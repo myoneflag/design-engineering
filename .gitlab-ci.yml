@@ -1,0 +1,32 @@
+
+# :(
+variables:
+  GIT_SSL_NO_VERIFY: "true"
+
+stages:
+    - build
+    - test
+
+cache:
+    paths:
+        - node/h2xdemo/node_modules/
+
+
+build:node:
+    stage: build
+    image: node:latest
+    script:
+        - cd node/h2xdemo/
+        - npm install
+
+build:java:
+    stage: build
+    image: java:8
+    script: cd java/
+
+test:node:
+    stage: test
+    script: 
+        - cd node/h2xdemo/
+        - npm test
+
