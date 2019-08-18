@@ -6,7 +6,7 @@ import './registerServiceWorker';
 
 Vue.config.productionTip = false;
 
-let vm = new Vue({
+new Vue({
   router,
   store,
   render: (h) => h(App),

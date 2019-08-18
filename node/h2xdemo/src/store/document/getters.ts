@@ -6,5 +6,5 @@ export const getters: GetterTree<DocumentState, RootState> = {
     title(state): string {
         const { title } = state.drawing;
         return title;
-    }
+    },
 };

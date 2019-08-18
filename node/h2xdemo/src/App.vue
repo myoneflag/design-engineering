@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-    <MainNavBar/>
     <router-view/>
   </div>
 </template>
@@ -8,17 +7,20 @@
 <script lang="ts">
   import Vue from 'vue'
   import BootstrapVue from 'bootstrap-vue'
-  import MainNavBar from "@/components/MainNavBar.vue";
+  import MainNavBar from "./components/MainNavBar.vue";
   import Component from 'vue-class-component';
 
   import 'bootstrap/dist/css/bootstrap.css'
   import 'bootstrap-vue/dist/bootstrap-vue.css'
 
   // @ts-ignore
-  import VueInputAutowidth from 'vue-input-autowidth'
+  import VueInputAutowidth from 'vue-input-autowidth';
+  // @ts-ignore
+  import VueAwesome from 'vue-awesome';
 
   Vue.use(VueInputAutowidth);
   Vue.use(BootstrapVue);
+  Vue.component('v-icon', VueAwesome);
 
   @Component({
     components: {

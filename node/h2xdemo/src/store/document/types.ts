@@ -24,4 +24,4 @@ export const initialValue: DocumentState = {
     history: [],
     lastOrder: 0,
     isOpen: false,
-}
+};

@@ -1,4 +1,6 @@
 <template>
+  <div>
+  <MainNavBar></MainNavBar>
   <b-container class="home">
     <b-row>
       <b-col>
@@ -27,13 +29,14 @@
       </b-col>
     </b-row>
   </b-container>
+  </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import MainNavBar from '@/components/MainNavBar.vue';
 import { State, Action, Getter } from 'vuex-class';
-import {DocumentState} from "@/store/document/types";
+import {DocumentState} from '@/store/document/types';
 
 
 @Component({
