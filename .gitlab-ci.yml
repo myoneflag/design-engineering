@@ -26,6 +26,7 @@ build:java:
 
 test:node:
     stage: test
+    image: node:latest
     script: 
         - cd node/h2xdemo/
         - npm test
