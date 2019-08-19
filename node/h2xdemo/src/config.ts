@@ -74,3 +74,5 @@ export const PAPER_SIZES: PaperSize[] = [
 ];
 
 export const DEFAULT_PAPER_SIZE: PaperSize = { name: 'A1', height: 594, width: 841 };
+
+export const DEFAULT_FONT_NAME: string = 'Helvetica';

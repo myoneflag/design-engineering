@@ -12,6 +12,7 @@
     import Component from "vue-class-component";
     import {Watch} from 'vue-property-decorator';
     import {PaperSize} from "@/config";
+    import {drawPaperScale} from "@/Layers/Scale";
 
     @Component ({
         props: {
@@ -63,6 +64,8 @@
                 ctx.fillStyle = "white";
                 ctx.fillRect(tlx, tly, this.$props.paperSize.width * pxPerMm, this.$props.paperSize.height * pxPerMm);
 
+                // Now draw scale bars
+                drawPaperScale(ctx, pxPerMm);
             } else {
                 console.log("Context is null, cannot render");
             }
