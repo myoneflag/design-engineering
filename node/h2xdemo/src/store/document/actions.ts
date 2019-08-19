@@ -6,7 +6,8 @@ import { DocumentState } from '@/store/document/types';
 
 export const actions: ActionTree<DocumentState, RootState> = {
     titleChange({ commit, state}, title): any {
-        commit('applyOperation', OT.createTitleChangeOperation(state.lastOrder + 1, state.drawing.title, title));
+        console.log('Changing state to ' + title + ' via action');
+        commit('applyOperation', OT.createTitleChangeOperation(-1, state.drawing.title, title));
     },
     open({commit}): any {
         commit('open');

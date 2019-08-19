@@ -7,16 +7,17 @@
 
         <b-navbar-nav style="padding-left: 20px">
 
-            <span v-if="data.titleEditing">
-                <b-form-input v-model="documentState.drawing.title"
+            <span v-if="titleEditing">
+                <b-input v-model="stagedTitle"
                               v-autowidth="{maxWidth: '960px', minWidth: '20px', comfortZone: 0}"
-                              v-on:blur="data.titleEditing = false"
-                              @keyup.enter="data.titleEditing = false"
+                              v-on:blur="setTitle"
+                              @keyup.enter="setTitle"
                               @focus="$event.target.select()"
+                         size="md"
                 />
             </span>
 
-            <b-navbar-brand v-else @dblclick="data.titleEditing = true">{{ documentState.drawing.title }}</b-navbar-brand>
+            <b-navbar-brand v-else @dblclick="titleEditing = true; stagedTitle = title">{{title}}</b-navbar-brand>
 
         </b-navbar-nav>
 
@@ -30,23 +31,25 @@
     import { Component, Vue } from 'vue-property-decorator';
     import { DocumentState } from '@/store/document/types';
     import { State } from 'vuex-class';
-
-    export interface MainNavBarState {
-        titleEditing: boolean;
-    }
+    import {state} from "@/store/document";
 
     @Component
     export default class DrawingNavBar extends Vue {
         @State('document') documentState!: DocumentState;
-        data: MainNavBarState = {
-            titleEditing: false,
-        };
-        methods: any  = {
-            editTitle: function () {
-                console.log('Double clicked you douche');
-            },
-        };
-    }
+
+        titleEditing = false;
+        stagedTitle: string = "";
+
+        get title() {
+            return this.$store.getters["document/title"];
+        }
+
+
+        setTitle(event: any) {
+            this.$store.dispatch("document/titleChange", event.target.value);
+            this.titleEditing = false;
+        }
+    };
 
 </script>
 

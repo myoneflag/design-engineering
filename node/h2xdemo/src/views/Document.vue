@@ -1,9 +1,7 @@
 <template>
     <div>
         <DrawingNavBar></DrawingNavBar>
-        <DrawingSetup>
-
-        </DrawingSetup>
+        <DrawingSetup/>
     </div>
 </template>
 
@@ -14,8 +12,9 @@
     import DrawingSetup from '@/components/DrawingSetup.vue';
 
     @Component({
-        components: {DrawingSetup, DrawingNavBar}
+        components: {DrawingSetup, DrawingNavBar},
     })
     export default class Document extends Vue {
+
     }
 </script>

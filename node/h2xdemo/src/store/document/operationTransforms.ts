@@ -1,3 +1,4 @@
+import Vue from 'vue';
 
 export interface OperationTransform {
     order: number;
@@ -16,3 +17,5 @@ export function createTitleChangeOperation(order: number, titleFrom: string, tit
 export const OPERATION_NAMES = {
     TITLE_CHANGE: 'TITLE_CHANGE',
 };
+
+export const OTEventBus = new Vue();

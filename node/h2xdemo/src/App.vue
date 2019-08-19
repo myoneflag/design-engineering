@@ -13,13 +13,20 @@
   import 'bootstrap/dist/css/bootstrap.css'
   import 'bootstrap-vue/dist/bootstrap-vue.css'
 
+
+  // @ts-ignore
+  import VueResize from 'vue-resize'
+  import 'vue-resize/dist/vue-resize.css'
+
   // @ts-ignore
   import VueInputAutowidth from 'vue-input-autowidth';
   // @ts-ignore
   import VueAwesome from 'vue-awesome';
 
+
   Vue.use(VueInputAutowidth);
   Vue.use(BootstrapVue);
+  Vue.use(VueResize)
   Vue.component('v-icon', VueAwesome);
 
   @Component({
@@ -32,6 +39,7 @@
 </script>
 
 <style lang="less">
+
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

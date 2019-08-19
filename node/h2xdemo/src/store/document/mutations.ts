@@ -1,6 +1,7 @@
 import { MutationTree } from 'vuex';
 import { DocumentState } from './types';
 import * as OT from './operationTransforms';
+import {OTEventBus} from './operationTransforms';
 
 export const mutations: MutationTree<DocumentState> = {
     /**
@@ -10,6 +11,9 @@ export const mutations: MutationTree<DocumentState> = {
      * @param operation
      */
     applyOperation(state, operation: OT.OperationTransform) {
+        if (operation.order === -1) {
+            operation.order = state.lastOrder + 1;
+        }
         state.history.push(operation);
         let handled: boolean = true;
 
@@ -22,8 +26,8 @@ export const mutations: MutationTree<DocumentState> = {
         }
         if (handled) {
             state.history.push(operation);
+            OTEventBus.$emit('ot-applied', operation);
         } else {
-            // TODO: log it
         }
     },
     open(state) {
