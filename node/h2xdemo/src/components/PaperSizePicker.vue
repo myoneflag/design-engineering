@@ -1,5 +1,5 @@
 <template>
-    <b-dropdown size="sm" id="dropdown-1" :text="this.size" variant="secondary">
+    <b-dropdown size="sm" id="dropdown-1" :text="this.size" variant="secondary" :disabled="disabled">
         <b-dropdown-item v-for="dims in paperSizes" @click="changeSize(dims)" :key="dims.name">
             {{ dims.name }}
         </b-dropdown-item>
@@ -16,10 +16,11 @@
         props: {
             initialSize: String,
             onchange: Function,
+            disabled: Boolean,
         }
     })
     export default class PaperSizeSelector extends Vue {
-        size = "A2";
+        size = (this as any).initialSize;
 
         get paperSizes() {
             return PAPER_SIZES;

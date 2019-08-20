@@ -46,7 +46,7 @@
 
 
         setTitle(event: any) {
-            this.$store.dispatch("document/titleChange", event.target.value);
+            this.$store.dispatch("document/setTitle", event.target.value);
             this.titleEditing = false;
         }
     };

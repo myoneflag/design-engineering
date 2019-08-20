@@ -44,9 +44,6 @@ export const getFriendlyDistanceUnit = (mm: number) : [string, number] => {
 export const drawPaperScale = (ctx: CanvasRenderingContext2D, pxPerMm: number) => {
     // draw on bottom left
     const height = ctx.canvas.height;
-    ctx.font = '14px ' + DEFAULT_FONT_NAME;
-    ctx.fillStyle = '#000000';
-    ctx.fillText('OUR PAPER SCALE:', 10, height - 50);
 
     // Draw ruler
     const minSmallWidth = 4;
@@ -58,12 +55,17 @@ export const drawPaperScale = (ctx: CanvasRenderingContext2D, pxPerMm: number) =
         }
     }
 
-    let left: number = 10;
     const smallW = smallestUnit * pxPerMm;
     const medW = smallW * 5;
     const largeW = smallW * 10;
     const scaleHeight = 10;
     const scaleBottomOffset = 30;
+
+
+    const scaleLeftEdge = ctx.canvas.width - minSmallWidth * 2 * 50 - 10;
+
+    let left: number = scaleLeftEdge;
+
 
     for (let i = 0; i < 10; i++) {
         if (i % 2 === 0) {
@@ -95,7 +97,7 @@ export const drawPaperScale = (ctx: CanvasRenderingContext2D, pxPerMm: number) =
 
     // draw ruler text
     let [uname, unit] = getFriendlyDistanceUnit(smallestUnit * 10);
-    left = 10;
+    left = scaleLeftEdge;
     ctx.font = '9px ' + DEFAULT_FONT_NAME;
     for (let i = 0; i < 6; i++) {
         if (i % 2 === 0) {
@@ -112,6 +114,6 @@ export const drawPaperScale = (ctx: CanvasRenderingContext2D, pxPerMm: number) =
         left += largeW;
     }
 
-    ctx.rect(10, height - scaleBottomOffset, smallW * 50, scaleHeight);
+    ctx.rect(     scaleLeftEdge, height - scaleBottomOffset, smallW * 50, scaleHeight);
     ctx.stroke();
 };
