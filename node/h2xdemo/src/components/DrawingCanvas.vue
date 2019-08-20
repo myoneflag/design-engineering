@@ -155,7 +155,7 @@
         onWheel(event: WheelEvent) {
             const [wx, wy] = this.viewPort.toWorldCoord(event.offsetX, event.offsetY);
             console.log("Wheel event " + wx + " " + wy);
-            this.viewPort.rescale(this.viewPort.scale * (1 + event.deltaY / 500), wx, wy);
+            this.viewPort.rescale(this.viewPort.scale * (1 - event.deltaY / 500), wx, wy);
             this.draw();
             return false;
         }
