@@ -11,6 +11,7 @@
 
                 :initial-background-center-x="centerX"
                 :initial-background-center-y="centerY"
+                :initial-background-uri="this.$store.state.document.drawing.background.uri"
         />
         <DrawingCanvas/>
     </div>

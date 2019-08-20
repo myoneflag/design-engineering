@@ -73,6 +73,7 @@
 
             initialBackgroundCenterX: Number,
             initialBackgroundCenterY: Number,
+            initialBackgroundUri: String,
             initialCrop: Object,
         }
     })
@@ -131,6 +132,7 @@
         mounted() {
             console.log("Mounted. tiltleStaged: " + this.titleStaged + " internal paper size: " + this.internalOurPaperSize);
             this.updateTitle();
+            this.renderedPdf = this.$props.initialBackgroundUri;
             OTEventBus.$on("ot-applied", this.updateTitle);
         }
 

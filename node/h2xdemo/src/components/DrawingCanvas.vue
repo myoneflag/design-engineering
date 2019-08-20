@@ -29,6 +29,7 @@
 
         ctx: CanvasRenderingContext2D | null = null;
         mounted() {
+            console.log("DrawingCanvas Mounted");
             this.ctx = (this.$refs["drawingCanvas"] as any).getContext("2d");
             this.draw();
             OT.OTEventBus.$on('ot-applied', this.otReceived);
@@ -37,6 +38,7 @@
             (this.$refs["drawingCanvas"] as any).onmouseup = this.onMouseUp;
             (this.$refs["drawingCanvas"] as any).onwheel = this.onWheel;
             this.centerFrame();
+            this.stageBackground();
         }
 
         viewPort: ViewPort = new ViewPort(0, 0, 100, 100, 1);
