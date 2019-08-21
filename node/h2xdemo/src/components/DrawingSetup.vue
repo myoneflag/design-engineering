@@ -36,18 +36,28 @@
                 </b-col>
             </b-row>
 
-            <b-row style="margin-top: 20px;">
-                <b-col>
+            <b-row style="margin-top: 20px;" v-if="backgroundState.uri === ''">
+                <b-col cols="12">
+                    <b-form-file
+                            ref="uploadForm"
+                            v-model="pdfUploadFile"
+                            :state="pdfUploadFile != null"
 
+                            accept=".pdf"
+                            placeholder="Choose a PDF file or drop it here..."
+                            drop-placeholder="Drop background PDF here..."
+                            :disabled="pdfUploadFile != null"
+                    ></b-form-file>
                 </b-col>
+            </b-row>
+            <b-row v-else>
+                <b-col></b-col>
                 <b-col cols="3">
-                    <b-button variant="primary" @click="uploadPdfClick">
-                        Upload PDF Background
+                    <b-button variant="primary" @click="removeBackgroundClick">
+                        Remove Background
                     </b-button>
                 </b-col>
-                <b-col>
-
-                </b-col>
+                <b-col></b-col>
             </b-row>
         </b-container>
 
@@ -63,6 +73,9 @@
     import {DEFAULT_PAPER_SIZE, PAPER_SIZES, PaperSize} from "@/config";
     import PreviewCanvas, { BackgroundState } from "@/components/PreviewCanvas.vue";
     import PaperSettings from '@/components/PaperSettings.vue';
+
+    import axios from 'axios';
+
     @Component({
         components: { PaperSettings, PreviewCanvas, PaperSizeSelector},
         props: {
@@ -85,6 +98,37 @@
         internalImportedPaperSize: PaperSize = DEFAULT_PAPER_SIZE;
 
         internalOurPaperSize: PaperSize = DEFAULT_PAPER_SIZE;
+
+        internalPdfUploadFile: File | null = null;
+        get pdfUploadFile() {
+            return this.internalPdfUploadFile;
+        }
+        set pdfUploadFile(value: File | null) {
+            if (value != null) {
+                let formData = new FormData();
+                console.log(Object.keys(value));
+                formData.append("pdf", value);
+                let promise = axios.post('api/uploadPdf', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+                promise.catch(reason => {
+                    console.log(reason);
+                    console.log(JSON.stringify(reason));
+                    this.internalPdfUploadFile = null;
+                });
+                promise.then((value) => {
+                    this.renderedPdf = value.data.uri;
+                });
+            }
+            this.internalPdfUploadFile = value;
+        }
+
+        onPdfUploadFileChanged() {
+            console.log("changed pdf file " + this.internalPdfUploadFile);
+        }
+
         updateTitle() {
             this.titleStaged = this.$store.getters["document/title"];
         }
@@ -134,14 +178,15 @@
             this.updateTitle();
             this.renderedPdf = this.$props.initialBackgroundUri;
             OTEventBus.$on("ot-applied", this.updateTitle);
+            if ((this.$refs["uploadForm"] as any)) {
+                (this.$refs["uploadForm"] as any).onchange = this.onPdfUploadFileChanged;
+                console.log("Added handler");
+            }
         }
 
-        /**
-         * TODO: actually upload PDF. right now, it just pretends.
-         */
-        uploadPdfClick(event: Event) {
-            console.log("Rendered PDF done");
-            this.renderedPdf = "https://conversionxl.com/wp-content/uploads/2013/03/blueprint-architecture.png";
+        removeBackgroundClick(event: Event) {
+            this.renderedPdf = "";
+            this.internalPdfUploadFile = null;
         }
 
         backgroundState: BackgroundState = {
@@ -161,9 +206,7 @@
             // WE ACCEPTED THE FORM!
             // FINALLY! FIRE THE OPERATIONS!
             this.$store.dispatch('document/setTitle', this.titleStaged);
-
             this.$store.dispatch('document/setBackground', this.backgroundState);
-
             this.$store.dispatch('document/setPaper', {name: this.ourPaperSize.name, scale: this.ourPaperScaleL + ':' + this.ourPaperScaleR });
         }
     }
