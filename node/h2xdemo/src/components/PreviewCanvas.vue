@@ -87,16 +87,21 @@
 
         @Watch("backgroundUri")
         onBackgroundUriChange(val: string, old: string) {
-            if (val !== "" && val !== old) {
+            if (val !== old) {
                 this.loadBackground();
             }
         }
 
         loadBackground() {
-            if (this.$props.backgroundUri && this.$props.backgroundUri != "") {
-                this.backgroundImage = new BackgroundImage(this.$props.backgroundUri, this.handleImageLoad, (result: BackgroundImage) => {
-                    this.draw()
-                });
+            if (this.$props.backgroundUri != undefined) {
+                if (this.$props.backgroundUri != "") {
+                    this.backgroundImage = new BackgroundImage(this.$props.backgroundUri, this.handleImageLoad, (result: BackgroundImage) => {
+                        this.draw()
+                    });
+                } else {
+                    this.backgroundImage = null;
+                    this.draw();
+                }
             }
         }
 
