@@ -22,7 +22,7 @@ public class Profile {
 
 
     @OneToOne
-    //@MapsId
+    @MapsId("username")
     private Login login;
 
     @Id

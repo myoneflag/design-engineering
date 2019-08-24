@@ -55,6 +55,7 @@ public class Session {
     private String id;
 
     @OneToOne
+    @MapsId("id")
     private Login login;
 
     private LocalDateTime expiresOn;
