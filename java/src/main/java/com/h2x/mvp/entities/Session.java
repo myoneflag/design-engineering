@@ -51,11 +51,11 @@ public class Session {
         this.expiresOn = expiresOn;
     }
 
+
     @Id
     private String id;
 
-    @OneToOne
-    @MapsId("id")
+    @ManyToOne
     private Login login;
 
     private LocalDateTime expiresOn;

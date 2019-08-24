@@ -5,9 +5,11 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Entity
 public class Login {
@@ -76,15 +78,15 @@ public class Login {
     }
 
     public Session getAndRefreshValidSession(org.hibernate.Session dbSession) {
-        if (session == null) return null;
-        if (session.getExpiresOn().isBefore(LocalDateTime.now())) {
+        if (session.size() == 0) return null;
+        if (session.get(0).getExpiresOn().isBefore(LocalDateTime.now())) {
             dbSession.delete(session);
             return null;
         } else {
             LocalDateTime c = LocalDateTime.now();
             c = c.plus(SecurityConfig.SESSION_DURATION_MINUTES, ChronoUnit.MINUTES);
-            session.setExpiresOn(c);
-            return session;
+            session.get(0).setExpiresOn(c);
+            return session.get(0);
         }
     }
 
@@ -96,8 +98,8 @@ public class Login {
         return login;
     }
 
-    @OneToOne(mappedBy = "login")
-    private Session session;
+    @OneToMany(mappedBy = "login")
+    private List<Session> session;
 
     @OneToOne(mappedBy = "login")
     private Profile profile;
@@ -110,11 +112,11 @@ public class Login {
         this.profile = profile;
     }
 
-    public Session getSession() {
+    public List<Session> getSession() {
         return session;
     }
 
-    public void setSession(Session session) {
+    public void setSession(List<Session> session) {
         this.session = session;
     }
 }
