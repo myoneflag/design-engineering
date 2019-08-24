@@ -14,12 +14,10 @@ public class CreateRootUser {
         System.out.print("Password? ");
         String password = sc.nextLine();
         Database.withSession(s -> {
-            Transaction tx = s.beginTransaction();
             Login login = Login.createObject(username, password);
             login.setSuperUser(true);
             login.setAdmin(true);
             s.saveOrUpdate(login);
-            tx.commit();
             return null;
         });
     }
