@@ -21,24 +21,31 @@
 
         </b-navbar-nav>
 
-        <b-navbar-nav class="ml-auto">
-            <b-nav-item v-b-modal.project-setup-modal>Setup <v-icon name="sliders-h"></v-icon> </b-nav-item>
-        </b-navbar-nav>
+
+        <ProfileMenuItem/>
     </b-navbar>
 </template>
 
 <script lang="ts">
-    import { Component, Vue } from 'vue-property-decorator';
+    import {Vue } from 'vue-property-decorator';
     import { DocumentState } from '@/store/document/types';
     import { State } from 'vuex-class';
     import {state} from "@/store/document";
-
-    @Component
+    import {mapGetters} from "vuex";
+    import Component from 'vue-class-component';
+    import ProfileMenuItem from '@/components/ProfileMenuItem.vue';
+    @Component({
+        components: {ProfileMenuItem}
+    })
     export default class DrawingNavBar extends Vue {
         @State('document') documentState!: DocumentState;
 
         titleEditing = false;
         stagedTitle: string = "";
+
+        get username() {
+            return this.$store.getters["profile/username"]
+        }
 
         get title() {
             return this.$store.getters["document/title"];

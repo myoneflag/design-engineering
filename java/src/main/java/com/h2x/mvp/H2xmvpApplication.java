@@ -15,5 +15,4 @@ public class H2xmvpApplication {
     public static void main(String[] args) {
         SpringApplication.run(H2xmvpApplication.class, args);
     }
-
 }

@@ -3,14 +3,18 @@
         <b-navbar-nav>
             <b-nav-item to="/" active-class="active" exact>Home</b-nav-item>
         </b-navbar-nav>
+
+        <ProfileMenuItem/>
     </b-navbar>
 </template>
 
 <script lang="ts">
     import Component from 'vue-class-component';
     import Vue from 'vue';
-
-    @Component
+    import ProfileMenuItem from '@/components/ProfileMenuItem.vue';
+    @Component({
+        components: {ProfileMenuItem}
+    })
     export default class MainNavBar extends Vue {};
 </script>
 

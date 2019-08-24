@@ -9,6 +9,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    public static final int SESSION_DURATION_MINUTES = 60*24;
+
     @Override
     protected void configure(HttpSecurity security) throws Exception
     {
