@@ -23,6 +23,8 @@
   // @ts-ignore
   import VueAwesome from 'vue-awesome';
 
+  import VueCookies from 'vue-cookies';
+  Vue.use(VueCookies);
 
   Vue.use(VueInputAutowidth);
   Vue.use(BootstrapVue);

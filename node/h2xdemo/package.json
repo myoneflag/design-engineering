@@ -18,6 +18,8 @@
     "vue": "^2.6.10",
     "vue-awesome": "^3.5.4",
     "vue-class-component": "^7.0.2",
+    "vue-cookies": "^1.5.13",
+    "vue-cookies-ts": "^1.5.16",
     "vue-input-autowidth": "^1.0.5",
     "vue-property-decorator": "^8.1.0",
     "vue-resize": "^0.4.5",
