@@ -4,10 +4,8 @@ import com.h2x.mvp.configuration.SecurityConfig;
 import com.h2x.mvp.entities.Database;
 import com.h2x.mvp.entities.Login;
 import com.h2x.mvp.entities.Session;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.web.bind.annotation.*;
 
-import javax.xml.crypto.Data;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -77,7 +75,7 @@ public class LoginController {
 
     @RequestMapping("api/login/password")
     public LoginResult changePassword(@CookieValue("session-id") String sessionId, @RequestBody PasswordChangeRequest changeRequest) {
-        return Session.withAuth(sessionId, (dbSession, session) -> {
+        return Session.withAuthAndDb(sessionId, (dbSession, session) -> {
             Login l = session.getLogin();
             if (l.authenticate(changeRequest.currentPassword)) {
                 if (changeRequest.newPassword.length() < 8) {
@@ -90,7 +88,7 @@ public class LoginController {
             } else {
                 return new LoginResult(false, "", "Password incorrect", "");
             }
-        });
+        }, new LoginResult(false, "", "You are not logged in", ""));
     }
 
     public static class PasswordChangeRequest {

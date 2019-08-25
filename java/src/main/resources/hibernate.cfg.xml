@@ -34,9 +34,12 @@
       true
     </property>
     <!-- List of XML mapping files -->
+    <mapping package="com.h2x.mvp.entities"/>
+    <mapping class="com.h2x.mvp.entities.Operation"/>
+    <mapping class="com.h2x.mvp.entities.Login"/>
+    <mapping class="com.h2x.mvp.entities.Document"/>
     <mapping class="com.h2x.mvp.entities.Session"/>
     <mapping class="com.h2x.mvp.entities.Profile"/>
-    <mapping class="com.h2x.mvp.entities.Login"/>
 
   </session-factory>
 </hibernate-configuration>

@@ -1,18 +1,6 @@
 <template>
     <div>
         <DrawingNavBar></DrawingNavBar>
-        <DrawingSetup
-                :initial-paper-scale="this.$store.state.document.drawing.paper.scale"
-
-                :initial-paper-size="this.$store.state.document.drawing.paper.name"
-                :initial-pdf-scale="this.$store.state.document.drawing.background.paperScale"
-                :initial-pdf-size="this.$store.state.document.drawing.background.paper"
-                :initial-crop="crop"
-
-                :initial-background-center-x="centerX"
-                :initial-background-center-y="centerY"
-                :initial-background-uri="this.$store.state.document.drawing.background.uri"
-        />
         <DrawingCanvas/>
     </div>
 </template>
@@ -23,35 +11,27 @@
     import DrawingNavBar from "../components/DrawingNavBar.vue";
     import DrawingSetup from '@/components/DrawingSetup.vue';
     import DrawingCanvas from '@/components/DrawingCanvas.vue';
+    import sockjs from 'sockjs-client';
+    import Stomp, {Message} from "stompjs";
 
     @Component({
         components: {DrawingCanvas, DrawingSetup, DrawingNavBar},
     })
     export default class Document extends Vue {
-        getInitialCrop() {
-            if (this.$store.state.document.drawing.background.uri != "") {
-                return this.$store.state.document.drawing.background.crop;
-            } else {
-                return undefined;
-            }
-        }
+        mounted() {
+            let socket = sockjs('/api/websocket');
+            console.log("Connecting to websocket");
+            let connection = Stomp.over(socket);
+            connection.connect({}, () => {
 
-        get centerX() {
-            if (this.$store.state.document.drawing.background.uri != "") {
-                return this.$store.state.document.drawing.background.centerX;
-            }
-        }
+                    console.log("Connected to websocket");
 
-        get centerY() {
-            if (this.$store.state.document.drawing.background.uri != "") {
-                return this.$store.state.document.drawing.background.centerY;
-            }
-        }
+                    connection.subscribe('/user/document', (payload: Message) => {
+                        this.$store.dispatch('document/applyRemoteOperation', JSON.parse(payload.body));
+                    })
+                }
+            );
 
-        get crop() {
-            if (this.$store.state.document.drawing.background.uri != "") {
-                return this.$store.state.document.drawing.background.crop;
-            }
         }
     }
 /*
