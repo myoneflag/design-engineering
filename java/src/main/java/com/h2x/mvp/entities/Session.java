@@ -75,7 +75,7 @@ public class Session {
         refresh(dbSession, durationMinutes);
     }
 
-    public static <T> T withAuth(String sessionId, BiFunction<org.hibernate.Session, Session, T> fun) {
+    public static <T> T withAuthAndDb(String sessionId, BiFunction<org.hibernate.Session, Session, T> fun, T defaultValue) {
         return Database.withSession((dbSession) -> {
 
             List<Session> sessions = dbSession.createQuery("FROM Session S WHERE S.id = :id")
@@ -87,8 +87,7 @@ public class Session {
                 return fun.apply(dbSession, session);
             }
 
-            // TODO: 401
-            return null;
+            return defaultValue;
         });
     }
 }

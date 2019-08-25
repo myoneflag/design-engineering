@@ -6,6 +6,16 @@ import { DocumentState } from '@/store/document/types';
 import {BackgroundImage} from '@/Drawings/BackgroundImage';
 import {PaperSize} from '@/config';
 
+
+let submitOperation = (commit: any, op: OT.OperationTransform) => {
+    axios.post('/api/document/operation', op).then(
+        () => console.log("operation " + op + " submitted"),
+    );
+
+    // Take line off to disable optimistic operations.
+   // commit('applyOperation', op);
+};
+
 // TODO: These actions are supposed to send REST requests to the server to commit them.
 // The only thing we are doing right now is optimistically applying actions.
 // When we get a confirmation back from the server, we are good.
@@ -13,9 +23,14 @@ import {PaperSize} from '@/config';
 // operations as told by the server. If our request got through, we should get our
 // operation as a result afterwards because the server would have done conflict resoulution.
 export const actions: ActionTree<DocumentState, RootState> = {
-    setTitle({ commit, state}, title): any {
-        commit('applyOperation', OT.createsetTitleOperation(-1, state.drawing.title, title));
+    applyRemoteOperation({commit, state}, op) {
+        commit('applyOperation', op);
     },
+
+    setTitle({ commit, state}, title): any {
+        submitOperation(commit, OT.createsetTitleOperation(-1, state.drawing.title, title));
+    },
+
     open({commit}): any {
         commit('open');
     },
@@ -49,7 +64,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
             type: OT.OPERATION_NAMES.SET_BACKGROUND,
             uri,
         };
-        commit('applyOperation', op);
+        submitOperation(commit, op);
     },
 
     setPaper({ commit, state }, { name, scale }): any {
@@ -61,7 +76,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
             type: OT.OPERATION_NAMES.SET_PAPER,
             order: -1,
         };
-        commit('applyOperation', op);
+        submitOperation(commit, op);
     },
 
 };

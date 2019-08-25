@@ -32,43 +32,20 @@
             console.log("DrawingCanvas Mounted");
             this.ctx = (this.$refs["drawingCanvas"] as any).getContext("2d");
             this.draw();
-            OT.OTEventBus.$on('ot-applied', this.otReceived);
+            //OT.OTEventBus.$on('ot-applied', this.otReceived);
             (this.$refs["drawingCanvas"] as any).onmousedown = this.onMouseDown;
             (this.$refs["drawingCanvas"] as any).onmousemove = this.onMouseMove;
             (this.$refs["drawingCanvas"] as any).onmouseup = this.onMouseUp;
             (this.$refs["drawingCanvas"] as any).onwheel = this.onWheel;
-            this.centerFrame();
             this.stageBackground();
         }
 
         viewPort: ViewPort = new ViewPort(0, 0, 100, 100, 1);
-        paperSize: PaperSize = DEFAULT_PAPER_SIZE;
 
-        otReceived(ot: OT.OperationTransform) {
-            if (ot.type == OT.OPERATION_NAMES.SET_BACKGROUND || ot.type == OT.OPERATION_NAMES.SET_PAPER) {
-                this.centerFrame();
-                this.stageBackground();
-            }
-        }
-
-        centerFrame() {
-            // We need to re-frame everything.
-            for (let s of PAPER_SIZES) {
-                if (s.name === this.$store.state.document.drawing.paper.name) {
-                    this.paperSize = s;
-                }
-            }
-            if (this.ctx) {
-                const doc: DocumentState = this.$store.state;
-                let pxPerMm;
-                [this.viewPort, pxPerMm] = createViewportForPaper(this.ctx, this.paperSize.width, this.paperSize.height, 50);
-            }
-
-            this.draw();
-        }
 
         background: BackgroundImage | null = null;
         crop = {x: 0, y: 0, w: 0, h: 0};
+
         stageBackground() {
             const state: DocumentState = this.$store.state.document;
             if (state.drawing.background.uri != "") {
@@ -106,19 +83,12 @@
                 this.viewPort.width = width;
                 this.viewPort.height = height;
 
-                ctx.fillStyle = "#AAAAAA";
-                fillRect(ctx, this.viewPort, 5, this.paperSize.height-5, this.paperSize.width, this.paperSize.height);
-                ctx.fillStyle = "#ffffff";
-                fillRect(ctx, this.viewPort, 0, this.paperSize.height, this.paperSize.width, this.paperSize.height);
-                ctx.strokeStyle = "#CCCCCC";
-                rect(ctx, this.viewPort, 0, this.paperSize.height, this.paperSize.width, this.paperSize.height);
-
                 if (this.background) {
                     // Draw cropped pdf.
                     this.background.worldClipDraw(ctx, this.viewPort, 1.0, this.crop.x, this.crop.y, this.crop.w, this.crop.h);
                 }
 
-                drawPaperScale(ctx, this.viewPort.scale * parseScale(state.drawing.paper.scale));
+                drawPaperScale(ctx, this.viewPort.scale);
             }
         }
 

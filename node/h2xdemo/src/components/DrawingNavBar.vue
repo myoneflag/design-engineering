@@ -19,6 +19,12 @@
 
             <b-navbar-brand v-else @dblclick="titleEditing = true; stagedTitle = title">{{title}}</b-navbar-brand>
 
+            <b-nav-item>
+                <span>
+                    <v-icon name="cog"></v-icon>
+                </span>
+                Settings
+            </b-nav-item>
         </b-navbar-nav>
 
 
