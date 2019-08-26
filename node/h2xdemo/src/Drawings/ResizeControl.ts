@@ -1,5 +1,6 @@
 import {ViewPort} from '@/Drawings/2DViewport';
 import {rect} from '@/Drawings/ViewportDrawing';
+import DrawableObject from '@/Drawings/Object';
 
 enum Sides {
     Left,
@@ -10,7 +11,7 @@ enum Sides {
 
 type Handle = [number, number, Sides[], string];
 
-export class ResizeControl {
+export class ResizeControl extends DrawableObject {
 
     onChange: ((_: ResizeControl) => any) | null;
     handles: Handle[];
@@ -21,6 +22,7 @@ export class ResizeControl {
     private h_: number;
 
     constructor(x: number, y: number, w: number, h: number, onChange: ((_: ResizeControl) => any) | null = null) {
+        super();
         this.x_ = x;
         this.y_ = y;
         this.w_ = w;

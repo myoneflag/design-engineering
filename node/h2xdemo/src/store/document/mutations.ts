@@ -2,6 +2,7 @@ import { MutationTree } from 'vuex';
 import { DocumentState } from './types';
 import * as OT from './operationTransforms';
 import {OTEventBus} from './operationTransforms';
+import deepEqual from 'deep-equal';
 
 export const mutations: MutationTree<DocumentState> = {
     /**
@@ -12,38 +13,42 @@ export const mutations: MutationTree<DocumentState> = {
      */
     applyOperation(state, operation: OT.OperationTransform) {
         console.log("Applying operation: " + JSON.stringify(operation));
-        if (operation.order === -1) {
-            operation.order = state.lastOrder + 1;
+        if (operation.id === -1) {
+            operation.id = state.nextId;
+        } else if (state.history.length && operation.id === state.history[state.history.length - 1].id) {
+            if (!deepEqual(operation, state.history[state.history.length - 1])) {
+                console.log('Warning: inconsistent operation received: ' + JSON.stringify(operation)
+                    + ' vs ' + JSON.stringify(state.history[state.history.length - 1]));
+            } else {
+                // We can skip this one
+                console.log('Info: Received identical operation from server as one that was optimistically applied. Skipping');
+                return;
+            }
+        } else if (operation.id != state.nextId) {
+            console.log('Warning: operation is too far in the future: ')
         }
+
         state.history.push(operation);
         let handled: boolean = true;
 
         switch (operation.type) {
 
             case OT.OPERATION_NAMES.SET_TITLE: {
-                state.drawing.title = (operation as OT.setTitleOperation).titleTo;
+                state.drawing.title = (operation as OT.SetTitleOperation).titleTo;
                 break;
             }
-            case OT.OPERATION_NAMES.SET_BACKGROUND: {
-                const op: OT.SetBackgroundOperation = (operation as OT.SetBackgroundOperation);
-                state.drawing.background.centerX = op.centerX;
-                state.drawing.background.centerY = op.centerY;
-                state.drawing.background.scale = op.scale;
-                state.drawing.background.paperScale = op.paperScale;
-                state.drawing.background.paper = op.paper;
-                state.drawing.background.uri = op.uri;
-                state.drawing.background.crop = op.crop;
-
-                state.drawing.background.crop.x = op.crop.x;
-                state.drawing.background.crop.y = op.crop.y;
-                state.drawing.background.crop.w = op.crop.w;
-                state.drawing.background.crop.h = op.crop.h;
+            case OT.OPERATION_NAMES.ADD_BACKGROUND: {
+                state.drawing.backgrounds.push((operation as OT.AddBackgroundOperation).background);
                 break;
             }
-            case OT.OPERATION_NAMES.SET_PAPER: {
-                const op: OT.SetPaperOperation = (operation as OT.SetPaperOperation);
-                state.drawing.paper.name = op.name;
-                state.drawing.paper.scale = op.scale;
+            case OT.OPERATION_NAMES.UPDATE_BACKGROUND: {
+                const op = operation as OT.UpdateBackgroundOperation;
+                state.drawing.backgrounds.splice(op.index, 1, op.background);
+                break;
+            }
+            case OT.OPERATION_NAMES.DELETE_BACKGROUND: {
+                const op = operation as OT.DeleteBackgroundOperation;
+                state.drawing.backgrounds.splice(op.index, 1);
                 break;
             }
             default:
@@ -51,15 +56,10 @@ export const mutations: MutationTree<DocumentState> = {
         }
         if (handled) {
             state.history.push(operation);
+            state.nextId = Math.max(state.nextId, operation.id) + 1;
             OTEventBus.$emit('ot-applied', operation);
         } else {
         }
-    },
-    open(state) {
-        state.isOpen = true;
-    },
-    close(state) {
-        state.isOpen = false;
     },
 };
 

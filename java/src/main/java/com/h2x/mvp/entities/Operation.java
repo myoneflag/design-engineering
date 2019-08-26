@@ -1,5 +1,7 @@
 package com.h2x.mvp.entities;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -48,5 +50,7 @@ public class Operation {
     @ManyToOne
     private Document document;
 
+
+    @Type(type="text")
     private String operation;
 }

@@ -23,6 +23,10 @@
   // @ts-ignore
   import VueAwesome from 'vue-awesome';
 
+  import VueDragDrop from 'vue-drag-drop';
+
+  Vue.use(VueDragDrop);
+
   import VueCookies from 'vue-cookies';
   Vue.use(VueCookies);
 

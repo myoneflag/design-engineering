@@ -1,59 +1,36 @@
 import Vue from 'vue';
+import { Background} from '@/store/document/types';
 
 export interface OperationTransform {
-    order: number;
+    id: number;
     type: string;
 }
 
-export interface setTitleOperation extends OperationTransform {
+export interface SetTitleOperation extends OperationTransform {
     titleFrom: string;
     titleTo: string;
 }
 
-export function createsetTitleOperation(order: number, titleFrom: string, titleTo: string): setTitleOperation {
-    return {order, type: OPERATION_NAMES.SET_TITLE, titleFrom, titleTo};
+export interface AddBackgroundOperation extends OperationTransform {
+    background: Background;
 }
 
-export interface SetBackgroundOperation extends OperationTransform {
-    oldUri: string;
-    oldPaper: string;
-    oldScale: number;
-    oldPaperScale: string; // keep a record of paper scale, which is obfuscated in calculations, but needed by the editor.
-    oldCenterX: number;
-    oldCenterY: number;
-    oldCrop: {
-        x: number;
-        y: number;
-        w: number;
-        h: number;
-    };
-
-    uri: string;
-    paper: string;
-    scale: number;
-    paperScale: string;
-    centerX: number;
-    centerY: number;
-    crop: {
-        x: number;
-        y: number;
-        w: number;
-        h: number;
-    };
+export interface UpdateBackgroundOperation extends OperationTransform {
+    background: Background;
+    oldBackground: Background;
+    index: number;
 }
 
-export interface SetPaperOperation extends OperationTransform {
-    oldName: string;
-    oldScale: string;
-
-    name: string;
-    scale: string;
+export interface DeleteBackgroundOperation extends OperationTransform {
+    deleted: Background;
+    index: number;
 }
 
 export const OPERATION_NAMES = {
     SET_TITLE: 'SET_TITLE',
-    SET_BACKGROUND: 'SET_BACKGROUND',
-    SET_PAPER: 'SET_PAPER',
+    ADD_BACKGROUND: 'ADD_BACKGROUND',
+    UPDATE_BACKGROUND: 'UPDATE_BACKGROUND',
+    DELETE_BACKGROUND: 'DELETE_BACKGROUND',
 };
 
 export const OTEventBus = new Vue();
