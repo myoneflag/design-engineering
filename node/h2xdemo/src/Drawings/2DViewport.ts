@@ -1,5 +1,3 @@
-import {rescaleAnchor} from '@/Drawings/Utils';
-
 export const EPS = 1e-5;
 
 export class ViewPort {
