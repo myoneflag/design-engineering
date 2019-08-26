@@ -9,7 +9,6 @@
     import Vue from "vue";
     import Component from "vue-class-component";
     import DrawingNavBar from "../components/DrawingNavBar.vue";
-    import DrawingSetup from '@/components/DrawingSetup.vue';
     import DrawingCanvas from '@/components/canvas/DrawingCanvas.vue';
     import sockjs from 'sockjs-client';
     import Stomp, {Message} from "stompjs";
@@ -17,7 +16,7 @@
     import {DocumentState} from '@/store/document/types';
 
     @Component({
-        components: {DrawingCanvas, DrawingSetup, DrawingNavBar},
+        components: {DrawingCanvas  , DrawingNavBar},
     })
     export default class Document extends Vue {
 
