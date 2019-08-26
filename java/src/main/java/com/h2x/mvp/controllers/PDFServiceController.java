@@ -11,24 +11,104 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 import java.util.logging.FileHandler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.h2x.mvp.webmodels.*;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.json.simple.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuple3;
+
+import javax.persistence.Tuple;
 
 @RestController
 public class PDFServiceController
 {
+    ObjectMapper mapper = new ObjectMapper();
+
+    @Autowired
+    @Qualifier("threadConfig")
+    TaskExecutor taskExecutor;
+
     @RequestMapping(value = "api/uploadPdf")
-    public DeferredResult<ResponseEntity<BackgroundURI>> uploadPdf(@RequestParam("pdf")MultipartFile file)
+    public DeferredResult<ResponseEntity<BackgroundURI>> uploadPdf(
+            @RequestParam("pdf")MultipartFile file,
+            @RequestParam("x") double dropX,
+            @RequestParam("y") double dropY)
     {
+
+        Logger logger = LoggerFactory.getLogger(PDFServiceController.class);
         DeferredResult<ResponseEntity<BackgroundURI>> output = new DeferredResult<>();
         //return new BackgroundURI("https://conversionxl.com/wp-content/uploads/2013/03/blueprint-architecture.png");
         ForkJoinPool.commonPool().submit(() -> {
             try {
-                output.setResult(ResponseEntity.ok(new BackgroundURI(convertToPng(file))));
-            } catch (InterruptedException | IOException e) {
+                logger.debug("Starting PDF conversion service");
+                // Save to temp dir
+                String pdfPath = "/tmp/" + UUID.randomUUID().toString() + ".pdf";
+                File pdfFile = new File(pdfPath);
+                OutputStream pdfOutput = new FileOutputStream(pdfFile);
+                pdfOutput.write(file.getBytes());
+
+                String pngHash = UUID.randomUUID().toString();
+                String pngDest = "/static/" + pngHash + ".png";
+
+                logger.debug("Submitting convert task.");
+                ForkJoinPool.commonPool().submit(() -> {
+                    try {
+                        convertToPng(pdfPath, pngHash);
+                    } catch (IOException | InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                });
+                logger.debug("Submitted convert task. Now pushing operation");
+
+                PdfDims pdfDims = new PdfDims(1, ImmutablePaperSize.builder().name("A1").width(500).height(300).build(), "1:100");// getPdfDimensions(pdfPath);
+
+                logger.debug("Submitted convert task. Now pushing operation 2");
+                // We can get the size of the PDF immediately. Then, the operation can be returned to the user
+                // already.
+
+                String request =
+                        mapper.writeValueAsString(
+                                ImmutableAddBackgroundOperation.builder()
+                                        .background(
+                                                ImmutableBackground.builder()
+                                                .crop(ImmutableRectangle.builder().x(0).y(0).w(
+                                                        pdfDims.paperSize.width()).h(pdfDims.paperSize.height()
+                                                ).build())
+                                                .center(ImmutableCoord.builder().x(dropX).y(dropY).build())
+                                                .page(0)
+                                                .totalPages(pdfDims.pages)
+                                                .paperSize(pdfDims.paperSize)
+                                                .scale(1)
+                                                .uri(pngDest)
+                                                .build()
+                                        )
+                                        .build()
+                        );
+
+                logger.debug("Submitted convert task. Now pushing operation 3");
+                DocumentWebSockets.pushOperation(
+                        request
+                );
+
+                logger.debug("Setting output result");
+                output.setResult(ResponseEntity.ok(new BackgroundURI(pngDest)));
+
+                logger.debug("Done");
+
+            } catch (IOException e) {
                 e.printStackTrace();
+                logger.debug("Error when converting PDF");
                 output.setResult(ResponseEntity.status(500).build());
             }
         });
@@ -36,14 +116,21 @@ public class PDFServiceController
         return output;
     }
 
-    private static String converToSvg(MultipartFile file) throws IOException, InterruptedException {
-        // Save to temp dir
-        String pdfPath = "/tmp/" + UUID.randomUUID().toString() + ".pdf";
-        File pdfFile = new File(pdfPath);
+    private PdfDims getPdfDimensions(String path) throws IOException {
+        PDDocument pdf = PDDocument.load(new File(path));
+        int pages = pdf.getNumberOfPages();
+        // Get a page somewhere in the middle (not title page)
+        PDRectangle rect = pdf.getPage(pages/2).getBBox();
 
-        OutputStream pdfOutput = new FileOutputStream(pdfFile);
-        pdfOutput.write(file.getBytes());
+        // TODO: Find paper sizes and scale properly.
+        return  new PdfDims(
+                pages,
+                ImmutablePaperSize.builder().width(594).height(840).name("A1").build(),
+                "1:100"
+        );
+    }
 
+    private static String converToSvg(String pdfPath) throws IOException, InterruptedException {
         // Call pdf2svg
         String svgHash = UUID.randomUUID().toString();
         String svgPath = "/tmp/" + svgHash + ".svg";
@@ -61,16 +148,10 @@ public class PDFServiceController
         return "static/" + svgHash + ".svg";
     }
 
-    private static String convertToPng(MultipartFile file) throws IOException, InterruptedException {
-        // Save to temp dir
-        String pdfPath = "/tmp/" + UUID.randomUUID().toString() + ".pdf";
-        File pdfFile = new File(pdfPath);
+    private static String convertToPng(String pdfPath, String pngHash) throws IOException, InterruptedException {
 
-        OutputStream pdfOutput = new FileOutputStream(pdfFile);
-        pdfOutput.write(file.getBytes());
 
         // Call pdf2svg
-        String pngHash = UUID.randomUUID().toString();
         String pngPath = "/tmp/" + pngHash + ".png";
 
         Runtime rt = Runtime.getRuntime();
@@ -93,5 +174,18 @@ public class PDFServiceController
         BackgroundURI(String uri) {
             this.uri = uri;
         }
+    }
+
+    static class PdfDims {
+        int pages;
+        PaperSize paperSize;
+
+        public PdfDims(int pages, PaperSize paperSize, String scale) {
+            this.pages = pages;
+            this.paperSize = paperSize;
+            this.scale = scale;
+        }
+
+        String scale;
     }
 }

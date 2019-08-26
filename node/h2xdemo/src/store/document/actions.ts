@@ -2,7 +2,7 @@ import { ActionTree } from 'vuex';
 import axios from 'axios';
 import * as OT from './operationTransforms';
 import { RootState } from '../types';
-import { DocumentState } from '@/store/document/types';
+import {Background, DocumentState} from '@/store/document/types';
 import {BackgroundImage} from '@/Drawings/BackgroundImage';
 import {PaperSize} from '@/config';
 
@@ -27,56 +27,18 @@ export const actions: ActionTree<DocumentState, RootState> = {
         commit('applyOperation', op);
     },
 
-    setTitle({ commit, state}, title): any {
-        submitOperation(commit, OT.createsetTitleOperation(-1, state.drawing.title, title));
-    },
-
-    open({commit}): any {
-        commit('open');
-    },
-    close({commit}): any {
-        commit('close');
-    },
-
-    setBackground({ commit, state }, { centerX, centerY, paper, paperScale, scale, uri, crop: {x, y, w, h}}): any {
-        const op: OT.SetBackgroundOperation = {
-
-            oldCenterX: state.drawing.background.centerX,
-            oldCenterY: state.drawing.background.centerY,
-            oldPaper: state.drawing.background.paper,
-            oldScale: state.drawing.background.scale,
-            oldPaperScale: state.drawing.background.paperScale,
-            oldUri: state.drawing.background.uri,
-            order: -1,
-            oldCrop: Object.assign({}, state.drawing.background.crop),
-
-            centerX,
-            centerY,
-            paper,
-            scale,
-            paperScale,
-            crop: {
-                x,
-                y,
-                w,
-                h,
-            },
-            type: OT.OPERATION_NAMES.SET_BACKGROUND,
-            uri,
+    setTitle({ commit, state}, title: string): any {
+        const op: OT.SetTitleOperation = {
+            id: -1, titleFrom: state.drawing.title, titleTo: title, type: OT.OPERATION_NAMES.SET_TITLE
         };
         submitOperation(commit, op);
     },
 
-    setPaper({ commit, state }, { name, scale }): any {
-        const op: OT.SetPaperOperation = {
-            name,
-            scale,
-            oldName: state.drawing.paper.name,
-            oldScale: state.drawing.paper.scale,
-            type: OT.OPERATION_NAMES.SET_PAPER,
-            order: -1,
+    addBackground({commit, state}, {background} ): any {
+        const op: OT.AddBackgroundOperation = {
+            background,
+            id: -1,
+            type: OT.OPERATION_NAMES.ADD_BACKGROUND,
         };
-        submitOperation(commit, op);
     },
-
 };

@@ -3,8 +3,11 @@ package com.h2x.mvp.configuration;
 import com.h2x.mvp.controllers.DocumentWebSockets;
 import com.h2x.mvp.entities.Database;
 import com.h2x.mvp.entities.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -23,6 +26,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.server.HandshakeFailureException;
 import org.springframework.web.socket.server.HandshakeHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
@@ -39,6 +43,8 @@ import java.util.Map;
 @EnableWebSocketMessageBroker
 @CrossOrigin(origins = "*")
 public class WebSocketMessageBrokerConfig implements WebSocketMessageBrokerConfigurer {
+
+    Logger logger = LoggerFactory.getLogger(WebSocketMessageBrokerConfig.class);
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
@@ -87,5 +93,18 @@ public class WebSocketMessageBrokerConfig implements WebSocketMessageBrokerConfi
             public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Exception exception) {
             }
         };
+    }
+
+    @EventListener
+    public void onSocketDisconnected(SessionDisconnectEvent event) {
+        StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
+        try {
+            DocumentWebSockets.close(sha.getUser());
+            logger.debug("[Disonnected] " + sha.getSessionId());
+        } catch (InterruptedException e) {
+
+            logger.debug("Error while [Disonnected] " + sha.getSessionId());
+            e.printStackTrace();
+        }
     }
 }

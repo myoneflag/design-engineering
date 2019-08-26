@@ -1,127 +1,102 @@
 import {ViewPort} from '@/Drawings/2DViewport';
-import {rescaleAnchor} from '@/Drawings/Utils';
+import {Dimensions, Coord, Rectangle} from '@/store/document/types';
+import DrawableObject from '@/Drawings/Object';
 
-export class BackgroundImage {
+export class BackgroundImage extends DrawableObject{
     image: HTMLImageElement = new Image();
-    centerX: number = 0;
-    centerY: number = 0;
-    scale: number = 1;
+    center: Coord;
+    dimensions: Dimensions;
+    clipOs: Rectangle;
     uri: string;
 
-    onMove: ((_: BackgroundImage) => any) | null;
+    scale: {x: number, y: number} = {x: 1, y: 1};
 
-    constructor(uri: string, onLoad: (image: BackgroundImage) => any, onMove: ((_: BackgroundImage) => any) | null = null) {
+    constructor(uri: string, center: Coord, bounds: Dimensions, onLoad: (image: BackgroundImage) => any) {
+        super();
+        this.center = Object.assign({}, center);
+        this.dimensions = Object.assign({}, bounds);
         this.image.onload = () => {
-            this.centerX = this.image.naturalWidth / 2;
-            this.centerY = this.image.naturalHeight / 2;
+            this.scale = {
+                x: bounds.w / this.image.naturalWidth,
+                y: bounds.h / this.image.naturalHeight,
+            };
             onLoad(this);
         };
         this.image.src = uri;
         this.uri = uri;
-        this.onMove = onMove;
+        this.clipOs = {
+            x: - bounds.w / 2,
+            y: - bounds.h / 2,
+            w: bounds.w,
+            h: bounds.h,
+        };
     }
 
     /**
      * World X coordinate
      */
     get x() {
-        return this.centerX - this.scale * this.image.naturalWidth / 2;
+        return this.center.x - this.dimensions.w / 2;
     }
 
     /**
      * World Y coordinate
      */
     get y() {
-        return this.centerY - this.scale * this.image.naturalHeight / 2;
+        return this.center.y - this.dimensions.h / 2;
     }
 
     /**
      * Draw with natural clip
-     * @param ctx
-     * @param vp
-     * @param alpha
-     * @param x
-     * @param y
-     * @param w
-     * @param h
      */
     naturalClipDraw(ctx: CanvasRenderingContext2D, vp: ViewPort, alpha: number, l: number, t: number, w: number, h: number) {
+        console.log("this scale: " + this.scale.x + " " + this.scale.y);
         let oldAlpha = ctx.globalAlpha;
         ctx.globalAlpha = alpha;
-        let [x, y] = vp.toScreenCoord(this.centerX + (l - this.image.naturalWidth / 2) * this.scale, this.centerY - (t - this.image.naturalHeight / 2) * this.scale);
+        let [x, y] = vp.toScreenCoord(
+            this.center.x + (l - this.image.naturalWidth / 2) * this.scale.x,
+            this.center.y - (t - this.image.naturalHeight / 2) * this.scale.y,
+        );
         ctx.drawImage(this.image,
             l, t, w, h,
-            x, y, vp.toScreenLength(w * this.scale), vp.toScreenLength(h * this.scale),
+            x, y,
+            vp.toScreenLength(w * this.scale.x),
+            vp.toScreenLength(h * this.scale.y),
         );
+
+        ctx.strokeStyle = "#888888";
+        ctx.beginPath();
+        ctx.strokeRect(
+            x, y,
+            vp.toScreenLength(w * this.scale.x),
+            vp.toScreenLength(h * this.scale.y),
+            );
+        ctx.stroke();
         ctx.globalAlpha = oldAlpha;
     }
 
     worldClipDraw(ctx: CanvasRenderingContext2D, vp: ViewPort, alpha: number, x: number, y: number, w: number, h: number) {
         // We use an inverse viewport to find the appropriate clip bounds.
-        let ivp = new ViewPort(this.centerX, this.centerY, this.image.naturalWidth, this.image.naturalHeight, 1 / this.scale);
+        let ivp_x = new ViewPort(this.center.x, this.center.y, this.image.naturalWidth, this.image.naturalHeight, 1/this.scale.x);
+        let ivp_y = new ViewPort(this.center.x, this.center.y, this.image.naturalWidth, this.image.naturalHeight, 1/this.scale.y);
         // Remember that when going from world view to image coordinate view, we must invert the y axis about the center.
-        let [l, t] = ivp.toScreenCoord(x, y + h);
-        this.naturalClipDraw(ctx, vp, alpha, l, t, w / this.scale, h / this.scale);
+        let [l, _d1] = ivp_x.toScreenCoord(x, y + h);
+        let [_d2, t] = ivp_y.toScreenCoord(x, y + h);
+
+        console.log("l and t: " + l + " " + t);
+        this.naturalClipDraw(ctx, vp, alpha, l, t,
+            w / this.scale.x,
+            h / this.scale.y,
+        );
     }
+
 
     // Draw without world space concerns
-    draw(ctx: CanvasRenderingContext2D, vp: ViewPort, alpha: number = 1.0) {
-        this.naturalClipDraw(ctx, vp, alpha, 0, 0, this.image.naturalWidth, this.image.naturalHeight);
-    }
-
-    rescale(newScale: number, anchorX: number, anchorY: number) {
-        rescaleAnchor(this, newScale, anchorX, anchorY);
-    }
-
-    inBounds(x: number, y: number): boolean {
-        if (x < this.x || y < this.y) {
-            return false;
-        } else if (x <= this.x + this.image.naturalWidth * this.scale
-            && y <= this.y + this.image.naturalHeight * this.scale) {
-            return true;
+    draw(ctx: CanvasRenderingContext2D, vp: ViewPort, whole: boolean = false) {
+        if (whole) {
+            this.naturalClipDraw(ctx, vp, 0.2, 0, 0, this.image.naturalWidth, this.image.naturalHeight);
         }
-        return false;
+        const corner = this.toWorldCoord({x: this.clipOs.x, y: this.clipOs.y});
+        this.worldClipDraw(ctx, vp, 1, corner.x, corner.y, this.clipOs.w, this.clipOs.h);
     }
-
-    grabbedPoint: [number, number] | null = null;
-    grabbedCenterState: [number, number] | null = null;
-    onMouseDown(event: MouseEvent, vp: ViewPort): boolean {
-        this.grabbedPoint = vp.toWorldCoord(event.offsetX, event.offsetY);
-        if (this.inBounds(this.grabbedPoint[0], this.grabbedPoint[1])) {
-            this.grabbedCenterState = [this.centerX, this.centerY];
-            return true;
-        } else {
-            this.grabbedPoint = null;
-            return false;
-        }
-    }
-
-    onMouseMove(event: MouseEvent, vp: ViewPort): boolean {
-        if (event.buttons && 1) {
-            if (this.grabbedPoint != null && this.grabbedCenterState != null) {
-                let [wx, wy] = vp.toWorldCoord(event.offsetX, event.offsetY);
-                // Drag move
-                this.centerX = this.grabbedCenterState[0] + wx - this.grabbedPoint[0];
-                this.centerY = this.grabbedCenterState[1] + wy - this.grabbedPoint[1];
-
-                if (this.onMove != null) {
-                    this.onMove(this);
-                }
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            this.grabbedCenterState = null;
-            this.grabbedPoint = null;
-            return false;
-        }
-    }
-
-    onMouseUp(event: MouseEvent, vp: ViewPort): boolean {
-        this.grabbedPoint = null;
-        this.grabbedCenterState = null;
-        return false;
-    }
-
 }

@@ -33,21 +33,14 @@ public class DocumentWebSockets {
     @Autowired
     private SimpMessagingTemplate template;
 
-    Logger logger = LoggerFactory.getLogger(DocumentWebSockets.class);
+    static Logger logger = LoggerFactory.getLogger(DocumentWebSockets.class);
 
     @Autowired
-            @Qualifier("threadConfig")
+    @Qualifier("threadConfig")
     TaskExecutor taskExecutor;
 
     @SubscribeMapping("/document")
     public void onSubscribe(Principal user) {
-        FileWriter fw = null;
-        try {
-            fw = new FileWriter("/home/yujin/imhere");
-            fw.write("Hello");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         logger.error("Subscribing");
         logger.debug("Subscribing with  user " + user.getName());
         Boolean auth = Database.withSession(s_ -> {
@@ -105,11 +98,14 @@ public class DocumentWebSockets {
     static ObjectMapper js = new ObjectMapper();
 
     public static void pushOperation(String request) {
+        logger.debug("Push operation called for " + request);
         while (true) {
             try {
+                logger.debug("Pushing an operation");
                 pendingOperations.put(request);
                 break;
             } catch (InterruptedException e) {
+                logger.debug("Failed. Will retry...");
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException ex) {
@@ -144,7 +140,7 @@ public class DocumentWebSockets {
             op.setOrderIndex(firstOrder+1);
 
             Map<String, Object> parsed = jp.parseMap(request);
-            parsed.put("order", op.getOrderIndex());
+            parsed.put("id", op.getOrderIndex());
             try {
                 op.setOperation(js.writeValueAsString(parsed));
                 op.setDocument(d);
@@ -169,6 +165,7 @@ public class DocumentWebSockets {
     }
 
     static ConcurrentHashMap<String, BlockingQueue<DocumentController.DocumentInstruction>> documentTopics = new ConcurrentHashMap<>();
+
     // We use a queue here to manage operations concurrently.
     static BlockingQueue<String> pendingOperations = new LinkedBlockingQueue<>();
 
@@ -201,5 +198,15 @@ public class DocumentWebSockets {
                 });
             }
         };
+    }
+
+    public static void close(Principal user) throws InterruptedException {
+        logger.debug("Closing user " + user.getName());
+        if (documentTopics.containsKey(user.getName())) {
+            logger.debug("Aborting user " + user.getName());
+            documentTopics.get(user.getName()).put(new DocumentController.DocumentInstruction(true));
+        } else {
+            logger.debug("User " + user.getName() + " not found...");
+        }
     }
 }

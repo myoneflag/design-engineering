@@ -26,6 +26,7 @@ export const parseScale = (repr: string) => {
     return 1;
 };
 
+/*
 export const rescaleAnchor = (
     obj: {centerX: number, centerY: number, scale: number},
     newScale: number,
@@ -40,4 +41,4 @@ export const rescaleAnchor = (
     obj.centerX -= anchorX - nx;
     obj.centerY -= anchorY - ny;
     obj.scale = newScale;
-};
+};*/
