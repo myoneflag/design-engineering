@@ -1,8 +1,9 @@
 import { MutationTree } from 'vuex';
-import { DocumentState } from './types';
+import {Background, DocumentState} from './types';
 import * as OT from './operationTransforms';
 import {OTEventBus} from './operationTransforms';
 import deepEqual from 'deep-equal';
+import uuidv4 from 'uuid/v4';
 
 export const mutations: MutationTree<DocumentState> = {
     /**
@@ -38,12 +39,17 @@ export const mutations: MutationTree<DocumentState> = {
                 break;
             }
             case OT.OPERATION_NAMES.ADD_BACKGROUND: {
-                state.drawing.backgrounds.push((operation as OT.AddBackgroundOperation).background);
+                let bg: Background = Object.assign({selectId: uuidv4() },
+                    (operation as OT.AddBackgroundOperation).background
+                );
+                state.drawing.backgrounds.push(bg);
                 break;
             }
             case OT.OPERATION_NAMES.UPDATE_BACKGROUND: {
                 const op = operation as OT.UpdateBackgroundOperation;
-                state.drawing.backgrounds.splice(op.index, 1, op.background);
+                let selectId = state.drawing.backgrounds[op.index].selectId;
+                //Object.assign(state.drawing.backgrounds[op.index], op.background);
+                state.drawing.backgrounds.splice(op.index, 1, Object.assign({selectId: selectId}, op.background));
                 break;
             }
             case OT.OPERATION_NAMES.DELETE_BACKGROUND: {

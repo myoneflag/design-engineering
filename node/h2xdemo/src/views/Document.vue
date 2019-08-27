@@ -21,6 +21,7 @@
     export default class Document extends Vue {
 
         get document() {
+            console.log("Refreshing document");
             return this.$store.getters["document/document"];
         }
 

@@ -14,6 +14,7 @@ type Handle = [number, number, Sides[], string];
 export class ResizeControl extends DrawableObject {
 
     onChange: ((_: ResizeControl) => any) | null;
+    onCommit: ((_: ResizeControl) => any) | null;
     handles: Handle[];
 
     private x_: number;
@@ -21,7 +22,7 @@ export class ResizeControl extends DrawableObject {
     private w_: number;
     private h_: number;
 
-    constructor(x: number, y: number, w: number, h: number, onChange: ((_: ResizeControl) => any) | null = null) {
+    constructor(x: number, y: number, w: number, h: number, onChange: ((_: ResizeControl) => any), onCommit: ((_: ResizeControl) => any)) {
         super();
         this.x_ = x;
         this.y_ = y;
@@ -29,6 +30,7 @@ export class ResizeControl extends DrawableObject {
         this.h_ = h;
         this.handles = this.getHandles();
         this.onChange = onChange;
+        this.onCommit = onCommit;
     }
 
 
@@ -124,7 +126,13 @@ export class ResizeControl extends DrawableObject {
             return false;
         } else {
             // No buttons are pressed.
-            this.selectedHandle = null;
+            if (this.selectedHandle) {
+                this.selectedHandle = null;
+
+                if (this.onCommit) {
+                    this.onCommit(this);
+                }
+            }
             const at: Handle | null = this.getHandleAtScreenCoord(event.offsetX, event.offsetY, vp);
             const target = (event.target as HTMLElement);
             if (at == null) {
@@ -137,8 +145,15 @@ export class ResizeControl extends DrawableObject {
         }
     }
 
-    onMouseUp(event: MouseEvent): boolean {
-        this.selectedHandle = null;
+    onMouseUp(event: MouseEvent, vp: ViewPort): boolean {
+        if (this.selectedHandle) {
+            this.selectedHandle = null;
+            if (this.onCommit) {
+                this.onCommit(this);
+            }
+            console.log("Resize control took the up event");
+            return true;
+        }
         return false;
     }
 

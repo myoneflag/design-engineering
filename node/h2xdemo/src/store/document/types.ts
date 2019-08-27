@@ -19,9 +19,13 @@ export interface Rectangle {
     h: number;
 }
 
-export interface Background {
+export interface Selectable {
+    selectId: string;
+}
+
+export interface Background extends Selectable {
     center: Coord;
-    scale: number;
+    scale: string;
     uri: string;
     crop: Rectangle;
     paperSize: PaperSize;

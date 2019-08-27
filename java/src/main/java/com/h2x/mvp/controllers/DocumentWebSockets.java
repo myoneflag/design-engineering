@@ -201,7 +201,8 @@ public class DocumentWebSockets {
     }
 
     public static void close(Principal user) throws InterruptedException {
-        logger.debug("Closing user " + user.getName());
+        logger.debug("Closing");
+        if (user == null) return;
         if (documentTopics.containsKey(user.getName())) {
             logger.debug("Aborting user " + user.getName());
             documentTopics.get(user.getName()).put(new DocumentController.DocumentInstruction(true));
