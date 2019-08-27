@@ -1,6 +1,8 @@
 import {DrawingMode} from "@/components/canvas/types";
 import {DrawingMode} from "@/components/canvas/types";
 import {DrawingMode} from "@/components/canvas/types";
+import {DrawingMode} from "@/components/canvas/types";
+import {DrawingMode} from "@/components/canvas/types";
 <template>
     <div ref="canvasFrame" style="width:100%; height: -webkit-calc(100vh - 65px);">
         <drop
@@ -13,7 +15,7 @@ import {DrawingMode} from "@/components/canvas/types";
 
             <ModeButtons :mode.sync="mode"/>
 
-            <PropertiesWindow :selectedObject="selectedObject" v-if="selectedObject">
+            <PropertiesWindow :selectedObject="selectedObject" v-if="selectedObject" :object-type="selectedObjectType">
 
             </PropertiesWindow>
 
@@ -29,7 +31,7 @@ import {DrawingMode} from "@/components/canvas/types";
     import * as OT from "@/store/document/operationTransforms";
     import {OperationTransform} from "@/store/document/operationTransforms";
     import {ViewPort} from "@/Drawings/2DViewport";
-    import {Background, DocumentState, Selectable} from "@/store/document/types";
+    import {Background, DocumentState} from "@/store/document/types";
     import {drawPaperScale} from "@/Drawings/Scale";
     import ModeButtons from "@/components/canvas/ModeButtons.vue";
     import PropertiesWindow from "@/components/canvas/PropertiesWindow.vue";
@@ -37,7 +39,6 @@ import {DrawingMode} from "@/components/canvas/types";
     import axios from "axios";
     import BackgroundLayer from "@/components/canvas/backgroundLayer";
     import doc = Mocha.reporters.doc;
-    import {BackgroundImage} from '@/Drawings/BackgroundImage';
 
     @Component({
         components: {PropertiesWindow, ModeButtons},
@@ -60,15 +61,15 @@ import {DrawingMode} from "@/components/canvas/types";
             (this.$refs["drawingCanvas"] as any).onwheel = this.onWheel;
             this.backgroundLayer = new BackgroundLayer(
                 () => {
-                    this.backgroundLayer.update(this.$props.document);
+                    //this.backgroundLayer.update(this.$props.document);
                     this.draw();
                 },
-                (selectId) => {
-                    this.selectedObject = selectId;
+                (object) => {
+                    this.selectedObjectBackground = object;
                     this.draw();
                 },
-                (selectId) => { // onCommit
-                    this.commitBackgroundChange(selectId);
+                (object) => { // onCommit
+                    this.commitBackgroundChange(object);
                 }
             );
             this.processDocument();
@@ -97,27 +98,32 @@ import {DrawingMode} from "@/components/canvas/types";
             this.processDocument();
         }
 
-        selectedObjectInternal: string = "";
+        selectedObjectBackground: Background | null = null;
         get selectedObject() {
-            return this.selectedObjectInternal;
+            if (this.mode == DrawingMode.FloorPlan) {
+                return this.selectedObjectBackground;
+            }
+            return null;
         }
 
-        set selectedObject(value: string) {
-            this.selectedObjectInternal = value;
+        get selectedObjectType() {
+            if (this.mode == DrawingMode.FloorPlan) {
+                return "floor-plan";
+            }
+            return "";
         }
 
-        commitBackgroundChange(selectId: string) {
-            console.log("Committing " + selectId);
+        commitBackgroundChange(object: Background) {
+            console.log("Committing " + object.selectId);
             // Scan existing backgrounds for that id.
             const doc: DocumentState = this.$props.document;
             const backgrounds = doc.drawing.backgrounds;
             for (let i = 0; i < backgrounds.length; i++) {
-                if (backgrounds[i].selectId === selectId) {
+                if (backgrounds[i].selectId === object.selectId) {
                     // Send OT
                     let newBg: Background = Object.assign({}, backgrounds[i]);
-                    const backgroundImg =  this.backgroundLayer.sidToObject[selectId];
-                    newBg.center = backgroundImg.center;
-                    newBg.crop = backgroundImg.clipOs;
+                    newBg.center = object.center;
+                    newBg.crop = object.crop;
 
                     console.log("Dispatching");
                     this.$store.dispatch('document/updateBackground', {

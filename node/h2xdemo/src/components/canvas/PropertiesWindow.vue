@@ -1,22 +1,21 @@
 <template>
     <div class="propertiesWindow">
-        <b-container>
-            <b-row style="margin-top: 10px">
-                <b-col>
-                    <h6>Properties</h6>
-                </b-col>
-            </b-row>
-        </b-container>
+        <FloorPlanProperties :selected-object="selectedObject"
+            v-if="objectType === 'floor-plan'"
+        />
     </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue';
     import Component from "vue-class-component";
+    import FloorPlanProperties from '@/components/canvas/FloorPlanProperties.vue';
 
     @Component({
+        components: {FloorPlanProperties},
         props: {
-            selectedObject: String,
+            selectedObject: Object,
+            objectType: String,
         }
     })
     export default class PropertiesWindow extends Vue {
@@ -29,10 +28,11 @@
         position: fixed;
         top: 180px;
         right: 20px;
-        width: 250px;
-        height: 500px;
+        min-width: 300px;
+        min-height: 100px;
         background: white;
         border: gray solid 1px;
         border-radius: 5px;
+        padding: 20px;
     }
 </style>

@@ -13,6 +13,7 @@ public interface Background {
     String scale();
     String uri();
     PaperSize paperSize();
+    double rotation();
 
     int page();
     int totalPages();
