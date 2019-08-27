@@ -54,7 +54,9 @@ export const mutations: MutationTree<DocumentState> = {
             }
             case OT.OPERATION_NAMES.DELETE_BACKGROUND: {
                 const op = operation as OT.DeleteBackgroundOperation;
+                console.log("Backgrounds before: " + JSON.stringify(state.drawing.backgrounds));
                 state.drawing.backgrounds.splice(op.index, 1);
+                console.log("Backgrounds after: " + JSON.stringify(state.drawing.backgrounds));
                 break;
             }
             default:

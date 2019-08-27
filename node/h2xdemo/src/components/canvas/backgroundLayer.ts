@@ -1,5 +1,5 @@
 import Layer from '@/components/canvas/layer';
-import {DocumentState} from '@/store/document/types';
+import {Background, DocumentState} from '@/store/document/types';
 import {ViewPort} from '@/Drawings/2DViewport';
 import {BackgroundImage} from '@/Drawings/BackgroundImage';
 import axios from 'axios';
@@ -12,18 +12,19 @@ export default class BackgroundLayer implements Layer {
     selectedId: string | null = null;
     resizeBox: ResizeControl | null = null;
 
-    onLoad: (selectId: string) => any;
-    onChange: (selectId: string) => any;
-    onCommit: (selectId: string) => any;
+    onChange: () => any;
+    onSelect: (selectId: Background | null) => any;
+    onCommit: (selectId: Background) => any;
 
-    constructor(onLoad: (selectId: string) => any, onChange: (selectId: string) => any, onCommit: (selectId: string) => any) {
-        this.onLoad = onLoad;
+    constructor(onChange: () => any, onSelect: (selectId: Background | null) => any, onCommit: (selectId: Background) => any) {
         this.onChange = onChange;
+        this.onSelect = onSelect;
         this.onCommit = onCommit;
     }
 
 
     draw(ctx: CanvasRenderingContext2D, vp: ViewPort, active: boolean) {
+
         // draw selected one on top.
         this.sidsInOrder.forEach((selectId) => {
             if (this.sidToObject[selectId]) {
@@ -47,41 +48,58 @@ export default class BackgroundLayer implements Layer {
     update(doc: DocumentState) {
         this.resizeBox = null; // We regenerate this if needed.
 
+        let existingSids: string[] = [];
+
         for (const background of doc.drawing.backgrounds) {
             if ( this.sidToObject[background.selectId] === undefined) {
                 console.log("Background layer updating dom for thing with center " + background.center.x + " " + background.center.y);
                 this.sidToObject[background.selectId] = new BackgroundImage(
-                    background.uri,
-                    {x: Number(background.center.x), y: Number(background.center.y)},
-                    {
-                        w: background.paperSize.width / parseScale(background.scale),
-                        h: background.paperSize.height / parseScale(background.scale),
-                    },
+                    background,
                     (image: BackgroundImage) => {
-                        this.onLoad(background.selectId);
+                        this.onChange();
                     },
                     (image: BackgroundImage) => {
                         this.updateSelectionBox();
-                        this.onChange(background.selectId);
+                        this.onChange();
                     },
                     (backgroundImage: BackgroundImage) => {
-                        const {x, y} = backgroundImage.toWorldCoord(backgroundImage.clipOs);
+                        const {x, y} = backgroundImage.toWorldCoord(backgroundImage.background.crop);
                         this.selectedId = background.selectId;
                         this.updateSelectionBox();
-                        this.onChange(this.selectedId);
+                        this.onSelect(backgroundImage.background);
                         return true;
                     },
                     (backgroundImage: BackgroundImage) => {
                         console.log("Background image called my onCommit");
-                        this.onCommit(background.selectId);
+                        this.onCommit(backgroundImage.background);
                     },
                 );
                 this.sidsInOrder.push(background.selectId);
             } else {
-                this.sidToObject[background.selectId].center = background.center;
-                this.sidToObject[background.selectId].clipOs = background.crop;
+                this.sidToObject[background.selectId].background = background;
+                if (background.selectId === this.selectedId) {
+                    this.onSelect(background);
+                }
+            }
+
+            existingSids.push(background.selectId);
+        }
+
+        let toDelete: string[] = [];
+        for (const selectId in this.sidToObject) {
+            if (existingSids.indexOf(selectId) === -1) {
+                this.sidsInOrder.splice(this.sidsInOrder.indexOf(selectId), 1);
+                if (selectId === this.selectedId) {
+                    this.selectedId = null;
+                    this.onSelect(null);
+                }
+                toDelete.push(selectId);
             }
         }
+        toDelete.forEach((s) => delete this.sidToObject[s]);
+
+        console.log("Existing: " + JSON.stringify(existingSids));
+        console.log("ToDelete: " + JSON.stringify(toDelete));
 
         this.updateSelectionBox();
     }
@@ -92,18 +110,18 @@ export default class BackgroundLayer implements Layer {
         for (let selectId in this.sidToObject) {
             if (selectId === this.selectedId) {
                 const background = this.sidToObject[selectId];
-                const {x, y} = background.toWorldCoord(background.clipOs);
+                const {x, y} = background.toWorldCoord(background.background.crop);
                 this.resizeBox = new ResizeControl(
                     x,
                     y,
-                    background.clipOs.w,
-                    background.clipOs.h,
+                    background.background.crop.w,
+                    background.background.crop.h,
                     (e: ResizeControl) =>  this.onSelectedResize(e),
                     (e: ResizeControl) => {
                         // Do deh operation transform.
                         // TODO: Deh operation transform
                         console.log("Resize control called my onCommit");
-                        this.onCommit(selectId);
+                        this.onCommit(background.background);
                     },
                 );
             }
@@ -116,13 +134,13 @@ export default class BackgroundLayer implements Layer {
             const background = this.sidToObject[this.selectedId];
             if (background) {
                 const {x, y} = background.toObjectCoord(target);
-                background.clipOs.x = x;
-                background.clipOs.y = y;
-                background.clipOs.w = target.w;
-                background.clipOs.h = target.h;
+                background.background.crop.x = x;
+                background.background.crop.y = y;
+                background.background.crop.w = target.w;
+                background.background.crop.h = target.h;
             }
+            this.onChange();
         }
-        this.onChange(this.selectedId as string);
     }
 
     drawSelectionLayer(ctx: CanvasRenderingContext2D, vp: ViewPort) {
@@ -192,8 +210,8 @@ export default class BackgroundLayer implements Layer {
 
         this.selectedId = null;
         this.resizeBox = null;
-        console.log("Background layer has the up event");
-        this.onChange('');
+        this.onSelect(null);
+        this.onChange();
 
         return false;
     }

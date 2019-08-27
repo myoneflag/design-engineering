@@ -8,8 +8,9 @@ import {PaperSize} from '@/config';
 
 
 let submitOperation = (commit: any, op: OT.OperationTransform) => {
+    console.log("Submitting operation " + JSON.stringify(op));
     axios.post('/api/document/operation', op).then(
-        () => console.log("operation " + op + " submitted"),
+        () => console.log("operation " + JSON.stringify(op) + " submitted"),
     );
 
     // Take line off to disable optimistic operations.
@@ -29,7 +30,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
 
     setTitle({ commit, state}, title: string): any {
         const op: OT.SetTitleOperation = {
-            id: -1, titleFrom: state.drawing.title, titleTo: title, type: OT.OPERATION_NAMES.SET_TITLE
+            id: -1, titleFrom: state.drawing.title, titleTo: title, type: OT.OPERATION_NAMES.SET_TITLE,
         };
         submitOperation(commit, op);
     },
@@ -60,4 +61,42 @@ export const actions: ActionTree<DocumentState, RootState> = {
         };
         submitOperation(commit, op);
     },
+
+    deleteBackground({commit, state}, background): any {
+        console.log("Delete background dispatched: " + JSON.stringify(background));
+        const selectId = background.selectId;
+        for (let i = 0; i < state.drawing.backgrounds.length; i++) {
+            const thisbg = state.drawing.backgrounds[i];
+            if (thisbg.selectId === selectId) {
+
+                const op: OT.DeleteBackgroundOperation = {
+                    deleted: thisbg, id: -1, index: i, type: OT.OPERATION_NAMES.DELETE_BACKGROUND,
+                };
+
+                submitOperation(commit, op);
+                return;
+            }
+        }
+        console.log('Warning: deleteBackground called but no item to delete');
+    },
+
+    rotateBackground({commit, state}, {background, degrees}) {
+        const selectId = background.selectId;
+        for (let i = 0; i < state.drawing.backgrounds.length; i++) {
+            const thisbg = state.drawing.backgrounds[i];
+            if (thisbg.selectId === selectId) {
+
+                const op: OT.UpdateBackgroundOperation = {
+                    background: Object.assign({}, background, {rotation: background.rotation + degrees}),
+                    id: -1,
+                    index: i,
+                    oldBackground: background,
+                    type: OT.OPERATION_NAMES.UPDATE_BACKGROUND,
+                };
+
+                submitOperation(commit, op);
+                return;
+            }
+        }
+    }
 };

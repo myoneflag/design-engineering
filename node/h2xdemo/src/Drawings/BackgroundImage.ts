@@ -1,37 +1,28 @@
 import {ViewPort} from '@/Drawings/2DViewport';
-import {Dimensions, Coord, Rectangle} from '@/store/document/types';
+import {Dimensions, Coord, Rectangle, Background} from '@/store/document/types';
 import DrawableObject from '@/Drawings/Object';
 import axios from 'axios';
+import {parseScale} from '@/Drawings/Utils';
 
 export class BackgroundImage extends DrawableObject{
     image: HTMLImageElement | null = null;
-    center: Coord;
-    dimensions: Dimensions;
-    clipOs: Rectangle;
-    uri: string;
+    imgScale: {x: number, y: number} = {x: 1, y: 1};
 
-    scale: {x: number, y: number} = {x: 1, y: 1};
+    background: Background;
 
     onMove: (image: BackgroundImage) => any;
     onSelect: (image: BackgroundImage) => any;
     onCommit: (image: BackgroundImage) => any;
 
-    constructor(uri: string, center: Coord, bounds: Dimensions,
+    constructor(background: Background,
                 onLoad: (image: BackgroundImage) => any,
                 onMove: (image: BackgroundImage) => any,
                 onSelect: (image: BackgroundImage) => any,
                 onCommit: (image: BackgroundImage) => any,
     ) {
         super();
-        this.center = Object.assign({}, center);
-        this.dimensions =  Object.assign({}, bounds);
-        this.uri = uri;
-        this.clipOs = {
-            x: - bounds.w / 2,
-            y: - bounds.h / 2,
-            w: bounds.w,
-            h: bounds.h,
-        };
+        console.log("Constructed background with " + background);
+        this.background = background;
 
         this.onMove = onMove;
         this.onSelect = onSelect;
@@ -39,20 +30,20 @@ export class BackgroundImage extends DrawableObject{
 
         // Try to load the image. If we can't, then show a loading screen.
         const retry = () => {
-            axios.head(this.uri).then((res) => {
+            axios.head(this.background.uri).then((res) => {
                     console.log('background loaded. Resp: ' + res.status);
                     const image = new Image();
-                    image.src = uri;
+                    image.src = background.uri;
 
                     image.onload = () => {
-                        this.scale = {
-                            x: bounds.w / image.naturalWidth,
-                            y: bounds.h / image.naturalHeight,
+                        this.imgScale = {
+                            x: this.width / image.naturalWidth,
+                            y: this.height / image.naturalHeight,
                         };
                         this.image = image;
                         onLoad(this);
                     };
-                    image.src = uri;
+                    image.src = background.uri;
                 },
             ).catch((err) => {
                 console.log('Resource not loaded. ' + err);
@@ -66,32 +57,54 @@ export class BackgroundImage extends DrawableObject{
         retry();
     }
 
+    get width() {
+        return this.background.paperSize.width / parseScale(this.background.scale);
+    }
+
+    get height() {
+        return this.background.paperSize.height / parseScale(this.background.scale);
+    }
+
+    get center() {
+        return this.background.center;
+    }
+
+    set center(value) {
+        this.background.center = value;
+    }
+
     /**
      * Draw with natural clip
      */
     naturalClipDraw(ctx: CanvasRenderingContext2D, vp: ViewPort, alpha: number, l: number, t: number, w: number, h: number, active: boolean) {
         if (this.image) {
-            console.log("this scale: " + this.scale.x + " " + this.scale.y);
+            console.log("this scale: " + this.imgScale.x + " " + this.imgScale.y);
             let oldAlpha = ctx.globalAlpha;
             ctx.globalAlpha = alpha;
             let [x, y] = vp.toScreenCoord(
-                this.center.x + (l - this.image.naturalWidth / 2) * this.scale.x,
-                this.center.y - (t - this.image.naturalHeight / 2) * this.scale.y,
+                this.center.x + (l - this.image.naturalWidth / 2) * this.imgScale.x,
+                this.center.y - (t - this.image.naturalHeight / 2) * this.imgScale.y,
             );
             let oldCompositeOperation = ctx.globalCompositeOperation;
+
+
+            let sw = vp.toScreenLength(w * this.imgScale.x);
+            let sh = vp.toScreenLength(h * this.imgScale.y);
             ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(
-                x,
-                y,
-                vp.toScreenLength(w * this.scale.x),
-                vp.toScreenLength(h * this.scale.y),
-            );
+            ctx.fillRect(x, y, sw, sh);
+
+
+            // Draw a potentially rotated image
+
+            ctx.translate(x + sw / 2, y + sh / 2);
+            ctx.rotate(this.background.rotation / 180 * Math.PI);
             ctx.drawImage(this.image,
                 l, t, w, h,
-                x, y,
-                vp.toScreenLength(w * this.scale.x),
-                vp.toScreenLength(h * this.scale.y),
+                -sw / 2, -sh / 2,
+                sw, sh,
             );
+            ctx.rotate(-this.background.rotation / 180 * Math.PI);
+            ctx.translate(-(x + sw / 2), -(y + sh / 2));
 
 
             if (!active) {
@@ -100,8 +113,8 @@ export class BackgroundImage extends DrawableObject{
                 ctx.fillRect(
                     x,
                     y,
-                    vp.toScreenLength(w * this.scale.x),
-                    vp.toScreenLength(h * this.scale.y),
+                    vp.toScreenLength(w * this.imgScale.x),
+                    vp.toScreenLength(h * this.imgScale.y),
                 );
             }
 
@@ -109,8 +122,8 @@ export class BackgroundImage extends DrawableObject{
             ctx.beginPath();
             ctx.strokeRect(
                 x, y,
-                vp.toScreenLength(w * this.scale.x),
-                vp.toScreenLength(h * this.scale.y),
+                vp.toScreenLength(w * this.imgScale.x),
+                vp.toScreenLength(h * this.imgScale.y),
             );
             ctx.stroke();
             ctx.globalAlpha = oldAlpha;
@@ -126,18 +139,20 @@ export class BackgroundImage extends DrawableObject{
             if (selected) {
                 this.image
             }
-            let ivp_x = new ViewPort(this.center.x, this.center.y, this.image.naturalWidth, this.image.naturalHeight, 1 / this.scale.x);
-            let ivp_y = new ViewPort(this.center.x, this.center.y, this.image.naturalWidth, this.image.naturalHeight, 1 / this.scale.y);
+            let ivp_x = new ViewPort(this.center.x, this.center.y, this.image.naturalWidth, this.image.naturalHeight, 1 / this.imgScale.x);
+            let ivp_y = new ViewPort(this.center.x, this.center.y, this.image.naturalWidth, this.image.naturalHeight, 1 / this.imgScale.y);
             // Remember that when going from world view to image coordinate view, we must invert the y axis about the center.
             let [l, _d1] = ivp_x.toScreenCoord(x, y + h);
             let [_d2, t] = ivp_y.toScreenCoord(x, y + h);
 
             console.log("l and t: " + l + " " + t);
             this.naturalClipDraw(ctx, vp, alpha, l, t,
-                w / this.scale.x,
-                h / this.scale.y,
+                w / this.imgScale.x,
+                h / this.imgScale.y,
                 active,
             );
+
+
         } else {
 
             let oldAlpha = ctx.globalAlpha;
@@ -151,7 +166,7 @@ export class BackgroundImage extends DrawableObject{
             );
             ctx.font = '20pt Helvetica';
             ctx.fillStyle = '#FFFFFF';
-            ctx.fillText('Loading...', sx + vp.toScreenLength(w) / 2 - 50, sy + vp.toScreenLength(y) / 2);
+            ctx.fillText('Loading...', sx + vp.toScreenLength(w) / 2 - 50, sy - vp.toScreenLength(y) / 2);
             ctx.globalAlpha = oldAlpha;
         }
     }
@@ -162,12 +177,12 @@ export class BackgroundImage extends DrawableObject{
         if (selected && active && this.image) {
             this.naturalClipDraw(ctx, vp, 0.2, 0, 0, this.image.naturalWidth, this.image.naturalHeight, active);
         }
-        const corner = this.toWorldCoord({x: this.clipOs.x, y: this.clipOs.y});
+        const corner = this.toWorldCoord({x: this.background.crop.x, y: this.background.crop.y});
         let alpha = 1;
         if (selected && this.hasDragged) {
             alpha = 0.6
         }
-        this.worldClipDraw(ctx, vp, alpha, corner.x, corner.y, this.clipOs.w, this.clipOs.h, selected, active);
+        this.worldClipDraw(ctx, vp, alpha, corner.x, corner.y, this.background.crop.w, this.background.crop.h, selected, active);
     }
 
     /**
@@ -176,12 +191,12 @@ export class BackgroundImage extends DrawableObject{
 
 
     inBounds(wx: number, wy: number): boolean {
-        let clipP = this.toWorldCoord(this.clipOs);
+        let clipP = this.toWorldCoord(this.background.crop);
 
         if (wx < clipP.x || wy < clipP.y) {
             return false;
-        } else if (wx <= clipP.x + this.clipOs.w
-            && wy <= clipP.y + this.clipOs.h) {
+        } else if (wx <= clipP.x + this.background.crop.w
+            && wy <= clipP.y + this.background.crop.h) {
             return true;
         }
         return false;

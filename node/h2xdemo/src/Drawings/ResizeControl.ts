@@ -97,6 +97,7 @@ export class ResizeControl extends DrawableObject {
     }
 
     onMouseMove(event: MouseEvent, vp: ViewPort): boolean {
+        console.log("Resize: move");
         // do mouse changes
         if (event.buttons & 1) {
             if (this.selectedHandle != null) {

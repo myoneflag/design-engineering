@@ -29,6 +29,7 @@ export interface Background extends Selectable {
     uri: string;
     crop: Rectangle;
     paperSize: PaperSize;
+    rotation: number;
 
     // Backgrounds are part of PDFs and so may have many pages.
     page: number;

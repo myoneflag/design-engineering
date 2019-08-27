@@ -90,8 +90,11 @@ public class PDFServiceController
                                 ImmutableAddBackgroundOperation.builder()
                                         .background(
                                                 ImmutableBackground.builder()
-                                                .crop(ImmutableRectangle.builder().x(0).y(0).w(
-                                                        pdfDims.paperSize.width()).h(pdfDims.paperSize.height()
+                                                .crop(ImmutableRectangle.builder()
+                                                        .x(-pdfDims.paperSize.width()/pdfDims.scaleNumber/2)
+                                                        .y(-pdfDims.paperSize.height()/pdfDims.scaleNumber/2)
+                                                        .w(pdfDims.paperSize.width()/pdfDims.scaleNumber)
+                                                        .h(pdfDims.paperSize.height()/pdfDims.scaleNumber
                                                 ).build())
                                                 .center(ImmutableCoord.builder().x(dropX).y(dropY).build())
                                                 .page(0)
@@ -99,6 +102,7 @@ public class PDFServiceController
                                                 .paperSize(pdfDims.paperSize)
                                                 .scale(pdfDims.scale)
                                                 .uri(pngDest)
+                                                .rotation(0)
                                                 .build()
                                         )
                                         .build()
@@ -157,6 +161,7 @@ public class PDFServiceController
 
         String scale = "1:100";
         String paperSize = "Custom";
+        double scaleNumber = 1/100.0;
         if (m.find()) {
             logger.debug("Mathcresult: " + m.toMatchResult().toString());
             if (m.groupCount() >= 3) {
@@ -183,13 +188,15 @@ public class PDFServiceController
                 String r = m.group(2);
 
                 logger.debug("PDF found scale: " + l + " : " + r);
-
                 try {
                     int lef, rig;
                     lef = Integer.parseInt(l);
                     rig = Integer.parseInt(r);
                     logger.debug("Scale parsed successfully");
                     scale = lef + ":" + rig;
+                    if (rig != 0) {
+                        scaleNumber = lef / (double) rig;
+                    }
                 } catch (Exception e) {
                     logger.debug("Scale couldn't parse, reverting to default");
                 }
@@ -202,7 +209,8 @@ public class PDFServiceController
         return  new PdfDims(
                 pages,
                 ImmutablePaperSize.builder().width(w).height(h).name(paperSize).build(),
-                scale
+                scale,
+                scaleNumber
         );
     }
 
@@ -266,12 +274,14 @@ public class PDFServiceController
         int pages;
         PaperSize paperSize;
 
-        public PdfDims(int pages, PaperSize paperSize, String scale) {
+        public PdfDims(int pages, PaperSize paperSize, String scale, double scaleNumber) {
             this.pages = pages;
             this.paperSize = paperSize;
             this.scale = scale;
+            this.scaleNumber = scaleNumber;
         }
 
         String scale;
+        double scaleNumber;
     }
 }
