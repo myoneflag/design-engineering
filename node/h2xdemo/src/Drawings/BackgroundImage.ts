@@ -166,7 +166,7 @@ export class BackgroundImage extends DrawableObject{
             );
             ctx.font = '20pt Helvetica';
             ctx.fillStyle = '#FFFFFF';
-            ctx.fillText('Loading...', sx + vp.toScreenLength(w) / 2 - 50, sy - vp.toScreenLength(y) / 2);
+            ctx.fillText('Loading...', sx + vp.toScreenLength(w) / 2 - 50, sy + vp.toScreenLength(h) / 2);
             ctx.globalAlpha = oldAlpha;
         }
     }
