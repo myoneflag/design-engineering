@@ -41,4 +41,23 @@ export const actions: ActionTree<DocumentState, RootState> = {
             type: OT.OPERATION_NAMES.ADD_BACKGROUND,
         };
     },
+
+    updateBackground({commit, state}, {background, index}): any {
+        const newbg = Object.assign({}, background);
+
+        // We know we added selectId manually so we want to delete it before sending it over.
+        // TODO: there has to be a better way - just copy the object with fields from the interface.
+        // How to do that????
+        delete newbg.selectId;
+        const oldbg = Object.assign({}, state.drawing.backgrounds[index]);
+        delete oldbg.selectId;
+        const op: OT.UpdateBackgroundOperation = {
+            oldBackground: oldbg,
+            background: newbg,
+            id: -1,
+            type: OT.OPERATION_NAMES.UPDATE_BACKGROUND,
+            index,
+        };
+        submitOperation(commit, op);
+    },
 };

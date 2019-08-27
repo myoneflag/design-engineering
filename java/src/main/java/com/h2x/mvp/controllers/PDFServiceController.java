@@ -10,11 +10,18 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 import java.util.logging.FileHandler;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.h2x.mvp.webmodels.*;
+import org.apache.juli.logging.Log;
+import org.apache.pdfbox.cos.COSDocument;
+import org.apache.pdfbox.io.RandomAccessRead;
+import org.apache.pdfbox.pdfparser.PDFParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +41,7 @@ import javax.persistence.Tuple;
 public class PDFServiceController
 {
     ObjectMapper mapper = new ObjectMapper();
+    static Logger logger = LoggerFactory.getLogger(PDFServiceController.class);
 
     @Autowired
     @Qualifier("threadConfig")
@@ -71,7 +79,7 @@ public class PDFServiceController
                 });
                 logger.debug("Submitted convert task. Now pushing operation");
 
-                PdfDims pdfDims = new PdfDims(1, ImmutablePaperSize.builder().name("A1").width(500).height(300).build(), "1:100");// getPdfDimensions(pdfPath);
+                PdfDims pdfDims = getPdfDimensions(pdfPath);
 
                 logger.debug("Submitted convert task. Now pushing operation 2");
                 // We can get the size of the PDF immediately. Then, the operation can be returned to the user
@@ -89,7 +97,7 @@ public class PDFServiceController
                                                 .page(0)
                                                 .totalPages(pdfDims.pages)
                                                 .paperSize(pdfDims.paperSize)
-                                                .scale(1)
+                                                .scale(pdfDims.scale)
                                                 .uri(pngDest)
                                                 .build()
                                         )
@@ -121,12 +129,80 @@ public class PDFServiceController
         int pages = pdf.getNumberOfPages();
         // Get a page somewhere in the middle (not title page)
         PDRectangle rect = pdf.getPage(pages/2).getBBox();
+        int rotation = pdf.getPage(pages/2).getRotation();
+        pdf.getPage(pages/2);
+
+        double w = rect.getWidth();
+        double h = rect.getHeight();
+        if (rotation == 90 || rotation == 270) {
+            double temp = w;
+            w = h;
+            h =temp;
+        }
+
+        // Attempt to get the paper scale and size using heuristics.
+        String contents = pdfToString(pdf);
+
+        String paperPattern = PaperSizes.PAPER_SIZES[0].name();
+        for (int i = 1; i < PaperSizes.PAPER_SIZES.length; i++) {
+            paperPattern += "|" + PaperSizes.PAPER_SIZES[i].name();
+        }
+
+        String regexp = "SCALE[-: \t]*([0-9]+):([0-9]+)[ \t]*@?[ \t]*(" + paperPattern +")?";
+        logger.debug("Regex is:");
+        logger.debug(regexp);
+
+        Pattern p = Pattern.compile(regexp, Pattern.CASE_INSENSITIVE);
+        Matcher m = p.matcher(contents);
+
+        String scale = "1:100";
+        String paperSize = "Custom";
+        if (m.find()) {
+            logger.debug("Mathcresult: " + m.toMatchResult().toString());
+            if (m.groupCount() >= 3) {
+                // We got the paper size bois
+                paperSize = m.group(3);
+                logger.debug("Found paper size: " + paperSize);
+
+                for (PaperSize size : PaperSizes.PAPER_SIZES) {
+                    if (size.name().equals(paperSize)) {
+                        if (h > w) {
+                            h = size.width();
+                            w = size.height();
+                        } else {
+                            h = size.height();
+                            w = size.width();
+                        }
+                    }
+                }
+            }
+
+            if (m.groupCount() >= 2) {
+                // We got the scale bois
+                String l = m.group(1);
+                String r = m.group(2);
+
+                logger.debug("PDF found scale: " + l + " : " + r);
+
+                try {
+                    int lef, rig;
+                    lef = Integer.parseInt(l);
+                    rig = Integer.parseInt(r);
+                    logger.debug("Scale parsed successfully");
+                    scale = lef + ":" + rig;
+                } catch (Exception e) {
+                    logger.debug("Scale couldn't parse, reverting to default");
+                }
+            }
+        } else {
+            logger.debug("No match");
+        }
 
         // TODO: Find paper sizes and scale properly.
         return  new PdfDims(
                 pages,
-                ImmutablePaperSize.builder().width(594).height(840).name("A1").build(),
-                "1:100"
+                ImmutablePaperSize.builder().width(w).height(h).name(paperSize).build(),
+                scale
         );
     }
 
@@ -148,9 +224,19 @@ public class PDFServiceController
         return "static/" + svgHash + ".svg";
     }
 
+    private static String pdfToString(PDDocument doc) throws IOException {
+        PDFTextStripper pdfStripper;
+
+        pdfStripper = new PDFTextStripper();
+        pdfStripper.setStartPage(1);
+        pdfStripper.setEndPage(doc.getNumberOfPages());
+        String parsedText = pdfStripper.getText(doc);
+        logger.debug(parsedText);
+
+        return parsedText;
+    }
+
     private static String convertToPng(String pdfPath, String pngHash) throws IOException, InterruptedException {
-
-
         // Call pdf2svg
         String pngPath = "/tmp/" + pngHash + ".png";
 

@@ -1,3 +1,6 @@
+import {DrawingMode} from "@/components/canvas/types";
+import {DrawingMode} from "@/components/canvas/types";
+import {DrawingMode} from "@/components/canvas/types";
 <template>
     <div ref="canvasFrame" style="width:100%; height: -webkit-calc(100vh - 65px);">
         <drop
@@ -7,36 +10,34 @@
             >
 
             </canvas>
+
+            <ModeButtons :mode.sync="mode"/>
+
+            <PropertiesWindow :selectedObject="selectedObject" v-if="selectedObject">
+
+            </PropertiesWindow>
+
+
         </drop>
         <resize-observer @notify="draw"/>
-
-        <ModeButtons :mode.sync="mode"/>
-
-        <PropertiesWindow>
-
-        </PropertiesWindow>
     </div>
 </template>
 
 <script lang="ts">
-    import Vue from 'vue';
+    import Vue from "vue";
     import Component from "vue-class-component";
-    import * as OT from '@/store/document/operationTransforms';
-    import {ViewPort} from "@/Drawings/2DViewport";
-    import {createViewportForPaper, parseScale} from "@/Drawings/Utils";
-    import {Background, DocumentState} from "@/store/document/types";
-    import {DEFAULT_PAPER_SIZE, PAPER_SIZES, PaperSize} from "@/config";
-    import {fillRect, rect} from "@/Drawings/ViewportDrawing";
-    import {BackgroundImage} from "@/Drawings/BackgroundImage";
-    import {drawPaperScale} from "@/Drawings/Scale";
-    import ModeButtons from '@/components/canvas/ModeButtons.vue';
-    import {Watch} from 'vue-property-decorator'
-    import PropertiesWindow from '@/components/canvas/PropertiesWindow.vue';
-    import {DrawingMode} from '@/components/canvas/types';
-    import axios from 'axios';
-    import doc = Mocha.reporters.doc;
+    import * as OT from "@/store/document/operationTransforms";
     import {OperationTransform} from "@/store/document/operationTransforms";
+    import {ViewPort} from "@/Drawings/2DViewport";
+    import {Background, DocumentState, Selectable} from "@/store/document/types";
+    import {drawPaperScale} from "@/Drawings/Scale";
+    import ModeButtons from "@/components/canvas/ModeButtons.vue";
+    import PropertiesWindow from "@/components/canvas/PropertiesWindow.vue";
+    import {DrawingMode} from "@/components/canvas/types";
+    import axios from "axios";
     import BackgroundLayer from "@/components/canvas/backgroundLayer";
+    import doc = Mocha.reporters.doc;
+    import {BackgroundImage} from '@/Drawings/BackgroundImage';
 
     @Component({
         components: {PropertiesWindow, ModeButtons},
@@ -57,14 +58,23 @@
             (this.$refs["drawingCanvas"] as any).onmousemove = this.onMouseMove;
             (this.$refs["drawingCanvas"] as any).onmouseup = this.onMouseUp;
             (this.$refs["drawingCanvas"] as any).onwheel = this.onWheel;
-            this.backgroundLayer = new BackgroundLayer(() => {
-                this.backgroundLayer.update(this.$props.document);
-                this.draw();
-            });
+            this.backgroundLayer = new BackgroundLayer(
+                () => {
+                    this.backgroundLayer.update(this.$props.document);
+                    this.draw();
+                },
+                (selectId) => {
+                    this.selectedObject = selectId;
+                    this.draw();
+                },
+                (selectId) => { // onCommit
+                    this.commitBackgroundChange(selectId);
+                }
+            );
             this.processDocument();
         }
 
-        viewPort: ViewPort = new ViewPort(0, 0, 100, 100, 1);
+        viewPort: ViewPort = new ViewPort(0, 0, 10000, 10000, 0.01);
         selected: number | null = null;
         internal_mode: DrawingMode = DrawingMode.FloorPlan;
 
@@ -85,6 +95,37 @@
 
         onOT(operation: OperationTransform) {
             this.processDocument();
+        }
+
+        selectedObjectInternal: string = "";
+        get selectedObject() {
+            return this.selectedObjectInternal;
+        }
+
+        set selectedObject(value: string) {
+            this.selectedObjectInternal = value;
+        }
+
+        commitBackgroundChange(selectId: string) {
+            console.log("Committing " + selectId);
+            // Scan existing backgrounds for that id.
+            const doc: DocumentState = this.$props.document;
+            const backgrounds = doc.drawing.backgrounds;
+            for (let i = 0; i < backgrounds.length; i++) {
+                if (backgrounds[i].selectId === selectId) {
+                    // Send OT
+                    let newBg: Background = Object.assign({}, backgrounds[i]);
+                    const backgroundImg =  this.backgroundLayer.sidToObject[selectId];
+                    newBg.center = backgroundImg.center;
+                    newBg.crop = backgroundImg.clipOs;
+
+                    console.log("Dispatching");
+                    this.$store.dispatch('document/updateBackground', {
+                        index: i,
+                        background: newBg,
+                    });
+                }
+            }
         }
 
         processDocument() {
@@ -121,7 +162,20 @@
                 this.viewPort.width = width;
                 this.viewPort.height = height;
 
-                this.backgroundLayer.draw(ctx, this.viewPort);
+                this.backgroundLayer.draw(ctx, this.viewPort, this.mode == DrawingMode.FloorPlan);
+
+                // Draw hydraulics layer =>
+
+                // Draw selection layers
+                switch (this.mode) {
+                    case DrawingMode.FloorPlan:
+                        this.backgroundLayer.drawSelectionLayer(ctx, this.viewPort);
+                        break;
+                    case DrawingMode.Hydraulics:
+                        break;
+                    default:
+                        break;
+                }
 
                 drawPaperScale(ctx, this.viewPort.scale);
             }
@@ -170,16 +224,29 @@
         }
 
         grabbedPoint: [number, number] | null = null;
-        onMouseDown(event: MouseEvent, vp: ViewPort): boolean {
+        hasDragged: boolean = false;
+
+        onMouseDown(event: MouseEvent): boolean {
+            // Pass the event down to layers below
+            if (this.mode === DrawingMode.FloorPlan) {
+                if (this.backgroundLayer.onMouseDown(event, this.viewPort)) return true;
+            }
+
             this.grabbedPoint = this.viewPort.toWorldCoord(event.offsetX, event.offsetY);
+            this.hasDragged = false;
             return true;
         }
 
-        onMouseMove(event: MouseEvent, vp: ViewPort): boolean {
+        onMouseMove(event: MouseEvent): boolean {
+            // Pass the event down to layers below
+            if (this.mode === DrawingMode.FloorPlan) {
+                if (this.backgroundLayer.onMouseMove(event, this.viewPort)) return true;
+            }
+
             if (event.buttons && 1) {
                 if (this.grabbedPoint != null) {
                     let [wx, wy] = this.viewPort.toWorldCoord(event.offsetX, event.offsetY);
-
+                    this.hasDragged = true;
                     this.viewPort.centerX += this.grabbedPoint[0] - wx;
                     this.viewPort.centerY += this.grabbedPoint[1] - wy;
                     this.draw();
@@ -189,12 +256,28 @@
                 }
             } else {
                 this.grabbedPoint = null;
+                this.hasDragged = false;
                 return false;
             }
         }
 
-        onMouseUp(event: MouseEvent, vp: ViewPort): boolean {
-            this.grabbedPoint = null;
+        onMouseUp(event: MouseEvent): boolean {
+
+            if (this.grabbedPoint) {
+                this.grabbedPoint = null;
+                const wasDragged = this.hasDragged;
+                this.hasDragged = false;
+                if (wasDragged) {
+                    console.log("Drawing canvas swallowed the up event");
+                    return true;
+                }
+            }
+
+            // Pass the event down to layers below
+            if (this.mode === DrawingMode.FloorPlan) {
+                if (this.backgroundLayer.onMouseUp(event, this.viewPort)) return true;
+            }
+
             return false;
         }
 
@@ -202,7 +285,11 @@
             event.preventDefault();
             const [wx, wy] = this.viewPort.toWorldCoord(event.offsetX, event.offsetY);
             console.log("Wheel event " + wx + " " + wy);
-            this.viewPort.rescale(this.viewPort.scale * (1 - event.deltaY / 500), wx, wy);
+            let delta = 1 - event.deltaY / 500;
+            if (event.deltaY > 0) {
+                delta = 1 / (1 + event.deltaY / 500);
+            }
+            this.viewPort.rescale(this.viewPort.scale * delta, wx, wy);
             this.draw();
         }
     }

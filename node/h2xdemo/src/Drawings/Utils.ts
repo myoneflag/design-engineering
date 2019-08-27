@@ -18,7 +18,8 @@ export  const createViewportForPaper =
 };
 
 export const parseScale = (repr: string) => {
-    let match = repr.match('^([0-9]+):([0-9]+)$');
+    console.log("Parsing scale of " + repr);
+    const match = repr.match('^([0-9]+):([0-9]+)$');
     if (match) {
         let [_, l, r] = match;
         return parseInt(l) / parseInt(r);

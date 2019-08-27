@@ -9,7 +9,7 @@
                 <b-button variant="outline-dark" class="modebtn pipes btn-sm"
                           :pressed="mode === 1"
                           @click="$emit('update:mode', 1)"
-                ><v-icon  name="wave-square" scale="2"/><br>Pipes</b-button>
+                ><v-icon  name="wave-square" scale="2.5"/><br>Hydraulics</b-button>
                 <b-button variant="outline-dark" class="modebtn results btn-sm"
                           :pressed="mode === 2"
                           @click="$emit('update:mode', 2)"
