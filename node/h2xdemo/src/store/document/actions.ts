@@ -87,7 +87,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
             if (thisbg.selectId === selectId) {
 
                 const op: OT.UpdateBackgroundOperation = {
-                    background: Object.assign({}, background, {rotation: background.rotation + degrees}),
+                    background: Object.assign({}, background, {rotation: ((background.rotation + degrees) % 360 + 360) % 360}),
                     id: -1,
                     index: i,
                     oldBackground: background,
@@ -98,5 +98,5 @@ export const actions: ActionTree<DocumentState, RootState> = {
                 return;
             }
         }
-    }
+    },
 };

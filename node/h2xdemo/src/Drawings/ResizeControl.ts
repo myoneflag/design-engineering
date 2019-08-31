@@ -1,6 +1,9 @@
 import {ViewPort} from '@/Drawings/2DViewport';
 import {rect} from '@/Drawings/ViewportDrawing';
-import DrawableObject from '@/Drawings/Object';
+import DrawableObject from '@/Drawings/DrawableObject';
+import SizeableObject from '@/Drawings/SizeableObject';
+import * as TM from 'transformation-matrix';
+import {decomposeMatrix, matrixScale} from '@/Drawings/Utils';
 
 enum Sides {
     Left,
@@ -17,52 +20,47 @@ export class ResizeControl extends DrawableObject {
     onCommit: ((_: ResizeControl) => any) | null;
     handles: Handle[];
 
-    private x_: number;
-    private y_: number;
-    private w_: number;
-    private h_: number;
-
-    constructor(x: number, y: number, w: number, h: number, onChange: ((_: ResizeControl) => any), onCommit: ((_: ResizeControl) => any)) {
-        super();
-        this.x_ = x;
-        this.y_ = y;
-        this.w_ = w;
-        this.h_ = h;
+    constructor(parent: SizeableObject, onChange: ((_: ResizeControl) => any), onCommit: ((_: ResizeControl) => any)) {
+        super(parent);
         this.handles = this.getHandles();
         this.onChange = onChange;
         this.onCommit = onCommit;
     }
 
+    get position() {
+        return TM.identity();
+    }
+
 
     get x() {
-        return this.x_;
+        return (this.parent as SizeableObject).boundary.x;
     }
     set x(val: number) {
-        this.x_ = val;
+        (this.parent as SizeableObject).boundary.x = val;
         this.handles = this.getHandles();
     }
 
     get y() {
-        return this.y_;
+        return (this.parent as SizeableObject).boundary.y;
     }
     set y(val: number) {
-        this.y_ = val;
+        (this.parent as SizeableObject).boundary.y = val;
         this.handles = this.getHandles();
     }
 
     get w() {
-        return this.w_;
+        return (this.parent as SizeableObject).boundary.w;
     }
     set w(val: number) {
-        this.w_ = val;
+        (this.parent as SizeableObject).boundary.w = val;
         this.handles = this.getHandles();
     }
 
     get h() {
-        return this.h_;
+        return (this.parent as SizeableObject).boundary.h;
     }
     set h(val: number) {
-        this.h_ = val;
+        (this.parent as SizeableObject).boundary.h = val;
         this.handles = this.getHandles();
     }
 
@@ -81,8 +79,8 @@ export class ResizeControl extends DrawableObject {
 
     getHandleAtScreenCoord(sx: number, sy: number, vp: ViewPort): Handle | null {
         for (const [x, y, sides, cursor] of this.handles) {
-            let [cx, cy] = vp.toScreenCoord(x, y);
-            if (Math.abs(cx - sx) < 10 && Math.abs(cy - sy) < 10) {
+            const c = vp.toScreenCoord(this.toWorldCoord({x, y}));
+            if (Math.abs(c.x - sx) < 10 && Math.abs(c.y - sy) < 10) {
                 return [x, y, sides, cursor];
             }
         }
@@ -101,22 +99,22 @@ export class ResizeControl extends DrawableObject {
         // do mouse changes
         if (event.buttons & 1) {
             if (this.selectedHandle != null) {
-                const [wx, wy] = vp.toWorldCoord(event.offsetX, event.offsetY);
+                const w = this.toObjectCoord(vp.toWorldCoord({x: event.offsetX, y: event.offsetY}));
                 console.log(this.selectedHandle[2]);
                 // start resizing shit
                 if (this.selectedHandle[2].indexOf(Sides.Left) != -1) {
-                    this.w += this.x - wx;
-                    this.x = wx;
+                    this.w += this.x - w.x;
+                    this.x = w.x;
                 }
                 if (this.selectedHandle[2].indexOf(Sides.Right) != -1) {
-                    this.w = wx - this.x;
+                    this.w = w.x - this.x;
                 }
                 if (this.selectedHandle[2].indexOf(Sides.Bottom) != -1) {
-                    this.h += this.y - wy;
-                    this.y = wy;
+                    this.h += this.y - w.y;
+                    this.y = w.y;
                 }
                 if (this.selectedHandle[2].indexOf(Sides.Top) != -1) {
-                    this.h = wy - this.y;
+                    this.h = w.y - this.y;
                 }
 
                 if (this.onChange != null) {
@@ -158,20 +156,26 @@ export class ResizeControl extends DrawableObject {
         return false;
     }
 
-    draw(ctx: CanvasRenderingContext2D, vp: ViewPort) {
+    drawInternal(ctx: CanvasRenderingContext2D) {
+        console.log("Drawing resize. transform: " + JSON.stringify(ctx.getTransform()) + " x and y: " + this.x + " " + this.y + " w and h " + this.w + " " + this.h);
         const prevDash = ctx.getLineDash();
-        ctx.strokeStyle = '#666666';
-        ctx.setLineDash([5, 5]);
+
+        const scale = matrixScale(ctx.getTransform());
+
+
+        ctx.lineWidth = 1 / scale;
         ctx.beginPath();
-        rect(ctx, vp, this.x, this.y + this.h, this.w, this.h);
+        ctx.strokeStyle = '#666666';
+
+        ctx.setLineDash([5 / scale, 5 / scale]);
+        ctx.rect(this.x, this.y, this.w, this.h);
         ctx.stroke();
 
         ctx.setLineDash([]);
         ctx.strokeStyle = '#333333';
-        ctx.beginPath()
+        ctx.beginPath();
         for (const [x, y] of this.handles) {
-            const [cx, cy] = vp.toScreenCoord(x, y);
-            ctx.rect(cx - 5, cy - 5, 10, 10);
+            ctx.rect(x - 5 / scale, y - 5 / scale, 10 / scale, 10 / scale);
         }
         ctx.stroke();
 

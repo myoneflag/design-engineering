@@ -1,18 +1,21 @@
 package com.h2x.mvp.entities;
 
 import com.h2x.mvp.configuration.SecurityConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Entity
 public class Login {
+
+    @Transient
+    Logger logger = LoggerFactory.getLogger(Login.class);
+
     public Login() {};
 
     public Login(String username, String passwordHash, String passwordSalt) {
@@ -80,7 +83,7 @@ public class Login {
     public Session getAndRefreshValidSession(org.hibernate.Session dbSession) {
         if (session.size() == 0) return null;
         if (session.get(0).getExpiresOn().isBefore(LocalDateTime.now())) {
-            dbSession.delete(session);
+            dbSession.delete(session.get(0));
             return null;
         } else {
             LocalDateTime c = LocalDateTime.now();

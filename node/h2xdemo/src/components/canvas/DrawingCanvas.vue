@@ -1,8 +1,3 @@
-import {DrawingMode} from "@/components/canvas/types";
-import {DrawingMode} from "@/components/canvas/types";
-import {DrawingMode} from "@/components/canvas/types";
-import {DrawingMode} from "@/components/canvas/types";
-import {DrawingMode} from "@/components/canvas/types";
 <template>
     <div ref="canvasFrame" style="width:100%; height: -webkit-calc(100vh - 65px);">
         <drop
@@ -31,14 +26,16 @@ import {DrawingMode} from "@/components/canvas/types";
     import * as OT from "@/store/document/operationTransforms";
     import {OperationTransform} from "@/store/document/operationTransforms";
     import {ViewPort} from "@/Drawings/2DViewport";
-    import {Background, DocumentState} from "@/store/document/types";
+    import {Background, Coord, DocumentState} from "@/store/document/types";
     import {drawPaperScale} from "@/Drawings/Scale";
     import ModeButtons from "@/components/canvas/ModeButtons.vue";
     import PropertiesWindow from "@/components/canvas/PropertiesWindow.vue";
     import {DrawingMode} from "@/components/canvas/types";
     import axios from "axios";
     import BackgroundLayer from "@/components/canvas/backgroundLayer";
+    import * as TM from 'transformation-matrix';
     import doc = Mocha.reporters.doc;
+    import {decomposeMatrix} from "@/Drawings/Utils";
 
     @Component({
         components: {PropertiesWindow, ModeButtons},
@@ -75,7 +72,7 @@ import {DrawingMode} from "@/components/canvas/types";
             this.processDocument();
         }
 
-        viewPort: ViewPort = new ViewPort(0, 0, 10000, 10000, 0.01);
+        viewPort: ViewPort = new ViewPort(TM.transform(TM.translate(0, 0), TM.scale(100)), 10000, 10000);
         selected: number | null = null;
         internal_mode: DrawingMode = DrawingMode.FloorPlan;
 
@@ -183,7 +180,7 @@ import {DrawingMode} from "@/components/canvas/types";
                         break;
                 }
 
-                drawPaperScale(ctx, this.viewPort.scale);
+                drawPaperScale(ctx, 1/decomposeMatrix(this.viewPort.position).sx);
             }
         }
 
@@ -197,12 +194,12 @@ import {DrawingMode} from "@/components/canvas/types";
                     console.log("File " + i + ": " + event.dataTransfer.files.item(i));
 
                     let formData = new FormData();
-                    let [wx, wy] = this.viewPort.toWorldCoord(event.offsetX, event.offsetY);
+                    let w = this.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
                     formData.append("pdf", event.dataTransfer.files.item(i) as File);
-                    formData.append("x", String(wx));
-                    formData.append("y", String(wy));
+                    formData.append("x", String(w.x));
+                    formData.append("y", String(w.y));
 
-                    const loading = {'x': wx, 'y': wy};
+                    const loading = {'x': w.x, 'y': w.y};
 
                     this.loadingPdfs.push(loading);
                     console.log("Loading pdfs: " + this.loadingPdfs);
@@ -229,7 +226,7 @@ import {DrawingMode} from "@/components/canvas/types";
             }
         }
 
-        grabbedPoint: [number, number] | null = null;
+        grabbedPoint: Coord | null = null;
         hasDragged: boolean = false;
 
         onMouseDown(event: MouseEvent): boolean {
@@ -238,7 +235,7 @@ import {DrawingMode} from "@/components/canvas/types";
                 if (this.backgroundLayer.onMouseDown(event, this.viewPort)) return true;
             }
 
-            this.grabbedPoint = this.viewPort.toWorldCoord(event.offsetX, event.offsetY);
+            this.grabbedPoint = this.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
             this.hasDragged = false;
             return true;
         }
@@ -251,10 +248,11 @@ import {DrawingMode} from "@/components/canvas/types";
 
             if (event.buttons && 1) {
                 if (this.grabbedPoint != null) {
-                    let [wx, wy] = this.viewPort.toWorldCoord(event.offsetX, event.offsetY);
+                    let s = this.viewPort.toScreenCoord(this.grabbedPoint);
                     this.hasDragged = true;
-                    this.viewPort.centerX += this.grabbedPoint[0] - wx;
-                    this.viewPort.centerY += this.grabbedPoint[1] - wy;
+                    let {sx, sy} = decomposeMatrix(this.viewPort.position);
+                    console.log("sx sy: " + sx+ " " + sy);
+                    this.viewPort.panAbs(s.x - event.offsetX, s.y - event.offsetY);
                     this.draw();
                     return true;
                 } else {
@@ -289,13 +287,11 @@ import {DrawingMode} from "@/components/canvas/types";
 
         onWheel(event: WheelEvent) {
             event.preventDefault();
-            const [wx, wy] = this.viewPort.toWorldCoord(event.offsetX, event.offsetY);
-            console.log("Wheel event " + wx + " " + wy);
-            let delta = 1 - event.deltaY / 500;
-            if (event.deltaY > 0) {
-                delta = 1 / (1 + event.deltaY / 500);
+            let delta = 1 + event.deltaY / 500;
+            if (event.deltaY < 0) {
+                delta = 1 / (1 - event.deltaY / 500);
             }
-            this.viewPort.rescale(this.viewPort.scale * delta, wx, wy);
+            this.viewPort.rescale(delta, event.offsetX, event.offsetY);
             this.draw();
         }
     }

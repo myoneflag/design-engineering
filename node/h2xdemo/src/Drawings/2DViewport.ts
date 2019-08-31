@@ -1,65 +1,40 @@
+import {Matrix} from 'transformation-matrix';
+import * as TM from 'transformation-matrix';
+import {Coord} from '@/store/document/types';
+import assert from 'assert';
+import {decomposeMatrix} from '@/Drawings/Utils';
+
 export const EPS = 1e-5;
 
+/*
+ * A transformation specifically for the screen, with a center co-ordinate, rotation, and scale.
+ */
 export class ViewPort {
-    /**
-     * X world coordinate
-     */
-    centerX: number;
-    /**
-     * Y world coordinate
-     */
-    centerY: number;
+    position: Matrix;
     width: number;
     height: number;
-    scale: number;
 
-    constructor(centerX: number, centerY: number, width: number, height: number, scale: number) {
-        this.centerX = centerX;
-        this.centerY = centerY;
+    constructor(position: Matrix, width: number, height: number) {
         this.width = width;
         this.height = height;
-        this.scale = scale;
-    }
-
-    static from2Points(wx: number, wy: number, sx: number, sy: number,
-                wx2: number, wy2: number, sx2: number, sy2: number,
-                       width: number, height: number): ViewPort {
-        const scale = (sx2 - sx) / (wx2 - wx);
-        const scale2 = (sy - sy2) / (wy2 - wy);
-        if (Math.abs(scale2 - scale) > EPS) {
-            throw new Error('X and Y scales are different');
-        }
-
-        return ViewPort.fromPointAndScale(wx, wy, sx, sy, width, height, scale);
-    }
-
-    static fromPointAndScale(wx: number, wy: number, sx: number, sy: number,
-                             width:number, height:number, scale: number): ViewPort {
-        const sdx = sx - width / 2;
-        const sdy = height / 2 - sy;
-        const wdx = sdx / scale;
-        const wdy = sdy / scale;
-        const centerX = wx - wdx;
-        const centerY = wy - wdy;
-        return new ViewPort(centerX, centerY, width, height, scale);
-    }
-
-    rescale(newScale: number, anchorX: number, anchorY: number) {
-        const [sx, sy] = this.toScreenCoord(anchorX, anchorY);
-        this.scale = newScale;
-        const [wx, wy] = this.toWorldCoord(sx, sy);
-        this.centerX += anchorX - wx;
-        this.centerY += anchorY - wy;
+        this.position = TM.transform(position);
     }
 
     /**
-     * Pans the given world coordinates
-     * @param dx
-     * @param dy
+     * Rescales with anchorX and anchorY as screen coordinates
      */
-    pan(dx: number, dy: number) {
-        this.centerX += dx;
-        this.centerY += dy;
+    rescale(factor: number, sx: number, sy: number) {
+        const world = this.toWorldCoord({x: sx, y: sy});
+        // Move, then scale, then move again
+        this.position = TM.transform(
+            this.position,
+            TM.scale(factor),
+        );
+        const finish = this.toScreenCoord(world);
+        this.position = TM.transform(
+            this.position,
+            TM.translate(finish.x - sx, finish.y - sy),
+        )
     }
 
     /**
@@ -68,8 +43,7 @@ export class ViewPort {
      * @param dy
      */
     panAbs(dx: number, dy: number) {
-        this.centerX += dx / this.scale;
-        this.centerY -= dy / this.scale;
+        this.position = TM.transform(this.position, TM.translate(dx, dy));
     }
 
     /**
@@ -77,15 +51,38 @@ export class ViewPort {
      * @param x
      * @param y
      */
-    toScreenCoord(x: number, y: number): [number, number] {
-        const xOffset = x - this.centerX;
-        const yOffset = this.centerY - y;
-
-        return [xOffset * this.scale + this.width / 2, yOffset * this.scale + this.height / 2];
+    toScreenCoord(point: Coord): Coord {
+        const inv: Matrix = TM.inverse(TM.transform(this.position, TM.translate(-this.width / 2, -this.height / 2)));
+        return TM.applyToPoint(inv, point);
     }
 
     toScreenLength(len: number) {
-        return len * this.scale;
+        const t = decomposeMatrix(this.position);
+        assert(Math.abs(t.sx - t.sy) < EPS);
+        return len / t.sx;
+    }
+
+    /**
+     * Prepares the context so that drawing to it with real world coordinates will draw to screen
+     * appropriately.
+     *
+     *
+     */
+    prepareContext(ctx: CanvasRenderingContext2D, ...transform: Matrix[]) {
+        console.log(JSON.stringify(this.position) + " " + JSON.stringify(transform));
+
+
+        transform.forEach((t) => {
+            console.log("applying transform: " + JSON.stringify(t));
+        });
+
+        const m = (transform.length > 0 ?
+                        TM.transform(TM.translate(this.width / 2, this.height / 2), TM.inverse(this.position), ...transform)
+                        : TM.transform(TM.translate(this.width / 2, this.height / 2), TM.inverse(this.position))
+        );
+
+        console.log("Preparing context to matrix with transforms: " + JSON.stringify(decomposeMatrix(m)));
+        ctx.setTransform(m);
     }
 
     /**
@@ -93,9 +90,7 @@ export class ViewPort {
      * @param x
      * @param y
      */
-    toWorldCoord(x: number, y: number): [number, number] {
-        const xDiff = (x - this.width / 2) / this.scale;
-        const yDiff = (this.height / 2 - y) / this.scale;
-        return [xDiff + this.centerX, yDiff + this.centerY];
+    toWorldCoord(point: Coord): Coord {
+        return TM.applyToPoint(TM.transform(this.position, TM.translate(-this.width / 2, -this.height / 2)), point);
     }
 }

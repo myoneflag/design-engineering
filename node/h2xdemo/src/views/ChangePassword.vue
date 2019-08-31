@@ -45,7 +45,7 @@
 
 
                     <b-form-group>
-                        <b-button variant="success" @click="confirm" >Confirm</b-button>
+                        <b-button variant="info" @click="confirm" >Confirm</b-button>
                     </b-form-group>
                 </b-form>
             </b-col>
