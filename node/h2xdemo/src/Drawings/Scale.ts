@@ -1,4 +1,5 @@
 import {DEFAULT_FONT_NAME} from '@/config';
+import * as TM from 'transformation-matrix';
 
 const SENSIBLE_UNITS_MM: number[] = [
     1, 2, 4, 5, 8,
@@ -42,6 +43,8 @@ export const getFriendlyDistanceUnit = (mm: number) : [string, number] => {
 };
 
 export const drawPaperScale = (ctx: CanvasRenderingContext2D, pxPerMm: number) => {
+    ctx.setTransform(TM.identity());
+    ctx.lineWidth = 1;
     // draw on bottom left
     const height = ctx.canvas.height;
 

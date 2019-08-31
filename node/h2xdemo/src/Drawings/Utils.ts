@@ -1,21 +1,13 @@
 import {ViewPort} from '@/Drawings/2DViewport';
+import {Matrix} from 'transformation-matrix';
 
-export  const createViewportForPaper =
-    (ctx: CanvasRenderingContext2D, paperW: number, paperH: number, innerPadding: number = 20)
-        : [ViewPort, number] => {
-    let width = ctx.canvas.width;
-    let height = ctx.canvas.height;
-
-    let ws = ( width - innerPadding * 2 ) / paperW;
-    let hs = ( height - innerPadding * 2 ) / paperH;
-    let pxPerMm = Math.min(ws, hs);
-
-    return [new ViewPort(
-        paperW/2, paperH/2,
-        width, height,
-        pxPerMm
-    ), pxPerMm];
-};
+export interface Transformation {
+    tx: number;
+    ty: number;
+    sx: number;
+    sy: number;
+    a: number;
+}
 
 export const parseScale = (repr: string) => {
     console.log("Parsing scale of " + repr);
@@ -26,6 +18,26 @@ export const parseScale = (repr: string) => {
     }
     return 1;
 };
+
+/**
+ * Decomposes a transformation matrix to the 2d transformation components.
+ * Why doesn't this exist in transformation-matrix?
+ * @param mat
+ */
+export const decomposeMatrix = (mat: Matrix): Transformation => {
+    return {
+        tx: mat.e,
+        ty: mat.f,
+        sx: (mat.a >= 0 ? 1 : -1) * Math.sqrt(mat.a * mat.a + mat.c * mat.c),
+        sy: (mat.d >= 0 ? 1 : -1) * Math.sqrt(mat.b * mat.b + mat.d * mat.d),
+        a: Math.atan2(mat.b, mat.d),
+    };
+};
+
+export const matrixScale = (mat: Matrix): number => {
+    const sx = (mat.a >= 0 ? 1 : -1) * Math.sqrt(mat.a * mat.a + mat.c * mat.c);
+    return Math.abs(sx);
+}
 
 /*
 export const rescaleAnchor = (

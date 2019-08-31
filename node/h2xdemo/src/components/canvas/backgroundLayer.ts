@@ -112,10 +112,7 @@ export default class BackgroundLayer implements Layer {
                 const background = this.sidToObject[selectId];
                 const {x, y} = background.toWorldCoord(background.background.crop);
                 this.resizeBox = new ResizeControl(
-                    x,
-                    y,
-                    background.background.crop.w,
-                    background.background.crop.h,
+                    this.sidToObject[selectId],
                     (e: ResizeControl) =>  this.onSelectedResize(e),
                     (e: ResizeControl) => {
                         // Do deh operation transform.
@@ -132,12 +129,12 @@ export default class BackgroundLayer implements Layer {
     onSelectedResize(target: ResizeControl) {
         if (this.selectedId) {
             const background = this.sidToObject[this.selectedId];
-            if (background) {
+            if (background) {/*
                 const {x, y} = background.toObjectCoord(target);
                 background.background.crop.x = x;
                 background.background.crop.y = y;
                 background.background.crop.w = target.w;
-                background.background.crop.h = target.h;
+                background.background.crop.h = target.h;*/
             }
             this.onChange();
         }

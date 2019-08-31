@@ -58,11 +58,11 @@
         }
 
         rotateLeft() {
-            this.$store.dispatch('document/rotateBackground', {background: this.$props.selectedObject, degrees: -90});
+            this.$store.dispatch('document/rotateBackground', {background: this.$props.selectedObject, degrees: -45});
         }
 
         rotateRight() {
-            this.$store.dispatch('document/rotateBackground', {background: this.$props.selectedObject, degrees: 90});
+            this.$store.dispatch('document/rotateBackground', {background: this.$props.selectedObject, degrees: 45});
         }
     }
 

@@ -1,10 +1,14 @@
 import {ViewPort} from '@/Drawings/2DViewport';
 import {Dimensions, Coord, Rectangle, Background} from '@/store/document/types';
-import DrawableObject from '@/Drawings/Object';
+import DrawableObject from '@/Drawings/DrawableObject';
 import axios from 'axios';
-import {parseScale} from '@/Drawings/Utils';
+import * as TM from 'transformation-matrix';
+import {decomposeMatrix, parseScale} from '@/Drawings/Utils';
+import SizeableObject from '@/Drawings/SizeableObject';
+import {scale} from 'transformation-matrix/scale';
+import {translate} from 'transformation-matrix/translate';
 
-export class BackgroundImage extends DrawableObject{
+export class BackgroundImage extends SizeableObject {
     image: HTMLImageElement | null = null;
     imgScale: {x: number, y: number} = {x: 1, y: 1};
 
@@ -20,7 +24,7 @@ export class BackgroundImage extends DrawableObject{
                 onSelect: (image: BackgroundImage) => any,
                 onCommit: (image: BackgroundImage) => any,
     ) {
-        super();
+        super(null);
         console.log("Constructed background with " + background);
         this.background = background;
 
@@ -57,6 +61,14 @@ export class BackgroundImage extends DrawableObject{
         retry();
     }
 
+    get position() {
+        return TM.transform(
+            // TM.scale(parseScale(background.scale)), // no scale because we will base the scale on the image size.
+            TM.translate(this.background.center.x, this.background.center.y),
+            TM.rotateDEG(this.background.rotation),//, this.background.center.x, this.background.center.y),
+        );
+    }
+
     get width() {
         return this.background.paperSize.width / parseScale(this.background.scale);
     }
@@ -73,39 +85,43 @@ export class BackgroundImage extends DrawableObject{
         this.background.center = value;
     }
 
+    get boundary() {
+        return this.background.crop;
+    }
+
+    set boundary(value: Rectangle) {
+        this.background.crop = value;
+    }
+
+
     /**
      * Draw with natural clip
      */
-    naturalClipDraw(ctx: CanvasRenderingContext2D, vp: ViewPort, alpha: number, l: number, t: number, w: number, h: number, active: boolean) {
+    naturalClipDraw(ctx: CanvasRenderingContext2D, alpha: number, l: number, t: number, w: number, h: number, active: boolean) {
         if (this.image) {
+
+            const { sx, sy } = decomposeMatrix(ctx.getTransform());
+
             console.log("this scale: " + this.imgScale.x + " " + this.imgScale.y);
             let oldAlpha = ctx.globalAlpha;
             ctx.globalAlpha = alpha;
-            let [x, y] = vp.toScreenCoord(
-                this.center.x + (l - this.image.naturalWidth / 2) * this.imgScale.x,
-                this.center.y - (t - this.image.naturalHeight / 2) * this.imgScale.y,
-            );
+            let {x, y} = {x: (l - this.image.naturalWidth / 2) * this.imgScale.x,
+                y: (t - this.image.naturalHeight / 2) * this.imgScale.y};
             let oldCompositeOperation = ctx.globalCompositeOperation;
 
 
-            let sw = vp.toScreenLength(w * this.imgScale.x);
-            let sh = vp.toScreenLength(h * this.imgScale.y);
+            let sw = w * this.imgScale.x;
+            let sh = h * this.imgScale.y;
             ctx.fillStyle = '#FFFFFF';
             ctx.fillRect(x, y, sw, sh);
 
 
             // Draw a potentially rotated image
-
-            ctx.translate(x + sw / 2, y + sh / 2);
-            ctx.rotate(this.background.rotation / 180 * Math.PI);
             ctx.drawImage(this.image,
                 l, t, w, h,
-                -sw / 2, -sh / 2,
+                x, y,
                 sw, sh,
             );
-            ctx.rotate(-this.background.rotation / 180 * Math.PI);
-            ctx.translate(-(x + sw / 2), -(y + sh / 2));
-
 
             if (!active) {
                 ctx.fillStyle = '#f0f8ff';
@@ -113,17 +129,18 @@ export class BackgroundImage extends DrawableObject{
                 ctx.fillRect(
                     x,
                     y,
-                    vp.toScreenLength(w * this.imgScale.x),
-                    vp.toScreenLength(h * this.imgScale.y),
+                    sw,
+                    sh,
                 );
             }
 
+            ctx.lineWidth = 1 / sx;
             ctx.strokeStyle = '#AAAAAA';
             ctx.beginPath();
             ctx.strokeRect(
                 x, y,
-                vp.toScreenLength(w * this.imgScale.x),
-                vp.toScreenLength(h * this.imgScale.y),
+                sw,
+                sh,
             );
             ctx.stroke();
             ctx.globalAlpha = oldAlpha;
@@ -133,20 +150,23 @@ export class BackgroundImage extends DrawableObject{
         }
     }
 
-    worldClipDraw(ctx: CanvasRenderingContext2D, vp: ViewPort, alpha: number, x: number, y: number, w: number, h: number, selected: boolean, active: boolean) {
+    objectClipDraw(ctx: CanvasRenderingContext2D, alpha: number, x: number, y: number, w: number, h: number, selected: boolean, active: boolean) {
         // We use an inverse viewport to find the appropriate clip bounds.
         if (this.image) {
-            if (selected) {
-                this.image
-            }
-            let ivp_x = new ViewPort(this.center.x, this.center.y, this.image.naturalWidth, this.image.naturalHeight, 1 / this.imgScale.x);
-            let ivp_y = new ViewPort(this.center.x, this.center.y, this.image.naturalWidth, this.image.naturalHeight, 1 / this.imgScale.y);
-            // Remember that when going from world view to image coordinate view, we must invert the y axis about the center.
-            let [l, _d1] = ivp_x.toScreenCoord(x, y + h);
-            let [_d2, t] = ivp_y.toScreenCoord(x, y + h);
+            let ivp = new ViewPort(TM.transform(
+                TM.scale(this.imgScale.x, this.imgScale.y),
+                ),
+                this.image.naturalWidth,
+                this.image.naturalHeight,
+            );
 
-            console.log("l and t: " + l + " " + t);
-            this.naturalClipDraw(ctx, vp, alpha, l, t,
+            // Remember that when going from world view to image coordinate view, we must invert the y axis about the center.
+            let l = ivp.toScreenCoord({x, y});
+            let t = ivp.toScreenCoord({x, y});
+
+            console.log("x and y: " + JSON.stringify(l) + " " + JSON.stringify(t));
+
+            this.naturalClipDraw(ctx, alpha, l.x, t.y,
                 w / this.imgScale.x,
                 h / this.imgScale.y,
                 active,
@@ -158,31 +178,30 @@ export class BackgroundImage extends DrawableObject{
             let oldAlpha = ctx.globalAlpha;
             ctx.globalAlpha = 0.5;
             ctx.fillStyle = '#AAAAAA';
-            const [sx, sy] = vp.toScreenCoord(x, y);
             ctx.fillRect(
-                sx, sy - vp.toScreenLength(h),
-                vp.toScreenLength(w),
-                vp.toScreenLength(h),
+                x, y, w, h,
             );
             ctx.font = '20pt Helvetica';
             ctx.fillStyle = '#FFFFFF';
-            ctx.fillText('Loading...', sx + vp.toScreenLength(w) / 2 - 50, sy + vp.toScreenLength(h) / 2);
+            ctx.fillText('Loading...', x + (w) / 2, y + (h) / 2 - 20);
             ctx.globalAlpha = oldAlpha;
         }
     }
 
 
     // Draw without world space concerns
-    draw(ctx: CanvasRenderingContext2D, vp: ViewPort, selected: boolean = false, active: boolean = true) {
-        if (selected && active && this.image) {
-            this.naturalClipDraw(ctx, vp, 0.2, 0, 0, this.image.naturalWidth, this.image.naturalHeight, active);
+    drawInternal(ctx: CanvasRenderingContext2D, selected: boolean, active: boolean) {
+        if ((selected && active) && this.image) {
+            this.naturalClipDraw(ctx, 0.2, 0, 0, this.image.naturalWidth, this.image.naturalHeight, active);
         }
-        const corner = this.toWorldCoord({x: this.background.crop.x, y: this.background.crop.y});
+
         let alpha = 1;
         if (selected && this.hasDragged) {
-            alpha = 0.6
+            alpha = 0.6;
         }
-        this.worldClipDraw(ctx, vp, alpha, corner.x, corner.y, this.background.crop.w, this.background.crop.h, selected, active);
+
+        console.log("this boundary: " + JSON.stringify(this.boundary));
+        this.objectClipDraw(ctx, alpha, this.boundary.x, this.boundary.y, this.boundary.w, this.boundary.h, selected, active);
     }
 
     /**
@@ -190,13 +209,13 @@ export class BackgroundImage extends DrawableObject{
      */
 
 
-    inBounds(wx: number, wy: number): boolean {
-        let clipP = this.toWorldCoord(this.background.crop);
+    inBounds(ox: number, oy: number): boolean {
+        //let clipP = this.toWorldCoord(this.background.crop);
 
-        if (wx < clipP.x || wy < clipP.y) {
+        if (ox < this.background.crop.x || oy < this.background.crop.y) {
             return false;
-        } else if (wx <= clipP.x + this.background.crop.w
-            && wy <= clipP.y + this.background.crop.h) {
+        } else if (ox <= this.background.crop.x + this.background.crop.w
+            && oy <= this.background.crop.y + this.background.crop.h) {
             return true;
         }
         return false;
@@ -207,9 +226,10 @@ export class BackgroundImage extends DrawableObject{
     hasDragged: boolean = false;
 
     onMouseDown(event: MouseEvent, vp: ViewPort): boolean {
-        let [wx, wy] = vp.toWorldCoord(event.offsetX, event.offsetY);
-        if (this.inBounds(wx, wy)) {
-            this.grabbedPoint = [wx, wy];
+        const w = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
+        const o = this.toObjectCoord(w);
+        if (this.inBounds(o.x, o.y)) {
+            this.grabbedPoint = [w.x, w.y];
             this.grabbedCenterState = [this.center.x, this.center.y];
             this.hasDragged = false;
             if (this.onSelect) {
@@ -223,10 +243,10 @@ export class BackgroundImage extends DrawableObject{
     onMouseMove(event: MouseEvent, vp: ViewPort): boolean {
         if (event.buttons && 1) {
             if (this.grabbedPoint != null && this.grabbedCenterState != null) {
-                let [wx, wy] = vp.toWorldCoord(event.offsetX, event.offsetY);
+                let w = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
                 // Drag move
-                this.center.x = this.grabbedCenterState[0] + wx - this.grabbedPoint[0];
-                this.center.y = this.grabbedCenterState[1] + wy - this.grabbedPoint[1];
+                this.center.x = this.grabbedCenterState[0] + w.x - this.grabbedPoint[0];
+                this.center.y = this.grabbedCenterState[1] + w.y - this.grabbedPoint[1];
                 this.hasDragged = true;
 
                 if (this.onMove != null) {
@@ -258,5 +278,4 @@ export class BackgroundImage extends DrawableObject{
         }
         return false;
     }
-
 }
