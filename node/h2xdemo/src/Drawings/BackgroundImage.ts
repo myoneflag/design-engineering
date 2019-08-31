@@ -3,7 +3,7 @@ import {Dimensions, Coord, Rectangle, Background} from '@/store/document/types';
 import DrawableObject from '@/Drawings/DrawableObject';
 import axios from 'axios';
 import * as TM from 'transformation-matrix';
-import {decomposeMatrix, parseScale} from '@/Drawings/Utils';
+import {decomposeMatrix, matrixScale, parseScale} from '@/Drawings/Utils';
 import SizeableObject from '@/Drawings/SizeableObject';
 import {scale} from 'transformation-matrix/scale';
 import {translate} from 'transformation-matrix/translate';
@@ -100,7 +100,7 @@ export class BackgroundImage extends SizeableObject {
     naturalClipDraw(ctx: CanvasRenderingContext2D, alpha: number, l: number, t: number, w: number, h: number, active: boolean) {
         if (this.image) {
 
-            const { sx, sy } = decomposeMatrix(ctx.getTransform());
+            const sx = matrixScale(ctx.getTransform());
 
             console.log("this scale: " + this.imgScale.x + " " + this.imgScale.y);
             let oldAlpha = ctx.globalAlpha;
