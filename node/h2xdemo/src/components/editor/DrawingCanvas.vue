@@ -50,6 +50,8 @@
     import {ToolConfig} from '@/store/tools/types';
     import {ToolHandler} from "@/htmlcanvas/tools/tool";
     import DrawableObject from "@/htmlcanvas/components/drawable-object";
+    import uuid from "uuid";
+    import {renderPdf} from "@/api/pdf";
 
     @Component({
         components: {Overlay, Toolbar, PropertiesWindow, ModeButtons},
@@ -93,9 +95,6 @@
         viewPort: ViewPort = new ViewPort(TM.transform(TM.translate(0, 0), TM.scale(100)), 10000, 10000);
         selected: number | null = null;
         internal_mode: DrawingMode = DrawingMode.FloorPlan;
-
-        // These are ones that are still being sent to the server
-        loadingPdfs: {x: number, y: number}[] = [];
 
         // The layers
         backgroundLayer!: BackgroundLayer;
@@ -236,32 +235,32 @@
                     }
                     console.log("File " + i + ": " + event.dataTransfer.files.item(i));
 
-                    let formData = new FormData();
+
                     let w = this.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
-                    formData.append("pdf", event.dataTransfer.files.item(i) as File);
-                    formData.append("x", String(w.x));
-                    formData.append("y", String(w.y));
 
-                    const loading = {'x': w.x, 'y': w.y};
+                    renderPdf(event.dataTransfer.files.item(i) as File, ({paperSize, scale, scaleName, uri, totalPages}) => {
+                        console.log("Loaded PDF successfully: " + paperSize + " " + scale + " " + uri);
 
-                    this.loadingPdfs.push(loading);
-                    console.log("Loading pdfs: " + this.loadingPdfs);
+                        const width = paperSize.width / scale;
+                        const height = paperSize.height / scale;
+                        // We create the operation here, not the other way around.
+                        let background: Background = {
+                            center: w,
+                            crop: {x: -width/2, y: -height/2, w: width, h: height},
+                            offset: {x: 0, y: 0},
+                            page: 1,
+                            paperSize: paperSize,
+                            pointA: null,
+                            pointB: null,
+                            rotation: 0,
+                            scaleFactor: 1,
+                            scaleName: scaleName,
+                            selectId: uuid(),
+                            totalPages: totalPages,
+                            uri: uri,
+                        };
 
-                    let promise = axios.post('api/uploadPdf', formData, {
-                        headers: {
-                            'Content-Type': 'multipart/form-data'
-                        }
-                    });
-                    promise.catch(reason => {
-                        console.log(JSON.stringify(reason));
-                        console.log("Loaded PDF failed: " + JSON.stringify(loading));
-                        this.loadingPdfs.splice(this.loadingPdfs.indexOf(loading), 1);
-                        console.log("Loading pdfs: " + this.loadingPdfs);
-                    });
-                    promise.then((value) => {
-                        console.log("Loaded PDF successfully: " + JSON.stringify(loading));
-                        this.loadingPdfs.splice(this.loadingPdfs.indexOf(loading), 1);
-                        console.log("Loading pdfs: " + this.loadingPdfs);
+                        this.$store.dispatch("document/addBackground", {background});
                     });
                 }
             } else {

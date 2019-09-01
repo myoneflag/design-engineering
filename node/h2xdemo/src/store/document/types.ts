@@ -36,6 +36,9 @@ export interface Background extends Selectable {
     pointA: Coord | null;
     pointB: Coord | null;
 
+    // For replacing pdfs that need adjustments later:
+    offset: Coord;
+
     // Backgrounds are part of PDFs and so may have many pages.
     page: number;
     totalPages: number;

@@ -1,22 +1,17 @@
 package com.h2x.mvp.webmodels;
 
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@JsonSerialize(as = ImmutableBackground.class)
-@JsonDeserialize(as = ImmutableBackground.class)
-public interface Background {
-    Coord center();
-    Coord offset();
-    Rectangle crop();
+@JsonSerialize(as = ImmutablePDFRenderResult.class)
+@JsonDeserialize(as = ImmutablePDFRenderResult.class)
+public interface PDFRenderResult {
     String scaleName();
-    double scaleFactor();
-    String uri();
+    Double scale();
     PaperSize paperSize();
-    double rotation();
-
-    int page();
+    String uri();
     int totalPages();
 }

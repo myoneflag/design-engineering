@@ -3,7 +3,6 @@ import axios from 'axios';
 import * as OT from './operation-transforms';
 import { RootState } from '../types';
 import {Background, DocumentState} from '@/store/document/types';
-import {BackgroundImage} from '@/htmlcanvas/components/background-image';
 import {PaperSize} from '@/config';
 
 
@@ -41,6 +40,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
             id: -1,
             type: OT.OPERATION_NAMES.ADD_BACKGROUND,
         };
+        submitOperation(commit, op);
     },
 
     updateBackground({commit, state}, {background, index}): any {

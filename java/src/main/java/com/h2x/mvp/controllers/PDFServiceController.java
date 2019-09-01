@@ -48,14 +48,12 @@ public class PDFServiceController
     TaskExecutor taskExecutor;
 
     @RequestMapping(value = "api/uploadPdf")
-    public DeferredResult<ResponseEntity<BackgroundURI>> uploadPdf(
-            @RequestParam("pdf")MultipartFile file,
-            @RequestParam("x") double dropX,
-            @RequestParam("y") double dropY)
+    public DeferredResult<ResponseEntity<PDFRenderResult>> uploadPdf(
+            @RequestParam("pdf")MultipartFile file)
     {
 
         Logger logger = LoggerFactory.getLogger(PDFServiceController.class);
-        DeferredResult<ResponseEntity<BackgroundURI>> output = new DeferredResult<>();
+        DeferredResult<ResponseEntity<PDFRenderResult>> output = new DeferredResult<>();
         //return new BackgroundURI("https://conversionxl.com/wp-content/uploads/2013/03/blueprint-architecture.png");
         ForkJoinPool.commonPool().submit(() -> {
             try {
@@ -85,37 +83,16 @@ public class PDFServiceController
                 // We can get the size of the PDF immediately. Then, the operation can be returned to the user
                 // already.
 
-                String request =
-                        mapper.writeValueAsString(
-                                ImmutableAddBackgroundOperation.builder()
-                                        .background(
-                                                ImmutableBackground.builder()
-                                                .crop(ImmutableRectangle.builder()
-                                                        .x(-pdfDims.paperSize.width()/pdfDims.scaleNumber/2)
-                                                        .y(-pdfDims.paperSize.height()/pdfDims.scaleNumber/2)
-                                                        .w(pdfDims.paperSize.width()/pdfDims.scaleNumber)
-                                                        .h(pdfDims.paperSize.height()/pdfDims.scaleNumber
-                                                        ).build())
-                                                        .center(ImmutableCoord.builder().x(dropX).y(dropY).build())
-                                                        .page(0)
-                                                        .totalPages(pdfDims.pages)
-                                                        .paperSize(pdfDims.paperSize)
-                                                        .scaleName(pdfDims.scale)
-                                                        .scaleFactor(1)
-                                                        .uri(pngDest)
-                                                        .rotation(0)
-                                                        .build()
-                                        )
-                                        .build()
-                        );
-
-                logger.debug("Submitted convert task. Now pushing operation 3");
-                DocumentWebSockets.pushOperation(
-                        request
-                );
+                PDFRenderResult result = ImmutablePDFRenderResult.builder()
+                        .paperSize(pdfDims.paperSize)
+                        .scaleName(pdfDims.scale)
+                        .scale(pdfDims.scaleNumber)
+                        .uri(pngDest)
+                        .totalPages(pdfDims.pages)
+                        .build();
 
                 logger.debug("Setting output result");
-                output.setResult(ResponseEntity.ok(new BackgroundURI(pngDest)));
+                output.setResult(ResponseEntity.ok(result));
 
                 logger.debug("Done");
 

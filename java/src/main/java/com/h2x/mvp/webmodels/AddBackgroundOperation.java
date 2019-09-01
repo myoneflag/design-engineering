@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
+/**
+ * Soon to be deprecated. We will not be modelling web data structures here. It will be strictly for API.
+ */
 @Value.Immutable
 @JsonSerialize(as = ImmutableAddBackgroundOperation.class)
 @JsonDeserialize(as = ImmutableAddBackgroundOperation.class)
