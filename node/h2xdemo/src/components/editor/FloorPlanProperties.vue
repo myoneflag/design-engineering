@@ -89,8 +89,20 @@
         <b-row style="margin-top: 20px;">
             <b-col>
                 <h5 class="sidebar-title">
-                    &nbsp;Other&nbsp;
+                    &nbsp;PDF&nbsp;
                 </h5>
+            </b-col>
+        </b-row>
+
+        <b-row style="margin-top: 10px">
+            <b-col>
+                <b-form-file
+                        v-model="file"
+                        :state="Boolean(file)"
+                        browse-text="Click to replace current PDF"
+                        size="sm"
+                        @input="onReplacePdf"
+                ></b-form-file>
             </b-col>
         </b-row>
 
@@ -112,6 +124,7 @@
     import DrawableObject from "@/htmlcanvas/components/drawable-object";
     import store from '@/store/store';
     import {BackgroundImage} from "@/htmlcanvas/components/background-image";
+    import {PDFRenderResult, renderPdf} from "@/api/pdf";
 
     @Component({
         props: {
@@ -123,6 +136,8 @@
     })
     export default class FloorPlanProperties extends Vue {
         EPS = 0.0001;
+
+        file: File | null = null;
 
         onDeleteClick() {
             this.$store.dispatch('document/deleteBackground', this.$props.selectedObject);
@@ -169,6 +184,20 @@
                 return (wb.x / 1000).toFixed(2) + ", " + (wb.y / 1000).toFixed(2) + "m";
             } else {
                 return "Choose";
+            }
+        }
+
+        onReplacePdf(event: Event) {
+            console.log("PDF upload: " + this.file);
+            const backgroundObject: BackgroundImage = this.$props.selectedDrawable;
+            const background: Background = this.$props.selectedObject;
+            if (this.file) {
+                renderPdf(this.file, (data: PDFRenderResult) => {
+                    this.$store.dispatch("document/updateBackgroundInPlace", {background, update: (background: Background) => ({
+                        uri: data.uri,
+                        })
+                    });
+                });
             }
         }
 

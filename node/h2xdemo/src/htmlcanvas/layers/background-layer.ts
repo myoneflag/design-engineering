@@ -81,7 +81,13 @@ export default class BackgroundLayer implements Layer {
                 this.sidsInOrder.push(background.selectId);
             } else {
                 let obj = this.sidToObject[background.selectId];
+                const oldUri = obj.background.uri;
                 obj.background = background;
+                if (obj.background.uri != oldUri) {
+                    obj.initializeImage(() => {
+                        this.onChange();
+                    });
+                }
                 if (background.selectId === this.selectedId) {
                     this.onSelect(background, obj);
                 }

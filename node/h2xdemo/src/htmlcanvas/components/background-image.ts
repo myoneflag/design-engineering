@@ -33,33 +33,51 @@ export class BackgroundImage extends SizeableObject {
         this.onSelect = onSelect;
         this.onCommit = onCommit;
 
+        this.initializeImage(onLoad);
+    }
+
+    initializeImage(onLoad: (image: BackgroundImage) => any) {
+        this.image = null;
         // Try to load the image. If we can't, then show a loading screen.
-        const retry = () => {
+        const retry = (expectedUri: string) => {
+            if (expectedUri != this.background.uri) {
+                // Sometimes, there are a lot of URI switches. We just want to keep the latest one.
+                return;
+            }
+
             axios.head(this.background.uri).then((res) => {
                     console.log('background loaded. Resp: ' + res.status);
                     const image = new Image();
-                    image.src = background.uri;
+                    image.src = this.background.uri;
 
                     image.onload = () => {
                         this.imgScale = {
                             x: this.width / image.naturalWidth,
                             y: this.height / image.naturalHeight,
                         };
+
+                        // Now now, we all know the scales better be the same
+                        if (Math.abs(this.imgScale.x / this.imgScale.y - 1) > 0.05) {
+                            console.log('Warning: Image aspect ratio differs from paper aspect ratio by more than 5%');
+                        }
+
+                        this.imgScale.y = this.imgScale.x;
+
                         this.image = image;
                         onLoad(this);
                     };
-                    image.src = background.uri;
+                    image.src = this.background.uri;
                 },
             ).catch((err) => {
                 console.log('Resource not loaded. ' + err);
                 setTimeout(() => {
                     console.log("retrying...");
-                    retry();
+                    retry(expectedUri);
                 }, 1000);
             });
         };
 
-        retry();
+        retry(this.background.uri);
     }
 
     get position() {
@@ -120,8 +138,11 @@ export class BackgroundImage extends SizeableObject {
 
 
             // Draw a potentially rotated image
-            ctx.drawImage(this.image,
-                l, t, w, h,
+            ctx.drawImage(
+                this.image,
+                l - this.background.offset.x / this.imgScale.x,
+                t - this.background.offset.y / this.imgScale.y,
+                w, h,
                 x, y,
                 sw, sh,
             );
@@ -209,7 +230,15 @@ export class BackgroundImage extends SizeableObject {
     // Draw without world space concerns
     drawInternal(ctx: CanvasRenderingContext2D, selected: boolean, active: boolean) {
         if ((selected && active) && this.image) {
-            this.naturalClipDraw(ctx, 0.2, 0, 0, this.image.naturalWidth, this.image.naturalHeight, active);
+            this.naturalClipDraw(
+                ctx,
+                0.2,
+                this.background.offset.x / this.imgScale.x,
+                this.background.offset.y / this.imgScale.y,
+                this.image.naturalWidth,
+                this.image.naturalHeight,
+                active
+            );
         }
 
         let alpha = 1;
@@ -249,14 +278,18 @@ export class BackgroundImage extends SizeableObject {
 
     grabbedPoint: [number, number] | null = null;
     grabbedCenterState: [number, number] | null = null;
+    grabbedOffsetState: Coord | null = null;
     hasDragged: boolean = false;
+    shiftKey: boolean = false;
 
     onMouseDown(event: MouseEvent, vp: ViewPort): boolean {
+        this.shiftKey = event.shiftKey; // shift click moves the pdf but not the crop box or child points.
         const w = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const o = this.toObjectCoord(w);
         if (this.inBounds(o.x, o.y)) {
             this.grabbedPoint = [w.x, w.y];
             this.grabbedCenterState = [this.center.x, this.center.y];
+            this.grabbedOffsetState = Object.assign({}, this.background.offset);
             this.hasDragged = false;
             if (this.onSelect) {
                 this.onSelect(this);
@@ -268,12 +301,28 @@ export class BackgroundImage extends SizeableObject {
 
     onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
         if (event.buttons && 1) {
-            if (this.grabbedPoint != null && this.grabbedCenterState != null) {
-                let w = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
-                // Drag move
-                this.center.x = this.grabbedCenterState[0] + w.x - this.grabbedPoint[0];
-                this.center.y = this.grabbedCenterState[1] + w.y - this.grabbedPoint[1];
+            if (this.grabbedPoint != null && this.grabbedCenterState != null && this.grabbedOffsetState != null) {
+
+                if (!this.hasDragged) {
+                    if (event.shiftKey) this.shiftKey = true; // Give the user the change to click then shift then drag.
+                }
                 this.hasDragged = true;
+                
+                let w = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
+                if (this.shiftKey) {
+                    // Move the offset, not the object
+                    let o = this.toObjectCoord(w);
+                    let grabbedO = this.toObjectCoord({x: this.grabbedPoint[0], y: this.grabbedPoint[1]});
+
+                    this.background.offset.x  = this.grabbedOffsetState.x + o.x - grabbedO.x;
+                    this.background.offset.y = this.grabbedOffsetState.y + o.y - grabbedO.y;
+                } else {
+
+                    // Move the object
+                    this.center.x = this.grabbedCenterState[0] + w.x - this.grabbedPoint[0];
+                    this.center.y = this.grabbedCenterState[1] + w.y - this.grabbedPoint[1];
+                }
+
 
                 if (this.onMove != null) {
                     this.onMove(this);
@@ -288,6 +337,7 @@ export class BackgroundImage extends SizeableObject {
             }
             this.grabbedCenterState = null;
             this.grabbedPoint = null;
+            this.grabbedOffsetState = null;
             this.hasDragged = false;
             return UNHANDLED;
         }

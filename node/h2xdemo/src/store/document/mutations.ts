@@ -39,8 +39,8 @@ export const mutations: MutationTree<DocumentState> = {
                 break;
             }
             case OT.OPERATION_NAMES.ADD_BACKGROUND: {
-                let bg: Background = Object.assign({selectId: uuidv4() },
-                    (operation as OT.AddBackgroundOperation).background
+                const bg: Background = Object.assign({selectId: uuidv4() },
+                    (operation as OT.AddBackgroundOperation).background,
                 );
                 state.drawing.backgrounds.push(bg);
                 break;
