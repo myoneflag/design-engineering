@@ -102,6 +102,7 @@
                         browse-text="Click to replace current PDF"
                         size="sm"
                         @input="onReplacePdf"
+                        accept=".pdf"
                 ></b-form-file>
             </b-col>
         </b-row>
