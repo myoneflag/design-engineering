@@ -1,16 +1,17 @@
-import {ViewPort} from '@/Drawings/2DViewport';
+import {ViewPort} from '@/htmlcanvas/viewport';
 import {DocumentState} from '@/store/document/types';
+import {MouseMoveResult} from '@/htmlcanvas/types';
 
 export interface MouseHandler {
 
 }
 
 export default interface Layer {
-    draw: (ctx: CanvasRenderingContext2D, vp: ViewPort, active: boolean) => any;
+    draw: (ctx: CanvasRenderingContext2D, vp: ViewPort, ...args: any[]) => any;
     update: (doc: DocumentState) => any;
     drawSelectionLayer: (ctx: CanvasRenderingContext2D, vp: ViewPort) => any;
 
-    onMouseMove: (event: MouseEvent, vp: ViewPort) => boolean;
+    onMouseMove: (event: MouseEvent, vp: ViewPort) => MouseMoveResult;
     onMouseDown: (event: MouseEvent, vp: ViewPort) => boolean;
     onMouseUp: (event: MouseEvent, vp: ViewPort) => boolean;
 }

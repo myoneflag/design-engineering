@@ -1,4 +1,4 @@
-import {ViewPort} from '@/Drawings/2DViewport';
+import {ViewPort} from '@/htmlcanvas/viewport';
 import {Matrix} from 'transformation-matrix';
 
 export interface Transformation {
@@ -16,7 +16,7 @@ export const parseScale = (repr: string) => {
         let [_, l, r] = match;
         return parseInt(l) / parseInt(r);
     }
-    return 1;
+    return 1 / 100;
 };
 
 /**

@@ -9,7 +9,7 @@
     import Vue from "vue";
     import Component from "vue-class-component";
     import DrawingNavBar from "../components/DrawingNavBar.vue";
-    import DrawingCanvas from '@/components/canvas/DrawingCanvas.vue';
+    import DrawingCanvas from '@/components/editor/DrawingCanvas.vue';
     import sockjs from 'sockjs-client';
     import Stomp, {Message} from "stompjs";
     import {State} from "vuex-class";

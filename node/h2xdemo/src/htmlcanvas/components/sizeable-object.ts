@@ -1,5 +1,5 @@
 import {Rectangle} from '@/store/document/types';
-import DrawableObject from '@/Drawings/DrawableObject';
+import DrawableObject from '@/htmlcanvas/components/drawable-object';
 
 export default abstract class SizeableObject extends DrawableObject {
     // Size is relative to the center of the object.

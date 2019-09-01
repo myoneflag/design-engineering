@@ -1,5 +1,5 @@
 import {Coord, Dimensions, Rectangle} from '@/store/document/types';
-import {ViewPort} from '@/Drawings/2DViewport';
+import {ViewPort} from '@/htmlcanvas/viewport';
 import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
 

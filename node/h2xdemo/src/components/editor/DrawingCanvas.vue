@@ -1,44 +1,58 @@
 <template>
-    <div ref="canvasFrame" style="width:100%; height: -webkit-calc(100vh - 65px);">
+    <div ref="canvasFrame" class="fullFrame">
         <drop
             @drop="onDrop"
         >
-            <canvas ref="drawingCanvas" style="background-color: aliceblue;"
-            >
+            <canvas ref="drawingCanvas" v-bind:style="{ backgroundColor: 'aliceblue', cursor: currentCursor}">
 
             </canvas>
 
-            <ModeButtons :mode.sync="mode"/>
+            <ModeButtons
+                    :mode.sync="mode"
+                    v-if="currentTool.modesVisible"
+            />
 
-            <PropertiesWindow :selectedObject="selectedObject" v-if="selectedObject" :object-type="selectedObjectType">
+            <PropertiesWindow
+                    :selectedObject="selectedObject"
+                    :selected-drawable="selectedDrawable"
+                    v-if="selectedObject && currentTool.propertiesVisible"
+                    :object-type="selectedObjectType"
+            >
 
             </PropertiesWindow>
 
-
+            <Toolbar :current-tool-config="currentTool" :on-tool-click="changeTool"></Toolbar>
         </drop>
         <resize-observer @notify="draw"/>
+
     </div>
 </template>
 
 <script lang="ts">
     import Vue from "vue";
     import Component from "vue-class-component";
-    import * as OT from "@/store/document/operationTransforms";
-    import {OperationTransform} from "@/store/document/operationTransforms";
-    import {ViewPort} from "@/Drawings/2DViewport";
+    import * as OT from "@/store/document/operation-transforms";
+    import {OperationTransform} from "@/store/document/operation-transforms";
+    import {ViewPort} from "@/htmlcanvas/viewport";
     import {Background, Coord, DocumentState} from "@/store/document/types";
-    import {drawPaperScale} from "@/Drawings/Scale";
-    import ModeButtons from "@/components/canvas/ModeButtons.vue";
-    import PropertiesWindow from "@/components/canvas/PropertiesWindow.vue";
-    import {DrawingMode} from "@/components/canvas/types";
+    import {drawPaperScale} from "@/htmlcanvas/scale";
+    import ModeButtons from "@/components/editor/ModeButtons.vue";
+    import PropertiesWindow from "@/components/editor/PropertiesWindow.vue";
+    import {DrawingMode, MouseMoveResult, UNHANDLED} from "@/htmlcanvas/types";
     import axios from "axios";
-    import BackgroundLayer from "@/components/canvas/backgroundLayer";
+    import BackgroundLayer from "@/htmlcanvas/layers/background-layer";
     import * as TM from 'transformation-matrix';
     import doc = Mocha.reporters.doc;
-    import {decomposeMatrix} from "@/Drawings/Utils";
+    import {decomposeMatrix} from "@/htmlcanvas/utils";
+    import Toolbar from '@/components/editor/Toolbar.vue';
+    import Overlay from '@/components/editor/Overlay.vue';
+    import {MainEventBus} from "@/store/main-event-bus";
+    import {ToolConfig} from '@/store/tools/types';
+    import {ToolHandler} from "@/htmlcanvas/tools/tool";
+    import DrawableObject from "@/htmlcanvas/components/drawable-object";
 
     @Component({
-        components: {PropertiesWindow, ModeButtons},
+        components: {Overlay, Toolbar, PropertiesWindow, ModeButtons},
         props: {
             document: Object,
         }
@@ -50,19 +64,23 @@
             console.log("DrawingCanvas Mounted");
             this.ctx = (this.$refs["drawingCanvas"] as any).getContext("2d");
 
-            OT.OTEventBus.$on('ot-applied', this.onOT);
+            MainEventBus.$on('ot-applied', this.onOT);
+            MainEventBus.$on('tool-change', this.onToolChange);
+            MainEventBus.$on('set-tool-handler', this.setToolHandler);
 
             (this.$refs["drawingCanvas"] as any).onmousedown = this.onMouseDown;
             (this.$refs["drawingCanvas"] as any).onmousemove = this.onMouseMove;
             (this.$refs["drawingCanvas"] as any).onmouseup = this.onMouseUp;
             (this.$refs["drawingCanvas"] as any).onwheel = this.onWheel;
+
             this.backgroundLayer = new BackgroundLayer(
                 () => {
                     //this.backgroundLayer.update(this.$props.document);
                     this.draw();
                 },
-                (object) => {
+                (object, drawable) => {
                     this.selectedObjectBackground = object;
+                    this.selectedDrawable = drawable;
                     this.draw();
                 },
                 (object) => { // onCommit
@@ -82,6 +100,14 @@
         // The layers
         backgroundLayer!: BackgroundLayer;
 
+        toolHandler: ToolHandler | null = null;
+
+        currentCursor: string = "auto";
+
+        get currentTool(): ToolConfig {
+            return this.$store.getters["tools/getCurrentTool"];
+        }
+
         get mode() {
             return this.internal_mode;
         }
@@ -95,6 +121,17 @@
             this.processDocument();
         }
 
+        onToolChange(tool: ToolConfig) {
+            console.log("Tool change: " + tool + " " + this);
+            //(this.$refs["drawingCanvas"] as any).cursor = tool.defaultCursor;
+            this.draw();
+        }
+
+        setToolHandler(toolHandler: ToolHandler) {
+            this.toolHandler = toolHandler;
+            this.draw();
+        }
+
         selectedObjectBackground: Background | null = null;
         get selectedObject() {
             if (this.mode == DrawingMode.FloorPlan) {
@@ -102,12 +139,18 @@
             }
             return null;
         }
+        selectedDrawable: DrawableObject | null = null;
 
         get selectedObjectType() {
             if (this.mode == DrawingMode.FloorPlan) {
                 return "floor-plan";
             }
             return "";
+        }
+
+        changeTool(tool: ToolConfig) {
+            console.log("dispatching current tool: " + tool.name);
+            this.$store.dispatch("tools/setCurrentTool", tool);
         }
 
         commitBackgroundChange(object: Background) {
@@ -165,7 +208,7 @@
                 this.viewPort.width = width;
                 this.viewPort.height = height;
 
-                this.backgroundLayer.draw(ctx, this.viewPort, this.mode == DrawingMode.FloorPlan);
+                this.backgroundLayer.draw(ctx, this.viewPort, this.mode == DrawingMode.FloorPlan, this.currentTool);
 
                 // Draw hydraulics layer =>
 
@@ -230,20 +273,47 @@
         hasDragged: boolean = false;
 
         onMouseDown(event: MouseEvent): boolean {
-            // Pass the event down to layers below
-            if (this.mode === DrawingMode.FloorPlan) {
-                if (this.backgroundLayer.onMouseDown(event, this.viewPort)) return true;
+            if (this.toolHandler) {
+                if (this.toolHandler.onMouseDown(event, this.viewPort)) {
+                    return true;
+                }
+            } else {
+
+                // Pass the event down to layers below
+                if (this.mode === DrawingMode.FloorPlan) {
+                    if (this.backgroundLayer.onMouseDown(event, this.viewPort)) return true;
+                }
             }
 
+            // If no objects or tools wanted the events, we can always drag and shit.
             this.grabbedPoint = this.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
             this.hasDragged = false;
             return true;
         }
 
         onMouseMove(event: MouseEvent): boolean {
-            // Pass the event down to layers below
-            if (this.mode === DrawingMode.FloorPlan) {
-                if (this.backgroundLayer.onMouseMove(event, this.viewPort)) return true;
+            const res = this.onMouseMoveInternal(event);
+            if (res.cursor) {
+                console.log("Events gave cursor of " + res.cursor);
+                this.currentCursor = res.cursor;
+            } else {
+                this.currentCursor = this.currentTool.defaultCursor;
+            }
+            return res.handled;
+        }
+
+        onMouseMoveInternal(event: MouseEvent): MouseMoveResult {
+            if (this.toolHandler) {
+                const res = this.toolHandler.onMouseMove(event, this.viewPort);
+                if (res.handled) {
+                    return res;
+                }
+            } else {
+                // Pass the event down to layers below
+                if (this.mode === DrawingMode.FloorPlan) {
+                    const res = this.backgroundLayer.onMouseMove(event, this.viewPort);
+                    if (res.handled) return res;
+                }
             }
 
             if (event.buttons && 1) {
@@ -254,14 +324,14 @@
                     console.log("sx sy: " + sx+ " " + sy);
                     this.viewPort.panAbs(s.x - event.offsetX, s.y - event.offsetY);
                     this.draw();
-                    return true;
+                    return {handled: true, cursor: 'Move'};
                 } else {
-                    return false;
+                    return UNHANDLED;
                 }
             } else {
                 this.grabbedPoint = null;
                 this.hasDragged = false;
-                return false;
+                return UNHANDLED;
             }
         }
 
@@ -277,11 +347,16 @@
                 }
             }
 
-            // Pass the event down to layers below
-            if (this.mode === DrawingMode.FloorPlan) {
-                if (this.backgroundLayer.onMouseUp(event, this.viewPort)) return true;
+            if (this.toolHandler) {
+                if (this.toolHandler.onMouseUp(event, this.viewPort)) {
+                    return true;
+                }
+            } else {
+                // Pass the event down to layers below
+                if (this.mode === DrawingMode.FloorPlan) {
+                    if (this.backgroundLayer.onMouseUp(event, this.viewPort)) return true;
+                }
             }
-
             return false;
         }
 
@@ -298,8 +373,13 @@
 
 </script>
 
-<style lang="less">
+<style lang="css">
     body {
         height: 100%;
+    }
+
+    .fullFrame {
+        width:100%;
+        height: -webkit-calc(100vh - 65px);
     }
 </style>

@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import {ViewPort} from '@/Drawings/2DViewport';
+import {ViewPort} from '@/htmlcanvas/viewport';
 
 describe('2DViewPort.ts', () => {
     /*
