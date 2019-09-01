@@ -1,9 +1,9 @@
 import { MutationTree } from 'vuex';
 import {Background, DocumentState} from './types';
-import * as OT from './operationTransforms';
-import {OTEventBus} from './operationTransforms';
+import * as OT from './operation-transforms';
 import deepEqual from 'deep-equal';
 import uuidv4 from 'uuid/v4';
+import {MainEventBus} from '@/store/main-event-bus';
 
 export const mutations: MutationTree<DocumentState> = {
     /**
@@ -65,7 +65,7 @@ export const mutations: MutationTree<DocumentState> = {
         if (handled) {
             state.history.push(operation);
             state.nextId = Math.max(state.nextId, operation.id) + 1;
-            OTEventBus.$emit('ot-applied', operation);
+            MainEventBus.$emit('ot-applied', operation);
         } else {
         }
     },

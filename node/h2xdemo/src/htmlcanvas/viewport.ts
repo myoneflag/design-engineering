@@ -2,7 +2,7 @@ import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
 import {Coord} from '@/store/document/types';
 import assert from 'assert';
-import {decomposeMatrix} from '@/Drawings/Utils';
+import {decomposeMatrix} from '@/htmlcanvas/utils';
 
 export const EPS = 1e-5;
 

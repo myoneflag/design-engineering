@@ -1,12 +1,13 @@
-import {ViewPort} from '@/Drawings/2DViewport';
+import {ViewPort} from '@/htmlcanvas/viewport';
 import {Dimensions, Coord, Rectangle, Background} from '@/store/document/types';
-import DrawableObject from '@/Drawings/DrawableObject';
+import DrawableObject from '@/htmlcanvas/components/drawable-object';
 import axios from 'axios';
 import * as TM from 'transformation-matrix';
-import {decomposeMatrix, matrixScale, parseScale} from '@/Drawings/Utils';
-import SizeableObject from '@/Drawings/SizeableObject';
+import {decomposeMatrix, matrixScale, parseScale} from '@/htmlcanvas/utils';
+import SizeableObject from '@/htmlcanvas/components/sizeable-object';
 import {scale} from 'transformation-matrix/scale';
 import {translate} from 'transformation-matrix/translate';
+import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 
 export class BackgroundImage extends SizeableObject {
     image: HTMLImageElement | null = null;
@@ -62,19 +63,21 @@ export class BackgroundImage extends SizeableObject {
     }
 
     get position() {
-        return TM.transform(
-            // TM.scale(parseScale(background.scale)), // no scale because we will base the scale on the image size.
+        const mat = TM.transform(
             TM.translate(this.background.center.x, this.background.center.y),
             TM.rotateDEG(this.background.rotation),//, this.background.center.x, this.background.center.y),
+            TM.scale(this.background.scaleFactor),
         );
+        console.log("Background has matrix: " + JSON.stringify(mat) + " scaleFactor: " + JSON.stringify(this.background));
+        return mat;
     }
 
     get width() {
-        return this.background.paperSize.width / parseScale(this.background.scale);
+        return this.background.paperSize.width / parseScale(this.background.scaleName);
     }
 
     get height() {
-        return this.background.paperSize.height / parseScale(this.background.scale);
+        return this.background.paperSize.height / parseScale(this.background.scaleName);
     }
 
     get center() {
@@ -188,6 +191,20 @@ export class BackgroundImage extends SizeableObject {
         }
     }
 
+    drawPoint(ctx: CanvasRenderingContext2D, point: Coord, label: string) {
+        const scale = matrixScale(ctx.getTransform());
+
+
+        ctx.fillStyle = '#ff0000';
+        ctx.beginPath();
+
+        ctx.arc(point.x, point.y, 12 / scale, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.font = Math.floor(14/scale) + "pt Helvetica";
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText(label, point.x-5/scale, point.y+7/scale);
+    }
 
     // Draw without world space concerns
     drawInternal(ctx: CanvasRenderingContext2D, selected: boolean, active: boolean) {
@@ -202,6 +219,15 @@ export class BackgroundImage extends SizeableObject {
 
         console.log("this boundary: " + JSON.stringify(this.boundary));
         this.objectClipDraw(ctx, alpha, this.boundary.x, this.boundary.y, this.boundary.w, this.boundary.h, selected, active);
+
+        if ((selected && active)) {
+            if (this.background.pointA) {
+                this.drawPoint(ctx, this.background.pointA, 'A');
+            }
+            if (this.background.pointB) {
+                this.drawPoint(ctx, this.background.pointB, 'B');
+            }
+        }
     }
 
     /**
@@ -240,7 +266,7 @@ export class BackgroundImage extends SizeableObject {
         return false;
     }
 
-    onMouseMove(event: MouseEvent, vp: ViewPort): boolean {
+    onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
         if (event.buttons && 1) {
             if (this.grabbedPoint != null && this.grabbedCenterState != null) {
                 let w = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
@@ -252,9 +278,9 @@ export class BackgroundImage extends SizeableObject {
                 if (this.onMove != null) {
                     this.onMove(this);
                 }
-                return true;
+                return {handled: true, cursor: "Move"};
             } else {
-                return false;
+                return UNHANDLED;
             }
         } else {
             if (this.grabbedCenterState != null || this.grabbedPoint != null) {
@@ -263,7 +289,7 @@ export class BackgroundImage extends SizeableObject {
             this.grabbedCenterState = null;
             this.grabbedPoint = null;
             this.hasDragged = false;
-            return false;
+            return UNHANDLED;
         }
     }
 

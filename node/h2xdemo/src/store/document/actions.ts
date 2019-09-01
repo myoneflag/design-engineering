@@ -1,9 +1,9 @@
 import { ActionTree } from 'vuex';
 import axios from 'axios';
-import * as OT from './operationTransforms';
+import * as OT from './operation-transforms';
 import { RootState } from '../types';
 import {Background, DocumentState} from '@/store/document/types';
-import {BackgroundImage} from '@/Drawings/BackgroundImage';
+import {BackgroundImage} from '@/htmlcanvas/components/background-image';
 import {PaperSize} from '@/config';
 
 
@@ -80,14 +80,38 @@ export const actions: ActionTree<DocumentState, RootState> = {
         console.log('Warning: deleteBackground called but no item to delete');
     },
 
-    rotateBackground({commit, state}, {background, degrees}) {
+    updateBackgroundInPlace({commit, state}, {background, update}: { background: Background, update: (background: Background) => object}) {
         const selectId = background.selectId;
         for (let i = 0; i < state.drawing.backgrounds.length; i++) {
             const thisbg = state.drawing.backgrounds[i];
             if (thisbg.selectId === selectId) {
 
                 const op: OT.UpdateBackgroundOperation = {
-                    background: Object.assign({}, background, {rotation: ((background.rotation + degrees) % 360 + 360) % 360}),
+                    background: Object.assign({}, background, update(background)),
+                    id: -1,
+                    index: i,
+                    oldBackground: background,
+                    type: OT.OPERATION_NAMES.UPDATE_BACKGROUND,
+                };
+
+                submitOperation(commit, op);
+                return;
+            }
+        }
+    },
+
+    scaleBackground({commit, state}, {background, factor}) {
+        const selectId = background.selectId;
+        for (let i = 0; i < state.drawing.backgrounds.length; i++) {
+            const thisbg = state.drawing.backgrounds[i];
+            if (thisbg.selectId === selectId) {
+
+                let newBackground: Background = Object.assign({}, background, {
+                    scaleFactor: background.scaleFactor * factor,
+                });
+
+                const op: OT.UpdateBackgroundOperation = {
+                    background: newBackground,
                     id: -1,
                     index: i,
                     oldBackground: background,

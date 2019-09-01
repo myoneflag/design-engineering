@@ -4,6 +4,7 @@ import Vuex, { StoreOptions } from 'vuex';
 import { RootState } from './types';
 import { document } from './document/index';
 import { profile } from './profile';
+import {tools} from '@/store/tools';
 
 Vue.use(Vuex);
 
@@ -14,6 +15,7 @@ const store: StoreOptions<RootState> = {
   modules: {
     document,
     profile,
+    tools,
   },
 };
 

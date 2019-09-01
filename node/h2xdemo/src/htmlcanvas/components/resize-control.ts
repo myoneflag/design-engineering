@@ -1,9 +1,9 @@
-import {ViewPort} from '@/Drawings/2DViewport';
-import {rect} from '@/Drawings/ViewportDrawing';
-import DrawableObject from '@/Drawings/DrawableObject';
-import SizeableObject from '@/Drawings/SizeableObject';
+import {ViewPort} from '@/htmlcanvas/viewport';
+import DrawableObject from '@/htmlcanvas/components/drawable-object';
+import SizeableObject from '@/htmlcanvas/components/sizeable-object';
 import * as TM from 'transformation-matrix';
-import {decomposeMatrix, matrixScale} from '@/Drawings/Utils';
+import {decomposeMatrix, matrixScale} from '@/htmlcanvas/utils';
+import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 
 enum Sides {
     Left,
@@ -94,7 +94,7 @@ export class ResizeControl extends DrawableObject {
         return this.selectedHandle != null;
     }
 
-    onMouseMove(event: MouseEvent, vp: ViewPort): boolean {
+    onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
         console.log("Resize: move");
         // do mouse changes
         if (event.buttons & 1) {
@@ -120,9 +120,9 @@ export class ResizeControl extends DrawableObject {
                 if (this.onChange != null) {
                     this.onChange(this);
                 }
-                return true;
+                return {handled: true, cursor: 'move'};
             }
-            return false;
+            return UNHANDLED;
         } else {
             // No buttons are pressed.
             if (this.selectedHandle) {
@@ -133,13 +133,10 @@ export class ResizeControl extends DrawableObject {
                 }
             }
             const at: Handle | null = this.getHandleAtScreenCoord(event.offsetX, event.offsetY, vp);
-            const target = (event.target as HTMLElement);
             if (at == null) {
-                target.style.cursor = 'auto';
-                return false;
+                return UNHANDLED;
             } else {
-                target.style.cursor = at[3];
-                return true;
+                return {handled: true, cursor: at[3]};
             }
         }
     }

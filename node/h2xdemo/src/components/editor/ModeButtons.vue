@@ -22,7 +22,7 @@
 <script lang="ts">
     import Vue from 'vue';
     import Component from "vue-class-component";
-    import {DrawingMode} from "@/components/canvas/types";
+    import {DrawingMode} from "@/htmlcanvas/types";
 
     @Component({
         props: {

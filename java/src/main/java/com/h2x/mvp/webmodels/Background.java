@@ -10,7 +10,8 @@ import org.immutables.value.Value;
 public interface Background {
     Coord center();
     Rectangle crop();
-    String scale();
+    String scaleName();
+    double scaleFactor();
     String uri();
     PaperSize paperSize();
     double rotation();

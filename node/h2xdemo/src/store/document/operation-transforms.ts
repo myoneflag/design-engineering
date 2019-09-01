@@ -33,4 +33,3 @@ export const OPERATION_NAMES = {
     DELETE_BACKGROUND: 'DELETE_BACKGROUND',
 };
 
-export const OTEventBus = new Vue();

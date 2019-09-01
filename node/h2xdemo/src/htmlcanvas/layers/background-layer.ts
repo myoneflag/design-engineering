@@ -1,10 +1,13 @@
-import Layer from '@/components/canvas/layer';
+import Layer from '@/htmlcanvas/layers/layer';
 import {Background, DocumentState} from '@/store/document/types';
-import {ViewPort} from '@/Drawings/2DViewport';
-import {BackgroundImage} from '@/Drawings/BackgroundImage';
+import {ViewPort} from '@/htmlcanvas/viewport';
+import {BackgroundImage} from '@/htmlcanvas/components/background-image';
 import axios from 'axios';
-import {parseScale} from '@/Drawings/Utils';
-import {ResizeControl} from '@/Drawings/ResizeControl';
+import {parseScale} from '@/htmlcanvas/utils';
+import {ResizeControl} from '@/htmlcanvas/components/resize-control';
+import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
+import {ToolConfig} from '@/store/tools/types';
+import DrawableObject from '@/htmlcanvas/components/drawable-object';
 
 export default class BackgroundLayer implements Layer {
     sidToObject: { [uuid: string]: BackgroundImage } = {};
@@ -13,31 +16,32 @@ export default class BackgroundLayer implements Layer {
     resizeBox: ResizeControl | null = null;
 
     onChange: () => any;
-    onSelect: (selectId: Background | null) => any;
+    onSelect: (selectId: Background | null, drawable: DrawableObject | null) => any;
     onCommit: (selectId: Background) => any;
 
-    constructor(onChange: () => any, onSelect: (selectId: Background | null) => any, onCommit: (selectId: Background) => any) {
+    constructor(onChange: () => any, onSelect: (selectId: Background | null, drawable: DrawableObject | null) => any, onCommit: (selectId: Background) => any) {
         this.onChange = onChange;
         this.onSelect = onSelect;
         this.onCommit = onCommit;
     }
 
 
-    draw(ctx: CanvasRenderingContext2D, vp: ViewPort, active: boolean) {
+    draw(ctx: CanvasRenderingContext2D, vp: ViewPort, active: boolean, selectedTool: ToolConfig) {
 
         // draw selected one on top.
         this.sidsInOrder.forEach((selectId) => {
             if (this.sidToObject[selectId]) {
                 if (selectId !== this.selectedId || !active || !this.sidToObject[selectId].hasDragged) {
                     const bgi = this.sidToObject[selectId];
-                    bgi.draw(ctx, vp, this.selectedId === selectId, active);
+                    bgi.draw(ctx, vp, this.selectedId === selectId, active && !selectedTool.focusSelectedObject);
                 }
             }
         });
 
         if (active) {
             this.sidsInOrder.forEach((selectId) => {
-                if (this.sidToObject[selectId] && selectId === this.selectedId && this.sidToObject[selectId].hasDragged) {
+                if (this.sidToObject[selectId] && selectId === this.selectedId
+                    && (this.sidToObject[selectId].hasDragged || selectedTool.focusSelectedObject)) {
                     const bgi = this.sidToObject[selectId];
                     bgi.draw(ctx, vp, this.selectedId === selectId, active);
                 }
@@ -66,7 +70,7 @@ export default class BackgroundLayer implements Layer {
                         const {x, y} = backgroundImage.toWorldCoord(backgroundImage.background.crop);
                         this.selectedId = background.selectId;
                         this.updateSelectionBox();
-                        this.onSelect(backgroundImage.background);
+                        this.onSelect(backgroundImage.background, backgroundImage);
                         return true;
                     },
                     (backgroundImage: BackgroundImage) => {
@@ -76,9 +80,10 @@ export default class BackgroundLayer implements Layer {
                 );
                 this.sidsInOrder.push(background.selectId);
             } else {
-                this.sidToObject[background.selectId].background = background;
+                let obj = this.sidToObject[background.selectId];
+                obj.background = background;
                 if (background.selectId === this.selectedId) {
-                    this.onSelect(background);
+                    this.onSelect(background, obj);
                 }
             }
 
@@ -91,7 +96,7 @@ export default class BackgroundLayer implements Layer {
                 this.sidsInOrder.splice(this.sidsInOrder.indexOf(selectId), 1);
                 if (selectId === this.selectedId) {
                     this.selectedId = null;
-                    this.onSelect(null);
+                    this.onSelect(null, null);
                 }
                 toDelete.push(selectId);
             }
@@ -111,6 +116,7 @@ export default class BackgroundLayer implements Layer {
             if (selectId === this.selectedId) {
                 const background = this.sidToObject[selectId];
                 const {x, y} = background.toWorldCoord(background.background.crop);
+                background.height;
                 this.resizeBox = new ResizeControl(
                     this.sidToObject[selectId],
                     (e: ResizeControl) =>  this.onSelectedResize(e),
@@ -128,14 +134,6 @@ export default class BackgroundLayer implements Layer {
     // This is when our guy resizes
     onSelectedResize(target: ResizeControl) {
         if (this.selectedId) {
-            const background = this.sidToObject[this.selectedId];
-            if (background) {/*
-                const {x, y} = background.toObjectCoord(target);
-                background.background.crop.x = x;
-                background.background.crop.y = y;
-                background.background.crop.w = target.w;
-                background.background.crop.h = target.h;*/
-            }
             this.onChange();
         }
     }
@@ -166,10 +164,11 @@ export default class BackgroundLayer implements Layer {
         return false;
     }
 
-    onMouseMove(event: MouseEvent, vp: ViewPort) {
+    onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
         if (this.resizeBox) {
-            if (this.resizeBox.onMouseMove(event, vp)) {
-                return true;
+            const res = this.resizeBox.onMouseMove(event, vp);
+            if (res.handled) {
+                return res;
             }
         }
 
@@ -177,13 +176,14 @@ export default class BackgroundLayer implements Layer {
             const selectId = this.sidsInOrder[i];
             if (this.sidToObject[selectId]) {
                 const background = this.sidToObject[selectId];
-                if (background.onMouseMove(event, vp)) {
-                    return true;
+                const res = background.onMouseMove(event, vp);
+                if (res.handled) {
+                    return res;
                 }
             }
         }
 
-        return false;
+        return UNHANDLED;
     }
 
 
@@ -207,7 +207,7 @@ export default class BackgroundLayer implements Layer {
 
         this.selectedId = null;
         this.resizeBox = null;
-        this.onSelect(null);
+        this.onSelect(null, null);
         this.onChange();
 
         return false;

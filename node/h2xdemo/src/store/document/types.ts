@@ -1,4 +1,4 @@
-import * as Operations from './operationTransforms';
+import * as Operations from './operation-transforms';
 import Doc = Mocha.reporters.Doc;
 import {PaperSize} from '@/config';
 
@@ -25,11 +25,16 @@ export interface Selectable {
 
 export interface Background extends Selectable {
     center: Coord;
-    scale: string;
+    scaleName: string;
+    scaleFactor: number;
     uri: string;
     crop: Rectangle;
     paperSize: PaperSize;
     rotation: number;
+
+    // For scaling:
+    pointA: Coord | null;
+    pointB: Coord | null;
 
     // Backgrounds are part of PDFs and so may have many pages.
     page: number;
