@@ -1,0 +1,17 @@
+import { expect } from 'chai';
+import {mount, shallowMount} from '@vue/test-utils';
+import * as _ from 'lodash';
+import {initialValue} from '@/store/document/types';
+import store from '@/store/store';
+import WaterSystems from '@/views/settings/WaterSystems.vue';
+
+describe('WaterSystems.vue', () => {
+
+    it('can edit all general properties', () => {
+        const wrapper = shallowMount(WaterSystems, { store });
+        const fieldIds: string[] = (wrapper.vm as any).fields.map((v: [string, string]) => v[0]);
+        const expectedFields = _.keys(initialValue.drawing.waterSystems[0]);
+
+        expect(fieldIds.sort()).eql(expectedFields.sort());
+    });
+});

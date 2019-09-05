@@ -4,8 +4,9 @@ import { actions } from './actions';
 import { mutations } from './mutations';
 import { DocumentState, initialValue } from './types';
 import { RootState } from '../types';
+import * as _ from 'lodash';
 
-export const state: DocumentState = initialValue;
+export const state: DocumentState = _.cloneDeep(initialValue);
 
 const namespaced: boolean = true;
 

@@ -61,11 +61,8 @@ export const actions: ActionTree<DocumentState, RootState> = {
 
     // Call this action to commit the current operation transforms. TODO: make that atomic.
     commit({commit, state}) {
-        console.log("Committed: " + JSON.stringify(state.committedDrawing));
-        console.log("Current:   " + JSON.stringify(state.drawing));
         const diff = diffState(state.committedDrawing, state.drawing);
-        console.log("Commit diffed operations " + JSON.stringify(diff));
-        diff.forEach((v) => applyOtOnState(state.committedDrawing, v));
+        diff.forEach((v: OT.OperationTransform) => applyOtOnState(state.committedDrawing, v));
         state.optimisticHistory.push(...diff);
         const wait = (index: number) => {
             if (index === diff.length) { return; }
@@ -74,5 +71,9 @@ export const actions: ActionTree<DocumentState, RootState> = {
             );
         };
         wait(0);
+    },
+
+    reset({commit, state}) {
+        commit('reset');
     },
 };

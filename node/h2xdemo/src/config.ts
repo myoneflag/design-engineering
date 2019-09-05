@@ -56,3 +56,31 @@ export const SENSIBLE_SCALES = [
     [1, 25],
     [1, 10],
 ];
+
+// These are some temporary configs while we don't have a database yet.
+export const PSD_METHODS = [
+
+    'DIN 1988-300 Residential',
+    'Hospital',
+    'Hotel',
+    'School',
+    'Office',
+    'Assisted Living',
+    'Nursing Home',
+    'AS3500 LU, Dwellings',
+    'ASPE',
+    'Barries Book LU, Dwellings',
+
+];
+
+export const RING_MAIN_CALCULATION_METHODS = [
+    'Flow rate assigned to each fixture as %',
+    'Flow rate assigned to fixtures evenly, ',
+    'Flow rate assigned to most disadvantaged fixtures',
+    '99th percentile computer simulated PSD',
+];
+
+export const PIPE_SIZING_METHODS = [
+    'Keep maximum velocity within bounds',
+    'Keep maximum pressure drop within bounds',
+];
