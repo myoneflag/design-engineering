@@ -31,8 +31,8 @@
 <script lang="ts">
     import Vue from "vue";
     import Component from "vue-class-component";
-    import * as OT from "@/store/document/operation-transforms";
-    import {OperationTransform} from "@/store/document/operation-transforms";
+    import * as OT from "@/store/document/operation-transforms/operation-transforms";
+    import {OperationTransform} from "@/store/document/operation-transforms/operation-transforms";
     import {ViewPort} from "@/htmlcanvas/viewport";
     import {Background, Coord, DocumentState} from "@/store/document/types";
     import {drawPaperScale} from "@/htmlcanvas/scale";
@@ -78,18 +78,22 @@
             this.backgroundLayer = new BackgroundLayer(
                 () => {
                     //this.backgroundLayer.update(this.$props.document);
-                    this.draw();
+                    this.scheduleDraw();
                 },
                 (object, drawable) => {
                     this.selectedObjectBackground = object;
                     this.selectedDrawable = drawable;
-                    this.draw();
+                    this.scheduleDraw();
                 },
                 (object) => { // onCommit
                     this.commitBackgroundChange(object);
+                    console.log("committing");
+                    this.$store.dispatch('document/commit');
                 }
             );
             this.processDocument();
+
+            setInterval(this.drawLoop, 20);
         }
 
         viewPort: ViewPort = new ViewPort(TM.transform(TM.translate(0, 0), TM.scale(100)), 10000, 10000);
@@ -123,12 +127,12 @@
         onToolChange(tool: ToolConfig) {
             console.log("Tool change: " + tool + " " + this);
             //(this.$refs["drawingCanvas"] as any).cursor = tool.defaultCursor;
-            this.draw();
+            this.scheduleDraw();
         }
 
         setToolHandler(toolHandler: ToolHandler) {
             this.toolHandler = toolHandler;
-            this.draw();
+            this.scheduleDraw();
         }
 
         selectedObjectBackground: Background | null = null;
@@ -153,18 +157,16 @@
         }
 
         commitBackgroundChange(object: Background) {
-            console.log("Committing " + object.selectId);
             // Scan existing backgrounds for that id.
             const doc: DocumentState = this.$props.document;
             const backgrounds = doc.drawing.backgrounds;
             for (let i = 0; i < backgrounds.length; i++) {
-                if (backgrounds[i].selectId === object.selectId) {
+                if (backgrounds[i].uid === object.uid) {
                     // Send OT
                     let newBg: Background = Object.assign({}, backgrounds[i]);
                     newBg.center = object.center;
                     newBg.crop = object.crop;
 
-                    console.log("Dispatching");
                     this.$store.dispatch('document/updateBackground', {
                         index: i,
                         background: newBg,
@@ -175,7 +177,7 @@
 
         processDocument() {
             const document: DocumentState = this.$props.document;
-            console.log("Document updated, processing. Document is: " + JSON.stringify(document));
+            console.log("Document updated, processing. Drawing is: " + JSON.stringify(document.drawing));
 
             for (let background of document.drawing.backgrounds) {
                 console.log(background.uri);
@@ -187,19 +189,40 @@
             // do any indexes
 
             // finally, draw
-            this.draw();
+            this.scheduleDraw();
         }
 
+        shouldDraw: boolean = true;
+        lastDraw: number = 0;
+
+        scheduleDraw() {
+            if (Date.now() - this.lastDraw > 25 && !this.shouldDraw) {
+                this.draw();
+            } else { // throttle rendering.
+                this.shouldDraw = true;
+            }
+        }
+
+        drawLoop() {
+            if (this.shouldDraw) {
+                this.shouldDraw = false;
+                try {
+                    this.draw();
+                } catch {
+                    console.log("Caught error in drawing loop");
+                }
+            }
+        }
 
         // For this to work, there is to be no local state at all. All state is to be stored in the vue store,
         // which is serialised by snapshots and operation transforms.
         draw() {
+            this.lastDraw = Date.now();
             const state: DocumentState = this.$store.state.document;
             if (this.ctx != null && (this.$refs["canvasFrame"] as any) != null) {
-                console.log("Rendering. Viewport: " + JSON.stringify(this.viewPort));
                 let ctx: CanvasRenderingContext2D = this.ctx;
 
-                let width = (this.$refs["canvasFrame"] as any).clientWidth-1;
+                let width = (this.$refs["canvasFrame"] as any).clientWidth - 1;
                 let height = (this.$refs["canvasFrame"] as any).clientHeight;
                 ctx.canvas.width = width;
                 ctx.canvas.height = height;
@@ -222,8 +245,9 @@
                         break;
                 }
 
-                drawPaperScale(ctx, 1/decomposeMatrix(this.viewPort.position).sx);
+                drawPaperScale(ctx, 1 / decomposeMatrix(this.viewPort.position).sx);
             }
+            console.log("Draw took " + (Date.now() - this.lastDraw));
         }
 
         onDrop(value: any, event: DragEvent) {
@@ -255,12 +279,13 @@
                             rotation: 0,
                             scaleFactor: 1,
                             scaleName: scaleName,
-                            selectId: uuid(),
+                            uid: uuid(),
                             totalPages: totalPages,
                             uri: uri,
                         };
 
                         this.$store.dispatch("document/addBackground", {background});
+                        this.$store.dispatch("document/commit");
                     });
                 }
             } else {
@@ -291,9 +316,12 @@
         }
 
         onMouseMove(event: MouseEvent): boolean {
+            if (event.movementX === 0 && event.movementY === 0) {
+                console.log("Warning: Phantom mousemove event");
+                return true; // Phantom movement - damn it chrome
+            }
             const res = this.onMouseMoveInternal(event);
             if (res.cursor) {
-                console.log("Events gave cursor of " + res.cursor);
                 this.currentCursor = res.cursor;
             } else {
                 this.currentCursor = this.currentTool.defaultCursor;
@@ -318,11 +346,14 @@
             if (event.buttons && 1) {
                 if (this.grabbedPoint != null) {
                     let s = this.viewPort.toScreenCoord(this.grabbedPoint);
+                    if (!this.hasDragged) {
+                        console.log("...Dragging for the first time");
+                        console.log("Moved: " + event.movementX + " " + event.movementY);
+                    }
                     this.hasDragged = true;
                     let {sx, sy} = decomposeMatrix(this.viewPort.position);
-                    console.log("sx sy: " + sx+ " " + sy);
                     this.viewPort.panAbs(s.x - event.offsetX, s.y - event.offsetY);
-                    this.draw();
+                    this.scheduleDraw();
                     return {handled: true, cursor: 'Move'};
                 } else {
                     return UNHANDLED;
@@ -335,25 +366,30 @@
         }
 
         onMouseUp(event: MouseEvent): boolean {
+            console.log("onMouseUp");
 
             if (this.grabbedPoint) {
                 this.grabbedPoint = null;
                 const wasDragged = this.hasDragged;
                 this.hasDragged = false;
                 if (wasDragged) {
-                    console.log("Drawing canvas swallowed the up event");
+                    console.log("...Was dragged");
                     return true;
                 }
             }
 
             if (this.toolHandler) {
                 if (this.toolHandler.onMouseUp(event, this.viewPort)) {
+                    console.log("...Handled by tool");
                     return true;
                 }
             } else {
                 // Pass the event down to layers below
                 if (this.mode === DrawingMode.FloorPlan) {
-                    if (this.backgroundLayer.onMouseUp(event, this.viewPort)) return true;
+                    if (this.backgroundLayer.onMouseUp(event, this.viewPort)) {
+                        console.log("...Handled by background layer");
+                        return true;
+                    }
                 }
             }
             return false;
@@ -366,7 +402,7 @@
                 delta = 1 / (1 - event.deltaY / 500);
             }
             this.viewPort.rescale(delta, event.offsetX, event.offsetY);
-            this.draw();
+            this.scheduleDraw();
         }
     }
 

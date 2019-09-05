@@ -69,19 +69,10 @@ export class ViewPort {
      *
      */
     prepareContext(ctx: CanvasRenderingContext2D, ...transform: Matrix[]) {
-        console.log(JSON.stringify(this.position) + " " + JSON.stringify(transform));
-
-
-        transform.forEach((t) => {
-            console.log("applying transform: " + JSON.stringify(t));
-        });
-
         const m = (transform.length > 0 ?
                         TM.transform(TM.translate(this.width / 2, this.height / 2), TM.inverse(this.position), ...transform)
                         : TM.transform(TM.translate(this.width / 2, this.height / 2), TM.inverse(this.position))
         );
-
-        console.log("Preparing context to matrix with transforms: " + JSON.stringify(decomposeMatrix(m)));
         ctx.setTransform(m);
     }
 

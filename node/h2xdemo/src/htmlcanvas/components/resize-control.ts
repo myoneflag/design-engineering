@@ -95,12 +95,10 @@ export class ResizeControl extends DrawableObject {
     }
 
     onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
-        console.log("Resize: move");
         // do mouse changes
         if (event.buttons & 1) {
             if (this.selectedHandle != null) {
                 const w = this.toObjectCoord(vp.toWorldCoord({x: event.offsetX, y: event.offsetY}));
-                console.log(this.selectedHandle[2]);
                 // start resizing shit
                 if (this.selectedHandle[2].indexOf(Sides.Left) != -1) {
                     this.w += this.x - w.x;
@@ -147,14 +145,12 @@ export class ResizeControl extends DrawableObject {
             if (this.onCommit) {
                 this.onCommit(this);
             }
-            console.log("Resize control took the up event");
             return true;
         }
         return false;
     }
 
     drawInternal(ctx: CanvasRenderingContext2D) {
-        console.log("Drawing resize. transform: " + JSON.stringify(ctx.getTransform()) + " x and y: " + this.x + " " + this.y + " w and h " + this.w + " " + this.h);
         const prevDash = ctx.getLineDash();
 
         const scale = matrixScale(ctx.getTransform());

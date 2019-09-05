@@ -55,9 +55,9 @@ export default class BackgroundLayer implements Layer {
         let existingSids: string[] = [];
 
         for (const background of doc.drawing.backgrounds) {
-            if ( this.sidToObject[background.selectId] === undefined) {
+            if ( this.sidToObject[background.uid] === undefined) {
                 console.log("Background layer updating dom for thing with center " + background.center.x + " " + background.center.y);
-                this.sidToObject[background.selectId] = new BackgroundImage(
+                this.sidToObject[background.uid] = new BackgroundImage(
                     background,
                     (image: BackgroundImage) => {
                         this.onChange();
@@ -68,7 +68,7 @@ export default class BackgroundLayer implements Layer {
                     },
                     (backgroundImage: BackgroundImage) => {
                         const {x, y} = backgroundImage.toWorldCoord(backgroundImage.background.crop);
-                        this.selectedId = background.selectId;
+                        this.selectedId = background.uid;
                         this.updateSelectionBox();
                         this.onSelect(backgroundImage.background, backgroundImage);
                         return true;
@@ -78,9 +78,9 @@ export default class BackgroundLayer implements Layer {
                         this.onCommit(backgroundImage.background);
                     },
                 );
-                this.sidsInOrder.push(background.selectId);
+                this.sidsInOrder.push(background.uid);
             } else {
-                let obj = this.sidToObject[background.selectId];
+                let obj = this.sidToObject[background.uid];
                 const oldUri = obj.background.uri;
                 obj.background = background;
                 if (obj.background.uri != oldUri) {
@@ -88,12 +88,12 @@ export default class BackgroundLayer implements Layer {
                         this.onChange();
                     });
                 }
-                if (background.selectId === this.selectedId) {
+                if (background.uid === this.selectedId) {
                     this.onSelect(background, obj);
                 }
             }
 
-            existingSids.push(background.selectId);
+            existingSids.push(background.uid);
         }
 
         let toDelete: string[] = [];
@@ -194,7 +194,6 @@ export default class BackgroundLayer implements Layer {
 
 
     onMouseUp(event: MouseEvent, vp: ViewPort) {
-        console.log("Background layer received an up event");
         if (this.resizeBox) {
             if (this.resizeBox.onMouseUp(event, vp)) {
                 return true;

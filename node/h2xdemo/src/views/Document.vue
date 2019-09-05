@@ -30,9 +30,7 @@
             console.log("Connecting to websocket");
             let connection = Stomp.over(socket);
             connection.connect({}, () => {
-
                     console.log("Connected to websocket");
-
                     connection.subscribe('/user/document', (payload: Message) => {
                         console.log("Got message from websocket: " + JSON.stringify(payload));
                         this.$store.dispatch('document/applyRemoteOperation', JSON.parse(payload.body));
