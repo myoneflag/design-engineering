@@ -12,7 +12,7 @@
     <b-row>
       <b-col>
       <b-card
-              :title="documentState.drawing.title"
+              :title="documentState.drawing.generalInfo.title"
               img-src="https://conversionxl.com/wp-content/uploads/2013/03/blueprint-architecture.png"
               img-alt="Image"
               img-top
