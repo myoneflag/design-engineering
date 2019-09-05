@@ -94,12 +94,10 @@
 
         internalRangeValue: number = 8;
         get rangeValue() {
-            console.log("Getting range value, " + this.internalRangeValue);
             return this.internalRangeValue;
         }
 
         set rangeValue(value: number) {
-            console.log("Setting range value to " + value);
             let [l, r] = SENSIBLE_SCALES[value];
             this.scaleText = l + ':' + r;
             this.internalRangeValue = value;

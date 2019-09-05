@@ -26,7 +26,6 @@ export class BackgroundImage extends SizeableObject {
                 onCommit: (image: BackgroundImage) => any,
     ) {
         super(null);
-        console.log("Constructed background with " + background);
         this.background = background;
 
         this.onMove = onMove;
@@ -86,7 +85,6 @@ export class BackgroundImage extends SizeableObject {
             TM.rotateDEG(this.background.rotation),//, this.background.center.x, this.background.center.y),
             TM.scale(this.background.scaleFactor),
         );
-        console.log("Background has matrix: " + JSON.stringify(mat) + " scaleFactor: " + JSON.stringify(this.background));
         return mat;
     }
 
@@ -122,8 +120,6 @@ export class BackgroundImage extends SizeableObject {
         if (this.image) {
 
             const sx = matrixScale(ctx.getTransform());
-
-            console.log("this scale: " + this.imgScale.x + " " + this.imgScale.y);
             let oldAlpha = ctx.globalAlpha;
             ctx.globalAlpha = alpha;
             let {x, y} = {x: (l - this.image.naturalWidth / 2) * this.imgScale.x,
@@ -188,8 +184,6 @@ export class BackgroundImage extends SizeableObject {
             let l = ivp.toScreenCoord({x, y});
             let t = ivp.toScreenCoord({x, y});
 
-            console.log("x and y: " + JSON.stringify(l) + " " + JSON.stringify(t));
-
             this.naturalClipDraw(ctx, alpha, l.x, t.y,
                 w / this.imgScale.x,
                 h / this.imgScale.y,
@@ -246,7 +240,6 @@ export class BackgroundImage extends SizeableObject {
             alpha = 0.6;
         }
 
-        console.log("this boundary: " + JSON.stringify(this.boundary));
         this.objectClipDraw(ctx, alpha, this.boundary.x, this.boundary.y, this.boundary.w, this.boundary.h, selected, active);
 
         if ((selected && active)) {
@@ -265,7 +258,7 @@ export class BackgroundImage extends SizeableObject {
 
 
     inBounds(ox: number, oy: number): boolean {
-        //let clipP = this.toWorldCoord(this.background.crop);
+        // let clipP = this.toWorldCoord(this.background.crop);
 
         if (ox < this.background.crop.x || oy < this.background.crop.y) {
             return false;
@@ -307,7 +300,7 @@ export class BackgroundImage extends SizeableObject {
                     if (event.shiftKey) this.shiftKey = true; // Give the user the change to click then shift then drag.
                 }
                 this.hasDragged = true;
-                
+
                 let w = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
                 if (this.shiftKey) {
                     // Move the offset, not the object

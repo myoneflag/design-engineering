@@ -142,6 +142,7 @@
 
         onDeleteClick() {
             this.$store.dispatch('document/deleteBackground', this.$props.selectedObject);
+            this.$store.dispatch('document/commit');
         }
 
         mounted() {
@@ -198,6 +199,7 @@
                         uri: data.uri,
                         })
                     });
+                    this.$store.dispatch('document/commit');
                 });
             }
         }
@@ -216,6 +218,7 @@
 
                 console.log("Scaling background by " + factor);
                 this.$store.dispatch('document/scaleBackground', {background, factor});
+                this.$store.dispatch('document/commit');
             }
 
         }
@@ -237,6 +240,7 @@
                 {background: this.$props.selectedObject,
                     update: (background: Background) => ({rotation: ((background.rotation -45) % 360 + 360) % 360 })
                 });
+            this.$store.dispatch('document/commit');
         }
 
         rotateRight() {
@@ -244,6 +248,7 @@
                 {background: this.$props.selectedObject,
                     update: (background: Background) => ({ rotation: ((background.rotation +45) % 360 + 360) % 360 })
                 });
+            this.$store.dispatch('document/commit');
         }
 
         deployPointTool(onPoint: (worldCoord: Coord) => void) {
@@ -252,14 +257,10 @@
             this.$store.dispatch('tools/setCurrentTool', POINT_TOOL).then(() => {
                 MainEventBus.$emit('set-tool-handler', new PointTool(
                     () => {
-                        this.$store.dispatch('tools/setCurrentTool', POINT_TOOL);
+                        this.$store.dispatch('tools/setCurrentTool', DEFAULT_TOOL);
                         MainEventBus.$emit('set-tool-handler', null);
                     },
                     (worldCoord: Coord) => {
-
-                        store.dispatch('tools/setCurrentTool', DEFAULT_TOOL);
-                        store.dispatch('tools/setToolHelper', null);
-
                         onPoint(worldCoord);
                     },
                 ))
@@ -273,6 +274,7 @@
                     {background: this.$props.selectedObject,
                         update: (background: Background) => ({ pointA: d.toObjectCoord(worldCoord)}),
                     });
+                this.$store.dispatch('document/commit');
             });
         }
 
@@ -283,6 +285,7 @@
                     {background: this.$props.selectedObject,
                         update: (background: Background) => ({ pointB: d.toObjectCoord(worldCoord)}),
                     });
+                this.$store.dispatch('document/commit');
             });
         }
     }
