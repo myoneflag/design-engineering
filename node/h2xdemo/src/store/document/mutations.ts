@@ -1,5 +1,5 @@
 import { MutationTree } from 'vuex';
-import {Background, DocumentState} from './types';
+import {Background, DocumentState, initialValue} from './types';
 import * as OT from './operation-transforms/operation-transforms';
 import deepEqual from 'deep-equal';
 import uuidv4 from 'uuid/v4';
@@ -57,9 +57,13 @@ export const mutations: MutationTree<DocumentState> = {
         }
     },
 
+    setTitle(state, title) {
+        state.drawing.generalInfo.title = title;
+        MainEventBus.$emit('ot-applied');
+    },
+
     addBackground(state, {background} ): any {
         state.drawing.backgrounds.push(background);
-        console.log('added background ' + JSON.stringify(background));
         MainEventBus.$emit('ot-applied');
     },
 
@@ -84,6 +88,10 @@ export const mutations: MutationTree<DocumentState> = {
         const index = state.drawing.backgrounds.findIndex((b) => b.uid === background.uid);
         state.drawing.backgrounds[index].scaleFactor *= factor;
         MainEventBus.$emit('ot-applied');
+    },
+
+    reset(state) {
+        Object.assign(state, _.cloneDeep(initialValue));
     },
 };
 

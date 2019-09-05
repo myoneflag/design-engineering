@@ -10,8 +10,6 @@
     import Component from "vue-class-component";
     import DrawingNavBar from "../components/DrawingNavBar.vue";
     import DrawingCanvas from '@/components/editor/DrawingCanvas.vue';
-    import sockjs from 'sockjs-client';
-    import Stomp, {Message} from "stompjs";
     import {State} from "vuex-class";
     import {DocumentState} from '@/store/document/types';
 
@@ -23,21 +21,6 @@
         get document() {
             console.log("Refreshing document");
             return this.$store.getters["document/document"];
-        }
-
-        mounted() {
-            let socket = sockjs('/api/websocket');
-            console.log("Connecting to websocket");
-            let connection = Stomp.over(socket);
-            connection.connect({}, () => {
-                    console.log("Connected to websocket");
-                    connection.subscribe('/user/document', (payload: Message) => {
-                        console.log("Got message from websocket: " + JSON.stringify(payload));
-                        this.$store.dispatch('document/applyRemoteOperation', JSON.parse(payload.body));
-                    })
-                }
-            );
-
         }
     }
 /*

@@ -8,18 +8,25 @@
         <b-navbar-nav style="padding-left: 20px">
 
             <span v-if="titleEditing">
-                <b-input v-model="stagedTitle"
+                <b-input v-model="title"
                               v-autowidth="{maxWidth: '960px', minWidth: '20px', comfortZone: 0}"
-                              v-on:blur="setTitle"
-                              @keyup.enter="setTitle"
+                              v-on:blur="commit"
+                              @keyup.enter="commit"
                               @focus="$event.target.select()"
                          size="md"
                 />
             </span>
 
-            <b-navbar-brand v-else @dblclick="titleEditing = true; stagedTitle = title">{{title}}</b-navbar-brand>
+            <b-navbar-brand
+                    to="/document"
+                    v-else
+                    @dblclick="titleEditing = true"
+                    v-b-tooltip.hover :title="title"
+            >
+                {{shortTitle}}
+            </b-navbar-brand>
 
-            <b-nav-item>
+            <b-nav-item to="/document/settings/general" active-class="active" exact>
                 <span>
                     <v-icon name="cog"></v-icon>
                 </span>
@@ -36,31 +43,39 @@
     import {Vue } from 'vue-property-decorator';
     import { DocumentState } from '@/store/document/types';
     import { State } from 'vuex-class';
-    import {state} from "@/store/document";
-    import {mapGetters} from "vuex";
     import Component from 'vue-class-component';
     import ProfileMenuItem from '@/components/ProfileMenuItem.vue';
     @Component({
-        components: {ProfileMenuItem}
+        components: { ProfileMenuItem },
     })
     export default class DrawingNavBar extends Vue {
         @State('document') documentState!: DocumentState;
 
         titleEditing = false;
-        stagedTitle: string = "";
 
         get username() {
-            return this.$store.getters["profile/username"]
+            return this.$store.getters["profile/username"];
         }
 
         get title() {
             return this.$store.getters["document/title"];
         }
 
+        get shortTitle() {
+            let title = this.title;
+            if (title.length > 50) {
+                title = title.slice(0, 40) + "..." + title.slice(title.length - 7, title.length);
+            }
+            return title;
+        }
 
-        setTitle(event: any) {
-            this.$store.dispatch("document/setTitle", event.target.value);
+        set title(value: string) {
+            this.$store.dispatch("document/setTitle", value);
+        }
+
+        commit() {
             this.titleEditing = false;
+            this.$store.dispatch('document/commit');
         }
     };
 

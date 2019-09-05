@@ -8,6 +8,7 @@ import {ResizeControl} from '@/htmlcanvas/components/resize-control';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import {ToolConfig} from '@/store/tools/types';
 import DrawableObject from '@/htmlcanvas/components/drawable-object';
+import * as _ from 'lodash';
 
 export default class BackgroundLayer implements Layer {
     sidToObject: { [uuid: string]: BackgroundImage } = {};
@@ -58,7 +59,7 @@ export default class BackgroundLayer implements Layer {
             if ( this.sidToObject[background.uid] === undefined) {
                 console.log("Background layer updating dom for thing with center " + background.center.x + " " + background.center.y);
                 this.sidToObject[background.uid] = new BackgroundImage(
-                    background,
+                    _.cloneDeep(background),
                     (image: BackgroundImage) => {
                         this.onChange();
                     },
@@ -82,7 +83,8 @@ export default class BackgroundLayer implements Layer {
             } else {
                 let obj = this.sidToObject[background.uid];
                 const oldUri = obj.background.uri;
-                obj.background = background;
+                obj.background = _.cloneDeep(background);
+                console.log("new background: " + background.uri + " old background: " + oldUri);
                 if (obj.background.uri != oldUri) {
                     obj.initializeImage(() => {
                         this.onChange();

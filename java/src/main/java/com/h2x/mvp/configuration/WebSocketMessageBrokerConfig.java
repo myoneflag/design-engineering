@@ -107,4 +107,16 @@ public class WebSocketMessageBrokerConfig implements WebSocketMessageBrokerConfi
             e.printStackTrace();
         }
     }
+
+    // Sadly, we must limit websocket threads to only one because of a limitation in Spring. With multiple websockets,
+    // messages can come out of order.
+    @Override
+    public void configureClientOutboundChannel(ChannelRegistration registration) {
+        registration.taskExecutor().corePoolSize(1);
+    }
+
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.taskExecutor().corePoolSize(1);
+    }
 }

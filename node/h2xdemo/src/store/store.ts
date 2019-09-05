@@ -8,7 +8,8 @@ import {tools} from '@/store/tools';
 
 Vue.use(Vuex);
 
-const store: StoreOptions<RootState> = {
+// export for testing
+export const store: StoreOptions<RootState> = {
   state: {
     version: '1.0.0.0',
   },

@@ -4,7 +4,7 @@ import { RootState } from '../types';
 
 export const getters: GetterTree<DocumentState, RootState> = {
     title(state): string {
-        return state.drawing.title;
+        return state.drawing.generalInfo.title;
     },
 
     document(state): DocumentState {

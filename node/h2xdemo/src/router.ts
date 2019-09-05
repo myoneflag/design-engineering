@@ -1,6 +1,5 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import Home from './views/Home.vue';
 import Login from './views/Login.vue';
 import store from './store/store';
 import axios from 'axios';
@@ -10,45 +9,80 @@ import ChangePassword from '@/views/ChangePassword.vue';
 Vue.use(Router);
 
 let router = new Router({
-  mode: 'history',
-  base: process.env.BASE_URL,
-  routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: () => import(/* webpackChunkName: "home" */ './views/Home.vue'),
-      meta: {
-        auth: true,
-      },
-    },
-    {
-      path: '/document',
-      name: 'document',
-      // route level code-splitting
-      // this generates a separate chunk (about.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import(/* webpackChunkName: "about" */ './views/Document.vue'),
-      meta: {
-        auth: true,
-      },
-    },
-    {
-      path: '/login',
-      name: 'login',
-      component: Login,
-    },
-      {
-        path: '/login/complete',
-        name: 'loginComplete',
-        component: LoadProfile,
-      },
+    mode: 'history',
+    base: process.env.BASE_URL,
+    routes: [
+        {
+            path: '/',
+            name: 'home',
+            component: () => import(/* webpackChunkName: "home" */ './views/Home.vue'),
+            meta: {
+                auth: true,
+            },
+        },
 
-      {
-        path: '/changePassword',
-        name: 'changePassword',
-        component: ChangePassword,
-      },
-  ],
+        {
+            path: '/document',
+            name: 'document',
+            // route level code-splitting
+            // this generates a separate chunk (about.[hash].js) for this route
+            // which is lazy-loaded when the route is visited.
+            component: () => import(/* webpackChunkName: "about" */ './views/Document.vue'),
+            meta: {
+                auth: true,
+            },
+        },
+
+        {
+            path: '/document/settings',
+            name: 'settings',
+            children: [
+                {
+                    path: 'general',
+                    name: 'general',
+                    component: () => import(/* webpackChunkName: "general" */ './views/settings/General.vue'),
+                },
+                {
+                    path: 'water-systems',
+                    name: 'water-systems',
+                    component: () => import(/* webpackChunkName: "general" */ './views/settings/WaterSystems.vue'),
+                },
+                {
+                    path: 'calculations',
+                    name: 'calculations',
+                    component: () => import(/* webpackChunkName: "general" */ './views/settings/Calculations.vue'),
+                },
+                {
+                    path: 'document',
+                    name: 'document',
+                    component: () => import(/* webpackChunkName: "general" */ './views/settings/Document.vue'),
+                },
+            ],
+
+            component: () => import(/* webpackChunkName: "settings" */ './views/settings/ProjectSettings.vue'),
+            meta: {
+                auth: true,
+            },
+        },
+
+        {
+            path: '/login',
+            name: 'login',
+            component: Login,
+        },
+
+        {
+            path: '/login/complete',
+            name: 'loginComplete',
+            component: LoadProfile,
+        },
+
+        {
+            path: '/changePassword',
+            name: 'changePassword',
+            component: ChangePassword,
+        },
+    ],
 });
 
 router.beforeEach((to, from, next) => {
