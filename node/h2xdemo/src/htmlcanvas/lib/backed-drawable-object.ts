@@ -10,12 +10,9 @@ export default abstract class BackedDrawableObject<T extends WithID> extends Dra
         this.refreshObjectInternal(context, obj);
     }
 
-    setObject(obj: T) {
+    refreshObject(context: DocumentState, parent: DrawableObject | null, obj: T) {
         this.stateObject = obj;
-    }
-
-    refreshObject(context: DocumentState, obj: T) {
-        this.stateObject = obj;
+        this.parent = parent;
         this.refreshObjectInternal(context, obj);
     }
 

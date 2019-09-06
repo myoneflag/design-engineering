@@ -1,3 +1,7 @@
+import {DrawingMode} from "@/htmlcanvas/types";
+import {DrawingMode} from "@/htmlcanvas/types";
+import {DrawingMode} from "@/htmlcanvas/types";
+import {DrawingMode} from "@/htmlcanvas/types";
 <template>
     <div ref="canvasFrame" class="fullFrame">
         <drop
@@ -31,7 +35,6 @@
 <script lang="ts">
     import Vue from "vue";
     import Component from "vue-class-component";
-    import * as OT from "@/store/document/operation-transforms/operation-transforms";
     import {OperationTransform} from "@/store/document/operation-transforms/operation-transforms";
     import {ViewPort} from "@/htmlcanvas/viewport";
     import {Background, Coord, DocumentState} from "@/store/document/types";
@@ -39,19 +42,20 @@
     import ModeButtons from "@/components/editor/ModeButtons.vue";
     import PropertiesWindow from "@/components/editor/PropertiesWindow.vue";
     import {DrawingMode, MouseMoveResult, UNHANDLED} from "@/htmlcanvas/types";
-    import axios from "axios";
     import BackgroundLayer from "@/htmlcanvas/layers/background-layer";
-    import * as TM from 'transformation-matrix';
-    import doc = Mocha.reporters.doc;
+    import * as TM from "transformation-matrix";
     import {decomposeMatrix} from "@/htmlcanvas/utils";
-    import Toolbar from '@/components/editor/Toolbar.vue';
-    import Overlay from '@/components/editor/Overlay.vue';
+    import Toolbar from "@/components/editor/Toolbar.vue";
+    import Overlay from "@/components/editor/Overlay.vue";
     import {MainEventBus} from "@/store/main-event-bus";
-    import {ToolConfig} from '@/store/tools/types';
+    import {ToolConfig} from "@/store/tools/types";
     import {ToolHandler} from "@/htmlcanvas/tools/tool";
     import DrawableObject from "@/htmlcanvas/lib/drawable-object";
     import uuid from "uuid";
     import {renderPdf} from "@/api/pdf";
+    import HydraulicsLayer from "@/htmlcanvas/layers/hydraulics-layer";
+    import Layer from "@/htmlcanvas/layers/layer";
+    import doc = Mocha.reporters.doc;
 
     @Component({
         components: {Overlay, Toolbar, PropertiesWindow, ModeButtons},
@@ -91,6 +95,9 @@
                     this.$store.dispatch('document/commit');
                 }
             );
+            this.drawingLayer = new HydraulicsLayer();
+
+            this.allLayers.push(this.backgroundLayer, this.drawingLayer);
             this.processDocument();
 
             setInterval(this.drawLoop, 20);
@@ -102,6 +109,17 @@
 
         // The layers
         backgroundLayer!: BackgroundLayer;
+        drawingLayer!: HydraulicsLayer;
+        allLayers: Layer[] = [];
+
+        get activeLayer(): Layer | null {
+            if (this.mode === DrawingMode.FloorPlan) {
+                return this.backgroundLayer;
+            } else if (this.mode === DrawingMode.Hydraulics) {
+                return this.drawingLayer;
+            }
+            return null;
+        }
 
         toolHandler: ToolHandler | null = null;
 
@@ -182,12 +200,7 @@
             for (let background of document.drawing.backgrounds) {
                 console.log(background.uri);
             }
-            this.backgroundLayer.update(document);
-
-            // hook all the UI
-
-            // do any indexes
-
+            this.allLayers.forEach((l) => l.update(document));
             // finally, draw
             this.scheduleDraw();
         }
@@ -231,18 +244,13 @@
                 this.viewPort.height = height;
 
                 this.backgroundLayer.draw(ctx, this.viewPort, this.mode == DrawingMode.FloorPlan, this.currentTool);
+                this.drawingLayer.draw(ctx, this.viewPort, this.mode == DrawingMode.Hydraulics);
 
                 // Draw hydraulics layer =>
 
                 // Draw selection layers
-                switch (this.mode) {
-                    case DrawingMode.FloorPlan:
-                        this.backgroundLayer.drawSelectionLayer(ctx, this.viewPort);
-                        break;
-                    case DrawingMode.Hydraulics:
-                        break;
-                    default:
-                        break;
+                if (this.activeLayer) {
+                    this.activeLayer.drawSelectionLayer(ctx, this.viewPort);
                 }
 
                 drawPaperScale(ctx, 1 / decomposeMatrix(this.viewPort.position).sx);
@@ -304,8 +312,9 @@
             } else {
 
                 // Pass the event down to layers below
-                if (this.mode === DrawingMode.FloorPlan) {
-                    if (this.backgroundLayer.onMouseDown(event, this.viewPort)) return true;
+                if (this.activeLayer) {
+
+                    if (this.activeLayer.onMouseDown(event, this.viewPort)) return true;
                 }
             }
 
@@ -337,8 +346,8 @@
                 }
             } else {
                 // Pass the event down to layers below
-                if (this.mode === DrawingMode.FloorPlan) {
-                    const res = this.backgroundLayer.onMouseMove(event, this.viewPort);
+                if (this.activeLayer) {
+                    const res = this.activeLayer.onMouseMove(event, this.viewPort);
                     if (res.handled) return res;
                 }
             }
@@ -385,9 +394,9 @@
                 }
             } else {
                 // Pass the event down to layers below
-                if (this.mode === DrawingMode.FloorPlan) {
-                    if (this.backgroundLayer.onMouseUp(event, this.viewPort)) {
-                        console.log("...Handled by background layer");
+                if (this.activeLayer) {
+                    if (this.activeLayer.onMouseUp(event, this.viewPort)) {
+                        console.log("...Handled by active layer");
                         return true;
                     }
                 }

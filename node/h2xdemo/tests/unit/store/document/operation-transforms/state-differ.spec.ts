@@ -253,6 +253,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi1,
             flowSystems: [ws1],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
@@ -260,6 +261,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi1,
             flowSystems: [ws1],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next, 0);
@@ -272,6 +274,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi1,
             flowSystems: [ws1],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
@@ -279,6 +282,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi2,
             flowSystems: [ws2],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next, 1);
@@ -291,6 +295,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi1,
             flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
@@ -298,6 +303,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi1,
             flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next, 1);
@@ -310,6 +316,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi1,
             flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
@@ -317,6 +324,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi1,
             flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next, 3);
@@ -330,6 +338,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi1,
             flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
@@ -337,6 +346,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi1,
             flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next, 1);
@@ -349,6 +359,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi1,
             flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
@@ -356,6 +367,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi1,
             flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next, 1);
@@ -368,6 +380,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi1,
             flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
@@ -375,6 +388,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi1,
             flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next, 1);
@@ -387,6 +401,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi1,
             flowSystems: [ws2, ws2, ws1, ws1],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
@@ -394,6 +409,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi1,
             flowSystems: [ws2],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next, 1);
@@ -406,6 +422,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi1,
             flowSystems: [ws2, ws1],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
@@ -413,6 +430,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi1,
             flowSystems: [ws1],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next);
@@ -426,6 +444,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi2,
             flowSystems: [ws1],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
@@ -433,6 +452,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi2,
             flowSystems: [ws2, ws1],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next);
@@ -445,6 +465,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi3,
             flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
@@ -452,6 +473,7 @@ describe('state-differ.ts', () => {
             generalInfo: gi3,
             flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next, 1);

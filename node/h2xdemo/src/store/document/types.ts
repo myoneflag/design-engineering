@@ -35,7 +35,7 @@ export interface WithID {
 }
 
 export interface DrawableEntity extends WithID {
-    parent: DrawableEntity | null;
+    parentUid: string | null;
     type: string;
 }
 
@@ -68,6 +68,7 @@ export interface DrawingState {
     backgrounds: Background[];
     flowSystems: FlowSystemParameters[];
     calculationParams: CalculationParameters;
+    entities: DrawableEntity[];
 }
 
 /**
@@ -152,12 +153,13 @@ export const initialDrawing: DrawingState = {
             uid: 'ebhwujfbguiwehig',
         },
     ],
-    backgrounds: [],
     calculationParams: {
         psdMethod: PSD_METHODS[0],
         ringMainCalculationMethod: RING_MAIN_CALCULATION_METHODS[0],
         pipeSizingMethod: PIPE_SIZING_METHODS[0],
     },
+    backgrounds: [],
+    entities: [],
 };
 
 export const initialValue: DocumentState = {
