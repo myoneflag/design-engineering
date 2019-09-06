@@ -3,11 +3,11 @@
         <b-col>
             <b-button-group>
                 <b-button variant="outline-dark" class="insertBtn background btn-sm"
-                          @click="$emit('click', entityNames.FLOW_SOURCE)"
+                          @click="$emit('insert', {entityName: entityNames.FLOW_SOURCE, system: selectedSystem})"
                           v-b-tooltip.hover title="Flow Source"
                 ><v-icon  name="arrow-up" scale="1.2"/></b-button>
                 <b-button variant="outline-dark" class="insertBtn pipes btn-sm"
-                          @click="$emit('click', entityNames.FLOW_SINK)"
+                          @click="$emit('insert', {entityName: entityNames.FLOW_SINK, system: selectedSystem})"
                           v-b-tooltip.hover title="Flow Sink"
                 ><v-icon  name="arrow-down" scale="1.2"/></b-button>
                 <FlowSystemPicker

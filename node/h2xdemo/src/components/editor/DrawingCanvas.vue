@@ -16,6 +16,7 @@
             <HydraulicsInsertPanel
                 v-if="mode === 1"
                 :flow-systems="document.drawing.flowSystems"
+                @insert="hydraulicsInsert"
             />
 
             <PropertiesWindow
@@ -39,7 +40,7 @@
     import Component from "vue-class-component";
     import {OperationTransform} from "@/store/document/operation-transforms/operation-transforms";
     import {ViewPort} from "@/htmlcanvas/viewport";
-    import {Background, Coord, DocumentState} from "@/store/document/types";
+    import {Background, Coord, DocumentState, FlowSystemParameters} from "@/store/document/types";
     import {drawPaperScale} from "@/htmlcanvas/scale";
     import ModeButtons from "@/components/editor/ModeButtons.vue";
     import PropertiesWindow from "@/components/editor/PropertiesWindow.vue";
@@ -51,7 +52,7 @@
     import Overlay from "@/components/editor/Overlay.vue";
     import {MainEventBus} from "@/store/main-event-bus";
     import {ToolConfig} from "@/store/tools/types";
-    import {ToolHandler} from "@/htmlcanvas/tools/tool";
+    import {DEFAULT_TOOL, POINT_TOOL, ToolHandler} from "@/htmlcanvas/tools/tool";
     import DrawableObject from "@/htmlcanvas/lib/drawable-object";
     import uuid from "uuid";
     import {renderPdf} from "@/api/pdf";
@@ -59,6 +60,10 @@
     import Layer from "@/htmlcanvas/layers/layer";
     import doc = Mocha.reporters.doc;
     import HydraulicsInsertPanel from '@/components/editor/HydraulicsInsertPanel.vue';
+    import PointTool from "@/htmlcanvas/tools/point-tool";
+    import FlowSource from "@/htmlcanvas/objects/flow-source";
+    import FlowSourceEntity from '@/store/document/entities/flow-source';
+    import {ENTITY_NAMES} from "@/store/document/entities";
 
     @Component({
         components: {HydraulicsInsertPanel, Overlay, Toolbar, PropertiesWindow, ModeButtons},
@@ -228,6 +233,35 @@
                     console.log("Caught error in drawing loop");
                 }
             }
+        }
+
+        hydraulicsInsert({entityName, system}: {entityName: string, system: FlowSystemParameters}) {
+            this.$store.dispatch('tools/setCurrentTool', POINT_TOOL);
+            MainEventBus.$emit('set-tool-handler', new PointTool(
+                () => {
+                    this.$store.dispatch('tools/setCurrentTool', DEFAULT_TOOL);
+                },
+                (wc: Coord) => {
+                    const doc = this.$props.document as DocumentState;
+                    const newEntity: FlowSourceEntity = {
+                        center: wc,
+                        color: null,
+                        heightAboveFloorM: 0,
+                        material: null,
+                        maximumVelocityMS: null,
+                        parentUid: null,
+                        pressureAtSourceKPA: 0,
+                        radiusMM: 0,
+                        spareCapacity: null,
+                        systemUid: system.uid,
+                        temperatureC: null,
+                        type: ENTITY_NAMES.FLOW_SOURCE,
+                        uid: uuid(),
+                    };
+                    doc.drawing.entities.push(newEntity);
+                    this.$store.dispatch('document/commit');
+                }
+            ))
         }
 
         // For this to work, there is to be no local state at all. All state is to be stored in the vue store,

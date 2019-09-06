@@ -25,6 +25,7 @@ export const mutations: MutationTree<DocumentState> = {
                 // All g.
                 state.optimisticHistory.splice(0, 1);
                 console.log('Optimistic operation confirmed. Now there\'s ' + JSON.stringify(state.optimisticHistory));
+                MainEventBus.$emit('ot-applied', operation);
                 return;
             } else {
                 throw new Error('Optimistic operation conflict. TODO: rewind with undo\'s here.');

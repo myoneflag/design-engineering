@@ -13,7 +13,9 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> {
     drawInternal(ctx: CanvasRenderingContext2D, ...args: any[]): void {
         ctx.fillStyle = this.color.hex;
 
-        ctx.arc(this.stateObject.center.x, this.stateObject.center.y, this.stateObject.radiusMM, 0, Math.PI * 2);
+        ctx.beginPath();
+        ctx.arc(this.stateObject.center.x, this.stateObject.center.y, Math.max(this.stateObject.radiusMM, 500), 0, Math.PI * 2);
+        ctx.fill();
     }
 
     get position() : Matrix {
