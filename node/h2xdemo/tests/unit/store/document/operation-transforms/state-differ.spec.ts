@@ -9,7 +9,7 @@ import {
     CalculationParameters,
     DrawingState,
     GeneralInfo,
-    WaterSystemParameters
+    FlowSystemParameters
 } from '@/store/document/types';
 
 function roundTripTest(prev: DrawingState, next: DrawingState, expectedOps: number = -1) {
@@ -221,7 +221,7 @@ const gi3: GeneralInfo = {
     title: '',
 };
 
-const ws1: WaterSystemParameters = {
+const ws1: FlowSystemParameters = {
     color: {hex: '#0000ff'},
     material: 'wat',
     name: 'the',
@@ -231,7 +231,7 @@ const ws1: WaterSystemParameters = {
     uid: 'bweuyifgwe',
 };
 
-const ws2: WaterSystemParameters = {
+const ws2: FlowSystemParameters = {
     color: {hex: '#ff0000'},
     material: 'wat',
     name: 'the',
@@ -251,14 +251,14 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [bg2],
             generalInfo: gi1,
-            waterSystems: [ws1],
+            flowSystems: [ws1],
             calculationParams: cp1,
         };
 
         const next: DrawingState = {
             backgrounds: [bg2],
             generalInfo: gi1,
-            waterSystems: [ws1],
+            flowSystems: [ws1],
             calculationParams: cp1,
         };
 
@@ -270,14 +270,14 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [],
             generalInfo: gi1,
-            waterSystems: [ws1],
+            flowSystems: [ws1],
             calculationParams: cp1,
         };
 
         const next: DrawingState = {
             backgrounds: [],
             generalInfo: gi2,
-            waterSystems: [ws2],
+            flowSystems: [ws2],
             calculationParams: cp1,
         };
 
@@ -289,14 +289,14 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [],
             generalInfo: gi1,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
         };
 
         const next: DrawingState = {
             backgrounds: [bg2],
             generalInfo: gi1,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
         };
 
@@ -308,14 +308,14 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [bg1, bg2, bg3],
             generalInfo: gi1,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
         };
 
         const next: DrawingState = {
             backgrounds: [],
             generalInfo: gi1,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
         };
 
@@ -328,14 +328,14 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [bg2],
             generalInfo: gi1,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
         };
 
         const next: DrawingState = {
             backgrounds: [bg2B],
             generalInfo: gi1,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
         };
 
@@ -347,14 +347,14 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [bg1, bg2, bg3],
             generalInfo: gi1,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
         };
 
         const next: DrawingState = {
             backgrounds: [bg2, bg3, bg1],
             generalInfo: gi1,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
         };
 
@@ -366,14 +366,14 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [bg2, bg3, bg1],
             generalInfo: gi1,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
         };
 
         const next: DrawingState = {
             backgrounds: [bg1, bg2, bg3],
             generalInfo: gi1,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
         };
 
@@ -385,14 +385,14 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [bg2, bg3, bg4],
             generalInfo: gi1,
-            waterSystems: [ws2, ws2, ws1, ws1],
+            flowSystems: [ws2, ws2, ws1, ws1],
             calculationParams: cp1,
         };
 
         const next: DrawingState = {
             backgrounds: [bg2, bg3, bg4],
             generalInfo: gi1,
-            waterSystems: [ws2],
+            flowSystems: [ws2],
             calculationParams: cp1,
         };
 
@@ -404,14 +404,14 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [bg2, bg3, bg4],
             generalInfo: gi1,
-            waterSystems: [ws2, ws1],
+            flowSystems: [ws2, ws1],
             calculationParams: cp1,
         };
 
         const next: DrawingState = {
             backgrounds: [bg1, bg2B],
             generalInfo: gi1,
-            waterSystems: [ws1],
+            flowSystems: [ws1],
             calculationParams: cp1,
         };
 
@@ -424,14 +424,14 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [bg1, bg2B],
             generalInfo: gi2,
-            waterSystems: [ws1],
+            flowSystems: [ws1],
             calculationParams: cp1,
         };
 
         const next: DrawingState = {
             backgrounds: [bg2, bg3, bg4],
             generalInfo: gi2,
-            waterSystems: [ws2, ws1],
+            flowSystems: [ws2, ws1],
             calculationParams: cp1,
         };
 
@@ -443,14 +443,14 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [bg4B],
             generalInfo: gi3,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
         };
 
         const next: DrawingState = {
             backgrounds: [bg4C],
             generalInfo: gi3,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
         };
 

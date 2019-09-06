@@ -4,7 +4,7 @@ import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
 
 export default abstract class DrawableObject {
-    position!: Matrix;
+    abstract position: Matrix;
     parent: DrawableObject | null; // null parents mean root objects
 
     protected constructor(parent: DrawableObject | null) {

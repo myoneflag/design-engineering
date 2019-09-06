@@ -3,7 +3,7 @@ import {mount, shallowMount} from '@vue/test-utils';
 import * as _ from 'lodash';
 import {initialValue} from '@/store/document/types';
 import store from '@/store/store';
-import WaterSystems from '@/views/settings/WaterSystems.vue';
+import FlowSystems from '@/views/settings/FlowSystems.vue';
 import Calculations from '@/views/settings/Calculations.vue';
 
 describe('Calculations.vue', () => {

@@ -36,6 +36,7 @@ export interface WithID {
 
 export interface DrawableEntity extends WithID {
     parent: DrawableEntity | null;
+    type: string;
 }
 
 export interface Background extends WithID {
@@ -65,7 +66,7 @@ export interface Background extends WithID {
 export interface DrawingState {
     generalInfo: GeneralInfo;
     backgrounds: Background[];
-    waterSystems: WaterSystemParameters[];
+    flowSystems: FlowSystemParameters[];
     calculationParams: CalculationParameters;
 }
 
@@ -103,7 +104,7 @@ export interface Color {
     hex: string;
 }
 
-export interface WaterSystemParameters extends WithID{
+export interface FlowSystemParameters extends WithID{
     name: string;
     velocity: number;
     temperature: number;
@@ -130,7 +131,7 @@ export const initialDrawing: DrawingState = {
         client: '',
         description: '',
     },
-    waterSystems: [
+    flowSystems: [
         // TODO: these values should get got from the database.
         {
             name: 'Cold Water',

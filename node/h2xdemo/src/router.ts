@@ -43,9 +43,9 @@ let router = new Router({
                     component: () => import(/* webpackChunkName: "general" */ './views/settings/General.vue'),
                 },
                 {
-                    path: 'water-systems',
-                    name: 'water-systems',
-                    component: () => import(/* webpackChunkName: "general" */ './views/settings/WaterSystems.vue'),
+                    path: 'flow-systems',
+                    name: 'flow-systems',
+                    component: () => import(/* webpackChunkName: "general" */ './views/settings/FlowSystems.vue'),
                 },
                 {
                     path: 'calculations',

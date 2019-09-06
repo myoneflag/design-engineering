@@ -8,7 +8,7 @@
             <b-col>
                 <b-dropdown size="md" id="dropdown-1" :text="selectedSystem.name" variant="outline-light" class="float-left" :style="'border-radius: 5px; background-color: ' + selectedSystem.color.hex">
                     <b-dropdown-item
-                            v-for="(system, index) in waterSystems"
+                            v-for="(system, index) in flowSystems"
                             @click="selectSystem(index)"
                             :key="system.uid"
                             style="padding-right: 25px"
@@ -64,11 +64,11 @@
         }
 
     })
-    export default class WaterSystems extends Vue {
+    export default class FlowSystems extends Vue {
 
         mounted() {
-            console.log(this.document.drawing.waterSystems == this.document.committedDrawing.waterSystems);
-            console.log(this.document.drawing.waterSystems[0] == this.document.committedDrawing.waterSystems[0]);
+            console.log(this.document.drawing.flowSystems == this.document.committedDrawing.flowSystems);
+            console.log(this.document.drawing.flowSystems[0] == this.document.committedDrawing.flowSystems[0]);
         }
 
         get fields(): Array<Array<any>> {
@@ -89,8 +89,8 @@
             return this.$store.getters["document/document"];
         }
 
-        get waterSystems() {
-            return this.document.drawing.waterSystems;
+        get flowSystems() {
+            return this.document.drawing.flowSystems;
         }
 
         selectSystem(value: number) {
@@ -105,24 +105,24 @@
         }
         deleteSystem() {
             if (window.confirm("Are you sure you want to delete " + this.selectedSystem.name + "?")) {
-                this.document.drawing.waterSystems.splice(this.selectedSystemId, 1);
+                this.document.drawing.flowSystems.splice(this.selectedSystemId, 1);
                 this.selectedSystemId = 1;
                 this.$store.dispatch('document/commit');
             }
         }
 
         get selectedSystem() {
-            return this.document.drawing.waterSystems[this.selectedSystemId];
+            return this.document.drawing.flowSystems[this.selectedSystemId];
         }
 
         get committedSelectedSystem() {
-            return this.document.committedDrawing.waterSystems[this.selectedSystemId];
+            return this.document.committedDrawing.flowSystems[this.selectedSystemId];
         }
 
         addNewSystem() {
             if ((this.$refs.fields as any).leave()) {
-                this.document.drawing.waterSystems.push({
-                    name: 'New Water System',
+                this.document.drawing.flowSystems.push({
+                    name: 'New Flow System',
                     velocity: 2.5,
                     temperature: 60,
                     spareCapacity: 20,
@@ -131,7 +131,7 @@
                     uid: uuid(),
                 });
                 this.$store.dispatch('document/commit');
-                this.selectedSystemId = this.document.drawing.waterSystems.length-1;
+                this.selectedSystemId = this.document.drawing.flowSystems.length-1;
             } else {
                 // nup
             }
