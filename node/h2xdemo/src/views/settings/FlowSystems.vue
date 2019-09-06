@@ -6,18 +6,11 @@
                 <h4 class="float-right">Settings for:</h4>
             </b-col>
             <b-col>
-                <b-dropdown size="md" id="dropdown-1" :text="selectedSystem.name" variant="outline-light" class="float-left" :style="'border-radius: 5px; background-color: ' + selectedSystem.color.hex">
-                    <b-dropdown-item
-                            v-for="(system, index) in flowSystems"
-                            @click="selectSystem(index)"
-                            :key="system.uid"
-                            style="padding-right: 25px"
-                    >
-                        <span :style="'float: left; width:20px; height:20px; margin-right:10px; background-color: ' + system.color.hex">
-                        </span>
-                        {{system.name}}
-                    </b-dropdown-item>
-                </b-dropdown>
+                <FlowSystemPicker
+                    :selected-system="selectedSystem"
+                    :flow-systems="flowSystems"
+                    @selectSystem="selectSystem"
+                />
             </b-col>
         </b-row>
         <b-row style="padding-bottom: 20px">
@@ -50,11 +43,12 @@
     import Vue from 'vue'
     import Component from "vue-class-component";
     import {DocumentState} from '@/store/document/types';
-    import FieldBuilder from '@/views/settings/FieldBuilder.vue';
+    import FieldBuilder from '@/components/FieldBuilder.vue';
     import uuid from 'uuid';
+    import FlowSystemPicker from '@/components/editor/FlowSystemPicker.vue';
 
     @Component({
-        components: {FieldBuilder},
+        components: {FlowSystemPicker, FieldBuilder},
         beforeRouteLeave(to, from, next) {
             if ((this.$refs.fields as any).leave()) {
                 next();

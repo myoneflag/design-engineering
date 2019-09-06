@@ -15,7 +15,7 @@
     import Component from "vue-class-component";
     import {DocumentState} from '@/store/document/types';
     import * as _ from 'lodash';
-    import FieldBuilder from '@/views/settings/FieldBuilder.vue';
+    import FieldBuilder from '@/components/FieldBuilder.vue';
 
     @Component({
         components: {FieldBuilder},

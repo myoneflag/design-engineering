@@ -15,7 +15,7 @@
     import Component from "vue-class-component";
     import {DocumentState} from '@/store/document/types';
     import * as _ from 'lodash';
-    import FieldBuilder from '@/views/settings/FieldBuilder.vue';
+    import FieldBuilder from '@/components/FieldBuilder.vue';
     import {PIPE_SIZING_METHODS, PSD_METHODS, RING_MAIN_CALCULATION_METHODS} from "@/config";
 
     @Component({

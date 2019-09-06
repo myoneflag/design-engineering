@@ -1,7 +1,4 @@
-import {DrawingMode} from "@/htmlcanvas/types";
-import {DrawingMode} from "@/htmlcanvas/types";
-import {DrawingMode} from "@/htmlcanvas/types";
-import {DrawingMode} from "@/htmlcanvas/types";
+
 <template>
     <div ref="canvasFrame" class="fullFrame">
         <drop
@@ -14,6 +11,11 @@ import {DrawingMode} from "@/htmlcanvas/types";
             <ModeButtons
                     :mode.sync="mode"
                     v-if="currentTool.modesVisible"
+            />
+
+            <HydraulicsInsertPanel
+                v-if="mode === 1"
+                :flow-systems="document.drawing.flowSystems"
             />
 
             <PropertiesWindow
@@ -56,9 +58,10 @@ import {DrawingMode} from "@/htmlcanvas/types";
     import HydraulicsLayer from "@/htmlcanvas/layers/hydraulics-layer";
     import Layer from "@/htmlcanvas/layers/layer";
     import doc = Mocha.reporters.doc;
+    import HydraulicsInsertPanel from '@/components/editor/HydraulicsInsertPanel.vue';
 
     @Component({
-        components: {Overlay, Toolbar, PropertiesWindow, ModeButtons},
+        components: {HydraulicsInsertPanel, Overlay, Toolbar, PropertiesWindow, ModeButtons},
         props: {
             document: Object,
         }
