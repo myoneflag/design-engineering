@@ -2,6 +2,7 @@ import {Coord, Dimensions, Rectangle} from '@/store/document/types';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
+import {MouseMoveResult} from '@/htmlcanvas/types';
 
 export default abstract class DrawableObject {
     abstract position: Matrix;
@@ -48,4 +49,12 @@ export default abstract class DrawableObject {
 
         this.drawInternal(ctx, ...args);
     }
+
+
+    abstract onMouseDown(event: MouseEvent, vp: ViewPort): boolean;
+
+    abstract onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult;
+
+    abstract onMouseUp(event: MouseEvent, vp: ViewPort): boolean;
+
 }

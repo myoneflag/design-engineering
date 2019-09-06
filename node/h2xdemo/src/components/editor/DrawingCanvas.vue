@@ -1,3 +1,4 @@
+import {DrawingMode} from "@/htmlcanvas/types";
 
 <template>
     <div ref="canvasFrame" class="fullFrame">
@@ -58,13 +59,12 @@
     import {renderPdf} from "@/api/pdf";
     import HydraulicsLayer from "@/htmlcanvas/layers/hydraulics-layer";
     import Layer from "@/htmlcanvas/layers/layer";
-    import doc = Mocha.reporters.doc;
-    import HydraulicsInsertPanel from '@/components/editor/HydraulicsInsertPanel.vue';
+    import HydraulicsInsertPanel from "@/components/editor/HydraulicsInsertPanel.vue";
     import PointTool from "@/htmlcanvas/tools/point-tool";
-    import FlowSource from "@/htmlcanvas/objects/flow-source";
-    import FlowSourceEntity from '@/store/document/entities/flow-source';
+    import FlowSourceEntity from "@/store/document/entities/flow-source";
     import {ENTITY_NAMES} from "@/store/document/entities";
     import BackedDrawableObject from "@/htmlcanvas/lib/backed-drawable-object";
+    import doc = Mocha.reporters.doc;
 
     @Component({
         components: {HydraulicsInsertPanel, Overlay, Toolbar, PropertiesWindow, ModeButtons},
@@ -109,7 +109,8 @@
                     this.scheduleDraw();
                 },
                 (selectedObject: BackedDrawableObject<WithID> | null) => {
-
+                    this.selectedDrawable = selectedObject;
+                    this.scheduleDraw();
                 },
                 (onCommit: BackedDrawableObject<WithID>) => {
 
@@ -176,6 +177,12 @@
         get selectedObject() {
             if (this.mode == DrawingMode.FloorPlan) {
                 return this.selectedObjectBackground;
+            } else if (this.mode === DrawingMode.Hydraulics) {
+                if (this.selectedDrawable) {
+                    return (this.selectedDrawable as BackedDrawableObject<WithID>).stateObject;
+                } else {
+                    return null;
+                }
             }
             return null;
         }

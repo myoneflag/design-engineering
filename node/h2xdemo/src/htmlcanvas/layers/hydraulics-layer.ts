@@ -24,26 +24,18 @@ export default class  HydraulicsLayer implements Layer {
         this.onCommit = onCommit;
     }
 
+    selectedObject: BackedDrawableObject<WithID> | null = null;
+
     draw(ctx: CanvasRenderingContext2D, vp: ViewPort, active: boolean) {
         this.uidsInOrder.forEach((v) => {
-            this.uidToObject.get(v)!.draw(ctx, vp);
+            this.uidToObject.get(v)!.draw(ctx, vp, active);
         });
     }
 
     drawSelectionLayer (ctx: CanvasRenderingContext2D, vp: ViewPort) {
-
-    }
-
-    onMouseDown (event: MouseEvent, vp: ViewPort) {
-        return false;
-    }
-
-    onMouseMove (event: MouseEvent, vp: ViewPort) {
-        return UNHANDLED;
-    }
-
-    onMouseUp (event: MouseEvent, vp: ViewPort) {
-        return false;
+        if (this.selectedObject) {
+            this.uidToObject.get(this.selectedObject.stateObject.uid)!.draw(ctx, vp, true, true);
+        }
     }
 
     update (doc: DocumentState) {
@@ -54,7 +46,7 @@ export default class  HydraulicsLayer implements Layer {
 
         // We have to create child objects from root to child with a tree.
         // Build tree.
-        const adj:  Map<string|null, string[]> = new Map<string|null, string[]>();
+        const adj: Map<string|null, string[]> = new Map<string|null, string[]>();
         doc.drawing.entities.forEach((v) => {
             if (!adj.has((v.parentUid))) {
                 adj.set(v.parentUid, []);
@@ -86,6 +78,7 @@ export default class  HydraulicsLayer implements Layer {
                             doc,
                             entity.parentUid == null ? null : this.uidToObject.get(entity.parentUid)!,
                             entity as FlowSourceEntity,
+                            (object) => this.onSelected(object),
                             ),
                         );
                     }
@@ -107,5 +100,60 @@ export default class  HydraulicsLayer implements Layer {
         }
 
         this.uidsInOrder =  thisIds;
+    }
+
+
+    onSelected(object: BackedDrawableObject<WithID> | null) {
+        this.selectedObject = object;
+        this.onSelect(this.selectedObject);
+    }
+
+    onMouseDown(event: MouseEvent, vp: ViewPort) {
+        for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
+            const uid = this.uidsInOrder[i];
+            if (this.uidToObject.has(uid)) {
+                const object = this.uidToObject.get(uid)!;
+                if (object.onMouseDown(event, vp)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
+        for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
+            const uid = this.uidsInOrder[i];
+            if (this.uidToObject.has(uid)) {
+                const object = this.uidToObject.get(uid)!;
+                const res = object.onMouseMove(event, vp);
+                if (res.handled) {
+                    return res;
+                }
+            }
+        }
+
+        return UNHANDLED;
+    }
+
+
+    onMouseUp(event: MouseEvent, vp: ViewPort) {
+        for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
+            const uid = this.uidsInOrder[i];
+            if (this.uidToObject.has(uid)) {
+                const object = this.uidToObject.get(uid)!;
+                if (object.onMouseUp(event, vp)) {
+                    return true;
+                }
+            }
+        }
+
+
+        this.selectedObject = null;
+        this.onSelect(null);
+        this.onChange();
+
+        return false;
     }
 }
