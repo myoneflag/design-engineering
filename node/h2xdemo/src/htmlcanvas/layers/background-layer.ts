@@ -28,7 +28,7 @@ export default class BackgroundLayer implements Layer {
 
 
     draw(ctx: CanvasRenderingContext2D, vp: ViewPort, active: boolean, selectedTool: ToolConfig) {
-
+        console.log("Background drawing");
         // draw selected one on top.
         this.sidsInOrder.forEach((selectId) => {
             if (this.sidToObject[selectId]) {
@@ -51,6 +51,7 @@ export default class BackgroundLayer implements Layer {
     }
 
     update(doc: DocumentState) {
+        console.log("background updating");
         this.resizeBox = null; // We regenerate this if needed.
 
         let existingSids: string[] = [];

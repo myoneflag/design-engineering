@@ -40,7 +40,7 @@
     import Component from "vue-class-component";
     import {OperationTransform} from "@/store/document/operation-transforms/operation-transforms";
     import {ViewPort} from "@/htmlcanvas/viewport";
-    import {Background, Coord, DocumentState, FlowSystemParameters} from "@/store/document/types";
+    import {Background, Coord, DocumentState, FlowSystemParameters, WithID} from "@/store/document/types";
     import {drawPaperScale} from "@/htmlcanvas/scale";
     import ModeButtons from "@/components/editor/ModeButtons.vue";
     import PropertiesWindow from "@/components/editor/PropertiesWindow.vue";
@@ -64,6 +64,7 @@
     import FlowSource from "@/htmlcanvas/objects/flow-source";
     import FlowSourceEntity from '@/store/document/entities/flow-source';
     import {ENTITY_NAMES} from "@/store/document/entities";
+    import BackedDrawableObject from "@/htmlcanvas/lib/backed-drawable-object";
 
     @Component({
         components: {HydraulicsInsertPanel, Overlay, Toolbar, PropertiesWindow, ModeButtons},
@@ -103,9 +104,19 @@
                     this.$store.dispatch('document/commit');
                 }
             );
-            this.drawingLayer = new HydraulicsLayer();
+            this.hydraulicsLayer = new HydraulicsLayer(
+                () => {
+                    this.scheduleDraw();
+                },
+                (selectedObject: BackedDrawableObject<WithID> | null) => {
 
-            this.allLayers.push(this.backgroundLayer, this.drawingLayer);
+                },
+                (onCommit: BackedDrawableObject<WithID>) => {
+
+                },
+            );
+
+            this.allLayers.push(this.backgroundLayer, this.hydraulicsLayer);
             this.processDocument();
 
             setInterval(this.drawLoop, 20);
@@ -117,14 +128,14 @@
 
         // The layers
         backgroundLayer!: BackgroundLayer;
-        drawingLayer!: HydraulicsLayer;
+        hydraulicsLayer!: HydraulicsLayer;
         allLayers: Layer[] = [];
 
         get activeLayer(): Layer | null {
             if (this.mode === DrawingMode.FloorPlan) {
                 return this.backgroundLayer;
             } else if (this.mode === DrawingMode.Hydraulics) {
-                return this.drawingLayer;
+                return this.hydraulicsLayer;
             }
             return null;
         }
@@ -240,6 +251,7 @@
             MainEventBus.$emit('set-tool-handler', new PointTool(
                 () => {
                     this.$store.dispatch('tools/setCurrentTool', DEFAULT_TOOL);
+                    MainEventBus.$emit('set-tool-handler', null);
                 },
                 (wc: Coord) => {
                     const doc = this.$props.document as DocumentState;
@@ -251,7 +263,7 @@
                         maximumVelocityMS: null,
                         parentUid: null,
                         pressureAtSourceKPA: 0,
-                        radiusMM: 0,
+                        radiusMM: 100,
                         spareCapacity: null,
                         systemUid: system.uid,
                         temperatureC: null,
@@ -281,9 +293,9 @@
                 this.viewPort.height = height;
 
                 this.backgroundLayer.draw(ctx, this.viewPort, this.mode == DrawingMode.FloorPlan, this.currentTool);
-                this.drawingLayer.draw(ctx, this.viewPort, this.mode == DrawingMode.Hydraulics);
+                this.hydraulicsLayer.draw(ctx, this.viewPort, this.mode == DrawingMode.Hydraulics);
 
-                // Draw hydraulics layer =>
+                // Draw hydraulics layer
 
                 // Draw selection layers
                 if (this.activeLayer) {

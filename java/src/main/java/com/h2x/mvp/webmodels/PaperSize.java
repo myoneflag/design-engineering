@@ -9,6 +9,6 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ImmutablePaperSize.class)
 public interface PaperSize {
     String name();
-    double width();
-    double height();
+    double widthMM();
+    double heightMM();
 }

@@ -150,11 +150,11 @@ public class PDFServiceController
                 for (PaperSize size : PaperSizes.PAPER_SIZES) {
                     if (size.name().equals(paperSize)) {
                         if (h > w) {
-                            h = size.width();
-                            w = size.height();
+                            h = size.widthMM();
+                            w = size.heightMM();
                         } else {
-                            h = size.height();
-                            w = size.width();
+                            h = size.heightMM();
+                            w = size.widthMM();
                         }
                     }
                 }
@@ -186,7 +186,7 @@ public class PDFServiceController
         // TODO: Find paper sizes and scale properly.
         return  new PdfDims(
                 pages,
-                ImmutablePaperSize.builder().width(w).height(h).name(paperSize).build(),
+                ImmutablePaperSize.builder().widthMM(w).heightMM(h).name(paperSize).build(),
                 scale,
                 scaleNumber
         );

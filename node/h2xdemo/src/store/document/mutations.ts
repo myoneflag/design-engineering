@@ -28,7 +28,7 @@ export const mutations: MutationTree<DocumentState> = {
                 MainEventBus.$emit('ot-applied', operation);
                 return;
             } else {
-                throw new Error('Optimistic operation conflict. TODO: rewind with undo\'s here.');
+                throw new Error('Optimistic operation conflict. TODO: rewind with undo\'s here. New object is: \n' + JSON.stringify(operation) + '\nold object is:\n' + JSON.stringify(state.optimisticHistory[0]));
             }
         }
 

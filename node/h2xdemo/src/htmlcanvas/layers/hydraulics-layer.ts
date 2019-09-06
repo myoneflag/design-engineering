@@ -1,7 +1,7 @@
 import Layer from '@/htmlcanvas/layers/layer';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
-import {DocumentState, DrawableEntity, WithID} from '@/store/document/types';
+import {Background, DocumentState, DrawableEntity, WithID} from '@/store/document/types';
 import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import {ENTITY_NAMES} from '@/store/document/entities';
@@ -12,6 +12,17 @@ export default class  HydraulicsLayer implements Layer {
 
     uidToObject: Map<string, BackedDrawableObject<WithID>> = new Map<string, BackedDrawableObject<WithID>>();
     uidsInOrder: string[] = [];
+
+    onChange: () => any;
+    onSelect: (drawable: BackedDrawableObject<WithID> | null) => any;
+    onCommit: (drawable: BackedDrawableObject<WithID>) => any;
+
+    constructor(onChange: () => any, onSelect: (drawable: BackedDrawableObject<WithID> | null) => any, onCommit: (drawable: BackedDrawableObject<WithID>) => any) {
+        this.onChange = onChange;
+
+        this.onSelect = onSelect;
+        this.onCommit = onCommit;
+    }
 
     draw(ctx: CanvasRenderingContext2D, vp: ViewPort, active: boolean) {
         this.uidsInOrder.forEach((v) => {
