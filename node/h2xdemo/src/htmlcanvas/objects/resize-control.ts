@@ -1,6 +1,6 @@
 import {ViewPort} from '@/htmlcanvas/viewport';
-import DrawableObject from '@/htmlcanvas/components/drawable-object';
-import SizeableObject from '@/htmlcanvas/components/sizeable-object';
+import DrawableObject from '@/htmlcanvas/lib/drawable-object';
+import SizeableObject from '@/htmlcanvas/lib/sizeable-object';
 import * as TM from 'transformation-matrix';
 import {decomposeMatrix, matrixScale} from '@/htmlcanvas/utils';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
@@ -30,7 +30,6 @@ export class ResizeControl extends DrawableObject {
     get position() {
         return TM.identity();
     }
-
 
     get x() {
         return (this.parent as SizeableObject).boundary.x;

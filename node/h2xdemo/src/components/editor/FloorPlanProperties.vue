@@ -122,9 +122,9 @@
     import PointTool from "@/htmlcanvas/tools/point-tool";
     import {DEFAULT_TOOL, POINT_TOOL} from "@/htmlcanvas/tools/tool";
     import {Background, Coord} from "@/store/document/types";
-    import DrawableObject from "@/htmlcanvas/components/drawable-object";
+    import DrawableObject from "@/htmlcanvas/lib/drawable-object";
     import store from '@/store/store';
-    import {BackgroundImage} from "@/htmlcanvas/components/background-image";
+    import {BackgroundImage} from "@/htmlcanvas/objects/background-image";
     import {PDFRenderResult, renderPdf} from "@/api/pdf";
 
     @Component({

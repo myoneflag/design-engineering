@@ -1,13 +1,13 @@
 import Layer from '@/htmlcanvas/layers/layer';
 import {Background, DocumentState} from '@/store/document/types';
 import {ViewPort} from '@/htmlcanvas/viewport';
-import {BackgroundImage} from '@/htmlcanvas/components/background-image';
+import {BackgroundImage} from '@/htmlcanvas/objects/background-image';
 import axios from 'axios';
 import {parseScale} from '@/htmlcanvas/utils';
-import {ResizeControl} from '@/htmlcanvas/components/resize-control';
+import {ResizeControl} from '@/htmlcanvas/objects/resize-control';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import {ToolConfig} from '@/store/tools/types';
-import DrawableObject from '@/htmlcanvas/components/drawable-object';
+import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 import * as _ from 'lodash';
 
 export default class BackgroundLayer implements Layer {

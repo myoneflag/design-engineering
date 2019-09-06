@@ -49,7 +49,7 @@
     import {MainEventBus} from "@/store/main-event-bus";
     import {ToolConfig} from '@/store/tools/types';
     import {ToolHandler} from "@/htmlcanvas/tools/tool";
-    import DrawableObject from "@/htmlcanvas/components/drawable-object";
+    import DrawableObject from "@/htmlcanvas/lib/drawable-object";
     import uuid from "uuid";
     import {renderPdf} from "@/api/pdf";
 
@@ -265,8 +265,8 @@
                     renderPdf(event.dataTransfer.files.item(i) as File, ({paperSize, scale, scaleName, uri, totalPages}) => {
                         console.log("Loaded PDF successfully: " + paperSize + " " + scale + " " + uri);
 
-                        const width = paperSize.width / scale;
-                        const height = paperSize.height / scale;
+                        const width = paperSize.widthMM / scale;
+                        const height = paperSize.heightMM / scale;
                         // We create the operation here, not the other way around.
                         let background: Background = {
                             center: w,

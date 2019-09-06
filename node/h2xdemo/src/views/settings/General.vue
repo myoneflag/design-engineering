@@ -40,7 +40,7 @@
                 ["approved", "Approved by:", "text"],
                 ["revision", "Revision No.:", "number"],
                 ["client", "Client:", "text"],
-                ["description", "Dscription:", "textarea"]
+                ["description", "Description:", "textarea"]
             ]
         }
 

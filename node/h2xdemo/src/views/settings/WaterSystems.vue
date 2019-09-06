@@ -10,7 +10,7 @@
                     <b-dropdown-item
                             v-for="(system, index) in waterSystems"
                             @click="selectSystem(index)"
-                            :key="system.name"
+                            :key="system.uid"
                             style="padding-right: 25px"
                     >
                         <span :style="'float: left; width:20px; height:20px; margin-right:10px; background-color: ' + system.color.hex">
@@ -51,6 +51,7 @@
     import Component from "vue-class-component";
     import {DocumentState} from '@/store/document/types';
     import FieldBuilder from '@/views/settings/FieldBuilder.vue';
+    import uuid from 'uuid';
 
     @Component({
         components: {FieldBuilder},
@@ -127,6 +128,7 @@
                     spareCapacity: 20,
                     material: 'Material A',
                     color: {hex: '#FCDC00'},
+                    uid: uuid(),
                 });
                 this.$store.dispatch('document/commit');
                 this.selectedSystemId = this.document.drawing.waterSystems.length-1;

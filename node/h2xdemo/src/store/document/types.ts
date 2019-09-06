@@ -34,10 +34,11 @@ export interface WithID {
     uid: string;
 }
 
-export interface Selectable extends WithID {
+export interface DrawableEntity extends WithID {
+    parent: DrawableEntity | null;
 }
 
-export interface Background extends Selectable {
+export interface Background extends WithID {
     center: Coord;
     scaleName: string;
     scaleFactor: number;
@@ -102,7 +103,7 @@ export interface Color {
     hex: string;
 }
 
-export interface WaterSystemParameters {
+export interface WaterSystemParameters extends WithID{
     name: string;
     velocity: number;
     temperature: number;
@@ -130,6 +131,7 @@ export const initialDrawing: DrawingState = {
         description: '',
     },
     waterSystems: [
+        // TODO: these values should get got from the database.
         {
             name: 'Cold Water',
             velocity: 10,
@@ -137,6 +139,7 @@ export const initialDrawing: DrawingState = {
             spareCapacity: 10,
             material : 'Material A',
             color: {hex: '#009CE0'},
+            uid: 'jhrwekvgjuyh',
         },
         {
             name: 'Hot Water',
@@ -145,6 +148,7 @@ export const initialDrawing: DrawingState = {
             spareCapacity: 10,
             material : 'Material B',
             color: {hex: '#F44E3B'},
+            uid: 'ebhwujfbguiwehig',
         },
     ],
     backgrounds: [],

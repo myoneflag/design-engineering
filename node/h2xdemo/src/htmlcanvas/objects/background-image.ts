@@ -1,15 +1,17 @@
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {Dimensions, Coord, Rectangle, Background} from '@/store/document/types';
-import DrawableObject from '@/htmlcanvas/components/drawable-object';
+import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 import axios from 'axios';
 import * as TM from 'transformation-matrix';
 import {decomposeMatrix, matrixScale, parseScale} from '@/htmlcanvas/utils';
-import SizeableObject from '@/htmlcanvas/components/sizeable-object';
+import SizeableObject from '@/htmlcanvas/lib/sizeable-object';
 import {scale} from 'transformation-matrix/scale';
 import {translate} from 'transformation-matrix/translate';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 
+// TODO: Convert into backed drawable object.
 export class BackgroundImage extends SizeableObject {
+
     image: HTMLImageElement | null = null;
     imgScale: {x: number, y: number} = {x: 1, y: 1};
 
@@ -89,11 +91,11 @@ export class BackgroundImage extends SizeableObject {
     }
 
     get width() {
-        return this.background.paperSize.width / parseScale(this.background.scaleName);
+        return this.background.paperSize.widthMM / parseScale(this.background.scaleName);
     }
 
     get height() {
-        return this.background.paperSize.height / parseScale(this.background.scaleName);
+        return this.background.paperSize.heightMM / parseScale(this.background.scaleName);
     }
 
     get center() {

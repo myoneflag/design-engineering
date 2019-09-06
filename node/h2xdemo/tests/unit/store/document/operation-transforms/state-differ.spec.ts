@@ -29,8 +29,8 @@ const bg1: Background = {
     page: 0,
     paperSize: {
         name: 'awwefew',
-        width: 12,
-        height: 200,
+        widthMM: 12,
+        heightMM: 200,
     },
     pointA: {x: -1, y: 2},
     pointB: {x: 3, y: 5},
@@ -50,8 +50,8 @@ const bg2: Background = {
     page: 0,
     paperSize: {
         name: 'asdf',
-        width: 100,
-        height: 200,
+        widthMM: 100,
+        heightMM: 200,
     },
     pointA: {x: -1, y: 2},
     pointB: {x: 3, y: 4},
@@ -70,8 +70,8 @@ const bg2B: Background = {
     page: 0,
     paperSize: {
         name: 'asdf',
-        width: 100,
-        height: 200,
+        widthMM: 100,
+        heightMM: 200,
     },
     pointA: {x: -1, y: 2},
     pointB: {x: 3, y: 4},
@@ -90,8 +90,8 @@ const bg3: Background = {
     page: 0,
     paperSize: {
         name: 'asdf',
-        width: 100,
-        height: 200,
+        widthMM: 100,
+        heightMM: 200,
     },
     pointA: {x: -1, y: 2},
     pointB: {x: 3, y: 4},
@@ -111,8 +111,8 @@ const bg3B: Background = {
     page: 0,
     paperSize: {
         name: 'asdf',
-        width: 100,
-        height: 200,
+        widthMM: 100,
+        heightMM: 200,
     },
     pointA: {x: -1, y: 2},
     pointB: {x: 3, y: 4},
@@ -132,8 +132,8 @@ const bg4: Background = {
     page: 0,
     paperSize: {
         name: 'asdf',
-        width: 100,
-        height: 200,
+        widthMM: 100,
+        heightMM: 200,
     },
     pointA: {x: -1, y: 2},
     pointB: {x: 3, y: 4},
@@ -152,8 +152,8 @@ const bg4B: Background = {
     page: 0,
     paperSize: {
         name: 'asdf',
-        width: 100,
-        height: 200,
+        widthMM: 100,
+        heightMM: 200,
     },
     pointA: {x: -1, y: 2},
     pointB: {x: 3, y: 4},
@@ -172,8 +172,8 @@ const bg4C: Background = {
     page: 0,
     paperSize: {
         name: 'asdf',
-        width: 100,
-        height: 200,
+        widthMM: 100,
+        heightMM: 200,
     },
     pointA: {x: -1, y: 2},
     pointB: {x: 3, y: 4},
@@ -228,6 +228,7 @@ const ws1: WaterSystemParameters = {
     spareCapacity: 0,
     temperature: 1,
     velocity: 0,
+    uid: 'bweuyifgwe',
 };
 
 const ws2: WaterSystemParameters = {
@@ -237,6 +238,7 @@ const ws2: WaterSystemParameters = {
     spareCapacity: 0,
     temperature: 1,
     velocity: 1,
+    uid: 'werfewjknfhwiejhb',
 };
 
 const cp1: CalculationParameters = {
