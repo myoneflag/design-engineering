@@ -9,7 +9,7 @@ export function longestIncreasingSubsequence(values: string[], order: string[]):
 
         for (let j = 0; j < i; j++) {
             if (order.indexOf(values[j]) < order.indexOf(values[i])) {
-                if (dp[j] > thisBest) {
+                if (dp[j][0] > thisBest[0]) {
                     thisBest = [dp[j][0], j];
                 }
             }
@@ -21,6 +21,8 @@ export function longestIncreasingSubsequence(values: string[], order: string[]):
         thisBest[0] ++;
         dp.push(thisBest);
     }
+
+    console.log(JSON.stringify(high));
 
     // Reconstruct the DP.
     const result: Array<[string, boolean]> = values.map((val) => [val, false]);
@@ -41,6 +43,7 @@ export function longestIncreasingSubsequence(values: string[], order: string[]):
 // the array, and this list of operations is the minimal size.
 export function findOptimalSwaps(before: string[], after: string[]): Array<[string, number]> {
     const progress = longestIncreasingSubsequence(before, after);
+    console.log("LIS: " + JSON.stringify(progress));
     const results: Array<[string, number]> = [];
     for (let i = 0; i < progress.length; i++) {
         if (!progress[i][1]) {

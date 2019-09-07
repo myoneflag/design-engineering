@@ -33,7 +33,7 @@
         },
     })
     export default class HydraulicsInsertPanel extends Vue {
-        static get entityNames() {
+        get entityNames() {
             return ENTITY_NAMES;
         }
 

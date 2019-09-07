@@ -1,5 +1,5 @@
 import Layer from '@/htmlcanvas/layers/layer';
-import {Background, DocumentState} from '@/store/document/types';
+import {Background, Coord, DocumentState} from '@/store/document/types';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {BackgroundImage} from '@/htmlcanvas/objects/background-image';
 import {ResizeControl} from '@/htmlcanvas/objects/resize-control';
@@ -138,6 +138,20 @@ export default class BackgroundLayer implements Layer {
         if (this.resizeBox) {
             this.resizeBox.draw(ctx, vp);
         }
+    }
+
+    getBackgroundAt(worldCoord: Coord) {
+        for (let i = this.sidsInOrder.length - 1; i >= 0; i--) {
+            const selectId = this.sidsInOrder[i];
+            if (this.sidToObject[selectId]) {
+                const background = this.sidToObject[selectId];
+                const {x, y} = background.toObjectCoord(worldCoord);
+                if (background.inBounds(x, y)) {
+                    return background;
+                }
+            }
+        }
+        return null;
     }
 
     onMouseDown(event: MouseEvent, vp: ViewPort) {
