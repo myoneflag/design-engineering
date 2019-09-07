@@ -3,6 +3,7 @@ import {ViewPort} from '@/htmlcanvas/viewport';
 import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
 import {MouseMoveResult} from '@/htmlcanvas/types';
+import {matrixScale} from '@/htmlcanvas/utils';
 
 export default abstract class DrawableObject {
     abstract position: Matrix;
@@ -23,6 +24,17 @@ export default abstract class DrawableObject {
         return this.fromParentToObjectCoord(this.parent.toObjectCoord(world));
     }
 
+    fromParentToObjectLength(parentLength: number): number {
+        return matrixScale(TM.inverse(this.position)) * parentLength;
+    }
+
+    toObjectLength(worldLength: number): number {
+        if (this.parent == null) {
+            return this.fromParentToObjectLength(worldLength);
+        }
+        return this.fromParentToObjectLength(this.parent.toObjectLength(worldLength));
+    }
+
     toParentCoord(object: Coord): Coord {
         return TM.applyToPoint(this.position, object);
     }
@@ -34,7 +46,18 @@ export default abstract class DrawableObject {
         return this.parent.toWorldCoord(this.toParentCoord(object));
     }
 
-    abstract drawInternal(ctx: CanvasRenderingContext2D, ...args: any[]): void;
+    toParentLength(object: number): number {
+        return matrixScale(this.position) * object;
+    }
+
+    toWorldLength(object: number): number {
+        if (this.parent == null) {
+            return this.toParentLength(object);
+        }
+        return this.parent.toWorldLength(this.toParentLength(object));
+    }
+
+    abstract drawInternal(ctx: CanvasRenderingContext2D, vp: ViewPort, ...args: any[]): void;
 
     draw(ctx: CanvasRenderingContext2D, vp: ViewPort, ...args: any[]) {
         // get parent positions
@@ -47,7 +70,7 @@ export default abstract class DrawableObject {
 
         vp.prepareContext(ctx, ...transforms);
 
-        this.drawInternal(ctx, ...args);
+        this.drawInternal(ctx, vp, ...args);
     }
 
 

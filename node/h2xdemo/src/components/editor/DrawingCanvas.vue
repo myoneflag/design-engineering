@@ -138,6 +138,10 @@ import {DrawingMode} from "@/htmlcanvas/types";
             setInterval(this.drawLoop, 20);
         }
 
+        get document() {
+            return this.$store.getters['document/document'];
+        }
+
         get activeLayer(): Layer | null {
             if (this.mode === DrawingMode.FloorPlan) {
                 return this.backgroundLayer;
@@ -234,7 +238,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                     MainEventBus.$emit('set-tool-handler', null);
                 },
                 (wc: Coord) => {
-                    const doc = this.$props.document as DocumentState;
+                    const doc = this.document as DocumentState;
                     const newEntity: FlowSourceEntity = {
                         center: wc,
                         color: null,

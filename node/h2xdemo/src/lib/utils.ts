@@ -10,9 +10,9 @@ export const lighten = (col: string, percent: number, alpha: number = 1.0) => {
 
     if (percent < 0) {
         // darken
-        b *= (100 - percent) / 100;
-        g *= (100 - percent) / 100;
-        r *= (100 - percent) / 100;
+        b *= (100 + percent) / 100;
+        g *= (100 + percent) / 100;
+        r *= (100 + percent) / 100;
     } else {
         // lighten
         b += (255 - b) * (percent / 100);

@@ -1,7 +1,7 @@
 <template>
     <div>
         <DrawingNavBar></DrawingNavBar>
-        <DrawingCanvas :document="document"/>
+        <DrawingCanvas/>
     </div>
 </template>
 
@@ -10,8 +10,6 @@
     import Component from 'vue-class-component';
     import DrawingNavBar from '../components/DrawingNavBar.vue';
     import DrawingCanvas from '@/components/editor/DrawingCanvas.vue';
-    import {State} from 'vuex-class';
-    import {DocumentState} from '@/store/document/types';
 
     @Component({
         components: {DrawingCanvas, DrawingNavBar},

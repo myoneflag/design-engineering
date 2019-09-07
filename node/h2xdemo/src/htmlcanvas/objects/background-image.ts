@@ -246,7 +246,7 @@ export class BackgroundImage extends SizeableObject {
 
 
     // Draw without world space concerns
-    drawInternal(ctx: CanvasRenderingContext2D, selected: boolean, active: boolean) {
+    drawInternal(ctx: CanvasRenderingContext2D, vp: ViewPort, selected: boolean, active: boolean) {
         if ((selected && active) && this.image) {
             this.naturalClipDraw(
                 ctx,

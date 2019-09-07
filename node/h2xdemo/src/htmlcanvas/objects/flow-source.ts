@@ -12,6 +12,7 @@ import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 
 export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> {
 
+    MINIMUM_RADIUS_PX: number = 3;
     onSelect: (object: FlowSource) => void;
     lastDrawnWorldRadius: number = 0; // for bounds detection
 
@@ -27,18 +28,18 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> {
 
 
 
-    drawInternal(ctx: CanvasRenderingContext2D, layerActive: boolean, selected: boolean): void {
+    drawInternal(ctx: CanvasRenderingContext2D, vp: ViewPort, layerActive: boolean, selected: boolean): void {
         const mat = ctx.getTransform();
         const scale = matrixScale(mat);
         // Minimum screen size for them.
-        const screenSize = this.stateObject.radiusMM * scale;
-        this.lastDrawnWorldRadius = this.stateObject.radiusMM * scale;
+        const screenSize = vp.toScreenLength(this.stateObject.radiusMM);
+        this.lastDrawnWorldRadius = this.stateObject.radiusMM;
 
         ctx.lineWidth = 0;
 
         if (selected) {
             // we want to draw a pixel sized dark halo around a selected component
-            const haloSize = (Math.max(10, screenSize) + 5) / scale;
+            const haloSize = (Math.max(this.MINIMUM_RADIUS_PX, screenSize) + 5) / scale;
 
             ctx.fillStyle = lighten(this.color.hex, -90, 1);
 
@@ -52,16 +53,22 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> {
         }
 
         if (layerActive) {
-            if (screenSize < 10) {
+            if (screenSize < this.MINIMUM_RADIUS_PX) {
                 // Flow sources are very important and should be visible, even when zoomed out.
 
                 ctx.fillStyle = this.color.hex;
                 ctx.globalAlpha = 0.5;
                 ctx.beginPath();
-                ctx.arc(this.stateObject.center.x, this.stateObject.center.y, 10 / scale, 0, Math.PI * 2);
+                ctx.arc(
+                    this.stateObject.center.x,
+                    this.stateObject.center.y,
+                    this.MINIMUM_RADIUS_PX / scale,
+                    0,
+                    Math.PI * 2,
+                );
                 ctx.fill();
 
-                this.lastDrawnWorldRadius = 10 / scale;
+                this.lastDrawnWorldRadius = this.MINIMUM_RADIUS_PX / scale;
             }
         }
 
@@ -69,7 +76,13 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> {
 
         ctx.globalAlpha = 1;
         ctx.beginPath();
-        ctx.arc(this.stateObject.center.x, this.stateObject.center.y, this.stateObject.radiusMM, 0, Math.PI * 2);
+        ctx.arc(
+            this.stateObject.center.x,
+            this.stateObject.center.y,
+            this.toObjectLength(this.stateObject.radiusMM),
+            0,
+            Math.PI * 2,
+        );
         ctx.fill();
 
     }
@@ -91,11 +104,10 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> {
     inBounds(objectCoord: Coord) {
         const dist = Math.sqrt(
             (objectCoord.x - this.stateObject.center.x) ** 2
-            + (objectCoord.y - this.stateObject.center.y),
+            + (objectCoord.y - this.stateObject.center.y) ** 2,
         );
         return dist <= this.lastDrawnWorldRadius;
     }
-
 
     onMouseDown(event: MouseEvent, vp: ViewPort): boolean {
         const wc = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
@@ -110,9 +122,11 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> {
 
         return false;
     }
+
     onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
         return UNHANDLED;
     }
+
     onMouseUp(event: MouseEvent, vp: ViewPort): boolean {
         const wc = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const oc = this.toObjectCoord(wc);

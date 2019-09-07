@@ -1,6 +1,8 @@
 import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
 import {Coord} from '@/store/document/types';
+import {scale} from 'transformation-matrix/scale';
+import {matrixScale} from '@/htmlcanvas/utils';
 
 /*
  * A transformation specifically for the screen, with a center co-ordinate, rotation, and scale.
@@ -48,6 +50,10 @@ export class ViewPort {
     toScreenCoord(point: Coord): Coord {
         const inv: Matrix = TM.inverse(TM.transform(this.position, TM.translate(-this.width / 2, -this.height / 2)));
         return TM.applyToPoint(inv, point);
+    }
+
+    toScreenLength(worldLen: number): number {
+        return worldLen / matrixScale(this.position);
     }
 
     /**
