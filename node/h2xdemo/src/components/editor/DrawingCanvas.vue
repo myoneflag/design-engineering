@@ -67,9 +67,6 @@ import {DrawingMode} from "@/htmlcanvas/types";
 
     @Component({
         components: {HydraulicsInsertPanel, Overlay, Toolbar, PropertiesWindow, ModeButtons},
-        props: {
-            document: Object,
-        },
     })
     export default class DrawingCanvas extends Vue {
 
@@ -118,8 +115,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                     this.selectedDrawable = drawable;
                     this.scheduleDraw();
                 },
-                (object) => { // onCommit
-                    this.commitBackgroundChange(object);
+                () => { // onCommit
                     this.$store.dispatch('document/commit');
                 },
             );
@@ -202,27 +198,8 @@ import {DrawingMode} from "@/htmlcanvas/types";
             this.$store.dispatch('tools/setCurrentTool', tool);
         }
 
-        commitBackgroundChange(object: Background) {
-            // Scan existing backgrounds for that id.
-            const doc: DocumentState = this.$props.document;
-            const backgrounds = doc.drawing.backgrounds;
-            for (let i = 0; i < backgrounds.length; i++) {
-                if (backgrounds[i].uid === object.uid) {
-                    // Send OT
-                    const newBg: Background = Object.assign({}, backgrounds[i]);
-                    newBg.center = object.center;
-                    newBg.crop = object.crop;
-
-                    this.$store.dispatch('document/updateBackground', {
-                        index: i,
-                        background: newBg,
-                    });
-                }
-            }
-        }
-
         processDocument() {
-            const document: DocumentState = this.$props.document;
+            const document: DocumentState = this.$store.getters['document/document'];
 
             this.allLayers.forEach((l) => l.update(document));
             // finally, draw
@@ -327,7 +304,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
 
                         const width = paperSize.widthMM / scale;
                         const height = paperSize.heightMM / scale;
-                        // We create the operation here, not the other way around.
+                        // We create the operation here, not the server.
                         const background: Background = {
                             center: w,
                             crop: {x: -width / 2, y: -height / 2, w: width, h: height},

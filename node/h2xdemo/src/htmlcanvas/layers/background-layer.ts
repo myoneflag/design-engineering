@@ -56,7 +56,7 @@ export default class BackgroundLayer implements Layer {
         for (const background of doc.drawing.backgrounds) {
             if ( this.sidToObject[background.uid] === undefined) {
                 this.sidToObject[background.uid] = new BackgroundImage(
-                    _.cloneDeep(background),
+                    background,
                     () => {
                         this.onChange();
                     },
@@ -78,7 +78,7 @@ export default class BackgroundLayer implements Layer {
             } else {
                 const obj = this.sidToObject[background.uid];
                 const oldUri = obj.background.uri;
-                obj.background = _.cloneDeep(background);
+                obj.background = background;
                 if (obj.background.uri !== oldUri) {
                     obj.initializeImage(() => {
                         this.onChange();

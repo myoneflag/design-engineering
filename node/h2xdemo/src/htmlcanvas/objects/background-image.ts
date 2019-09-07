@@ -5,6 +5,7 @@ import * as TM from 'transformation-matrix';
 import {matrixScale, parseScale} from '@/htmlcanvas/utils';
 import SizeableObject from '@/htmlcanvas/lib/sizeable-object';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
+import _ from 'lodash';
 
 // TODO: Convert into backed drawable object.
 export class BackgroundImage extends SizeableObject {
@@ -309,7 +310,7 @@ export class BackgroundImage extends SizeableObject {
         if (this.inBounds(o.x, o.y)) {
             this.grabbedPoint = [w.x, w.y];
             this.grabbedCenterState = [this.center.x, this.center.y];
-            this.grabbedOffsetState = Object.assign({}, this.background.offset);
+            this.grabbedOffsetState = _.cloneDeep(this.background.offset);
             this.hasDragged = false;
             if (this.onSelect) {
                 this.onSelect(this);
