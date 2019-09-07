@@ -17,7 +17,7 @@ export interface ToolConfig {
     toolbarVisible: boolean;
     toolbarEnabled: boolean;
 
-    propertiesVisible:boolean;
+    propertiesVisible: boolean;
     propertiesEnabled: boolean;
 
     focusSelectedObject: boolean;

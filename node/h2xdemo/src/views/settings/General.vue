@@ -1,20 +1,19 @@
 <template>
     <FieldBuilder
-            ref="fields"
-            :fields="fields"
-            :reactiveData="generalInfo"
-            :originalData="committedGeneralInfo"
-            :onSave="save"
-            :onBack="back"
+            ref='fields'
+            :fields='fields'
+            :reactiveData='generalInfo'
+            :originalData='committedGeneralInfo'
+            :onSave='save'
+            :onBack='back'
     />
 </template>
 
-<script lang="ts">
+<script lang='ts'>
 
-    import Vue from 'vue'
-    import Component from "vue-class-component";
+    import Vue from 'vue';
+    import Component from 'vue-class-component';
     import {DocumentState} from '@/store/document/types';
-    import * as _ from 'lodash';
     import FieldBuilder from '@/components/FieldBuilder.vue';
 
     @Component({
@@ -30,23 +29,22 @@
     export default class General extends Vue {
 
 
-        get fields(): Array<[string, string, string]> {
+        static get fields(): Array<[string, string, string]> {
             return [
-                ["title", "Project Title:", "text"],
-                ["projectNumber", "Project No.", "text"],
-                ["projectStage", "Project Stage:", "text"],
-                ["designer", "Designer:", "text"],
-                ["reviewed", "Reviewed by:", "text"],
-                ["approved", "Approved by:", "text"],
-                ["revision", "Revision No.:", "number"],
-                ["client", "Client:", "text"],
-                ["description", "Description:", "textarea"]
-            ]
+                ['title', 'Project Title:', 'text'],
+                ['projectNumber', 'Project No.', 'text'],
+                ['projectStage', 'Project Stage:', 'text'],
+                ['designer', 'Designer:', 'text'],
+                ['reviewed', 'Reviewed by:', 'text'],
+                ['approved', 'Approved by:', 'text'],
+                ['revision', 'Revision No.:', 'number'],
+                ['client', 'Client:', 'text'],
+                ['description', 'Description:', 'textarea'],
+            ];
         }
 
         get document(): DocumentState {
-            console.log("Refreshing document");
-            return this.$store.getters["document/document"];
+            return this.$store.getters['document/document'];
         }
 
         get generalInfo() {
@@ -60,7 +58,7 @@
 
         save() {
             this.$store.dispatch('document/commit').then(() => {
-                this.$bvToast.toast("Saved successfully!", {variant: "success", title: "Success"});
+                this.$bvToast.toast('Saved successfully!', {variant: 'success', title: 'Success'});
             });
         }
 
@@ -71,6 +69,6 @@
 
 </script>
 
-<style lang="less">
+<style lang='less'>
 
 </style>

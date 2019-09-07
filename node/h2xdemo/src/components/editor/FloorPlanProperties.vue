@@ -117,28 +117,28 @@
 
 <script lang="ts">
     import Vue from 'vue';
-    import Component from "vue-class-component";
-    import {MainEventBus} from "@/store/main-event-bus";
-    import PointTool from "@/htmlcanvas/tools/point-tool";
-    import {DEFAULT_TOOL, POINT_TOOL} from "@/htmlcanvas/tools/tool";
-    import {Background, Coord} from "@/store/document/types";
-    import DrawableObject from "@/htmlcanvas/lib/drawable-object";
-    import store from '@/store/store';
-    import {BackgroundImage} from "@/htmlcanvas/objects/background-image";
-    import {PDFRenderResult, renderPdf} from "@/api/pdf";
+    import Component from 'vue-class-component';
+    import {MainEventBus} from '@/store/main-event-bus';
+    import PointTool from '@/htmlcanvas/tools/point-tool';
+    import {DEFAULT_TOOL, POINT_TOOL} from '@/htmlcanvas/tools/tool';
+    import {Background, Coord} from '@/store/document/types';
+    import DrawableObject from '@/htmlcanvas/lib/drawable-object';
+    import {BackgroundImage} from '@/htmlcanvas/objects/background-image';
+    import {PDFRenderResult, renderPdf} from '@/api/pdf';
 
     @Component({
         props: {
             selectedObject: Object,
             selectedDrawable: Object,
             onPointAChange: Function,
-            onPointBChange: Function
+            onPointBChange: Function,
         },
     })
     export default class FloorPlanProperties extends Vue {
         EPS = 0.0001;
 
         file: File | null = null;
+        enteredDistance: string = '';
 
         onDeleteClick() {
             this.$store.dispatch('document/deleteBackground', this.$props.selectedObject);
@@ -159,16 +159,20 @@
 
                 const wa: Coord = backgroundImage.toWorldCoord(background.pointA);
 
-                return (wa.x / 1000).toFixed(2) + ", " + (wa.y / 1000).toFixed(2) + "m";
+                return (wa.x / 1000).toFixed(2) + ', ' + (wa.y / 1000).toFixed(2) + 'm';
             } else {
-                return "Choose";
+                return 'Choose';
             }
         }
 
         get changeIsValid() {
             try {
-                if (parseFloat(this.enteredDistance) < this.EPS) return false;
-                if (!this.ABDistanceMeters) return false;
+                if (parseFloat(this.enteredDistance) < this.EPS) {
+                    return false;
+                }
+                if (!this.ABDistanceMeters) {
+                    return false;
+                }
                 return Math.abs(this.ABDistanceMeters - parseFloat(this.enteredDistance)) > this.EPS;
             } catch {
                 return false;
@@ -183,40 +187,35 @@
 
                 const wb: Coord = backgroundImage.toWorldCoord(background.pointB);
 
-                return (wb.x / 1000).toFixed(2) + ", " + (wb.y / 1000).toFixed(2) + "m";
+                return (wb.x / 1000).toFixed(2) + ', ' + (wb.y / 1000).toFixed(2) + 'm';
             } else {
-                return "Choose";
+                return 'Choose';
             }
         }
 
-        onReplacePdf(event: Event) {
-            console.log("PDF upload: " + this.file);
-            const backgroundObject: BackgroundImage = this.$props.selectedDrawable;
+        onReplacePdf() {
             const background: Background = this.$props.selectedObject;
             if (this.file) {
                 renderPdf(this.file, (data: PDFRenderResult) => {
-                    this.$store.dispatch("document/updateBackgroundInPlace", {background, update: (background: Background) => ({
-                        uri: data.uri,
-                        })
+                    this.$store.dispatch('document/updateBackgroundInPlace', {background, update: () => ({
+                            uri: data.uri,
+                        }),
                     });
                     this.$store.dispatch('document/commit');
                 });
             }
         }
 
-        enteredDistance: string = "";
         distanceChanged(value: string) {
             this.enteredDistance = value;
         }
 
         calibrate() {
             const background: Background = this.$props.selectedObject;
-            const backgroundImage: BackgroundImage = this.$props.selectedDrawable;
 
             if (this.ABDistanceMeters) {
-                const factor = parseFloat(this.enteredDistance)/ this.ABDistanceMeters;
+                const factor = parseFloat(this.enteredDistance) / this.ABDistanceMeters;
 
-                console.log("Scaling background by " + factor);
                 this.$store.dispatch('document/scaleBackground', {background, factor});
                 this.$store.dispatch('document/commit');
             }
@@ -238,7 +237,7 @@
         rotateLeft() {
             this.$store.dispatch('document/updateBackgroundInPlace',
                 {background: this.$props.selectedObject,
-                    update: (background: Background) => ({rotation: ((background.rotation -45) % 360 + 360) % 360 })
+                    update: (background: Background) => ({rotation: ((background.rotation - 45) % 360 + 360) % 360 }),
                 });
             this.$store.dispatch('document/commit');
         }
@@ -246,7 +245,7 @@
         rotateRight() {
             this.$store.dispatch('document/updateBackgroundInPlace',
                 {background: this.$props.selectedObject,
-                    update: (background: Background) => ({ rotation: ((background.rotation +45) % 360 + 360) % 360 })
+                    update: (background: Background) => ({ rotation: ((background.rotation + 45) % 360 + 360) % 360 }),
                 });
             this.$store.dispatch('document/commit');
         }
@@ -263,16 +262,16 @@
                     (worldCoord: Coord) => {
                         onPoint(worldCoord);
                     },
-                ))
+                ));
             });
         }
 
         pointAClick() {
             this.deployPointTool((worldCoord: Coord) => {
-                let d: DrawableObject = this.$props.selectedDrawable;
+                const d: DrawableObject = this.$props.selectedDrawable;
                 this.$store.dispatch('document/updateBackgroundInPlace',
                     {background: this.$props.selectedObject,
-                        update: (background: Background) => ({ pointA: d.toObjectCoord(worldCoord)}),
+                        update: () => ({ pointA: d.toObjectCoord(worldCoord)}),
                     });
                 this.$store.dispatch('document/commit');
             });
@@ -280,10 +279,10 @@
 
         pointBClick() {
             this.deployPointTool((worldCoord: Coord) => {
-                let d: DrawableObject = this.$props.selectedDrawable;
+                const d: DrawableObject = this.$props.selectedDrawable;
                 this.$store.dispatch('document/updateBackgroundInPlace',
                     {background: this.$props.selectedObject,
-                        update: (background: Background) => ({ pointB: d.toObjectCoord(worldCoord)}),
+                        update: () => ({ pointB: d.toObjectCoord(worldCoord)}),
                     });
                 this.$store.dispatch('document/commit');
             });

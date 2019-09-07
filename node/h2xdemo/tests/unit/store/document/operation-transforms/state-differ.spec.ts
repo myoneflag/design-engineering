@@ -1,15 +1,14 @@
 import { expect } from 'chai';
-import {ViewPort} from '@/htmlcanvas/viewport';
-import {findOptimalSwaps, longestIncreasingSubsequence} from '@/store/document/operation-transforms/uid-lis';
 import * as _ from 'lodash';
 import {diffState} from '@/store/document/operation-transforms/state-differ';
 import {applyOtOnState} from '@/store/document/operation-transforms/state-ot-apply';
+
 import {
     Background,
     CalculationParameters,
     DrawingState,
     GeneralInfo,
-    FlowSystemParameters
+    FlowSystemParameters,
 } from '@/store/document/types';
 
 function roundTripTest(prev: DrawingState, next: DrawingState, expectedOps: number = -1) {
@@ -17,7 +16,7 @@ function roundTripTest(prev: DrawingState, next: DrawingState, expectedOps: numb
     const ops = diffState(prev, next);
     ops.forEach((o) => applyOtOnState(prevCopy, o));
     expect(prevCopy).eql(next);
-    if (expectedOps != -1) {
+    if (expectedOps !== -1) {
         expect(ops.length).eq(expectedOps);
     }
 }
@@ -102,28 +101,6 @@ const bg3: Background = {
     uid: 'uid3',
     uri: 'gerreger',
 };
-
-
-const bg3B: Background = {
-    center: {x: 100, y: 2},
-    crop: {x: -1, y: 2.5, w: 100, h: 101},
-    offset: {x: 1, y: 4},
-    page: 0,
-    paperSize: {
-        name: 'asdf',
-        widthMM: 100,
-        heightMM: 200,
-    },
-    pointA: {x: -1, y: 2},
-    pointB: {x: 3, y: 4},
-    rotation: 12,
-    scaleFactor: 1,
-    scaleName: '1:200',
-    totalPages: 100,
-    uid: 'uid3',
-    uri: 'wkefnkwenf',
-};
-
 
 const bg4: Background = {
     center: {x: 100, y: 2},
@@ -242,7 +219,7 @@ const ws2: FlowSystemParameters = {
 };
 
 const cp1: CalculationParameters = {
-    pipeSizingMethod: "", psdMethod: "", ringMainCalculationMethod: ""
+    pipeSizingMethod: '', psdMethod: '', ringMainCalculationMethod: '',
 };
 
 describe('state-differ.ts', () => {

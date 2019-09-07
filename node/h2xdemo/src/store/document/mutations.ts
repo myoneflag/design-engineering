@@ -1,8 +1,6 @@
 import { MutationTree } from 'vuex';
-import {Background, DocumentState, initialValue} from './types';
+import {DocumentState, initialValue} from './types';
 import * as OT from './operation-transforms/operation-transforms';
-import deepEqual from 'deep-equal';
-import uuidv4 from 'uuid/v4';
 import {MainEventBus} from '@/store/main-event-bus';
 import {applyOtOnState} from '@/store/document/operation-transforms/state-ot-apply';
 import * as _ from 'lodash';
@@ -17,22 +15,22 @@ export const mutations: MutationTree<DocumentState> = {
     applyOperation(state, operation: OT.OperationTransform) {
         state.history.push(operation);
 
-        console.log("Applying operation: " + JSON.stringify(operation));
         if (state.optimisticHistory.length) {
             // optimistic history id typically would be 1. We trust the server to give us correct incrementing ids.
             state.optimisticHistory[0].id = operation.id;
             if (_.isEqual(state.optimisticHistory[0], operation)) {
                 // All g.
                 state.optimisticHistory.splice(0, 1);
-                console.log('Optimistic operation confirmed. Now there\'s ' + JSON.stringify(state.optimisticHistory));
                 MainEventBus.$emit('ot-applied', operation);
                 return;
             } else {
-                throw new Error('Optimistic operation conflict. TODO: rewind with undo\'s here. New object is: \n' + JSON.stringify(operation) + '\nold object is:\n' + JSON.stringify(state.optimisticHistory[0]));
+                throw new Error('Optimistic operation conflict. TODO: rewind with undo\'s here. New object is: \n' +
+                    JSON.stringify(operation) + '\n' +
+                    'old object is:\n' +
+                    JSON.stringify(state.optimisticHistory[0]),
+                );
             }
         }
-
-        console.log('New operation from server, applying.');
 
         let handled: boolean = true;
 

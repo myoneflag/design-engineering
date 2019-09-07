@@ -1,59 +1,32 @@
+/* tslint:disable:no-bitwise */
 
-export const lighten = (col: string, amt: number) => {
+export const lighten = (col: string, percent: number, alpha: number = 1.0) => {
 
-    var usePound = false;
+    const num = parseInt(col.substr(1), 16);
 
-    if (col[0] == "#") {
-        col = col.slice(1);
-        usePound = true;
+    let b = num & 0xFF;
+    let g = (num >> 8) & 0xFF;
+    let r = (num >> 16) & 0xFF;
+
+    if (percent < 0) {
+        // darken
+        b *= (100 - percent) / 100;
+        g *= (100 - percent) / 100;
+        r *= (100 - percent) / 100;
+    } else {
+        // lighten
+        b += (255 - b) * (percent / 100);
+        g += (255 - g) * (percent / 100);
+        r += (255 - r) * (percent / 100);
     }
 
-    var num = parseInt(col,16);
-
-    var r = (num >> 16) + amt;
-
-    if (r > 255) r = 255;
-    else if  (r < 0) r = 0;
-
-    var b = ((num >> 8) & 0x00FF) + amt;
-
-    if (b > 255) b = 255;
-    else if  (b < 0) b = 0;
-
-    var g = (num & 0x0000FF) + amt;
-
-    if (g > 255) g = 255;
-    else if (g < 0) g = 0;
-
-    return (usePound?"#":"") + (g | (b << 8) | (r << 16)).toString(16);
-}
-
-
-export const lightenA = (col: string, amt: number, alpha: number = 0.6) => {
-
-    var usePound = false;
-
-    if (col[0] == "#") {
-        col = col.slice(1);
-        usePound = true;
+    if (alpha === 1) {
+        let str = ((r << 16) | (g << 8) | (b << 0)).toString(16);
+        while (str.length < 6) {
+            str = '0' + str;
+        }
+        return '#' + str;
+    } else {
+        return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha + ')';
     }
-
-    var num = parseInt(col,16);
-
-    var r = (num >> 16) + amt;
-
-    if (r > 255) r = 255;
-    else if  (r < 0) r = 0;
-
-    var b = ((num >> 8) & 0x00FF) + amt;
-
-    if (b > 255) b = 255;
-    else if  (b < 0) b = 0;
-
-    var g = (num & 0x0000FF) + amt;
-
-    if (g > 255) g = 255;
-    else if (g < 0) g = 0;
-
-    return 'rgba(' + r + ', ' + b + ', ' + g + ', ' + alpha + ')';
-}
+};

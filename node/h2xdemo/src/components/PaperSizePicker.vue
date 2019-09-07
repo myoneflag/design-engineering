@@ -6,23 +6,23 @@
     </b-dropdown>
 </template>
 
-<script lang="ts">
+<script lang='ts'>
 
-    import Component from "vue-class-component";
+    import Component from 'vue-class-component';
     import Vue from 'vue';
-    import {PaperSize, PAPER_SIZES} from "@/config";
+    import {PaperSize, PAPER_SIZES} from '@/config';
 
     @Component({
         props: {
             initialSize: String,
             onchange: Function,
             disabled: Boolean,
-        }
+        },
     })
     export default class PaperSizeSelector extends Vue {
         size = (this as any).initialSize;
 
-        get paperSizes() {
+        static get paperSizes() {
             return PAPER_SIZES;
         }
 
@@ -32,5 +32,5 @@
                 this.$props.onchange(newSize);
             }
         }
-    };
+    }
 </script>

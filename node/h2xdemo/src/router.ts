@@ -8,7 +8,7 @@ import ChangePassword from '@/views/ChangePassword.vue';
 
 Vue.use(Router);
 
-let router = new Router({
+const router = new Router({
     mode: 'history',
     base: process.env.BASE_URL,
     routes: [
@@ -87,7 +87,7 @@ let router = new Router({
 
 router.beforeEach((to, from, next) => {
     if (to.matched.some((record) => record.meta.auth)) {
-        if (Vue.cookies.get('session-id') == null) {
+        if ((Vue as any).cookies.get('session-id') == null) {
             next({
                 name: 'login',
             });
@@ -95,7 +95,6 @@ router.beforeEach((to, from, next) => {
             if (store.getters['profile/username'] !== '') {
                 next();
             } else {
-                console.log("loading profile from existing session");
                 axios.post('/api/session')
                 .then(({data: {success, username}}) => {
                     if (success === true) {
@@ -104,7 +103,7 @@ router.beforeEach((to, from, next) => {
                                     router.push(to);
                                 });
                     } else {
-                        Vue.cookies.remove('session-id');
+                        (Vue as any).cookies.remove('session-id');
                         next({
                             name: 'login',
                         });

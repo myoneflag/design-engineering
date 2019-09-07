@@ -47,34 +47,34 @@
     </b-container>
 </template>
 
-<script lang="ts">
-    import Component from "vue-class-component";
+<script lang='ts'>
+    import Component from 'vue-class-component';
     import Vue from 'vue';
     import axios from 'axios';
     import router from '@/router';
 
     @Component
     export default class Login extends Vue {
-        public username: string = "";
-        public password: string = "";
+        username: string = '';
+        password: string = '';
 
         login() {
-            axios.post("/api/login", {username: this.username, password: this.password})
+            axios.post('/api/login', {username: this.username, password: this.password})
                 .then(({data: {success, accessToken, message, username}}) => {
-                    if (success == true) {
+                    if (success === true) {
                         this.$store.dispatch('profile/setUsername', username);
-                        this.$cookies.set("session-id", accessToken);
+                        (this as any).$cookies.set('session-id', accessToken);
                         if (this.$route.query.next) {
                             router.push(this.$route.query.next as string);
                         } else {
                             router.push({name: 'home'});
                         }
                     } else {
-                        this.$bvToast.toast(message, {
+                        (this as any).$bvToast.toast(message, {
                             title: 'Login Error',
                             variant: 'danger',
-                            solid: true
-                        })
+                            solid: true,
+                        });
                     }
             });
         }

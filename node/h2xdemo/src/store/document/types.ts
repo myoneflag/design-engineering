@@ -1,7 +1,5 @@
 import * as Operations from './operation-transforms/operation-transforms';
-import Doc = Mocha.reporters.Doc;
 import {PaperSize, PIPE_SIZING_METHODS, PSD_METHODS, RING_MAIN_CALCULATION_METHODS} from '@/config';
-import {OperationTransform} from './operation-transforms/operation-transforms';
 import * as _ from 'lodash';
 
 // Because of how the diffing engine works, there are restrictions on the data structure for the document state.
@@ -105,7 +103,7 @@ export interface Color {
     hex: string;
 }
 
-export interface FlowSystemParameters extends WithID{
+export interface FlowSystemParameters extends WithID {
     name: string;
     velocity: number;
     temperature: number;

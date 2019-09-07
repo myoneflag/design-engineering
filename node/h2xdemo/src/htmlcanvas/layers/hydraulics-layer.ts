@@ -1,8 +1,7 @@
 import Layer from '@/htmlcanvas/layers/layer';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
-import {Background, DocumentState, DrawableEntity, WithID} from '@/store/document/types';
-import DrawableObject from '@/htmlcanvas/lib/drawable-object';
+import {DocumentState, WithID} from '@/store/document/types';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import {ENTITY_NAMES} from '@/store/document/entities';
 import FlowSource from '@/htmlcanvas/objects/flow-source';
@@ -17,14 +16,16 @@ export default class  HydraulicsLayer implements Layer {
     onSelect: (drawable: BackedDrawableObject<WithID> | null) => any;
     onCommit: (drawable: BackedDrawableObject<WithID>) => any;
 
-    constructor(onChange: () => any, onSelect: (drawable: BackedDrawableObject<WithID> | null) => any, onCommit: (drawable: BackedDrawableObject<WithID>) => any) {
+    selectedObject: BackedDrawableObject<WithID> | null = null;
+
+    constructor(onChange: () => any, onSelect: (drawable: BackedDrawableObject<WithID> | null)
+        => any, onCommit: (drawable: BackedDrawableObject<WithID>) => any) {
         this.onChange = onChange;
 
         this.onSelect = onSelect;
         this.onCommit = onCommit;
     }
 
-    selectedObject: BackedDrawableObject<WithID> | null = null;
 
     draw(ctx: CanvasRenderingContext2D, vp: ViewPort, active: boolean) {
         this.uidsInOrder.forEach((v) => {
@@ -32,13 +33,13 @@ export default class  HydraulicsLayer implements Layer {
         });
     }
 
-    drawSelectionLayer (ctx: CanvasRenderingContext2D, vp: ViewPort) {
+    drawSelectionLayer(ctx: CanvasRenderingContext2D, vp: ViewPort) {
         if (this.selectedObject) {
             this.uidToObject.get(this.selectedObject.stateObject.uid)!.draw(ctx, vp, true, true);
         }
     }
 
-    update (doc: DocumentState) {
+    update(doc: DocumentState) {
         const thisIds = doc.drawing.entities.map((v) => v.uid);
         const removed = this.uidsInOrder.filter((v: string) => thisIds.indexOf(v) === -1);
 

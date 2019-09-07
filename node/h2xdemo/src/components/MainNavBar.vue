@@ -13,9 +13,9 @@
     import Vue from 'vue';
     import ProfileMenuItem from '@/components/ProfileMenuItem.vue';
     @Component({
-        components: {ProfileMenuItem}
+        components: {ProfileMenuItem},
     })
-    export default class MainNavBar extends Vue {};
+    export default class MainNavBar extends Vue {}
 </script>
 
 <style lang="less">

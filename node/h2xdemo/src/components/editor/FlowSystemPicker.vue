@@ -1,5 +1,5 @@
 <template>
-    <b-dropdown size="md" id="dropdown-1" :text="selectedSystem.name" variant="outline-dark" class="float-left" :style="'border-radius: 5px; background-color: ' + lighten(selectedSystem.color.hex, 30)">
+    <b-dropdown size="md" id="dropdown-1" :text="selectedSystem.name" variant="outline-dark" class="float-left" :style="'border-radius: 5px; background-color: ' + lighten(selectedSystem.color.hex, 50, 0.5)">
         <b-dropdown-item
                 v-for="(system, index) in flowSystems"
                 @click="selectSystem(index)"
@@ -15,22 +15,22 @@
 
 <script lang="ts">
     import Vue from 'vue';
-    import Component from "vue-class-component";
-    import {lightenA} from '@/lib/utils';
+    import Component from 'vue-class-component';
+    import {lighten} from '@/lib/utils';
 
     @Component({
         props: {
             flowSystems: Array,
             selectedSystem: Object,
-        }
+        },
     })
     export default class FlowSystemPicker extends Vue {
         selectSystem(index: number) {
             this.$emit('selectSystem', index);
         }
 
-        lighten(col: string, amt: number) {
-            return lightenA(col, amt);
+        lighten(col: string, amt: number, alpha: number) {
+            return lighten(col, amt, alpha);
         }
     }
 

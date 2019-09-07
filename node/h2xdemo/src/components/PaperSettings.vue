@@ -33,9 +33,9 @@
 
 <script lang="ts">
     import Vue from 'vue';
-    import Component from "vue-class-component";
-    import PaperSizeSelector from "@/components/PaperSizePicker.vue";
-    import {PaperSize, SENSIBLE_SCALES} from "@/config";
+    import Component from 'vue-class-component';
+    import PaperSizeSelector from '@/components/PaperSizePicker.vue';
+    import {PaperSize, SENSIBLE_SCALES} from '@/config';
 
     @Component({
         props: {
@@ -47,9 +47,16 @@
             paperSize: String,
             scale: String,
         },
-        components: {PaperSizeSelector}
+        components: {PaperSizeSelector},
     })
     export default class PaperSettings extends Vue {
+
+        static sensibleScales() {
+            return SENSIBLE_SCALES;
+        }
+
+        internalScaleText: string = '1:100';
+        internalRangeValue: number = 8;
 
         setPaperSize(size: PaperSize) {
             if (this.$props.onPaperSizeChange) {
@@ -57,23 +64,22 @@
             }
         }
 
-        internalScaleText: string = "1:100";
         get scaleText() {
             return this.internalScaleText;
         }
 
         set scaleText(text: string) {
-            let match: RegExpMatchArray | null = (text ? text.match("^([0-9]+):([0-9]+)$") : null);
+            const match: RegExpMatchArray | null = (text ? text.match('^([0-9]+):([0-9]+)$') : null);
             if (match) {
-                let a = parseInt(match[1]);
-                let b = parseInt(match[2]);
+                const a = parseInt(match[1], 10);
+                const b = parseInt(match[2], 10);
 
-                if (b != 0 && a != 0) {
-                    let ratio = a / b;
+                if (b !== 0 && a !== 0) {
+                    const ratio = a / b;
 
                     // find closest ratio
                     for (let i = 0; i < SENSIBLE_SCALES.length; i++) {
-                        let iRatio = SENSIBLE_SCALES[i][0] / SENSIBLE_SCALES[i][1];
+                        const iRatio = SENSIBLE_SCALES[i][0] / SENSIBLE_SCALES[i][1];
                         this.internalRangeValue = i;
                         if (iRatio >= ratio) {
                             break;
@@ -92,22 +98,17 @@
             this.scaleText = this.$props.scale;
         }
 
-        internalRangeValue: number = 8;
         get rangeValue() {
             return this.internalRangeValue;
         }
 
         set rangeValue(value: number) {
-            let [l, r] = SENSIBLE_SCALES[value];
+            const [l, r] = SENSIBLE_SCALES[value];
             this.scaleText = l + ':' + r;
             this.internalRangeValue = value;
             if (this.$props.onScaleChange) {
                 this.$props.onScaleChange(l, r);
             }
-        }
-
-        sensibleScales() {
-            return SENSIBLE_SCALES;
         }
     }
 </script>

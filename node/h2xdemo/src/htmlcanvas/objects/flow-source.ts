@@ -2,27 +2,30 @@ import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import FlowSourceEntity from '@/store/document/entities/flow-source';
 import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
-import {Color, DocumentState, FlowSystemParameters} from '@/store/document/types';
+import {Coord, DocumentState, FlowSystemParameters} from '@/store/document/types';
 import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 import assert from 'assert';
 import {matrixScale} from '@/htmlcanvas/utils';
-import {lighten, lightenA} from '@/lib/utils';
-import {ViewPort} from '@/htmlcanvas/viewport'
+import {lighten} from '@/lib/utils';
+import {ViewPort} from '@/htmlcanvas/viewport';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 
 export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> {
 
-    private system!: FlowSystemParameters;
     onSelect: (object: FlowSource) => void;
+    lastDrawnWorldRadius: number = 0; // for bounds detection
 
-    constructor(context: DocumentState, parent: DrawableObject | null, obj: FlowSourceEntity, onSelect: (object: FlowSource) => void) {
+    private system!: FlowSystemParameters;
+
+    constructor(
+        context: DocumentState, parent: DrawableObject | null,
+        obj: FlowSourceEntity, onSelect: (object: FlowSource) => void,
+    ) {
         super(context, parent, obj);
         this.onSelect = onSelect;
     }
 
 
-
-    lastDrawnWorldRadius: number = 0; // for bounds detection
 
     drawInternal(ctx: CanvasRenderingContext2D, layerActive: boolean, selected: boolean): void {
         const mat = ctx.getTransform();
@@ -37,7 +40,7 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> {
             // we want to draw a pixel sized dark halo around a selected component
             const haloSize = (Math.max(10, screenSize) + 5) / scale;
 
-            ctx.fillStyle = lightenA(this.color.hex, -90, 1);
+            ctx.fillStyle = lighten(this.color.hex, -90, 1);
 
             ctx.beginPath();
             ctx.lineWidth = 0;
@@ -71,7 +74,7 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> {
 
     }
 
-    get position() : Matrix {
+    get position(): Matrix {
         return TM.identity();
     }
 
@@ -85,16 +88,21 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> {
         this.system = system!;
     }
 
+    inBounds(objectCoord: Coord) {
+        const dist = Math.sqrt(
+            (objectCoord.x - this.stateObject.center.x) ** 2
+            + (objectCoord.y - this.stateObject.center.y),
+        );
+        return dist <= this.lastDrawnWorldRadius;
+    }
+
 
     onMouseDown(event: MouseEvent, vp: ViewPort): boolean {
         const wc = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const oc = this.toObjectCoord(wc);
 
         // Check bounds
-        const dist = Math.sqrt((oc.x - this.stateObject.center.x) ** 2 + (oc.y - this.stateObject.center.y));
-
-        console.log("Mouse down event " + dist + " " + this.lastDrawnWorldRadius);
-        if (dist <= this.lastDrawnWorldRadius) {
+        if (this.inBounds(oc)) {
             this.onSelect(this);
 
             return true;
@@ -109,13 +117,7 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> {
         const wc = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const oc = this.toObjectCoord(wc);
         // Check bounds
-        const dist = Math.sqrt((oc.x - this.stateObject.center.x) ** 2 + (oc.y - this.stateObject.center.y) ** 2);
+        return this.inBounds(oc);
 
-        if (dist <= this.lastDrawnWorldRadius) {
-
-            return true;
-        }
-
-        return false;
     }
 }

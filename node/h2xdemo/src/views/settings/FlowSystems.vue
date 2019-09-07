@@ -40,8 +40,8 @@
 
 <script lang="ts">
 
-    import Vue from 'vue'
-    import Component from "vue-class-component";
+    import Vue from 'vue';
+    import Component from 'vue-class-component';
     import {DocumentState} from '@/store/document/types';
     import FieldBuilder from '@/components/FieldBuilder.vue';
     import uuid from 'uuid';
@@ -55,32 +55,26 @@
             } else {
                 next(false);
             }
-        }
-
+        },
     })
     export default class FlowSystems extends Vue {
 
-        mounted() {
-            console.log(this.document.drawing.flowSystems == this.document.committedDrawing.flowSystems);
-            console.log(this.document.drawing.flowSystems[0] == this.document.committedDrawing.flowSystems[0]);
-        }
-
-        get fields(): Array<Array<any>> {
-            return [
-                ["name", "System Name:", "text"],
-                ["velocity", "Velocity: (m/s)", "number"],
-                ["temperature", "Entry temperature: (c)", "range", 10, 100],
-                ["spareCapacity", "Spare Capacity: %", "range", 0, 100],
-                ["material", "Material:", "choice", ["Material A", "Material B", "I need a database right now"]],
-                ["color", "Colour:", "color"],
-            ]
-        }
-
         selectedSystemId: number = 0;
 
+        static get fields(): any[][] {
+            return [
+                ['name', 'System Name:', 'text'],
+                ['velocity', 'Velocity: (m/s)', 'number'],
+                ['temperature', 'Entry temperature: (c)', 'range', 10, 100],
+                ['spareCapacity', 'Spare Capacity: %', 'range', 0, 100],
+                ['material', 'Material:', 'choice', ['Material A', 'Material B', 'I need a database right now']],
+                ['color', 'Colour:', 'color'],
+            ];
+        }
+
+
         get document(): DocumentState {
-            console.log("Refreshing document");
-            return this.$store.getters["document/document"];
+            return this.$store.getters['document/document'];
         }
 
         get flowSystems() {
@@ -88,7 +82,7 @@
         }
 
         selectSystem(value: number) {
-            if (value == this.selectedSystemId) {
+            if (value === this.selectedSystemId) {
                 return;
             }
             if ((this.$refs.fields as any).leave()) {
@@ -97,8 +91,9 @@
                 // nup
             }
         }
+
         deleteSystem() {
-            if (window.confirm("Are you sure you want to delete " + this.selectedSystem.name + "?")) {
+            if (window.confirm('Are you sure you want to delete ' + this.selectedSystem.name + '?')) {
                 this.document.drawing.flowSystems.splice(this.selectedSystemId, 1);
                 this.selectedSystemId = 1;
                 this.$store.dispatch('document/commit');
@@ -125,7 +120,7 @@
                     uid: uuid(),
                 });
                 this.$store.dispatch('document/commit');
-                this.selectedSystemId = this.document.drawing.flowSystems.length-1;
+                this.selectedSystemId = this.document.drawing.flowSystems.length - 1;
             } else {
                 // nup
             }

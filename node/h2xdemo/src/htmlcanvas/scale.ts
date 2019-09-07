@@ -11,23 +11,7 @@ const SENSIBLE_UNITS_MM: number[] = [
     1000000, 2000000, 4000000, 5000000, 8000000, // 1km to 8km
 ];
 
-export const friendlyDistanceName = (mm: number): string => {
-    if (mm < 10) {
-        return mm + 'mm';
-    }
-    mm /= 10;
-    if (mm < 100) {
-        return mm + 'cm';
-    }
-    mm /= 100;
-    if (mm < 1000) {
-        return mm + 'm';
-    }
-    mm /= 1000;
-    return mm + 'km';
-};
-
-export const getFriendlyDistanceUnit = (mm: number) : [string, number] => {
+export const getFriendlyDistanceUnit = (mm: number): [string, number] => {
     if (mm < 10) {
         return  ['mm', 1];
     }
@@ -51,9 +35,9 @@ export const drawPaperScale = (ctx: CanvasRenderingContext2D, pxPerMm: number) =
     // Draw ruler
     const minSmallWidth = 4;
     let smallestUnit: number = 0;
-    for (const unit of SENSIBLE_UNITS_MM) {
-        if (unit * pxPerMm >= minSmallWidth) {
-            smallestUnit = unit;
+    for (const units of SENSIBLE_UNITS_MM) {
+        if (units * pxPerMm >= minSmallWidth) {
+            smallestUnit = units;
             break;
         }
     }
@@ -99,7 +83,7 @@ export const drawPaperScale = (ctx: CanvasRenderingContext2D, pxPerMm: number) =
     }
 
     // draw ruler text
-    let [uname, unit] = getFriendlyDistanceUnit(smallestUnit * 10);
+    const [uname, unit] = getFriendlyDistanceUnit(smallestUnit * 10);
     left = scaleLeftEdge;
     ctx.font = '9px ' + DEFAULT_FONT_NAME;
     for (let i = 0; i < 6; i++) {

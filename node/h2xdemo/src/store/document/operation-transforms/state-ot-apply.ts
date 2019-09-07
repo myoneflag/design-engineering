@@ -11,7 +11,8 @@ import Vue from 'vue';
  * @param op A function that modifies a leaf node in place. Eg. Given an array, push and pop it. For primitives, though
  * you should return the new value and that's the only exception.
  */
-function walkToEnds(object: any, path: any, op: (object: any, path: any) => string | number | undefined): string | number | undefined {
+function walkToEnds(object: any, path: any, op: (object: any, path: any)
+    => string | number | undefined): string | number | undefined {
     if (_.isArray(object)) {
         // We stop here always.
         // If it is a literal array (without distinguishable elements, ie elemenets without uid) then we want to replace
@@ -21,7 +22,7 @@ function walkToEnds(object: any, path: any, op: (object: any, path: any) => stri
     } else if (_.isObject(object)) {
         _.forOwn(path, (value, key) => {
             // @ts-ignore
-            let val = walkToEnds((object as any)[key], path[key], op);
+            const val = walkToEnds((object as any)[key], path[key], op);
             if (val !== undefined) {
                 // @ts-ignore;
                 object[key] = val;

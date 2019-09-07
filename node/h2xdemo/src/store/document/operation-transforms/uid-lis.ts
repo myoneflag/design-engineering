@@ -1,6 +1,6 @@
 
 // Returns array of [value, isInLIS?] in original order.
-export function longestIncreasingSubsequence(values: string[], order: string[]): [string, boolean][] {
+export function longestIncreasingSubsequence(values: string[], order: string[]): Array<[string, boolean]> {
     const dp: Array<[number, number]> = []; // length, prevIndex
     let high: [number, number] = [-1, -1]; // length, index
     for (let i = 0; i < values.length; i++) {
@@ -39,7 +39,7 @@ export function longestIncreasingSubsequence(values: string[], order: string[]):
 //
 // Returns an array of "remove-and-replace-in-index" operations, which, if done in order, will sort
 // the array, and this list of operations is the minimal size.
-export function findOptimalSwaps(before: string[], after: string[]): [string, number][] {
+export function findOptimalSwaps(before: string[], after: string[]): Array<[string, number]> {
     const progress = longestIncreasingSubsequence(before, after);
     const results: Array<[string, number]> = [];
     for (let i = 0; i < progress.length; i++) {

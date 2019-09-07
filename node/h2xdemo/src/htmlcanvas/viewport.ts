@@ -1,10 +1,6 @@
 import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
 import {Coord} from '@/store/document/types';
-import assert from 'assert';
-import {decomposeMatrix} from '@/htmlcanvas/utils';
-
-export const EPS = 1e-5;
 
 /*
  * A transformation specifically for the screen, with a center co-ordinate, rotation, and scale.
@@ -34,7 +30,7 @@ export class ViewPort {
         this.position = TM.transform(
             this.position,
             TM.translate(finish.x - sx, finish.y - sy),
-        )
+        );
     }
 
     /**
@@ -48,18 +44,10 @@ export class ViewPort {
 
     /**
      * Take a world coordinate and project to the screen
-     * @param x
-     * @param y
      */
     toScreenCoord(point: Coord): Coord {
         const inv: Matrix = TM.inverse(TM.transform(this.position, TM.translate(-this.width / 2, -this.height / 2)));
         return TM.applyToPoint(inv, point);
-    }
-
-    toScreenLength(len: number) {
-        const t = decomposeMatrix(this.position);
-        assert(Math.abs(t.sx - t.sy) < EPS);
-        return len / t.sx;
     }
 
     /**
@@ -70,7 +58,8 @@ export class ViewPort {
      */
     prepareContext(ctx: CanvasRenderingContext2D, ...transform: Matrix[]) {
         const m = (transform.length > 0 ?
-                        TM.transform(TM.translate(this.width / 2, this.height / 2), TM.inverse(this.position), ...transform)
+                        TM.transform(TM.translate(this.width / 2, this.height / 2), TM.inverse(this.position),
+                            ...transform)
                         : TM.transform(TM.translate(this.width / 2, this.height / 2), TM.inverse(this.position))
         );
         ctx.setTransform(m);
@@ -78,10 +67,11 @@ export class ViewPort {
 
     /**
      * Takes a screen coordinate and finds the world coordinate
-     * @param x
-     * @param y
      */
     toWorldCoord(point: Coord): Coord {
-        return TM.applyToPoint(TM.transform(this.position, TM.translate(-this.width / 2, -this.height / 2)), point);
+        return TM.applyToPoint(TM.transform(
+            this.position,
+            TM.translate(-this.width / 2, -this.height / 2),
+        ), point);
     }
 }

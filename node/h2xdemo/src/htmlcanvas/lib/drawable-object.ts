@@ -1,4 +1,4 @@
-import {Coord, Dimensions, Rectangle} from '@/store/document/types';
+import {Coord} from '@/store/document/types';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';

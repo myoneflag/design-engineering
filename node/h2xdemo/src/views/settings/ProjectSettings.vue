@@ -26,16 +26,14 @@
 </template>
 
 <script lang="ts">
-    import Vue from "vue";
-    import Component from "vue-class-component";
-    import DrawingNavBar from "../../components/DrawingNavBar.vue";
+    import Vue from 'vue';
+    import Component from 'vue-class-component';
+    import DrawingNavBar from '../../components/DrawingNavBar.vue';
+
     @Component({
         components: { DrawingNavBar },
     })
     export default class ProjectSettings extends Vue {
-        mounted() {
-
-        }
     }
     /*
 

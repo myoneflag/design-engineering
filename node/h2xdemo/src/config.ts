@@ -37,8 +37,6 @@ export const PAPER_SIZES: PaperSize[] = [
     { name: 'ARCH E', heightMM: 914.4, widthMM: 1219.2 },
 ];
 
-export const DEFAULT_PAPER_SIZE: PaperSize = { name: 'A1', heightMM: 594, widthMM: 841 };
-
 export const DEFAULT_FONT_NAME: string = 'Helvetica';
 
 export const SENSIBLE_SCALES = [

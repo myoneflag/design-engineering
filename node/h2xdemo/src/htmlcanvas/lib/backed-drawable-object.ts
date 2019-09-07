@@ -4,7 +4,7 @@ import {DocumentState, WithID} from '@/store/document/types';
 export default abstract class BackedDrawableObject<T extends WithID> extends DrawableObject {
     stateObject: T;
 
-    constructor(context: DocumentState, parent: DrawableObject | null, obj: T) {
+    protected constructor(context: DocumentState, parent: DrawableObject | null, obj: T) {
         super(parent);
         this.stateObject = obj;
         this.refreshObjectInternal(context, obj);

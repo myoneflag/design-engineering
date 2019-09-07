@@ -1,12 +1,7 @@
 
 export enum DrawingMode {
-    FloorPlan,
-    Hydraulics,
-    Results,
-}
-
-export class EventHandler {
-
+    FloorPlan = 0,
+    Hydraulics = 1,
 }
 
 export interface MouseMoveResult {
@@ -17,4 +12,4 @@ export interface MouseMoveResult {
 export const UNHANDLED: MouseMoveResult = {
     handled: false,
     cursor: null,
-}
+};

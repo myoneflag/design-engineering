@@ -9,7 +9,7 @@
 
 <script lang="ts">
     import Vue from 'vue';
-    import Component from "vue-class-component";
+    import Component from 'vue-class-component';
     import FloorPlanProperties from '@/components/editor/FloorPlanProperties.vue';
 
     @Component({
@@ -18,7 +18,7 @@
             selectedObject: Object,
             selectedDrawable: Object,
             objectType: String,
-        }
+        },
     })
     export default class PropertiesWindow extends Vue {
     }

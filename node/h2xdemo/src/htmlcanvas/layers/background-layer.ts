@@ -2,8 +2,6 @@ import Layer from '@/htmlcanvas/layers/layer';
 import {Background, DocumentState} from '@/store/document/types';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {BackgroundImage} from '@/htmlcanvas/objects/background-image';
-import axios from 'axios';
-import {parseScale} from '@/htmlcanvas/utils';
 import {ResizeControl} from '@/htmlcanvas/objects/resize-control';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import {ToolConfig} from '@/store/tools/types';
@@ -20,7 +18,8 @@ export default class BackgroundLayer implements Layer {
     onSelect: (selectId: Background | null, drawable: DrawableObject | null) => any;
     onCommit: (selectId: Background) => any;
 
-    constructor(onChange: () => any, onSelect: (selectId: Background | null, drawable: DrawableObject | null) => any, onCommit: (selectId: Background) => any) {
+    constructor(onChange: () => any, onSelect: (selectId: Background | null, drawable: DrawableObject | null)
+        => any, onCommit: (selectId: Background) => any) {
         this.onChange = onChange;
         this.onSelect = onSelect;
         this.onCommit = onCommit;
@@ -28,7 +27,6 @@ export default class BackgroundLayer implements Layer {
 
 
     draw(ctx: CanvasRenderingContext2D, vp: ViewPort, active: boolean, selectedTool: ToolConfig) {
-        console.log("Background drawing");
         // draw selected one on top.
         this.sidsInOrder.forEach((selectId) => {
             if (this.sidToObject[selectId]) {
@@ -51,42 +49,37 @@ export default class BackgroundLayer implements Layer {
     }
 
     update(doc: DocumentState) {
-        console.log("background updating");
         this.resizeBox = null; // We regenerate this if needed.
 
-        let existingSids: string[] = [];
+        const existingSids: string[] = [];
 
         for (const background of doc.drawing.backgrounds) {
             if ( this.sidToObject[background.uid] === undefined) {
-                console.log("Background layer updating dom for thing with center " + background.center.x + " " + background.center.y);
                 this.sidToObject[background.uid] = new BackgroundImage(
                     _.cloneDeep(background),
-                    (image: BackgroundImage) => {
+                    () => {
                         this.onChange();
                     },
-                    (image: BackgroundImage) => {
+                    () => {
                         this.updateSelectionBox();
                         this.onChange();
                     },
                     (backgroundImage: BackgroundImage) => {
-                        const {x, y} = backgroundImage.toWorldCoord(backgroundImage.background.crop);
                         this.selectedId = background.uid;
                         this.updateSelectionBox();
                         this.onSelect(backgroundImage.background, backgroundImage);
                         return true;
                     },
                     (backgroundImage: BackgroundImage) => {
-                        console.log("Background image called my onCommit");
                         this.onCommit(backgroundImage.background);
                     },
                 );
                 this.sidsInOrder.push(background.uid);
             } else {
-                let obj = this.sidToObject[background.uid];
+                const obj = this.sidToObject[background.uid];
                 const oldUri = obj.background.uri;
                 obj.background = _.cloneDeep(background);
-                console.log("new background: " + background.uri + " old background: " + oldUri);
-                if (obj.background.uri != oldUri) {
+                if (obj.background.uri !== oldUri) {
                     obj.initializeImage(() => {
                         this.onChange();
                     });
@@ -99,7 +92,7 @@ export default class BackgroundLayer implements Layer {
             existingSids.push(background.uid);
         }
 
-        let toDelete: string[] = [];
+        const toDelete: string[] = [];
         for (const selectId in this.sidToObject) {
             if (existingSids.indexOf(selectId) === -1) {
                 this.sidsInOrder.splice(this.sidsInOrder.indexOf(selectId), 1);
@@ -112,27 +105,21 @@ export default class BackgroundLayer implements Layer {
         }
         toDelete.forEach((s) => delete this.sidToObject[s]);
 
-        console.log("Existing: " + JSON.stringify(existingSids));
-        console.log("ToDelete: " + JSON.stringify(toDelete));
-
         this.updateSelectionBox();
     }
 
     // When the state changes, the selection box needs to follow.
     updateSelectionBox() {
         this.resizeBox = null;
-        for (let selectId in this.sidToObject) {
+        for (const selectId in this.sidToObject) {
             if (selectId === this.selectedId) {
                 const background = this.sidToObject[selectId];
-                const {x, y} = background.toWorldCoord(background.background.crop);
-                background.height;
                 this.resizeBox = new ResizeControl(
                     this.sidToObject[selectId],
-                    (e: ResizeControl) =>  this.onSelectedResize(e),
-                    (e: ResizeControl) => {
+                    () =>  this.onSelectedResize(),
+                    () => {
                         // Do deh operation transform.
                         // TODO: Deh operation transform
-                        console.log("Resize control called my onCommit");
                         this.onCommit(background.background);
                     },
                 );
@@ -141,7 +128,7 @@ export default class BackgroundLayer implements Layer {
     }
 
     // This is when our guy resizes
-    onSelectedResize(target: ResizeControl) {
+    onSelectedResize() {
         if (this.selectedId) {
             this.onChange();
         }

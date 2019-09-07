@@ -22,23 +22,22 @@
 
 <script lang="ts">
     import Vue from 'vue';
-    import Component from "vue-class-component";
-    import {DrawingMode} from "@/htmlcanvas/types";
-    import {ENTITY_NAMES} from "@/store/document/entities";
+    import Component from 'vue-class-component';
+    import {ENTITY_NAMES} from '@/store/document/entities';
     import FlowSystemPicker from '@/components/editor/FlowSystemPicker.vue';
 
     @Component({
         components: {FlowSystemPicker},
         props: {
             flowSystems: Array,
-        }
+        },
     })
     export default class HydraulicsInsertPanel extends Vue {
-        selectedSystemId: number = 0;
-
-        get entityNames() {
+        static get entityNames() {
             return ENTITY_NAMES;
         }
+
+        selectedSystemId: number = 0;
 
         get selectedSystem() {
             return this.$props.flowSystems[this.selectedSystemId];

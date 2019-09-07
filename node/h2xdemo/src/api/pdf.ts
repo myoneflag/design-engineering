@@ -10,18 +10,16 @@ export interface PDFRenderResult {
 }
 
 export const renderPdf = (file: File, onLoad: (data: PDFRenderResult) => void) => {
-    let formData = new FormData();
+    const formData = new FormData();
     formData.append('pdf', file);
 
     axios.post('api/uploadPdf', formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },
-    }).catch((reason) => {
-        console.log(JSON.stringify(reason));
     }).then((response) => { // from backend API
         if (response) {
             onLoad(response.data);
         }
     });
-}
+};
