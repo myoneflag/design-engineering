@@ -193,11 +193,6 @@ function diffUidObjects(prev: any, next: any): OT.OperationTransform[] {
 
             // Do the LCM thing for reordering.
             const result = findOptimalSwaps(inOld, inNew);
-            console.log("Optimal swaps: " + JSON.stringify(result));
-            console.log(JSON.stringify(inOld));
-            console.log(JSON.stringify(inNew));
-            console.log(_.isEqual(inOld, inNew));
-
 
             result.forEach(([uid, index]) => {
                 const op: OT.MoveOperation = {

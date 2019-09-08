@@ -6,10 +6,10 @@ import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import {ENTITY_NAMES} from '@/store/document/entities';
 import FlowSource from '@/htmlcanvas/objects/flow-source';
 import FlowSourceEntity from '@/store/document/entities/flow-source';
+import * as _ from 'lodash';
+import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 
 export default class  HydraulicsLayer implements Layer {
-
-    uidToObject: Map<string, BackedDrawableObject<WithID>> = new Map<string, BackedDrawableObject<WithID>>();
     uidsInOrder: string[] = [];
 
     onChange: () => any;
@@ -18,8 +18,15 @@ export default class  HydraulicsLayer implements Layer {
 
     selectedObject: BackedDrawableObject<WithID> | null = null;
 
-    constructor(onChange: () => any, onSelect: (drawable: BackedDrawableObject<WithID> | null)
-        => any, onCommit: (drawable: BackedDrawableObject<WithID>) => any) {
+    objectStore: Map<string, DrawableObject>;
+
+    constructor(
+        objectStore: Map<string, DrawableObject>,
+        onChange: () => any,
+        onSelect: (drawable: BackedDrawableObject<WithID> | null)
+        => any, onCommit: (drawable: BackedDrawableObject<WithID>) => any
+    ) {
+        this.objectStore = objectStore;
         this.onChange = onChange;
 
         this.onSelect = onSelect;
@@ -29,13 +36,13 @@ export default class  HydraulicsLayer implements Layer {
 
     draw(ctx: CanvasRenderingContext2D, vp: ViewPort, active: boolean) {
         this.uidsInOrder.forEach((v) => {
-            this.uidToObject.get(v)!.draw(ctx, vp, active);
+            this.objectStore.get(v)!.draw(ctx, vp, active);
         });
     }
 
     drawSelectionLayer(ctx: CanvasRenderingContext2D, vp: ViewPort) {
         if (this.selectedObject) {
-            this.uidToObject.get(this.selectedObject.stateObject.uid)!.draw(ctx, vp, true, true);
+            this.objectStore.get(this.selectedObject.stateObject.uid)!.draw(ctx, vp, true, true);
         }
     }
 
@@ -43,7 +50,7 @@ export default class  HydraulicsLayer implements Layer {
         const thisIds = doc.drawing.entities.map((v) => v.uid);
         const removed = this.uidsInOrder.filter((v: string) => thisIds.indexOf(v) === -1);
 
-        removed.forEach((v) =>  this.uidToObject.delete(v));
+        removed.forEach((v) =>  this.objectStore.delete(v));
 
         // We have to create child objects from root to child with a tree.
         // Build tree.
@@ -57,27 +64,40 @@ export default class  HydraulicsLayer implements Layer {
 
         // Traverse tree, building real world objects in the correct order so that parents are always available before
         // children.
-        const dfs: Array<string|null> = [null];
+        const roots: Array<string | null> = [null, ...(doc.drawing.backgrounds.map((v) => v.uid))];
+        const dfs: Array<string|null> = _.clone(roots);
         let numVisited = 0;
         while (dfs.length) {
             const next = dfs.pop()!;
             numVisited ++;
-            if (next != null) {
+
+            // Root elements are not part of this.
+            if (roots.indexOf(next) === -1) {
                 const entity = doc.drawing.entities.find((v) => v.uid === next)!;
 
-                if (this.uidToObject.get(entity.uid) !== undefined) {
+                let parent: DrawableObject | null = null;
+                if (entity.parentUid) {
+                    parent = this.objectStore.get(entity.parentUid)!;
+                }
+
+                if (this.objectStore.get(entity.uid) !== undefined) {
                     // update existing object
-                    this.uidToObject.get(entity.uid)!.refreshObject(
-                        doc,
-                        entity.parentUid == null ? null : this.uidToObject.get(entity.parentUid)!,
-                        entity,
-                    );
+                    const object = this.objectStore.get(entity.uid);
+                    if (object instanceof BackedDrawableObject) {
+                        object.refreshObject(
+                            doc,
+                            parent,
+                            entity,
+                        );
+                    } else {
+                        throw new Error('Expected backed drawable object, got ' + JSON.stringify(object) + ' instead');
+                    }
                 } else {
                     // create new object
                     if (entity.type === ENTITY_NAMES.FLOW_SOURCE) {
-                        this.uidToObject.set(entity.uid, new FlowSource(
+                        this.objectStore.set(entity.uid, new FlowSource(
                             doc,
-                            entity.parentUid == null ? null : this.uidToObject.get(entity.parentUid)!,
+                            parent,
                             entity as FlowSourceEntity,
                             (object) => this.onSelected(object),
                             ),
@@ -92,11 +112,11 @@ export default class  HydraulicsLayer implements Layer {
             }
         }
 
-        if (numVisited !== thisIds.length + 1) {
+        if (numVisited !== thisIds.length + roots.length) {
 
             throw new Error('Number of create objects not the same as total number of objects.' +
                 ' Possible causes: multiple objects with the same ID. Cyclic parent dependency. ' +
-                numVisited + ' vs ' + (thisIds.length + 1),
+                numVisited + ' vs ' + (thisIds.length + roots.length),
             );
         }
 
@@ -112,8 +132,8 @@ export default class  HydraulicsLayer implements Layer {
     onMouseDown(event: MouseEvent, vp: ViewPort) {
         for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
             const uid = this.uidsInOrder[i];
-            if (this.uidToObject.has(uid)) {
-                const object = this.uidToObject.get(uid)!;
+            if (this.objectStore.has(uid)) {
+                const object = this.objectStore.get(uid)!;
                 if (object.onMouseDown(event, vp)) {
                     return true;
                 }
@@ -126,8 +146,8 @@ export default class  HydraulicsLayer implements Layer {
     onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
         for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
             const uid = this.uidsInOrder[i];
-            if (this.uidToObject.has(uid)) {
-                const object = this.uidToObject.get(uid)!;
+            if (this.objectStore.has(uid)) {
+                const object = this.objectStore.get(uid)!;
                 const res = object.onMouseMove(event, vp);
                 if (res.handled) {
                     return res;
@@ -142,8 +162,8 @@ export default class  HydraulicsLayer implements Layer {
     onMouseUp(event: MouseEvent, vp: ViewPort) {
         for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
             const uid = this.uidsInOrder[i];
-            if (this.uidToObject.has(uid)) {
-                const object = this.uidToObject.get(uid)!;
+            if (this.objectStore.has(uid)) {
+                const object = this.objectStore.get(uid)!;
                 if (object.onMouseUp(event, vp)) {
                     return true;
                 }

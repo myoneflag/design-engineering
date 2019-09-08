@@ -64,6 +64,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
     import FlowSourceEntity from '@/store/document/entities/flow-source';
     import {ENTITY_NAMES} from '@/store/document/entities';
     import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
+    import * as _ from 'lodash';
 
     @Component({
         components: {HydraulicsInsertPanel, Overlay, Toolbar, PropertiesWindow, ModeButtons},
@@ -94,6 +95,9 @@ import {DrawingMode} from "@/htmlcanvas/types";
         shouldDraw: boolean = true;
         lastDraw: number = 0;
 
+
+        objectStore: Map<string, DrawableObject> = new Map<string, DrawableObject>();
+
         mounted() {
             this.ctx = (this.$refs.drawingCanvas as any).getContext('2d');
 
@@ -107,6 +111,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
             (this.$refs.drawingCanvas as any).onwheel = this.onWheel;
 
             this.backgroundLayer = new BackgroundLayer(
+                this.objectStore,
                 () => {
                     this.scheduleDraw();
                 },
@@ -120,6 +125,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                 },
             );
             this.hydraulicsLayer = new HydraulicsLayer(
+                this.objectStore,
                 () => {
                     this.scheduleDraw();
                 },
@@ -239,13 +245,23 @@ import {DrawingMode} from "@/htmlcanvas/types";
                 },
                 (wc: Coord) => {
                     const doc = this.document as DocumentState;
+
+                    // Maybe we drew onto a background
+                    const floor = this.backgroundLayer.getBackgroundAt(wc, this.objectStore);
+                    let parentUid: string | null = null;
+                    let oc = _.cloneDeep(wc);
+                    if (floor != null) {
+                        parentUid = floor.background.uid;
+                        oc = floor.toObjectCoord(wc);
+                    }
+
                     const newEntity: FlowSourceEntity = {
-                        center: wc,
+                        center: oc,
                         color: null,
                         heightAboveFloorM: 0,
                         material: null,
                         maximumVelocityMS: null,
-                        parentUid: null,
+                        parentUid,
                         pressureAtSourceKPA: 0,
                         radiusMM: 100,
                         spareCapacity: null,

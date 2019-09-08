@@ -130,7 +130,7 @@ public class PDFServiceController
             paperPattern += "|" + PaperSizes.PAPER_SIZES[i].name();
         }
 
-        String regexp = "SCALE[-: \t]*([0-9]+):([0-9]+)[ \t]*@?[ \t]*(" + paperPattern +")?";
+        String regexp = "(?:SCALE|Scale|scale)[-: \n\t]*([0-9]+):([0-9]+)[ \n\t]*@?[ \n\t]*(" + paperPattern +")?";
         logger.debug("Regex is:");
         logger.debug(regexp);
 
@@ -142,22 +142,10 @@ public class PDFServiceController
         double scaleNumber = 1/100.0;
         if (m.find()) {
             logger.debug("Mathcresult: " + m.toMatchResult().toString());
-            if (m.groupCount() >= 3) {
+            if (m.groupCount() >= 3 && m.group(3) != null) {
                 // We got the paper size bois
                 paperSize = m.group(3);
                 logger.debug("Found paper size: " + paperSize);
-
-                for (PaperSize size : PaperSizes.PAPER_SIZES) {
-                    if (size.name().equals(paperSize)) {
-                        if (h > w) {
-                            h = size.widthMM();
-                            w = size.heightMM();
-                        } else {
-                            h = size.heightMM();
-                            w = size.widthMM();
-                        }
-                    }
-                }
             }
 
             if (m.groupCount() >= 2) {
@@ -183,13 +171,41 @@ public class PDFServiceController
             logger.debug("No match");
         }
 
+        // Try again
+        regexp = "SCALE[-: \n\t][ \n\t]*@?[ \n\t]*(" + paperPattern +")";
+        p = Pattern.compile(regexp, Pattern.CASE_INSENSITIVE);
+        m = p.matcher(contents);
+
+        if (m.find()) {
+            if (m.groupCount() >= 1) {
+                paperSize = m.group(1);
+                logger.debug("Found paper size with second method: " + paperSize);
+            }
+        }
+
+        for (PaperSize size : PaperSizes.PAPER_SIZES) {
+            if (size.name().equals(paperSize)) {
+                if (h > w) {
+                    h = size.widthMM();
+                    w = size.heightMM();
+                } else {
+                    h = size.heightMM();
+                    w = size.widthMM();
+                }
+            }
+        }
+
+        logger.debug("Building result: " + w + " " + h + " " + paperSize);
         // TODO: Find paper sizes and scale properly.
-        return  new PdfDims(
+        PdfDims result = new PdfDims(
                 pages,
                 ImmutablePaperSize.builder().widthMM(w).heightMM(h).name(paperSize).build(),
                 scale,
                 scaleNumber
         );
+        logger.debug("Built");
+
+        return result;
     }
 
     private static String converToSvg(String pdfPath) throws IOException, InterruptedException {
