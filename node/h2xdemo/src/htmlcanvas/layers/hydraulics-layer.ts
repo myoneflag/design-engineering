@@ -23,8 +23,8 @@ export default class  HydraulicsLayer implements Layer {
     constructor(
         objectStore: Map<string, DrawableObject>,
         onChange: () => any,
-        onSelect: (drawable: BackedDrawableObject<WithID> | null)
-        => any, onCommit: (drawable: BackedDrawableObject<WithID>) => any
+        onSelect: (drawable: BackedDrawableObject<WithID> | null) => any,
+        onCommit: (drawable: BackedDrawableObject<WithID>) => any,
     ) {
         this.objectStore = objectStore;
         this.onChange = onChange;
@@ -100,8 +100,9 @@ export default class  HydraulicsLayer implements Layer {
                             parent,
                             entity as FlowSourceEntity,
                             (object) => this.onSelected(object),
-                            ),
-                        );
+                            () => this.onChange(),
+                            (flowSource) => this.onCommit(flowSource),
+                        ));
                     }
                 }
             }

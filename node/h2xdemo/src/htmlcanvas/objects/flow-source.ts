@@ -9,20 +9,30 @@ import {matrixScale} from '@/htmlcanvas/utils';
 import {lighten} from '@/lib/utils';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
+import DraggableObject, {Movable} from '@/htmlcanvas/lib/draggable-object';
 
-export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> {
+export default class FlowSource extends DraggableObject<FlowSourceEntity> {
 
     MINIMUM_RADIUS_PX: number = 3;
     onSelect: (object: FlowSource) => void;
     lastDrawnWorldRadius: number = 0; // for bounds detection
 
+
+    onChange: (flowSource: FlowSource) => void;
+    onCommit: (flowSource: FlowSource) => void;
+
     private system!: FlowSystemParameters;
 
     constructor(
         context: DocumentState, parent: DrawableObject | null,
-        obj: FlowSourceEntity, onSelect: (object: FlowSource) => void,
+        obj: FlowSourceEntity,
+        onSelect: (object: FlowSource) => void,
+        onChange: (flowSource: FlowSource) => void,
+        onCommit: (flowSource: FlowSource) => void,
     ) {
         super(context, parent, obj);
+        this.onChange = onChange;
+        this.onCommit = onCommit;
         this.onSelect = onSelect;
     }
 
@@ -46,7 +56,7 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> {
             ctx.beginPath();
             ctx.lineWidth = 0;
             ctx.globalAlpha = 1;
-            ctx.arc(this.stateObject.center.x, this.stateObject.center.y, haloSize, 0, Math.PI * 2);
+            ctx.arc(0, 0, haloSize, 0, Math.PI * 2);
             ctx.fill();
 
             this.lastDrawnWorldRadius = haloSize;
@@ -60,8 +70,8 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> {
                 ctx.globalAlpha = 0.5;
                 ctx.beginPath();
                 ctx.arc(
-                    this.stateObject.center.x,
-                    this.stateObject.center.y,
+                    0,
+                    0,
                     this.MINIMUM_RADIUS_PX / scale,
                     0,
                     Math.PI * 2,
@@ -77,8 +87,8 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> {
         ctx.globalAlpha = 1;
         ctx.beginPath();
         ctx.arc(
-            this.stateObject.center.x,
-            this.stateObject.center.y,
+            0,
+            0,
             this.toObjectLength(this.stateObject.radiusMM),
             0,
             Math.PI * 2,
@@ -88,7 +98,9 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> {
     }
 
     get position(): Matrix {
-        return TM.identity();
+        return TM.transform(
+            TM.translate(this.stateObject.center.x, this.stateObject.center.y),
+        );
     }
 
     get color() {
@@ -103,13 +115,31 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> {
 
     inBounds(objectCoord: Coord) {
         const dist = Math.sqrt(
-            (objectCoord.x - this.stateObject.center.x) ** 2
-            + (objectCoord.y - this.stateObject.center.y) ** 2,
+            (objectCoord.x) ** 2
+            + (objectCoord.y) ** 2,
         );
         return dist <= this.lastDrawnWorldRadius;
     }
 
+    onDragStart(objectCoord: Coord) {
+        return null;
+    }
+
+    onDrag(grabbedObjectCoord: Coord, eventObjectCoord: Coord, grabState: any) {
+        this.stateObject.center.x -= grabbedObjectCoord.x - eventObjectCoord.x;
+        this.stateObject.center.y -= grabbedObjectCoord.y - eventObjectCoord.y;
+        this.onChange(this);
+    }
+
+    onDragFinish() {
+        this.onCommit(this);
+    }
+
     onMouseDown(event: MouseEvent, vp: ViewPort): boolean {
+        if (super.onMouseDown(event, vp)) {
+            // return true;
+            // We want to select too while moving
+        }
         const wc = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const oc = this.toObjectCoord(wc);
 
@@ -124,10 +154,18 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> {
     }
 
     onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
+        const res = super.onMouseMove(event, vp);
+        if (res.handled) {
+            return res;
+        }
         return UNHANDLED;
     }
 
     onMouseUp(event: MouseEvent, vp: ViewPort): boolean {
+        if (super.onMouseUp(event, vp)) {
+            return true;
+        }
+
         const wc = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const oc = this.toObjectCoord(wc);
         // Check bounds
