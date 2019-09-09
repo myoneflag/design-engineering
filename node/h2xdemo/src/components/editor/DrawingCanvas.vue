@@ -21,7 +21,7 @@
             <PropertiesWindow
                     :selected-entity="selectedEntity"
                     :selected-object="selectedObject"
-                    v-if="selectedEntity && currentTool.propertiesVisible"
+                    v-if="selectedObject && currentTool.propertiesVisible"
                     :object-type="selectedObjectType"
                     :on-change="scheduleDraw"
             >

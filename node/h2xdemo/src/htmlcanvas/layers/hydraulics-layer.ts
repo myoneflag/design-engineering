@@ -166,6 +166,7 @@ export default class  HydraulicsLayer implements Layer {
             if (this.objectStore.has(uid)) {
                 const object = this.objectStore.get(uid)!;
                 if (object.onMouseUp(event, vp)) {
+                    console.log(this.selectedObject);
                     return true;
                 }
             }
