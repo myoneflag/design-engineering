@@ -1,8 +1,8 @@
 import {ViewPort} from '@/htmlcanvas/viewport';
-import DrawableObject from '@/htmlcanvas/components/drawable-object';
-import SizeableObject from '@/htmlcanvas/components/sizeable-object';
+import DrawableObject from '@/htmlcanvas/lib/drawable-object';
+import SizeableObject from '@/htmlcanvas/lib/sizeable-object';
 import * as TM from 'transformation-matrix';
-import {decomposeMatrix, matrixScale} from '@/htmlcanvas/utils';
+import {matrixScale} from '@/htmlcanvas/utils';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 
 enum Sides {
@@ -20,6 +20,8 @@ export class ResizeControl extends DrawableObject {
     onCommit: ((_: ResizeControl) => any) | null;
     handles: Handle[];
 
+    selectedHandle: Handle | null = null;
+
     constructor(parent: SizeableObject, onChange: ((_: ResizeControl) => any), onCommit: ((_: ResizeControl) => any)) {
         super(parent);
         this.handles = this.getHandles();
@@ -30,7 +32,6 @@ export class ResizeControl extends DrawableObject {
     get position() {
         return TM.identity();
     }
-
 
     get x() {
         return (this.parent as SizeableObject).boundary.x;
@@ -87,7 +88,6 @@ export class ResizeControl extends DrawableObject {
         return null;
     }
 
-    selectedHandle: Handle | null = null;
 
     onMouseDown(event: MouseEvent, vp: ViewPort): boolean {
         this.selectedHandle = this.getHandleAtScreenCoord(event.offsetX, event.offsetY, vp);
@@ -96,22 +96,23 @@ export class ResizeControl extends DrawableObject {
 
     onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
         // do mouse changes
+        // tslint:disable-next-line:no-bitwise
         if (event.buttons & 1) {
             if (this.selectedHandle != null) {
                 const w = this.toObjectCoord(vp.toWorldCoord({x: event.offsetX, y: event.offsetY}));
                 // start resizing shit
-                if (this.selectedHandle[2].indexOf(Sides.Left) != -1) {
+                if (this.selectedHandle[2].indexOf(Sides.Left) !== -1) {
                     this.w += this.x - w.x;
                     this.x = w.x;
                 }
-                if (this.selectedHandle[2].indexOf(Sides.Right) != -1) {
+                if (this.selectedHandle[2].indexOf(Sides.Right) !== -1) {
                     this.w = w.x - this.x;
                 }
-                if (this.selectedHandle[2].indexOf(Sides.Bottom) != -1) {
+                if (this.selectedHandle[2].indexOf(Sides.Bottom) !== -1) {
                     this.h += this.y - w.y;
                     this.y = w.y;
                 }
-                if (this.selectedHandle[2].indexOf(Sides.Top) != -1) {
+                if (this.selectedHandle[2].indexOf(Sides.Top) !== -1) {
                     this.h = w.y - this.y;
                 }
 

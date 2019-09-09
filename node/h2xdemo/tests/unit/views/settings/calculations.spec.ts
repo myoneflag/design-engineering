@@ -1,9 +1,8 @@
 import { expect } from 'chai';
-import {mount, shallowMount} from '@vue/test-utils';
+import {shallowMount} from '@vue/test-utils';
 import * as _ from 'lodash';
 import {initialValue} from '@/store/document/types';
 import store from '@/store/store';
-import WaterSystems from '@/views/settings/WaterSystems.vue';
 import Calculations from '@/views/settings/Calculations.vue';
 
 describe('Calculations.vue', () => {

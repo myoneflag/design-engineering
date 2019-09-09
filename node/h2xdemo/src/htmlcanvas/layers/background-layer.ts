@@ -1,17 +1,13 @@
 import Layer from '@/htmlcanvas/layers/layer';
-import {Background, DocumentState} from '@/store/document/types';
+import {Background, Coord, DocumentState} from '@/store/document/types';
 import {ViewPort} from '@/htmlcanvas/viewport';
-import {BackgroundImage} from '@/htmlcanvas/components/background-image';
-import axios from 'axios';
-import {parseScale} from '@/htmlcanvas/utils';
-import {ResizeControl} from '@/htmlcanvas/components/resize-control';
+import {BackgroundImage} from '@/htmlcanvas/objects/background-image';
+import {ResizeControl} from '@/htmlcanvas/objects/resize-control';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import {ToolConfig} from '@/store/tools/types';
-import DrawableObject from '@/htmlcanvas/components/drawable-object';
-import * as _ from 'lodash';
+import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 
 export default class BackgroundLayer implements Layer {
-    sidToObject: { [uuid: string]: BackgroundImage } = {};
     sidsInOrder: string[] = [];
     selectedId: string | null = null;
     resizeBox: ResizeControl | null = null;
@@ -19,32 +15,40 @@ export default class BackgroundLayer implements Layer {
     onChange: () => any;
     onSelect: (selectId: Background | null, drawable: DrawableObject | null) => any;
     onCommit: (selectId: Background) => any;
+    objectStore: Map<string, DrawableObject>;
 
-    constructor(onChange: () => any, onSelect: (selectId: Background | null, drawable: DrawableObject | null) => any, onCommit: (selectId: Background) => any) {
+    constructor(
+        objectStore: Map<string, DrawableObject>,
+        onChange: () => any,
+        onSelect: (selectId: Background | null, drawable: DrawableObject | null) => any,
+        onCommit: (selectId: Background) => any,
+    ) {
         this.onChange = onChange;
         this.onSelect = onSelect;
         this.onCommit = onCommit;
+        this.objectStore = objectStore;
     }
 
 
     draw(ctx: CanvasRenderingContext2D, vp: ViewPort, active: boolean, selectedTool: ToolConfig) {
-
         // draw selected one on top.
         this.sidsInOrder.forEach((selectId) => {
-            if (this.sidToObject[selectId]) {
-                if (selectId !== this.selectedId || !active || !this.sidToObject[selectId].hasDragged) {
-                    const bgi = this.sidToObject[selectId];
-                    bgi.draw(ctx, vp, this.selectedId === selectId, active && !selectedTool.focusSelectedObject);
+            const background = this.objectStore.get(selectId);
+            if (background && background instanceof BackgroundImage) {
+                if (selectId !== this.selectedId || !active || !background.hasDragged) {
+                    background.draw(ctx, vp, this.selectedId === selectId, active && !selectedTool.focusSelectedObject);
                 }
+            } else {
+                throw new Error('Expected background image, got ' + JSON.stringify(background) + ' instead');
             }
         });
 
         if (active) {
             this.sidsInOrder.forEach((selectId) => {
-                if (this.sidToObject[selectId] && selectId === this.selectedId
-                    && (this.sidToObject[selectId].hasDragged || selectedTool.focusSelectedObject)) {
-                    const bgi = this.sidToObject[selectId];
-                    bgi.draw(ctx, vp, this.selectedId === selectId, active);
+                const background = this.objectStore.get(selectId);
+                if (background && background instanceof BackgroundImage && background.background.uid === this.selectedId
+                    && (background.hasDragged || selectedTool.focusSelectedObject)) {
+                    background.draw(ctx, vp, this.selectedId === selectId, active);
                 }
             });
         }
@@ -53,53 +57,53 @@ export default class BackgroundLayer implements Layer {
     update(doc: DocumentState) {
         this.resizeBox = null; // We regenerate this if needed.
 
-        let existingSids: string[] = [];
+        const existingSids: string[] = [];
 
         for (const background of doc.drawing.backgrounds) {
-            if ( this.sidToObject[background.uid] === undefined) {
-                console.log("Background layer updating dom for thing with center " + background.center.x + " " + background.center.y);
-                this.sidToObject[background.uid] = new BackgroundImage(
-                    _.cloneDeep(background),
-                    (image: BackgroundImage) => {
+            if (!this.objectStore.has(background.uid)) {
+                this.objectStore.set(background.uid, new BackgroundImage(
+                    background,
+                    () => {
                         this.onChange();
                     },
-                    (image: BackgroundImage) => {
+                    () => {
                         this.updateSelectionBox();
                         this.onChange();
                     },
                     (backgroundImage: BackgroundImage) => {
-                        const {x, y} = backgroundImage.toWorldCoord(backgroundImage.background.crop);
                         this.selectedId = background.uid;
                         this.updateSelectionBox();
                         this.onSelect(backgroundImage.background, backgroundImage);
                         return true;
                     },
                     (backgroundImage: BackgroundImage) => {
-                        console.log("Background image called my onCommit");
                         this.onCommit(backgroundImage.background);
                     },
-                );
+                ));
                 this.sidsInOrder.push(background.uid);
             } else {
-                let obj = this.sidToObject[background.uid];
-                const oldUri = obj.background.uri;
-                obj.background = _.cloneDeep(background);
-                console.log("new background: " + background.uri + " old background: " + oldUri);
-                if (obj.background.uri != oldUri) {
-                    obj.initializeImage(() => {
-                        this.onChange();
-                    });
-                }
-                if (background.uid === this.selectedId) {
-                    this.onSelect(background, obj);
+                const obj = this.objectStore.get(background.uid)!;
+                if (obj instanceof BackgroundImage) {
+                    const oldUri = obj.background.uri;
+                    obj.background = background;
+                    if (obj.background.uri !== oldUri) {
+                        obj.initializeImage(() => {
+                            this.onChange();
+                        });
+                    }
+                    if (background.uid === this.selectedId) {
+                        this.onSelect(background, obj);
+                    }
+                } else {
+                    throw new Error('Expected background object but got ' + JSON.stringify(background));
                 }
             }
 
             existingSids.push(background.uid);
         }
 
-        let toDelete: string[] = [];
-        for (const selectId in this.sidToObject) {
+        const toDelete: string[] = [];
+        this.sidsInOrder.forEach((selectId) => {
             if (existingSids.indexOf(selectId) === -1) {
                 this.sidsInOrder.splice(this.sidsInOrder.indexOf(selectId), 1);
                 if (selectId === this.selectedId) {
@@ -108,11 +112,9 @@ export default class BackgroundLayer implements Layer {
                 }
                 toDelete.push(selectId);
             }
-        }
-        toDelete.forEach((s) => delete this.sidToObject[s]);
 
-        console.log("Existing: " + JSON.stringify(existingSids));
-        console.log("ToDelete: " + JSON.stringify(toDelete));
+        });
+        toDelete.forEach((s) => this.objectStore.delete(s));
 
         this.updateSelectionBox();
     }
@@ -120,27 +122,24 @@ export default class BackgroundLayer implements Layer {
     // When the state changes, the selection box needs to follow.
     updateSelectionBox() {
         this.resizeBox = null;
-        for (let selectId in this.sidToObject) {
+        this.sidsInOrder.forEach((selectId) => {
             if (selectId === this.selectedId) {
-                const background = this.sidToObject[selectId];
-                const {x, y} = background.toWorldCoord(background.background.crop);
-                background.height;
+                const background = this.objectStore.get(selectId)! as BackgroundImage;
                 this.resizeBox = new ResizeControl(
-                    this.sidToObject[selectId],
-                    (e: ResizeControl) =>  this.onSelectedResize(e),
-                    (e: ResizeControl) => {
+                    background,
+                    () =>  this.onSelectedResize(),
+                    () => {
                         // Do deh operation transform.
                         // TODO: Deh operation transform
-                        console.log("Resize control called my onCommit");
                         this.onCommit(background.background);
                     },
                 );
             }
-        }
+        });
     }
 
     // This is when our guy resizes
-    onSelectedResize(target: ResizeControl) {
+    onSelectedResize() {
         if (this.selectedId) {
             this.onChange();
         }
@@ -152,6 +151,24 @@ export default class BackgroundLayer implements Layer {
         }
     }
 
+    getBackgroundAt(worldCoord: Coord, objectStore: Map<string, DrawableObject>) {
+        for (let i = this.sidsInOrder.length - 1; i >= 0; i--) {
+            const selectId = this.sidsInOrder[i];
+            if (objectStore.get(selectId)) {
+                const background = this.objectStore.get(selectId);
+                if (background instanceof BackgroundImage) {
+                    const {x, y} = background.toObjectCoord(worldCoord);
+                    if (background.inBounds(x, y)) {
+                        return background;
+                    }
+                } else {
+                    throw new Error('Exepected background image, got' + JSON.stringify(background) + 'instead');
+                }
+            }
+        }
+        return null;
+    }
+
     onMouseDown(event: MouseEvent, vp: ViewPort) {
         if (this.resizeBox) {
             if (this.resizeBox.onMouseDown(event, vp)) {
@@ -161,10 +178,14 @@ export default class BackgroundLayer implements Layer {
 
         for (let i = this.sidsInOrder.length - 1; i >= 0; i--) {
             const selectId = this.sidsInOrder[i];
-            if (this.sidToObject[selectId]) {
-                const background = this.sidToObject[selectId];
-                if (background.onMouseDown(event, vp)) {
-                    return true;
+            if (this.objectStore.get(selectId)) {
+                const background = this.objectStore.get(selectId);
+                if (background instanceof BackgroundImage) {
+                    if (background.onMouseDown(event, vp)) {
+                        return true;
+                    }
+                } else {
+                    throw new Error('Exepected background image, got' + JSON.stringify(background) + 'instead');
                 }
             }
         }
@@ -182,12 +203,14 @@ export default class BackgroundLayer implements Layer {
 
         for (let i = this.sidsInOrder.length - 1; i >= 0; i--) {
             const selectId = this.sidsInOrder[i];
-            if (this.sidToObject[selectId]) {
-                const background = this.sidToObject[selectId];
+            const background = this.objectStore.get(selectId);
+            if (background instanceof BackgroundImage) {
                 const res = background.onMouseMove(event, vp);
                 if (res.handled) {
                     return res;
                 }
+            } else {
+                throw new Error('Exepected background image, got' + JSON.stringify(background) + 'instead');
             }
         }
 
@@ -204,11 +227,13 @@ export default class BackgroundLayer implements Layer {
 
         for (let i = this.sidsInOrder.length - 1; i >= 0; i--) {
             const selectId = this.sidsInOrder[i];
-            if (this.sidToObject[selectId]) {
-                const background = this.sidToObject[selectId];
+            const background = this.objectStore.get(selectId);
+            if (background instanceof BackgroundImage) {
                 if (background.onMouseUp(event, vp)) {
                     return true;
                 }
+            } else {
+                throw new Error('Expected background image, got' + JSON.stringify(background) + 'instead');
             }
         }
 

@@ -1,10 +1,7 @@
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {DocumentState} from '@/store/document/types';
 import {MouseMoveResult} from '@/htmlcanvas/types';
-
-export interface MouseHandler {
-
-}
+import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 
 export default interface Layer {
     draw: (ctx: CanvasRenderingContext2D, vp: ViewPort, ...args: any[]) => any;

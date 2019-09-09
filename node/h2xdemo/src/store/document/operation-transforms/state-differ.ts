@@ -110,7 +110,7 @@ function diffFieldsOnly(prev: any, next: any) {
     }
 }
 
-function prefixObject(obj: any, key: string) : any {
+function prefixObject(obj: any, key: string): any {
     const newObj: any = {};
     newObj[key] = obj;
     return newObj;
@@ -230,7 +230,7 @@ function diffUidObjects(prev: any, next: any): OT.OperationTransform[] {
 //
 export const diffState = (prev: DrawingState, next: DrawingState): OT.OperationTransform[] => {
     // get value diffs
-    let results: OT.OperationTransform[] = [];
+    const results: OT.OperationTransform[] = [];
     const fieldDeepDiff = diffFieldsOnly(prev, next);
     if (!_.isEmpty(fieldDeepDiff)) {
         const op: OT.UpdateOperation = {

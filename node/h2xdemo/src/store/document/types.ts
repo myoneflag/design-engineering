@@ -1,7 +1,5 @@
 import * as Operations from './operation-transforms/operation-transforms';
-import Doc = Mocha.reporters.Doc;
 import {PaperSize, PIPE_SIZING_METHODS, PSD_METHODS, RING_MAIN_CALCULATION_METHODS} from '@/config';
-import {OperationTransform} from './operation-transforms/operation-transforms';
 import * as _ from 'lodash';
 
 // Because of how the diffing engine works, there are restrictions on the data structure for the document state.
@@ -34,10 +32,12 @@ export interface WithID {
     uid: string;
 }
 
-export interface Selectable extends WithID {
+export interface DrawableEntity extends WithID {
+    parentUid: string | null;
+    type: string;
 }
 
-export interface Background extends Selectable {
+export interface Background extends WithID {
     center: Coord;
     scaleName: string;
     scaleFactor: number;
@@ -64,8 +64,9 @@ export interface Background extends Selectable {
 export interface DrawingState {
     generalInfo: GeneralInfo;
     backgrounds: Background[];
-    waterSystems: WaterSystemParameters[];
+    flowSystems: FlowSystemParameters[];
     calculationParams: CalculationParameters;
+    entities: DrawableEntity[];
 }
 
 /**
@@ -102,7 +103,7 @@ export interface Color {
     hex: string;
 }
 
-export interface WaterSystemParameters {
+export interface FlowSystemParameters extends WithID {
     name: string;
     velocity: number;
     temperature: number;
@@ -129,7 +130,8 @@ export const initialDrawing: DrawingState = {
         client: '',
         description: '',
     },
-    waterSystems: [
+    flowSystems: [
+        // TODO: these values should get got from the database.
         {
             name: 'Cold Water',
             velocity: 10,
@@ -137,6 +139,7 @@ export const initialDrawing: DrawingState = {
             spareCapacity: 10,
             material : 'Material A',
             color: {hex: '#009CE0'},
+            uid: 'jhrwekvgjuyh',
         },
         {
             name: 'Hot Water',
@@ -145,14 +148,16 @@ export const initialDrawing: DrawingState = {
             spareCapacity: 10,
             material : 'Material B',
             color: {hex: '#F44E3B'},
+            uid: 'ebhwujfbguiwehig',
         },
     ],
-    backgrounds: [],
     calculationParams: {
         psdMethod: PSD_METHODS[0],
         ringMainCalculationMethod: RING_MAIN_CALCULATION_METHODS[0],
         pipeSizingMethod: PIPE_SIZING_METHODS[0],
     },
+    backgrounds: [],
+    entities: [],
 };
 
 export const initialValue: DocumentState = {

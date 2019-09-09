@@ -3,19 +3,13 @@ import axios from 'axios';
 import * as OT from './operation-transforms/operation-transforms';
 import { RootState } from '../types';
 import {Background, DocumentState} from '@/store/document/types';
-import {PaperSize} from '@/config';
 import {diffState} from '@/store/document/operation-transforms/state-differ';
-import {MainEventBus} from '@/store/main-event-bus';
 import {applyOtOnState} from '@/store/document/operation-transforms/state-ot-apply';
 
 
-let submitOperation = (commit: any, op: OT.OperationTransform) => {
-    console.log("Submitting operation " + JSON.stringify(op));
+function submitOperation(commit: any, op: OT.OperationTransform) {
     return axios.post('/api/document/operation', op);
-
-    // Take line off to disable optimistic operations.
-   // commit('applyOperation', op);
-};
+}
 
 export const actions: ActionTree<DocumentState, RootState> = {
     applyRemoteOperation({commit, state}, op) {
@@ -27,7 +21,6 @@ export const actions: ActionTree<DocumentState, RootState> = {
     },
 
     addBackground({commit, state}, {background} ): any {
-        console.log("added background " + JSON.stringify(background));
         commit('addBackground', {background});
     },
 
@@ -43,7 +36,10 @@ export const actions: ActionTree<DocumentState, RootState> = {
         commit('deleteBackground', background);
     },
 
-    updateBackgroundInPlace({commit, state}, {background, update}: { background: Background, update: (background: Background) => object}) {
+    updateBackgroundInPlace(
+        {commit, state},
+        {background, update}: { background: Background, update: (background: Background) => object},
+    ) {
         const index = state.drawing.backgrounds.findIndex((b) => b.uid === background.uid);
         if (index === -1) {
             throw new Error('tried to update background ' + JSON.stringify(background) + ' but it doesn\'t exist');

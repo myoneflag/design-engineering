@@ -9,37 +9,32 @@
 <script lang="ts">
     // The purpose of this is to capture events above the UI and pass them to the canvas when necessary.
     import Vue from 'vue';
-    import Component from "vue-class-component";
-    import FloorPlanProperties from '@/components/editor/FloorPlanProperties.vue';
+    import Component from 'vue-class-component';
+    import FloorPlanProperties from '@/components/editor/property-window/FloorPlanProperties.vue';
 
-    @Component({
-        props: {
-
-        },
-    })
+    @Component
     export default class Overlay extends Vue {
 
         mounted() {
             window.addEventListener('click', () => {
-                console.log("mouseup");
+                //
             });
             window.addEventListener('mousedown', () => {
-                console.log("mousedown " + arguments[0]);
+                //
             });
             window.addEventListener('mouseup', () => {
-                console.log("mouseup");
+                //
             });
             window.addEventListener('mousemove', () => {
-                console.log("mousemove");
+                //
             });
-            (this.$refs["overlaydiv"] as any).addEventListener('click', () => {
-                console.log("clicked");
+            (this.$refs.overlaydiv as any).addEventListener('click', () => {
+                //
             });
-            (this.$refs["overlaydiv"] as any).addEventListener('click', () => {
-                console.log("mouseup");
+            (this.$refs.overlaydiv as any).addEventListener('click', () => {
+                //
             });
-            (this.$refs["overlaydiv"] as any).addEventListener('click', () => {
-                console.log("moved");
+            (this.$refs.overlaydiv as any).addEventListener('click', () => {
                 return false;
             });
         }

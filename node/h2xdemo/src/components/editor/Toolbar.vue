@@ -39,15 +39,15 @@
 
 <script lang="ts">
     import Vue from 'vue';
-    import Component from "vue-class-component";
-    import {DEFAULT_TOOL, POINT_TOOL} from "../../htmlcanvas/tools/tool";
+    import Component from 'vue-class-component';
+    import {DEFAULT_TOOL, POINT_TOOL} from '../../htmlcanvas/tools/tool';
     import {ToolConfig} from '@/store/tools/types';
 
     @Component({
         props: {
             currentToolConfig: Object,
             onToolClick: Function,
-        }
+        },
     })
     export default class Toolbar extends Vue {
         TOOLBAR_BUTTONS: ToolConfig[] = [
@@ -56,7 +56,6 @@
         ];
 
         toolBtnClick(tool: ToolConfig) {
-            console.log("btn click " + tool.name + " " + this.$props.onToolClick);
             if (this.$props.onToolClick) {
                 this.$props.onToolClick(tool);
             }

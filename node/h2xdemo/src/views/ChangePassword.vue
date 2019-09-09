@@ -57,56 +57,56 @@
 </template>
 
 <script lang="ts">
-    import Component from "vue-class-component";
+    import Component from 'vue-class-component';
     import Vue from 'vue';
     import axios from 'axios';
     import router from '@/router';
 
     @Component
     export default class ChangePassword extends Vue {
-        public currentPassword: string = "";
-        public newPassword1: string = "";
-        public newPassword2: string = "";
+        currentPassword: string = '';
+        newPassword1: string = '';
+        newPassword2: string = '';
 
         confirm() {
-            if (this.newPassword1 != this.newPassword2) {
-                this.$bvToast.toast("Passwords didn't match", {
-                    title: "Please try again",
-                    variant: "info",
+            if (this.newPassword1 !== this.newPassword2) {
+                (this as any).$bvToast.toast('Passwords didn\'t match', {
+                    title: 'Please try again',
+                    variant: 'info',
                     solid: true,
                 });
             } else {
-                axios.post("/api/login/password", {
+                axios.post('/api/login/password', {
                     currentPassword: this.currentPassword,
-                    newPassword: this.newPassword1
+                    newPassword: this.newPassword1,
                 })
                 .then(({data: {success, accessToken, message, username}}) => {
-                    if (success == true) {
+                    if (success === true) {
                         this.$store.dispatch('profile/setUsername', username);
-                        this.$cookies.set("session-id", accessToken);
+                        (this as any).$cookies.set('session-id', accessToken);
 
                         if (this.$route.query.next) {
                             router.push(this.$route.query.next as string).then(() =>
-                                this.$bvToast.toast("Password change succeeded", {
-                                    variant: "success",
-                                })
+                                (this as any).$bvToast.toast('Password change succeeded', {
+                                    variant: 'success',
+                                }),
                             );
                         } else {
                             router.push({name: 'home'}).then(() =>
-                                this.$bvToast.toast("Password change succeeded", {
-                                    variant: "success",
-                                })
+                                (this as any).$bvToast.toast('Password change succeeded', {
+                                    variant: 'success',
+                                }),
                             );
                         }
                     } else {
-                        this.$bvToast.toast(message, {
+                        (this as any).$bvToast.toast(message, {
                             title: 'Password Change Error',
                             variant: 'danger',
-                            solid: true
-                        })
+                            solid: true,
+                        });
                     }
                 }).catch(() => {
-                    this.$bvToast.toast("Something went wrong...")
+                    (this as any).$bvToast.toast('Something went wrong...');
                 });
             }
         }

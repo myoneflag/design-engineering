@@ -1,6 +1,3 @@
-import Vue from 'vue';
-import { Background} from '@/store/document/types';
-
 export interface OperationTransform {
     id: number;
     type: string;

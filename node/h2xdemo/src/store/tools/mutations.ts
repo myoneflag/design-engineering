@@ -7,4 +7,4 @@ export const mutations: MutationTree<ToolState> = {
         state.currentTool = toolConfig;
         MainEventBus.$emit('tool-change', toolConfig);
     },
-}
+};

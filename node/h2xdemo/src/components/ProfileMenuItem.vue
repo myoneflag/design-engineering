@@ -14,26 +14,26 @@
     import {mapGetters} from 'vuex';
     import Vue from 'vue';
     import axios from 'axios';
-    import router from "@/router";
+    import router from '@/router';
 
     @Component(
         mapGetters({
-            username: 'profile/username'
-        })
+            username: 'profile/username',
+        }),
     )
     export default class ProfileMenuItem extends Vue {
         get username() {
-            return this.$store.getters["profile/username"];
+            return this.$store.getters['profile/username'];
         }
 
         logout() {
             axios.post('/api/logout')
                 .then(() => {
-                        this.$cookies.remove('session-id');
+                        (this as any).$cookies.remove('session-id');
                         this.$store.dispatch('profile/setUsername', '').then(() =>
-                            router.push({name: 'login'})
-                        )
-                    }
+                            router.push({name: 'login'}),
+                        );
+                    },
                 );
         }
 
@@ -43,7 +43,7 @@
                 query: {
                     next: this.$router.currentRoute.fullPath,
                 },
-            })
+            });
         }
     }
 </script>

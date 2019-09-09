@@ -1,9 +1,8 @@
 import { expect } from 'chai';
-import {mount, shallowMount} from '@vue/test-utils';
+import {shallowMount} from '@vue/test-utils';
 import General from '@/views/settings/General.vue';
 import * as _ from 'lodash';
 import {initialValue} from '@/store/document/types';
-import Vuex from 'vuex';
 import store from '@/store/store';
 
 describe('General.vue', () => {

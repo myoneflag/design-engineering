@@ -21,25 +21,14 @@
 
 <script lang="ts">
     import Vue from 'vue';
-    import Component from "vue-class-component";
-    import {DrawingMode} from "@/htmlcanvas/types";
+    import Component from 'vue-class-component';
 
     @Component({
         props: {
-            mode: Number
-        }
+            mode: Number,
+        },
     })
-    export default class ModeButtons extends Vue {
-        internalToggle: boolean = false;
-
-        get toggle() {
-            return this.internalToggle;
-        }
-
-        set toggle(value: boolean) {
-            this.internalToggle = value;
-        }
-    }
+    export default class ModeButtons extends Vue {}
 </script>
 
 <style lang="less">

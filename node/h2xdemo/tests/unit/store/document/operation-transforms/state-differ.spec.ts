@@ -1,15 +1,14 @@
 import { expect } from 'chai';
-import {ViewPort} from '@/htmlcanvas/viewport';
-import {findOptimalSwaps, longestIncreasingSubsequence} from '@/store/document/operation-transforms/uid-lis';
 import * as _ from 'lodash';
 import {diffState} from '@/store/document/operation-transforms/state-differ';
 import {applyOtOnState} from '@/store/document/operation-transforms/state-ot-apply';
+
 import {
     Background,
     CalculationParameters,
     DrawingState,
     GeneralInfo,
-    WaterSystemParameters
+    FlowSystemParameters,
 } from '@/store/document/types';
 
 function roundTripTest(prev: DrawingState, next: DrawingState, expectedOps: number = -1) {
@@ -17,7 +16,7 @@ function roundTripTest(prev: DrawingState, next: DrawingState, expectedOps: numb
     const ops = diffState(prev, next);
     ops.forEach((o) => applyOtOnState(prevCopy, o));
     expect(prevCopy).eql(next);
-    if (expectedOps != -1) {
+    if (expectedOps !== -1) {
         expect(ops.length).eq(expectedOps);
     }
 }
@@ -29,8 +28,8 @@ const bg1: Background = {
     page: 0,
     paperSize: {
         name: 'awwefew',
-        width: 12,
-        height: 200,
+        widthMM: 12,
+        heightMM: 200,
     },
     pointA: {x: -1, y: 2},
     pointB: {x: 3, y: 5},
@@ -50,8 +49,8 @@ const bg2: Background = {
     page: 0,
     paperSize: {
         name: 'asdf',
-        width: 100,
-        height: 200,
+        widthMM: 100,
+        heightMM: 200,
     },
     pointA: {x: -1, y: 2},
     pointB: {x: 3, y: 4},
@@ -70,8 +69,8 @@ const bg2B: Background = {
     page: 0,
     paperSize: {
         name: 'asdf',
-        width: 100,
-        height: 200,
+        widthMM: 100,
+        heightMM: 200,
     },
     pointA: {x: -1, y: 2},
     pointB: {x: 3, y: 4},
@@ -90,8 +89,8 @@ const bg3: Background = {
     page: 0,
     paperSize: {
         name: 'asdf',
-        width: 100,
-        height: 200,
+        widthMM: 100,
+        heightMM: 200,
     },
     pointA: {x: -1, y: 2},
     pointB: {x: 3, y: 4},
@@ -103,28 +102,6 @@ const bg3: Background = {
     uri: 'gerreger',
 };
 
-
-const bg3B: Background = {
-    center: {x: 100, y: 2},
-    crop: {x: -1, y: 2.5, w: 100, h: 101},
-    offset: {x: 1, y: 4},
-    page: 0,
-    paperSize: {
-        name: 'asdf',
-        width: 100,
-        height: 200,
-    },
-    pointA: {x: -1, y: 2},
-    pointB: {x: 3, y: 4},
-    rotation: 12,
-    scaleFactor: 1,
-    scaleName: '1:200',
-    totalPages: 100,
-    uid: 'uid3',
-    uri: 'wkefnkwenf',
-};
-
-
 const bg4: Background = {
     center: {x: 100, y: 2},
     crop: {x: -1, y: 2.5, w: 100, h: 101},
@@ -132,8 +109,8 @@ const bg4: Background = {
     page: 0,
     paperSize: {
         name: 'asdf',
-        width: 100,
-        height: 200,
+        widthMM: 100,
+        heightMM: 200,
     },
     pointA: {x: -1, y: 2},
     pointB: {x: 3, y: 4},
@@ -152,8 +129,8 @@ const bg4B: Background = {
     page: 0,
     paperSize: {
         name: 'asdf',
-        width: 100,
-        height: 200,
+        widthMM: 100,
+        heightMM: 200,
     },
     pointA: {x: -1, y: 2},
     pointB: {x: 3, y: 4},
@@ -172,8 +149,8 @@ const bg4C: Background = {
     page: 0,
     paperSize: {
         name: 'asdf',
-        width: 100,
-        height: 200,
+        widthMM: 100,
+        heightMM: 200,
     },
     pointA: {x: -1, y: 2},
     pointB: {x: 3, y: 4},
@@ -221,26 +198,28 @@ const gi3: GeneralInfo = {
     title: '',
 };
 
-const ws1: WaterSystemParameters = {
+const ws1: FlowSystemParameters = {
     color: {hex: '#0000ff'},
     material: 'wat',
     name: 'the',
     spareCapacity: 0,
     temperature: 1,
     velocity: 0,
+    uid: 'bweuyifgwe',
 };
 
-const ws2: WaterSystemParameters = {
+const ws2: FlowSystemParameters = {
     color: {hex: '#ff0000'},
     material: 'wat',
     name: 'the',
     spareCapacity: 0,
     temperature: 1,
     velocity: 1,
+    uid: 'werfewjknfhwiejhb',
 };
 
 const cp1: CalculationParameters = {
-    pipeSizingMethod: "", psdMethod: "", ringMainCalculationMethod: ""
+    pipeSizingMethod: '', psdMethod: '', ringMainCalculationMethod: '',
 };
 
 describe('state-differ.ts', () => {
@@ -249,15 +228,17 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [bg2],
             generalInfo: gi1,
-            waterSystems: [ws1],
+            flowSystems: [ws1],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
             backgrounds: [bg2],
             generalInfo: gi1,
-            waterSystems: [ws1],
+            flowSystems: [ws1],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next, 0);
@@ -268,15 +249,17 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [],
             generalInfo: gi1,
-            waterSystems: [ws1],
+            flowSystems: [ws1],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
             backgrounds: [],
             generalInfo: gi2,
-            waterSystems: [ws2],
+            flowSystems: [ws2],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next, 1);
@@ -287,15 +270,17 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [],
             generalInfo: gi1,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
             backgrounds: [bg2],
             generalInfo: gi1,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next, 1);
@@ -306,15 +291,17 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [bg1, bg2, bg3],
             generalInfo: gi1,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
             backgrounds: [],
             generalInfo: gi1,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next, 3);
@@ -326,15 +313,17 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [bg2],
             generalInfo: gi1,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
             backgrounds: [bg2B],
             generalInfo: gi1,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next, 1);
@@ -345,15 +334,17 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [bg1, bg2, bg3],
             generalInfo: gi1,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
             backgrounds: [bg2, bg3, bg1],
             generalInfo: gi1,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next, 1);
@@ -364,15 +355,17 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [bg2, bg3, bg1],
             generalInfo: gi1,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
             backgrounds: [bg1, bg2, bg3],
             generalInfo: gi1,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next, 1);
@@ -383,15 +376,17 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [bg2, bg3, bg4],
             generalInfo: gi1,
-            waterSystems: [ws2, ws2, ws1, ws1],
+            flowSystems: [ws2, ws2, ws1, ws1],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
             backgrounds: [bg2, bg3, bg4],
             generalInfo: gi1,
-            waterSystems: [ws2],
+            flowSystems: [ws2],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next, 1);
@@ -402,15 +397,17 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [bg2, bg3, bg4],
             generalInfo: gi1,
-            waterSystems: [ws2, ws1],
+            flowSystems: [ws2, ws1],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
             backgrounds: [bg1, bg2B],
             generalInfo: gi1,
-            waterSystems: [ws1],
+            flowSystems: [ws1],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next);
@@ -422,15 +419,17 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [bg1, bg2B],
             generalInfo: gi2,
-            waterSystems: [ws1],
+            flowSystems: [ws1],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
             backgrounds: [bg2, bg3, bg4],
             generalInfo: gi2,
-            waterSystems: [ws2, ws1],
+            flowSystems: [ws2, ws1],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next);
@@ -441,15 +440,17 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [bg4B],
             generalInfo: gi3,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         const next: DrawingState = {
             backgrounds: [bg4C],
             generalInfo: gi3,
-            waterSystems: [],
+            flowSystems: [],
             calculationParams: cp1,
+            entities: [],
         };
 
         roundTripTest(prev, next, 1);

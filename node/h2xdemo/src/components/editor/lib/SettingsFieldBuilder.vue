@@ -6,6 +6,7 @@
 
                 <b-form-group
                         v-for="field in fields"
+                        :key="field[0]"
                         :id="'input-group-' + field[0]"
                         :label="field[1]"
                         :label-for="'input-' + field[0]"
@@ -49,7 +50,7 @@
                         </b-dropdown-item>
                     </b-dropdown>
 
-                    <compact-picker v-else-if="field[2] == 'color'" v-model="reactiveData[field[0]]"/>
+                    <compact-picker v-else-if="field[2] === 'color'" v-model="reactiveData[field[0]]"/>
 
                     <b-form-input
                         v-else
@@ -82,8 +83,8 @@
 
 <script lang="ts">
 
-    import Vue from 'vue'
-    import Component from "vue-class-component";
+    import Vue from 'vue';
+    import Component from 'vue-class-component';
     import {DocumentState} from '@/store/document/types';
     import {Compact} from 'vue-color';
     import * as _ from 'lodash';
@@ -98,12 +99,11 @@
         },
         components: {
             compactPicker: Compact,
-        }
+        },
     })
-    export default class FieldBuilder extends Vue {
+    export default class SettingsFieldBuilder extends Vue {
         get document(): DocumentState {
-            console.log("Refreshing document");
-            return this.$store.getters["document/document"];
+            return this.$store.getters['document/document'];
         }
 
         get isUnchanged() {
@@ -118,7 +118,7 @@
             if (this.isUnchanged) {
                 return true;
             } else {
-                if (window.confirm("Leaving now will discard your changes. Are you sure?")) {
+                if (window.confirm('Leaving now will discard your changes. Are you sure?')) {
                     this.cancel();
                     return true;
                 } else {

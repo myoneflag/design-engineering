@@ -1,7 +1,5 @@
 import { expect } from 'chai';
-import {ViewPort} from '@/htmlcanvas/viewport';
 import {findOptimalSwaps, longestIncreasingSubsequence} from '@/store/document/operation-transforms/uid-lis';
-import * as _ from 'lodash';
 
 describe('uid-lcm', () => {
     it('calculates the LIS correctly', () => {

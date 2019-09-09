@@ -1,10 +1,12 @@
-import {Coord, Dimensions, Rectangle} from '@/store/document/types';
+import {Coord} from '@/store/document/types';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
+import {MouseMoveResult} from '@/htmlcanvas/types';
+import {matrixScale} from '@/htmlcanvas/utils';
 
 export default abstract class DrawableObject {
-    position!: Matrix;
+    abstract position: Matrix;
     parent: DrawableObject | null; // null parents mean root objects
 
     protected constructor(parent: DrawableObject | null) {
@@ -22,6 +24,17 @@ export default abstract class DrawableObject {
         return this.fromParentToObjectCoord(this.parent.toObjectCoord(world));
     }
 
+    fromParentToObjectLength(parentLength: number): number {
+        return matrixScale(TM.inverse(this.position)) * parentLength;
+    }
+
+    toObjectLength(worldLength: number): number {
+        if (this.parent == null) {
+            return this.fromParentToObjectLength(worldLength);
+        }
+        return this.fromParentToObjectLength(this.parent.toObjectLength(worldLength));
+    }
+
     toParentCoord(object: Coord): Coord {
         return TM.applyToPoint(this.position, object);
     }
@@ -33,7 +46,18 @@ export default abstract class DrawableObject {
         return this.parent.toWorldCoord(this.toParentCoord(object));
     }
 
-    abstract drawInternal(ctx: CanvasRenderingContext2D, ...args: any[]): void;
+    toParentLength(object: number): number {
+        return matrixScale(this.position) * object;
+    }
+
+    toWorldLength(object: number): number {
+        if (this.parent == null) {
+            return this.toParentLength(object);
+        }
+        return this.parent.toWorldLength(this.toParentLength(object));
+    }
+
+    abstract drawInternal(ctx: CanvasRenderingContext2D, vp: ViewPort, ...args: any[]): void;
 
     draw(ctx: CanvasRenderingContext2D, vp: ViewPort, ...args: any[]) {
         // get parent positions
@@ -46,6 +70,14 @@ export default abstract class DrawableObject {
 
         vp.prepareContext(ctx, ...transforms);
 
-        this.drawInternal(ctx, ...args);
+        this.drawInternal(ctx, vp, ...args);
     }
+
+
+    abstract onMouseDown(event: MouseEvent, vp: ViewPort): boolean;
+
+    abstract onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult;
+
+    abstract onMouseUp(event: MouseEvent, vp: ViewPort): boolean;
+
 }

@@ -54,30 +54,30 @@
         titleEditing = false;
 
         get username() {
-            return this.$store.getters["profile/username"];
+            return this.$store.getters['profile/username'];
         }
 
         get title() {
-            return this.$store.getters["document/title"];
+            return this.$store.getters['document/title'];
+        }
+
+        set title(value: string) {
+            this.$store.dispatch('document/setTitle', value);
         }
 
         get shortTitle() {
             let title = this.title;
             if (title.length > 50) {
-                title = title.slice(0, 40) + "..." + title.slice(title.length - 7, title.length);
+                title = title.slice(0, 40) + '...' + title.slice(title.length - 7, title.length);
             }
             return title;
-        }
-
-        set title(value: string) {
-            this.$store.dispatch("document/setTitle", value);
         }
 
         commit() {
             this.titleEditing = false;
             this.$store.dispatch('document/commit');
         }
-    };
+    }
 
 </script>
 
