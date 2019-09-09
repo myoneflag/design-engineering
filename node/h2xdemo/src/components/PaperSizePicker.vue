@@ -22,7 +22,7 @@
     export default class PaperSizeSelector extends Vue {
         size = (this as any).initialSize;
 
-        static get paperSizes() {
+        get paperSizes() {
             return PAPER_SIZES;
         }
 

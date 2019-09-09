@@ -6,6 +6,7 @@
 
                 <b-form-group
                         v-for="field in fields"
+                        :key="field[0]"
                         :id="'input-group-' + field[0]"
                         :label="field[1]"
                         :label-for="'input-' + field[0]"
@@ -49,7 +50,7 @@
                         </b-dropdown-item>
                     </b-dropdown>
 
-                    <compact-picker v-else-if="field[2] == 'color'" v-model="reactiveData[field[0]]"/>
+                    <compact-picker v-else-if="field[2] === 'color'" v-model="reactiveData[field[0]]"/>
 
                     <b-form-input
                         v-else
@@ -100,7 +101,7 @@
             compactPicker: Compact,
         },
     })
-    export default class FieldBuilder extends Vue {
+    export default class SettingsFieldBuilder extends Vue {
         get document(): DocumentState {
             return this.$store.getters['document/document'];
         }

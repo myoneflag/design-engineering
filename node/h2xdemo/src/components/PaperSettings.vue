@@ -51,12 +51,13 @@
     })
     export default class PaperSettings extends Vue {
 
-        static sensibleScales() {
-            return SENSIBLE_SCALES;
-        }
 
         internalScaleText: string = '1:100';
         internalRangeValue: number = 8;
+
+        sensibleScales() {
+            return SENSIBLE_SCALES;
+        }
 
         setPaperSize(size: PaperSize) {
             if (this.$props.onPaperSizeChange) {

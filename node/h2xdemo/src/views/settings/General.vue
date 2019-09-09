@@ -1,5 +1,5 @@
 <template>
-    <FieldBuilder
+    <SettingsFieldBuilder
             ref='fields'
             :fields='fields'
             :reactiveData='generalInfo'
@@ -14,10 +14,10 @@
     import Vue from 'vue';
     import Component from 'vue-class-component';
     import {DocumentState} from '@/store/document/types';
-    import FieldBuilder from '@/components/FieldBuilder.vue';
+    import SettingsFieldBuilder from '@/components/editor/lib/SettingsFieldBuilder.vue';
 
     @Component({
-        components: {FieldBuilder},
+        components: {SettingsFieldBuilder},
         beforeRouteLeave(to, from, next) {
             if ((this.$refs.fields as any).leave()) {
                 next();
@@ -29,7 +29,7 @@
     export default class General extends Vue {
 
 
-        static get fields(): Array<[string, string, string]> {
+        get fields(): Array<[string, string, string]> {
             return [
                 ['title', 'Project Title:', 'text'],
                 ['projectNumber', 'Project No.', 'text'],

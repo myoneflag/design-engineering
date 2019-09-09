@@ -11,7 +11,7 @@
                           v-b-tooltip.hover title="Flow Sink"
                 ><v-icon  name="arrow-down" scale="1.2"/></b-button>
                 <FlowSystemPicker
-                        :selected-system="selectedSystem"
+                        :selected-system-uid="selectedSystem.uid"
                         :flow-systems="flowSystems"
                         @selectSystem="selectSystem"
                 />

@@ -21,7 +21,7 @@ export default class FlowSource extends DraggableObject<FlowSourceEntity> {
     onChange: (flowSource: FlowSource) => void;
     onCommit: (flowSource: FlowSource) => void;
 
-    private system!: FlowSystemParameters;
+    private systems: FlowSystemParameters[];
 
     constructor(
         context: DocumentState, parent: DrawableObject | null,
@@ -31,6 +31,7 @@ export default class FlowSource extends DraggableObject<FlowSourceEntity> {
         onCommit: (flowSource: FlowSource) => void,
     ) {
         super(context, parent, obj);
+        this.systems = context.drawing.flowSystems;
         this.onChange = onChange;
         this.onCommit = onCommit;
         this.onSelect = onSelect;
@@ -39,11 +40,12 @@ export default class FlowSource extends DraggableObject<FlowSourceEntity> {
 
 
     drawInternal(ctx: CanvasRenderingContext2D, vp: ViewPort, layerActive: boolean, selected: boolean): void {
+        this.lastDrawnWorldRadius = 0;
+
         const mat = ctx.getTransform();
         const scale = matrixScale(mat);
         // Minimum screen size for them.
         const screenSize = vp.toScreenLength(this.stateObject.radiusMM);
-        this.lastDrawnWorldRadius = this.stateObject.radiusMM;
 
         ctx.lineWidth = 0;
 
@@ -59,7 +61,7 @@ export default class FlowSource extends DraggableObject<FlowSourceEntity> {
             ctx.arc(0, 0, haloSize, 0, Math.PI * 2);
             ctx.fill();
 
-            this.lastDrawnWorldRadius = haloSize;
+            this.lastDrawnWorldRadius = Math.max(this.lastDrawnWorldRadius, haloSize);
         }
 
         if (layerActive) {
@@ -78,7 +80,7 @@ export default class FlowSource extends DraggableObject<FlowSourceEntity> {
                 );
                 ctx.fill();
 
-                this.lastDrawnWorldRadius = this.MINIMUM_RADIUS_PX / scale;
+                this.lastDrawnWorldRadius = Math.max(this.lastDrawnWorldRadius, this.MINIMUM_RADIUS_PX / scale);
             }
         }
 
@@ -92,6 +94,10 @@ export default class FlowSource extends DraggableObject<FlowSourceEntity> {
             this.toObjectLength(this.stateObject.radiusMM),
             0,
             Math.PI * 2,
+        );
+        this.lastDrawnWorldRadius = Math.max(
+            this.lastDrawnWorldRadius,
+            this.toObjectLength(this.stateObject.radiusMM),
         );
         ctx.fill();
 
@@ -107,10 +113,18 @@ export default class FlowSource extends DraggableObject<FlowSourceEntity> {
         return this.stateObject.color == null ? this.system.color : this.stateObject.color;
     }
 
+    get system(): FlowSystemParameters {
+        const result = this.systems.find((v) => v.uid === this.stateObject.systemUid);
+        if (result) {
+            return result;
+        } else {
+            throw new Error('Flow system not found for flow source ' + JSON.stringify(this.stateObject));
+        }
+    }
+
     refreshObjectInternal(context: DocumentState, obj: FlowSourceEntity): void {
         const system = context.drawing.flowSystems.find((v) => v.uid === obj.systemUid);
         assert(system !== undefined);
-        this.system = system!;
     }
 
     inBounds(objectCoord: Coord) {
@@ -170,6 +184,5 @@ export default class FlowSource extends DraggableObject<FlowSourceEntity> {
         const oc = this.toObjectCoord(wc);
         // Check bounds
         return this.inBounds(oc);
-
     }
 }

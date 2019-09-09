@@ -17,7 +17,7 @@
 
     })
     export default class Document extends Vue {
-        static deleteDocument() {
+        deleteDocument() {
             window.alert('The day that we can create documents is the day that we can delete documents.');
         }
     }

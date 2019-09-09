@@ -26,7 +26,7 @@
             </b-col>
         </b-row>
 
-        <FieldBuilder
+        <SettingsFieldBuilder
                 ref="fields"
                 :fields="fields"
                 :reactiveData="selectedSystem"
@@ -34,7 +34,7 @@
                 :onSave="save"
                 :onBack="back"
         >
-        </FieldBuilder>
+        </SettingsFieldBuilder>
     </div>
 </template>
 
@@ -43,12 +43,12 @@
     import Vue from 'vue';
     import Component from 'vue-class-component';
     import {DocumentState} from '@/store/document/types';
-    import FieldBuilder from '@/components/FieldBuilder.vue';
+    import SettingsFieldBuilder from '@/components/editor/lib/SettingsFieldBuilder.vue';
     import uuid from 'uuid';
     import FlowSystemPicker from '@/components/editor/FlowSystemPicker.vue';
 
     @Component({
-        components: {FlowSystemPicker, FieldBuilder},
+        components: {SettingsFieldBuilder, FlowSystemPicker},
         beforeRouteLeave(to, from, next) {
             if ((this.$refs.fields as any).leave()) {
                 next();
@@ -61,7 +61,7 @@
 
         selectedSystemId: number = 0;
 
-        static get fields(): any[][] {
+        get fields(): any[][] {
             return [
                 ['name', 'System Name:', 'text'],
                 ['velocity', 'Velocity: (m/s)', 'number'],

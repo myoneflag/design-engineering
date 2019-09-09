@@ -17,11 +17,12 @@
     import Vue from 'vue';
     import Component from 'vue-class-component';
     import {lighten} from '@/lib/utils';
+    import {FlowSystemParameters} from '@/store/document/types';
 
     @Component({
         props: {
             flowSystems: Array,
-            selectedSystem: Object,
+            selectedSystemUid: String,
         },
     })
     export default class FlowSystemPicker extends Vue {
@@ -31,6 +32,10 @@
 
         lighten(col: string, amt: number, alpha: number) {
             return lighten(col, amt, alpha);
+        }
+
+        get selectedSystem() {
+            return this.$props.flowSystems.find((s: FlowSystemParameters) => s.uid === this.$props.selectedSystemUid);
         }
     }
 

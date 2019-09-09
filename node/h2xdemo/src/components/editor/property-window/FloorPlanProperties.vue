@@ -8,20 +8,20 @@
 
         <b-row style="margin-top: 10px">
             <b-col>
-                Scale: {{ selectedObject.scale }}
+                Scale: {{ selectedEntity.scale }}
             </b-col>
         </b-row>
 
 
         <b-row style="margin-top: 10px">
             <b-col>
-                Paper: {{ selectedObject.paperSize.name }}
+                Paper: {{ selectedEntity.paperSize.name }}
             </b-col>
         </b-row>
 
         <b-row style="margin-top: 10px">
             <b-col>
-                Rotation: {{ selectedObject.rotation }}
+                Rotation: {{ selectedEntity.rotation }}
             </b-col>
         </b-row>
 
@@ -128,8 +128,8 @@
 
     @Component({
         props: {
+            selectedEntity: Object,
             selectedObject: Object,
-            selectedDrawable: Object,
             onPointAChange: Function,
             onPointBChange: Function,
         },
@@ -141,7 +141,7 @@
         enteredDistance: string = '';
 
         onDeleteClick() {
-            this.$store.dispatch('document/deleteBackground', this.$props.selectedObject);
+            this.$store.dispatch('document/deleteBackground', this.$props.selectedEntity);
             this.$store.dispatch('document/commit');
         }
 
@@ -152,8 +152,8 @@
         }
 
         get pointA() {
-            const background: Background = this.$props.selectedObject;
-            const backgroundImage: BackgroundImage = this.$props.selectedDrawable;
+            const background: Background = this.$props.selectedEntity;
+            const backgroundImage: BackgroundImage = this.$props.selectedObject;
 
             if (background.pointA) {
 
@@ -180,8 +180,8 @@
         }
 
         get pointB() {
-            const background: Background = this.$props.selectedObject;
-            const backgroundImage: BackgroundImage = this.$props.selectedDrawable;
+            const background: Background = this.$props.selectedEntity;
+            const backgroundImage: BackgroundImage = this.$props.selectedObject;
 
             if (background.pointB) {
 
@@ -194,7 +194,7 @@
         }
 
         onReplacePdf() {
-            const background: Background = this.$props.selectedObject;
+            const background: Background = this.$props.selectedEntity;
             if (this.file) {
                 renderPdf(this.file, (data: PDFRenderResult) => {
                     this.$store.dispatch('document/updateBackgroundInPlace', {background, update: () => ({
@@ -211,7 +211,7 @@
         }
 
         calibrate() {
-            const background: Background = this.$props.selectedObject;
+            const background: Background = this.$props.selectedEntity;
 
             if (this.ABDistanceMeters) {
                 const factor = parseFloat(this.enteredDistance) / this.ABDistanceMeters;
@@ -223,8 +223,8 @@
         }
 
         get ABDistanceMeters() {
-            const background: Background = this.$props.selectedObject;
-            const backgroundImage: BackgroundImage = this.$props.selectedDrawable;
+            const background: Background = this.$props.selectedEntity;
+            const backgroundImage: BackgroundImage = this.$props.selectedObject;
 
             if (background.pointA && background.pointB) {
                 const wa: Coord = backgroundImage.toWorldCoord(background.pointA);
@@ -236,7 +236,7 @@
 
         rotateLeft() {
             this.$store.dispatch('document/updateBackgroundInPlace',
-                {background: this.$props.selectedObject,
+                {background: this.$props.selectedEntity,
                     update: (background: Background) => ({rotation: ((background.rotation - 45) % 360 + 360) % 360 }),
                 });
             this.$store.dispatch('document/commit');
@@ -244,7 +244,7 @@
 
         rotateRight() {
             this.$store.dispatch('document/updateBackgroundInPlace',
-                {background: this.$props.selectedObject,
+                {background: this.$props.selectedEntity,
                     update: (background: Background) => ({ rotation: ((background.rotation + 45) % 360 + 360) % 360 }),
                 });
             this.$store.dispatch('document/commit');
@@ -268,9 +268,9 @@
 
         pointAClick() {
             this.deployPointTool((worldCoord: Coord) => {
-                const d: DrawableObject = this.$props.selectedDrawable;
+                const d: DrawableObject = this.$props.selectedObject;
                 this.$store.dispatch('document/updateBackgroundInPlace',
-                    {background: this.$props.selectedObject,
+                    {background: this.$props.selectedEntity,
                         update: () => ({ pointA: d.toObjectCoord(worldCoord)}),
                     });
                 this.$store.dispatch('document/commit');
@@ -279,9 +279,9 @@
 
         pointBClick() {
             this.deployPointTool((worldCoord: Coord) => {
-                const d: DrawableObject = this.$props.selectedDrawable;
+                const d: DrawableObject = this.$props.selectedObject;
                 this.$store.dispatch('document/updateBackgroundInPlace',
-                    {background: this.$props.selectedObject,
+                    {background: this.$props.selectedEntity,
                         update: () => ({ pointB: d.toObjectCoord(worldCoord)}),
                     });
                 this.$store.dispatch('document/commit');

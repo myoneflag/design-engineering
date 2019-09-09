@@ -171,7 +171,6 @@ export default class  HydraulicsLayer implements Layer {
             }
         }
 
-
         this.selectedObject = null;
         this.onSelect(null);
         this.onChange();

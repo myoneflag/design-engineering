@@ -1,5 +1,3 @@
-import {DrawingMode} from "@/htmlcanvas/types";
-
 <template>
     <div ref="canvasFrame" class="fullFrame">
         <drop
@@ -21,10 +19,11 @@ import {DrawingMode} from "@/htmlcanvas/types";
             />
 
             <PropertiesWindow
-                    :selectedObject="selectedObject"
-                    :selected-drawable="selectedDrawable"
-                    v-if="selectedObject && currentTool.propertiesVisible"
+                    :selected-entity="selectedEntity"
+                    :selected-object="selectedObject"
+                    v-if="selectedEntity && currentTool.propertiesVisible"
                     :object-type="selectedObjectType"
+                    :on-change="scheduleDraw"
             >
 
             </PropertiesWindow>
@@ -44,7 +43,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
     import {Background, Coord, DocumentState, FlowSystemParameters, WithID} from '@/store/document/types';
     import {drawPaperScale} from '@/htmlcanvas/scale';
     import ModeButtons from '@/components/editor/ModeButtons.vue';
-    import PropertiesWindow from '@/components/editor/PropertiesWindow.vue';
+    import PropertiesWindow from '@/components/editor/property-window/PropertiesWindow.vue';
     import {DrawingMode, MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
     import BackgroundLayer from '@/htmlcanvas/layers/background-layer';
     import * as TM from 'transformation-matrix';
@@ -90,7 +89,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
         currentCursor: string = 'auto';
 
         selectedObjectBackground: Background | null = null;
-        selectedDrawable: DrawableObject | null = null;
+        selectedObject: DrawableObject | null = null;
 
         shouldDraw: boolean = true;
         lastDraw: number = 0;
@@ -117,7 +116,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                 },
                 (object, drawable) => {
                     this.selectedObjectBackground = object;
-                    this.selectedDrawable = drawable;
+                    this.selectedObject = drawable;
                     this.scheduleDraw();
                 },
                 () => { // onCommit
@@ -130,7 +129,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                     this.scheduleDraw();
                 },
                 (selectedObject: BackedDrawableObject<WithID> | null) => {
-                    this.selectedDrawable = selectedObject;
+                    this.selectedObject = selectedObject;
                     this.scheduleDraw();
                 },
                 () => {
@@ -184,12 +183,12 @@ import {DrawingMode} from "@/htmlcanvas/types";
             this.scheduleDraw();
         }
 
-        get selectedObject() {
+        get selectedEntity() {
             if (this.mode === DrawingMode.FloorPlan) {
                 return this.selectedObjectBackground;
             } else if (this.mode === DrawingMode.Hydraulics) {
-                if (this.selectedDrawable) {
-                    return (this.selectedDrawable as BackedDrawableObject<WithID>).stateObject;
+                if (this.selectedObject) {
+                    return (this.selectedObject as BackedDrawableObject<WithID>).stateObject;
                 } else {
                     return null;
                 }
@@ -200,6 +199,8 @@ import {DrawingMode} from "@/htmlcanvas/types";
         get selectedObjectType() {
             if (this.mode === DrawingMode.FloorPlan) {
                 return 'floor-plan';
+            } else if (this.mode === DrawingMode.Hydraulics) {
+                return 'hydraulics';
             }
             return '';
         }
@@ -262,7 +263,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                         material: null,
                         maximumVelocityMS: null,
                         parentUid,
-                        pressureAtSourceKPA: 0,
+                        pressureKPA: 0,
                         radiusMM: 100,
                         spareCapacity: null,
                         systemUid: system.uid,
@@ -458,6 +459,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
 <style lang="css">
     body {
         height: 100%;
+        overflow: hidden;
     }
 
     .fullFrame {

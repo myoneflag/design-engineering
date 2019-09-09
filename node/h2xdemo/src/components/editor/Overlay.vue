@@ -10,7 +10,7 @@
     // The purpose of this is to capture events above the UI and pass them to the canvas when necessary.
     import Vue from 'vue';
     import Component from 'vue-class-component';
-    import FloorPlanProperties from '@/components/editor/FloorPlanProperties.vue';
+    import FloorPlanProperties from '@/components/editor/property-window/FloorPlanProperties.vue';
 
     @Component
     export default class Overlay extends Vue {
