@@ -158,7 +158,6 @@
         }
 
         setRenderedData(property: string, val: any) {
-            console.log(property + " " + val);
             if (this.$props.reactiveData[property] == null) {
                 // don't do it
             } else {
