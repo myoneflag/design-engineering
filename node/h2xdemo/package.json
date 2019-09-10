@@ -10,6 +10,7 @@
     "test:unit": "vue-cli-service test:unit"
   },
   "dependencies": {
+    "@flatten-js/core": "^1.0.17",
     "@types/assert": "^1.4.3",
     "@types/deep-equal": "^1.0.1",
     "@types/lodash": "^4.14.138",

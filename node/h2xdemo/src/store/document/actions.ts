@@ -5,10 +5,14 @@ import { RootState } from '../types';
 import {Background, DocumentState} from '@/store/document/types';
 import {diffState} from '@/store/document/operation-transforms/state-differ';
 import {applyOtOnState} from '@/store/document/operation-transforms/state-ot-apply';
+import * as _ from 'lodash';
+import {MainEventBus} from '@/store/main-event-bus';
 
 
 function submitOperation(commit: any, op: OT.OperationTransform) {
-    return axios.post('/api/document/operation', op);
+    return axios.post('/api/document/operation', op).catch(() => {
+        window.alert('Please refresh your browser, an error has been detected trying to communicate with the server.');
+    });
 }
 
 export const actions: ActionTree<DocumentState, RootState> = {
@@ -57,16 +61,33 @@ export const actions: ActionTree<DocumentState, RootState> = {
 
     // Call this action to commit the current operation transforms. TODO: make that atomic.
     commit({commit, state}) {
-        const diff = diffState(state.committedDrawing, state.drawing);
+        // We have to clone to stop reactivity affecting the async post values later.
+        // We choose to clone the resulting operations rather than the input for performance.
+        const diff = _.cloneDeep(diffState(state.committedDrawing, state.drawing));
         diff.forEach((v: OT.OperationTransform) => applyOtOnState(state.committedDrawing, v));
         state.optimisticHistory.push(...diff);
-        const wait = (index: number) => {
-            if (index === diff.length) { return; }
-            submitOperation(commit, diff[index]).then(
-                () => wait(index + 1),
-            );
+
+        if (diff.length === 0) {
+            return;
+        }
+
+        MainEventBus.$emit('ot-applied');
+
+        const wait = (index: number): Promise<any> => {
+            if (index === diff.length - 1) {
+                return submitOperation(commit, diff[index]);
+            } else {
+                return submitOperation(commit, diff[index]).then(
+                    () => wait(index + 1),
+                );
+            }
         };
         wait(0);
+    },
+
+    revert({commit, state}) {
+        // Reverse all optimistic operations
+        commit('revert');
     },
 
     reset({commit, state}) {

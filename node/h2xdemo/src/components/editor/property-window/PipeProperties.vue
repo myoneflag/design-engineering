@@ -2,15 +2,15 @@
     <b-container>
         <b-row>
             <b-col>
-                <h3>Flow Source</h3>
+                <h3>Pipe</h3>
             </b-col>
         </b-row>
         <PropertiesFieldBuilder
-            :fields="fields"
-            :reactive-data="reactiveData"
-            :default-data="defaultData"
-            :on-commit="onCommit"
-            :on-change="onChange"
+                :fields="fields"
+                :reactive-data="reactiveData"
+                :default-data="defaultData"
+                :on-commit="onCommit"
+                :on-change="onChange"
         />
         <b-row>
             <b-col>
@@ -26,8 +26,8 @@
     import Vue from 'vue';
     import Component from 'vue-class-component';
     import PropertiesFieldBuilder from '@/components/editor/lib/PropertiesFieldBuilder.vue';
-    import {fillFlowSourceDefaults, makeFlowSourceFields} from '@/store/document/entities/flow-source-entity';
     import {DocumentState} from '@/store/document/types';
+    import PipeEntity, {fillPipeDefaultFields, makePipeFields} from '../../../store/document/entities/pipeEntity';
 
     @Component({
         components: {PropertiesFieldBuilder},
@@ -38,16 +38,17 @@
             onChange: Function,
         },
     })
-    export default class FlowSourceProperties extends Vue {
+    export default class PipeProperties extends Vue {
 
         get fields() {
-            return makeFlowSourceFields(
-                ['Material A', 'Material B'],
+            return makePipeFields(
+                // TODO: Database
+                ['Material A', 'Material B', 'I need to make a database'],
                 this.document.drawing.flowSystems,
             );
         }
 
-        get reactiveData() {
+        get reactiveData(): PipeEntity {
             return this.$props.selectedEntity;
         }
 
@@ -55,8 +56,8 @@
             return this.$store.getters['document/document'];
         }
 
-        get defaultData() {
-            return fillFlowSourceDefaults(this.document, this.reactiveData);
+        get defaultData(): PipeEntity {
+            return fillPipeDefaultFields(this.document, this.$props.selectedObject.computedLengthM, this.reactiveData);
         }
 
         onCommit() {

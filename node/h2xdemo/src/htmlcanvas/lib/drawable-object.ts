@@ -46,6 +46,13 @@ export default abstract class DrawableObject {
         return this.parent.toWorldCoord(this.toParentCoord(object));
     }
 
+    fromParentToWorldCoord(parent: Coord) {
+        if (this.parent == null) {
+            return parent;
+        }
+        return this.parent.toWorldCoord(parent);
+    }
+
     toParentLength(object: number): number {
         return matrixScale(this.position) * object;
     }
@@ -73,6 +80,7 @@ export default abstract class DrawableObject {
         this.drawInternal(ctx, vp, ...args);
     }
 
+    abstract inBounds(objectCoord: Coord): boolean;
 
     abstract onMouseDown(event: MouseEvent, vp: ViewPort): boolean;
 

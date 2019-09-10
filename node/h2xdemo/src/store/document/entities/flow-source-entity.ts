@@ -1,12 +1,18 @@
-import {Color, Coord, DocumentState, DrawableEntity, FlowSystemParameters} from '@/store/document/types';
+import {
+    ConnectableEntity,
+    Color,
+    Coord,
+    DocumentState,
+    FlowSystemParameters,
+} from '@/store/document/types';
 import {FieldType, PropertyField} from '@/store/document/entities/property-field';
 import * as _ from 'lodash';
 
-export default interface FlowSource extends DrawableEntity {
+export default interface FlowSourceEntity extends ConnectableEntity {
     center: Coord;
     systemUid: string;
 
-    radiusMM: number;
+    diameterMM: number;
     maximumVelocityMS: number | null; // null means default
     heightAboveFloorM: number;
     material: string | null;
@@ -18,36 +24,36 @@ export default interface FlowSource extends DrawableEntity {
 
 export function makeFlowSourceFields(materials: string[], systems: FlowSystemParameters[]): PropertyField[] {
     return [
-        { property: 'systemUid', title: 'Flow System', hasDefault: false,
+        { property: 'systemUid', title: 'Flow System', hasDefault: false, isCalculated: false,
             type: FieldType.FlowSystemChoice, params: { systems } },
 
-        { property: 'radiusMM', title: 'Radius (mm)', hasDefault: false,
+        { property: 'diameterMM', title: 'Diameter (mm)', hasDefault: false, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: null } },
 
-        { property: 'maximumVelocityMS', title: 'Maximum Velocity (m/s)', hasDefault: true,
+        { property: 'maximumVelocityMS', title: 'Maximum Velocity (m/s)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: null } },
 
-        { property: 'heightAboveFloorM', title: 'Height Above Floor (m)', hasDefault: false,
+        { property: 'heightAboveFloorM', title: 'Height Above Floor (m)', hasDefault: false, isCalculated: false,
             type: FieldType.Number, params: { min: null, max: null } },
 
-        { property: 'material', title: 'Material', hasDefault: true,
+        { property: 'material', title: 'Material', hasDefault: true, isCalculated: false,
             type: FieldType.Choice, params: { choices: materials} },
 
-        { property: 'spareCapacity', title: 'Spare Capacity (%)', hasDefault: true,
+        { property: 'spareCapacity', title: 'Spare Capacity (%)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: 100 } },
 
-        { property: 'color', title: 'Color:', hasDefault: true,
+        { property: 'color', title: 'Color:', hasDefault: true, isCalculated: false,
             type: FieldType.Color, params: null },
 
-        { property: 'temperatureC', title: 'Temperature (C)', hasDefault: true,
+        { property: 'temperatureC', title: 'Temperature (C)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: 100 } },
 
-        { property: 'pressureKPA', title: 'Pressure (kPA)', hasDefault: true,
+        { property: 'pressureKPA', title: 'Pressure (kPA)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: null } },
     ];
 }
 
-export function fillDefaults(doc: DocumentState, value: FlowSource) {
+export function fillFlowSourceDefaults(doc: DocumentState, value: FlowSourceEntity) {
     const result = _.cloneDeep(value);
 
     // get system

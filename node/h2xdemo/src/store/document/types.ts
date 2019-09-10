@@ -37,6 +37,11 @@ export interface DrawableEntity extends WithID {
     type: string;
 }
 
+export interface ConnectableEntity extends DrawableEntity {
+    center: Coord;
+    connections: string[];
+}
+
 export interface Background extends WithID {
     center: Coord;
     scaleName: string;

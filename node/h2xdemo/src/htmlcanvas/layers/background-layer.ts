@@ -29,6 +29,19 @@ export default class BackgroundLayer implements Layer {
         this.objectStore = objectStore;
     }
 
+    get selectedObject() {
+        if (this.selectedId == null) {
+            return null;
+        }
+        return this.objectStore.get(this.selectedId)!;
+    }
+
+    get selectedEntity() {
+        if (this.selectedObject instanceof BackgroundImage) {
+            return this.selectedObject.background;
+        }
+        return null;
+    }
 
     draw(ctx: CanvasRenderingContext2D, vp: ViewPort, active: boolean, selectedTool: ToolConfig) {
         // draw selected one on top.
@@ -157,8 +170,7 @@ export default class BackgroundLayer implements Layer {
             if (objectStore.get(selectId)) {
                 const background = this.objectStore.get(selectId);
                 if (background instanceof BackgroundImage) {
-                    const {x, y} = background.toObjectCoord(worldCoord);
-                    if (background.inBounds(x, y)) {
+                    if (background.inBounds(background.toObjectCoord(worldCoord))) {
                         return background;
                     }
                 } else {

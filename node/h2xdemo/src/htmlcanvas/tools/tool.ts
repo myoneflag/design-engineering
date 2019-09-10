@@ -3,6 +3,7 @@ import {MouseMoveResult} from '@/htmlcanvas/types';
 import {ViewPort} from '@/htmlcanvas/viewport';
 
 export interface ToolHandler {
+    config: ToolConfig;
     onMouseDown: (event: MouseEvent, vp: ViewPort) => boolean;
     onMouseMove: (event: MouseEvent, vp: ViewPort) => MouseMoveResult;
     onMouseUp: (event: MouseEvent, vp: ViewPort) => boolean;

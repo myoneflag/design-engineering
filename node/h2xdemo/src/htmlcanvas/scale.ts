@@ -85,6 +85,7 @@ export const drawPaperScale = (ctx: CanvasRenderingContext2D, pxPerMm: number) =
     // draw ruler text
     const [uname, unit] = getFriendlyDistanceUnit(smallestUnit * 10);
     left = scaleLeftEdge;
+    ctx.beginPath();
     ctx.font = '9px ' + DEFAULT_FONT_NAME;
     for (let i = 0; i < 6; i++) {
         if (i % 2 === 0) {

@@ -253,17 +253,15 @@
         deployPointTool(onPoint: (worldCoord: Coord) => void) {
             // Very verbose :( But this is to keep tool configs reactive in the vue state, while
             // still having a tool handler object.
-            this.$store.dispatch('tools/setCurrentTool', POINT_TOOL).then(() => {
-                MainEventBus.$emit('set-tool-handler', new PointTool(
-                    () => {
-                        this.$store.dispatch('tools/setCurrentTool', DEFAULT_TOOL);
-                        MainEventBus.$emit('set-tool-handler', null);
-                    },
-                    (worldCoord: Coord) => {
-                        onPoint(worldCoord);
-                    },
-                ));
-            });
+            MainEventBus.$emit('set-tool-handler', new PointTool(
+                () => {
+                    MainEventBus.$emit('set-tool-handler', null);
+                },
+                () => { /* asdf */ },
+                (worldCoord: Coord) => {
+                    onPoint(worldCoord);
+                },
+            ));
         }
 
         pointAClick() {
