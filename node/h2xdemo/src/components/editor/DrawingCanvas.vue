@@ -1,3 +1,5 @@
+import {DrawingMode} from "@/htmlcanvas/types";
+import {DrawingMode} from "@/htmlcanvas/types";
 <template>
     <div ref="canvasFrame" class="fullFrame">
         <drop
@@ -22,8 +24,9 @@
                     :selected-entity="selectedEntity"
                     :selected-object="selectedObject"
                     v-if="selectedObject && currentTool.propertiesVisible"
-                    :object-type="selectedObjectType"
+                    :mode="mode"
                     :on-change="scheduleDraw"
+                    :on-delete="deleteSelected"
             >
 
             </PropertiesWindow>
@@ -40,7 +43,14 @@
     import Component from 'vue-class-component';
     import {OperationTransform} from '@/store/document/operation-transforms/operation-transforms';
     import {ViewPort} from '@/htmlcanvas/viewport';
-    import {Background, Coord, DocumentState, FlowSystemParameters, WithID} from '@/store/document/types';
+    import {
+        Background, ConnectableEntity,
+        Coord,
+        DocumentState,
+        DrawableEntity,
+        FlowSystemParameters,
+        WithID,
+    } from '@/store/document/types';
     import {drawPaperScale} from '@/htmlcanvas/scale';
     import ModeButtons from '@/components/editor/ModeButtons.vue';
     import PropertiesWindow from '@/components/editor/property-window/PropertiesWindow.vue';
@@ -60,10 +70,15 @@
     import Layer from '@/htmlcanvas/layers/layer';
     import HydraulicsInsertPanel from '@/components/editor/HydraulicsInsertPanel.vue';
     import PointTool from '@/htmlcanvas/tools/point-tool';
-    import FlowSourceEntity from '@/store/document/entities/flow-source';
+    import FlowSourceEntity from '@/store/document/entities/flow-source-entity';
     import {ENTITY_NAMES} from '@/store/document/entities';
     import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
     import * as _ from 'lodash';
+    import ValveEntity from '@/store/document/entities/valveEntity';
+    import PipeEntity from '@/store/document/entities/pipeEntity';
+    import Flatten from '@flatten-js/core';
+    import Connectable from '@/htmlcanvas/lib/connectable';
+    import assert from 'assert';
 
     @Component({
         components: {HydraulicsInsertPanel, Overlay, Toolbar, PropertiesWindow, ModeButtons},
@@ -76,7 +91,6 @@
         hasDragged: boolean = false;
 
         viewPort: ViewPort = new ViewPort(TM.transform(TM.translate(0, 0), TM.scale(100)), 10000, 10000);
-        selected: number | null = null;
         internalMode: DrawingMode = DrawingMode.FloorPlan;
 
         // The layers
@@ -88,9 +102,6 @@
         toolHandler: ToolHandler | null = null;
         currentCursor: string = 'auto';
 
-        selectedObjectBackground: Background | null = null;
-        selectedObject: DrawableObject | null = null;
-
         shouldDraw: boolean = true;
         lastDraw: number = 0;
 
@@ -101,7 +112,6 @@
             this.ctx = (this.$refs.drawingCanvas as any).getContext('2d');
 
             MainEventBus.$on('ot-applied', this.onOT);
-            MainEventBus.$on('tool-change', this.onToolChange);
             MainEventBus.$on('set-tool-handler', this.setToolHandler);
 
             (this.$refs.drawingCanvas as any).onmousedown = this.onMouseDown;
@@ -115,8 +125,6 @@
                     this.scheduleDraw();
                 },
                 (object, drawable) => {
-                    this.selectedObjectBackground = object;
-                    this.selectedObject = drawable;
                     this.scheduleDraw();
                 },
                 () => { // onCommit
@@ -129,7 +137,6 @@
                     this.scheduleDraw();
                 },
                 (selectedObject: BackedDrawableObject<WithID> | null) => {
-                    this.selectedObject = selectedObject;
                     this.scheduleDraw();
                 },
                 () => {
@@ -143,7 +150,7 @@
             setInterval(this.drawLoop, 20);
         }
 
-        get document() {
+        get document(): DocumentState {
             return this.$store.getters['document/document'];
         }
 
@@ -158,7 +165,11 @@
 
 
         get currentTool(): ToolConfig {
-            return this.$store.getters['tools/getCurrentTool'];
+            if (this.toolHandler) {
+                return this.toolHandler.config;
+            } else {
+                return DEFAULT_TOOL;
+            }
         }
 
         get mode() {
@@ -166,16 +177,11 @@
         }
         set mode(value) {
             this.internalMode = value;
-            this.selected = null;
             this.processDocument();
         }
 
         onOT(operation: OperationTransform) {
             this.processDocument();
-        }
-
-        onToolChange(tool: ToolConfig) {
-            this.scheduleDraw();
         }
 
         setToolHandler(toolHandler: ToolHandler) {
@@ -185,10 +191,14 @@
 
         get selectedEntity() {
             if (this.mode === DrawingMode.FloorPlan) {
-                return this.selectedObjectBackground;
+                if (this.backgroundLayer) {
+                    return this.backgroundLayer.selectedEntity;
+                } else {
+                    return null;
+                }
             } else if (this.mode === DrawingMode.Hydraulics) {
-                if (this.selectedObject) {
-                    return (this.selectedObject as BackedDrawableObject<WithID>).stateObject;
+                if (this.hydraulicsLayer) {
+                    return this.hydraulicsLayer.selectedEntity;
                 } else {
                     return null;
                 }
@@ -196,23 +206,54 @@
             return null;
         }
 
-        get selectedObjectType() {
+        get selectedObject() {
             if (this.mode === DrawingMode.FloorPlan) {
-                return 'floor-plan';
+                if (this.backgroundLayer) {
+                    return this.backgroundLayer.selectedObject;
+                } else {
+                    return null;
+                }
             } else if (this.mode === DrawingMode.Hydraulics) {
-                return 'hydraulics';
+                if (this.hydraulicsLayer) {
+                    return this.hydraulicsLayer.selectedObject;
+                } else {
+                    return null;
+                }
             }
-            return '';
+            return null;
+        }
+
+        deleteSelected() {
+            if (this.mode === DrawingMode.FloorPlan) {
+                const background: Background = this.selectedEntity as Background;
+                const index = this.document.drawing.backgrounds.findIndex((b) => b.uid === background.uid);
+                this.document.drawing.backgrounds.splice(index, 1);
+                this.$store.dispatch('document/commit');
+            } else if (this.mode === DrawingMode.Hydraulics) {
+
+                if (this.selectedObject) {
+                    const object = this.selectedObject as BackedDrawableObject<DrawableEntity>;
+                    const toDelete = object.prepareDelete();
+                    toDelete.forEach((drawableObject) => {
+                        const index = this.document.drawing.entities.findIndex((b) => b.uid === drawableObject.uid);
+                        this.document.drawing.entities.splice(index, 1);
+                    });
+                } else {
+                    throw new Error('Delete was called but we didn\'t select anything');
+                }
+
+                this.$store.dispatch('document/commit');
+            }
         }
 
         changeTool(tool: ToolConfig) {
-            this.$store.dispatch('tools/setCurrentTool', tool);
+            if (tool.name === DEFAULT_TOOL.name) {
+                this.$emit('set-tool-handler', null);
+            }
         }
 
         processDocument() {
-            const document: DocumentState = this.$store.getters['document/document'];
-
-            this.allLayers.forEach((l) => l.update(document));
+            this.allLayers.forEach((l) => l.update(this.document));
             // finally, draw
             this.scheduleDraw();
         }
@@ -237,12 +278,13 @@
             }
         }
 
-        hydraulicsInsert({entityName, system}: {entityName: string, system: FlowSystemParameters}) {
-            this.$store.dispatch('tools/setCurrentTool', POINT_TOOL);
+        insertFlowSource(system: FlowSystemParameters) {
             MainEventBus.$emit('set-tool-handler', new PointTool(
                 () => {
-                    this.$store.dispatch('tools/setCurrentTool', DEFAULT_TOOL);
                     MainEventBus.$emit('set-tool-handler', null);
+                },
+                (wc: Coord) => {
+                    // Preview
                 },
                 (wc: Coord) => {
                     const doc = this.document as DocumentState;
@@ -257,6 +299,7 @@
                     }
 
                     const newEntity: FlowSourceEntity = {
+                        connections: [],
                         center: oc,
                         color: null,
                         heightAboveFloorM: 0,
@@ -264,7 +307,7 @@
                         maximumVelocityMS: null,
                         parentUid,
                         pressureKPA: 0,
-                        radiusMM: 100,
+                        diameterMM: 100,
                         spareCapacity: null,
                         systemUid: system.uid,
                         temperatureC: null,
@@ -277,11 +320,272 @@
             ));
         }
 
+        insertFlowSink(system: FlowSystemParameters) {
+            window.alert('No can do returns just yet');
+        }
+
+        insertPipes(system: FlowSystemParameters) {
+            // strategy:
+            // 1. create new pipe at click point
+            // 2. endpoint of pipe is at 2nd click point and follows the move in order to preview
+            // 3. clicking creates new pipe with start point the same as endpoint.
+            MainEventBus.$emit('set-tool-handler', new PointTool(
+                (interrupted) => {
+                    MainEventBus.$emit('set-tool-handler', null);
+                },
+                (wc: Coord) => {
+                    // Preview
+                },
+                (wc: Coord) => {
+                    // Create a valve. It will only have a single pipe, and thus be a dead-leg.
+                    const doc = this.document as DocumentState;
+
+                    // maybe we drew onto an existing node.
+                    const object = this.hydraulicsLayer.getObjectAt(wc) as BackedDrawableObject<DrawableEntity>;
+                    let entity: ConnectableEntity | ValveEntity;
+                    if (object &&
+                        (
+                            object.stateObject.type === ENTITY_NAMES.VALVE
+                            || object.stateObject.type === ENTITY_NAMES.FLOW_SOURCE
+                            || object.stateObject.type === ENTITY_NAMES.FLOW_SINK
+                        )
+                    ) {
+                        entity = object.stateObject as ConnectableEntity;
+                        this.hydraulicsLayer.onSelected(object);
+                    } else {
+
+                        this.hydraulicsLayer.onSelected(null);
+                        // Maybe we drew onto a background
+                        const floor = this.backgroundLayer.getBackgroundAt(wc, this.objectStore);
+                        let parentUid: string | null = null;
+                        let oc = _.cloneDeep(wc);
+                        if (floor != null) {
+                            parentUid = floor.background.uid;
+                            oc = floor.toObjectCoord(wc);
+                        }
+
+                        // Nope, we landed on nothing. We create new valve here.
+                        entity = {
+                            center: oc,
+                            color: null,
+                            connections: [],
+                            parentUid,
+                            systemUid: system.uid,
+                            type: ENTITY_NAMES.VALVE,
+                            uid: uuid(),
+                            // These names should come from databases.
+                            valveType: 'fitting',
+                        };
+                        doc.drawing.entities.push(entity);
+                    }
+
+
+                    this.$store.dispatch('document/commit').then(() => {
+                        this.insertPipeChain(entity, system.uid);
+                    });
+                },
+            ));
+        }
+
+        insertPipeChain(lastAttachment: ConnectableEntity, systemUid: string) {
+            let nextEntity: ConnectableEntity | ValveEntity;
+            let nextEntityWasNew: boolean = false;
+            let pipe: PipeEntity;
+            const pipeUid = uuid();
+            MainEventBus.$emit('set-tool-handler', new PointTool(
+                (interrupted) => {
+                    MainEventBus.$emit('set-tool-handler', null);
+                    if (interrupted) {
+                        // revert changes.
+                        this.$store.dispatch('document/revert').then(() => {
+
+                            // it's possible that we are drawing the first connection, in which case we will have an
+                            // orphaned valve. Delete it.
+                            if (lastAttachment.connections.length === 0) {
+                                const index = this.document.drawing.entities.findIndex((b) => b.uid === lastAttachment.uid);
+                                this.document.drawing.entities.splice(index, 1);
+                            }
+                            this.$store.dispatch('document/commit');
+                        });
+                    }
+                },
+                (wc: Coord, event: MouseEvent) => {
+
+                    let needUpdate: boolean = false;
+
+                    // create pipe
+                    if (!pipe) {
+                        pipe = {
+                            color: null,
+                            diameterMM: null,
+                            lengthM: null,
+                            endpointUid: [lastAttachment.uid, lastAttachment.uid],
+                            heightAboveFloorM: 0.7,
+                            material: null,
+                            maximumVelocityMS: null,
+                            parentUid: null,
+                            systemUid,
+                            type: ENTITY_NAMES.PIPE,
+                            uid: pipeUid,
+                        };
+                        this.document.drawing.entities.push(pipe);
+                        (this.document.drawing.entities.find((e) => e.uid === lastAttachment.uid) as ConnectableEntity)
+                            .connections.push(pipe.uid);
+                        // this.processDocument();
+                        needUpdate = true;
+                    }
+
+
+                    // maybe we drew onto an existing node.
+                    const exclude = [];
+                    if (nextEntityWasNew && nextEntity) {
+                        exclude.push(nextEntity.uid);
+                    }
+                    const object = this.hydraulicsLayer.getObjectAt(wc, exclude) as BackedDrawableObject<DrawableEntity>;
+                    if (object &&
+                        (
+                            object.stateObject.type === ENTITY_NAMES.VALVE
+                            || object.stateObject.type === ENTITY_NAMES.FLOW_SOURCE
+                            || object.stateObject.type === ENTITY_NAMES.FLOW_SINK
+                        )
+                    ) {
+                        if (nextEntityWasNew && nextEntity !== null) {
+                            // delete the no longer needed new phantom pipe
+                            const index = this.document.drawing.entities.findIndex((e) => e.uid === nextEntity.uid);
+                            this.document.drawing.entities.splice(index, 1);
+                            needUpdate = true;
+                        }
+
+                        if (!nextEntityWasNew) {
+                            if (nextEntity) {
+                                nextEntity.connections.splice(nextEntity.connections.indexOf(pipeUid), 1);
+                            }
+                        }
+
+                        nextEntity = object.stateObject as ConnectableEntity;
+                        nextEntity.connections.push(pipeUid);
+                        this.hydraulicsLayer.selectedObject = object;
+                        nextEntityWasNew = false;
+                    } else {
+                        this.hydraulicsLayer.selectedObject = null;
+                        if (!event.shiftKey) {
+                            // Snap onto a direction.
+
+                            const bases = [Flatten.vector(0, 1)];
+                            const connectable = this.objectStore.get(lastAttachment.uid) as
+                                (BackedDrawableObject<ConnectableEntity> & Connectable);
+
+                            const lawc = connectable.fromParentToWorldCoord(lastAttachment.center);
+                            const lawcp = Flatten.point(lawc.x, lawc.y);
+                            const wcp = Flatten.point(wc.x, wc.y);
+                            connectable.radials(pipeUid).forEach(([radialWc, obj]) => {
+                                // right now, we don't need a uid check because we are guaranteed that the state was
+                                // reset.
+                                bases.push(Flatten.vector(lawcp, Flatten.point(radialWc.x, radialWc.y)));
+                            });
+
+
+                            let bestPoint: [number, Flatten.Point] = [Infinity, wcp];
+                            bases.forEach((dirVec) => {
+                                for (let i = 0; i < 4; i++) {
+                                    const thisPoint = wcp.projectionOn(Flatten.line(lawcp, dirVec));
+                                    const dist = thisPoint.distanceTo(wcp)[0];
+                                    if (dist < bestPoint[0]) {
+                                        bestPoint = [dist, thisPoint];
+                                    }
+                                    dirVec = dirVec.rotate90CCW();
+                                }
+                            });
+
+                            wc.x = bestPoint[1].x;
+                            wc.y = bestPoint[1].y;
+
+                        }
+
+                        // Maybe we drew onto a background
+                        const floor = this.backgroundLayer.getBackgroundAt(wc, this.objectStore);
+                        let parentUid: string | null = null;
+                        let oc = _.cloneDeep(wc);
+                        if (floor != null) {
+                            parentUid = floor.background.uid;
+                            oc = floor.toObjectCoord(wc);
+                        }
+
+                        if (nextEntityWasNew) {
+                            nextEntity.center = oc;
+                            nextEntity.parentUid = parentUid;
+                        } else {
+                            if (nextEntity) {
+                                nextEntity.connections.splice(nextEntity.connections.indexOf(pipeUid), 1);
+                            }
+
+                            // Create 2nd valve
+                            nextEntity = {
+                                center: oc,
+                                color: null,
+                                connections: [pipeUid],
+                                parentUid,
+                                systemUid,
+                                type: ENTITY_NAMES.VALVE,
+                                uid: uuid(),
+                                // These names should come from databases.
+                                valveType: 'fitting',
+                            };
+                            this.document.drawing.entities.push(nextEntity);
+                            needUpdate = true;
+                        }
+
+                        nextEntityWasNew = true;
+                    }
+
+                    pipe.endpointUid.splice(1, 1, nextEntity.uid);
+
+                    if (needUpdate) {
+                        this.processDocument();
+                    } else {
+                        this.scheduleDraw();
+                    }
+                },
+
+                (wc: Coord) => {
+                    // committed to the point. And also create new pipe, continue the chain.
+                    if (nextEntity && lastAttachment.uid !== nextEntity.uid) {
+                        this.$store.dispatch('document/commit').then(() => {
+                            this.insertPipeChain(nextEntity, systemUid);
+                        });
+                    } else {
+                        // end
+                        this.$store.dispatch('document/revert').then(() => {
+                            // it's possible that we are drawing the first connection, in which case we will have an
+                            // orphaned valve. Delete it.
+                            if (lastAttachment.connections.length === 0) {
+                                const index = this.document.drawing.entities.findIndex((b) => b.uid === lastAttachment.uid);
+                                this.document.drawing.entities.splice(index, 1);
+                            }
+                            this.$store.dispatch('document/commit');
+                        });
+                    }
+                },
+            ));
+        }
+
+        hydraulicsInsert({entityName, system}: {entityName: string, system: FlowSystemParameters}) {
+
+            this.hydraulicsLayer.onSelected(null);
+
+            if (entityName === ENTITY_NAMES.FLOW_SOURCE) {
+                this.insertFlowSource(system);
+            } else if (entityName === ENTITY_NAMES.FLOW_SINK) {
+                this.insertFlowSink(system);
+            } else if (entityName === ENTITY_NAMES.PIPE) {
+                this.insertPipes(system);
+            }
+        }
+
         // For this to work, there is to be no local state at all. All state is to be stored in the vue store,
         // which is serialised by snapshots and operation transforms.
         draw() {
             this.lastDraw = Date.now();
-            const state: DocumentState = this.$store.state.document;
             if (this.ctx != null && (this.$refs.canvasFrame as any) != null) {
                 const ctx: CanvasRenderingContext2D = this.ctx;
 

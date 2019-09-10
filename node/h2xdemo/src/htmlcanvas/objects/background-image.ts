@@ -290,13 +290,13 @@ export class BackgroundImage extends SizeableObject {
      */
 
 
-    inBounds(ox: number, oy: number): boolean {
+    inBounds(objectCoord: Coord): boolean {
         // let clipP = this.toWorldCoord(this.background.crop);
 
-        if (ox < this.background.crop.x || oy < this.background.crop.y) {
+        if (objectCoord.x < this.background.crop.x || objectCoord.y < this.background.crop.y) {
             return false;
-        } else if (ox <= this.background.crop.x + this.background.crop.w
-            && oy <= this.background.crop.y + this.background.crop.h) {
+        } else if (objectCoord.x <= this.background.crop.x + this.background.crop.w
+            && objectCoord.y <= this.background.crop.y + this.background.crop.h) {
             return true;
         }
         return false;
@@ -307,7 +307,7 @@ export class BackgroundImage extends SizeableObject {
         this.shiftKey = event.shiftKey; // shift click moves the pdf but not the crop box or child points.
         const w = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const o = this.toObjectCoord(w);
-        if (this.inBounds(o.x, o.y)) {
+        if (this.inBounds(o)) {
             this.grabbedPoint = [w.x, w.y];
             this.grabbedCenterState = [this.center.x, this.center.y];
             this.grabbedOffsetState = _.cloneDeep(this.background.offset);

@@ -26,7 +26,8 @@
       "dom",
       "dom.iterable",
       "scripthost"
-    ]
+    ],
+    "skipLibCheck": true // for flatten-js.
   },
   "include": [
     "src/**/*.ts",

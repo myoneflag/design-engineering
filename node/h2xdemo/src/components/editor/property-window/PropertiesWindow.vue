@@ -2,14 +2,29 @@
     <div class="propertiesWindow">
         <FloorPlanProperties :selected-entity="selectedEntity"
                              :selected-object="selectedObject"
-                             v-if="objectType === 'floor-plan'"
+                             v-if="mode === 0"
         />
         <FlowSourceProperties
             v-else-if="entity.type === ENTITY_NAMES.FLOW_SOURCE"
             :selected-entity="entity"
             :selected-object="selectedObject"
             :on-change="onChange"
-        />-
+            :on-delete="onDelete"
+        />
+        <ValveProperties
+                v-else-if="entity.type === ENTITY_NAMES.VALVE"
+                :selected-entity="entity"
+                :selected-object="selectedObject"
+                :on-change="onChange"
+                :on-delete="onDelete"
+        />
+        <PipeProperties
+                v-else-if="entity.type === ENTITY_NAMES.PIPE"
+                :selected-entity="entity"
+                :selected-object="selectedObject"
+                :on-change="onChange"
+                :on-delete="onDelete"
+        />
     </div>
 </template>
 
@@ -20,14 +35,17 @@
     import FlowSourceProperties from '@/components/editor/property-window/FlowSourceProperties.vue';
     import {DrawableEntity} from '@/store/document/types';
     import {ENTITY_NAMES} from '@/store/document/entities';
+    import ValveProperties from '@/components/editor/property-window/ValveProperties.vue';
+    import PipeProperties from '@/components/editor/property-window/PipeProperties.vue';
 
     @Component({
-        components: {FlowSourceProperties, FloorPlanProperties},
+        components: {PipeProperties, ValveProperties, FlowSourceProperties, FloorPlanProperties},
         props: {
             selectedEntity: Object,
             selectedObject: Object,
-            objectType: String,
+            mode: Number,
             onChange: Function,
+            onDelete: Function,
         },
     })
     export default class PropertiesWindow extends Vue {

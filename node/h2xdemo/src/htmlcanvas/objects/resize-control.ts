@@ -4,6 +4,7 @@ import SizeableObject from '@/htmlcanvas/lib/sizeable-object';
 import * as TM from 'transformation-matrix';
 import {matrixScale} from '@/htmlcanvas/utils';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
+import {Coord} from '@/store/document/types';
 
 enum Sides {
     Left,
@@ -174,5 +175,9 @@ export class ResizeControl extends DrawableObject {
         ctx.stroke();
 
         ctx.setLineDash(prevDash);
+    }
+
+    inBounds(objectCoord: Coord): boolean {
+        return false;
     }
 }

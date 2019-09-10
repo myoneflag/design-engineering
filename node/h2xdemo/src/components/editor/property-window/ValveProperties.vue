@@ -2,15 +2,15 @@
     <b-container>
         <b-row>
             <b-col>
-                <h3>Flow Source</h3>
+                <h3>{{ selectedObject.friendlyTypeName }}</h3>
             </b-col>
         </b-row>
         <PropertiesFieldBuilder
-            :fields="fields"
-            :reactive-data="reactiveData"
-            :default-data="defaultData"
-            :on-commit="onCommit"
-            :on-change="onChange"
+                :fields="fields"
+                :reactive-data="reactiveData"
+                :default-data="defaultData"
+                :on-commit="onCommit"
+                :on-change="onChange"
         />
         <b-row>
             <b-col>
@@ -26,8 +26,8 @@
     import Vue from 'vue';
     import Component from 'vue-class-component';
     import PropertiesFieldBuilder from '@/components/editor/lib/PropertiesFieldBuilder.vue';
-    import {fillFlowSourceDefaults, makeFlowSourceFields} from '@/store/document/entities/flow-source-entity';
     import {DocumentState} from '@/store/document/types';
+    import ValveEntity, {fillValveDefaultFields, makeValveFields} from '../../../store/document/entities/valveEntity';
 
     @Component({
         components: {PropertiesFieldBuilder},
@@ -38,16 +38,17 @@
             onChange: Function,
         },
     })
-    export default class FlowSourceProperties extends Vue {
+    export default class ValveProperties extends Vue {
 
         get fields() {
-            return makeFlowSourceFields(
-                ['Material A', 'Material B'],
+            return makeValveFields(
+                // TODO: Database
+                ['fitting', 'rcpd', 'pressure', 'I need to make a database'],
                 this.document.drawing.flowSystems,
             );
         }
 
-        get reactiveData() {
+        get reactiveData(): ValveEntity {
             return this.$props.selectedEntity;
         }
 
@@ -55,8 +56,8 @@
             return this.$store.getters['document/document'];
         }
 
-        get defaultData() {
-            return fillFlowSourceDefaults(this.document, this.reactiveData);
+        get defaultData(): ValveEntity {
+            return fillValveDefaultFields(this.document, this.reactiveData);
         }
 
         onCommit() {
@@ -70,28 +71,5 @@
 
 <style lang="less">
 
-    .sidebar-title {
-
-        position: relative;
-        font-size: 30px;
-        z-index: 1;
-        overflow: hidden;
-        text-align: center;
-
-        &:before, &:after {
-            position: absolute;
-            top: 51%;
-            overflow: hidden;
-            width: 50%;
-            height: 1px;
-            content: '\a0';
-            background-color: lightgray;
-        }
-
-        &:before {
-            margin-left: -50%;
-            text-align: right;
-        }
-    }
 </style>
 

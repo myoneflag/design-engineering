@@ -24,6 +24,7 @@ export const mutations: MutationTree<DocumentState> = {
                 MainEventBus.$emit('ot-applied', operation);
                 return;
             } else {
+                window.alert('Please refresh your browser - an error has been detected');
                 throw new Error('Optimistic operation conflict. TODO: rewind with undo\'s here. New object is: \n' +
                     JSON.stringify(operation) + '\n' +
                     'old object is:\n' +
@@ -86,6 +87,11 @@ export const mutations: MutationTree<DocumentState> = {
     scaleBackground(state, {background, factor}) {
         const index = state.drawing.backgrounds.findIndex((b) => b.uid === background.uid);
         state.drawing.backgrounds[index].scaleFactor *= factor;
+        MainEventBus.$emit('ot-applied');
+    },
+
+    revert(state) {
+        state.drawing = _.cloneDeep(state.committedDrawing);
         MainEventBus.$emit('ot-applied');
     },
 

@@ -7,7 +7,7 @@
             </b-col>
             <b-col>
                 <FlowSystemPicker
-                    :selected-system="selectedSystem"
+                    :selected-system-uid="selectedSystem.uid"
                     :flow-systems="flowSystems"
                     @selectSystem="selectSystem"
                 />

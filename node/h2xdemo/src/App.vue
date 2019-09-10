@@ -52,10 +52,14 @@
         mounted() {
             const socket = sockjs('/api/websocket');
             this.connection = Stomp.over(socket);
-            this.connection.connect({}, () => {
+            this.connection.connect({},
+                () => {
                     this.connection.subscribe('/user/document', (payload: Message) => {
                         this.$store.dispatch('document/applyRemoteOperation', JSON.parse(payload.body));
                     });
+                },
+                () => {
+                    window.alert('You have been disconnected with the server, please refresh');
                 },
             );
         }

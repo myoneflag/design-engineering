@@ -30,6 +30,7 @@ export interface PropertyField {
     property: string;
     title: string;
     hasDefault: boolean;
+    isCalculated: boolean;
     type: FieldType;
     params: NumberParams | TextAreaParams | ChoiceParams | FlowSystemChoiceParams | null;
 }

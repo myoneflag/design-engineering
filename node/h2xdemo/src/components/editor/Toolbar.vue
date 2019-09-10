@@ -52,7 +52,6 @@
     export default class Toolbar extends Vue {
         TOOLBAR_BUTTONS: ToolConfig[] = [
             DEFAULT_TOOL,
-            POINT_TOOL,
         ];
 
         toolBtnClick(tool: ToolConfig) {

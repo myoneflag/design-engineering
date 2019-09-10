@@ -6,12 +6,18 @@ import {ToolConfig} from '@/store/tools/types';
 
 export default class PointTool implements ToolHandler {
 
-    onPointChosen: (worldCoord: Coord) => void;
-    onFinish: () => void;
+    onPointChosen: (worldCoord: Coord, event: MouseEvent) => void;
+    onMove: (worldCoord: Coord, event: MouseEvent) => void;
+    onFinish: (interrupted: boolean) => void;
     moved: boolean = false;
 
-    constructor(onFinish: () => void, onPointChosen: (worldCoord: Coord) => void) {
+    constructor(
+        onFinish: (interrupted: boolean) => void,
+        onMove: (worldCoord: Coord, event: MouseEvent) => void,
+        onPointChosen: (worldCoord: Coord, event: MouseEvent) => void,
+    ) {
         this.onPointChosen = onPointChosen;
+        this.onMove = onMove;
         this.onFinish = onFinish;
     }
 
@@ -25,6 +31,7 @@ export default class PointTool implements ToolHandler {
     }
     onMouseMove(event: MouseEvent, vp: ViewPort) {
         this.moved = true;
+        this.onMove(vp.toWorldCoord({x: event.offsetX, y: event.offsetY}), event);
         return UNHANDLED;
     }
     onMouseScroll(event: MouseEvent, vp: ViewPort) {
@@ -35,8 +42,8 @@ export default class PointTool implements ToolHandler {
             return false;
         } else {
             // End event.
-            this.onFinish();
-            this.onPointChosen(vp.toWorldCoord({x: event.offsetX, y: event.offsetY}));
+            this.onFinish(false);
+            this.onPointChosen(vp.toWorldCoord({x: event.offsetX, y: event.offsetY}), event);
             return true;
         }
     }
