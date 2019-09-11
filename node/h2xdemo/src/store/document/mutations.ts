@@ -21,7 +21,7 @@ export const mutations: MutationTree<DocumentState> = {
             if (_.isEqual(state.optimisticHistory[0], operation)) {
                 // All g.
                 state.optimisticHistory.splice(0, 1);
-                MainEventBus.$emit('ot-applied', operation);
+                MainEventBus.$emit('ot-applied');
                 return;
             } else {
                 window.alert('Please refresh your browser - an error has been detected');
@@ -51,7 +51,7 @@ export const mutations: MutationTree<DocumentState> = {
         if (handled) {
             state.history.push(operation);
             state.nextId = Math.max(state.nextId, operation.id) + 1;
-            MainEventBus.$emit('ot-applied', operation);
+            MainEventBus.$emit('ot-applied');
         } else {
             throw new Error('Invalid operation: ' + JSON.stringify(operation));
         }
@@ -90,9 +90,9 @@ export const mutations: MutationTree<DocumentState> = {
         MainEventBus.$emit('ot-applied');
     },
 
-    revert(state) {
+    revert(state, redraw) {
         state.drawing = _.cloneDeep(state.committedDrawing);
-        MainEventBus.$emit('ot-applied');
+        MainEventBus.$emit('ot-applied', redraw);
     },
 
     reset(state) {

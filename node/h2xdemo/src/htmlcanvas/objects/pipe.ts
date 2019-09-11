@@ -105,6 +105,15 @@ export default class Pipe extends DraggableObject<PipeEntity> {
         }
     }
 
+    project(wc: Coord): Coord {
+        if (this.lastDrawnLine instanceof Flatten.Segment) {
+            const shortSeg: Flatten.Segment = this.lastDrawnLine.distanceTo(Flatten.point(wc.x, wc.y))[1];
+            return {x: shortSeg.ps.x, y: shortSeg.ps.y};
+        } else {
+            return {x: this.lastDrawnLine.x, y: this.lastDrawnLine.y};
+        }
+    }
+
     inBounds(oc: Coord): boolean {
         if (!this.lastDrawnLine) {
             return false;

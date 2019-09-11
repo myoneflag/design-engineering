@@ -79,6 +79,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
     import Flatten from '@flatten-js/core';
     import Connectable from '@/htmlcanvas/lib/connectable';
     import assert from 'assert';
+    import Pipe from '@/htmlcanvas/objects/pipe';
 
     @Component({
         components: {HydraulicsInsertPanel, Overlay, Toolbar, PropertiesWindow, ModeButtons},
@@ -180,8 +181,8 @@ import {DrawingMode} from "@/htmlcanvas/types";
             this.processDocument();
         }
 
-        onOT(operation: OperationTransform) {
-            this.processDocument();
+        onOT(redraw: boolean = true) {
+            this.processDocument(redraw);
         }
 
         setToolHandler(toolHandler: ToolHandler) {
@@ -223,6 +224,14 @@ import {DrawingMode} from "@/htmlcanvas/types";
             return null;
         }
 
+        deleteFromHydraulicsLayerSoft(object: BackedDrawableObject<DrawableEntity>) {
+            const toDelete = object.prepareDelete();
+            toDelete.forEach((drawableObject) => {
+                const index = this.document.drawing.entities.findIndex((b) => b.uid === drawableObject.uid);
+                this.document.drawing.entities.splice(index, 1);
+            });
+        }
+
         deleteSelected() {
             if (this.mode === DrawingMode.FloorPlan) {
                 const background: Background = this.selectedEntity as Background;
@@ -230,19 +239,12 @@ import {DrawingMode} from "@/htmlcanvas/types";
                 this.document.drawing.backgrounds.splice(index, 1);
                 this.$store.dispatch('document/commit');
             } else if (this.mode === DrawingMode.Hydraulics) {
-
                 if (this.selectedObject) {
-                    const object = this.selectedObject as BackedDrawableObject<DrawableEntity>;
-                    const toDelete = object.prepareDelete();
-                    toDelete.forEach((drawableObject) => {
-                        const index = this.document.drawing.entities.findIndex((b) => b.uid === drawableObject.uid);
-                        this.document.drawing.entities.splice(index, 1);
-                    });
+                    this.deleteFromHydraulicsLayerSoft(this.selectedObject as BackedDrawableObject<DrawableEntity>);
+                    this.$store.dispatch('document/commit');
                 } else {
                     throw new Error('Delete was called but we didn\'t select anything');
                 }
-
-                this.$store.dispatch('document/commit');
             }
         }
 
@@ -252,10 +254,12 @@ import {DrawingMode} from "@/htmlcanvas/types";
             }
         }
 
-        processDocument() {
+        processDocument(redraw: boolean = true) {
             this.allLayers.forEach((l) => l.update(this.document));
             // finally, draw
-            this.scheduleDraw();
+            if (redraw) {
+                this.scheduleDraw();
+            }
         }
 
 
@@ -569,6 +573,112 @@ import {DrawingMode} from "@/htmlcanvas/types";
             ));
         }
 
+        insertValve(system: FlowSystemParameters) {
+
+            let pipe: Pipe | null = null;
+
+            MainEventBus.$emit('set-tool-handler', new PointTool(
+                (interrupted) => {
+                    if (interrupted) {
+                        this.$store.dispatch('document/revert').then(() => {
+                            MainEventBus.$emit('set-tool-handler', null);
+                            this.$store.dispatch('document/commit');
+                        })
+                    }
+                },
+                (wc, event) => {
+                    this.$store.dispatch('document/revert', false).then(() => {
+
+                        let entity: ConnectableEntity | ValveEntity;
+                        const exclude: string[] = [];
+
+                        const object = this.hydraulicsLayer.getObjectAt(wc, exclude) as BackedDrawableObject<DrawableEntity>;
+                        if (object &&
+                            (
+                                object.stateObject.type === ENTITY_NAMES.PIPE
+                            )
+                        ) {
+                            pipe = object as Pipe;
+                            this.hydraulicsLayer.selectedObject  = object;
+                            // Project onto pipe
+
+                            wc = pipe.project(wc);
+
+                            // Maybe we drew onto a background
+                            const floor = this.backgroundLayer.getBackgroundAt(wc, this.objectStore);
+                            let parentUid: string | null = null;
+                            let oc = _.cloneDeep(wc);
+                            if (floor != null) {
+                                parentUid = floor.background.uid;
+                                oc = floor.toObjectCoord(wc);
+                            }
+
+                            const pipe1uid = uuid();
+                            const pipe2uid = uuid();
+
+                            const newValve: ValveEntity = {
+                                center: oc,
+                                color: null,
+                                connections: [pipe1uid, pipe2uid],
+                                parentUid,
+                                systemUid: system.uid,
+                                type: ENTITY_NAMES.VALVE,
+                                uid: uuid(),
+                                valveType: 'fitting',
+                            };
+
+                            const newPipe1: PipeEntity = {
+                                color: pipe.stateObject.color,
+                                diameterMM: pipe.stateObject.diameterMM,
+                                endpointUid: [newValve.uid, pipe.stateObject.endpointUid[0]],
+                                heightAboveFloorM: pipe.stateObject.heightAboveFloorM,
+                                lengthM: null,
+                                material: pipe.stateObject.material,
+                                maximumVelocityMS: pipe.stateObject.maximumVelocityMS,
+                                parentUid: null,
+                                systemUid: pipe.stateObject.systemUid,
+                                type: ENTITY_NAMES.PIPE,
+                                uid: pipe1uid,
+                            };
+
+                            const newPipe2: PipeEntity = {
+                                color: pipe.stateObject.color,
+                                diameterMM: pipe.stateObject.diameterMM,
+                                endpointUid: [newValve.uid, pipe.stateObject.endpointUid[1]],
+                                heightAboveFloorM: pipe.stateObject.heightAboveFloorM,
+                                lengthM: null,
+                                material: pipe.stateObject.material,
+                                maximumVelocityMS: pipe.stateObject.maximumVelocityMS,
+                                parentUid: null,
+                                systemUid: pipe.stateObject.systemUid,
+                                type: ENTITY_NAMES.PIPE,
+                                uid: pipe2uid,
+                            };
+
+                            (this.document.drawing.entities.find((o) => o.uid === pipe!.stateObject.endpointUid[0]) as ConnectableEntity)
+                                .connections.push(newPipe1.uid);
+                            (this.document.drawing.entities.find((o) => o.uid === pipe!.stateObject.endpointUid[1]) as ConnectableEntity)
+                                .connections.push(newPipe2.uid);
+
+                            this.document.drawing.entities.push(newValve, newPipe1, newPipe2);
+                            this.processDocument();
+                        } else {
+                            pipe = null;
+                            this.hydraulicsLayer.selectedObject = null;
+                        }
+                    });
+                },
+                (worldCoord, event) => {
+                    MainEventBus.$emit('set-tool-handler', null);
+                    if (pipe) {
+                        this.deleteFromHydraulicsLayerSoft(pipe);
+                    }
+                    this.$store.dispatch('document/commit');
+                },
+            ));
+        }
+
+
         hydraulicsInsert({entityName, system}: {entityName: string, system: FlowSystemParameters}) {
 
             this.hydraulicsLayer.onSelected(null);
@@ -579,6 +689,8 @@ import {DrawingMode} from "@/htmlcanvas/types";
                 this.insertFlowSink(system);
             } else if (entityName === ENTITY_NAMES.PIPE) {
                 this.insertPipes(system);
+            } else if (entityName === ENTITY_NAMES.VALVE) {
+                this.insertValve(system);
             }
         }
 

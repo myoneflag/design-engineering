@@ -2,6 +2,11 @@
     <b-row style="position:fixed; left:300px; top:80px;">
         <b-col>
             <b-button-group>
+                <FlowSystemPicker
+                        :selected-system-uid="selectedSystem.uid"
+                        :flow-systems="flowSystems"
+                        @selectSystem="selectSystem"
+                />
                 <b-button variant="outline-dark" class="insertBtn source btn-sm"
                           @click="$emit('insert', {entityName: entityNames.FLOW_SOURCE, system: selectedSystem})"
                           v-b-tooltip.hover title="Flow Source"
@@ -14,11 +19,10 @@
                           @click="$emit('insert', {entityName: entityNames.PIPE, system: selectedSystem})"
                           v-b-tooltip.hover title="Pipes"
                 ><v-icon  name="wave-square" scale="1.2"/></b-button>
-                <FlowSystemPicker
-                        :selected-system-uid="selectedSystem.uid"
-                        :flow-systems="flowSystems"
-                        @selectSystem="selectSystem"
-                />
+                <b-button variant="outline-dark" class="insertBtn pipes btn-sm"
+                          @click="$emit('insert', {entityName: entityNames.VALVE, system: selectedSystem})"
+                          v-b-tooltip.hover title="Valve"
+                ><v-icon  name="cross" scale="1.2"/></b-button>
             </b-button-group>
         </b-col>
     </b-row>
