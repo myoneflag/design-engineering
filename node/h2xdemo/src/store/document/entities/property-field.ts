@@ -26,11 +26,15 @@ export interface FlowSystemChoiceParams {
     systems: FlowSystemParameters[];
 }
 
+export interface CalculationParams {
+    initialValue: any;
+}
+
 export interface PropertyField {
     property: string;
     title: string;
     hasDefault: boolean;
     isCalculated: boolean;
     type: FieldType;
-    params: NumberParams | TextAreaParams | ChoiceParams | FlowSystemChoiceParams | null;
+    params: (NumberParams | TextAreaParams | ChoiceParams | FlowSystemChoiceParams) & (CalculationParams | {}) | null;
 }

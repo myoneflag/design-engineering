@@ -24,7 +24,7 @@ export function makePipeFields(materials: string[], systems: FlowSystemParameter
             type: FieldType.Choice, params: { choices: materials } },
 
         { property: 'lengthM', title: 'Length (m)', hasDefault: false, isCalculated: true,
-            type: FieldType.Number, params: { min: 0, max: null } },
+            type: FieldType.Number, params: { min: 0, max: null, initialValue: 0 } },
 
         { property: 'color', title: 'Color:', hasDefault: true, isCalculated: false,
             type: FieldType.Color, params: null },
@@ -33,7 +33,7 @@ export function makePipeFields(materials: string[], systems: FlowSystemParameter
             type: FieldType.Number, params: { min: 0, max: null } },
 
         { property: 'diameterMM', title: 'Diameter', hasDefault: false, isCalculated: true,
-            type: FieldType.Number, params: { min: 0, max: null } },
+            type: FieldType.Number, params: { min: 0, max: null, initialValue: 50 } },
 
         { property: 'heightAboveFloorM', title: 'Height Above Floor (m)', hasDefault: false, isCalculated: false,
             type: FieldType.Number, params: { min: null, max: null } },

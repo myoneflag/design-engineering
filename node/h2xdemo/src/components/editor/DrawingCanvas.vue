@@ -583,16 +583,16 @@ import {DrawingMode} from "@/htmlcanvas/types";
                         this.$store.dispatch('document/revert').then(() => {
                             MainEventBus.$emit('set-tool-handler', null);
                             this.$store.dispatch('document/commit');
-                        })
+                        });
                     }
                 },
                 (wc, event) => {
                     this.$store.dispatch('document/revert', false).then(() => {
 
-                        let entity: ConnectableEntity | ValveEntity;
                         const exclude: string[] = [];
 
-                        const object = this.hydraulicsLayer.getObjectAt(wc, exclude) as BackedDrawableObject<DrawableEntity>;
+                        const object =
+                            this.hydraulicsLayer.getObjectAt(wc, exclude) as BackedDrawableObject<DrawableEntity>;
                         if (object &&
                             (
                                 object.stateObject.type === ENTITY_NAMES.PIPE
@@ -655,10 +655,12 @@ import {DrawingMode} from "@/htmlcanvas/types";
                                 uid: pipe2uid,
                             };
 
-                            (this.document.drawing.entities.find((o) => o.uid === pipe!.stateObject.endpointUid[0]) as ConnectableEntity)
-                                .connections.push(newPipe1.uid);
-                            (this.document.drawing.entities.find((o) => o.uid === pipe!.stateObject.endpointUid[1]) as ConnectableEntity)
-                                .connections.push(newPipe2.uid);
+                            (this.document.drawing.entities.find(
+                                (o) => o.uid === pipe!.stateObject.endpointUid[0]) as ConnectableEntity
+                            ).connections.push(newPipe1.uid);
+                            (this.document.drawing.entities.find(
+                                (o) => o.uid === pipe!.stateObject.endpointUid[1]) as ConnectableEntity
+                            ).connections.push(newPipe2.uid);
 
                             this.document.drawing.entities.push(newValve, newPipe1, newPipe2);
                             this.processDocument();
