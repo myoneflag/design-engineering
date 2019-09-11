@@ -165,13 +165,15 @@ export default class  HydraulicsLayer implements Layer {
             return o.type === ENTITY_NAMES.VALVE;
         }));
 
+
         this.uidsInOrder.splice(0, 0, ...thisIds.filter((a) => {
             const o = (this.objectStore.get(a) as BackedDrawableObject<DrawableEntity>).stateObject;
-            return o.type === ENTITY_NAMES.PIPE;
+            return this.uidsInOrder.indexOf(a) === -1 && o.type !== ENTITY_NAMES.PIPE;
         }));
 
         this.uidsInOrder.splice(0, 0, ...thisIds.filter((a) => {
-            return this.uidsInOrder.indexOf(a) === -1;
+            const o = (this.objectStore.get(a) as BackedDrawableObject<DrawableEntity>).stateObject;
+            return o.type === ENTITY_NAMES.PIPE;
         }));
     }
 
