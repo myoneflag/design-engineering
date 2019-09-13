@@ -1,6 +1,9 @@
+import {FileWebsocketMessageType} from "@/api/types";
+import {FileWebsocketMessageType} from "@/api/types";
 <template>
     <div id="app">
         <router-view/>
+        <version-number/>
     </div>
 </template>
 
@@ -12,25 +15,19 @@
 
     import 'bootstrap/dist/css/bootstrap.css';
     import 'bootstrap-vue/dist/bootstrap-vue.css';
-    import sockjs from 'sockjs-client';
-    import Stomp, {Client, Message} from 'stompjs';
-
-
     // @ts-ignore
     import VueResize from 'vue-resize';
     import 'vue-resize/dist/vue-resize.css';
-
     // @ts-ignore
     import VueInputAutowidth from 'vue-input-autowidth';
-
     // @ts-ignore
     import VueAwesome from 'vue-awesome';
 
     import VueDragDrop from 'vue-drag-drop';
+    import VueCookies from 'vue-cookies';
+    import VersionNumber from '@/components/VersionNumber.vue';
 
     Vue.use(VueDragDrop);
-
-    import VueCookies from 'vue-cookies';
 
     Vue.use(VueCookies);
 
@@ -41,36 +38,12 @@
 
     @Component({
         components: {
+            VersionNumber,
             MainNavBar,
         },
     })
 
     export default class App extends Vue {
-
-        connection!: Client;
-
-        mounted() {
-            const socket = sockjs('/api/websocket');
-            this.connection = Stomp.over(socket);
-            this.connection.connect({},
-                () => {
-                    this.connection.subscribe('/user/document', (payload: Message) => {
-                        this.$store.dispatch('document/applyRemoteOperation', JSON.parse(payload.body));
-                    });
-                },
-                () => {
-                    window.alert('You have been disconnected with the server, please refresh');
-                },
-            );
-        }
-
-        destroyed() {
-            // kill the socket
-            this.connection.disconnect(() => {
-                this.$store.dispatch('document/reset');
-            });
-        }
-
     }
 </script>
 

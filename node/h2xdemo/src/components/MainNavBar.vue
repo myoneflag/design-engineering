@@ -1,7 +1,7 @@
 <template>
     <b-navbar type="light">
         <b-navbar-nav>
-            <b-nav-item to="/" active-class="active" exact>Home</b-nav-item>
+            <b-nav-item :to="{name: 'home'}" active-class="active" exact>Home</b-nav-item>
         </b-navbar-nav>
 
         <ProfileMenuItem/>

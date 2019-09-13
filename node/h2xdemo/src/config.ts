@@ -1,5 +1,4 @@
 // http://www.metrication.com/drafting/paper.html
-
 export interface PaperSize {
     name: string;
     heightMM: number;

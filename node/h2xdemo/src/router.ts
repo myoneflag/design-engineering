@@ -24,46 +24,61 @@ const router = new Router({
         {
             path: '/document',
             name: 'document',
-            // route level code-splitting
-            // this generates a separate chunk (about.[hash].js) for this route
-            // which is lazy-loaded when the route is visited.
-            component: () => import(/* webpackChunkName: "about" */ './views/Document.vue'),
-            meta: {
-                auth: true,
-            },
-        },
 
-        {
-            path: '/document/settings',
-            name: 'settings',
+            component: () => import(/* webpackChunkName: "about" */ './views/Document.vue'),
+
             children: [
                 {
-                    path: 'general',
-                    name: 'general',
-                    component: () => import(/* webpackChunkName: "general" */ './views/settings/General.vue'),
+                    path: '',
+                    name: 'drawing',
+
+                    component: () => import(/* webpackChunkName: "about" */ './views/Canvas.vue'),
                 },
+
                 {
-                    path: 'flow-systems',
-                    name: 'flow-systems',
-                    component: () => import(/* webpackChunkName: "general" */ './views/settings/FlowSystems.vue'),
-                },
-                {
-                    path: 'calculations',
-                    name: 'calculations',
-                    component: () => import(/* webpackChunkName: "general" */ './views/settings/Calculations.vue'),
-                },
-                {
-                    path: 'document',
-                    name: 'document',
-                    component: () => import(/* webpackChunkName: "general" */ './views/settings/Document.vue'),
+                    path: 'settings',
+                    name: 'settings',
+
+                    component: () => import(/* webpackChunkName: "settings" */ './views/settings/ProjectSettings.vue'),
+
+                    children: [
+                        {
+                            path: 'general',
+                            name: 'settings/general',
+                            component: () => import(/* webpackChunkName: "general" */ './views/settings/General.vue'),
+                        },
+                        {
+                            path: 'flow-systems',
+                            name: 'settings/flow-systems',
+                            component: () => import(
+                                /* webpackChunkName: "general" */ './views/settings/FlowSystems.vue'),
+                        },
+                        {
+                            path: 'calculations',
+                            name: 'settings/calculations',
+                            component: () => import(
+                                /* webpackChunkName: "general" */ './views/settings/Calculations.vue'),
+                        },
+                        {
+                            path: 'document',
+                            name: 'settings/document',
+                            component: () => import(
+                                /* webpackChunkName: "general" */ './views/settings/Document.vue'),
+                        },
+                    ],
+
+                    meta: {
+                        auth: true,
+                    },
                 },
             ],
 
-            component: () => import(/* webpackChunkName: "settings" */ './views/settings/ProjectSettings.vue'),
             meta: {
                 auth: true,
             },
         },
+
+
 
         {
             path: '/login',

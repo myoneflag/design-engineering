@@ -2,7 +2,7 @@
     <b-row>
         <b-col>
             <b-button size="lg" variant="danger" @click="deleteDocument">
-                <v-icon name="trash-alt"/> Delete Document
+                <v-icon name="trash-alt"/>Reset Document
             </b-button>
         </b-col>
     </b-row>
@@ -12,13 +12,18 @@
 
     import Vue from 'vue';
     import Component from 'vue-class-component';
+    import axios from 'axios';
 
     @Component({
 
     })
     export default class Document extends Vue {
         deleteDocument() {
-            window.alert('The day that we can create documents is the day that we can delete documents.');
+            if (window.confirm('Are you sure you want to reset this document? This operation cannot be undone.')) {
+                axios.post('/api/document/reset').then(() =>
+                    window.location.reload(),
+                );
+            }
         }
     }
 

@@ -24,7 +24,7 @@
           Description of this file.
         </b-card-text>
 
-        <b-button to="/document" variant="primary">Open Drawing</b-button>
+        <b-button :to="{name: 'drawing'}" variant="primary">Open Drawing</b-button>
       </b-card>
       </b-col>
     </b-row>

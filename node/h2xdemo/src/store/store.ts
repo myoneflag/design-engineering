@@ -11,7 +11,12 @@ Vue.use(Vuex);
 // export for testing
 export const store: StoreOptions<RootState> = {
   state: {
-    version: '1.0.0.0',
+    packageVersion: JSON.parse(unescape(process.env.PACKAGE_JSON || '{"version":"0.0.0"}')).version,
+  },
+  getters: {
+    appVersion(state) {
+      return state.packageVersion;
+    },
   },
   modules: {
     document,

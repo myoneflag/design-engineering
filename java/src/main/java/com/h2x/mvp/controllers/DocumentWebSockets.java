@@ -2,9 +2,12 @@ package com.h2x.mvp.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.h2x.mvp.api.FileWebsocketMessageType;
+import com.h2x.mvp.api.ImmutableFileWebsocketMessage;
 import com.h2x.mvp.entities.Database;
 import com.h2x.mvp.entities.Document;
 import com.h2x.mvp.entities.Operation;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,8 +83,25 @@ public class DocumentWebSockets {
                     }
                     if (di != null) {
                         try {
-                            logger.debug("Thread for user " + fuid + " sending " + new ObjectMapper().writeValueAsString(di.operation.getOperation()));
-                            template.convertAndSendToUser(fuid, "/document", di.operation.getOperation());
+                            if (di.isDelete) {
+                                logger.debug("Thread for user " + fuid + " sending reset");
+                                template.convertAndSendToUser(fuid, "/document",
+                                        ImmutableFileWebsocketMessage.builder()
+                                                .type(FileWebsocketMessageType.FILE_DELETED)
+                                                .message("")
+                                                .operation("")
+                                                .build()
+                                );
+                            } else {
+                                logger.debug("Thread for user " + fuid + " sending " + new ObjectMapper().writeValueAsString(di.operation.getOperation()));
+                                template.convertAndSendToUser(fuid, "/document",
+                                        ImmutableFileWebsocketMessage.builder()
+                                                .type(FileWebsocketMessageType.OPERATION)
+                                                .message("")
+                                                .operation(di.operation.getOperation())
+                                                .build()
+                                );
+                            }
                         } catch (JsonProcessingException e) {
                             logger.debug("Thread for user " + fuid + " error converting and sending to user");
                             e.printStackTrace();
@@ -156,6 +176,15 @@ public class DocumentWebSockets {
         for (String k: documentTopics.keySet()) {
             BlockingQueue<DocumentController.DocumentInstruction> q = documentTopics.get(k);
             if (q != null) q.add(new DocumentController.DocumentInstruction(operation));
+        }
+    }
+
+    public static void broadcastDelete() {
+        for (String k: documentTopics.keySet()) {
+            BlockingQueue<DocumentController.DocumentInstruction> q = documentTopics.get(k);
+            var msg = new DocumentController.DocumentInstruction(false);
+            msg.isDelete = true;
+            if (q != null) q.add(msg);
         }
     }
 
