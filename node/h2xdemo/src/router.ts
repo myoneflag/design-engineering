@@ -23,7 +23,6 @@ const router = new Router({
 
         {
             path: '/document',
-            name: 'document',
 
             component: () => import(/* webpackChunkName: "about" */ './views/Document.vue'),
 
