@@ -2,7 +2,7 @@
     <b-navbar type="light">
 
         <b-navbar-nav>
-            <b-nav-item to="/" active-class="active" exact>Home</b-nav-item>
+            <b-nav-item :to="{name: 'home'}" active-class="active" exact>Home</b-nav-item>
         </b-navbar-nav>
 
         <b-navbar-nav style="padding-left: 20px">
@@ -18,7 +18,7 @@
             </span>
 
             <b-navbar-brand
-                    to="/document"
+                    :to="{name: 'drawing'}"
                     v-else
                     @dblclick="titleEditing = true"
                     v-b-tooltip.hover :title="title"
@@ -26,7 +26,7 @@
                 {{shortTitle}}
             </b-navbar-brand>
 
-            <b-nav-item to="/document/settings/general" active-class="active" exact>
+            <b-nav-item :to="{name: 'settings/general'}" active-class="active" exact>
                 <span>
                     <v-icon name="cog"></v-icon>
                 </span>

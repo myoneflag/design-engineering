@@ -23,6 +23,18 @@ public class DocumentController {
         }, new Result(false, ""));
     }
 
+
+    @RequestMapping("api/document/reset")
+    public String ResetDocument(@CookieValue("session-id") String sessionId) {
+        return Session.withAuthAndDb(sessionId, (s, session) -> {
+            // delete the document.
+            var query = s.createQuery("DELETE FROM Operation");
+            query.executeUpdate();
+            DocumentWebSockets.broadcastDelete();
+            return null;
+        }, null);
+    }
+
     static class DocumentInstruction {
         public DocumentInstruction(Operation o) {
             this.operation = o;
@@ -32,6 +44,7 @@ public class DocumentController {
             this.terminate = t;
         }
         Operation operation;
+        boolean isDelete = false;
         boolean terminate = false;
     }
 
