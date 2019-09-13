@@ -10,7 +10,11 @@ module.exports = {
             }),
         ],
     },
+    pwa: {
+        workboxPluginMode: 'InjectManifest',
+        workboxOptions: {
+            swSrc: 'service-worker.js',
+        },
+    }
 // the rest of your original module.exports code goes here
 };
-
-console.log("vue config js");
