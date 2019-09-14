@@ -12,6 +12,7 @@ import ValveEntity from '@/store/document/entities/valveEntity';
 import Pipe from '@/htmlcanvas/objects/pipe';
 import PipeEntity from '@/store/document/entities/pipeEntity';
 import {EntityType} from '@/store/document/entities/types';
+import {Interaction} from '@/htmlcanvas/tools/interaction';
 
 export default class  HydraulicsLayer implements Layer {
     uidsInOrder: string[] = [];
@@ -22,10 +23,10 @@ export default class  HydraulicsLayer implements Layer {
 
     selectedObject: BackedDrawableObject<DrawableEntity> | null = null;
 
-    objectStore: Map<string, DrawableObject>;
+    objectStore: Map<string, BackedDrawableObject<DrawableEntity>>;
 
     constructor(
-        objectStore: Map<string, DrawableObject>,
+        objectStore: Map<string,  BackedDrawableObject<DrawableEntity>>,
         onChange: () => any,
         onSelect: (drawable: BackedDrawableObject<DrawableEntity> | null) => any,
         onCommit: (drawable: BackedDrawableObject<DrawableEntity>) => any,
@@ -44,15 +45,26 @@ export default class  HydraulicsLayer implements Layer {
         return this.selectedObject.stateObject;
     }
 
-    draw(ctx: CanvasRenderingContext2D, vp: ViewPort, active: boolean) {
+    draw(
+        ctx: CanvasRenderingContext2D,
+        vp: ViewPort,
+        active: boolean,
+    ) {
         this.uidsInOrder.forEach((v) => {
             this.objectStore.get(v)!.draw(ctx, vp, active);
         });
     }
 
-    drawSelectionLayer(ctx: CanvasRenderingContext2D, vp: ViewPort) {
+    drawSelectionLayer(
+        ctx: CanvasRenderingContext2D,
+        vp: ViewPort,
+        interactive: BackedDrawableObject<DrawableEntity> | null,
+    ) {
         if (this.selectedObject) {
             this.objectStore.get(this.selectedObject.stateObject.uid)!.draw(ctx, vp, true, true);
+        }
+        if (interactive && this.uidsInOrder.indexOf(interactive.uid) !== -1) {
+            this.objectStore.get(interactive.stateObject.uid)!.draw(ctx, vp, true, true);
         }
     }
 
@@ -251,5 +263,26 @@ export default class  HydraulicsLayer implements Layer {
         this.onChange();
 
         return false;
+    }
+
+    offerInteraction(
+        interaction: Interaction,
+        filter?: (object: BackedDrawableObject<DrawableEntity>) => boolean,
+    ): BackedDrawableObject<DrawableEntity> | null {
+        for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
+            const uid = this.uidsInOrder[i];
+            if (this.objectStore.has(uid)) {
+                const object = this.objectStore.get(uid)!;
+                const objectCoord = object.toObjectCoord(interaction.wc);
+                if (object.inBounds(objectCoord)) {
+                    if (object.offerInteraction(interaction)) {
+                        if (filter === undefined || filter(object)) {
+                            return object;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

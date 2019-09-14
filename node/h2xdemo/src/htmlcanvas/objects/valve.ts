@@ -1,17 +1,17 @@
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import ValveEntity, {fillValveDefaultFields} from '@/store/document/entities/valveEntity';
+import * as TM from 'transformation-matrix';
 import {Matrix} from 'transformation-matrix';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
-import * as TM from 'transformation-matrix';
 import {Coord, DrawableEntity} from '@/store/document/types';
 import {matrixScale} from '@/htmlcanvas/utils';
 import * as _ from 'lodash';
 import Flatten from '@flatten-js/core';
-import assert from 'assert';
 import Connectable, {ConnectableObject} from '@/htmlcanvas/lib/object-traits/connectable';
 import {lighten} from '@/lib/utils';
 import CenterDraggableObject from '@/htmlcanvas/lib/object-traits/center-draggable-object';
+import {Interaction, InteractionType} from '@/htmlcanvas/tools/interaction';
 
 @CenterDraggableObject
 @ConnectableObject
@@ -29,7 +29,8 @@ export default class Valve extends BackedDrawableObject<ValveEntity> implements 
 
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to
     // complete the type.
-    getRadials(exclude?: string | null): Array<[Coord, BackedDrawableObject<DrawableEntity>]> { /* */ }
+    getRadials(exclude?: string | null): Array<[Coord, BackedDrawableObject<DrawableEntity>]> { /* */
+    }
 
     drawInternal(ctx: CanvasRenderingContext2D, vp: ViewPort, layerActive: boolean, selected: boolean): void {
         // asdf
@@ -48,7 +49,7 @@ export default class Valve extends BackedDrawableObject<ValveEntity> implements 
         this.getRadials().forEach(([wc]) => {
             const oc = this.toObjectCoord(wc);
             const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
-            const small = vec.normalize().multiply(Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM )));
+            const small = vec.normalize().multiply(Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM)));
             if (layerActive && selected) {
                 ctx.beginPath();
                 ctx.lineWidth = this.FITTING_DIAMETER_PIXELS * 3 / scale;
@@ -120,6 +121,19 @@ export default class Valve extends BackedDrawableObject<ValveEntity> implements 
         const oc = this.toObjectCoord(wc);
         // Check bounds
         return this.inBounds(oc);
+    }
+
+
+    offerInteraction(interaction: Interaction): boolean {
+        switch (interaction.type) {
+            case InteractionType.INSERT:
+                return false;
+            case InteractionType.CONTINUING_PIPE:
+            case InteractionType.STARTING_PIPE:
+                return true;
+            default:
+                return false;
+        }
     }
 
     prepareDelete(): Array<BackedDrawableObject<DrawableEntity>> {

@@ -11,6 +11,7 @@ import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import {Draggable, DraggableObject} from '@/htmlcanvas/lib/object-traits/draggable-object';
 import Connectable, {ConnectableObject} from '@/htmlcanvas/lib/object-traits/connectable';
 import CenterDraggableObject from '@/htmlcanvas/lib/object-traits/center-draggable-object';
+import {Interaction, InteractionType} from '@/htmlcanvas/tools/interaction';
 
 @CenterDraggableObject
 @ConnectableObject
@@ -145,5 +146,18 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> i
 
     prepareDelete(): Array<BackedDrawableObject<DrawableEntity>> {
         return [this];
+    }
+
+
+    offerInteraction(interaction: Interaction): boolean {
+        switch (interaction.type) {
+            case InteractionType.INSERT:
+                return false;
+            case InteractionType.CONTINUING_PIPE:
+            case InteractionType.STARTING_PIPE:
+                return true;
+            default:
+                return false;
+        }
     }
 }

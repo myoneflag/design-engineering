@@ -13,6 +13,7 @@ import * as _ from 'lodash';
 import ValveEntity from '@/store/document/entities/valveEntity';
 import assert from 'assert';
 import {lighten} from '@/lib/utils';
+import {Interaction, InteractionType} from '@/htmlcanvas/tools/interaction';
 
 @DraggableObject
 export default class Pipe extends BackedDrawableObject<PipeEntity> implements Draggable {
@@ -165,6 +166,17 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             }
         }
         return result;
+    }
+
+    offerInteraction(interaction: Interaction): boolean {
+        switch (interaction.type) {
+            case InteractionType.INSERT:
+                return true;
+            case InteractionType.CONTINUING_PIPE:
+            case InteractionType.STARTING_PIPE:
+            default:
+                return false;
+        }
     }
 
     protected refreshObjectInternal(obj: PipeEntity): void {

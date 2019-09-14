@@ -6,8 +6,8 @@ import {matrixScale, parseScale} from '@/htmlcanvas/utils';
 import {Sizeable} from '@/htmlcanvas/lib/object-traits/sizeable-object';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import _ from 'lodash';
-import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
+import {Interaction, InteractionType} from '@/htmlcanvas/tools/interaction';
 
 // TODO: Convert into backed drawable object.
 export class BackgroundImage extends BackedDrawableObject<Background> implements Sizeable {
@@ -355,6 +355,17 @@ export class BackgroundImage extends BackedDrawableObject<Background> implements
             return true;
         }
         return false;
+    }
+
+    offerInteraction(interaction: Interaction): boolean {
+        switch (interaction.type) {
+            case InteractionType.INSERT:
+            case InteractionType.CONTINUING_PIPE:
+            case InteractionType.STARTING_PIPE:
+                return true;
+            default:
+                return false;
+        }
     }
 
     protected refreshObjectInternal(obj: Background, old: Background): void {
