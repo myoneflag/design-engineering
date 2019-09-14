@@ -1,4 +1,8 @@
 import {EntityType} from "@/store/document/entities/types";
+import {EntityType} from "@/store/document/entities/types";
+import {InteractionType} from "@/htmlcanvas/tools/interaction";
+import {InteractionType} from "@/htmlcanvas/tools/interaction";
+import {EntityType} from "@/store/document/entities/types";
 import {DrawingMode} from "@/htmlcanvas/types";
 import {DrawingMode} from "@/htmlcanvas/types";
 <template>
@@ -63,7 +67,6 @@ import {DrawingMode} from "@/htmlcanvas/types";
     import {MainEventBus} from '@/store/main-event-bus';
     import {ToolConfig} from '@/store/tools/types';
     import {DEFAULT_TOOL, ToolHandler} from '@/htmlcanvas/tools/tool';
-    import DrawableObject from '@/htmlcanvas/lib/drawable-object';
     import uuid from 'uuid';
     import {renderPdf} from '@/api/pdf';
     import HydraulicsLayer from '@/htmlcanvas/layers/hydraulics-layer';
@@ -79,6 +82,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
     import Connectable from '@/htmlcanvas/lib/object-traits/connectable';
     import Pipe from '@/htmlcanvas/objects/pipe';
     import {EntityType} from '@/store/document/entities/types';
+    import {Interaction, InteractionType} from '@/htmlcanvas/tools/interaction';
 
     @Component({
         components: {HydraulicsInsertPanel, Overlay, Toolbar, PropertiesWindow, ModeButtons},
@@ -106,7 +110,13 @@ import {DrawingMode} from "@/htmlcanvas/types";
         lastDraw: number = 0;
 
 
-        objectStore: Map<string, DrawableObject> = new Map<string, DrawableObject>();
+        // The currently hovered element ready for interaction.
+        interactive: BackedDrawableObject<DrawableEntity> | null = null;
+
+        objectStore: Map<string, BackedDrawableObject<DrawableEntity>> =
+            new Map<string, BackedDrawableObject<DrawableEntity>>();
+
+        updating: boolean = false;
 
         mounted() {
             this.ctx = (this.$refs.drawingCanvas as any).getContext('2d');
@@ -254,19 +264,24 @@ import {DrawingMode} from "@/htmlcanvas/types";
         }
 
         processDocument(redraw: boolean = true) {
+            this.updating = true;
             this.allLayers.forEach((l) => l.update(this.document));
+            this.updating = false;
             // finally, draw
             if (redraw) {
                 this.scheduleDraw();
             }
         }
 
-
         scheduleDraw() {
-            if (Date.now() - this.lastDraw > 25 && !this.shouldDraw) {
-                this.draw();
-            } else { // throttle rendering.
+            if (Date.now() - this.lastDraw < 25) {
                 this.shouldDraw = true;
+            } else if (this.updating) {
+                this.shouldDraw = true;
+            } else if (this.shouldDraw) {
+                this.shouldDraw = true;
+            } else { // throttle rendering.
+                this.draw();
             }
         }
 
@@ -336,36 +351,32 @@ import {DrawingMode} from "@/htmlcanvas/types";
                 (interrupted) => {
                     MainEventBus.$emit('set-tool-handler', null);
                 },
-                (wc: Coord) => {
+                (wc: Coord, event: MouseEvent) => {
                     // Preview
+                    this.offerInteraction(
+                        {
+                            type: InteractionType.STARTING_PIPE,
+                            wc,
+                        },
+                        (object) => {
+                            return object.stateObject.type === EntityType.VALVE
+                                || object.stateObject.type === EntityType.FLOW_SOURCE
+                                || object.stateObject.type === EntityType.FLOW_SINK;
+                        },
+                    );
                 },
-                (wc: Coord) => {
+                (wc: Coord, event: MouseEvent) => {
                     // Create a valve. It will only have a single pipe, and thus be a dead-leg.
                     const doc = this.document as DocumentState;
 
                     // maybe we drew onto an existing node.
-                    const object = this.hydraulicsLayer.getObjectAt(wc) as BackedDrawableObject<DrawableEntity>;
                     let entity: ConnectableEntity | ValveEntity;
-                    if (object &&
-                        (
-                            object.stateObject.type === EntityType.VALVE
-                            || object.stateObject.type === EntityType.FLOW_SOURCE
-                            || object.stateObject.type === EntityType.FLOW_SINK
-                        )
-                    ) {
-                        entity = object.stateObject as ConnectableEntity;
-                        this.hydraulicsLayer.onSelected(object);
+                    if (this.interactive && this.interactive.type !== EntityType.BACKGROUND_IMAGE) {
+                        entity = this.interactive.stateObject as ConnectableEntity;
+                        this.hydraulicsLayer.onSelected(this.interactive);
                     } else {
-
-                        this.hydraulicsLayer.onSelected(null);
                         // Maybe we drew onto a background
-                        const floor = this.backgroundLayer.getBackgroundAt(wc, this.objectStore);
-                        let parentUid: string | null = null;
-                        let oc = _.cloneDeep(wc);
-                        if (floor != null) {
-                            parentUid = floor.stateObject.uid;
-                            oc = floor.toObjectCoord(wc);
-                        }
+                        const [parentUid, oc] = this.getInsertCoordsAt(wc);
 
                         // Nope, we landed on nothing. We create new valve here.
                         entity = {
@@ -382,12 +393,23 @@ import {DrawingMode} from "@/htmlcanvas/types";
                         doc.drawing.entities.push(entity);
                     }
 
-
                     this.$store.dispatch('document/commit').then(() => {
+                        this.interactive = null;
                         this.insertPipeChain(entity, system.uid);
                     });
                 },
             ));
+        }
+
+        getInsertCoordsAt(wc: Coord): [string | null, Coord] {
+            const floor = this.backgroundLayer.getBackgroundAt(wc, this.objectStore);
+            let parentUid: string | null = null;
+            let oc = _.cloneDeep(wc);
+            if (floor != null) {
+                parentUid = floor.stateObject.uid;
+                oc = floor.toObjectCoord(wc);
+            }
+            return [parentUid, oc];
         }
 
         insertPipeChain(lastAttachment: ConnectableEntity, systemUid: string) {
@@ -515,8 +537,12 @@ import {DrawingMode} from "@/htmlcanvas/types";
                         }
 
                         if (nextEntityWasNew) {
+                            let oldpar = nextEntity.parentUid;
                             nextEntity.center = oc;
                             nextEntity.parentUid = parentUid;
+                            if (oldpar !== parentUid) {
+                                needUpdate = true;
+                            }
                         } else {
                             if (nextEntity) {
                                 nextEntity.connections.splice(nextEntity.connections.indexOf(pipeUid), 1);
@@ -551,6 +577,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                 },
 
                 (wc: Coord) => {
+                    this.interactive = null;
                     // committed to the point. And also create new pipe, continue the chain.
                     if (nextEntity && lastAttachment.uid !== nextEntity.uid) {
                         this.$store.dispatch('document/commit').then(() => {
@@ -572,6 +599,21 @@ import {DrawingMode} from "@/htmlcanvas/types";
             ));
         }
 
+        offerInteraction(
+            interaction: Interaction,
+            filter?: (object: BackedDrawableObject<DrawableEntity>) => boolean,
+        ): BackedDrawableObject<DrawableEntity> | null {
+            for (let i = this.allLayers.length - 1; i >= 0; i--) {
+                this.interactive = this.allLayers[i].offerInteraction(interaction, filter);
+                if (this.interactive) {
+                    this.scheduleDraw();
+                    return this.interactive;
+                }
+            }
+            this.scheduleDraw();
+            return this.interactive;
+        }
+
         insertValve(system: FlowSystemParameters) {
 
             let pipe: Pipe | null = null;
@@ -588,17 +630,18 @@ import {DrawingMode} from "@/htmlcanvas/types";
                 (wc, event) => {
                     this.$store.dispatch('document/revert', false).then(() => {
 
-                        const exclude: string[] = [];
+                        this.offerInteraction(
+                            {
+                                type: InteractionType.INSERT,
+                                wc,
+                            },
+                            (drawable) => {
+                                return drawable.type === EntityType.PIPE;
+                            },
+                        );
 
-                        const object =
-                            this.hydraulicsLayer.getObjectAt(wc, exclude) as BackedDrawableObject<DrawableEntity>;
-                        if (object &&
-                            (
-                                object.stateObject.type === EntityType.PIPE
-                            )
-                        ) {
-                            pipe = object as Pipe;
-                            this.hydraulicsLayer.selectedObject  = object;
+                        if (this.interactive) {
+                            pipe = this.interactive as Pipe;
                             // Project onto pipe
 
                             wc = pipe.project(wc);
@@ -665,11 +708,11 @@ import {DrawingMode} from "@/htmlcanvas/types";
                             this.processDocument();
                         } else {
                             pipe = null;
-                            this.hydraulicsLayer.selectedObject = null;
                         }
                     });
                 },
                 (worldCoord, event) => {
+                    this.interactive = null;
                     MainEventBus.$emit('set-tool-handler', null);
                     if (pipe) {
                         this.deleteFromHydraulicsLayerSoft(pipe);
@@ -717,7 +760,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
 
                 // Draw selection layers
                 if (this.activeLayer) {
-                    this.activeLayer.drawSelectionLayer(ctx, this.viewPort);
+                    this.activeLayer.drawSelectionLayer(ctx, this.viewPort, this.interactive);
                 }
 
                 drawPaperScale(ctx, 1 / decomposeMatrix(this.viewPort.position).sx);

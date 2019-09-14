@@ -1,6 +1,7 @@
 import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 import {Coord, DocumentState, DrawableEntity, WithID} from '@/store/document/types';
 import * as _ from 'lodash';
+import {Interaction} from '@/htmlcanvas/tools/interaction';
 
 
 export default abstract class BackedDrawableObject<T extends DrawableEntity> extends DrawableObject {
@@ -38,10 +39,12 @@ export default abstract class BackedDrawableObject<T extends DrawableEntity> ext
         this.refreshObjectInternal(obj, old);
     }
 
+    abstract offerInteraction(interaction: Interaction): boolean;
+
     // Return list of objects to remove.
     abstract prepareDelete(): Array<BackedDrawableObject<DrawableEntity>>;
 
-   // abstract inBounds(objectCoord: Coord): boolean;
+    abstract inBounds(objectCoord: Coord): boolean;
 
     protected abstract refreshObjectInternal(obj: T, old?: T): void;
 

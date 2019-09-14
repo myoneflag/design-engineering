@@ -1,5 +1,5 @@
 import Layer from '@/htmlcanvas/layers/layer';
-import {Background, Coord, DocumentState} from '@/store/document/types';
+import {Background, Coord, DocumentState, DrawableEntity} from '@/store/document/types';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {BackgroundImage} from '@/htmlcanvas/objects/background-image';
 import {ResizeControl} from '@/htmlcanvas/objects/resize-control';
@@ -7,6 +7,7 @@ import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import {ToolConfig} from '@/store/tools/types';
 import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
+import {Interaction} from '@/htmlcanvas/tools/interaction';
 
 export default class BackgroundLayer implements Layer {
     sidsInOrder: string[] = [];
@@ -16,10 +17,10 @@ export default class BackgroundLayer implements Layer {
     onChange: () => any;
     onSelect: (selectId: Background | null, drawable: DrawableObject | null) => any;
     onCommit: (selectId: Background) => any;
-    objectStore: Map<string, DrawableObject>;
+    objectStore: Map<string, BackedDrawableObject<DrawableEntity>>;
 
     constructor(
-        objectStore: Map<string, DrawableObject>,
+        objectStore: Map<string, BackedDrawableObject<DrawableEntity>>,
         onChange: () => any,
         onSelect: (selectId: Background | null, drawable: DrawableObject | null) => any,
         onCommit: (selectId: Background) => any,
@@ -158,9 +159,16 @@ export default class BackgroundLayer implements Layer {
         }
     }
 
-    drawSelectionLayer(ctx: CanvasRenderingContext2D, vp: ViewPort) {
+    drawSelectionLayer(
+        ctx: CanvasRenderingContext2D,
+        vp: ViewPort,
+        interactive: BackedDrawableObject<DrawableEntity> | null) {
         if (this.resizeBox) {
             this.resizeBox.draw(ctx, vp);
+        }
+
+        if (interactive && this.sidsInOrder.indexOf(interactive.uid) !== -1) {
+            this.objectStore.get(interactive.stateObject.uid)!.draw(ctx, vp, true, true);
         }
     }
 
@@ -255,5 +263,26 @@ export default class BackgroundLayer implements Layer {
         this.onChange();
 
         return false;
+    }
+
+    offerInteraction(
+        interaction: Interaction,
+        filter?: (object: BackedDrawableObject<DrawableEntity>) => boolean,
+    ): BackedDrawableObject<DrawableEntity> | null {
+        for (let i = this.sidsInOrder.length - 1; i >= 0; i--) {
+            const uid = this.sidsInOrder[i];
+            if (this.objectStore.has(uid)) {
+                const object = this.objectStore.get(uid)!;
+                const objectCoord = object.toObjectCoord(interaction.wc);
+                if (object.inBounds(objectCoord)) {
+                    if (object.offerInteraction(interaction)) {
+                        if (filter === undefined || filter(object)) {
+                            return object;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 }
