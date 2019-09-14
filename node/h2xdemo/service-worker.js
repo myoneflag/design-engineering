@@ -1,9 +1,7 @@
 // https://medium.com/js-dojo/vuejs-pwa-cache-busting-8d09edd22a31
-let package = require('./package.json');
-
 workbox.core.setCacheNameDetails({ prefix: 'd4' })
 //Change this value every time before you build
-const LATEST_VERSION = package.version;
+const LATEST_VERSION = "0.1.3";
 
 self.addEventListener('activate', (event) => {
     console.log(`%c ${LATEST_VERSION} `, 'background: #ddd; color: #0000ff')
