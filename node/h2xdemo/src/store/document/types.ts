@@ -1,6 +1,7 @@
 import * as Operations from './operation-transforms/operation-transforms';
 import {PaperSize, PIPE_SIZING_METHODS, PSD_METHODS, RING_MAIN_CALCULATION_METHODS} from '@/config';
 import * as _ from 'lodash';
+import {EntityType} from '@/store/document/entities/types';
 
 // Because of how the diffing engine works, there are restrictions on the data structure for the document state.
 // Rules are:
@@ -34,7 +35,7 @@ export interface WithID {
 
 export interface DrawableEntity extends WithID {
     parentUid: string | null;
-    type: string;
+    type: EntityType;
 }
 
 export interface ConnectableEntity extends DrawableEntity {
@@ -42,7 +43,7 @@ export interface ConnectableEntity extends DrawableEntity {
     connections: string[];
 }
 
-export interface Background extends WithID {
+export interface Background extends DrawableEntity {
     center: Coord;
     scaleName: string;
     scaleFactor: number;

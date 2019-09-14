@@ -1,36 +1,55 @@
 import DrawableObject from '@/htmlcanvas/lib/drawable-object';
-import {DocumentState, DrawableEntity, WithID} from '@/store/document/types';
+import {Coord, DocumentState, DrawableEntity, WithID} from '@/store/document/types';
+import * as _ from 'lodash';
 
-export default abstract class BackedDrawableObject<T extends WithID> extends DrawableObject {
+
+export default abstract class BackedDrawableObject<T extends DrawableEntity> extends DrawableObject {
     stateObject: T;
     context: DocumentState;
     objectStore: Map<string, DrawableObject>;
 
-    protected constructor(
+    protected onSelect: () => void;
+    protected onChange: () => void;
+    protected onCommit: () => void;
+
+    constructor(
         context: DocumentState,
         objectStore: Map<string, DrawableObject>,
         parent: DrawableObject | null,
         obj: T,
+        onSelect: () => void,
+        onChange: () => void,
+        onCommit: () => void,
     ) {
         super(parent);
         this.stateObject = obj;
         this.objectStore = objectStore;
         this.context = context;
+        this.onSelect = onSelect;
+        this.onChange = onChange;
+        this.onCommit = onCommit;
         this.refreshObjectInternal(obj);
     }
 
     refreshObject(parent: DrawableObject | null, obj: T) {
+        const old = _.cloneDeep(this.stateObject);
         this.stateObject = obj;
         this.parent = parent;
-        this.refreshObjectInternal(obj);
+        this.refreshObjectInternal(obj, old);
     }
 
     // Return list of objects to remove.
     abstract prepareDelete(): Array<BackedDrawableObject<DrawableEntity>>;
 
-    protected abstract refreshObjectInternal(obj: T): void;
+   // abstract inBounds(objectCoord: Coord): boolean;
+
+    protected abstract refreshObjectInternal(obj: T, old?: T): void;
 
     get uid() {
         return this.stateObject.uid;
+    }
+
+    get type() {
+        return this.stateObject.type;
     }
 }

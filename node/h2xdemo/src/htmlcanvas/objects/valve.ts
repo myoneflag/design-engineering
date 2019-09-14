@@ -4,24 +4,18 @@ import {Matrix} from 'transformation-matrix';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import * as TM from 'transformation-matrix';
-import {ConnectableEntity, Coord, DocumentState, DrawableEntity, WithID} from '@/store/document/types';
-import DrawableObject from '@/htmlcanvas/lib/drawable-object';
+import {Coord, DrawableEntity} from '@/store/document/types';
 import {matrixScale} from '@/htmlcanvas/utils';
-import DraggableObject from '@/htmlcanvas/lib/draggable-object';
 import * as _ from 'lodash';
-import Pipe from '@/htmlcanvas/objects/pipe';
-import {ENTITY_NAMES} from '@/store/document/entities';
-import PipeEntity from '@/store/document/entities/pipeEntity';
 import Flatten from '@flatten-js/core';
 import assert from 'assert';
-import Connectable, {getRadials} from '@/htmlcanvas/lib/connectable';
+import Connectable, {ConnectableObject} from '@/htmlcanvas/lib/object-traits/connectable';
 import {lighten} from '@/lib/utils';
+import CenterDraggableObject from '@/htmlcanvas/lib/object-traits/center-draggable-object';
 
-export default class Valve extends DraggableObject<ValveEntity> implements Connectable {
-
-    onChange: (flowSource: Valve) => void;
-    onCommit: (flowSource: Valve) => void;
-    onSelect: (object: Valve) => void;
+@CenterDraggableObject
+@ConnectableObject
+export default class Valve extends BackedDrawableObject<ValveEntity> implements Connectable {
 
     lastDrawnRadius: number = 0;
     pixelRadius: number = 5;
@@ -29,23 +23,13 @@ export default class Valve extends DraggableObject<ValveEntity> implements Conne
     TURN_RADIUS_MM = 100;
     FITTING_DIAMETER_PIXELS = 6;
 
-    constructor(
-        context: DocumentState,
-        objectStore: Map<string, DrawableObject>,
-        parent: DrawableObject | null,
-        obj: ValveEntity,
-        onSelect: (object: Valve) => void,
-        onChange: (flowSource: Valve) => void,
-        onCommit: (flowSource: Valve) => void,
-    ) {
-        super(context, objectStore, parent, obj);
-        this.onChange = onChange;
-        this.onCommit = onCommit;
-        this.onSelect = onSelect;
-    }
     get position(): Matrix {
         return TM.translate(this.stateObject.center.x, this.stateObject.center.y);
     }
+
+    // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to
+    // complete the type.
+    getRadials(exclude?: string | null): Array<[Coord, BackedDrawableObject<DrawableEntity>]> { /* */ }
 
     drawInternal(ctx: CanvasRenderingContext2D, vp: ViewPort, layerActive: boolean, selected: boolean): void {
         // asdf
@@ -61,7 +45,7 @@ export default class Valve extends DraggableObject<ValveEntity> implements Conne
 
         const minJointLength = this.FITTING_DIAMETER_PIXELS / scale;
 
-        this.radials().forEach(([wc]) => {
+        this.getRadials().forEach(([wc]) => {
             const oc = this.toObjectCoord(wc);
             const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
             const small = vec.normalize().multiply(Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM )));
@@ -113,22 +97,13 @@ export default class Valve extends DraggableObject<ValveEntity> implements Conne
         }
     }
 
-    radials(exclude: string | null = null): Array<[Coord, BackedDrawableObject<DrawableEntity>]> {
-        return getRadials(this, exclude);
-    }
-
-
     onMouseDown(event: MouseEvent, vp: ViewPort): boolean {
-        if (super.onMouseDown(event, vp)) {
-            // We want to select too while moving
-            // return true;
-        }
         const wc = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const oc = this.toObjectCoord(wc);
 
         // Check bounds
         if (this.inBounds(oc)) {
-            this.onSelect(this);
+            this.onSelect();
 
             return true;
         }
@@ -137,38 +112,15 @@ export default class Valve extends DraggableObject<ValveEntity> implements Conne
     }
 
     onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
-        const res = super.onMouseMove(event, vp);
-        if (res.handled) {
-            return res;
-        }
         return UNHANDLED;
     }
 
     onMouseUp(event: MouseEvent, vp: ViewPort): boolean {
-        if (super.onMouseUp(event, vp)) {
-            return true;
-        }
-
         const wc = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const oc = this.toObjectCoord(wc);
         // Check bounds
         return this.inBounds(oc);
     }
-
-    onDrag(grabbedObjectCoord: Coord, eventObjectCoord: Coord, grabState: any): void {
-        this.stateObject.center.x -= grabbedObjectCoord.x - eventObjectCoord.x;
-        this.stateObject.center.y -= grabbedObjectCoord.y - eventObjectCoord.y;
-        this.onChange(this);
-    }
-
-    onDragFinish(): void {
-        this.onCommit(this);
-    }
-
-    onDragStart(objectCoord: Coord): any {
-        return null;
-    }
-
 
     prepareDelete(): Array<BackedDrawableObject<DrawableEntity>> {
         // Delete all connected pipes.

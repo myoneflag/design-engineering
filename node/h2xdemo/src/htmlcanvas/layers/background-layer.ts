@@ -6,6 +6,7 @@ import {ResizeControl} from '@/htmlcanvas/objects/resize-control';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import {ToolConfig} from '@/store/tools/types';
 import DrawableObject from '@/htmlcanvas/lib/drawable-object';
+import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 
 export default class BackgroundLayer implements Layer {
     sidsInOrder: string[] = [];
@@ -38,7 +39,7 @@ export default class BackgroundLayer implements Layer {
 
     get selectedEntity() {
         if (this.selectedObject instanceof BackgroundImage) {
-            return this.selectedObject.background;
+            return this.selectedObject.stateObject;
         }
         return null;
     }
@@ -49,7 +50,11 @@ export default class BackgroundLayer implements Layer {
             const background = this.objectStore.get(selectId);
             if (background && background instanceof BackgroundImage) {
                 if (selectId !== this.selectedId || !active || !background.hasDragged) {
-                    background.draw(ctx, vp, this.selectedId === selectId, active && !selectedTool.focusSelectedObject);
+                    background.draw(
+                        ctx,
+                        vp,
+                        this.selectedId === selectId, active && !selectedTool.focusSelectedObject,
+                    );
                 }
             } else {
                 throw new Error('Expected background image, got ' + JSON.stringify(background) + ' instead');
@@ -59,7 +64,8 @@ export default class BackgroundLayer implements Layer {
         if (active) {
             this.sidsInOrder.forEach((selectId) => {
                 const background = this.objectStore.get(selectId);
-                if (background && background instanceof BackgroundImage && background.background.uid === this.selectedId
+                if (background && background instanceof BackgroundImage
+                    && background.stateObject.uid === this.selectedId
                     && (background.hasDragged || selectedTool.focusSelectedObject)) {
                     background.draw(ctx, vp, this.selectedId === selectId, active);
                 }
@@ -74,36 +80,30 @@ export default class BackgroundLayer implements Layer {
 
         for (const background of doc.drawing.backgrounds) {
             if (!this.objectStore.has(background.uid)) {
-                this.objectStore.set(background.uid, new BackgroundImage(
+                const obj: BackgroundImage = new BackgroundImage(
+                    doc,
+                    this.objectStore,
+                    null,
                     background,
                     () => {
-                        this.onChange();
+                        this.selectedId = background.uid;
+                        this.updateSelectionBox();
+                        this.onSelect(background, obj);
                     },
                     () => {
                         this.updateSelectionBox();
                         this.onChange();
                     },
-                    (backgroundImage: BackgroundImage) => {
-                        this.selectedId = background.uid;
-                        this.updateSelectionBox();
-                        this.onSelect(backgroundImage.background, backgroundImage);
-                        return true;
+                    () => {
+                        this.onCommit(obj.stateObject);
                     },
-                    (backgroundImage: BackgroundImage) => {
-                        this.onCommit(backgroundImage.background);
-                    },
-                ));
+                );
+                this.objectStore.set(background.uid, obj);
                 this.sidsInOrder.push(background.uid);
             } else {
                 const obj = this.objectStore.get(background.uid)!;
                 if (obj instanceof BackgroundImage) {
-                    const oldUri = obj.background.uri;
-                    obj.background = background;
-                    if (obj.background.uri !== oldUri) {
-                        obj.initializeImage(() => {
-                            this.onChange();
-                        });
-                    }
+                    obj.refreshObject(null, background);
                     if (background.uid === this.selectedId) {
                         this.onSelect(background, obj);
                     }
@@ -144,7 +144,7 @@ export default class BackgroundLayer implements Layer {
                     () => {
                         // Do deh operation transform.
                         // TODO: Deh operation transform
-                        this.onCommit(background.background);
+                        this.onCommit(background.stateObject);
                     },
                 );
             }

@@ -87,5 +87,4 @@ export default abstract class DrawableObject {
     abstract onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult;
 
     abstract onMouseUp(event: MouseEvent, vp: ViewPort): boolean;
-
 }

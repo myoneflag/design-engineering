@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import {expect} from 'chai';
 import * as _ from 'lodash';
 import {diffState} from '@/store/document/operation-transforms/state-differ';
 import {applyOtOnState} from '@/store/document/operation-transforms/state-ot-apply';
@@ -7,9 +7,10 @@ import {
     Background,
     CalculationParameters,
     DrawingState,
-    GeneralInfo,
     FlowSystemParameters,
+    GeneralInfo,
 } from '@/store/document/types';
+import {EntityType} from '@/store/document/entities/types';
 
 function roundTripTest(prev: DrawingState, next: DrawingState, expectedOps: number = -1) {
     const prevCopy = _.cloneDeep(prev);
@@ -22,6 +23,8 @@ function roundTripTest(prev: DrawingState, next: DrawingState, expectedOps: numb
 }
 
 const bg1: Background = {
+    parentUid: null,
+    type: EntityType.BACKGROUND_IMAGE,
     center: {x: 1, y: 2},
     crop: {x: -1, y: 2.4, w: 100, h: 101},
     offset: {x: 1, y: 2},
@@ -43,6 +46,8 @@ const bg1: Background = {
 
 
 const bg2: Background = {
+    parentUid: null,
+    type: EntityType.BACKGROUND_IMAGE,
     center: {x: 1, y: 2},
     crop: {x: -1, y: 2.5, w: 100, h: 101},
     offset: {x: 1, y: 2},
@@ -63,6 +68,8 @@ const bg2: Background = {
 };
 
 const bg2B: Background = {
+    parentUid: null,
+    type: EntityType.BACKGROUND_IMAGE,
     center: {x: 1, y: 2},
     crop: {x: -1, y: 2.5, w: 100, h: 101},
     offset: {x: 1, y: 2},
@@ -83,6 +90,8 @@ const bg2B: Background = {
 };
 
 const bg3: Background = {
+    parentUid: null,
+    type: EntityType.BACKGROUND_IMAGE,
     center: {x: 100, y: 2},
     crop: {x: -1, y: 2.5, w: 100, h: 101},
     offset: {x: 1, y: 4},
@@ -103,6 +112,8 @@ const bg3: Background = {
 };
 
 const bg4: Background = {
+    parentUid: null,
+    type: EntityType.BACKGROUND_IMAGE,
     center: {x: 100, y: 2},
     crop: {x: -1, y: 2.5, w: 100, h: 101},
     offset: {x: 1, y: 4},
@@ -123,6 +134,8 @@ const bg4: Background = {
 };
 
 const bg4B: Background = {
+    parentUid: null,
+    type: EntityType.BACKGROUND_IMAGE,
     center: {x: 100, y: 2},
     crop: {x: -1, y: 2.5, w: 10, h: 101},
     offset: {x: 1, y: 4},
@@ -143,6 +156,8 @@ const bg4B: Background = {
 };
 
 const bg4C: Background = {
+    parentUid: null,
+    type: EntityType.BACKGROUND_IMAGE,
     center: {x: 100, y: 2},
     crop: {x: -1, y: 2.0, w: 10, h: 101},
     offset: {x: 1, y: 4},

@@ -1,4 +1,4 @@
-// index.ts
+// types.ts
 import Vue from 'vue';
 import Vuex, { StoreOptions } from 'vuex';
 import { RootState } from './types';

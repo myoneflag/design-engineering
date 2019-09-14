@@ -31,8 +31,8 @@
 <script lang="ts">
     import Vue from 'vue';
     import Component from 'vue-class-component';
-    import {ENTITY_NAMES} from '@/store/document/entities';
     import FlowSystemPicker from '@/components/editor/FlowSystemPicker.vue';
+    import {EntityType} from '@/store/document/entities/types';
 
     @Component({
         components: {FlowSystemPicker},
@@ -42,7 +42,7 @@
     })
     export default class HydraulicsInsertPanel extends Vue {
         get entityNames() {
-            return ENTITY_NAMES;
+            return EntityType;
         }
 
         selectedSystemId: number = 0;

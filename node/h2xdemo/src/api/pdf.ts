@@ -13,7 +13,7 @@ export const renderPdf = (file: File, onLoad: (data: PDFRenderResult) => void) =
     const formData = new FormData();
     formData.append('pdf', file);
 
-    axios.post('api/uploadPdf', formData, {
+    axios.post('/api/uploadPdf', formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },
