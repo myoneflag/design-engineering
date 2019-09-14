@@ -8,34 +8,16 @@ import * as TM from 'transformation-matrix';
 import {matrixScale} from '@/htmlcanvas/utils';
 import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 import Flatten from '@flatten-js/core';
-import DraggableObject from '@/htmlcanvas/lib/draggable-object';
+import {Draggable, DraggableObject} from '@/htmlcanvas/lib/object-traits/draggable-object';
 import * as _ from 'lodash';
 import ValveEntity from '@/store/document/entities/valveEntity';
 import assert from 'assert';
 import {lighten} from '@/lib/utils';
 
-export default class Pipe extends DraggableObject<PipeEntity> {
+@DraggableObject
+export default class Pipe extends BackedDrawableObject<PipeEntity> implements Draggable {
     lastDrawnLine!: Flatten.Segment | Flatten.Point;
     lastDrawnWidth!: number;
-
-    onSelect: (object: Pipe) => void;
-    onChange: (flowSource: Pipe) => void;
-    onCommit: (flowSource: Pipe) => void;
-
-    constructor(
-        context: DocumentState,
-        objectStore: Map<string, DrawableObject>,
-        parent: DrawableObject | null,
-        obj: PipeEntity,
-        onSelect: (object: Pipe) => void,
-        onChange: (flowSource: Pipe) => void,
-        onCommit: (flowSource: Pipe) => void,
-    ) {
-        super(context, objectStore, parent, obj);
-        this.onChange = onChange;
-        this.onCommit = onCommit;
-        this.onSelect = onSelect;
-    }
 
     get position(): Matrix {
         // We don't draw by object location because the object doesn't really have an own location. Instead, its
@@ -142,16 +124,12 @@ export default class Pipe extends DraggableObject<PipeEntity> {
     }
 
     onMouseDown(event: MouseEvent, vp: ViewPort): boolean {
-        if (super.onMouseDown(event, vp)) {
-            // We want to select too while moving
-            // return true;
-        }
         const wc = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const oc = this.toObjectCoord(wc);
 
         // Check bounds
         if (this.inBounds(oc)) {
-            this.onSelect(this);
+            this.onSelect();
 
             return true;
         }
@@ -160,18 +138,10 @@ export default class Pipe extends DraggableObject<PipeEntity> {
     }
 
     onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
-        const res = super.onMouseMove(event, vp);
-        if (res.handled) {
-            return res;
-        }
         return UNHANDLED;
     }
 
     onMouseUp(event: MouseEvent, vp: ViewPort): boolean {
-        if (super.onMouseUp(event, vp)) {
-            return true;
-        }
-
         const wc = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const oc = this.toObjectCoord(wc);
         // Check bounds

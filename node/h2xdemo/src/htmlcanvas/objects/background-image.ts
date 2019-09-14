@@ -1,15 +1,16 @@
 import {ViewPort} from '@/htmlcanvas/viewport';
-import {Background, Coord, Rectangle} from '@/store/document/types';
+import {Background, Coord, DrawableEntity, Rectangle} from '@/store/document/types';
 import axios from 'axios';
 import * as TM from 'transformation-matrix';
 import {matrixScale, parseScale} from '@/htmlcanvas/utils';
-import SizeableObject from '@/htmlcanvas/lib/sizeable-object';
+import {Sizeable} from '@/htmlcanvas/lib/object-traits/sizeable-object';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import _ from 'lodash';
+import DrawableObject from '@/htmlcanvas/lib/drawable-object';
+import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 
 // TODO: Convert into backed drawable object.
-export class BackgroundImage extends SizeableObject {
-
+export class BackgroundImage extends BackedDrawableObject<Background> implements Sizeable {
     static drawPoint(ctx: CanvasRenderingContext2D, point: Coord, label: string) {
         const scale = matrixScale(ctx.getTransform());
 
@@ -28,12 +29,6 @@ export class BackgroundImage extends SizeableObject {
     image: HTMLImageElement | null = null;
     imgScale: {x: number, y: number} = {x: 1, y: 1};
 
-    background: Background;
-
-    onMove: (image: BackgroundImage) => any;
-    onSelect: (image: BackgroundImage) => any;
-    onCommit: (image: BackgroundImage) => any;
-
     grabbedPoint: [number, number] | null = null;
     grabbedCenterState: [number, number] | null = null;
     grabbedOffsetState: Coord | null = null;
@@ -41,36 +36,22 @@ export class BackgroundImage extends SizeableObject {
     shiftKey: boolean = false;
 
 
-    constructor(background: Background,
-                onLoad: (image: BackgroundImage) => any,
-                onMove: (image: BackgroundImage) => any,
-                onSelect: (image: BackgroundImage) => any,
-                onCommit: (image: BackgroundImage) => any,
-    ) {
-        super(null);
-        this.background = background;
-
-        this.onMove = onMove;
-        this.onSelect = onSelect;
-        this.onCommit = onCommit;
-
-        this.initializeImage(onLoad);
+    prepareDelete(): Array<BackedDrawableObject<DrawableEntity>> {
+        throw new Error('Method not implemented.');
     }
-
-
 
     initializeImage(onLoad: (image: BackgroundImage) => any) {
         this.image = null;
         // Try to load the image. If we can't, then show a loading screen.
         const retry = (expectedUri: string) => {
-            if (expectedUri !== this.background.uri) {
+            if (expectedUri !== this.stateObject.uri) {
                 // Sometimes, there are a lot of URI switches. We just want to keep the latest one.
                 return;
             }
 
-            axios.head(this.background.uri).then(() => {
+            axios.head(this.stateObject.uri).then(() => {
                     const image = new Image();
-                    image.src = this.background.uri;
+                    image.src = this.stateObject.uri;
 
                     image.onload = () => {
                         this.imgScale = {
@@ -88,7 +69,7 @@ export class BackgroundImage extends SizeableObject {
                         this.image = image;
                         onLoad(this);
                     };
-                    image.src = this.background.uri;
+                    image.src = this.stateObject.uri;
                 },
             ).catch(() => {
                 setTimeout(() => {
@@ -97,39 +78,39 @@ export class BackgroundImage extends SizeableObject {
             });
         };
 
-        retry(this.background.uri);
+        retry(this.stateObject.uri);
     }
 
     get position() {
         return TM.transform(
-            TM.translate(this.background.center.x, this.background.center.y),
-            TM.rotateDEG(this.background.rotation),
-            TM.scale(this.background.scaleFactor),
+            TM.translate(this.stateObject.center.x, this.stateObject.center.y),
+            TM.rotateDEG(this.stateObject.rotation),
+            TM.scale(this.stateObject.scaleFactor),
         );
     }
 
     get width() {
-        return this.background.paperSize.widthMM / parseScale(this.background.scaleName);
+        return this.stateObject.paperSize.widthMM / parseScale(this.stateObject.scaleName);
     }
 
     get height() {
-        return this.background.paperSize.heightMM / parseScale(this.background.scaleName);
+        return this.stateObject.paperSize.heightMM / parseScale(this.stateObject.scaleName);
     }
 
     get center() {
-        return this.background.center;
+        return this.stateObject.center;
     }
 
     set center(value) {
-        this.background.center = value;
+        this.stateObject.center = value;
     }
 
     get boundary() {
-        return this.background.crop;
+        return this.stateObject.crop;
     }
 
     set boundary(value: Rectangle) {
-        this.background.crop = value;
+        this.stateObject.crop = value;
     }
 
 
@@ -164,8 +145,8 @@ export class BackgroundImage extends SizeableObject {
             // Draw a potentially rotated image
             ctx.drawImage(
                 this.image,
-                l - this.background.offset.x / this.imgScale.x,
-                t - this.background.offset.y / this.imgScale.y,
+                l - this.stateObject.offset.x / this.imgScale.x,
+                t - this.stateObject.offset.y / this.imgScale.y,
                 w, h,
                 x, y,
                 sw, sh,
@@ -251,8 +232,8 @@ export class BackgroundImage extends SizeableObject {
             this.naturalClipDraw(
                 ctx,
                 0.2,
-                this.background.offset.x / this.imgScale.x,
-                this.background.offset.y / this.imgScale.y,
+                this.stateObject.offset.x / this.imgScale.x,
+                this.stateObject.offset.y / this.imgScale.y,
                 this.image.naturalWidth,
                 this.image.naturalHeight,
                 active,
@@ -276,11 +257,11 @@ export class BackgroundImage extends SizeableObject {
         );
 
         if ((selected && active)) {
-            if (this.background.pointA) {
-                BackgroundImage.drawPoint(ctx, this.background.pointA, 'A');
+            if (this.stateObject.pointA) {
+                BackgroundImage.drawPoint(ctx, this.stateObject.pointA, 'A');
             }
-            if (this.background.pointB) {
-                BackgroundImage.drawPoint(ctx, this.background.pointB, 'B');
+            if (this.stateObject.pointB) {
+                BackgroundImage.drawPoint(ctx, this.stateObject.pointB, 'B');
             }
         }
     }
@@ -291,12 +272,12 @@ export class BackgroundImage extends SizeableObject {
 
 
     inBounds(objectCoord: Coord): boolean {
-        // let clipP = this.toWorldCoord(this.background.crop);
+        // let clipP = this.toWorldCoord(this.stateObject.crop);
 
-        if (objectCoord.x < this.background.crop.x || objectCoord.y < this.background.crop.y) {
+        if (objectCoord.x < this.stateObject.crop.x || objectCoord.y < this.stateObject.crop.y) {
             return false;
-        } else if (objectCoord.x <= this.background.crop.x + this.background.crop.w
-            && objectCoord.y <= this.background.crop.y + this.background.crop.h) {
+        } else if (objectCoord.x <= this.stateObject.crop.x + this.stateObject.crop.w
+            && objectCoord.y <= this.stateObject.crop.y + this.stateObject.crop.h) {
             return true;
         }
         return false;
@@ -310,10 +291,10 @@ export class BackgroundImage extends SizeableObject {
         if (this.inBounds(o)) {
             this.grabbedPoint = [w.x, w.y];
             this.grabbedCenterState = [this.center.x, this.center.y];
-            this.grabbedOffsetState = _.cloneDeep(this.background.offset);
+            this.grabbedOffsetState = _.cloneDeep(this.stateObject.offset);
             this.hasDragged = false;
             if (this.onSelect) {
-                this.onSelect(this);
+                this.onSelect();
             }
             return true;
         }
@@ -337,8 +318,8 @@ export class BackgroundImage extends SizeableObject {
                     const o = this.toObjectCoord(w);
                     const grabbedO = this.toObjectCoord({x: this.grabbedPoint[0], y: this.grabbedPoint[1]});
 
-                    this.background.offset.x  = this.grabbedOffsetState.x + o.x - grabbedO.x;
-                    this.background.offset.y = this.grabbedOffsetState.y + o.y - grabbedO.y;
+                    this.stateObject.offset.x  = this.grabbedOffsetState.x + o.x - grabbedO.x;
+                    this.stateObject.offset.y = this.grabbedOffsetState.y + o.y - grabbedO.y;
                 } else {
 
                     // Move the object
@@ -347,16 +328,14 @@ export class BackgroundImage extends SizeableObject {
                 }
 
 
-                if (this.onMove != null) {
-                    this.onMove(this);
-                }
+                this.onChange();
                 return {handled: true, cursor: 'Move'};
             } else {
                 return UNHANDLED;
             }
         } else {
             if (this.grabbedCenterState != null || this.grabbedPoint != null) {
-                this.onCommit(this);
+                this.onCommit();
             }
             this.grabbedCenterState = null;
             this.grabbedPoint = null;
@@ -371,10 +350,25 @@ export class BackgroundImage extends SizeableObject {
             this.grabbedPoint = null;
             this.grabbedCenterState = null;
             this.hasDragged = false;
-            this.onMove(this);
-            this.onCommit(this);
+            this.onChange();
+            this.onCommit();
             return true;
         }
         return false;
     }
+
+    protected refreshObjectInternal(obj: Background, old: Background): void {
+        if (old) {
+            if (this.stateObject.uri !== old.uri) {
+                this.initializeImage(() => {
+                    this.onChange();
+                });
+            }
+        } else {
+            this.initializeImage(() => {
+                this.onChange();
+            });
+        }
+    }
+
 }

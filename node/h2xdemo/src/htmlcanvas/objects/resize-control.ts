@@ -1,6 +1,6 @@
 import {ViewPort} from '@/htmlcanvas/viewport';
 import DrawableObject from '@/htmlcanvas/lib/drawable-object';
-import SizeableObject from '@/htmlcanvas/lib/sizeable-object';
+import {SizeableObject} from '@/htmlcanvas/lib/object-traits/sizeable-object';
 import * as TM from 'transformation-matrix';
 import {matrixScale} from '@/htmlcanvas/utils';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';

@@ -1,3 +1,4 @@
+import {EntityType} from "@/store/document/entities/types";
 import {DrawingMode} from "@/htmlcanvas/types";
 import {DrawingMode} from "@/htmlcanvas/types";
 <template>
@@ -41,15 +42,14 @@ import {DrawingMode} from "@/htmlcanvas/types";
 <script lang="ts">
     import Vue from 'vue';
     import Component from 'vue-class-component';
-    import {OperationTransform} from '@/store/document/operation-transforms/operation-transforms';
     import {ViewPort} from '@/htmlcanvas/viewport';
     import {
-        Background, ConnectableEntity,
+        Background,
+        ConnectableEntity,
         Coord,
         DocumentState,
         DrawableEntity,
         FlowSystemParameters,
-        WithID,
     } from '@/store/document/types';
     import {drawPaperScale} from '@/htmlcanvas/scale';
     import ModeButtons from '@/components/editor/ModeButtons.vue';
@@ -62,7 +62,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
     import Overlay from '@/components/editor/Overlay.vue';
     import {MainEventBus} from '@/store/main-event-bus';
     import {ToolConfig} from '@/store/tools/types';
-    import {DEFAULT_TOOL, POINT_TOOL, ToolHandler} from '@/htmlcanvas/tools/tool';
+    import {DEFAULT_TOOL, ToolHandler} from '@/htmlcanvas/tools/tool';
     import DrawableObject from '@/htmlcanvas/lib/drawable-object';
     import uuid from 'uuid';
     import {renderPdf} from '@/api/pdf';
@@ -71,15 +71,14 @@ import {DrawingMode} from "@/htmlcanvas/types";
     import HydraulicsInsertPanel from '@/components/editor/HydraulicsInsertPanel.vue';
     import PointTool from '@/htmlcanvas/tools/point-tool';
     import FlowSourceEntity from '@/store/document/entities/flow-source-entity';
-    import {ENTITY_NAMES} from '@/store/document/entities';
     import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
     import * as _ from 'lodash';
     import ValveEntity from '@/store/document/entities/valveEntity';
     import PipeEntity from '@/store/document/entities/pipeEntity';
     import Flatten from '@flatten-js/core';
-    import Connectable from '@/htmlcanvas/lib/connectable';
-    import assert from 'assert';
+    import Connectable from '@/htmlcanvas/lib/object-traits/connectable';
     import Pipe from '@/htmlcanvas/objects/pipe';
+    import {EntityType} from '@/store/document/entities/types';
 
     @Component({
         components: {HydraulicsInsertPanel, Overlay, Toolbar, PropertiesWindow, ModeButtons},
@@ -137,7 +136,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                 () => {
                     this.scheduleDraw();
                 },
-                (selectedObject: BackedDrawableObject<WithID> | null) => {
+                (selectedObject: BackedDrawableObject<DrawableEntity> | null) => {
                     this.scheduleDraw();
                 },
                 () => {
@@ -298,7 +297,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                     let parentUid: string | null = null;
                     let oc = _.cloneDeep(wc);
                     if (floor != null) {
-                        parentUid = floor.background.uid;
+                        parentUid = floor.stateObject.uid;
                         oc = floor.toObjectCoord(wc);
                     }
 
@@ -315,7 +314,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                         spareCapacity: null,
                         systemUid: system.uid,
                         temperatureC: null,
-                        type: ENTITY_NAMES.FLOW_SOURCE,
+                        type: EntityType.FLOW_SOURCE,
                         uid: uuid(),
                     };
                     doc.drawing.entities.push(newEntity);
@@ -349,9 +348,9 @@ import {DrawingMode} from "@/htmlcanvas/types";
                     let entity: ConnectableEntity | ValveEntity;
                     if (object &&
                         (
-                            object.stateObject.type === ENTITY_NAMES.VALVE
-                            || object.stateObject.type === ENTITY_NAMES.FLOW_SOURCE
-                            || object.stateObject.type === ENTITY_NAMES.FLOW_SINK
+                            object.stateObject.type === EntityType.VALVE
+                            || object.stateObject.type === EntityType.FLOW_SOURCE
+                            || object.stateObject.type === EntityType.FLOW_SINK
                         )
                     ) {
                         entity = object.stateObject as ConnectableEntity;
@@ -364,7 +363,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                         let parentUid: string | null = null;
                         let oc = _.cloneDeep(wc);
                         if (floor != null) {
-                            parentUid = floor.background.uid;
+                            parentUid = floor.stateObject.uid;
                             oc = floor.toObjectCoord(wc);
                         }
 
@@ -375,7 +374,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                             connections: [],
                             parentUid,
                             systemUid: system.uid,
-                            type: ENTITY_NAMES.VALVE,
+                            type: EntityType.VALVE,
                             uid: uuid(),
                             // These names should come from databases.
                             valveType: 'fitting',
@@ -429,7 +428,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                             maximumVelocityMS: null,
                             parentUid: null,
                             systemUid,
-                            type: ENTITY_NAMES.PIPE,
+                            type: EntityType.PIPE,
                             uid: pipeUid,
                         };
                         this.document.drawing.entities.push(pipe);
@@ -448,9 +447,9 @@ import {DrawingMode} from "@/htmlcanvas/types";
                     const object = this.hydraulicsLayer.getObjectAt(wc, exclude) as BackedDrawableObject<DrawableEntity>;
                     if (object &&
                         (
-                            object.stateObject.type === ENTITY_NAMES.VALVE
-                            || object.stateObject.type === ENTITY_NAMES.FLOW_SOURCE
-                            || object.stateObject.type === ENTITY_NAMES.FLOW_SINK
+                            object.stateObject.type === EntityType.VALVE
+                            || object.stateObject.type === EntityType.FLOW_SOURCE
+                            || object.stateObject.type === EntityType.FLOW_SINK
                         )
                     ) {
                         if (nextEntityWasNew && nextEntity !== null) {
@@ -482,7 +481,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                             const lawc = connectable.fromParentToWorldCoord(lastAttachment.center);
                             const lawcp = Flatten.point(lawc.x, lawc.y);
                             const wcp = Flatten.point(wc.x, wc.y);
-                            connectable.radials(pipeUid).forEach(([radialWc, obj]) => {
+                            connectable.getRadials(pipeUid).forEach(([radialWc, obj]) => {
                                 // right now, we don't need a uid check because we are guaranteed that the state was
                                 // reset.
                                 bases.push(Flatten.vector(lawcp, Flatten.point(radialWc.x, radialWc.y)));
@@ -511,7 +510,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                         let parentUid: string | null = null;
                         let oc = _.cloneDeep(wc);
                         if (floor != null) {
-                            parentUid = floor.background.uid;
+                            parentUid = floor.stateObject.uid;
                             oc = floor.toObjectCoord(wc);
                         }
 
@@ -530,7 +529,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                                 connections: [pipeUid],
                                 parentUid,
                                 systemUid,
-                                type: ENTITY_NAMES.VALVE,
+                                type: EntityType.VALVE,
                                 uid: uuid(),
                                 // These names should come from databases.
                                 valveType: 'fitting',
@@ -595,7 +594,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                             this.hydraulicsLayer.getObjectAt(wc, exclude) as BackedDrawableObject<DrawableEntity>;
                         if (object &&
                             (
-                                object.stateObject.type === ENTITY_NAMES.PIPE
+                                object.stateObject.type === EntityType.PIPE
                             )
                         ) {
                             pipe = object as Pipe;
@@ -609,7 +608,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                             let parentUid: string | null = null;
                             let oc = _.cloneDeep(wc);
                             if (floor != null) {
-                                parentUid = floor.background.uid;
+                                parentUid = floor.stateObject.uid;
                                 oc = floor.toObjectCoord(wc);
                             }
 
@@ -622,7 +621,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                                 connections: [pipe1uid, pipe2uid],
                                 parentUid,
                                 systemUid: system.uid,
-                                type: ENTITY_NAMES.VALVE,
+                                type: EntityType.VALVE,
                                 uid: uuid(),
                                 valveType: 'fitting',
                             };
@@ -637,7 +636,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                                 maximumVelocityMS: pipe.stateObject.maximumVelocityMS,
                                 parentUid: null,
                                 systemUid: pipe.stateObject.systemUid,
-                                type: ENTITY_NAMES.PIPE,
+                                type: EntityType.PIPE,
                                 uid: pipe1uid,
                             };
 
@@ -651,7 +650,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                                 maximumVelocityMS: pipe.stateObject.maximumVelocityMS,
                                 parentUid: null,
                                 systemUid: pipe.stateObject.systemUid,
-                                type: ENTITY_NAMES.PIPE,
+                                type: EntityType.PIPE,
                                 uid: pipe2uid,
                             };
 
@@ -685,13 +684,13 @@ import {DrawingMode} from "@/htmlcanvas/types";
 
             this.hydraulicsLayer.onSelected(null);
 
-            if (entityName === ENTITY_NAMES.FLOW_SOURCE) {
+            if (entityName === EntityType.FLOW_SOURCE) {
                 this.insertFlowSource(system);
-            } else if (entityName === ENTITY_NAMES.FLOW_SINK) {
+            } else if (entityName === EntityType.FLOW_SINK) {
                 this.insertFlowSink(system);
-            } else if (entityName === ENTITY_NAMES.PIPE) {
+            } else if (entityName === EntityType.PIPE) {
                 this.insertPipes(system);
-            } else if (entityName === ENTITY_NAMES.VALVE) {
+            } else if (entityName === EntityType.VALVE) {
                 this.insertValve(system);
             }
         }
@@ -745,6 +744,8 @@ import {DrawingMode} from "@/htmlcanvas/types";
                         const height = paperSize.heightMM / scale;
                         // We create the operation here, not the server.
                         const background: Background = {
+                            parentUid: null,
+                            type: EntityType.BACKGROUND_IMAGE,
                             center: w,
                             crop: {x: -width / 2, y: -height / 2, w: width, h: height},
                             offset: {x: 0, y: 0},

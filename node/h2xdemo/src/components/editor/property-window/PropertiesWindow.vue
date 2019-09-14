@@ -34,9 +34,9 @@
     import FloorPlanProperties from '@/components/editor/property-window/FloorPlanProperties.vue';
     import FlowSourceProperties from '@/components/editor/property-window/FlowSourceProperties.vue';
     import {DrawableEntity} from '@/store/document/types';
-    import {ENTITY_NAMES} from '@/store/document/entities';
     import ValveProperties from '@/components/editor/property-window/ValveProperties.vue';
     import PipeProperties from '@/components/editor/property-window/PipeProperties.vue';
+    import {EntityType} from '@/store/document/entities/types';
 
     @Component({
         components: {PipeProperties, ValveProperties, FlowSourceProperties, FloorPlanProperties},
@@ -57,7 +57,7 @@
         }
 
         get ENTITY_NAMES() {
-            return ENTITY_NAMES;
+            return EntityType;
         }
     }
 </script>

@@ -3,42 +3,20 @@ import FlowSourceEntity from '@/store/document/entities/flow-source-entity';
 import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
 import {Coord, DocumentState, DrawableEntity, FlowSystemParameters} from '@/store/document/types';
-import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 import assert from 'assert';
 import {matrixScale} from '@/htmlcanvas/utils';
 import {lighten} from '@/lib/utils';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
-import DraggableObject from '@/htmlcanvas/lib/draggable-object';
-import Connectable, {getRadials} from '@/htmlcanvas/lib/connectable';
+import {Draggable, DraggableObject} from '@/htmlcanvas/lib/object-traits/draggable-object';
+import Connectable, {ConnectableObject} from '@/htmlcanvas/lib/object-traits/connectable';
+import CenterDraggableObject from '@/htmlcanvas/lib/object-traits/center-draggable-object';
 
-export default class FlowSource extends DraggableObject<FlowSourceEntity> implements Connectable {
-
+@CenterDraggableObject
+@ConnectableObject
+export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> implements Connectable {
     MINIMUM_RADIUS_PX: number = 3;
-    onSelect: (object: FlowSource) => void;
     lastDrawnWorldRadius: number = 0; // for bounds detection
-
-
-    onChange: (flowSource: FlowSource) => void;
-    onCommit: (flowSource: FlowSource) => void;
-
-    private systems: FlowSystemParameters[];
-
-    constructor(
-        context: DocumentState,
-        objectStore: Map<string, DrawableObject>,
-        parent: DrawableObject | null,
-        obj: FlowSourceEntity,
-        onSelect: (object: FlowSource) => void,
-        onChange: (flowSource: FlowSource) => void,
-        onCommit: (flowSource: FlowSource) => void,
-    ) {
-        super(context, objectStore, parent, obj);
-        this.systems = context.drawing.flowSystems;
-        this.onChange = onChange;
-        this.onCommit = onCommit;
-        this.onSelect = onSelect;
-    }
 
     drawInternal(ctx: CanvasRenderingContext2D, vp: ViewPort, layerActive: boolean, selected: boolean): void {
         this.lastDrawnWorldRadius = 0;
@@ -104,9 +82,9 @@ export default class FlowSource extends DraggableObject<FlowSourceEntity> implem
 
     }
 
-    radials(exclude: string | null = null): Array<[Coord, BackedDrawableObject<DrawableEntity>]> {
-        return getRadials(this, exclude);
-    }
+    // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to
+    // complete the type.
+    getRadials(exclude?: string | null): Array<[Coord, BackedDrawableObject<DrawableEntity>]> { /* */ }
 
     get position(): Matrix {
         return TM.transform(
@@ -119,7 +97,7 @@ export default class FlowSource extends DraggableObject<FlowSourceEntity> implem
     }
 
     get system(): FlowSystemParameters {
-        const result = this.systems.find((v) => v.uid === this.stateObject.systemUid);
+        const result = this.context.drawing.flowSystems.find((v) => v.uid === this.stateObject.systemUid);
         if (result) {
             return result;
         } else {
@@ -140,31 +118,13 @@ export default class FlowSource extends DraggableObject<FlowSourceEntity> implem
         return dist <= this.lastDrawnWorldRadius;
     }
 
-    onDragStart(objectCoord: Coord) {
-        return null;
-    }
-
-    onDrag(grabbedObjectCoord: Coord, eventObjectCoord: Coord, grabState: any) {
-        this.stateObject.center.x -= grabbedObjectCoord.x - eventObjectCoord.x;
-        this.stateObject.center.y -= grabbedObjectCoord.y - eventObjectCoord.y;
-        this.onChange(this);
-    }
-
-    onDragFinish() {
-        this.onCommit(this);
-    }
-
     onMouseDown(event: MouseEvent, vp: ViewPort): boolean {
-        if (super.onMouseDown(event, vp)) {
-            // We want to select too while moving
-            // return true;
-        }
         const wc = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const oc = this.toObjectCoord(wc);
 
         // Check bounds
         if (this.inBounds(oc)) {
-            this.onSelect(this);
+            this.onSelect();
 
             return true;
         }
@@ -173,18 +133,10 @@ export default class FlowSource extends DraggableObject<FlowSourceEntity> implem
     }
 
     onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
-        const res = super.onMouseMove(event, vp);
-        if (res.handled) {
-            return res;
-        }
         return UNHANDLED;
     }
 
     onMouseUp(event: MouseEvent, vp: ViewPort): boolean {
-        if (super.onMouseUp(event, vp)) {
-            return true;
-        }
-
         const wc = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const oc = this.toObjectCoord(wc);
         // Check bounds

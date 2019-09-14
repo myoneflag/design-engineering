@@ -3,7 +3,6 @@ import {ViewPort} from '@/htmlcanvas/viewport';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import {Coord, DocumentState, DrawableEntity, WithID} from '@/store/document/types';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
-import {ENTITY_NAMES} from '@/store/document/entities';
 import FlowSource from '@/htmlcanvas/objects/flow-source';
 import FlowSourceEntity from '@/store/document/entities/flow-source-entity';
 import * as _ from 'lodash';
@@ -12,23 +11,24 @@ import Valve from '@/htmlcanvas/objects/valve';
 import ValveEntity from '@/store/document/entities/valveEntity';
 import Pipe from '@/htmlcanvas/objects/pipe';
 import PipeEntity from '@/store/document/entities/pipeEntity';
+import {EntityType} from '@/store/document/entities/types';
 
 export default class  HydraulicsLayer implements Layer {
     uidsInOrder: string[] = [];
 
     onChange: () => any;
-    onSelect: (drawable: BackedDrawableObject<WithID> | null) => any;
-    onCommit: (drawable: BackedDrawableObject<WithID>) => any;
+    onSelect: (drawable: BackedDrawableObject<DrawableEntity> | null) => any;
+    onCommit: (drawable: BackedDrawableObject<DrawableEntity>) => any;
 
-    selectedObject: BackedDrawableObject<WithID> | null = null;
+    selectedObject: BackedDrawableObject<DrawableEntity> | null = null;
 
     objectStore: Map<string, DrawableObject>;
 
     constructor(
         objectStore: Map<string, DrawableObject>,
         onChange: () => any,
-        onSelect: (drawable: BackedDrawableObject<WithID> | null) => any,
-        onCommit: (drawable: BackedDrawableObject<WithID>) => any,
+        onSelect: (drawable: BackedDrawableObject<DrawableEntity> | null) => any,
+        onCommit: (drawable: BackedDrawableObject<DrawableEntity>) => any,
     ) {
         this.objectStore = objectStore;
         this.onChange = onChange;
@@ -109,36 +109,39 @@ export default class  HydraulicsLayer implements Layer {
                     }
                 } else {
                     // create new object
-                    if (entity.type === ENTITY_NAMES.FLOW_SOURCE) {
-                        this.objectStore.set(entity.uid, new FlowSource(
+                    if (entity.type === EntityType.FLOW_SOURCE) {
+                        const obj: FlowSource = new FlowSource(
                             doc,
                             this.objectStore,
                             parent,
                             entity as FlowSourceEntity,
-                            (object) => this.onSelected(object),
+                            () => this.onSelected(obj),
                             () => this.onChange(),
-                            (flowSource) => this.onCommit(flowSource),
-                        ));
-                    } else if (entity.type === ENTITY_NAMES.VALVE) {
-                        this.objectStore.set(entity.uid, new Valve(
+                            () => this.onCommit(obj),
+                        );
+                        this.objectStore.set(entity.uid, obj);
+                    } else if (entity.type === EntityType.VALVE) {
+                        const obj: Valve = new Valve(
                             doc,
                             this.objectStore,
                             parent,
                             entity as ValveEntity,
-                            (object) => this.onSelected(object),
+                            () => this.onSelected(obj),
                             () => this.onChange(),
-                            (flowSource) => this.onCommit(flowSource),
-                        ));
-                    } else if (entity.type === ENTITY_NAMES.PIPE) {
-                        this.objectStore.set(entity.uid, new Pipe(
+                            () => this.onCommit(obj),
+                        );
+                        this.objectStore.set(entity.uid, obj);
+                    } else if (entity.type === EntityType.PIPE) {
+                        const obj: Pipe = new Pipe(
                             doc,
                             this.objectStore,
                             parent,
                             entity as PipeEntity,
-                            (object) => this.onSelected(object),
+                            () => this.onSelected(obj),
                             () => this.onChange(),
-                            (flowSource) => this.onCommit(flowSource),
-                        ));
+                            () => this.onCommit(obj),
+                        );
+                        this.objectStore.set(entity.uid, obj);
                     }
                 }
             }
@@ -162,18 +165,18 @@ export default class  HydraulicsLayer implements Layer {
         // We draw valves on top, followed by pipes and finally risers, sinks and everything else.
         this.uidsInOrder.push(...thisIds.filter((a) => {
             const o = (this.objectStore.get(a) as BackedDrawableObject<DrawableEntity>).stateObject;
-            return o.type === ENTITY_NAMES.VALVE;
+            return o.type === EntityType.VALVE;
         }));
 
 
         this.uidsInOrder.splice(0, 0, ...thisIds.filter((a) => {
             const o = (this.objectStore.get(a) as BackedDrawableObject<DrawableEntity>).stateObject;
-            return this.uidsInOrder.indexOf(a) === -1 && o.type !== ENTITY_NAMES.PIPE;
+            return this.uidsInOrder.indexOf(a) === -1 && o.type !== EntityType.PIPE;
         }));
 
         this.uidsInOrder.splice(0, 0, ...thisIds.filter((a) => {
             const o = (this.objectStore.get(a) as BackedDrawableObject<DrawableEntity>).stateObject;
-            return o.type === ENTITY_NAMES.PIPE;
+            return o.type === EntityType.PIPE;
         }));
     }
 
@@ -193,7 +196,7 @@ export default class  HydraulicsLayer implements Layer {
         return null;
     }
 
-    onSelected(object: BackedDrawableObject<WithID> | null) {
+    onSelected(object: BackedDrawableObject<DrawableEntity> | null) {
         const oldSelected = this.selectedObject;
         this.selectedObject = object;
         if (oldSelected !== null && object !== null && oldSelected.uid !== object.uid
