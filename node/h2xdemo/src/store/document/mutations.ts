@@ -98,5 +98,9 @@ export const mutations: MutationTree<DocumentState> = {
     reset(state) {
         Object.assign(state, _.cloneDeep(initialValue));
     },
+
+    loaded(state, loaded) {
+        state.loaded = loaded;
+    },
 };
 

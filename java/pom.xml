@@ -130,6 +130,12 @@
             <artifactId>value</artifactId>
             <version>2.7.5</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.vladmihalcea</groupId>
+            <artifactId>hibernate-types-52</artifactId>
+            <version>2.1.1</version>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>

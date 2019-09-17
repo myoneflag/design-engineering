@@ -1,0 +1,1537 @@
+{
+  "fixtures": {
+    "apartmentBasinShowerBathWcKitchenSinkLaundryTroughWashingMachine": {
+      "fixtureUnits": "18",
+      "loadingUnits": {
+        "as3500": {
+          "cold": "21",
+          "hot": "14"
+        },
+        "other": {
+          "cold": "22",
+          "hot": "20"
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Apartment (basin,shower, bath, WC, Kitchen Sink, Laundry Trough, Washing Machine)",
+      "outletAboveFloorM": null,
+      "qLS": {
+        "cold": "1.02",
+        "hot": "1.1"
+      },
+      "uid": "apartmentBasinShowerBathWcKitchenSinkLaundryTroughWashingMachine",
+      "warmTempC": null
+    },
+    "basin": {
+      "fixtureUnits": "1",
+      "loadingUnits": {
+        "as3500": {
+          "cold": "1",
+          "hot": "1"
+        },
+        "other": {
+          "cold": "1",
+          "hot": "1"
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Basin",
+      "outletAboveFloorM": "1",
+      "qLS": {
+        "cold": "0.1",
+        "hot": "0.1"
+      },
+      "uid": "basin",
+      "warmTempC": "42"
+    },
+    "bath": {
+      "fixtureUnits": "4",
+      "loadingUnits": {
+        "as3500": {
+          "cold": "8",
+          "hot": "4"
+        },
+        "other": {
+          "cold": "8",
+          "hot": "8"
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Bath",
+      "outletAboveFloorM": "0.75",
+      "qLS": {
+        "cold": "0.3",
+        "hot": "0.3"
+      },
+      "uid": "bath",
+      "warmTempC": "42"
+    },
+    "beverageBay": {
+      "fixtureUnits": "1",
+      "loadingUnits": {
+        "as3500": {
+          "cold": "2",
+          "hot": "2"
+        },
+        "other": {
+          "cold": "2",
+          "hot": "2"
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Beverage Bay",
+      "outletAboveFloorM": "1",
+      "qLS": {
+        "cold": "0.1",
+        "hot": "0.1"
+      },
+      "uid": "beverageBay",
+      "warmTempC": "42"
+    },
+    "birthingPool": {
+      "fixtureUnits": "22",
+      "loadingUnits": {
+        "as3500": {
+          "cold": null,
+          "hot": null
+        },
+        "other": {
+          "cold": null,
+          "hot": null
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Birthing Pool",
+      "outletAboveFloorM": "0.75",
+      "qLS": {
+        "cold": "1",
+        "hot": "1"
+      },
+      "uid": "birthingPool",
+      "warmTempC": "38"
+    },
+    "cleanersSink": {
+      "fixtureUnits": "1",
+      "loadingUnits": {
+        "as3500": {
+          "cold": "2",
+          "hot": "2"
+        },
+        "other": {
+          "cold": "2",
+          "hot": "3"
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Cleaners sink",
+      "outletAboveFloorM": "1",
+      "qLS": {
+        "cold": "0.12",
+        "hot": "0.2"
+      },
+      "uid": "cleanersSink",
+      "warmTempC": null
+    },
+    "continuousFlow": {
+      "fixtureUnits": null,
+      "loadingUnits": {
+        "as3500": {
+          "cold": "Specified in the properties each time (this is added to the PSD and is not diversified)",
+          "hot": null
+        },
+        "other": {
+          "cold": null,
+          "hot": null
+        }
+      },
+      "maxInletPressureKPA": null,
+      "minInletPressureKPA": null,
+      "name": "Continuous Flow",
+      "outletAboveFloorM": null,
+      "qLS": {
+        "cold": null,
+        "hot": null
+      },
+      "uid": "continuousFlow",
+      "warmTempC": null
+    },
+    "dirtyUtilitySinkBasinSanitiserFlushingRimSink": {
+      "fixtureUnits": "13",
+      "loadingUnits": {
+        "as3500": {
+          "cold": null,
+          "hot": null
+        },
+        "other": {
+          "cold": null,
+          "hot": null
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Dirty Utility ( Sink, Basin, Sanitiser, Flushing Rim Sink)",
+      "outletAboveFloorM": null,
+      "qLS": {
+        "cold": null,
+        "hot": null
+      },
+      "uid": "dirtyUtilitySinkBasinSanitiserFlushingRimSink",
+      "warmTempC": null
+    },
+    "dishwasher": {
+      "fixtureUnits": "3",
+      "loadingUnits": {
+        "as3500": {
+          "cold": "3",
+          "hot": "2"
+        },
+        "other": {
+          "cold": "3",
+          "hot": "3"
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Dishwasher",
+      "outletAboveFloorM": "0.8",
+      "qLS": {
+        "cold": "0.2",
+        "hot": "0.2"
+      },
+      "uid": "dishwasher",
+      "warmTempC": null
+    },
+    "dualEnsuite2XWc2XBasin2XShower": {
+      "fixtureUnits": "12",
+      "loadingUnits": {
+        "as3500": {
+          "cold": "10",
+          "hot": "6"
+        },
+        "other": {
+          "cold": "10",
+          "hot": "6"
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Dual Ensuite (2 x WC, 2 x Basin & 2 x Shower)",
+      "outletAboveFloorM": null,
+      "qLS": {
+        "cold": "0.6",
+        "hot": "0.4"
+      },
+      "uid": "dualEnsuite2XWc2XBasin2XShower",
+      "warmTempC": null
+    },
+    "dualEnsuite2XWc2XBasin2XShower2XBasin": {
+      "fixtureUnits": "14",
+      "loadingUnits": {
+        "as3500": {
+          "cold": "12",
+          "hot": "8"
+        },
+        "other": {
+          "cold": "12",
+          "hot": "8"
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Dual Ensuite (2 x WC, 2 x Basin & 2 x Shower) + 2 x Basin",
+      "outletAboveFloorM": null,
+      "qLS": {
+        "cold": "0.8",
+        "hot": "0.6"
+      },
+      "uid": "dualEnsuite2XWc2XBasin2XShower2XBasin",
+      "warmTempC": null
+    },
+    "ensuiteWcBasinShower": {
+      "fixtureUnits": "6",
+      "loadingUnits": {
+        "as3500": {
+          "cold": "5",
+          "hot": "3"
+        },
+        "other": {
+          "cold": "5",
+          "hot": "3"
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Ensuite (WC, Basin & Shower)",
+      "outletAboveFloorM": null,
+      "qLS": {
+        "cold": "0.3",
+        "hot": "0.2"
+      },
+      "uid": "ensuiteWcBasinShower",
+      "warmTempC": null
+    },
+    "ensuiteWcBasinShowerBasin": {
+      "fixtureUnits": "7",
+      "loadingUnits": {
+        "as3500": {
+          "cold": "6",
+          "hot": "4"
+        },
+        "other": {
+          "cold": "6",
+          "hot": "4"
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Ensuite (WC, Basin & Shower) + Basin",
+      "outletAboveFloorM": null,
+      "qLS": {
+        "cold": "0.4",
+        "hot": "0.3"
+      },
+      "uid": "ensuiteWcBasinShowerBasin",
+      "warmTempC": null
+    },
+    "flishingRimSink": {
+      "fixtureUnits": null,
+      "loadingUnits": {
+        "as3500": {
+          "cold": null,
+          "hot": null
+        },
+        "other": {
+          "cold": null,
+          "hot": null
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Flishing Rim Sink",
+      "outletAboveFloorM": "1",
+      "qLS": {
+        "cold": null,
+        "hot": null
+      },
+      "uid": "flishingRimSink",
+      "warmTempC": null
+    },
+    "kitchenSink": {
+      "fixtureUnits": "3",
+      "loadingUnits": {
+        "as3500": {
+          "cold": "2",
+          "hot": "2"
+        },
+        "other": {
+          "cold": "2",
+          "hot": "3"
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Kitchen sink",
+      "outletAboveFloorM": "1",
+      "qLS": {
+        "cold": "0.1",
+        "hot": "0.2"
+      },
+      "uid": "kitchenSink",
+      "warmTempC": null
+    },
+    "laundryTrough": {
+      "fixtureUnits": "4",
+      "loadingUnits": {
+        "as3500": {
+          "cold": "3",
+          "hot": "3"
+        },
+        "other": {
+          "cold": "3",
+          "hot": "3"
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Laundry Trough",
+      "outletAboveFloorM": "1",
+      "qLS": {
+        "cold": "0.12",
+        "hot": "0.2"
+      },
+      "uid": "laundryTrough",
+      "warmTempC": null
+    },
+    "sanitiser": {
+      "fixtureUnits": null,
+      "loadingUnits": {
+        "as3500": {
+          "cold": null,
+          "hot": null
+        },
+        "other": {
+          "cold": null,
+          "hot": null
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Sanitiser",
+      "outletAboveFloorM": "1",
+      "qLS": {
+        "cold": null,
+        "hot": null
+      },
+      "uid": "sanitiser",
+      "warmTempC": null
+    },
+    "scrubTrough": {
+      "fixtureUnits": null,
+      "loadingUnits": {
+        "as3500": {
+          "cold": null,
+          "hot": null
+        },
+        "other": {
+          "cold": null,
+          "hot": null
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Scrub Trough",
+      "outletAboveFloorM": "1",
+      "qLS": {
+        "cold": "0.45",
+        "hot": "0.45"
+      },
+      "uid": "scrubTrough",
+      "warmTempC": "42"
+    },
+    "shower": {
+      "fixtureUnits": "2",
+      "loadingUnits": {
+        "as3500": {
+          "cold": "2",
+          "hot": "2"
+        },
+        "other": {
+          "cold": "3",
+          "hot": "2"
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Shower",
+      "outletAboveFloorM": "1.5",
+      "qLS": {
+        "cold": "0.1",
+        "hot": "0.1"
+      },
+      "uid": "shower",
+      "warmTempC": "42"
+    },
+    "urinal": {
+      "fixtureUnits": "2",
+      "loadingUnits": {
+        "as3500": {
+          "cold": null,
+          "hot": null
+        },
+        "other": {
+          "cold": null,
+          "hot": null
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Urinal",
+      "outletAboveFloorM": null,
+      "qLS": {
+        "cold": "0.5",
+        "hot": "0"
+      },
+      "uid": "urinal",
+      "warmTempC": null
+    },
+    "washingMachine": {
+      "fixtureUnits": "5",
+      "loadingUnits": {
+        "as3500": {
+          "cold": "3",
+          "hot": "2"
+        },
+        "other": {
+          "cold": "3",
+          "hot": "3"
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Washing Machine",
+      "outletAboveFloorM": "0.8",
+      "qLS": {
+        "cold": "0.2",
+        "hot": "0.2"
+      },
+      "uid": "washingMachine",
+      "warmTempC": null
+    },
+    "wc": {
+      "fixtureUnits": "4",
+      "loadingUnits": {
+        "as3500": {
+          "cold": "2",
+          "hot": "0"
+        },
+        "other": {
+          "cold": "2",
+          "hot": "0"
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "WC",
+      "outletAboveFloorM": "0.75",
+      "qLS": {
+        "cold": "0.1",
+        "hot": "0"
+      },
+      "uid": "wc",
+      "warmTempC": null
+    },
+    "wcBasin": {
+      "fixtureUnits": "5",
+      "loadingUnits": {
+        "as3500": {
+          "cold": "3",
+          "hot": "1"
+        },
+        "other": {
+          "cold": "3",
+          "hot": "1"
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "WC + Basin",
+      "outletAboveFloorM": null,
+      "qLS": {
+        "cold": "0.2",
+        "hot": "0.1"
+      },
+      "uid": "wcBasin",
+      "warmTempC": null
+    }
+  },
+  "pipes": {
+    "addNewPipe": {
+      "name": "Add new pipe",
+      "pipesBySize": {
+        "": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": null,
+          "diameterNominalMM": null,
+          "pipeUid": "addNewPipe",
+          "safeWorkingPressureKPA": null
+        }
+      },
+      "uid": "addNewPipe"
+    },
+    "castIronCoated": {
+      "name": "Cast Iron (Coated)",
+      "pipesBySize": {
+        "100": {
+          "colebrookWhiteCoefficient": "0.3",
+          "diameterInternalMM": "102",
+          "diameterNominalMM": "100",
+          "pipeUid": "castIronCoated",
+          "safeWorkingPressureKPA": "3500"
+        },
+        "150": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "157",
+          "diameterNominalMM": "150",
+          "pipeUid": "castIronCoated",
+          "safeWorkingPressureKPA": "3500"
+        },
+        "200": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "212",
+          "diameterNominalMM": "200",
+          "pipeUid": "castIronCoated",
+          "safeWorkingPressureKPA": "3500"
+        },
+        "225": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "238.6",
+          "diameterNominalMM": "225",
+          "pipeUid": "castIronCoated",
+          "safeWorkingPressureKPA": "3500"
+        },
+        "250": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "264.8",
+          "diameterNominalMM": "250",
+          "pipeUid": "castIronCoated",
+          "safeWorkingPressureKPA": "3500"
+        },
+        "300": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "322.4",
+          "diameterNominalMM": "300",
+          "pipeUid": "castIronCoated",
+          "safeWorkingPressureKPA": "3500"
+        }
+      },
+      "uid": "castIronCoated"
+    },
+    "copperTypeB": {
+      "name": "Copper (Type B)",
+      "pipesBySize": {
+        "100": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "98.2",
+          "diameterNominalMM": "100",
+          "pipeUid": "copperTypeB",
+          "safeWorkingPressureKPA": "1200"
+        },
+        "15": {
+          "colebrookWhiteCoefficient": "0.00015",
+          "diameterInternalMM": "10.81",
+          "diameterNominalMM": "15",
+          "pipeUid": "copperTypeB",
+          "safeWorkingPressureKPA": "5290"
+        },
+        "150": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "148.2",
+          "diameterNominalMM": "150",
+          "pipeUid": "copperTypeB",
+          "safeWorkingPressureKPA": "1000"
+        },
+        "20": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "16.9",
+          "diameterNominalMM": "20",
+          "pipeUid": "copperTypeB",
+          "safeWorkingPressureKPA": "3970"
+        },
+        "200": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "198.9",
+          "diameterNominalMM": "200",
+          "pipeUid": "copperTypeB",
+          "safeWorkingPressureKPA": "720"
+        },
+        "25": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "22.8",
+          "diameterNominalMM": "25",
+          "pipeUid": "copperTypeB",
+          "safeWorkingPressureKPA": "3500"
+        },
+        "32": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "29.1",
+          "diameterNominalMM": "32",
+          "pipeUid": "copperTypeB",
+          "safeWorkingPressureKPA": "2780"
+        },
+        "40": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "35.4",
+          "diameterNominalMM": "40",
+          "pipeUid": "copperTypeB",
+          "safeWorkingPressureKPA": "2300"
+        },
+        "50": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "48.3",
+          "diameterNominalMM": "50",
+          "pipeUid": "copperTypeB",
+          "safeWorkingPressureKPA": "1710"
+        },
+        "65": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "61",
+          "diameterNominalMM": "65",
+          "pipeUid": "copperTypeB",
+          "safeWorkingPressureKPA": "1370"
+        },
+        "80": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "72.9",
+          "diameterNominalMM": "80",
+          "pipeUid": "copperTypeB",
+          "safeWorkingPressureKPA": "1520"
+        }
+      },
+      "uid": "copperTypeB"
+    },
+    "gmsMedium": {
+      "name": "GMS (Medium)",
+      "pipesBySize": {
+        "100": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "105",
+          "diameterNominalMM": "100",
+          "pipeUid": "gmsMedium",
+          "safeWorkingPressureKPA": "5680"
+        },
+        "150": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "155",
+          "diameterNominalMM": "150",
+          "pipeUid": "gmsMedium",
+          "safeWorkingPressureKPA": "4330"
+        },
+        "80": {
+          "colebrookWhiteCoefficient": "0.15",
+          "diameterInternalMM": "80.7",
+          "diameterNominalMM": "80",
+          "pipeUid": "gmsMedium",
+          "safeWorkingPressureKPA": "6530"
+        }
+      },
+      "uid": "gmsMedium"
+    },
+    "hdpeSdr11": {
+      "name": "HDPE (SDR11)",
+      "pipesBySize": {
+        "110": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "89.4",
+          "diameterNominalMM": "110",
+          "pipeUid": "hdpeSdr11",
+          "safeWorkingPressureKPA": "1600"
+        },
+        "16": {
+          "colebrookWhiteCoefficient": "0.0015",
+          "diameterInternalMM": "12.65",
+          "diameterNominalMM": "16",
+          "pipeUid": "hdpeSdr11",
+          "safeWorkingPressureKPA": "1600"
+        },
+        "160": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "130",
+          "diameterNominalMM": "160",
+          "pipeUid": "hdpeSdr11",
+          "safeWorkingPressureKPA": "1600"
+        },
+        "20": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "16.05",
+          "diameterNominalMM": "20",
+          "pipeUid": "hdpeSdr11",
+          "safeWorkingPressureKPA": "1600"
+        },
+        "200": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "162.5",
+          "diameterNominalMM": "200",
+          "pipeUid": "hdpeSdr11",
+          "safeWorkingPressureKPA": "1600"
+        },
+        "225": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "182.9",
+          "diameterNominalMM": "225",
+          "pipeUid": "hdpeSdr11",
+          "safeWorkingPressureKPA": "1600"
+        },
+        "25": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "20.15",
+          "diameterNominalMM": "25",
+          "pipeUid": "hdpeSdr11",
+          "safeWorkingPressureKPA": "1600"
+        },
+        "315": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "256.3",
+          "diameterNominalMM": "315",
+          "pipeUid": "hdpeSdr11",
+          "safeWorkingPressureKPA": "1600"
+        },
+        "32": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "25.95",
+          "diameterNominalMM": "32",
+          "pipeUid": "hdpeSdr11",
+          "safeWorkingPressureKPA": "1600"
+        },
+        "40": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "32.3",
+          "diameterNominalMM": "40",
+          "pipeUid": "hdpeSdr11",
+          "safeWorkingPressureKPA": "1600"
+        },
+        "50": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "40.4",
+          "diameterNominalMM": "50",
+          "pipeUid": "hdpeSdr11",
+          "safeWorkingPressureKPA": "1600"
+        },
+        "63": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "51",
+          "diameterNominalMM": "63",
+          "pipeUid": "hdpeSdr11",
+          "safeWorkingPressureKPA": "1600"
+        },
+        "75": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "61",
+          "diameterNominalMM": "75",
+          "pipeUid": "hdpeSdr11",
+          "safeWorkingPressureKPA": "1600"
+        }
+      },
+      "uid": "hdpeSdr11"
+    },
+    "pexSdr74": {
+      "name": "PEX (SDR 7.4)",
+      "pipesBySize": {
+        "110": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "78.6",
+          "diameterNominalMM": "110",
+          "pipeUid": "pexSdr74",
+          "safeWorkingPressureKPA": "2500"
+        },
+        "16": {
+          "colebrookWhiteCoefficient": "0.0015",
+          "diameterInternalMM": "11.35",
+          "diameterNominalMM": "16",
+          "pipeUid": "pexSdr74",
+          "safeWorkingPressureKPA": "2500"
+        },
+        "160": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "114.7",
+          "diameterNominalMM": "160",
+          "pipeUid": "pexSdr74",
+          "safeWorkingPressureKPA": "2500"
+        },
+        "20": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "14.15",
+          "diameterNominalMM": "20",
+          "pipeUid": "pexSdr74",
+          "safeWorkingPressureKPA": "2500"
+        },
+        "25": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "17.65",
+          "diameterNominalMM": "25",
+          "pipeUid": "pexSdr74",
+          "safeWorkingPressureKPA": "2500"
+        },
+        "32": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "22.75",
+          "diameterNominalMM": "32",
+          "pipeUid": "pexSdr74",
+          "safeWorkingPressureKPA": "2500"
+        },
+        "40": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "28.5",
+          "diameterNominalMM": "40",
+          "pipeUid": "pexSdr74",
+          "safeWorkingPressureKPA": "2500"
+        },
+        "50": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "35.7",
+          "diameterNominalMM": "50",
+          "pipeUid": "pexSdr74",
+          "safeWorkingPressureKPA": "2500"
+        },
+        "63": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "45.1",
+          "diameterNominalMM": "63",
+          "pipeUid": "pexSdr74",
+          "safeWorkingPressureKPA": "2500"
+        },
+        "75": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "53.6",
+          "diameterNominalMM": "75",
+          "pipeUid": "pexSdr74",
+          "safeWorkingPressureKPA": "2500"
+        }
+      },
+      "uid": "pexSdr74"
+    },
+    "stainlessSteel": {
+      "name": "Stainless Steel",
+      "pipesBySize": {
+        "100": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "104",
+          "diameterNominalMM": "100",
+          "pipeUid": "stainlessSteel",
+          "safeWorkingPressureKPA": "4500"
+        },
+        "15": {
+          "colebrookWhiteCoefficient": "0.0015",
+          "diameterInternalMM": "13",
+          "diameterNominalMM": "15",
+          "pipeUid": "stainlessSteel",
+          "safeWorkingPressureKPA": "20000"
+        },
+        "150": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "158",
+          "diameterNominalMM": "150",
+          "pipeUid": "stainlessSteel",
+          "safeWorkingPressureKPA": "4000"
+        },
+        "20": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "19.6",
+          "diameterNominalMM": "20",
+          "pipeUid": "stainlessSteel",
+          "safeWorkingPressureKPA": "15800"
+        },
+        "25": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "25.6",
+          "diameterNominalMM": "25",
+          "pipeUid": "stainlessSteel",
+          "safeWorkingPressureKPA": "12500"
+        },
+        "32": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "32",
+          "diameterNominalMM": "32",
+          "pipeUid": "stainlessSteel",
+          "safeWorkingPressureKPA": "9800"
+        },
+        "40": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "39",
+          "diameterNominalMM": "40",
+          "pipeUid": "stainlessSteel",
+          "safeWorkingPressureKPA": "8500"
+        },
+        "50": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "51",
+          "diameterNominalMM": "50",
+          "pipeUid": "stainlessSteel",
+          "safeWorkingPressureKPA": "6800"
+        },
+        "65": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "72.1",
+          "diameterNominalMM": "65",
+          "pipeUid": "stainlessSteel",
+          "safeWorkingPressureKPA": "7200"
+        },
+        "80": {
+          "colebrookWhiteCoefficient": null,
+          "diameterInternalMM": "87.6",
+          "diameterNominalMM": "80",
+          "pipeUid": "stainlessSteel",
+          "safeWorkingPressureKPA": "5900"
+        }
+      },
+      "uid": "stainlessSteel"
+    }
+  },
+  "valves": {
+    "45Elbow": {
+      "abbreviation": "NA",
+      "name": "45 Elbow",
+      "uid": "45Elbow",
+      "valvesBySize": {
+        "100": {
+          "diameterNominalMM": "100",
+          "kValue": "0.27",
+          "symbol": null,
+          "valveUid": "45Elbow"
+        },
+        "15": {
+          "diameterNominalMM": "15",
+          "kValue": "0.43",
+          "symbol": null,
+          "valveUid": "45Elbow"
+        },
+        "150": {
+          "diameterNominalMM": "150",
+          "kValue": "0.24",
+          "symbol": null,
+          "valveUid": "45Elbow"
+        },
+        "20": {
+          "diameterNominalMM": "20",
+          "kValue": "0.4",
+          "symbol": null,
+          "valveUid": "45Elbow"
+        },
+        "200-250": {
+          "diameterNominalMM": "200-250",
+          "kValue": "0.22",
+          "symbol": null,
+          "valveUid": "45Elbow"
+        },
+        "25": {
+          "diameterNominalMM": "25",
+          "kValue": "0.37",
+          "symbol": null,
+          "valveUid": "45Elbow"
+        },
+        "315": {
+          "diameterNominalMM": "315",
+          "kValue": "0.21",
+          "symbol": null,
+          "valveUid": "45Elbow"
+        },
+        "32": {
+          "diameterNominalMM": "32",
+          "kValue": "0.35",
+          "symbol": null,
+          "valveUid": "45Elbow"
+        },
+        "40": {
+          "diameterNominalMM": "40",
+          "kValue": "0.34",
+          "symbol": null,
+          "valveUid": "45Elbow"
+        },
+        "50": {
+          "diameterNominalMM": "50",
+          "kValue": "0.3",
+          "symbol": null,
+          "valveUid": "45Elbow"
+        },
+        "65-80": {
+          "diameterNominalMM": "65-80",
+          "kValue": "0.29",
+          "symbol": null,
+          "valveUid": "45Elbow"
+        }
+      }
+    },
+    "90Elbow": {
+      "abbreviation": "NA",
+      "name": "90 Elbow",
+      "uid": "90Elbow",
+      "valvesBySize": {
+        "100": {
+          "diameterNominalMM": "100",
+          "kValue": "0.51",
+          "symbol": null,
+          "valveUid": "90Elbow"
+        },
+        "15": {
+          "diameterNominalMM": "15",
+          "kValue": "0.81",
+          "symbol": null,
+          "valveUid": "90Elbow"
+        },
+        "150": {
+          "diameterNominalMM": "150",
+          "kValue": "0.45",
+          "symbol": null,
+          "valveUid": "90Elbow"
+        },
+        "20": {
+          "diameterNominalMM": "20",
+          "kValue": "0.75",
+          "symbol": null,
+          "valveUid": "90Elbow"
+        },
+        "200-250": {
+          "diameterNominalMM": "200-250",
+          "kValue": "0.42",
+          "symbol": null,
+          "valveUid": "90Elbow"
+        },
+        "25": {
+          "diameterNominalMM": "25",
+          "kValue": "0.69",
+          "symbol": null,
+          "valveUid": "90Elbow"
+        },
+        "315": {
+          "diameterNominalMM": "315",
+          "kValue": "0.39",
+          "symbol": null,
+          "valveUid": "90Elbow"
+        },
+        "32": {
+          "diameterNominalMM": "32",
+          "kValue": "0.66",
+          "symbol": null,
+          "valveUid": "90Elbow"
+        },
+        "40": {
+          "diameterNominalMM": "40",
+          "kValue": "0.63",
+          "symbol": null,
+          "valveUid": "90Elbow"
+        },
+        "50": {
+          "diameterNominalMM": "50",
+          "kValue": "0.57",
+          "symbol": null,
+          "valveUid": "90Elbow"
+        },
+        "65-80": {
+          "diameterNominalMM": "65-80",
+          "kValue": "0.54",
+          "symbol": null,
+          "valveUid": "90Elbow"
+        }
+      }
+    },
+    "ballValve": {
+      "abbreviation": "BV",
+      "name": "Ball Valve",
+      "uid": "ballValve",
+      "valvesBySize": {
+        "100": {
+          "diameterNominalMM": "100",
+          "kValue": "0.05",
+          "symbol": null,
+          "valveUid": "ballValve"
+        },
+        "15": {
+          "diameterNominalMM": "15",
+          "kValue": "0.08",
+          "symbol": null,
+          "valveUid": "ballValve"
+        },
+        "150": {
+          "diameterNominalMM": "150",
+          "kValue": "0.05",
+          "symbol": null,
+          "valveUid": "ballValve"
+        },
+        "20": {
+          "diameterNominalMM": "20",
+          "kValue": "0.08",
+          "symbol": null,
+          "valveUid": "ballValve"
+        },
+        "200-250": {
+          "diameterNominalMM": "200-250",
+          "kValue": "0.04",
+          "symbol": null,
+          "valveUid": "ballValve"
+        },
+        "25": {
+          "diameterNominalMM": "25",
+          "kValue": "0.07",
+          "symbol": null,
+          "valveUid": "ballValve"
+        },
+        "315": {
+          "diameterNominalMM": "315",
+          "kValue": "0.04",
+          "symbol": null,
+          "valveUid": "ballValve"
+        },
+        "32": {
+          "diameterNominalMM": "32",
+          "kValue": "0.07",
+          "symbol": null,
+          "valveUid": "ballValve"
+        },
+        "40": {
+          "diameterNominalMM": "40",
+          "kValue": "0.06",
+          "symbol": null,
+          "valveUid": "ballValve"
+        },
+        "50": {
+          "diameterNominalMM": "50",
+          "kValue": "0.06",
+          "symbol": null,
+          "valveUid": "ballValve"
+        },
+        "65-80": {
+          "diameterNominalMM": "65-80",
+          "kValue": "0.05",
+          "symbol": null,
+          "valveUid": "ballValve"
+        }
+      }
+    },
+    "butterflyValve": {
+      "abbreviation": "BFV",
+      "name": "Butterfly Valve",
+      "uid": "butterflyValve",
+      "valvesBySize": {
+        "100": {
+          "diameterNominalMM": "100",
+          "kValue": "0.77",
+          "symbol": null,
+          "valveUid": "butterflyValve"
+        },
+        "150": {
+          "diameterNominalMM": "150",
+          "kValue": "0.68",
+          "symbol": null,
+          "valveUid": "butterflyValve"
+        },
+        "200-250": {
+          "diameterNominalMM": "200-250",
+          "kValue": "0.56",
+          "symbol": null,
+          "valveUid": "butterflyValve"
+        },
+        "315": {
+          "diameterNominalMM": "315",
+          "kValue": "0.39",
+          "symbol": null,
+          "valveUid": "butterflyValve"
+        },
+        "50": {
+          "diameterNominalMM": "50",
+          "kValue": "0.86",
+          "symbol": null,
+          "valveUid": "butterflyValve"
+        },
+        "65-80": {
+          "diameterNominalMM": "65-80",
+          "kValue": "0.81",
+          "symbol": null,
+          "valveUid": "butterflyValve"
+        }
+      }
+    },
+    "checkValve": {
+      "abbreviation": "CV",
+      "name": "Check Valve",
+      "uid": "checkValve",
+      "valvesBySize": {
+        "100": {
+          "diameterNominalMM": "100",
+          "kValue": "1.7",
+          "symbol": null,
+          "valveUid": "checkValve"
+        },
+        "15": {
+          "diameterNominalMM": "15",
+          "kValue": "2.7",
+          "symbol": null,
+          "valveUid": "checkValve"
+        },
+        "150": {
+          "diameterNominalMM": "150",
+          "kValue": "1.5",
+          "symbol": null,
+          "valveUid": "checkValve"
+        },
+        "20": {
+          "diameterNominalMM": "20",
+          "kValue": "2.5",
+          "symbol": null,
+          "valveUid": "checkValve"
+        },
+        "200-250": {
+          "diameterNominalMM": "200-250",
+          "kValue": "1.4",
+          "symbol": null,
+          "valveUid": "checkValve"
+        },
+        "25": {
+          "diameterNominalMM": "25",
+          "kValue": "2.3",
+          "symbol": null,
+          "valveUid": "checkValve"
+        },
+        "315": {
+          "diameterNominalMM": "315",
+          "kValue": "1.3",
+          "symbol": null,
+          "valveUid": "checkValve"
+        },
+        "32": {
+          "diameterNominalMM": "32",
+          "kValue": "2.2",
+          "symbol": null,
+          "valveUid": "checkValve"
+        },
+        "40": {
+          "diameterNominalMM": "40",
+          "kValue": "2.1",
+          "symbol": null,
+          "valveUid": "checkValve"
+        },
+        "50": {
+          "diameterNominalMM": "50",
+          "kValue": "1.9",
+          "symbol": null,
+          "valveUid": "checkValve"
+        },
+        "65-80": {
+          "diameterNominalMM": "65-80",
+          "kValue": "1.8",
+          "symbol": null,
+          "valveUid": "checkValve"
+        }
+      }
+    },
+    "gateValve": {
+      "abbreviation": "GV",
+      "name": "Gate Valve",
+      "uid": "gateValve",
+      "valvesBySize": {
+        "100": {
+          "diameterNominalMM": "100",
+          "kValue": "0.14",
+          "symbol": null,
+          "valveUid": "gateValve"
+        },
+        "15": {
+          "diameterNominalMM": "15",
+          "kValue": "0.22",
+          "symbol": null,
+          "valveUid": "gateValve"
+        },
+        "150": {
+          "diameterNominalMM": "150",
+          "kValue": "0.12",
+          "symbol": null,
+          "valveUid": "gateValve"
+        },
+        "20": {
+          "diameterNominalMM": "20",
+          "kValue": "0.2",
+          "symbol": null,
+          "valveUid": "gateValve"
+        },
+        "200-250": {
+          "diameterNominalMM": "200-250",
+          "kValue": "0.11",
+          "symbol": null,
+          "valveUid": "gateValve"
+        },
+        "25": {
+          "diameterNominalMM": "25",
+          "kValue": "0.18",
+          "symbol": null,
+          "valveUid": "gateValve"
+        },
+        "315": {
+          "diameterNominalMM": "315",
+          "kValue": "0.1",
+          "symbol": null,
+          "valveUid": "gateValve"
+        },
+        "32": {
+          "diameterNominalMM": "32",
+          "kValue": "0.18",
+          "symbol": null,
+          "valveUid": "gateValve"
+        },
+        "40": {
+          "diameterNominalMM": "40",
+          "kValue": "0.17",
+          "symbol": null,
+          "valveUid": "gateValve"
+        },
+        "50": {
+          "diameterNominalMM": "50",
+          "kValue": "0.15",
+          "symbol": null,
+          "valveUid": "gateValve"
+        },
+        "65-80": {
+          "diameterNominalMM": "65-80",
+          "kValue": "0.14",
+          "symbol": null,
+          "valveUid": "gateValve"
+        }
+      }
+    },
+    "strainer": {
+      "abbreviation": "ST",
+      "name": "Strainer",
+      "uid": "strainer",
+      "valvesBySize": {
+        "All": {
+          "diameterNominalMM": "All",
+          "kValue": "2",
+          "symbol": null,
+          "valveUid": "strainer"
+        }
+      }
+    },
+    "tThruBranch": {
+      "abbreviation": "NA",
+      "name": "T - Thru Branch",
+      "uid": "tThruBranch",
+      "valvesBySize": {
+        "100": {
+          "diameterNominalMM": "100",
+          "kValue": "1.02",
+          "symbol": null,
+          "valveUid": "tThruBranch"
+        },
+        "15": {
+          "diameterNominalMM": "15",
+          "kValue": "1.62",
+          "symbol": null,
+          "valveUid": "tThruBranch"
+        },
+        "150": {
+          "diameterNominalMM": "150",
+          "kValue": "0.9",
+          "symbol": null,
+          "valveUid": "tThruBranch"
+        },
+        "20": {
+          "diameterNominalMM": "20",
+          "kValue": "1.5",
+          "symbol": null,
+          "valveUid": "tThruBranch"
+        },
+        "200-250": {
+          "diameterNominalMM": "200-250",
+          "kValue": "0.84",
+          "symbol": null,
+          "valveUid": "tThruBranch"
+        },
+        "25": {
+          "diameterNominalMM": "25",
+          "kValue": "1.38",
+          "symbol": null,
+          "valveUid": "tThruBranch"
+        },
+        "315": {
+          "diameterNominalMM": "315",
+          "kValue": "0.78",
+          "symbol": null,
+          "valveUid": "tThruBranch"
+        },
+        "32": {
+          "diameterNominalMM": "32",
+          "kValue": "1.32",
+          "symbol": null,
+          "valveUid": "tThruBranch"
+        },
+        "40": {
+          "diameterNominalMM": "40",
+          "kValue": "1.26",
+          "symbol": null,
+          "valveUid": "tThruBranch"
+        },
+        "50": {
+          "diameterNominalMM": "50",
+          "kValue": "1.14",
+          "symbol": null,
+          "valveUid": "tThruBranch"
+        },
+        "65-80": {
+          "diameterNominalMM": "65-80",
+          "kValue": "1.08",
+          "symbol": null,
+          "valveUid": "tThruBranch"
+        }
+      }
+    },
+    "tThruFlow": {
+      "abbreviation": "NA",
+      "name": "T - Thru Flow",
+      "uid": "tThruFlow",
+      "valvesBySize": {
+        "100": {
+          "diameterNominalMM": "100",
+          "kValue": "0.34",
+          "symbol": null,
+          "valveUid": "tThruFlow"
+        },
+        "15": {
+          "diameterNominalMM": "15",
+          "kValue": "0.54",
+          "symbol": null,
+          "valveUid": "tThruFlow"
+        },
+        "150": {
+          "diameterNominalMM": "150",
+          "kValue": "0.3",
+          "symbol": null,
+          "valveUid": "tThruFlow"
+        },
+        "20": {
+          "diameterNominalMM": "20",
+          "kValue": "0.5",
+          "symbol": null,
+          "valveUid": "tThruFlow"
+        },
+        "200-250": {
+          "diameterNominalMM": "200-250",
+          "kValue": "0.28",
+          "symbol": null,
+          "valveUid": "tThruFlow"
+        },
+        "25": {
+          "diameterNominalMM": "25",
+          "kValue": "0.46",
+          "symbol": null,
+          "valveUid": "tThruFlow"
+        },
+        "315": {
+          "diameterNominalMM": "315",
+          "kValue": "0.26",
+          "symbol": null,
+          "valveUid": "tThruFlow"
+        },
+        "32": {
+          "diameterNominalMM": "32",
+          "kValue": "0.44",
+          "symbol": null,
+          "valveUid": "tThruFlow"
+        },
+        "40": {
+          "diameterNominalMM": "40",
+          "kValue": "0.42",
+          "symbol": null,
+          "valveUid": "tThruFlow"
+        },
+        "50": {
+          "diameterNominalMM": "50",
+          "kValue": "0.38",
+          "symbol": null,
+          "valveUid": "tThruFlow"
+        },
+        "65-80": {
+          "diameterNominalMM": "65-80",
+          "kValue": "0.36",
+          "symbol": null,
+          "valveUid": "tThruFlow"
+        }
+      }
+    },
+    "waterMeter": {
+      "abbreviation": "WM",
+      "name": "Water Meter",
+      "uid": "waterMeter",
+      "valvesBySize": {
+        "All": {
+          "diameterNominalMM": "All",
+          "kValue": "7",
+          "symbol": null,
+          "valveUid": "waterMeter"
+        }
+      }
+    }
+  }
+}

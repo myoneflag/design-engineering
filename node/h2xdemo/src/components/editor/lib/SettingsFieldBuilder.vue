@@ -44,9 +44,9 @@
 
                     <b-dropdown
                             v-else-if="field[2] === 'choice'" class="float-left"
-                            size="md" id="dropdown-1" :text="reactiveData[field[0]]" variant="outline-secondary" style="padding-bottom: 20px">
-                        <b-dropdown-item v-for="(choice, index) in field[3]" @click="reactiveData[field[0]] = choice" :key="choice">
-                            {{choice}}
+                            size="md" id="dropdown-1" :text="choiceName(reactiveData[field[0]], field[3])" variant="outline-secondary" style="padding-bottom: 20px">
+                        <b-dropdown-item v-for="(choice, index) in field[3]" @click="reactiveData[field[0]] = choiceId(choice)" :key="index">
+                            {{choiceName(choice)}}
                         </b-dropdown-item>
                     </b-dropdown>
 
@@ -88,6 +88,7 @@
     import {DocumentState} from '@/store/document/types';
     import {Compact} from 'vue-color';
     import * as _ from 'lodash';
+    import { isString } from 'lodash';
 
     @Component({
         props: {
@@ -134,6 +135,30 @@
             } else {
                 // revert
                 Object.assign(this.$props.reactiveData, this.$props.originalData);
+            }
+        }
+
+
+        choiceId(choice: string | string[]): string {
+            if (isString(choice)) {
+                return choice;
+            } else {
+                return choice[0];
+            }
+        }
+
+        choiceName(choice: string | string[], choices: string[] | Array<[string, string]>): string {
+            if (choices !== undefined && _.isString(choice)) {
+                for (let i = 0; i < choices.length; i++) {
+                    if (choices[i][0] === choice) {
+                        return choices[i][1];
+                    }
+                }
+                return choice;
+            } else if (isString(choice)) {
+                return choice;
+            } else {
+                return choice[1];
             }
         }
     }

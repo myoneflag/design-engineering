@@ -105,15 +105,15 @@
                                 v-else-if="field.type === 'choice'"
                                 class="float-left"
                                 size="sm" id="dropdown-1"
-                                :text="renderedData(field.property)"
+                                :text="choiceName(renderedData(field.property), field.params.choices)"
                                 variant="outline-secondary"
                                 :disabled="reactiveData[field.property] == null"
                         >
                             <b-dropdown-item v-for="(choice, index) in field.params.choices"
-                                             @click="setRenderedData(field.property, choice)" :key="choice"
+                                             @click="setRenderedData(field.property, choiceId(choice))" :key="index"
                                              size="sm"
                             >
-                                {{choice}}
+                                {{choiceName(choice)}}
                             </b-dropdown-item>
                         </b-dropdown>
 
@@ -156,6 +156,7 @@
     import FlowSystemPicker from '@/components/editor/FlowSystemPicker.vue';
     import PopoutColourPicker from '@/components/editor/lib/PopoutColourPicker.vue';
     import {CalculationParams, PropertyField} from '@/store/document/entities/property-field';
+    import { isString } from 'lodash';
 
     @Component({
         props: {
@@ -216,6 +217,29 @@
                 }
             }
             this.$props.onChange();
+        }
+
+        choiceId(choice: string | string[]): string {
+            if (isString(choice)) {
+                return choice;
+            } else {
+                return choice[0];
+            }
+        }
+
+        choiceName(choice: string | string[], choices: string[] | Array<[string, string]>): string {
+            if (choices !== undefined && isString(choice)) {
+                for (let i = 0; i < choices.length; i++) {
+                    if (choices[i][0] === choice) {
+                        return choices[i][1];
+                    }
+                }
+                return choice;
+            } else if (isString(choice)) {
+                return choice;
+            } else {
+                return choice[1];
+            }
         }
     }
 </script>

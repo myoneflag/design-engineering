@@ -1,0 +1,79 @@
+Name,Size (DN),Internal Diameter (mm),Colebrook White Coefficient,Safe Working Pressure (kPa) ,Dynamic Viscosity (Ns/m2) @ 10degC,Dynamic Viscosity (Ns/m2) @ 15degC,Dynamic Viscosity (Ns/m2) @ 18degC,Dynamic Viscosity (Ns/m2) @ 20degC,Dynamic Viscosity (Ns/m2) @ 25degC,Dynamic Viscosity (Ns/m2) @ 38degC,Dynamic Viscosity (Ns/m2) @ 40degC,Dynamic Viscosity (Ns/m2) @ 43degC,Dynamic Viscosity (Ns/m2) @ 45degC,Dynamic Viscosity (Ns/m2) @ 50degC,Dynamic Viscosity (Ns/m2) @ 60degC,Dynamic Viscosity (Ns/m2) @ 65degC,Dynamic Viscosity (Ns/m2) @ 70degC,Fluid Density (kg/m3),Commissioning + Testing,Maintenance
+Copper (Type B),15,10.81,0.00015,5290,0.0013076,0.0011373,0.0010518,0.00100005,0.0008891,0.0006791,0.0006539,0.0006188,0.000597,0.0005474,0.0004656,0.000432,0.0004024,997,"Provide ITPs for review that show the following have been undertaken to allow the compliant installation wth quality workmanship:
+
+-Pipe supports installed as per relevant standard to the pipe material and also manufacturers details including seismic restraints
+-Pipe sizes are as per the design drawings
+-Pipe materials are as per the design drawings
+-Pipe runs have been marked out as per the design drawings and installed at the correct height
+-Dead leg capacity is compliant with the relevant standards and guidelines
+-Pipework identification installed at compliant distances
+-All openings in pipelines have been covered (and sealed with watertight plugs where applicable) to prevent contamination during construction
+-Proximity to other servicee is compliant with all relevant standards
+-The pipework has been installed in compliance with the manufacturers guidelines
+-Insulation has been installed as prescribed for acoustic and thermal insulation reasons as per the project requirements
+-Water services 80mm+ have been chlorinated in accordance with ANSI/AWWA C651
+-The complete system has operated under normal working conditions for a period of at least 48 hours and there has been no visual leaks
+-All air has been fully purged from the system
+
+We would like to witness:
+
+-Flush the system at a minimum velocity of 0.75m/sec until the water runs completely clear prior to testing 
+-Undertake a 1500kPa hydrostatic test for 30min with no leaks. Some fixtures cannot handle 1500KPA, these fixtures are to be disconnected for the 1500kPa test then reconnected and tested at their maximum operation pressure for 30min","Annual: 
+
+-Inspect the visible pipework to ensure no leaks or potential issues
+-Ensure there is no undue noise from the system
+-Ensure the insulation is still wrapped as required
+"
+,20,16.9,,3970,,,,,,,,,,,,,,,,
+,25,22.8,,3500,,,,,,,,,,,,,,,,
+,32,29.1,,2780,,,,,,,,,,,,,,,,
+,40,35.4,,2300,,,,,,,,,,,,,,,,
+,50,48.3,,1710,,,,,,,,,,,,,,,,
+,65,61,,1370,,,,,,,,,,,,,,,,
+,80,72.9,,1520,,,,,,,,,,,,,,,,
+,100,98.2,,1200,,,,,,,,,,,,,,,,
+,150,148.2,,1000,,,,,,,,,,,,,,,,
+,200,198.9,,720,,,,,,,,,,,,,,,,
+HDPE (SDR11),16,12.65,0.0015,1600,,,,,,,,,,,,,,,,
+,20,16.05,,1600,,,,,,,,,,,,,,,,
+,25,20.15,,1600,,,,,,,,,,,,,,,,
+,32,25.95,,1600,,,,,,,,,,,,,,,,
+,40,32.3,,1600,,,,,,,,,,,,,,,,
+,50,40.4,,1600,,,,,,,,,,,,,,,,
+,63,51,,1600,,,,,,,,,,,,,,,,
+,75,61,,1600,,,,,,,,,,,,,,,,
+,110,89.4,,1600,,,,,,,,,,,,,,,,
+,160,130,,1600,,,,,,,,,,,,,,,,
+,200,162.5,,1600,,,,,,,,,,,,,,,,
+,225,182.9,,1600,,,,,,,,,,,,,,,,
+,315,256.3,,1600,,,,,,,,,,,,,,,,
+PEX (SDR 7.4),16,11.35,0.0015,2500,,,,,,,,,,,,,,,,
+,20,14.15,,2500,,,,,,,,,,,,,,,,
+,25,17.65,,2500,,,,,,,,,,,,,,,,
+,32,22.75,,2500,,,,,,,,,,,,,,,,
+,40,28.5,,2500,,,,,,,,,,,,,,,,
+,50,35.7,,2500,,,,,,,,,,,,,,,,
+,63,45.1,,2500,,,,,,,,,,,,,,,,
+,75,53.6,,2500,,,,,,,,,,,,,,,,
+,110,78.6,,2500,,,,,,,,,,,,,,,,
+,160,114.7,,2500,,,,,,,,,,,,,,,,
+GMS (Medium),80,80.7,0.15,6530,,,,,,,,,,,,,,,,
+,100,105,,5680,,,,,,,,,,,,,,,,
+,150,155,,4330,,,,,,,,,,,,,,,,
+Stainless Steel,15,13,0.0015,20000,,,,,,,,,,,,,,,,
+,20,19.6,,15800,,,,,,,,,,,,,,,,
+,25,25.6,,12500,,,,,,,,,,,,,,,,
+,32,32,,9800,,,,,,,,,,,,,,,,
+,40,39,,8500,,,,,,,,,,,,,,,,
+,50,51,,6800,,,,,,,,,,,,,,,,
+,65,72.1,,7200,,,,,,,,,,,,,,,,
+,80,87.6,,5900,,,,,,,,,,,,,,,,
+,100,104,,4500,,,,,,,,,,,,,,,,
+,150,158,,4000,,,,,,,,,,,,,,,,
+Cast Iron (Coated),100,102,0.3,3500,,,,,,,,,,,,,,,,
+,150,157,,3500,,,,,,,,,,,,,,,,
+,200,212,,3500,,,,,,,,,,,,,,,,
+,225,238.6,,3500,,,,,,,,,,,,,,,,
+,250,264.8,,3500,,,,,,,,,,,,,,,,
+,300,322.4,,3500,,,,,,,,,,,,,,,,
+Add new pipe,,,,,,,,,,,,,,,,,,,,

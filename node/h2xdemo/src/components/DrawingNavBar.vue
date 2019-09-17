@@ -7,7 +7,7 @@
 
         <b-navbar-nav style="padding-left: 20px">
 
-            <span v-if="titleEditing">
+            <span v-if="titleEditing && !loading">
                 <b-input v-model="title"
                               v-autowidth="{maxWidth: '960px', minWidth: '20px', comfortZone: 0}"
                               v-on:blur="commit"
@@ -26,7 +26,7 @@
                 {{shortTitle}}
             </b-navbar-brand>
 
-            <b-nav-item :to="{name: 'settings/general'}" active-class="active" exact>
+            <b-nav-item :to="{name: 'settings/general'}" active-class="active" exact :disabled="loading">
                 <span>
                     <v-icon name="cog"></v-icon>
                 </span>
@@ -47,6 +47,9 @@
     import ProfileMenuItem from '@/components/ProfileMenuItem.vue';
     @Component({
         components: { ProfileMenuItem },
+        props: {
+            loading: Boolean,
+        },
     })
     export default class DrawingNavBar extends Vue {
         @State('document') documentState!: DocumentState;

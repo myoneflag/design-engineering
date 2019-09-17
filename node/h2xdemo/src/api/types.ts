@@ -3,6 +3,7 @@
 export enum FileWebsocketMessageType {
     OPERATION = 'OPERATION',
     FILE_DELETED = 'FILE_DELETED',
+    FILE_LOADED = 'FILE_LOADED',
 }
 
 export interface FileWebsocketMessage {

@@ -11,13 +11,13 @@ import javax.persistence.*;
         name = "jsonb",
         typeClass = JsonBinaryType.class
 )
-public class Operation {
-    public String getOperation() {
-        return operation;
+public class Catalog {
+    public int getId() {
+        return id;
     }
 
-    public void setOperation(String operation) {
-        this.operation = operation;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public Document getDocument() {
@@ -28,33 +28,22 @@ public class Operation {
         this.document = document;
     }
 
-    public int getOrderIndex() {
-        return orderIndex;
+    public String getContent() {
+        return content;
     }
 
-    public void setOrderIndex(int order) {
-        this.orderIndex = order;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
+    public void setContent(String content) {
+        this.content = content;
     }
 
     @Id
     @GeneratedValue
     private int id;
 
-    private int orderIndex;
-
-    @ManyToOne
+    @OneToOne(optional = true)
     private Document document;
-
 
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
-    private String operation;
+    private String content;
 }

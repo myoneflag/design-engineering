@@ -40,6 +40,8 @@
     <mapping class="com.h2x.mvp.entities.Document"/>
     <mapping class="com.h2x.mvp.entities.Session"/>
     <mapping class="com.h2x.mvp.entities.Profile"/>
+    <mapping class="com.h2x.mvp.entities.Catalog"/>
+
 
   </session-factory>
 </hibernate-configuration>

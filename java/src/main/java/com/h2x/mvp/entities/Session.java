@@ -1,6 +1,7 @@
 package com.h2x.mvp.entities;
 
 import com.h2x.mvp.configuration.SecurityConfig;
+import com.h2x.mvp.controllers.AuthAndDbHandler;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.function.Function3;
@@ -75,7 +76,7 @@ public class Session {
         refresh(dbSession, durationMinutes);
     }
 
-    public static <T> T withAuthAndDb(String sessionId, BiFunction<org.hibernate.Session, Session, T> fun, T defaultValue) {
+    public static <T, K extends Throwable> T withAuthAndDb(String sessionId, AuthAndDbHandler<T, K> fun, T defaultValue) throws K {
         return Database.withSession((dbSession) -> {
 
             List<Session> sessions = dbSession.createQuery("FROM Session S WHERE S.id = :id")

@@ -42,8 +42,7 @@
 
         get fields() {
             return makePipeFields(
-                // TODO: Database
-                ['Material A', 'Material B', 'I need to make a database'],
+                this.$store.getters["catalog/defaultPipeMaterialChoices"],
                 this.document.drawing.flowSystems,
             );
         }
