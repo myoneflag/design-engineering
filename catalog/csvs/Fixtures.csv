@@ -1,0 +1,39 @@
+Name,Loading Units\AS3500\Cold,Loading Units\AS3500\Hot,Loading Units\(Other)\Cold,Loading Units\(Other)\Hot,Q (l/s)\Cold,Q (l/s)\Hot,Fixture Units,Warm Temp. (degC),Outlet Above Floor (m),Template Roughin Layout,Min. Inlet Pressure (kPa),Max. Inlet Pressure (kPa),Commissioning + Testing,Maintenance
+Basin,1,1,1,1,0.1,0.1,1,42,1,,200,500,"Provide ITPs for review that show the following have been undertaken to allow the compliant installation wth quality workmanship:
+
+-All fixtures have been checked to confirm their correct performance
+
+-Tapware and basin have been installed at the correct setout as per the architectural room layout sheets
+
+-Tapware and basins installed have been approved by the client
+
+We would like to witness:
+
+-The flow rate of the fixtures verified against the architectural specification
+
+","Annual:
+
+-Ensure the flow rate and pressure at the fixture is in line with the architectural specification
+-Ensure the drain is free flowing and there are no gurgling noises in the system"
+Shower,2,2,3,2,0.1,0.1,2,42,1.5,,200,500,,
+WC,2,0,2,0,0.1,0,4,NA,0.75,,200,500,,
+Bath,8,4,8,8,0.3,0.3,4,42,0.75,,200,500,,
+Kitchen sink,2,2,2,3,0.1,0.2,3,NA,1,,200,500,,
+Washing Machine,3,2,3,3,0.2,0.2,5,NA,0.8,,200,500,,
+Dishwasher,3,2,3,3,0.2,0.2,3,NA,0.8,,200,500,,
+Laundry Trough,3,3,3,3,0.12,0.2,4,NA,1,,200,500,,
+"Ensuite (WC, Basin & Shower)",5,3,5,3,0.3,0.2,6,NA,NA,,200,500,,
+"Dual Ensuite (2 x WC, 2 x Basin & 2 x Shower)",10,6,10,6,0.6,0.4,12,NA,NA,,200,500,,
+Beverage Bay,2,2,2,2,0.1,0.1,1,42,1,,200,500,,
+WC + Basin,3,1,3,1,0.2,0.1,5,NA,NA,,200,500,,
+"Ensuite (WC, Basin & Shower) + Basin",6,4,6,4,0.4,0.3,7,NA,NA,,200,500,,
+"Dual Ensuite (2 x WC, 2 x Basin & 2 x Shower) + 2 x Basin",12,8,12,8,0.8,0.6,14,NA,NA,,200,500,,
+Scrub Trough,?,?,?,?,0.45,0.45,?,42,1,,200,500,,
+Urinal,?,?,?,?,0.5,0,2,NA,NA,,200,500,,
+Birthing Pool,?,?,?,?,1,1,22,38,0.75,,200,500,,
+Flishing Rim Sink,?,?,?,?,?,?,?,NA,1,,200,500,,
+Sanitiser,?,?,?,?,?,?,?,NA,1,,200,500,,
+"Dirty Utility ( Sink, Basin, Sanitiser, Flushing Rim Sink)",?,?,?,?,?,?,13,NA,NA,,200,500,,
+Cleaners sink,2,2,2,3,0.12,0.2,1,NA,1,,200,500,,
+"Apartment (basin,shower, bath, WC, Kitchen Sink, Laundry Trough, Washing Machine)",21,14,22,20,1.02,1.1,18,NA,NA,,200,500,,
+Continuous Flow,Specified in the properties each time (this is added to the PSD and is not diversified),,,,,,,,,,,,,

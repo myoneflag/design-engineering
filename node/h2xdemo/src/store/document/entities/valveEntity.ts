@@ -10,7 +10,10 @@ export default interface ValveEntity extends ConnectableEntity {
     color: Color | null;
 }
 
-export function makeValveFields(valveTypes: string[], systems: FlowSystemParameters[]): PropertyField[] {
+export function makeValveFields(
+    valveTypes: string[] | Array<[string, string]>,
+    systems: FlowSystemParameters[],
+): PropertyField[] {
     return [
         { property: 'systemUid', title: 'Flow System', hasDefault: false, isCalculated: false,
             type: FieldType.FlowSystemChoice, params: { systems } },

@@ -93,4 +93,8 @@ export const actions: ActionTree<DocumentState, RootState> = {
     reset({commit, state}) {
         commit('reset');
     },
+
+    loaded({commit, state}, loaded) {
+        commit('loaded', loaded);
+    }
 };

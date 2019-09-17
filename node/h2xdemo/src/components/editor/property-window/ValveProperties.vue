@@ -28,6 +28,8 @@
     import PropertiesFieldBuilder from '@/components/editor/lib/PropertiesFieldBuilder.vue';
     import {DocumentState} from '@/store/document/types';
     import ValveEntity, {fillValveDefaultFields, makeValveFields} from '../../../store/document/entities/valveEntity';
+    import {Catalog, ValveSpec} from "@/store/catalog/types";
+    import * as _ from 'lodash';
 
     @Component({
         components: {PropertiesFieldBuilder},
@@ -42,14 +44,17 @@
 
         get fields() {
             return makeValveFields(
-                // TODO: Database
-                ['fitting', 'rcpd', 'pressure', 'I need to make a database'],
+                this.$store.getters["catalog/defaultValveChoices"],
                 this.document.drawing.flowSystems,
             );
         }
 
         get reactiveData(): ValveEntity {
             return this.$props.selectedEntity;
+        }
+
+        get catalog(): Catalog {
+            return this.$store.getters['catalog/default'];
         }
 
         get document(): DocumentState {

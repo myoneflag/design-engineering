@@ -1,10 +1,3 @@
-import {EntityType} from "@/store/document/entities/types";
-import {EntityType} from "@/store/document/entities/types";
-import {InteractionType} from "@/htmlcanvas/tools/interaction";
-import {InteractionType} from "@/htmlcanvas/tools/interaction";
-import {EntityType} from "@/store/document/entities/types";
-import {DrawingMode} from "@/htmlcanvas/types";
-import {DrawingMode} from "@/htmlcanvas/types";
 <template>
     <div ref="canvasFrame" class="fullFrame">
         <drop
@@ -63,7 +56,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
     import * as TM from 'transformation-matrix';
     import {decomposeMatrix} from '@/htmlcanvas/utils';
     import Toolbar from '@/components/editor/Toolbar.vue';
-    import Overlay from '@/components/editor/Overlay.vue';
+    import LoadingScreen from '@/views/LoadingScreen.vue';
     import {MainEventBus} from '@/store/main-event-bus';
     import {ToolConfig} from '@/store/tools/types';
     import {DEFAULT_TOOL, ToolHandler} from '@/htmlcanvas/tools/tool';
@@ -83,9 +76,12 @@ import {DrawingMode} from "@/htmlcanvas/types";
     import Pipe from '@/htmlcanvas/objects/pipe';
     import {EntityType} from '@/store/document/entities/types';
     import {Interaction, InteractionType} from '@/htmlcanvas/tools/interaction';
+    import {Catalog} from "@/store/catalog/types";
 
     @Component({
-        components: {HydraulicsInsertPanel, Overlay, Toolbar, PropertiesWindow, ModeButtons},
+        components: {
+            LoadingScreen,
+            HydraulicsInsertPanel, Overlay: LoadingScreen, Toolbar, PropertiesWindow, ModeButtons},
     })
     export default class DrawingCanvas extends Vue {
 
@@ -537,7 +533,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                         }
 
                         if (nextEntityWasNew) {
-                            let oldpar = nextEntity.parentUid;
+                            const oldpar = nextEntity.parentUid;
                             nextEntity.center = oc;
                             nextEntity.parentUid = parentUid;
                             if (oldpar !== parentUid) {

@@ -91,6 +91,8 @@ export interface DocumentState {
     // This also implies that changes are updated from the server.
     history: Operations.OperationTransform[];
     nextId: number;
+
+    loaded: boolean;
 }
 
 export interface GeneralInfo {
@@ -143,7 +145,7 @@ export const initialDrawing: DrawingState = {
             velocity: 10,
             temperature: 20,
             spareCapacity: 10,
-            material : 'Material A',
+            material : 'copperTypeB',
             color: {hex: '#009CE0'},
             uid: 'jhrwekvgjuyh',
         },
@@ -152,7 +154,7 @@ export const initialDrawing: DrawingState = {
             velocity: 10,
             temperature: 60,
             spareCapacity: 10,
-            material : 'Material B',
+            material : 'copperTypeB',
             color: {hex: '#F44E3B'},
             uid: 'ebhwujfbguiwehig',
         },
@@ -172,4 +174,5 @@ export const initialValue: DocumentState = {
     optimisticHistory: [],
     history: [],
     nextId: 1,
+    loaded: false,
 };

@@ -4,14 +4,21 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.ResourceUtils;
 
 import java.awt.dnd.DropTarget;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.function.Function;
 
 public class Database {
     public static SessionFactory factory = new Configuration().configure().buildSessionFactory();
+    static Logger logger = LoggerFactory.getLogger(Database.class.getName());
 
-    public static <T> T withSession(Function<Session, T> fun) {
+    public static <T, K extends Throwable> T withSession(SessionHandler<T, K> fun) throws K {
         Session session = Database.factory.openSession();
         Transaction tx = null;
 
@@ -29,7 +36,22 @@ public class Database {
         }
     }
 
-    public interface Operation {
-        void call(Session session);
+    public static Catalog getDefaultCatalog(Session session) throws IOException {
+        List<Catalog> catalogList = session.createQuery("FROM Catalog AS C WHERE C.document = null").list();
+        if (catalogList.size() == 0) {
+            // create default one
+            logger.debug("Creating default catalog because one doesn't exist already");
+            Catalog catalog = new Catalog();
+            catalog.setDocument(null);
+
+            File file = ResourceUtils.getFile("classpath:initial-catalog.json");
+            catalog.setContent(new String(new FileInputStream(file).readAllBytes(), StandardCharsets.UTF_8));
+            session.persist(catalog);
+            return catalog;
+        } else if (catalogList.size() != 1) {
+            throw new InvalidObjectException("There are more than one catalogs");
+        } else {
+            return catalogList.get(0);
+        }
     }
 }

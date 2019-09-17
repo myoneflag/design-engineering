@@ -67,7 +67,7 @@
                 ['velocity', 'Velocity: (m/s)', 'number'],
                 ['temperature', 'Entry temperature: (c)', 'range', 10, 100],
                 ['spareCapacity', 'Spare Capacity: %', 'range', 0, 100],
-                ['material', 'Material:', 'choice', ['Material A', 'Material B', 'I need a database right now']],
+                ['material', 'Material:', 'choice', this.$store.getters["catalog/defaultPipeMaterialChoices"]],
                 ['color', 'Colour:', 'color'],
             ];
         }

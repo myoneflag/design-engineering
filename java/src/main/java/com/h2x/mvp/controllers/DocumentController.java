@@ -35,17 +35,25 @@ public class DocumentController {
         }, null);
     }
 
+    static enum DocumentInstructionType {
+        Terminate,
+        Delete,
+        Loaded,
+        Operation,
+    }
+
     static class DocumentInstruction {
         public DocumentInstruction(Operation o) {
+            this.type = DocumentInstructionType.Operation;
             this.operation = o;
         }
 
-        public DocumentInstruction(boolean t) {
-            this.terminate = t;
+        public DocumentInstruction(DocumentInstructionType type) {
+            this.type = type;
         }
+
         Operation operation;
-        boolean isDelete = false;
-        boolean terminate = false;
+        DocumentInstructionType type;
     }
 
     public static class Result {

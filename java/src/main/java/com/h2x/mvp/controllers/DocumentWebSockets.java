@@ -58,6 +58,7 @@ public class DocumentWebSockets {
                 for (Operation op: ops) {
                     submitOperation(op, user.getName());
                 }
+                submitLoadedMessage(user.getName());
                 return null;
             });
             return true;
@@ -76,31 +77,46 @@ public class DocumentWebSockets {
                         logger.debug("Thread for user " + fuid + " terminated via interruption");
                         break;
                     }
-                    if (di != null && di.terminate) {
+                    if (di != null && di.type == DocumentController.DocumentInstructionType.Terminate) {
                         documentTopics.remove(fuid);
                         logger.debug("Thread for user " + fuid + " terminated");
                         break;
                     }
                     if (di != null) {
                         try {
-                            if (di.isDelete) {
-                                logger.debug("Thread for user " + fuid + " sending reset");
-                                template.convertAndSendToUser(fuid, "/document",
-                                        ImmutableFileWebsocketMessage.builder()
-                                                .type(FileWebsocketMessageType.FILE_DELETED)
-                                                .message("")
-                                                .operation("")
-                                                .build()
-                                );
-                            } else {
-                                logger.debug("Thread for user " + fuid + " sending " + new ObjectMapper().writeValueAsString(di.operation.getOperation()));
-                                template.convertAndSendToUser(fuid, "/document",
-                                        ImmutableFileWebsocketMessage.builder()
-                                                .type(FileWebsocketMessageType.OPERATION)
-                                                .message("")
-                                                .operation(di.operation.getOperation())
-                                                .build()
-                                );
+                            switch (di.type) {
+                                case Delete:
+                                    logger.debug("Thread for user " + fuid + " sending reset");
+                                    template.convertAndSendToUser(fuid, "/document",
+                                            ImmutableFileWebsocketMessage.builder()
+                                                    .type(FileWebsocketMessageType.FILE_DELETED)
+                                                    .message("")
+                                                    .operation("")
+                                                    .build()
+                                    );
+                                    break;
+                                case Operation:
+                                    logger.debug("Thread for user " + fuid + " sending " + new ObjectMapper().writeValueAsString(di.operation.getOperation()));
+                                    template.convertAndSendToUser(fuid, "/document",
+                                            ImmutableFileWebsocketMessage.builder()
+                                                    .type(FileWebsocketMessageType.OPERATION)
+                                                    .message("")
+                                                    .operation(di.operation.getOperation())
+                                                    .build()
+                                    );
+                                    break;
+                                case Loaded:
+                                    logger.debug("Thread for user " + fuid + " sending loaded message");
+                                    template.convertAndSendToUser(fuid, "/document",
+                                            ImmutableFileWebsocketMessage.builder()
+                                                    .type(FileWebsocketMessageType.FILE_LOADED)
+                                                    .message("")
+                                                    .operation("")
+                                                    .build()
+                                    );
+                                    break;
+                                default:
+                                    throw new IllegalArgumentException("Type of instruction is not handled here");
                             }
                         } catch (JsonProcessingException e) {
                             logger.debug("Thread for user " + fuid + " error converting and sending to user");
@@ -182,8 +198,7 @@ public class DocumentWebSockets {
     public static void broadcastDelete() {
         for (String k: documentTopics.keySet()) {
             BlockingQueue<DocumentController.DocumentInstruction> q = documentTopics.get(k);
-            var msg = new DocumentController.DocumentInstruction(false);
-            msg.isDelete = true;
+            var msg = new DocumentController.DocumentInstruction(DocumentController.DocumentInstructionType.Delete);
             if (q != null) q.add(msg);
         }
     }
@@ -191,6 +206,13 @@ public class DocumentWebSockets {
     public static void submitOperation(Operation op, String uid) {
         BlockingQueue<DocumentController.DocumentInstruction> q = documentTopics.get(uid);
         if (q != null) q.add(new DocumentController.DocumentInstruction(op));
+    }
+
+    public static void submitLoadedMessage(String uid) {
+        BlockingQueue<DocumentController.DocumentInstruction> q = documentTopics.get(uid);
+        if (q != null) q.add(new DocumentController.DocumentInstruction(
+                DocumentController.DocumentInstructionType.Loaded
+        ));
     }
 
     static ConcurrentHashMap<String, BlockingQueue<DocumentController.DocumentInstruction>> documentTopics = new ConcurrentHashMap<>();
@@ -234,7 +256,9 @@ public class DocumentWebSockets {
         if (user == null) return;
         if (documentTopics.containsKey(user.getName())) {
             logger.debug("Aborting user " + user.getName());
-            documentTopics.get(user.getName()).put(new DocumentController.DocumentInstruction(true));
+            documentTopics.get(user.getName()).put(
+                    new DocumentController.DocumentInstruction(DocumentController.DocumentInstructionType.Terminate)
+            );
         } else {
             logger.debug("User " + user.getName() + " not found...");
         }

@@ -1,0 +1,3 @@
+These scripts were used to help produce the initial catalog under java/resources/catalog.
+
+Please make modifications in that json file, not to data under csvs/. Use these scripts only as helper functions to initially port data from client's excel sheets.
