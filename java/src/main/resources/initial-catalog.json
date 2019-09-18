@@ -1,27 +1,28 @@
 {
   "fixtures": {
-    "apartmentBasinShowerBathWcKitchenSinkLaundryTroughWashingMachine": {
-      "fixtureUnits": "18",
+    "ablutionTrough": {
+      "fixtureUnits": "3",
       "loadingUnits": {
         "as3500": {
-          "cold": "21",
-          "hot": "14"
+          "cold": "3",
+          "hot": "3"
         },
-        "other": {
-          "cold": "22",
-          "hot": "20"
+        "barriesBook": {
+          "cold": "3",
+          "hot": "3"
         }
       },
       "maxInletPressureKPA": "500",
       "minInletPressureKPA": "200",
-      "name": "Apartment (basin,shower, bath, WC, Kitchen Sink, Laundry Trough, Washing Machine)",
-      "outletAboveFloorM": null,
+      "name": "Ablution Trough",
+      "outletAboveFloorM": "1",
+      "probabilityOfUsagePCT": "2",
       "qLS": {
-        "cold": "1.02",
-        "hot": "1.1"
+        "cold": "0.15",
+        "hot": "0.15"
       },
-      "uid": "apartmentBasinShowerBathWcKitchenSinkLaundryTroughWashingMachine",
-      "warmTempC": null
+      "uid": "ablutionTrough",
+      "warmTempC": "42"
     },
     "basin": {
       "fixtureUnits": "1",
@@ -30,7 +31,7 @@
           "cold": "1",
           "hot": "1"
         },
-        "other": {
+        "barriesBook": {
           "cold": "1",
           "hot": "1"
         }
@@ -39,6 +40,7 @@
       "minInletPressureKPA": "200",
       "name": "Basin",
       "outletAboveFloorM": "1",
+      "probabilityOfUsagePCT": "2",
       "qLS": {
         "cold": "0.1",
         "hot": "0.1"
@@ -53,7 +55,7 @@
           "cold": "8",
           "hot": "4"
         },
-        "other": {
+        "barriesBook": {
           "cold": "8",
           "hot": "8"
         }
@@ -62,12 +64,37 @@
       "minInletPressureKPA": "200",
       "name": "Bath",
       "outletAboveFloorM": "0.75",
+      "probabilityOfUsagePCT": "1",
       "qLS": {
         "cold": "0.3",
         "hot": "0.3"
       },
       "uid": "bath",
       "warmTempC": "42"
+    },
+    "bedpanSanitiser": {
+      "fixtureUnits": "6",
+      "loadingUnits": {
+        "as3500": {
+          "cold": "2",
+          "hot": "0"
+        },
+        "barriesBook": {
+          "cold": "2",
+          "hot": "0"
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Bedpan Sanitiser",
+      "outletAboveFloorM": "1",
+      "probabilityOfUsagePCT": "2",
+      "qLS": {
+        "cold": "0.15",
+        "hot": "0"
+      },
+      "uid": "bedpanSanitiser",
+      "warmTempC": null
     },
     "beverageBay": {
       "fixtureUnits": "1",
@@ -76,7 +103,7 @@
           "cold": "2",
           "hot": "2"
         },
-        "other": {
+        "barriesBook": {
           "cold": "2",
           "hot": "2"
         }
@@ -85,6 +112,7 @@
       "minInletPressureKPA": "200",
       "name": "Beverage Bay",
       "outletAboveFloorM": "1",
+      "probabilityOfUsagePCT": "2",
       "qLS": {
         "cold": "0.1",
         "hot": "0.1"
@@ -93,21 +121,22 @@
       "warmTempC": "42"
     },
     "birthingPool": {
-      "fixtureUnits": "22",
+      "fixtureUnits": "8",
       "loadingUnits": {
         "as3500": {
-          "cold": null,
-          "hot": null
+          "cold": "16",
+          "hot": "8"
         },
-        "other": {
-          "cold": null,
-          "hot": null
+        "barriesBook": {
+          "cold": "16",
+          "hot": "8"
         }
       },
       "maxInletPressureKPA": "500",
       "minInletPressureKPA": "200",
       "name": "Birthing Pool",
       "outletAboveFloorM": "0.75",
+      "probabilityOfUsagePCT": "1",
       "qLS": {
         "cold": "1",
         "hot": "1"
@@ -122,7 +151,7 @@
           "cold": "2",
           "hot": "2"
         },
-        "other": {
+        "barriesBook": {
           "cold": "2",
           "hot": "3"
         }
@@ -131,57 +160,12 @@
       "minInletPressureKPA": "200",
       "name": "Cleaners sink",
       "outletAboveFloorM": "1",
+      "probabilityOfUsagePCT": "2",
       "qLS": {
-        "cold": "0.12",
-        "hot": "0.2"
+        "cold": "0.15",
+        "hot": "0.15"
       },
       "uid": "cleanersSink",
-      "warmTempC": null
-    },
-    "continuousFlow": {
-      "fixtureUnits": null,
-      "loadingUnits": {
-        "as3500": {
-          "cold": "Specified in the properties each time (this is added to the PSD and is not diversified)",
-          "hot": null
-        },
-        "other": {
-          "cold": null,
-          "hot": null
-        }
-      },
-      "maxInletPressureKPA": null,
-      "minInletPressureKPA": null,
-      "name": "Continuous Flow",
-      "outletAboveFloorM": null,
-      "qLS": {
-        "cold": null,
-        "hot": null
-      },
-      "uid": "continuousFlow",
-      "warmTempC": null
-    },
-    "dirtyUtilitySinkBasinSanitiserFlushingRimSink": {
-      "fixtureUnits": "13",
-      "loadingUnits": {
-        "as3500": {
-          "cold": null,
-          "hot": null
-        },
-        "other": {
-          "cold": null,
-          "hot": null
-        }
-      },
-      "maxInletPressureKPA": "500",
-      "minInletPressureKPA": "200",
-      "name": "Dirty Utility ( Sink, Basin, Sanitiser, Flushing Rim Sink)",
-      "outletAboveFloorM": null,
-      "qLS": {
-        "cold": null,
-        "hot": null
-      },
-      "uid": "dirtyUtilitySinkBasinSanitiserFlushingRimSink",
       "warmTempC": null
     },
     "dishwasher": {
@@ -191,7 +175,7 @@
           "cold": "3",
           "hot": "2"
         },
-        "other": {
+        "barriesBook": {
           "cold": "3",
           "hot": "3"
         }
@@ -200,6 +184,7 @@
       "minInletPressureKPA": "200",
       "name": "Dishwasher",
       "outletAboveFloorM": "0.8",
+      "probabilityOfUsagePCT": "0.5",
       "qLS": {
         "cold": "0.2",
         "hot": "0.2"
@@ -207,119 +192,52 @@
       "uid": "dishwasher",
       "warmTempC": null
     },
-    "dualEnsuite2XWc2XBasin2XShower": {
-      "fixtureUnits": "12",
-      "loadingUnits": {
-        "as3500": {
-          "cold": "10",
-          "hot": "6"
-        },
-        "other": {
-          "cold": "10",
-          "hot": "6"
-        }
-      },
-      "maxInletPressureKPA": "500",
-      "minInletPressureKPA": "200",
-      "name": "Dual Ensuite (2 x WC, 2 x Basin & 2 x Shower)",
-      "outletAboveFloorM": null,
-      "qLS": {
-        "cold": "0.6",
-        "hot": "0.4"
-      },
-      "uid": "dualEnsuite2XWc2XBasin2XShower",
-      "warmTempC": null
-    },
-    "dualEnsuite2XWc2XBasin2XShower2XBasin": {
-      "fixtureUnits": "14",
-      "loadingUnits": {
-        "as3500": {
-          "cold": "12",
-          "hot": "8"
-        },
-        "other": {
-          "cold": "12",
-          "hot": "8"
-        }
-      },
-      "maxInletPressureKPA": "500",
-      "minInletPressureKPA": "200",
-      "name": "Dual Ensuite (2 x WC, 2 x Basin & 2 x Shower) + 2 x Basin",
-      "outletAboveFloorM": null,
-      "qLS": {
-        "cold": "0.8",
-        "hot": "0.6"
-      },
-      "uid": "dualEnsuite2XWc2XBasin2XShower2XBasin",
-      "warmTempC": null
-    },
-    "ensuiteWcBasinShower": {
+    "flishingRimSink": {
       "fixtureUnits": "6",
       "loadingUnits": {
         "as3500": {
-          "cold": "5",
-          "hot": "3"
+          "cold": "2",
+          "hot": "0"
         },
-        "other": {
-          "cold": "5",
-          "hot": "3"
-        }
-      },
-      "maxInletPressureKPA": "500",
-      "minInletPressureKPA": "200",
-      "name": "Ensuite (WC, Basin & Shower)",
-      "outletAboveFloorM": null,
-      "qLS": {
-        "cold": "0.3",
-        "hot": "0.2"
-      },
-      "uid": "ensuiteWcBasinShower",
-      "warmTempC": null
-    },
-    "ensuiteWcBasinShowerBasin": {
-      "fixtureUnits": "7",
-      "loadingUnits": {
-        "as3500": {
-          "cold": "6",
-          "hot": "4"
-        },
-        "other": {
-          "cold": "6",
-          "hot": "4"
-        }
-      },
-      "maxInletPressureKPA": "500",
-      "minInletPressureKPA": "200",
-      "name": "Ensuite (WC, Basin & Shower) + Basin",
-      "outletAboveFloorM": null,
-      "qLS": {
-        "cold": "0.4",
-        "hot": "0.3"
-      },
-      "uid": "ensuiteWcBasinShowerBasin",
-      "warmTempC": null
-    },
-    "flishingRimSink": {
-      "fixtureUnits": null,
-      "loadingUnits": {
-        "as3500": {
-          "cold": null,
-          "hot": null
-        },
-        "other": {
-          "cold": null,
-          "hot": null
+        "barriesBook": {
+          "cold": "2",
+          "hot": "0"
         }
       },
       "maxInletPressureKPA": "500",
       "minInletPressureKPA": "200",
       "name": "Flishing Rim Sink",
       "outletAboveFloorM": "1",
+      "probabilityOfUsagePCT": "2",
       "qLS": {
-        "cold": null,
-        "hot": null
+        "cold": "0.1",
+        "hot": "0"
       },
       "uid": "flishingRimSink",
+      "warmTempC": null
+    },
+    "hoseTap": {
+      "fixtureUnits": "0",
+      "loadingUnits": {
+        "as3500": {
+          "cold": "8",
+          "hot": "0"
+        },
+        "barriesBook": {
+          "cold": "8",
+          "hot": "0"
+        }
+      },
+      "maxInletPressureKPA": "500",
+      "minInletPressureKPA": "200",
+      "name": "Hose tap",
+      "outletAboveFloorM": "0.5",
+      "probabilityOfUsagePCT": "0",
+      "qLS": {
+        "cold": "0.3",
+        "hot": "0"
+      },
+      "uid": "hoseTap",
       "warmTempC": null
     },
     "kitchenSink": {
@@ -329,8 +247,8 @@
           "cold": "2",
           "hot": "2"
         },
-        "other": {
-          "cold": "2",
+        "barriesBook": {
+          "cold": "3",
           "hot": "3"
         }
       },
@@ -338,21 +256,22 @@
       "minInletPressureKPA": "200",
       "name": "Kitchen sink",
       "outletAboveFloorM": "1",
+      "probabilityOfUsagePCT": "2",
       "qLS": {
         "cold": "0.1",
-        "hot": "0.2"
+        "hot": "0.1"
       },
       "uid": "kitchenSink",
       "warmTempC": null
     },
     "laundryTrough": {
-      "fixtureUnits": "4",
+      "fixtureUnits": "5",
       "loadingUnits": {
         "as3500": {
           "cold": "3",
           "hot": "3"
         },
-        "other": {
+        "barriesBook": {
           "cold": "3",
           "hot": "3"
         }
@@ -361,58 +280,13 @@
       "minInletPressureKPA": "200",
       "name": "Laundry Trough",
       "outletAboveFloorM": "1",
+      "probabilityOfUsagePCT": "2",
       "qLS": {
         "cold": "0.12",
-        "hot": "0.2"
+        "hot": "0.12"
       },
       "uid": "laundryTrough",
       "warmTempC": null
-    },
-    "sanitiser": {
-      "fixtureUnits": null,
-      "loadingUnits": {
-        "as3500": {
-          "cold": null,
-          "hot": null
-        },
-        "other": {
-          "cold": null,
-          "hot": null
-        }
-      },
-      "maxInletPressureKPA": "500",
-      "minInletPressureKPA": "200",
-      "name": "Sanitiser",
-      "outletAboveFloorM": "1",
-      "qLS": {
-        "cold": null,
-        "hot": null
-      },
-      "uid": "sanitiser",
-      "warmTempC": null
-    },
-    "scrubTrough": {
-      "fixtureUnits": null,
-      "loadingUnits": {
-        "as3500": {
-          "cold": null,
-          "hot": null
-        },
-        "other": {
-          "cold": null,
-          "hot": null
-        }
-      },
-      "maxInletPressureKPA": "500",
-      "minInletPressureKPA": "200",
-      "name": "Scrub Trough",
-      "outletAboveFloorM": "1",
-      "qLS": {
-        "cold": "0.45",
-        "hot": "0.45"
-      },
-      "uid": "scrubTrough",
-      "warmTempC": "42"
     },
     "shower": {
       "fixtureUnits": "2",
@@ -421,7 +295,7 @@
           "cold": "2",
           "hot": "2"
         },
-        "other": {
+        "barriesBook": {
           "cold": "3",
           "hot": "2"
         }
@@ -430,31 +304,33 @@
       "minInletPressureKPA": "200",
       "name": "Shower",
       "outletAboveFloorM": "1.5",
+      "probabilityOfUsagePCT": "4.5",
       "qLS": {
-        "cold": "0.1",
-        "hot": "0.1"
+        "cold": "0.15",
+        "hot": "0.15"
       },
       "uid": "shower",
       "warmTempC": "42"
     },
     "urinal": {
-      "fixtureUnits": "2",
+      "fixtureUnits": "1",
       "loadingUnits": {
         "as3500": {
-          "cold": null,
-          "hot": null
+          "cold": "2",
+          "hot": "2"
         },
-        "other": {
-          "cold": null,
-          "hot": null
+        "barriesBook": {
+          "cold": "2",
+          "hot": "2"
         }
       },
       "maxInletPressureKPA": "500",
       "minInletPressureKPA": "200",
       "name": "Urinal",
       "outletAboveFloorM": null,
+      "probabilityOfUsagePCT": "4.5",
       "qLS": {
-        "cold": "0.5",
+        "cold": "0.1",
         "hot": "0"
       },
       "uid": "urinal",
@@ -467,7 +343,7 @@
           "cold": "3",
           "hot": "2"
         },
-        "other": {
+        "barriesBook": {
           "cold": "3",
           "hot": "3"
         }
@@ -476,6 +352,7 @@
       "minInletPressureKPA": "200",
       "name": "Washing Machine",
       "outletAboveFloorM": "0.8",
+      "probabilityOfUsagePCT": "5.5",
       "qLS": {
         "cold": "0.2",
         "hot": "0.2"
@@ -490,7 +367,7 @@
           "cold": "2",
           "hot": "0"
         },
-        "other": {
+        "barriesBook": {
           "cold": "2",
           "hot": "0"
         }
@@ -499,51 +376,16 @@
       "minInletPressureKPA": "200",
       "name": "WC",
       "outletAboveFloorM": "0.75",
+      "probabilityOfUsagePCT": "1",
       "qLS": {
         "cold": "0.1",
         "hot": "0"
       },
       "uid": "wc",
       "warmTempC": null
-    },
-    "wcBasin": {
-      "fixtureUnits": "5",
-      "loadingUnits": {
-        "as3500": {
-          "cold": "3",
-          "hot": "1"
-        },
-        "other": {
-          "cold": "3",
-          "hot": "1"
-        }
-      },
-      "maxInletPressureKPA": "500",
-      "minInletPressureKPA": "200",
-      "name": "WC + Basin",
-      "outletAboveFloorM": null,
-      "qLS": {
-        "cold": "0.2",
-        "hot": "0.1"
-      },
-      "uid": "wcBasin",
-      "warmTempC": null
     }
   },
   "pipes": {
-    "addNewPipe": {
-      "name": "Add new pipe",
-      "pipesBySize": {
-        "": {
-          "colebrookWhiteCoefficient": null,
-          "diameterInternalMM": null,
-          "diameterNominalMM": null,
-          "pipeUid": "addNewPipe",
-          "safeWorkingPressureKPA": null
-        }
-      },
-      "uid": "addNewPipe"
-    },
     "castIronCoated": {
       "name": "Cast Iron (Coated)",
       "pipesBySize": {
