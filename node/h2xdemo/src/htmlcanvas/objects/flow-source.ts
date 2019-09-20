@@ -1,4 +1,4 @@
-import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
+import BackedDrawableObject, {BaseBackedObject} from '@/htmlcanvas/lib/backed-drawable-object';
 import FlowSourceEntity from '@/store/document/entities/flow-source-entity';
 import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
@@ -11,21 +11,28 @@ import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import {Draggable, DraggableObject} from '@/htmlcanvas/lib/object-traits/draggable-object';
 import Connectable, {ConnectableObject} from '@/htmlcanvas/lib/object-traits/connectable';
 import CenterDraggableObject from '@/htmlcanvas/lib/object-traits/center-draggable-object';
-import {Interaction, InteractionType} from '@/htmlcanvas/tools/interaction';
+import {Interaction, InteractionType} from '@/htmlcanvas/lib/interaction';
+import {DrawingContext} from '@/htmlcanvas/lib/types';
+import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
+import {EntityType} from '@/store/document/entities/types';
 
 @CenterDraggableObject
 @ConnectableObject
 export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> implements Connectable {
+    static register(): void {
+        DrawableObjectFactory.registerEntity(EntityType.FLOW_SOURCE, FlowSource);
+    }
+
     MINIMUM_RADIUS_PX: number = 3;
     lastDrawnWorldRadius: number = 0; // for bounds detection
 
-    drawInternal(ctx: CanvasRenderingContext2D, vp: ViewPort, layerActive: boolean, selected: boolean): void {
+    drawInternal({ctx, doc, vp}: DrawingContext, layerActive: boolean, selected: boolean): void {
         this.lastDrawnWorldRadius = 0;
 
         const mat = ctx.getTransform();
         const scale = matrixScale(mat);
         // Minimum screen size for them.
-        const screenSize = vp.toScreenLength(this.stateObject.diameterMM / 2);
+        const screenSize = vp.toScreenLength(this.entity.diameterMM / 2);
 
         ctx.lineWidth = 0;
 
@@ -33,7 +40,7 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> i
             // we want to draw a pixel sized dark halo around a selected component
             const haloSize = (Math.max(this.MINIMUM_RADIUS_PX, screenSize) + 5) / scale;
 
-            ctx.fillStyle = lighten(this.color.hex, -90, 1);
+            ctx.fillStyle = lighten(this.color(doc).hex, -90, 1);
 
             ctx.beginPath();
             ctx.lineWidth = 0;
@@ -48,7 +55,7 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> i
             if (screenSize < this.MINIMUM_RADIUS_PX) {
                 // Flow sources are very important and should be visible, even when zoomed out.
 
-                ctx.fillStyle = this.color.hex;
+                ctx.fillStyle = this.color(doc).hex;
                 ctx.globalAlpha = 0.5;
                 ctx.beginPath();
                 ctx.arc(
@@ -64,20 +71,20 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> i
             }
         }
 
-        ctx.fillStyle = this.color.hex;
+        ctx.fillStyle = this.color(doc).hex;
 
         ctx.globalAlpha = 1;
         ctx.beginPath();
         ctx.arc(
             0,
             0,
-            this.toObjectLength(this.stateObject.diameterMM / 2),
+            this.toObjectLength(this.entity.diameterMM / 2),
             0,
             Math.PI * 2,
         );
         this.lastDrawnWorldRadius = Math.max(
             this.lastDrawnWorldRadius,
-            this.toObjectLength(this.stateObject.diameterMM / 2),
+            this.toObjectLength(this.entity.diameterMM / 2),
         );
         ctx.fill();
 
@@ -85,30 +92,29 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> i
 
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to
     // complete the type.
-    getRadials(exclude?: string | null): Array<[Coord, BackedDrawableObject<DrawableEntity>]> { /* */ }
+    getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]> { /* */ }
 
     get position(): Matrix {
         return TM.transform(
-            TM.translate(this.stateObject.center.x, this.stateObject.center.y),
+            TM.translate(this.entity.center.x, this.entity.center.y),
         );
     }
 
-    get color() {
-        return this.stateObject.color == null ? this.system.color : this.stateObject.color;
+    color(doc: DocumentState) {
+        return this.entity.color == null ? this.system(doc).color : this.entity.color;
     }
 
-    get system(): FlowSystemParameters {
-        const result = this.context.drawing.flowSystems.find((v) => v.uid === this.stateObject.systemUid);
+    system(doc: DocumentState): FlowSystemParameters {
+        const result = doc.drawing.flowSystems.find((v) => v.uid === this.entity.systemUid);
         if (result) {
             return result;
         } else {
-            throw new Error('Flow system not found for flow source ' + JSON.stringify(this.stateObject));
+            throw new Error('Flow system not found for flow source ' + JSON.stringify(this.entity));
         }
     }
 
     refreshObjectInternal(obj: FlowSourceEntity): void {
-        const system = this.context.drawing.flowSystems.find((v) => v.uid === obj.systemUid);
-        assert(system !== undefined);
+        //
     }
 
     inBounds(objectCoord: Coord) {
@@ -144,7 +150,7 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> i
         return this.inBounds(oc);
     }
 
-    prepareDelete(): Array<BackedDrawableObject<DrawableEntity>> {
+    prepareDelete(): BaseBackedObject[] {
         return [this];
     }
 
@@ -159,5 +165,9 @@ export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> i
             default:
                 return false;
         }
+    }
+
+    rememberToRegister(): void {
+        //
     }
 }

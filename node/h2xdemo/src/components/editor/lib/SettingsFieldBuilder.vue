@@ -149,9 +149,9 @@
 
         choiceName(choice: string | string[], choices: string[] | Array<[string, string]>): string {
             if (choices !== undefined && _.isString(choice)) {
-                for (let i = 0; i < choices.length; i++) {
-                    if (choices[i][0] === choice) {
-                        return choices[i][1];
+                for (const i of choices) {
+                    if (i[0] === choice) {
+                        return i[1];
                     }
                 }
                 return choice;

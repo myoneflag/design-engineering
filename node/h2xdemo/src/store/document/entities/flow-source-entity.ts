@@ -7,8 +7,10 @@ import {
 } from '@/store/document/types';
 import {FieldType, PropertyField} from '@/store/document/entities/property-field';
 import * as _ from 'lodash';
+import {EntityType} from '@/store/document/entities/types';
 
 export default interface FlowSourceEntity extends ConnectableEntity {
+    type: EntityType.FLOW_SOURCE;
     center: Coord;
     systemUid: string;
 

@@ -13,18 +13,18 @@ import {FileWebsocketMessageType} from "@/api/types";
 </template>
 
 <script lang="ts">
-    import Vue from "vue";
-    import Component from "vue-class-component";
-    import DrawingNavBar from "../components/DrawingNavBar.vue";
-    import DrawingCanvas from "@/components/editor/DrawingCanvas.vue";
+    import Vue from 'vue';
+    import Component from 'vue-class-component';
+    import DrawingNavBar from '../components/DrawingNavBar.vue';
+    import DrawingCanvas from '@/components/editor/DrawingCanvas.vue';
 
 
-    import sockjs from "sockjs-client";
-    import Stomp, {Client, Message} from "stompjs";
-    import {FileWebsocketMessage, FileWebsocketMessageType} from "@/api/types";
-    import {loadCatalog} from "@/api/catalog";
-    import LoadingScreen from "@/views/LoadingScreen.vue";
-    import {Catalog} from "@/store/catalog/types";
+    import sockjs from 'sockjs-client';
+    import Stomp, {Client, Message} from 'stompjs';
+    import {FileWebsocketMessage, FileWebsocketMessageType} from '@/api/types';
+    import {loadCatalog} from '@/api/catalog';
+    import LoadingScreen from '@/views/LoadingScreen.vue';
+    import {Catalog} from '@/store/catalog/types';
 
 
     @Component({
@@ -59,8 +59,8 @@ import {FileWebsocketMessageType} from "@/api/types";
             );
 
             loadCatalog((catalog) => {
-                this.$store.dispatch("catalog/setDefault", catalog);
-            })
+                this.$store.dispatch('catalog/setDefault', catalog);
+            });
         }
 
         deleteFile() {
@@ -72,7 +72,7 @@ import {FileWebsocketMessageType} from "@/api/types";
             // kill the socket
             this.connection.disconnect(() => {
                 this.$store.dispatch('document/reset').then(() =>
-                    this.$store.dispatch('document/loaded', false)
+                    this.$store.dispatch('document/loaded', false),
                 );
             });
         }

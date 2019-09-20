@@ -4,7 +4,7 @@ import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import {ViewPort} from '@/htmlcanvas/viewport';
 
 export interface Draggable {
-    inBounds(objectCoord: Coord): boolean;
+    inBounds(objectCoord: Coord, objectRadius?: number): boolean;
     onDragStart(objectCoord: Coord): any;
     onDrag(grabbedObjectCoord: Coord, eventObjectCoord: Coord, grabState: any): void;
     onDragFinish(): void;

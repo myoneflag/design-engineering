@@ -27,8 +27,8 @@
     import Component from 'vue-class-component';
     import PropertiesFieldBuilder from '@/components/editor/lib/PropertiesFieldBuilder.vue';
     import {DocumentState} from '@/store/document/types';
-    import ValveEntity, {fillValveDefaultFields, makeValveFields} from '../../../store/document/entities/valveEntity';
-    import {Catalog, ValveSpec} from "@/store/catalog/types";
+    import ValveEntity, {fillValveDefaultFields, makeValveFields} from '../../../store/document/entities/valve-entity';
+    import {Catalog, ValveSpec} from '@/store/catalog/types';
     import * as _ from 'lodash';
 
     @Component({
@@ -44,7 +44,7 @@
 
         get fields() {
             return makeValveFields(
-                this.$store.getters["catalog/defaultValveChoices"],
+                this.$store.getters['catalog/defaultValveChoices'],
                 this.document.drawing.flowSystems,
             );
         }

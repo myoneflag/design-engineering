@@ -1,5 +1,3 @@
-import {FileWebsocketMessageType} from "@/api/types";
-import {FileWebsocketMessageType} from "@/api/types";
 <template>
     <div id="app">
         <router-view/>
@@ -26,6 +24,8 @@ import {FileWebsocketMessageType} from "@/api/types";
     import VueDragDrop from 'vue-drag-drop';
     import VueCookies from 'vue-cookies';
     import VersionNumber from '@/components/VersionNumber.vue';
+    import {MainEventBus} from '@/store/main-event-bus';
+    import {registerObjectBuilders} from "@/htmlcanvas/objects";
 
     Vue.use(VueDragDrop);
 
@@ -36,6 +36,8 @@ import {FileWebsocketMessageType} from "@/api/types";
     Vue.use(VueResize);
     Vue.component('v-icon', VueAwesome);
 
+    registerObjectBuilders();
+
     @Component({
         components: {
             VersionNumber,
@@ -44,6 +46,17 @@ import {FileWebsocketMessageType} from "@/api/types";
     })
 
     export default class App extends Vue {
+        mounted() {
+            document.onkeydown = function(evt) {
+                var isEscape = false;
+                if ("key" in evt) {
+                    isEscape = (evt.key === "Escape" || evt.key === "Esc");
+                }
+                if (isEscape) {
+                    MainEventBus.$emit('escape-pressed');
+                }
+            };
+        }
     }
 </script>
 

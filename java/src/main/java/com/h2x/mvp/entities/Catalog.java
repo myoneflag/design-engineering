@@ -5,6 +5,7 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @TypeDef(
@@ -36,6 +37,14 @@ public class Catalog {
         this.content = content;
     }
 
+    public LocalDateTime getSavedOn() {
+        return savedOn;
+    }
+
+    public void setSavedOn(LocalDateTime savedOn) {
+        this.savedOn = savedOn;
+    }
+
     @Id
     @GeneratedValue
     private int id;
@@ -46,4 +55,6 @@ public class Catalog {
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
     private String content;
+
+    private LocalDateTime savedOn;
 }

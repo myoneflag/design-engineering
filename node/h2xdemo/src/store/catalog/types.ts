@@ -9,6 +9,7 @@ export interface Catalog {
     fixtures: {[key: string]: FixtureSpec};
     pipes: {[key: string]: PipeMaterial};
     valves: {[key: string]: ValveSpec};
+    mixingValves: {[key: string]: MixingValveSpec};
 }
 
 export interface FixtureSpec {
@@ -58,4 +59,12 @@ export interface Pipe {
     diameterInternalMM: Diameter | null;
     colebrookWhiteCoefficient: number | null;
     safeWorkingPressureKPA: number | null;
+}
+
+export interface MixingValveSpec {
+    minInletPressureKPA: number;
+    maxInletPressureKPA: number;
+    maxHotColdPressureDifferentialPCT: number;
+    minFlowRateLS: number;
+    maxFlowRateLS: number;
 }

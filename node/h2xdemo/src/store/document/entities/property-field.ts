@@ -7,6 +7,7 @@ export enum FieldType {
     Color = 'color',
     Choice = 'choice',
     FlowSystemChoice = 'flow-system-choice',
+    Rotation = 'rotation',
 }
 
 export interface NumberParams {

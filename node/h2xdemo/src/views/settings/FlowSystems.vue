@@ -67,7 +67,7 @@
                 ['velocity', 'Velocity: (m/s)', 'number'],
                 ['temperature', 'Entry temperature: (c)', 'range', 10, 100],
                 ['spareCapacity', 'Spare Capacity: %', 'range', 0, 100],
-                ['material', 'Material:', 'choice', this.$store.getters["catalog/defaultPipeMaterialChoices"]],
+                ['material', 'Material:', 'choice', this.$store.getters['catalog/defaultPipeMaterialChoices']],
                 ['color', 'Colour:', 'color'],
             ];
         }
@@ -128,7 +128,7 @@
 
         save() {
             this.$store.dispatch('document/commit').then(() => {
-                this.$bvToast.toast('Saved successfully!', {variant: 'success', title: 'Success'});
+                (this as any).$bvToast.toast('Saved successfully!', {variant: 'success', title: 'Success'});
             });
         }
 

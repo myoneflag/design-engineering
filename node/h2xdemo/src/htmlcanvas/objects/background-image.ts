@@ -1,29 +1,23 @@
 import {ViewPort} from '@/htmlcanvas/viewport';
-import {Background, Coord, DrawableEntity, Rectangle} from '@/store/document/types';
+import {Coord, DrawableEntity, Rectangle} from '@/store/document/types';
 import axios from 'axios';
 import * as TM from 'transformation-matrix';
 import {matrixScale, parseScale} from '@/htmlcanvas/utils';
 import {Sizeable} from '@/htmlcanvas/lib/object-traits/sizeable-object';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import _ from 'lodash';
-import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
-import {Interaction, InteractionType} from '@/htmlcanvas/tools/interaction';
+import BackedDrawableObject, {BaseBackedObject} from '@/htmlcanvas/lib/backed-drawable-object';
+import {Interaction, InteractionType} from '@/htmlcanvas/lib/interaction';
+import CanvasContext from '@/htmlcanvas/lib/canvas-context';
+import {DrawingContext} from '@/htmlcanvas/lib/types';
+import {BackgroundEntity} from '@/store/document/entities/background-entity';
+import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
+import {EntityType} from '@/store/document/entities/types';
 
 // TODO: Convert into backed drawable object.
-export class BackgroundImage extends BackedDrawableObject<Background> implements Sizeable {
-    static drawPoint(ctx: CanvasRenderingContext2D, point: Coord, label: string) {
-        const scale = matrixScale(ctx.getTransform());
-
-
-        ctx.fillStyle = '#ff0000';
-        ctx.beginPath();
-
-        ctx.arc(point.x, point.y, 12 / scale, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.font = Math.floor(14 / scale) + 'pt Helvetica';
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillText(label, point.x - 5 / scale, point.y + 7 / scale);
+export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> implements Sizeable {
+    static register(): void {
+        DrawableObjectFactory.registerEntity(EntityType.BACKGROUND_IMAGE, BackgroundImage);
     }
 
     image: HTMLImageElement | null = null;
@@ -35,8 +29,22 @@ export class BackgroundImage extends BackedDrawableObject<Background> implements
     hasDragged: boolean = false;
     shiftKey: boolean = false;
 
+    drawPoint(context: DrawingContext, objectCoord: Coord, label: string) {
+        const {ctx} = context;
+        this.withScreen(context, objectCoord, () => {
+            ctx.fillStyle = '#ff0000';
+            ctx.beginPath();
 
-    prepareDelete(): Array<BackedDrawableObject<DrawableEntity>> {
+            ctx.arc(0, 0, 12, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.font = '14pt Helvetica';
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillText(label, - 6, + 7);
+        });
+    }
+
+    prepareDelete(): BaseBackedObject[] {
         throw new Error('Method not implemented.');
     }
 
@@ -44,14 +52,14 @@ export class BackgroundImage extends BackedDrawableObject<Background> implements
         this.image = null;
         // Try to load the image. If we can't, then show a loading screen.
         const retry = (expectedUri: string) => {
-            if (expectedUri !== this.stateObject.uri) {
+            if (expectedUri !== this.entity.uri) {
                 // Sometimes, there are a lot of URI switches. We just want to keep the latest one.
                 return;
             }
 
-            axios.head(this.stateObject.uri).then(() => {
+            axios.head(this.entity.uri).then(() => {
                     const image = new Image();
-                    image.src = this.stateObject.uri;
+                    image.src = this.entity.uri;
 
                     image.onload = () => {
                         this.imgScale = {
@@ -69,7 +77,7 @@ export class BackgroundImage extends BackedDrawableObject<Background> implements
                         this.image = image;
                         onLoad(this);
                     };
-                    image.src = this.stateObject.uri;
+                    image.src = this.entity.uri;
                 },
             ).catch(() => {
                 setTimeout(() => {
@@ -78,39 +86,39 @@ export class BackgroundImage extends BackedDrawableObject<Background> implements
             });
         };
 
-        retry(this.stateObject.uri);
+        retry(this.entity.uri);
     }
 
     get position() {
         return TM.transform(
-            TM.translate(this.stateObject.center.x, this.stateObject.center.y),
-            TM.rotateDEG(this.stateObject.rotation),
-            TM.scale(this.stateObject.scaleFactor),
+            TM.translate(this.entity.center.x, this.entity.center.y),
+            TM.rotateDEG(this.entity.rotation),
+            TM.scale(this.entity.scaleFactor),
         );
     }
 
     get width() {
-        return this.stateObject.paperSize.widthMM / parseScale(this.stateObject.scaleName);
+        return this.entity.paperSize.widthMM / parseScale(this.entity.scaleName);
     }
 
     get height() {
-        return this.stateObject.paperSize.heightMM / parseScale(this.stateObject.scaleName);
+        return this.entity.paperSize.heightMM / parseScale(this.entity.scaleName);
     }
 
     get center() {
-        return this.stateObject.center;
+        return this.entity.center;
     }
 
     set center(value) {
-        this.stateObject.center = value;
+        this.entity.center = value;
     }
 
     get boundary() {
-        return this.stateObject.crop;
+        return this.entity.crop;
     }
 
     set boundary(value: Rectangle) {
-        this.stateObject.crop = value;
+        this.entity.crop = value;
     }
 
 
@@ -145,8 +153,8 @@ export class BackgroundImage extends BackedDrawableObject<Background> implements
             // Draw a potentially rotated image
             ctx.drawImage(
                 this.image,
-                l - this.stateObject.offset.x / this.imgScale.x,
-                t - this.stateObject.offset.y / this.imgScale.y,
+                l - this.entity.offset.x / this.imgScale.x,
+                t - this.entity.offset.y / this.imgScale.y,
                 w, h,
                 x, y,
                 sw, sh,
@@ -227,13 +235,14 @@ export class BackgroundImage extends BackedDrawableObject<Background> implements
 
 
     // Draw without world space concerns
-    drawInternal(ctx: CanvasRenderingContext2D, vp: ViewPort, selected: boolean, active: boolean) {
+    drawInternal(context: DrawingContext, selected: boolean, active: boolean) {
+        const {ctx, vp} = context;
         if ((selected && active) && this.image) {
             this.naturalClipDraw(
                 ctx,
                 0.2,
-                this.stateObject.offset.x / this.imgScale.x,
-                this.stateObject.offset.y / this.imgScale.y,
+                this.entity.offset.x / this.imgScale.x,
+                this.entity.offset.y / this.imgScale.y,
                 this.image.naturalWidth,
                 this.image.naturalHeight,
                 active,
@@ -257,11 +266,11 @@ export class BackgroundImage extends BackedDrawableObject<Background> implements
         );
 
         if ((selected && active)) {
-            if (this.stateObject.pointA) {
-                BackgroundImage.drawPoint(ctx, this.stateObject.pointA, 'A');
+            if (this.entity.pointA) {
+                this.drawPoint(context, this.entity.pointA, 'A');
             }
-            if (this.stateObject.pointB) {
-                BackgroundImage.drawPoint(ctx, this.stateObject.pointB, 'B');
+            if (this.entity.pointB) {
+                this.drawPoint(context, this.entity.pointB, 'B');
             }
         }
     }
@@ -272,12 +281,10 @@ export class BackgroundImage extends BackedDrawableObject<Background> implements
 
 
     inBounds(objectCoord: Coord): boolean {
-        // let clipP = this.toWorldCoord(this.stateObject.crop);
-
-        if (objectCoord.x < this.stateObject.crop.x || objectCoord.y < this.stateObject.crop.y) {
+        if (objectCoord.x < this.entity.crop.x || objectCoord.y < this.entity.crop.y) {
             return false;
-        } else if (objectCoord.x <= this.stateObject.crop.x + this.stateObject.crop.w
-            && objectCoord.y <= this.stateObject.crop.y + this.stateObject.crop.h) {
+        } else if (objectCoord.x <= this.entity.crop.x + this.entity.crop.w
+            && objectCoord.y <= this.entity.crop.y + this.entity.crop.h) {
             return true;
         }
         return false;
@@ -291,7 +298,7 @@ export class BackgroundImage extends BackedDrawableObject<Background> implements
         if (this.inBounds(o)) {
             this.grabbedPoint = [w.x, w.y];
             this.grabbedCenterState = [this.center.x, this.center.y];
-            this.grabbedOffsetState = _.cloneDeep(this.stateObject.offset);
+            this.grabbedOffsetState = _.cloneDeep(this.entity.offset);
             this.hasDragged = false;
             if (this.onSelect) {
                 this.onSelect();
@@ -318,8 +325,8 @@ export class BackgroundImage extends BackedDrawableObject<Background> implements
                     const o = this.toObjectCoord(w);
                     const grabbedO = this.toObjectCoord({x: this.grabbedPoint[0], y: this.grabbedPoint[1]});
 
-                    this.stateObject.offset.x  = this.grabbedOffsetState.x + o.x - grabbedO.x;
-                    this.stateObject.offset.y = this.grabbedOffsetState.y + o.y - grabbedO.y;
+                    this.entity.offset.x  = this.grabbedOffsetState.x + o.x - grabbedO.x;
+                    this.entity.offset.y = this.grabbedOffsetState.y + o.y - grabbedO.y;
                 } else {
 
                     // Move the object
@@ -368,9 +375,9 @@ export class BackgroundImage extends BackedDrawableObject<Background> implements
         }
     }
 
-    protected refreshObjectInternal(obj: Background, old: Background): void {
+    protected refreshObjectInternal(obj: BackgroundEntity, old: BackgroundEntity): void {
         if (old) {
-            if (this.stateObject.uri !== old.uri) {
+            if (this.entity.uri !== old.uri) {
                 this.initializeImage(() => {
                     this.onChange();
                 });
@@ -382,4 +389,7 @@ export class BackgroundImage extends BackedDrawableObject<Background> implements
         }
     }
 
+    rememberToRegister(): void {
+        //
+    }
 }

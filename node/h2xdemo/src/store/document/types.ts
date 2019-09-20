@@ -2,6 +2,7 @@ import * as Operations from './operation-transforms/operation-transforms';
 import {PaperSize, PIPE_SIZING_METHODS, PSD_METHODS, RING_MAIN_CALCULATION_METHODS} from '@/config';
 import * as _ from 'lodash';
 import {EntityType} from '@/store/document/entities/types';
+import {BackgroundEntity} from '@/store/document/entities/background-entity';
 
 // Because of how the diffing engine works, there are restrictions on the data structure for the document state.
 // Rules are:
@@ -38,30 +39,12 @@ export interface DrawableEntity extends WithID {
     type: EntityType;
 }
 
-export interface ConnectableEntity extends DrawableEntity {
+export interface CenteredEntity extends DrawableEntity {
     center: Coord;
-    connections: string[];
 }
 
-export interface Background extends DrawableEntity {
-    center: Coord;
-    scaleName: string;
-    scaleFactor: number;
-    uri: string;
-    crop: Rectangle;
-    paperSize: PaperSize;
-    rotation: number;
-
-    // For scaling:
-    pointA: Coord | null;
-    pointB: Coord | null;
-
-    // For replacing pdfs that need adjustments later:
-    offset: Coord;
-
-    // Backgrounds are part of PDFs and so may have many pages.
-    page: number;
-    totalPages: number;
+export interface ConnectableEntity extends CenteredEntity {
+    connections: string[];
 }
 
 /**
@@ -69,7 +52,7 @@ export interface Background extends DrawableEntity {
  */
 export interface DrawingState {
     generalInfo: GeneralInfo;
-    backgrounds: Background[];
+    backgrounds: BackgroundEntity[];
     flowSystems: FlowSystemParameters[];
     calculationParams: CalculationParameters;
     entities: DrawableEntity[];
@@ -147,7 +130,7 @@ export const initialDrawing: DrawingState = {
             spareCapacity: 10,
             material : 'copperTypeB',
             color: {hex: '#009CE0'},
-            uid: 'jhrwekvgjuyh',
+            uid: 'cold-water',
         },
         {
             name: 'Hot Water',
@@ -156,7 +139,16 @@ export const initialDrawing: DrawingState = {
             spareCapacity: 10,
             material : 'copperTypeB',
             color: {hex: '#F44E3B'},
-            uid: 'ebhwujfbguiwehig',
+            uid: 'hot-water',
+        },
+        {
+            name: 'Warm Water',
+            velocity: 10,
+            temperature: 50,
+            spareCapacity: 10,
+            material : 'copperTypeB',
+            color: {hex: '#F49000'},
+            uid: 'warm-water',
         },
     ],
     calculationParams: {

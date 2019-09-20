@@ -3,7 +3,8 @@ import {ViewPort} from '@/htmlcanvas/viewport';
 import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
 import {MouseMoveResult} from '@/htmlcanvas/types';
-import {matrixScale} from '@/htmlcanvas/utils';
+import {decomposeMatrix, matrixScale} from '@/htmlcanvas/utils';
+import {DrawingContext} from '@/htmlcanvas/lib/types';
 
 export default abstract class DrawableObject {
     abstract position: Matrix;
@@ -53,6 +54,13 @@ export default abstract class DrawableObject {
         return this.parent.toWorldCoord(parent);
     }
 
+    fromParentToWorldLength(parent: number) {
+        if (this.parent == null) {
+            return parent;
+        }
+        return this.parent.toWorldLength(parent);
+    }
+
     toParentLength(object: number): number {
         return matrixScale(this.position) * object;
     }
@@ -64,9 +72,21 @@ export default abstract class DrawableObject {
         return this.parent.toWorldLength(this.toParentLength(object));
     }
 
-    abstract drawInternal(ctx: CanvasRenderingContext2D, vp: ViewPort, ...args: any[]): void;
+    toParentAngle(object: number) {
+        return object + decomposeMatrix(this.position).a / Math.PI * 180;
+    }
 
-    draw(ctx: CanvasRenderingContext2D, vp: ViewPort, ...args: any[]) {
+    toWorldAngle(object: number): number {
+        if (this.parent == null) {
+            return this.toParentAngle(object);
+        }
+        return this.parent.toWorldAngle(this.toParentAngle(object));
+    }
+
+    abstract drawInternal(context: DrawingContext, ...args: any[]): void;
+
+    draw(context: DrawingContext, ...args: any[]) {
+        const {ctx, vp} = context;
         // get parent positions
         const transforms: Matrix[] = [this.position];
         let parent = this.parent;
@@ -77,10 +97,66 @@ export default abstract class DrawableObject {
 
         vp.prepareContext(ctx, ...transforms);
 
-        this.drawInternal(ctx, vp, ...args);
+        this.drawInternal(context, ...args);
     }
 
-    abstract inBounds(objectCoord: Coord): boolean;
+    withScreen({ctx}: DrawingContext, current: Coord, fun: () => void) {
+        const oldTransform = ctx.getTransform();
+        const sc = TM.applyToPoint(ctx.getTransform(), current);
+        ctx.resetTransform();
+        ctx.setTransform(TM.translate(sc.x, sc.y));
+
+        fun();
+
+        ctx.setTransform(oldTransform);
+    }
+
+    withWorld({ctx, vp}: DrawingContext, current: Coord, fun: () => void) {
+        const oldTransform = ctx.getTransform();
+        const sc = TM.applyToPoint(ctx.getTransform(), current);
+
+        const wc = vp.toWorldCoord(sc);
+        vp.prepareContext(ctx);
+        ctx.translate(wc.x, wc.y);
+
+        fun();
+
+        ctx.setTransform(oldTransform);
+    }
+
+    // Assumes uniform x/y scale
+    withWorldScale({ctx, vp}: DrawingContext, current: Coord, fun: () => void) {
+
+        const oldTransform = ctx.getTransform();
+        const sc = TM.applyToPoint(ctx.getTransform(), current);
+
+        const t = decomposeMatrix(ctx.getTransform());
+
+        const wc = vp.toWorldCoord(sc);
+        vp.prepareContext(ctx);
+        ctx.translate(wc.x, wc.y);
+        ctx.rotate(t.a);
+
+        fun();
+        ctx.setTransform(oldTransform);
+    }
+
+    // Assumes uniform x/y scale
+    withWorldAngle({ctx, vp}: DrawingContext, current: Coord, fun: () => void) {
+
+        const oldTransform = ctx.getTransform();
+        const sc = TM.applyToPoint(ctx.getTransform(), current);
+
+        const t = decomposeMatrix(ctx.getTransform());
+
+        ctx.translate(current.x, current.y);
+        ctx.rotate(-t.a);
+
+        fun();
+        ctx.setTransform(oldTransform);
+    }
+
+    abstract inBounds(objectCoord: Coord, objectRadius?: number): boolean;
 
     abstract onMouseDown(event: MouseEvent, vp: ViewPort): boolean;
 

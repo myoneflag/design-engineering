@@ -27,7 +27,7 @@
     import Component from 'vue-class-component';
     import PropertiesFieldBuilder from '@/components/editor/lib/PropertiesFieldBuilder.vue';
     import {DocumentState} from '@/store/document/types';
-    import PipeEntity, {fillPipeDefaultFields, makePipeFields} from '../../../store/document/entities/pipeEntity';
+    import PipeEntity, {fillPipeDefaultFields, makePipeFields} from '../../../store/document/entities/pipe-entity';
 
     @Component({
         components: {PropertiesFieldBuilder},
@@ -42,7 +42,7 @@
 
         get fields() {
             return makePipeFields(
-                this.$store.getters["catalog/defaultPipeMaterialChoices"],
+                this.$store.getters['catalog/defaultPipeMaterialChoices'],
                 this.document.drawing.flowSystems,
             );
         }

@@ -11,18 +11,22 @@
                           @click="$emit('insert', {entityName: entityNames.FLOW_SOURCE, system: selectedSystem})"
                           v-b-tooltip.hover title="Flow Source"
                 ><v-icon  name="arrow-up" scale="1.2"/></b-button>
-                <b-button variant="outline-dark" class="insertBtn sink btn-sm"
-                          @click="$emit('insert', {entityName: entityNames.FLOW_SINK, system: selectedSystem})"
-                          v-b-tooltip.hover title="Flow Sink"
+                <b-button variant="outline-dark" class="insertBtn return btn-sm"
+                          @click="$emit('insert', {entityName: entityNames.FLOW_RETURN, system: selectedSystem})"
+                          v-b-tooltip.hover title="Flow Return"
                 ><v-icon  name="arrow-down" scale="1.2"/></b-button>
                 <b-button variant="outline-dark" class="insertBtn pipes btn-sm"
                           @click="$emit('insert', {entityName: entityNames.PIPE, system: selectedSystem})"
                           v-b-tooltip.hover title="Pipes"
                 ><v-icon  name="wave-square" scale="1.2"/></b-button>
-                <b-button variant="outline-dark" class="insertBtn pipes btn-sm"
+                <b-button variant="outline-dark" class="insertBtn valve btn-sm"
                           @click="$emit('insert', {entityName: entityNames.VALVE, system: selectedSystem})"
                           v-b-tooltip.hover title="Valve"
                 ><v-icon  name="cross" scale="1.2"/></b-button>
+                <b-button variant="outline-dark" class="insertBtn tmv btn-sm"
+                          @click="$emit('insert', {entityName: entityNames.TMV, system: selectedSystem})"
+                          v-b-tooltip.hover title="TMV"
+                ></b-button>
             </b-button-group>
         </b-col>
     </b-row>
@@ -63,5 +67,12 @@
         width: 50px;
         font-size: 12px;
         background-color:white;
+    }
+
+    .insertBtn.tmv {
+        background-image: url('~@/assets/object-icons/mixer-valves/tmv/tmv.png');
+        background-size: 35px;
+        background-repeat: no-repeat;
+        background-position: center;
     }
 </style>

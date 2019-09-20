@@ -15,6 +15,6 @@ module.exports = {
         workboxOptions: {
             swSrc: 'service-worker.js',
         },
-    }
+    },
 // the rest of your original module.exports code goes here
 };

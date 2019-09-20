@@ -131,6 +131,12 @@
                                 @selectSystem="setRenderedData(field.property, field.params.systems[$event].uid)"
                         />
 
+                        <rotation-picker
+                                v-else-if="field.type === 'rotation'"
+                                :value="renderedData(field.property)" @input="setRenderedData(field.property, $event)"
+                                :disabled="reactiveData[field.property] == null"
+                        />
+
                         <b-form-input
                                 v-else
                                 :value="renderedData(field.property)" @input="setRenderedData(field.property, $event)"
@@ -157,6 +163,7 @@
     import PopoutColourPicker from '@/components/editor/lib/PopoutColourPicker.vue';
     import {CalculationParams, PropertyField} from '@/store/document/entities/property-field';
     import { isString } from 'lodash';
+    import RotationPicker from '@/components/editor/lib/RotationPicker.vue';
 
     @Component({
         props: {
@@ -167,6 +174,7 @@
             onCommit: Function,
         },
         components: {
+            RotationPicker,
             PopoutColourPicker,
             FlowSystemPicker,
             compactPicker: Compact,
@@ -229,9 +237,9 @@
 
         choiceName(choice: string | string[], choices: string[] | Array<[string, string]>): string {
             if (choices !== undefined && isString(choice)) {
-                for (let i = 0; i < choices.length; i++) {
-                    if (choices[i][0] === choice) {
-                        return choices[i][1];
+                for (const i of choices) {
+                    if (i[0] === choice) {
+                        return i[1];
                     }
                 }
                 return choice;

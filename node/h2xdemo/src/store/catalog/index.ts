@@ -10,6 +10,7 @@ export const state: CatalogState = {
         valves: {},
         fixtures: {},
         pipes: {},
+        mixingValves: {},
     },
     loaded: false,
 };
@@ -23,3 +24,9 @@ export const catalog: Module<CatalogState, RootState> = {
     actions,
     mutations,
 };
+
+export enum StandardFlowSystemUids {
+    ColdWater = 'cold-water',
+    HotWater = 'hot-water',
+    WarmWater = 'warm-water',
+}

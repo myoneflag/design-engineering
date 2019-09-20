@@ -1,58 +1,117 @@
 import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 import {Coord, DocumentState, DrawableEntity, WithID} from '@/store/document/types';
 import * as _ from 'lodash';
-import {Interaction} from '@/htmlcanvas/tools/interaction';
+import {Interaction} from '@/htmlcanvas/lib/interaction';
+import {ObjectStore} from '@/htmlcanvas/lib/types';
 
 
-export default abstract class BackedDrawableObject<T extends DrawableEntity> extends DrawableObject {
-    stateObject: T;
-    context: DocumentState;
-    objectStore: Map<string, DrawableObject>;
+export abstract class BaseBackedObject extends DrawableObject {
+    entity: DrawableEntity;
+    parentEntity: DrawableEntity | null;
+    objectStore: ObjectStore;
 
     protected onSelect: () => void;
     protected onChange: () => void;
     protected onCommit: () => void;
 
-    constructor(
-        context: DocumentState,
-        objectStore: Map<string, DrawableObject>,
-        parent: DrawableObject | null,
-        obj: T,
+    protected constructor(
+        objectStore: ObjectStore,
+        parentEntity: DrawableEntity | null,
+        obj: DrawableEntity,
         onSelect: () => void,
         onChange: () => void,
         onCommit: () => void,
     ) {
-        super(parent);
-        this.stateObject = obj;
-        this.objectStore = objectStore;
-        this.context = context;
+        super(null);
+        this.parentEntity = parentEntity;
+        this.entity = obj;
         this.onSelect = onSelect;
         this.onChange = onChange;
         this.onCommit = onCommit;
+        this.objectStore = objectStore;
         this.refreshObjectInternal(obj);
     }
 
-    refreshObject(parent: DrawableObject | null, obj: T) {
-        const old = _.cloneDeep(this.stateObject);
-        this.stateObject = obj;
-        this.parent = parent;
+    get parent() {
+        if (this.parentEntity === null) {
+            return null;
+        } else {
+            const result = this.objectStore.get(this.parentEntity.uid);
+            if (result) {
+                return result;
+            }
+            throw new Error('Parent object not created while ');
+        }
+    }
+
+    set parent(par: BaseBackedObject | null) {
+        if (par) {
+            this.parentEntity = par.parentEntity;
+        } else {
+            this.parentEntity = null;
+        }
+    }
+
+    refreshObject(parentEntity: DrawableEntity | null, obj: DrawableEntity) {
+        const old = _.cloneDeep(this.entity);
+        this.entity = obj;
+        this.parentEntity = parentEntity;
         this.refreshObjectInternal(obj, old);
     }
 
     abstract offerInteraction(interaction: Interaction): boolean;
 
     // Return list of objects to remove.
-    abstract prepareDelete(): Array<BackedDrawableObject<DrawableEntity>>;
+    abstract prepareDelete(): BaseBackedObject[];
 
-    abstract inBounds(objectCoord: Coord): boolean;
+    abstract inBounds(objectCoord: Coord, objectRadius?: number): boolean;
 
-    protected abstract refreshObjectInternal(obj: T, old?: T): void;
+    protected abstract refreshObjectInternal(obj: DrawableEntity, old?: DrawableEntity): void;
 
     get uid() {
-        return this.stateObject.uid;
+        return this.entity.uid;
     }
 
     get type() {
-        return this.stateObject.type;
+        return this.entity.type;
     }
 }
+
+export default abstract class BackedDrawableObject<T extends DrawableEntity> extends BaseBackedObject {
+    entity: T;
+
+    // Unfortunately, typescript does not allow abstract static methods. So this is just a human reminder
+    // to register new objects with a concrete static method (suggest: register()). Don't actually do the
+    // registration in this instance method, just no-op it and use it as a reminder to make the real one.
+    abstract rememberToRegister(): void;
+
+    constructor(
+        objectStore: ObjectStore,
+        parentEntity: DrawableEntity | null,
+        obj: T,
+        onSelect: () => void,
+        onChange: () => void,
+        onCommit: () => void,
+    ) {
+        super(objectStore, parentEntity, obj, onSelect, onChange, onCommit);
+        this.entity = obj; // to keep error checking happy
+    }
+}
+
+export type BaseBackedConstructor = new (
+    objectStore: ObjectStore,
+    parentEntity: DrawableEntity | null,
+    obj: DrawableEntity,
+    onSelect: () => void,
+    onChange: () => void,
+    onCommit: () => void,
+) => BaseBackedObject;
+
+export type BackedObjectConstructor<T extends DrawableEntity> = new (
+    objectStore: ObjectStore,
+    parentEntity: DrawableEntity | null,
+    obj: T,
+    onSelect: () => void,
+    onChange: () => void,
+    onCommit: () => void,
+) => BackedDrawableObject<T>;

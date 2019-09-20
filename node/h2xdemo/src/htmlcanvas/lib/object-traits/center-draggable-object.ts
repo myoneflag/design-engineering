@@ -1,10 +1,11 @@
 import {Draggable, DraggableObject} from '@/htmlcanvas/lib/object-traits/draggable-object';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
-import {ConnectableEntity, Coord, DrawableEntity} from '@/store/document/types';
+import {CenteredEntity, ConnectableEntity, Coord, DrawableEntity} from '@/store/document/types';
 import Connectable from '@/htmlcanvas/lib/object-traits/connectable';
+import * as TM from 'transformation-matrix';
 
 export default function CenterDraggableObject<T extends new (...args: any[]) =>
-    Connectable & BackedDrawableObject<ConnectableEntity>>(constructor: T) {
+    BackedDrawableObject<CenteredEntity>>(constructor: T) {
 
     return DraggableObject(
 
@@ -12,8 +13,13 @@ export default function CenterDraggableObject<T extends new (...args: any[]) =>
         class extends constructor implements Draggable {
 
         onDrag(grabbedObjectCoord: Coord, eventObjectCoord: Coord, grabState: any): void {
-            this.stateObject.center.x -= grabbedObjectCoord.x - eventObjectCoord.x;
-            this.stateObject.center.y -= grabbedObjectCoord.y - eventObjectCoord.y;
+
+            const inv = TM.inverse(this.position);
+            const before = TM.applyToPoint(this.position, grabbedObjectCoord);
+            const after = TM.applyToPoint(this.position, eventObjectCoord);
+
+            this.entity.center.x += after.x - before.x;
+            this.entity.center.y += after.y - before.y;
             this.onChange();
         }
 
