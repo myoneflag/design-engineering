@@ -40,7 +40,7 @@
 <script lang="ts">
     import Vue from 'vue';
     import Component from 'vue-class-component';
-    import {DEFAULT_TOOL, POINT_TOOL} from '../../htmlcanvas/tools/tool';
+    import {DEFAULT_TOOL, POINT_TOOL} from '../../htmlcanvas/lib/tool';
     import {ToolConfig} from '@/store/tools/types';
 
     @Component({

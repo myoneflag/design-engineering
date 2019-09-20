@@ -4,13 +4,13 @@ import {diffState} from '@/store/document/operation-transforms/state-differ';
 import {applyOtOnState} from '@/store/document/operation-transforms/state-ot-apply';
 
 import {
-    Background,
     CalculationParameters,
     DrawingState,
     FlowSystemParameters,
     GeneralInfo,
 } from '@/store/document/types';
 import {EntityType} from '@/store/document/entities/types';
+import {BackgroundEntity} from '@/store/document/entities/background-entity';
 
 function roundTripTest(prev: DrawingState, next: DrawingState, expectedOps: number = -1) {
     const prevCopy = _.cloneDeep(prev);
@@ -22,7 +22,7 @@ function roundTripTest(prev: DrawingState, next: DrawingState, expectedOps: numb
     }
 }
 
-const bg1: Background = {
+const bg1: BackgroundEntity = {
     parentUid: null,
     type: EntityType.BACKGROUND_IMAGE,
     center: {x: 1, y: 2},
@@ -45,7 +45,7 @@ const bg1: Background = {
 };
 
 
-const bg2: Background = {
+const bg2: BackgroundEntity = {
     parentUid: null,
     type: EntityType.BACKGROUND_IMAGE,
     center: {x: 1, y: 2},
@@ -67,7 +67,7 @@ const bg2: Background = {
     uri: 'awuhevgfyhwe',
 };
 
-const bg2B: Background = {
+const bg2B: BackgroundEntity = {
     parentUid: null,
     type: EntityType.BACKGROUND_IMAGE,
     center: {x: 1, y: 2},
@@ -89,7 +89,7 @@ const bg2B: Background = {
     uri: 'wefjnwkeifjw',
 };
 
-const bg3: Background = {
+const bg3: BackgroundEntity = {
     parentUid: null,
     type: EntityType.BACKGROUND_IMAGE,
     center: {x: 100, y: 2},
@@ -111,7 +111,7 @@ const bg3: Background = {
     uri: 'gerreger',
 };
 
-const bg4: Background = {
+const bg4: BackgroundEntity = {
     parentUid: null,
     type: EntityType.BACKGROUND_IMAGE,
     center: {x: 100, y: 2},
@@ -133,7 +133,7 @@ const bg4: Background = {
     uri: 'ewoikfkweo',
 };
 
-const bg4B: Background = {
+const bg4B: BackgroundEntity = {
     parentUid: null,
     type: EntityType.BACKGROUND_IMAGE,
     center: {x: 100, y: 2},
@@ -155,7 +155,7 @@ const bg4B: Background = {
     uri: 'fwkemfewpokfowe',
 };
 
-const bg4C: Background = {
+const bg4C: BackgroundEntity = {
     parentUid: null,
     type: EntityType.BACKGROUND_IMAGE,
     center: {x: 100, y: 2},

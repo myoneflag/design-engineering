@@ -2,8 +2,11 @@ import {Color, DocumentState, DrawableEntity, FlowSystemParameters, WithID} from
 import {FieldType, PropertyField} from '@/store/document/entities/property-field';
 import * as _ from 'lodash';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
+import {EntityType} from '@/store/document/entities/types';
 
 export default interface PipeEntity extends DrawableEntity {
+    type: EntityType.PIPE;
+
     systemUid: string;
     material: string | null;
     lengthM: number | null;

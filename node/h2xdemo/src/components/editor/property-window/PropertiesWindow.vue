@@ -25,6 +25,13 @@
                 :on-change="onChange"
                 :on-delete="onDelete"
         />
+        <TMVProperties
+                v-else-if="entity.type === ENTITY_NAMES.TMV"
+                :selected-entity="entity"
+                :selected-object="selectedObject"
+                :on-change="onChange"
+                :on-delete="onDelete"
+        />
     </div>
 </template>
 
@@ -37,9 +44,10 @@
     import ValveProperties from '@/components/editor/property-window/ValveProperties.vue';
     import PipeProperties from '@/components/editor/property-window/PipeProperties.vue';
     import {EntityType} from '@/store/document/entities/types';
+    import TMVProperties from '@/components/editor/property-window/TMVProperties.vue';
 
     @Component({
-        components: {PipeProperties, ValveProperties, FlowSourceProperties, FloorPlanProperties},
+        components: {TMVProperties, PipeProperties, ValveProperties, FlowSourceProperties, FloorPlanProperties},
         props: {
             selectedEntity: Object,
             selectedObject: Object,

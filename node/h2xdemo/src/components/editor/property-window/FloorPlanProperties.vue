@@ -120,11 +120,12 @@
     import Component from 'vue-class-component';
     import {MainEventBus} from '@/store/main-event-bus';
     import PointTool from '@/htmlcanvas/tools/point-tool';
-    import {DEFAULT_TOOL, POINT_TOOL} from '@/htmlcanvas/tools/tool';
-    import {Background, Coord} from '@/store/document/types';
+    import {DEFAULT_TOOL, POINT_TOOL} from '@/htmlcanvas/lib/tool';
+    import {Coord} from '@/store/document/types';
     import DrawableObject from '@/htmlcanvas/lib/drawable-object';
     import {BackgroundImage} from '@/htmlcanvas/objects/background-image';
     import {PDFRenderResult, renderPdf} from '@/api/pdf';
+    import {BackgroundEntity} from '@/store/document/entities/background-entity';
 
     @Component({
         props: {
@@ -152,7 +153,7 @@
         }
 
         get pointA() {
-            const background: Background = this.$props.selectedEntity;
+            const background: BackgroundEntity = this.$props.selectedEntity;
             const backgroundImage: BackgroundImage = this.$props.selectedObject;
 
             if (background.pointA) {
@@ -180,7 +181,7 @@
         }
 
         get pointB() {
-            const background: Background = this.$props.selectedEntity;
+            const background: BackgroundEntity = this.$props.selectedEntity;
             const backgroundImage: BackgroundImage = this.$props.selectedObject;
 
             if (background.pointB) {
@@ -194,7 +195,7 @@
         }
 
         onReplacePdf() {
-            const background: Background = this.$props.selectedEntity;
+            const background: BackgroundEntity = this.$props.selectedEntity;
             if (this.file) {
                 renderPdf(this.file, (data: PDFRenderResult) => {
                     this.$store.dispatch('document/updateBackgroundInPlace', {background, update: () => ({
@@ -211,7 +212,7 @@
         }
 
         calibrate() {
-            const background: Background = this.$props.selectedEntity;
+            const background: BackgroundEntity = this.$props.selectedEntity;
 
             if (this.ABDistanceMeters) {
                 const factor = parseFloat(this.enteredDistance) / this.ABDistanceMeters;
@@ -223,7 +224,7 @@
         }
 
         get ABDistanceMeters() {
-            const background: Background = this.$props.selectedEntity;
+            const background: BackgroundEntity = this.$props.selectedEntity;
             const backgroundImage: BackgroundImage = this.$props.selectedObject;
 
             if (background.pointA && background.pointB) {
@@ -237,7 +238,8 @@
         rotateLeft() {
             this.$store.dispatch('document/updateBackgroundInPlace',
                 {background: this.$props.selectedEntity,
-                    update: (background: Background) => ({rotation: ((background.rotation - 45) % 360 + 360) % 360 }),
+                    update: (background: BackgroundEntity) =>
+                        ({rotation: ((background.rotation - 45) % 360 + 360) % 360 }),
                 });
             this.$store.dispatch('document/commit');
         }
@@ -245,7 +247,8 @@
         rotateRight() {
             this.$store.dispatch('document/updateBackgroundInPlace',
                 {background: this.$props.selectedEntity,
-                    update: (background: Background) => ({ rotation: ((background.rotation + 45) % 360 + 360) % 360 }),
+                    update: (background: BackgroundEntity) =>
+                        ({ rotation: ((background.rotation + 45) % 360 + 360) % 360 }),
                 });
             this.$store.dispatch('document/commit');
         }

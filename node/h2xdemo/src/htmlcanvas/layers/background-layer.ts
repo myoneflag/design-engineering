@@ -1,13 +1,15 @@
 import Layer from '@/htmlcanvas/layers/layer';
-import {Background, Coord, DocumentState, DrawableEntity} from '@/store/document/types';
+import {Coord, DocumentState, DrawableEntity} from '@/store/document/types';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {BackgroundImage} from '@/htmlcanvas/objects/background-image';
 import {ResizeControl} from '@/htmlcanvas/objects/resize-control';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import {ToolConfig} from '@/store/tools/types';
 import DrawableObject from '@/htmlcanvas/lib/drawable-object';
-import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
-import {Interaction} from '@/htmlcanvas/tools/interaction';
+import BackedDrawableObject, {BaseBackedObject} from '@/htmlcanvas/lib/backed-drawable-object';
+import {Interaction} from '@/htmlcanvas/lib/interaction';
+import {DrawingContext, ObjectStore} from '@/htmlcanvas/lib/types';
+import {BackgroundEntity} from '@/store/document/entities/background-entity';
 
 export default class BackgroundLayer implements Layer {
     sidsInOrder: string[] = [];
@@ -15,15 +17,15 @@ export default class BackgroundLayer implements Layer {
     resizeBox: ResizeControl | null = null;
 
     onChange: () => any;
-    onSelect: (selectId: Background | null, drawable: DrawableObject | null) => any;
-    onCommit: (selectId: Background) => any;
-    objectStore: Map<string, BackedDrawableObject<DrawableEntity>>;
+    onSelect: (selectId: BackgroundEntity | null, drawable: DrawableObject | null) => any;
+    onCommit: (selectId: BackgroundEntity) => any;
+    objectStore: ObjectStore;
 
     constructor(
-        objectStore: Map<string, BackedDrawableObject<DrawableEntity>>,
+        objectStore: ObjectStore,
         onChange: () => any,
-        onSelect: (selectId: Background | null, drawable: DrawableObject | null) => any,
-        onCommit: (selectId: Background) => any,
+        onSelect: (selectId: BackgroundEntity | null, drawable: DrawableObject | null) => any,
+        onCommit: (selectId: BackgroundEntity) => any,
     ) {
         this.onChange = onChange;
         this.onSelect = onSelect;
@@ -40,20 +42,19 @@ export default class BackgroundLayer implements Layer {
 
     get selectedEntity() {
         if (this.selectedObject instanceof BackgroundImage) {
-            return this.selectedObject.stateObject;
+            return this.selectedObject.entity;
         }
         return null;
     }
 
-    draw(ctx: CanvasRenderingContext2D, vp: ViewPort, active: boolean, selectedTool: ToolConfig) {
+    draw(context: DrawingContext, active: boolean, selectedTool: ToolConfig) {
         // draw selected one on top.
         this.sidsInOrder.forEach((selectId) => {
             const background = this.objectStore.get(selectId);
             if (background && background instanceof BackgroundImage) {
                 if (selectId !== this.selectedId || !active || !background.hasDragged) {
                     background.draw(
-                        ctx,
-                        vp,
+                        context,
                         this.selectedId === selectId, active && !selectedTool.focusSelectedObject,
                     );
                 }
@@ -66,9 +67,9 @@ export default class BackgroundLayer implements Layer {
             this.sidsInOrder.forEach((selectId) => {
                 const background = this.objectStore.get(selectId);
                 if (background && background instanceof BackgroundImage
-                    && background.stateObject.uid === this.selectedId
+                    && background.entity.uid === this.selectedId
                     && (background.hasDragged || selectedTool.focusSelectedObject)) {
-                    background.draw(ctx, vp, this.selectedId === selectId, active);
+                    background.draw(context, this.selectedId === selectId, active);
                 }
             });
         }
@@ -82,7 +83,6 @@ export default class BackgroundLayer implements Layer {
         for (const background of doc.drawing.backgrounds) {
             if (!this.objectStore.has(background.uid)) {
                 const obj: BackgroundImage = new BackgroundImage(
-                    doc,
                     this.objectStore,
                     null,
                     background,
@@ -96,7 +96,7 @@ export default class BackgroundLayer implements Layer {
                         this.onChange();
                     },
                     () => {
-                        this.onCommit(obj.stateObject);
+                        this.onCommit(obj.entity);
                     },
                 );
                 this.objectStore.set(background.uid, obj);
@@ -145,7 +145,7 @@ export default class BackgroundLayer implements Layer {
                     () => {
                         // Do deh operation transform.
                         // TODO: Deh operation transform
-                        this.onCommit(background.stateObject);
+                        this.onCommit(background.entity);
                     },
                 );
             }
@@ -160,19 +160,18 @@ export default class BackgroundLayer implements Layer {
     }
 
     drawSelectionLayer(
-        ctx: CanvasRenderingContext2D,
-        vp: ViewPort,
-        interactive: BackedDrawableObject<DrawableEntity> | null) {
+        context: DrawingContext,
+        interactive: BaseBackedObject | null) {
         if (this.resizeBox) {
-            this.resizeBox.draw(ctx, vp);
+            this.resizeBox.draw(context);
         }
 
         if (interactive && this.sidsInOrder.indexOf(interactive.uid) !== -1) {
-            this.objectStore.get(interactive.stateObject.uid)!.draw(ctx, vp, true, true);
+            this.objectStore.get(interactive.entity.uid)!.draw(context, true, true);
         }
     }
 
-    getBackgroundAt(worldCoord: Coord, objectStore: Map<string, DrawableObject>) {
+    getBackgroundAt(worldCoord: Coord, objectStore: ObjectStore) {
         for (let i = this.sidsInOrder.length - 1; i >= 0; i--) {
             const selectId = this.sidsInOrder[i];
             if (objectStore.get(selectId)) {
@@ -267,13 +266,13 @@ export default class BackgroundLayer implements Layer {
 
     offerInteraction(
         interaction: Interaction,
-        filter?: (object: BackedDrawableObject<DrawableEntity>) => boolean,
-    ): BackedDrawableObject<DrawableEntity> | null {
+        filter?: (object: BaseBackedObject) => boolean,
+    ): BaseBackedObject | null {
         for (let i = this.sidsInOrder.length - 1; i >= 0; i--) {
             const uid = this.sidsInOrder[i];
             if (this.objectStore.has(uid)) {
                 const object = this.objectStore.get(uid)!;
-                const objectCoord = object.toObjectCoord(interaction.wc);
+                const objectCoord = object.toObjectCoord(interaction.worldCoord);
                 if (object.inBounds(objectCoord)) {
                     if (object.offerInteraction(interaction)) {
                         if (filter === undefined || filter(object)) {

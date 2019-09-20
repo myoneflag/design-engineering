@@ -56,6 +56,10 @@ export class ViewPort {
         return worldLen / matrixScale(this.position);
     }
 
+    toWorldLength(screenLen: number): number {
+        return screenLen * matrixScale(this.position);
+    }
+
     /**
      * Prepares the context so that drawing to it with real world coordinates will draw to screen
      * appropriately.

@@ -2,11 +2,12 @@ import { ActionTree } from 'vuex';
 import axios from 'axios';
 import * as OT from './operation-transforms/operation-transforms';
 import { RootState } from '../types';
-import {Background, DocumentState} from '@/store/document/types';
+import {DocumentState} from '@/store/document/types';
 import {diffState} from '@/store/document/operation-transforms/state-differ';
 import {applyOtOnState} from '@/store/document/operation-transforms/state-ot-apply';
 import * as _ from 'lodash';
 import {MainEventBus} from '@/store/main-event-bus';
+import {BackgroundEntity} from '@/store/document/entities/background-entity';
 
 
 function submitOperation(commit: any, op: OT.OperationTransform) {
@@ -42,7 +43,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
 
     updateBackgroundInPlace(
         {commit, state},
-        {background, update}: { background: Background, update: (background: Background) => object},
+        {background, update}: { background: BackgroundEntity, update: (background: BackgroundEntity) => object},
     ) {
         const index = state.drawing.backgrounds.findIndex((b) => b.uid === background.uid);
         if (index === -1) {
@@ -96,5 +97,5 @@ export const actions: ActionTree<DocumentState, RootState> = {
 
     loaded({commit, state}, loaded) {
         commit('loaded', loaded);
-    }
+    },
 };

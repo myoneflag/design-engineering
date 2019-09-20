@@ -1,22 +1,28 @@
-import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
-import PipeEntity, {fillPipeDefaultFields} from '@/store/document/entities/pipeEntity';
+import BackedDrawableObject, {BaseBackedObject} from '@/htmlcanvas/lib/backed-drawable-object';
+import PipeEntity, {fillPipeDefaultFields} from '@/store/document/entities/pipe-entity';
+import * as TM from 'transformation-matrix';
 import {Matrix} from 'transformation-matrix';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
-import {ConnectableEntity, Coord, DocumentState, DrawableEntity} from '@/store/document/types';
-import * as TM from 'transformation-matrix';
+import {ConnectableEntity, Coord, DocumentState} from '@/store/document/types';
 import {matrixScale} from '@/htmlcanvas/utils';
-import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 import Flatten from '@flatten-js/core';
 import {Draggable, DraggableObject} from '@/htmlcanvas/lib/object-traits/draggable-object';
 import * as _ from 'lodash';
-import ValveEntity from '@/store/document/entities/valveEntity';
+import ValveEntity from '@/store/document/entities/valve-entity';
 import assert from 'assert';
 import {lighten} from '@/lib/utils';
-import {Interaction, InteractionType} from '@/htmlcanvas/tools/interaction';
+import {Interaction, InteractionType} from '@/htmlcanvas/lib/interaction';
+import {DrawingContext} from '@/htmlcanvas/lib/types';
+import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
+import {EntityType} from '@/store/document/entities/types';
 
 @DraggableObject
 export default class Pipe extends BackedDrawableObject<PipeEntity> implements Draggable {
+    static register(): void {
+        DrawableObjectFactory.registerEntity(EntityType.PIPE, Pipe);
+    }
+
     lastDrawnLine!: Flatten.Segment | Flatten.Point;
     lastDrawnWidth!: number;
 
@@ -26,7 +32,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         return TM.identity();
     }
 
-    drawInternal(ctx: CanvasRenderingContext2D, vp: ViewPort, layerActive: boolean, selected: boolean): void {
+    drawInternal({ctx, doc}: DrawingContext, layerActive: boolean, selected: boolean): void {
         const s = matrixScale(ctx.getTransform());
 
         // lol what are our coordinates
@@ -38,7 +44,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         if (layerActive && selected) {
             ctx.beginPath();
             ctx.lineWidth = 8.0 / s;
-            ctx.strokeStyle = lighten(this.displayObject.color!.hex, 0, 0.5);
+            ctx.strokeStyle = lighten(this.displayObject(doc).color!.hex, 0, 0.5);
 
             ctx.moveTo(ao.x, ao.y);
             ctx.lineTo(bo.x, bo.y);
@@ -46,7 +52,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
 
         ctx.beginPath();
-        ctx.strokeStyle = this.displayObject.color!.hex;
+        ctx.strokeStyle = this.displayObject(doc).color!.hex;
         ctx.lineWidth = 2.0 / s;
         ctx.moveTo(ao.x, ao.y);
         ctx.lineTo(bo.x, bo.y);
@@ -64,16 +70,16 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
     // Returns the world coordinates of the two endpoints
     worldEndpoints(excludeUid: string | null = null): Coord[] {
         const a: ConnectableEntity =
-            this.context.drawing.entities.find((e) => e.uid === this.stateObject.endpointUid[0]) as ConnectableEntity;
+            this.objectStore.get(this.entity.endpointUid[0])!.entity as ConnectableEntity;
         const b: ConnectableEntity =
-            this.context.drawing.entities.find((e) => e.uid === this.stateObject.endpointUid[1]) as ConnectableEntity;
+            this.objectStore.get(this.entity.endpointUid[1])!.entity as ConnectableEntity;
 
         if (!a || !b) {
-            throw new Error('One of pipe\'s endpoints are missing. Pipe is: ' + JSON.stringify(this.stateObject));
+            throw new Error('One of pipe\'s endpoints are missing. Pipe is: ' + JSON.stringify(this.entity));
         }
 
-        const ao = this.objectStore.get(a.uid) as BackedDrawableObject<DrawableEntity>;
-        const bo = this.objectStore.get(b.uid) as BackedDrawableObject<DrawableEntity>;
+        const ao = this.objectStore.get(a.uid) as BaseBackedObject;
+        const bo = this.objectStore.get(b.uid) as BaseBackedObject;
         if (ao && bo) {
             const res: Coord[] = [];
             if (ao.uid !== excludeUid) {
@@ -84,7 +90,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             }
             return res;
         } else {
-            throw new Error('One of pipe\'s endpoints are missing. Pipe is: ' + JSON.stringify(this.stateObject));
+            throw new Error('One of pipe\'s endpoints are missing. Pipe is: ' + JSON.stringify(this.entity));
         }
     }
 
@@ -97,11 +103,11 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
     }
 
-    inBounds(oc: Coord): boolean {
+    inBounds(oc: Coord, radius: number = 0): boolean {
         if (!this.lastDrawnLine) {
             return false;
         }
-        return this.lastDrawnLine.distanceTo(new Flatten.Point(oc.x, oc.y))[0] < this.lastDrawnWidth;
+        return this.lastDrawnLine.distanceTo(new Flatten.Point(oc.x, oc.y))[0] < this.lastDrawnWidth + radius;
     }
 
     get computedLengthM(): number {
@@ -109,8 +115,8 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         return Math.sqrt((wa.x - wb.x) ** 2 + (wa.y - wb.y) ** 2) / 1000;
     }
 
-    get displayObject(): PipeEntity {
-        return fillPipeDefaultFields(this.context, this.computedLengthM, this.stateObject);
+    displayObject(doc: DocumentState): PipeEntity {
+        return fillPipeDefaultFields(doc, this.computedLengthM, this.entity);
     }
 
 
@@ -149,20 +155,20 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         return this.inBounds(oc);
     }
 
-    prepareDelete(): Array<BackedDrawableObject<DrawableEntity>> {
-        const result: Array<BackedDrawableObject<DrawableEntity>> = [this];
+    prepareDelete(): BaseBackedObject[] {
+        const result: BaseBackedObject[] = [this];
         for (let i = 0; i < 2; i++) {
-            const a = this.objectStore.get(this.stateObject.endpointUid[i]);
+            const a = this.objectStore.get(this.entity.endpointUid[i]);
             if (a instanceof BackedDrawableObject) {
-                const state = a.stateObject as ValveEntity;
-                const toDelete = state.connections.indexOf(this.stateObject.uid);
+                const state = a.entity as ValveEntity;
+                const toDelete = state.connections.indexOf(this.entity.uid);
                 assert(toDelete !== -1);
                 state.connections.splice(toDelete, 1);
                 if (state.connections.length === 0) {
                     result.push(a);
                 }
             } else {
-                throw new Error('endpoint non existent on pipe ' + JSON.stringify(this.stateObject));
+                throw new Error('endpoint non existent on pipe ' + JSON.stringify(this.entity));
             }
         }
         return result;
@@ -179,7 +185,13 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
     }
 
+    rememberToRegister(): void {
+        //
+    }
+
     protected refreshObjectInternal(obj: PipeEntity): void {
         // asdf
     }
 }
+
+DrawableObjectFactory.registerEntity(EntityType.PIPE, Pipe);

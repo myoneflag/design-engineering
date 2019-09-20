@@ -385,6 +385,27 @@
       "warmTempC": null
     }
   },
+  "lastModified": "2019-09-19T09:55:27.341822",
+  "mixingValves": {
+    "temperingValve": {
+      "maxFlowRateLS": "0.6",
+      "maxHotColdPressureDifferentialPCT": "10",
+      "maxInletPressureKPA": "500",
+      "minFlowRateLS": "0.066",
+      "minInletPressureKPA": "20",
+      "name": "Tempering Valve",
+      "uid": "temperingValve"
+    },
+    "tmv": {
+      "maxFlowRateLS": "0.65",
+      "maxHotColdPressureDifferentialPCT": "10",
+      "maxInletPressureKPA": "500",
+      "minFlowRateLS": "0.066",
+      "minInletPressureKPA": "20",
+      "name": "TMV",
+      "uid": "tmv"
+    }
+  },
   "pipes": {
     "castIronCoated": {
       "name": "Cast Iron (Coated)",

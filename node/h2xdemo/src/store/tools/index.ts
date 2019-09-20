@@ -4,7 +4,7 @@ import {getters} from '@/store/tools/getters';
 import {actions} from '@/store/tools/actions';
 import {mutations} from '@/store/tools/mutations';
 import ToolState from './types';
-import {DEFAULT_TOOL} from '@/htmlcanvas/tools/tool';
+import {DEFAULT_TOOL} from '@/htmlcanvas/lib/tool';
 
 export const state: ToolState = {
     currentTool: DEFAULT_TOOL,

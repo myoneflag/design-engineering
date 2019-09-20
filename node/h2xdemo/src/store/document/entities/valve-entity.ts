@@ -1,9 +1,11 @@
 import {Color, ConnectableEntity, Coord, DocumentState, FlowSystemParameters} from '@/store/document/types';
 import {FieldType, PropertyField} from '@/store/document/entities/property-field';
 import * as _ from 'lodash';
-import PipeEntity from '@/store/document/entities/pipeEntity';
+import PipeEntity from '@/store/document/entities/pipe-entity';
+import {EntityType} from '@/store/document/entities/types';
 
 export default interface ValveEntity extends ConnectableEntity {
+    type: EntityType.VALVE;
     center: Coord;
     systemUid: string;
     valveType: string;

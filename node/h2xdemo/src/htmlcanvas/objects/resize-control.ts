@@ -5,6 +5,7 @@ import * as TM from 'transformation-matrix';
 import {matrixScale} from '@/htmlcanvas/utils';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import {Coord} from '@/store/document/types';
+import {DrawingContext} from '@/htmlcanvas/lib/types';
 
 enum Sides {
     Left,
@@ -152,7 +153,8 @@ export class ResizeControl extends DrawableObject {
         return false;
     }
 
-    drawInternal(ctx: CanvasRenderingContext2D) {
+    drawInternal(context: DrawingContext) {
+        const {ctx} = context;
         const prevDash = ctx.getLineDash();
 
         const scale = matrixScale(ctx.getTransform());
@@ -170,7 +172,9 @@ export class ResizeControl extends DrawableObject {
         ctx.strokeStyle = '#333333';
         ctx.beginPath();
         for (const [x, y] of this.handles) {
-            ctx.rect(x - 5 / scale, y - 5 / scale, 10 / scale, 10 / scale);
+            this.withScreen(context, {x, y}, () => {
+                ctx.rect(- 5, -5, 10 , 10);
+            });
         }
         ctx.stroke();
 
