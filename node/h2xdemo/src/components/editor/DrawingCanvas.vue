@@ -72,6 +72,7 @@
     import {DrawingContext, ObjectStore} from '@/htmlcanvas/lib/types';
     import {BackgroundEntity} from '@/store/document/entities/background-entity';
     import insertTmv from '@/htmlcanvas/tools/insert-tmv';
+    import insertFixture from '@/htmlcanvas/tools/insert-fixture';
 
     @Component({
         components: {
@@ -326,7 +327,7 @@
         }
 
 
-        hydraulicsInsert({entityName, system}: {entityName: string, system: FlowSystemParameters}) {
+        hydraulicsInsert({entityName, system, fixtureName}: {entityName: string, system: FlowSystemParameters, fixtureName: string}) {
             this.hydraulicsLayer.onSelected(null);
 
             if (entityName === EntityType.FLOW_SOURCE) {
@@ -339,6 +340,8 @@
                 insertValve(this, system);
             } else if (entityName === EntityType.TMV) {
                 insertTmv(this);
+            } else if (entityName === EntityType.FIXTURE) {
+                insertFixture(this, fixtureName);
             }
         }
 
