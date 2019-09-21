@@ -23,10 +23,27 @@
                           @click="$emit('insert', {entityName: entityNames.VALVE, system: selectedSystem})"
                           v-b-tooltip.hover title="Valve"
                 ><v-icon  name="cross" scale="1.2"/></b-button>
+
+            </b-button-group>
+        </b-col>
+        <b-col>
+            <b-button-group>
                 <b-button variant="outline-dark" class="insertBtn tmv btn-sm"
                           @click="$emit('insert', {entityName: entityNames.TMV, system: selectedSystem})"
                           v-b-tooltip.hover title="TMV"
                 ></b-button>
+                <b-button variant="outline-dark" class="insertBtn shower btn-sm"
+                          @click="$emit('insert', {entityName: entityNames.FIXTURE, system: selectedSystem, fixtureName: 'shower'})"
+                          v-b-tooltip.hover title="Shower"
+                >Shr</b-button>
+                <b-button variant="outline-dark" class="insertBtn basin btn-sm"
+                          @click="$emit('insert', {entityName: entityNames.FIXTURE, system: selectedSystem, fixtureName: 'basin'})"
+                          v-b-tooltip.hover title="Basin"
+                >B</b-button>
+                <b-button variant="outline-dark" class="insertBtn waterCloset btn-sm"
+                          @click="$emit('insert', {entityName: entityNames.FIXTURE, system: selectedSystem, fixtureName: 'wc'})"
+                          v-b-tooltip.hover title="Flush Toilet"
+                >WC</b-button>
             </b-button-group>
         </b-col>
     </b-row>

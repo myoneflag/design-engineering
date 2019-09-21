@@ -21,6 +21,7 @@ export interface FixtureSpec {
 
     maxInletPressureKPA: number | null;
     minInletPressureKPA: number | null;
+    probabilityOfUsagePCT: number | null;
 
     outletAboveFloorM: number | null;
 

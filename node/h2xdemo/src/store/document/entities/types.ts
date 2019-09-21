@@ -10,4 +10,7 @@ export enum EntityType {
     COLD_ROUGH_IN = 'COLD_ROUGH_IN',
     HOT_ROUGH_IN = 'HOT_ROUGH_IN',
     WARM_OUT = 'WARM_OUT',
+
+    // Fixtures
+    FIXTURE = 'FIXTURE',
 }

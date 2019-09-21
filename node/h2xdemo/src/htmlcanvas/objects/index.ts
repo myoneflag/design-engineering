@@ -6,6 +6,7 @@ import {BackgroundImage} from '@/htmlcanvas/objects/background-image';
 import FlowSource from '@/htmlcanvas/objects/flow-source';
 import Pipe from '@/htmlcanvas/objects/pipe';
 import Valve from '@/htmlcanvas/objects/valve';
+import Fixture from '@/htmlcanvas/objects/fixture';
 
 export function registerObjectBuilders() {
     ColdRoughIn.register();
@@ -16,4 +17,5 @@ export function registerObjectBuilders() {
     FlowSource.register();
     Pipe.register();
     Valve.register();
+    Fixture.register();
 }
