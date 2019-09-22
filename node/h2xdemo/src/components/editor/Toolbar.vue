@@ -24,14 +24,6 @@
                     </template>
 
                 </b-col>
-                <b-col cols="4">
-                    <b-input :readonly="true" :value="currentToolConfig.text" style="width: 200px;">
-
-                    </b-input>
-                </b-col>
-                <b-col cols="4">
-
-                </b-col>
             </b-row>
         </div>
     </div>

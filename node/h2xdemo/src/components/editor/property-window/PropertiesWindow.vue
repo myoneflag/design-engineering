@@ -1,8 +1,10 @@
 <template>
     <div class="propertiesWindow">
-        <FloorPlanProperties :selected-entity="selectedEntity"
-                             :selected-object="selectedObject"
-                             v-if="mode === 0"
+        <FloorPlanProperties
+                :selected-entity="selectedEntity"
+                :selected-object="selectedObject"
+                :on-delete="onDelete"
+                v-if="mode === 0"
         />
         <FlowSourceProperties
             v-else-if="entity.type === ENTITY_NAMES.FLOW_SOURCE"

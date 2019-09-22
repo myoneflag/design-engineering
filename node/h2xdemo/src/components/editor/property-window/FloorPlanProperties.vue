@@ -109,7 +109,7 @@
 
         <b-row style="margin-top: 10px">
             <b-col>
-                <b-button variant="danger" @click="onDeleteClick" size="sm">Delete</b-button>
+                <b-button variant="danger" @click="onDelete" size="sm">Delete</b-button>
             </b-col>
         </b-row>
     </b-container>
@@ -133,6 +133,7 @@
             selectedObject: Object,
             onPointAChange: Function,
             onPointBChange: Function,
+            onDelete: Function,
         },
     })
     export default class FloorPlanProperties extends Vue {
@@ -140,11 +141,6 @@
 
         file: File | null = null;
         enteredDistance: string = '';
-
-        onDeleteClick() {
-            this.$store.dispatch('document/deleteBackground', this.$props.selectedEntity);
-            this.$store.dispatch('document/commit');
-        }
 
         mounted() {
             if (this.ABDistanceMeters) {

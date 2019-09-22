@@ -232,13 +232,19 @@
         deleteEntity(object: BaseBackedObject) {
             const toDelete = object.prepareDelete();
             toDelete.forEach((drawableObject) => {
-                let index = this.document.drawing.entities.findIndex((b) => b.uid === drawableObject.uid);
-                if (index !== -1) {
-                    this.document.drawing.entities.splice(index, 1);
+                const index1 = this.document.drawing.entities.findIndex((b) => b.uid === drawableObject.uid);
+                if (index1 !== -1) {
+                    this.document.drawing.entities.splice(index1, 1);
                 }
-                index = this.document.drawing.backgrounds.findIndex((b) => b.uid === drawableObject.uid);
-                if (index !== -1) {
-                    this.document.drawing.backgrounds.splice(index, 1);
+                const index2 = this.document.drawing.backgrounds.findIndex((b) => b.uid === drawableObject.uid);
+                if (index2 !== -1) {
+                    this.document.drawing.backgrounds.splice(index2, 1);
+                }
+                if (index1 === -1 && index2 === -1) {
+                    throw new Error(
+                        'Tried to delete something that wasn\'t deletable: '
+                        + JSON.stringify(drawableObject)
+                    );
                 }
             });
         }

@@ -45,7 +45,13 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
     }
 
     prepareDelete(): BaseBackedObject[] {
-        throw new Error('Method not implemented.');
+        const result: BaseBackedObject[] = [this];
+        this.objectStore.forEach((v) => {
+            if (v.entity.parentUid === this.entity.uid) {
+                result.push(...v.prepareDelete());
+            }
+        });
+        return result;
     }
 
     initializeImage(onLoad: (image: BackgroundImage) => any) {
