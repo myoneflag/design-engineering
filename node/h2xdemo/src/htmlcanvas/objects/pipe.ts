@@ -16,6 +16,7 @@ import {Interaction, InteractionType} from '@/htmlcanvas/lib/interaction';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
+import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
 
 @DraggableObject
 export default class Pipe extends BackedDrawableObject<PipeEntity> implements Draggable {
@@ -159,14 +160,8 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         const result: BaseBackedObject[] = [this];
         for (let i = 0; i < 2; i++) {
             const a = this.objectStore.get(this.entity.endpointUid[i]);
-            if (a instanceof BackedDrawableObject) {
-                const state = a.entity as ValveEntity;
-                const toDelete = state.connections.indexOf(this.entity.uid);
-                assert(toDelete !== -1);
-                state.connections.splice(toDelete, 1);
-                if (state.connections.length === 0) {
-                    result.push(a);
-                }
+            if (a instanceof BackedConnectable) {
+                result.push(...a.prepareDeleteConnection(this.entity.uid));
             } else {
                 throw new Error('endpoint non existent on pipe ' + JSON.stringify(this.entity));
             }

@@ -6,8 +6,9 @@ import uuid from 'uuid';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 import {getInsertCoordsAt} from '@/htmlcanvas/lib/utils';
 import FixtureEntity from '@/store/document/entities/fixtures/fixture-entity';
-import {ColdRoughInEntity, WarmOutEntity} from '@/store/document/entities/tmv/tmv-entity';
-import HotRoughIn from '@/htmlcanvas/objects/tmv/hot-rough-in';
+import {SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
+import {StandardFlowSystemUids} from '@/store/catalog';
+import SystemNode from '@/htmlcanvas/objects/tmv/system-node';
 
 export default function insertFixture(
     context: CanvasContext,
@@ -58,22 +59,24 @@ export default function insertFixture(
             };
 
 
-            const coldEntity: ColdRoughInEntity = {
+            const coldEntity: SystemNodeEntity = {
                 center: hasWarm ? {x: -newEntity.pipeDistanceMM / 2, y: 0} : {x: 0, y: 0},
                 connections: [],
                 parentUid: fixtureUid,
-                type: EntityType.COLD_ROUGH_IN,
+                type: EntityType.SYSTEM_NODE,
+                systemUid: StandardFlowSystemUids.ColdWater,
                 uid: coldUid,
             };
 
             doc.drawing.entities.push(newEntity, coldEntity);
 
             if (hasWarm) {
-                const warmEntity: WarmOutEntity = {
+                const warmEntity: SystemNodeEntity = {
                     center: {x: newEntity.pipeDistanceMM / 2, y: 0},
                     connections: [],
                     parentUid: fixtureUid,
-                    type: EntityType.WARM_OUT,
+                    type: EntityType.SYSTEM_NODE,
+                    systemUid: StandardFlowSystemUids.WarmWater,
                     uid: warmUid,
                 };
 

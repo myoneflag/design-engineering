@@ -4,7 +4,7 @@ import PointTool from '@/htmlcanvas/tools/point-tool';
 import {EntityType} from '@/store/document/entities/types';
 import uuid from 'uuid';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
-import TmvEntity, {ColdRoughInEntity, HotRoughInEntity, WarmOutEntity} from '@/store/document/entities/tmv/tmv-entity';
+import TmvEntity, {SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
 import {getInsertCoordsAt} from '@/htmlcanvas/lib/utils';
 import {InteractionType} from '@/htmlcanvas/lib/interaction';
 import Pipe from '@/htmlcanvas/objects/pipe';
@@ -15,8 +15,7 @@ import {StandardFlowSystemUids} from '@/store/catalog';
 import {addValveAndSplitPipe} from '@/htmlcanvas/tools/insert-valve';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import Tmv from '@/htmlcanvas/objects/tmv/tmv';
-import ColdRoughIn from '@/htmlcanvas/objects/tmv/cold-rough-in';
-import HotRoughIn from '@/htmlcanvas/objects/tmv/hot-rough-in';
+import SystemNode from '@/htmlcanvas/objects/tmv/system-node';
 
 export default function insertTmv(
     context: CanvasContext,
@@ -74,27 +73,30 @@ export default function insertTmv(
                             uid: tmvUid,
                         };
 
-                        const newCold: ColdRoughInEntity = {
+                        const newCold: SystemNodeEntity = {
                             center: {x: newTmv.pipeDistanceMM / 2, y: 0},
                             connections: [],
                             parentUid: tmvUid,
-                            type: EntityType.COLD_ROUGH_IN,
+                            type: EntityType.SYSTEM_NODE,
+                            systemUid: StandardFlowSystemUids.ColdWater,
                             uid: coldUid,
                         };
 
-                        const newHot: HotRoughInEntity = {
+                        const newHot: SystemNodeEntity = {
                             center: {x: -newTmv.pipeDistanceMM / 2, y: 0},
                             connections: [],
                             parentUid: tmvUid,
-                            type: EntityType.HOT_ROUGH_IN,
+                            type: EntityType.SYSTEM_NODE,
+                            systemUid: StandardFlowSystemUids.HotWater,
                             uid: hotUid,
                         };
 
-                        const newWarm: WarmOutEntity = {
+                        const newWarm: SystemNodeEntity = {
                             center: {x: 0, y: newTmv.valveLengthMM},
                             connections: [],
                             parentUid: tmvUid,
-                            type: EntityType.WARM_OUT,
+                            type: EntityType.SYSTEM_NODE,
+                            systemUid: StandardFlowSystemUids.WarmWater,
                             uid: warmUid,
                         };
 
@@ -102,8 +104,8 @@ export default function insertTmv(
 
 
                         let tmvObj: Tmv | undefined;
-                        let coldObj: ColdRoughIn | undefined;
-                        let hotObj: HotRoughIn | undefined;
+                        let coldObj: SystemNode | undefined;
+                        let hotObj: SystemNode | undefined;
                         try {
                             // connect to existing cold pipe
 
@@ -137,7 +139,7 @@ export default function insertTmv(
                                         newTmv,
                                         context.objectStore,
                                         false,
-                                    ) as ColdRoughIn;
+                                    ) as SystemNode;
                                     const coldLoc = coldObj.toWorldCoord({x: 0, y: 0});
 
                                     leadPipe(context, coldLoc, newCold, coldPipeUid, StandardFlowSystemUids.ColdWater, splitColdPipe);
@@ -159,7 +161,7 @@ export default function insertTmv(
                                             newTmv,
                                             context.objectStore,
                                             false,
-                                        ) as HotRoughIn;
+                                        ) as SystemNode;
 
                                         const hotWc = hotObj.toWorldCoord({x: 0, y: 0});
 

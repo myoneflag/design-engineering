@@ -16,14 +16,16 @@ import {DrawingContext} from '@/htmlcanvas/lib/types';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
 import Pipe from '@/htmlcanvas/objects/pipe';
+import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
 
 @CenterDraggableObject
 @ConnectableObject
-export default class Valve extends BackedDrawableObject<ValveEntity> implements Connectable {
+export default class Valve extends BackedConnectable<ValveEntity> implements Connectable {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.VALVE, Valve);
     }
 
+    minimumConnections = 1;
 
     lastDrawnRadius: number = 0;
     pixelRadius: number = 5;

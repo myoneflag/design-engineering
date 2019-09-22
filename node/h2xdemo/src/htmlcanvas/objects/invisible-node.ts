@@ -7,8 +7,9 @@ import {ViewPort} from '@/htmlcanvas/viewport';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import {Interaction} from '@/htmlcanvas/lib/interaction';
 import {ConnectableObject} from '../lib/object-traits/connectable';
+import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
 
-export abstract class InvisibleNode<T extends InvisibleNodeEntity> extends BackedDrawableObject<T> {
+export abstract class InvisibleNode<T extends InvisibleNodeEntity> extends BackedConnectable<T> {
     get position() {
         return TM.translate(this.entity.center.x, this.entity.center.y);
     }

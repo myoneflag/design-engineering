@@ -4,6 +4,7 @@ import Pipe from '@/htmlcanvas/objects/pipe';
 import assert from 'assert';
 import {EntityType} from '@/store/document/entities/types';
 import * as _ from 'lodash';
+import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
 
 export default interface Connectable {
     getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]>;
@@ -12,7 +13,7 @@ export default interface Connectable {
 
 
 export function ConnectableObject<T extends new (...args: any[])
-    => Connectable & BackedDrawableObject<ConnectableEntity>>(constructor: T) {
+    => Connectable & BackedConnectable<ConnectableEntity>>(constructor: T) {
 
     // @ts-ignore abstract class expression limitation in the language. In practice this is fine.
     return class extends constructor implements Connectable {

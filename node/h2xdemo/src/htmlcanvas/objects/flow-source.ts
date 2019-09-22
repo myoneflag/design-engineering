@@ -15,13 +15,16 @@ import {Interaction, InteractionType} from '@/htmlcanvas/lib/interaction';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
+import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
 
 @CenterDraggableObject
 @ConnectableObject
-export default class FlowSource extends BackedDrawableObject<FlowSourceEntity> implements Connectable {
+export default class FlowSource extends BackedConnectable<FlowSourceEntity> implements Connectable {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.FLOW_SOURCE, FlowSource);
     }
+
+    minimumConnections = 0;
 
     MINIMUM_RADIUS_PX: number = 3;
     lastDrawnWorldRadius: number = 0; // for bounds detection

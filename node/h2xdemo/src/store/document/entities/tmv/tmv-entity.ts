@@ -27,16 +27,9 @@ export default interface TmvEntity extends DrawableEntity {
     maxFlowRateLS: number | null;
 }
 
-export interface ColdRoughInEntity extends InvisibleNodeEntity {
-    type: EntityType.COLD_ROUGH_IN;
-}
-
-export interface HotRoughInEntity extends InvisibleNodeEntity {
-    type: EntityType.HOT_ROUGH_IN;
-}
-
-export interface WarmOutEntity extends InvisibleNodeEntity {
-    type: EntityType.WARM_OUT;
+export interface SystemNodeEntity extends InvisibleNodeEntity {
+    type: EntityType.SYSTEM_NODE;
+    systemUid: string;
 }
 
 export function makeTMVFields(): PropertyField[] {

@@ -7,9 +7,7 @@ export enum EntityType {
     INVISIBLE_NODE = 'INVISIBLE_NODE',
 
     TMV = 'TMV',
-    COLD_ROUGH_IN = 'COLD_ROUGH_IN',
-    HOT_ROUGH_IN = 'HOT_ROUGH_IN',
-    WARM_OUT = 'WARM_OUT',
+    SYSTEM_NODE = 'SYSTEM_NODE',
 
     // Fixtures
     FIXTURE = 'FIXTURE',

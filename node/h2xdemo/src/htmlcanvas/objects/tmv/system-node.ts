@@ -1,21 +1,23 @@
 import {Interaction, InteractionType} from '@/htmlcanvas/lib/interaction';
 import {StandardFlowSystemUids} from '@/store/catalog';
-import {HotRoughInEntity} from '@/store/document/entities/tmv/tmv-entity';
-import {InvisibleNode} from '@/htmlcanvas/objects/invisible-node';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
+import {ConnectableObject} from '@/htmlcanvas/lib/object-traits/connectable';
 import {Coord, DocumentState} from '@/store/document/types';
+import {BaseBackedObject} from '@/htmlcanvas/lib/backed-drawable-object';
+import {InvisibleNode} from '@/htmlcanvas/objects/invisible-node';
 import Flatten from '@flatten-js/core';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
 import {lighten} from '@/lib/utils';
-import {BaseBackedObject} from '@/htmlcanvas/lib/backed-drawable-object';
-import {ConnectableObject} from '@/htmlcanvas/lib/object-traits/connectable';
+import {SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
 
 @ConnectableObject
-export default class HotRoughIn extends InvisibleNode<HotRoughInEntity> {
+export default class SystemNode extends InvisibleNode<SystemNodeEntity> {
     static register(): void {
-        DrawableObjectFactory.registerEntity(EntityType.HOT_ROUGH_IN, HotRoughIn);
+        DrawableObjectFactory.registerEntity(EntityType.SYSTEM_NODE, SystemNode);
     }
+
+    minimumConnections = 0;
 
     offerInteraction(interaction: Interaction): boolean {
         switch (interaction.type) {
@@ -24,7 +26,7 @@ export default class HotRoughIn extends InvisibleNode<HotRoughInEntity> {
                 if (this.entity.connections.length > 1) {
                     return false;
                 }
-                return interaction.system.uid === StandardFlowSystemUids.HotWater;
+                return interaction.system.uid === this.entity.systemUid;
             case InteractionType.INSERT:
             default:
                 return false;
@@ -32,12 +34,8 @@ export default class HotRoughIn extends InvisibleNode<HotRoughInEntity> {
     }
 
 
-    rememberToRegister(): void {
-        //
-    }
-
     system(doc: DocumentState) {
-        const system = doc.drawing.flowSystems.find((s) => s.uid === StandardFlowSystemUids.HotWater);
+        const system = doc.drawing.flowSystems.find((s) => s.uid === this.entity.systemUid);
         if (system) {
             return system;
         } else {
@@ -67,5 +65,8 @@ export default class HotRoughIn extends InvisibleNode<HotRoughInEntity> {
             }
         }
         return false;
+    }
+    rememberToRegister(): void {
+        //
     }
 }
