@@ -96,7 +96,7 @@ function diffFieldsOnly(prev: any, next: any) {
         const diff: any = {};
         _.forOwn(prev, (value, key) => {
             const cdiff = diffFieldsOnly(value, next[key]);
-            if (cdiff !== undefined && !_.isEmpty(cdiff)) {
+            if (cdiff !== undefined && (!_.isEmpty(cdiff) || !_.isObject(cdiff))) {
                 diff[key] = cdiff;
             }
         });

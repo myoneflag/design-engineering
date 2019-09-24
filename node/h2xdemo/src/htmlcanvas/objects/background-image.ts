@@ -6,7 +6,8 @@ import {matrixScale, parseScale} from '@/htmlcanvas/utils';
 import {Sizeable} from '@/htmlcanvas/lib/object-traits/sizeable-object';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import _ from 'lodash';
-import BackedDrawableObject, {BaseBackedObject} from '@/htmlcanvas/lib/backed-drawable-object';
+import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
+import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import {Interaction, InteractionType} from '@/htmlcanvas/lib/interaction';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
@@ -381,6 +382,28 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         }
     }
 
+    rememberToRegister(): void {
+        //
+    }
+
+    viewBoundingBox() {
+        const a = this.toWorldCoord({x: this.boundary.x,
+            y: this.boundary.y});
+        const b = this.toWorldCoord({x: this.boundary.x + this.boundary.w,
+            y: this.boundary.y});
+        const c = this.toWorldCoord({x: this.boundary.x,
+            y: this.boundary.y + this.boundary.h});
+        const d = this.toWorldCoord({x: this.boundary.x + this.boundary.w,
+            y: this.boundary.y + this.boundary.h});
+
+        const l = Math.min(a.x, b.x, c.x, d.x);
+        const r = Math.max(a.x, b.x, c.x, d.x);
+        const t = Math.min(a.y, b.y, c.y, d.y);
+        const bot = Math.max(a.y, b.y, c.y, d.y);
+
+        return {x: l, y: t, w: r - l, h: bot - t};
+    }
+
     protected refreshObjectInternal(obj: BackgroundEntity, old: BackgroundEntity): void {
         if (old) {
             if (this.entity.uri !== old.uri) {
@@ -393,9 +416,5 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
                 this.onChange();
             });
         }
-    }
-
-    rememberToRegister(): void {
-        //
     }
 }

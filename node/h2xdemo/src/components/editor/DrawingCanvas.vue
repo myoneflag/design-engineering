@@ -12,6 +12,11 @@
                     v-if="currentTool.modesVisible"
             />
 
+            <FloorPlanInsertPanel
+                @insert-floor-plan="onFloorPlanSelected"
+                v-if="mode === 0"
+            />
+
             <HydraulicsInsertPanel
                 v-if="mode === 1"
                 :flow-systems="document.drawing.flowSystems"
@@ -29,7 +34,15 @@
 
             </PropertiesWindow>
 
-            <Toolbar :current-tool-config="currentTool" :on-tool-click="changeTool"></Toolbar>
+            <Toolbar
+                    :current-tool-config="currentTool"
+                    :on-tool-click="changeTool"
+                    :on-fit-to-view-click="fitToView"
+            ></Toolbar>
+
+            <InstructionPage
+                v-if="documentBrandNew"
+            />
         </drop>
         <resize-observer @notify="draw"/>
 
@@ -59,11 +72,11 @@
     import {ToolConfig} from '@/store/tools/types';
     import {DEFAULT_TOOL, ToolHandler} from '@/htmlcanvas/lib/tool';
     import uuid from 'uuid';
-    import {renderPdf} from '@/api/pdf';
+    import {PDFRenderResult, renderPdf} from '@/api/pdf';
     import HydraulicsLayer from '@/htmlcanvas/layers/hydraulics-layer';
     import Layer from '@/htmlcanvas/layers/layer';
     import HydraulicsInsertPanel from '@/components/editor/HydraulicsInsertPanel.vue';
-    import BackedDrawableObject, {BaseBackedObject} from '@/htmlcanvas/lib/backed-drawable-object';
+    import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
     import {EntityType} from '@/store/document/entities/types';
     import {Interaction} from '@/htmlcanvas/lib/interaction';
     import insertFlowSource from '@/htmlcanvas/tools/insert-flow-source';
@@ -73,9 +86,13 @@
     import {BackgroundEntity} from '@/store/document/entities/background-entity';
     import insertTmv from '@/htmlcanvas/tools/insert-tmv';
     import insertFixture from '@/htmlcanvas/tools/insert-fixture';
+    import FloorPlanInsertPanel from '@/components/editor/FloorPlanInsertPanel.vue';
+    import InstructionPage from '@/components/editor/InstructionPage.vue';
 
     @Component({
         components: {
+            InstructionPage,
+            FloorPlanInsertPanel,
             LoadingScreen,
             HydraulicsInsertPanel, Overlay: LoadingScreen, Toolbar, PropertiesWindow, ModeButtons},
     })
@@ -86,12 +103,37 @@
         grabbedPoint: Coord | null = null;
         hasDragged: boolean = false;
 
-        viewPort: ViewPort = new ViewPort(TM.transform(TM.translate(0, 0), TM.scale(100)), 10000, 10000);
+        viewPort: ViewPort = this.initialViewport;
         internalMode: DrawingMode = DrawingMode.FloorPlan;
 
+        objectStore: ObjectStore =
+            new ObjectStore();
+
         // The layers
-        backgroundLayer!: BackgroundLayer;
-        hydraulicsLayer!: HydraulicsLayer;
+        backgroundLayer: BackgroundLayer = new BackgroundLayer(
+            this.objectStore,
+            () => {
+                this.scheduleDraw();
+            },
+            (object, drawable) => {
+                this.scheduleDraw();
+            },
+            () => { // onCommit
+                this.$store.dispatch('document/commit');
+            },
+        );
+        hydraulicsLayer: HydraulicsLayer = new HydraulicsLayer(
+            this.objectStore,
+            () => {
+                this.scheduleDraw();
+            },
+            (selectedObject: BaseBackedObject | null) => {
+                this.scheduleDraw();
+            },
+            () => {
+                this.$store.dispatch('document/commit');
+            },
+        );
         allLayers: Layer[] = [];
 
 
@@ -105,8 +147,6 @@
         // The currently hovered element ready for interaction.
         interactive: BaseBackedObject | null = null;
 
-        objectStore: ObjectStore =
-            new ObjectStore();
 
         updating: boolean = false;
 
@@ -125,35 +165,18 @@
             (this.$refs.drawingCanvas as any).onmouseup = this.onMouseUp;
             (this.$refs.drawingCanvas as any).onwheel = this.onWheel;
 
-            this.backgroundLayer = new BackgroundLayer(
-                this.objectStore,
-                () => {
-                    this.scheduleDraw();
-                },
-                (object, drawable) => {
-                    this.scheduleDraw();
-                },
-                () => { // onCommit
-                    this.$store.dispatch('document/commit');
-                },
-            );
-            this.hydraulicsLayer = new HydraulicsLayer(
-                this.objectStore,
-                () => {
-                    this.scheduleDraw();
-                },
-                (selectedObject: BaseBackedObject | null) => {
-                    this.scheduleDraw();
-                },
-                () => {
-                    this.$store.dispatch('document/commit');
-                },
-            );
-
             this.allLayers.push(this.backgroundLayer, this.hydraulicsLayer);
             this.processDocument();
 
             setInterval(this.drawLoop, 20);
+        }
+
+        get initialViewport() {
+            return new ViewPort(TM.transform(TM.translate(0, 0), TM.scale(50)), 5000, 5000);
+        }
+
+        get documentBrandNew() {
+            return this.$store.getters['document/isBrandNew'];
         }
 
         get document(): DocumentState {
@@ -217,13 +240,13 @@
                 if (this.backgroundLayer) {
                     return this.backgroundLayer.selectedObject;
                 } else {
-                    return null;
+                    throw new Error('background layer missing');
                 }
             } else if (this.mode === DrawingMode.Hydraulics) {
                 if (this.hydraulicsLayer) {
                     return this.hydraulicsLayer.selectedObject;
                 } else {
-                    return null;
+                    throw new Error('hydraulics layer missing');
                 }
             }
             return null;
@@ -243,7 +266,7 @@
                 if (index1 === -1 && index2 === -1) {
                     throw new Error(
                         'Tried to delete something that wasn\'t deletable: '
-                        + JSON.stringify(drawableObject)
+                        + JSON.stringify(drawableObject),
                     );
                 }
             });
@@ -290,12 +313,10 @@
 
         lockDrawing() {
             this.drawingLocked ++;
-            console.log("lock " + this.drawingLocked);
         }
 
         unlockDrawing() {
             this.drawingLocked --;
-            console.log("unlock " + this.drawingLocked);
             if (this.drawingLocked === 0) {
                 this.scheduleDraw();
             }
@@ -332,8 +353,49 @@
             return this.interactive;
         }
 
+        fitToView() {
+            if (this.document.drawing.entities.length === 0 && this.document.drawing.backgrounds.length === 0) {
+                this.viewPort = this.initialViewport;
+                this.scheduleDraw();
+            } else {
+                let l = Infinity;
+                let r = -Infinity;
+                let t = Infinity;
+                let b = -Infinity;
 
-        hydraulicsInsert({entityName, system, fixtureName}: {entityName: string, system: FlowSystemParameters, fixtureName: string}) {
+                const look = (e: DrawableEntity) => {
+                    const obj = this.objectStore.get(e.uid);
+                    if (obj) {
+                        const bb = obj.viewBoundingBox();
+                        if (bb) {
+                            l = Math.min(l, bb.x);
+                            r = Math.max(r, bb.x + bb.w);
+                            t = Math.min(t, bb.y);
+                            b = Math.max(b, bb.y + bb.h);
+                        }
+                    }
+                };
+
+                this.document.drawing.backgrounds.forEach(look);
+                this.document.drawing.entities.forEach(look);
+
+                const w = this.viewPort.width;
+                const h = this.viewPort.height;
+                const s = Math.max((r - l + 1) / w, (b - t + 1) / h, 1) * 1.5;
+                this.viewPort =
+                    new ViewPort(
+                        TM.transform(TM.translate((l + r) / 2, (t + b) / 2), TM.scale(s)),
+                        w,
+                        h,
+                    );
+                this.scheduleDraw();
+            }
+        }
+
+        hydraulicsInsert(
+            {entityName, system, fixtureName}:
+                {entityName: string, system: FlowSystemParameters, fixtureName: string},
+        ) {
             this.hydraulicsLayer.onSelected(null);
 
             if (entityName === EntityType.FLOW_SOURCE) {
@@ -393,37 +455,47 @@
 
                     const w = this.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
 
-                    renderPdf(
-                        event.dataTransfer.files.item(i) as File,
-                        ({paperSize, scale, scaleName, uri, totalPages},
-                        ) => {
-
-                        const width = paperSize.widthMM / scale;
-                        const height = paperSize.heightMM / scale;
-                        // We create the operation here, not the server.
-                        const background: BackgroundEntity = {
-                            parentUid: null,
-                            type: EntityType.BACKGROUND_IMAGE,
-                            center: w,
-                            crop: {x: -width / 2, y: -height / 2, w: width, h: height},
-                            offset: {x: 0, y: 0},
-                            page: 1,
-                            paperSize,
-                            pointA: null,
-                            pointB: null,
-                            rotation: 0,
-                            scaleFactor: 1,
-                            scaleName,
-                            uid: uuid(),
-                            totalPages,
-                            uri,
-                        };
-
-                        this.$store.dispatch('document/addBackground', {background});
-                        this.$store.dispatch('document/commit');
-                    });
+                    this.insertFloorPlan(event.dataTransfer.files.item(i) as File, w);
                 }
             }
+        }
+
+        onFloorPlanSelected(file: File) {
+            const m = decomposeMatrix(this.viewPort.position);
+            this.insertFloorPlan(file, {x: m.tx + this.viewPort.width / 2, y: m.ty + this.viewPort.height / 2});
+        }
+
+        insertFloorPlan(file: File, wc: Coord) {
+            renderPdf(
+                file,
+                ({paperSize, scale, scaleName, uri, totalPages},
+                ) => {
+
+                    const width = paperSize.widthMM / scale;
+                    const height = paperSize.heightMM / scale;
+                    // We create the operation here, not the server.
+                    const background: BackgroundEntity = {
+                        parentUid: null,
+                        type: EntityType.BACKGROUND_IMAGE,
+                        filename: file.name,
+                        center: wc,
+                        crop: {x: -width / 2, y: -height / 2, w: width, h: height},
+                        offset: {x: 0, y: 0},
+                        page: 1,
+                        paperSize,
+                        pointA: null,
+                        pointB: null,
+                        rotation: 0,
+                        scaleFactor: 1,
+                        scaleName,
+                        uid: uuid(),
+                        totalPages,
+                        uri,
+                    };
+
+                    this.$store.dispatch('document/addBackground', {background});
+                    this.$store.dispatch('document/commit');
+                });
         }
 
         onMouseDown(event: MouseEvent): boolean {

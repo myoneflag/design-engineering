@@ -70,6 +70,9 @@
     })
     export default class PropertiesWindow extends Vue {
 
+        mounted() {
+            //
+        }
 
         // This is here to invoke type cohesion when working in the template.
         get entity(): DrawableEntity {

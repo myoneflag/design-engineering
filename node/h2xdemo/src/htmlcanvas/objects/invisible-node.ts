@@ -1,4 +1,5 @@
-import BackedDrawableObject, {BaseBackedObject} from '@/htmlcanvas/lib/backed-drawable-object';
+import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
+import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import InvisibleNodeEntity from '@/store/document/entities/Invisible-node-entity';
 import * as TM from 'transformation-matrix';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
@@ -38,11 +39,11 @@ export abstract class InvisibleNode<T extends InvisibleNodeEntity> extends Backe
         return [];
     }
 
-    protected refreshObjectInternal(obj: InvisibleNodeEntity, old?: InvisibleNodeEntity): void {
+    rememberToRegister(): void {
         //
     }
 
-    rememberToRegister(): void {
+    protected refreshObjectInternal(obj: InvisibleNodeEntity, old?: InvisibleNodeEntity): void {
         //
     }
 }

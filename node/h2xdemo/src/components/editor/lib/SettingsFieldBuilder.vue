@@ -45,7 +45,12 @@
                     <b-dropdown
                             v-else-if="field[2] === 'choice'" class="float-left"
                             size="md" id="dropdown-1" :text="choiceName(reactiveData[field[0]], field[3])" variant="outline-secondary" style="padding-bottom: 20px">
-                        <b-dropdown-item v-for="(choice, index) in field[3]" @click="reactiveData[field[0]] = choiceId(choice)" :key="index">
+                        <b-dropdown-item
+                                v-for="(choice, index) in field[3]"
+                                @click="reactiveData[field[0]] = choiceId(choice)"
+                                :key="index"
+                                :disabled="!supported(choice)"
+                        >
                             {{choiceName(choice)}}
                         </b-dropdown-item>
                     </b-dropdown>
@@ -139,7 +144,7 @@
         }
 
 
-        choiceId(choice: string | string[]): string {
+        choiceId(choice: string | string[] | [string, boolean]): string {
             if (isString(choice)) {
                 return choice;
             } else {
@@ -147,16 +152,32 @@
             }
         }
 
-        choiceName(choice: string | string[], choices: string[] | Array<[string, string]>): string {
+        choiceName(choice: string | string[] | [string, boolean], choices: string[] | Array<[string, string]>): string {
             if (choices !== undefined && _.isString(choice)) {
                 for (const i of choices) {
                     if (i[0] === choice) {
+                        if (_.isBoolean(i[1])) {
+                            return i[0];
+                        }
                         return i[1];
                     }
                 }
                 return choice;
             } else if (isString(choice)) {
                 return choice;
+            } else {
+                if (_.isBoolean(choice[1])) {
+                    return choice[0];
+                }
+                return choice[1];
+            }
+        }
+
+        supported(choice: string | string[] | [string, boolean]) {
+            if (_.isString(choice)) {
+                return true;
+            } else if (_.isString(choice[1])) {
+                return true;
             } else {
                 return choice[1];
             }

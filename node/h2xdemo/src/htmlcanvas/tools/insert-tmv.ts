@@ -9,7 +9,7 @@ import {getInsertCoordsAt} from '@/htmlcanvas/lib/utils';
 import {InteractionType} from '@/htmlcanvas/lib/interaction';
 import Pipe from '@/htmlcanvas/objects/pipe';
 import Flatten from '@flatten-js/core';
-import {BaseBackedObject} from '@/htmlcanvas/lib/backed-drawable-object';
+import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import PipeEntity from '@/store/document/entities/pipe-entity';
 import {StandardFlowSystemUids} from '@/store/catalog';
 import {addValveAndSplitPipe} from '@/htmlcanvas/tools/insert-valve';
@@ -111,38 +111,46 @@ export default function insertTmv(
 
                             interactClosestPipe(context, StandardFlowSystemUids.ColdWater, wc, 3000);
                             if (context.interactive) {
-                                    splitColdPipe = context.interactive as Pipe;
-                                    // rotate our pipe and try again with correct position of cold water
-                                    tmvObj = DrawableObjectFactory.build(
-                                        newTmv,
-                                        context.document.drawing.backgrounds.find((b) => b.uid === parentUid) || null,
-                                        context.objectStore,
-                                        false,
-                                    ) as Tmv;
+                                splitColdPipe = context.interactive as Pipe;
+                                // rotate our pipe and try again with correct position of cold water
+                                tmvObj = DrawableObjectFactory.build(
+                                    newTmv,
+                                    context.document.drawing.backgrounds.find((b) => b.uid === parentUid) || null,
+                                    context.objectStore,
+                                    false,
+                                ) as Tmv;
 
 
-                                    const closePoint = splitColdPipe.lastDrawnLine.distanceTo(Flatten.point(wc.x, wc.y))[1].ps;
-                                    const currA = tmvObj.toWorldAngle(0);
-                                    const desiredA = -Flatten.vector(
-                                        Flatten.point(wc.x, wc.y)
-                                        , closePoint,
-                                    ).angleTo(
-                                        Flatten.vector(0, -1),
-                                    ) / Math.PI * 180;
+                                const closePoint =
+                                    splitColdPipe.lastDrawnLine.distanceTo(Flatten.point(wc.x, wc.y))[1].ps;
+                                const currA = tmvObj.toWorldAngle(0);
+                                const desiredA = -Flatten.vector(
+                                    Flatten.point(wc.x, wc.y)
+                                    , closePoint,
+                                ).angleTo(
+                                    Flatten.vector(0, -1),
+                                ) / Math.PI * 180;
 
-                                    newTmv.rotation = ((desiredA - currA) % 360 + 360) % 360;
+                                newTmv.rotation = ((desiredA - currA) % 360 + 360) % 360;
 
-                                    // maybe refresh is unnecessary?
-                                    tmvObj.refreshObject(tmvObj.parentEntity, newTmv);
-                                    coldObj = DrawableObjectFactory.build(
-                                        newCold,
-                                        newTmv,
-                                        context.objectStore,
-                                        false,
-                                    ) as SystemNode;
-                                    const coldLoc = coldObj.toWorldCoord({x: 0, y: 0});
+                                // maybe refresh is unnecessary?
+                                tmvObj.refreshObject(tmvObj.parentEntity, newTmv);
+                                coldObj = DrawableObjectFactory.build(
+                                    newCold,
+                                    newTmv,
+                                    context.objectStore,
+                                    false,
+                                ) as SystemNode;
+                                const coldLoc = coldObj.toWorldCoord({x: 0, y: 0});
 
-                                    leadPipe(context, coldLoc, newCold, coldPipeUid, StandardFlowSystemUids.ColdWater, splitColdPipe);
+                                leadPipe(
+                                    context,
+                                    coldLoc,
+                                    newCold,
+                                    coldPipeUid,
+                                    StandardFlowSystemUids.ColdWater,
+                                    splitColdPipe,
+                                );
 
                             } else {
                                 splitColdPipe = null;
@@ -165,7 +173,14 @@ export default function insertTmv(
 
                                         const hotWc = hotObj.toWorldCoord({x: 0, y: 0});
 
-                                        leadPipe(context, hotWc, newHot, hotPipeUid, StandardFlowSystemUids.HotWater, splitHotPipe);
+                                        leadPipe(
+                                            context,
+                                            hotWc,
+                                            newHot,
+                                            hotPipeUid,
+                                            StandardFlowSystemUids.HotWater,
+                                            splitHotPipe,
+                                        );
                                     } finally {
                                         if (hotObj) {
                                             context.objectStore.delete(hotObj.uid);

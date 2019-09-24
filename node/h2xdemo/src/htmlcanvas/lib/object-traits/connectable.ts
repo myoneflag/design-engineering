@@ -1,5 +1,6 @@
 import {ConnectableEntity, Coord, DrawableEntity} from '@/store/document/types';
-import BackedDrawableObject, {BaseBackedObject} from '@/htmlcanvas/lib/backed-drawable-object';
+import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
+import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import Pipe from '@/htmlcanvas/objects/pipe';
 import assert from 'assert';
 import {EntityType} from '@/store/document/entities/types';

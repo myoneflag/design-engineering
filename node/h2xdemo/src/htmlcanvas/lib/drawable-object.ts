@@ -1,4 +1,4 @@
-import {Coord} from '@/store/document/types';
+import {Coord, Rectangle} from '@/store/document/types';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
@@ -163,4 +163,9 @@ export default abstract class DrawableObject {
     abstract onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult;
 
     abstract onMouseUp(event: MouseEvent, vp: ViewPort): boolean;
+
+    // For figuring out how to fit the view.
+    viewBoundingBox(): Rectangle | null {
+        return {...this.toWorldCoord({x: 0, y: 0}), w: 0, h: 0};
+    }
 }

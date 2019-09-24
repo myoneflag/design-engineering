@@ -14,7 +14,7 @@ import {BackgroundEntity} from '@/store/document/entities/background-entity';
 
 function roundTripTest(prev: DrawingState, next: DrawingState, expectedOps: number = -1) {
     const prevCopy = _.cloneDeep(prev);
-    const ops = diffState(prev, next);
+    const ops = diffState(_.cloneDeep(prev), _.cloneDeep(next));
     ops.forEach((o) => applyOtOnState(prevCopy, o));
     expect(prevCopy).eql(next);
     if (expectedOps !== -1) {
@@ -25,6 +25,7 @@ function roundTripTest(prev: DrawingState, next: DrawingState, expectedOps: numb
 const bg1: BackgroundEntity = {
     parentUid: null,
     type: EntityType.BACKGROUND_IMAGE,
+    filename: 'bg.pdf',
     center: {x: 1, y: 2},
     crop: {x: -1, y: 2.4, w: 100, h: 101},
     offset: {x: 1, y: 2},
@@ -48,6 +49,7 @@ const bg1: BackgroundEntity = {
 const bg2: BackgroundEntity = {
     parentUid: null,
     type: EntityType.BACKGROUND_IMAGE,
+    filename: 'bg.pdf',
     center: {x: 1, y: 2},
     crop: {x: -1, y: 2.5, w: 100, h: 101},
     offset: {x: 1, y: 2},
@@ -70,6 +72,7 @@ const bg2: BackgroundEntity = {
 const bg2B: BackgroundEntity = {
     parentUid: null,
     type: EntityType.BACKGROUND_IMAGE,
+    filename: 'bg.pdf',
     center: {x: 1, y: 2},
     crop: {x: -1, y: 2.5, w: 100, h: 101},
     offset: {x: 1, y: 2},
@@ -92,6 +95,7 @@ const bg2B: BackgroundEntity = {
 const bg3: BackgroundEntity = {
     parentUid: null,
     type: EntityType.BACKGROUND_IMAGE,
+    filename: 'bg.pdf',
     center: {x: 100, y: 2},
     crop: {x: -1, y: 2.5, w: 100, h: 101},
     offset: {x: 1, y: 4},
@@ -114,6 +118,7 @@ const bg3: BackgroundEntity = {
 const bg4: BackgroundEntity = {
     parentUid: null,
     type: EntityType.BACKGROUND_IMAGE,
+    filename: 'bg.pdf',
     center: {x: 100, y: 2},
     crop: {x: -1, y: 2.5, w: 100, h: 101},
     offset: {x: 1, y: 4},
@@ -136,6 +141,7 @@ const bg4: BackgroundEntity = {
 const bg4B: BackgroundEntity = {
     parentUid: null,
     type: EntityType.BACKGROUND_IMAGE,
+    filename: 'bg.pdf',
     center: {x: 100, y: 2},
     crop: {x: -1, y: 2.5, w: 10, h: 101},
     offset: {x: 1, y: 4},
@@ -158,6 +164,7 @@ const bg4B: BackgroundEntity = {
 const bg4C: BackgroundEntity = {
     parentUid: null,
     type: EntityType.BACKGROUND_IMAGE,
+    filename: 'bg.pdf',
     center: {x: 100, y: 2},
     crop: {x: -1, y: 2.0, w: 10, h: 101},
     offset: {x: 1, y: 4},
@@ -272,7 +279,7 @@ describe('state-differ.ts', () => {
         const next: DrawingState = {
             backgrounds: [],
             generalInfo: gi2,
-            flowSystems: [ws2],
+            flowSystems: [ws1],
             calculationParams: cp1,
             entities: [],
         };
@@ -391,7 +398,7 @@ describe('state-differ.ts', () => {
         const prev: DrawingState = {
             backgrounds: [bg2, bg3, bg4],
             generalInfo: gi1,
-            flowSystems: [ws2, ws2, ws1, ws1],
+            flowSystems: [ws2, ws1],
             calculationParams: cp1,
             entities: [],
         };

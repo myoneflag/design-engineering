@@ -3,87 +3,10 @@ import {Coord, DocumentState, DrawableEntity, WithID} from '@/store/document/typ
 import * as _ from 'lodash';
 import {Interaction} from '@/htmlcanvas/lib/interaction';
 import {ObjectStore} from '@/htmlcanvas/lib/types';
-
-
-export abstract class BaseBackedObject extends DrawableObject {
-    entity: DrawableEntity;
-    parentEntity: DrawableEntity | null;
-    objectStore: ObjectStore;
-
-    protected onSelect: () => void;
-    protected onChange: () => void;
-    protected onCommit: () => void;
-
-    protected constructor(
-        objectStore: ObjectStore,
-        parentEntity: DrawableEntity | null,
-        obj: DrawableEntity,
-        onSelect: () => void,
-        onChange: () => void,
-        onCommit: () => void,
-    ) {
-        super(null);
-        this.parentEntity = parentEntity;
-        this.entity = obj;
-        this.onSelect = onSelect;
-        this.onChange = onChange;
-        this.onCommit = onCommit;
-        this.objectStore = objectStore;
-        this.refreshObjectInternal(obj);
-    }
-
-    get parent() {
-        if (this.parentEntity === null) {
-            return null;
-        } else {
-            const result = this.objectStore.get(this.parentEntity.uid);
-            if (result) {
-                return result;
-            }
-            throw new Error('Parent object not created while ');
-        }
-    }
-
-    set parent(par: BaseBackedObject | null) {
-        if (par) {
-            this.parentEntity = par.parentEntity;
-        } else {
-            this.parentEntity = null;
-        }
-    }
-
-    refreshObject(parentEntity: DrawableEntity | null, obj: DrawableEntity) {
-        const old = _.cloneDeep(this.entity);
-        this.entity = obj;
-        this.parentEntity = parentEntity;
-        this.refreshObjectInternal(obj, old);
-    }
-
-    abstract offerInteraction(interaction: Interaction): boolean;
-
-    // Return list of objects to remove.
-    abstract prepareDelete(): BaseBackedObject[];
-
-    abstract inBounds(objectCoord: Coord, objectRadius?: number): boolean;
-
-    protected abstract refreshObjectInternal(obj: DrawableEntity, old?: DrawableEntity): void;
-
-    get uid() {
-        return this.entity.uid;
-    }
-
-    get type() {
-        return this.entity.type;
-    }
-}
+import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 
 export default abstract class BackedDrawableObject<T extends DrawableEntity> extends BaseBackedObject {
     entity: T;
-
-    // Unfortunately, typescript does not allow abstract static methods. So this is just a human reminder
-    // to register new objects with a concrete static method (suggest: register()). Don't actually do the
-    // registration in this instance method, just no-op it and use it as a reminder to make the real one.
-    abstract rememberToRegister(): void;
 
     constructor(
         objectStore: ObjectStore,
@@ -96,6 +19,12 @@ export default abstract class BackedDrawableObject<T extends DrawableEntity> ext
         super(objectStore, parentEntity, obj, onSelect, onChange, onCommit);
         this.entity = obj; // to keep error checking happy
     }
+
+    // Unfortunately, typescript does not allow abstract static methods. So this is just a human reminder
+    // to register new objects with a concrete static method (suggest: register()). Don't actually do the
+    // registration in this instance method, just no-op it and use it as a reminder to make the real one.
+    abstract rememberToRegister(): void;
+
 }
 
 export type BaseBackedConstructor = new (

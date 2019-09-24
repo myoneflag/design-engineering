@@ -1,10 +1,11 @@
-import BackedDrawableObject, {BaseBackedObject} from '@/htmlcanvas/lib/backed-drawable-object';
+import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
+import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import PipeEntity, {fillPipeDefaultFields} from '@/store/document/entities/pipe-entity';
 import * as TM from 'transformation-matrix';
 import {Matrix} from 'transformation-matrix';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
-import {ConnectableEntity, Coord, DocumentState} from '@/store/document/types';
+import {ConnectableEntity, Coord, DocumentState, Rectangle} from '@/store/document/types';
 import {matrixScale} from '@/htmlcanvas/utils';
 import Flatten from '@flatten-js/core';
 import {Draggable, DraggableObject} from '@/htmlcanvas/lib/object-traits/draggable-object';
@@ -182,6 +183,11 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
     rememberToRegister(): void {
         //
+    }
+
+    viewBoundingBox(): Rectangle | null {
+        // We will let the connected components handle that, because we don't know what our bounding box really is.
+        return null;
     }
 
     protected refreshObjectInternal(obj: PipeEntity): void {

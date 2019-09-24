@@ -1,6 +1,7 @@
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {DocumentState, DrawableEntity} from '@/store/document/types';
-import BackedDrawableObject, {BaseBackedObject} from '@/htmlcanvas/lib/backed-drawable-object';
+import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
+import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 
 export interface DrawingContext {
     ctx: CanvasRenderingContext2D;

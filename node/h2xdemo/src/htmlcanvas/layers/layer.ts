@@ -3,7 +3,8 @@ import {DocumentState, DrawableEntity, WithID} from '@/store/document/types';
 import {MouseMoveResult} from '@/htmlcanvas/types';
 import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 import {Interaction} from '@/htmlcanvas/lib/interaction';
-import BackedDrawableObject, {BaseBackedObject} from '@/htmlcanvas/lib/backed-drawable-object';
+import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
+import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
 
 export default interface Layer {

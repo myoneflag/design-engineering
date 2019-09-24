@@ -28,9 +28,8 @@
     import PropertiesFieldBuilder from '@/components/editor/lib/PropertiesFieldBuilder.vue';
     import {fillFlowSourceDefaults, makeFlowSourceFields} from '@/store/document/entities/flow-source-entity';
     import {DocumentState} from '@/store/document/types';
-    import {fillTMVFields, makeTMVFields} from '../../../store/document/entities/tmv/tmv-entity';
-    import {Catalog} from '../../../store/catalog/types';
-    import {fillFixtureFields, makeFixtureFields} from "@/store/document/entities/fixtures/fixture-entity";
+    import {Catalog} from '@/store/catalog/types';
+    import {fillFixtureFields, makeFixtureFields} from '@/store/document/entities/fixtures/fixture-entity';
 
     @Component({
         components: {PropertiesFieldBuilder},
