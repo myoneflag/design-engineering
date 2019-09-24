@@ -60,7 +60,12 @@ export default function insertValve(context: CanvasContext, system: FlowSystemPa
     ));
 }
 
-export function addValveAndSplitPipe(context: CanvasContext, pipe: Pipe, wc: Coord, system: FlowSystemParameters): ValveEntity {
+export function addValveAndSplitPipe(
+    context: CanvasContext,
+    pipe: Pipe,
+    wc: Coord,
+    system: FlowSystemParameters,
+): ValveEntity {
     wc = pipe.project(wc);
 
     // Maybe we drew onto a background

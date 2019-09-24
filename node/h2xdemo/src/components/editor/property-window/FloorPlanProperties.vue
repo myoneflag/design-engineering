@@ -2,7 +2,7 @@
     <b-container>
         <b-row>
             <b-col>
-                <h3>Floor Plan</h3>
+                <h3>{{ selectedEntity.filename }}</h3>
             </b-col>
         </b-row>
 
@@ -196,6 +196,7 @@
                 renderPdf(this.file, (data: PDFRenderResult) => {
                     this.$store.dispatch('document/updateBackgroundInPlace', {background, update: () => ({
                             uri: data.uri,
+                            filename: this.file!.name,
                         }),
                     });
                     this.$store.dispatch('document/commit');

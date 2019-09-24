@@ -24,6 +24,19 @@
                     </template>
 
                 </b-col>
+                <b-col>
+
+                    <b-button-group>
+                        <b-button
+                                variant="outline-dark"
+                                v-b-tooltip.hover = "{title: 'Fit to View'}"
+                                class="toolBtn"
+                                @click="onFitToViewClick"
+                        >
+                            <v-icon name="expand" scale="1.5"/>
+                        </b-button>
+                    </b-button-group>
+                </b-col>
             </b-row>
         </div>
     </div>
@@ -39,6 +52,7 @@
         props: {
             currentToolConfig: Object,
             onToolClick: Function,
+            onFitToViewClick: Function,
         },
     })
     export default class Toolbar extends Vue {

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites errors="0"
+            failures="1"
+            tests="1">
+
+  <testsuite name="test"
+    errors="0" failures="1" hostname="" id="" package="test" skipped="0"
+    tests="1" time="5.678" timestamp="Tue, 24 Sep 2019 05:12:46 GMT">
+  
+    <testcase name="default e2e tests" classname="test" time="5.678" assertions="2">
+
+      <failure message="Testing if element &lt;.hello&gt; is present.">    at Object.default e2e tests (/home/yujin/h2x/h2x-mvp/node/h2xdemo/tests/e2e/specs/test.js:9:15)
+    at _combinedTickCallback (internal/process/next_tick.js:131:7)</failure>
+
+    
+    </testcase>
+  
+
+  
+
+  
+  </testsuite>
+</testsuites>

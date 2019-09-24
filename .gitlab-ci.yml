@@ -29,5 +29,5 @@ test:node:
     image: node:latest
     script: 
         - cd node/h2xdemo/
-        - npm run test
+        - npm run test:unit
 

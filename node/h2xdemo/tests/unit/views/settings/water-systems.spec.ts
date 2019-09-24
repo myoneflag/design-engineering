@@ -10,6 +10,9 @@ describe('FlowSystems.vue', () => {
     it('can edit all general properties', () => {
         const wrapper = shallowMount(FlowSystems, { store });
         const fieldIds: string[] = (wrapper.vm as any).fields.map((v: [string, string]) => v[0]);
+
+        fieldIds.push('uid');
+
         const expectedFields = _.keys(initialValue.drawing.flowSystems[0]);
 
         expect(fieldIds.sort()).eql(expectedFields.sort());

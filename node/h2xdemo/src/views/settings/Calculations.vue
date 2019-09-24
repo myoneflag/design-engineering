@@ -57,7 +57,7 @@
         }
 
         back() {
-            this.$router.push({ name: 'document'});
+            this.$router.push({ name: 'drawing'});
         }
     }
 

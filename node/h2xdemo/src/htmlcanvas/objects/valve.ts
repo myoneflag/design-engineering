@@ -1,10 +1,11 @@
-import BackedDrawableObject, {BaseBackedObject} from '@/htmlcanvas/lib/backed-drawable-object';
+import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
+import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import ValveEntity, {fillValveDefaultFields} from '@/store/document/entities/valve-entity';
 import * as TM from 'transformation-matrix';
 import {Matrix} from 'transformation-matrix';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
-import {Coord, DocumentState, DrawableEntity} from '@/store/document/types';
+import {Coord, DocumentState, DrawableEntity, Rectangle} from '@/store/document/types';
 import {matrixScale} from '@/htmlcanvas/utils';
 import * as _ from 'lodash';
 import Flatten from '@flatten-js/core';
@@ -17,6 +18,7 @@ import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
 import Pipe from '@/htmlcanvas/objects/pipe';
 import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
+import {isConnectable} from '@/store/document';
 
 @CenterDraggableObject
 @ConnectableObject
@@ -138,7 +140,7 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
     offerInteraction(interaction: Interaction): boolean {
         switch (interaction.type) {
             case InteractionType.INSERT:
-                return false;
+                return isConnectable(interaction.entityType);
             case InteractionType.CONTINUING_PIPE:
             case InteractionType.STARTING_PIPE:
                 return true;

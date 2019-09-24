@@ -1,5 +1,6 @@
 import BackgroundLayer from '@/htmlcanvas/layers/background-layer';
-import BackedDrawableObject, {BaseBackedObject} from '@/htmlcanvas/lib/backed-drawable-object';
+import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
+import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 import {DocumentState, DrawableEntity} from '@/store/document/types';
 import {Store} from 'vuex';

@@ -4,7 +4,7 @@ import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
 import {ConnectableObject} from '@/htmlcanvas/lib/object-traits/connectable';
 import {Coord, DocumentState} from '@/store/document/types';
-import {BaseBackedObject} from '@/htmlcanvas/lib/backed-drawable-object';
+import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import {InvisibleNode} from '@/htmlcanvas/objects/invisible-node';
 import Flatten from '@flatten-js/core';
 import {DrawingContext} from '@/htmlcanvas/lib/types';

@@ -1,11 +1,11 @@
 <template>
-    <div id="app">
+    <div id='app'>
         <router-view/>
         <version-number/>
     </div>
 </template>
 
-<script lang="ts">
+<script lang='ts'>
     import Vue from 'vue';
     import BootstrapVue from 'bootstrap-vue';
     import MainNavBar from './components/MainNavBar.vue';
@@ -25,7 +25,7 @@
     import VueCookies from 'vue-cookies';
     import VersionNumber from '@/components/VersionNumber.vue';
     import {MainEventBus} from '@/store/main-event-bus';
-    import {registerObjectBuilders} from "@/htmlcanvas/objects";
+    import {registerObjectBuilders} from '@/htmlcanvas/objects';
 
     Vue.use(VueDragDrop);
 
@@ -47,10 +47,10 @@
 
     export default class App extends Vue {
         mounted() {
-            document.onkeydown = function(evt) {
-                var isEscape = false;
-                if ("key" in evt) {
-                    isEscape = (evt.key === "Escape" || evt.key === "Esc");
+            document.onkeydown = (evt) => {
+                let isEscape = false;
+                if ('key' in evt) {
+                    isEscape = (evt.key === 'Escape' || evt.key === 'Esc');
                 }
                 if (isEscape) {
                     MainEventBus.$emit('escape-pressed');
@@ -60,7 +60,7 @@
     }
 </script>
 
-<style lang="less">
+<style lang='less'>
 
 #app {
     font-family: 'Avenir', Helvetica, Arial, sans-serif;

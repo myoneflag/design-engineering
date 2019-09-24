@@ -1,4 +1,5 @@
-import BackedDrawableObject, {BaseBackedObject} from '@/htmlcanvas/lib/backed-drawable-object';
+import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
+import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import FlowSourceEntity from '@/store/document/entities/flow-source-entity';
 import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';

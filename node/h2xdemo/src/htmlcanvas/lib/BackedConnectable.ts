@@ -1,4 +1,5 @@
-import BackedDrawableObject, {BaseBackedObject} from '@/htmlcanvas/lib/backed-drawable-object';
+import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
+import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import {ConnectableEntity} from '@/store/document/types';
 import assert from 'assert';
 

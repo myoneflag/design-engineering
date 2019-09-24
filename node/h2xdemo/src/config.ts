@@ -55,29 +55,33 @@ export const SENSIBLE_SCALES = [
 ];
 
 // These are some temporary configs while we don't have a database yet.
-export const PSD_METHODS = [
-
-    'DIN 1988-300 Residential',
-    'Hospital',
-    'Hotel',
-    'School',
-    'Office',
-    'Assisted Living',
-    'Nursing Home',
-    'AS3500 LU, Dwellings',
-    'ASPE',
-    'Barries Book LU, Dwellings',
-
+//
+export const PSD_METHODS: Array<[string, boolean]> = [
+    ['AS3500 2018 Loading Units', true],
+    ['AS3500 2018 Dwellings', false],
+    ['Barrie\'s Book Loading Units', false],
+    ['Barrie\'s Book Dwellings', false],
+    ['DIN 1988-300 - Residential', false],
+    ['DIN 1988-300 - Hospital', false],
+    ['DIN 1988-300 - Hotel', false],
+    ['DIN 1988-300 - School', false],
+    ['DIN 1988-300 - Office', false],
+    ['DIN 1988-300 - Assisted Living', false],
+    ['DIN 1988-300 - Nursing Home', false],
+    ['BS 806', false],
+    ['CIBSE Guide G', false],
+    ['Uniform Plumbing Code 2018', false],
+    ['International Plumbing Code 2018', false],
 ];
 
-export const RING_MAIN_CALCULATION_METHODS = [
-    'Flow rate assigned to each fixture as %',
-    'Flow rate assigned to fixtures evenly, ',
-    'Flow rate assigned to most disadvantaged fixtures',
-    '99th percentile computer simulated PSD',
+export const RING_MAIN_CALCULATION_METHODS: Array<[string, boolean]> = [
+    ['Flow rate assigned to each fixture as %', false],
+    ['Flow rate assigned to fixtures evenly', false],
+    ['Flow rate assigned to most disadvantaged fixtures', false],
+    ['99th percentile computer simulated PSD', false],
 ];
 
-export const PIPE_SIZING_METHODS = [
-    'Keep maximum velocity within bounds',
-    'Keep maximum pressure drop within bounds',
+export const PIPE_SIZING_METHODS: Array<[string, boolean]> = [
+    ['Keep maximum velocity within bounds', true],
+    ['Keep maximum pressure drop within bounds', true],
 ];

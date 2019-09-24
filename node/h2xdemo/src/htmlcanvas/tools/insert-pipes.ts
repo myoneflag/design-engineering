@@ -42,6 +42,7 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
         },
         (wc: Coord, event: MouseEvent) => {
 
+
             // Preview
             context.offerInteraction(
                 {
@@ -156,10 +157,10 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
                         : 0,
                     worldCoord: wc,
                 },
-                (object) => {
-                    if (object.uid !== pipeUid) {
+                (obj) => {
+                    if (obj.uid !== pipeUid) {
                         if (nextEntity) {
-                            return object.uid !== nextEntity.uid;
+                            return obj.uid !== nextEntity.uid;
                         } else {
                             return true;
                         }
