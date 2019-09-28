@@ -2,7 +2,7 @@
     <div class="toolbar">
         <div class="container">
             <b-row>
-                <b-col cols="4">
+                <b-col>
 
                     <b-button-group>
                         <template v-for="tool in TOOLBAR_BUTTONS" v-text="tool.tooltip">

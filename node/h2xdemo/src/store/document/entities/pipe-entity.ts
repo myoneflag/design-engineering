@@ -1,10 +1,18 @@
-import {Color, DocumentState, DrawableEntity, FlowSystemParameters, WithID} from '@/store/document/types';
+import {
+    Color,
+    DocumentState,
+    DrawableEntity,
+    FlowSystemParameters,
+    WithID,
+} from '@/store/document/types';
 import {FieldType, PropertyField} from '@/store/document/entities/property-field';
 import * as _ from 'lodash';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import {EntityType} from '@/store/document/entities/types';
+import PipeCalculation from '@/store/document/calculations/pipe-calculation';
+import {CalculationTarget} from '@/store/document/calculations/types';
 
-export default interface PipeEntity extends DrawableEntity {
+export default interface PipeEntity extends DrawableEntity, CalculationTarget<PipeCalculation> {
     type: EntityType.PIPE;
 
     systemUid: string;
@@ -16,6 +24,8 @@ export default interface PipeEntity extends DrawableEntity {
 
     color: Color | null;
     endpointUid: [string, string];
+
+    calculation: PipeCalculation | null;
 }
 
 export function makePipeFields(materials: string[], systems: FlowSystemParameters[]): PropertyField[] {

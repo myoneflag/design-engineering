@@ -1,8 +1,11 @@
 import * as Operations from './operation-transforms/operation-transforms';
-import {PaperSize, PIPE_SIZING_METHODS, PSD_METHODS, RING_MAIN_CALCULATION_METHODS} from '@/config';
+import {PIPE_SIZING_METHODS, PSD_METHODS, RING_MAIN_CALCULATION_METHODS} from '@/config';
 import * as _ from 'lodash';
 import {EntityType} from '@/store/document/entities/types';
 import {BackgroundEntity} from '@/store/document/entities/background-entity';
+import {ViewPort} from '@/htmlcanvas/viewport';
+import {DrawingMode} from '@/htmlcanvas/types';
+import {DemandType} from '@/calculations/types';
 
 // Because of how the diffing engine works, there are restrictions on the data structure for the document state.
 // Rules are:
@@ -58,6 +61,21 @@ export interface DrawingState {
     entities: DrawableEntity[];
 }
 
+export interface CalculationUiSettings {
+    demandType: DemandType | null;
+}
+
+export interface UIState {
+    viewPort: ViewPort | null;
+    loaded: boolean;
+    drawingMode: DrawingMode;
+    demandType: DemandType;
+
+    lastCalculationId: number;
+    lastCalculationUiSettings: CalculationUiSettings;
+    isCalculating: boolean;
+}
+
 /**
  * A document is a drawing + all of its history and meta attributes.
  */
@@ -69,13 +87,16 @@ export interface DocumentState {
     drawing: DrawingState;
 
     optimisticHistory: Operations.OperationTransform[];
+
+    stagedCommits: Operations.OperationTransform[];
+
     // A list of operations that have been performed on the committedDrawing.
     // This implies that changes in the drawing state are not reflected in operations.
     // This also implies that changes are updated from the server.
     history: Operations.OperationTransform[];
     nextId: number;
 
-    loaded: boolean;
+    uiState: UIState;
 }
 
 export interface GeneralInfo {
@@ -160,11 +181,25 @@ export const initialDrawing: DrawingState = {
     entities: [],
 };
 
+export const initialUIState: UIState = {
+    demandType: DemandType.PSD,
+    drawingMode: DrawingMode.FloorPlan,
+    loaded: false,
+    viewPort: null,
+
+    lastCalculationId: 0,
+    lastCalculationUiSettings: {
+        demandType: null,
+    },
+    isCalculating: false,
+};
+
 export const initialValue: DocumentState = {
     committedDrawing: _.cloneDeep(initialDrawing),
     drawing: _.cloneDeep(initialDrawing),
     optimisticHistory: [],
+    stagedCommits: [],
     history: [],
     nextId: 1,
-    loaded: false,
+    uiState: _.cloneDeep(initialUIState),
 };

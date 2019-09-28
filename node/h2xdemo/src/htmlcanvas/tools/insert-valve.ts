@@ -83,6 +83,7 @@ export function addValveAndSplitPipe(
         type: EntityType.VALVE,
         uid: uuid(),
         valveType: 'fitting',
+        calculation: null,
     };
 
     const newPipe1: PipeEntity = {
@@ -97,6 +98,7 @@ export function addValveAndSplitPipe(
         systemUid: pipe.entity.systemUid,
         type: EntityType.PIPE,
         uid: pipe1uid,
+        calculation: null,
     };
 
     const newPipe2: PipeEntity = {
@@ -111,6 +113,7 @@ export function addValveAndSplitPipe(
         systemUid: pipe.entity.systemUid,
         type: EntityType.PIPE,
         uid: pipe2uid,
+        calculation: null,
     };
 
     (context.document.drawing.entities.find(

@@ -1,12 +1,20 @@
-import {ConnectableEntity, Coord, DocumentState, DrawableEntity, FlowSystemParameters} from '@/store/document/types';
+import {
+    ConnectableEntity,
+    Coord,
+    DocumentState,
+    DrawableEntity,
+    FlowSystemParameters,
+} from '@/store/document/types';
 import {EntityType} from '@/store/document/entities/types';
 import {FieldType, PropertyField} from '@/store/document/entities/property-field';
 import * as _ from 'lodash';
 import ValveEntity from '@/store/document/entities/valve-entity';
 import CatalogState, {Catalog} from '@/store/catalog/types';
 import InvisibleNodeEntity from '@/store/document/entities/Invisible-node-entity';
+import TmvCalculation from '@/store/document/calculations/tmv-calculation';
+import {CalculationTarget} from '@/store/document/calculations/types';
 
-export default interface TmvEntity extends DrawableEntity {
+export default interface TmvEntity extends DrawableEntity, CalculationTarget<TmvCalculation> {
     center: Coord;
     type: EntityType.TMV;
     rotation: number;
@@ -25,6 +33,8 @@ export default interface TmvEntity extends DrawableEntity {
     maxHotColdPressureDifferentialPCT: number | null;
     minFlowRateLS: number | null;
     maxFlowRateLS: number | null;
+
+    calculation: TmvCalculation | null;
 }
 
 export interface SystemNodeEntity extends InvisibleNodeEntity {

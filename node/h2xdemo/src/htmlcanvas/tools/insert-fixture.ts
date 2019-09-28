@@ -56,6 +56,7 @@ export default function insertFixture(
                 rotation: 0,
                 warmRoughInUid: hasWarm ? warmUid : null,
                 warmTempC: null,
+                calculation: null,
             };
 
 

@@ -21,10 +21,11 @@ export const mutations: MutationTree<DocumentState> = {
             if (_.isEqual(state.optimisticHistory[0], operation)) {
                 // All g.
                 state.optimisticHistory.splice(0, 1);
-                MainEventBus.$emit('ot-applied');
+                state.nextId = Math.max(state.nextId, operation.id) + 1;
                 return;
             } else {
-                window.alert('Please refresh your browser - an error has been detected');
+                window.alert('An error has been detected, refreshing now.');
+                window.location.reload();
                 throw new Error('Optimistic operation conflict. TODO: rewind with undo\'s here. New object is: \n' +
                     JSON.stringify(operation) + '\n' +
                     'old object is:\n' +
@@ -33,28 +34,39 @@ export const mutations: MutationTree<DocumentState> = {
             }
         }
 
-        let handled: boolean = true;
 
-        switch (operation.type) {
-            case OT.OPERATION_NAMES.ADD_OPERATION:
-            case OT.OPERATION_NAMES.DELETE_OPERATION:
-            case OT.OPERATION_NAMES.UPDATE_OPERATION:
-            case OT.OPERATION_NAMES.MOVE_OPERATION: {
-                applyOtOnState(state.drawing, _.cloneDeep(operation));
-                applyOtOnState(state.committedDrawing, _.cloneDeep(operation));
-                break;
+        if (operation.type === OT.OPERATION_NAMES.COMMITTED_OPERATION) {
+
+            while (state.stagedCommits.length) {
+                const toApply = state.stagedCommits[0];
+                let handled: boolean = true;
+                switch (toApply.type) {
+                    case OT.OPERATION_NAMES.ADD_OPERATION:
+                    case OT.OPERATION_NAMES.DELETE_OPERATION:
+                    case OT.OPERATION_NAMES.UPDATE_OPERATION:
+                    case OT.OPERATION_NAMES.MOVE_OPERATION: {
+                        applyOtOnState(state.drawing, _.cloneDeep(toApply));
+                        applyOtOnState(state.committedDrawing, _.cloneDeep(toApply));
+                        break;
+                    }
+
+                    default:
+                        handled = false;
+                }
+
+                if (handled) {
+                    state.history.push(toApply);
+                    state.nextId = Math.max(state.nextId, toApply.id) + 1;
+                    state.stagedCommits.splice(0, 1);
+                } else {
+                    throw new Error('Invalid operation: ' + JSON.stringify(toApply));
+                }
             }
-            default:
-                handled = false;
+        } else {
+            state.stagedCommits.push(operation);
         }
 
-        if (handled) {
-            state.history.push(operation);
-            state.nextId = Math.max(state.nextId, operation.id) + 1;
-            MainEventBus.$emit('ot-applied');
-        } else {
-            throw new Error('Invalid operation: ' + JSON.stringify(operation));
-        }
+        MainEventBus.$emit('ot-applied');
     },
 
     setTitle(state, title) {
@@ -100,7 +112,7 @@ export const mutations: MutationTree<DocumentState> = {
     },
 
     loaded(state, loaded) {
-        state.loaded = loaded;
+        state.uiState.loaded = loaded;
     },
 };
 

@@ -1,7 +1,8 @@
-import { ActionTree } from 'vuex';
+import {ActionTree} from 'vuex';
 import axios from 'axios';
 import * as OT from './operation-transforms/operation-transforms';
-import { RootState } from '../types';
+import {OPERATION_NAMES} from './operation-transforms/operation-transforms';
+import {RootState} from '../types';
 import {DocumentState} from '@/store/document/types';
 import {diffState} from '@/store/document/operation-transforms/state-differ';
 import {applyOtOnState} from '@/store/document/operation-transforms/state-ot-apply';
@@ -73,6 +74,10 @@ export const actions: ActionTree<DocumentState, RootState> = {
         }
 
         MainEventBus.$emit('ot-applied');
+
+        if (diff.length) {
+            diff.push({type: OPERATION_NAMES.COMMITTED_OPERATION, id: -1});
+        }
 
         const wait = (index: number): Promise<any> => {
             if (index === diff.length - 1) {

@@ -22,6 +22,9 @@ export default function insertFlowSource(
     let toReplace: BackedDrawableObject<ConnectableEntity> | null = null;
     MainEventBus.$emit('set-tool-handler', new PointTool(
         (interrupted) => {
+            if (interrupted) {
+                context.$store.dispatch('document/revert');
+            }
             MainEventBus.$emit('set-tool-handler', null);
         },
         (wc: Coord) => {
@@ -85,6 +88,7 @@ export default function insertFlowSource(
                     temperatureC: null,
                     type: EntityType.FLOW_SOURCE,
                     uid: newUid,
+                    calculation: null,
                 };
 
                 doc.drawing.entities.push(newEntity);

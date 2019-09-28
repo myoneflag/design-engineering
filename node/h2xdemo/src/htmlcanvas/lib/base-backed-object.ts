@@ -3,6 +3,7 @@ import {Coord, DrawableEntity} from '@/store/document/types';
 import {ObjectStore} from '@/htmlcanvas/lib/types';
 import * as _ from 'lodash';
 import {Interaction} from '@/htmlcanvas/lib/interaction';
+import {EntityType} from '@/store/document/entities/types';
 
 export default abstract class BaseBackedObject extends DrawableObject {
     entity: DrawableEntity;
@@ -71,7 +72,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
         return this.entity.uid;
     }
 
-    get type() {
+    get type(): EntityType {
         return this.entity.type;
     }
 }

@@ -1,4 +1,10 @@
-import {ConnectableEntity, Coord, DocumentState, DrawableEntity, FlowSystemParameters} from '@/store/document/types';
+import {
+    ConnectableEntity,
+    Coord,
+    DocumentState,
+    DrawableEntity,
+    FlowSystemParameters,
+} from '@/store/document/types';
 import {EntityType} from '@/store/document/entities/types';
 import {FieldType, PropertyField} from '@/store/document/entities/property-field';
 import * as _ from 'lodash';
@@ -6,8 +12,10 @@ import ValveEntity from '@/store/document/entities/valve-entity';
 import CatalogState, {Catalog} from '@/store/catalog/types';
 import InvisibleNodeEntity from '@/store/document/entities/Invisible-node-entity';
 import {PSD_METHODS} from '../../../../config';
+import FixtureCalculation from '@/store/document/calculations/fixture-calculation';
+import {CalculationTarget} from '@/store/document/calculations/types';
 
-export default interface FixtureEntity extends DrawableEntity {
+export default interface FixtureEntity extends DrawableEntity, CalculationTarget<FixtureCalculation> {
     center: Coord;
     type: EntityType.FIXTURE;
     name: string;
@@ -27,6 +35,8 @@ export default interface FixtureEntity extends DrawableEntity {
     loadingUnitsHot: number | null;
     fixtureUnits: number | null;
     probabilityOfUsagePCT: number | null;
+
+    calculation: FixtureCalculation | null;
 }
 
 export function makeFixtureFields(): PropertyField[] {

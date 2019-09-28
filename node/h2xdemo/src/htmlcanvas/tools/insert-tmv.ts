@@ -71,6 +71,7 @@ export default function insertTmv(
                             parentUid,
                             outputTemperatureC: 50,
                             uid: tmvUid,
+                            calculation: null,
                         };
 
                         const newCold: SystemNodeEntity = {
@@ -260,6 +261,7 @@ function leadPipe(
         systemUid,
         type: EntityType.PIPE,
         uid: pipeUid,
+        calculation: null,
     };
 
     context.document.drawing.entities.push(newPipe);

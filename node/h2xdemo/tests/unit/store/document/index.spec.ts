@@ -2,7 +2,7 @@ import {EntityType} from '@/store/document/entities/types';
 import {isConnectable} from '@/store/document';
 import { expect } from 'chai';
 
-describe('index.ts', () => {
+describe('calculation-engine.ts', () => {
     it('can determine connectivity for every type', () => {
         Object.values(EntityType).forEach((item) => {
             if (item) {

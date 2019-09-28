@@ -11,4 +11,7 @@ export enum EntityType {
 
     // Fixtures
     FIXTURE = 'FIXTURE',
+
+    // Output
+    RESULTS_MESSAGE = 'RESULTS_MESSAGE',
 }

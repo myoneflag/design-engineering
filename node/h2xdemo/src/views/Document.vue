@@ -25,6 +25,7 @@ import {FileWebsocketMessageType} from "@/api/types";
     import {loadCatalog} from '@/api/catalog';
     import LoadingScreen from '@/views/LoadingScreen.vue';
     import {Catalog} from '@/store/catalog/types';
+    import {DocumentState} from '@/store/document/types';
 
 
     @Component({
@@ -77,7 +78,7 @@ import {FileWebsocketMessageType} from "@/api/types";
             });
         }
 
-        get document() {
+        get document(): DocumentState {
             return this.$store.getters['document/document'];
         }
 
@@ -90,7 +91,7 @@ import {FileWebsocketMessageType} from "@/api/types";
         }
 
         get isLoading() {
-            return !this.catalogLoaded || !this.document.loaded;
+            return !this.catalogLoaded || !this.document.uiState.loaded;
         }
 
     }
