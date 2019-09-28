@@ -8,8 +8,10 @@ import {
 import {FieldType, PropertyField} from '@/store/document/entities/property-field';
 import * as _ from 'lodash';
 import {EntityType} from '@/store/document/entities/types';
+import FlowSourceCalculation from '@/store/document/calculations/flow-source-calculation';
+import {CalculationTarget} from '@/store/document/calculations/types';
 
-export default interface FlowSourceEntity extends ConnectableEntity {
+export default interface FlowSourceEntity extends ConnectableEntity, CalculationTarget<FlowSourceCalculation> {
     type: EntityType.FLOW_SOURCE;
     center: Coord;
     systemUid: string;
@@ -22,6 +24,8 @@ export default interface FlowSourceEntity extends ConnectableEntity {
     color: Color | null;
     temperatureC: number | null;
     pressureKPA: number;
+
+    calculation: FlowSourceCalculation | null;
 }
 
 export function makeFlowSourceFields(materials: string[], systems: FlowSystemParameters[]): PropertyField[] {

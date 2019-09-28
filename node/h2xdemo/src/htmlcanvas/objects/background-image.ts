@@ -14,6 +14,7 @@ import {DrawingContext} from '@/htmlcanvas/lib/types';
 import {BackgroundEntity} from '@/store/document/entities/background-entity';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
+import Flatten from '@flatten-js/core';
 
 // TODO: Convert into backed drawable object.
 export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> implements Sizeable {
@@ -386,7 +387,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         //
     }
 
-    viewBoundingBox() {
+    shape() {
         const a = this.toWorldCoord({x: this.boundary.x,
             y: this.boundary.y});
         const b = this.toWorldCoord({x: this.boundary.x + this.boundary.w,
@@ -396,12 +397,9 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         const d = this.toWorldCoord({x: this.boundary.x + this.boundary.w,
             y: this.boundary.y + this.boundary.h});
 
-        const l = Math.min(a.x, b.x, c.x, d.x);
-        const r = Math.max(a.x, b.x, c.x, d.x);
-        const t = Math.min(a.y, b.y, c.y, d.y);
-        const bot = Math.max(a.y, b.y, c.y, d.y);
-
-        return {x: l, y: t, w: r - l, h: bot - t};
+        const shape = new Flatten.Polygon();
+        shape.addFace([a, b, c, d].map((p) => Flatten.point(p.x, p.y)));
+        return shape;
     }
 
     protected refreshObjectInternal(obj: BackgroundEntity, old: BackgroundEntity): void {

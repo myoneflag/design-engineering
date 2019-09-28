@@ -155,7 +155,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
     }
 
     prepareDelete(): BaseBackedObject[] {
-        return [this];
+        return [];
     }
 
 

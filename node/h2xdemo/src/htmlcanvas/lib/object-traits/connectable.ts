@@ -58,6 +58,8 @@ export function ConnectableObject<T extends new (...args: any[])
             const superResult = super.prepareDelete();
             result.push(...superResult);
 
+            result.push(this);
+
             return result;
         }
     };

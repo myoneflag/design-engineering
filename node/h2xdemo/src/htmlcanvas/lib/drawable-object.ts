@@ -5,6 +5,7 @@ import * as TM from 'transformation-matrix';
 import {MouseMoveResult} from '@/htmlcanvas/types';
 import {decomposeMatrix, matrixScale} from '@/htmlcanvas/utils';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
+import Flatten from '@flatten-js/core';
 
 export default abstract class DrawableObject {
     abstract position: Matrix;
@@ -165,7 +166,8 @@ export default abstract class DrawableObject {
     abstract onMouseUp(event: MouseEvent, vp: ViewPort): boolean;
 
     // For figuring out how to fit the view.
-    viewBoundingBox(): Rectangle | null {
-        return {...this.toWorldCoord({x: 0, y: 0}), w: 0, h: 0};
+    shape(): Flatten.Segment | Flatten.Point | Flatten.Polygon | null {
+        const point = this.toWorldCoord({x: 0, y: 0});
+        return Flatten.point(point.x, point.y);
     }
 }

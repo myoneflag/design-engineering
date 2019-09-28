@@ -70,7 +70,7 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                 const [parentUid, oc] = getInsertCoordsAt(context, wc);
 
                 // Nope, we landed on nothing. We create new valve here.
-                entity = {
+                const valveEntity: ValveEntity = {
                     center: oc,
                     color: null,
                     connections: [],
@@ -80,8 +80,10 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                     uid: uuid(),
                     // These names should come from databases.
                     valveType: 'fitting',
+                    calculation: null,
                 };
-                doc.drawing.entities.push(entity);
+                entity = valveEntity;
+                doc.drawing.entities.push(valveEntity);
             }
 
             context.$store.dispatch('document/commit').then(() => {
@@ -133,6 +135,7 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
                     systemUid: system.uid,
                     type: EntityType.PIPE,
                     uid: pipeUid,
+                    calculation: null,
                 };
                 context.document.drawing.entities.push(pipe);
                 (context.document.drawing.entities.find((e) => e.uid === lastAttachment.uid) as ConnectableEntity)
@@ -246,7 +249,7 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
                     }
 
                     // Create 2nd valve
-                    nextEntity = {
+                    const valveEntity: ValveEntity = {
                         center: oc,
                         color: null,
                         connections: [pipeUid],
@@ -256,7 +259,9 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
                         uid: uuid(),
                         // These names should come from databases.
                         valveType: 'fitting',
+                        calculation: null,
                     };
+                    nextEntity = valveEntity;
                     context.document.drawing.entities.push(nextEntity);
                     needUpdate = true;
                 }

@@ -31,8 +31,7 @@ export function isConnectable(type: EntityType): boolean {
         case EntityType.FIXTURE:
         case EntityType.BACKGROUND_IMAGE:
         case EntityType.PIPE:
+        case EntityType.RESULTS_MESSAGE:
             return false;
-        default:
-            throw new Error('type not recognised ' + type);
     }
 }

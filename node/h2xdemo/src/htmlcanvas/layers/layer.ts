@@ -9,7 +9,7 @@ import {DrawingContext} from '@/htmlcanvas/lib/types';
 
 export default interface Layer {
     selectedEntity: WithID | null;
-    selectedObject: DrawableObject | null;
+    selectedObject: BaseBackedObject | null;
 
     draw(context: DrawingContext, active: boolean, ...args: any[]): any;
     update(doc: DocumentState): any;

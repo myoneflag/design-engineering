@@ -41,6 +41,22 @@
                 :on-change="onChange"
                 :on-delete="onDelete"
         />
+
+        <!--Debug-->
+        <b-row style="margin-top: 20px">
+
+            <b-col>
+
+                <b-button style="opacity: 0.2" v-b-toggle.collapse-1 variant="primary" size="sm">Debug Info <v-icon name="info" scale="0.8"/></b-button>
+                <b-collapse id="collapse-1" class="mt-2">
+                        <pre style="font-size: 12px; text-align: left">{{ JSON.stringify(entity, null, 2) }}</pre>
+                        <b-button v-b-toggle.collapse-1-inner size="sm">Toggle Inner Collapse</b-button>
+                        <b-collapse id="collapse-1-inner" class="mt-2">
+                            <b-card>Hello!</b-card>
+                        </b-collapse>
+                </b-collapse>
+            </b-col>
+        </b-row>
     </div>
 </template>
 

@@ -185,7 +185,18 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         //
     }
 
-    viewBoundingBox(): Rectangle | null {
+    shape(): Flatten.Segment | null {
+        if (this.lastDrawnLine) {
+            if (this.lastDrawnLine instanceof Flatten.Point) {
+                const w = this.toWorldCoord(this.lastDrawnLine);
+                return Flatten.point([w.x, w.y]);
+            } else {
+                const aw = this.toWorldCoord(this.lastDrawnLine.ps);
+                const bw = this.toWorldCoord(this.lastDrawnLine.pe);
+
+                return Flatten.segment(Flatten.point(aw.x, aw.y), Flatten.point(bw.x, bw.y));
+            }
+        }
         // We will let the connected components handle that, because we don't know what our bounding box really is.
         return null;
     }

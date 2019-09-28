@@ -23,6 +23,12 @@
                 @insert="hydraulicsInsert"
             />
 
+            <CalculationBar
+                v-if="mode === 2"
+                :demandType.sync="demandType"
+                :is-calculating="isCalculating"
+            />
+
             <PropertiesWindow
                     :selected-entity="selectedEntity"
                     :selected-object="selectedObject"
@@ -41,7 +47,7 @@
             ></Toolbar>
 
             <InstructionPage
-                v-if="documentBrandNew"
+                v-if="documentBrandNew && toolHandler === null"
             />
         </drop>
         <resize-observer @notify="draw"/>
@@ -53,12 +59,7 @@
     import Vue from 'vue';
     import Component from 'vue-class-component';
     import {ViewPort} from '@/htmlcanvas/viewport';
-    import {
-        Coord,
-        DocumentState,
-        DrawableEntity,
-        FlowSystemParameters,
-    } from '@/store/document/types';
+    import {Coord, DocumentState, FlowSystemParameters} from '@/store/document/types';
     import {drawPaperScale} from '@/htmlcanvas/scale';
     import ModeButtons from '@/components/editor/ModeButtons.vue';
     import PropertiesWindow from '@/components/editor/property-window/PropertiesWindow.vue';
@@ -72,7 +73,7 @@
     import {ToolConfig} from '@/store/tools/types';
     import {DEFAULT_TOOL, ToolHandler} from '@/htmlcanvas/lib/tool';
     import uuid from 'uuid';
-    import {PDFRenderResult, renderPdf} from '@/api/pdf';
+    import {renderPdf} from '@/api/pdf';
     import HydraulicsLayer from '@/htmlcanvas/layers/hydraulics-layer';
     import Layer from '@/htmlcanvas/layers/layer';
     import HydraulicsInsertPanel from '@/components/editor/HydraulicsInsertPanel.vue';
@@ -88,9 +89,16 @@
     import insertFixture from '@/htmlcanvas/tools/insert-fixture';
     import FloorPlanInsertPanel from '@/components/editor/FloorPlanInsertPanel.vue';
     import InstructionPage from '@/components/editor/InstructionPage.vue';
+    import CalculationBar from '@/components/CalculationBar.vue';
+    import {DemandType} from '@/calculations/types';
+    import CalculationEngine from '@/calculations/calculation-engine';
+    import CalculationLayer from '@/htmlcanvas/layers/calculation-layer';
+    import {getBoundingBox} from '@/htmlcanvas/lib/utils';
+    import {Catalog} from '@/store/catalog/types';
 
     @Component({
         components: {
+            CalculationBar,
             InstructionPage,
             FloorPlanInsertPanel,
             LoadingScreen,
@@ -102,9 +110,6 @@
 
         grabbedPoint: Coord | null = null;
         hasDragged: boolean = false;
-
-        viewPort: ViewPort = this.initialViewport;
-        internalMode: DrawingMode = DrawingMode.FloorPlan;
 
         objectStore: ObjectStore =
             new ObjectStore();
@@ -134,6 +139,18 @@
                 this.$store.dispatch('document/commit');
             },
         );
+        calculationLayer: CalculationLayer = new CalculationLayer(
+            this.objectStore,
+            () => {
+                this.scheduleDraw();
+            },
+            (selctedObject: BaseBackedObject | null) => {
+                this.scheduleDraw();
+            },
+            () => {
+                this.$store.dispatch('document/commit');
+            },
+        );
         allLayers: Layer[] = [];
 
 
@@ -154,6 +171,8 @@
 
         lastDrawingContext: DrawingContext | null = null;
 
+        calculationEngine!: CalculationEngine;
+
         mounted() {
             this.ctx = (this.$refs.drawingCanvas as any).getContext('2d');
 
@@ -165,8 +184,14 @@
             (this.$refs.drawingCanvas as any).onmouseup = this.onMouseUp;
             (this.$refs.drawingCanvas as any).onwheel = this.onWheel;
 
-            this.allLayers.push(this.backgroundLayer, this.hydraulicsLayer);
+            this.allLayers.push(this.backgroundLayer, this.hydraulicsLayer, this.calculationLayer);
             this.processDocument();
+
+            if (this.document.uiState.viewPort === null) {
+                this.fitToView();
+            }
+
+            this.calculationEngine = new CalculationEngine();
 
             setInterval(this.drawLoop, 20);
         }
@@ -183,11 +208,17 @@
             return this.$store.getters['document/document'];
         }
 
+        get catalog(): Catalog {
+            return this.$store.getters['catalog/default'];
+        }
+
         get activeLayer(): Layer | null {
             if (this.mode === DrawingMode.FloorPlan) {
                 return this.backgroundLayer;
             } else if (this.mode === DrawingMode.Hydraulics) {
                 return this.hydraulicsLayer;
+            } else if (this.mode === DrawingMode.Calculations) {
+                return this.calculationLayer;
             }
             return null;
         }
@@ -201,11 +232,30 @@
         }
 
         get mode() {
-            return this.internalMode;
+            return this.document.uiState.drawingMode;
         }
         set mode(value) {
-            this.internalMode = value;
+            this.document.uiState.drawingMode = value;
             this.processDocument();
+        }
+
+        get demandType() {
+            return this.document.uiState.demandType;
+        }
+        set demandType(value: DemandType) {
+            this.document.uiState.demandType = value;
+            this.considerCalculating();
+        }
+
+        get viewPort(): ViewPort {
+            if (this.document.uiState.viewPort === null) {
+                this.document.uiState.viewPort = this.initialViewport;
+            }
+            return this.document.uiState.viewPort;
+        }
+
+        set viewPort(vp: ViewPort) {
+            this.document.uiState.viewPort = vp;
         }
 
         onOT(redraw: boolean = true) {
@@ -219,37 +269,20 @@
         }
 
         get selectedEntity() {
-            if (this.mode === DrawingMode.FloorPlan) {
-                if (this.backgroundLayer) {
-                    return this.backgroundLayer.selectedEntity;
-                } else {
-                    return null;
-                }
-            } else if (this.mode === DrawingMode.Hydraulics) {
-                if (this.hydraulicsLayer) {
-                    return this.hydraulicsLayer.selectedEntity;
-                } else {
-                    return null;
-                }
+            if (this.activeLayer) {
+                return this.activeLayer.selectedEntity;
+            }
+        }
+
+        get selectedObject() {
+            if (this.activeLayer) {
+                return this.activeLayer.selectedObject;
             }
             return null;
         }
 
-        get selectedObject() {
-            if (this.mode === DrawingMode.FloorPlan) {
-                if (this.backgroundLayer) {
-                    return this.backgroundLayer.selectedObject;
-                } else {
-                    throw new Error('background layer missing');
-                }
-            } else if (this.mode === DrawingMode.Hydraulics) {
-                if (this.hydraulicsLayer) {
-                    return this.hydraulicsLayer.selectedObject;
-                } else {
-                    throw new Error('hydraulics layer missing');
-                }
-            }
-            return null;
+        get isCalculating() {
+            return this.document.uiState.isCalculating;
         }
 
         deleteEntity(object: BaseBackedObject) {
@@ -289,6 +322,7 @@
 
         processDocument(redraw: boolean = true) {
             this.updating = true;
+            this.considerCalculating();
             this.allLayers.forEach((l) => l.update(this.document));
             this.updating = false;
             // finally, draw
@@ -358,26 +392,8 @@
                 this.viewPort = this.initialViewport;
                 this.scheduleDraw();
             } else {
-                let l = Infinity;
-                let r = -Infinity;
-                let t = Infinity;
-                let b = -Infinity;
 
-                const look = (e: DrawableEntity) => {
-                    const obj = this.objectStore.get(e.uid);
-                    if (obj) {
-                        const bb = obj.viewBoundingBox();
-                        if (bb) {
-                            l = Math.min(l, bb.x);
-                            r = Math.max(r, bb.x + bb.w);
-                            t = Math.min(t, bb.y);
-                            b = Math.max(b, bb.y + bb.h);
-                        }
-                    }
-                };
-
-                this.document.drawing.backgrounds.forEach(look);
-                this.document.drawing.entities.forEach(look);
+                const {l, r, t, b} = getBoundingBox(this.objectStore, this.document);
 
                 const w = this.viewPort.width;
                 const h = this.viewPort.height;
@@ -432,6 +448,7 @@
                 this.lastDrawingContext = context;
                 this.backgroundLayer.draw(context, this.mode === DrawingMode.FloorPlan, this.currentTool);
                 this.hydraulicsLayer.draw(context, this.mode === DrawingMode.Hydraulics);
+                this.calculationLayer.draw(context, this.mode === DrawingMode.Calculations);
 
                 // Draw hydraulics layer
 
@@ -444,6 +461,23 @@
             }
         }
 
+        considerCalculating() {
+            if (this.mode === DrawingMode.Calculations) {
+                if (this.document.uiState.lastCalculationId < this.document.nextId
+                    || this.document.uiState.lastCalculationUiSettings.demandType !== this.demandType) {
+
+                    this.calculationLayer.calculate(
+                        this.document,
+                        this.catalog,
+                        this.demandType,
+                        () => {
+                            this.scheduleDraw();
+                        },
+                    );
+                }
+            }
+        }
+
         onDrop(value: any, event: DragEvent) {
             if (event.dataTransfer) {
                 event.preventDefault();
@@ -451,7 +485,6 @@
                     if (!(event.dataTransfer.files.item(i) as File).name.endsWith('pdf')) {
                         continue;
                     }
-
 
                     const w = this.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
 
