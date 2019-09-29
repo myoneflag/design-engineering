@@ -12,9 +12,9 @@ import {DemandType} from '@/calculations/types';
 import PipeProperties from '@/components/editor/property-window/PipeProperties.vue';
 import {EntityType} from '@/store/document/entities/types';
 import PipeEntity from '@/store/document/entities/pipe-entity';
-import CalculationMessage from '@/htmlcanvas/objects/calculation-message';
+import Popup from '@/htmlcanvas/objects/popup';
 import {isCalculated} from '@/store/document/calculations';
-import {getBoundingBox} from '@/htmlcanvas/lib/utils';
+import {getBoundingBox, getDocumentCenter} from '@/htmlcanvas/lib/utils';
 import assert from 'assert';
 import {CalculationTarget} from '@/store/document/calculations/types';
 import CatalogState, {Catalog} from '@/store/catalog/types';
@@ -150,7 +150,7 @@ export default class CalculationLayer implements Layer {
                 if (isCalculated(e)) {
                     const te = e as CalculationTarget<any>;
                     if (te.calculation !== null) {
-                        const msg: CalculationMessage = new CalculationMessage(
+                        const msg: Popup = new Popup(
                             this.objectStore,
                             e as CalculationTarget<any>,
                             {x: (l + r) / 2, y: (t + b) / 2},
@@ -176,8 +176,10 @@ export default class CalculationLayer implements Layer {
     }
 
     calculate(doc: DocumentState, catalog: Catalog, demandType: DemandType, done: () => void) {
+
+        const middleWc = getDocumentCenter(this.objectStore, doc);
         doc.uiState.isCalculating = true;
-        this.calculator.calculate(this.objectStore, doc, catalog, demandType, (warnings) => {
+        this.calculator.calculate(this.objectStore, doc, middleWc, catalog, demandType, (warnings) => {
 
             doc.uiState.lastCalculationId = doc.nextId;
             doc.uiState.lastCalculationUiSettings = {

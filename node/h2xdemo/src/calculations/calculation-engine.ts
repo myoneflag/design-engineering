@@ -1,4 +1,4 @@
-import {DocumentState, DrawableEntity} from '@/store/document/types';
+import {Coord, DocumentState, DrawableEntity} from '@/store/document/types';
 import {ObjectStore} from '@/htmlcanvas/lib/types';
 import {EntityType} from '@/store/document/entities/types';
 import PipeEntity from '@/store/document/entities/pipe-entity';
@@ -11,7 +11,7 @@ import {
     ThreeConnectionAttribute,
     TwoConnectionAttribute,
 } from '@/store/document/calculations/valve-calculation';
-import MessageEntity from '@/store/document/entities/calculations/message-entity';
+import PopupEntity, {MessageType} from '@/store/document/entities/calculations/popup-entity';
 import {DemandType} from '@/calculations/types';
 import assert from 'assert';
 import Graph from '@/calculations/graph';
@@ -22,27 +22,33 @@ import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import {isCalculated} from '@/store/document/calculations';
 import UnionFind from '@/calculations/union-find';
 import {assertUnreachable} from '@/lib/utils';
+import uuid from 'uuid';
+import {emptyPipeCalculation} from '@/store/document/calculations/pipe-calculation';
 
 export default class CalculationEngine {
 
     objectStore!: ObjectStore;
     doc!: DocumentState;
     demandType!: DemandType;
-    graph!: Graph<string, string>;
+    flowGraph!: Graph<string, string>;
+    luFlowGraph!: Graph<string, string>;
     equationEngine!: EquationEngine;
     catalog!: Catalog;
+    centerWc!: Coord;
 
     calculate(
         objectStore: ObjectStore,
         doc: DocumentState,
+        centerWc: Coord,
         catalog: Catalog,
         demandType: DemandType,
-        done: (entity: MessageEntity[]) => void,
+        done: (entity: PopupEntity[]) => void,
     ) {
         this.objectStore = objectStore;
         this.doc = doc;
         this.catalog = catalog;
         this.demandType = demandType;
+        this.centerWc = centerWc;
         setTimeout(() => {
 
             // let's do some random calculations for now.
@@ -62,20 +68,17 @@ export default class CalculationEngine {
     }
 
 
-    doRealCalculation(): MessageEntity[] {
+    doRealCalculation(): PopupEntity[] {
         this.clearCalculations();
         this.generateFlowGraph();
+        this.generateLUFlowGraph();
 
         const sanityCheckWarnings = this.sanityCheck(this.objectStore, this.doc);
-        const multipleRootWarnings = this.checkForMultipleSources(this.objectStore, this.doc);
-        const cycles = this.checkForRingMains(this.objectStore, this.doc);
 
-        if (sanityCheckWarnings.length === 0 && multipleRootWarnings.length === 0 && cycles.length === 0) {
+        if (sanityCheckWarnings.length === 0) {
             // The remaining graph must be a rooted forest.
-            const {roots, biconnected} = this.analyseGraph();
-            roots.forEach((a) => assert(a.length === 1));
-            this.prepareEmptyCalculations(roots);
-            this.calculatePsds(roots.map((a) => a[0]));
+            const {sources, biconnected} = this.analyseGraph();
+            const warnings = this.calculatePsds(sources.flat());
         }
 
         console.log(this.equationEngine.toString());
@@ -88,28 +91,34 @@ export default class CalculationEngine {
         return [];
     }
 
-    prepareEmptyCalculations(roots: string[][]) {
-        roots.forEach((a) => {
-            const r = a[0];
-            this.graph.reachable(r)[0].forEach((v) => {
-                const e = this.objectStore.get(v)!.entity;
-                this.randomizeEntityCalculations(e);
-            });
-        });
-    }
-
     generateFlowGraph() {
-        this.graph = new Graph<string, string>();
+        this.flowGraph = new Graph<string, string>();
         this.objectStore.forEach((obj) => {
             if (obj.entity.type === EntityType.PIPE) {
                 const entity = obj.entity as PipeEntity;
-                this.graph.addEdge(entity.endpointUid[0], entity.endpointUid[1], entity.uid);
+                this.flowGraph.addEdge(entity.endpointUid[0], entity.endpointUid[1], entity.uid, entity.uid);
             } else if (obj.entity.type === EntityType.TMV) {
                 const entity = obj.entity as TmvEntity;
-                this.graph.addDirectedEdge(entity.hotRoughInUid, entity.outputUid, entity.uid);
-                this.graph.addDirectedEdge(entity.coldRoughInUid, entity.outputUid, entity.uid);
+                this.flowGraph.addDirectedEdge(entity.hotRoughInUid, entity.outputUid, entity.uid);
+                this.flowGraph.addDirectedEdge(entity.coldRoughInUid, entity.outputUid, entity.uid);
             } else if (isConnectable(obj.entity.type)) {
-                this.graph.addNode(obj.uid);
+                this.flowGraph.addNode(obj.uid);
+            }
+        });
+    }
+
+    // Just like a flow graph, but only connects when loading units are transferred.
+    generateLUFlowGraph() {
+        this.luFlowGraph = new Graph<string, string>();
+        this.objectStore.forEach((obj) => {
+            if (obj.entity.type === EntityType.PIPE) {
+                const entity = obj.entity as PipeEntity;
+                this.luFlowGraph.addEdge(entity.endpointUid[0], entity.endpointUid[1], entity.uid, entity.uid);
+            } else if (obj.entity.type === EntityType.TMV) {
+                const entity = obj.entity as TmvEntity;
+                this.luFlowGraph.addDirectedEdge(entity.hotRoughInUid, entity.outputUid, entity.uid, entity.uid);
+            } else if (isConnectable(obj.entity.type)) {
+                this.luFlowGraph.addNode(obj.uid);
             }
         });
     }
@@ -117,15 +126,7 @@ export default class CalculationEngine {
 
     // Checks basic validity stuff, like hot water/cold water shouldn't mix, all fixtures have
     // required water sources filled in, etc.
-    sanityCheck(objectStore: ObjectStore, doc: DocumentState): MessageEntity[] {
-        return [];
-    }
-
-    checkForMultipleSources(objectStore: ObjectStore, doc: DocumentState): MessageEntity[] {
-        return [];
-    }
-
-    checkForRingMains(objectStore: ObjectStore, doc: DocumentState): MessageEntity[] {
+    sanityCheck(objectStore: ObjectStore, doc: DocumentState): PopupEntity[] {
         return [];
     }
 
@@ -183,99 +184,131 @@ export default class CalculationEngine {
         }
     }
 
-    getLoadingUnitTransfer(
-        lu: number,
-        curr: DrawableEntity,
-        connector: DrawableEntity,
-        nextNode: DrawableEntity): number
-    {
-        switch (connector.type) {
-            case EntityType.PIPE:
-                return lu;
-            case EntityType.TMV:
-                const tmv = connector as TmvEntity;
-                if (curr.uid === tmv.coldRoughInUid) {
-                    return 0;
-                } else if (curr.uid === tmv.hotRoughInUid) {
-                    if (nextNode.uid === tmv.outputUid) {
-                        return lu;
-                    } else {
-                        throw new Error('Flow going out of TMV is not the output: ' + JSON.stringify(nextNode));
-                    }
-                } else {
-                    throw new Error('Not using rough-in to flow into TMV: ' + JSON.stringify(curr));
-                }
-            case EntityType.BACKGROUND_IMAGE:
-            case EntityType.FLOW_SOURCE:
-            case EntityType.FLOW_RETURN:
-            case EntityType.VALVE:
-            case EntityType.INVISIBLE_NODE:
-            case EntityType.SYSTEM_NODE:
-            case EntityType.FIXTURE:
-            case EntityType.RESULTS_MESSAGE:
-                throw new Error('Invalid flow connector: ' + JSON.stringify(connector));
-        }
-    }
 
     calculatePsds(roots: string[]) {
-        // from roots dp to ends.
-        const traversal = this.graph.dagTraversal(roots);
-        traversal.forEach((thisNode) => {
-            console.log("Looking at " + this.objectStore.get(thisNode.node)!.type + " " + thisNode.node);
-            const nodeObj = this.objectStore.get(thisNode.node)!;
+        const totalReachedLUs = this.getTotalReachedLUs(roots);
+        console.log('reached LUs: ' + totalReachedLUs);
+        const warnings: PopupEntity[] = [];
 
-            const downstream: Array<[string, DrawableEntity, DrawableEntity]> = [];
+        // Go through all pipes
+        this.objectStore.forEach((object) => {
+            if (object.type !== EntityType.PIPE) {
+                return;
+            }
+            const pipe = object.entity as PipeEntity;
+            console.log(JSON.stringify(pipe));
 
-            thisNode.children.forEach((e) => {
-                const connectorObject = this.objectStore.get(e.value);
-                const nextNodeObject = this.objectStore.get(e.to);
-                if (connectorObject && nextNodeObject) {
-                    const connector = connectorObject.entity as DrawableEntity;
-                    const nextNode = nextNodeObject.entity as DrawableEntity;
+            const reachedLUs = this.getTotalReachedLUs(roots, [], [pipe.uid]);
+            const exclusiveLUs = totalReachedLUs - reachedLUs;
 
-                    downstream.push([nextNode.uid + EquationValues.LoadingUnits, connector, nextNode]);
-                } else {
-                    throw new Error('pipe not found');
-                }
-            });
 
-            console.log('node: ' + JSON.stringify(thisNode));
-            console.log('children: ' + JSON.stringify(downstream.map((a) => a[0])));
+            if (exclusiveLUs > 0) {
+                const [point] = this.getDryEndpoints(pipe, roots);
+                const [wet] = this.getWetEndpoints(pipe, roots);
+                const residualLUs = this.getTotalReachedLUs([point], [wet], [pipe.uid]);
 
-            this.equationEngine.submitEquation({
-                inputs: downstream.map((a) => a[0]),
-                evaluate: (inputs: Map<string, any>) => {
-                    let result: number = 0;
+                console.log('exclusive: ' + exclusiveLUs + ' vs residual: ' + residualLUs);
 
-                    downstream.forEach(([inputField, connector, nextNode]) => {
-                        console.log('checking lu transfer from ');
-                        console.log(JSON.stringify(nodeObj));
-                        console.log('to');
-                        console.log(JSON.stringify(nextNode));
-                        console.log('via');
-                        console.log(JSON.stringify(connector));
-                        const pr = result;
-                        result += this.getLoadingUnitTransfer(
-                            inputs.get(inputField),
-                            nodeObj.entity,
-                            connector,
-                            nextNode,
-                        );
-                        console.log('got ' + (result - pr));
+                if (residualLUs > exclusiveLUs) {
+                    // the LU for this pipe is ambiguous in this configuration.
+                    warnings.push({
+                        center: this.centerWc,
+                        params: {
+                            type: MessageType.WARNING,
+                            text: 'Loading units for this pipe are ambiguous (but it is at least ' + exclusiveLUs + ')',
+                        },
+                        parentUid: null,
+                        targetUids: [object.uid],
+                        type: EntityType.RESULTS_MESSAGE,
+                        uid: uuid(),
                     });
+                } else {
+                    // we have successfully calculated the pipe's loading units.
+                    pipe.calculation = emptyPipeCalculation();
+                    pipe.calculation.loadingUnits = residualLUs;
+                }
+            } else {
+                console.log('no exclusive fixtures found. total: ' + totalReachedLUs + ' reached: ' + reachedLUs);
 
-                    result += this.getTerminalLoadingUnits(nodeObj.entity);
+                // zero exclusive to us. Work out whether this is because we don't have any fixture demand.
+                const wets = this.getWetEndpoints(pipe, roots);
+                const demandA = this.getTotalReachedLUs([pipe.endpointUid[0]], [], [pipe.uid]);
+                const demandB = this.getTotalReachedLUs([pipe.endpointUid[1]], [], [pipe.uid]);
 
-                    if (nodeObj.type !== EntityType.SYSTEM_NODE) {
-                        this.setLoadingUnits(nodeObj, result);
-                    }
-                    return [[nodeObj.uid + EquationValues.LoadingUnits, result]];
-                },
-            });
+                if (demandA === 0 && wets.indexOf(pipe.endpointUid[0]) === -1 ||
+                    demandB === 0 && wets.indexOf(pipe.endpointUid[1]) === -1
+                ) {
+                    // redundant deadleg
+                    warnings.push({
+                        center: this.centerWc,
+                        params: {
+                            type: MessageType.WARNING,
+                            text: 'Redundant deadleg',
+                        },
+                        parentUid: null,
+                        targetUids: [object.uid],
+                        type: EntityType.RESULTS_MESSAGE,
+                        uid: uuid(),
+                    });
+                } else {
+                    // ambiguous
+                    warnings.push({
+                        center: this.centerWc,
+                        params: {
+                            type: MessageType.WARNING,
+                            text: 'Loading units for this pipe are ambiguous',
+                        },
+                        parentUid: null,
+                        targetUids: [object.uid],
+                        type: EntityType.RESULTS_MESSAGE,
+                        uid: uuid(),
+                    });
+                }
+            }
+
         });
     }
 
-    analyseGraph(): {roots: string[][], biconnected: string[][]} {
+    getTotalReachedLUs(roots: string[], excludedNodes: string[] = [], excludedEdges: string[] = []): number {
+        const seen = new Set<string>(excludedNodes);
+        const seenEdges = new Set<string>(excludedEdges);
+        console.log(JSON.stringify(Array.from(seenEdges.entries())));
+
+        let lu = 0;
+
+        roots.forEach((r) => {
+            this.luFlowGraph.dfs(r, seen, null, (n, v) => {
+                console.log('visiting point ' + n);
+                lu += this.getTerminalLoadingUnits(this.objectStore.get(n)!.entity);
+            }, (e, v) => {
+            }, seenEdges);
+        });
+
+        return lu;
+    }
+
+    getWetEndpoints(pipe: PipeEntity, roots: string[]): string[] {
+        const seen = new Set<string>();
+        const seenEdges = new Set<string>([pipe.uid]);
+
+        roots.forEach((r) => {
+            this.luFlowGraph.dfs(r, seen, null, (n) => {}, (e) => {}, seenEdges);
+        });
+
+        return pipe.endpointUid.filter((ep) => {
+            // to be dry, we have to not have any sources.
+            return seen.has(ep);
+        });
+    }
+
+    getDryEndpoints(pipe: PipeEntity, roots: string[]): string[] {
+        const wet = this.getWetEndpoints(pipe, roots);
+        return pipe.endpointUid.filter((ep) => {
+            return wet.indexOf(ep) === -1;
+        });
+    }
+
+    analyseGraph(): {sources: string[][], biconnected: string[][]} {
         const seen = new Set();
         const uf = new UnionFind<string>();
 
@@ -283,7 +316,7 @@ export default class CalculationEngine {
             if (o.type === EntityType.FLOW_SOURCE) {
                 const e = o.entity as FlowSourceEntity;
 
-                this.graph.reachable(e.uid)[0].forEach((ouid) => {
+                this.flowGraph.reachable(e.uid)[0].forEach((ouid) => {
                     if (this.objectStore.get(ouid)!.type === EntityType.FLOW_SOURCE) {
                         uf.join(ouid, e.uid);
                     }
@@ -293,7 +326,7 @@ export default class CalculationEngine {
 
         const roots = uf.groups();
 
-        return {roots, biconnected: []};
+        return {sources: roots, biconnected: []};
     }
 
     randomizeEntityCalculations(e: DrawableEntity) {
@@ -307,7 +340,7 @@ export default class CalculationEngine {
                 velocityOptimalPipeDiameterMS: randInt(0, 10),
                 velocityRealMS: randInt(0, 10),
                 temperatureRange: randInt(0, 10) + ' to ' + randInt(0, 10),
-                loadingUnitRange: randInt(0, 10) + ' to ' + randInt(0, 10),
+                loadingUnits: randInt(0, 10),
             };
         } else if (e.type === EntityType.VALVE) {
             const te = e as ValveEntity;
@@ -317,7 +350,6 @@ export default class CalculationEngine {
                 pressureKPA: randInt(0, 10),
                 pressureDropKPA: randInt(0, 10),
                 valveAttributes: getValveAttributes(te),
-                loadingUnits: randInt(0, 10),
             };
         } else if (e.type === EntityType.FLOW_SOURCE) {
             const te = e as FlowSourceEntity;
@@ -336,7 +368,6 @@ export default class CalculationEngine {
                 outputFlowRateLS: randInt(0, 10),
                 outputPressureKPA: randInt(0, 10),
                 outputTemperatureC: randInt(0, 10),
-                loadingUnits: randInt(0, 10),
             };
         } else if (e.type === EntityType.FIXTURE) {
             const te = e as FixtureEntity;

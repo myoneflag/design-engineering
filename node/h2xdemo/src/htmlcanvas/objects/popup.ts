@@ -1,10 +1,11 @@
+import * as TM from 'transformation-matrix';
 import {Matrix} from 'transformation-matrix';
 import {DrawingContext, ObjectStore} from '@/htmlcanvas/lib/types';
 import {Coord, DrawableEntity, Rectangle} from '@/store/document/types';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
-import MessageEntity from '@/store/document/entities/calculations/message-entity';
+import PopupEntity, {MessageType} from '@/store/document/entities/calculations/popup-entity';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import {Interaction} from '@/htmlcanvas/lib/interaction';
 import {EntityType} from '@/store/document/entities/types';
@@ -16,17 +17,53 @@ import {makePipeCalculationFields} from '@/store/document/calculations/pipe-calc
 import {makeValveCalculationFields} from '@/store/document/calculations/valve-calculation';
 import {makeTmvCalculationFields} from '@/store/document/calculations/tmv-calculation';
 import {makeFlowSourceCalculationFields} from '@/store/document/calculations/flow-source-calculation';
-import {makeFixtureFields} from '@/store/document/entities/fixtures/fixture-entity';
 import {makeFixtureCalculationFields} from '@/store/document/calculations/fixture-calculation';
 import {decomposeMatrix} from '@/htmlcanvas/utils';
-import * as TM from 'transformation-matrix';
 import {resolveProperty} from '@/htmlcanvas/lib/utils';
 import CenterDraggableObject from '@/htmlcanvas/lib/object-traits/center-draggable-object';
 import {CalculationTarget} from '@/store/document/calculations/types';
 
 @CenterDraggableObject
-export default class CalculationMessage extends BackedDrawableObject<MessageEntity> {
+export default class Popup extends BackedDrawableObject<PopupEntity> {
     static MESSGAE_DISTANCE: number = 400;
+
+    static findCenter(object: BaseBackedObject, middleWc: Coord): Coord {
+
+        const mp = Flatten.point(middleWc.x, middleWc.y);
+
+        let center;
+
+        // find position for it.
+        if (object instanceof Pipe) {
+            const [a, b] = object.worldEndpoints();
+            // put it in the outside.
+            const x = (a.x + b.x) / 2;
+            const y = (a.y + b.y) / 2;
+
+            const middle = Flatten.point(x, y);
+            const vector = Flatten.vector(Flatten.point(a.x, a.y), Flatten.point(b.x, b.y));
+            const perp = vector.rotate90CCW();
+            const candA = middle.translate(perp.normalize().multiply(Popup.MESSGAE_DISTANCE));
+            const candB = middle.translate(perp.normalize().multiply(-Popup.MESSGAE_DISTANCE));
+
+            if (mp.distanceTo(candA)[0] > mp.distanceTo(candB)[0]) {
+                center = {x: candA.x, y: candA.y};
+            } else {
+                center = {x: candB.x, y: candB.y};
+            }
+        } else if (object) {
+            const wc = object.toWorldCoord({x: 0, y: 0});
+            const wcp = Flatten.point(wc.x, wc.y);
+            const away = Flatten.vector(mp, wcp);
+            center = wcp.translate(away.normalize().multiply(Popup.MESSGAE_DISTANCE));
+        }
+
+        if (!center) {
+            throw new Error('created message with unknown center. target is: ' + JSON.stringify(object.entity));
+        }
+        return center;
+    }
+
     target: CalculationTarget<any>;
 
     fields: MessageField[];
@@ -44,47 +81,19 @@ export default class CalculationMessage extends BackedDrawableObject<MessageEnti
     ) {
 
         const object = objectStore.get(target.uid);
-        const mp = Flatten.point(middleWc.x, middleWc.y);
-
-        let center;
-
-        // find position for it.
-        if (object instanceof Pipe) {
-            const [a, b] = object.worldEndpoints();
-            // put it in the outside.
-            const x = (a.x + b.x) / 2;
-            const y = (a.y + b.y) / 2;
-
-            const middle = Flatten.point(x, y);
-            const vector = Flatten.vector(Flatten.point(a.x, a.y), Flatten.point(b.x, b.y));
-            const perp = vector.rotate90CCW();
-            const candA = middle.translate(perp.normalize().multiply(CalculationMessage.MESSGAE_DISTANCE));
-            const candB = middle.translate(perp.normalize().multiply(-CalculationMessage.MESSGAE_DISTANCE));
-
-            if (mp.distanceTo(candA)[0] > mp.distanceTo(candB)[0]) {
-                center = {x: candA.x, y: candA.y};
-            } else {
-                center = {x: candB.x, y: candB.y};
-            }
-        } else if (object) {
-            const wc = object.toWorldCoord({x: 0, y: 0});
-            const wcp = Flatten.point(wc.x, wc.y);
-            const away = Flatten.vector(mp, wcp);
-            center = wcp.translate(away.normalize().multiply(CalculationMessage.MESSGAE_DISTANCE));
-        } else {
-            throw new Error('Object not found for calculation target: ' + JSON.stringify(target));
+        if (!object) {
+            throw new Error('target object doesn\'t exist');
         }
 
-        if (!center) {
-            throw new Error('created message with unknown center. target is: ' + JSON.stringify(target));
-        }
+        const center = Popup.findCenter(object, middleWc);
 
-        const obj: MessageEntity = {
+        const obj: PopupEntity = {
             center,
             parentUid: null,
             targetUids: [target.type],
             type: EntityType.RESULTS_MESSAGE,
             uid: uuid(),
+            params: { type: MessageType.CALCULATION },
         };
         super(objectStore, null, obj, onSelect, onChange, onCommit);
 
@@ -149,6 +158,7 @@ export default class CalculationMessage extends BackedDrawableObject<MessageEnti
         ctx.lineWidth = Math.max(1 / scale, 10);
 
         const fontSize = 50;
+        ctx.font = fontSize + 'px Helvetica';
 
         let width = 0;
         const height = this.outputs.length * fontSize;
@@ -165,7 +175,6 @@ export default class CalculationMessage extends BackedDrawableObject<MessageEnti
         ctx.fillRect(-boxWidth / 2, -boxHeight / 2, boxWidth, boxHeight);
         ctx.stroke();
 
-        ctx.font = fontSize + 'px Helvetica';
         ctx.fillStyle = '#003300';
         for (let i = 0; i < this.outputs.length; i++) {
             ctx.fillText(this.outputs[i], - width / 2, i * fontSize - height / 2 + fontSize * 0.8);
@@ -182,13 +191,35 @@ export default class CalculationMessage extends BackedDrawableObject<MessageEnti
             ctx.lineWidth = Math.max(1 / innerScale, 10);
             ctx.beginPath();
 
-            const ts = this.objectStore.get(this.target.uid) ? this.objectStore.get(this.target.uid)!.shape() : null;
-            if (ts) {
-                const shortest = this.shape().distanceTo(ts)[1];
+            const other = this.objectStore.get(this.target.uid);
+            if (other) {
 
-                ctx.moveTo(shortest.ps.x, shortest.ps.y);
-                ctx.lineTo(shortest.pe.x, shortest.pe.y);
-                ctx.stroke();
+                let ts =  other.shape();
+                if (other.type === EntityType.PIPE) {
+                    const l = ts as Flatten.Segment;
+
+                    const chop = Popup.MESSGAE_DISTANCE / 2;
+
+                    const ep = (other as Pipe).worldEndpoints();
+                    const middle  = Flatten.point((ep[0].x + ep[1].x) / 2, (ep[0].y + ep[1].y) / 2);
+                    if (l.length < chop * 2) {
+                        ts = middle;
+                    } else {
+                        const pe2m = Flatten.vector(l.pe, middle);
+                        const ps2m = Flatten.vector(l.ps, middle);
+                        ts = Flatten.segment(
+                            l.pe.translate(pe2m.normalize().multiply(chop)),
+                            l.ps.translate(ps2m.normalize().multiply(chop)),
+                        );
+                    }
+                }
+                if (ts) {
+                    const shortest = this.shape().distanceTo(ts)[1];
+
+                    ctx.moveTo(shortest.ps.x, shortest.ps.y);
+                    ctx.lineTo(shortest.pe.x, shortest.pe.y);
+                    ctx.stroke();
+                }
             }
         });
     }

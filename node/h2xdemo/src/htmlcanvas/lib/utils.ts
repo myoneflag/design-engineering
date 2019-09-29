@@ -2,6 +2,7 @@ import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 import {Coord, DocumentState, DrawableEntity} from '@/store/document/types';
 import * as _ from 'lodash';
 import {ObjectStore} from '@/htmlcanvas/lib/types';
+import doc = Mocha.reporters.doc;
 
 
 export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
@@ -38,6 +39,11 @@ export function getBoundingBox(objectStore: ObjectStore, document: DocumentState
     document.drawing.entities.forEach(look);
 
     return {l, r, t, b};
+}
+
+export function getDocumentCenter(objectStore: ObjectStore, document: DocumentState): Coord {
+    const {l, r, t, b} = getBoundingBox(objectStore, document);
+    return {x: (l + r) / 2, y: (t + b) / 2};
 }
 
 export function resolveProperty(prop: string, obj: any): any {

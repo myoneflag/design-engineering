@@ -1,5 +1,5 @@
 import {FieldCategory, MessageField} from '@/store/document/calculations/message-field';
-import {PsdPointCalculation} from '@/store/document/calculations/types';
+import {PsdCalculation} from '@/store/document/calculations/types';
 
 export default interface FixtureCalculation {
     coldPressureKPA: number | null;

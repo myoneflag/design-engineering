@@ -1,7 +1,7 @@
 import {FieldCategory, MessageField} from '@/store/document/calculations/message-field';
-import {PsdPointCalculation} from '@/store/document/calculations/types';
+import {PsdCalculation} from '@/store/document/calculations/types';
 
-export default interface FlowSourceCalculation extends PsdPointCalculation {
+export default interface FlowSourceCalculation extends PsdCalculation {
     pressureKPA: number | null;
     flowRateLS: number | null;
 }

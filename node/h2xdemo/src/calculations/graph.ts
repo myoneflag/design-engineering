@@ -9,11 +9,9 @@ export default class Graph<N, E> {
         }
     }
 
-    addDirectedEdge(from: N, to: N, edgeValue: E, uid?: string) {
-        let isDirected = false;
+    addDirectedEdge(from: N, to: N, edgeValue: E, uid?: string, isDirected: boolean = true) {
         if (uid === undefined) {
             uid = uuid();
-            isDirected = true;
         }
         this.addNode(from);
         this.addNode(to);
@@ -26,10 +24,12 @@ export default class Graph<N, E> {
         });
     }
 
-    addEdge(a: N, b: N, edgeValue: E) {
-        const uid = uuid();
-        this.addDirectedEdge(a, b, edgeValue, uid);
-        this.addDirectedEdge(b, a, edgeValue, uid);
+    addEdge(a: N, b: N, edgeValue: E, uid?: string) {
+        if (uid === undefined) {
+            uid = uuid();
+        }
+        this.addDirectedEdge(a, b, edgeValue, uid, false);
+        this.addDirectedEdge(b, a, edgeValue, uid, false);
     }
 
 
@@ -105,6 +105,7 @@ export default class Graph<N, E> {
                 if (seenEdges!.has(next.uid)) {
                     return;
                 }
+                console.log('visiting edge uid ' + next.uid);
                 seenEdges!.add(next.uid);
 
                 const v1 = visitEdge(next.edge, v2 === undefined ? null : v2);
