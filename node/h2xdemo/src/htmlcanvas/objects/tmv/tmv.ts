@@ -5,7 +5,7 @@ import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
 import {Coord, DocumentState, DrawableEntity, FlowSystemParameters, Rectangle} from '@/store/document/types';
 import assert from 'assert';
-import {matrixScale} from '@/htmlcanvas/utils';
+import {decomposeMatrix, matrixScale} from '@/htmlcanvas/utils';
 import {lighten} from '@/lib/utils';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
@@ -17,6 +17,7 @@ import {DrawingContext} from '@/htmlcanvas/lib/types';
 import TmvEntity from '@/store/document/entities/tmv/tmv-entity';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
+import {StandardFlowSystemUids} from '@/store/catalog';
 
 @CenterDraggableObject
 export default class Tmv extends BackedDrawableObject<TmvEntity> implements Connectable {
@@ -39,16 +40,32 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Conn
         const t = 0;
         const m = 0;
 
-        if (selected) {
-            ctx.fillStyle = 'rgba(100, 100, 255, 0.2)';
-            ctx.fillRect(l, t, r - l, b - t);
-        }
+        const boxl = l * 1.2;
+        const boxw = (r - l) * 1.2;
+        const boxt = 0 - b * 0.1;
+        const boxh = b * 1.2;
 
         const sw = 1;
         const ww = vp.toWorldLength(sw);
 
-        ctx.lineWidth = ww;
+        const scale = matrixScale(ctx.getTransform());
+        ctx.lineWidth = Math.max(1 / scale, 10 * this.toWorldLength(1));
         ctx.strokeStyle = '#000';
+        ctx.lineCap = 'round';
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.fillRect(boxl, boxt, boxw, boxh);
+        ctx.beginPath();
+        ctx.strokeStyle = '#000';
+        ctx.rect(boxl, boxt, boxw, boxh);
+        ctx.stroke();
+
+        if (selected) {
+            ctx.fillStyle = 'rgba(100, 100, 255, 0.2)';
+            ctx.fillRect(boxl, boxt, boxw, boxh);
+        }
+
+
 
         // Draw double hourglass
         // XX
@@ -64,6 +81,9 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Conn
 
         // |V|V|
         ctx.stroke();
+
+        ctx.beginPath();
+
         ctx.moveTo(l, bm);
         ctx.lineTo(l, b);
         ctx.lineTo(r, b);
@@ -72,6 +92,8 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Conn
         ctx.lineTo(m, bm);
         ctx.lineTo(lm, b);
         ctx.lineTo(l, bm);
+        ctx.moveTo(m, bm);
+        ctx.lineTo(m, b);
 
         ctx.stroke();
     }
@@ -139,13 +161,30 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Conn
     }
 
 
-    offerInteraction(interaction: Interaction): boolean {
+    offerInteraction(interaction: Interaction): DrawableEntity[] | null {
         switch (interaction.type) {
-            case InteractionType.INSERT:
             case InteractionType.CONTINUING_PIPE:
             case InteractionType.STARTING_PIPE:
+                if (interaction.system.uid === StandardFlowSystemUids.ColdWater) {
+                    const coldObj = this.objectStore.get(this.entity.coldRoughInUid);
+                    if (coldObj && coldObj.offerInteraction(interaction)) {
+                        return [coldObj.entity, this.entity];
+                    }
+                } else if (interaction.system.uid === StandardFlowSystemUids.WarmWater && this.entity.outputUid) {
+                    const warmObj = this.objectStore.get(this.entity.outputUid);
+                    if (warmObj && warmObj.offerInteraction(interaction)) {
+                        return [warmObj.entity, this.entity];
+                    }
+                } else if (interaction.system.uid === StandardFlowSystemUids.HotWater && this.entity.hotRoughInUid) {
+                    const hotObj = this.objectStore.get(this.entity.hotRoughInUid);
+                    if (hotObj && hotObj.offerInteraction(interaction)) {
+                        return [hotObj.entity, this.entity];
+                    }
+                }
+
+            case InteractionType.INSERT:
             default:
-                return false;
+                return null;
         }
     }
 

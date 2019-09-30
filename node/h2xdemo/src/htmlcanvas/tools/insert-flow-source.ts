@@ -32,19 +32,21 @@ export default function insertFlowSource(
             context.lockDrawing();
             context.$store.dispatch('document/revert', false).then(() => {
 
-                const object = context.offerInteraction({
+                const interactive = context.offerInteraction({
                     entityType: EntityType.FLOW_SOURCE,
                     worldCoord: wc,
                     worldRadius: 0,
                     type: InteractionType.INSERT,
                 },
                     (o) => {
-                    return o.entity.type === EntityType.VALVE;
+                    return o.length > 0 && o[0].type === EntityType.VALVE;
                 });
+
 
                 let connections: string[] = [];
 
-                if (object) {
+                if (interactive) {
+                    const object = context.objectStore.get(interactive[0].uid)!;
                     const entity = object.entity as ConnectableEntity;
                     connections = _.cloneDeep(entity.connections);
 

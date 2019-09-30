@@ -13,7 +13,7 @@ export default interface Layer {
 
     draw(context: DrawingContext, active: boolean, ...args: any[]): any;
     update(doc: DocumentState): any;
-    drawSelectionLayer(context: DrawingContext, interactive: BaseBackedObject | null): any;
+    drawSelectionLayer(context: DrawingContext, interactive: DrawableEntity[] | null): any;
 
     onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult;
     onMouseDown(event: MouseEvent, vp: ViewPort): boolean;
@@ -21,7 +21,7 @@ export default interface Layer {
 
     offerInteraction(
         interaction: Interaction,
-        filter?: (object: BaseBackedObject) => boolean,
-        sortBy?: (object: BaseBackedObject) => any,
-    ): BaseBackedObject | null;
+        filter?: (objects: DrawableEntity[]) => boolean,
+        sortBy?: (objects: DrawableEntity[]) => any,
+    ): DrawableEntity[] | null;
 }

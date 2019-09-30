@@ -59,13 +59,15 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
 
         const minJointLength = this.FITTING_DIAMETER_PIXELS / scale;
 
+        const width = Math.max(this.FITTING_DIAMETER_PIXELS / scale, 30 / this.toWorldLength(1));
+
         this.getRadials().forEach(([wc]) => {
             const oc = this.toObjectCoord(wc);
             const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
             const small = vec.normalize().multiply(Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM)));
             if (layerActive && selected) {
                 ctx.beginPath();
-                ctx.lineWidth = this.FITTING_DIAMETER_PIXELS * 3 / scale;
+                ctx.lineWidth = width + this.FITTING_DIAMETER_PIXELS * 2 / scale;
                 ctx.strokeStyle = lighten(this.displayEntity(doc).color!.hex, 50, 0.5);
                 ctx.moveTo(0, 0);
                 ctx.lineTo(small.x, small.y);
@@ -73,7 +75,7 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
             }
 
             ctx.strokeStyle = this.displayEntity(doc).color!.hex;
-            ctx.lineWidth = this.FITTING_DIAMETER_PIXELS / scale;
+            ctx.lineWidth = width;
             ctx.beginPath();
             ctx.moveTo(0, 0);
             ctx.lineTo(small.x, small.y);
@@ -137,15 +139,18 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
     }
 
 
-    offerInteraction(interaction: Interaction): boolean {
+    offerInteraction(interaction: Interaction): DrawableEntity[] | null {
         switch (interaction.type) {
             case InteractionType.INSERT:
-                return isConnectable(interaction.entityType);
+                if (isConnectable(interaction.entityType)) {
+                    return [this.entity];
+                }
+                return null;
             case InteractionType.CONTINUING_PIPE:
             case InteractionType.STARTING_PIPE:
-                return true;
+                return [this.entity];
             default:
-                return false;
+                return null;
         }
     }
 

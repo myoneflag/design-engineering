@@ -35,7 +35,7 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                     worldCoord: wc,
                 },
                 (object) => {
-                    return object.type !== EntityType.BACKGROUND_IMAGE;
+                    return object[0].type !== EntityType.BACKGROUND_IMAGE;
                 },
             );
             context.unlockDrawing();
@@ -54,7 +54,7 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                     worldCoord: wc,
                 },
                 (object) => {
-                    return object.type !== EntityType.BACKGROUND_IMAGE;
+                    return object[0].type !== EntityType.BACKGROUND_IMAGE;
                 },
             );
 
@@ -62,9 +62,13 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
             const doc = context.document as DocumentState;
             // maybe we drew onto an existing node.
             let entity: ConnectableEntity | ValveEntity;
-            if (context.interactive && context.interactive.type !== EntityType.BACKGROUND_IMAGE) {
-                entity = context.interactive.entity as ConnectableEntity;
-                context.hydraulicsLayer.onSelected(context.interactive);
+            if (context.interactive &&
+                context.interactive.length &&
+                context.interactive[0].type !== EntityType.BACKGROUND_IMAGE
+            ) {
+                entity = context.interactive[0] as ConnectableEntity;
+                const object = context.objectStore.get(context.interactive[0].uid)!;
+                context.hydraulicsLayer.onSelected(object);
             } else {
                 // Maybe we drew onto a background
                 const [parentUid, oc] = getInsertCoordsAt(context, wc);
@@ -146,9 +150,15 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
 
 
             // maybe we drew onto an existing node.
-            const exclude = [];
+            const exclude: string[] = [];
             if (nextEntityWasNew && nextEntity) {
                 exclude.push(nextEntity.uid);
+            }
+
+            if (!nextEntityWasNew) {
+                if (nextEntity) {
+                    nextEntity.connections.splice(nextEntity.connections.indexOf(pipeUid), 1);
+                }
             }
 
             context.offerInteraction(
@@ -161,9 +171,9 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
                     worldCoord: wc,
                 },
                 (obj) => {
-                    if (obj.uid !== pipeUid) {
+                    if (obj[0].uid !== pipeUid) {
                         if (nextEntity) {
-                            return obj.uid !== nextEntity.uid;
+                            return exclude.indexOf(obj[0].uid) === -1;
                         } else {
                             return true;
                         }
@@ -171,9 +181,17 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
                     return false;
                 },
             );
-            const object = context.interactive;
 
-            if (object && object.type !== EntityType.BACKGROUND_IMAGE) {
+            if (!nextEntityWasNew) {
+                if (nextEntity) {
+                    nextEntity.connections.push(pipeUid);
+                }
+            }
+
+            if (context.interactive &&
+                context.interactive.length &&
+                context.interactive[0].type !== EntityType.BACKGROUND_IMAGE
+            ) {
                 if (nextEntityWasNew && nextEntity !== null) {
                     // delete the no longer needed new phantom pipe
                     const index = context.document.drawing.entities.findIndex((e) => e.uid === nextEntity.uid);
@@ -187,9 +205,9 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
                     }
                 }
 
-                nextEntity = object.entity as ConnectableEntity;
+                nextEntity = context.interactive[0] as ConnectableEntity;
                 nextEntity.connections.push(pipeUid);
-                context.hydraulicsLayer.selectedObject = object;
+                context.hydraulicsLayer.selectedObject = context.objectStore.get(context.interactive[0].uid)!;
                 nextEntityWasNew = false;
             } else {
                 context.hydraulicsLayer.selectedObject = null;

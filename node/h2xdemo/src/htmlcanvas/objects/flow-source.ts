@@ -159,15 +159,15 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
     }
 
 
-    offerInteraction(interaction: Interaction): boolean {
+    offerInteraction(interaction: Interaction): DrawableEntity[] | null {
         switch (interaction.type) {
             case InteractionType.INSERT:
-                return false;
+                return null;
             case InteractionType.CONTINUING_PIPE:
             case InteractionType.STARTING_PIPE:
-                return true;
+                return [this.entity];
             default:
-                return false;
+                return null;
         }
     }
 
