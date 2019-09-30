@@ -5,7 +5,7 @@ import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
 import {Coord, DocumentState, DrawableEntity, FlowSystemParameters, Rectangle} from '@/store/document/types';
 import assert from 'assert';
-import {matrixScale} from '@/htmlcanvas/utils';
+import {decomposeMatrix, matrixScale} from '@/htmlcanvas/utils';
 import {lighten} from '@/lib/utils';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
@@ -18,6 +18,7 @@ import TmvEntity from '@/store/document/entities/tmv/tmv-entity';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
 import FixtureEntity from '@/store/document/entities/fixtures/fixture-entity';
+import {StandardFlowSystemUids} from '@/store/catalog';
 
 @CenterDraggableObject
 export default class Fixture extends BackedDrawableObject<FixtureEntity> implements Connectable {
@@ -27,8 +28,14 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
 
     drawInternal(context: DrawingContext, layerActive: boolean, selected: boolean): void {
 
-        const {ctx, vp} = context;
+        const scale = matrixScale(context.ctx.getTransform());
+        const ww = Math.max(10 / this.toWorldLength(1), 1 / scale);
 
+        const {ctx, vp} = context;
+        ctx.lineWidth = ww;
+
+
+        const xm1 = -this.entity.pipeDistanceMM + this.entity.pipeDistanceMM * -1 / 4;
         const x0 = -this.entity.pipeDistanceMM;
         const x1 = -this.entity.pipeDistanceMM + this.entity.pipeDistanceMM * 1 / 4;
         const x2 = -this.entity.pipeDistanceMM + this.entity.pipeDistanceMM * 2 / 4;
@@ -38,8 +45,10 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         const x6 = -this.entity.pipeDistanceMM + this.entity.pipeDistanceMM * 6 / 4;
         const x7 = -this.entity.pipeDistanceMM + this.entity.pipeDistanceMM * 7 / 4;
         const x8 = -this.entity.pipeDistanceMM + this.entity.pipeDistanceMM * 8 / 4;
+        const x9 = -this.entity.pipeDistanceMM + this.entity.pipeDistanceMM * 9 / 4;
 
 
+        const ym1 = 0 + this.entity.pipeDistanceMM * -1 / 4;;
         const y0 = 0;
         const y1 = 0 + this.entity.pipeDistanceMM * 1 / 4;
         const y2 = 0 + this.entity.pipeDistanceMM * 2 / 4;
@@ -50,20 +59,32 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         const y7 = 0 + this.entity.pipeDistanceMM * 7 / 4;
         const y8 = 0 + this.entity.pipeDistanceMM * 8 / 4;
 
+        ctx.fillStyle = 'rgba(230, 255, 230, 0.8)';
+        ctx.strokeStyle = '#000';
+        ctx.beginPath();
+        if (this.entity.warmRoughInUid) {
+            ctx.fillRect(xm1, ym1, x9 - xm1, y7 - ym1);
+            ctx.rect(xm1, ym1, x9 - xm1, y7 - ym1);
+        } else {
+            ctx.fillRect(x2, ym1, x6 - x2, y4 - ym1);
+            ctx.rect(x2, ym1, x6 - x2, y4 - ym1);
+        }
+        ctx.stroke();
+
         if (selected) {
-            ctx.fillStyle = 'rgba(100, 100, 255, 0.2)';
-            ctx.fillRect(x0, y0, x8 - x0, y8 - y0);
+            ctx.fillStyle = 'rgba(230, 255, 230, 0.8)';
+            if (this.entity.warmRoughInUid) {
+                ctx.fillRect(xm1, ym1, x9 - xm1, y7 - ym1);
+            } else {
+                ctx.fillRect(x2, ym1, x6 - x2, y4 - ym1);
+            }
         }
 
-        const sw = 1;
-        const ww = vp.toWorldLength(sw);
-
-        ctx.lineWidth = ww;
         ctx.strokeStyle = '#228800';
 
+        ctx.beginPath();
         if (this.entity.warmRoughInUid) {
             // double (cross)
-            ctx.beginPath();
             ctx.moveTo(x0, y1);
             ctx.lineTo(x8, y1);
             ctx.moveTo(x2, y0);
@@ -81,7 +102,6 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
             ctx.lineTo(x4, y6);
         } else {
             // single
-            ctx.beginPath();
             ctx.moveTo(x4, y0);
             ctx.lineTo(x4, y3);
             ctx.moveTo(x3, y2);
@@ -112,7 +132,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         if (this.entity.warmRoughInUid) {
             // double
             if (objectCoord.x >= -this.entity.pipeDistanceMM && objectCoord.x <= this.entity.pipeDistanceMM) {
-                if (objectCoord.y >= 0 && objectCoord.y <= this.entity.pipeDistanceMM) {
+                if (objectCoord.y >= 0 && objectCoord.y <= this.entity.pipeDistanceMM * 2) {
                     return true;
                 }
             }
@@ -120,7 +140,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         } else {
             // single
             if (objectCoord.x >= -this.entity.pipeDistanceMM / 2 && objectCoord.x <= this.entity.pipeDistanceMM / 2) {
-                if (objectCoord.y >= 0 && objectCoord.y <= this.entity.pipeDistanceMM) {
+                if (objectCoord.y >= 0 && objectCoord.y <= this.entity.pipeDistanceMM * 3 / 4) {
                     return true;
                 }
             }
@@ -169,13 +189,25 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
     }
 
 
-    offerInteraction(interaction: Interaction): boolean {
+    offerInteraction(interaction: Interaction): DrawableEntity[] | null {
         switch (interaction.type) {
-            case InteractionType.INSERT:
             case InteractionType.CONTINUING_PIPE:
             case InteractionType.STARTING_PIPE:
+                if (interaction.system.uid === StandardFlowSystemUids.ColdWater) {
+                    const coldObj = this.objectStore.get(this.entity.coldRoughInUid);
+                    if (coldObj && coldObj.offerInteraction(interaction)) {
+                        return [coldObj.entity, this.entity];
+                    }
+                } else if (interaction.system.uid === StandardFlowSystemUids.WarmWater && this.entity.warmRoughInUid) {
+                    const warmObj = this.objectStore.get(this.entity.warmRoughInUid);
+                    if (warmObj && warmObj.offerInteraction(interaction)) {
+                        return [warmObj.entity, this.entity];
+                    }
+                }
+                return null;
+            case InteractionType.INSERT:
             default:
-                return false;
+                return null;
         }
     }
 

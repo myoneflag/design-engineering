@@ -3,7 +3,7 @@ import {StandardFlowSystemUids} from '@/store/catalog';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
 import {ConnectableObject} from '@/htmlcanvas/lib/object-traits/connectable';
-import {Coord, DocumentState} from '@/store/document/types';
+import {Coord, DocumentState, DrawableEntity} from '@/store/document/types';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import {InvisibleNode} from '@/htmlcanvas/objects/invisible-node';
 import Flatten from '@flatten-js/core';
@@ -19,17 +19,19 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> {
 
     minimumConnections = 0;
 
-    offerInteraction(interaction: Interaction): boolean {
+    offerInteraction(interaction: Interaction): DrawableEntity[] | null {
         switch (interaction.type) {
             case InteractionType.STARTING_PIPE:
             case InteractionType.CONTINUING_PIPE:
-                if (this.entity.connections.length > 1) {
-                    return false;
+                if (this.entity.connections.length > 0) {
+                    return null;
                 }
-                return interaction.system.uid === this.entity.systemUid;
+                if (interaction.system.uid === this.entity.systemUid) {
+                    return [this.entity];
+                }
             case InteractionType.INSERT:
             default:
-                return false;
+                return null;
         }
     }
 
@@ -51,7 +53,7 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> {
 
     drawInternal(context: DrawingContext, layerActive: boolean, selected: boolean): void {
         if (selected) {
-            context.ctx.fillStyle = lighten(this.system(context.doc).color.hex, 50, 0.3);
+            context.ctx.fillStyle = lighten(this.system(context.doc).color.hex, 50, 0.7);
             context.ctx.beginPath();
             context.ctx.arc(0, 0, 50, 0, Math.PI * 2);
             context.ctx.fill();

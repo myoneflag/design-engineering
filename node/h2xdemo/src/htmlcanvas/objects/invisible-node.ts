@@ -19,10 +19,6 @@ export abstract class InvisibleNode<T extends InvisibleNodeEntity> extends Backe
         // TA-DA!
     }
 
-    offerInteraction(interaction: Interaction): boolean {
-        return false;
-    }
-
     onMouseDown(event: MouseEvent, vp: ViewPort): boolean {
         return false;
     }

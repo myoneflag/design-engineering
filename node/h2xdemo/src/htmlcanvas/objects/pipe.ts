@@ -5,7 +5,7 @@ import * as TM from 'transformation-matrix';
 import {Matrix} from 'transformation-matrix';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
-import {ConnectableEntity, Coord, DocumentState, Rectangle} from '@/store/document/types';
+import {ConnectableEntity, Coord, DocumentState, DrawableEntity, Rectangle} from '@/store/document/types';
 import {matrixScale} from '@/htmlcanvas/utils';
 import Flatten from '@flatten-js/core';
 import {Draggable, DraggableObject} from '@/htmlcanvas/lib/object-traits/draggable-object';
@@ -42,10 +42,12 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         const ao = this.toObjectCoord(aw);
         const bo = this.toObjectCoord(bw);
 
+        const baseWidth = Math.max(2.0 / s, 10 / this.toWorldLength(1));
+
         ctx.lineCap = 'round';
         if (layerActive && selected) {
             ctx.beginPath();
-            ctx.lineWidth = 8.0 / s;
+            ctx.lineWidth = baseWidth + 3.0 / 2;
             ctx.strokeStyle = lighten(this.displayObject(doc).color!.hex, 0, 0.5);
 
             ctx.moveTo(ao.x, ao.y);
@@ -55,7 +57,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
         ctx.beginPath();
         ctx.strokeStyle = this.displayObject(doc).color!.hex;
-        ctx.lineWidth = 2.0 / s;
+        ctx.lineWidth = baseWidth;
         ctx.moveTo(ao.x, ao.y);
         ctx.lineTo(bo.x, bo.y);
         ctx.stroke();
@@ -170,14 +172,14 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         return result;
     }
 
-    offerInteraction(interaction: Interaction): boolean {
+    offerInteraction(interaction: Interaction): DrawableEntity[] | null {
         switch (interaction.type) {
             case InteractionType.INSERT:
-                return true;
+                return [this.entity];
             case InteractionType.CONTINUING_PIPE:
             case InteractionType.STARTING_PIPE:
             default:
-                return false;
+                return null;
         }
     }
 

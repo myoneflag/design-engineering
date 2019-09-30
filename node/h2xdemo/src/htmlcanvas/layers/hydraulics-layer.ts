@@ -56,12 +56,18 @@ export default class  HydraulicsLayer implements Layer {
         });
     }
 
-    drawSelectionLayer(context: DrawingContext, interactive: BaseBackedObject | null) {
+    drawSelectionLayer(context: DrawingContext, interactive: DrawableEntity[] | null) {
         if (this.selectedObject) {
             this.objectStore.get(this.selectedObject.entity.uid)!.draw(context, true, true);
         }
-        if (interactive && this.uidsInOrder.indexOf(interactive.uid) !== -1) {
-            this.objectStore.get(interactive.entity.uid)!.draw(context, true, true);
+        if (interactive) {
+
+            for (let i = interactive.length - 1; i >= 0; i--) {
+                const ii = interactive[i];
+                if (this.uidsInOrder.indexOf(ii.uid) !== -1) {
+                    this.objectStore.get(ii.uid)!.draw(context, true, true);
+                }
+            }
         }
     }
 
@@ -206,11 +212,11 @@ export default class  HydraulicsLayer implements Layer {
 
     offerInteraction(
         interaction: Interaction,
-        filter?: (object: BaseBackedObject) => boolean,
-        sortKey?: (object: BaseBackedObject) => any,
-    ): BaseBackedObject | null {
+        filter?: (objects: DrawableEntity[]) => boolean,
+        sortKey?: (objects: DrawableEntity[]) => any,
+    ): DrawableEntity[] | null {
 
-        const candidates: Array<[any, BaseBackedObject]> = [];
+        const candidates: Array<[any, DrawableEntity[]]> = [];
 
         for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
             const uid = this.uidsInOrder[i];
@@ -219,15 +225,18 @@ export default class  HydraulicsLayer implements Layer {
                 const objectCoord = object.toObjectCoord(interaction.worldCoord);
                 const objectLength = object.toObjectLength(interaction.worldRadius);
                 if (object.inBounds(objectCoord, objectLength)) {
-                    if (object.offerInteraction(interaction)) {
-                        if (filter === undefined || filter(object)) {
+
+                    const result = object.offerInteraction(interaction);
+                    if (result && result.length) {
+                        if (filter === undefined || filter(result)) {
                             if (sortKey === undefined) {
-                                return object;
+                                return result;
                             } else {
-                                candidates.push([sortKey(object), object]);
+                                candidates.push([sortKey(result), result]);
                             }
                         }
                     }
+
                 }
             }
         }

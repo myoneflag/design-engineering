@@ -372,14 +372,14 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         return false;
     }
 
-    offerInteraction(interaction: Interaction): boolean {
+    offerInteraction(interaction: Interaction): DrawableEntity[] | null {
         switch (interaction.type) {
             case InteractionType.INSERT:
             case InteractionType.CONTINUING_PIPE:
             case InteractionType.STARTING_PIPE:
-                return true;
+                return [this.entity];
             default:
-                return false;
+                return null;
         }
     }
 

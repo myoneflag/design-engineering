@@ -111,8 +111,9 @@ export default function insertTmv(
                             // connect to existing cold pipe
 
                             interactClosestPipe(context, StandardFlowSystemUids.ColdWater, wc, 3000);
-                            if (context.interactive) {
-                                splitColdPipe = context.interactive as Pipe;
+                            if (context.interactive && context.interactive.length) {
+                                const pipeE = context.interactive[0];
+                                splitColdPipe = context.objectStore.get(pipeE.uid) as Pipe;
                                 // rotate our pipe and try again with correct position of cold water
                                 tmvObj = DrawableObjectFactory.build(
                                     newTmv,
@@ -161,9 +162,10 @@ export default function insertTmv(
                             // do closest hot pipe
                             if (splitColdPipe) {
                                 interactClosestPipe(context, StandardFlowSystemUids.HotWater, wc, 3000);
-                                if (context.interactive) {
+                                if (context.interactive && context.interactive.length) {
                                     try {
-                                        splitHotPipe = context.interactive as Pipe;
+                                        const pipeE = context.interactive[0];
+                                        splitHotPipe = context.objectStore.get(pipeE.uid) as Pipe;
 
                                         hotObj = DrawableObjectFactory.build(
                                             newHot,
@@ -237,8 +239,9 @@ function leadPipe(
         pipe = pipeSpec;
     } else {
         interactClosestPipe(context, pipeSpec, wc, radius);
-        if (context.interactive) {
-            pipe = context.interactive as Pipe;
+        if (context.interactive && context.interactive) {
+            const pipeE = context.interactive[0];
+            pipe = context.objectStore.get(pipeE.uid) as Pipe;
         } else {
             return null;
         }
@@ -264,6 +267,10 @@ function leadPipe(
         calculation: null,
     };
 
+    valve.connections.push(pipeUid);
+    connectTo.connections.push(pipeUid);
+
+
     context.document.drawing.entities.push(newPipe);
     return newPipe;
 }
@@ -276,16 +283,18 @@ function interactClosestPipe(context: CanvasContext, systemUid: string, wc: Coor
             worldCoord: wc,
             worldRadius: radius, // 1 M radius
         },
-        (object: BaseBackedObject) => {
-            const entity: DrawableEntity = object.entity;
+        (object: DrawableEntity[]) => {
+            const entity: DrawableEntity = object[0];
             if (entity.type === EntityType.PIPE) {
                 const pe: PipeEntity = entity as PipeEntity;
                 return pe.systemUid === systemUid;
             }
             return false;
         },
-        (object: BaseBackedObject) => {
-            return -(object as Pipe).lastDrawnLine.distanceTo(Flatten.point(wc.x, wc.y))[0];
+        (object: DrawableEntity[]) => {
+            return -(context.objectStore.get(object[0].uid) as Pipe)
+                .lastDrawnLine
+                .distanceTo(Flatten.point(wc.x, wc.y))[0];
         },
     );
 }

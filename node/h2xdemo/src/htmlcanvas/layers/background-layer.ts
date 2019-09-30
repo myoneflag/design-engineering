@@ -162,13 +162,17 @@ export default class BackgroundLayer implements Layer {
 
     drawSelectionLayer(
         context: DrawingContext,
-        interactive: BaseBackedObject | null) {
+        interactive: DrawableEntity[] | null) {
         if (this.resizeBox) {
             this.resizeBox.draw(context);
         }
 
-        if (interactive && this.sidsInOrder.indexOf(interactive.uid) !== -1) {
-            this.objectStore.get(interactive.entity.uid)!.draw(context, true, true);
+        if (interactive) {
+            interactive.forEach((i) => {
+                if (this.sidsInOrder.indexOf(i.uid) !== -1) {
+                    this.objectStore.get(i.uid)!.draw(context, true, true);
+                }
+            });
         }
     }
 
@@ -267,17 +271,19 @@ export default class BackgroundLayer implements Layer {
 
     offerInteraction(
         interaction: Interaction,
-        filter?: (object: BaseBackedObject) => boolean,
-    ): BaseBackedObject | null {
+        filter?: (objects: DrawableEntity[]) => boolean,
+    ): DrawableEntity[] | null {
         for (let i = this.sidsInOrder.length - 1; i >= 0; i--) {
             const uid = this.sidsInOrder[i];
             if (this.objectStore.has(uid)) {
                 const object = this.objectStore.get(uid)!;
                 const objectCoord = object.toObjectCoord(interaction.worldCoord);
                 if (object.inBounds(objectCoord)) {
-                    if (object.offerInteraction(interaction)) {
-                        if (filter === undefined || filter(object)) {
-                            return object;
+
+                    const result = object.offerInteraction(interaction);
+                    if (result) {
+                        if (filter === undefined || filter(result)) {
+                            return result;
                         }
                     }
                 }

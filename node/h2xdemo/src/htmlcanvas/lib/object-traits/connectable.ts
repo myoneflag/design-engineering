@@ -28,6 +28,10 @@ export function ConnectableObject<T extends new (...args: any[])
 
                 const connected = this.objectStore.get(uid) as BaseBackedObject;
 
+                if (connected === undefined) {
+                    throw new Error('connectable not found: ' + uid + ' of ' + JSON.stringify(this.entity));
+                }
+
                 if (connected.entity.type === EntityType.PIPE) {
                     const pipeObject = connected as Pipe;
                     const [other] = pipeObject.worldEndpoints(this.uid);

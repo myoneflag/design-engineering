@@ -59,14 +59,14 @@
     import Vue from 'vue';
     import Component from 'vue-class-component';
     import {ViewPort} from '@/htmlcanvas/viewport';
-    import {Coord, DocumentState, FlowSystemParameters} from '@/store/document/types';
+    import {Coord, DocumentState, DrawableEntity, FlowSystemParameters} from "@/store/document/types";
     import {drawPaperScale} from '@/htmlcanvas/scale';
     import ModeButtons from '@/components/editor/ModeButtons.vue';
     import PropertiesWindow from '@/components/editor/property-window/PropertiesWindow.vue';
     import {DrawingMode, MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
     import BackgroundLayer from '@/htmlcanvas/layers/background-layer';
     import * as TM from 'transformation-matrix';
-    import {decomposeMatrix} from '@/htmlcanvas/utils';
+    import {decomposeMatrix, matrixScale} from "@/htmlcanvas/utils";
     import Toolbar from '@/components/editor/Toolbar.vue';
     import LoadingScreen from '@/views/LoadingScreen.vue';
     import {MainEventBus} from '@/store/main-event-bus';
@@ -162,7 +162,7 @@
 
 
         // The currently hovered element ready for interaction.
-        interactive: BaseBackedObject | null = null;
+        interactive: DrawableEntity[] | null = null;
 
 
         updating: boolean = false;
@@ -373,12 +373,14 @@
 
         offerInteraction(
             interaction: Interaction,
-            filter?: (object: BaseBackedObject) => boolean,
-            sortBy?: (object: BaseBackedObject) => any,
-        ): BaseBackedObject | null {
+            filter?: (objects: DrawableEntity[]) => boolean,
+            sortBy?: (objects: DrawableEntity[]) => any,
+        ): DrawableEntity[] | null {
+            this.interactive = null;
             for (let i = this.allLayers.length - 1; i >= 0; i--) {
-                this.interactive = this.allLayers[i].offerInteraction(interaction, filter, sortBy);
-                if (this.interactive) {
+                const result = this.allLayers[i].offerInteraction(interaction, filter, sortBy);
+                if (result && result.length > 0) {
+                    this.interactive = result;
                     this.scheduleDraw();
                     return this.interactive;
                 }
@@ -457,7 +459,7 @@
                     this.activeLayer.drawSelectionLayer(context, this.interactive);
                 }
 
-                drawPaperScale(ctx, 1 / decomposeMatrix(this.viewPort.position).sx);
+                drawPaperScale(ctx, 1 / matrixScale(this.viewPort.position));
             }
         }
 

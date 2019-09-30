@@ -34,12 +34,13 @@ export default function insertValve(context: CanvasContext, system: FlowSystemPa
                         worldRadius: 0,
                     },
                     (drawable) => {
-                        return drawable.type === EntityType.PIPE;
+                        return drawable[0].type === EntityType.PIPE;
                     },
                 );
 
-                if (context.interactive) {
-                    pipe = context.interactive as Pipe;
+                if (context.interactive && context.interactive.length) {
+                    const pipeE = context.interactive[0];
+                    pipe = context.objectStore.get(pipeE.uid) as Pipe;
                     // Project onto pipe
                     addValveAndSplitPipe(context, pipe, wc, system);
 

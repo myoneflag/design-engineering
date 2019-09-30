@@ -456,7 +456,6 @@ export default class CalculationEngine {
                 optimalInnerPipeDiameterMM: randInt(0, 10),
                 pressureDropKpa: randInt(0, 10),
                 realNominalPipeDiameterMM: randInt(0, 10),
-                velocityOptimalPipeDiameterMS: randInt(0, 10),
                 velocityRealMS: randInt(0, 10),
                 temperatureRange: randInt(0, 10) + ' to ' + randInt(0, 10),
                 loadingUnits: randInt(0, 10),

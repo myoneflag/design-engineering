@@ -1,5 +1,5 @@
 import Layer from '@/htmlcanvas/layers/layer';
-import {DocumentState, WithID} from '@/store/document/types';
+import {DocumentState, DrawableEntity, WithID} from '@/store/document/types';
 import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 import {DrawingContext, MessageStore, ObjectStore} from '@/htmlcanvas/lib/types';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
@@ -71,15 +71,15 @@ export default class CalculationLayer implements Layer {
         }
     }
 
-    drawSelectionLayer(context: DrawingContext, interactive: BaseBackedObject | null): any {
+    drawSelectionLayer(context: DrawingContext, interactive: DrawableEntity[] | null): any {
         //
     }
 
     offerInteraction(
         interaction: Interaction,
-        filter?: (object: BaseBackedObject) => boolean,
-        sortBy?: (object: BaseBackedObject) => any,
-    ): BaseBackedObject | null {
+        filter?: (objects: DrawableEntity[]) => boolean,
+        sortBy?: (objects: DrawableEntity[]) => any,
+    ): DrawableEntity[] | null {
         return null;
     }
 

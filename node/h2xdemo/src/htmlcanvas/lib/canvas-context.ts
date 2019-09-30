@@ -21,7 +21,7 @@ export default interface CanvasContext {
 
     $store: Store<RootState>;
 
-    interactive: BaseBackedObject | null;
+    interactive: DrawableEntity[] | null;
 
     lastDrawingContext: DrawingContext | null;
 
@@ -30,9 +30,9 @@ export default interface CanvasContext {
 
     offerInteraction(
         interaction: Interaction,
-        filter?: (object: BaseBackedObject) => boolean,
-        sortBy?: (object: BaseBackedObject) => any,
-    ): BaseBackedObject | null;
+        filter?: (objects: DrawableEntity[]) => boolean,
+        sortBy?: (objects: DrawableEntity[]) => any,
+    ): DrawableEntity[] | null;
 
     scheduleDraw(): void;
     processDocument(): void;

@@ -18,7 +18,7 @@ import {makeValveCalculationFields} from '@/store/document/calculations/valve-ca
 import {makeTmvCalculationFields} from '@/store/document/calculations/tmv-calculation';
 import {makeFlowSourceCalculationFields} from '@/store/document/calculations/flow-source-calculation';
 import {makeFixtureCalculationFields} from '@/store/document/calculations/fixture-calculation';
-import {decomposeMatrix} from '@/htmlcanvas/utils';
+import {decomposeMatrix, matrixScale} from '@/htmlcanvas/utils';
 import {resolveProperty} from '@/htmlcanvas/lib/utils';
 import CenterDraggableObject from '@/htmlcanvas/lib/object-traits/center-draggable-object';
 import {CalculationTarget} from '@/store/document/calculations/types';
@@ -154,7 +154,7 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
         }
 
         const {ctx} = context;
-        const scale = decomposeMatrix(ctx.getTransform()).sx;
+        const scale = matrixScale(ctx.getTransform());
         ctx.lineWidth = Math.max(1 / scale, 10);
 
         const fontSize = 50;
@@ -187,7 +187,7 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
         this.lastDrawnBox = {x: -boxWidth / 2, y: -boxHeight / 2, w: boxWidth, h: boxHeight};
 
         this.withWorld(context, this.toObjectCoord({x: 0, y: 0}), () => {
-            const innerScale = decomposeMatrix(ctx.getTransform()).sx;
+            const innerScale = matrixScale(ctx.getTransform());
             ctx.lineWidth = Math.max(1 / innerScale, 10);
             ctx.beginPath();
 
@@ -234,8 +234,8 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
         return false;
     }
 
-    offerInteraction(interaction: Interaction): boolean {
-        return false;
+    offerInteraction(interaction: Interaction): DrawableEntity[] | null {
+        return null;
     }
 
     onMouseDown(event: MouseEvent, vp: ViewPort): boolean {

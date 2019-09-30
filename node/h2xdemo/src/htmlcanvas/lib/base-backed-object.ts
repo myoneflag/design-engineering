@@ -4,6 +4,7 @@ import {ObjectStore} from '@/htmlcanvas/lib/types';
 import * as _ from 'lodash';
 import {Interaction} from '@/htmlcanvas/lib/interaction';
 import {EntityType} from '@/store/document/entities/types';
+import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 
 export default abstract class BaseBackedObject extends DrawableObject {
     entity: DrawableEntity;
@@ -59,7 +60,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
         this.refreshObjectInternal(obj, old);
     }
 
-    abstract offerInteraction(interaction: Interaction): boolean;
+    abstract offerInteraction(interaction: Interaction): DrawableEntity[] | null;
 
     // Return list of objects to remove.
     abstract prepareDelete(): BaseBackedObject[];
