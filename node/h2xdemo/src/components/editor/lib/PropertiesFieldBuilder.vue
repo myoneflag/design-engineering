@@ -110,10 +110,10 @@
                                 :disabled="reactiveData[field.property] == null"
                         >
                             <b-dropdown-item v-for="(choice, index) in field.params.choices"
-                                             @click="setRenderedData(field.property, choiceId(choice))" :key="index"
+                                             @click="setRenderedData(field.property, choice.key)" :key="index"
                                              size="sm"
                             >
-                                {{choiceName(choice)}}
+                                {{ choice.name }}
                             </b-dropdown-item>
                         </b-dropdown>
 
@@ -164,6 +164,7 @@
     import {CalculationParams, PropertyField} from '@/store/document/entities/property-field';
     import { isString } from 'lodash';
     import RotationPicker from '@/components/editor/lib/RotationPicker.vue';
+    import {Choice} from '@/lib/types';
 
     @Component({
         props: {
@@ -227,27 +228,12 @@
             this.$props.onChange();
         }
 
-        choiceId(choice: string | string[]): string {
-            if (isString(choice)) {
-                return choice;
-            } else {
-                return choice[0];
+        choiceName(key: string, choices: Choice[]): string {
+            const result = choices.find((c) => c.key === key);
+            if (result) {
+                return result.name;
             }
-        }
-
-        choiceName(choice: string | string[], choices: string[] | Array<[string, string]>): string {
-            if (choices !== undefined && isString(choice)) {
-                for (const i of choices) {
-                    if (i[0] === choice) {
-                        return i[1];
-                    }
-                }
-                return choice;
-            } else if (isString(choice)) {
-                return choice;
-            } else {
-                return choice[1];
-            }
+            return key + " (not found...)";
         }
     }
 </script>

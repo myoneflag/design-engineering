@@ -13,6 +13,7 @@ import CatalogState, {Catalog} from '@/store/catalog/types';
 import InvisibleNodeEntity from '@/store/document/entities/Invisible-node-entity';
 import TmvCalculation from '@/store/document/calculations/tmv-calculation';
 import {CalculationTarget} from '@/store/document/calculations/types';
+import {parseCatalogNumberOrMin} from '@/htmlcanvas/lib/utils';
 
 export default interface TmvEntity extends DrawableEntity, CalculationTarget<TmvCalculation> {
     center: Coord;
@@ -92,7 +93,7 @@ export function fillTMVFields(
 
     arr.forEach((field) => {
         if (result[field] === null) {
-            result[field] = defaultCatalog.mixingValves.tmv[field];
+            result[field] = parseCatalogNumberOrMin(defaultCatalog.mixingValves.tmv[field]);
         }
     });
     return result;

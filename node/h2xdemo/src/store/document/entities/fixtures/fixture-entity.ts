@@ -14,6 +14,7 @@ import InvisibleNodeEntity from '@/store/document/entities/Invisible-node-entity
 import {PSD_METHODS} from '../../../../config';
 import FixtureCalculation from '@/store/document/calculations/fixture-calculation';
 import {CalculationTarget} from '@/store/document/calculations/types';
+import {parseCatalogNumberOrMin} from '@/htmlcanvas/lib/utils';
 
 export default interface FixtureEntity extends DrawableEntity, CalculationTarget<FixtureCalculation> {
     center: Coord;
@@ -97,16 +98,20 @@ export function fillFixtureFields(
 
     arr.forEach((field) => {
         if (result[field] === null) {
-            result[field] = defaultCatalog.fixtures[result.name][field];
+            result[field] = parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name][field]);
         }
     });
 
+    const psdStrategy = doc.drawing.calculationParams.psdMethod;
+
     if (!result.loadingUnitsCold) {
-        result.loadingUnitsCold = defaultCatalog.fixtures[result.name].loadingUnits.as3500.cold;
+        result.loadingUnitsCold =
+            parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy].cold);
     }
 
     if (!result.loadingUnitsHot) {
-        result.loadingUnitsHot = defaultCatalog.fixtures[result.name].loadingUnits.as3500.hot;
+        result.loadingUnitsHot =
+            parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy].hot);
     }
     return result;
 }

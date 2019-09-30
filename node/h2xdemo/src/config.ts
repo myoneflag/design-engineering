@@ -1,4 +1,6 @@
 // http://www.metrication.com/drafting/paper.html
+import {Choice} from '@/lib/types';
+
 export interface PaperSize {
     name: string;
     heightMM: number;
@@ -56,32 +58,32 @@ export const SENSIBLE_SCALES = [
 
 // These are some temporary configs while we don't have a database yet.
 //
-export const PSD_METHODS: Array<[string, boolean]> = [
-    ['AS3500 2018 Loading Units', true],
-    ['AS3500 2018 Dwellings', false],
-    ['Barrie\'s Book Loading Units', false],
-    ['Barrie\'s Book Dwellings', false],
-    ['DIN 1988-300 - Residential', false],
-    ['DIN 1988-300 - Hospital', false],
-    ['DIN 1988-300 - Hotel', false],
-    ['DIN 1988-300 - School', false],
-    ['DIN 1988-300 - Office', false],
-    ['DIN 1988-300 - Assisted Living', false],
-    ['DIN 1988-300 - Nursing Home', false],
-    ['BS 806', false],
-    ['CIBSE Guide G', false],
-    ['Uniform Plumbing Code 2018', false],
-    ['International Plumbing Code 2018', false],
+export const PSD_METHODS: Choice[] = [
+    {name: 'AS3500 2018 Loading Units', key: 'as35002018LoadingUnits'},
+    {name: 'AS3500 2018 Dwellings', disabled: true, key: 'as3500D2018Dwellings'},
+    {name: 'Barrie\'s Book Loading Units', disabled: true, key: 'barriesBookLoadingUnits'},
+    {name: 'Barrie\'s Book Dwellings', disabled: true, key: 'barriesBookDwellings'},
+    {name: 'DIN 1988-300 - Residential', disabled: true, key: 'din1988300Residential'},
+    {name: 'DIN 1988-300 - Hospital', disabled: true, key: 'din1988300Hospital'},
+    {name: 'DIN 1988-300 - Hotel', disabled: true, key: 'din1988300Hotel'},
+    {name: 'DIN 1988-300 - School', disabled: true, key: 'din1988300School'},
+    {name: 'DIN 1988-300 - Office', disabled: true, key: 'din1988300Office'},
+    {name: 'DIN 1988-300 - Assisted Living', disabled: true, key: 'din1988300AssistedLiving'},
+    {name: 'DIN 1988-300 - Nursing Home', disabled: true, key: 'din1988300NursingHome'},
+    {name: 'BS 806', disabled: true, key: 'BS806'},
+    {name: 'CIBSE Guide G', disabled: true, key: 'CIBSEGuideG'},
+    {name: 'Uniform Plumbing Code 2018', disabled: true, key: 'UnifromPlumbingCode2018'},
+    {name: 'International Plumbing Code 2018', disabled: true, key: 'InternationalPlumbingCode2018'},
 ];
 
-export const RING_MAIN_CALCULATION_METHODS: Array<[string, boolean]> = [
-    ['Flow rate assigned to each fixture as %', false],
-    ['Flow rate assigned to fixtures evenly', false],
-    ['Flow rate assigned to most disadvantaged fixtures', false],
-    ['99th percentile computer simulated PSD', false],
+export const RING_MAIN_CALCULATION_METHODS: Choice[] = [
+    {name: 'Flow rate assigned to each fixture as %', disabled: true, key: 'fixturePCT'},
+    {name: 'Flow rate assigned to fixtures evenly', disabled: true, key: 'fixtureEven'},
+    {name: 'Flow rate assigned to most disadvantaged fixtures', disabled: true, key: 'fixtureDisadvantaged'},
+    {name: '99th percentile computer simulated PSD', disabled: true, key: 'monteCarlo'},
 ];
 
-export const PIPE_SIZING_METHODS: Array<[string, boolean]> = [
-    ['Keep maximum velocity within bounds', true],
-    ['Keep maximum pressure drop within bounds', true],
+export const PIPE_SIZING_METHODS: Choice[] = [
+    {name: 'Keep maximum velocity within bounds', key: 'velocity'},
+    {name: 'Keep maximum pressure drop within bounds', key: 'pressure', disabled: true},
 ];

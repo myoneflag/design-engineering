@@ -3,6 +3,8 @@ import {Coord, DocumentState, DrawableEntity} from '@/store/document/types';
 import * as _ from 'lodash';
 import {ObjectStore} from '@/htmlcanvas/lib/types';
 import doc = Mocha.reporters.doc;
+import * as webpack from 'webpack';
+import numberToIdentifer = webpack.Template.numberToIdentifer;
 
 
 export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
@@ -55,4 +57,137 @@ export function resolveProperty(prop: string, obj: any): any {
         prop.split('.').splice(1).join('.'),
         obj[prop.split('.')[0]],
     );
+}
+
+export function parseCatalogNumberOrMin(str: string | number | null): number | null {
+    if (typeof str === 'number') {
+        return str;
+    }
+    if (str === null) {
+        return null;
+    }
+    if (str.indexOf('-') !== -1) {
+        const arr = str.split('-');
+        if (arr.length > 2) {
+            throw new Error('Dunno');
+        }
+        const n = Number(str.split('-')[0]);
+        return isNaN(n) ? null : n;
+    } else {
+        const n = Number(str);
+        return isNaN(n) ? null : n;
+    }
+}
+
+export function parseCatalogNumberOrMax(str: string | number | null): number | null {
+    if (typeof str === 'number') {
+        return str;
+    }
+    if (str === null) {
+        return null;
+    }
+    if (str.indexOf('-') !== -1) {
+        const arr = str.split('-');
+        if (arr.length > 2) {
+            throw new Error('Dunno');
+        }
+        const n = Number(str.split('-')[1]);
+        return isNaN(n) ? null : n;
+    } else {
+        const n = Number(str);
+        return isNaN(n) ? null : n;
+    }
+}
+
+export function parseCatalogNumberExact(str: string | number | null): number | null {
+    if (typeof str === 'number') {
+        return str;
+    }
+    if (str === null) {
+        return null;
+    }
+    const n = Number(str);
+    return isNaN(n) ? null : n;
+}
+
+
+// assumes keys in table are non overlapping
+export function interpolateTable(table: {[key: string]: string | number}, index: number, strict: boolean = false): number | null {
+    let lowKey = -Infinity;
+    let highKey = Infinity;
+    let lowValue = null;
+    let highValue = null;
+
+    for (const key in table) {
+        const min = parseCatalogNumberOrMin(key);
+        const max = parseCatalogNumberOrMax(key);
+        const value = parseCatalogNumberOrMin(table[key]);
+        if (value !== null) {
+            if (min !== null && max !== null) {
+                if (index >= min && index <= max) {
+                    if (value !== null) {
+                        return value;
+                    }
+                } else {
+                    if (min > index && min < highKey) {
+                        highKey = min;
+                        highValue = value;
+                    }
+                    if (max < index && max >= lowKey) {
+                        lowKey = max;
+                        lowValue = value;
+                    }
+                }
+            } else {
+                throw new Error('table key not a number or range');
+            }
+        } else {
+            throw new Error('table value not a number, cannot interpolate');
+        }
+    }
+
+    if (lowValue === null) {
+        if (highValue !== null) {
+            return strict ? null : highValue;
+        } else {
+            return null;
+        }
+    } else if (highValue === null) {
+        if (lowValue !== null) {
+            return strict ? null : lowValue;
+        } else {
+            return null;
+        }
+    }
+
+    const lw = (highValue - index) / (highValue - lowValue);
+    const hw = (index - lowValue) / (highValue - lowValue);
+    return lw * lowValue + hw * highValue;
+}
+
+// assumes keys in table are non overlapping
+export function lowerBoundTable<T>(table: {[key: string]: T}, index: number, getVal?: (t: T) => number): T | null {
+    let highKey = Infinity;
+    let highValue: T | null = null;
+
+    for (const key in table) {
+        const min = getVal ? getVal(table[key]) : parseCatalogNumberOrMin(key);
+        const max = getVal ? getVal(table[key]) : parseCatalogNumberOrMax(key);
+        const value = table[key];
+
+        if (min === null || max === null) {
+            throw new Error('key is not a number');
+        }
+
+        if (min <= index && max >= index) {
+            return value;
+        }
+
+        if (min < highKey && min > index) {
+            highKey = min;
+            highValue = value;
+        }
+    }
+
+    return highValue;
 }

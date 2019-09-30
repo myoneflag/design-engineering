@@ -11,6 +11,7 @@ export const state: CatalogState = {
         fixtures: {},
         pipes: {},
         mixingValves: {},
+        psdStandards: {},
     },
     loaded: false,
 };

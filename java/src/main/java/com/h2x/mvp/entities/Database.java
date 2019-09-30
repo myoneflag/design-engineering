@@ -54,7 +54,7 @@ public class Database {
         catalog.setContent(new String(new FileInputStream(file).readAllBytes(), StandardCharsets.UTF_8));
         _defaultCatalogLastSaved = LocalDateTime.parse(
                 jp.parseMap(catalog.getContent()).get("lastModified").toString(),
-                DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                DateTimeFormatter.ISO_ZONED_DATE_TIME
         );
         session.persist(catalog);
         return catalog;
@@ -68,7 +68,7 @@ public class Database {
             String content = new String(new FileInputStream(file).readAllBytes(), StandardCharsets.UTF_8);
             _defaultCatalogLastSaved = LocalDateTime.parse(
                     jp.parseMap(content).get("lastModified").toString(),
-                    DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                    DateTimeFormatter.ISO_ZONED_DATE_TIME
             );
         }
         return _defaultCatalogLastSaved;

@@ -27,15 +27,15 @@ import {CalculationTarget} from '@/store/document/calculations/types';
 export default class Popup extends BackedDrawableObject<PopupEntity> {
     static MESSGAE_DISTANCE: number = 400;
 
-    static findCenter(object: BaseBackedObject, middleWc: Coord): Coord {
+    static findCenter(target: BaseBackedObject, middleWc: Coord): Coord {
 
         const mp = Flatten.point(middleWc.x, middleWc.y);
 
         let center;
 
         // find position for it.
-        if (object instanceof Pipe) {
-            const [a, b] = object.worldEndpoints();
+        if (target instanceof Pipe) {
+            const [a, b] = target.worldEndpoints();
             // put it in the outside.
             const x = (a.x + b.x) / 2;
             const y = (a.y + b.y) / 2;
@@ -51,15 +51,15 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
             } else {
                 center = {x: candB.x, y: candB.y};
             }
-        } else if (object) {
-            const wc = object.toWorldCoord({x: 0, y: 0});
+        } else if (target) {
+            const wc = target.toWorldCoord({x: 0, y: 0});
             const wcp = Flatten.point(wc.x, wc.y);
             const away = Flatten.vector(mp, wcp);
             center = wcp.translate(away.normalize().multiply(Popup.MESSGAE_DISTANCE));
         }
 
         if (!center) {
-            throw new Error('created message with unknown center. target is: ' + JSON.stringify(object.entity));
+            throw new Error('created message with unknown center. target is: ' + JSON.stringify(target.entity));
         }
         return center;
     }

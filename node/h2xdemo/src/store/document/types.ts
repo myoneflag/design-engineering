@@ -173,9 +173,9 @@ export const initialDrawing: DrawingState = {
         },
     ],
     calculationParams: {
-        psdMethod: PSD_METHODS[0][0],
-        ringMainCalculationMethod: RING_MAIN_CALCULATION_METHODS[0][0],
-        pipeSizingMethod: PIPE_SIZING_METHODS[0][0],
+        psdMethod: PSD_METHODS[0].key,
+        ringMainCalculationMethod: RING_MAIN_CALCULATION_METHODS[0].key,
+        pipeSizingMethod: PIPE_SIZING_METHODS[0].key,
     },
     backgrounds: [],
     entities: [],

@@ -11,6 +11,7 @@ import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import {EntityType} from '@/store/document/entities/types';
 import PipeCalculation from '@/store/document/calculations/pipe-calculation';
 import {CalculationTarget} from '@/store/document/calculations/types';
+import {Choice} from '@/lib/types';
 
 export default interface PipeEntity extends DrawableEntity, CalculationTarget<PipeCalculation> {
     type: EntityType.PIPE;
@@ -28,7 +29,7 @@ export default interface PipeEntity extends DrawableEntity, CalculationTarget<Pi
     calculation: PipeCalculation | null;
 }
 
-export function makePipeFields(materials: string[], systems: FlowSystemParameters[]): PropertyField[] {
+export function makePipeFields(materials: Choice[], systems: FlowSystemParameters[]): PropertyField[] {
     return [
         { property: 'systemUid', title: 'Flow System', hasDefault: false, isCalculated: false,
             type: FieldType.FlowSystemChoice, params: { systems } },

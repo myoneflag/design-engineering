@@ -1,15 +1,19 @@
+import LoadingUnitTable from '@/store/catalog/psd-standard/loading-unit-table';
+
 export default interface CatalogState {
     defaultCatalog: Catalog;
     loaded: boolean;
 }
 
 export type Diameter = number | string;
+export type PSDSpec = LoadingUnitTable;
 
 export interface Catalog {
     fixtures: {[key: string]: FixtureSpec};
     pipes: {[key: string]: PipeMaterial};
     valves: {[key: string]: ValveSpec};
     mixingValves: {[key: string]: MixingValveSpec};
+    psdStandards: {[key: string]: PSDSpec};
 }
 
 export interface FixtureSpec {
@@ -19,18 +23,18 @@ export interface FixtureSpec {
     fixtureUnits: number | null;
     loadingUnits: {[key: string]: LoadingUnit};
 
-    maxInletPressureKPA: number | null;
-    minInletPressureKPA: number | null;
-    probabilityOfUsagePCT: number | null;
+    maxInletPressureKPA: string | null;
+    minInletPressureKPA: string | null;
+    probabilityOfUsagePCT: string | null;
 
-    outletAboveFloorM: number | null;
+    outletAboveFloorM: string | null;
 
-    warmTempC: number | null;
+    warmTempC: string | null;
 }
 
 export interface LoadingUnit {
-    cold: number | null;
-    hot: number | null;
+    cold: string | null;
+    hot: string | null;
 }
 
 export interface  ValveSpec {
@@ -44,13 +48,13 @@ export interface Valve {
     valveUid: string;
     symbol: string | null;
     diameterNominalMM: Diameter | null;
-    kValue: number | null;
+    kValue: string | null;
 }
 
 export interface PipeMaterial {
     name: string;
     uid: string;
-    pipesBySize: {[key: number]: Pipe};
+    pipesBySize: {[key: string]: Pipe};
 }
 
 export interface Pipe {
@@ -58,14 +62,14 @@ export interface Pipe {
     uid: string;
     diameterNominalMM: Diameter | null;
     diameterInternalMM: Diameter | null;
-    colebrookWhiteCoefficient: number | null;
-    safeWorkingPressureKPA: number | null;
+    colebrookWhiteCoefficient: string | null;
+    safeWorkingPressureKPA: string | null;
 }
 
 export interface MixingValveSpec {
-    minInletPressureKPA: number;
-    maxInletPressureKPA: number;
-    maxHotColdPressureDifferentialPCT: number;
-    minFlowRateLS: number;
-    maxFlowRateLS: number;
+    minInletPressureKPA: string;
+    maxInletPressureKPA: string;
+    maxHotColdPressureDifferentialPCT: string;
+    minFlowRateLS: string;
+    maxFlowRateLS: string;
 }

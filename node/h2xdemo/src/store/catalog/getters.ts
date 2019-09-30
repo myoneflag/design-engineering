@@ -2,6 +2,7 @@ import {GetterTree} from 'vuex';
 import {RootState} from '@/store/types';
 import CatalogState from '@/store/catalog/types';
 import _ from 'lodash';
+import {Choice} from '@/lib/types';
 
 export const getters: GetterTree<CatalogState, RootState> = {
     loaded(state) {
@@ -13,17 +14,17 @@ export const getters: GetterTree<CatalogState, RootState> = {
     },
 
     defaultPipeMaterialChoices(state) {
-        const result: Array<[string, string]> = [];
+        const result: Choice[] = [];
         _.forOwn(state.defaultCatalog.pipes, (val, key) => {
-            result.push([key, val.name]);
+            result.push({key, name: val.name});
         });
         return result;
     },
 
     defaultValveChoices(state) {
-        const result: Array<[string, string]> = [];
+        const result: Choice[] = [];
         _.forOwn(state.defaultCatalog.valves, (val, key) => {
-            result.push([key, val.name]);
+            result.push({key, name: val.name});
         });
         return result;
     },

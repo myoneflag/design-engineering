@@ -1,7 +1,7 @@
 import {Coord, DocumentState, DrawableEntity} from '@/store/document/types';
 import {ObjectStore} from '@/htmlcanvas/lib/types';
 import {EntityType} from '@/store/document/entities/types';
-import PipeEntity from '@/store/document/entities/pipe-entity';
+import PipeEntity, {fillPipeDefaultFields} from '@/store/document/entities/pipe-entity';
 import ValveEntity from '@/store/document/entities/valve-entity';
 import FlowSourceEntity from '@/store/document/entities/flow-source-entity';
 import TmvEntity from '@/store/document/entities/tmv/tmv-entity';
@@ -13,7 +13,6 @@ import {
 } from '@/store/document/calculations/valve-calculation';
 import PopupEntity, {MessageType} from '@/store/document/entities/calculations/popup-entity';
 import {DemandType} from '@/calculations/types';
-import assert from 'assert';
 import Graph from '@/calculations/graph';
 import {isConnectable} from '@/store/document';
 import EquationEngine from '@/calculations/equation-engine';
@@ -24,6 +23,12 @@ import UnionFind from '@/calculations/union-find';
 import {assertUnreachable} from '@/lib/utils';
 import uuid from 'uuid';
 import {emptyPipeCalculation} from '@/store/document/calculations/pipe-calculation';
+import {interpolateTable, lowerBoundTable, parseCatalogNumberExact} from '@/htmlcanvas/lib/utils';
+import * as _ from 'lodash';
+import Popup from '@/htmlcanvas/objects/popup';
+import Pipe from '@/htmlcanvas/objects/pipe';
+
+const AS_PSD = 'as35002018LoadingUnits';
 
 export default class CalculationEngine {
 
@@ -35,6 +40,8 @@ export default class CalculationEngine {
     equationEngine!: EquationEngine;
     catalog!: Catalog;
     centerWc!: Coord;
+    extraWarnings!: PopupEntity[];
+    extraErrors!: PopupEntity[];
 
     calculate(
         objectStore: ObjectStore,
@@ -49,6 +56,8 @@ export default class CalculationEngine {
         this.catalog = catalog;
         this.demandType = demandType;
         this.centerWc = centerWc;
+        this.extraWarnings = [];
+        this.extraErrors = [];
         setTimeout(() => {
 
             // let's do some random calculations for now.
@@ -184,6 +193,117 @@ export default class CalculationEngine {
         }
     }
 
+    configurePipeForLoadingUnits(pipe: PipeEntity, lu: number) {
+        pipe.calculation = emptyPipeCalculation();
+        pipe.calculation.loadingUnits = lu;
+
+        pipe.calculation.flowRateLS = this.lookupFlowRate(lu);
+
+        if (pipe.calculation.flowRateLS === null) {
+            // out of range
+            this.extraWarnings.push({
+                center: Popup.findCenter(this.objectStore.get(pipe.uid)!, this.centerWc),
+                params: {
+                    type: MessageType.WARNING,
+                    text: 'Could not get flow rate for this pipe using the current PSD standard',
+                },
+                parentUid: null,
+                targetUids: [pipe.uid],
+                type: EntityType.RESULTS_MESSAGE,
+                uid: uuid(),
+            });
+        }
+
+        pipe.calculation.optimalInnerPipeDiameterMM = this.calculateInnerDiameter(pipe);
+        pipe.calculation.realNominalPipeDiameterMM = this.getRealPipe(pipe);
+
+        if (pipe.calculation.realNominalPipeDiameterMM) {
+            pipe.calculation.velocityRealMS = this.getVelocityRealMs(pipe);
+            pipe.calculation.pressureDropKpa = this.getPressureDrop(pipe);
+        }
+    }
+
+    lookupFlowRate(lu: number): number | null {
+        const psd = this.doc.drawing.calculationParams.psdMethod;
+        console.log(psd);
+        const table = this.catalog.psdStandards[psd].table;
+        if (psd === AS_PSD) {
+            return interpolateTable(table, lu, true);
+        } else {
+            throw new Error('PSD not supported');
+        }
+    }
+
+    calculateInnerDiameter(pipe: PipeEntity): number {
+        const computed = fillPipeDefaultFields(this.doc, 0, pipe);
+
+        // depends on pipe sizing method
+        if (this.doc.drawing.calculationParams.pipeSizingMethod === 'velocity') {
+            // http://www.1728.org/flowrate.htm
+            return Math.sqrt(
+                4000 * pipe.calculation!.flowRateLS! / (Math.PI * computed.maximumVelocityMS!),
+            );
+        } else {
+            throw new Error('Pipe sizing strategy not supported');
+        }
+    }
+
+    getPressureDrop(pipe: PipeEntity): number {
+        const F = 1;
+        const length = (this.objectStore.get(pipe.uid) as Pipe).computedLengthM;
+        const computed = fillPipeDefaultFields(this.doc, length, pipe);
+        const realInnerDiameter = parseCatalogNumberExact(lowerBoundTable(
+            this.catalog.pipes[computed.material!].pipesBySize,
+            pipe.calculation!.realNominalPipeDiameterMM!,
+        )!.diameterInternalMM)!;
+        return F * length * pipe.calculation!.velocityRealMS! ** 2
+            /
+            (2 * realInnerDiameter);
+    }
+
+    getVelocityRealMs(pipe: PipeEntity) {
+        // http://www.1728.org/flowrate.htm
+        const computed = fillPipeDefaultFields(this.doc, 0, pipe);
+        return 4000 * computed.calculation!.flowRateLS! /
+            (Math.PI * computed.calculation!.realNominalPipeDiameterMM! ** 2);
+    }
+
+    getRealPipe(pipe: PipeEntity): number | null {
+        const pipeFilled = fillPipeDefaultFields(this.doc, 0, pipe);
+
+
+        const table = this.catalog.pipes[pipeFilled.material!];
+
+        if (!table) {
+            throw new Error('Material doesn\'t exist anymore ' + JSON.stringify(pipeFilled));
+        }
+
+        const a = lowerBoundTable(table.pipesBySize, pipeFilled.calculation!.optimalInnerPipeDiameterMM!, (p) => {
+            const v = parseCatalogNumberExact(p.diameterNominalMM);
+            if (!v) {
+                throw new Error('no nominal diameter');
+            }
+            return v;
+        });
+
+        if (!a) {
+            // No pipe big enough
+            this.extraWarnings.push({
+                center: Popup.findCenter(this.objectStore.get(pipe.uid)!, this.centerWc),
+                params: {
+                    type: MessageType.WARNING,
+                    text: 'No pipe with this material in the database is big enough to handle the required demand',
+                },
+                parentUid: null,
+                targetUids: [pipe.uid],
+                type: EntityType.RESULTS_MESSAGE,
+                uid: uuid(),
+            });
+            return null;
+        } else {
+            return parseCatalogNumberExact(a.diameterNominalMM);
+        }
+    }
 
     calculatePsds(roots: string[]) {
         const totalReachedLUs = this.getTotalReachedLUs(roots);
@@ -212,7 +332,7 @@ export default class CalculationEngine {
                 if (residualLUs > exclusiveLUs) {
                     // the LU for this pipe is ambiguous in this configuration.
                     warnings.push({
-                        center: this.centerWc,
+                        center: Popup.findCenter(object, this.centerWc),
                         params: {
                             type: MessageType.WARNING,
                             text: 'Loading units for this pipe are ambiguous (but it is at least ' + exclusiveLUs + ')',
@@ -224,8 +344,7 @@ export default class CalculationEngine {
                     });
                 } else {
                     // we have successfully calculated the pipe's loading units.
-                    pipe.calculation = emptyPipeCalculation();
-                    pipe.calculation.loadingUnits = residualLUs;
+                    this.configurePipeForLoadingUnits(pipe, exclusiveLUs);
                 }
             } else {
                 console.log('no exclusive fixtures found. total: ' + totalReachedLUs + ' reached: ' + reachedLUs);
@@ -240,7 +359,7 @@ export default class CalculationEngine {
                 ) {
                     // redundant deadleg
                     warnings.push({
-                        center: this.centerWc,
+                        center: Popup.findCenter(object, this.centerWc),
                         params: {
                             type: MessageType.WARNING,
                             text: 'Redundant deadleg',
@@ -253,7 +372,7 @@ export default class CalculationEngine {
                 } else {
                     // ambiguous
                     warnings.push({
-                        center: this.centerWc,
+                        center: Popup.findCenter(object, this.centerWc),
                         params: {
                             type: MessageType.WARNING,
                             text: 'Loading units for this pipe are ambiguous',

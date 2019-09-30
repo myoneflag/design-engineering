@@ -1,4 +1,5 @@
 import {FlowSystemParameters} from '@/store/document/types';
+import {Choice} from '@/lib/types';
 
 export enum FieldType {
     Text = 'text',
@@ -20,7 +21,7 @@ export interface TextAreaParams {
 }
 
 export interface ChoiceParams {
-    choices: any[];
+    choices: Choice[];
 }
 
 export interface FlowSystemChoiceParams {

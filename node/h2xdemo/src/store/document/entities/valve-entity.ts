@@ -11,6 +11,7 @@ import PipeEntity from '@/store/document/entities/pipe-entity';
 import {EntityType} from '@/store/document/entities/types';
 import ValveCalculation from '@/store/document/calculations/valve-calculation';
 import {CalculationTarget} from '@/store/document/calculations/types';
+import {Choice} from '@/lib/types';
 
 export default interface ValveEntity extends ConnectableEntity, CalculationTarget<ValveCalculation> {
     type: EntityType.VALVE;
@@ -23,7 +24,7 @@ export default interface ValveEntity extends ConnectableEntity, CalculationTarge
 }
 
 export function makeValveFields(
-    valveTypes: string[] | Array<[string, string]>,
+    valveTypes: Choice[],
     systems: FlowSystemParameters[],
 ): PropertyField[] {
     return [

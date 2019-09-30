@@ -10,6 +10,7 @@ import * as _ from 'lodash';
 import {EntityType} from '@/store/document/entities/types';
 import FlowSourceCalculation from '@/store/document/calculations/flow-source-calculation';
 import {CalculationTarget} from '@/store/document/calculations/types';
+import {Choice} from '@/lib/types';
 
 export default interface FlowSourceEntity extends ConnectableEntity, CalculationTarget<FlowSourceCalculation> {
     type: EntityType.FLOW_SOURCE;
@@ -28,7 +29,7 @@ export default interface FlowSourceEntity extends ConnectableEntity, Calculation
     calculation: FlowSourceCalculation | null;
 }
 
-export function makeFlowSourceFields(materials: string[], systems: FlowSystemParameters[]): PropertyField[] {
+export function makeFlowSourceFields(materials: Choice[], systems: FlowSystemParameters[]): PropertyField[] {
     return [
         { property: 'systemUid', title: 'Flow System', hasDefault: false, isCalculated: false,
             type: FieldType.FlowSystemChoice, params: { systems } },

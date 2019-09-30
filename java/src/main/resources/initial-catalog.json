@@ -1,9 +1,10 @@
 {
+  "lastModified": "2019-09-29T08:29:46-04",
   "fixtures": {
     "ablutionTrough": {
       "fixtureUnits": "3",
       "loadingUnits": {
-        "as3500": {
+        "as35002018LoadingUnits": {
           "cold": "3",
           "hot": "3"
         },
@@ -27,7 +28,7 @@
     "basin": {
       "fixtureUnits": "1",
       "loadingUnits": {
-        "as3500": {
+        "as35002018LoadingUnits": {
           "cold": "1",
           "hot": "1"
         },
@@ -51,7 +52,7 @@
     "bath": {
       "fixtureUnits": "4",
       "loadingUnits": {
-        "as3500": {
+        "as35002018LoadingUnits": {
           "cold": "8",
           "hot": "4"
         },
@@ -75,7 +76,7 @@
     "bedpanSanitiser": {
       "fixtureUnits": "6",
       "loadingUnits": {
-        "as3500": {
+        "as35002018LoadingUnits": {
           "cold": "2",
           "hot": "0"
         },
@@ -99,7 +100,7 @@
     "beverageBay": {
       "fixtureUnits": "1",
       "loadingUnits": {
-        "as3500": {
+        "as35002018LoadingUnits": {
           "cold": "2",
           "hot": "2"
         },
@@ -123,7 +124,7 @@
     "birthingPool": {
       "fixtureUnits": "8",
       "loadingUnits": {
-        "as3500": {
+        "as35002018LoadingUnits": {
           "cold": "16",
           "hot": "8"
         },
@@ -147,7 +148,7 @@
     "cleanersSink": {
       "fixtureUnits": "1",
       "loadingUnits": {
-        "as3500": {
+        "as35002018LoadingUnits": {
           "cold": "2",
           "hot": "2"
         },
@@ -171,7 +172,7 @@
     "dishwasher": {
       "fixtureUnits": "3",
       "loadingUnits": {
-        "as3500": {
+        "as35002018LoadingUnits": {
           "cold": "3",
           "hot": "2"
         },
@@ -195,7 +196,7 @@
     "flishingRimSink": {
       "fixtureUnits": "6",
       "loadingUnits": {
-        "as3500": {
+        "as35002018LoadingUnits": {
           "cold": "2",
           "hot": "0"
         },
@@ -219,7 +220,7 @@
     "hoseTap": {
       "fixtureUnits": "0",
       "loadingUnits": {
-        "as3500": {
+        "as35002018LoadingUnits": {
           "cold": "8",
           "hot": "0"
         },
@@ -243,7 +244,7 @@
     "kitchenSink": {
       "fixtureUnits": "3",
       "loadingUnits": {
-        "as3500": {
+        "as35002018LoadingUnits": {
           "cold": "2",
           "hot": "2"
         },
@@ -267,7 +268,7 @@
     "laundryTrough": {
       "fixtureUnits": "5",
       "loadingUnits": {
-        "as3500": {
+        "as35002018LoadingUnits": {
           "cold": "3",
           "hot": "3"
         },
@@ -291,7 +292,7 @@
     "shower": {
       "fixtureUnits": "2",
       "loadingUnits": {
-        "as3500": {
+        "as35002018LoadingUnits": {
           "cold": "2",
           "hot": "2"
         },
@@ -315,7 +316,7 @@
     "urinal": {
       "fixtureUnits": "1",
       "loadingUnits": {
-        "as3500": {
+        "as35002018LoadingUnits": {
           "cold": "2",
           "hot": "2"
         },
@@ -339,7 +340,7 @@
     "washingMachine": {
       "fixtureUnits": "5",
       "loadingUnits": {
-        "as3500": {
+        "as35002018LoadingUnits": {
           "cold": "3",
           "hot": "2"
         },
@@ -363,7 +364,7 @@
     "wc": {
       "fixtureUnits": "4",
       "loadingUnits": {
-        "as3500": {
+        "as35002018LoadingUnits": {
           "cold": "2",
           "hot": "0"
         },
@@ -385,7 +386,6 @@
       "warmTempC": null
     }
   },
-  "lastModified": "2019-09-19T09:55:27.341822",
   "mixingValves": {
     "temperingValve": {
       "maxFlowRateLS": "0.6",
@@ -418,35 +418,35 @@
           "safeWorkingPressureKPA": "3500"
         },
         "150": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.3",
           "diameterInternalMM": "157",
           "diameterNominalMM": "150",
           "pipeUid": "castIronCoated",
           "safeWorkingPressureKPA": "3500"
         },
         "200": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.3",
           "diameterInternalMM": "212",
           "diameterNominalMM": "200",
           "pipeUid": "castIronCoated",
           "safeWorkingPressureKPA": "3500"
         },
         "225": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.3",
           "diameterInternalMM": "238.6",
           "diameterNominalMM": "225",
           "pipeUid": "castIronCoated",
           "safeWorkingPressureKPA": "3500"
         },
         "250": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.3",
           "diameterInternalMM": "264.8",
           "diameterNominalMM": "250",
           "pipeUid": "castIronCoated",
           "safeWorkingPressureKPA": "3500"
         },
         "300": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.3",
           "diameterInternalMM": "322.4",
           "diameterNominalMM": "300",
           "pipeUid": "castIronCoated",
@@ -459,7 +459,7 @@
       "name": "Copper (Type B)",
       "pipesBySize": {
         "100": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "98.2",
           "diameterNominalMM": "100",
           "pipeUid": "copperTypeB",
@@ -473,63 +473,63 @@
           "safeWorkingPressureKPA": "5290"
         },
         "150": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "148.2",
           "diameterNominalMM": "150",
           "pipeUid": "copperTypeB",
           "safeWorkingPressureKPA": "1000"
         },
         "20": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "16.9",
           "diameterNominalMM": "20",
           "pipeUid": "copperTypeB",
           "safeWorkingPressureKPA": "3970"
         },
         "200": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "198.9",
           "diameterNominalMM": "200",
           "pipeUid": "copperTypeB",
           "safeWorkingPressureKPA": "720"
         },
         "25": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "22.8",
           "diameterNominalMM": "25",
           "pipeUid": "copperTypeB",
           "safeWorkingPressureKPA": "3500"
         },
         "32": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "29.1",
           "diameterNominalMM": "32",
           "pipeUid": "copperTypeB",
           "safeWorkingPressureKPA": "2780"
         },
         "40": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "35.4",
           "diameterNominalMM": "40",
           "pipeUid": "copperTypeB",
           "safeWorkingPressureKPA": "2300"
         },
         "50": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "48.3",
           "diameterNominalMM": "50",
           "pipeUid": "copperTypeB",
           "safeWorkingPressureKPA": "1710"
         },
         "65": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "61",
           "diameterNominalMM": "65",
           "pipeUid": "copperTypeB",
           "safeWorkingPressureKPA": "1370"
         },
         "80": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "72.9",
           "diameterNominalMM": "80",
           "pipeUid": "copperTypeB",
@@ -542,14 +542,14 @@
       "name": "GMS (Medium)",
       "pipesBySize": {
         "100": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.15",
           "diameterInternalMM": "105",
           "diameterNominalMM": "100",
           "pipeUid": "gmsMedium",
           "safeWorkingPressureKPA": "5680"
         },
         "150": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.15",
           "diameterInternalMM": "155",
           "diameterNominalMM": "150",
           "pipeUid": "gmsMedium",
@@ -569,7 +569,7 @@
       "name": "HDPE (SDR11)",
       "pipesBySize": {
         "110": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "89.4",
           "diameterNominalMM": "110",
           "pipeUid": "hdpeSdr11",
@@ -583,77 +583,77 @@
           "safeWorkingPressureKPA": "1600"
         },
         "160": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "130",
           "diameterNominalMM": "160",
           "pipeUid": "hdpeSdr11",
           "safeWorkingPressureKPA": "1600"
         },
         "20": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "16.05",
           "diameterNominalMM": "20",
           "pipeUid": "hdpeSdr11",
           "safeWorkingPressureKPA": "1600"
         },
         "200": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "162.5",
           "diameterNominalMM": "200",
           "pipeUid": "hdpeSdr11",
           "safeWorkingPressureKPA": "1600"
         },
         "225": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "182.9",
           "diameterNominalMM": "225",
           "pipeUid": "hdpeSdr11",
           "safeWorkingPressureKPA": "1600"
         },
         "25": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "20.15",
           "diameterNominalMM": "25",
           "pipeUid": "hdpeSdr11",
           "safeWorkingPressureKPA": "1600"
         },
         "315": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "256.3",
           "diameterNominalMM": "315",
           "pipeUid": "hdpeSdr11",
           "safeWorkingPressureKPA": "1600"
         },
         "32": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "25.95",
           "diameterNominalMM": "32",
           "pipeUid": "hdpeSdr11",
           "safeWorkingPressureKPA": "1600"
         },
         "40": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "32.3",
           "diameterNominalMM": "40",
           "pipeUid": "hdpeSdr11",
           "safeWorkingPressureKPA": "1600"
         },
         "50": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "40.4",
           "diameterNominalMM": "50",
           "pipeUid": "hdpeSdr11",
           "safeWorkingPressureKPA": "1600"
         },
         "63": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "51",
           "diameterNominalMM": "63",
           "pipeUid": "hdpeSdr11",
           "safeWorkingPressureKPA": "1600"
         },
         "75": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "61",
           "diameterNominalMM": "75",
           "pipeUid": "hdpeSdr11",
@@ -666,7 +666,7 @@
       "name": "PEX (SDR 7.4)",
       "pipesBySize": {
         "110": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "78.6",
           "diameterNominalMM": "110",
           "pipeUid": "pexSdr74",
@@ -680,56 +680,56 @@
           "safeWorkingPressureKPA": "2500"
         },
         "160": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "114.7",
           "diameterNominalMM": "160",
           "pipeUid": "pexSdr74",
           "safeWorkingPressureKPA": "2500"
         },
         "20": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "14.15",
           "diameterNominalMM": "20",
           "pipeUid": "pexSdr74",
           "safeWorkingPressureKPA": "2500"
         },
         "25": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "17.65",
           "diameterNominalMM": "25",
           "pipeUid": "pexSdr74",
           "safeWorkingPressureKPA": "2500"
         },
         "32": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "22.75",
           "diameterNominalMM": "32",
           "pipeUid": "pexSdr74",
           "safeWorkingPressureKPA": "2500"
         },
         "40": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "28.5",
           "diameterNominalMM": "40",
           "pipeUid": "pexSdr74",
           "safeWorkingPressureKPA": "2500"
         },
         "50": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "35.7",
           "diameterNominalMM": "50",
           "pipeUid": "pexSdr74",
           "safeWorkingPressureKPA": "2500"
         },
         "63": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "45.1",
           "diameterNominalMM": "63",
           "pipeUid": "pexSdr74",
           "safeWorkingPressureKPA": "2500"
         },
         "75": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "53.6",
           "diameterNominalMM": "75",
           "pipeUid": "pexSdr74",
@@ -742,7 +742,7 @@
       "name": "Stainless Steel",
       "pipesBySize": {
         "100": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "104",
           "diameterNominalMM": "100",
           "pipeUid": "stainlessSteel",
@@ -756,56 +756,56 @@
           "safeWorkingPressureKPA": "20000"
         },
         "150": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "158",
           "diameterNominalMM": "150",
           "pipeUid": "stainlessSteel",
           "safeWorkingPressureKPA": "4000"
         },
         "20": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "19.6",
           "diameterNominalMM": "20",
           "pipeUid": "stainlessSteel",
           "safeWorkingPressureKPA": "15800"
         },
         "25": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "25.6",
           "diameterNominalMM": "25",
           "pipeUid": "stainlessSteel",
           "safeWorkingPressureKPA": "12500"
         },
         "32": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "32",
           "diameterNominalMM": "32",
           "pipeUid": "stainlessSteel",
           "safeWorkingPressureKPA": "9800"
         },
         "40": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "39",
           "diameterNominalMM": "40",
           "pipeUid": "stainlessSteel",
           "safeWorkingPressureKPA": "8500"
         },
         "50": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "51",
           "diameterNominalMM": "50",
           "pipeUid": "stainlessSteel",
           "safeWorkingPressureKPA": "6800"
         },
         "65": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "72.1",
           "diameterNominalMM": "65",
           "pipeUid": "stainlessSteel",
           "safeWorkingPressureKPA": "7200"
         },
         "80": {
-          "colebrookWhiteCoefficient": null,
+          "colebrookWhiteCoefficient": "0.0015",
           "diameterInternalMM": "87.6",
           "diameterNominalMM": "80",
           "pipeUid": "stainlessSteel",
@@ -1394,6 +1394,73 @@
           "symbol": null,
           "valveUid": "waterMeter"
         }
+      }
+    }
+  },
+  "psdStandards": {
+    "as35002018LoadingUnits": {
+      "type": "LU_LOOKUP_TABLE",
+      "table": {
+        "1": "0.09",
+        "2": "0.12",
+        "3": "0.14",
+        "4": "0.16",
+        "5": "0.18",
+        "6": "0.2",
+        "7": "0.22",
+        "8": "0.24",
+        "9": "0.25",
+        "10": "0.26",
+        "11": "0.28",
+        "12": "0.29",
+        "13": "0.3",
+        "14": "0.31",
+        "15": "0.33",
+        "16": "0.34",
+        "17": "0.35",
+        "18": "0.36",
+        "19": "0.37",
+        "20": "0.38",
+        "21": "0.39",
+        "22": "0.4",
+        "23": "0.41",
+        "24": "0.42",
+        "25": "0.43",
+        "26": "0.43",
+        "27": "0.44",
+        "28": "0.45",
+        "29": "0.46",
+        "30": "0.47",
+        "31": "0.48",
+        "32": "0.49",
+        "33": "0.49",
+        "34": "0.5",
+        "35": "0.51",
+        "36": "0.52",
+        "37": "0.52",
+        "38": "0.53",
+        "39": "0.54",
+        "40": "0.55",
+        "41": "0.55",
+        "42": "0.56",
+        "43": "0.57",
+        "44": "0.58",
+        "45": "0.58",
+        "46": "0.59",
+        "47": "0.6",
+        "48": "0.6",
+        "49": "0.61",
+        "50": "0.62",
+        "51": "0.62",
+        "52": "0.63",
+        "53": "0.64",
+        "54": "0.64",
+        "55": "0.65",
+        "56": "0.65",
+        "57": "0.66",
+        "58": "0.67",
+        "59": "0.67",
+        "60": "0.68"
       }
     }
   }
