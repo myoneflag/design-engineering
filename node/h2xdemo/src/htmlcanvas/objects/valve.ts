@@ -29,8 +29,9 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
 
     minimumConnections = 1;
 
-    lastDrawnRadius: number = 0;
+    lastDrawnWidth: number = 0;
     pixelRadius: number = 5;
+    lastDrawnLength: number = 0;
 
     TURN_RADIUS_MM = 100;
     FITTING_DIAMETER_PIXELS = 6;
@@ -60,6 +61,8 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
         const minJointLength = this.FITTING_DIAMETER_PIXELS / scale;
 
         const width = Math.max(this.FITTING_DIAMETER_PIXELS / scale, 30 / this.toWorldLength(1));
+        this.lastDrawnWidth = width;
+        this.lastDrawnLength = Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM));
 
         this.getRadials().forEach(([wc]) => {
             const oc = this.toObjectCoord(wc);
@@ -68,6 +71,7 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
             if (layerActive && selected) {
                 ctx.beginPath();
                 ctx.lineWidth = width + this.FITTING_DIAMETER_PIXELS * 2 / scale;
+                this.lastDrawnWidth = width + this.FITTING_DIAMETER_PIXELS * 2 / scale;
                 ctx.strokeStyle = lighten(this.displayEntity(doc).color!.hex, 50, 0.5);
                 ctx.moveTo(0, 0);
                 ctx.lineTo(small.x, small.y);
@@ -81,18 +85,25 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
             ctx.lineTo(small.x, small.y);
             ctx.stroke();
         });
-        // }
-
-        // Draw a slightly thick line towards every point.
-        this.lastDrawnRadius = screenSize * 2;
     }
 
     displayEntity(context: DocumentState) {
         return fillValveDefaultFields(context, this.entity);
     }
 
-    inBounds(oc: Coord): boolean {
-        return Math.sqrt(oc.x ** 2 + oc.y ** 2) < this.lastDrawnRadius;
+    inBounds(moc: Coord): boolean {
+        let selected = false;
+        this.getRadials().forEach(([wc]) => {
+            const oc = this.toObjectCoord(wc);
+            const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
+            const small = vec.normalize().multiply(this.lastDrawnLength);
+
+            if (Flatten.segment(Flatten.point(0, 0), Flatten.point(small.x, small.y))
+                .distanceTo(Flatten.point(moc.x, moc.y))[0] <= this.lastDrawnWidth) {
+                selected = true;
+            }
+        });
+        return selected;
     }
 
     get friendlyTypeName(): string {

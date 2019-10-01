@@ -44,10 +44,13 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
         const baseWidth = Math.max(2.0 / s, 10 / this.toWorldLength(1));
 
+        this.lastDrawnWidth = baseWidth;
+
         ctx.lineCap = 'round';
         if (layerActive && selected) {
             ctx.beginPath();
-            ctx.lineWidth = baseWidth + 3.0 / 2;
+            ctx.lineWidth = baseWidth + 6.0 / s;
+            this.lastDrawnWidth = baseWidth + 6.0 / s;
             ctx.strokeStyle = lighten(this.displayObject(doc).color!.hex, 0, 0.5);
 
             ctx.moveTo(ao.x, ao.y);
@@ -68,7 +71,6 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         } else {
             this.lastDrawnLine = new Flatten.Segment(new Flatten.Point(ao.x, ao.y), new Flatten.Point(bo.x, bo.y));
         }
-        this.lastDrawnWidth = 8.0 / s;
     }
 
     // Returns the world coordinates of the two endpoints
