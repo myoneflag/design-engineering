@@ -22,6 +22,7 @@ import org.springframework.messaging.simp.annotation.SubscribeMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
@@ -44,7 +45,7 @@ public class DocumentWebSockets {
 
     @SubscribeMapping("/document")
     public void onSubscribe(Principal user) {
-        logger.error("Subscribing");
+        logger.debug("Subscribing");
         logger.debug("Subscribing with  user " + user.getName());
         Boolean auth = Database.withSession(s_ -> {
             logger.debug("Auth'd and subscribed session uid " + user.getName());

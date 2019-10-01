@@ -53,14 +53,18 @@ public class WebSocketMessageBrokerConfig implements WebSocketMessageBrokerConfi
         config.setApplicationDestinationPrefixes("/user");
     }
 
-    public static class MyHandshakeHandler extends DefaultHandshakeHandler {
-
-        @Override
-        protected Principal determineUser(ServerHttpRequest request, WebSocketHandler wsHandler,
-                                          Map<String, Object> attributes) {
-            // add your own code to determine the user
-            return new StompPrincipal();
-        }
+    @Bean
+    public HandshakeHandler myHandshakeHandler() {
+        return new DefaultHandshakeHandler() {
+            @Override
+            protected Principal determineUser(ServerHttpRequest request, WebSocketHandler wsHandler,
+                                              Map<String, Object> attributes) {
+                // add your own code to determine the user
+                StompPrincipal p = new StompPrincipal();
+                logger.debug("Determining user to be " + p.getName());
+                return p;
+            }
+        };
     }
 
     @Override
@@ -68,9 +72,10 @@ public class WebSocketMessageBrokerConfig implements WebSocketMessageBrokerConfi
         stompEndpointRegistry
                 .addEndpoint("api/websocket") // Set websocket endpoint to connect to
                 .setAllowedOrigins("*")
-                .setHandshakeHandler(new MyHandshakeHandler())
+                .setHandshakeHandler(myHandshakeHandler())
                 .withSockJS()
-                .setInterceptors(httpSessionHandshakeInterceptor());
+                .setInterceptors(httpSessionHandshakeInterceptor())
+        ;
     }
 
     @Bean
@@ -78,19 +83,24 @@ public class WebSocketMessageBrokerConfig implements WebSocketMessageBrokerConfi
         return new HandshakeInterceptor() {
             @Override
             public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
+                logger.debug("got handshake request");
                 if (request instanceof ServletServerHttpRequest) {
                     ServletServerHttpRequest servletServerRequest = (ServletServerHttpRequest) request;
                     HttpServletRequest servletRequest = servletServerRequest.getServletRequest();
                     Cookie token = WebUtils.getCookie(servletRequest, "session-id");
+                    logger.debug("Got token " + token.getValue());
                     return Session.withAuthAndDb(token != null ? token.getValue() : null, (db, s) -> {
                         attributes.put("session-id", token.getValue());
+                        logger.debug("Successful handshake with session " + token.getValue());
                         return true;
                     }, false);
                 }
+                logger.debug("Unusual request type before handshake");
                 return false;
             }
             @Override
             public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Exception exception) {
+                logger.debug("after handshake");
             }
         };
     }
