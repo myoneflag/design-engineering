@@ -37,6 +37,7 @@ export interface PropertyField {
     title: string;
     hasDefault: boolean;
     isCalculated: boolean;
+    requiresInput?: boolean;
     type: FieldType;
     params: (NumberParams | TextAreaParams | ChoiceParams | FlowSystemChoiceParams) & (CalculationParams | {}) | null;
 }

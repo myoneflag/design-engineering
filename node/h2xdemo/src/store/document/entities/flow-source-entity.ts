@@ -24,7 +24,7 @@ export default interface FlowSourceEntity extends ConnectableEntity, Calculation
     spareCapacity: number | null;
     color: Color | null;
     temperatureC: number | null;
-    pressureKPA: number;
+    pressureKPA: number | null;
 
     calculation: FlowSourceCalculation | null;
 }
@@ -55,7 +55,7 @@ export function makeFlowSourceFields(materials: Choice[], systems: FlowSystemPar
         { property: 'temperatureC', title: 'Temperature (C)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: 100 } },
 
-        { property: 'pressureKPA', title: 'Pressure (kPA)', hasDefault: true, isCalculated: false,
+        { property: 'pressureKPA', title: 'Pressure (kPA)', hasDefault: false, isCalculated: false, requiresInput: true,
             type: FieldType.Number, params: { min: 0, max: null } },
     ];
 }

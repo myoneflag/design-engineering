@@ -11,6 +11,7 @@
             :default-data="defaultData"
             :on-commit="onCommit"
             :on-change="onChange"
+            :target="targetProperty"
         />
         <b-row>
             <b-col>
@@ -34,6 +35,7 @@
         props: {
             selectedEntity: Object,
             selectedObject: Object,
+            targetProperty: String,
             onDelete: Function,
             onChange: Function,
         },

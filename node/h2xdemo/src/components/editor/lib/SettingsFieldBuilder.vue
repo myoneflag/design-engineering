@@ -94,7 +94,7 @@
     import {Compact} from 'vue-color';
     import * as _ from 'lodash';
     import { isString } from 'lodash';
-    import {Choice} from "@/lib/types";
+    import {Choice} from '@/lib/types';
 
     @Component({
         props: {
@@ -149,7 +149,7 @@
             if (result) {
                 return result.name;
             }
-            return key + " (not found...)";
+            return key + ' (not found...)';
         }
     }
 

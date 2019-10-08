@@ -3,9 +3,10 @@ import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import {CenteredEntity, ConnectableEntity, Coord, DrawableEntity} from '@/store/document/types';
 import Connectable from '@/htmlcanvas/lib/object-traits/connectable';
 import * as TM from 'transformation-matrix';
+import {CenteredEntityConcrete} from '@/store/document/entities/concrete-entity';
 
 export default function CenterDraggableObject<T extends new (...args: any[]) =>
-    BackedDrawableObject<CenteredEntity>>(constructor: T) {
+    BackedDrawableObject<CenteredEntityConcrete>>(constructor: T) {
 
     return DraggableObject(
 

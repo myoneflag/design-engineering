@@ -1,18 +1,22 @@
 import Graph from '@/calculations/graph';
 import {expect} from 'chai';
+import {strictEqual} from 'assert';
+import * as _ from 'lodash';
+
 
 describe('graph.ts', () => {
     it('dfs single node or single edge', () => {
         const graph: Graph<string, number> = new Graph<string, number>();
         addSingleNode(graph);
-        const seen = new Set<string>();
         const visited: string[] = [];
-        graph.dfs('A', seen, 'test', (n, v) => {
-            expect(v).equal('test');
-            visited.push(n);
-        }, (e, v) => {
-            expect(false);
-        });
+        graph.dfs('A', (n) => {
+                visited.push(n);
+            },
+            undefined,
+            (e) => {
+                expect(false);
+            },
+        );
         expect(visited.sort()).eql(['A']);
 
         const cc = graph.connectedComponents();
@@ -21,25 +25,24 @@ describe('graph.ts', () => {
 
         const graph2: Graph<string, number> = new Graph<string, number>();
         addSingleEdge(graph2);
-        const seen2 = new Set<string>();
         const visited2: string[] = [];
         const visitedEdges: number[] = [];
-        graph2.dfs('B', seen2, 'test', (n, v) => {
-            expect(v).equal('test');
-            visited2.push(n);
-            return 1337;
-        }, (e, v) => {
-            visitedEdges.push(e.value);
-            expect(e.to).equal('C');
-            expect(v).equal(1337);
-            return 'test';
-        });
+        graph2.dfs('B', (n) => {
+                visited2.push(n);
+            },
+            undefined,
+
+                (e) => {
+                visitedEdges.push(e.value);
+                expect(e.to).equal('C');
+            },
+        );
         expect(visited2).eql(['B', 'C']);
 
         expect(visitedEdges).eql([1]);
 
         const cc2 = graph2.connectedComponents();
-        expect(cc2).eql([[['B', 'C'], [{value: 1, from: 'B', to: 'C', isDirected: false}]]]);
+        expect(cc2.map((c) => c[0])).eql([['B', 'C']]);
     });
 
     it('traverses a directed graph', () => {
@@ -48,24 +51,31 @@ describe('graph.ts', () => {
 
         const visitations: Array<[string, string]> = new Array<[string, string]>();
 
-        const seen = new Set<string>();
-        graph.dfs('D', seen, '',
-            (node, value) => {
-                const newval = value + node;
-                visitations.push([node, newval]);
-                return newval;
-            }, (edge, value) => {
-                return value + edge.value.toString();
-            });
+        /**
+         * D --3-->F --5-->G
+         * ^      /
+         * 2     4
+         * |    /
+         * E<--
+         */
+
+        graph.dfs('D',
+            undefined,
+            undefined,
+            (edge) => {
+                visitations.push([edge.from, edge.to]);
+            },
+        );
 
         expect(visitations.sort()).eql([
-            ['D', 'D'],
-            ['E', 'D3F4E'],
-            ['F', 'D3F'],
-            ['G', 'D3F5G'],
+            ['D', 'F'],
+            ['E', 'D'],
+            ['F', 'E'],
+            ['F', 'G'],
         ]);
 
         const traversal = graph.dagTraversal(['E']);
+        removeUidForTesting(traversal);
         expect(traversal).eql([
             {
                 node: 'G',
@@ -74,6 +84,7 @@ describe('graph.ts', () => {
                     to: 'G',
                     value: 5,
                     isDirected: true,
+                    isReversed: false,
                 },
                 children: [
 
@@ -86,6 +97,7 @@ describe('graph.ts', () => {
                     to: 'F',
                     value: 3,
                     isDirected: true,
+                    isReversed: false,
                 },
                 children: [
                     {
@@ -93,12 +105,14 @@ describe('graph.ts', () => {
                         to: 'E',
                         value: 4,
                         isDirected: true,
+                        isReversed: false,
                     },
                     {
                         from: 'F',
                         to: 'G',
                         value: 5,
                         isDirected: true,
+                        isReversed: false,
                     },
                 ],
             },
@@ -109,6 +123,7 @@ describe('graph.ts', () => {
                     to: 'D',
                     value: 2,
                     isDirected: true,
+                    isReversed: false,
                 },
                 children: [
                     {
@@ -116,6 +131,7 @@ describe('graph.ts', () => {
                         to: 'F',
                         value: 3,
                         isDirected: true,
+                        isReversed: false,
                     },
                 ],
             },
@@ -128,57 +144,68 @@ describe('graph.ts', () => {
                         to: 'D',
                         value: 2,
                         isDirected: true,
+                        isReversed: false,
                     },
                 ],
             },
         ]);
     });
 
-    it ('traverses a simple undirected graph', () => {
+    it ('traverses a simple tree', () => {
         const graph = new Graph<string, number>();
         addSimpleTree(graph);
 
         const visitations: Array<[string, string]> = new Array<[string, string]>();
         const seen = new Set<string>();
-        graph.dfs('L', seen, '',
-            (node, value) => {
-                const newval = value + node;
-                visitations.push([node, newval]);
-                return newval;
-            }, (edge, value) => {
-                return value + edge.value.toString();
-            });
+        graph.dfs(
+            'L',
+            undefined,
+            undefined,
+            (edge) => {
+                visitations.push([edge.from, edge.to]);
+            },
+        );
+
+        /**
+         *                      N
+         *                     /
+         *                    9
+         *                  /
+         * J --7-- I --8-- K --10-- M
+         *        /         \
+         *       6          11
+         *      /            \
+         *     H              L
+         */
 
         expect(visitations.sort()).eql([
-            ['H', 'L11K8I6H'],
-            ['I', 'L11K8I'],
-            ['J', 'L11K8I7J'],
-            ['K', 'L11K'],
-            ['L', 'L'],
-            ['M', 'L11K10M'],
-            ['N', 'L11K9N'],
+            ['I', 'H'],
+            ['I', 'J'],
+            ['K', 'I'],
+            ['K', 'M'],
+            ['K', 'N'],
+            ['L', 'K'],
         ]);
 
         visitations.splice(0);
         seen.clear();
 
-        graph.dfs('K', seen, '',
-            (node, value) => {
-                const newval = value + node;
-                visitations.push([node, newval]);
-                return newval;
-            }, (edge, value) => {
-                return value + edge.value.toString();
-            });
+        graph.dfs('K',
+            undefined,
+            undefined,
+            undefined,
+            (edge) => {
+                visitations.push([edge.from, edge.to]);
+            },
+        );
 
         expect(visitations.sort()).eql([
-            ['H', 'K8I6H'],
-            ['I', 'K8I'],
-            ['J', 'K8I7J'],
-            ['K', 'K'],
-            ['L', 'K11L'],
-            ['M', 'K10M'],
-            ['N', 'K9N'],
+            ['I', 'H'],
+            ['I', 'J'],
+            ['K', 'I'],
+            ['K', 'L'],
+            ['K', 'M'],
+            ['K', 'N'],
         ]);
     });
 
@@ -200,7 +227,66 @@ describe('graph.ts', () => {
             [7, 6],
         ]);
     });
+
+    it('finds a path', () => {
+        const graph = new Graph<string, number>();
+        addSimpleTree(graph);
+
+        const path = graph.anyPath('J', 'L');
+        expect(path).not.eq(null);
+        expect(path!.map((e) => e.to)).eql(['I', 'K', 'L']);
+
+        const graph2 = new Graph<string, number>();
+        addSimpleDirectedGraph(graph2);
+
+        const path2 = graph2.anyPath('E', 'G');
+        expect(path2).not.eq(null);
+        expect(path2!.map((e) => e.to)).eql(['D', 'F', 'G']);
+
+        const path3 = graph2.anyPath('G', 'E');
+        expect(path3).eq(null);
+    });
+
+    it('finds edge cycle cover', () => {
+        const graph = new Graph<string, number>();
+        addSimpleDirectedGraph(graph);
+
+        const cycleCover = graph.edgeCycleCover(true);
+        expect(cycleCover.map((k) => k.map((e) => [e.from, e.to]).sort()).sort()).eql(
+            [
+                [
+                    ['D', 'F'],
+                    ['E', 'D'],
+                    ['F', 'E'],
+                ],
+            ],
+        );
+        for (let i = 1; i < cycleCover[0].length - 1; i++) {
+            expect(cycleCover[0][i].from).eq(cycleCover[0][i - 1].to);
+        }
+        expect(cycleCover[0][0].from).eq(cycleCover[0][cycleCover[0].length - 1].to);
+    });
+
+    it ('finds arc cover', () => {
+       const graph = new Graph<string, number>();
+       addSimpleTree(graph);
+
+       const arc = graph.sourceArcCover(new Set(['M', 'N', 'H']));
+       expect(arc.length).eq(2);
+       const endpoints = new Set<string>();
+       arc.forEach((a) => {
+           endpoints.add(a[0].from);
+           endpoints.add(a[a.length - 1].to);
+       });
+       expect(Array.from(endpoints.values()).sort()).eql(['H', 'M', 'N']);
+       arc.forEach((a) => {
+           for (let i = 1; i < a.length - 1; i++) {
+               expect(a[i].from).eq(a[i - 1].to);
+           }
+       });
+    });
 });
+
 
 /**
  * A
@@ -230,6 +316,19 @@ function addSimpleDirectedGraph(graph: Graph<string, number>) {
     graph.addDirectedEdge('F', 'G',  5);
 }
 
+function removeUidForTesting(obj: any) {
+    if (_.isArray(obj)) {
+        obj.forEach(removeUidForTesting);
+    } else if (_.isObject(obj)) {
+        for (const key of Object.keys(obj)) {
+            if (key === 'uid') {
+                delete((obj as any)[key]);
+            } else {
+                removeUidForTesting((obj as any)[key]);
+            }
+        }
+    }
+}
 
 /**
  *                      N

@@ -5,6 +5,7 @@ export default interface PipeCalculation extends PsdCalculation {
     flowRateLS: number | null;
     optimalInnerPipeDiameterMM: number | null;
     realNominalPipeDiameterMM: number | null;
+    realInternalDiameterMM: number | null;
     pressureDropKpa: number | null;
 
     velocityRealMS: number | null;
@@ -17,6 +18,7 @@ export function makePipeCalculationFields(): MessageField[] {
     return [
         {property: 'flowRateLS', title: 'Flow rate (L/s)', category: FieldCategory.FlowRate},
         {property: 'realNominalPipeDiameterMM', title: 'Pipe Diameter (mm)', category: FieldCategory.Size},
+        {property: 'realInternalDiameterMM', title: 'Internal Diameter (mm)', category: FieldCategory.Size},
         {property: 'pressureDropKpa', title: 'Pressure drop (kPa)', category: FieldCategory.Pressure},
         {property: 'velocityRealMS', title: 'velocity (m/s)', category: FieldCategory.Velocity},
         {property: 'temperatureRange', title: 'Temperature range (C)', category: FieldCategory.Temperature},
@@ -29,6 +31,7 @@ export function emptyPipeCalculation(): PipeCalculation {
         flowRateLS: null,
         loadingUnits: null,
         optimalInnerPipeDiameterMM: null,
+        realInternalDiameterMM: null,
         pressureDropKpa: null,
         realNominalPipeDiameterMM: null,
         temperatureRange: null,

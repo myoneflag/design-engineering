@@ -5,9 +5,10 @@ import * as _ from 'lodash';
 import {Interaction} from '@/htmlcanvas/lib/interaction';
 import {EntityType} from '@/store/document/entities/types';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
+import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 
 export default abstract class BaseBackedObject extends DrawableObject {
-    entity: DrawableEntity;
+    entity: DrawableEntityConcrete;
     parentEntity: DrawableEntity | null;
     objectStore: ObjectStore;
 
@@ -18,7 +19,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
     protected constructor(
         objectStore: ObjectStore,
         parentEntity: DrawableEntity | null,
-        obj: DrawableEntity,
+        obj: DrawableEntityConcrete,
         onSelect: () => void,
         onChange: () => void,
         onCommit: () => void,
@@ -53,7 +54,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
         }
     }
 
-    refreshObject(parentEntity: DrawableEntity | null, obj: DrawableEntity) {
+    refreshObject(parentEntity: DrawableEntity | null, obj: DrawableEntityConcrete) {
         const old = _.cloneDeep(this.entity);
         this.entity = obj;
         this.parentEntity = parentEntity;

@@ -11,6 +11,7 @@
             :selected-entity="entity"
             :selected-object="selectedObject"
             :on-change="onChange"
+            :target-property="targetProperty"
             :on-delete="onDelete"
         />
         <ValveProperties
@@ -18,6 +19,7 @@
                 :selected-entity="entity"
                 :selected-object="selectedObject"
                 :on-change="onChange"
+                :target-property="targetProperty"
                 :on-delete="onDelete"
         />
         <PipeProperties
@@ -25,6 +27,7 @@
                 :selected-entity="entity"
                 :selected-object="selectedObject"
                 :on-change="onChange"
+                :target-property="targetProperty"
                 :on-delete="onDelete"
         />
         <TMVProperties
@@ -32,6 +35,7 @@
                 :selected-entity="entity"
                 :selected-object="selectedObject"
                 :on-change="onChange"
+                :target-property="targetProperty"
                 :on-delete="onDelete"
         />
         <FixtureProperties
@@ -39,6 +43,7 @@
                 :selected-entity="entity"
                 :selected-object="selectedObject"
                 :on-change="onChange"
+                :target-property="targetProperty"
                 :on-delete="onDelete"
         />
 
@@ -79,6 +84,7 @@
         props: {
             selectedEntity: Object,
             selectedObject: Object,
+            targetProperty: String,
             mode: Number,
             onChange: Function,
             onDelete: Function,

@@ -14,6 +14,7 @@ export interface Catalog {
     valves: {[key: string]: ValveSpec};
     mixingValves: {[key: string]: MixingValveSpec};
     psdStandards: {[key: string]: PSDSpec};
+    fluids: {[key: string]: FluidsSpec};
 }
 
 export interface FixtureSpec {
@@ -41,10 +42,10 @@ export interface  ValveSpec {
     name: string;
     uid: string;
     abbreviation: string | null;
-    valvesBySize: {[key: string]: Valve};
+    valvesBySize: {[key: string]: ValveSize};
 }
 
-export interface Valve {
+export interface ValveSize {
     valveUid: string;
     symbol: string | null;
     diameterNominalMM: Diameter | null;
@@ -54,10 +55,10 @@ export interface Valve {
 export interface PipeMaterial {
     name: string;
     uid: string;
-    pipesBySize: {[key: string]: Pipe};
+    pipesBySize: {[key: string]: PipeSpec};
 }
 
-export interface Pipe {
+export interface PipeSpec {
     name: string;
     uid: string;
     diameterNominalMM: Diameter | null;
@@ -72,4 +73,11 @@ export interface MixingValveSpec {
     maxHotColdPressureDifferentialPCT: string;
     minFlowRateLS: string;
     maxFlowRateLS: string;
+    pressureLossKPAbyFlowRateLS: {[key: string]: string};
+}
+
+export interface FluidsSpec {
+    name: string;
+    densityKGM3: string;
+    dynamicViscosityByTemperature: {[key: string]: string};
 }

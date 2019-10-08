@@ -22,6 +22,7 @@ import {decomposeMatrix, matrixScale} from '@/htmlcanvas/utils';
 import {resolveProperty} from '@/htmlcanvas/lib/utils';
 import CenterDraggableObject from '@/htmlcanvas/lib/object-traits/center-draggable-object';
 import {CalculationTarget} from '@/store/document/calculations/types';
+import * as _ from 'lodash';
 
 @CenterDraggableObject
 export default class Popup extends BackedDrawableObject<PopupEntity> {
@@ -125,7 +126,6 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
                 return makeTmvCalculationFields();
             case EntityType.FIXTURE:
                 return makeFixtureCalculationFields();
-            case EntityType.INVISIBLE_NODE:
             case EntityType.SYSTEM_NODE:
             case EntityType.RESULTS_MESSAGE:
             case EntityType.BACKGROUND_IMAGE:
@@ -141,7 +141,12 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
         this.fields = this.getFields();
         this.outputs = [];
         this.fields.forEach((f) => {
-            const line = f.title + ': ' + resolveProperty(f.property, this.target.calculation);
+            const property = resolveProperty(f.property, this.target.calculation);
+            let repr = _.toString(property);
+            if (_.isNumber(property)) {
+                repr = property.toFixed(5);
+            }
+            const line = f.title + ': ' + repr;
             this.outputs.push(line);
         });
     }

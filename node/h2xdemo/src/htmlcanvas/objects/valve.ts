@@ -19,6 +19,8 @@ import {EntityType} from '@/store/document/entities/types';
 import Pipe from '@/htmlcanvas/objects/pipe';
 import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
 import {isConnectable} from '@/store/document';
+import {Catalog, ValveSize, ValveSpec} from '@/store/catalog/types';
+import {lowerBoundTable} from '@/htmlcanvas/lib/utils';
 
 @CenterDraggableObject
 @ConnectableObject
@@ -35,6 +37,7 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
 
     TURN_RADIUS_MM = 100;
     FITTING_DIAMETER_PIXELS = 6;
+    lastRadials: Array<[Coord, BaseBackedObject]> = [];
 
     get position(): Matrix {
         return TM.translate(this.entity.center.x, this.entity.center.y);
@@ -64,7 +67,8 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
         this.lastDrawnWidth = width;
         this.lastDrawnLength = Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM));
 
-        this.getRadials().forEach(([wc]) => {
+        this.lastRadials = this.getRadials();
+        this.lastRadials.forEach(([wc]) => {
             const oc = this.toObjectCoord(wc);
             const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
             const small = vec.normalize().multiply(Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM)));
@@ -93,7 +97,7 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
 
     inBounds(moc: Coord): boolean {
         let selected = false;
-        this.getRadials().forEach(([wc]) => {
+        this.lastRadials.forEach(([wc]) => {
             const oc = this.toObjectCoord(wc);
             const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
             const small = vec.normalize().multiply(this.lastDrawnLength);
@@ -131,7 +135,6 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
         // Check bounds
         if (this.inBounds(oc)) {
             this.onSelect();
-
             return true;
         }
 
@@ -171,6 +174,18 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
 
     rememberToRegister(): void {
         //
+    }
+
+    getCatalogPage(catalog: Catalog, diameter: number): ValveSize | null {
+        const valve = catalog.valves[this.entity.valveType];
+        if (!valve) {
+            return null;
+        }
+        const page = lowerBoundTable(valve.valvesBySize, diameter);
+        if (!page) {
+            return null;
+        }
+        return page;
     }
 
     protected refreshObjectInternal(obj: ValveEntity): void {

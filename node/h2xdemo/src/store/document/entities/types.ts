@@ -4,7 +4,6 @@ export enum EntityType {
     FLOW_RETURN = 'FLOW_RETURN',
     PIPE = 'PIPE',
     VALVE = 'VALVE',
-    INVISIBLE_NODE = 'INVISIBLE_NODE',
 
     TMV = 'TMV',
     SYSTEM_NODE = 'SYSTEM_NODE',

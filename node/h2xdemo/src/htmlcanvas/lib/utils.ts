@@ -112,13 +112,16 @@ export function parseCatalogNumberExact(str: string | number | null): number | n
 
 
 // assumes keys in table are non overlapping
-export function interpolateTable(table: {[key: string]: string | number}, index: number, strict: boolean = false): number | null {
+export function interpolateTable(
+    table: {[key: string]: string | number},
+    index: number, strict: boolean = false,
+): number | null {
     let lowKey = -Infinity;
     let highKey = Infinity;
     let lowValue = null;
     let highValue = null;
 
-    for (const key in table) {
+    for (const key of Object.keys(table)) {
         const min = parseCatalogNumberOrMin(key);
         const max = parseCatalogNumberOrMax(key);
         const value = parseCatalogNumberOrMin(table[key]);
@@ -170,7 +173,7 @@ export function lowerBoundTable<T>(table: {[key: string]: T}, index: number, get
     let highKey = Infinity;
     let highValue: T | null = null;
 
-    for (const key in table) {
+    for (const key of Object.keys(table)) {
         const min = getVal ? getVal(table[key]) : parseCatalogNumberOrMin(key);
         const max = getVal ? getVal(table[key]) : parseCatalogNumberOrMax(key);
         const value = table[key];

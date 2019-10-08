@@ -11,6 +11,8 @@ export default interface Layer {
     selectedEntity: WithID | null;
     selectedObject: BaseBackedObject | null;
 
+    select(object: BaseBackedObject | null): void;
+
     draw(context: DrawingContext, active: boolean, ...args: any[]): any;
     update(doc: DocumentState): any;
     drawSelectionLayer(context: DrawingContext, interactive: DrawableEntity[] | null): any;

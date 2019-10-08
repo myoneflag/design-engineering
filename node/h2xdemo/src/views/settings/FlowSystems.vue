@@ -64,6 +64,7 @@
         get fields(): any[][] {
             return [
                 ['name', 'System Name:', 'text'],
+                ['fluid', 'Fluid:', 'choice', this.$store.getters['catalog/defaultFluidChoices']],
                 ['velocity', 'Velocity: (m/s)', 'number'],
                 ['temperature', 'Entry temperature: (c)', 'range', 10, 100],
                 ['spareCapacity', 'Spare Capacity: %', 'range', 0, 100],
@@ -118,6 +119,7 @@
                     material: 'Material A',
                     color: {hex: '#FCDC00'},
                     uid: uuid(),
+                    fluid: 'water',
                 });
                 this.$store.dispatch('document/commit');
                 this.selectedSystemId = this.document.drawing.flowSystems.length - 1;

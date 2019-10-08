@@ -28,4 +28,12 @@ export const getters: GetterTree<CatalogState, RootState> = {
         });
         return result;
     },
+
+    defaultFluidChoices(state) {
+        const result: Choice[] = [];
+        _.forOwn(state.defaultCatalog.fluids, (val, key) => {
+            result.push({key, name: val.name});
+        });
+        return result;
+    },
 };

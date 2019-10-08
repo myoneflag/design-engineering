@@ -12,6 +12,7 @@ export const state: CatalogState = {
         pipes: {},
         mixingValves: {},
         psdStandards: {},
+        fluids: {},
     },
     loaded: false,
 };

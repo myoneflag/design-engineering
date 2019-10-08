@@ -15,3 +15,12 @@ export class ObjectStore extends Map<string, BaseBackedObject> {}
 
 // tslint:disable-next-line:max-classes-per-file
 export class MessageStore extends Map<string, Popup> {}
+
+export interface SelectionTarget {
+    uid: string | null;
+    property?: string;
+    message?: string;
+    variant?: string;
+    title?: string;
+    recenter?: boolean;
+}

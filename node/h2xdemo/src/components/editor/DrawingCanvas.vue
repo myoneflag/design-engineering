@@ -1,3 +1,4 @@
+import {DrawingMode} from "@/htmlcanvas/types";
 <template>
     <div ref="canvasFrame" class="fullFrame">
         <drop
@@ -32,6 +33,7 @@
             <PropertiesWindow
                     :selected-entity="selectedEntity"
                     :selected-object="selectedObject"
+                    :target-property="targetProperty"
                     v-if="selectedObject && currentTool.propertiesVisible"
                     :mode="mode"
                     :on-change="scheduleDraw"
@@ -56,45 +58,45 @@
 </template>
 
 <script lang="ts">
-    import Vue from 'vue';
-    import Component from 'vue-class-component';
-    import {ViewPort} from '@/htmlcanvas/viewport';
+    import Vue from "vue";
+    import Component from "vue-class-component";
+    import {ViewPort} from "@/htmlcanvas/viewport";
     import {Coord, DocumentState, DrawableEntity, FlowSystemParameters} from "@/store/document/types";
-    import {drawPaperScale} from '@/htmlcanvas/scale';
-    import ModeButtons from '@/components/editor/ModeButtons.vue';
-    import PropertiesWindow from '@/components/editor/property-window/PropertiesWindow.vue';
-    import {DrawingMode, MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
-    import BackgroundLayer from '@/htmlcanvas/layers/background-layer';
-    import * as TM from 'transformation-matrix';
+    import {drawPaperScale} from "@/htmlcanvas/scale";
+    import ModeButtons from "@/components/editor/ModeButtons.vue";
+    import PropertiesWindow from "@/components/editor/property-window/PropertiesWindow.vue";
+    import {DrawingMode, MouseMoveResult, UNHANDLED} from "@/htmlcanvas/types";
+    import BackgroundLayer from "@/htmlcanvas/layers/background-layer";
+    import * as TM from "transformation-matrix";
     import {decomposeMatrix, matrixScale} from "@/htmlcanvas/utils";
-    import Toolbar from '@/components/editor/Toolbar.vue';
-    import LoadingScreen from '@/views/LoadingScreen.vue';
-    import {MainEventBus} from '@/store/main-event-bus';
-    import {ToolConfig} from '@/store/tools/types';
-    import {DEFAULT_TOOL, ToolHandler} from '@/htmlcanvas/lib/tool';
-    import uuid from 'uuid';
-    import {renderPdf} from '@/api/pdf';
-    import HydraulicsLayer from '@/htmlcanvas/layers/hydraulics-layer';
-    import Layer from '@/htmlcanvas/layers/layer';
-    import HydraulicsInsertPanel from '@/components/editor/HydraulicsInsertPanel.vue';
-    import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
-    import {EntityType} from '@/store/document/entities/types';
-    import {Interaction} from '@/htmlcanvas/lib/interaction';
-    import insertFlowSource from '@/htmlcanvas/tools/insert-flow-source';
-    import insertPipes from '@/htmlcanvas/tools/insert-pipes';
-    import insertValve from '@/htmlcanvas/tools/insert-valve';
-    import {DrawingContext, ObjectStore} from '@/htmlcanvas/lib/types';
-    import {BackgroundEntity} from '@/store/document/entities/background-entity';
-    import insertTmv from '@/htmlcanvas/tools/insert-tmv';
-    import insertFixture from '@/htmlcanvas/tools/insert-fixture';
-    import FloorPlanInsertPanel from '@/components/editor/FloorPlanInsertPanel.vue';
-    import InstructionPage from '@/components/editor/InstructionPage.vue';
-    import CalculationBar from '@/components/CalculationBar.vue';
-    import {DemandType} from '@/calculations/types';
-    import CalculationEngine from '@/calculations/calculation-engine';
-    import CalculationLayer from '@/htmlcanvas/layers/calculation-layer';
-    import {getBoundingBox} from '@/htmlcanvas/lib/utils';
-    import {Catalog} from '@/store/catalog/types';
+    import Toolbar from "@/components/editor/Toolbar.vue";
+    import LoadingScreen from "@/views/LoadingScreen.vue";
+    import {MainEventBus} from "@/store/main-event-bus";
+    import {ToolConfig} from "@/store/tools/types";
+    import {DEFAULT_TOOL, ToolHandler} from "@/htmlcanvas/lib/tool";
+    import uuid from "uuid";
+    import {renderPdf} from "@/api/pdf";
+    import HydraulicsLayer from "@/htmlcanvas/layers/hydraulics-layer";
+    import Layer from "@/htmlcanvas/layers/layer";
+    import HydraulicsInsertPanel from "@/components/editor/HydraulicsInsertPanel.vue";
+    import BaseBackedObject from "@/htmlcanvas/lib/base-backed-object";
+    import {EntityType} from "@/store/document/entities/types";
+    import {Interaction} from "@/htmlcanvas/lib/interaction";
+    import insertFlowSource from "@/htmlcanvas/tools/insert-flow-source";
+    import insertPipes from "@/htmlcanvas/tools/insert-pipes";
+    import insertValve from "@/htmlcanvas/tools/insert-valve";
+    import {DrawingContext, ObjectStore, SelectionTarget} from "@/htmlcanvas/lib/types";
+    import {BackgroundEntity} from "@/store/document/entities/background-entity";
+    import insertTmv from "@/htmlcanvas/tools/insert-tmv";
+    import insertFixture from "@/htmlcanvas/tools/insert-fixture";
+    import FloorPlanInsertPanel from "@/components/editor/FloorPlanInsertPanel.vue";
+    import InstructionPage from "@/components/editor/InstructionPage.vue";
+    import CalculationBar from "@/components/CalculationBar.vue";
+    import {DemandType} from "@/calculations/types";
+    import CalculationEngine from "@/calculations/calculation-engine";
+    import CalculationLayer from "@/htmlcanvas/layers/calculation-layer";
+    import {getBoundingBox} from "@/htmlcanvas/lib/utils";
+    import {Catalog} from "@/store/catalog/types";
 
     @Component({
         components: {
@@ -172,12 +174,14 @@
         lastDrawingContext: DrawingContext | null = null;
 
         calculationEngine!: CalculationEngine;
+        targetProperty: string | null = null;
 
         mounted() {
             this.ctx = (this.$refs.drawingCanvas as any).getContext('2d');
 
             MainEventBus.$on('ot-applied', this.onOT);
             MainEventBus.$on('set-tool-handler', this.setToolHandler);
+            MainEventBus.$on('select', this.onSelect);
 
             (this.$refs.drawingCanvas as any).onmousedown = this.onMouseDown;
             (this.$refs.drawingCanvas as any).onmousemove = this.onMouseMove;
@@ -287,7 +291,11 @@
 
         deleteEntity(object: BaseBackedObject) {
             const toDelete = object.prepareDelete();
+            const deleted = new Set<string>();
             toDelete.forEach((drawableObject) => {
+                if (deleted.has(drawableObject.uid)) {
+                    return;
+                }
                 const index1 = this.document.drawing.entities.findIndex((b) => b.uid === drawableObject.uid);
                 if (index1 !== -1) {
                     this.document.drawing.entities.splice(index1, 1);
@@ -302,7 +310,54 @@
                         + JSON.stringify(drawableObject),
                     );
                 }
+                deleted.add(drawableObject.uid);
             });
+        }
+
+        onSelect(selectionTarget: SelectionTarget) {
+            if (selectionTarget.uid === null) {
+                if (this.activeLayer) {
+                    this.activeLayer.select(null);
+                }
+            } else {
+                const obj = this.objectStore.get(selectionTarget.uid);
+                if (!obj) {
+                    throw new Error('Selecting an object that doesn\'t exist');
+                }
+
+                const background = this.document.drawing.backgrounds.find((b) => b.uid === selectionTarget.uid);
+                const drawable = this.document.drawing.entities.find((e) => e.uid === selectionTarget.uid);
+                if (background) {
+                    this.mode = DrawingMode.FloorPlan;
+                } else if (drawable) {
+                    this.mode = DrawingMode.Hydraulics;
+                }
+
+                if (this.activeLayer) {
+                    this.activeLayer.select(obj);
+                }
+
+                if (selectionTarget.property) {
+                    this.targetProperty = selectionTarget.property;
+                } else {
+                    this.targetProperty = null;
+                }
+
+                if (selectionTarget.recenter === true) {
+                    // Move view to object
+                    const shape = obj.shape();
+                    if (shape) {
+                        this.viewPort.panToWc(shape.box.center);
+                    }
+                }
+            }
+
+            if (selectionTarget.message) {
+                (this as any).$bvToast.toast(selectionTarget.message, {
+                    variant: selectionTarget.variant!,
+                    title: selectionTarget.title!,
+                });
+            }
         }
 
         deleteSelected() {

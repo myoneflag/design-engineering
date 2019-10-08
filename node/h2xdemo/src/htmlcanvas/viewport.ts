@@ -44,6 +44,11 @@ export class ViewPort {
         this.position = TM.transform(this.position, TM.translate(dx, dy));
     }
 
+    panToWc(point: Coord) {
+        const toCenter = this.toScreenCoord(point);
+        this.panAbs(toCenter.x - this.width / 2, toCenter.y - this.height / 2);
+    }
+
     /**
      * Take a world coordinate and project to the screen
      */

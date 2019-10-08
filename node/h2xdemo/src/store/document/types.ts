@@ -6,6 +6,9 @@ import {BackgroundEntity} from '@/store/document/entities/background-entity';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {DrawingMode} from '@/htmlcanvas/types';
 import {DemandType} from '@/calculations/types';
+import ValveEntity from '@/store/document/entities/valve-entity';
+import PipeEntity from '@/store/document/entities/pipe-entity';
+import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 
 // Because of how the diffing engine works, there are restrictions on the data structure for the document state.
 // Rules are:
@@ -42,6 +45,8 @@ export interface DrawableEntity extends WithID {
     type: EntityType;
 }
 
+
+
 export interface CenteredEntity extends DrawableEntity {
     center: Coord;
 }
@@ -58,7 +63,7 @@ export interface DrawingState {
     backgrounds: BackgroundEntity[];
     flowSystems: FlowSystemParameters[];
     calculationParams: CalculationParameters;
-    entities: DrawableEntity[];
+    entities: DrawableEntityConcrete[];
 }
 
 export interface CalculationUiSettings {
@@ -122,6 +127,7 @@ export interface FlowSystemParameters extends WithID {
     spareCapacity: number;
     material: string;
     color: Color;
+    fluid: string;
 }
 
 export interface CalculationParameters {
@@ -146,30 +152,33 @@ export const initialDrawing: DrawingState = {
         // TODO: these values should get got from the database.
         {
             name: 'Cold Water',
-            velocity: 10,
+            velocity: 1.5,
             temperature: 20,
             spareCapacity: 10,
             material : 'copperTypeB',
             color: {hex: '#009CE0'},
             uid: 'cold-water',
+            fluid: 'water',
         },
         {
             name: 'Hot Water',
-            velocity: 10,
+            velocity: 1.5,
             temperature: 60,
             spareCapacity: 10,
             material : 'copperTypeB',
             color: {hex: '#F44E3B'},
             uid: 'hot-water',
+            fluid: 'water',
         },
         {
             name: 'Warm Water',
-            velocity: 10,
+            velocity: 1.5,
             temperature: 50,
             spareCapacity: 10,
             material : 'copperTypeB',
             color: {hex: '#F49000'},
             uid: 'warm-water',
+            fluid: 'water',
         },
     ],
     calculationParams: {

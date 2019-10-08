@@ -4,8 +4,9 @@ import * as _ from 'lodash';
 import {Interaction} from '@/htmlcanvas/lib/interaction';
 import {ObjectStore} from '@/htmlcanvas/lib/types';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
+import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 
-export default abstract class BackedDrawableObject<T extends DrawableEntity> extends BaseBackedObject {
+export default abstract class BackedDrawableObject<T extends DrawableEntityConcrete> extends BaseBackedObject {
     entity: T;
 
     constructor(
@@ -36,7 +37,7 @@ export type BaseBackedConstructor = new (
     onCommit: () => void,
 ) => BaseBackedObject;
 
-export type BackedObjectConstructor<T extends DrawableEntity> = new (
+export type BackedObjectConstructor<T extends DrawableEntityConcrete> = new (
     objectStore: ObjectStore,
     parentEntity: DrawableEntity | null,
     obj: T,

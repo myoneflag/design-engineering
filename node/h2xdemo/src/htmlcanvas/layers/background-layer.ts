@@ -48,6 +48,14 @@ export default class BackgroundLayer implements Layer {
         return null;
     }
 
+    select(object: BaseBackedObject): void {
+        if (object) {
+            this.selectedId = object.uid;
+        } else {
+            this.selectedId = null;
+        }
+    }
+
     draw(context: DrawingContext, active: boolean, selectedTool: ToolConfig) {
         // draw selected one on top.
         this.sidsInOrder.forEach((selectId) => {

@@ -22,7 +22,6 @@ export const document: Module<DocumentState, RootState> = {
 export function isConnectable(type: EntityType): boolean {
     switch (type) {
         case EntityType.VALVE:
-        case EntityType.INVISIBLE_NODE:
         case EntityType.SYSTEM_NODE:
         case EntityType.FLOW_SOURCE:
         case EntityType.FLOW_RETURN:

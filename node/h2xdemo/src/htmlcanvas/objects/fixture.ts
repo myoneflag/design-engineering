@@ -48,7 +48,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         const x9 = -this.entity.pipeDistanceMM + this.entity.pipeDistanceMM * 9 / 4;
 
 
-        const ym1 = 0 + this.entity.pipeDistanceMM * -1 / 4;;
+        const ym1 = 0 + this.entity.pipeDistanceMM * -1 / 4;
         const y0 = 0;
         const y1 = 0 + this.entity.pipeDistanceMM * 1 / 4;
         const y2 = 0 + this.entity.pipeDistanceMM * 2 / 4;

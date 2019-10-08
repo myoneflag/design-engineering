@@ -44,8 +44,6 @@ describe('equation-engine.ts', () => {
             return [['H', 7]];
         });
 
-        console.log(engine.unresolved);
-        console.log(engine.resolved);
         expect(engine.isComplete()).eq(false);
 
         engine.submitValue('A', 0);
@@ -183,5 +181,5 @@ describe('equation-engine.ts', () => {
 
 
 function addChristmasTree(engine: EquationEngine) {
-
+    // asdf
 }

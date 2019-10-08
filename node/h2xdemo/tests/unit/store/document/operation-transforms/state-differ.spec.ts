@@ -228,6 +228,7 @@ const ws1: FlowSystemParameters = {
     temperature: 1,
     velocity: 0,
     uid: 'bweuyifgwe',
+    fluid: 'water',
 };
 
 const ws2: FlowSystemParameters = {
@@ -238,6 +239,7 @@ const ws2: FlowSystemParameters = {
     temperature: 1,
     velocity: 1,
     uid: 'werfewjknfhwiejhb',
+    fluid: 'water',
 };
 
 const cp1: CalculationParameters = {
