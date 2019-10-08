@@ -1,11 +1,11 @@
 import {Coord, DocumentState, DrawableEntity} from '@/store/document/types';
-import {ObjectStore} from '@/htmlcanvas/lib/types';
+import {ObjectStore, SelectionTarget} from '@/htmlcanvas/lib/types';
 import {EntityType} from '@/store/document/entities/types';
-import PipeEntity, {fillPipeDefaultFields} from '@/store/document/entities/pipe-entity';
-import ValveEntity from '@/store/document/entities/valve-entity';
-import FlowSourceEntity from '@/store/document/entities/flow-source-entity';
-import TmvEntity from '@/store/document/entities/tmv/tmv-entity';
-import FixtureEntity, {fillFixtureFields} from '@/store/document/entities/fixtures/fixture-entity';
+import PipeEntity, {fillPipeDefaultFields, makePipeFields} from '@/store/document/entities/pipe-entity';
+import ValveEntity, {makeValveFields} from '@/store/document/entities/valve-entity';
+import FlowSourceEntity, {makeFlowSourceFields} from '@/store/document/entities/flow-source-entity';
+import TmvEntity, {makeTMVFields} from '@/store/document/entities/tmv/tmv-entity';
+import FixtureEntity, {fillFixtureFields, makeFixtureFields} from '@/store/document/entities/fixtures/fixture-entity';
 import {
     DeadlegAttribute,
     ThreeConnectionAttribute,
@@ -16,7 +16,7 @@ import {DemandType} from '@/calculations/types';
 import Graph from '@/calculations/graph';
 import {isConnectable} from '@/store/document';
 import EquationEngine from '@/calculations/equation-engine';
-import {Catalog} from '@/store/catalog/types';
+import {Catalog, PipeSpec} from '@/store/catalog/types';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import {isCalculated} from '@/store/document/calculations';
 import UnionFind from '@/calculations/union-find';
@@ -24,9 +24,13 @@ import {assertUnreachable} from '@/lib/utils';
 import uuid from 'uuid';
 import {emptyPipeCalculation} from '@/store/document/calculations/pipe-calculation';
 import {interpolateTable, lowerBoundTable, parseCatalogNumberExact} from '@/htmlcanvas/lib/utils';
-import * as _ from 'lodash';
 import Popup from '@/htmlcanvas/objects/popup';
 import Pipe from '@/htmlcanvas/objects/pipe';
+import {getDarcyWeisbachMH, getFrictionFactor, getReynoldsNumber} from '@/calculations/pressure-drops';
+import FlowSolver from '@/calculations/flow-solver';
+import {PropertyField} from '@/store/document/entities/property-field';
+import {MainEventBus} from '@/store/main-event-bus';
+import Vue from 'vue';
 
 const AS_PSD = 'as35002018LoadingUnits';
 
@@ -58,10 +62,15 @@ export default class CalculationEngine {
         this.centerWc = centerWc;
         this.extraWarnings = [];
         this.extraErrors = [];
+
+        const success = this.preValidate();
+
+        if (!success) {
+            return;
+        }
+
         setTimeout(() => {
-
             // let's do some random calculations for now.
-
             done(this.doRealCalculation());
         },
             500);
@@ -76,6 +85,58 @@ export default class CalculationEngine {
         });
     }
 
+    preValidate(): boolean {
+        let selectObject: SelectionTarget | null = null;
+
+        this.objectStore.forEach((obj) => {
+            let fields: PropertyField[] = [];
+            switch (obj.entity.type) {
+                case EntityType.FLOW_SOURCE:
+                    fields = makeFlowSourceFields([], []);
+                    break;
+                case EntityType.PIPE:
+                    fields = makePipeFields([], []);
+                    break;
+                case EntityType.VALVE:
+                    fields = makeValveFields([], []);
+                    break;
+                case EntityType.TMV:
+                    fields = makeTMVFields();
+                    break;
+                case EntityType.FIXTURE:
+                    fields = makeFixtureFields();
+                    break;
+                case EntityType.SYSTEM_NODE:
+                case EntityType.BACKGROUND_IMAGE:
+                case EntityType.RESULTS_MESSAGE:
+                    break;
+            }
+
+            fields.forEach((field) => {
+                if (!selectObject) {
+                    if (field.requiresInput &&
+                        ((obj.entity as any)[field.property] === null ||
+                            (obj.entity as any)[field.property] === '')
+                    ) {
+                        selectObject = {
+                            uid: obj.uid,
+                            property: field.property,
+                            message: 'Please enter a value for ' + field.property,
+                            variant: 'danger',
+                            title: 'Missing required value',
+                            recenter: true,
+                        };
+                    }
+                }
+            });
+        });
+
+        if (selectObject) {
+            MainEventBus.$emit('select', selectObject);
+            return false;
+        }
+        return true;
+    }
 
     doRealCalculation(): PopupEntity[] {
         this.clearCalculations();
@@ -87,10 +148,9 @@ export default class CalculationEngine {
         if (sanityCheckWarnings.length === 0) {
             // The remaining graph must be a rooted forest.
             const {sources, biconnected} = this.analyseGraph();
-            const warnings = this.calculatePsds(sources.flat());
+            this.sizeDefinitePipes(sources.flat());
+            this.sizeRingsAndRoots(sources.flat());
         }
-
-        console.log(this.equationEngine.toString());
 
         if (!this.equationEngine.isComplete()) {
             throw new Error('Calculations could not complete \n');
@@ -132,6 +192,126 @@ export default class CalculationEngine {
         });
     }
 
+
+    sizeRingsAndRoots(sources: string[]) {
+
+        // For each connected component, find the total LUs, thus the flow rates, then distribute
+        // the flow rate equally to each fixture. From these flow rates, we can then calculate the
+        // flow network, and iteratively re-size the pipes.
+        const leaf2lu = new Map<string, number>();
+        const flowConnectedUF = new UnionFind<string>();
+        sources.forEach((s) => {
+            this.luFlowGraph.dfs(s, (n) => {
+               const lu = this.getTerminalLoadingUnits(this.objectStore.get(n)!.entity);
+               leaf2lu.set(n, lu);
+               flowConnectedUF.join(s, n);
+            });
+        });
+
+        const demandLS = new Map<string, number>();
+        const sourcesKPA = new Map<string, number>();
+
+        sources.forEach((suid) => {
+            const source = this.objectStore.get(suid)!;
+            if (source.entity.type === EntityType.FLOW_SOURCE) {
+                sourcesKPA.set(suid, source.entity.pressureKPA!);
+            } else {
+                throw new Error('Flow coming in from an entity that isn\'t a source');
+            }
+        });
+
+        const flowComponents = flowConnectedUF.groups();
+        flowComponents.forEach((group) => {
+            let totalLU = 0;
+            group.forEach((n) => {
+                if (leaf2lu.has(n)) {
+                    totalLU += leaf2lu.get(n)!;
+                }
+            });
+
+            if (totalLU) {
+                const recommendedFlowRate = this.lookupFlowRate(totalLU);
+                if (recommendedFlowRate === null) {
+                    throw new Error('Could not get flow rate from loading units');
+                }
+
+                const perUnit = recommendedFlowRate / totalLU;
+
+                group.forEach((n) => {
+                    if (leaf2lu.has(n) && leaf2lu.get(n)! > 0) {
+                        demandLS.set(n, perUnit * leaf2lu.get(n)!);
+                    }
+                });
+            }
+        });
+
+        // Now we can iteratively sizing of pipes.
+        const pipesThatNeedSizing = new Set<string>();
+        this.luFlowGraph.edgeList.forEach((e) => {
+            const pipeObj = this.objectStore.get(e.value)!;
+            if (pipeObj instanceof Pipe) {
+                if (pipeObj.entity.calculation === null) {
+                    const filled = fillPipeDefaultFields(this.doc, pipeObj.computedLengthM, pipeObj.entity);
+                    const initialSize = lowerBoundTable(this.catalog.pipes[filled.material!].pipesBySize, 0)!;
+                    pipeObj.entity.calculation = {
+                        flowRateLS: null,
+                        loadingUnits: null,
+                        optimalInnerPipeDiameterMM: null,
+                        pressureDropKpa: null,
+                        realInternalDiameterMM: parseCatalogNumberExact(initialSize.diameterInternalMM),
+                        realNominalPipeDiameterMM: parseCatalogNumberExact(initialSize.diameterNominalMM),
+                        temperatureRange: null,
+                        velocityRealMS: null,
+                    };
+                    pipesThatNeedSizing.add(pipeObj.entity.uid);
+                } else if (pipeObj.entity.calculation.realInternalDiameterMM === null) {
+                    const filled = fillPipeDefaultFields(this.doc, pipeObj.computedLengthM, pipeObj.entity);
+                    const initialSize = lowerBoundTable(this.catalog.pipes[filled.material!].pipesBySize, 0)!;
+
+                    pipeObj.entity.calculation.realInternalDiameterMM =
+                        parseCatalogNumberExact(initialSize.diameterInternalMM);
+                    pipeObj.entity.calculation.realNominalPipeDiameterMM =
+                        parseCatalogNumberExact(initialSize.diameterNominalMM);
+
+                    pipesThatNeedSizing.add(pipeObj.entity.uid);
+                }
+            }
+        });
+
+        const solver = new FlowSolver(this.luFlowGraph, this.objectStore, this.doc, this.catalog);
+
+        console.log("demand:");
+        console.log(demandLS);
+        console.log("sources:");
+        console.log(sourcesKPA);
+
+        while (true) {
+            const assignment = solver.solveFlowsLS(demandLS, sourcesKPA);
+            let changed = false;
+
+            pipesThatNeedSizing.forEach((target) => {
+                const flow = assignment.getFlow(target);
+
+                // TODO: Size ring mains properly
+                // But for now, just size this main by this flow.
+                const pipe = this.objectStore.get(target) as Pipe;
+                const oldSize = pipe.entity.calculation!.realInternalDiameterMM;
+                this.sizePipeForFlowRate(pipe.entity, flow);
+                const newSize = pipe.entity.calculation!.realInternalDiameterMM;
+
+                if (oldSize !== newSize) {
+                    changed = true;
+                }
+            });
+
+            console.log("Changed: " + changed);
+
+            if (!changed) {
+                // Pipe sizes have converged.
+                break;
+            }
+        }
+    }
 
     // Checks basic validity stuff, like hot water/cold water shouldn't mix, all fixtures have
     // required water sources filled in, etc.
@@ -179,7 +359,6 @@ export default class CalculationEngine {
                 case EntityType.FLOW_RETURN:
                 case EntityType.PIPE:
                 case EntityType.VALVE:
-                case EntityType.INVISIBLE_NODE:
                 case EntityType.TMV:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.RESULTS_MESSAGE:
@@ -197,9 +376,9 @@ export default class CalculationEngine {
         pipe.calculation = emptyPipeCalculation();
         pipe.calculation.loadingUnits = lu;
 
-        pipe.calculation.flowRateLS = this.lookupFlowRate(lu);
+        const size = this.lookupFlowRate(lu);
 
-        if (pipe.calculation.flowRateLS === null) {
+        if (size === null) {
             // out of range
             this.extraWarnings.push({
                 center: Popup.findCenter(this.objectStore.get(pipe.uid)!, this.centerWc),
@@ -212,20 +391,28 @@ export default class CalculationEngine {
                 type: EntityType.RESULTS_MESSAGE,
                 uid: uuid(),
             });
+        } else {
+            this.sizePipeForFlowRate(pipe, size);
         }
 
-        pipe.calculation.optimalInnerPipeDiameterMM = this.calculateInnerDiameter(pipe);
-        pipe.calculation.realNominalPipeDiameterMM = this.getRealPipe(pipe);
+    }
 
-        if (pipe.calculation.realNominalPipeDiameterMM) {
-            pipe.calculation.velocityRealMS = this.getVelocityRealMs(pipe);
-            pipe.calculation.pressureDropKpa = this.getPressureDrop(pipe);
+    sizePipeForFlowRate(pipe: PipeEntity, flowRateLS: number) {
+        pipe.calculation!.flowRateLS = flowRateLS;
+
+        pipe.calculation!.optimalInnerPipeDiameterMM = this.calculateInnerDiameter(pipe);
+        const page = this.getRealPipe(pipe);
+        pipe.calculation!.realNominalPipeDiameterMM = parseCatalogNumberExact(page!.diameterNominalMM);
+        pipe.calculation!.realInternalDiameterMM = parseCatalogNumberExact(page!.diameterInternalMM);
+
+        if (pipe.calculation!.realNominalPipeDiameterMM) {
+            pipe.calculation!.velocityRealMS = this.getVelocityRealMs(pipe);
+            pipe.calculation!.pressureDropKpa = this.getPressureDrop(pipe);
         }
     }
 
     lookupFlowRate(lu: number): number | null {
         const psd = this.doc.drawing.calculationParams.psdMethod;
-        console.log(psd);
         const table = this.catalog.psdStandards[psd].table;
         if (psd === AS_PSD) {
             return interpolateTable(table, lu, true);
@@ -249,26 +436,48 @@ export default class CalculationEngine {
     }
 
     getPressureDrop(pipe: PipeEntity): number {
-        const F = 1;
-        const length = (this.objectStore.get(pipe.uid) as Pipe).computedLengthM;
-        const computed = fillPipeDefaultFields(this.doc, length, pipe);
-        const realInnerDiameter = parseCatalogNumberExact(lowerBoundTable(
-            this.catalog.pipes[computed.material!].pipesBySize,
-            pipe.calculation!.realNominalPipeDiameterMM!,
-        )!.diameterInternalMM)!;
-        return F * length * pipe.calculation!.velocityRealMS! ** 2
-            /
-            (2 * realInnerDiameter);
+        const obj = this.objectStore.get(pipe.uid) as Pipe;
+        const filled = fillPipeDefaultFields(this.doc, obj.computedLengthM, pipe);
+        const realPipe = lowerBoundTable(
+            this.catalog.pipes[filled.material!].pipesBySize,
+            filled.diameterMM!,
+        )!;
+        const roughness = parseCatalogNumberExact(realPipe.colebrookWhiteCoefficient);
+        const realInternalDiameter = parseCatalogNumberExact(realPipe.diameterInternalMM);
+
+        const system = this.doc.drawing.flowSystems.find((s) => s.uid === pipe.systemUid)!;
+
+        const fluidDensity =  parseCatalogNumberExact(this.catalog.fluids[system.fluid].densityKGM3);
+        const dynamicViscosity = parseCatalogNumberExact(interpolateTable(
+            this.catalog.fluids[system.fluid].dynamicViscosityByTemperature,
+            system.temperature, // TOOD: Use pipe's temperature
+        ));
+
+        return getDarcyWeisbachMH(
+            getFrictionFactor(
+                realInternalDiameter!,
+                roughness!,
+                getReynoldsNumber(
+                    fluidDensity!,
+                    pipe.calculation!.velocityRealMS!,
+                    realInternalDiameter!,
+                    dynamicViscosity!,
+                ),
+            ),
+            filled.lengthM!,
+            realInternalDiameter!,
+            pipe.calculation!.velocityRealMS!,
+        );
     }
 
     getVelocityRealMs(pipe: PipeEntity) {
         // http://www.1728.org/flowrate.htm
-        const computed = fillPipeDefaultFields(this.doc, 0, pipe);
-        return 4000 * computed.calculation!.flowRateLS! /
-            (Math.PI * computed.calculation!.realNominalPipeDiameterMM! ** 2);
+
+        return 4000 * pipe.calculation!.flowRateLS! /
+            (Math.PI * parseCatalogNumberExact(pipe.calculation!.realInternalDiameterMM)! ** 2);
     }
 
-    getRealPipe(pipe: PipeEntity): number | null {
+    getRealPipe(pipe: PipeEntity): PipeSpec | null {
         const pipeFilled = fillPipeDefaultFields(this.doc, 0, pipe);
 
 
@@ -301,14 +510,12 @@ export default class CalculationEngine {
             });
             return null;
         } else {
-            return parseCatalogNumberExact(a.diameterNominalMM);
+            return a;
         }
     }
 
-    calculatePsds(roots: string[]) {
+    sizeDefinitePipes(roots: string[]) {
         const totalReachedLUs = this.getTotalReachedLUs(roots);
-        console.log('reached LUs: ' + totalReachedLUs);
-        const warnings: PopupEntity[] = [];
 
         // Go through all pipes
         this.objectStore.forEach((object) => {
@@ -316,7 +523,6 @@ export default class CalculationEngine {
                 return;
             }
             const pipe = object.entity as PipeEntity;
-            console.log(JSON.stringify(pipe));
 
             const reachedLUs = this.getTotalReachedLUs(roots, [], [pipe.uid]);
             const exclusiveLUs = totalReachedLUs - reachedLUs;
@@ -327,11 +533,9 @@ export default class CalculationEngine {
                 const [wet] = this.getWetEndpoints(pipe, roots);
                 const residualLUs = this.getTotalReachedLUs([point], [wet], [pipe.uid]);
 
-                console.log('exclusive: ' + exclusiveLUs + ' vs residual: ' + residualLUs);
-
                 if (residualLUs > exclusiveLUs) {
                     // the LU for this pipe is ambiguous in this configuration.
-                    warnings.push({
+                    this.extraWarnings.push({
                         center: Popup.findCenter(object, this.centerWc),
                         params: {
                             type: MessageType.WARNING,
@@ -347,8 +551,6 @@ export default class CalculationEngine {
                     this.configurePipeForLoadingUnits(pipe, exclusiveLUs);
                 }
             } else {
-                console.log('no exclusive fixtures found. total: ' + totalReachedLUs + ' reached: ' + reachedLUs);
-
                 // zero exclusive to us. Work out whether this is because we don't have any fixture demand.
                 const wets = this.getWetEndpoints(pipe, roots);
                 const demandA = this.getTotalReachedLUs([pipe.endpointUid[0]], [], [pipe.uid]);
@@ -358,7 +560,7 @@ export default class CalculationEngine {
                     demandB === 0 && wets.indexOf(pipe.endpointUid[1]) === -1
                 ) {
                     // redundant deadleg
-                    warnings.push({
+                    this.extraWarnings.push({
                         center: Popup.findCenter(object, this.centerWc),
                         params: {
                             type: MessageType.WARNING,
@@ -371,7 +573,7 @@ export default class CalculationEngine {
                     });
                 } else {
                     // ambiguous
-                    warnings.push({
+                    this.extraWarnings.push({
                         center: Popup.findCenter(object, this.centerWc),
                         params: {
                             type: MessageType.WARNING,
@@ -391,16 +593,20 @@ export default class CalculationEngine {
     getTotalReachedLUs(roots: string[], excludedNodes: string[] = [], excludedEdges: string[] = []): number {
         const seen = new Set<string>(excludedNodes);
         const seenEdges = new Set<string>(excludedEdges);
-        console.log(JSON.stringify(Array.from(seenEdges.entries())));
 
         let lu = 0;
 
         roots.forEach((r) => {
-            this.luFlowGraph.dfs(r, seen, null, (n, v) => {
-                console.log('visiting point ' + n);
-                lu += this.getTerminalLoadingUnits(this.objectStore.get(n)!.entity);
-            }, (e, v) => {
-            }, seenEdges);
+            this.luFlowGraph.dfs(r, (n) => {
+                    lu += this.getTerminalLoadingUnits(this.objectStore.get(n)!.entity);
+                    return false;
+                },
+                undefined,
+                undefined,
+                undefined,
+                seen,
+                seenEdges,
+            );
         });
 
         return lu;
@@ -411,7 +617,7 @@ export default class CalculationEngine {
         const seenEdges = new Set<string>([pipe.uid]);
 
         roots.forEach((r) => {
-            this.luFlowGraph.dfs(r, seen, null, (n) => {}, (e) => {}, seenEdges);
+            this.luFlowGraph.dfs(r, undefined, undefined, undefined, undefined, seen, seenEdges);
         });
 
         return pipe.endpointUid.filter((ep) => {
@@ -456,6 +662,7 @@ export default class CalculationEngine {
                 optimalInnerPipeDiameterMM: randInt(0, 10),
                 pressureDropKpa: randInt(0, 10),
                 realNominalPipeDiameterMM: randInt(0, 10),
+                realInternalDiameterMM: randInt(0, 10),
                 velocityRealMS: randInt(0, 10),
                 temperatureRange: randInt(0, 10) + ' to ' + randInt(0, 10),
                 loadingUnits: randInt(0, 10),

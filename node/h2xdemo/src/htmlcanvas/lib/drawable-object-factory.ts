@@ -6,13 +6,14 @@ import BackedDrawableObject, {
     BaseBackedConstructor,
 } from '@/htmlcanvas/lib/backed-drawable-object';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
+import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 
 export default class DrawableObjectFactory {
 
     static constructors: Map<EntityType, BaseBackedConstructor> =
         new Map<EntityType, BaseBackedConstructor>();
 
-    static registerEntity<Y extends EntityType, T extends DrawableEntity & {type: Y}>(
+    static registerEntity<Y extends EntityType, T extends DrawableEntityConcrete & {type: Y}>(
         type: Y,
         DrawableObject: BackedObjectConstructor<T>,
     ) {

@@ -2,8 +2,9 @@ import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import {ConnectableEntity} from '@/store/document/types';
 import assert from 'assert';
+import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-entity';
 
-export default abstract class BackedConnectable<T extends ConnectableEntity> extends BackedDrawableObject<T> {
+export default abstract class BackedConnectable<T extends ConnectableEntityConcrete> extends BackedDrawableObject<T> {
     abstract minimumConnections: number;
 
     prepareDeleteConnection(uid: string): BaseBackedObject[] {

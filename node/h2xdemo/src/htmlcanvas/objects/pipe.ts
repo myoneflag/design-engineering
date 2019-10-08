@@ -18,6 +18,10 @@ import {DrawingContext} from '@/htmlcanvas/lib/types';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
 import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
+import CatalogState, {Catalog, PipeMaterial, PipeSpec} from '@/store/catalog/types';
+import {lowerBoundTable} from '@/htmlcanvas/lib/utils';
+import {isCalculated} from '@/store/document/calculations';
+import Doc = Mocha.reporters.Doc;
 
 @DraggableObject
 export default class Pipe extends BackedDrawableObject<PipeEntity> implements Draggable {
@@ -203,6 +207,33 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
         // We will let the connected components handle that, because we don't know what our bounding box really is.
         return null;
+    }
+
+    getCatalogPage(doc: DocumentState, catalog: Catalog): PipeMaterial | null {
+        const computed = fillPipeDefaultFields(doc, this.computedLengthM, this.entity);
+        if (!computed.material) {
+            return null;
+        }
+        if (!computed.calculation || !computed.calculation.realNominalPipeDiameterMM) {
+            return null;
+        }
+        return catalog.pipes[computed.material];
+    }
+
+    getCatalogBySizePage(doc: DocumentState, catalog: Catalog): PipeSpec | null {
+        const computed = fillPipeDefaultFields(doc, this.computedLengthM, this.entity);
+        if (!computed.calculation || !computed.calculation.realNominalPipeDiameterMM) {
+            return null;
+        }
+        const material = this.getCatalogPage(doc, catalog);
+        if (!material) {
+            return null;
+        }
+        const tableVal = lowerBoundTable(
+            material.pipesBySize,
+            computed.calculation.realNominalPipeDiameterMM,
+        );
+        return tableVal;
     }
 
     protected refreshObjectInternal(obj: PipeEntity): void {

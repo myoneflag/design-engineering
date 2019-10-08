@@ -56,6 +56,10 @@ export default class  HydraulicsLayer implements Layer {
         });
     }
 
+    select(object: BaseBackedObject): void {
+        this.selectedObject = object;
+    }
+
     drawSelectionLayer(context: DrawingContext, interactive: DrawableEntity[] | null) {
         if (this.selectedObject) {
             this.objectStore.get(this.selectedObject.entity.uid)!.draw(context, true, true);

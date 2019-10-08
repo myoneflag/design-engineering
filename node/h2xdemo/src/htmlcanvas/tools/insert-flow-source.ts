@@ -13,13 +13,14 @@ import Valve from '@/htmlcanvas/objects/valve';
 import Pipe from '@/htmlcanvas/objects/pipe';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
+import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-entity';
 
 export default function insertFlowSource(
     context: CanvasContext,
     system: FlowSystemParameters,
 ) {
     const newUid = uuid();
-    let toReplace: BackedDrawableObject<ConnectableEntity> | null = null;
+    let toReplace: BackedDrawableObject<ConnectableEntityConcrete> | null = null;
     MainEventBus.$emit('set-tool-handler', new PointTool(
         (interrupted) => {
             if (interrupted) {
@@ -63,7 +64,7 @@ export default function insertFlowSource(
                         }
                     });
 
-                    toReplace = object as BackedDrawableObject<ConnectableEntity>;
+                    toReplace = object as BackedDrawableObject<ConnectableEntityConcrete>;
                     toReplace.entity.connections.splice(0);
                     wc = object.toWorldCoord({x: 0, y: 0});
                 } else {
@@ -83,7 +84,7 @@ export default function insertFlowSource(
                     material: null,
                     maximumVelocityMS: null,
                     parentUid,
-                    pressureKPA: 0,
+                    pressureKPA: null,
                     diameterMM: 100,
                     spareCapacity: null,
                     systemUid: system.uid,
@@ -105,6 +106,9 @@ export default function insertFlowSource(
                 context.deleteEntity(toReplace);
             }
             context.$store.dispatch('document/commit');
+
+            // Notify the user that there's fields to select
+            MainEventBus.$emit('select', {uid: newUid, property: 'pressureKPA', recenter: false});
         },
     ));
 }

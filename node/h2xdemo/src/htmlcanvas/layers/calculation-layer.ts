@@ -54,6 +54,10 @@ export default class CalculationLayer implements Layer {
         return null;
     }
 
+    select(object: BaseBackedObject): void {
+        throw new Error('Not implemented');
+    }
+
     draw(context: DrawingContext, active: boolean, ...args: any[]): any {
         if (active) {
             for (let i = this.idsInOrder.length - 1; i >= 0; i--) {

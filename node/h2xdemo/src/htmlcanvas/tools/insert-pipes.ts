@@ -12,6 +12,7 @@ import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import Connectable from '@/htmlcanvas/lib/object-traits/connectable';
 import Flatten from '@flatten-js/core';
 import * as _ from 'lodash';
+import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-entity';
 
 export default function insertPipes(context: CanvasContext, system: FlowSystemParameters) {
     // strategy:
@@ -99,7 +100,7 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
 }
 
 function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEntity, system: FlowSystemParameters) {
-    let nextEntity: ConnectableEntity | ValveEntity;
+    let nextEntity: ConnectableEntityConcrete | ValveEntity;
     let nextEntityWasNew: boolean = false;
     let pipe: PipeEntity;
     const pipeUid = uuid();
@@ -205,7 +206,7 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
                     }
                 }
 
-                nextEntity = context.interactive[0] as ConnectableEntity;
+                nextEntity = context.interactive[0] as ConnectableEntityConcrete;
                 nextEntity.connections.push(pipeUid);
                 context.hydraulicsLayer.selectedObject = context.objectStore.get(context.interactive[0].uid)!;
                 nextEntityWasNew = false;
@@ -216,7 +217,7 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
 
                     const bases = [Flatten.vector(0, 1)];
                     const connectable = context.objectStore.get(lastAttachment.uid) as
-                        (BackedDrawableObject<ConnectableEntity> & Connectable);
+                        (BackedDrawableObject<ConnectableEntityConcrete> & Connectable);
 
                     const lawc = connectable.fromParentToWorldCoord(lastAttachment.center);
                     const lawcp = Flatten.point(lawc.x, lawc.y);

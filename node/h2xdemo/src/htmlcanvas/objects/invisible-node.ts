@@ -9,8 +9,9 @@ import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import {Interaction} from '@/htmlcanvas/lib/interaction';
 import {ConnectableObject} from '../lib/object-traits/connectable';
 import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
+import {InvisibleNodeEntityConcrete} from '@/store/document/entities/concrete-entity';
 
-export abstract class InvisibleNode<T extends InvisibleNodeEntity> extends BackedConnectable<T> {
+export abstract class InvisibleNode<T extends InvisibleNodeEntityConcrete> extends BackedConnectable<T> {
     get position() {
         return TM.translate(this.entity.center.x, this.entity.center.y);
     }

@@ -33,7 +33,8 @@ export default class UnionFind<T> {
 
     groups(): T[][] {
         const byGroup = new Map<T, T[]>();
-        this.parent.forEach((g, n) => {
+        this.parent.forEach((k, n) => {
+            const g = this.find(k);
             if (!byGroup.has(g)) {
                 byGroup.set(g, []);
             }
