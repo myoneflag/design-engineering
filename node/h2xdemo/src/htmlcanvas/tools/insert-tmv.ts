@@ -19,12 +19,14 @@ import SystemNode from '@/htmlcanvas/objects/tmv/system-node';
 
 export default function insertTmv(
     context: CanvasContext,
+    tmvhasCold: boolean,
 ) {
     context.$store.dispatch('document/commit').then(() => {
         const tmvUid = uuid();
         const coldUid = uuid();
         const hotUid = uuid();
         const warmUid = uuid();
+        const coldOutUid = uuid();
 
         const coldPipeUid = uuid();
 
@@ -54,7 +56,8 @@ export default function insertTmv(
                         const newTmv: TmvEntity = {
                             coldRoughInUid: coldUid,
                             hotRoughInUid: hotUid,
-                            outputUid: warmUid,
+                            warmOutputUid: warmUid,
+                            coldOutputUid: tmvhasCold ? coldOutUid : null,
 
                             maxFlowRateLS: null,
                             maxHotColdPressureDifferentialPCT: null,
@@ -101,7 +104,19 @@ export default function insertTmv(
                             uid: warmUid,
                         };
 
+                        const newColdOut: SystemNodeEntity = {
+                            center: {x: -newTmv.pipeDistanceMM / 4, y: newTmv.valveLengthMM},
+                            connections: [],
+                            parentUid: tmvUid,
+                            type: EntityType.SYSTEM_NODE,
+                            systemUid: StandardFlowSystemUids.ColdWater,
+                            uid: coldOutUid,
+                        };
+
                         doc.drawing.entities.push(newTmv, newCold, newHot, newWarm);
+                        if (tmvhasCold) {
+                            doc.drawing.entities.push(newColdOut);
+                        }
 
 
                         let tmvObj: Tmv | undefined;

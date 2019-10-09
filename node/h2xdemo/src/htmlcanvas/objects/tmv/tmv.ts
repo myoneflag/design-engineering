@@ -152,12 +152,16 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Conn
     }
 
     prepareDelete(): BaseBackedObject[] {
-        return [
+        const list = [
             this,
             ...this.objectStore.get(this.entity.coldRoughInUid)!.prepareDelete(),
             ...this.objectStore.get(this.entity.hotRoughInUid)!.prepareDelete(),
-            ...this.objectStore.get(this.entity.outputUid)!.prepareDelete(),
+            ...this.objectStore.get(this.entity.warmOutputUid)!.prepareDelete(),
         ];
+        if (this.entity.coldOutputUid) {
+            list.push(...this.objectStore.get(this.entity.coldOutputUid)!.prepareDelete());
+        }
+        return list;
     }
 
 
@@ -166,12 +170,25 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Conn
             case InteractionType.CONTINUING_PIPE:
             case InteractionType.STARTING_PIPE:
                 if (interaction.system.uid === StandardFlowSystemUids.ColdWater) {
-                    const coldObj = this.objectStore.get(this.entity.coldRoughInUid);
-                    if (coldObj && coldObj.offerInteraction(interaction)) {
-                        return [coldObj.entity, this.entity];
+                    const {y} = this.toObjectCoord(interaction.worldCoord);
+                    let preference: string[] = [this.entity.coldRoughInUid];
+                    if (this.entity.coldOutputUid) {
+                        if (y < this.entity.valveLengthMM / 2) {
+                            preference = [this.entity.coldRoughInUid, this.entity.coldOutputUid];
+                        } else {
+                            preference = [this.entity.coldOutputUid, this.entity.coldRoughInUid];
+                        }
                     }
-                } else if (interaction.system.uid === StandardFlowSystemUids.WarmWater && this.entity.outputUid) {
-                    const warmObj = this.objectStore.get(this.entity.outputUid);
+
+                    for (let i = 0; i < preference.length; i++) {
+                        const uid = preference[i];
+                        const coldObj = this.objectStore.get(uid);
+                        if (coldObj && coldObj.offerInteraction(interaction)) {
+                            return [coldObj.entity, this.entity];
+                        }
+                    }
+                } else if (interaction.system.uid === StandardFlowSystemUids.WarmWater && this.entity.warmOutputUid) {
+                    const warmObj = this.objectStore.get(this.entity.warmOutputUid);
                     if (warmObj && warmObj.offerInteraction(interaction)) {
                         return [warmObj.entity, this.entity];
                     }
@@ -181,7 +198,7 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Conn
                         return [hotObj.entity, this.entity];
                     }
                 }
-
+                return null;
             case InteractionType.INSERT:
             default:
                 return null;

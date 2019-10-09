@@ -69,6 +69,7 @@ export default class FlowSolver {
         // give any valid flow initially.
         const flowRates = this.getInitialFlowRates(demandsLS, suppliesKPA);
 
+        //return flowRates;
         while (true) {
             let adjustments = 0;
             cycles.forEach((c) => {
@@ -126,14 +127,24 @@ export default class FlowSolver {
             return Math.abs(-expectedDifferenceHead - totalHeadLoss);
         });
 
-        /*
+
+
 
         console.log("adjusting path with adjustment " + bestAdjustment + ' head difference: ' + expectedDifferenceHead + ' total head loss: ' + totalHeadLoss);
         console.log('from: ' + path[0].from + ' to: ' + path[path.length - 1].to);
 
+
         path.forEach((e) => {
             console.log(e.from + " => " + e.to + " flow: " + flows.getFlow(e.uid, e.from));
-        });*/
+            const connector = this.objectStore.get(e.value)!;
+            const pd = this.getObjectFrictionHeadLoss(
+                connector,
+                flows.getFlow(e.uid, e.from) + bestAdjustment,
+                e.from,
+                e.to,
+            );
+            console.log(pd);
+        });
 
         path.forEach((v) => {
             flows.addFlow(v.uid, v.from, bestAdjustment);
@@ -213,15 +224,20 @@ export default class FlowSolver {
                 if (kValue === null) {
                     throw new Error('kValue invalid from catalog');
                 }
-                return kValue * velocityMS ** 2 / (2 * GRAVITATIONAL_ACCELERATION);
+                return sign * kValue * velocityMS ** 2 / (2 * GRAVITATIONAL_ACCELERATION);
             }
             case EntityType.TMV: {
                 // it is directional
-                if (from !== entity.hotRoughInUid) {
-                    // Water shouldn't flow from warm to hot or cold to anything, so return effectively
-                    // infinite when flow is going the wrong way.
-                    // Add flowFS to make the function curved to help guide ternary searches.
-                    return 1e15 + flowLS;
+                let valid = false;
+                if (from === entity.hotRoughInUid && to === entity.warmOutputUid) {
+                    valid = true;
+                }
+                if (from === entity.coldRoughInUid && to === entity.coldOutputUid) {
+                    valid = true;
+                }
+                if (!valid) {
+                    // Water not flowing the correct direction
+                    return sign * 1e10 + flowLS;
                 }
                 const pdKPAfield = interpolateTable(this.catalog.mixingValves.tmv.pressureLossKPAbyFlowRateLS, flowLS);
                 const pdKPA = parseCatalogNumberExact(pdKPAfield);
@@ -232,12 +248,12 @@ export default class FlowSolver {
                 // We need the fluid density because TMV pressure stats are in KPA, not head loss
                 // which is what the rest of the calculations are base off of.
 
-                const systemUid = (this.objectStore.get(entity.outputUid)!.entity as SystemNodeEntity).systemUid;
+                const systemUid = (this.objectStore.get(entity.warmOutputUid)!.entity as SystemNodeEntity).systemUid;
                 const fluid = this.doc.drawing.flowSystems.find((s) => s.uid === systemUid)!.fluid;
                 const density = parseCatalogNumberExact(this.catalog.fluids[fluid].densityKGM3)!;
 
                 // https://neutrium.net/equipment/conversion-between-head-and-pressure/
-                return pdKPA * 1000 / (density * GRAVITATIONAL_ACCELERATION);
+                return sign * pdKPA * 1000 / (density * GRAVITATIONAL_ACCELERATION);
             }
             case EntityType.FLOW_SOURCE:
             case EntityType.SYSTEM_NODE:
@@ -254,7 +270,8 @@ export default class FlowSolver {
 
         demandsLS.forEach((f, n) => {
             // find a source for this flow.
-            const path = this.network.anyPath(n, Array.from(suppliesKPA.keys()));
+            const path = this.network.anyPath(n, Array.from(suppliesKPA.keys()), undefined, undefined, true, true);
+            console.log('demand ' + n + ' has path ' + JSON.stringify(path));
             if (path) {
                 path.reverse().forEach((e) => {
                     result.addFlow(e.uid, e.to, f);

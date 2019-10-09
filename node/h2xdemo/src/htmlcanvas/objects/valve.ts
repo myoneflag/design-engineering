@@ -1,13 +1,11 @@
-import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import ValveEntity, {fillValveDefaultFields} from '@/store/document/entities/valve-entity';
 import * as TM from 'transformation-matrix';
 import {Matrix} from 'transformation-matrix';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
-import {Coord, DocumentState, DrawableEntity, Rectangle} from '@/store/document/types';
+import {Coord, DocumentState, DrawableEntity} from '@/store/document/types';
 import {matrixScale} from '@/htmlcanvas/utils';
-import * as _ from 'lodash';
 import Flatten from '@flatten-js/core';
 import Connectable, {ConnectableObject} from '@/htmlcanvas/lib/object-traits/connectable';
 import {lighten} from '@/lib/utils';
@@ -16,11 +14,11 @@ import {Interaction, InteractionType} from '@/htmlcanvas/lib/interaction';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
-import Pipe from '@/htmlcanvas/objects/pipe';
 import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
 import {isConnectable} from '@/store/document';
-import {Catalog, ValveSize, ValveSpec} from '@/store/catalog/types';
+import {Catalog, ValveSize} from '@/store/catalog/types';
 import {lowerBoundTable} from '@/htmlcanvas/lib/utils';
+import Pipe from '@/htmlcanvas/objects/pipe';
 
 @CenterDraggableObject
 @ConnectableObject
@@ -63,19 +61,27 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
 
         const minJointLength = this.FITTING_DIAMETER_PIXELS / scale;
 
-        const width = Math.max(this.FITTING_DIAMETER_PIXELS / scale, 30 / this.toWorldLength(1));
-        this.lastDrawnWidth = width;
+        const defaultWidth = Math.max(this.FITTING_DIAMETER_PIXELS / scale, 30 / this.toWorldLength(1));
+        this.lastDrawnWidth = defaultWidth;
         this.lastDrawnLength = Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM));
 
         this.lastRadials = this.getRadials();
-        this.lastRadials.forEach(([wc]) => {
+        this.lastRadials.forEach(([wc, pipe]) => {
+            let targetWidth = defaultWidth;
+            if (pipe.entity.type === EntityType.PIPE) {
+
+                if ((pipe as Pipe).lastDrawnWidth) {
+                    targetWidth = Math.max(defaultWidth, (pipe as Pipe).lastDrawnWidth + this.FITTING_DIAMETER_PIXELS / scale);
+                }
+            }
             const oc = this.toObjectCoord(wc);
             const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
             const small = vec.normalize().multiply(Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM)));
             if (layerActive && selected) {
                 ctx.beginPath();
-                ctx.lineWidth = width + this.FITTING_DIAMETER_PIXELS * 2 / scale;
-                this.lastDrawnWidth = width + this.FITTING_DIAMETER_PIXELS * 2 / scale;
+                ctx.lineWidth = targetWidth + this.FITTING_DIAMETER_PIXELS * 2 / scale;
+
+                this.lastDrawnWidth = defaultWidth + this.FITTING_DIAMETER_PIXELS * 2 / scale;
                 ctx.strokeStyle = lighten(this.displayEntity(doc).color!.hex, 50, 0.5);
                 ctx.moveTo(0, 0);
                 ctx.lineTo(small.x, small.y);
@@ -83,7 +89,7 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
             }
 
             ctx.strokeStyle = this.displayEntity(doc).color!.hex;
-            ctx.lineWidth = width;
+            ctx.lineWidth = targetWidth;
             ctx.beginPath();
             ctx.moveTo(0, 0);
             ctx.lineTo(small.x, small.y);

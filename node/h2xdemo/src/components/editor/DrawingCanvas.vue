@@ -466,8 +466,8 @@ import {DrawingMode} from "@/htmlcanvas/types";
         }
 
         hydraulicsInsert(
-            {entityName, system, fixtureName}:
-                {entityName: string, system: FlowSystemParameters, fixtureName: string},
+            {entityName, system, fixtureName, tmvHasCold}:
+                {entityName: string, system: FlowSystemParameters, fixtureName: string, tmvHasCold: boolean},
         ) {
             this.hydraulicsLayer.onSelected(null);
 
@@ -480,7 +480,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
             } else if (entityName === EntityType.VALVE) {
                 insertValve(this, system);
             } else if (entityName === EntityType.TMV) {
-                insertTmv(this);
+                insertTmv(this, tmvHasCold ? true : false);
             } else if (entityName === EntityType.FIXTURE) {
                 insertFixture(this, fixtureName);
             }
@@ -504,7 +504,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                 const context: DrawingContext = {ctx, vp: this.viewPort, doc: this.document};
                 this.lastDrawingContext = context;
                 this.backgroundLayer.draw(context, this.mode === DrawingMode.FloorPlan, this.currentTool);
-                this.hydraulicsLayer.draw(context, this.mode === DrawingMode.Hydraulics);
+                this.hydraulicsLayer.draw(context, this.mode === DrawingMode.Hydraulics, this.mode);
                 this.calculationLayer.draw(context, this.mode === DrawingMode.Calculations);
 
                 // Draw hydraulics layer
