@@ -168,8 +168,8 @@ export default class CalculationEngine {
                 this.flowGraph.addEdge(entity.endpointUid[0], entity.endpointUid[1], entity.uid, entity.uid);
             } else if (obj.entity.type === EntityType.TMV) {
                 const entity = obj.entity as TmvEntity;
-                this.flowGraph.addDirectedEdge(entity.hotRoughInUid, entity.outputUid, entity.uid);
-                this.flowGraph.addDirectedEdge(entity.coldRoughInUid, entity.outputUid, entity.uid);
+                this.flowGraph.addDirectedEdge(entity.hotRoughInUid, entity.warmOutputUid, entity.uid);
+                this.flowGraph.addDirectedEdge(entity.coldRoughInUid, entity.warmOutputUid, entity.uid);
             } else if (isConnectable(obj.entity.type)) {
                 this.flowGraph.addNode(obj.uid);
             }
@@ -185,7 +185,20 @@ export default class CalculationEngine {
                 this.luFlowGraph.addEdge(entity.endpointUid[0], entity.endpointUid[1], entity.uid, entity.uid);
             } else if (obj.entity.type === EntityType.TMV) {
                 const entity = obj.entity as TmvEntity;
-                this.luFlowGraph.addDirectedEdge(entity.hotRoughInUid, entity.outputUid, entity.uid, entity.uid);
+                this.luFlowGraph.addDirectedEdge(
+                    entity.hotRoughInUid,
+                    entity.warmOutputUid,
+                    entity.uid,
+                    entity.uid + 'hot',
+                );
+                if (entity.coldOutputUid !== null) {
+                    this.luFlowGraph.addDirectedEdge(
+                        entity.coldRoughInUid,
+                        entity.coldOutputUid,
+                        entity.uid,
+                        entity.uid + 'cold',
+                    );
+                }
             } else if (isConnectable(obj.entity.type)) {
                 this.luFlowGraph.addNode(obj.uid);
             }
@@ -488,7 +501,7 @@ export default class CalculationEngine {
         }
 
         const a = lowerBoundTable(table.pipesBySize, pipeFilled.calculation!.optimalInnerPipeDiameterMM!, (p) => {
-            const v = parseCatalogNumberExact(p.diameterNominalMM);
+            const v = parseCatalogNumberExact(p.diameterInternalMM);
             if (!v) {
                 throw new Error('no nominal diameter');
             }

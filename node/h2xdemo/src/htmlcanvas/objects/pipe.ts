@@ -4,24 +4,20 @@ import PipeEntity, {fillPipeDefaultFields} from '@/store/document/entities/pipe-
 import * as TM from 'transformation-matrix';
 import {Matrix} from 'transformation-matrix';
 import {ViewPort} from '@/htmlcanvas/viewport';
-import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
-import {ConnectableEntity, Coord, DocumentState, DrawableEntity, Rectangle} from '@/store/document/types';
+import {DrawingMode, MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
+import {ConnectableEntity, Coord, DocumentState, DrawableEntity} from '@/store/document/types';
 import {matrixScale} from '@/htmlcanvas/utils';
 import Flatten from '@flatten-js/core';
 import {Draggable, DraggableObject} from '@/htmlcanvas/lib/object-traits/draggable-object';
 import * as _ from 'lodash';
-import ValveEntity from '@/store/document/entities/valve-entity';
-import assert from 'assert';
 import {lighten} from '@/lib/utils';
 import {Interaction, InteractionType} from '@/htmlcanvas/lib/interaction';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
 import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
-import CatalogState, {Catalog, PipeMaterial, PipeSpec} from '@/store/catalog/types';
+import {Catalog, PipeMaterial, PipeSpec} from '@/store/catalog/types';
 import {lowerBoundTable} from '@/htmlcanvas/lib/utils';
-import {isCalculated} from '@/store/document/calculations';
-import Doc = Mocha.reporters.Doc;
 
 @DraggableObject
 export default class Pipe extends BackedDrawableObject<PipeEntity> implements Draggable {
@@ -38,7 +34,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         return TM.identity();
     }
 
-    drawInternal({ctx, doc}: DrawingContext, layerActive: boolean, selected: boolean): void {
+    drawInternal({ctx, doc}: DrawingContext, layerActive: boolean, selected: boolean, mode: DrawingMode): void {
         const s = matrixScale(ctx.getTransform());
 
         // lol what are our coordinates
@@ -46,7 +42,22 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         const ao = this.toObjectCoord(aw);
         const bo = this.toObjectCoord(bw);
 
-        const baseWidth = Math.max(2.0 / s, 10 / this.toWorldLength(1));
+        let targetWWidth = 10;
+        let baseColor = this.displayObject(doc).color!.hex;
+
+        if (mode === DrawingMode.Calculations) {
+            if (this.entity.calculation) {
+                if (this.entity.calculation.realNominalPipeDiameterMM) {
+                    targetWWidth = this.entity.calculation.realNominalPipeDiameterMM;
+                }
+            }
+            if (!this.entity.calculation || !this.entity.calculation.realNominalPipeDiameterMM) {
+                baseColor = '#444444';
+            }
+        }
+
+        const baseWidth = Math.max(2.0 / s, targetWWidth / this.toWorldLength(1));
+
 
         this.lastDrawnWidth = baseWidth;
 
@@ -55,7 +66,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             ctx.beginPath();
             ctx.lineWidth = baseWidth + 6.0 / s;
             this.lastDrawnWidth = baseWidth + 6.0 / s;
-            ctx.strokeStyle = lighten(this.displayObject(doc).color!.hex, 0, 0.5);
+            ctx.strokeStyle = lighten(baseColor, 0, 0.5);
 
             ctx.moveTo(ao.x, ao.y);
             ctx.lineTo(bo.x, bo.y);
@@ -63,7 +74,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
 
         ctx.beginPath();
-        ctx.strokeStyle = this.displayObject(doc).color!.hex;
+        ctx.strokeStyle = baseColor;
         ctx.lineWidth = baseWidth;
         ctx.moveTo(ao.x, ao.y);
         ctx.lineTo(bo.x, bo.y);

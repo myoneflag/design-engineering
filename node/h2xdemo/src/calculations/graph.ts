@@ -201,7 +201,8 @@ export default class Graph<N, E> {
         to: Set<N> | N[] | N,
         seenNodes?: Set<N>,
         seenEdges?: Set<string>,
-        directed: boolean = true, reversed: boolean = false,
+        directed: boolean = true,
+        reversed: boolean = false,
     ): Array<Edge<N, E>> | null {
         const cache: Array<Edge<N, E>> = [];
         let result: Array<Edge<N, E>> | null = null;

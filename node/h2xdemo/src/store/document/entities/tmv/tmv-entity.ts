@@ -21,7 +21,9 @@ export default interface TmvEntity extends DrawableEntity, CalculationTarget<Tmv
     rotation: number;
     coldRoughInUid: string;
     hotRoughInUid: string;
-    outputUid: string;
+    warmOutputUid: string;
+    coldOutputUid: string | null;
+
 
     pipeDistanceMM: number;
     valveLengthMM: number;

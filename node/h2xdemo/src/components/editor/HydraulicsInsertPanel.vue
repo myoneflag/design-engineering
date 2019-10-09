@@ -32,6 +32,10 @@
                           @click="$emit('insert', {entityName: entityNames.TMV, system: selectedSystem})"
                           v-b-tooltip.hover title="TMV"
                 ></b-button>
+                <b-button variant="outline-dark" class="insertBtn tmv btn-sm"
+                          @click="$emit('insert', {entityName: entityNames.TMV, system: selectedSystem, tmvHasCold: true})"
+                          v-b-tooltip.hover title="TMV with cold water out"
+                ></b-button>
                 <b-button variant="outline-dark" class="insertBtn shower btn-sm"
                           @click="$emit('insert', {entityName: entityNames.FIXTURE, system: selectedSystem, fixtureName: 'shower'})"
                           v-b-tooltip.hover title="Shower"

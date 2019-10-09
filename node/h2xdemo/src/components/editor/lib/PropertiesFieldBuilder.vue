@@ -200,6 +200,7 @@
         mounted() {
             if (this.$props.target) {
                 // scroll to it
+                console.log("scrolling into view");
                 (this.$refs['field-' + this.$props.target] as any)[0].scrollIntoView();
             }
         }

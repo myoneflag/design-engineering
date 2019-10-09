@@ -1,6 +1,6 @@
 import Layer from '@/htmlcanvas/layers/layer';
 import {ViewPort} from '@/htmlcanvas/viewport';
-import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
+import {DrawingMode, MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import {Coord, DocumentState, DrawableEntity, WithID} from '@/store/document/types';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
@@ -50,9 +50,9 @@ export default class  HydraulicsLayer implements Layer {
         return this.selectedObject.entity;
     }
 
-    draw(context: DrawingContext, active: boolean) {
+    draw(context: DrawingContext, active: boolean, mode: DrawingMode) {
         this.uidsInOrder.forEach((v) => {
-            this.objectStore.get(v)!.draw(context, active);
+            this.objectStore.get(v)!.draw(context, active, false, mode);
         });
     }
 
