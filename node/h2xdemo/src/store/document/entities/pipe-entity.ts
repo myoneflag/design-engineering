@@ -1,7 +1,7 @@
 import {
     Color,
     DocumentState,
-    DrawableEntity,
+    DrawableEntity, DrawingState,
     FlowSystemParameters,
     WithID,
 } from '@/store/document/types';
@@ -55,14 +55,14 @@ export function makePipeFields(materials: Choice[], systems: FlowSystemParameter
 }
 
 export function fillPipeDefaultFields(
-    doc: DocumentState,
+    drawing: DrawingState,
     computedLengthM: number,
     value: PipeEntity,
 ) {
     const result = _.cloneDeep(value);
 
     // get system
-    const system = doc.drawing.flowSystems.find((s) => s.uid === value.systemUid);
+    const system = drawing.flowSystems.find((s) => s.uid === value.systemUid);
 
     if (system) {
         if (result.maximumVelocityMS == null) {

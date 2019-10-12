@@ -8,11 +8,13 @@ import {DocumentState} from '@/store/document/types';
 import {interpolateTable, parseCatalogNumberExact} from '@/htmlcanvas/lib/utils';
 import Valve from '@/htmlcanvas/objects/valve';
 import {getDarcyWeisbachFlatMH, getFluidDensityOfSystem, kpa2head} from '@/calculations/pressure-drops';
-import {terniarySearch} from '@/calculations/search-functions';
+import {ternarySearchForGlobalMin} from '@/calculations/search-functions';
 import {SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
 import {GRAVITATIONAL_ACCELERATION} from '@/calculations/index';
 import FlowSourceEntity from '@/store/document/entities/flow-source-entity';
 import {FlowAssignment} from '@/calculations/flow-assignment';
+import {CalculationContext} from '@/calculations/types';
+import { getObjectFrictionHeadLoss } from './enitity-pressure-drops';
 
 export const MINIMUM_FLOW_RATE_CHANGE = 0.0001;
 
@@ -70,7 +72,13 @@ export default class FlowSolver {
         const flowRates = this.getInitialFlowRates(demandsLS, suppliesKPA);
 
         //return flowRates;
+        let iters = 0;
         while (true) {
+            iters++;
+            if (iters > 200) {
+                console.log("We are past the number of iterations");
+                break;
+            }
             let adjustments = 0;
             cycles.forEach((c) => {
                 adjustments += Math.abs(this.adjustPath(flowRates, c, 0));
@@ -109,41 +117,34 @@ export default class FlowSolver {
     // the expected difference.
     // Returns the delta speed, for iteration exit purposes.
     adjustPath(flows: FlowAssignment, path: Array<Edge<string, string>>, expectedDifferenceHead: number = 0): number {
-
         // Augment the path backwards
         // Use ternary search to find the smallest value of the sum of concave functions.
         let totalHeadLoss: number  = 0;
-        const bestAdjustment = terniarySearch(-10, 10, (num) => {
+        const bestAdjustment = ternarySearchForGlobalMin((num) => {
             totalHeadLoss = 0;
             path.forEach((v) => {
                 const connector = this.objectStore.get(v.value)!;
-                totalHeadLoss += this.getObjectFrictionHeadLoss(
+                const delta = getObjectFrictionHeadLoss(
+                    {drawing: this.doc.drawing, catalog: this.catalog, objectStore: this.objectStore},
                     connector,
                     flows.getFlow(v.uid, v.from) + num,
                     v.from,
                     v.to,
                 );
+                totalHeadLoss += delta;
             });
             return Math.abs(-expectedDifferenceHead - totalHeadLoss);
         });
 
-
-
-
-        console.log("adjusting path with adjustment " + bestAdjustment + ' head difference: ' + expectedDifferenceHead + ' total head loss: ' + totalHeadLoss);
-        console.log('from: ' + path[0].from + ' to: ' + path[path.length - 1].to);
-
-
         path.forEach((e) => {
-            console.log(e.from + " => " + e.to + " flow: " + flows.getFlow(e.uid, e.from));
             const connector = this.objectStore.get(e.value)!;
-            const pd = this.getObjectFrictionHeadLoss(
+            const pd = getObjectFrictionHeadLoss(
+                {drawing: this.doc.drawing, catalog: this.catalog, objectStore: this.objectStore},
                 connector,
                 flows.getFlow(e.uid, e.from) + bestAdjustment,
                 e.from,
                 e.to,
             );
-            console.log(pd);
         });
 
         path.forEach((v) => {
@@ -153,117 +154,6 @@ export default class FlowSolver {
         return bestAdjustment;
     }
 
-    getObjectFrictionHeadLoss(object: BaseBackedObject, flowLS: number, from: string, to: string, signed = true): number {
-        const entity = object.entity;
-        let sign = 1;
-        if (flowLS < 0) {
-            const oldFrom = from;
-            from = to;
-            to = oldFrom;
-            flowLS = -flowLS;
-            if (signed) {
-                sign = -1;
-            }
-        }
-
-        switch (entity.type) {
-            case EntityType.PIPE: {
-
-                const system = this.doc.drawing.flowSystems.find((s) => s.uid === entity.systemUid)!;
-                const fluid = this.catalog.fluids[system.fluid];
-                const pipe = object as Pipe;
-
-                const volLM =
-                    parseCatalogNumberExact(entity.calculation!.realInternalDiameterMM)! ** 2 * Math.PI / 4 / 1000;
-                const velocityMS = flowLS / volLM;
-
-                const page = pipe.getCatalogBySizePage(this.doc, this.catalog);
-                if (!page) {
-                    throw new Error('Cannot find pipe entry for this pipe.');
-                }
-
-                const dynamicViscosity = parseCatalogNumberExact(
-                    // TODO: get temperature of the pipe.
-                    interpolateTable(fluid.dynamicViscosityByTemperature, system.temperature),
-                );
-
-                const retval = sign * getDarcyWeisbachFlatMH(
-                    parseCatalogNumberExact(page.diameterInternalMM)!,
-                    parseCatalogNumberExact(page.colebrookWhiteCoefficient)!,
-                    parseCatalogNumberExact(fluid.densityKGM3)!,
-                    dynamicViscosity!,
-                    pipe.computedLengthM,
-                    velocityMS,
-                );
-
-                return retval;
-            }
-            case EntityType.VALVE: {
-                let smallestDiameterMM: number | undefined;
-                entity.connections.forEach((p) => {
-                    const pipe = this.objectStore.get(p) as Pipe;
-                    smallestDiameterMM = Math.min(
-                        smallestDiameterMM === undefined ? Infinity : smallestDiameterMM,
-                        parseCatalogNumberExact(pipe.entity.calculation!.realInternalDiameterMM)!,
-                    );
-                });
-
-                if (smallestDiameterMM === undefined) {
-                    throw new Error('Couldn\'t find smallest diameter');
-
-                }
-
-                const valvePage = (object as Valve).getCatalogPage(this.catalog, smallestDiameterMM);
-                if (!valvePage) {
-                    throw new Error('valvePage');
-                }
-
-                const volLM = smallestDiameterMM ** 2 * Math.PI / 4 / 1000;
-                const velocityMS = flowLS / volLM;
-                const kValue = parseCatalogNumberExact(valvePage.kValue);
-                if (kValue === null) {
-                    throw new Error('kValue invalid from catalog');
-                }
-                return sign * kValue * velocityMS ** 2 / (2 * GRAVITATIONAL_ACCELERATION);
-            }
-            case EntityType.TMV: {
-                // it is directional
-                let valid = false;
-                if (from === entity.hotRoughInUid && to === entity.warmOutputUid) {
-                    valid = true;
-                }
-                if (from === entity.coldRoughInUid && to === entity.coldOutputUid) {
-                    valid = true;
-                }
-                if (!valid) {
-                    // Water not flowing the correct direction
-                    return sign * 1e10 + flowLS;
-                }
-                const pdKPAfield = interpolateTable(this.catalog.mixingValves.tmv.pressureLossKPAbyFlowRateLS, flowLS);
-                const pdKPA = parseCatalogNumberExact(pdKPAfield);
-                if (pdKPA === null) {
-                    throw new Error('pressure drop for TMV not available');
-                }
-
-                // We need the fluid density because TMV pressure stats are in KPA, not head loss
-                // which is what the rest of the calculations are base off of.
-
-                const systemUid = (this.objectStore.get(entity.warmOutputUid)!.entity as SystemNodeEntity).systemUid;
-                const fluid = this.doc.drawing.flowSystems.find((s) => s.uid === systemUid)!.fluid;
-                const density = parseCatalogNumberExact(this.catalog.fluids[fluid].densityKGM3)!;
-
-                // https://neutrium.net/equipment/conversion-between-head-and-pressure/
-                return sign * pdKPA * 1000 / (density * GRAVITATIONAL_ACCELERATION);
-            }
-            case EntityType.FLOW_SOURCE:
-            case EntityType.SYSTEM_NODE:
-            case EntityType.FIXTURE:
-                return 0;
-            case EntityType.BACKGROUND_IMAGE:
-            case EntityType.RESULTS_MESSAGE:
-                throw new Error('Invalid object in flow network');
-        }
-    }
 
     getInitialFlowRates(demandsLS: Map<string, number>, suppliesKPA: Map<string, number>): FlowAssignment {
         const result: FlowAssignment = new FlowAssignment();
@@ -271,7 +161,6 @@ export default class FlowSolver {
         demandsLS.forEach((f, n) => {
             // find a source for this flow.
             const path = this.network.anyPath(n, Array.from(suppliesKPA.keys()), undefined, undefined, true, true);
-            console.log('demand ' + n + ' has path ' + JSON.stringify(path));
             if (path) {
                 path.reverse().forEach((e) => {
                     result.addFlow(e.uid, e.to, f);

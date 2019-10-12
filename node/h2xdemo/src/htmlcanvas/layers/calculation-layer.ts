@@ -18,6 +18,7 @@ import {getBoundingBox, getDocumentCenter} from '@/htmlcanvas/lib/utils';
 import assert from 'assert';
 import {CalculationTarget} from '@/store/document/calculations/types';
 import CatalogState, {Catalog} from '@/store/catalog/types';
+import {CalculatableEntityConcrete} from '@/store/document/entities/concrete-entity';
 
 export default class CalculationLayer implements Layer {
 
@@ -144,19 +145,19 @@ export default class CalculationLayer implements Layer {
             const o = this.messageStore.get(e.uid);
             if (o) {
                 assert(isCalculated(e));
-                const te = e as CalculationTarget<any>;
+                const te = e as CalculatableEntityConcrete;
                 if (te.calculation !== null) {
-                    o.updateTarget(e as CalculationTarget<any>);
+                    o.updateTarget(te);
                     thisIds.push(e.uid);
                 }
             } else {
                 // create new message
                 if (isCalculated(e)) {
-                    const te = e as CalculationTarget<any>;
+                    const te = e as CalculatableEntityConcrete;
                     if (te.calculation !== null) {
                         const msg: Popup = new Popup(
                             this.objectStore,
-                            e as CalculationTarget<any>,
+                            te,
                             {x: (l + r) / 2, y: (t + b) / 2},
                             () => this.onSelect(msg),
                             () => this.onChange(),

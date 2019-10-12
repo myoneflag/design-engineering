@@ -1,6 +1,7 @@
 import uuid from 'uuid';
 import _ from 'lodash';
 import assert from 'assert';
+import TinyQueue from 'tinyqueue';
 
 export default class Graph<N, E> {
     adjacencyList: Map<N, Array<Edge<N, E>>> = new Map<N, Array<Edge<N, E>>>();
@@ -167,6 +168,70 @@ export default class Graph<N, E> {
         }
     }
 
+    dijkstra(curr: N,
+             getDistance: (edge: Edge<N, E>) => number,
+             visitNode?: (dijk: DijkstraNode<N, E>) => (boolean | void),
+             visitEdge?: (edge: Edge<N, E>) => (boolean | void),
+             excludedNodes?: Set<N>,
+             excludedEdges?: Set<string>,
+             directed: boolean = true,
+             reversed: boolean = false,
+    ) {
+        if (excludedEdges === undefined) {
+            excludedEdges = new Set<string>();
+        }
+        if (excludedNodes === undefined) {
+            excludedNodes = new Set<N>();
+        }
+
+        const start: Array<DijkstraNode<N, E>> = [{
+            weight: 0,
+            node: curr,
+        }];
+        const q = new TinyQueue(start, (a, b) => {
+            return a.weight - b.weight;
+        });
+
+        while (q.length) {
+            const top = q.pop()!;
+
+            if (visitEdge && top.parent && visitEdge(top.parent)) {
+                continue;
+            }
+
+            if (excludedNodes.has(top.node)) {
+                continue;
+            }
+
+            if (visitNode && visitNode(top)) {
+                continue;
+            }
+
+            excludedNodes.add(top.node);
+
+            let forward = _.cloneDeep(this.adjacencyList.get(top.node)!);
+            let backward = _.cloneDeep(this.reverseAdjacencyList.get(top.node)!);
+
+            let nei = reversed ? backward : forward;
+            if (!directed) {
+                nei = [...forward, ...backward];
+            }
+
+            nei.forEach((edge) => {
+               if (excludedEdges!.has(edge.uid)) {
+                   return;
+               }
+               excludedEdges!.add(edge.uid);
+
+               q.push({
+                   weight: top.weight + getDistance(edge),
+                   node: edge.to,
+                   parent: edge,
+               });
+            });
+        }
+    }
+
     /**
      * Only makes sense for directed graphs.
      */
@@ -236,6 +301,65 @@ export default class Graph<N, E> {
 
         return result;
     }
+
+    shortestPath(
+        from: N,
+        to: Set<N> | N[] | N,
+        getDistance: (edge: Edge<N, E>) => number,
+        seenNodes?: Set<N>,
+        seenEdges?: Set<string>,
+        directed: boolean = true,
+        reversed: boolean = false,
+    ): [Array<Edge<N, E>>, number] | null {
+        const parentOf: Map<N, Edge<N, E>> = new Map<N, Edge<N, E>>();
+        let found = false;
+
+        let destination: N | null = null;
+        let dist = 0;
+
+        this.dijkstra(
+            from,
+            getDistance,
+            (dijk) => {
+                if (dijk.parent) {
+                    parentOf.set(dijk.node, dijk.parent);
+                }
+                if (found) {
+                    return true;
+                }
+                if (to instanceof Set && to.has(dijk.node) ||
+                    to instanceof Array && to.indexOf(dijk.node) !== -1 ||
+                    to === dijk.node
+                ) {
+                    destination = dijk.node;
+                    found = true;
+                    dist = dijk.weight;
+                    return true;
+                }
+            },
+            undefined,
+            seenNodes,
+            seenEdges,
+            directed,
+            reversed,
+        );
+
+        if (destination === null) {
+            return null;
+        }
+
+        const path: Array<Edge<N, E>> = [];
+
+        let curr: N = destination;
+        while (curr !== from) {
+            const prev = parentOf.get(curr)!;
+            path.unshift(prev);
+            curr = prev.from;
+        }
+
+        return [path, dist];
+    }
+
 
     reachable(root: N): SubGraph<N, E> {
         const subGraph: SubGraph<N, E> = [[], []];
@@ -352,4 +476,10 @@ export interface Traversal<N, E> {
     node: N;
     children: Array<Edge<N, E>>;
     parent: Edge<N, E> | null;
+}
+
+export interface DijkstraNode<N, E> {
+    weight: number;
+    node: N;
+    parent?: Edge<N, E>;
 }

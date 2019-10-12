@@ -34,3 +34,10 @@ export type CenteredEntityConcrete =
 
 export type InvisibleNodeEntityConcrete =
     SystemNodeEntity;
+
+export type CalculatableEntityConcrete =
+    FlowSourceEntity |
+    PipeEntity |
+    TmvEntity |
+    ValveEntity |
+    FixtureEntity;

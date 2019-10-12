@@ -1,5 +1,5 @@
 {
-  "lastModified": "2019-10-02T02:26:14-04",
+  "lastModified": "2019-10-11T21:00:52-04",
   "fixtures": {
     "ablutionTrough": {
       "fixtureUnits": "3",
@@ -396,6 +396,7 @@
       "name": "Tempering Valve",
       "uid": "temperingValve",
       "pressureLossKPAbyFlowRateLS" : {
+        "0": "0",
         "0.08": "3",
         "0.16": "12",
         "0.32": "50",
@@ -411,6 +412,7 @@
       "name": "TMV",
       "uid": "tmv",
       "pressureLossKPAbyFlowRateLS" : {
+        "0": "0",
         "0.16": "30",
         "0.32": "80",
         "0.48": "160",

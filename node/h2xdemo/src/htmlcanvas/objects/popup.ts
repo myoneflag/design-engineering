@@ -23,6 +23,7 @@ import {resolveProperty} from '@/htmlcanvas/lib/utils';
 import CenterDraggableObject from '@/htmlcanvas/lib/object-traits/center-draggable-object';
 import {CalculationTarget} from '@/store/document/calculations/types';
 import * as _ from 'lodash';
+import {CalculatableEntityConcrete, DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 
 @CenterDraggableObject
 export default class Popup extends BackedDrawableObject<PopupEntity> {
@@ -65,7 +66,7 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
         return center;
     }
 
-    target: CalculationTarget<any>;
+    target: CalculatableEntityConcrete;
 
     fields: MessageField[];
     outputs: string[];
@@ -74,7 +75,7 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
 
     constructor(
         objectStore: ObjectStore,
-        target: CalculationTarget<any>,
+        target: CalculatableEntityConcrete,
         middleWc: Coord,
         onSelect: () => any,
         onChange: () => any,
@@ -116,20 +117,14 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
         switch (this.target.type) {
             case EntityType.FLOW_SOURCE:
                 return makeFlowSourceCalculationFields();
-            case EntityType.FLOW_RETURN:
-                throw new Error('unsupported');
             case EntityType.PIPE:
                 return makePipeCalculationFields();
             case EntityType.VALVE:
                 return makeValveCalculationFields();
             case EntityType.TMV:
-                return makeTmvCalculationFields();
+                return makeTmvCalculationFields(this.target);
             case EntityType.FIXTURE:
                 return makeFixtureCalculationFields();
-            case EntityType.SYSTEM_NODE:
-            case EntityType.RESULTS_MESSAGE:
-            case EntityType.BACKGROUND_IMAGE:
-                throw new Error('cannot be calculated');
         }
     }
 
@@ -280,7 +275,7 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
         // be registering.
     }
 
-    updateTarget(entity: CalculationTarget<any>) {
+    updateTarget(entity: CalculatableEntityConcrete) {
         this.target = entity;
         this.generateFields();
     }
