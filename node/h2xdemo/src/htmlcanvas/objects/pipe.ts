@@ -18,6 +18,7 @@ import {EntityType} from '@/store/document/entities/types';
 import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
 import {Catalog, PipeMaterial, PipeSpec} from '@/store/catalog/types';
 import {lowerBoundTable} from '@/htmlcanvas/lib/utils';
+import {CalculationContext} from '@/calculations/types';
 
 @DraggableObject
 export default class Pipe extends BackedDrawableObject<PipeEntity> implements Draggable {
@@ -137,7 +138,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
     }
 
     displayObject(doc: DocumentState): PipeEntity {
-        return fillPipeDefaultFields(doc, this.computedLengthM, this.entity);
+        return fillPipeDefaultFields(doc.drawing, this.computedLengthM, this.entity);
     }
 
 
@@ -220,8 +221,8 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         return null;
     }
 
-    getCatalogPage(doc: DocumentState, catalog: Catalog): PipeMaterial | null {
-        const computed = fillPipeDefaultFields(doc, this.computedLengthM, this.entity);
+    getCatalogPage({drawing, catalog}: CalculationContext): PipeMaterial | null {
+        const computed = fillPipeDefaultFields(drawing, this.computedLengthM, this.entity);
         if (!computed.material) {
             return null;
         }
@@ -231,12 +232,13 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         return catalog.pipes[computed.material];
     }
 
-    getCatalogBySizePage(doc: DocumentState, catalog: Catalog): PipeSpec | null {
-        const computed = fillPipeDefaultFields(doc, this.computedLengthM, this.entity);
+    getCatalogBySizePage(context: CalculationContext): PipeSpec | null {
+        const {drawing} = context;
+        const computed = fillPipeDefaultFields(drawing, this.computedLengthM, this.entity);
         if (!computed.calculation || !computed.calculation.realNominalPipeDiameterMM) {
             return null;
         }
-        const material = this.getCatalogPage(doc, catalog);
+        const material = this.getCatalogPage(context);
         if (!material) {
             return null;
         }

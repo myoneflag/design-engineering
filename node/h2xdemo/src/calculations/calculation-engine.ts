@@ -1,10 +1,10 @@
-import {Coord, DocumentState, DrawableEntity} from '@/store/document/types';
+import {Coord, DocumentState, DrawableEntity, DrawingState} from '@/store/document/types';
 import {ObjectStore, SelectionTarget} from '@/htmlcanvas/lib/types';
 import {EntityType} from '@/store/document/entities/types';
 import PipeEntity, {fillPipeDefaultFields, makePipeFields} from '@/store/document/entities/pipe-entity';
 import ValveEntity, {makeValveFields} from '@/store/document/entities/valve-entity';
 import FlowSourceEntity, {makeFlowSourceFields} from '@/store/document/entities/flow-source-entity';
-import TmvEntity, {makeTMVFields} from '@/store/document/entities/tmv/tmv-entity';
+import TmvEntity, {makeTMVFields, SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
 import FixtureEntity, {fillFixtureFields, makeFixtureFields} from '@/store/document/entities/fixtures/fixture-entity';
 import {
     DeadlegAttribute,
@@ -23,16 +23,30 @@ import UnionFind from '@/calculations/union-find';
 import {assertUnreachable} from '@/lib/utils';
 import uuid from 'uuid';
 import {emptyPipeCalculation} from '@/store/document/calculations/pipe-calculation';
-import {interpolateTable, lowerBoundTable, parseCatalogNumberExact} from '@/htmlcanvas/lib/utils';
+import {interpolateTable, lowerBoundTable, parseCatalogNumberExact, upperBoundTable} from '@/htmlcanvas/lib/utils';
 import Popup from '@/htmlcanvas/objects/popup';
 import Pipe from '@/htmlcanvas/objects/pipe';
-import {getDarcyWeisbachMH, getFrictionFactor, getReynoldsNumber} from '@/calculations/pressure-drops';
+import {
+    getDarcyWeisbachMH,
+    getFluidDensityOfSystem,
+    getFrictionFactor,
+    getReynoldsNumber,
+    head2kpa
+} from '@/calculations/pressure-drops';
 import FlowSolver from '@/calculations/flow-solver';
 import {PropertyField} from '@/store/document/entities/property-field';
 import {MainEventBus} from '@/store/main-event-bus';
-import Vue from 'vue';
+import {emptyFixtureCalculation} from '@/store/document/calculations/fixture-calculation';
+import {getObjectFrictionHeadLoss} from '@/calculations/enitity-pressure-drops';
+import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import {emptyTmvCalculation} from '@/store/document/calculations/tmv-calculation';
+import FlowSource from '@/htmlcanvas/objects/flow-source';
 
 const AS_PSD = 'as35002018LoadingUnits';
+
+const HOT_WARM_EDGE_ID = ':hot-warm';
+const COLD_COLD_EDGE_ID = ':cold-cold';
+const COLD_WARM_EDGE_ID = ':cold-warm';
 
 export default class CalculationEngine {
 
@@ -46,6 +60,7 @@ export default class CalculationEngine {
     centerWc!: Coord;
     extraWarnings!: PopupEntity[];
     extraErrors!: PopupEntity[];
+    drawing!: DrawingState;
 
     calculate(
         objectStore: ObjectStore,
@@ -62,6 +77,7 @@ export default class CalculationEngine {
         this.centerWc = centerWc;
         this.extraWarnings = [];
         this.extraErrors = [];
+        this.drawing = this.doc.drawing;
 
         const success = this.preValidate();
 
@@ -148,16 +164,203 @@ export default class CalculationEngine {
         if (sanityCheckWarnings.length === 0) {
             // The remaining graph must be a rooted forest.
             const {sources, biconnected} = this.analyseGraph();
-            this.sizeDefinitePipes(sources.flat());
+            this.sizeDefiniteTransports(sources.flat());
             this.sizeRingsAndRoots(sources.flat());
+            this.calculateAllFixturesAbsolutePressure(sources.flat());
         }
 
         if (!this.equationEngine.isComplete()) {
             throw new Error('Calculations could not complete \n');
         }
 
-
         return [];
+    }
+
+    calculateAllFixturesAbsolutePressure(sources: string[]) {
+        this.objectStore.forEach((obj): null => {
+            const entity = obj.entity;
+            switch (entity.type) {
+                case EntityType.FIXTURE:
+
+                    if (!entity.calculation) {
+                        entity.calculation = emptyFixtureCalculation();
+                    }
+
+                    entity.calculation.coldPressureKPA =
+                        this.getAbsolutePressureFixture(entity.coldRoughInUid, sources);
+                    if (entity.warmRoughInUid) {
+                        entity.calculation.warmPressureKPA =
+                            this.getAbsolutePressureFixture(entity.warmRoughInUid, sources);
+                    }
+
+                    return null;
+                case EntityType.TMV:
+                    if (entity.calculation) {
+                        entity.calculation.coldPressureKPA =
+                            this.getAbsolutePressureFixture(entity.coldRoughInUid, sources);
+                        entity.calculation.hotPressureKPA =
+                            this.getAbsolutePressureFixture(entity.hotRoughInUid, sources);
+                    }
+                case EntityType.BACKGROUND_IMAGE:
+                case EntityType.VALVE:
+                case EntityType.PIPE:
+                case EntityType.FLOW_SOURCE:
+                case EntityType.RESULTS_MESSAGE:
+                case EntityType.SYSTEM_NODE:
+                    return null;
+            }
+        });
+    }
+
+    getAbsolutePressureFixture(uid: string, sources: string[]) {
+        if (this.demandType === DemandType.PSD) {
+            return this.getPeakDemandKPAWithShortestPath(uid, sources);
+        } else {
+            const obj = this.objectStore.get(uid)!;
+            let height: number;
+            switch (obj.entity.type) {
+                case EntityType.SYSTEM_NODE:
+                    if (obj.entity.parentUid) {
+                        const par = this.objectStore.get(obj.entity.parentUid)!;
+                        switch (par.entity.type) {
+                            case EntityType.PIPE:
+                                height = par.entity.heightAboveFloorM;
+                                break;
+                            case EntityType.TMV:
+                                height = par.entity.heightAboveFloorM;
+                                break;
+                            case EntityType.FIXTURE:
+                                const filled = fillFixtureFields(this.doc, this.catalog, par.entity);
+                                height = filled.outletAboveFloorM!;
+                                break;
+                            case EntityType.VALVE:
+                            case EntityType.BACKGROUND_IMAGE:
+                            case EntityType.FLOW_SOURCE:
+                            case EntityType.RESULTS_MESSAGE:
+                            case EntityType.SYSTEM_NODE:
+                                throw new Error('don\'t know how to calculate static pressure for this');
+                        }
+                    } else {
+                        throw new Error('don\'t know how to calculate static pressure for an orphaned node');
+                    }
+                    break;
+                case EntityType.BACKGROUND_IMAGE:
+                case EntityType.FLOW_SOURCE:
+                case EntityType.PIPE:
+                case EntityType.VALVE:
+                case EntityType.TMV:
+                case EntityType.FIXTURE:
+                case EntityType.RESULTS_MESSAGE:
+                    throw new Error('don\'t know how to calculate static pressure for that');
+            }
+            return this.getStaticPressure(uid, sources, height!);
+        }
+    }
+
+    getStaticPressure(uid: string, sources: string[], heightM: number): number {
+        let highPressure: number | null = null;
+        this.luFlowGraph.dfs(
+            uid,
+            (n) => {
+                if (sources.indexOf(n) !== -1) {
+                    const source = this.objectStore.get(n) as FlowSource;
+                    const density = getFluidDensityOfSystem(source.entity.systemUid, this.doc, this.catalog)!;
+                    const mh = source.entity.heightAboveFloorM - heightM;
+                    const thisPressure = Number(source.entity.pressureKPA!) + head2kpa(mh, density);
+                    if (highPressure === null || thisPressure > highPressure) {
+                        highPressure = thisPressure;
+                    }
+                }
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            false,
+            true,
+        );
+        return highPressure == null ? -1 : highPressure;
+    }
+
+    /**
+     * In a peak flow graph, flow paths don't represent a valid network flow state, and sometimes, don't
+     * even have a direction for each pipe.
+     * One strategy to get a sane pressure drop to a point is to find the smallest pressure drop from it to
+     * any source along the least pressure drop path.
+     */
+    getPeakDemandKPAWithShortestPath(uid: string, sources: string[]): number | null {
+        const rPath = this.luFlowGraph.shortestPath(
+            uid,
+            sources,
+            (edge) => {
+                const obj = this.objectStore.get(edge.value)!;
+                switch (obj.entity.type) {
+                    case EntityType.TMV:
+                        if (!obj.entity.calculation) {
+                            return Infinity;
+                        }
+
+                        // Remember, this path is reversed
+                        const flowFrom = edge.to;
+                        const flowTo = edge.from;
+
+                        let systemUid: string = '';
+
+                        let fr: number | null = null;
+                        if (edge.uid.endsWith(COLD_COLD_EDGE_ID) && flowFrom === obj.entity.coldRoughInUid) {
+
+                            fr = obj.entity.calculation.coldPeakFlowRate;
+                            systemUid = (this.objectStore.get(obj.entity.coldRoughInUid)!
+                                .entity as SystemNodeEntity).systemUid;
+                        } else if (edge.uid.endsWith(HOT_WARM_EDGE_ID) && flowFrom === obj.entity.hotRoughInUid) {
+                            fr = obj.entity.calculation.hotPeakFlowRate;
+                            systemUid = (this.objectStore.get(obj.entity.hotRoughInUid)!
+                                .entity as SystemNodeEntity).systemUid;
+                        } else {
+                            throw new Error('Misused TMV');
+                        }
+
+                        if (fr === null) {
+                            return Infinity;
+                        }
+
+                        return head2kpa(
+                            getObjectFrictionHeadLoss(
+                                this,
+                                obj,
+                                fr,
+                                flowFrom,
+                                flowTo,
+                            ),
+                            getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
+                        );
+                    case EntityType.PIPE:
+                        if (!obj.entity.calculation || obj.entity.calculation.pressureDropKpa === null) {
+                            return Infinity;
+                        }
+                        return obj.entity.calculation.pressureDropKpa;
+                    case EntityType.FLOW_SOURCE:
+                    case EntityType.SYSTEM_NODE:
+                    case EntityType.FIXTURE:
+                    case EntityType.VALVE:
+                        return 0;
+                    case EntityType.RESULTS_MESSAGE:
+                    case EntityType.BACKGROUND_IMAGE:
+                        throw new Error('Invalid entity in network');
+                }
+            },
+            undefined,
+            undefined,
+            true,
+            true,
+        );
+        if (rPath) {
+            const sourceObj = this.objectStore.get(rPath[0][rPath[0].length - 1].to)! as FlowSource;
+            return sourceObj.entity.pressureKPA! - rPath[1];
+        } else {
+            return null;
+        }
     }
 
     generateFlowGraph() {
@@ -168,8 +371,14 @@ export default class CalculationEngine {
                 this.flowGraph.addEdge(entity.endpointUid[0], entity.endpointUid[1], entity.uid, entity.uid);
             } else if (obj.entity.type === EntityType.TMV) {
                 const entity = obj.entity as TmvEntity;
-                this.flowGraph.addDirectedEdge(entity.hotRoughInUid, entity.warmOutputUid, entity.uid);
-                this.flowGraph.addDirectedEdge(entity.coldRoughInUid, entity.warmOutputUid, entity.uid);
+                this.flowGraph.addDirectedEdge(entity.hotRoughInUid, entity.warmOutputUid, entity.uid, entity.uid + HOT_WARM_EDGE_ID);
+                this.flowGraph.addDirectedEdge(entity.coldRoughInUid, entity.warmOutputUid,  entity.uid,entity.uid + COLD_WARM_EDGE_ID);
+                if (entity.coldOutputUid) {
+                    this.flowGraph.addDirectedEdge(entity.coldRoughInUid, entity.coldOutputUid,  entity.uid,entity.uid + COLD_WARM_EDGE_ID);
+                }
+                 if (entity.coldOutputUid) {
+                    this.flowGraph.addDirectedEdge(entity.coldRoughInUid, entity.coldOutputUid, entity.uid,entity.uid + COLD_COLD_EDGE_ID);
+                }
             } else if (isConnectable(obj.entity.type)) {
                 this.flowGraph.addNode(obj.uid);
             }
@@ -189,14 +398,14 @@ export default class CalculationEngine {
                     entity.hotRoughInUid,
                     entity.warmOutputUid,
                     entity.uid,
-                    entity.uid + 'hot',
+                    entity.uid + HOT_WARM_EDGE_ID,
                 );
                 if (entity.coldOutputUid !== null) {
                     this.luFlowGraph.addDirectedEdge(
                         entity.coldRoughInUid,
                         entity.coldOutputUid,
                         entity.uid,
-                        entity.uid + 'cold',
+                        entity.uid + COLD_COLD_EDGE_ID,
                     );
                 }
             } else if (isConnectable(obj.entity.type)) {
@@ -264,10 +473,10 @@ export default class CalculationEngine {
             const pipeObj = this.objectStore.get(e.value)!;
             if (pipeObj instanceof Pipe) {
                 if (pipeObj.entity.calculation === null) {
-                    const filled = fillPipeDefaultFields(this.doc, pipeObj.computedLengthM, pipeObj.entity);
+                    const filled = fillPipeDefaultFields(this.doc.drawing, pipeObj.computedLengthM, pipeObj.entity);
                     const initialSize = lowerBoundTable(this.catalog.pipes[filled.material!].pipesBySize, 0)!;
                     pipeObj.entity.calculation = {
-                        flowRateLS: null,
+                        peakFlowRate: null,
                         loadingUnits: null,
                         optimalInnerPipeDiameterMM: null,
                         pressureDropKpa: null,
@@ -278,7 +487,7 @@ export default class CalculationEngine {
                     };
                     pipesThatNeedSizing.add(pipeObj.entity.uid);
                 } else if (pipeObj.entity.calculation.realInternalDiameterMM === null) {
-                    const filled = fillPipeDefaultFields(this.doc, pipeObj.computedLengthM, pipeObj.entity);
+                    const filled = fillPipeDefaultFields(this.doc.drawing, pipeObj.computedLengthM, pipeObj.entity);
                     const initialSize = lowerBoundTable(this.catalog.pipes[filled.material!].pipesBySize, 0)!;
 
                     pipeObj.entity.calculation.realInternalDiameterMM =
@@ -293,12 +502,13 @@ export default class CalculationEngine {
 
         const solver = new FlowSolver(this.luFlowGraph, this.objectStore, this.doc, this.catalog);
 
-        console.log("demand:");
-        console.log(demandLS);
-        console.log("sources:");
-        console.log(sourcesKPA);
-
+        let iters = 0;
         while (true) {
+            iters++;
+            if (iters > 20) {
+                console.log('pipe sizes are possibly oscillating');
+                break;
+            }
             const assignment = solver.solveFlowsLS(demandLS, sourcesKPA);
             let changed = false;
 
@@ -317,7 +527,6 @@ export default class CalculationEngine {
                 }
             });
 
-            console.log("Changed: " + changed);
 
             if (!changed) {
                 // Pipe sizes have converged.
@@ -385,42 +594,82 @@ export default class CalculationEngine {
         }
     }
 
-    configurePipeForLoadingUnits(pipe: PipeEntity, lu: number) {
-        pipe.calculation = emptyPipeCalculation();
-        pipe.calculation.loadingUnits = lu;
+    configureEntityForLoadingUnits(entity: DrawableEntityConcrete, lu: number, edgeUid: string) {
+        switch (entity.type) {
+            case EntityType.PIPE: {
 
-        const size = this.lookupFlowRate(lu);
+                entity.calculation = emptyPipeCalculation();
+                entity.calculation.loadingUnits = lu;
 
-        if (size === null) {
-            // out of range
-            this.extraWarnings.push({
-                center: Popup.findCenter(this.objectStore.get(pipe.uid)!, this.centerWc),
-                params: {
-                    type: MessageType.WARNING,
-                    text: 'Could not get flow rate for this pipe using the current PSD standard',
-                },
-                parentUid: null,
-                targetUids: [pipe.uid],
-                type: EntityType.RESULTS_MESSAGE,
-                uid: uuid(),
-            });
-        } else {
-            this.sizePipeForFlowRate(pipe, size);
+                const flowRate = this.lookupFlowRate(lu);
+
+                if (flowRate === null) {
+                    // out of range
+                    this.extraWarnings.push({
+                        center: Popup.findCenter(this.objectStore.get(entity.uid)!, this.centerWc),
+                        params: {
+                            type: MessageType.WARNING,
+                            text: 'Could not get flow rate for this entity using the current PSD standard',
+                        },
+                        parentUid: null,
+                        targetUids: [entity.uid],
+                        type: EntityType.RESULTS_MESSAGE,
+                        uid: uuid(),
+                    });
+                } else {
+                    this.sizePipeForFlowRate(entity, flowRate);
+                }
+
+                return;
+            }
+            case EntityType.TMV: {
+
+                if (!entity.calculation) {
+                    entity.calculation = emptyTmvCalculation();
+                }
+                const flowRate = this.lookupFlowRate(lu);
+
+                if (edgeUid.endsWith(COLD_COLD_EDGE_ID)) {
+                    entity.calculation.coldLUs = lu;
+                    entity.calculation.coldPeakFlowRate = flowRate;
+                } else if (edgeUid.endsWith(HOT_WARM_EDGE_ID)) {
+                    entity.calculation.hotLUs = lu;
+                    entity.calculation.hotPeakFlowRate = flowRate;
+                } else {
+                    throw new Error('invalid edge in TMV');
+                }
+
+                return;
+            }
+            case EntityType.BACKGROUND_IMAGE:
+            case EntityType.FLOW_SOURCE:
+            case EntityType.VALVE:
+            case EntityType.SYSTEM_NODE:
+            case EntityType.FIXTURE:
+            case EntityType.RESULTS_MESSAGE:
+                throw new Error('Cannot configure this entity to accept loading units');
         }
+        assertUnreachable(entity);
 
     }
 
     sizePipeForFlowRate(pipe: PipeEntity, flowRateLS: number) {
-        pipe.calculation!.flowRateLS = flowRateLS;
+        pipe.calculation!.peakFlowRate = flowRateLS;
 
         pipe.calculation!.optimalInnerPipeDiameterMM = this.calculateInnerDiameter(pipe);
-        const page = this.getRealPipe(pipe);
+        let page = this.getRealPipe(pipe);
+        if (!page) {
+            page = this.getBiggestPipe(pipe);
+        }
         pipe.calculation!.realNominalPipeDiameterMM = parseCatalogNumberExact(page!.diameterNominalMM);
         pipe.calculation!.realInternalDiameterMM = parseCatalogNumberExact(page!.diameterInternalMM);
 
         if (pipe.calculation!.realNominalPipeDiameterMM) {
             pipe.calculation!.velocityRealMS = this.getVelocityRealMs(pipe);
-            pipe.calculation!.pressureDropKpa = this.getPressureDrop(pipe);
+            pipe.calculation!.pressureDropKpa = head2kpa(
+                this.getPipePressureDropMH(pipe),
+                getFluidDensityOfSystem(pipe.systemUid, this.doc, this.catalog)!,
+            );
         }
     }
 
@@ -435,22 +684,22 @@ export default class CalculationEngine {
     }
 
     calculateInnerDiameter(pipe: PipeEntity): number {
-        const computed = fillPipeDefaultFields(this.doc, 0, pipe);
+        const computed = fillPipeDefaultFields(this.doc.drawing, 0, pipe);
 
         // depends on pipe sizing method
         if (this.doc.drawing.calculationParams.pipeSizingMethod === 'velocity') {
             // http://www.1728.org/flowrate.htm
             return Math.sqrt(
-                4000 * pipe.calculation!.flowRateLS! / (Math.PI * computed.maximumVelocityMS!),
+                4000 * pipe.calculation!.peakFlowRate! / (Math.PI * computed.maximumVelocityMS!),
             );
         } else {
             throw new Error('Pipe sizing strategy not supported');
         }
     }
 
-    getPressureDrop(pipe: PipeEntity): number {
+    getPipePressureDropMH(pipe: PipeEntity): number {
         const obj = this.objectStore.get(pipe.uid) as Pipe;
-        const filled = fillPipeDefaultFields(this.doc, obj.computedLengthM, pipe);
+        const filled = fillPipeDefaultFields(this.doc.drawing, obj.computedLengthM, pipe);
         const realPipe = lowerBoundTable(
             this.catalog.pipes[filled.material!].pipesBySize,
             filled.diameterMM!,
@@ -486,14 +735,12 @@ export default class CalculationEngine {
     getVelocityRealMs(pipe: PipeEntity) {
         // http://www.1728.org/flowrate.htm
 
-        return 4000 * pipe.calculation!.flowRateLS! /
+        return 4000 * pipe.calculation!.peakFlowRate! /
             (Math.PI * parseCatalogNumberExact(pipe.calculation!.realInternalDiameterMM)! ** 2);
     }
 
     getRealPipe(pipe: PipeEntity): PipeSpec | null {
-        const pipeFilled = fillPipeDefaultFields(this.doc, 0, pipe);
-
-
+        const pipeFilled = fillPipeDefaultFields(this.doc.drawing, 0, pipe);
         const table = this.catalog.pipes[pipeFilled.material!];
 
         if (!table) {
@@ -527,80 +774,145 @@ export default class CalculationEngine {
         }
     }
 
-    sizeDefinitePipes(roots: string[]) {
+    getBiggestPipe(pipe: PipeEntity): PipeSpec | null {
+        const pipeFilled = fillPipeDefaultFields(this.doc.drawing, 0, pipe);
+        const table = this.catalog.pipes[pipeFilled.material!];
+
+        if (!table) {
+            throw new Error('Material doesn\'t exist anymore ' + JSON.stringify(pipeFilled));
+        }
+
+        const a = upperBoundTable(table.pipesBySize, Infinity, (p) => {
+            const v = parseCatalogNumberExact(p.diameterInternalMM);
+            if (!v) {
+                throw new Error('no nominal diameter');
+            }
+            return v;
+        });
+
+        if (!a) {
+            // No pipe big enough
+            this.extraWarnings.push({
+                center: Popup.findCenter(this.objectStore.get(pipe.uid)!, this.centerWc),
+                params: {
+                    type: MessageType.WARNING,
+                    text: 'No pipe with this material in the database is big enough to handle the required demand',
+                },
+                parentUid: null,
+                targetUids: [pipe.uid],
+                type: EntityType.RESULTS_MESSAGE,
+                uid: uuid(),
+            });
+            return null;
+        } else {
+            return a;
+        }
+    }
+
+    sizeDefiniteTransports(roots: string[]) {
         const totalReachedLUs = this.getTotalReachedLUs(roots);
 
         // Go through all pipes
-        this.objectStore.forEach((object) => {
-            if (object.type !== EntityType.PIPE) {
-                return;
+        this.objectStore.forEach((object): null => {
+            switch (object.entity.type) {
+                case EntityType.TMV:
+                    this.sizeDefiniteTransport(
+                        object,
+                        roots,
+                        totalReachedLUs,
+                        object.uid + HOT_WARM_EDGE_ID,
+                        [object.entity.hotRoughInUid, object.entity.warmOutputUid],
+                    );
+
+                    if (object.entity.coldRoughInUid) {
+                        this.sizeDefiniteTransport(
+                            object,
+                            roots,
+                            totalReachedLUs,
+                            object.uid + COLD_COLD_EDGE_ID,
+                            [object.entity.coldRoughInUid, object.entity.coldOutputUid!],
+                        );
+                    }
+                    return null;
+                case EntityType.PIPE:
+                    this.sizeDefiniteTransport(object, roots, totalReachedLUs, object.uid, object.entity.endpointUid);
+                    return null;
+                case EntityType.BACKGROUND_IMAGE:
+                case EntityType.VALVE:
+                case EntityType.FLOW_SOURCE:
+                case EntityType.RESULTS_MESSAGE:
+                case EntityType.SYSTEM_NODE:
+                case EntityType.FIXTURE:
+                    return null;
             }
-            const pipe = object.entity as PipeEntity;
-
-            const reachedLUs = this.getTotalReachedLUs(roots, [], [pipe.uid]);
-            const exclusiveLUs = totalReachedLUs - reachedLUs;
-
-
-            if (exclusiveLUs > 0) {
-                const [point] = this.getDryEndpoints(pipe, roots);
-                const [wet] = this.getWetEndpoints(pipe, roots);
-                const residualLUs = this.getTotalReachedLUs([point], [wet], [pipe.uid]);
-
-                if (residualLUs > exclusiveLUs) {
-                    // the LU for this pipe is ambiguous in this configuration.
-                    this.extraWarnings.push({
-                        center: Popup.findCenter(object, this.centerWc),
-                        params: {
-                            type: MessageType.WARNING,
-                            text: 'Loading units for this pipe are ambiguous (but it is at least ' + exclusiveLUs + ')',
-                        },
-                        parentUid: null,
-                        targetUids: [object.uid],
-                        type: EntityType.RESULTS_MESSAGE,
-                        uid: uuid(),
-                    });
-                } else {
-                    // we have successfully calculated the pipe's loading units.
-                    this.configurePipeForLoadingUnits(pipe, exclusiveLUs);
-                }
-            } else {
-                // zero exclusive to us. Work out whether this is because we don't have any fixture demand.
-                const wets = this.getWetEndpoints(pipe, roots);
-                const demandA = this.getTotalReachedLUs([pipe.endpointUid[0]], [], [pipe.uid]);
-                const demandB = this.getTotalReachedLUs([pipe.endpointUid[1]], [], [pipe.uid]);
-
-                if (demandA === 0 && wets.indexOf(pipe.endpointUid[0]) === -1 ||
-                    demandB === 0 && wets.indexOf(pipe.endpointUid[1]) === -1
-                ) {
-                    // redundant deadleg
-                    this.extraWarnings.push({
-                        center: Popup.findCenter(object, this.centerWc),
-                        params: {
-                            type: MessageType.WARNING,
-                            text: 'Redundant deadleg',
-                        },
-                        parentUid: null,
-                        targetUids: [object.uid],
-                        type: EntityType.RESULTS_MESSAGE,
-                        uid: uuid(),
-                    });
-                } else {
-                    // ambiguous
-                    this.extraWarnings.push({
-                        center: Popup.findCenter(object, this.centerWc),
-                        params: {
-                            type: MessageType.WARNING,
-                            text: 'Loading units for this pipe are ambiguous',
-                        },
-                        parentUid: null,
-                        targetUids: [object.uid],
-                        type: EntityType.RESULTS_MESSAGE,
-                        uid: uuid(),
-                    });
-                }
-            }
-
         });
+    }
+
+    sizeDefiniteTransport(object: BaseBackedObject, roots: string[], totalReachedLUs: number, edgeUid: string, endpointUids: string[]) {
+
+        const reachedLUs = this.getTotalReachedLUs(roots, [], [edgeUid]);
+        const exclusiveLUs = totalReachedLUs - reachedLUs;
+
+
+        if (exclusiveLUs > 0) {
+            const [point] = this.getDryEndpoints(endpointUids, edgeUid, roots);
+            const [wet] = this.getWetEndpoints(endpointUids, edgeUid, roots);
+            const residualLUs = this.getTotalReachedLUs([point], [wet], [edgeUid]);
+
+            if (residualLUs > exclusiveLUs) {
+                // the LU for this pipe is ambiguous in this configuration.
+                this.extraWarnings.push({
+                    center: Popup.findCenter(object, this.centerWc),
+                    params: {
+                        type: MessageType.WARNING,
+                        text: 'Loading units for this pipe are ambiguous (but it is at least ' + exclusiveLUs + ')',
+                    },
+                    parentUid: null,
+                    targetUids: [object.uid],
+                    type: EntityType.RESULTS_MESSAGE,
+                    uid: uuid(),
+                });
+            } else {
+                // we have successfully calculated the pipe's loading units.
+                this.configureEntityForLoadingUnits(object.entity, exclusiveLUs, edgeUid);
+            }
+        } else {
+            // zero exclusive to us. Work out whether this is because we don't have any fixture demand.
+            const wets = this.getWetEndpoints(endpointUids, edgeUid, roots);
+            const demandA = this.getTotalReachedLUs([endpointUids[0]], [], [edgeUid]);
+            const demandB = this.getTotalReachedLUs([endpointUids[1]], [], [edgeUid]);
+
+            if (demandA === 0 && wets.indexOf(endpointUids[0]) === -1 ||
+                demandB === 0 && wets.indexOf(endpointUids[1]) === -1
+            ) {
+                // redundant deadleg
+                this.extraWarnings.push({
+                    center: Popup.findCenter(object, this.centerWc),
+                    params: {
+                        type: MessageType.WARNING,
+                        text: 'Redundant deadleg',
+                    },
+                    parentUid: null,
+                    targetUids: [object.uid],
+                    type: EntityType.RESULTS_MESSAGE,
+                    uid: uuid(),
+                });
+            } else {
+                // ambiguous
+                this.extraWarnings.push({
+                    center: Popup.findCenter(object, this.centerWc),
+                    params: {
+                        type: MessageType.WARNING,
+                        text: 'Loading units for this pipe are ambiguous',
+                    },
+                    parentUid: null,
+                    targetUids: [object.uid],
+                    type: EntityType.RESULTS_MESSAGE,
+                    uid: uuid(),
+                });
+            }
+        }
+
     }
 
     getTotalReachedLUs(roots: string[], excludedNodes: string[] = [], excludedEdges: string[] = []): number {
@@ -625,23 +937,23 @@ export default class CalculationEngine {
         return lu;
     }
 
-    getWetEndpoints(pipe: PipeEntity, roots: string[]): string[] {
+    getWetEndpoints(endpointUids: string[], edgeUid: string, roots: string[]): string[] {
         const seen = new Set<string>();
-        const seenEdges = new Set<string>([pipe.uid]);
+        const seenEdges = new Set<string>([edgeUid]);
 
         roots.forEach((r) => {
             this.luFlowGraph.dfs(r, undefined, undefined, undefined, undefined, seen, seenEdges);
         });
 
-        return pipe.endpointUid.filter((ep) => {
+        return endpointUids.filter((ep) => {
             // to be dry, we have to not have any sources.
             return seen.has(ep);
         });
     }
 
-    getDryEndpoints(pipe: PipeEntity, roots: string[]): string[] {
-        const wet = this.getWetEndpoints(pipe, roots);
-        return pipe.endpointUid.filter((ep) => {
+    getDryEndpoints(endpointUids: string[], edgeUid: string, roots: string[]): string[] {
+        const wet = this.getWetEndpoints(endpointUids, edgeUid, roots);
+        return endpointUids.filter((ep) => {
             return wet.indexOf(ep) === -1;
         });
     }
@@ -665,55 +977,6 @@ export default class CalculationEngine {
         const roots = uf.groups();
 
         return {sources: roots, biconnected: []};
-    }
-
-    randomizeEntityCalculations(e: DrawableEntity) {
-        if (e.type === EntityType.PIPE) {
-            const te = e as PipeEntity;
-            te.calculation = {
-                flowRateLS: randInt(0, 10),
-                optimalInnerPipeDiameterMM: randInt(0, 10),
-                pressureDropKpa: randInt(0, 10),
-                realNominalPipeDiameterMM: randInt(0, 10),
-                realInternalDiameterMM: randInt(0, 10),
-                velocityRealMS: randInt(0, 10),
-                temperatureRange: randInt(0, 10) + ' to ' + randInt(0, 10),
-                loadingUnits: randInt(0, 10),
-            };
-        } else if (e.type === EntityType.VALVE) {
-            const te = e as ValveEntity;
-
-            te.calculation = {
-                flowRateLS: randInt(0, 10),
-                pressureKPA: randInt(0, 10),
-                pressureDropKPA: randInt(0, 10),
-                valveAttributes: getValveAttributes(te),
-            };
-        } else if (e.type === EntityType.FLOW_SOURCE) {
-            const te = e as FlowSourceEntity;
-            te.calculation = {
-                flowRateLS: randInt(0, 10),
-                pressureKPA: randInt(0, 10),
-                loadingUnits: randInt(0, 10),
-            };
-        } else if (e.type === EntityType.TMV) {
-            const te = e as TmvEntity;
-            te.calculation = {
-                coldPressureKPA: randInt(0, 10),
-                coldTemperatureC: randInt(0, 10),
-                hotPressureKPA: randInt(0, 10),
-                hotTemperatureC: randInt(0, 10),
-                outputFlowRateLS: randInt(0, 10),
-                outputPressureKPA: randInt(0, 10),
-                outputTemperatureC: randInt(0, 10),
-            };
-        } else if (e.type === EntityType.FIXTURE) {
-            const te = e as FixtureEntity;
-            te.calculation = {
-                coldPressureKPA: randInt(0, 10),
-                warmPressureKPA: randInt(0, 10),
-            };
-        }
     }
 }
 

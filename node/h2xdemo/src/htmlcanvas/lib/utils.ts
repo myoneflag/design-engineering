@@ -163,8 +163,8 @@ export function interpolateTable(
         }
     }
 
-    const lw = (highValue - index) / (highValue - lowValue);
-    const hw = (index - lowValue) / (highValue - lowValue);
+    const lw = (highKey - index) / (highKey - lowKey);
+    const hw = (index - lowKey) / (highKey - lowKey);
     return lw * lowValue + hw * highValue;
 }
 
@@ -193,4 +193,31 @@ export function lowerBoundTable<T>(table: {[key: string]: T}, index: number, get
     }
 
     return highValue;
+}
+
+// assumes keys in table are non overlapping
+export function upperBoundTable<T>(table: {[key: string]: T}, index: number, getVal?: (t: T) => number): T | null {
+    let lowKey = -Infinity;
+    let lowValue: T | null = null;
+
+    for (const key of Object.keys(table)) {
+        const min = getVal ? getVal(table[key]) : parseCatalogNumberOrMin(key);
+        const max = getVal ? getVal(table[key]) : parseCatalogNumberOrMax(key);
+        const value = table[key];
+
+        if (min === null || max === null) {
+            throw new Error('key is not a number');
+        }
+
+        if (min <= index && max >= index) {
+            return value;
+        }
+
+        if (max < index && max > lowKey) {
+            lowKey = max;
+            lowValue = value;
+        }
+    }
+
+    return lowValue;
 }

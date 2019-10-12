@@ -267,7 +267,7 @@ describe('graph.ts', () => {
         expect(cycleCover[0][0].from).eq(cycleCover[0][cycleCover[0].length - 1].to);
     });
 
-    it ('finds arc cover', () => {
+    it('finds arc cover', () => {
        const graph = new Graph<string, number>();
        addSimpleTree(graph);
 
@@ -284,6 +284,110 @@ describe('graph.ts', () => {
                expect(a[i].from).eq(a[i - 1].to);
            }
        });
+    });
+
+    it('dijkstra returns a path with one edge', () => {
+        const graph = new Graph<string, number>();
+        addSingleEdge(graph);
+
+        const visitedNodes: string[] = [];
+        const visitedEdges: number[] = [];
+
+        graph.dijkstra(
+            'B',
+            (e) => {
+                return e.value;
+            },
+            (n) => {
+                visitedNodes.push(n.node);
+            },
+            (e) => {
+                visitedEdges.push(e.value);
+            },
+        );
+
+        expect(visitedNodes).eql(['B', 'C']);
+        expect(visitedEdges).eql([1]);
+    });
+
+    it('traverses a directed cyclic graph with dijkstra', () => {
+
+        const graph = new Graph<string, number>();
+        addSimpleDirectedGraph(graph);
+
+        const visitedNodes: string[] = [];
+        const visitedEdges: number[] = [];
+
+        graph.dijkstra(
+            'D',
+            (e) => {
+                return e.value;
+            },
+            (n) => {
+                visitedNodes.push(n.node);
+            },
+            (e) => {
+                visitedEdges.push(e.value);
+            },
+        );
+
+        expect(visitedNodes).eql(['D', 'F', 'E', 'G']);
+        expect(visitedEdges).eql([3, 4, 5, 2]);
+    });
+
+    it('traverses a tree with dijkstra and missing edges/nodes', () => {
+
+        const graph = new Graph<string, number>();
+        addSimpleTree(graph);
+
+        const visitedNodes: string[] = [];
+        const visitedEdges: number[] = [];
+
+        graph.dijkstra(
+            'J',
+            (e) => {
+                return e.value;
+            },
+            (n) => {
+                console.log(n);
+                visitedNodes.push(n.node);
+            },
+            (e) => {
+                visitedEdges.push(e.value);
+                if (e.value === 6) {
+                    return true;
+                }
+            },
+            new Set<string>(['M']),
+            new Set<string>(['9']),
+        );
+
+        expect(visitedNodes).eql(['J', 'I', 'K', 'L']);
+        expect(visitedEdges).eql([7, 6, 8, 10, 11]);
+    });
+
+    it('should find shortest path', () => {
+        const graph = new Graph<string, number>();
+        addSimpleDirectedGraph(graph);
+
+        const result = graph.shortestPath('E', 'G', (e) => e.value);
+        expect(result);
+        expect(result![1]).eq(10);
+        expect(result![0].map((e) => e.to)).eql(['D', 'F', 'G']);
+
+        console.log('here');
+        const result2 = graph.shortestPath('E', 'G', (e) => e.value, undefined, undefined, false);
+        expect(result2);
+        expect(result2![1]).eq(9);
+        expect(result2![0].map((e) => e.to)).eql(['F', 'G']);
+
+        const result3 = graph.shortestPath('G', 'D', (e) => e.value);
+        expect(result3).eq(null);
+
+        const result4 = graph.shortestPath('D', 'F', (e) => e.value, undefined, undefined, true, true);
+        expect(result4);
+        expect(result4![1]).eq(6);
+        expect(result4![0].map((e) => e.to)).eql(['E', 'F']);
     });
 });
 
@@ -342,10 +446,10 @@ function removeUidForTesting(obj: any) {
  *     H              L
  */
 function addSimpleTree(graph: Graph<string, number>) {
-    graph.addEdge('H', 'I', 6);
-    graph.addEdge('J', 'I', 7);
-    graph.addEdge('K', 'I', 8);
-    graph.addEdge('K', 'N', 9);
-    graph.addEdge('M', 'K', 10);
-    graph.addEdge('K', 'L', 11);
+    graph.addEdge('H', 'I', 6, '6');
+    graph.addEdge('J', 'I', 7, '7');
+    graph.addEdge('K', 'I', 8, '8');
+    graph.addEdge('K', 'N', 9, '9');
+    graph.addEdge('M', 'K', 10, '10');
+    graph.addEdge('K', 'L', 11, '11');
 }

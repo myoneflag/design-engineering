@@ -31,6 +31,7 @@
     "register-service-worker": "^1.6.2",
     "stompjs": "^2.3.3",
     "style-loader": "^1.0.0",
+    "tinyqueue": "^2.0.3",
     "transformation-matrix": "^2.1.0",
     "uuid": "^3.3.3",
     "vue": "^2.6.10",
