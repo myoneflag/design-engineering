@@ -15,6 +15,7 @@ import {BackgroundEntity} from '@/store/document/entities/background-entity';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
 import Flatten from '@flatten-js/core';
+import {DEFAULT_FONT_NAME} from '@/config';
 
 // TODO: Convert into backed drawable object.
 export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> implements Sizeable {
@@ -40,7 +41,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
             ctx.arc(0, 0, 12, 0, Math.PI * 2);
             ctx.fill();
 
-            ctx.font = '14pt Helvetica';
+            ctx.font = '14pt ' + DEFAULT_FONT_NAME;
             ctx.fillStyle = '#FFFFFF';
             ctx.fillText(label, - 6, + 7);
         });
@@ -234,7 +235,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
             ctx.fillRect(
                 x, y, w, h,
             );
-            ctx.font = '20pt Helvetica';
+            ctx.font = '20pt ' + DEFAULT_FONT_NAME;
             ctx.fillStyle = '#FFFFFF';
             ctx.fillText('Loading...', x + (w) / 2, y + (h) / 2 - 20);
             ctx.globalAlpha = oldAlpha;

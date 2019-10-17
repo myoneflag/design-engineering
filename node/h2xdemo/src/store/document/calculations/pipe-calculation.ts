@@ -1,5 +1,7 @@
 import {FieldCategory, MessageField} from '@/store/document/calculations/message-field';
 import {PsdCalculation} from '@/store/document/calculations/types';
+import {DrawingState} from '@/store/document/types';
+import {isGermanStandard} from '@/config';
 
 export default interface PipeCalculation extends PsdCalculation {
     peakFlowRate: number | null;
@@ -14,7 +16,8 @@ export default interface PipeCalculation extends PsdCalculation {
 }
 
 
-export function makePipeCalculationFields(): MessageField[] {
+export function makePipeCalculationFields(settings: DrawingState): MessageField[] {
+    const psdUnit = isGermanStandard(settings.calculationParams.psdMethod) ? 'Design Flow Rate' : 'Loading Units';
     return [
         {property: 'peakFlowRate', title: 'Peak Flow rate (L/s)', category: FieldCategory.FlowRate},
         {property: 'realNominalPipeDiameterMM', title: 'Pipe Diameter (mm)', category: FieldCategory.Size},
@@ -22,14 +25,14 @@ export function makePipeCalculationFields(): MessageField[] {
         {property: 'pressureDropKpa', title: 'Peak pressure drop (kPa)', category: FieldCategory.Pressure},
         {property: 'velocityRealMS', title: 'velocity (m/s)', category: FieldCategory.Velocity},
         {property: 'temperatureRange', title: 'Temperature range (C)', category: FieldCategory.Temperature},
-        {property: 'loadingUnits', title: 'Loading Units', category: FieldCategory.LoadingUnits},
+        {property: 'psdUnits', title: psdUnit, category: FieldCategory.LoadingUnits},
     ];
 }
 
 export function emptyPipeCalculation(): PipeCalculation {
     return {
         peakFlowRate: null,
-        loadingUnits: null,
+        psdUnits: null,
         optimalInnerPipeDiameterMM: null,
         realInternalDiameterMM: null,
         pressureDropKpa: null,

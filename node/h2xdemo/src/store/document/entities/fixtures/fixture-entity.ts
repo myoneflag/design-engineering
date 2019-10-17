@@ -11,7 +11,7 @@ import * as _ from 'lodash';
 import ValveEntity from '@/store/document/entities/valve-entity';
 import CatalogState, {Catalog} from '@/store/catalog/types';
 import InvisibleNodeEntity from '@/store/document/entities/Invisible-node-entity';
-import {PSD_METHODS} from '../../../../config';
+import {DISPLAY_PSD_METHODS} from '../../../../config';
 import FixtureCalculation from '@/store/document/calculations/fixture-calculation';
 import {CalculationTarget} from '@/store/document/calculations/types';
 import {parseCatalogNumberOrMin} from '@/htmlcanvas/lib/utils';
@@ -20,6 +20,8 @@ export default interface FixtureEntity extends DrawableEntity, CalculationTarget
     center: Coord;
     type: EntityType.FIXTURE;
     name: string;
+    abbreviation: string;
+
     rotation: number;
     coldRoughInUid: string;
     warmRoughInUid: string | null;
@@ -34,6 +36,10 @@ export default interface FixtureEntity extends DrawableEntity, CalculationTarget
 
     loadingUnitsCold: number | null;
     loadingUnitsHot: number | null;
+
+    designFlowRateCold: number | null;
+    designFlowRateHot: number | null;
+
     fixtureUnits: number | null;
     probabilityOfUsagePCT: number | null;
 
@@ -64,6 +70,12 @@ export function makeFixtureFields(): PropertyField[] {
         { property: 'loadingUnitsHot', title: 'Loading Units (Hot)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: null } },
 
+        { property: 'designFlowRateCold', title: 'Design Flow Rate (Cold, L/s)', hasDefault: true, isCalculated: false,
+            type: FieldType.Number, params: { min: 0, max: null } },
+
+        { property: 'designFlowRateHot', title: 'Design Flow Rate (Hot, L/s)', hasDefault: true, isCalculated: false,
+            type: FieldType.Number, params: { min: 0, max: null } },
+
         { property: 'fixtureUnits', title: 'Fixture Units', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: null } },
 
@@ -76,7 +88,7 @@ export function fillFixtureFields(
     doc: DocumentState,
     defaultCatalog: Catalog,
     value: FixtureEntity,
-) {
+): FixtureEntity {
     const result = _.cloneDeep(value);
 
 
@@ -104,14 +116,23 @@ export function fillFixtureFields(
 
     const psdStrategy = doc.drawing.calculationParams.psdMethod;
 
-    if (!result.loadingUnitsCold) {
-        result.loadingUnitsCold =
-            parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy].cold);
+    if (psdStrategy in defaultCatalog.fixtures[result.name].loadingUnits) {
+        if (!result.loadingUnitsCold) {
+            result.loadingUnitsCold =
+                parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy].cold);
+        }
+
+        if (!result.loadingUnitsHot) {
+            result.loadingUnitsHot =
+                parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy].hot);
+        }
+    }
+    if (!result.designFlowRateCold) {
+        result.designFlowRateCold = parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].qLS.cold);
+    }
+    if (!result.designFlowRateHot) {
+        result.designFlowRateHot = parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].qLS.hot);
     }
 
-    if (!result.loadingUnitsHot) {
-        result.loadingUnitsHot =
-            parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy].hot);
-    }
     return result;
 }

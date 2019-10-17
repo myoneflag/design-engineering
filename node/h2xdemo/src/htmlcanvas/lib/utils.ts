@@ -110,11 +110,25 @@ export function parseCatalogNumberExact(str: string | number | null): number | n
     return isNaN(n) ? null : n;
 }
 
+export function interpolateTable<T>(
+    table: {[key: string]: string | number},
+    index: number,
+    strict?: boolean,
+): number | null;
+
+export function interpolateTable<T>(
+    table: {[key: string]: T},
+    index: number,
+    strict: boolean,
+    fn: (entry: T) => string | number,
+): number | null;
 
 // assumes keys in table are non overlapping
-export function interpolateTable(
-    table: {[key: string]: string | number},
-    index: number, strict: boolean = false,
+export function interpolateTable<T>(
+    table: {[key: string]: T},
+    index: number,
+    strict: boolean = false,
+    fn?: (entry: T) => string | number,
 ): number | null {
     let lowKey = -Infinity;
     let highKey = Infinity;
@@ -124,7 +138,7 @@ export function interpolateTable(
     for (const key of Object.keys(table)) {
         const min = parseCatalogNumberOrMin(key);
         const max = parseCatalogNumberOrMax(key);
-        const value = parseCatalogNumberOrMin(table[key]);
+        const value = fn ? parseCatalogNumberExact(fn(table[key])) : parseCatalogNumberExact(table[key] as any);
         if (value !== null) {
             if (min !== null && max !== null) {
                 if (index >= min && index <= max) {

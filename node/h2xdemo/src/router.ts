@@ -47,6 +47,12 @@ const router = new Router({
                             component: () => import(/* webpackChunkName: "general" */ './views/settings/General.vue'),
                         },
                         {
+                            path: 'fixtures',
+                            name: 'settings/fixtures',
+                            component: () => import(
+                                /* webpackChunkName: "general" */ './views/settings/Fixtures.vue'),
+                        },
+                        {
                             path: 'flow-systems',
                             name: 'settings/flow-systems',
                             component: () => import(

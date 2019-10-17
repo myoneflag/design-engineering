@@ -3,14 +3,10 @@ import * as _ from 'lodash';
 import {diffState} from '@/store/document/operation-transforms/state-differ';
 import {applyOtOnState} from '@/store/document/operation-transforms/state-ot-apply';
 
-import {
-    CalculationParameters,
-    DrawingState,
-    FlowSystemParameters,
-    GeneralInfo,
-} from '@/store/document/types';
+import {CalculationParameters, DrawingState, FlowSystemParameters, GeneralInfo,} from '@/store/document/types';
 import {EntityType} from '@/store/document/entities/types';
 import {BackgroundEntity} from '@/store/document/entities/background-entity';
+import {SupportedPsdStandards} from '@/config';
 
 function roundTripTest(prev: DrawingState, next: DrawingState, expectedOps: number = -1) {
     const prevCopy = _.cloneDeep(prev);
@@ -243,7 +239,7 @@ const ws2: FlowSystemParameters = {
 };
 
 const cp1: CalculationParameters = {
-    pipeSizingMethod: '', psdMethod: '', ringMainCalculationMethod: '',
+    pipeSizingMethod: '', psdMethod: SupportedPsdStandards.as35002018LoadingUnits, ringMainCalculationMethod: '',
 };
 
 describe('state-differ.ts', () => {
@@ -255,6 +251,7 @@ describe('state-differ.ts', () => {
             flowSystems: [ws1],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         const next: DrawingState = {
@@ -263,6 +260,7 @@ describe('state-differ.ts', () => {
             flowSystems: [ws1],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         roundTripTest(prev, next, 0);
@@ -276,6 +274,7 @@ describe('state-differ.ts', () => {
             flowSystems: [ws1],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         const next: DrawingState = {
@@ -284,6 +283,7 @@ describe('state-differ.ts', () => {
             flowSystems: [ws1],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         roundTripTest(prev, next, 1);
@@ -297,6 +297,7 @@ describe('state-differ.ts', () => {
             flowSystems: [],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         const next: DrawingState = {
@@ -305,6 +306,7 @@ describe('state-differ.ts', () => {
             flowSystems: [],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         roundTripTest(prev, next, 1);
@@ -318,6 +320,7 @@ describe('state-differ.ts', () => {
             flowSystems: [],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         const next: DrawingState = {
@@ -326,6 +329,7 @@ describe('state-differ.ts', () => {
             flowSystems: [],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         roundTripTest(prev, next, 3);
@@ -340,6 +344,7 @@ describe('state-differ.ts', () => {
             flowSystems: [],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         const next: DrawingState = {
@@ -348,6 +353,7 @@ describe('state-differ.ts', () => {
             flowSystems: [],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         roundTripTest(prev, next, 1);
@@ -361,6 +367,7 @@ describe('state-differ.ts', () => {
             flowSystems: [],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         const next: DrawingState = {
@@ -369,6 +376,7 @@ describe('state-differ.ts', () => {
             flowSystems: [],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         roundTripTest(prev, next, 1);
@@ -382,6 +390,7 @@ describe('state-differ.ts', () => {
             flowSystems: [],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         const next: DrawingState = {
@@ -390,6 +399,7 @@ describe('state-differ.ts', () => {
             flowSystems: [],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         roundTripTest(prev, next, 1);
@@ -403,6 +413,7 @@ describe('state-differ.ts', () => {
             flowSystems: [ws2, ws1],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         const next: DrawingState = {
@@ -411,6 +422,7 @@ describe('state-differ.ts', () => {
             flowSystems: [ws2],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         roundTripTest(prev, next, 1);
@@ -424,6 +436,7 @@ describe('state-differ.ts', () => {
             flowSystems: [ws2, ws1],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         const next: DrawingState = {
@@ -432,6 +445,7 @@ describe('state-differ.ts', () => {
             flowSystems: [ws1],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         roundTripTest(prev, next);
@@ -446,6 +460,7 @@ describe('state-differ.ts', () => {
             flowSystems: [ws1],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         const next: DrawingState = {
@@ -454,6 +469,7 @@ describe('state-differ.ts', () => {
             flowSystems: [ws2, ws1],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         roundTripTest(prev, next);
@@ -467,6 +483,7 @@ describe('state-differ.ts', () => {
             flowSystems: [],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         const next: DrawingState = {
@@ -475,6 +492,7 @@ describe('state-differ.ts', () => {
             flowSystems: [],
             calculationParams: cp1,
             entities: [],
+            availableFixtures: [],
         };
 
         roundTripTest(prev, next, 1);
