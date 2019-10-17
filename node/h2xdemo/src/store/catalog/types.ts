@@ -1,4 +1,6 @@
 import LoadingUnitTable from '@/store/catalog/psd-standard/loading-unit-table';
+import LoadingUnitHotColdTable from '@/store/catalog/psd-standard/loading-unit-hot-cold-table';
+import Equation from '@/store/catalog/psd-standard/equation';
 
 export default interface CatalogState {
     defaultCatalog: Catalog;
@@ -6,7 +8,7 @@ export default interface CatalogState {
 }
 
 export type Diameter = number | string;
-export type PSDSpec = LoadingUnitTable;
+export type PSDSpec = LoadingUnitTable | LoadingUnitHotColdTable | Equation;
 
 export interface Catalog {
     fixtures: {[key: string]: FixtureSpec};
@@ -19,10 +21,12 @@ export interface Catalog {
 
 export interface FixtureSpec {
     name: string;
+    abbreviation: string;
     uid: string;
 
     fixtureUnits: number | null;
     loadingUnits: {[key: string]: LoadingUnit};
+    qLS: DesignFlowRate;
 
     maxInletPressureKPA: string | null;
     minInletPressureKPA: string | null;
@@ -34,6 +38,11 @@ export interface FixtureSpec {
 }
 
 export interface LoadingUnit {
+    cold: string | null;
+    hot: string | null;
+}
+
+export interface DesignFlowRate {
     cold: string | null;
     hot: string | null;
 }

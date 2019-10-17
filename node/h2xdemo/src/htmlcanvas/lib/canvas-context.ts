@@ -8,6 +8,7 @@ import {RootState} from '@/store/types';
 import {Interaction} from '@/htmlcanvas/lib/interaction';
 import HydraulicsLayer from '@/htmlcanvas/layers/hydraulics-layer';
 import {DrawingContext, ObjectStore} from '@/htmlcanvas/lib/types';
+import {Catalog} from '@/store/catalog/types';
 
 
 // Expose the members of CanvasContext (a vue object) to other classes and methods
@@ -18,6 +19,7 @@ export default interface CanvasContext {
     hydraulicsLayer: HydraulicsLayer;
     objectStore: ObjectStore;
     document: DocumentState;
+    effectiveCatalog: Catalog;
 
     $store: Store<RootState>;
 

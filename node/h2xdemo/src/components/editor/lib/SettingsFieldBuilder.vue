@@ -103,6 +103,7 @@
             originalData: Object,
             onSave: Function,
             onBack: Function,
+            onRevert: Function,
         },
         components: {
             compactPicker: Compact,
@@ -141,6 +142,9 @@
             } else {
                 // revert
                 Object.assign(this.$props.reactiveData, this.$props.originalData);
+                if (this.$props.onRevert) {
+                    this.$props.onRevert();
+                }
             }
         }
 

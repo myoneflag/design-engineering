@@ -4,11 +4,12 @@ import PointTool from '@/htmlcanvas/tools/point-tool';
 import {EntityType} from '@/store/document/entities/types';
 import uuid from 'uuid';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
-import {getInsertCoordsAt} from '@/htmlcanvas/lib/utils';
+import {getInsertCoordsAt, parseCatalogNumberExact} from '@/htmlcanvas/lib/utils';
 import FixtureEntity from '@/store/document/entities/fixtures/fixture-entity';
 import {SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
 import {StandardFlowSystemUids} from '@/store/catalog';
 import SystemNode from '@/htmlcanvas/objects/tmv/system-node';
+import {SupportedPsdStandards} from '@/config';
 
 export default function insertFixture(
     context: CanvasContext,
@@ -18,10 +19,13 @@ export default function insertFixture(
     const warmUid = uuid();
     const fixtureUid = uuid();
 
-    let hasWarm = true;
-    if (fixtureName === 'wc') {
-        hasWarm = false;
+    let hasWarm = false;
+    if (parseCatalogNumberExact(
+        context.effectiveCatalog.fixtures[fixtureName].loadingUnits[SupportedPsdStandards.as35002018LoadingUnits].hot,
+        )) {
+        hasWarm = true;
     }
+    const abbreviation =  context.effectiveCatalog.fixtures[fixtureName].abbreviation;
 
     MainEventBus.$emit('set-tool-handler', new PointTool(
         (interrupted) => {
@@ -37,16 +41,19 @@ export default function insertFixture(
             const [parentUid, oc] = getInsertCoordsAt(context, wc);
 
             const newEntity: FixtureEntity = {
+                abbreviation,
                 center: oc,
                 parentUid,
                 type: EntityType.FIXTURE,
                 uid: fixtureUid,
 
-
                 coldRoughInUid: coldUid,
                 fixtureUnits: null,
                 loadingUnitsCold: null,
                 loadingUnitsHot: null,
+                designFlowRateCold: null,
+                designFlowRateHot: null,
+
                 maxInletPressureKPA: null,
                 minInletPressureKPA: null,
                 name: fixtureName,

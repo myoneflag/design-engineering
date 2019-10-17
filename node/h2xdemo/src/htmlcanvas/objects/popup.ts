@@ -1,7 +1,7 @@
 import * as TM from 'transformation-matrix';
 import {Matrix} from 'transformation-matrix';
 import {DrawingContext, ObjectStore} from '@/htmlcanvas/lib/types';
-import {Coord, DrawableEntity, Rectangle} from '@/store/document/types';
+import {Coord, DocumentState, DrawableEntity, Rectangle} from '@/store/document/types';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
@@ -24,6 +24,7 @@ import CenterDraggableObject from '@/htmlcanvas/lib/object-traits/center-draggab
 import {CalculationTarget} from '@/store/document/calculations/types';
 import * as _ from 'lodash';
 import {CalculatableEntityConcrete, DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import {DEFAULT_FONT_NAME} from '@/config';
 
 @CenterDraggableObject
 export default class Popup extends BackedDrawableObject<PopupEntity> {
@@ -68,8 +69,8 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
 
     target: CalculatableEntityConcrete;
 
-    fields: MessageField[];
-    outputs: string[];
+    fields: MessageField[] | undefined;
+    outputs: string[] | undefined;
 
     lastDrawnBox: Rectangle | undefined;
 
@@ -100,9 +101,6 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
         super(objectStore, null, obj, onSelect, onChange, onCommit);
 
         this.target = target;
-        this.fields = [];
-        this.outputs = [];
-        this.generateFields();
     }
 
     get position(): Matrix {
@@ -112,13 +110,12 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
         return TM.translate(this.entity.center.x, this.entity.center.y);
     }
 
-
-    getFields(): MessageField[] {
+    getFields(context: DrawingContext): MessageField[] {
         switch (this.target.type) {
             case EntityType.FLOW_SOURCE:
                 return makeFlowSourceCalculationFields();
             case EntityType.PIPE:
-                return makePipeCalculationFields();
+                return makePipeCalculationFields(context.doc.drawing);
             case EntityType.VALVE:
                 return makeValveCalculationFields();
             case EntityType.TMV:
@@ -129,11 +126,11 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
     }
 
     // add return type to invoke case complete check
-    generateFields() {
+    generateFields(context: DrawingContext) {
         if (this.target.calculation === null) {
             return;
         }
-        this.fields = this.getFields();
+        this.fields = this.getFields(context);
         this.outputs = [];
         this.fields.forEach((f) => {
             const property = resolveProperty(f.property, this.target.calculation);
@@ -142,7 +139,7 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
                 repr = property.toFixed(5);
             }
             const line = f.title + ': ' + repr;
-            this.outputs.push(line);
+            this.outputs!.push(line);
         });
     }
 
@@ -153,16 +150,20 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
             return;
         }
 
+        if (this.fields === undefined) {
+            this.generateFields(context);
+        }
+
         const {ctx} = context;
         const scale = matrixScale(ctx.getTransform());
         ctx.lineWidth = Math.max(1 / scale, 10);
 
         const fontSize = 50;
-        ctx.font = fontSize + 'px Helvetica';
+        ctx.font = fontSize + 'px ' + DEFAULT_FONT_NAME;
 
         let width = 0;
-        const height = this.outputs.length * fontSize;
-        this.outputs.forEach((i) => {
+        const height = this.outputs!.length * fontSize;
+        this.outputs!.forEach((i) => {
             width = Math.max(width, ctx.measureText(i).width);
         });
 
@@ -176,8 +177,8 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
         ctx.stroke();
 
         ctx.fillStyle = '#003300';
-        for (let i = 0; i < this.outputs.length; i++) {
-            ctx.fillText(this.outputs[i], - width / 2, i * fontSize - height / 2 + fontSize * 0.8);
+        for (let i = 0; i < this.outputs!.length; i++) {
+            ctx.fillText(this.outputs![i], - width / 2, i * fontSize - height / 2 + fontSize * 0.8);
         }
 
         ctx.beginPath();
@@ -277,7 +278,8 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
 
     updateTarget(entity: CalculatableEntityConcrete) {
         this.target = entity;
-        this.generateFields();
+        this.fields = undefined;
+        this.outputs = undefined;
     }
 
     protected refreshObjectInternal(obj: DrawableEntity, old?: DrawableEntity): void {

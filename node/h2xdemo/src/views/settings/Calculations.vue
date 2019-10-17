@@ -15,7 +15,7 @@
     import Component from 'vue-class-component';
     import {DocumentState} from '@/store/document/types';
     import SettingsFieldBuilder from '@/components/editor/lib/SettingsFieldBuilder.vue';
-    import {PIPE_SIZING_METHODS, PSD_METHODS, RING_MAIN_CALCULATION_METHODS} from '@/config';
+    import {PIPE_SIZING_METHODS, DISPLAY_PSD_METHODS, RING_MAIN_CALCULATION_METHODS, getPsdMethods} from "@/config";
 
     @Component({
         components: {SettingsFieldBuilder},
@@ -32,7 +32,7 @@
 
         get fields(): any[][] {
             return [
-                ['psdMethod', 'PSD Calculation Method:', 'choice', PSD_METHODS],
+                ['psdMethod', 'PSD Calculation Method:', 'choice', getPsdMethods(this.$store.getters['catalog/default'])],
                 ['pipeSizingMethod', 'Pipe Sizing Method:', 'choice', PIPE_SIZING_METHODS],
                 ['ringMainCalculationMethod', 'Ring Main Calculation Method:', 'choice', RING_MAIN_CALCULATION_METHODS],
             ];

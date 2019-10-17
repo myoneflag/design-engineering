@@ -22,6 +22,9 @@ import {DrawingMode} from "@/htmlcanvas/types";
                 v-if="mode === 1"
                 :flow-systems="document.drawing.flowSystems"
                 @insert="hydraulicsInsert"
+                :fixtures="effectiveCatalog.fixtures"
+                :available-fixtures="availableFixtures"
+                :last-used-fixture-uid="document.uiState.lastUsedFixtureUid"
             />
 
             <CalculationBar
@@ -96,7 +99,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
     import CalculationEngine from "@/calculations/calculation-engine";
     import CalculationLayer from "@/htmlcanvas/layers/calculation-layer";
     import {getBoundingBox} from "@/htmlcanvas/lib/utils";
-    import {Catalog} from "@/store/catalog/types";
+    import {Catalog, FixtureSpec} from "@/store/catalog/types";
 
     @Component({
         components: {
@@ -212,8 +215,12 @@ import {DrawingMode} from "@/htmlcanvas/types";
             return this.$store.getters['document/document'];
         }
 
-        get catalog(): Catalog {
+        get effectiveCatalog(): Catalog {
             return this.$store.getters['catalog/default'];
+        }
+
+        get availableFixtures(): string[] {
+            return this.document.drawing.availableFixtures;
         }
 
         get activeLayer(): Layer | null {
@@ -482,6 +489,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
             } else if (entityName === EntityType.TMV) {
                 insertTmv(this, tmvHasCold ? true : false);
             } else if (entityName === EntityType.FIXTURE) {
+                this.document.uiState.lastUsedFixtureUid = fixtureName;
                 insertFixture(this, fixtureName);
             }
         }
@@ -525,7 +533,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
 
                     this.calculationLayer.calculate(
                         this.document,
-                        this.catalog,
+                        this.effectiveCatalog,
                         this.demandType,
                         () => {
                             this.scheduleDraw();

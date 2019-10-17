@@ -7,12 +7,12 @@ export default interface TmvCalculation {
     coldTemperatureC: number | null;
     coldPressureKPA: number | null;
     coldPeakFlowRate: number | null;
-    coldLUs: number | null;
+    coldPsdUs: number | null;
 
     hotTemperatureC: number | null;
     hotPressureKPA: number | null;
     hotPeakFlowRate: number | null;
-    hotLUs: number | null;
+    hotPsdUs: number | null;
 
     warmOutTemperature: number | null;
     warmOutPressureKPA: number | null;
@@ -55,12 +55,12 @@ export function emptyTmvCalculation(): TmvCalculation {
         coldPressureKPA: null,
         coldTemperatureC: null,
         coldPeakFlowRate: null,
-        coldLUs: null,
+        coldPsdUs: null,
 
         hotPressureKPA: null,
         hotTemperatureC: null,
         hotPeakFlowRate: null,
-        hotLUs: null,
+        hotPsdUs: null,
 
         warmOutFlowRateLS: null,
         warmOutPressureKPA: null,

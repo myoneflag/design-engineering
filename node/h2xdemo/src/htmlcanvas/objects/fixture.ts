@@ -19,6 +19,7 @@ import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
 import FixtureEntity from '@/store/document/entities/fixtures/fixture-entity';
 import {StandardFlowSystemUids} from '@/store/catalog';
+import {DEFAULT_FONT_NAME} from '@/config';
 
 @CenterDraggableObject
 export default class Fixture extends BackedDrawableObject<FixtureEntity> implements Connectable {
@@ -109,6 +110,15 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         }
 
         ctx.stroke();
+
+        this.withWorldAngle(context, {x: 0, y: 0}, () => {
+            ctx.font = (this.entity.pipeDistanceMM / 2) + 'pt ' + DEFAULT_FONT_NAME;
+            const abbreviation = this.entity.abbreviation ? this.entity.abbreviation : '';
+            const bounds = ctx.measureText(abbreviation);
+            const left = -bounds.width / 2;
+            ctx.fillStyle = '#000';
+            ctx.fillText(abbreviation, left, this.entity.pipeDistanceMM * 1.5);
+        });
     }
 
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to

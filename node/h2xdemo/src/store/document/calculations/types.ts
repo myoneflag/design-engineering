@@ -5,5 +5,5 @@ export interface CalculationTarget<T> extends DrawableEntity {
 }
 
 export interface PsdCalculation {
-    loadingUnits: number | null;
+    psdUnits: number | null;
 }

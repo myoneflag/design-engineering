@@ -16,6 +16,6 @@ export function makeFlowSourceCalculationFields(): MessageField[] {
 
 export function emptyFlowSourceCalculation(): FlowSourceCalculation {
     return {
-        flowRateLS: null, loadingUnits: null, pressureKPA: null,
+        flowRateLS: null, psdUnits: null, pressureKPA: null,
     };
 }

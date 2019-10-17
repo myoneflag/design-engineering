@@ -49,6 +49,8 @@ export function grayscale(col: string) {
     return '#' + str;
 }
 
-export function assertUnreachable(x: never): never {
-    throw new Error('Didn\'t expect to get here');
+export function assertUnreachable(x: never, shouldThrow: boolean = true) {
+    if (shouldThrow) {
+        throw new Error('Didn\'t expect to get here');
+    }
 }

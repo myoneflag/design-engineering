@@ -41,6 +41,9 @@ import {getObjectFrictionHeadLoss} from '@/calculations/enitity-pressure-drops';
 import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import {emptyTmvCalculation} from '@/store/document/calculations/tmv-calculation';
 import FlowSource from '@/htmlcanvas/objects/flow-source';
+import {PsdStandard, PSDStandardType} from '@/store/catalog/psd-standard/types';
+import assert from 'assert';
+import {isGermanStandard, SupportedPsdStandards} from '@/config';
 
 const AS_PSD = 'as35002018LoadingUnits';
 
@@ -417,15 +420,15 @@ export default class CalculationEngine {
 
     sizeRingsAndRoots(sources: string[]) {
 
-        // For each connected component, find the total LUs, thus the flow rates, then distribute
+        // For each connected component, find the total PsdUs, thus the flow rates, then distribute
         // the flow rate equally to each fixture. From these flow rates, we can then calculate the
         // flow network, and iteratively re-size the pipes.
-        const leaf2lu = new Map<string, number>();
+        const leaf2PsdU = new Map<string, number>();
         const flowConnectedUF = new UnionFind<string>();
         sources.forEach((s) => {
             this.luFlowGraph.dfs(s, (n) => {
-               const lu = this.getTerminalLoadingUnits(this.objectStore.get(n)!.entity);
-               leaf2lu.set(n, lu);
+               const psdU = this.getTerminalPsdU(this.objectStore.get(n)!.entity);
+                leaf2PsdU.set(n, psdU);
                flowConnectedUF.join(s, n);
             });
         });
@@ -444,24 +447,24 @@ export default class CalculationEngine {
 
         const flowComponents = flowConnectedUF.groups();
         flowComponents.forEach((group) => {
-            let totalLU = 0;
+            let totalPsdU = 0;
             group.forEach((n) => {
-                if (leaf2lu.has(n)) {
-                    totalLU += leaf2lu.get(n)!;
+                if (leaf2PsdU.has(n)) {
+                    totalPsdU += leaf2PsdU.get(n)!;
                 }
             });
 
-            if (totalLU) {
-                const recommendedFlowRate = this.lookupFlowRate(totalLU);
+            if (totalPsdU) {
+                const recommendedFlowRate = this.lookupFlowRate(totalPsdU);
                 if (recommendedFlowRate === null) {
                     throw new Error('Could not get flow rate from loading units');
                 }
 
-                const perUnit = recommendedFlowRate / totalLU;
+                const perUnit = recommendedFlowRate / totalPsdU;
 
                 group.forEach((n) => {
-                    if (leaf2lu.has(n) && leaf2lu.get(n)! > 0) {
-                        demandLS.set(n, perUnit * leaf2lu.get(n)!);
+                    if (leaf2PsdU.has(n) && leaf2PsdU.get(n)! > 0) {
+                        demandLS.set(n, perUnit * leaf2PsdU.get(n)!);
                     }
                 });
             }
@@ -477,7 +480,7 @@ export default class CalculationEngine {
                     const initialSize = lowerBoundTable(this.catalog.pipes[filled.material!].pipesBySize, 0)!;
                     pipeObj.entity.calculation = {
                         peakFlowRate: null,
-                        loadingUnits: null,
+                        psdUnits: null,
                         optimalInnerPipeDiameterMM: null,
                         pressureDropKpa: null,
                         realInternalDiameterMM: parseCatalogNumberExact(initialSize.diameterInternalMM),
@@ -541,20 +544,7 @@ export default class CalculationEngine {
         return [];
     }
 
-    setLoadingUnits(object: BaseBackedObject, value: number) {
-        if (isCalculated(object.entity)) {
-            const calculation = (object.entity as any).calculation;
-            if ('loadingUnits' in calculation) {
-                calculation.loadingUnits = value;
-            } else {
-                throw new Error('loadingUnits not a property of calculation ' + JSON.stringify(object.entity));
-            }
-        } else {
-            throw new Error('object not calculatable' + JSON.stringify(object.entity));
-        }
-    }
-
-    getTerminalLoadingUnits(node: DrawableEntity): number {
+    getTerminalPsdU(node: DrawableEntity): number {
         if (node.type === EntityType.SYSTEM_NODE) {
             if (node.parentUid === null) {
                 throw new Error('System node doesn\'t have parent. ' + JSON.stringify(node));
@@ -567,10 +557,19 @@ export default class CalculationEngine {
                 case EntityType.FIXTURE:
                     const fixture = parent.entity as FixtureEntity;
                     const mainFixture = fillFixtureFields(this.doc, this.catalog, fixture);
+
                     if (node.uid === fixture.coldRoughInUid) {
-                        return Number(mainFixture.loadingUnitsCold!);
+                        if (isGermanStandard(this.doc.drawing.calculationParams.psdMethod)) {
+                            return Number(mainFixture.designFlowRateCold);
+                        } else {
+                            return Number(mainFixture.loadingUnitsCold!);
+                        }
                     } else if (node.uid === fixture.warmRoughInUid) {
-                        return Number(mainFixture.loadingUnitsHot!);
+                        if (isGermanStandard(this.doc.drawing.calculationParams.psdMethod)) {
+                            return Number(mainFixture.designFlowRateCold);
+                        } else {
+                            return Number(mainFixture.loadingUnitsCold!);
+                        }
                     } else {
                         throw new Error('Invalid connection to fixture ' +
                             JSON.stringify(node) + '\n' + JSON.stringify(fixture),
@@ -594,14 +593,14 @@ export default class CalculationEngine {
         }
     }
 
-    configureEntityForLoadingUnits(entity: DrawableEntityConcrete, lu: number, edgeUid: string) {
+    configureEntityForPSD(entity: DrawableEntityConcrete, psdU: number, edgeUid: string) {
         switch (entity.type) {
             case EntityType.PIPE: {
 
                 entity.calculation = emptyPipeCalculation();
-                entity.calculation.loadingUnits = lu;
+                entity.calculation.psdUnits = psdU;
 
-                const flowRate = this.lookupFlowRate(lu);
+                const flowRate = this.lookupFlowRate(psdU);
 
                 if (flowRate === null) {
                     // out of range
@@ -627,13 +626,13 @@ export default class CalculationEngine {
                 if (!entity.calculation) {
                     entity.calculation = emptyTmvCalculation();
                 }
-                const flowRate = this.lookupFlowRate(lu);
+                const flowRate = this.lookupFlowRate(psdU);
 
                 if (edgeUid.endsWith(COLD_COLD_EDGE_ID)) {
-                    entity.calculation.coldLUs = lu;
+                    entity.calculation.coldPsdUs = psdU;
                     entity.calculation.coldPeakFlowRate = flowRate;
                 } else if (edgeUid.endsWith(HOT_WARM_EDGE_ID)) {
-                    entity.calculation.hotLUs = lu;
+                    entity.calculation.hotPsdUs = psdU;
                     entity.calculation.hotPeakFlowRate = flowRate;
                 } else {
                     throw new Error('invalid edge in TMV');
@@ -673,11 +672,21 @@ export default class CalculationEngine {
         }
     }
 
-    lookupFlowRate(lu: number): number | null {
+    lookupFlowRate(psdU: number): number | null {
         const psd = this.doc.drawing.calculationParams.psdMethod;
-        const table = this.catalog.psdStandards[psd].table;
-        if (psd === AS_PSD) {
-            return interpolateTable(table, lu, true);
+        const standard = this.catalog.psdStandards[psd];
+        if (standard.type === PSDStandardType.LU_LOOKUP_TABLE) {
+            const table = standard.table;
+            return interpolateTable(table, psdU, true);
+        } else if (standard.type === PSDStandardType.EQUATION) {
+            if (standard.equation !== 'a*(sum(Q,q))^b-c') {
+                throw new Error('Only the german equation a*(sum(Q,q))^b-c is currently supported');
+            }
+            const a = parseCatalogNumberExact(standard.variables.a)!;
+            const b = parseCatalogNumberExact(standard.variables.b)!;
+            const c = parseCatalogNumberExact(standard.variables.c)!;
+
+            return a * (psdU ** b) - c;
         } else {
             throw new Error('PSD not supported');
         }
@@ -810,7 +819,7 @@ export default class CalculationEngine {
     }
 
     sizeDefiniteTransports(roots: string[]) {
-        const totalReachedLUs = this.getTotalReachedLUs(roots);
+        const totalReachedPsdU = this.getTotalReachedPsdU(roots);
 
         // Go through all pipes
         this.objectStore.forEach((object): null => {
@@ -819,7 +828,7 @@ export default class CalculationEngine {
                     this.sizeDefiniteTransport(
                         object,
                         roots,
-                        totalReachedLUs,
+                        totalReachedPsdU,
                         object.uid + HOT_WARM_EDGE_ID,
                         [object.entity.hotRoughInUid, object.entity.warmOutputUid],
                     );
@@ -828,14 +837,14 @@ export default class CalculationEngine {
                         this.sizeDefiniteTransport(
                             object,
                             roots,
-                            totalReachedLUs,
+                            totalReachedPsdU,
                             object.uid + COLD_COLD_EDGE_ID,
                             [object.entity.coldRoughInUid, object.entity.coldOutputUid!],
                         );
                     }
                     return null;
                 case EntityType.PIPE:
-                    this.sizeDefiniteTransport(object, roots, totalReachedLUs, object.uid, object.entity.endpointUid);
+                    this.sizeDefiniteTransport(object, roots, totalReachedPsdU, object.uid, object.entity.endpointUid);
                     return null;
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.VALVE:
@@ -848,24 +857,24 @@ export default class CalculationEngine {
         });
     }
 
-    sizeDefiniteTransport(object: BaseBackedObject, roots: string[], totalReachedLUs: number, edgeUid: string, endpointUids: string[]) {
+    sizeDefiniteTransport(object: BaseBackedObject, roots: string[], totalReachedPsdU: number, edgeUid: string, endpointUids: string[]) {
 
-        const reachedLUs = this.getTotalReachedLUs(roots, [], [edgeUid]);
-        const exclusiveLUs = totalReachedLUs - reachedLUs;
+        const reachedPsdU = this.getTotalReachedPsdU(roots, [], [edgeUid]);
+        const exclusivePsdU = totalReachedPsdU - reachedPsdU;
 
 
-        if (exclusiveLUs > 0) {
+        if (exclusivePsdU > 0) {
             const [point] = this.getDryEndpoints(endpointUids, edgeUid, roots);
             const [wet] = this.getWetEndpoints(endpointUids, edgeUid, roots);
-            const residualLUs = this.getTotalReachedLUs([point], [wet], [edgeUid]);
+            const residualPsdU = this.getTotalReachedPsdU([point], [wet], [edgeUid]);
 
-            if (residualLUs > exclusiveLUs) {
-                // the LU for this pipe is ambiguous in this configuration.
+            if (residualPsdU > exclusivePsdU) {
+                // the PSD Units for this pipe is ambiguous in this configuration.
                 this.extraWarnings.push({
                     center: Popup.findCenter(object, this.centerWc),
                     params: {
                         type: MessageType.WARNING,
-                        text: 'Loading units for this pipe are ambiguous (but it is at least ' + exclusiveLUs + ')',
+                        text: 'Loading units for this pipe are ambiguous (but it is at least ' + exclusivePsdU + ')',
                     },
                     parentUid: null,
                     targetUids: [object.uid],
@@ -874,13 +883,13 @@ export default class CalculationEngine {
                 });
             } else {
                 // we have successfully calculated the pipe's loading units.
-                this.configureEntityForLoadingUnits(object.entity, exclusiveLUs, edgeUid);
+                this.configureEntityForPSD(object.entity, exclusivePsdU, edgeUid);
             }
         } else {
             // zero exclusive to us. Work out whether this is because we don't have any fixture demand.
             const wets = this.getWetEndpoints(endpointUids, edgeUid, roots);
-            const demandA = this.getTotalReachedLUs([endpointUids[0]], [], [edgeUid]);
-            const demandB = this.getTotalReachedLUs([endpointUids[1]], [], [edgeUid]);
+            const demandA = this.getTotalReachedPsdU([endpointUids[0]], [], [edgeUid]);
+            const demandB = this.getTotalReachedPsdU([endpointUids[1]], [], [edgeUid]);
 
             if (demandA === 0 && wets.indexOf(endpointUids[0]) === -1 ||
                 demandB === 0 && wets.indexOf(endpointUids[1]) === -1
@@ -915,15 +924,15 @@ export default class CalculationEngine {
 
     }
 
-    getTotalReachedLUs(roots: string[], excludedNodes: string[] = [], excludedEdges: string[] = []): number {
+    getTotalReachedPsdU(roots: string[], excludedNodes: string[] = [], excludedEdges: string[] = []): number {
         const seen = new Set<string>(excludedNodes);
         const seenEdges = new Set<string>(excludedEdges);
 
-        let lu = 0;
+        let psdUs = 0;
 
         roots.forEach((r) => {
             this.luFlowGraph.dfs(r, (n) => {
-                    lu += this.getTerminalLoadingUnits(this.objectStore.get(n)!.entity);
+                    psdUs += this.getTerminalPsdU(this.objectStore.get(n)!.entity);
                     return false;
                 },
                 undefined,
@@ -934,7 +943,7 @@ export default class CalculationEngine {
             );
         });
 
-        return lu;
+        return psdUs;
     }
 
     getWetEndpoints(endpointUids: string[], edgeUid: string, roots: string[]): string[] {

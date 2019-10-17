@@ -1,13 +1,11 @@
 import * as Operations from './operation-transforms/operation-transforms';
-import {PIPE_SIZING_METHODS, PSD_METHODS, RING_MAIN_CALCULATION_METHODS} from '@/config';
+import {PIPE_SIZING_METHODS, RING_MAIN_CALCULATION_METHODS, SupportedPsdStandards} from '@/config';
 import * as _ from 'lodash';
 import {EntityType} from '@/store/document/entities/types';
 import {BackgroundEntity} from '@/store/document/entities/background-entity';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {DrawingMode} from '@/htmlcanvas/types';
 import {DemandType} from '@/calculations/types';
-import ValveEntity from '@/store/document/entities/valve-entity';
-import PipeEntity from '@/store/document/entities/pipe-entity';
 import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 
 // Because of how the diffing engine works, there are restrictions on the data structure for the document state.
@@ -22,11 +20,6 @@ import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity'
 export interface Coord {
     x: number;
     y: number;
-}
-
-export interface Dimensions {
-    w: number;
-    h: number;
 }
 
 export interface Rectangle {
@@ -64,6 +57,7 @@ export interface DrawingState {
     flowSystems: FlowSystemParameters[];
     calculationParams: CalculationParameters;
     entities: DrawableEntityConcrete[];
+    availableFixtures: string[];
 }
 
 export interface CalculationUiSettings {
@@ -79,6 +73,8 @@ export interface UIState {
     lastCalculationId: number;
     lastCalculationUiSettings: CalculationUiSettings;
     isCalculating: boolean;
+
+    lastUsedFixtureUid: string | null;
 }
 
 /**
@@ -131,7 +127,7 @@ export interface FlowSystemParameters extends WithID {
 }
 
 export interface CalculationParameters {
-    psdMethod: string;
+    psdMethod: SupportedPsdStandards;
     ringMainCalculationMethod: string;
     pipeSizingMethod: string;
 }
@@ -182,12 +178,13 @@ export const initialDrawing: DrawingState = {
         },
     ],
     calculationParams: {
-        psdMethod: PSD_METHODS[0].key,
+        psdMethod: SupportedPsdStandards.as35002018LoadingUnits,
         ringMainCalculationMethod: RING_MAIN_CALCULATION_METHODS[0].key,
         pipeSizingMethod: PIPE_SIZING_METHODS[0].key,
     },
     backgrounds: [],
     entities: [],
+    availableFixtures: ['basin', 'bath', 'shower', 'kitchenSink', 'wc', 'washingMachine', 'laundryTrough'],
 };
 
 export const initialUIState: UIState = {
@@ -195,6 +192,8 @@ export const initialUIState: UIState = {
     drawingMode: DrawingMode.FloorPlan,
     loaded: false,
     viewPort: null,
+
+    lastUsedFixtureUid: null,
 
     lastCalculationId: 0,
     lastCalculationUiSettings: {

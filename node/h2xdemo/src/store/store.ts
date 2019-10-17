@@ -6,6 +6,7 @@ import { document } from './document/index';
 import { profile } from './profile';
 import { tools } from '@/store/tools';
 import { catalog } from '@/store/catalog';
+import {getters} from '@/store/getters';
 
 Vue.use(Vuex);
 
@@ -14,11 +15,7 @@ export const store: StoreOptions<RootState> = {
   state: {
     packageVersion: JSON.parse(unescape(process.env.PACKAGE_JSON || '{"version":"0.0.0"}')).version,
   },
-  getters: {
-    appVersion(state) {
-      return state.packageVersion;
-    },
-  },
+  getters,
   modules: {
     document,
     profile,

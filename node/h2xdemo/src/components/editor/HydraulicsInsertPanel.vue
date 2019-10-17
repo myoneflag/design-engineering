@@ -36,19 +36,45 @@
                           @click="$emit('insert', {entityName: entityNames.TMV, system: selectedSystem, tmvHasCold: true})"
                           v-b-tooltip.hover title="TMV with cold water out"
                 ></b-button>
-                <b-button variant="outline-dark" class="insertBtn shower btn-sm"
-                          @click="$emit('insert', {entityName: entityNames.FIXTURE, system: selectedSystem, fixtureName: 'shower'})"
-                          v-b-tooltip.hover title="Shower"
-                >Shr</b-button>
-                <b-button variant="outline-dark" class="insertBtn basin btn-sm"
-                          @click="$emit('insert', {entityName: entityNames.FIXTURE, system: selectedSystem, fixtureName: 'basin'})"
-                          v-b-tooltip.hover title="Basin"
-                >B</b-button>
-                <b-button variant="outline-dark" class="insertBtn waterCloset btn-sm"
-                          @click="$emit('insert', {entityName: entityNames.FIXTURE, system: selectedSystem, fixtureName: 'wc'})"
-                          v-b-tooltip.hover title="Flush Toilet"
-                >WC</b-button>
             </b-button-group>
+        </b-col>
+        <b-col>
+            <b-button-group v-if="lastUsedFixtureUid">
+                <b-button
+                        class="insertEntityBtn"
+                        variant="outline-dark"
+                        id="insertEntitySplitBtn"
+                        :disabled="!lastUsedFixture"
+                        @click="$emit('insert', {entityName: entityNames.FIXTURE, system: selectedSystem, fixtureName: lastUsedFixtureUid})"
+                >
+                    {{ lastUsedFixture.name }}
+                </b-button>
+                <b-dropdown text="" class="insertEntityBtn" variant="outline-dark">
+                    <b-dropdown-item
+                            v-for="fixture in availableFixtureList"
+                            variant="outline-dark"
+                            class="shower btn-sm"
+                            @click="$emit('insert', {entityName: entityNames.FIXTURE, system: selectedSystem, fixtureName: fixture.uid})"
+                    >{{ fixture.name }}</b-dropdown-item>
+                    <b-dropdown-item href="#" variant="info" @click="addRemoveFixturesClick">+/- Fixtures</b-dropdown-item>
+                </b-dropdown>
+
+            </b-button-group>
+            <b-dropdown
+                    text="Fixtures..."
+                    class="insertEntityBtn"
+                    variant="outline-dark"
+                    v-else
+            >
+                <b-dropdown-item
+                        v-for="fixture in availableFixtureList"
+                        variant="outline-dark"
+                        class="shower btn-sm"
+                        @click="$emit('insert', {entityName: entityNames.FIXTURE, system: selectedSystem, fixtureName: fixture.uid})"
+                >{{ fixture.name }}</b-dropdown-item>
+                <b-dropdown-item variant="info" @click="addRemoveFixturesClick">+/- Fixtures</b-dropdown-item>
+            </b-dropdown>
+
         </b-col>
     </b-row>
 </template>
@@ -58,14 +84,19 @@
     import Component from 'vue-class-component';
     import FlowSystemPicker from '@/components/editor/FlowSystemPicker.vue';
     import {EntityType} from '@/store/document/entities/types';
+    import {FixtureSpec} from "@/store/catalog/types";
 
     @Component({
         components: {FlowSystemPicker},
         props: {
             flowSystems: Array,
+            fixtures: Object,
+            availableFixtures: Array,
+            lastUsedFixtureUid: String,
         },
     })
     export default class HydraulicsInsertPanel extends Vue {
+
         get entityNames() {
             return EntityType;
         }
@@ -74,6 +105,23 @@
 
         get selectedSystem() {
             return this.$props.flowSystems[this.selectedSystemId];
+        }
+
+        get lastUsedFixture() {
+            if (!this.$props.lastUsedFixtureUid) {
+                return null;
+            }
+            return this.$props.fixtures[this.$props.lastUsedFixtureUid];
+        }
+
+        get availableFixtureList(): FixtureSpec[] {
+            return this.$props.availableFixtures.map((key: string) => {
+                return this.$props.fixtures[key];
+            });
+        }
+
+        addRemoveFixturesClick() {
+            this.$router.push({name: 'settings/fixtures'});
         }
 
         selectSystem(value: number) {
@@ -86,6 +134,12 @@
     .insertBtn {
         height: 45px;
         width: 50px;
+        font-size: 12px;
+        background-color:white;
+    }
+
+    .insertEntityBtn {
+        height: 45px;
         font-size: 12px;
         background-color:white;
     }
