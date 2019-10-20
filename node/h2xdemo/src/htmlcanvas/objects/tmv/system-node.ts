@@ -40,6 +40,8 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> {
                 break;
             case InteractionType.MOVE_ONTO_SEND:
                 return null;
+            case InteractionType.EXTEND_NETWORK:
+                return null;
         }
         return super.offerInteraction(interaction);
     }
