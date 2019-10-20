@@ -25,6 +25,9 @@ import {CalculationTarget} from '@/store/document/calculations/types';
 import * as _ from 'lodash';
 import {CalculatableEntityConcrete, DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import {DEFAULT_FONT_NAME} from '@/config';
+import Layer from '@/htmlcanvas/layers/layer';
+import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
+import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 
 @CenterDraggableObject
 export default class Popup extends BackedDrawableObject<PopupEntity> {
@@ -76,6 +79,7 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
 
     constructor(
         objectStore: ObjectStore,
+        layer: Layer,
         target: CalculatableEntityConcrete,
         middleWc: Coord,
         onSelect: () => any,
@@ -98,7 +102,7 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
             uid: uuid(),
             params: { type: MessageType.CALCULATION },
         };
-        super(objectStore, null, obj, onSelect, onChange, onCommit);
+        super(objectStore, layer, null, obj, onSelect, onChange, onCommit);
 
         this.target = target;
     }
@@ -197,22 +201,7 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
 
                 let ts =  other.shape();
                 if (other.type === EntityType.PIPE) {
-                    const l = ts as Flatten.Segment;
-
-                    const chop = Popup.MESSGAE_DISTANCE / 2;
-
-                    const ep = (other as Pipe).worldEndpoints();
-                    const middle  = Flatten.point((ep[0].x + ep[1].x) / 2, (ep[0].y + ep[1].y) / 2);
-                    if (l.length < chop * 2) {
-                        ts = middle;
-                    } else {
-                        const pe2m = Flatten.vector(l.pe, middle);
-                        const ps2m = Flatten.vector(l.ps, middle);
-                        ts = Flatten.segment(
-                            l.pe.translate(pe2m.normalize().multiply(chop)),
-                            l.ps.translate(ps2m.normalize().multiply(chop)),
-                        );
-                    }
+                    ts = (other as Pipe).snipEnds(Popup.MESSGAE_DISTANCE / 2);
                 }
                 if (ts) {
                     const shortest = this.shape().distanceTo(ts)[1];
@@ -235,19 +224,19 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
         return false;
     }
 
-    offerInteraction(interaction: Interaction): DrawableEntity[] | null {
+    offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
         return null;
     }
 
-    onMouseDown(event: MouseEvent, vp: ViewPort): boolean {
+    onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
         return false;
     }
 
-    onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
+    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
         return UNHANDLED;
     }
 
-    onMouseUp(event: MouseEvent, vp: ViewPort): boolean {
+    onMouseUp(event: MouseEvent, context: CanvasContext): boolean {
         return false;
     }
 

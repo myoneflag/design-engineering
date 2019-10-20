@@ -7,6 +7,7 @@ import BackedDrawableObject, {
 } from '@/htmlcanvas/lib/backed-drawable-object';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import Layer from '@/htmlcanvas/layers/layer';
 
 export default class DrawableObjectFactory {
 
@@ -23,6 +24,7 @@ export default class DrawableObjectFactory {
     // Set hadndlers to false to create object without adding it to the state.
     // Use this if you just need an object instance for calculations, for example.
     static build<T extends EntityType>(
+        layer: Layer,
         entity: DrawableEntity & {type: T},
         parent: DrawableEntity | null,
         objectStore: ObjectStore,
@@ -34,6 +36,7 @@ export default class DrawableObjectFactory {
             if (handlers === false) {
                 const object: BaseBackedObject = new GenericDrawable(
                     objectStore,
+                    layer,
                     parent,
                     entity,
                     () => { /**/ },
@@ -45,6 +48,7 @@ export default class DrawableObjectFactory {
             } else {
                 const object: BaseBackedObject = new GenericDrawable(
                     objectStore,
+                    layer,
                     parent,
                     entity,
                     () => handlers.onSelected(object),

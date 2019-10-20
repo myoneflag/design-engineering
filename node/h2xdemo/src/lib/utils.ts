@@ -1,5 +1,7 @@
 /* tslint:disable:no-bitwise */
 
+import * as _ from 'lodash';
+
 export const lighten = (col: string, percent: number, alpha: number = 1.0) => {
 
     const num = parseInt(col.substr(1), 16);
@@ -52,5 +54,26 @@ export function grayscale(col: string) {
 export function assertUnreachable(x: never, shouldThrow: boolean = true) {
     if (shouldThrow) {
         throw new Error('Didn\'t expect to get here');
+    }
+}
+
+/**
+ * A faster alternative to lodash cloneDeep for simple JOSN-like objects
+ */
+export function cloneSimple<T>(obj: T): T {
+    if (_.isArray(obj)) {
+        const res: any[] = [];
+        obj.forEach((o) => {
+            res.push(cloneSimple(o));
+        });
+        return res as any as T;
+    } else if (_.isObject(obj)) {
+        const res: any = {};
+        for (const key of Object.keys(obj)) {
+            res[key] = cloneSimple((obj as any)[key]);
+        }
+        return res;
+    } else {
+        return obj;
     }
 }

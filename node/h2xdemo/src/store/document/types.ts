@@ -7,6 +7,7 @@ import {ViewPort} from '@/htmlcanvas/viewport';
 import {DrawingMode} from '@/htmlcanvas/types';
 import {DemandType} from '@/calculations/types';
 import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import {cloneSimple} from '@/lib/utils';
 
 // Because of how the diffing engine works, there are restrictions on the data structure for the document state.
 // Rules are:
@@ -203,11 +204,11 @@ export const initialUIState: UIState = {
 };
 
 export const initialValue: DocumentState = {
-    committedDrawing: _.cloneDeep(initialDrawing),
-    drawing: _.cloneDeep(initialDrawing),
+    committedDrawing: cloneSimple(initialDrawing),
+    drawing: cloneSimple(initialDrawing),
     optimisticHistory: [],
     stagedCommits: [],
     history: [],
     nextId: 1,
-    uiState: _.cloneDeep(initialUIState),
+    uiState: cloneSimple(initialUIState),
 };

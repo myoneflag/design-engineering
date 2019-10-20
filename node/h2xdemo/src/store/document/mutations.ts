@@ -1,9 +1,11 @@
-import { MutationTree } from 'vuex';
+import {MutationTree} from 'vuex';
 import {DocumentState, initialValue} from './types';
 import * as OT from './operation-transforms/operation-transforms';
+import {OPERATION_NAMES} from './operation-transforms/operation-transforms';
 import {MainEventBus} from '@/store/main-event-bus';
 import {applyOtOnState} from '@/store/document/operation-transforms/state-ot-apply';
 import * as _ from 'lodash';
+import {cloneSimple} from '@/lib/utils';
 
 export const mutations: MutationTree<DocumentState> = {
     /**
@@ -22,7 +24,9 @@ export const mutations: MutationTree<DocumentState> = {
                 // All g.
                 state.optimisticHistory.splice(0, 1);
                 state.nextId = Math.max(state.nextId, operation.id) + 1;
-                return;
+                if (operation.type !== OPERATION_NAMES.COMMITTED_OPERATION) {
+                    return;
+                }
             } else {
                 window.alert('An error has been detected, refreshing now.');
                 window.location.reload();
@@ -45,8 +49,8 @@ export const mutations: MutationTree<DocumentState> = {
                     case OT.OPERATION_NAMES.DELETE_OPERATION:
                     case OT.OPERATION_NAMES.UPDATE_OPERATION:
                     case OT.OPERATION_NAMES.MOVE_OPERATION: {
-                        applyOtOnState(state.drawing, _.cloneDeep(toApply));
-                        applyOtOnState(state.committedDrawing, _.cloneDeep(toApply));
+                        applyOtOnState(state.drawing, cloneSimple(toApply));
+                        applyOtOnState(state.committedDrawing, cloneSimple(toApply));
                         break;
                     }
 
@@ -103,12 +107,12 @@ export const mutations: MutationTree<DocumentState> = {
     },
 
     revert(state, redraw) {
-        state.drawing = _.cloneDeep(state.committedDrawing);
+        state.drawing = cloneSimple(state.committedDrawing);
         MainEventBus.$emit('ot-applied', redraw);
     },
 
     reset(state) {
-        Object.assign(state, _.cloneDeep(initialValue));
+        Object.assign(state, cloneSimple(initialValue));
     },
 
     loaded(state, loaded) {

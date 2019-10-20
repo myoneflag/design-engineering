@@ -6,13 +6,17 @@ import {MouseMoveResult} from '@/htmlcanvas/types';
 import {decomposeMatrix, matrixScale} from '@/htmlcanvas/utils';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
 import Flatten from '@flatten-js/core';
+import Layer from '@/htmlcanvas/layers/layer';
+import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 
 export default abstract class DrawableObject {
     abstract position: Matrix;
     parent: DrawableObject | null; // null parents mean root objects
+    layer: Layer;
 
-    protected constructor(parent: DrawableObject | null) {
+    protected constructor(parent: DrawableObject | null, layer: Layer) {
         this.parent = parent;
+        this.layer = layer;
     }
 
     fromParentToObjectCoord(parent: Coord): Coord {
@@ -159,14 +163,14 @@ export default abstract class DrawableObject {
 
     abstract inBounds(objectCoord: Coord, objectRadius?: number): boolean;
 
-    abstract onMouseDown(event: MouseEvent, vp: ViewPort): boolean;
+    abstract onMouseDown(event: MouseEvent, context: CanvasContext): boolean;
 
-    abstract onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult;
+    abstract onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult;
 
-    abstract onMouseUp(event: MouseEvent, vp: ViewPort): boolean;
+    abstract onMouseUp(event: MouseEvent, context: CanvasContext): boolean;
 
     // For figuring out how to fit the view.
-    shape(): Flatten.Segment | Flatten.Point | Flatten.Polygon | null {
+    shape(): Flatten.Segment | Flatten.Point | Flatten.Polygon | Flatten.Circle | null {
         const point = this.toWorldCoord({x: 0, y: 0});
         return Flatten.point(point.x, point.y);
     }

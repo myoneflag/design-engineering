@@ -14,6 +14,7 @@ import InvisibleNodeEntity from '@/store/document/entities/Invisible-node-entity
 import TmvCalculation from '@/store/document/calculations/tmv-calculation';
 import {CalculationTarget} from '@/store/document/calculations/types';
 import {parseCatalogNumberOrMin} from '@/htmlcanvas/lib/utils';
+import {cloneSimple} from '@/lib/utils';
 
 export default interface TmvEntity extends DrawableEntity, CalculationTarget<TmvCalculation> {
     center: Coord;
@@ -78,7 +79,7 @@ export function fillTMVFields(
     defaultCatalog: Catalog,
     value: TmvEntity,
 ) {
-    const result = _.cloneDeep(value);
+    const result = cloneSimple(value);
 
     const arr: Array<
         'minInletPressureKPA' |

@@ -1,13 +1,16 @@
 import {ToolConfig} from '@/store/tools/types';
 import {MouseMoveResult} from '@/htmlcanvas/types';
 import {ViewPort} from '@/htmlcanvas/viewport';
+import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 
 export interface ToolHandler {
     config: ToolConfig;
-    onMouseDown: (event: MouseEvent, vp: ViewPort) => boolean;
-    onMouseMove: (event: MouseEvent, vp: ViewPort) => MouseMoveResult;
-    onMouseUp: (event: MouseEvent, vp: ViewPort) => boolean;
-    onMouseScroll: (event: MouseEvent, vp: ViewPort) => boolean;
+    onMouseDown: (event: MouseEvent, context: CanvasContext) => boolean;
+    onMouseMove: (event: MouseEvent, context: CanvasContext) => MouseMoveResult;
+    onMouseUp: (event: MouseEvent, context: CanvasContext) => boolean;
+    onMouseScroll: (event: MouseEvent, context: CanvasContext) => boolean;
+
+    finish: (interrupted: boolean, displaced: boolean) => void;
 }
 
 export const DEFAULT_TOOL: ToolConfig = {

@@ -55,6 +55,11 @@
                 if (isEscape) {
                     MainEventBus.$emit('escape-pressed');
                 }
+                if (evt.key === 'Delete' || evt.key === 'Del' || evt.key === 'Backspace') {
+                    if (document.activeElement === null || document.activeElement.nodeName.toLowerCase() !== 'input') {
+                        MainEventBus.$emit('delete-pressed');
+                    }
+                }
             };
         }
     }

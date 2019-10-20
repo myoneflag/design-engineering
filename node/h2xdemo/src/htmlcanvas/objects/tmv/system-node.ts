@@ -1,5 +1,4 @@
 import {Interaction, InteractionType} from '@/htmlcanvas/lib/interaction';
-import {StandardFlowSystemUids} from '@/store/catalog';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
 import {ConnectableObject} from '@/htmlcanvas/lib/object-traits/connectable';
@@ -10,6 +9,8 @@ import Flatten from '@flatten-js/core';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
 import {lighten} from '@/lib/utils';
 import {SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
+import {getDragPriority} from '@/store/document';
+import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 
 @ConnectableObject
 export default class SystemNode extends InvisibleNode<SystemNodeEntity> {
@@ -18,21 +19,29 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> {
     }
 
     minimumConnections = 0;
+    maximumConnections = 1;
+    dragPriority = getDragPriority(EntityType.SYSTEM_NODE);
 
-    offerInteraction(interaction: Interaction): DrawableEntity[] | null {
+    offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
         switch (interaction.type) {
             case InteractionType.STARTING_PIPE:
             case InteractionType.CONTINUING_PIPE:
                 if (this.entity.connections.length > 0) {
                     return null;
                 }
-                if (interaction.system.uid === this.entity.systemUid) {
-                    return [this.entity];
+                if (interaction.system.uid !== this.entity.systemUid) {
+                    return null;
                 }
-            case InteractionType.INSERT:
-            default:
+                break;
+            case InteractionType.MOVE_ONTO_RECEIVE:
+                if (this.entity.connections.length > 0) {
+                    return null;
+                }
+                break;
+            case InteractionType.MOVE_ONTO_SEND:
                 return null;
         }
+        return super.offerInteraction(interaction);
     }
 
 

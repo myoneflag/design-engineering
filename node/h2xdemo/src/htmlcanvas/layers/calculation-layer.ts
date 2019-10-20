@@ -18,7 +18,8 @@ import {getBoundingBox, getDocumentCenter} from '@/htmlcanvas/lib/utils';
 import assert from 'assert';
 import {CalculationTarget} from '@/store/document/calculations/types';
 import CatalogState, {Catalog} from '@/store/catalog/types';
-import {CalculatableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import {CalculatableEntityConcrete, DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 
 export default class CalculationLayer implements Layer {
 
@@ -82,18 +83,18 @@ export default class CalculationLayer implements Layer {
 
     offerInteraction(
         interaction: Interaction,
-        filter?: (objects: DrawableEntity[]) => boolean,
-        sortBy?: (objects: DrawableEntity[]) => any,
-    ): DrawableEntity[] | null {
+        filter?: (objects: DrawableEntityConcrete[]) => boolean,
+        sortBy?: (objects: DrawableEntityConcrete[]) => any,
+    ): DrawableEntityConcrete[] | null {
         return null;
     }
 
-    onMouseDown(event: MouseEvent, vp: ViewPort) {
+    onMouseDown(event: MouseEvent, context: CanvasContext) {
         for (let i = this.idsInOrder.length - 1; i >= 0; i--) {
             const uid = this.idsInOrder[i];
             if (this.messageStore.has(uid)) {
                 const object = this.messageStore.get(uid)!;
-                if (object.onMouseDown(event, vp)) {
+                if (object.onMouseDown(event, context)) {
                     return true;
                 }
             }
@@ -102,12 +103,12 @@ export default class CalculationLayer implements Layer {
         return false;
     }
 
-    onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
+    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
         for (let i = this.idsInOrder.length - 1; i >= 0; i--) {
             const uid = this.idsInOrder[i];
             if (this.messageStore.has(uid)) {
                 const object = this.messageStore.get(uid)!;
-                const res = object.onMouseMove(event, vp);
+                const res = object.onMouseMove(event, context);
                 if (res.handled) {
                     return res;
                 }
@@ -118,12 +119,12 @@ export default class CalculationLayer implements Layer {
     }
 
 
-    onMouseUp(event: MouseEvent, vp: ViewPort) {
+    onMouseUp(event: MouseEvent, context: CanvasContext) {
         for (let i = this.idsInOrder.length - 1; i >= 0; i--) {
             const uid = this.idsInOrder[i];
             if (this.messageStore.has(uid)) {
                 const object = this.messageStore.get(uid)!;
-                if (object.onMouseUp(event, vp)) {
+                if (object.onMouseUp(event, context)) {
                     return true;
                 }
             }
@@ -139,7 +140,11 @@ export default class CalculationLayer implements Layer {
     update(doc: DocumentState): any {
         const thisIds: string[] = [];
 
-        const {l, r, t, b} = getBoundingBox(this.objectStore, doc);
+        let l: number;
+        let r: number;
+        let t: number;
+        let b: number;
+
 
         doc.drawing.entities.forEach((e) => {
             const o = this.messageStore.get(e.uid);
@@ -155,8 +160,17 @@ export default class CalculationLayer implements Layer {
                 if (isCalculated(e)) {
                     const te = e as CalculatableEntityConcrete;
                     if (te.calculation !== null) {
+                        if (l === undefined) {
+                            const bx = getBoundingBox(this.objectStore, doc);
+                            l = bx.l;
+                            r = bx.r;
+                            t = bx.t;
+                            b = bx.b;
+                        }
+
                         const msg: Popup = new Popup(
                             this.objectStore,
+                            this,
                             te,
                             {x: (l + r) / 2, y: (t + b) / 2},
                             () => this.onSelect(msg),
@@ -198,5 +212,13 @@ export default class CalculationLayer implements Layer {
 
             done();
         });
+    }
+
+    dragObjects(objects: BaseBackedObject[]): void {
+        //
+    }
+
+    releaseDrag(): void {
+        //
     }
 }

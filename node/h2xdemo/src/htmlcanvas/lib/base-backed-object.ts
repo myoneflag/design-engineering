@@ -6,6 +6,8 @@ import {Interaction} from '@/htmlcanvas/lib/interaction';
 import {EntityType} from '@/store/document/entities/types';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import Layer from '@/htmlcanvas/layers/layer';
+import {cloneSimple} from '@/lib/utils';
 
 export default abstract class BaseBackedObject extends DrawableObject {
     entity: DrawableEntityConcrete;
@@ -18,13 +20,14 @@ export default abstract class BaseBackedObject extends DrawableObject {
 
     protected constructor(
         objectStore: ObjectStore,
+        layer: Layer,
         parentEntity: DrawableEntity | null,
         obj: DrawableEntityConcrete,
         onSelect: () => void,
         onChange: () => void,
         onCommit: () => void,
     ) {
-        super(null);
+        super(null, layer);
         this.parentEntity = parentEntity;
         this.entity = obj;
         this.onSelect = onSelect;
@@ -55,13 +58,13 @@ export default abstract class BaseBackedObject extends DrawableObject {
     }
 
     refreshObject(parentEntity: DrawableEntity | null, obj: DrawableEntityConcrete) {
-        const old = _.cloneDeep(this.entity);
+        const old = this.entity;
         this.entity = obj;
         this.parentEntity = parentEntity;
         this.refreshObjectInternal(obj, old);
     }
 
-    abstract offerInteraction(interaction: Interaction): DrawableEntity[] | null;
+    abstract offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null;
 
     // Return list of objects to remove.
     abstract prepareDelete(): BaseBackedObject[];

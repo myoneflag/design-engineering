@@ -3,9 +3,8 @@ import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import PipeEntity, {fillPipeDefaultFields} from '@/store/document/entities/pipe-entity';
 import * as TM from 'transformation-matrix';
 import {Matrix} from 'transformation-matrix';
-import {ViewPort} from '@/htmlcanvas/viewport';
 import {DrawingMode, MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
-import {ConnectableEntity, Coord, DocumentState, DrawableEntity} from '@/store/document/types';
+import {ConnectableEntity, Coord, DocumentState} from '@/store/document/types';
 import {matrixScale} from '@/htmlcanvas/utils';
 import Flatten from '@flatten-js/core';
 import {Draggable, DraggableObject} from '@/htmlcanvas/lib/object-traits/draggable-object';
@@ -16,9 +15,11 @@ import {DrawingContext} from '@/htmlcanvas/lib/types';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
 import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
-import {Catalog, PipeMaterial, PipeSpec} from '@/store/catalog/types';
+import {PipeMaterial, PipeSpec} from '@/store/catalog/types';
 import {lowerBoundTable} from '@/htmlcanvas/lib/utils';
 import {CalculationContext} from '@/calculations/types';
+import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 
 @DraggableObject
 export default class Pipe extends BackedDrawableObject<PipeEntity> implements Draggable {
@@ -116,20 +117,19 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
     }
 
-    project(wc: Coord): Coord {
-        if (this.lastDrawnLine instanceof Flatten.Segment) {
-            const shortSeg: Flatten.Segment = this.lastDrawnLine.distanceTo(Flatten.point(wc.x, wc.y))[1];
-            return {x: shortSeg.ps.x, y: shortSeg.ps.y};
-        } else {
-            return {x: this.lastDrawnLine.x, y: this.lastDrawnLine.y};
-        }
+    project(wc: Coord, minWorldEndpointDist: number = 0): Coord {
+        const snipped = this.snipEnds(minWorldEndpointDist);
+        const p = Flatten.point(wc.x, wc.y).distanceTo(snipped)[1];
+        return {x: p.end.x, y: p.end.y};
     }
 
     inBounds(oc: Coord, radius: number = 0): boolean {
-        if (!this.lastDrawnLine) {
-            return false;
+        const shape = this.shape();
+        let width = this.lastDrawnWidth;
+        if (width === undefined) {
+            width = 10;
         }
-        return this.lastDrawnLine.distanceTo(new Flatten.Point(oc.x, oc.y))[0] < this.lastDrawnWidth + radius;
+        return shape.distanceTo(new Flatten.Point(oc.x, oc.y))[0] < width + radius;
     }
 
     get computedLengthM(): number {
@@ -152,8 +152,8 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         //
     }
 
-    onMouseDown(event: MouseEvent, vp: ViewPort): boolean {
-        const wc = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
+    onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
+        const wc = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const oc = this.toObjectCoord(wc);
 
         // Check bounds
@@ -166,12 +166,12 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         return false;
     }
 
-    onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
+    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
         return UNHANDLED;
     }
 
-    onMouseUp(event: MouseEvent, vp: ViewPort): boolean {
-        const wc = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
+    onMouseUp(event: MouseEvent, context: CanvasContext): boolean {
+        const wc = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const oc = this.toObjectCoord(wc);
         // Check bounds
         return this.inBounds(oc);
@@ -190,14 +190,32 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         return result;
     }
 
-    offerInteraction(interaction: Interaction): DrawableEntity[] | null {
+    offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
         switch (interaction.type) {
             case InteractionType.INSERT:
                 return [this.entity];
+            case InteractionType.MOVE_ONTO_RECEIVE: {
+                if (this.entity.endpointUid.indexOf(interaction.src.uid) !== -1) {
+                    return null;
+                }
+                // We can receive valves.
+                if ('connections' in interaction.src) {
+                    return [this.entity];
+                } else {
+                    return null;
+                }
+            }
             case InteractionType.CONTINUING_PIPE:
             case InteractionType.STARTING_PIPE:
-            default:
+                return [this.entity];
+            case InteractionType.MOVE_ONTO_SEND:
                 return null;
+            case InteractionType.EXTEND_NETWORK:
+                if (interaction.systemUid === this.entity.systemUid) {
+                    return [this.entity];
+                } else {
+                    return null;
+                }
         }
     }
 
@@ -205,20 +223,13 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         //
     }
 
-    shape(): Flatten.Segment | null {
-        if (this.lastDrawnLine) {
-            if (this.lastDrawnLine instanceof Flatten.Point) {
-                const w = this.toWorldCoord(this.lastDrawnLine);
-                return Flatten.point([w.x, w.y]);
-            } else {
-                const aw = this.toWorldCoord(this.lastDrawnLine.ps);
-                const bw = this.toWorldCoord(this.lastDrawnLine.pe);
-
-                return Flatten.segment(Flatten.point(aw.x, aw.y), Flatten.point(bw.x, bw.y));
-            }
+    shape(): Flatten.Segment | Flatten.Point {
+        const [a, b] = this.worldEndpoints();
+        if (_.isEqual(a, b)) {
+            return Flatten.point([a.x, a.y]);
+        } else {
+            return Flatten.segment(a.x, a.y, b.x, b.y);
         }
-        // We will let the connected components handle that, because we don't know what our bounding box really is.
-        return null;
     }
 
     getCatalogPage({drawing, catalog}: CalculationContext): PipeMaterial | null {
@@ -247,6 +258,25 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             computed.calculation.realNominalPipeDiameterMM,
         );
         return tableVal;
+    }
+
+    snipEnds(worldLength: number): Flatten.Segment | Flatten.Point {
+        let ts: Flatten.Segment | Flatten.Point = this.shape();
+        const l = ts as Flatten.Segment;
+
+        const ep = this.worldEndpoints();
+        const middle = Flatten.point((ep[0].x + ep[1].x) / 2, (ep[0].y + ep[1].y) / 2);
+        if (l.length <= worldLength * 2) {
+            ts = middle;
+        } else {
+            const pe2m = Flatten.vector(l.pe, middle);
+            const ps2m = Flatten.vector(l.ps, middle);
+            ts = Flatten.segment(
+                l.pe.translate(pe2m.normalize().multiply(worldLength)),
+                l.ps.translate(ps2m.normalize().multiply(worldLength)),
+            );
+        }
+        return ts;
     }
 
     protected refreshObjectInternal(obj: PipeEntity): void {

@@ -37,7 +37,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                     :selected-entity="selectedEntity"
                     :selected-object="selectedObject"
                     :target-property="targetProperty"
-                    v-if="selectedObject && currentTool.propertiesVisible"
+                    v-if="selectedObject && propertiesVisible"
                     :mode="mode"
                     :on-change="scheduleDraw"
                     :on-delete="deleteSelected"
@@ -61,45 +61,46 @@ import {DrawingMode} from "@/htmlcanvas/types";
 </template>
 
 <script lang="ts">
-    import Vue from "vue";
-    import Component from "vue-class-component";
-    import {ViewPort} from "@/htmlcanvas/viewport";
-    import {Coord, DocumentState, DrawableEntity, FlowSystemParameters} from "@/store/document/types";
-    import {drawPaperScale} from "@/htmlcanvas/scale";
-    import ModeButtons from "@/components/editor/ModeButtons.vue";
-    import PropertiesWindow from "@/components/editor/property-window/PropertiesWindow.vue";
-    import {DrawingMode, MouseMoveResult, UNHANDLED} from "@/htmlcanvas/types";
-    import BackgroundLayer from "@/htmlcanvas/layers/background-layer";
-    import * as TM from "transformation-matrix";
-    import {decomposeMatrix, matrixScale} from "@/htmlcanvas/utils";
-    import Toolbar from "@/components/editor/Toolbar.vue";
-    import LoadingScreen from "@/views/LoadingScreen.vue";
-    import {MainEventBus} from "@/store/main-event-bus";
-    import {ToolConfig} from "@/store/tools/types";
-    import {DEFAULT_TOOL, ToolHandler} from "@/htmlcanvas/lib/tool";
-    import uuid from "uuid";
-    import {renderPdf} from "@/api/pdf";
-    import HydraulicsLayer from "@/htmlcanvas/layers/hydraulics-layer";
-    import Layer from "@/htmlcanvas/layers/layer";
-    import HydraulicsInsertPanel from "@/components/editor/HydraulicsInsertPanel.vue";
-    import BaseBackedObject from "@/htmlcanvas/lib/base-backed-object";
-    import {EntityType} from "@/store/document/entities/types";
-    import {Interaction} from "@/htmlcanvas/lib/interaction";
-    import insertFlowSource from "@/htmlcanvas/tools/insert-flow-source";
-    import insertPipes from "@/htmlcanvas/tools/insert-pipes";
-    import insertValve from "@/htmlcanvas/tools/insert-valve";
-    import {DrawingContext, ObjectStore, SelectionTarget} from "@/htmlcanvas/lib/types";
-    import {BackgroundEntity} from "@/store/document/entities/background-entity";
-    import insertTmv from "@/htmlcanvas/tools/insert-tmv";
-    import insertFixture from "@/htmlcanvas/tools/insert-fixture";
-    import FloorPlanInsertPanel from "@/components/editor/FloorPlanInsertPanel.vue";
-    import InstructionPage from "@/components/editor/InstructionPage.vue";
-    import CalculationBar from "@/components/CalculationBar.vue";
-    import {DemandType} from "@/calculations/types";
-    import CalculationEngine from "@/calculations/calculation-engine";
-    import CalculationLayer from "@/htmlcanvas/layers/calculation-layer";
-    import {getBoundingBox} from "@/htmlcanvas/lib/utils";
-    import {Catalog, FixtureSpec} from "@/store/catalog/types";
+    import Vue from 'vue';
+    import Component from 'vue-class-component';
+    import {ViewPort} from '@/htmlcanvas/viewport';
+    import {Coord, DocumentState, DrawableEntity, FlowSystemParameters} from '@/store/document/types';
+    import {drawPaperScale} from '@/htmlcanvas/scale';
+    import ModeButtons from '@/components/editor/ModeButtons.vue';
+    import PropertiesWindow from '@/components/editor/property-window/PropertiesWindow.vue';
+    import {DrawingMode, MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
+    import BackgroundLayer from '@/htmlcanvas/layers/background-layer';
+    import * as TM from 'transformation-matrix';
+    import {decomposeMatrix, matrixScale} from '@/htmlcanvas/utils';
+    import Toolbar from '@/components/editor/Toolbar.vue';
+    import LoadingScreen from '@/views/LoadingScreen.vue';
+    import {MainEventBus} from '@/store/main-event-bus';
+    import {ToolConfig} from '@/store/tools/types';
+    import {DEFAULT_TOOL, ToolHandler} from '@/htmlcanvas/lib/tool';
+    import uuid from 'uuid';
+    import {renderPdf} from '@/api/pdf';
+    import HydraulicsLayer from '@/htmlcanvas/layers/hydraulics-layer';
+    import Layer from '@/htmlcanvas/layers/layer';
+    import HydraulicsInsertPanel from '@/components/editor/HydraulicsInsertPanel.vue';
+    import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
+    import {EntityType} from '@/store/document/entities/types';
+    import {Interaction} from '@/htmlcanvas/lib/interaction';
+    import insertFlowSource from '@/htmlcanvas/tools/insert-flow-source';
+    import insertPipes from '@/htmlcanvas/tools/insert-pipes';
+    import insertValve from '@/htmlcanvas/tools/insert-valve';
+    import {DrawingContext, ObjectStore, SelectionTarget} from '@/htmlcanvas/lib/types';
+    import {BackgroundEntity} from '@/store/document/entities/background-entity';
+    import insertTmv from '@/htmlcanvas/tools/insert-tmv';
+    import insertFixture from '@/htmlcanvas/tools/insert-fixture';
+    import FloorPlanInsertPanel from '@/components/editor/FloorPlanInsertPanel.vue';
+    import InstructionPage from '@/components/editor/InstructionPage.vue';
+    import CalculationBar from '@/components/CalculationBar.vue';
+    import {DemandType} from '@/calculations/types';
+    import CalculationEngine from '@/calculations/calculation-engine';
+    import CalculationLayer from '@/htmlcanvas/layers/calculation-layer';
+    import {getBoundingBox} from '@/htmlcanvas/lib/utils';
+    import {Catalog, FixtureSpec} from '@/store/catalog/types';
+    import {DrawableEntityConcrete} from "@/store/document/entities/concrete-entity";
 
     @Component({
         components: {
@@ -167,7 +168,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
 
 
         // The currently hovered element ready for interaction.
-        interactive: DrawableEntity[] | null = null;
+        interactive: DrawableEntityConcrete[] | null = null;
 
 
         updating: boolean = false;
@@ -234,6 +235,21 @@ import {DrawingMode} from "@/htmlcanvas/types";
             return null;
         }
 
+        get propertiesVisible() {
+            if (!this.selectedObject) {
+                return false;
+            }
+
+            if (!this.currentTool.propertiesVisible) {
+                return false;
+            }
+
+            if (this.hydraulicsLayer.draggedObjects) {
+                return false;
+            }
+            return true;
+        }
+
         get currentTool(): ToolConfig {
             if (this.toolHandler) {
                 return this.toolHandler.config;
@@ -274,6 +290,9 @@ import {DrawingMode} from "@/htmlcanvas/types";
         }
 
         setToolHandler(toolHandler: ToolHandler) {
+            if (toolHandler !== null && this.toolHandler !== null) {
+                this.toolHandler.finish(true, true);
+            }
             this.interactive = null;
             this.toolHandler = toolHandler;
             this.scheduleDraw();
@@ -382,7 +401,9 @@ import {DrawingMode} from "@/htmlcanvas/types";
             }
         }
 
+        id = 0;
         processDocument(redraw: boolean = true) {
+            this.id ++;
             this.updating = true;
             this.considerCalculating();
             this.allLayers.forEach((l) => l.update(this.document));
@@ -435,19 +456,18 @@ import {DrawingMode} from "@/htmlcanvas/types";
 
         offerInteraction(
             interaction: Interaction,
-            filter?: (objects: DrawableEntity[]) => boolean,
-            sortBy?: (objects: DrawableEntity[]) => any,
-        ): DrawableEntity[] | null {
+            filter?: (objects: DrawableEntityConcrete[]) => boolean,
+            sortBy?: (objects: DrawableEntityConcrete[]) => any,
+        ): DrawableEntityConcrete[] | null {
             this.interactive = null;
             for (let i = this.allLayers.length - 1; i >= 0; i--) {
                 const result = this.allLayers[i].offerInteraction(interaction, filter, sortBy);
                 if (result && result.length > 0) {
                     this.interactive = result;
-                    this.scheduleDraw();
+                    //this.scheduleDraw();
                     return this.interactive;
                 }
             }
-            this.scheduleDraw();
             return this.interactive;
         }
 
@@ -598,7 +618,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
 
         onMouseDown(event: MouseEvent): boolean {
             if (this.toolHandler) {
-                if (this.toolHandler.onMouseDown(event, this.viewPort)) {
+                if (this.toolHandler.onMouseDown(event, this)) {
                     return true;
                 }
             } else {
@@ -606,7 +626,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                 // Pass the event down to layers below
                 if (this.activeLayer) {
 
-                    if (this.activeLayer.onMouseDown(event, this.viewPort)) {
+                    if (this.activeLayer.onMouseDown(event, this)) {
                         return true;
                     }
                 }
@@ -633,14 +653,14 @@ import {DrawingMode} from "@/htmlcanvas/types";
 
         onMouseMoveInternal(event: MouseEvent): MouseMoveResult {
             if (this.toolHandler) {
-                const res = this.toolHandler.onMouseMove(event, this.viewPort);
+                const res = this.toolHandler.onMouseMove(event, this);
                 if (res.handled) {
                     return res;
                 }
             } else {
                 // Pass the event down to layers below
                 if (this.activeLayer) {
-                    const res = this.activeLayer.onMouseMove(event, this.viewPort);
+                    const res = this.activeLayer.onMouseMove(event, this);
                     if (res.handled) {
                         return res;
                     }
@@ -665,6 +685,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
         }
 
         onMouseUp(event: MouseEvent): boolean {
+            this.interactive = null;
 
             if (this.grabbedPoint) {
                 this.grabbedPoint = null;
@@ -676,13 +697,13 @@ import {DrawingMode} from "@/htmlcanvas/types";
             }
 
             if (this.toolHandler) {
-                if (this.toolHandler.onMouseUp(event, this.viewPort)) {
+                if (this.toolHandler.onMouseUp(event, this)) {
                     return true;
                 }
             } else {
                 // Pass the event down to layers below
                 if (this.activeLayer) {
-                    if (this.activeLayer.onMouseUp(event, this.viewPort)) {
+                    if (this.activeLayer.onMouseUp(event, this)) {
                         return true;
                     }
                 }

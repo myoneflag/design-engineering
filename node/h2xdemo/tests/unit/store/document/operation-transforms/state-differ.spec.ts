@@ -3,14 +3,15 @@ import * as _ from 'lodash';
 import {diffState} from '@/store/document/operation-transforms/state-differ';
 import {applyOtOnState} from '@/store/document/operation-transforms/state-ot-apply';
 
-import {CalculationParameters, DrawingState, FlowSystemParameters, GeneralInfo,} from '@/store/document/types';
+import {CalculationParameters, DrawingState, FlowSystemParameters, GeneralInfo} from '@/store/document/types';
 import {EntityType} from '@/store/document/entities/types';
 import {BackgroundEntity} from '@/store/document/entities/background-entity';
 import {SupportedPsdStandards} from '@/config';
+import {cloneSimple} from '@/lib/utils';
 
 function roundTripTest(prev: DrawingState, next: DrawingState, expectedOps: number = -1) {
-    const prevCopy = _.cloneDeep(prev);
-    const ops = diffState(_.cloneDeep(prev), _.cloneDeep(next));
+    const prevCopy = cloneSimple(prev);
+    const ops = diffState(cloneSimple(prev), cloneSimple(next));
     ops.forEach((o) => applyOtOnState(prevCopy, o));
     expect(prevCopy).eql(next);
     if (expectedOps !== -1) {

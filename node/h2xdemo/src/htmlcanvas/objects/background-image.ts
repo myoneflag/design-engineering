@@ -1,11 +1,10 @@
 import {ViewPort} from '@/htmlcanvas/viewport';
-import {Coord, DrawableEntity, Rectangle} from '@/store/document/types';
+import {Coord, Rectangle} from '@/store/document/types';
 import axios from 'axios';
 import * as TM from 'transformation-matrix';
 import {matrixScale, parseScale} from '@/htmlcanvas/utils';
 import {Sizeable} from '@/htmlcanvas/lib/object-traits/sizeable-object';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
-import _ from 'lodash';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import {Interaction, InteractionType} from '@/htmlcanvas/lib/interaction';
@@ -16,6 +15,8 @@ import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
 import Flatten from '@flatten-js/core';
 import {DEFAULT_FONT_NAME} from '@/config';
+import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import {cloneSimple} from '@/lib/utils';
 
 // TODO: Convert into backed drawable object.
 export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> implements Sizeable {
@@ -300,14 +301,14 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
     }
 
 
-    onMouseDown(event: MouseEvent, vp: ViewPort): boolean {
+    onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
         this.shiftKey = event.shiftKey; // shift click moves the pdf but not the crop box or child points.
-        const w = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
+        const w = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const o = this.toObjectCoord(w);
         if (this.inBounds(o)) {
             this.grabbedPoint = [w.x, w.y];
             this.grabbedCenterState = [this.center.x, this.center.y];
-            this.grabbedOffsetState = _.cloneDeep(this.entity.offset);
+            this.grabbedOffsetState = cloneSimple(this.entity.offset);
             this.hasDragged = false;
             if (this.onSelect) {
                 this.onSelect();
@@ -317,7 +318,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         return false;
     }
 
-    onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
+    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
         if (event.buttons && 1) {
             if (this.grabbedPoint != null && this.grabbedCenterState != null && this.grabbedOffsetState != null) {
 
@@ -328,7 +329,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
                 }
                 this.hasDragged = true;
 
-                const w = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
+                const w = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
                 if (this.shiftKey) {
                     // Move the offset, not the object
                     const o = this.toObjectCoord(w);
@@ -361,7 +362,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         }
     }
 
-    onMouseUp(event: MouseEvent, vp: ViewPort): boolean {
+    onMouseUp(event: MouseEvent, context: CanvasContext): boolean {
         if (this.grabbedPoint || this.grabbedCenterState) {
             this.grabbedPoint = null;
             this.grabbedCenterState = null;
@@ -373,13 +374,14 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         return false;
     }
 
-    offerInteraction(interaction: Interaction): DrawableEntity[] | null {
+    offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
         switch (interaction.type) {
             case InteractionType.INSERT:
             case InteractionType.CONTINUING_PIPE:
             case InteractionType.STARTING_PIPE:
-                return [this.entity];
-            default:
+            case InteractionType.MOVE_ONTO_RECEIVE:
+            case InteractionType.MOVE_ONTO_SEND:
+            case InteractionType.EXTEND_NETWORK:
                 return null;
         }
     }

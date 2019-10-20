@@ -2,6 +2,7 @@ import uuid from 'uuid';
 import _ from 'lodash';
 import assert from 'assert';
 import TinyQueue from 'tinyqueue';
+import {cloneSimple} from '@/lib/utils';
 
 export default class Graph<N, E> {
     adjacencyList: Map<N, Array<Edge<N, E>>> = new Map<N, Array<Edge<N, E>>>();
@@ -209,8 +210,8 @@ export default class Graph<N, E> {
 
             excludedNodes.add(top.node);
 
-            let forward = _.cloneDeep(this.adjacencyList.get(top.node)!);
-            let backward = _.cloneDeep(this.reverseAdjacencyList.get(top.node)!);
+            const forward = cloneSimple(this.adjacencyList.get(top.node)!);
+            const backward = cloneSimple(this.reverseAdjacencyList.get(top.node)!);
 
             let nei = reversed ? backward : forward;
             if (!directed) {
@@ -278,7 +279,7 @@ export default class Graph<N, E> {
             (n) => {
                 if (to instanceof Set && to.has(n) || _.isArray(to) && to.indexOf(n) !== -1 || to === n) {
                     found = true;
-                    result = _.cloneDeep(cache);
+                    result = cloneSimple(cache);
                 }
                 return found;
             },

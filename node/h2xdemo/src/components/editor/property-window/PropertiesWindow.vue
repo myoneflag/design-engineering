@@ -76,6 +76,7 @@
     import {EntityType} from '@/store/document/entities/types';
     import TMVProperties from '@/components/editor/property-window/TMVProperties.vue';
     import FixtureProperties from '@/components/editor/property-window/FixtureProperties.vue';
+    import {MainEventBus} from '@/store/main-event-bus';
 
     @Component({
         components: {
@@ -93,7 +94,11 @@
     export default class PropertiesWindow extends Vue {
 
         mounted() {
-            //
+            MainEventBus.$on('delete-pressed', this.$props.onDelete);
+        }
+
+        destroyed() {
+            MainEventBus.$off('delete-pressed', this.$props.onDelete);
         }
 
         // This is here to invoke type cohesion when working in the template.

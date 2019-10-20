@@ -31,21 +31,19 @@ import {
     getFluidDensityOfSystem,
     getFrictionFactor,
     getReynoldsNumber,
-    head2kpa
+    head2kpa,
 } from '@/calculations/pressure-drops';
 import FlowSolver from '@/calculations/flow-solver';
 import {PropertyField} from '@/store/document/entities/property-field';
 import {MainEventBus} from '@/store/main-event-bus';
 import {emptyFixtureCalculation} from '@/store/document/calculations/fixture-calculation';
-import {getObjectFrictionHeadLoss} from '@/calculations/enitity-pressure-drops';
+import {getObjectFrictionHeadLoss} from '@/calculations/entity-pressure-drops';
 import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import {emptyTmvCalculation} from '@/store/document/calculations/tmv-calculation';
 import FlowSource from '@/htmlcanvas/objects/flow-source';
 import {PsdStandard, PSDStandardType} from '@/store/catalog/psd-standard/types';
 import assert from 'assert';
-import {isGermanStandard, SupportedPsdStandards} from '@/config';
-
-const AS_PSD = 'as35002018LoadingUnits';
+import {isGermanStandard} from '@/config';
 
 const HOT_WARM_EDGE_ID = ':hot-warm';
 const COLD_COLD_EDGE_ID = ':cold-cold';
@@ -166,7 +164,7 @@ export default class CalculationEngine {
 
         if (sanityCheckWarnings.length === 0) {
             // The remaining graph must be a rooted forest.
-            const {sources, biconnected} = this.analyseGraph();
+            const {sources} = this.analyseGraph();
             this.sizeDefiniteTransports(sources.flat());
             this.sizeRingsAndRoots(sources.flat());
             this.calculateAllFixturesAbsolutePressure(sources.flat());
@@ -195,7 +193,6 @@ export default class CalculationEngine {
                         entity.calculation.warmPressureKPA =
                             this.getAbsolutePressureFixture(entity.warmRoughInUid, sources);
                     }
-
                     return null;
                 case EntityType.TMV:
                     if (entity.calculation) {
@@ -204,6 +201,7 @@ export default class CalculationEngine {
                         entity.calculation.hotPressureKPA =
                             this.getAbsolutePressureFixture(entity.hotRoughInUid, sources);
                     }
+                    return null;
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.VALVE:
                 case EntityType.PIPE:
@@ -374,13 +372,33 @@ export default class CalculationEngine {
                 this.flowGraph.addEdge(entity.endpointUid[0], entity.endpointUid[1], entity.uid, entity.uid);
             } else if (obj.entity.type === EntityType.TMV) {
                 const entity = obj.entity as TmvEntity;
-                this.flowGraph.addDirectedEdge(entity.hotRoughInUid, entity.warmOutputUid, entity.uid, entity.uid + HOT_WARM_EDGE_ID);
-                this.flowGraph.addDirectedEdge(entity.coldRoughInUid, entity.warmOutputUid,  entity.uid,entity.uid + COLD_WARM_EDGE_ID);
+                this.flowGraph.addDirectedEdge(
+                    entity.hotRoughInUid,
+                    entity.warmOutputUid,
+                    entity.uid,
+                    entity.uid + HOT_WARM_EDGE_ID,
+                );
+                this.flowGraph.addDirectedEdge(
+                    entity.coldRoughInUid,
+                    entity.warmOutputUid,
+                    entity.uid,
+                    entity.uid + COLD_WARM_EDGE_ID,
+                );
                 if (entity.coldOutputUid) {
-                    this.flowGraph.addDirectedEdge(entity.coldRoughInUid, entity.coldOutputUid,  entity.uid,entity.uid + COLD_WARM_EDGE_ID);
+                    this.flowGraph.addDirectedEdge(
+                        entity.coldRoughInUid,
+                        entity.coldOutputUid,
+                        entity.uid,
+                        entity.uid + COLD_WARM_EDGE_ID,
+                    );
                 }
-                 if (entity.coldOutputUid) {
-                    this.flowGraph.addDirectedEdge(entity.coldRoughInUid, entity.coldOutputUid, entity.uid,entity.uid + COLD_COLD_EDGE_ID);
+                if (entity.coldOutputUid) {
+                    this.flowGraph.addDirectedEdge(
+                        entity.coldRoughInUid,
+                        entity.coldOutputUid,
+                        entity.uid,
+                        entity.uid + COLD_COLD_EDGE_ID,
+                    );
                 }
             } else if (isConnectable(obj.entity.type)) {
                 this.flowGraph.addNode(obj.uid);
@@ -428,7 +446,7 @@ export default class CalculationEngine {
         sources.forEach((s) => {
             this.luFlowGraph.dfs(s, (n) => {
                const psdU = this.getTerminalPsdU(this.objectStore.get(n)!.entity);
-                leaf2PsdU.set(n, psdU);
+               leaf2PsdU.set(n, psdU);
                flowConnectedUF.join(s, n);
             });
         });
@@ -509,7 +527,6 @@ export default class CalculationEngine {
         while (true) {
             iters++;
             if (iters > 20) {
-                console.log('pipe sizes are possibly oscillating');
                 break;
             }
             const assignment = solver.solveFlowsLS(demandLS, sourcesKPA);
@@ -566,9 +583,9 @@ export default class CalculationEngine {
                         }
                     } else if (node.uid === fixture.warmRoughInUid) {
                         if (isGermanStandard(this.doc.drawing.calculationParams.psdMethod)) {
-                            return Number(mainFixture.designFlowRateCold);
+                            return Number(mainFixture.designFlowRateHot);
                         } else {
-                            return Number(mainFixture.loadingUnitsCold!);
+                            return Number(mainFixture.loadingUnitsHot!);
                         }
                     } else {
                         throw new Error('Invalid connection to fixture ' +
@@ -665,6 +682,9 @@ export default class CalculationEngine {
 
         if (pipe.calculation!.realNominalPipeDiameterMM) {
             pipe.calculation!.velocityRealMS = this.getVelocityRealMs(pipe);
+
+            console.log('pipe mh is ' + this.getPipePressureDropMH(pipe));
+
             pipe.calculation!.pressureDropKpa = head2kpa(
                 this.getPipePressureDropMH(pipe),
                 getFluidDensityOfSystem(pipe.systemUid, this.doc, this.catalog)!,
@@ -711,7 +731,7 @@ export default class CalculationEngine {
         const filled = fillPipeDefaultFields(this.doc.drawing, obj.computedLengthM, pipe);
         const realPipe = lowerBoundTable(
             this.catalog.pipes[filled.material!].pipesBySize,
-            filled.diameterMM!,
+            pipe.calculation!.optimalInnerPipeDiameterMM!,
         )!;
         const roughness = parseCatalogNumberExact(realPipe.colebrookWhiteCoefficient);
         const realInternalDiameter = parseCatalogNumberExact(realPipe.diameterInternalMM);
@@ -857,7 +877,13 @@ export default class CalculationEngine {
         });
     }
 
-    sizeDefiniteTransport(object: BaseBackedObject, roots: string[], totalReachedPsdU: number, edgeUid: string, endpointUids: string[]) {
+    sizeDefiniteTransport(
+        object: BaseBackedObject,
+        roots: string[],
+        totalReachedPsdU: number,
+        edgeUid: string,
+        endpointUids: string[],
+    ) {
 
         const reachedPsdU = this.getTotalReachedPsdU(roots, [], [edgeUid]);
         const exclusivePsdU = totalReachedPsdU - reachedPsdU;
@@ -968,7 +994,6 @@ export default class CalculationEngine {
     }
 
     analyseGraph(): {sources: string[][], biconnected: string[][]} {
-        const seen = new Set();
         const uf = new UnionFind<string>();
 
         this.objectStore.forEach((o) => {
@@ -991,27 +1016,6 @@ export default class CalculationEngine {
 
 function randInt(minInclusive: number, maxExclusive: number) {
     return Math.floor(Math.random() * (maxExclusive - minInclusive)) + minInclusive;
-}
-
-
-function getValveAttributes(e: ValveEntity): DeadlegAttribute | TwoConnectionAttribute | ThreeConnectionAttribute {
-    if (e.connections.length === 1) {
-        return { numConnections: 1 };
-    } else if (e.connections.length === 2) {
-        return {
-            numConnections: 2,
-            angle: randInt(0, 100),
-            nominalDiameterAMM: randInt(0, 100),
-            nominalDiameterBMM: randInt(0, 100),
-        };
-    } else if (e.connections.length === 3) {
-        return {
-            numConnections: 3,
-            nominalDiameterMM: randInt(0, 100),
-        };
-    } else {
-        throw new Error('I don\'t know how to deal with this yet, valve with ' + e.connections.length + ' connections');
-    }
 }
 
 enum EquationValues {

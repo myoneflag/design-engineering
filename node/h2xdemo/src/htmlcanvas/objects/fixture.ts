@@ -1,16 +1,11 @@
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
-import FlowSourceEntity from '@/store/document/entities/flow-source-entity';
-import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
-import {Coord, DocumentState, DrawableEntity, FlowSystemParameters, Rectangle} from '@/store/document/types';
-import assert from 'assert';
-import {decomposeMatrix, matrixScale} from '@/htmlcanvas/utils';
-import {lighten} from '@/lib/utils';
-import {ViewPort} from '@/htmlcanvas/viewport';
+import {Matrix} from 'transformation-matrix';
+import {Coord} from '@/store/document/types';
+import {matrixScale} from '@/htmlcanvas/utils';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
-import {Draggable, DraggableObject} from '@/htmlcanvas/lib/object-traits/draggable-object';
-import Connectable, {ConnectableObject} from '@/htmlcanvas/lib/object-traits/connectable';
+import Connectable from '@/htmlcanvas/lib/object-traits/connectable';
 import CenterDraggableObject from '@/htmlcanvas/lib/object-traits/center-draggable-object';
 import {Interaction, InteractionType} from '@/htmlcanvas/lib/interaction';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
@@ -20,6 +15,8 @@ import {EntityType} from '@/store/document/entities/types';
 import FixtureEntity from '@/store/document/entities/fixtures/fixture-entity';
 import {StandardFlowSystemUids} from '@/store/catalog';
 import {DEFAULT_FONT_NAME} from '@/config';
+import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 
 @CenterDraggableObject
 export default class Fixture extends BackedDrawableObject<FixtureEntity> implements Connectable {
@@ -158,8 +155,8 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         }
     }
 
-    onMouseDown(event: MouseEvent, vp: ViewPort): boolean {
-        const wc = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
+    onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
+        const wc = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const oc = this.toObjectCoord(wc);
 
         // Check bounds
@@ -172,12 +169,12 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         return false;
     }
 
-    onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
+    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
         return UNHANDLED;
     }
 
-    onMouseUp(event: MouseEvent, vp: ViewPort): boolean {
-        const wc = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
+    onMouseUp(event: MouseEvent, context: CanvasContext): boolean {
+        const wc = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const oc = this.toObjectCoord(wc);
         // Check bounds
         return this.inBounds(oc);
@@ -199,24 +196,33 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
     }
 
 
-    offerInteraction(interaction: Interaction): DrawableEntity[] | null {
+    offerJoiningInteraction(systemUid: string, interaction: Interaction) {
+        if (systemUid === StandardFlowSystemUids.ColdWater) {
+            const coldObj = this.objectStore.get(this.entity.coldRoughInUid);
+            if (coldObj && coldObj.offerInteraction(interaction)) {
+                return [coldObj.entity, this.entity];
+            }
+        } else if (systemUid === StandardFlowSystemUids.WarmWater && this.entity.warmRoughInUid) {
+            const warmObj = this.objectStore.get(this.entity.warmRoughInUid);
+            if (warmObj && warmObj.offerInteraction(interaction)) {
+                return [warmObj.entity, this.entity];
+            }
+        }
+        return null;
+    }
+
+    offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
         switch (interaction.type) {
             case InteractionType.CONTINUING_PIPE:
             case InteractionType.STARTING_PIPE:
-                if (interaction.system.uid === StandardFlowSystemUids.ColdWater) {
-                    const coldObj = this.objectStore.get(this.entity.coldRoughInUid);
-                    if (coldObj && coldObj.offerInteraction(interaction)) {
-                        return [coldObj.entity, this.entity];
-                    }
-                } else if (interaction.system.uid === StandardFlowSystemUids.WarmWater && this.entity.warmRoughInUid) {
-                    const warmObj = this.objectStore.get(this.entity.warmRoughInUid);
-                    if (warmObj && warmObj.offerInteraction(interaction)) {
-                        return [warmObj.entity, this.entity];
-                    }
+                return this.offerJoiningInteraction(interaction.system.uid, interaction);
+            case InteractionType.MOVE_ONTO_RECEIVE:
+                if (interaction.src.type === EntityType.VALVE) {
+                    return this.offerJoiningInteraction(interaction.src.systemUid, interaction);
                 }
-                return null;
             case InteractionType.INSERT:
-            default:
+            case InteractionType.MOVE_ONTO_SEND:
+            case InteractionType.EXTEND_NETWORK:
                 return null;
         }
     }

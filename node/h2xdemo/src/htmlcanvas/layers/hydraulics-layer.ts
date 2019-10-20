@@ -18,6 +18,9 @@ import {DrawingContext, ObjectStore} from '@/htmlcanvas/lib/types';
 import TmvEntity from '@/store/document/entities/tmv/tmv-entity';
 import Tmv from '@/htmlcanvas/objects/tmv/tmv';
 import DrawableObjectFactory from '../lib/drawable-object-factory';
+import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import CanvasContext from '@/htmlcanvas/lib/canvas-context';
+import assert from 'assert';
 
 export default class  HydraulicsLayer implements Layer {
     uidsInOrder: string[] = [];
@@ -29,6 +32,7 @@ export default class  HydraulicsLayer implements Layer {
     selectedObject: BaseBackedObject | null = null;
 
     objectStore: ObjectStore;
+    draggedObjects: BaseBackedObject[] | null = null;
 
     constructor(
         objectStore: Map<string,  BaseBackedObject>,
@@ -79,7 +83,17 @@ export default class  HydraulicsLayer implements Layer {
 
     update(doc: DocumentState) {
         const thisIds = doc.drawing.entities.map((v) => v.uid);
-        const removed = this.uidsInOrder.filter((v: string) => thisIds.indexOf(v) === -1);
+        const removed = this.uidsInOrder.filter((v: string) => {
+            if (thisIds.indexOf(v) !== -1) {
+                return false;
+            }
+            if (this.draggedObjects) {
+                if (this.draggedObjects.find((d) => d.uid === v)) {
+                    return false;
+                }
+            }
+            return true;
+        });
 
         removed.forEach((v) => {
             this.objectStore.delete(v);
@@ -107,7 +121,9 @@ export default class  HydraulicsLayer implements Layer {
                     entity,
                 );
             } else {
+                console.log('creating object ' + entity.type + ' id ' + entity.uid );
                 DrawableObjectFactory.build(
+                    this,
                     entity,
                     parent ? parent.entity : null,
                     this.objectStore,
@@ -166,12 +182,12 @@ export default class  HydraulicsLayer implements Layer {
         }
     }
 
-    onMouseDown(event: MouseEvent, vp: ViewPort) {
+    onMouseDown(event: MouseEvent, context: CanvasContext) {
         for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
             const uid = this.uidsInOrder[i];
             if (this.objectStore.has(uid)) {
                 const object = this.objectStore.get(uid)!;
-                if (object.onMouseDown(event, vp)) {
+                if (object.onMouseDown(event, context)) {
                     return true;
                 }
             }
@@ -180,12 +196,20 @@ export default class  HydraulicsLayer implements Layer {
         return false;
     }
 
-    onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
+    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
+        if (this.draggedObjects) {
+            context.$store.dispatch('document/revert', false);
+            const res = this.draggedObjects[0].onMouseMove(event, context);
+            if (res.handled) {
+                return res;
+            }
+        }
+
         for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
             const uid = this.uidsInOrder[i];
             if (this.objectStore.has(uid)) {
                 const object = this.objectStore.get(uid)!;
-                const res = object.onMouseMove(event, vp);
+                const res = object.onMouseMove(event, context);
                 if (res.handled) {
                     return res;
                 }
@@ -196,12 +220,18 @@ export default class  HydraulicsLayer implements Layer {
     }
 
 
-    onMouseUp(event: MouseEvent, vp: ViewPort) {
+    onMouseUp(event: MouseEvent, context: CanvasContext) {
+        if (this.draggedObjects) {
+            if (this.draggedObjects[0].onMouseMove(event, context)) {
+                return true;
+            }
+        }
+
         for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
             const uid = this.uidsInOrder[i];
             if (this.objectStore.has(uid)) {
                 const object = this.objectStore.get(uid)!;
-                if (object.onMouseUp(event, vp)) {
+                if (object.onMouseUp(event, context)) {
                     return true;
                 }
             }
@@ -216,11 +246,11 @@ export default class  HydraulicsLayer implements Layer {
 
     offerInteraction(
         interaction: Interaction,
-        filter?: (objects: DrawableEntity[]) => boolean,
-        sortKey?: (objects: DrawableEntity[]) => any,
-    ): DrawableEntity[] | null {
+        filter?: (objects: DrawableEntityConcrete[]) => boolean,
+        sortKey?: (objects: DrawableEntityConcrete[]) => any,
+    ): DrawableEntityConcrete[] | null {
 
-        const candidates: Array<[any, DrawableEntity[]]> = [];
+        const candidates: Array<[any, DrawableEntityConcrete[]]> = [];
 
         for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
             const uid = this.uidsInOrder[i];
@@ -259,5 +289,20 @@ export default class  HydraulicsLayer implements Layer {
         }
 
         return null;
+    }
+
+    dragObjects(objects: BaseBackedObject[]): void {
+        this.draggedObjects = objects;
+    }
+
+    releaseDrag(): void {
+        if (this.draggedObjects) {
+            this.draggedObjects.forEach((o) => {
+                if (!this.uidsInOrder.includes(o.uid)) {
+                    this.objectStore.delete(o.uid);
+                }
+            });
+        }
+        this.draggedObjects = null;
     }
 }

@@ -24,7 +24,6 @@ export function getFrictionFactor(
     reynoldsNumber: number,
 ) {
     if (reynoldsNumber < 10) {
-        console.log("warning: reynolds number too low " + reynoldsNumber);
         // numerically unstable for values of 0.81, and legitimate reynolds numbers below 10 are rare.
         return 0;
     }

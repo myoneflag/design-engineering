@@ -9,262 +9,235 @@ import {getInsertCoordsAt} from '@/htmlcanvas/lib/utils';
 import {InteractionType} from '@/htmlcanvas/lib/interaction';
 import Pipe from '@/htmlcanvas/objects/pipe';
 import Flatten from '@flatten-js/core';
-import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import PipeEntity from '@/store/document/entities/pipe-entity';
 import {StandardFlowSystemUids} from '@/store/catalog';
-import {addValveAndSplitPipe} from '@/htmlcanvas/tools/insert-valve';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import Tmv from '@/htmlcanvas/objects/tmv/tmv';
 import SystemNode from '@/htmlcanvas/objects/tmv/system-node';
+import {addValveAndSplitPipe} from '@/htmlcanvas/lib/interactions/split-pipe';
+import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import {isConnectable} from '@/store/document';
 
 export default function insertTmv(
     context: CanvasContext,
     tmvhasCold: boolean,
 ) {
-    context.$store.dispatch('document/commit').then(() => {
-        const tmvUid = uuid();
-        const coldUid = uuid();
-        const hotUid = uuid();
-        const warmUid = uuid();
-        const coldOutUid = uuid();
+    const tmvUid = uuid();
+    const coldUid = uuid();
+    const hotUid = uuid();
+    const warmUid = uuid();
+    const coldOutUid = uuid();
 
-        const coldPipeUid = uuid();
-
-        const hotPipeUid = uuid();
-
-        let splitColdPipe: Pipe | null = null;
-        let splitHotPipe: Pipe | null = null;
-
-        MainEventBus.$emit('set-tool-handler', new PointTool(
-            (interrupted) => {
-                if (interrupted) {
-                    context.$store.dispatch('document/revert');
-                }
+    MainEventBus.$emit('set-tool-handler', new PointTool(
+        (interrupted, displaced) => {
+            if (interrupted) {
+                context.$store.dispatch('document/revert');
+            }
+            if (!displaced) {
                 MainEventBus.$emit('set-tool-handler', null);
-            },
-            (wc: Coord) => {
-                context.lockDrawing();
-                context.$store.dispatch('document/revert').then(() => {
-                    try {
-
-
-                        const doc = context.document as DocumentState;
-
-                        // Maybe we drew onto a background
-                        const [parentUid, oc] = getInsertCoordsAt(context, wc);
-
-                        const newTmv: TmvEntity = {
-                            coldRoughInUid: coldUid,
-                            hotRoughInUid: hotUid,
-                            warmOutputUid: warmUid,
-                            coldOutputUid: tmvhasCold ? coldOutUid : null,
-
-                            maxFlowRateLS: null,
-                            maxHotColdPressureDifferentialPCT: null,
-                            maxInletPressureKPA: null,
-                            minFlowRateLS: null,
-                            minInletPressureKPA: null,
-                            pipeDistanceMM: 150,
-                            rotation: 0,
-                            valveLengthMM: 400,
-
-                            type: EntityType.TMV,
-                            center: oc,
-                            heightAboveFloorM: 70,
-                            parentUid,
-                            outputTemperatureC: 50,
-                            uid: tmvUid,
-                            calculation: null,
-                        };
-
-                        const newCold: SystemNodeEntity = {
-                            center: {x: newTmv.pipeDistanceMM / 2, y: 0},
-                            connections: [],
-                            parentUid: tmvUid,
-                            type: EntityType.SYSTEM_NODE,
-                            systemUid: StandardFlowSystemUids.ColdWater,
-                            uid: coldUid,
-                        };
-
-                        const newHot: SystemNodeEntity = {
-                            center: {x: -newTmv.pipeDistanceMM / 2, y: 0},
-                            connections: [],
-                            parentUid: tmvUid,
-                            type: EntityType.SYSTEM_NODE,
-                            systemUid: StandardFlowSystemUids.HotWater,
-                            uid: hotUid,
-                        };
-
-                        const newWarm: SystemNodeEntity = {
-                            center: {x: 0, y: newTmv.valveLengthMM},
-                            connections: [],
-                            parentUid: tmvUid,
-                            type: EntityType.SYSTEM_NODE,
-                            systemUid: StandardFlowSystemUids.WarmWater,
-                            uid: warmUid,
-                        };
-
-                        const newColdOut: SystemNodeEntity = {
-                            center: {x: -newTmv.pipeDistanceMM / 4, y: newTmv.valveLengthMM},
-                            connections: [],
-                            parentUid: tmvUid,
-                            type: EntityType.SYSTEM_NODE,
-                            systemUid: StandardFlowSystemUids.ColdWater,
-                            uid: coldOutUid,
-                        };
-
-                        doc.drawing.entities.push(newTmv, newCold, newHot, newWarm);
-                        if (tmvhasCold) {
-                            doc.drawing.entities.push(newColdOut);
-                        }
-
-
-                        let tmvObj: Tmv | undefined;
-                        let coldObj: SystemNode | undefined;
-                        let hotObj: SystemNode | undefined;
-                        try {
-                            // connect to existing cold pipe
-
-                            interactClosestPipe(context, StandardFlowSystemUids.ColdWater, wc, 3000);
-                            if (context.interactive && context.interactive.length) {
-                                const pipeE = context.interactive[0];
-                                splitColdPipe = context.objectStore.get(pipeE.uid) as Pipe;
-                                // rotate our pipe and try again with correct position of cold water
-                                tmvObj = DrawableObjectFactory.build(
-                                    newTmv,
-                                    context.document.drawing.backgrounds.find((b) => b.uid === parentUid) || null,
-                                    context.objectStore,
-                                    false,
-                                ) as Tmv;
-
-
-                                const closePoint =
-                                    splitColdPipe.lastDrawnLine.distanceTo(Flatten.point(wc.x, wc.y))[1].ps;
-                                const currA = tmvObj.toWorldAngle(0);
-                                const desiredA = -Flatten.vector(
-                                    Flatten.point(wc.x, wc.y)
-                                    , closePoint,
-                                ).angleTo(
-                                    Flatten.vector(0, -1),
-                                ) / Math.PI * 180;
-
-                                newTmv.rotation = ((desiredA - currA) % 360 + 360) % 360;
-
-                                // maybe refresh is unnecessary?
-                                tmvObj.refreshObject(tmvObj.parentEntity, newTmv);
-                                coldObj = DrawableObjectFactory.build(
-                                    newCold,
-                                    newTmv,
-                                    context.objectStore,
-                                    false,
-                                ) as SystemNode;
-                                const coldLoc = coldObj.toWorldCoord({x: 0, y: 0});
-
-                                leadPipe(
-                                    context,
-                                    coldLoc,
-                                    newCold,
-                                    coldPipeUid,
-                                    StandardFlowSystemUids.ColdWater,
-                                    splitColdPipe,
-                                );
-
-                            } else {
-                                splitColdPipe = null;
-                            }
-
-
-                            // do closest hot pipe
-                            if (splitColdPipe) {
-                                interactClosestPipe(context, StandardFlowSystemUids.HotWater, wc, 3000);
-                                if (context.interactive && context.interactive.length) {
-                                    try {
-                                        const pipeE = context.interactive[0];
-                                        splitHotPipe = context.objectStore.get(pipeE.uid) as Pipe;
-
-                                        hotObj = DrawableObjectFactory.build(
-                                            newHot,
-                                            newTmv,
-                                            context.objectStore,
-                                            false,
-                                        ) as SystemNode;
-
-                                        const hotWc = hotObj.toWorldCoord({x: 0, y: 0});
-
-                                        leadPipe(
-                                            context,
-                                            hotWc,
-                                            newHot,
-                                            hotPipeUid,
-                                            StandardFlowSystemUids.HotWater,
-                                            splitHotPipe,
-                                        );
-                                    } finally {
-                                        if (hotObj) {
-                                            context.objectStore.delete(hotObj.uid);
-                                        }
-                                    }
-                                } else {
-                                    splitHotPipe = null;
-                                }
-                            }
-                        } finally {
-                            if (tmvObj) {
-                                context.objectStore.delete(tmvObj.uid);
-                            }
-                            if (coldObj) {
-                                context.objectStore.delete(coldObj.uid);
-                            }
-                            if (hotObj) {
-                                context.objectStore.delete(hotObj.uid);
-                            }
-                        }
-                        context.processDocument();
-                    } finally {
-
-                        context.unlockDrawing();
-                    }
-                });
-            },
-            (wc: Coord) => {
-                if (splitColdPipe) {
-                    context.deleteEntity(splitColdPipe);
+                if (!interrupted) {
+                    // stamp
+                    insertTmv(context, tmvhasCold);
                 }
-                if (splitHotPipe) {
-                    context.deleteEntity(splitHotPipe);
+            }
+        },
+        (wc: Coord) => {
+            context.$store.dispatch('document/revert', false);
+
+            const doc = context.document as DocumentState;
+
+            // Maybe we drew onto a background
+            const [parentUid, oc] = getInsertCoordsAt(context, wc);
+
+            const newTmv: TmvEntity = {
+                coldRoughInUid: coldUid,
+                hotRoughInUid: hotUid,
+                warmOutputUid: warmUid,
+                coldOutputUid: tmvhasCold ? coldOutUid : null,
+
+                maxFlowRateLS: null,
+                maxHotColdPressureDifferentialPCT: null,
+                maxInletPressureKPA: null,
+                minFlowRateLS: null,
+                minInletPressureKPA: null,
+                pipeDistanceMM: 150,
+                rotation: 0,
+                valveLengthMM: 400,
+
+                type: EntityType.TMV,
+                center: oc,
+                heightAboveFloorM: 70,
+                parentUid,
+                outputTemperatureC: 50,
+                uid: tmvUid,
+                calculation: null,
+            };
+
+            const newCold: SystemNodeEntity = {
+                center: {x: newTmv.pipeDistanceMM / 2, y: 0},
+                connections: [],
+                parentUid: tmvUid,
+                type: EntityType.SYSTEM_NODE,
+                systemUid: StandardFlowSystemUids.ColdWater,
+                uid: coldUid,
+            };
+
+            const newHot: SystemNodeEntity = {
+                center: {x: -newTmv.pipeDistanceMM / 2, y: 0},
+                connections: [],
+                parentUid: tmvUid,
+                type: EntityType.SYSTEM_NODE,
+                systemUid: StandardFlowSystemUids.HotWater,
+                uid: hotUid,
+            };
+
+            const newWarm: SystemNodeEntity = {
+                center: {x: 0, y: newTmv.valveLengthMM},
+                connections: [],
+                parentUid: tmvUid,
+                type: EntityType.SYSTEM_NODE,
+                systemUid: StandardFlowSystemUids.WarmWater,
+                uid: warmUid,
+            };
+
+            const newColdOut: SystemNodeEntity = {
+                center: {x: -newTmv.pipeDistanceMM / 4, y: newTmv.valveLengthMM},
+                connections: [],
+                parentUid: tmvUid,
+                type: EntityType.SYSTEM_NODE,
+                systemUid: StandardFlowSystemUids.ColdWater,
+                uid: coldOutUid,
+            };
+
+            doc.drawing.entities.push(newTmv, newCold, newHot, newWarm);
+
+            if (tmvhasCold) {
+                doc.drawing.entities.push(newColdOut);
+            }
+
+            let tmvObj: Tmv | undefined;
+            let coldObj: SystemNode | undefined;
+            let hotObj: SystemNode | undefined;
+            let coldDrawn = false;
+
+
+            const interactive = getClosestJoinable(context, StandardFlowSystemUids.ColdWater, wc, 3000);
+            if (interactive) {
+                coldDrawn = true;
+                const target = interactive[0];
+                const targetObj = context.objectStore.get(target.uid)!;
+                // rotate our pipe and try again with correct position of cold water
+                tmvObj = DrawableObjectFactory.build(
+                    context.hydraulicsLayer,
+                    newTmv,
+                    context.document.drawing.backgrounds.find((b) => b.uid === parentUid) || null,
+                    context.objectStore,
+                    false,
+                ) as Tmv;
+
+
+                const closePoint = targetObj.shape()!.distanceTo(Flatten.point(wc.x, wc.y))[1].ps;
+                const currA = tmvObj.toWorldAngle(0);
+                const desiredA = -Flatten.vector(
+                    Flatten.point(wc.x, wc.y)
+                    , closePoint,
+                ).angleTo(
+                    Flatten.vector(0, -1),
+                ) / Math.PI * 180;
+
+                newTmv.rotation = ((desiredA - currA) % 360 + 360) % 360;
+
+                // maybe refresh is unnecessary?
+                tmvObj.refreshObject(tmvObj.parentEntity, newTmv);
+                coldObj = DrawableObjectFactory.build(
+                    context.hydraulicsLayer,
+                    newCold,
+                    newTmv,
+                    context.objectStore,
+                    false,
+                ) as SystemNode;
+                const coldLoc = coldObj.toWorldCoord({x: 0, y: 0});
+
+                leadPipe(
+                    context,
+                    coldLoc,
+                    newCold,
+                    StandardFlowSystemUids.ColdWater,
+                    target.uid,
+                );
+
+            }
+
+            // do closest hot pipe
+            if (coldDrawn) {
+                const interactive = getClosestJoinable(context, StandardFlowSystemUids.HotWater, wc, 3000);
+                if (interactive && interactive.length) {
+                    const pipeE = interactive[0];
+
+                    hotObj = DrawableObjectFactory.build(
+                        context.hydraulicsLayer,
+                        newHot,
+                        newTmv,
+                        context.objectStore,
+                        false,
+                    ) as SystemNode;
+
+                    const hotWc = hotObj.toWorldCoord({x: 0, y: 0});
+
+                    leadPipe(
+                        context,
+                        hotWc,
+                        newHot,
+                        StandardFlowSystemUids.HotWater,
+                    );
                 }
-                context.$store.dispatch('document/commit');
-            },
-        ));
-    });
+            }
+            context.processDocument();
+        },
+        (wc: Coord) => {
+            context.$store.dispatch('document/commit');
+        },
+    ));
 }
 
 function leadPipe(
     context: CanvasContext,
     wc: Coord,
     connectTo: ConnectableEntity,
-    pipeUid: string,
     systemUid: string,
-    pipeSpec: string | Pipe,
+    pipeSpec?: string,
     radius: number = Infinity,
 ): PipeEntity | null {
 
     let pipe: Pipe;
-    if (pipeSpec instanceof Pipe) {
-        pipe = pipeSpec;
+    let valve: ConnectableEntityConcrete;
+    if (pipeSpec !== undefined) {
+        const obj = context.objectStore.get(pipeSpec)!;
+        if (obj.entity.type === EntityType.PIPE) {
+            valve = addValveAndSplitPipe(context, obj as Pipe, wc, systemUid, 30);
+        } else if (isConnectable(obj.type)) {
+            valve = obj.entity as ConnectableEntityConcrete;
+        } else {
+            throw new Error('not supported to lead from');
+        }
     } else {
-        interactClosestPipe(context, pipeSpec, wc, radius);
-        if (context.interactive && context.interactive) {
-            const pipeE = context.interactive[0];
-            pipe = context.objectStore.get(pipeE.uid) as Pipe;
+        const interactive = getClosestJoinable(context, systemUid, wc, radius);
+        if (interactive) {
+            if (interactive[0].type === EntityType.PIPE) {
+                const pipeE = interactive[0];
+                pipe = context.objectStore.get(pipeE.uid) as Pipe;
+                valve = addValveAndSplitPipe(context, pipe, wc, systemUid, 30);
+
+            } else if (isConnectable(interactive[0].type)) {
+                valve = interactive[0] as ConnectableEntityConcrete;
+            } else {
+                throw new Error('not supported');
+            }
+
         } else {
             return null;
         }
     }
-
-    const valve = addValveAndSplitPipe(context, pipe, wc,
-        context.document.drawing.flowSystems.find((s) => s.uid === systemUid)!,
-    );
 
     // Draw de cold peep
     const newPipe: PipeEntity = {
@@ -278,38 +251,38 @@ function leadPipe(
         parentUid: null,
         systemUid,
         type: EntityType.PIPE,
-        uid: pipeUid,
+        uid: uuid(),
         calculation: null,
     };
 
-    valve.connections.push(pipeUid);
-    connectTo.connections.push(pipeUid);
+    valve.connections.push(newPipe.uid);
+    connectTo.connections.push(newPipe.uid);
 
 
     context.document.drawing.entities.push(newPipe);
     return newPipe;
+
 }
 
-function interactClosestPipe(context: CanvasContext, systemUid: string, wc: Coord, radius: number) {
-    context.offerInteraction(
+function getClosestJoinable(context: CanvasContext, systemUid: string, wc: Coord, radius: number): Array<PipeEntity | ConnectableEntityConcrete> | null {
+    return context.offerInteraction(
         {
-            type: InteractionType.INSERT,
-            entityType: EntityType.TMV,
+            type: InteractionType.EXTEND_NETWORK,
+            systemUid,
             worldCoord: wc,
             worldRadius: radius, // 1 M radius
         },
+        undefined,
         (object: DrawableEntity[]) => {
-            const entity: DrawableEntity = object[0];
-            if (entity.type === EntityType.PIPE) {
-                const pe: PipeEntity = entity as PipeEntity;
-                return pe.systemUid === systemUid;
+            const obj = context.objectStore.get(object[0].uid);
+            if (!obj) {
+                return -Infinity;
             }
-            return false;
+            if (!obj.shape()) {
+                return -Infinity;
+            }
+
+            return -obj!.shape()!.distanceTo(Flatten.point(wc.x, wc.y))[0];
         },
-        (object: DrawableEntity[]) => {
-            return -(context.objectStore.get(object[0].uid) as Pipe)
-                .lastDrawnLine
-                .distanceTo(Flatten.point(wc.x, wc.y))[0];
-        },
-    );
+    ) as Array<PipeEntity | ConnectableEntityConcrete>;
 }

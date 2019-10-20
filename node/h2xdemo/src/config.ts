@@ -3,6 +3,7 @@ import {Choice} from '@/lib/types';
 import {Catalog} from '@/store/catalog/types';
 import * as _ from 'lodash';
 import {assertUnreachable} from '@/lib/utils';
+import {cloneSimple} from '@/lib/utils';
 
 export interface PaperSize {
     name: string;
@@ -113,7 +114,7 @@ export const DISPLAY_PSD_METHODS: Choice[] = [
 ];
 
 export function getPsdMethods(catalog: Catalog): Choice[] {
-    const methods: Choice[] = _.cloneDeep(DISPLAY_PSD_METHODS);
+    const methods: Choice[] = cloneSimple(DISPLAY_PSD_METHODS);
 
     for (const key of Object.keys(catalog.psdStandards)) {
         const standard = catalog.psdStandards[key];

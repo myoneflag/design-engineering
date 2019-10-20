@@ -1,6 +1,5 @@
 import Graph from '@/calculations/graph';
 import {expect} from 'chai';
-import {strictEqual} from 'assert';
 import * as _ from 'lodash';
 
 
@@ -13,7 +12,7 @@ describe('graph.ts', () => {
                 visited.push(n);
             },
             undefined,
-            (e) => {
+            () => {
                 expect(false);
             },
         );
@@ -349,7 +348,6 @@ describe('graph.ts', () => {
                 return e.value;
             },
             (n) => {
-                console.log(n);
                 visitedNodes.push(n.node);
             },
             (e) => {
@@ -375,7 +373,6 @@ describe('graph.ts', () => {
         expect(result![1]).eq(10);
         expect(result![0].map((e) => e.to)).eql(['D', 'F', 'G']);
 
-        console.log('here');
         const result2 = graph.shortestPath('E', 'G', (e) => e.value, undefined, undefined, false);
         expect(result2);
         expect(result2![1]).eq(9);

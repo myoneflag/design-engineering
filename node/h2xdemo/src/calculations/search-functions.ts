@@ -52,10 +52,6 @@ export function ternarySearchForGlobalMin(fn: (num: number) => number): number {
         const mv0 = fn(low);
         const mv3 = fn(high);
 
-        if (mv1 > mv0 || mv2 > mv3) {
-            console.log(mv0 + ' ' + mv1 + ' ' + mv2 + ' ' + mv3);
-            console.log(low + ' ' + mid1 + ' ' + mid2 + ' ' + high);
-        }
         assert(mv1 <= mv0);
         assert(mv2 <= mv3);
         if (mv1 === mv2) {
