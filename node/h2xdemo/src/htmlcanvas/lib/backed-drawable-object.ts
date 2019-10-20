@@ -5,19 +5,21 @@ import {Interaction} from '@/htmlcanvas/lib/interaction';
 import {ObjectStore} from '@/htmlcanvas/lib/types';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import Layer from '@/htmlcanvas/layers/layer';
 
 export default abstract class BackedDrawableObject<T extends DrawableEntityConcrete> extends BaseBackedObject {
     entity: T;
 
     constructor(
         objectStore: ObjectStore,
+        layer: Layer,
         parentEntity: DrawableEntity | null,
         obj: T,
         onSelect: () => void,
         onChange: () => void,
         onCommit: () => void,
     ) {
-        super(objectStore, parentEntity, obj, onSelect, onChange, onCommit);
+        super(objectStore, layer, parentEntity, obj, onSelect, onChange, onCommit);
         this.entity = obj; // to keep error checking happy
     }
 
@@ -30,6 +32,7 @@ export default abstract class BackedDrawableObject<T extends DrawableEntityConcr
 
 export type BaseBackedConstructor = new (
     objectStore: ObjectStore,
+    layer: Layer,
     parentEntity: DrawableEntity | null,
     obj: DrawableEntity,
     onSelect: () => void,
@@ -39,6 +42,7 @@ export type BaseBackedConstructor = new (
 
 export type BackedObjectConstructor<T extends DrawableEntityConcrete> = new (
     objectStore: ObjectStore,
+    layer: Layer,
     parentEntity: DrawableEntity | null,
     obj: T,
     onSelect: () => void,

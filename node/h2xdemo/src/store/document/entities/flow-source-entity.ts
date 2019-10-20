@@ -11,6 +11,7 @@ import {EntityType} from '@/store/document/entities/types';
 import FlowSourceCalculation from '@/store/document/calculations/flow-source-calculation';
 import {CalculationTarget} from '@/store/document/calculations/types';
 import {Choice} from '@/lib/types';
+import {cloneSimple} from '@/lib/utils';
 
 export default interface FlowSourceEntity extends ConnectableEntity, CalculationTarget<FlowSourceCalculation> {
     type: EntityType.FLOW_SOURCE;
@@ -61,7 +62,7 @@ export function makeFlowSourceFields(materials: Choice[], systems: FlowSystemPar
 }
 
 export function fillFlowSourceDefaults(doc: DocumentState, value: FlowSourceEntity) {
-    const result = _.cloneDeep(value);
+    const result = cloneSimple(value);
 
     // get system
     const system = doc.drawing.flowSystems.find((s) => s.uid === value.systemUid);

@@ -8,12 +8,11 @@ import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 import {getInsertCoordsAt} from '@/htmlcanvas/lib/utils';
 import {InteractionType} from '@/htmlcanvas/lib/interaction';
 import * as _ from 'lodash';
-import ValveEntity from '@/store/document/entities/valve-entity';
-import Valve from '@/htmlcanvas/objects/valve';
 import Pipe from '@/htmlcanvas/objects/pipe';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
-import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import {addValveAndSplitPipe} from '@/htmlcanvas/lib/interactions/split-pipe';
+import {cloneSimple} from '@/lib/utils';
 
 export default function insertFlowSource(
     context: CanvasContext,
@@ -22,68 +21,39 @@ export default function insertFlowSource(
     const newUid = uuid();
     let toReplace: BackedDrawableObject<ConnectableEntityConcrete> | null = null;
     MainEventBus.$emit('set-tool-handler', new PointTool(
-        (interrupted) => {
+        (interrupted, displaced) => {
             if (interrupted) {
                 context.$store.dispatch('document/revert');
             }
-            MainEventBus.$emit('set-tool-handler', null);
+            if (!displaced) {
+                MainEventBus.$emit('set-tool-handler', null);
+            }
         },
         (wc: Coord) => {
             // Preview
-            context.lockDrawing();
             context.$store.dispatch('document/revert', false).then(() => {
 
                 const interactive = context.offerInteraction({
                     entityType: EntityType.FLOW_SOURCE,
                     worldCoord: wc,
-                    worldRadius: 0,
+                    worldRadius: 10,
                     type: InteractionType.INSERT,
                 },
                     (o) => {
-                    return o.length > 0 && o[0].type === EntityType.VALVE;
+                    return o[0].type === EntityType.VALVE || o[0].type === EntityType.PIPE;
                 });
 
 
                 let connections: string[] = [];
 
-                if (interactive) {
-                    const object = context.objectStore.get(interactive[0].uid)!;
-                    const entity = object.entity as ConnectableEntity;
-                    connections = _.cloneDeep(entity.connections);
-
-                    connections.forEach((e) => {
-                        const other = context.objectStore.get(e);
-                        if (other instanceof Pipe) {
-                            if (other.entity.endpointUid[0] === entity.uid) {
-                                other.entity.endpointUid[0] = newUid;
-                            } else {
-                                other.entity.endpointUid[1] = newUid;
-                            }
-                        } else {
-                            throw new Error('Connection is not a pipe');
-                        }
-                    });
-
-                    toReplace = object as BackedDrawableObject<ConnectableEntityConcrete>;
-                    toReplace.entity.connections.splice(0);
-                    wc = object.toWorldCoord({x: 0, y: 0});
-                } else {
-                    toReplace = null;
-                }
-
-                const doc = context.document as DocumentState;
-
-                // Maybe we drew onto a background
-                const [parentUid, oc] = getInsertCoordsAt(context, wc);
-
                 const newEntity: FlowSourceEntity = {
                     connections,
-                    center: oc,
+                    center: cloneSimple(wc),
                     color: null,
                     heightAboveFloorM: 0,
                     material: null,
                     maximumVelocityMS: null,
-                    parentUid,
+                    parentUid: null,
                     pressureKPA: null,
                     diameterMM: 100,
                     spareCapacity: null,
@@ -94,17 +64,54 @@ export default function insertFlowSource(
                     calculation: null,
                 };
 
+                if (interactive) {
+                    const object = context.objectStore.get(interactive[0].uid)!;
+                    if (object instanceof Pipe) {
+                        console.log('interacting with pipe');
+                        addValveAndSplitPipe(context, object, wc, object.entity.systemUid, 30, newEntity);
+                        context.deleteEntity(object);
+                        wc = newEntity.center;
+                    } else {
+
+                        const entity = object.entity as ConnectableEntity;
+                        connections = cloneSimple(entity.connections);
+
+                        connections.forEach((e) => {
+                            const other = context.objectStore.get(e);
+                            if (other instanceof Pipe) {
+                                if (other.entity.endpointUid[0] === entity.uid) {
+                                    other.entity.endpointUid[0] = newUid;
+                                } else {
+                                    other.entity.endpointUid[1] = newUid;
+                                }
+                            } else {
+                                throw new Error('Connection is not a pipe');
+                            }
+                        });
+
+                        toReplace = object as BackedDrawableObject<ConnectableEntityConcrete>;
+                        toReplace.entity.connections.splice(0);
+                        context.deleteEntity(toReplace);
+                        wc = object.toWorldCoord({x: 0, y: 0});
+                    }
+                } else {
+                    toReplace = null;
+                }
+
+                const doc = context.document as DocumentState;
+
+                // Maybe we drew onto a background
+                const [parentUid, oc] = getInsertCoordsAt(context, wc);
+                newEntity.center = oc;
+                newEntity.parentUid = parentUid;
+
                 doc.drawing.entities.push(newEntity);
 
-                context.unlockDrawing();
                 context.processDocument();
 
             });
         },
-        (wc: Coord) => {
-            if (toReplace) {
-                context.deleteEntity(toReplace);
-            }
+        () => {
             context.$store.dispatch('document/commit');
 
             // Notify the user that there's fields to select

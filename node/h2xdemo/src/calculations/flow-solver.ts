@@ -1,20 +1,12 @@
 import Graph, {Edge} from '@/calculations/graph';
 import {ObjectStore} from '@/htmlcanvas/lib/types';
-import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
-import {EntityType} from '@/store/document/entities/types';
 import {Catalog} from '@/store/catalog/types';
-import Pipe from '@/htmlcanvas/objects/pipe';
 import {DocumentState} from '@/store/document/types';
-import {interpolateTable, parseCatalogNumberExact} from '@/htmlcanvas/lib/utils';
-import Valve from '@/htmlcanvas/objects/valve';
-import {getDarcyWeisbachFlatMH, getFluidDensityOfSystem, kpa2head} from '@/calculations/pressure-drops';
+import {getFluidDensityOfSystem, kpa2head} from '@/calculations/pressure-drops';
 import {ternarySearchForGlobalMin} from '@/calculations/search-functions';
-import {SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
-import {GRAVITATIONAL_ACCELERATION} from '@/calculations/index';
 import FlowSourceEntity from '@/store/document/entities/flow-source-entity';
 import {FlowAssignment} from '@/calculations/flow-assignment';
-import {CalculationContext} from '@/calculations/types';
-import { getObjectFrictionHeadLoss } from './enitity-pressure-drops';
+import { getObjectFrictionHeadLoss } from './entity-pressure-drops';
 
 export const MINIMUM_FLOW_RATE_CHANGE = 0.0001;
 
@@ -71,12 +63,11 @@ export default class FlowSolver {
         // give any valid flow initially.
         const flowRates = this.getInitialFlowRates(demandsLS, suppliesKPA);
 
-        //return flowRates;
+        // return flowRates;
         let iters = 0;
         while (true) {
             iters++;
             if (iters > 200) {
-                console.log("We are past the number of iterations");
                 break;
             }
             let adjustments = 0;
@@ -107,7 +98,6 @@ export default class FlowSolver {
             if (adjustments < MINIMUM_FLOW_RATE_CHANGE) {
                 break;
             }
-            console.log('Continuing iteration, total adjustments: ' + adjustments);
         }
 
         return flowRates;
@@ -134,17 +124,6 @@ export default class FlowSolver {
                 totalHeadLoss += delta;
             });
             return Math.abs(-expectedDifferenceHead - totalHeadLoss);
-        });
-
-        path.forEach((e) => {
-            const connector = this.objectStore.get(e.value)!;
-            const pd = getObjectFrictionHeadLoss(
-                {drawing: this.doc.drawing, catalog: this.catalog, objectStore: this.objectStore},
-                connector,
-                flows.getFlow(e.uid, e.from) + bestAdjustment,
-                e.from,
-                e.to,
-            );
         });
 
         path.forEach((v) => {

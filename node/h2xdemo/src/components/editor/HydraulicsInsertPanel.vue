@@ -84,7 +84,7 @@
     import Component from 'vue-class-component';
     import FlowSystemPicker from '@/components/editor/FlowSystemPicker.vue';
     import {EntityType} from '@/store/document/entities/types';
-    import {FixtureSpec} from "@/store/catalog/types";
+    import {FixtureSpec} from '@/store/catalog/types';
 
     @Component({
         components: {FlowSystemPicker},

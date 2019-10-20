@@ -11,8 +11,10 @@ import {getInsertCoordsAt} from '@/htmlcanvas/lib/utils';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import Connectable from '@/htmlcanvas/lib/object-traits/connectable';
 import Flatten from '@flatten-js/core';
-import * as _ from 'lodash';
 import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import {addValveAndSplitPipe} from '@/htmlcanvas/lib/interactions/split-pipe';
+import Pipe from '@/htmlcanvas/objects/pipe';
+import {isConnectable} from '@/store/document';
 
 export default function insertPipes(context: CanvasContext, system: FlowSystemParameters) {
     // strategy:
@@ -20,11 +22,12 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
     // 2. endpoint of pipe is at 2nd click point and follows the move in order to preview
     // 3. clicking creates new pipe with start point the same as endpoint.
     MainEventBus.$emit('set-tool-handler', new PointTool(
-        (interrupted) => {
-            MainEventBus.$emit('set-tool-handler', null);
+        (interrupted, displaced) => {
+            if (!displaced) {
+                MainEventBus.$emit('set-tool-handler', null);
+            }
         },
         (wc: Coord, event: MouseEvent) => {
-            context.lockDrawing();
             // Preview
             context.offerInteraction(
                 {
@@ -39,13 +42,14 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                     return object[0].type !== EntityType.BACKGROUND_IMAGE;
                 },
             );
-            context.unlockDrawing();
+            context.scheduleDraw();
+
         },
         (wc: Coord, event: MouseEvent) => {
 
 
             // Preview
-            context.offerInteraction(
+            const interactive = context.offerInteraction(
                 {
                     type: InteractionType.STARTING_PIPE,
                     system,
@@ -63,13 +67,22 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
             const doc = context.document as DocumentState;
             // maybe we drew onto an existing node.
             let entity: ConnectableEntity | ValveEntity;
-            if (context.interactive &&
-                context.interactive.length &&
-                context.interactive[0].type !== EntityType.BACKGROUND_IMAGE
-            ) {
-                entity = context.interactive[0] as ConnectableEntity;
-                const object = context.objectStore.get(context.interactive[0].uid)!;
-                context.hydraulicsLayer.onSelected(object);
+            if (interactive) {
+                const target = interactive[0];
+                if (target.type === EntityType.PIPE) {
+                    entity = addValveAndSplitPipe(
+                        context,
+                        context.objectStore.get(target.uid) as Pipe,
+                        wc,
+                        target.systemUid,
+                        30,
+                    );
+                    context.deleteEntity(context.objectStore.get(target.uid) as Pipe);
+                } else {
+                    entity = target as ConnectableEntity;
+                }
+
+
             } else {
                 // Maybe we drew onto a background
                 const [parentUid, oc] = getInsertCoordsAt(context, wc);
@@ -100,14 +113,12 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
 }
 
 function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEntity, system: FlowSystemParameters) {
+    console.log('inserting pipe chain at ' + JSON.stringify(lastAttachment));
     let nextEntity: ConnectableEntityConcrete | ValveEntity;
-    let nextEntityWasNew: boolean = false;
-    let pipe: PipeEntity;
     const pipeUid = uuid();
 
     MainEventBus.$emit('set-tool-handler', new PointTool(
-        (interrupted) => {
-            MainEventBus.$emit('set-tool-handler', null);
+        (interrupted, displaced) => {
             if (interrupted) {
                 // revert changes.
                 context.$store.dispatch('document/revert').then(() => {
@@ -121,48 +132,39 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
                     context.$store.dispatch('document/commit');
                 });
             }
+
+            if (!displaced) {
+                MainEventBus.$emit('set-tool-handler', null);
+                // stamp and draw another pipe
+                insertPipes(context, system);
+            }
         },
         (wc: Coord, event: MouseEvent) => {
 
-            let needUpdate: boolean = false;
+            context.$store.dispatch('document/revert', false);
 
             // create pipe
-            if (!pipe) {
-                pipe = {
-                    color: null,
-                    diameterMM: null,
-                    lengthM: null,
-                    endpointUid: [lastAttachment.uid, lastAttachment.uid],
-                    heightAboveFloorM: 0.7,
-                    material: null,
-                    maximumVelocityMS: null,
-                    parentUid: null,
-                    systemUid: system.uid,
-                    type: EntityType.PIPE,
-                    uid: pipeUid,
-                    calculation: null,
-                };
-                context.document.drawing.entities.push(pipe);
-                (context.document.drawing.entities.find((e) => e.uid === lastAttachment.uid) as ConnectableEntity)
-                    .connections.push(pipe.uid);
-                // context.processDocument();
-                needUpdate = true;
-            }
-
+            const pipe: PipeEntity = {
+                color: null,
+                diameterMM: null,
+                lengthM: null,
+                endpointUid: [lastAttachment.uid, lastAttachment.uid],
+                heightAboveFloorM: 0.7,
+                material: null,
+                maximumVelocityMS: null,
+                parentUid: null,
+                systemUid: system.uid,
+                type: EntityType.PIPE,
+                uid: pipeUid,
+                calculation: null,
+            };
+            context.document.drawing.entities.push(pipe);
+            (context.document.drawing.entities.find((e) => e.uid === lastAttachment.uid) as ConnectableEntity)
+                .connections.push(pipe.uid);
 
             // maybe we drew onto an existing node.
-            const exclude: string[] = [];
-            if (nextEntityWasNew && nextEntity) {
-                exclude.push(nextEntity.uid);
-            }
 
-            if (!nextEntityWasNew) {
-                if (nextEntity) {
-                    nextEntity.connections.splice(nextEntity.connections.indexOf(pipeUid), 1);
-                }
-            }
-
-            context.offerInteraction(
+            const interactive = context.offerInteraction(
                 {
                     type: InteractionType.STARTING_PIPE,
                     system,
@@ -171,46 +173,37 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
                         : 0,
                     worldCoord: wc,
                 },
-                (obj) => {
-                    if (obj[0].uid !== pipeUid) {
-                        if (nextEntity) {
-                            return exclude.indexOf(obj[0].uid) === -1;
-                        } else {
-                            return true;
-                        }
+                undefined,
+                ([obj]) => {
+                    if (obj.type === EntityType.PIPE) {
+                        return 0;
+                    } else {
+                        return 10;
                     }
-                    return false;
                 },
             );
 
-            if (!nextEntityWasNew) {
-                if (nextEntity) {
+            if (interactive) {
+                if (interactive[0].type === EntityType.PIPE) {
+                    nextEntity = addValveAndSplitPipe(
+                        context,
+                        context.objectStore.get(interactive[0].uid) as Pipe,
+                        wc,
+                        pipe.systemUid,
+                        30,
+                    );
+                    context.deleteEntity(context.objectStore.get(interactive[0].uid) as Pipe);
+                    nextEntity.connections.push(pipe.uid);
+                } else if (isConnectable(interactive[0].type)) {
+                    nextEntity = interactive[0] as ConnectableEntityConcrete;
                     nextEntity.connections.push(pipeUid);
-                }
-            }
+                    context.hydraulicsLayer.selectedObject = context.objectStore.get(interactive[0].uid)!;
 
-            if (context.interactive &&
-                context.interactive.length &&
-                context.interactive[0].type !== EntityType.BACKGROUND_IMAGE
-            ) {
-                if (nextEntityWasNew && nextEntity !== null) {
-                    // delete the no longer needed new phantom pipe
-                    const index = context.document.drawing.entities.findIndex((e) => e.uid === nextEntity.uid);
-                    context.document.drawing.entities.splice(index, 1);
-                    needUpdate = true;
+                } else {
+                    throw new Error('Don\'t know how to handle this');
                 }
-
-                if (!nextEntityWasNew) {
-                    if (nextEntity) {
-                        nextEntity.connections.splice(nextEntity.connections.indexOf(pipeUid), 1);
-                    }
-                }
-
-                nextEntity = context.interactive[0] as ConnectableEntityConcrete;
-                nextEntity.connections.push(pipeUid);
-                context.hydraulicsLayer.selectedObject = context.objectStore.get(context.interactive[0].uid)!;
-                nextEntityWasNew = false;
             } else {
+                // Create an endpoint fitting for it instead
                 context.hydraulicsLayer.selectedObject = null;
                 if (!event.shiftKey) {
                     // Snap onto a direction.
@@ -247,75 +240,35 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
                 }
 
                 // Maybe we drew onto a background
-                const floor = context.backgroundLayer.getBackgroundAt(wc, context.objectStore);
-                let parentUid: string | null = null;
-                let oc = _.cloneDeep(wc);
-                if (floor != null) {
-                    parentUid = floor.entity.uid;
-                    oc = floor.toObjectCoord(wc);
-                }
+                const [parentUid, oc] = getInsertCoordsAt(context, wc);
 
-                if (nextEntityWasNew) {
-                    const oldpar = nextEntity.parentUid;
-                    nextEntity.center = oc;
-                    nextEntity.parentUid = parentUid;
-                    if (oldpar !== parentUid) {
-                        needUpdate = true;
-                    }
-                } else {
-                    if (nextEntity) {
-                        nextEntity.connections.splice(nextEntity.connections.indexOf(pipeUid), 1);
-                    }
-
-                    // Create 2nd valve
-                    const valveEntity: ValveEntity = {
-                        center: oc,
-                        color: null,
-                        connections: [pipeUid],
-                        parentUid,
-                        systemUid: system.uid,
-                        type: EntityType.VALVE,
-                        uid: uuid(),
-                        // These names should come from databases.
-                        valveType: 'fitting',
-                        calculation: null,
-                    };
-                    nextEntity = valveEntity;
-                    context.document.drawing.entities.push(nextEntity);
-                    needUpdate = true;
-                }
-
-                nextEntityWasNew = true;
+                // Create 2nd valve
+                nextEntity = {
+                    center: oc,
+                    color: null,
+                    connections: [pipeUid],
+                    parentUid,
+                    systemUid: system.uid,
+                    type: EntityType.VALVE,
+                    uid: uuid(),
+                    // These names should come from databases.
+                    valveType: 'fitting',
+                    calculation: null,
+                };
+                context.document.drawing.entities.push(nextEntity);
             }
 
             pipe.endpointUid.splice(1, 1, nextEntity.uid);
 
-            if (needUpdate) {
-                context.processDocument();
-            } else {
-                context.scheduleDraw();
-            }
+            context.processDocument();
         },
 
         (wc: Coord) => {
             context.interactive = null;
             // committed to the point. And also create new pipe, continue the chain.
-            if (nextEntity && lastAttachment.uid !== nextEntity.uid) {
-                context.$store.dispatch('document/commit').then(() => {
-                    insertPipeChain(context, nextEntity, system);
-                });
-            } else {
-                // end
-                context.$store.dispatch('document/revert').then(() => {
-                    // it's possible that we are drawing the first connection, in which case we will have an
-                    // orphaned valve. Delete it.
-                    if (lastAttachment.connections.length === 0) {
-                        const index = context.document.drawing.entities.findIndex((b) => b.uid === lastAttachment.uid);
-                        context.document.drawing.entities.splice(index, 1);
-                    }
-                    context.$store.dispatch('document/commit');
-                });
-            }
+            context.$store.dispatch('document/commit').then(() => {
+                insertPipeChain(context, nextEntity, system);
+            });
         },
     ));
 }

@@ -11,6 +11,8 @@ import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import {Interaction} from '@/htmlcanvas/lib/interaction';
 import {DrawingContext, ObjectStore} from '@/htmlcanvas/lib/types';
 import {BackgroundEntity} from '@/store/document/entities/background-entity';
+import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 
 export default class BackgroundLayer implements Layer {
     sidsInOrder: string[] = [];
@@ -93,6 +95,7 @@ export default class BackgroundLayer implements Layer {
             if (!this.objectStore.has(background.uid)) {
                 const obj: BackgroundImage = new BackgroundImage(
                     this.objectStore,
+                    this,
                     null,
                     background,
                     () => {
@@ -150,6 +153,7 @@ export default class BackgroundLayer implements Layer {
                 const background = this.objectStore.get(selectId)! as BackgroundImage;
                 this.resizeBox = new ResizeControl(
                     background,
+                    this,
                     () =>  this.onSelectedResize(),
                     () => {
                         // Do deh operation transform.
@@ -201,9 +205,9 @@ export default class BackgroundLayer implements Layer {
         return null;
     }
 
-    onMouseDown(event: MouseEvent, vp: ViewPort) {
+    onMouseDown(event: MouseEvent, context: CanvasContext) {
         if (this.resizeBox) {
-            if (this.resizeBox.onMouseDown(event, vp)) {
+            if (this.resizeBox.onMouseDown(event, context)) {
                 return true;
             }
         }
@@ -213,7 +217,7 @@ export default class BackgroundLayer implements Layer {
             if (this.objectStore.get(selectId)) {
                 const background = this.objectStore.get(selectId);
                 if (background instanceof BackgroundImage) {
-                    if (background.onMouseDown(event, vp)) {
+                    if (background.onMouseDown(event, context)) {
                         return true;
                     }
                 } else {
@@ -225,9 +229,9 @@ export default class BackgroundLayer implements Layer {
         return false;
     }
 
-    onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
+    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
         if (this.resizeBox) {
-            const res = this.resizeBox.onMouseMove(event, vp);
+            const res = this.resizeBox.onMouseMove(event, context);
             if (res.handled) {
                 return res;
             }
@@ -237,7 +241,7 @@ export default class BackgroundLayer implements Layer {
             const selectId = this.sidsInOrder[i];
             const background = this.objectStore.get(selectId);
             if (background instanceof BackgroundImage) {
-                const res = background.onMouseMove(event, vp);
+                const res = background.onMouseMove(event, context);
                 if (res.handled) {
                     return res;
                 }
@@ -250,9 +254,9 @@ export default class BackgroundLayer implements Layer {
     }
 
 
-    onMouseUp(event: MouseEvent, vp: ViewPort) {
+    onMouseUp(event: MouseEvent, context: CanvasContext) {
         if (this.resizeBox) {
-            if (this.resizeBox.onMouseUp(event, vp)) {
+            if (this.resizeBox.onMouseUp(event, context)) {
                 return true;
             }
         }
@@ -261,7 +265,7 @@ export default class BackgroundLayer implements Layer {
             const selectId = this.sidsInOrder[i];
             const background = this.objectStore.get(selectId);
             if (background instanceof BackgroundImage) {
-                if (background.onMouseUp(event, vp)) {
+                if (background.onMouseUp(event, context)) {
                     return true;
                 }
             } else {
@@ -279,8 +283,8 @@ export default class BackgroundLayer implements Layer {
 
     offerInteraction(
         interaction: Interaction,
-        filter?: (objects: DrawableEntity[]) => boolean,
-    ): DrawableEntity[] | null {
+        filter?: (objects: DrawableEntityConcrete[]) => boolean,
+    ): DrawableEntityConcrete[] | null {
         for (let i = this.sidsInOrder.length - 1; i >= 0; i--) {
             const uid = this.sidsInOrder[i];
             if (this.objectStore.has(uid)) {
@@ -298,5 +302,13 @@ export default class BackgroundLayer implements Layer {
             }
         }
         return null;
+    }
+
+    dragObjects(objects: BaseBackedObject[]): void {
+        //
+    }
+
+    releaseDrag(): void {
+        //
     }
 }

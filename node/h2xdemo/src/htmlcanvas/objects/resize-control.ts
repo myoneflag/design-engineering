@@ -6,6 +6,8 @@ import {matrixScale} from '@/htmlcanvas/utils';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import {Coord} from '@/store/document/types';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
+import Layer from '@/htmlcanvas/layers/layer';
+import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 
 enum Sides {
     Left,
@@ -24,8 +26,13 @@ export class ResizeControl extends DrawableObject {
 
     selectedHandle: Handle | null = null;
 
-    constructor(parent: SizeableObject, onChange: ((_: ResizeControl) => any), onCommit: ((_: ResizeControl) => any)) {
-        super(parent);
+    constructor(
+        parent: SizeableObject,
+        layer: Layer,
+        onChange: ((_: ResizeControl) => any),
+        onCommit: ((_: ResizeControl) => any),
+    ) {
+        super(parent, layer);
         this.handles = this.getHandles();
         this.onChange = onChange;
         this.onCommit = onCommit;
@@ -91,17 +98,17 @@ export class ResizeControl extends DrawableObject {
     }
 
 
-    onMouseDown(event: MouseEvent, vp: ViewPort): boolean {
-        this.selectedHandle = this.getHandleAtScreenCoord(event.offsetX, event.offsetY, vp);
+    onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
+        this.selectedHandle = this.getHandleAtScreenCoord(event.offsetX, event.offsetY, context.viewPort);
         return this.selectedHandle != null;
     }
 
-    onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
+    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
         // do mouse changes
         // tslint:disable-next-line:no-bitwise
         if (event.buttons & 1) {
             if (this.selectedHandle != null) {
-                const w = this.toObjectCoord(vp.toWorldCoord({x: event.offsetX, y: event.offsetY}));
+                const w = this.toObjectCoord(context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY}));
                 // start resizing shit
                 if (this.selectedHandle[2].indexOf(Sides.Left) !== -1) {
                     this.w += this.x - w.x;
@@ -133,7 +140,7 @@ export class ResizeControl extends DrawableObject {
                     this.onCommit(this);
                 }
             }
-            const at: Handle | null = this.getHandleAtScreenCoord(event.offsetX, event.offsetY, vp);
+            const at: Handle | null = this.getHandleAtScreenCoord(event.offsetX, event.offsetY, context.viewPort);
             if (at == null) {
                 return UNHANDLED;
             } else {
@@ -142,7 +149,7 @@ export class ResizeControl extends DrawableObject {
         }
     }
 
-    onMouseUp(event: MouseEvent, vp: ViewPort): boolean {
+    onMouseUp(event: MouseEvent, context: CanvasContext): boolean {
         if (this.selectedHandle) {
             this.selectedHandle = null;
             if (this.onCommit) {

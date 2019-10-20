@@ -3,6 +3,7 @@ import * as OT from '@/store/document/operation-transforms/operation-transforms'
 import * as _ from 'lodash';
 import assert from 'assert';
 import {findOptimalSwaps} from '@/store/document/operation-transforms/uid-lis';
+import {cloneSimple} from '@/lib/utils';
 
 
 // Assumptions for the states:
@@ -70,7 +71,7 @@ function getExistingValuesOfDiff(prev: any, result: any) {
         });
         return diff;
     } else {
-        return _.cloneDeep(prev);
+        return cloneSimple(prev);
     }
 }
 
@@ -103,7 +104,7 @@ function diffFieldsOnly(prev: any, next: any) {
         return diff;
     } else {
         if (prev !== next) {
-            return _.cloneDeep(next);
+            return cloneSimple(next);
         } else {
             return undefined;
         }
@@ -146,7 +147,7 @@ function diffUidObjects(prev: any, next: any): OT.OperationTransform[] {
             const inNew: string[] = next.map((v: WithID) => v.uid);
 
             // Find deletions and additions
-            const prevCopy = _.cloneDeep(prev);
+            const prevCopy = cloneSimple(prev);
             const deletions = inOld.filter((v) => inNew.indexOf(v) === -1);
             const insertions = inNew.filter((v) => inOld.indexOf(v) === -1);
 

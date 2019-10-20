@@ -12,6 +12,7 @@ import {EntityType} from '@/store/document/entities/types';
 import ValveCalculation from '@/store/document/calculations/valve-calculation';
 import {CalculationTarget} from '@/store/document/calculations/types';
 import {Choice} from '@/lib/types';
+import {cloneSimple} from '@/lib/utils';
 
 export default interface ValveEntity extends ConnectableEntity, CalculationTarget<ValveCalculation> {
     type: EntityType.VALVE;
@@ -44,7 +45,7 @@ export function fillValveDefaultFields(
     doc: DocumentState,
     value: ValveEntity,
 ) {
-    const result = _.cloneDeep(value);
+    const result = cloneSimple(value);
 
     // get system
     const system = doc.drawing.flowSystems.find((s) => s.uid === value.systemUid);

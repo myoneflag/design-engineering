@@ -15,6 +15,7 @@ import {DISPLAY_PSD_METHODS} from '../../../../config';
 import FixtureCalculation from '@/store/document/calculations/fixture-calculation';
 import {CalculationTarget} from '@/store/document/calculations/types';
 import {parseCatalogNumberOrMin} from '@/htmlcanvas/lib/utils';
+import {cloneSimple} from '@/lib/utils';
 
 export default interface FixtureEntity extends DrawableEntity, CalculationTarget<FixtureCalculation> {
     center: Coord;
@@ -89,7 +90,7 @@ export function fillFixtureFields(
     defaultCatalog: Catalog,
     value: FixtureEntity,
 ): FixtureEntity {
-    const result = _.cloneDeep(value);
+    const result = cloneSimple(value);
 
 
     const arr: Array<

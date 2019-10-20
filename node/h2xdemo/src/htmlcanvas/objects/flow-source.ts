@@ -17,6 +17,8 @@ import {DrawingContext} from '@/htmlcanvas/lib/types';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
 import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
+import {getDragPriority} from '@/store/document';
+import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 
 @CenterDraggableObject
 @ConnectableObject
@@ -26,6 +28,9 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
     }
 
     minimumConnections = 0;
+    maximumConnections = null;
+
+    dragPriority = getDragPriority(EntityType.FLOW_SOURCE);
 
     MINIMUM_RADIUS_PX: number = 3;
     lastDrawnWorldRadius: number = 0; // for bounds detection
@@ -99,6 +104,9 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
     getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]> { /* */ }
 
     get position(): Matrix {
+        if (this.entity.center === undefined) {
+            console.log(JSON.stringify(this.entity));
+        }
         return TM.transform(
             TM.translate(this.entity.center.x, this.entity.center.y),
         );
@@ -121,16 +129,16 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         //
     }
 
-    inBounds(objectCoord: Coord) {
+    inBounds(objectCoord: Coord, radius?: number) {
         const dist = Math.sqrt(
             (objectCoord.x) ** 2
             + (objectCoord.y) ** 2,
         );
-        return dist <= this.lastDrawnWorldRadius;
+        return dist <= this.toObjectLength(this.entity.diameterMM / 2) + (radius ? radius : 0);
     }
 
-    onMouseDown(event: MouseEvent, vp: ViewPort): boolean {
-        const wc = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
+    onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
+        const wc = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const oc = this.toObjectCoord(wc);
 
         // Check bounds
@@ -143,12 +151,12 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         return false;
     }
 
-    onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
+    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
         return UNHANDLED;
     }
 
-    onMouseUp(event: MouseEvent, vp: ViewPort): boolean {
-        const wc = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
+    onMouseUp(event: MouseEvent, context: CanvasContext): boolean {
+        const wc = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const oc = this.toObjectCoord(wc);
         // Check bounds
         return this.inBounds(oc);
@@ -156,19 +164,6 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
 
     prepareDelete(): BaseBackedObject[] {
         return [];
-    }
-
-
-    offerInteraction(interaction: Interaction): DrawableEntity[] | null {
-        switch (interaction.type) {
-            case InteractionType.INSERT:
-                return null;
-            case InteractionType.CONTINUING_PIPE:
-            case InteractionType.STARTING_PIPE:
-                return [this.entity];
-            default:
-                return null;
-        }
     }
 
     rememberToRegister(): void {

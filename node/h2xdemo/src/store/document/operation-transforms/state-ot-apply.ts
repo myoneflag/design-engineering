@@ -3,6 +3,7 @@ import * as OT from './operation-transforms';
 import * as _ from 'lodash';
 import assert from 'assert';
 import Vue from 'vue';
+import {cloneSimple} from '@/lib/utils';
 
 /**
  * Modifies the given state object *in place* with the given path and modifier function.
@@ -39,7 +40,7 @@ export const applyOtOnState = (state: DrawingState, op: OT.OperationTransform) =
         const top = op as OT.AddOperation;
         walkToEnds(state, top.object, (arr: any, obj: any): any => {
             assert(_.isArray(arr));
-            arr.push(_.cloneDeep(obj));
+            arr.push(cloneSimple(obj));
         });
     } else if (op.type === OT.OPERATION_NAMES.MOVE_OPERATION) {
         const top = op as OT.MoveOperation;
@@ -59,11 +60,11 @@ export const applyOtOnState = (state: DrawingState, op: OT.OperationTransform) =
 
                 // we could be updating an entire array, OR we are updating an element in an uid array.
                 if (_.isArray(obj)) {
-                    arr.splice(0, arr.length, ...(_.cloneDeep(obj) as []));
+                    arr.splice(0, arr.length, ...(cloneSimple(obj) as []));
                 } else {
                     assert(_.has(obj, 'uid'));
                     const itemIndex = arr.findIndex((v: WithID) => v.uid === obj.uid);
-                    Vue.set(arr, itemIndex, _.cloneDeep(obj));
+                    Vue.set(arr, itemIndex, cloneSimple(obj));
                 }
             } else {
                 // We are updating a single primitive field.

@@ -15,10 +15,11 @@ import {DrawingContext} from '@/htmlcanvas/lib/types';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
 import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
-import {isConnectable} from '@/store/document';
+import {getDragPriority, isConnectable} from '@/store/document';
 import {Catalog, ValveSize} from '@/store/catalog/types';
 import {lowerBoundTable} from '@/htmlcanvas/lib/utils';
 import Pipe from '@/htmlcanvas/objects/pipe';
+import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 
 @CenterDraggableObject
 @ConnectableObject
@@ -28,14 +29,16 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
     }
 
     minimumConnections = 1;
+    maximumConnections = null;
+    dragPriority = getDragPriority(EntityType.VALVE);
 
-    lastDrawnWidth: number = 0;
+    lastDrawnWidth!: number;
     pixelRadius: number = 5;
-    lastDrawnLength: number = 0;
+    lastDrawnLength!: number;
 
     TURN_RADIUS_MM = 100;
     FITTING_DIAMETER_PIXELS = 6;
-    lastRadials: Array<[Coord, BaseBackedObject]> = [];
+    lastRadials!: Array<[Coord, BaseBackedObject]>;
 
     get position(): Matrix {
         return TM.translate(this.entity.center.x, this.entity.center.y);
@@ -50,8 +53,6 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
 
         // asdf
         const scale = matrixScale(ctx.getTransform());
-
-        const screenSize = this.pixelRadius / scale;
 
         if (this.entity.connections.length === 2) {
             // TODO: draw an angled arc.
@@ -71,7 +72,8 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
             if (pipe.entity.type === EntityType.PIPE) {
 
                 if ((pipe as Pipe).lastDrawnWidth) {
-                    targetWidth = Math.max(defaultWidth, (pipe as Pipe).lastDrawnWidth + this.FITTING_DIAMETER_PIXELS / scale);
+                    targetWidth =
+                        Math.max(defaultWidth, (pipe as Pipe).lastDrawnWidth + this.FITTING_DIAMETER_PIXELS / scale);
                 }
             }
             const oc = this.toObjectCoord(wc);
@@ -101,19 +103,24 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
         return fillValveDefaultFields(context, this.entity);
     }
 
-    inBounds(moc: Coord): boolean {
-        let selected = false;
-        this.lastRadials.forEach(([wc]) => {
-            const oc = this.toObjectCoord(wc);
-            const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
-            const small = vec.normalize().multiply(this.lastDrawnLength);
+    inBounds(moc: Coord, radius: number = 0): boolean {
+        if (this.lastRadials && this.lastDrawnLength !== undefined && this.lastDrawnWidth !== undefined) {
+            let selected = false;
+            this.lastRadials.forEach(([wc]) => {
+                const oc = this.toObjectCoord(wc);
+                const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
+                const small = vec.normalize().multiply(this.lastDrawnLength);
 
-            if (Flatten.segment(Flatten.point(0, 0), Flatten.point(small.x, small.y))
-                .distanceTo(Flatten.point(moc.x, moc.y))[0] <= this.lastDrawnWidth) {
-                selected = true;
-            }
-        });
-        return selected;
+                if (Flatten.segment(Flatten.point(0, 0), Flatten.point(small.x, small.y))
+                    .distanceTo(Flatten.point(moc.x, moc.y))[0] <= this.lastDrawnWidth + radius) {
+                    selected = true;
+                }
+            });
+            return selected;
+        } else {
+            const l = this.toObjectLength(this.TURN_RADIUS_MM * 1.5);
+            return moc.x * moc.x + moc.y * moc.y <= (l + radius) * (l + radius);
+        }
     }
 
     get friendlyTypeName(): string {
@@ -134,8 +141,8 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
         }
     }
 
-    onMouseDown(event: MouseEvent, vp: ViewPort): boolean {
-        const wc = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
+    onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
+        const wc = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const oc = this.toObjectCoord(wc);
 
         // Check bounds
@@ -147,31 +154,15 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
         return false;
     }
 
-    onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
+    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
         return UNHANDLED;
     }
 
-    onMouseUp(event: MouseEvent, vp: ViewPort): boolean {
-        const wc = vp.toWorldCoord({x: event.offsetX, y: event.offsetY});
+    onMouseUp(event: MouseEvent, context: CanvasContext): boolean {
+        const wc = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const oc = this.toObjectCoord(wc);
         // Check bounds
         return this.inBounds(oc);
-    }
-
-
-    offerInteraction(interaction: Interaction): DrawableEntity[] | null {
-        switch (interaction.type) {
-            case InteractionType.INSERT:
-                if (isConnectable(interaction.entityType)) {
-                    return [this.entity];
-                }
-                return null;
-            case InteractionType.CONTINUING_PIPE:
-            case InteractionType.STARTING_PIPE:
-                return [this.entity];
-            default:
-                return null;
-        }
     }
 
     prepareDelete(): BaseBackedObject[] {

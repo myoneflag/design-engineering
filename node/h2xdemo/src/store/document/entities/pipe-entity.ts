@@ -12,6 +12,7 @@ import {EntityType} from '@/store/document/entities/types';
 import PipeCalculation from '@/store/document/calculations/pipe-calculation';
 import {CalculationTarget} from '@/store/document/calculations/types';
 import {Choice} from '@/lib/types';
+import {cloneSimple} from '@/lib/utils';
 
 export default interface PipeEntity extends DrawableEntity, CalculationTarget<PipeCalculation> {
     type: EntityType.PIPE;
@@ -59,7 +60,7 @@ export function fillPipeDefaultFields(
     computedLengthM: number,
     value: PipeEntity,
 ) {
-    const result = _.cloneDeep(value);
+    const result = cloneSimple(value);
 
     // get system
     const system = drawing.flowSystems.find((s) => s.uid === value.systemUid);
@@ -84,4 +85,12 @@ export function fillPipeDefaultFields(
     }
 
     return result;
+}
+
+export function replacePipeEndpointLocal(entity: PipeEntity, from: string, to: string) {
+    const index = entity.endpointUid.indexOf(from);
+    if (index === -1) {
+        throw new Error('Endpoint to replace doesn\'t exist');
+    }
+    entity.endpointUid.splice(index, 1, to);
 }

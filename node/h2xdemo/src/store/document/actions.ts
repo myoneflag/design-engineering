@@ -1,5 +1,4 @@
 import {ActionTree} from 'vuex';
-import axios from 'axios';
 import * as OT from './operation-transforms/operation-transforms';
 import {OPERATION_NAMES} from './operation-transforms/operation-transforms';
 import {RootState} from '../types';
@@ -9,13 +8,9 @@ import {applyOtOnState} from '@/store/document/operation-transforms/state-ot-app
 import * as _ from 'lodash';
 import {MainEventBus} from '@/store/main-event-bus';
 import {BackgroundEntity} from '@/store/document/entities/background-entity';
+import {submitOperation} from '@/api/submit-operation';
+import {cloneSimple} from '@/lib/utils';
 
-
-function submitOperation(commit: any, op: OT.OperationTransform) {
-    return axios.post('/api/document/operation', op).catch(() => {
-        window.alert('Please refresh your browser, an error has been detected trying to communicate with the server.');
-    });
-}
 
 export const actions: ActionTree<DocumentState, RootState> = {
     applyRemoteOperation({commit, state}, op) {
@@ -65,35 +60,28 @@ export const actions: ActionTree<DocumentState, RootState> = {
     commit({commit, state}) {
         // We have to clone to stop reactivity affecting the async post values later.
         // We choose to clone the resulting operations rather than the input for performance.
-        const diff = _.cloneDeep(diffState(state.committedDrawing, state.drawing));
+        const diff = cloneSimple(diffState(state.committedDrawing, state.drawing));
         diff.forEach((v: OT.OperationTransform) => applyOtOnState(state.committedDrawing, v));
-        state.optimisticHistory.push(...diff);
 
         if (diff.length === 0) {
             return;
         }
 
-        MainEventBus.$emit('ot-applied');
-
         if (diff.length) {
             diff.push({type: OPERATION_NAMES.COMMITTED_OPERATION, id: -1});
         }
 
-        const wait = (index: number): Promise<any> => {
-            if (index === diff.length - 1) {
-                return submitOperation(commit, diff[index]);
-            } else {
-                return submitOperation(commit, diff[index]).then(
-                    () => wait(index + 1),
-                );
-            }
-        };
-        wait(0);
+        state.optimisticHistory.push(...diff);
+
+        submitOperation(commit, diff);
+
+
+        MainEventBus.$emit('ot-applied');
     },
 
-    revert({commit, state}) {
+    revert({commit, state}, redraw) {
         // Reverse all optimistic operations
-        commit('revert');
+        commit('revert', redraw);
     },
 
     reset({commit, state}) {

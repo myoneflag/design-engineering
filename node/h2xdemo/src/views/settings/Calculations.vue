@@ -15,7 +15,7 @@
     import Component from 'vue-class-component';
     import {DocumentState} from '@/store/document/types';
     import SettingsFieldBuilder from '@/components/editor/lib/SettingsFieldBuilder.vue';
-    import {PIPE_SIZING_METHODS, DISPLAY_PSD_METHODS, RING_MAIN_CALCULATION_METHODS, getPsdMethods} from "@/config";
+    import {PIPE_SIZING_METHODS, RING_MAIN_CALCULATION_METHODS, getPsdMethods} from '@/config';
 
     @Component({
         components: {SettingsFieldBuilder},

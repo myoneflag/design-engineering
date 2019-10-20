@@ -176,7 +176,6 @@
     import FlowSystemPicker from '@/components/editor/FlowSystemPicker.vue';
     import PopoutColourPicker from '@/components/editor/lib/PopoutColourPicker.vue';
     import {CalculationParams, PropertyField} from '@/store/document/entities/property-field';
-    import { isString } from 'lodash';
     import RotationPicker from '@/components/editor/lib/RotationPicker.vue';
     import {Choice} from '@/lib/types';
 
@@ -200,7 +199,6 @@
         mounted() {
             if (this.$props.target) {
                 // scroll to it
-                console.log("scrolling into view");
                 (this.$refs['field-' + this.$props.target] as any)[0].scrollIntoView();
             }
         }

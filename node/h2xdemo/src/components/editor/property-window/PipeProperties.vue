@@ -58,7 +58,11 @@
         }
 
         get defaultData(): PipeEntity {
-            return fillPipeDefaultFields(this.document.drawing, this.$props.selectedObject.computedLengthM, this.reactiveData);
+            return fillPipeDefaultFields(
+                this.document.drawing,
+                this.$props.selectedObject.computedLengthM,
+                this.reactiveData,
+            );
         }
 
         onCommit() {

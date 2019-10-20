@@ -10,6 +10,7 @@ import {Interaction} from '@/htmlcanvas/lib/interaction';
 import {ConnectableObject} from '../lib/object-traits/connectable';
 import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
 import {InvisibleNodeEntityConcrete} from '@/store/document/entities/concrete-entity';
+import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 
 export abstract class InvisibleNode<T extends InvisibleNodeEntityConcrete> extends BackedConnectable<T> {
     get position() {
@@ -20,15 +21,15 @@ export abstract class InvisibleNode<T extends InvisibleNodeEntityConcrete> exten
         // TA-DA!
     }
 
-    onMouseDown(event: MouseEvent, vp: ViewPort): boolean {
+    onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
         return false;
     }
 
-    onMouseMove(event: MouseEvent, vp: ViewPort): MouseMoveResult {
+    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
         return UNHANDLED;
     }
 
-    onMouseUp(event: MouseEvent, vp: ViewPort): boolean {
+    onMouseUp(event: MouseEvent, context: CanvasContext): boolean {
         return false;
     }
 

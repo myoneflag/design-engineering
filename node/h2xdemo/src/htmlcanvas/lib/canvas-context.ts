@@ -9,6 +9,8 @@ import {Interaction} from '@/htmlcanvas/lib/interaction';
 import HydraulicsLayer from '@/htmlcanvas/layers/hydraulics-layer';
 import {DrawingContext, ObjectStore} from '@/htmlcanvas/lib/types';
 import {Catalog} from '@/store/catalog/types';
+import {ViewPort} from '@/htmlcanvas/viewport';
+import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 
 
 // Expose the members of CanvasContext (a vue object) to other classes and methods
@@ -22,8 +24,9 @@ export default interface CanvasContext {
     effectiveCatalog: Catalog;
 
     $store: Store<RootState>;
+    viewPort: ViewPort;
 
-    interactive: DrawableEntity[] | null;
+    interactive: DrawableEntityConcrete[] | null;
 
     lastDrawingContext: DrawingContext | null;
 
@@ -32,12 +35,12 @@ export default interface CanvasContext {
 
     offerInteraction(
         interaction: Interaction,
-        filter?: (objects: DrawableEntity[]) => boolean,
-        sortBy?: (objects: DrawableEntity[]) => any,
-    ): DrawableEntity[] | null;
+        filter?: (objects: DrawableEntityConcrete[]) => boolean,
+        sortBy?: (objects: DrawableEntityConcrete[]) => any,
+    ): DrawableEntityConcrete[] | null;
 
     scheduleDraw(): void;
-    processDocument(): void;
+    processDocument(redraw?: boolean): void;
 
     deleteEntity(object: BaseBackedObject): void;
 }

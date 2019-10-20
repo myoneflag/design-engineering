@@ -28,8 +28,14 @@ export default function insertFixture(
     const abbreviation =  context.effectiveCatalog.fixtures[fixtureName].abbreviation;
 
     MainEventBus.$emit('set-tool-handler', new PointTool(
-        (interrupted) => {
-            MainEventBus.$emit('set-tool-handler', null);
+        (interrupted, displaced) => {
+            if (interrupted) {
+                if (!displaced) {
+                    MainEventBus.$emit('set-tool-handler', null);
+                }
+            } else {
+                insertFixture(context, fixtureName);
+            }
         },
         (wc: Coord) => {
             // Preview

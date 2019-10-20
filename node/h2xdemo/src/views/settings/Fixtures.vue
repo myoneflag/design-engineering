@@ -51,8 +51,8 @@
     import Component from 'vue-class-component';
     import {DocumentState} from '@/store/document/types';
     import SettingsFieldBuilder from '@/components/editor/lib/SettingsFieldBuilder.vue';
-    import {PIPE_SIZING_METHODS, DISPLAY_PSD_METHODS, RING_MAIN_CALCULATION_METHODS, getPsdMethods} from "@/config";
-    import {Catalog, FixtureSpec} from "@/store/catalog/types";
+    import {PIPE_SIZING_METHODS, RING_MAIN_CALCULATION_METHODS, getPsdMethods} from '@/config';
+    import {Catalog, FixtureSpec} from '@/store/catalog/types';
 
     @Component({
         components: {SettingsFieldBuilder},
@@ -80,7 +80,7 @@
         }
 
         get effectiveCatalog(): Catalog {
-            return this.$store.getters['effectiveCatalog'];
+            return this.$store.getters.effectiveCatalog;
         }
 
         get unavailableFixtureUids(): string[] {

@@ -5,12 +5,13 @@ import {ObjectStore} from '@/htmlcanvas/lib/types';
 import doc = Mocha.reporters.doc;
 import * as webpack from 'webpack';
 import numberToIdentifer = webpack.Template.numberToIdentifer;
+import {cloneSimple} from '@/lib/utils';
 
 
 export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
     const floor = context.backgroundLayer.getBackgroundAt(wc, context.objectStore);
     let parentUid: string | null = null;
-    let oc = _.cloneDeep(wc);
+    let oc = cloneSimple(wc);
     if (floor != null) {
         parentUid = floor.entity.uid;
         oc = floor.toObjectCoord(wc);

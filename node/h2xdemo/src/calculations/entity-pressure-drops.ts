@@ -8,7 +8,14 @@ import {GRAVITATIONAL_ACCELERATION} from '@/calculations/index';
 import {SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
 import {CalculationContext} from '@/calculations/types';
 
-export function getObjectFrictionHeadLoss(context: CalculationContext, object: BaseBackedObject, flowLS: number, from: string, to: string, signed = true): number {
+export function getObjectFrictionHeadLoss(
+    context: CalculationContext,
+    object: BaseBackedObject,
+    flowLS: number,
+    from: string,
+    to: string,
+    signed = true,
+): number {
     const {drawing, catalog, objectStore} = context;
     const entity = object.entity;
     let sign = 1;
