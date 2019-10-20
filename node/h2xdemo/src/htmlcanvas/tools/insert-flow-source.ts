@@ -67,9 +67,7 @@ export default function insertFlowSource(
                 if (interactive) {
                     const object = context.objectStore.get(interactive[0].uid)!;
                     if (object instanceof Pipe) {
-                        console.log('interacting with pipe');
                         addValveAndSplitPipe(context, object, wc, object.entity.systemUid, 30, newEntity);
-                        context.deleteEntity(object);
                         wc = newEntity.center;
                     } else {
 

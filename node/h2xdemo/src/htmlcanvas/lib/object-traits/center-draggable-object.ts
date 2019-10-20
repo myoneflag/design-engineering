@@ -69,8 +69,6 @@ export default function CenterDraggableObject<T extends new (...args: any[]) =>
                             throw new Error('Somehow trying to move onto an incompatible entity');
                         }
                     }
-
-                    console.log('move processed, dragged on ' + JSON.stringify(draggedOn));
                 }
 
                 this.onChange();

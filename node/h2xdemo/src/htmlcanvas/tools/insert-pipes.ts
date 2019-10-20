@@ -77,7 +77,6 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                         target.systemUid,
                         30,
                     );
-                    context.deleteEntity(context.objectStore.get(target.uid) as Pipe);
                 } else {
                     entity = target as ConnectableEntity;
                 }
@@ -113,7 +112,6 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
 }
 
 function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEntity, system: FlowSystemParameters) {
-    console.log('inserting pipe chain at ' + JSON.stringify(lastAttachment));
     let nextEntity: ConnectableEntityConcrete | ValveEntity;
     const pipeUid = uuid();
 
@@ -192,7 +190,6 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
                         pipe.systemUid,
                         30,
                     );
-                    context.deleteEntity(context.objectStore.get(interactive[0].uid) as Pipe);
                     nextEntity.connections.push(pipe.uid);
                 } else if (isConnectable(interactive[0].type)) {
                     nextEntity = interactive[0] as ConnectableEntityConcrete;

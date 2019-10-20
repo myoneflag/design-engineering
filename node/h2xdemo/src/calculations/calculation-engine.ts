@@ -683,8 +683,6 @@ export default class CalculationEngine {
         if (pipe.calculation!.realNominalPipeDiameterMM) {
             pipe.calculation!.velocityRealMS = this.getVelocityRealMs(pipe);
 
-            console.log('pipe mh is ' + this.getPipePressureDropMH(pipe));
-
             pipe.calculation!.pressureDropKpa = head2kpa(
                 this.getPipePressureDropMH(pipe),
                 getFluidDensityOfSystem(pipe.systemUid, this.doc, this.catalog)!,

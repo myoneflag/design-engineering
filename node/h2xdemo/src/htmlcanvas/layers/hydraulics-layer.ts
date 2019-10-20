@@ -121,7 +121,6 @@ export default class  HydraulicsLayer implements Layer {
                     entity,
                 );
             } else {
-                console.log('creating object ' + entity.type + ' id ' + entity.uid );
                 DrawableObjectFactory.build(
                     this,
                     entity,

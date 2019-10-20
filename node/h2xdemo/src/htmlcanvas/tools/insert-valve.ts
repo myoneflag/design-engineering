@@ -23,37 +23,33 @@ export default function insertValve(context: CanvasContext, system: FlowSystemPa
             }
         },
         (wc, event) => {
-            context.$store.dispatch('document/revert', false).then(() => {
+            context.$store.dispatch('document/revert', false);
 
-                context.offerInteraction(
-                    {
-                        type: InteractionType.INSERT,
-                        entityType: EntityType.VALVE,
-                        worldCoord: wc,
-                        worldRadius: 0,
-                    },
-                    (drawable) => {
-                        return drawable[0].type === EntityType.PIPE;
-                    },
-                );
+            context.offerInteraction(
+                {
+                    type: InteractionType.INSERT,
+                    entityType: EntityType.VALVE,
+                    worldCoord: wc,
+                    worldRadius: 30,
+                },
+                (drawable) => {
+                    return drawable[0].type === EntityType.PIPE;
+                },
+            );
 
-                if (context.interactive && context.interactive.length) {
-                    const pipeE = context.interactive[0];
-                    pipe = context.objectStore.get(pipeE.uid) as Pipe;
-                    // Project onto pipe
-                    addValveAndSplitPipe(context, pipe, wc, system.uid);
+            if (context.interactive && context.interactive.length) {
+                const pipeE = context.interactive[0];
+                pipe = context.objectStore.get(pipeE.uid) as Pipe;
+                // Project onto pipe
+                addValveAndSplitPipe(context, pipe, wc, system.uid);
 
-                    context.processDocument();
-                } else {
-                    pipe = null;
-                }
-            });
+                context.processDocument();
+            } else {
+                pipe = null;
+            }
         },
         (worldCoord, event) => {
             context.interactive = null;
-            if (pipe) {
-                context.deleteEntity(pipe);
-            }
             context.$store.dispatch('document/commit');
         },
     ));

@@ -104,9 +104,6 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
     getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]> { /* */ }
 
     get position(): Matrix {
-        if (this.entity.center === undefined) {
-            console.log(JSON.stringify(this.entity));
-        }
         return TM.transform(
             TM.translate(this.entity.center.x, this.entity.center.y),
         );

@@ -18,7 +18,6 @@ export function moveOnto(
     dest: BackedConnectable<ConnectableEntityConcrete> | Pipe,
     context: CanvasContext,
 ) {
-    console.log('moving from  ' + JSON.stringify(source.entity) + ' to ' + JSON.stringify(dest.entity));
     if (dest instanceof Pipe) {
         const result = addValveAndSplitPipe(
             context,
@@ -29,7 +28,6 @@ export function moveOnto(
             source.entity,
         );
         assert(result.uid === source.uid);
-        context.deleteEntity(dest);
     } else {
         const entity = dest.entity;
         const finalCenter = dest.entity.center;

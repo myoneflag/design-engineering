@@ -141,5 +141,6 @@ export function addValveAndSplitPipe(
         context.interactive!.push(newPipe1, newPipe2);
     }
 
+    context.deleteEntity(pipe);
     return newValve;
 }
