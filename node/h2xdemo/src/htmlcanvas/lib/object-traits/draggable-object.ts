@@ -1,15 +1,21 @@
 import {Coord} from '@/store/document/types';
 import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
-import {ViewPort} from '@/htmlcanvas/viewport';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
-import Context = Mocha.Context;
+import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 
 export interface Draggable {
     inBounds(objectCoord: Coord, objectRadius?: number): boolean;
-    onDragStart(objectCoord: Coord): any;
-    onDrag(grabbedObjectCoord: Coord, eventObjectCoord: Coord, grabState: any, context: CanvasContext): void;
-    onDragFinish(): void;
+    onDragStart(event: MouseEvent, objectCoord: Coord, context: CanvasContext, isMultiDrag: boolean): any;
+    onDrag(
+        event: MouseEvent,
+        grabbedObjectCoord: Coord,
+        eventObjectCoord: Coord,
+        grabState: any,
+        context: CanvasContext,
+        isMultiDrag: boolean,
+    ): void;
+    onDragFinish(event: MouseEvent, context: CanvasContext, isMultiDrag: boolean): void;
 }
 
 export function DraggableObject<T extends new (...args: any[]) => Draggable & DrawableObject>(constructor: T) {
@@ -20,18 +26,19 @@ export function DraggableObject<T extends new (...args: any[]) => Draggable & Dr
         grabbedState: any;
         hasMoved: boolean = false; // can be any value while not dragging
 
+        draggable: true = true;
+
         onMouseDown(event: MouseEvent, context: CanvasContext) {
             let result = false;
             const world = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
             const objectCoord = this.toObjectCoord(world);
             if (this.inBounds(objectCoord)) {
-                this.grabbedObjectCoord = this.onDragStart(objectCoord);
+                this.grabbedState = this.onDragStartPre(event, world, objectCoord, context);
                 this.grabbedObjectCoord = objectCoord;
                 this.hasMoved = false;
                 result = true;
             }
 
-            // @ts-ignore abstract class expression limitation in the language. In practice this is fine.
             return super.onMouseDown(event, context) || result;
         }
 
@@ -45,16 +52,15 @@ export function DraggableObject<T extends new (...args: any[]) => Draggable & Dr
 
                     // tslint:disable-next-line:no-bitwise
                     if (event.buttons & 1) {
-                        this.onDrag(this.grabbedObjectCoord, objectCoord, this.grabbedState, context);
+                        this.onDragPre(event, world, this.grabbedObjectCoord, objectCoord, this.grabbedState, context);
                     } else {
                         this.grabbedObjectCoord = null;
-                        this.onDragFinish();
+                        this.onDragFinishPre(event, world, context);
                     }
                     result = {handled: true, cursor: 'move'};
                 }
             }
 
-            // @ts-ignore abstract class expression limitation in the language. In practice this is fine.
             const result2: MouseMoveResult = super.onMouseMove(event, context);
             if (result2.handled) {
                 return result2;
@@ -67,12 +73,49 @@ export function DraggableObject<T extends new (...args: any[]) => Draggable & Dr
             let result = false;
             if (this.grabbedObjectCoord) {
                 this.grabbedObjectCoord = null;
-                this.onDragFinish();
+                this.onDragFinishPre(event, this.grabbedState, context);
                 result = this.hasMoved;
             }
 
-            // @ts-ignore abstract class expression limitation in the language. In practice this is fine.
             return super.onMouseUp(event, context) || result;
+        }
+
+        isMultiSelected() {
+            if (this instanceof BaseBackedObject) {
+                return this.layer.selectedEntities.length > 1 && this.layer.isSelected(this);
+            }
+            return false;
+        }
+
+        onDragStartPre(event: MouseEvent, world: Coord, objectCoord: Coord, context: CanvasContext): any {
+            if (this.isMultiSelected()) {
+                return this.layer.onMultiSelectDragStart(event, world, context);
+            } else {
+                return this.onDragStart(event, objectCoord, context, false);
+            }
+        }
+
+        onDragPre(
+            event: MouseEvent,
+            world: Coord,
+            grabbedObjectCoord: Coord,
+            eventObjectCoord: Coord,
+            grabState: any,
+            context: CanvasContext,
+        ): void {
+            if (this.isMultiSelected()) {
+                return this.layer.onMultiSelectDrag(event, world, grabState, context);
+            } else {
+                return this.onDrag(event, grabbedObjectCoord, eventObjectCoord, grabState, context, false);
+            }
+        }
+
+        onDragFinishPre(event: MouseEvent, grabState: any, context: CanvasContext): void {
+            if (this.isMultiSelected()) {
+                return this.layer.onMultiSelectDragFinish(event, grabState, context);
+            } else {
+                return this.onDragFinish(event, context, false);
+            }
         }
     };
 }

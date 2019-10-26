@@ -7,7 +7,7 @@ export interface PipeInteraction extends BaseInteraction {
     system: FlowSystemParameters;
 }
 
-export interface InsertInteraction extends BaseInteraction{
+export interface InsertInteraction extends BaseInteraction {
     type: InteractionType.INSERT;
     entityType: EntityType;
 }

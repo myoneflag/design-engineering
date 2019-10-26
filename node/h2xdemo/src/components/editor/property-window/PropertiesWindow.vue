@@ -1,51 +1,62 @@
 <template>
     <div class="propertiesWindow">
-        <FloorPlanProperties
-                :selected-entity="selectedEntity"
-                :selected-object="selectedObject"
+        <template v-if="selectedObjects.length === 1">
+            <FloorPlanProperties
+                    :selected-entity="selectedEntities[0]"
+                    :selected-object="selectedObjects[0]"
+                    :on-delete="onDelete"
+                    v-if="mode === 0"
+            />
+            <FlowSourceProperties
+                    v-else-if="entity.type === ENTITY_NAMES.FLOW_SOURCE"
+                    :selected-entity="entity"
+                    :selected-object="selectedObjects[0]"
+                    :on-change="onChange"
+                    :target-property="targetProperty[0]"
+                    :on-delete="onDelete"
+            />
+            <ValveProperties
+                    v-else-if="entity.type === ENTITY_NAMES.VALVE"
+                    :selected-entity="entity"
+                    :selected-object="selectedObjects[0]"
+                    :on-change="onChange"
+                    :target-property="targetProperty"
+                    :on-delete="onDelete"
+            />
+            <PipeProperties
+                    v-else-if="entity.type === ENTITY_NAMES.PIPE"
+                    :selected-entity="entity"
+                    :selected-object="selectedObjects[0]"
+                    :on-change="onChange"
+                    :target-property="targetProperty"
+                    :on-delete="onDelete"
+            />
+            <TMVProperties
+                    v-else-if="entity.type === ENTITY_NAMES.TMV"
+                    :selected-entity="entity"
+                    :selected-object="selectedObjects[0]"
+                    :on-change="onChange"
+                    :target-property="targetProperty"
+                    :on-delete="onDelete"
+            />
+            <FixtureProperties
+                    v-else-if="entity.type === ENTITY_NAMES.FIXTURE"
+                    :selected-entity="entity"
+                    :selected-object="selectedObjects[0]"
+                    :on-change="onChange"
+                    :target-property="targetProperty"
+                    :on-delete="onDelete"
+            />
+
+        </template>
+        <MultiFieldBuilder
+                v-else
+                :selected-entities="selectedEntities"
+                :selected-objects="selectedObjects"
                 :on-delete="onDelete"
-                v-if="mode === 0"
-        />
-        <FlowSourceProperties
-            v-else-if="entity.type === ENTITY_NAMES.FLOW_SOURCE"
-            :selected-entity="entity"
-            :selected-object="selectedObject"
-            :on-change="onChange"
-            :target-property="targetProperty"
-            :on-delete="onDelete"
-        />
-        <ValveProperties
-                v-else-if="entity.type === ENTITY_NAMES.VALVE"
-                :selected-entity="entity"
-                :selected-object="selectedObject"
                 :on-change="onChange"
-                :target-property="targetProperty"
-                :on-delete="onDelete"
         />
-        <PipeProperties
-                v-else-if="entity.type === ENTITY_NAMES.PIPE"
-                :selected-entity="entity"
-                :selected-object="selectedObject"
-                :on-change="onChange"
-                :target-property="targetProperty"
-                :on-delete="onDelete"
-        />
-        <TMVProperties
-                v-else-if="entity.type === ENTITY_NAMES.TMV"
-                :selected-entity="entity"
-                :selected-object="selectedObject"
-                :on-change="onChange"
-                :target-property="targetProperty"
-                :on-delete="onDelete"
-        />
-        <FixtureProperties
-                v-else-if="entity.type === ENTITY_NAMES.FIXTURE"
-                :selected-entity="entity"
-                :selected-object="selectedObject"
-                :on-change="onChange"
-                :target-property="targetProperty"
-                :on-delete="onDelete"
-        />
+
 
         <!--Debug-->
         <b-row style="margin-top: 20px">
@@ -54,8 +65,7 @@
 
                 <b-button style="opacity: 0.2" v-b-toggle.collapse-1 variant="primary" size="sm">Debug Info <v-icon name="info" scale="0.8"/></b-button>
                 <b-collapse id="collapse-1" class="mt-2">
-                        <pre style="font-size: 12px; text-align: left">{{ JSON.stringify(entity, null, 2) }}</pre>
-                        <b-button v-b-toggle.collapse-1-inner size="sm">Toggle Inner Collapse</b-button>
+                        <pre style="font-size: 12px; text-align: left">{{ JSON.stringify(selectedEntities, null, 2) }}</pre>
                         <b-collapse id="collapse-1-inner" class="mt-2">
                             <b-card>Hello!</b-card>
                         </b-collapse>
@@ -77,14 +87,16 @@
     import TMVProperties from '@/components/editor/property-window/TMVProperties.vue';
     import FixtureProperties from '@/components/editor/property-window/FixtureProperties.vue';
     import {MainEventBus} from '@/store/main-event-bus';
+    import MultiFieldBuilder from '@/components/editor/lib/MultiFieldBuilder.vue';
 
     @Component({
         components: {
+            MultiFieldBuilder,
             FixtureProperties,
             TMVProperties, PipeProperties, ValveProperties, FlowSourceProperties, FloorPlanProperties},
         props: {
-            selectedEntity: Object,
-            selectedObject: Object,
+            selectedEntities: Array,
+            selectedObjects: Array,
             targetProperty: String,
             mode: Number,
             onChange: Function,
@@ -103,7 +115,7 @@
 
         // This is here to invoke type cohesion when working in the template.
         get entity(): DrawableEntity {
-            return this.$props.selectedEntity;
+            return this.$props.selectedEntities[0];
         }
 
         get ENTITY_NAMES() {

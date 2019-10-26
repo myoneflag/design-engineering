@@ -2,7 +2,7 @@ import {Coord, Rectangle} from '@/store/document/types';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
-import {MouseMoveResult} from '@/htmlcanvas/types';
+import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import {decomposeMatrix, matrixScale} from '@/htmlcanvas/utils';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
 import Flatten from '@flatten-js/core';
@@ -14,7 +14,10 @@ export default abstract class DrawableObject {
     parent: DrawableObject | null; // null parents mean root objects
     layer: Layer;
 
-    protected constructor(parent: DrawableObject | null, layer: Layer) {
+    selectable: boolean = false;
+    draggable: boolean = false;
+
+    constructor(parent: DrawableObject | null, layer: Layer) {
         this.parent = parent;
         this.layer = layer;
     }
@@ -103,6 +106,31 @@ export default abstract class DrawableObject {
         vp.prepareContext(ctx, ...transforms);
 
         this.drawInternal(context, ...args);
+
+        vp.prepareContext(ctx, ...transforms);
+        this.drawOwnShape(context);
+    }
+
+    drawOwnShape(context: DrawingContext) {
+        const {ctx} = context;
+        const currentWC00 = this.toObjectCoord({x: 0, y: 0});
+        this.withWorld(context, currentWC00, () => {
+           const s = this.shape();
+           if (s instanceof Flatten.Polygon) {
+               console.log('drawing polygon');
+               ctx.beginPath();
+               ctx.strokeStyle = '#000000';
+               ctx.lineWidth=5;
+               let began = false;
+               s.edges.forEach((f: Flatten.Segment) => {
+                   ctx.moveTo(f.start.x, f.start.y);
+                   ctx.lineTo(f.end.x, f.end.y);
+               });
+               ctx.stroke();
+           } else {
+
+           }
+        });
     }
 
     withScreen({ctx}: DrawingContext, current: Coord, fun: () => void) {
@@ -163,11 +191,17 @@ export default abstract class DrawableObject {
 
     abstract inBounds(objectCoord: Coord, objectRadius?: number): boolean;
 
-    abstract onMouseDown(event: MouseEvent, context: CanvasContext): boolean;
+    onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
+        return false;
+    }
 
-    abstract onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult;
+    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
+        return UNHANDLED;
+    }
 
-    abstract onMouseUp(event: MouseEvent, context: CanvasContext): boolean;
+    onMouseUp(event: MouseEvent, context: CanvasContext): boolean {
+        return false;
+    }
 
     // For figuring out how to fit the view.
     shape(): Flatten.Segment | Flatten.Point | Flatten.Polygon | Flatten.Circle | null {

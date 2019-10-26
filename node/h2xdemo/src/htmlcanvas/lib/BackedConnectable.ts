@@ -5,8 +5,15 @@ import {Interaction, InteractionType} from '@/htmlcanvas/lib/interaction';
 import {getDragPriority, isConnectable} from '@/store/document';
 import {EntityType} from '@/store/document/entities/types';
 import Flatten from '@flatten-js/core';
+import Connectable from '@/htmlcanvas/lib/object-traits/connectable';
+import {Coord} from '@/store/document/types';
+import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 
-export default abstract class BackedConnectable<T extends ConnectableEntityConcrete> extends BackedDrawableObject<T> {
+// TODO: this entire abstract class is obsolete and should be encapsulated in the ConnectableObject
+// decorator.
+export default abstract class BackedConnectable<T extends ConnectableEntityConcrete>
+    extends BackedDrawableObject<T>
+{
     abstract minimumConnections: number;
     abstract maximumConnections: number | null;
 
@@ -15,7 +22,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
      */
     abstract dragPriority: number;
 
-    prepareDeleteConnection(uid: string): BaseBackedObject[] {
+    prepareDeleteConnection(uid: string, context: CanvasContext): BaseBackedObject[] {
         const index = this.entity.connections.indexOf(uid);
         if (index === -1) {
             throw new Error('Tried to delete a connection that doesn\'t exist: ' +
@@ -25,7 +32,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
         this.entity.connections.splice(index, 1);
 
         if (this.entity.connections.length < this.minimumConnections) {
-            return this.prepareDelete();
+            return this.prepareDelete(context);
         } else {
             return [];
         }
@@ -120,7 +127,25 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
 
     shape(): Flatten.Segment | Flatten.Point | Flatten.Polygon | Flatten.Circle | null {
         const point = this.toWorldCoord({x: 0, y: 0});
-        //return Flatten.point(point.x, point.y);
         return Flatten.circle(Flatten.point(point.x, point.y), 30);
     }
+
+
+    getAngles(): number[] {
+        throw new Error('Method not implemented.');
+    }
+
+    isStraight(tolerance?: number): boolean {
+        throw new Error('Method not implemented.');
+    }
+
+    debase(): void {
+        throw new Error('Method not implemented.');
+    }
+
+    rebase(context: CanvasContext): void {
+        throw new Error('Method not implemented.');
+    }
+
 }
+

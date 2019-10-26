@@ -22,6 +22,7 @@ export default interface CanvasContext {
     objectStore: ObjectStore;
     document: DocumentState;
     effectiveCatalog: Catalog;
+    isLayerDragging: boolean;
 
     $store: Store<RootState>;
     viewPort: ViewPort;
@@ -29,9 +30,6 @@ export default interface CanvasContext {
     interactive: DrawableEntityConcrete[] | null;
 
     lastDrawingContext: DrawingContext | null;
-
-    lockDrawing(): void;
-    unlockDrawing(): void;
 
     offerInteraction(
         interaction: Interaction,

@@ -1,25 +1,20 @@
-import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import FlowSourceEntity from '@/store/document/entities/flow-source-entity';
 import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
 import {Coord, DocumentState, DrawableEntity, FlowSystemParameters} from '@/store/document/types';
-import assert from 'assert';
 import {matrixScale} from '@/htmlcanvas/utils';
 import {lighten} from '@/lib/utils';
-import {ViewPort} from '@/htmlcanvas/viewport';
-import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
-import {Draggable, DraggableObject} from '@/htmlcanvas/lib/object-traits/draggable-object';
 import Connectable, {ConnectableObject} from '@/htmlcanvas/lib/object-traits/connectable';
 import CenterDraggableObject from '@/htmlcanvas/lib/object-traits/center-draggable-object';
-import {Interaction, InteractionType} from '@/htmlcanvas/lib/interaction';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
 import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
 import {getDragPriority} from '@/store/document';
-import CanvasContext from '@/htmlcanvas/lib/canvas-context';
+import {SelectableObject} from '@/htmlcanvas/lib/object-traits/selectable';
 
+@SelectableObject
 @CenterDraggableObject
 @ConnectableObject
 export default class FlowSource extends BackedConnectable<FlowSourceEntity> implements Connectable {
@@ -132,31 +127,6 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
             + (objectCoord.y) ** 2,
         );
         return dist <= this.toObjectLength(this.entity.diameterMM / 2) + (radius ? radius : 0);
-    }
-
-    onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
-        const wc = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
-        const oc = this.toObjectCoord(wc);
-
-        // Check bounds
-        if (this.inBounds(oc)) {
-            this.onSelect();
-
-            return true;
-        }
-
-        return false;
-    }
-
-    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
-        return UNHANDLED;
-    }
-
-    onMouseUp(event: MouseEvent, context: CanvasContext): boolean {
-        const wc = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
-        const oc = this.toObjectCoord(wc);
-        // Check bounds
-        return this.inBounds(oc);
     }
 
     prepareDelete(): BaseBackedObject[] {

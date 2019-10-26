@@ -9,35 +9,82 @@ export enum FieldType {
     Choice = 'choice',
     FlowSystemChoice = 'flow-system-choice',
     Rotation = 'rotation',
+    TwoPointScale = 'two-point-scale',
 }
 
-export interface NumberParams {
+export interface NumberParams extends FieldParams {
     min: number | null;
     max: number | null;
 }
 
-export interface TextAreaParams {
+export interface TextAreaParams extends FieldParams {
     rows: number;
 }
 
-export interface ChoiceParams {
+export interface ChoiceParams extends FieldParams {
     choices: Choice[];
 }
 
-export interface FlowSystemChoiceParams {
+export interface FlowSystemChoiceParams extends FieldParams {
     systems: FlowSystemParameters[];
 }
 
-export interface CalculationParams {
-    initialValue: any;
+export interface FieldParams {
+    initialValue?: any;
 }
 
-export interface PropertyField {
+export interface PropertyFieldBase {
     property: string;
     title: string;
     hasDefault: boolean;
     isCalculated: boolean;
     requiresInput?: boolean;
+    readonly?: boolean;
+    multiFieldId: string | null;
     type: FieldType;
-    params: (NumberParams | TextAreaParams | ChoiceParams | FlowSystemChoiceParams) & (CalculationParams | {}) | null;
 }
+
+export interface NumberField extends PropertyFieldBase {
+    type: FieldType.Number;
+    params: NumberParams;
+}
+
+export interface FlowSystemChoiceField extends PropertyFieldBase {
+    type: FieldType.FlowSystemChoice;
+    params: FlowSystemChoiceParams;
+}
+
+export interface ChoiceField extends PropertyFieldBase {
+    type: FieldType.Choice;
+    params: ChoiceParams;
+}
+
+export interface TextAreaField extends PropertyFieldBase {
+    type: FieldType.TextArea;
+    params: TextAreaParams;
+}
+
+export interface ColorField extends PropertyFieldBase {
+    type: FieldType.Color;
+    params: null;
+}
+
+export interface RotationField extends PropertyFieldBase {
+    type: FieldType.Rotation;
+    params: null;
+}
+
+export interface TextField extends PropertyFieldBase {
+    type: FieldType.Text;
+    params: null;
+}
+
+
+export type PropertyField =
+    NumberField |
+    ChoiceField |
+    TextAreaField |
+    FlowSystemChoiceField |
+    ColorField |
+    RotationField |
+    TextField ;

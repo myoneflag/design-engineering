@@ -1,4 +1,4 @@
-import Layer from '@/htmlcanvas/layers/layer';
+import Layer, {LayerImplementation} from '@/htmlcanvas/layers/layer';
 import {DocumentState, DrawableEntity, WithID} from '@/store/document/types';
 import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 import {DrawingContext, MessageStore, ObjectStore} from '@/htmlcanvas/lib/types';
@@ -21,54 +21,20 @@ import CatalogState, {Catalog} from '@/store/catalog/types';
 import {CalculatableEntityConcrete, DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 
-export default class CalculationLayer implements Layer {
+export default class CalculationLayer extends LayerImplementation {
 
-    calculator: CalculationEngine;
-
-    onChange: () => any;
-    onSelect: (selectId: BaseBackedObject | null) => any;
-    onCommit: (selectId: BaseBackedObject) => any;
-    objectStore: ObjectStore;
-
-    messageStore: MessageStore;
-
-    idsInOrder: string[] = [];
-
-    constructor(
-        objectStore: ObjectStore,
-        onChange: () => any,
-        onSelect: (selectId: BaseBackedObject | null) => any,
-        onCommit: (selectId: BaseBackedObject) => any,
-    ) {
-        this.onChange = onChange;
-        this.onSelect = onSelect;
-        this.onCommit = onCommit;
-        this.objectStore = objectStore;
-
-        this.calculator = new CalculationEngine();
-        this.messageStore = new MessageStore();
-    }
-
-    get selectedEntity(): WithID | null {
-        return null;
-    }
-    get selectedObject(): BaseBackedObject | null {
-        return null;
-    }
-
-    select(object: BaseBackedObject): void {
-        throw new Error('Not implemented');
-    }
+    calculator: CalculationEngine = new CalculationEngine();
+    messageStore: MessageStore = new MessageStore();
 
     draw(context: DrawingContext, active: boolean, ...args: any[]): any {
         if (active) {
-            for (let i = this.idsInOrder.length - 1; i >= 0; i--) {
-                const message = this.messageStore.get(this.idsInOrder[i]);
+            for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
+                const message = this.messageStore.get(this.uidsInOrder[i]);
                 if (message) {
                     message.draw(
                         context,
                         active,
-                        this.selectedEntity ? this.selectedEntity.uid === message.uid : false,
+                        this.isSelected(message),
                     );
                 } else {
                     throw new Error('Message not found');
@@ -79,62 +45,6 @@ export default class CalculationLayer implements Layer {
 
     drawSelectionLayer(context: DrawingContext, interactive: DrawableEntity[] | null): any {
         //
-    }
-
-    offerInteraction(
-        interaction: Interaction,
-        filter?: (objects: DrawableEntityConcrete[]) => boolean,
-        sortBy?: (objects: DrawableEntityConcrete[]) => any,
-    ): DrawableEntityConcrete[] | null {
-        return null;
-    }
-
-    onMouseDown(event: MouseEvent, context: CanvasContext) {
-        for (let i = this.idsInOrder.length - 1; i >= 0; i--) {
-            const uid = this.idsInOrder[i];
-            if (this.messageStore.has(uid)) {
-                const object = this.messageStore.get(uid)!;
-                if (object.onMouseDown(event, context)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
-        for (let i = this.idsInOrder.length - 1; i >= 0; i--) {
-            const uid = this.idsInOrder[i];
-            if (this.messageStore.has(uid)) {
-                const object = this.messageStore.get(uid)!;
-                const res = object.onMouseMove(event, context);
-                if (res.handled) {
-                    return res;
-                }
-            }
-        }
-
-        return UNHANDLED;
-    }
-
-
-    onMouseUp(event: MouseEvent, context: CanvasContext) {
-        for (let i = this.idsInOrder.length - 1; i >= 0; i--) {
-            const uid = this.idsInOrder[i];
-            if (this.messageStore.has(uid)) {
-                const object = this.messageStore.get(uid)!;
-                if (object.onMouseUp(event, context)) {
-                    return true;
-                }
-            }
-        }
-
-        // this.selectedObject = null;
-        this.onSelect(null);
-        this.onChange();
-
-        return false;
     }
 
     update(doc: DocumentState): any {
@@ -173,7 +83,7 @@ export default class CalculationLayer implements Layer {
                             this,
                             te,
                             {x: (l + r) / 2, y: (t + b) / 2},
-                            () => this.onSelect(msg),
+                            (event) => this.onSelected(event, te.uid),
                             () => this.onChange(),
                             () => {/**/},
                         );
@@ -184,14 +94,14 @@ export default class CalculationLayer implements Layer {
             }
         });
 
-        this.idsInOrder.forEach((uid) => {
+        this.uidsInOrder.forEach((uid) => {
             if (thisIds.indexOf(uid) === -1) {
                 this.messageStore.delete(uid);
             }
         });
 
-        this.idsInOrder.splice(0);
-        this.idsInOrder.push(...thisIds);
+        this.uidsInOrder.splice(0);
+        this.uidsInOrder.push(...thisIds);
     }
 
     calculate(doc: DocumentState, catalog: Catalog, demandType: DemandType, done: () => void) {
@@ -212,13 +122,5 @@ export default class CalculationLayer implements Layer {
 
             done();
         });
-    }
-
-    dragObjects(objects: BaseBackedObject[]): void {
-        //
-    }
-
-    releaseDrag(): void {
-        //
     }
 }

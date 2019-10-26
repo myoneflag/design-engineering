@@ -33,25 +33,25 @@ export default interface PipeEntity extends DrawableEntity, CalculationTarget<Pi
 export function makePipeFields(materials: Choice[], systems: FlowSystemParameters[]): PropertyField[] {
     return [
         { property: 'systemUid', title: 'Flow System', hasDefault: false, isCalculated: false,
-            type: FieldType.FlowSystemChoice, params: { systems } },
+            type: FieldType.FlowSystemChoice, params: { systems },  multiFieldId: 'systemUid' },
 
         { property: 'material', title: 'Material', hasDefault: true, isCalculated: false,
-            type: FieldType.Choice, params: { choices: materials } },
+            type: FieldType.Choice, params: { choices: materials },  multiFieldId: 'material' },
 
         { property: 'lengthM', title: 'Length (m)', hasDefault: false, isCalculated: true,
-            type: FieldType.Number, params: { min: 0, max: null, initialValue: 0 } },
+            type: FieldType.Number, params: { min: 0, max: null, initialValue: 0 },  multiFieldId: null },
 
         { property: 'color', title: 'Color:', hasDefault: true, isCalculated: false,
-            type: FieldType.Color, params: null },
+            type: FieldType.Color, params: null,  multiFieldId: 'color' },
 
         { property: 'maximumVelocityMS', title: 'Maximum Velocity (m/s)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null } },
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'maximumVelocityMS' },
 
         { property: 'diameterMM', title: 'Diameter', hasDefault: false, isCalculated: true,
-            type: FieldType.Number, params: { min: 0, max: null, initialValue: 50 } },
+            type: FieldType.Number, params: { min: 0, max: null, initialValue: 50 },  multiFieldId: 'diameterMM' },
 
         { property: 'heightAboveFloorM', title: 'Height Above Floor (m)', hasDefault: false, isCalculated: false,
-            type: FieldType.Number, params: { min: null, max: null } },
+            type: FieldType.Number, params: { min: null, max: null },  multiFieldId: 'heightAboveFloorM' },
     ];
 }
 

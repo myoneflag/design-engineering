@@ -2,25 +2,27 @@ import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import ValveEntity, {fillValveDefaultFields} from '@/store/document/entities/valve-entity';
 import * as TM from 'transformation-matrix';
 import {Matrix} from 'transformation-matrix';
-import {ViewPort} from '@/htmlcanvas/viewport';
-import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
-import {Coord, DocumentState, DrawableEntity} from '@/store/document/types';
+import {Coord, DocumentState} from '@/store/document/types';
 import {matrixScale} from '@/htmlcanvas/utils';
 import Flatten from '@flatten-js/core';
 import Connectable, {ConnectableObject} from '@/htmlcanvas/lib/object-traits/connectable';
 import {lighten} from '@/lib/utils';
 import CenterDraggableObject from '@/htmlcanvas/lib/object-traits/center-draggable-object';
-import {Interaction, InteractionType} from '@/htmlcanvas/lib/interaction';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
 import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
-import {getDragPriority, isConnectable} from '@/store/document';
+import {getDragPriority} from '@/store/document';
 import {Catalog, ValveSize} from '@/store/catalog/types';
 import {lowerBoundTable} from '@/htmlcanvas/lib/utils';
 import Pipe from '@/htmlcanvas/objects/pipe';
+import {SelectableObject} from '@/htmlcanvas/lib/object-traits/selectable';
+import PipeEntity from '@/store/document/entities/pipe-entity';
+import uuid from 'uuid';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
+import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-entity';
 
+@SelectableObject
 @CenterDraggableObject
 @ConnectableObject
 export default class Valve extends BackedConnectable<ValveEntity> implements Connectable {
@@ -48,6 +50,7 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
     // complete the type.
     getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]> { /* */
     }
+
 
     drawInternal({ctx, doc}: DrawingContext, layerActive: boolean, selected: boolean): void {
 
@@ -139,30 +142,6 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
         } else {
             return 'Valve';
         }
-    }
-
-    onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
-        const wc = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
-        const oc = this.toObjectCoord(wc);
-
-        // Check bounds
-        if (this.inBounds(oc)) {
-            this.onSelect();
-            return true;
-        }
-
-        return false;
-    }
-
-    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
-        return UNHANDLED;
-    }
-
-    onMouseUp(event: MouseEvent, context: CanvasContext): boolean {
-        const wc = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
-        const oc = this.toObjectCoord(wc);
-        // Check bounds
-        return this.inBounds(oc);
     }
 
     prepareDelete(): BaseBackedObject[] {

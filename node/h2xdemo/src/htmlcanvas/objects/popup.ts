@@ -82,9 +82,9 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
         layer: Layer,
         target: CalculatableEntityConcrete,
         middleWc: Coord,
-        onSelect: () => any,
+        onSelect: (event: MouseEvent | KeyboardEvent) => any,
         onChange: () => any,
-        onCommit: () => any,
+        onCommit: (event: MouseEvent | KeyboardEvent) => any,
     ) {
 
         const object = objectStore.get(target.uid);
@@ -226,18 +226,6 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
 
     offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
         return null;
-    }
-
-    onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
-        return false;
-    }
-
-    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
-        return UNHANDLED;
-    }
-
-    onMouseUp(event: MouseEvent, context: CanvasContext): boolean {
-        return false;
     }
 
     prepareDelete(): BaseBackedObject[] {

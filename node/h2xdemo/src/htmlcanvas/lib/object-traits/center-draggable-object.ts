@@ -23,7 +23,14 @@ export default function CenterDraggableObject<T extends new (...args: any[]) =>
 
             toDelete: BaseBackedObject | null = null;
 
-            onDrag(grabbedObjectCoord: Coord, eventObjectCoord: Coord, grabState: any, context: CanvasContext): void {
+            onDrag(
+                event: MouseEvent,
+                grabbedObjectCoord: Coord,
+                eventObjectCoord: Coord,
+                grabState: any,
+                context: CanvasContext,
+                isMulti: boolean,
+            ): void {
                 this.toDelete = null;
 
                 const inv = TM.inverse(this.position);
@@ -33,7 +40,7 @@ export default function CenterDraggableObject<T extends new (...args: any[]) =>
                 this.entity.center.x += after.x - before.x;
                 this.entity.center.y += after.y - before.y;
 
-                if (this instanceof BackedConnectable) {
+                if (this instanceof BackedConnectable && !isMulti) {
                     // try moving the entity to a destination
                     const draggedOn = context.offerInteraction(
                         {
@@ -71,16 +78,18 @@ export default function CenterDraggableObject<T extends new (...args: any[]) =>
                     }
                 }
 
-                this.onChange();
+                if (!isMulti) {
+                    this.onChange();
+                }
             }
 
-            onDragFinish(): void {
-                this.layer.releaseDrag();
-                this.onCommit();
+            onDragFinish(event: MouseEvent, context: CanvasContext): void {
+                this.layer.releaseDrag(context);
+                this.onCommit(event);
             }
 
-            onDragStart(objectCoord: Coord): any {
-                this.layer.dragObjects([this]);
+            onDragStart(event: MouseEvent, objectCoord: Coord, context: CanvasContext): any {
+                this.layer.dragObjects([this], context);
                 return null;
             }
         },

@@ -51,9 +51,9 @@ export default class DrawableObjectFactory {
                     layer,
                     parent,
                     entity,
-                    () => handlers.onSelected(object),
+                    (e) => handlers.onSelected(e),
                     handlers.onChange,
-                    () => handlers.onCommit(object),
+                    (e) => handlers.onCommit(e),
                 );
                 objectStore.set(entity.uid, object);
                 return object;
@@ -65,7 +65,7 @@ export default class DrawableObjectFactory {
 }
 
 export interface Handlers {
-    onSelected: (obj: BaseBackedObject) => void;
+    onSelected: (event: MouseEvent | KeyboardEvent) => void;
     onChange: () => void;
-    onCommit: (obj: BaseBackedObject) => void;
+    onCommit: (event: MouseEvent | KeyboardEvent) => void;
 }
