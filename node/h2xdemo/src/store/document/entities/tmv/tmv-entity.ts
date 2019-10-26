@@ -49,28 +49,29 @@ export interface SystemNodeEntity extends InvisibleNodeEntity {
 export function makeTMVFields(): PropertyField[] {
     return [
         { property: 'rotation', title: 'Rotation: (Degrees)', hasDefault: false, isCalculated: false,
-            type: FieldType.Rotation, params: null },
+            type: FieldType.Rotation, params: null,  multiFieldId: 'rotation' },
 
         { property: 'heightAboveFloorM', title: 'Height Above Floor (m)', hasDefault: false, isCalculated: false,
-            type: FieldType.Number, params: { min: null, max: null } },
+            type: FieldType.Number, params: { min: null, max: null },  multiFieldId: 'heightAboveFloorM' },
 
         { property: 'outputTemperatureC', title: 'Output Temperature (c)', hasDefault: false, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: 100 } },
+            type: FieldType.Number, params: { min: 0, max: 100 },  multiFieldId: 'outputTemperatureC' },
 
         { property: 'minInletPressureKPA', title: 'Min. Inlet Pressure (KPA)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null } },
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'minInletPressureKPA' },
 
         { property: 'maxInletPressureKPA', title: 'Max. Inlet Pressure (KPA)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null } },
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'maxInletPressureKPA' },
 
         { property: 'maxHotColdPressureDifferentialPCT', title: 'Max. Hot/Cold Pressure Differential (%):',
-            hasDefault: true, isCalculated: false, type: FieldType.Number, params: { min: 0, max: 100 } },
+            hasDefault: true, isCalculated: false, type: FieldType.Number, params: { min: 0, max: 100 },
+            multiFieldId: 'maxHotColdPressureDifferentialPCT' },
 
         { property: 'minFlowRateLS', title: 'Min. Flow Rate (L/s)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null } },
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'minFlowRateLS' },
 
         { property: 'maxFlowRateLS', title: 'Max. Flow Rate (L/s)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null } },
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'maxFlowRateLS' },
     ];
 }
 

@@ -34,8 +34,23 @@
             return lighten(col, amt, alpha);
         }
 
-        get selectedSystem() {
-            return this.$props.flowSystems.find((s: FlowSystemParameters) => s.uid === this.$props.selectedSystemUid);
+        get selectedSystem(): FlowSystemParameters {
+            const result = this.$props.flowSystems.find(
+                (s: FlowSystemParameters) => s.uid === this.$props.selectedSystemUid,
+            );
+            if (result) {
+                return result;
+            }
+            return {
+                color: {hex: '#eeeeee'},
+                fluid: '',
+                material: '',
+                name: this.$props.selectedSystemUid,
+                spareCapacity: 0,
+                temperature: 0,
+                uid: this.$props.selectedSystemUid,
+                velocity: 0,
+            };
         }
     }
 

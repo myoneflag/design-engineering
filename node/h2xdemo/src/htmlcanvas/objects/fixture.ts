@@ -17,9 +17,12 @@ import {StandardFlowSystemUids} from '@/store/catalog';
 import {DEFAULT_FONT_NAME} from '@/config';
 import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
+import {SelectableObject} from '@/htmlcanvas/lib/object-traits/selectable';
+import Flatten from '@flatten-js/core';
 
+@SelectableObject
 @CenterDraggableObject
-export default class Fixture extends BackedDrawableObject<FixtureEntity> implements Connectable {
+export default class Fixture extends BackedDrawableObject<FixtureEntity> {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.FIXTURE, Fixture);
     }
@@ -70,7 +73,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         ctx.stroke();
 
         if (selected) {
-            ctx.fillStyle = 'rgba(230, 255, 230, 0.8)';
+            ctx.fillStyle = 'rgba(150, 200, 150, 1)';
             if (this.entity.warmRoughInUid) {
                 ctx.fillRect(xm1, ym1, x9 - xm1, y7 - ym1);
             } else {
@@ -155,42 +158,51 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         }
     }
 
-    onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
-        const wc = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
-        const oc = this.toObjectCoord(wc);
-
-        // Check bounds
-        if (this.inBounds(oc)) {
-            this.onSelect();
-
-            return true;
+    shape() {
+        const p = new Flatten.Polygon();
+        let l, t, r, b;
+        if (this.entity.warmRoughInUid) {
+            l = -this.entity.pipeDistanceMM * 5 / 4;
+            r = this.entity.pipeDistanceMM * 5 / 4;
+            t = -this.entity.pipeDistanceMM * 1 / 4;
+            b = this.entity.pipeDistanceMM * 7 / 4;
+        } else {
+            l = -this.entity.pipeDistanceMM / 2;
+            r = this.entity.pipeDistanceMM / 2;
+            t = -this.entity.pipeDistanceMM / 4;
+            b = this.entity.pipeDistanceMM * 4 / 4;
         }
 
-        return false;
+        const tl = this.toWorldCoord({x: l, y: t});
+        const tr = this.toWorldCoord({x: r, y: t});
+        const bl = this.toWorldCoord({x: l, y: b});
+        const br = this.toWorldCoord({x: r, y: b});
+        const tlp = Flatten.point(tl.x, tl.y);
+        const trp = Flatten.point(tr.x, tr.y);
+        const blp = Flatten.point(bl.x, bl.y);
+        const brp = Flatten.point(br.x, br.y);
+
+        p.addFace([
+            Flatten.segment(tlp, trp),
+            Flatten.segment(trp, brp),
+            Flatten.segment(brp, blp),
+            Flatten.segment(blp, tlp),
+        ]);
+
+        return p;
     }
 
-    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
-        return UNHANDLED;
-    }
-
-    onMouseUp(event: MouseEvent, context: CanvasContext): boolean {
-        const wc = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
-        const oc = this.toObjectCoord(wc);
-        // Check bounds
-        return this.inBounds(oc);
-    }
-
-    prepareDelete(): BaseBackedObject[] {
+    prepareDelete(context: CanvasContext): BaseBackedObject[] {
         if (this.entity.warmRoughInUid) {
             return [
                 this,
-                ...this.objectStore.get(this.entity.coldRoughInUid)!.prepareDelete(),
-                ...this.objectStore.get(this.entity.warmRoughInUid)!.prepareDelete(),
+                ...this.objectStore.get(this.entity.coldRoughInUid)!.prepareDelete(context),
+                ...this.objectStore.get(this.entity.warmRoughInUid)!.prepareDelete(context),
             ];
         } else {
             return [
                 this,
-                ...this.objectStore.get(this.entity.coldRoughInUid)!.prepareDelete(),
+                ...this.objectStore.get(this.entity.coldRoughInUid)!.prepareDelete(context),
             ];
         }
     }
@@ -220,6 +232,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
                 if (interaction.src.type === EntityType.VALVE) {
                     return this.offerJoiningInteraction(interaction.src.systemUid, interaction);
                 }
+                return null;
             case InteractionType.INSERT:
             case InteractionType.MOVE_ONTO_SEND:
             case InteractionType.EXTEND_NETWORK:

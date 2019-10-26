@@ -30,13 +30,13 @@ export function makeValveFields(
 ): PropertyField[] {
     return [
         { property: 'systemUid', title: 'Flow System', hasDefault: false, isCalculated: false,
-            type: FieldType.FlowSystemChoice, params: { systems } },
+            type: FieldType.FlowSystemChoice, params: { systems },  multiFieldId: 'systemUid' },
 
         { property: 'valveType', title: 'Valve Type', hasDefault: false, isCalculated: false,
-            type: FieldType.Choice, params: { choices: valveTypes } },
+            type: FieldType.Choice, params: { choices: valveTypes },  multiFieldId: 'valveType' },
 
         { property: 'color', title: 'Color:', hasDefault: true, isCalculated: false,
-            type: FieldType.Color, params: null },
+            type: FieldType.Color, params: null,  multiFieldId: 'color' },
 
     ];
 }

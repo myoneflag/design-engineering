@@ -8,24 +8,25 @@ import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import Layer from '@/htmlcanvas/layers/layer';
 import {cloneSimple} from '@/lib/utils';
+import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 
 export default abstract class BaseBackedObject extends DrawableObject {
     entity: DrawableEntityConcrete;
     parentEntity: DrawableEntity | null;
     objectStore: ObjectStore;
 
-    protected onSelect: () => void;
+    protected onSelect: (event: MouseEvent | KeyboardEvent) => void;
     protected onChange: () => void;
-    protected onCommit: () => void;
+    protected onCommit: (event: MouseEvent | KeyboardEvent) => void;
 
     protected constructor(
         objectStore: ObjectStore,
         layer: Layer,
         parentEntity: DrawableEntity | null,
         obj: DrawableEntityConcrete,
-        onSelect: () => void,
+        onSelect: (event: MouseEvent | KeyboardEvent) => void,
         onChange: () => void,
-        onCommit: () => void,
+        onCommit: (event: MouseEvent | KeyboardEvent) => void,
     ) {
         super(null, layer);
         this.parentEntity = parentEntity;
@@ -67,7 +68,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
     abstract offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null;
 
     // Return list of objects to remove.
-    abstract prepareDelete(): BaseBackedObject[];
+    abstract prepareDelete(context: CanvasContext): BaseBackedObject[];
 
     abstract inBounds(objectCoord: Coord, objectRadius?: number): boolean;
 

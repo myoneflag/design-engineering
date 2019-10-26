@@ -15,6 +15,7 @@ import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-enti
 import {addValveAndSplitPipe} from '@/htmlcanvas/lib/interactions/split-pipe';
 import Pipe from '@/htmlcanvas/objects/pipe';
 import {isConnectable} from '@/store/document';
+import {SelectMode} from '@/htmlcanvas/layers/layer';
 
 export default function insertPipes(context: CanvasContext, system: FlowSystemParameters) {
     // strategy:
@@ -194,14 +195,14 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
                 } else if (isConnectable(interactive[0].type)) {
                     nextEntity = interactive[0] as ConnectableEntityConcrete;
                     nextEntity.connections.push(pipeUid);
-                    context.hydraulicsLayer.selectedObject = context.objectStore.get(interactive[0].uid)!;
+                    context.hydraulicsLayer.select([context.objectStore.get(interactive[0].uid)!], SelectMode.Replace);
 
                 } else {
                     throw new Error('Don\'t know how to handle this');
                 }
             } else {
                 // Create an endpoint fitting for it instead
-                context.hydraulicsLayer.selectedObject = null;
+                context.hydraulicsLayer.select([], SelectMode.Replace);
                 if (!event.shiftKey) {
                     // Snap onto a direction.
 

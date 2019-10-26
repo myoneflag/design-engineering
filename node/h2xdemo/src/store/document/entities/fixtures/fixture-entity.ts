@@ -50,38 +50,38 @@ export default interface FixtureEntity extends DrawableEntity, CalculationTarget
 export function makeFixtureFields(): PropertyField[] {
     return [
         { property: 'rotation', title: 'Rotation: (Degrees)', hasDefault: false, isCalculated: false,
-            type: FieldType.Rotation, params: null },
+            type: FieldType.Rotation, params: null, multiFieldId: null },
 
         { property: 'outletAboveFloorM', title: 'Height Above Floor (m)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: null, max: null } },
+            type: FieldType.Number, params: { min: null, max: null }, multiFieldId: 'outletAboveFloorM' },
 
         { property: 'warmTempC', title: 'Warm Water Temperature (C)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: 100 } },
+            type: FieldType.Number, params: { min: 0, max: 100 },  multiFieldId: 'warmTempC' },
 
 
         { property: 'minInletPressureKPA', title: 'Min. Inlet Pressure (KPA)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null } },
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'minInletPressureKPA' },
 
         { property: 'maxInletPressureKPA', title: 'Max. Inlet Pressure (KPA)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null } },
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'maxInletPressureKPA' },
 
         { property: 'loadingUnitsCold', title: 'Loading Units (Cold)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null } },
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'loadingUnitsCold' },
 
         { property: 'loadingUnitsHot', title: 'Loading Units (Hot)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null } },
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'loadingUnitsHot' },
 
         { property: 'designFlowRateCold', title: 'Design Flow Rate (Cold, L/s)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null } },
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'designFlowRateCold' },
 
         { property: 'designFlowRateHot', title: 'Design Flow Rate (Hot, L/s)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null } },
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'designFlowRateHot' },
 
         { property: 'fixtureUnits', title: 'Fixture Units', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null } },
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'fixtureUnits' },
 
         { property: 'probabilityOfUsagePCT', title: 'Prob. of Usage (%)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null } },
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'probabilityOfUsagePCT' },
     ];
 }
 

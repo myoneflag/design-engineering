@@ -3,7 +3,7 @@ import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import PipeEntity, {fillPipeDefaultFields} from '@/store/document/entities/pipe-entity';
 import * as TM from 'transformation-matrix';
 import {Matrix} from 'transformation-matrix';
-import {DrawingMode, MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
+import {DrawingMode} from '@/htmlcanvas/types';
 import {ConnectableEntity, Coord, DocumentState} from '@/store/document/types';
 import {matrixScale} from '@/htmlcanvas/utils';
 import Flatten from '@flatten-js/core';
@@ -18,9 +18,19 @@ import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
 import {PipeMaterial, PipeSpec} from '@/store/catalog/types';
 import {lowerBoundTable} from '@/htmlcanvas/lib/utils';
 import {CalculationContext} from '@/calculations/types';
-import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import {
+    CenteredEntityConcrete,
+    ConnectableEntityConcrete,
+    DrawableEntityConcrete
+} from '@/store/document/entities/concrete-entity';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
+import {SelectableObject} from '@/htmlcanvas/lib/object-traits/selectable';
+import Connectable from '@/htmlcanvas/lib/object-traits/connectable';
+import uuid from 'uuid';
+import ValveEntity from '@/store/document/entities/valve-entity';
+import assert from 'assert';
 
+@SelectableObject
 @DraggableObject
 export default class Pipe extends BackedDrawableObject<PipeEntity> implements Draggable {
     static register(): void {
@@ -106,10 +116,10 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         if (ao && bo) {
             const res: Coord[] = [];
             if (ao.uid !== excludeUid) {
-                res.push(ao.fromParentToWorldCoord(a.center));
+                res.push(ao.toWorldCoord({x: 0, y: 0}));
             }
             if (bo.uid !== excludeUid) {
-                res.push(bo.fromParentToWorldCoord(b.center));
+                res.push(bo.toWorldCoord({x: 0, y: 0}));
             }
             return res;
         } else {
@@ -142,47 +152,198 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
     }
 
 
-    onDragStart(objectCoord: Coord) {
-        //
-    }
-    onDrag(grabbedObjectCoord: Coord, eventObjectCoord: Coord, grabState: any): void {
-        //
-    }
-    onDragFinish(): void {
-        //
+    onDragStart(event: MouseEvent, objectCoord: Coord, context: CanvasContext, isMultiDrag: boolean): PipeDragState {
+        const eps = this.worldEndpoints();
+        const a = Flatten.point(eps[0].x, eps[0].y);
+        const b = Flatten.point(eps[1].x, eps[1].y);
+        return {
+            a2b: Flatten.vector(a, b),
+            normal: Flatten.vector(a, b).rotate90CCW(),
+            pointOnPipe: _.cloneDeep(this.worldEndpoints()[0]),
+        };
     }
 
-    onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
-        const wc = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
-        const oc = this.toObjectCoord(wc);
+    projectEndpoint(
+        pointWc: Coord,
+        epUid: string,
+        direction: Flatten.Vector,
+        isStraight: boolean, // we need a precomputed variable because the object changes during a move.
+        context: CanvasContext,
+    ): ValveEntity | boolean {
+        const o = this.objectStore.get(epUid) as BackedConnectable<ConnectableEntityConcrete>;
+        const e = o.entity as ConnectableEntityConcrete;
+        if (e.connections.length !== 2) {
+            return false;
+        }
 
-        // Check bounds
-        if (this.inBounds(oc)) {
-            this.onSelect();
+        if (isStraight) {
+            console.log('is straight');
+            // Create pipe instead of extend it.
+            const newValveUid = uuid();
+            const pipe: PipeEntity = {
+                calculation: null,
+                color: this.entity.color,
+                diameterMM: this.entity.diameterMM,
+                endpointUid: [epUid, newValveUid],
+                heightAboveFloorM: this.entity.heightAboveFloorM,
+                lengthM: null,
+                material: this.entity.material,
+                maximumVelocityMS: this.entity.maximumVelocityMS,
+                parentUid: null,
+                systemUid: this.entity.systemUid,
+                type: EntityType.PIPE,
+                uid: uuid(),
+            };
+
+
+            const perp = direction.rotate90CCW();
+            const fromWc = o.toWorldCoord({x: 0, y: 0});
+            const perpLine = Flatten.line(Flatten.point(fromWc.x, fromWc.y), perp.rotate90CCW());
+            const projLine = Flatten.line(Flatten.point(pointWc.x, pointWc.y), direction.rotate90CCW());
+            const newLoc = perpLine.intersect(projLine);
+            assert(newLoc.length === 1);
+
+            const valve: ValveEntity = {
+                calculation: null,
+                center: {x: newLoc[0].x, y: newLoc[0].y},
+                color: this.entity.color,
+                connections: [this.uid, pipe.uid],
+                parentUid: null,
+                systemUid: this.entity.systemUid,
+                type: EntityType.VALVE,
+                uid: newValveUid,
+                valveType: 'fitting',
+            };
+
+            if (this.entity.endpointUid[0] === epUid) {
+                this.entity.endpointUid[0] = newValveUid;
+            } else {
+                assert(this.entity.endpointUid[1] === epUid);
+                this.entity.endpointUid[1] = newValveUid;
+            }
+
+            const i = e.connections.indexOf(this.uid);
+            if (i !== -1) {
+                e.connections.splice(i, 1, pipe.uid);
+            } else {
+                throw new Error('connection wasn\'t configured properly');
+            }
+
+            context.document.drawing.entities.push(pipe);
+            context.document.drawing.entities.push(valve);
+            return valve;
+        } else {
+            console.log('extending');
+            // extend existing pipe
+            // find other pipe
+            let opuid = e.connections[0] === this.uid ? e.connections[1] : e.connections[0];
+            let opo = this.objectStore.get(opuid) as Pipe;
+            const wep = opo.worldEndpoints();
+            const incident = Flatten.line(Flatten.point(wep[0].x, wep[0].y), Flatten.point(wep[1].x, wep[1].y));
+            const projLine = Flatten.line(Flatten.point(pointWc.x, pointWc.y), direction.rotate90CCW());
+            console.log('direction is ' + direction.x + ' ' + direction.y);
+            const nwp = projLine.intersect(incident);
+            assert(nwp.length === 1);
+            o.debase();
+            o.entity.center = {x: nwp[0].x, y: nwp[0].y};
+            o.rebase(context);
 
             return true;
         }
-
-        return false;
     }
 
-    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
-        return UNHANDLED;
+    onDrag(
+        event: MouseEvent,
+        grabbedObjectCoord: Coord,
+        eventObjectCoord: Coord,
+        grabState: PipeDragState,
+        context: CanvasContext,
+        isMultiDrag: boolean,
+    ): void {
+        if (!isMultiDrag) {
+            context.$store.dispatch('document/revert', false);
+        }
+        const needToReposition: string[] = [];
+        const spawnedEntities: ValveEntity[] = [];
+
+        const straights: boolean[] = [];
+        this.entity.endpointUid.forEach((euid) => {
+            const o = this.objectStore.get(euid) as BackedConnectable<ConnectableEntityConcrete>;
+            straights.push(o.isStraight(30));
+        });
+
+        let i = 0;
+        this.entity.endpointUid.forEach((euid) => {
+            const o = this.objectStore.get(euid)!;
+            if (!o.layer.isSelected(o.uid)) {
+                console.log(JSON.stringify(eventObjectCoord));
+                const newProjection = {
+                    x: grabState.pointOnPipe.x + eventObjectCoord.x - grabbedObjectCoord.x,
+                    y: grabState.pointOnPipe.y + eventObjectCoord.y - grabbedObjectCoord.y,
+                };
+                const res = this.projectEndpoint(newProjection, o.uid, grabState.a2b, straights[i], context);
+                if (!res) {
+                    // Cannot project for whatever reason, so move it normally plz.
+                    needToReposition.push(o.uid);
+                }
+                if (!_.isBoolean(res)) {
+                    spawnedEntities.push(res);
+                }
+            }
+            i ++;
+        });
+
+        console.log(JSON.stringify(needToReposition));
+
+        if (needToReposition.length === 1) {
+            // just plop the pipe to the other side
+            const e = this.objectStore.get(needToReposition[0]) as BackedConnectable<ConnectableEntityConcrete>;
+            e.debase();
+
+            const otherSide = this.entity.endpointUid.filter((euid) => euid !== needToReposition[0])[0];
+            const oo = this.objectStore.get(otherSide) as BackedConnectable<ConnectableEntityConcrete>;
+
+            let center: Coord;
+            if (oo) {
+                center = oo.toWorldCoord({x: 0, y: 0});
+            } else {
+                center = spawnedEntities[0].center;
+            }
+            let newCenter = Flatten.point(center.x, center.y).translate(grabState.a2b);
+            if (needToReposition[0] === this.entity.endpointUid[0]) {
+                newCenter = Flatten.point(center.x, center.y).translate(grabState.a2b.multiply(-1));
+            }
+
+            e.entity.center = newCenter;
+            e.rebase(context);
+        } else if (needToReposition.length === 2) {
+            // just drag the pipe ends like they were objects.
+            this.entity.endpointUid.forEach((euid) => {
+                const o = this.objectStore.get(euid) as BackedConnectable<ConnectableEntityConcrete>;
+                o.debase();
+                o.entity.center.x += eventObjectCoord.x - grabbedObjectCoord.x;
+                o.entity.center.y += eventObjectCoord.y - grabbedObjectCoord.y;
+                o.rebase(context);
+            });
+        }
+        if (!isMultiDrag) {
+            context.processDocument(false);
+            this.onChange();
+        }
+    }
+    onDragFinish(event: MouseEvent, context: CanvasContext, isMultiDrag: boolean): void {
+        //
+        if (!isMultiDrag) {
+            this.onCommit(event);
+        }
     }
 
-    onMouseUp(event: MouseEvent, context: CanvasContext): boolean {
-        const wc = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
-        const oc = this.toObjectCoord(wc);
-        // Check bounds
-        return this.inBounds(oc);
-    }
-
-    prepareDelete(): BaseBackedObject[] {
+    prepareDelete(context: CanvasContext): BaseBackedObject[] {
         const result: BaseBackedObject[] = [this];
         for (let i = 0; i < 2; i++) {
             const a = this.objectStore.get(this.entity.endpointUid[i]);
             if (a instanceof BackedConnectable) {
-                result.push(...a.prepareDeleteConnection(this.entity.uid));
+                result.push(...a.prepareDeleteConnection(this.entity.uid, context));
             } else {
                 throw new Error('endpoint non existent on pipe ' + JSON.stringify(this.entity));
             }
@@ -280,8 +441,14 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
     }
 
     protected refreshObjectInternal(obj: PipeEntity): void {
-        // asdf
+        //
     }
 }
 
 DrawableObjectFactory.registerEntity(EntityType.PIPE, Pipe);
+
+export interface PipeDragState {
+    a2b: Flatten.Vector;
+    normal: Flatten.Vector;
+    pointOnPipe: Coord;
+}

@@ -33,31 +33,31 @@ export default interface FlowSourceEntity extends ConnectableEntity, Calculation
 export function makeFlowSourceFields(materials: Choice[], systems: FlowSystemParameters[]): PropertyField[] {
     return [
         { property: 'systemUid', title: 'Flow System', hasDefault: false, isCalculated: false,
-            type: FieldType.FlowSystemChoice, params: { systems } },
+            type: FieldType.FlowSystemChoice, params: { systems },  multiFieldId: 'systemUid' },
 
         { property: 'diameterMM', title: 'Diameter (mm)', hasDefault: false, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null } },
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'diameterMM' },
 
         { property: 'maximumVelocityMS', title: 'Maximum Velocity (m/s)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null } },
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'maximumVelocityMS' },
 
-        { property: 'heightAboveFloorM', title: 'Height Above Floor (m)', hasDefault: false, isCalculated: false,
-            type: FieldType.Number, params: { min: null, max: null } },
+        { property: 'heightAboveFloorM', title: 'Pressure Height (m)', hasDefault: false, isCalculated: false,
+            type: FieldType.Number, params: { min: null, max: null },  multiFieldId: 'heightAboveFloorM' },
 
         { property: 'material', title: 'Material', hasDefault: true, isCalculated: false,
-            type: FieldType.Choice, params: { choices: materials} },
+            type: FieldType.Choice, params: { choices: materials},  multiFieldId: 'material' },
 
         { property: 'spareCapacity', title: 'Spare Capacity (%)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: 100 } },
+            type: FieldType.Number, params: { min: 0, max: 100 },  multiFieldId: 'spareCapacity' },
 
         { property: 'color', title: 'Color:', hasDefault: true, isCalculated: false,
-            type: FieldType.Color, params: null },
+            type: FieldType.Color, params: null,  multiFieldId: 'color' },
 
         { property: 'temperatureC', title: 'Temperature (C)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: 100 } },
+            type: FieldType.Number, params: { min: 0, max: 100 },  multiFieldId: 'temperatureC' },
 
         { property: 'pressureKPA', title: 'Pressure (kPA)', hasDefault: false, isCalculated: false, requiresInput: true,
-            type: FieldType.Number, params: { min: 0, max: null } },
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'pressureKPA' },
     ];
 }
 

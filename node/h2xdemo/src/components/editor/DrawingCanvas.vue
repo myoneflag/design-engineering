@@ -1,10 +1,9 @@
-import {DrawingMode} from "@/htmlcanvas/types";
 <template>
     <div ref="canvasFrame" class="fullFrame">
         <drop
             @drop="onDrop"
         >
-            <canvas ref="drawingCanvas" v-bind:style="{ backgroundColor: 'aliceblue', cursor: currentCursor}">
+            <canvas ref="drawingCanvas" @contextmenu="disableContextMenu" v-bind:style="{ backgroundColor: 'aliceblue', cursor: currentCursor}">
 
             </canvas>
 
@@ -34,10 +33,10 @@ import {DrawingMode} from "@/htmlcanvas/types";
             />
 
             <PropertiesWindow
-                    :selected-entity="selectedEntity"
-                    :selected-object="selectedObject"
+                    :selected-entities="selectedEntities"
+                    :selected-objects="selectedObjects"
                     :target-property="targetProperty"
-                    v-if="selectedObject && propertiesVisible"
+                    v-if="selectedObjects.length && propertiesVisible"
                     :mode="mode"
                     :on-change="scheduleDraw"
                     :on-delete="deleteSelected"
@@ -64,7 +63,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
     import Vue from 'vue';
     import Component from 'vue-class-component';
     import {ViewPort} from '@/htmlcanvas/viewport';
-    import {Coord, DocumentState, DrawableEntity, FlowSystemParameters} from '@/store/document/types';
+    import {Coord, DocumentState, FlowSystemParameters} from '@/store/document/types';
     import {drawPaperScale} from '@/htmlcanvas/scale';
     import ModeButtons from '@/components/editor/ModeButtons.vue';
     import PropertiesWindow from '@/components/editor/property-window/PropertiesWindow.vue';
@@ -80,7 +79,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
     import uuid from 'uuid';
     import {renderPdf} from '@/api/pdf';
     import HydraulicsLayer from '@/htmlcanvas/layers/hydraulics-layer';
-    import Layer from '@/htmlcanvas/layers/layer';
+    import Layer, {SelectMode} from '@/htmlcanvas/layers/layer';
     import HydraulicsInsertPanel from '@/components/editor/HydraulicsInsertPanel.vue';
     import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
     import {EntityType} from '@/store/document/entities/types';
@@ -99,8 +98,10 @@ import {DrawingMode} from "@/htmlcanvas/types";
     import CalculationEngine from '@/calculations/calculation-engine';
     import CalculationLayer from '@/htmlcanvas/layers/calculation-layer';
     import {getBoundingBox} from '@/htmlcanvas/lib/utils';
-    import {Catalog, FixtureSpec} from '@/store/catalog/types';
-    import {DrawableEntityConcrete} from "@/store/document/entities/concrete-entity";
+    import {Catalog} from '@/store/catalog/types';
+    import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
+    import SelectBox from '@/htmlcanvas/objects/select-box';
+    import * as _ from 'lodash';
 
     @Component({
         components: {
@@ -126,7 +127,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
             () => {
                 this.scheduleDraw();
             },
-            (object, drawable) => {
+            () => {
                 this.scheduleDraw();
             },
             () => { // onCommit
@@ -138,7 +139,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
             () => {
                 this.scheduleDraw();
             },
-            (selectedObject: BaseBackedObject | null) => {
+            () => {
                 this.scheduleDraw();
             },
             () => {
@@ -150,7 +151,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
             () => {
                 this.scheduleDraw();
             },
-            (selctedObject: BaseBackedObject | null) => {
+            () => {
                 this.scheduleDraw();
             },
             () => {
@@ -179,13 +180,18 @@ import {DrawingMode} from "@/htmlcanvas/types";
 
         calculationEngine!: CalculationEngine;
         targetProperty: string | null = null;
+        isLayerDragging: boolean = false;
+
+        selectBox: SelectBox | null = null;
+        selectBoxMode: SelectMode | null = null;
+        selectBoxStartSelected: string[] = [];
 
         mounted() {
             this.ctx = (this.$refs.drawingCanvas as any).getContext('2d');
 
             MainEventBus.$on('ot-applied', this.onOT);
             MainEventBus.$on('set-tool-handler', this.setToolHandler);
-            MainEventBus.$on('select', this.onSelect);
+            MainEventBus.$on('select', this.onSelectRequest);
 
             (this.$refs.drawingCanvas as any).onmousedown = this.onMouseDown;
             (this.$refs.drawingCanvas as any).onmousemove = this.onMouseMove;
@@ -236,7 +242,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
         }
 
         get propertiesVisible() {
-            if (!this.selectedObject) {
+            if (!this.selectedObjects) {
                 return false;
             }
 
@@ -244,7 +250,11 @@ import {DrawingMode} from "@/htmlcanvas/types";
                 return false;
             }
 
-            if (this.hydraulicsLayer.draggedObjects) {
+            if (this.hasDragged || this.isLayerDragging) {
+                return false;
+            }
+
+            if (this.selectBox) {
                 return false;
             }
             return true;
@@ -298,15 +308,15 @@ import {DrawingMode} from "@/htmlcanvas/types";
             this.scheduleDraw();
         }
 
-        get selectedEntity() {
+        get selectedEntities() {
             if (this.activeLayer) {
-                return this.activeLayer.selectedEntity;
+                return this.activeLayer.selectedEntities;
             }
         }
 
-        get selectedObject() {
+        get selectedObjects() {
             if (this.activeLayer) {
-                return this.activeLayer.selectedObject;
+                return this.activeLayer.selectedObjects;
             }
             return null;
         }
@@ -315,8 +325,12 @@ import {DrawingMode} from "@/htmlcanvas/types";
             return this.document.uiState.isCalculating;
         }
 
-        deleteEntity(object: BaseBackedObject) {
-            const toDelete = object.prepareDelete();
+        disableContextMenu(e: Event) {
+            return e.preventDefault();
+        }
+
+        deleteEntity(object: BaseBackedObject): Set<string> {
+            const toDelete = object.prepareDelete(this);
             const deleted = new Set<string>();
             toDelete.forEach((drawableObject) => {
                 if (deleted.has(drawableObject.uid)) {
@@ -338,12 +352,13 @@ import {DrawingMode} from "@/htmlcanvas/types";
                 }
                 deleted.add(drawableObject.uid);
             });
+            return deleted;
         }
 
-        onSelect(selectionTarget: SelectionTarget) {
+        onSelectRequest(selectionTarget: SelectionTarget) {
             if (selectionTarget.uid === null) {
                 if (this.activeLayer) {
-                    this.activeLayer.select(null);
+                    this.activeLayer.select([], SelectMode.Replace);
                 }
             } else {
                 const obj = this.objectStore.get(selectionTarget.uid);
@@ -360,7 +375,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                 }
 
                 if (this.activeLayer) {
-                    this.activeLayer.select(obj);
+                    this.activeLayer.select([obj], SelectMode.Replace);
                 }
 
                 if (selectionTarget.property) {
@@ -384,11 +399,20 @@ import {DrawingMode} from "@/htmlcanvas/types";
                     title: selectionTarget.title!,
                 });
             }
+
+            this.scheduleDraw();
         }
 
         deleteSelected() {
-            if (this.selectedObject) {
-                this.deleteEntity(this.selectedObject);
+            const deleted = new Set<string>();
+            if (this.selectedObjects) {
+                this.selectedObjects.forEach((o) => {
+                    if (!deleted.has(o.uid)) {
+                        this.deleteEntity(o).forEach((uid) => {
+                            deleted.add(uid);
+                        });
+                    }
+                });
                 this.$store.dispatch('document/commit');
             } else {
                 throw new Error('Delete selected was called but we didn\'t select anything');
@@ -401,9 +425,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
             }
         }
 
-        id = 0;
         processDocument(redraw: boolean = true) {
-            this.id ++;
             this.updating = true;
             this.considerCalculating();
             this.allLayers.forEach((l) => l.update(this.document));
@@ -464,7 +486,6 @@ import {DrawingMode} from "@/htmlcanvas/types";
                 const result = this.allLayers[i].offerInteraction(interaction, filter, sortBy);
                 if (result && result.length > 0) {
                     this.interactive = result;
-                    //this.scheduleDraw();
                     return this.interactive;
                 }
             }
@@ -496,7 +517,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
             {entityName, system, fixtureName, tmvHasCold}:
                 {entityName: string, system: FlowSystemParameters, fixtureName: string, tmvHasCold: boolean},
         ) {
-            this.hydraulicsLayer.onSelected(null);
+            this.hydraulicsLayer.select([], SelectMode.Replace);
 
             if (entityName === EntityType.FLOW_SOURCE) {
                 insertFlowSource(this, system);
@@ -543,6 +564,11 @@ import {DrawingMode} from "@/htmlcanvas/types";
                 }
 
                 drawPaperScale(ctx, 1 / matrixScale(this.viewPort.position));
+
+                // draw selection box
+                if (this.selectBox) {
+                    this.selectBox.draw(context);
+                }
             }
         }
 
@@ -617,6 +643,30 @@ import {DrawingMode} from "@/htmlcanvas/types";
         }
 
         onMouseDown(event: MouseEvent): boolean {
+            if (event.button === 2) {
+                if (event.shiftKey && !event.ctrlKey) {
+                    this.selectBoxMode = SelectMode.Exclude;
+                } else if (event.ctrlKey && !event.shiftKey) {
+                    this.selectBoxMode = SelectMode.Add;
+                } else if (event.shiftKey && event.ctrlKey) {
+                    this.selectBoxMode = SelectMode.Toggle;
+                } else {
+                    this.selectBoxMode = SelectMode.Replace;
+                }
+                this.selectBoxStartSelected = _.clone(this.hydraulicsLayer.selectedIds);
+                event.preventDefault();
+
+                // start box thingy
+                this.selectBox = new SelectBox(
+                    null,
+                    this.hydraulicsLayer,
+                    this.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY}),
+                    this.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY}),
+                );
+
+                return true;
+            }
+
             if (this.toolHandler) {
                 if (this.toolHandler.onMouseDown(event, this)) {
                     return true;
@@ -652,6 +702,29 @@ import {DrawingMode} from "@/htmlcanvas/types";
         }
 
         onMouseMoveInternal(event: MouseEvent): MouseMoveResult {
+            if (this.selectBox) {
+                this.selectBox.pointB = this.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
+
+                event.preventDefault();
+
+                if (this.mode === DrawingMode.Hydraulics) {
+                    this.hydraulicsLayer.select(_.clone(this.selectBoxStartSelected), SelectMode.Replace);
+
+                    this.hydraulicsLayer.select(
+                        this.hydraulicsLayer.uidsInOrder.filter((uid) => {
+                            return this.selectBox!.inSelection(
+                                [this.objectStore.get(uid)!],
+                            ).length > 0;
+                        }),
+                        this.selectBoxMode!,
+                    );
+                }
+
+                this.scheduleDraw();
+                // todo: select
+                return {cursor: null, handled: true};
+            }
+
             if (this.toolHandler) {
                 const res = this.toolHandler.onMouseMove(event, this);
                 if (res.handled) {
@@ -685,6 +758,14 @@ import {DrawingMode} from "@/htmlcanvas/types";
         }
 
         onMouseUp(event: MouseEvent): boolean {
+            if (this.selectBox && event.button === 2) {
+                // finish selection
+                event.preventDefault();
+                this.selectBox = null;
+                this.scheduleDraw();
+                return false;
+            }
+
             this.interactive = null;
 
             if (this.grabbedPoint) {
@@ -708,6 +789,7 @@ import {DrawingMode} from "@/htmlcanvas/types";
                     }
                 }
             }
+
             return false;
         }
 

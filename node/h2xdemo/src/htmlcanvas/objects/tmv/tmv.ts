@@ -15,9 +15,12 @@ import {EntityType} from '@/store/document/entities/types';
 import {StandardFlowSystemUids} from '@/store/catalog';
 import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
+import {SelectableObject} from '@/htmlcanvas/lib/object-traits/selectable';
+import {assertUnreachable} from '@/lib/utils';
 
+@SelectableObject
 @CenterDraggableObject
-export default class Tmv extends BackedDrawableObject<TmvEntity> implements Connectable {
+export default class Tmv extends BackedDrawableObject<TmvEntity> {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.TMV, Tmv);
     }
@@ -122,40 +125,15 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Conn
         return false;
     }
 
-    onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
-        const wc = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
-        const oc = this.toObjectCoord(wc);
-
-        // Check bounds
-        if (this.inBounds(oc)) {
-            this.onSelect();
-
-            return true;
-        }
-
-        return false;
-    }
-
-    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
-        return UNHANDLED;
-    }
-
-    onMouseUp(event: MouseEvent, context: CanvasContext): boolean {
-        const wc = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
-        const oc = this.toObjectCoord(wc);
-        // Check bounds
-        return this.inBounds(oc);
-    }
-
-    prepareDelete(): BaseBackedObject[] {
+    prepareDelete(context: CanvasContext): BaseBackedObject[] {
         const list = [
             this,
-            ...this.objectStore.get(this.entity.coldRoughInUid)!.prepareDelete(),
-            ...this.objectStore.get(this.entity.hotRoughInUid)!.prepareDelete(),
-            ...this.objectStore.get(this.entity.warmOutputUid)!.prepareDelete(),
+            ...this.objectStore.get(this.entity.coldRoughInUid)!.prepareDelete(context),
+            ...this.objectStore.get(this.entity.hotRoughInUid)!.prepareDelete(context),
+            ...this.objectStore.get(this.entity.warmOutputUid)!.prepareDelete(context),
         ];
         if (this.entity.coldOutputUid) {
-            list.push(...this.objectStore.get(this.entity.coldOutputUid)!.prepareDelete());
+            list.push(...this.objectStore.get(this.entity.coldOutputUid)!.prepareDelete(context));
         }
         return list;
     }

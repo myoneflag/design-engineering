@@ -75,7 +75,6 @@ export const actions: ActionTree<DocumentState, RootState> = {
 
         submitOperation(commit, diff);
 
-
         MainEventBus.$emit('ot-applied');
     },
 

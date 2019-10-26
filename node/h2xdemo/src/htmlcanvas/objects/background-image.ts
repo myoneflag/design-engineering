@@ -17,8 +17,10 @@ import Flatten from '@flatten-js/core';
 import {DEFAULT_FONT_NAME} from '@/config';
 import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import {cloneSimple} from '@/lib/utils';
+import {DraggableObject} from '@/htmlcanvas/lib/object-traits/draggable-object';
+import {SelectableObject} from '@/htmlcanvas/lib/object-traits/selectable';
+import CenterDraggableObject from '@/htmlcanvas/lib/object-traits/center-draggable-object';
 
-// TODO: Convert into backed drawable object.
 export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> implements Sizeable {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.BACKGROUND_IMAGE, BackgroundImage);
@@ -48,11 +50,11 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         });
     }
 
-    prepareDelete(): BaseBackedObject[] {
+    prepareDelete(context: CanvasContext): BaseBackedObject[] {
         const result: BaseBackedObject[] = [this];
         this.objectStore.forEach((v) => {
             if (v.entity.parentUid === this.entity.uid) {
-                result.push(...v.prepareDelete());
+                result.push(...v.prepareDelete(context));
             }
         });
         return result;
@@ -311,7 +313,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
             this.grabbedOffsetState = cloneSimple(this.entity.offset);
             this.hasDragged = false;
             if (this.onSelect) {
-                this.onSelect();
+                this.onSelect(event);
             }
             return true;
         }
@@ -352,7 +354,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
             }
         } else {
             if (this.grabbedCenterState != null || this.grabbedPoint != null) {
-                this.onCommit();
+                this.onCommit(event);
             }
             this.grabbedCenterState = null;
             this.grabbedPoint = null;
@@ -368,7 +370,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
             this.grabbedCenterState = null;
             this.hasDragged = false;
             this.onChange();
-            this.onCommit();
+            this.onCommit(event);
             return true;
         }
         return false;

@@ -1,85 +1,23 @@
-import Layer from '@/htmlcanvas/layers/layer';
-import {ViewPort} from '@/htmlcanvas/viewport';
+import {LayerImplementation, SelectMode} from '@/htmlcanvas/layers/layer';
 import {DrawingMode, MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
-import {Coord, DocumentState, DrawableEntity, WithID} from '@/store/document/types';
-import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
+import {Coord, DocumentState} from '@/store/document/types';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
-import FlowSource from '@/htmlcanvas/objects/flow-source';
-import FlowSourceEntity from '@/store/document/entities/flow-source-entity';
-import * as _ from 'lodash';
 import DrawableObject from '@/htmlcanvas/lib/drawable-object';
-import Valve from '@/htmlcanvas/objects/valve';
-import ValveEntity from '@/store/document/entities/valve-entity';
-import Pipe from '@/htmlcanvas/objects/pipe';
-import PipeEntity from '@/store/document/entities/pipe-entity';
 import {EntityType} from '@/store/document/entities/types';
-import {Interaction} from '@/htmlcanvas/lib/interaction';
-import {DrawingContext, ObjectStore} from '@/htmlcanvas/lib/types';
-import TmvEntity from '@/store/document/entities/tmv/tmv-entity';
-import Tmv from '@/htmlcanvas/objects/tmv/tmv';
+import {DrawingContext} from '@/htmlcanvas/lib/types';
 import DrawableObjectFactory from '../lib/drawable-object-factory';
-import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
-import assert from 'assert';
 
-export default class  HydraulicsLayer implements Layer {
+export default class  HydraulicsLayer extends LayerImplementation {
     uidsInOrder: string[] = [];
 
-    onChange: () => any;
-    onSelect: (drawable: BaseBackedObject | null) => any;
-    onCommit: (drawable: BaseBackedObject) => any;
-
-    selectedObject: BaseBackedObject | null = null;
-
-    objectStore: ObjectStore;
     draggedObjects: BaseBackedObject[] | null = null;
-
-    constructor(
-        objectStore: Map<string,  BaseBackedObject>,
-        onChange: () => any,
-        onSelect: (drawable: BaseBackedObject | null) => any,
-        onCommit: (drawable: BaseBackedObject) => any,
-    ) {
-        this.objectStore = objectStore;
-        this.onChange = onChange;
-
-        this.onSelect = onSelect;
-        this.onCommit = onCommit;
-    }
-
-    get selectedEntity() {
-        if (this.selectedObject == null) {
-            return null;
-        }
-        return this.selectedObject.entity;
-    }
 
     draw(context: DrawingContext, active: boolean, mode: DrawingMode) {
         this.uidsInOrder.forEach((v) => {
             this.objectStore.get(v)!.draw(context, active, false, mode);
         });
     }
-
-    select(object: BaseBackedObject): void {
-        this.selectedObject = object;
-    }
-
-    drawSelectionLayer(context: DrawingContext, interactive: DrawableEntity[] | null) {
-        if (this.selectedObject) {
-            this.objectStore.get(this.selectedObject.entity.uid)!.draw(context, true, true);
-        }
-        if (interactive) {
-
-            for (let i = interactive.length - 1; i >= 0; i--) {
-                const ii = interactive[i];
-                if (this.uidsInOrder.indexOf(ii.uid) !== -1) {
-                    this.objectStore.get(ii.uid)!.draw(context, true, true);
-                }
-            }
-        }
-    }
-
-
 
     update(doc: DocumentState) {
         const thisIds = doc.drawing.entities.map((v) => v.uid);
@@ -97,11 +35,13 @@ export default class  HydraulicsLayer implements Layer {
 
         removed.forEach((v) => {
             this.objectStore.delete(v);
-            if (this.selectedObject && v === this.selectedObject.entity.uid) {
-                this.selectedObject = null;
-                this.onSelect(null);
+            if (this.isSelected(v)) {
+                this.select([v], SelectMode.Exclude);
+                this.onSelect();
             }
         });
+
+
 
         // We have to create child objects from root to child with a tree.
         // Build tree.
@@ -127,9 +67,9 @@ export default class  HydraulicsLayer implements Layer {
                     parent ? parent.entity : null,
                     this.objectStore,
                     {
-                        onSelected: (o) => this.onSelected(o),
+                        onSelected: (e) => this.onSelected(e, entity.uid),
                         onChange: () => this.onChange(),
-                        onCommit: (o) => this.onCommit(o),
+                        onCommit: (e) => this.onCommit(entity),
                     },
                 );
             }
@@ -170,138 +110,5 @@ export default class  HydraulicsLayer implements Layer {
             }
         }
         return null;
-    }
-
-    onSelected(object: BaseBackedObject | null) {
-        const oldSelected = this.selectedObject;
-        this.selectedObject = object;
-        if (oldSelected !== null && object !== null && oldSelected.uid !== object.uid
-            || (oldSelected !== null) !== (object !== null)) {
-            this.onSelect(this.selectedObject);
-        }
-    }
-
-    onMouseDown(event: MouseEvent, context: CanvasContext) {
-        for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
-            const uid = this.uidsInOrder[i];
-            if (this.objectStore.has(uid)) {
-                const object = this.objectStore.get(uid)!;
-                if (object.onMouseDown(event, context)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
-        if (this.draggedObjects) {
-            context.$store.dispatch('document/revert', false);
-            const res = this.draggedObjects[0].onMouseMove(event, context);
-            if (res.handled) {
-                return res;
-            }
-        }
-
-        for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
-            const uid = this.uidsInOrder[i];
-            if (this.objectStore.has(uid)) {
-                const object = this.objectStore.get(uid)!;
-                const res = object.onMouseMove(event, context);
-                if (res.handled) {
-                    return res;
-                }
-            }
-        }
-
-        return UNHANDLED;
-    }
-
-
-    onMouseUp(event: MouseEvent, context: CanvasContext) {
-        if (this.draggedObjects) {
-            if (this.draggedObjects[0].onMouseMove(event, context)) {
-                return true;
-            }
-        }
-
-        for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
-            const uid = this.uidsInOrder[i];
-            if (this.objectStore.has(uid)) {
-                const object = this.objectStore.get(uid)!;
-                if (object.onMouseUp(event, context)) {
-                    return true;
-                }
-            }
-        }
-
-        this.selectedObject = null;
-        this.onSelect(null);
-        this.onChange();
-
-        return false;
-    }
-
-    offerInteraction(
-        interaction: Interaction,
-        filter?: (objects: DrawableEntityConcrete[]) => boolean,
-        sortKey?: (objects: DrawableEntityConcrete[]) => any,
-    ): DrawableEntityConcrete[] | null {
-
-        const candidates: Array<[any, DrawableEntityConcrete[]]> = [];
-
-        for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
-            const uid = this.uidsInOrder[i];
-            if (this.objectStore.has(uid)) {
-                const object = this.objectStore.get(uid)!;
-                const objectCoord = object.toObjectCoord(interaction.worldCoord);
-                const objectLength = object.toObjectLength(interaction.worldRadius);
-                if (object.inBounds(objectCoord, objectLength)) {
-
-                    const result = object.offerInteraction(interaction);
-                    if (result && result.length) {
-                        if (filter === undefined || filter(result)) {
-                            if (sortKey === undefined) {
-                                return result;
-                            } else {
-                                candidates.push([sortKey(result), result]);
-                            }
-                        }
-                    }
-
-                }
-            }
-        }
-
-        if (candidates.length) {
-            let best = candidates[0][1];
-            let bestScore = candidates[0][0];
-
-            for (let i = 1; i < candidates.length; i++) {
-                if (candidates[i][0] > bestScore) {
-                    bestScore = candidates[i][0];
-                    best = candidates[i][1];
-                }
-            }
-            return best;
-        }
-
-        return null;
-    }
-
-    dragObjects(objects: BaseBackedObject[]): void {
-        this.draggedObjects = objects;
-    }
-
-    releaseDrag(): void {
-        if (this.draggedObjects) {
-            this.draggedObjects.forEach((o) => {
-                if (!this.uidsInOrder.includes(o.uid)) {
-                    this.objectStore.delete(o.uid);
-                }
-            });
-        }
-        this.draggedObjects = null;
     }
 }

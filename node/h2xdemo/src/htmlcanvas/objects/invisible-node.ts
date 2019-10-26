@@ -21,18 +21,6 @@ export abstract class InvisibleNode<T extends InvisibleNodeEntityConcrete> exten
         // TA-DA!
     }
 
-    onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
-        return false;
-    }
-
-    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
-        return UNHANDLED;
-    }
-
-    onMouseUp(event: MouseEvent, context: CanvasContext): boolean {
-        return false;
-    }
-
     prepareDelete(): BaseBackedObject[] {
         return [];
     }

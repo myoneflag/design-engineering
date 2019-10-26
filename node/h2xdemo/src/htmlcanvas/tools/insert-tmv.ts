@@ -170,9 +170,9 @@ export default function insertTmv(
 
             // do closest hot pipe
             if (coldDrawn) {
-                const interactive = getClosestJoinable(context, StandardFlowSystemUids.HotWater, wc, 3000);
-                if (interactive && interactive.length) {
-                    const pipeE = interactive[0];
+                const interactiveC = getClosestJoinable(context, StandardFlowSystemUids.HotWater, wc, 3000);
+                if (interactiveC && interactiveC.length) {
+                    const pipeE = interactiveC[0];
 
                     hotObj = DrawableObjectFactory.build(
                         context.hydraulicsLayer,
@@ -191,6 +191,13 @@ export default function insertTmv(
                         StandardFlowSystemUids.HotWater,
                     );
                 }
+            }
+
+            if (coldObj) {
+                context.objectStore.delete(coldObj.uid);
+            }
+            if (tmvObj) {
+                context.objectStore.delete(tmvObj.uid);
             }
             context.processDocument();
         },
@@ -264,7 +271,11 @@ function leadPipe(
 
 }
 
-function getClosestJoinable(context: CanvasContext, systemUid: string, wc: Coord, radius: number): Array<PipeEntity | ConnectableEntityConcrete> | null {
+function getClosestJoinable(
+    context: CanvasContext,
+    systemUid: string,
+    wc: Coord, radius: number,
+): Array<PipeEntity | ConnectableEntityConcrete> | null {
     return context.offerInteraction(
         {
             type: InteractionType.EXTEND_NETWORK,
