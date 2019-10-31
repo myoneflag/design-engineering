@@ -62,6 +62,7 @@ export default class CalculationEngine {
     extraWarnings!: PopupEntity[];
     extraErrors!: PopupEntity[];
     drawing!: DrawingState;
+    ga!: number;
 
     calculate(
         objectStore: ObjectStore,
@@ -79,6 +80,7 @@ export default class CalculationEngine {
         this.extraWarnings = [];
         this.extraErrors = [];
         this.drawing = this.doc.drawing;
+        this.ga = this.doc.drawing.calculationParams.gravitationalAcceleration;
 
         const success = this.preValidate();
 
@@ -266,8 +268,8 @@ export default class CalculationEngine {
                 if (sources.indexOf(n) !== -1) {
                     const source = this.objectStore.get(n) as FlowSource;
                     const density = getFluidDensityOfSystem(source.entity.systemUid, this.doc, this.catalog)!;
-                    const mh = source.entity.heightAboveFloorM - heightM;
-                    const thisPressure = Number(source.entity.pressureKPA!) + head2kpa(mh, density);
+                    const mh = source.entity.heightAboveFloor - heightM;
+                    const thisPressure = Number(source.entity.pressureKPA!) + head2kpa(mh, density, this.ga);
                     if (highPressure === null || thisPressure > highPressure) {
                         highPressure = thisPressure;
                     }
@@ -335,6 +337,7 @@ export default class CalculationEngine {
                                 flowTo,
                             ),
                             getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
+                            this.ga,
                         );
                     case EntityType.PIPE:
                         if (!obj.entity.calculation || obj.entity.calculation.pressureDropKpa === null) {
@@ -686,6 +689,7 @@ export default class CalculationEngine {
             pipe.calculation!.pressureDropKpa = head2kpa(
                 this.getPipePressureDropMH(pipe),
                 getFluidDensityOfSystem(pipe.systemUid, this.doc, this.catalog)!,
+                this.ga,
             );
         }
     }
@@ -756,6 +760,7 @@ export default class CalculationEngine {
             filled.lengthM!,
             realInternalDiameter!,
             pipe.calculation!.velocityRealMS!,
+            this.ga,
         );
     }
 

@@ -1,0 +1,3 @@
+[submodule "node/keyboard-keys-speedflips"]
+	path = node/keyboard-keys-speedflips
+	url = https://github.com/q2apro/keyboard-keys-speedflips.git

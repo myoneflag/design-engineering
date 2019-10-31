@@ -20,7 +20,7 @@ export default interface FlowSourceEntity extends ConnectableEntity, Calculation
 
     diameterMM: number;
     maximumVelocityMS: number | null; // null means default
-    heightAboveFloorM: number;
+    heightAboveFloor: number;
     material: string | null;
     spareCapacity: number | null;
     color: Color | null;

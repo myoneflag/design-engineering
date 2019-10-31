@@ -111,13 +111,13 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> {
 
         ctx.stroke();
 
-        this.withWorldAngle(context, {x: 0, y: 0}, () => {
+        this.withWorldAngle(context, {x: 0, y: this.entity.pipeDistanceMM * 1.2}, () => {
             ctx.font = (this.entity.pipeDistanceMM / 2) + 'pt ' + DEFAULT_FONT_NAME;
             const abbreviation = this.entity.abbreviation ? this.entity.abbreviation : '';
             const bounds = ctx.measureText(abbreviation);
             const left = -bounds.width / 2;
             ctx.fillStyle = '#000';
-            ctx.fillText(abbreviation, left, this.entity.pipeDistanceMM * 1.5);
+            ctx.fillText(abbreviation, left, this.entity.pipeDistanceMM * 0.3);
         });
     }
 

@@ -52,6 +52,7 @@ export default function insertValve(context: CanvasContext, system: FlowSystemPa
             context.interactive = null;
             context.$store.dispatch('document/commit');
         },
+        'Insert',
     ));
 }
 

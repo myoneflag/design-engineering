@@ -2,6 +2,7 @@ import {ToolConfig} from '@/store/tools/types';
 import {MouseMoveResult} from '@/htmlcanvas/types';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
+import {DrawingContext} from '@/htmlcanvas/lib/types';
 
 export interface ToolHandler {
     config: ToolConfig;
@@ -11,6 +12,8 @@ export interface ToolHandler {
     onMouseScroll: (event: MouseEvent, context: CanvasContext) => boolean;
 
     finish: (interrupted: boolean, displaced: boolean) => void;
+
+    draw(context: DrawingContext): void;
 }
 
 export const DEFAULT_TOOL: ToolConfig = {

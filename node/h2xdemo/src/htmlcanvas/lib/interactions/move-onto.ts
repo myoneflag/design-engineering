@@ -58,6 +58,6 @@ export function moveOnto(
         });
         loser.entity.connections.splice(0);
 
-        context.deleteEntity(loser);
+        context.deleteEntity(loser, false);
     }
 }

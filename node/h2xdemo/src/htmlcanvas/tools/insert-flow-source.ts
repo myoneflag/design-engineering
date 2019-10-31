@@ -50,7 +50,7 @@ export default function insertFlowSource(
                     connections,
                     center: cloneSimple(wc),
                     color: null,
-                    heightAboveFloorM: 0,
+                    heightAboveFloor: 0,
                     material: null,
                     maximumVelocityMS: null,
                     parentUid: null,
@@ -115,5 +115,6 @@ export default function insertFlowSource(
             // Notify the user that there's fields to select
             MainEventBus.$emit('select', {uid: newUid, property: 'pressureKPA', recenter: false});
         },
+        'Insert Flow Source',
     ));
 }

@@ -16,6 +16,7 @@ export default class FlowSolver {
     objectStore: ObjectStore;
     catalog: Catalog;
     doc: DocumentState;
+    ga: number;
 
     constructor(
         network: Graph<string, string>,
@@ -27,6 +28,7 @@ export default class FlowSolver {
         this.objectStore = objectStore;
         this.catalog = catalog;
         this.doc = doc;
+        this.ga = doc.drawing.calculationParams.gravitationalAcceleration;
     }
 
     // Given a flow network of pipes, joints with given diameters, and the flow sources and sinks,
@@ -91,7 +93,7 @@ export default class FlowSolver {
                     this.doc,
                     this.catalog,
                 );
-                const diffHead = kpa2head(toKPA, fromDensity!) - kpa2head(fromKPA, toDensity!);
+                const diffHead = kpa2head(toKPA, fromDensity!, this.ga) - kpa2head(fromKPA, toDensity!, this.ga);
                 adjustments += Math.abs(this.adjustPath(flowRates, a, diffHead));
             });
 

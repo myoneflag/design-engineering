@@ -48,6 +48,10 @@
     export default class App extends Vue {
         mounted() {
             document.onkeydown = (evt) => {
+                if (document.activeElement === null || document.activeElement.nodeName.toLowerCase() !== 'input') {
+                    MainEventBus.$emit('keydown', evt);
+                }
+
                 let isEscape = false;
                 if ('key' in evt) {
                     isEscape = (evt.key === 'Escape' || evt.key === 'Esc');

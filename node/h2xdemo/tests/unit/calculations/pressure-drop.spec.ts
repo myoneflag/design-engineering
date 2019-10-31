@@ -26,6 +26,7 @@ describe('pressure-drop.ts', () => {
             74.5,
             203.1,
             2.57222542,
+            9.81,
         );
         expect(dw).closeTo(4.620857567, 0.0001);
     });
