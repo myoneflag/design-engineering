@@ -143,3 +143,4 @@ export const PIPE_SIZING_METHODS: Choice[] = [
     {name: 'Keep maximum pressure drop within bounds', key: 'pressure', disabled: true},
 ];
 
+export const PIPE_HEIGHT_GRAPHIC_EPS_MM = 50;

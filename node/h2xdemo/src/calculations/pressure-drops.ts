@@ -1,5 +1,4 @@
 import pipe from '@/htmlcanvas/objects/pipe';
-import {GRAVITATIONAL_ACCELERATION} from '@/calculations/index';
 import {DocumentState} from '@/store/document/types';
 import {Catalog} from '@/store/catalog/types';
 import {parseCatalogNumberExact} from '@/htmlcanvas/lib/utils';
@@ -46,9 +45,10 @@ export function getDarcyWeisbachMH(
     pipeLengthM: number,
     internalDiameterMM: number,
     velocityMS: number,
+    ga: number,
 ) {
     return frictionFactor * pipeLengthM * velocityMS ** 2 /
-        ((internalDiameterMM / 1000) * GRAVITATIONAL_ACCELERATION * 2);
+        ((internalDiameterMM / 1000) * ga * 2);
 }
 
 export function getDarcyWeisbachFlatMH(
@@ -58,6 +58,7 @@ export function getDarcyWeisbachFlatMH(
     dynamicViscosity: number,
     pipeLengthM: number,
     velocityMS: number,
+    ga: number,
 ) {
     return getDarcyWeisbachMH(
         getFrictionFactor(
@@ -73,6 +74,7 @@ export function getDarcyWeisbachFlatMH(
         pipeLengthM,
         internalDiameterMM,
         velocityMS,
+        ga,
     );
 }
 
@@ -87,16 +89,17 @@ export function getHazenWilliamsMH(
 export function fittingFrictionLossMH(
     velocityMS: number,
     kValue: number,
+    ga: number,
 ) {
-    return kValue * 2 * velocityMS / (GRAVITATIONAL_ACCELERATION * 2);
+    return kValue * 2 * velocityMS / (ga * 2);
 }
 
-export function head2kpa(mh: number, densityKGM3: number): number {
-    return densityKGM3 * GRAVITATIONAL_ACCELERATION * mh / 1000;
+export function head2kpa(mh: number, densityKGM3: number, ga: number): number {
+    return densityKGM3 * ga * mh / 1000;
 }
 
-export function kpa2head(kpa: number, densityKGM3: number): number {
-    return 1000 * kpa / (densityKGM3 * GRAVITATIONAL_ACCELERATION);
+export function kpa2head(kpa: number, densityKGM3: number, ga: number): number {
+    return 1000 * kpa / (densityKGM3 * ga);
 }
 
 export function getFluidDensityOfSystem(systemUid: string, doc: DocumentState, catalog: Catalog): number | null {

@@ -261,6 +261,7 @@
                 (worldCoord: Coord) => {
                     onPoint(worldCoord);
                 },
+                'Set Point'
             ));
         }
 

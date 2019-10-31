@@ -6,6 +6,8 @@ import doc = Mocha.reporters.doc;
 import * as webpack from 'webpack';
 import numberToIdentifer = webpack.Template.numberToIdentifer;
 import {cloneSimple} from '@/lib/utils';
+import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import {EntityType} from '@/store/document/entities/types';
 
 
 export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
@@ -235,4 +237,18 @@ export function upperBoundTable<T>(table: {[key: string]: T}, index: number, get
     }
 
     return lowValue;
+}
+
+export function maxHeightOfConnection(entity: ConnectableEntityConcrete, context: CanvasContext) {
+    let height = -Infinity;
+    entity.connections.forEach((cuid) => {
+        const o = context.objectStore.get(cuid)!;
+        if (o.entity.type === EntityType.PIPE) {
+            height = Math.max(o.entity.heightAboveFloorM, height);
+        }
+    });
+    if (height !== -Infinity) {
+        return height;
+    }
+    return null;
 }

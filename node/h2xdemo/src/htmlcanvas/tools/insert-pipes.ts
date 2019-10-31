@@ -7,7 +7,7 @@ import {EntityType} from '@/store/document/entities/types';
 import ValveEntity from '@/store/document/entities/valve-entity';
 import uuid from 'uuid';
 import PipeEntity from '@/store/document/entities/pipe-entity';
-import {getInsertCoordsAt} from '@/htmlcanvas/lib/utils';
+import {getInsertCoordsAt, maxHeightOfConnection} from '@/htmlcanvas/lib/utils';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import Connectable from '@/htmlcanvas/lib/object-traits/connectable';
 import Flatten from '@flatten-js/core';
@@ -16,6 +16,7 @@ import {addValveAndSplitPipe} from '@/htmlcanvas/lib/interactions/split-pipe';
 import Pipe from '@/htmlcanvas/objects/pipe';
 import {isConnectable} from '@/store/document';
 import {SelectMode} from '@/htmlcanvas/layers/layer';
+import {KeyCode} from '@/htmlcanvas/utils';
 
 export default function insertPipes(context: CanvasContext, system: FlowSystemParameters) {
     // strategy:
@@ -47,7 +48,7 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
 
         },
         (wc: Coord, event: MouseEvent) => {
-
+            let heightM = context.document.drawing.calculationParams.ceilingPipeHeightM;
 
             // Preview
             const interactive = context.offerInteraction(
@@ -67,7 +68,7 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
             // Create a valve. It will only have a single pipe, and thus be a dead-leg.
             const doc = context.document as DocumentState;
             // maybe we drew onto an existing node.
-            let entity: ConnectableEntity | ValveEntity;
+            let entity: ConnectableEntityConcrete;
             if (interactive) {
                 const target = interactive[0];
                 if (target.type === EntityType.PIPE) {
@@ -78,8 +79,14 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                         target.systemUid,
                         30,
                     );
+                    heightM = target.heightAboveFloorM;
                 } else {
-                    entity = target as ConnectableEntity;
+                    entity = target as ConnectableEntityConcrete;
+
+                    const h = maxHeightOfConnection(entity, context);
+                    if (h !== null) {
+                        heightM = h;
+                    }
                 }
 
 
@@ -106,15 +113,22 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
 
             context.$store.dispatch('document/commit').then(() => {
                 context.interactive = null;
-                insertPipeChain(context, entity, system);
+                insertPipeChain(context, entity, system, heightM);
             });
         },
+        'Start Pipe',
     ));
 }
 
-function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEntity, system: FlowSystemParameters) {
+function insertPipeChain(
+    context: CanvasContext,
+    lastAttachment: ConnectableEntity,
+    system: FlowSystemParameters,
+    heightM: number,
+) {
     let nextEntity: ConnectableEntityConcrete | ValveEntity;
     const pipeUid = uuid();
+    let newPipe: PipeEntity | null = null;
 
     MainEventBus.$emit('set-tool-handler', new PointTool(
         (interrupted, displaced) => {
@@ -139,7 +153,7 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
             }
         },
         (wc: Coord, event: MouseEvent) => {
-
+            newPipe = null;
             context.$store.dispatch('document/revert', false);
 
             // create pipe
@@ -148,7 +162,7 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
                 diameterMM: null,
                 lengthM: null,
                 endpointUid: [lastAttachment.uid, lastAttachment.uid],
-                heightAboveFloorM: 0.7,
+                heightAboveFloorM: heightM,
                 material: null,
                 maximumVelocityMS: null,
                 parentUid: null,
@@ -157,6 +171,7 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
                 uid: pipeUid,
                 calculation: null,
             };
+            newPipe = pipe;
             context.document.drawing.entities.push(pipe);
             (context.document.drawing.entities.find((e) => e.uid === lastAttachment.uid) as ConnectableEntity)
                 .connections.push(pipe.uid);
@@ -200,6 +215,7 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
                 } else {
                     throw new Error('Don\'t know how to handle this');
                 }
+
             } else {
                 // Create an endpoint fitting for it instead
                 context.hydraulicsLayer.select([], SelectMode.Replace);
@@ -249,6 +265,7 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
                     systemUid: system.uid,
                     type: EntityType.VALVE,
                     uid: uuid(),
+
                     // These names should come from databases.
                     valveType: 'fitting',
                     calculation: null,
@@ -265,8 +282,36 @@ function insertPipeChain(context: CanvasContext, lastAttachment: ConnectableEnti
             context.interactive = null;
             // committed to the point. And also create new pipe, continue the chain.
             context.$store.dispatch('document/commit').then(() => {
-                insertPipeChain(context, nextEntity, system);
+                insertPipeChain(context, nextEntity, system, heightM);
             });
         },
+
+        'Set Pipe',
+        [
+            [KeyCode.UP, {name: 'Raise Height', fn: () => {
+                heightM += 0.05;
+                if (newPipe) {
+                    newPipe.heightAboveFloorM = heightM;
+                }
+                context.scheduleDraw();
+                }}],
+            [KeyCode.DOWN, {name: 'Drop Height', fn: () => {
+                    heightM -= 0.05;
+                    if (newPipe) {
+                        newPipe.heightAboveFloorM = heightM;
+                    }
+                    context.scheduleDraw();
+                }}],
+        ],
+        () => {
+            if (newPipe) {
+                return [
+                    'Height: ' + heightM.toPrecision(3) + 'm',
+                    'Length: ' + (context.objectStore.get(newPipe.uid) as Pipe).computedLengthM.toPrecision(4) + 'mm',
+                ];
+            } else {
+                return [];
+            }
+        }
     ));
 }

@@ -66,7 +66,7 @@ export default function insertTmv(
 
                 type: EntityType.TMV,
                 center: oc,
-                heightAboveFloorM: 70,
+                heightAboveFloorM: 1,
                 parentUid,
                 outputTemperatureC: 50,
                 uid: tmvUid,
@@ -204,6 +204,7 @@ export default function insertTmv(
         (wc: Coord) => {
             context.$store.dispatch('document/commit');
         },
+        'Insert TMV',
     ));
 }
 

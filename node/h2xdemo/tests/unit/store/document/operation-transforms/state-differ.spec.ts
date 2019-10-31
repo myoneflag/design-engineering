@@ -240,7 +240,12 @@ const ws2: FlowSystemParameters = {
 };
 
 const cp1: CalculationParameters = {
-    pipeSizingMethod: '', psdMethod: SupportedPsdStandards.as35002018LoadingUnits, ringMainCalculationMethod: '',
+    ceilingPipeHeightM: 3.0,
+    gravitationalAcceleration: 9.80665,
+    roomTemperatureC: 22,
+    pipeSizingMethod: '',
+    psdMethod: SupportedPsdStandards.as35002018LoadingUnits,
+    ringMainCalculationMethod: '',
 };
 
 describe('state-differ.ts', () => {

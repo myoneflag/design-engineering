@@ -4,7 +4,6 @@ import Pipe from '@/htmlcanvas/objects/pipe';
 import {interpolateTable, parseCatalogNumberExact} from '@/htmlcanvas/lib/utils';
 import {getDarcyWeisbachFlatMH} from '@/calculations/pressure-drops';
 import Valve from '@/htmlcanvas/objects/valve';
-import {GRAVITATIONAL_ACCELERATION} from '@/calculations/index';
 import {SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
 import {CalculationContext} from '@/calculations/types';
 
@@ -16,6 +15,7 @@ export function getObjectFrictionHeadLoss(
     to: string,
     signed = true,
 ): number {
+    const ga = context.drawing.calculationParams.gravitationalAcceleration;
     const {drawing, catalog, objectStore} = context;
     const entity = object.entity;
     let sign = 1;
@@ -56,6 +56,7 @@ export function getObjectFrictionHeadLoss(
                 dynamicViscosity!,
                 pipe.computedLengthM,
                 velocityMS,
+                ga,
             );
 
             return retval;
@@ -86,7 +87,7 @@ export function getObjectFrictionHeadLoss(
             if (kValue === null) {
                 throw new Error('kValue invalid from catalog');
             }
-            return sign * (kValue * velocityMS ** 2 / (2 * GRAVITATIONAL_ACCELERATION));
+            return sign * (kValue * velocityMS ** 2 / (2 * ga));
         }
         case EntityType.TMV: {
             // it is directional
@@ -115,7 +116,7 @@ export function getObjectFrictionHeadLoss(
             const density = parseCatalogNumberExact(catalog.fluids[fluid].densityKGM3)!;
 
             // https://neutrium.net/equipment/conversion-between-head-and-pressure/
-            return sign * (pdKPA * 1000 / (density * GRAVITATIONAL_ACCELERATION));
+            return sign * (pdKPA * 1000 / (density * ga));
         }
         case EntityType.FLOW_SOURCE:
         case EntityType.SYSTEM_NODE:

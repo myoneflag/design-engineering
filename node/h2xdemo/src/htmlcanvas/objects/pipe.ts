@@ -38,7 +38,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
     }
 
     lastDrawnLine!: Flatten.Segment | Flatten.Point;
-    lastDrawnWidth!: number;
+    lastDrawnWidthInternal!: number;
 
     get position(): Matrix {
         // We don't draw by object location because the object doesn't really have an own location. Instead, its
@@ -71,7 +71,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         const baseWidth = Math.max(2.0 / s, targetWWidth / this.toWorldLength(1));
 
 
-        this.lastDrawnWidth = baseWidth;
+        this.lastDrawnWidthInternal = baseWidth;
 
         ctx.lineCap = 'round';
         if (layerActive && selected) {
@@ -98,6 +98,17 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         } else {
             this.lastDrawnLine = new Flatten.Segment(new Flatten.Point(ao.x, ao.y), new Flatten.Point(bo.x, bo.y));
         }
+    }
+
+    get lastDrawnWidth() {
+        if (this.lastDrawnWidthInternal !== undefined) {
+            return this.lastDrawnWidthInternal;
+        }
+        return 10;
+    }
+
+    set lastDrawnWidth(value: number) {
+        this.lastDrawnWidthInternal = value;
     }
 
     // Returns the world coordinates of the two endpoints

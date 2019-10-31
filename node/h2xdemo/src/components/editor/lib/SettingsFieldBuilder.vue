@@ -29,6 +29,7 @@
                                     :min="field[3]"
                                     :max="field[4]"
                                     :type="field[2]"
+                                    :step="field[5] ? field[5] : 1"
                                     :placeholder="'Enter ' + field[1]"
                             />
                         </b-col>
@@ -37,6 +38,7 @@
                                 v-model="reactiveData[field[0]]"
                                 :id="'input-' + field[0]"
                                 type="number"
+                                :step="field[5] ? field[5] : 1"
                                 :placeholder="'Enter ' + field[1]"
                         />
                         </b-col>

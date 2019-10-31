@@ -40,7 +40,7 @@ export default interface CanvasContext {
     scheduleDraw(): void;
     processDocument(redraw?: boolean): void;
 
-    deleteEntity(object: BaseBackedObject): void;
+    deleteEntity(object: BaseBackedObject, throwIfNotFound?: boolean): void;
 }
 
 

@@ -54,9 +54,10 @@ export interface ConnectableEntity extends CenteredEntity {
  */
 export interface DrawingState {
     generalInfo: GeneralInfo;
-    backgrounds: BackgroundEntity[];
     flowSystems: FlowSystemParameters[];
     calculationParams: CalculationParameters;
+
+    backgrounds: BackgroundEntity[];
     entities: DrawableEntityConcrete[];
     availableFixtures: string[];
 }
@@ -131,6 +132,10 @@ export interface CalculationParameters {
     psdMethod: SupportedPsdStandards;
     ringMainCalculationMethod: string;
     pipeSizingMethod: string;
+
+    ceilingPipeHeightM: number;
+    roomTemperatureC: number;
+    gravitationalAcceleration: number;
 }
 
 export const initialDrawing: DrawingState = {
@@ -182,6 +187,10 @@ export const initialDrawing: DrawingState = {
         psdMethod: SupportedPsdStandards.as35002018LoadingUnits,
         ringMainCalculationMethod: RING_MAIN_CALCULATION_METHODS[0].key,
         pipeSizingMethod: PIPE_SIZING_METHODS[0].key,
+
+        ceilingPipeHeightM: 3.0,
+        roomTemperatureC: 20,
+        gravitationalAcceleration: 9.80665,
     },
     backgrounds: [],
     entities: [],

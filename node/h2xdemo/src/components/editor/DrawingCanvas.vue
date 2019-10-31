@@ -329,9 +329,10 @@
             return e.preventDefault();
         }
 
-        deleteEntity(object: BaseBackedObject): Set<string> {
+        deleteEntity(object: BaseBackedObject, throwIfNotFound: boolean = true): Set<string> {
             const toDelete = object.prepareDelete(this);
             const deleted = new Set<string>();
+            console.log(JSON.stringify(toDelete.map((e) => e.uid)));
             toDelete.forEach((drawableObject) => {
                 if (deleted.has(drawableObject.uid)) {
                     return;
@@ -345,11 +346,15 @@
                     this.document.drawing.backgrounds.splice(index2, 1);
                 }
                 if (index1 === -1 && index2 === -1) {
-                    throw new Error(
-                        'Tried to delete something that wasn\'t deletable: '
-                        + JSON.stringify(drawableObject),
-                    );
+                    if (throwIfNotFound) {
+                        throw new Error(
+                            'Tried to delete something that wasn\'t deletable: '
+                            + JSON.stringify(drawableObject.entity) + ' all delete requests: ' +
+                            JSON.stringify(toDelete.map((e) => e.uid)),
+                        );
+                    }
                 }
+                console.log('deleted ' + drawableObject.uid);
                 deleted.add(drawableObject.uid);
             });
             return deleted;
@@ -531,7 +536,7 @@
                 insertTmv(this, tmvHasCold ? true : false);
             } else if (entityName === EntityType.FIXTURE) {
                 this.document.uiState.lastUsedFixtureUid = fixtureName;
-                insertFixture(this, fixtureName);
+                insertFixture(this, fixtureName, 0);
             }
         }
 
@@ -563,11 +568,18 @@
                     this.activeLayer.drawSelectionLayer(context, this.interactive);
                 }
 
-                drawPaperScale(ctx, 1 / matrixScale(this.viewPort.position));
 
                 // draw selection box
                 if (this.selectBox) {
                     this.selectBox.draw(context);
+                }
+
+                ctx.setTransform(TM.identity());
+                drawPaperScale(ctx, 1 / matrixScale(this.viewPort.position));
+
+                if (this.toolHandler) {
+                    ctx.setTransform(TM.identity());
+                    this.toolHandler.draw(context);
                 }
             }
         }

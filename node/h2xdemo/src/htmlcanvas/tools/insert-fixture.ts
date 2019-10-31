@@ -8,16 +8,18 @@ import {getInsertCoordsAt, parseCatalogNumberExact} from '@/htmlcanvas/lib/utils
 import FixtureEntity from '@/store/document/entities/fixtures/fixture-entity';
 import {SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
 import {StandardFlowSystemUids} from '@/store/catalog';
-import SystemNode from '@/htmlcanvas/objects/tmv/system-node';
 import {SupportedPsdStandards} from '@/config';
+import {KeyCode} from '@/htmlcanvas/utils';
 
 export default function insertFixture(
     context: CanvasContext,
     fixtureName: string,
+    angle: number,
 ) {
     const coldUid = uuid();
     const warmUid = uuid();
     const fixtureUid = uuid();
+    let newEntity: FixtureEntity | null = null;
 
     let hasWarm = false;
     if (parseCatalogNumberExact(
@@ -30,23 +32,24 @@ export default function insertFixture(
     MainEventBus.$emit('set-tool-handler', new PointTool(
         (interrupted, displaced) => {
             if (interrupted) {
+                context.$store.dispatch('document/revert');
                 if (!displaced) {
                     MainEventBus.$emit('set-tool-handler', null);
                 }
             } else {
-                insertFixture(context, fixtureName);
+                insertFixture(context, fixtureName, angle);
             }
         },
         (wc: Coord) => {
+            newEntity = null;
             // Preview
-        },
-        (wc: Coord) => {
+            context.$store.dispatch('document/revert', false);
             const doc = context.document as DocumentState;
 
             // Maybe we drew onto a background
             const [parentUid, oc] = getInsertCoordsAt(context, wc);
 
-            const newEntity: FixtureEntity = {
+            newEntity = {
                 abbreviation,
                 center: oc,
                 parentUid,
@@ -66,12 +69,11 @@ export default function insertFixture(
                 outletAboveFloorM: null,
                 pipeDistanceMM: 200,
                 probabilityOfUsagePCT: null,
-                rotation: 0,
+                rotation: angle,
                 warmRoughInUid: hasWarm ? warmUid : null,
                 warmTempC: null,
                 calculation: null,
             };
-
 
             const coldEntity: SystemNodeEntity = {
                 center: hasWarm ? {x: -newEntity.pipeDistanceMM / 2, y: 0} : {x: 0, y: 0},
@@ -97,7 +99,37 @@ export default function insertFixture(
                 doc.drawing.entities.push(warmEntity);
             }
 
+            context.processDocument();
+        },
+        (wc: Coord) => {
+
             context.$store.dispatch('document/commit');
         },
+        'Insert Fixture',
+        [
+            [KeyCode.SHIFT, {name: '+ Precise Rotating', fn: (event: KeyboardEvent) => { /* */ }}],
+            [KeyCode.RIGHT, {name: 'Rotate Clockwise', fn: (event: KeyboardEvent) => {
+                if (event.shiftKey || event.ctrlKey) {
+                    angle += 1;
+                } else {
+                    angle += 15;
+                }
+                if (newEntity) {
+                    newEntity.rotation = angle;
+                }
+                context.scheduleDraw();
+                }}],
+            [KeyCode.LEFT, {name: 'Rotate Counter-clockwise', fn: (event: KeyboardEvent) => {
+                    if (event.shiftKey || event.ctrlKey) {
+                        angle -= 1;
+                    } else {
+                        angle -= 15;
+                    }
+                    if (newEntity) {
+                        newEntity.rotation = angle;
+                    }
+                    context.scheduleDraw();
+                }}],
+        ],
     ));
 }
