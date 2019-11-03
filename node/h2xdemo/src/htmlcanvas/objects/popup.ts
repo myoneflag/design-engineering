@@ -102,7 +102,7 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
             uid: uuid(),
             params: { type: MessageType.CALCULATION },
         };
-        super(objectStore, layer, null, obj, onSelect, onChange, onCommit);
+        super(objectStore, layer, obj, onSelect, onChange, onCommit);
 
         this.target = target;
     }

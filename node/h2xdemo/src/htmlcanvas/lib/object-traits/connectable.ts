@@ -160,7 +160,7 @@ export function ConnectableObject<T extends new (...args: any[])
         getAngles(): number[] {
             const ret = [];
             const radials = this.getRadials();
-            const angles = radials.map((r) => this.toObjectCoord(r[0])).map((r) => Math.atan2(r.y, r.x));
+            const angles = radials.map((r) => this.toObjectCoord(r[0])).map((r) => (Math.atan2(r.y, r.x) + 2 * Math.PI) % (2 * Math.PI));
             angles.sort();
             for (let i = 0; i < angles.length; i++) {
                 const diff = angles[(i + 1) % angles.length] - angles[i];
@@ -168,6 +168,7 @@ export function ConnectableObject<T extends new (...args: any[])
             }
             let sum = 0;
             ret.forEach((n) => sum += n);
+            console.log(JSON.stringify(angles));
             console.log(JSON.stringify(ret));
             assert(Math.abs(sum - 360) <= EPS || Math.abs(sum) <= EPS);
             return ret;

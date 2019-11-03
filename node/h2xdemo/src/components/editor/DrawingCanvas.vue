@@ -102,6 +102,8 @@
     import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
     import SelectBox from '@/htmlcanvas/objects/select-box';
     import * as _ from 'lodash';
+    import {AutoConnector} from "@/htmlcanvas/lib/black-magic/auto-connect";
+    import {assertUnreachable} from "@/lib/utils";
 
     @Component({
         components: {
@@ -192,6 +194,9 @@
             MainEventBus.$on('ot-applied', this.onOT);
             MainEventBus.$on('set-tool-handler', this.setToolHandler);
             MainEventBus.$on('select', this.onSelectRequest);
+            MainEventBus.$on('auto-connect', this.onAutoConnect);
+            MainEventBus.$on('add-entity', this.onAddEntity);
+            MainEventBus.$on('delete-entity', this.onDeleteEntity);
 
             (this.$refs.drawingCanvas as any).onmousedown = this.onMouseDown;
             (this.$refs.drawingCanvas as any).onmousemove = this.onMouseMove;
@@ -325,11 +330,60 @@
             return this.document.uiState.isCalculating;
         }
 
+        onAddEntity(entity: DrawableEntityConcrete) {
+            switch (entity.type) {
+                case EntityType.BACKGROUND_IMAGE:
+                    this.backgroundLayer.addEntity(entity);
+                    break;
+                case EntityType.RESULTS_MESSAGE:
+                    this.calculationLayer.addEntity(entity);
+                    break;
+                case EntityType.VALVE:
+                case EntityType.PIPE:
+                case EntityType.FLOW_SOURCE:
+                case EntityType.SYSTEM_NODE:
+                case EntityType.TMV:
+                case EntityType.FIXTURE:
+                    this.hydraulicsLayer.addEntity(entity);
+                    break;
+                default:
+                    assertUnreachable(entity);
+            }
+        }
+
+        onDeleteEntity(entity: DrawableEntityConcrete) {
+            switch (entity.type) {
+                case EntityType.BACKGROUND_IMAGE:
+                    this.backgroundLayer.deleteEntity(entity);
+                    break;
+                case EntityType.RESULTS_MESSAGE:
+                    this.calculationLayer.deleteEntity(entity);
+                    break;
+                case EntityType.VALVE:
+                case EntityType.PIPE:
+                case EntityType.FLOW_SOURCE:
+                case EntityType.SYSTEM_NODE:
+                case EntityType.TMV:
+                case EntityType.FIXTURE:
+                    this.hydraulicsLayer.deleteEntity(entity);
+                    break;
+                default:
+                    assertUnreachable(entity);
+            }
+        }
+
         disableContextMenu(e: Event) {
             return e.preventDefault();
         }
 
-        deleteEntity(object: BaseBackedObject, throwIfNotFound: boolean = true): Set<string> {
+        onAutoConnect() {
+            if (this.selectedObjects) {
+                const ac = new AutoConnector(this.selectedObjects, this);
+                ac.autoConnect();
+            }
+        }
+
+        deleteEntity(object: BaseBackedObject): Set<string> {
             const toDelete = object.prepareDelete(this);
             const deleted = new Set<string>();
             console.log(JSON.stringify(toDelete.map((e) => e.uid)));
@@ -337,23 +391,7 @@
                 if (deleted.has(drawableObject.uid)) {
                     return;
                 }
-                const index1 = this.document.drawing.entities.findIndex((b) => b.uid === drawableObject.uid);
-                if (index1 !== -1) {
-                    this.document.drawing.entities.splice(index1, 1);
-                }
-                const index2 = this.document.drawing.backgrounds.findIndex((b) => b.uid === drawableObject.uid);
-                if (index2 !== -1) {
-                    this.document.drawing.backgrounds.splice(index2, 1);
-                }
-                if (index1 === -1 && index2 === -1) {
-                    if (throwIfNotFound) {
-                        throw new Error(
-                            'Tried to delete something that wasn\'t deletable: '
-                            + JSON.stringify(drawableObject.entity) + ' all delete requests: ' +
-                            JSON.stringify(toDelete.map((e) => e.uid)),
-                        );
-                    }
-                }
+                this.$store.dispatch('document/deleteEntity', drawableObject.entity);
                 console.log('deleted ' + drawableObject.uid);
                 deleted.add(drawableObject.uid);
             });

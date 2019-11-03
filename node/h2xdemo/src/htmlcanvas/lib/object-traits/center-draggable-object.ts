@@ -6,7 +6,7 @@ import * as TM from 'transformation-matrix';
 import {CenteredEntityConcrete} from '@/store/document/entities/concrete-entity';
 import {InteractionType} from '@/htmlcanvas/lib/interaction';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
-import {moveOnto} from '@/htmlcanvas/lib/interactions/move-onto';
+import {moveOnto} from '@/htmlcanvas/lib/black-magic/move-onto';
 import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
 import assert from 'assert';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';

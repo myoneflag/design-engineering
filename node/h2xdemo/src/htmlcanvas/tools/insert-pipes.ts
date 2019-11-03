@@ -12,11 +12,12 @@ import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import Connectable from '@/htmlcanvas/lib/object-traits/connectable';
 import Flatten from '@flatten-js/core';
 import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-entity';
-import {addValveAndSplitPipe} from '@/htmlcanvas/lib/interactions/split-pipe';
+import {addValveAndSplitPipe} from '@/htmlcanvas/lib/black-magic/split-pipe';
 import Pipe from '@/htmlcanvas/objects/pipe';
 import {isConnectable} from '@/store/document';
 import {SelectMode} from '@/htmlcanvas/layers/layer';
 import {KeyCode} from '@/htmlcanvas/utils';
+import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
 
 export default function insertPipes(context: CanvasContext, system: FlowSystemParameters) {
     // strategy:
@@ -78,7 +79,7 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                         wc,
                         target.systemUid,
                         30,
-                    );
+                    ).focus as ConnectableEntityConcrete;
                     heightM = target.heightAboveFloorM;
                 } else {
                     entity = target as ConnectableEntityConcrete;
@@ -108,7 +109,7 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                     calculation: null,
                 };
                 entity = valveEntity;
-                doc.drawing.entities.push(valveEntity);
+                context.$store.dispatch('document/addEntity', valveEntity);
             }
 
             context.$store.dispatch('document/commit').then(() => {
@@ -139,8 +140,7 @@ function insertPipeChain(
                     // it's possible that we are drawing the first connection, in which case we will have an
                     // orphaned valve. Delete it.
                     if (lastAttachment.connections.length === 0) {
-                        const index = context.document.drawing.entities.findIndex((b) => b.uid === lastAttachment.uid);
-                        context.document.drawing.entities.splice(index, 1);
+                        context.deleteEntity(context.objectStore.get(lastAttachment.uid)!);
                     }
                     context.$store.dispatch('document/commit');
                 });
@@ -172,9 +172,10 @@ function insertPipeChain(
                 calculation: null,
             };
             newPipe = pipe;
-            context.document.drawing.entities.push(pipe);
-            (context.document.drawing.entities.find((e) => e.uid === lastAttachment.uid) as ConnectableEntity)
-                .connections.push(pipe.uid);
+
+            context.$store.dispatch('document/addEntity', pipe);
+            (context.objectStore.get(lastAttachment.uid) as BackedConnectable<ConnectableEntityConcrete>)
+                .entity.connections.push(pipe.uid);
 
             // maybe we drew onto an existing node.
 
@@ -205,7 +206,7 @@ function insertPipeChain(
                         wc,
                         pipe.systemUid,
                         30,
-                    );
+                    ).focus as ConnectableEntityConcrete;
                     nextEntity.connections.push(pipe.uid);
                 } else if (isConnectable(interactive[0].type)) {
                     nextEntity = interactive[0] as ConnectableEntityConcrete;
@@ -270,7 +271,8 @@ function insertPipeChain(
                     valveType: 'fitting',
                     calculation: null,
                 };
-                context.document.drawing.entities.push(nextEntity);
+
+                context.$store.dispatch('document/addEntity', nextEntity);
             }
 
             pipe.endpointUid.splice(1, 1, nextEntity.uid);

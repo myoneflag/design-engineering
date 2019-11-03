@@ -6,6 +6,8 @@ import {MainEventBus} from '@/store/main-event-bus';
 import {applyOtOnState} from '@/store/document/operation-transforms/state-ot-apply';
 import * as _ from 'lodash';
 import {cloneSimple} from '@/lib/utils';
+import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import {EntityType} from '@/store/document/entities/types';
 
 export const mutations: MutationTree<DocumentState> = {
     /**
@@ -117,6 +119,34 @@ export const mutations: MutationTree<DocumentState> = {
 
     loaded(state, loaded) {
         state.uiState.loaded = loaded;
+    },
+
+    addEntity(state, entity: DrawableEntityConcrete) {
+        if (entity.type === EntityType.BACKGROUND_IMAGE) {
+            state.drawing.backgrounds.push(entity);
+        } else {
+            state.drawing.entities.push(entity);
+        }
+        MainEventBus.$emit('add-entity', entity);
+    },
+
+    deleteEntity(state, entity: DrawableEntityConcrete) {
+        if (entity.type === EntityType.BACKGROUND_IMAGE) {
+            const i = state.drawing.backgrounds.findIndex((b) => b.uid === entity.uid);
+            if (i === -1) {
+                throw new Error('deleted something that doesn\'t exist');
+            } else {
+                state.drawing.backgrounds.splice(i, 1);
+            }
+        } else {
+            const i = state.drawing.entities.findIndex((e) => e.uid === entity.uid);
+            if (i === -1) {
+                throw new Error('deleted an entitiy that doesn\'t exist');
+            } else {
+                state.drawing.entities.splice(i, 1);
+            }
+        }
+        MainEventBus.$emit('delete-entity', entity);
     },
 };
 

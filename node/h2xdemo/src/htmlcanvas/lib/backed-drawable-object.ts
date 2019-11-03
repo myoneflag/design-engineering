@@ -13,13 +13,12 @@ export default abstract class BackedDrawableObject<T extends DrawableEntityConcr
     constructor(
         objectStore: ObjectStore,
         layer: Layer,
-        parentEntity: DrawableEntity | null,
         obj: T,
         onSelect: (event: MouseEvent | KeyboardEvent) => void,
         onChange: () => void,
         onCommit: (event: MouseEvent | KeyboardEvent) => void,
     ) {
-        super(objectStore, layer, parentEntity, obj, onSelect, onChange, onCommit);
+        super(objectStore, layer, obj, onSelect, onChange, onCommit);
         this.entity = obj; // to keep error checking happy
     }
 
@@ -33,7 +32,6 @@ export default abstract class BackedDrawableObject<T extends DrawableEntityConcr
 export type BaseBackedConstructor = new (
     objectStore: ObjectStore,
     layer: Layer,
-    parentEntity: DrawableEntity | null,
     obj: DrawableEntity,
     onSelect: (event: MouseEvent | KeyboardEvent) => void,
     onChange: () => void,
@@ -43,7 +41,6 @@ export type BaseBackedConstructor = new (
 export type BackedObjectConstructor<T extends DrawableEntityConcrete> = new (
     objectStore: ObjectStore,
     layer: Layer,
-    parentEntity: DrawableEntity | null,
     obj: T,
     onSelect: (event: MouseEvent | KeyboardEvent) => void,
     onChange: () => void,

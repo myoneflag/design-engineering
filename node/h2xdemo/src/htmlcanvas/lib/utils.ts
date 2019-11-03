@@ -252,3 +252,17 @@ export function maxHeightOfConnection(entity: ConnectableEntityConcrete, context
     }
     return null;
 }
+
+export function minHeightOfConnection(entity: ConnectableEntityConcrete, context: CanvasContext) {
+    let height = Infinity;
+    entity.connections.forEach((cuid) => {
+        const o = context.objectStore.get(cuid)!;
+        if (o.entity.type === EntityType.PIPE) {
+            height = Math.min(o.entity.heightAboveFloorM, height);
+        }
+    });
+    if (height !== Infinity) {
+        return height;
+    }
+    return null;
+}

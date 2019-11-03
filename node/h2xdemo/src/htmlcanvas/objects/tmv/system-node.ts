@@ -2,13 +2,13 @@ import {Interaction, InteractionType} from '@/htmlcanvas/lib/interaction';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
 import {ConnectableObject} from '@/htmlcanvas/lib/object-traits/connectable';
-import {Coord, DocumentState, DrawableEntity} from '@/store/document/types';
+import {Coord, DocumentState} from '@/store/document/types';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import {InvisibleNode} from '@/htmlcanvas/objects/invisible-node';
 import Flatten from '@flatten-js/core';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
 import {lighten} from '@/lib/utils';
-import {SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
+import {FlowConfiguration, SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
 import {getDragPriority} from '@/store/document';
 import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 
@@ -41,7 +41,12 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> {
             case InteractionType.MOVE_ONTO_SEND:
                 return null;
             case InteractionType.EXTEND_NETWORK:
-                return null;
+                if (this.entity.configuration === FlowConfiguration.BOTH ||
+                    interaction.configuration === FlowConfiguration.BOTH) {
+                    break;
+                } else if (this.entity.configuration !== interaction.configuration) {
+                    return null;
+                }
         }
         return super.offerInteraction(interaction);
     }

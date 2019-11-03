@@ -5,7 +5,7 @@ import PointTool from '@/htmlcanvas/tools/point-tool';
 import {InteractionType} from '@/htmlcanvas/lib/interaction';
 import {EntityType} from '@/store/document/entities/types';
 import Pipe from '@/htmlcanvas/objects/pipe';
-import {addValveAndSplitPipe} from '@/htmlcanvas/lib/interactions/split-pipe';
+import {addValveAndSplitPipe} from '@/htmlcanvas/lib/black-magic/split-pipe';
 
 export default function insertValve(context: CanvasContext, system: FlowSystemParameters) {
 

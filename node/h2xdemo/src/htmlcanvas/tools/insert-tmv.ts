@@ -4,7 +4,7 @@ import PointTool from '@/htmlcanvas/tools/point-tool';
 import {EntityType} from '@/store/document/entities/types';
 import uuid from 'uuid';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
-import TmvEntity, {SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
+import TmvEntity, {FlowConfiguration, SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
 import {getInsertCoordsAt} from '@/htmlcanvas/lib/utils';
 import {InteractionType} from '@/htmlcanvas/lib/interaction';
 import Pipe from '@/htmlcanvas/objects/pipe';
@@ -14,9 +14,10 @@ import {StandardFlowSystemUids} from '@/store/catalog';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import Tmv from '@/htmlcanvas/objects/tmv/tmv';
 import SystemNode from '@/htmlcanvas/objects/tmv/system-node';
-import {addValveAndSplitPipe} from '@/htmlcanvas/lib/interactions/split-pipe';
+import {addValveAndSplitPipe} from '@/htmlcanvas/lib/black-magic/split-pipe';
 import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import {isConnectable} from '@/store/document';
+import ValveEntity from '@/store/document/entities/valve-entity';
 
 export default function insertTmv(
     context: CanvasContext,
@@ -80,6 +81,7 @@ export default function insertTmv(
                 type: EntityType.SYSTEM_NODE,
                 systemUid: StandardFlowSystemUids.ColdWater,
                 uid: coldUid,
+                configuration: FlowConfiguration.INPUT,
             };
 
             const newHot: SystemNodeEntity = {
@@ -89,6 +91,7 @@ export default function insertTmv(
                 type: EntityType.SYSTEM_NODE,
                 systemUid: StandardFlowSystemUids.HotWater,
                 uid: hotUid,
+                configuration: FlowConfiguration.INPUT,
             };
 
             const newWarm: SystemNodeEntity = {
@@ -98,6 +101,7 @@ export default function insertTmv(
                 type: EntityType.SYSTEM_NODE,
                 systemUid: StandardFlowSystemUids.WarmWater,
                 uid: warmUid,
+                configuration: FlowConfiguration.OUTPUT,
             };
 
             const newColdOut: SystemNodeEntity = {
@@ -107,12 +111,16 @@ export default function insertTmv(
                 type: EntityType.SYSTEM_NODE,
                 systemUid: StandardFlowSystemUids.ColdWater,
                 uid: coldOutUid,
+                configuration: FlowConfiguration.OUTPUT,
             };
+            const interactive = getClosestJoinable(context, StandardFlowSystemUids.ColdWater, wc, 3000);
 
-            doc.drawing.entities.push(newTmv, newCold, newHot, newWarm);
+            [newTmv, newCold, newHot, newWarm].forEach((e) => {
+                context.$store.dispatch('document/addEntity', e);
+            });
 
             if (tmvhasCold) {
-                doc.drawing.entities.push(newColdOut);
+                context.$store.dispatch('document/addEntity', newColdOut);
             }
 
             let tmvObj: Tmv | undefined;
@@ -121,20 +129,12 @@ export default function insertTmv(
             let coldDrawn = false;
 
 
-            const interactive = getClosestJoinable(context, StandardFlowSystemUids.ColdWater, wc, 3000);
             if (interactive) {
                 coldDrawn = true;
                 const target = interactive[0];
                 const targetObj = context.objectStore.get(target.uid)!;
                 // rotate our pipe and try again with correct position of cold water
-                tmvObj = DrawableObjectFactory.build(
-                    context.hydraulicsLayer,
-                    newTmv,
-                    context.document.drawing.backgrounds.find((b) => b.uid === parentUid) || null,
-                    context.objectStore,
-                    false,
-                ) as Tmv;
-
+                tmvObj = context.objectStore.get(newTmv.uid) as Tmv;
 
                 const closePoint = targetObj.shape()!.distanceTo(Flatten.point(wc.x, wc.y))[1].ps;
                 const currA = tmvObj.toWorldAngle(0);
@@ -148,14 +148,8 @@ export default function insertTmv(
                 newTmv.rotation = ((desiredA - currA) % 360 + 360) % 360;
 
                 // maybe refresh is unnecessary?
-                tmvObj.refreshObject(tmvObj.parentEntity, newTmv);
-                coldObj = DrawableObjectFactory.build(
-                    context.hydraulicsLayer,
-                    newCold,
-                    newTmv,
-                    context.objectStore,
-                    false,
-                ) as SystemNode;
+                tmvObj.refreshObject(newTmv);
+                coldObj = context.objectStore.get(newCold.uid) as SystemNode;
                 const coldLoc = coldObj.toWorldCoord({x: 0, y: 0});
 
                 leadPipe(
@@ -177,7 +171,6 @@ export default function insertTmv(
                     hotObj = DrawableObjectFactory.build(
                         context.hydraulicsLayer,
                         newHot,
-                        newTmv,
                         context.objectStore,
                         false,
                     ) as SystemNode;
@@ -193,12 +186,6 @@ export default function insertTmv(
                 }
             }
 
-            if (coldObj) {
-                context.objectStore.delete(coldObj.uid);
-            }
-            if (tmvObj) {
-                context.objectStore.delete(tmvObj.uid);
-            }
             context.processDocument();
         },
         (wc: Coord) => {
@@ -222,7 +209,7 @@ function leadPipe(
     if (pipeSpec !== undefined) {
         const obj = context.objectStore.get(pipeSpec)!;
         if (obj.entity.type === EntityType.PIPE) {
-            valve = addValveAndSplitPipe(context, obj as Pipe, wc, systemUid, 30);
+            valve = addValveAndSplitPipe(context, obj as Pipe, wc, systemUid, 30).focus as ValveEntity;
         } else if (isConnectable(obj.type)) {
             valve = obj.entity as ConnectableEntityConcrete;
         } else {
@@ -234,7 +221,7 @@ function leadPipe(
             if (interactive[0].type === EntityType.PIPE) {
                 const pipeE = interactive[0];
                 pipe = context.objectStore.get(pipeE.uid) as Pipe;
-                valve = addValveAndSplitPipe(context, pipe, wc, systemUid, 30);
+                valve = addValveAndSplitPipe(context, pipe, wc, systemUid, 30).focus as ValveEntity;
 
             } else if (isConnectable(interactive[0].type)) {
                 valve = interactive[0] as ConnectableEntityConcrete;
@@ -266,8 +253,7 @@ function leadPipe(
     valve.connections.push(newPipe.uid);
     connectTo.connections.push(newPipe.uid);
 
-
-    context.document.drawing.entities.push(newPipe);
+    context.$store.dispatch('document/addEntity', newPipe);
     return newPipe;
 
 }
@@ -283,6 +269,7 @@ function getClosestJoinable(
             systemUid,
             worldCoord: wc,
             worldRadius: radius, // 1 M radius
+            configuration: FlowConfiguration.OUTPUT,
         },
         undefined,
         (object: DrawableEntity[]) => {

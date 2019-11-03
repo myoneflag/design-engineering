@@ -17,6 +17,8 @@ import {cloneSimple} from '@/lib/utils';
 export default interface PipeEntity extends DrawableEntity, CalculationTarget<PipeCalculation> {
     type: EntityType.PIPE;
 
+    parentUid: null;
+
     systemUid: string;
     material: string | null;
     lengthM: number | null;

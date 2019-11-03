@@ -95,7 +95,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                 return null;
             }
             case InteractionType.EXTEND_NETWORK:
-                if (interaction.systemUid === this.entity.systemUid) {
+                if (interaction.systemUid === null || interaction.systemUid === this.entity.systemUid) {
                     if (this.numConnectionsInBound(this.entity.connections.length + 1)) {
                         return [this.entity];
                     } else {
