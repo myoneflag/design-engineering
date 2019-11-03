@@ -44,6 +44,7 @@ export default interface TmvEntity extends DrawableEntity, CalculationTarget<Tmv
 export interface SystemNodeEntity extends InvisibleNodeEntity {
     type: EntityType.SYSTEM_NODE;
     systemUid: string;
+    configuration: FlowConfiguration;
 }
 
 export function makeTMVFields(): PropertyField[] {
@@ -101,4 +102,10 @@ export function fillTMVFields(
         }
     });
     return result;
+}
+
+export enum FlowConfiguration {
+    INPUT,
+    OUTPUT,
+    BOTH,
 }

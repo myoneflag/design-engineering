@@ -21,8 +21,9 @@ export default class SelectBox extends DrawableObject {
     }
 
     drawInternal(context: DrawingContext, ...args: any[]): void {
-        const {ctx} = context;
+        const {ctx, vp} = context;
         ctx.fillStyle = 'rgba(50, 50, 100, 0.3)';
+        ctx.lineWidth = vp.toWorldLength(1);
         ctx.fillRect(this.tl.x, this.tl.y, this.br.x - this.tl.x, this.br.y - this.tl.y);
         ctx.strokeStyle = 'rgba(50, 50, 100, 1)';
         ctx.beginPath();

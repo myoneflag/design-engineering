@@ -1,15 +1,14 @@
 import {LayerImplementation, SelectMode} from '@/htmlcanvas/layers/layer';
-import {DrawingMode, MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
+import {DrawingMode} from '@/htmlcanvas/types';
 import {Coord, DocumentState} from '@/store/document/types';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 import {EntityType} from '@/store/document/entities/types';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
 import DrawableObjectFactory from '../lib/drawable-object-factory';
-import CanvasContext from '@/htmlcanvas/lib/canvas-context';
+import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 
 export default class  HydraulicsLayer extends LayerImplementation {
-    uidsInOrder: string[] = [];
 
     draggedObjects: BaseBackedObject[] | null = null;
 
@@ -57,14 +56,12 @@ export default class  HydraulicsLayer extends LayerImplementation {
                 // update existing object
                 const object = this.objectStore.get(entity.uid)!;
                 object.refreshObject(
-                    parent ? parent.entity : null,
                     entity,
                 );
             } else {
                 DrawableObjectFactory.build(
                     this,
                     entity,
-                    parent ? parent.entity : null,
                     this.objectStore,
                     {
                         onSelected: (e) => this.onSelected(e, entity.uid),
@@ -78,22 +75,31 @@ export default class  HydraulicsLayer extends LayerImplementation {
         this.uidsInOrder = [];
 
 
-        // We draw valves on top, followed by pipes and finally risers, sinks and everything else.
-        this.uidsInOrder.push(...thisIds.filter((a) => {
-            const o = (this.objectStore.get(a) as BaseBackedObject).entity;
-            return o.type === EntityType.VALVE;
-        }));
+        this.uidsInOrder = thisIds.sort((a, b) => {
+            return this.entitySortOrder(this.objectStore.get(a)!.entity) -
+                this.entitySortOrder(this.objectStore.get(b)!.entity);
+        });
+    }
 
+    entitySortOrder(entity: DrawableEntityConcrete): number {
+        switch (entity.type) {
+            case EntityType.VALVE:
+                return 100;
+            case EntityType.PIPE:
+                return 50;
+            case EntityType.FLOW_SOURCE:
+                return 70;
+            case EntityType.SYSTEM_NODE:
+                return 70;
+            case EntityType.TMV:
+                return 0;
+            case EntityType.FIXTURE:
+                return 0;
 
-        this.uidsInOrder.splice(0, 0, ...thisIds.filter((a) => {
-            const o = (this.objectStore.get(a) as BaseBackedObject).entity;
-            return this.uidsInOrder.indexOf(a) === -1 && o.type !== EntityType.PIPE;
-        }));
-
-        this.uidsInOrder.splice(0, 0, ...thisIds.filter((a) => {
-            const o = (this.objectStore.get(a) as BaseBackedObject).entity;
-            return o.type === EntityType.PIPE;
-        }));
+            case EntityType.RESULTS_MESSAGE:
+            case EntityType.BACKGROUND_IMAGE:
+                throw new Error('shouldn\'t find this entity here');
+        }
     }
 
     getObjectAt(worldCoord: Coord, exclude: string[] = []): DrawableObject | null {

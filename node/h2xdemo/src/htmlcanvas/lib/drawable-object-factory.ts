@@ -26,7 +26,6 @@ export default class DrawableObjectFactory {
     static build<T extends EntityType>(
         layer: Layer,
         entity: DrawableEntity & {type: T},
-        parent: DrawableEntity | null,
         objectStore: ObjectStore,
         handlers: Handlers | false,
     ) {
@@ -37,7 +36,6 @@ export default class DrawableObjectFactory {
                 const object: BaseBackedObject = new GenericDrawable(
                     objectStore,
                     layer,
-                    parent,
                     entity,
                     () => { /**/ },
                     () => { /**/ },
@@ -49,7 +47,6 @@ export default class DrawableObjectFactory {
                 const object: BaseBackedObject = new GenericDrawable(
                     objectStore,
                     layer,
-                    parent,
                     entity,
                     (e) => handlers.onSelected(e),
                     handlers.onChange,

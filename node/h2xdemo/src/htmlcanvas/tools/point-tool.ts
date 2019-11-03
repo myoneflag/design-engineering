@@ -25,6 +25,9 @@ export default class PointTool implements ToolHandler {
     images: HTMLImageElement[] = [];
     getInfoText: (() => string[]) | undefined;
 
+    lastEvent!: MouseEvent;
+    lastWc!: Coord;
+
     constructor(
         onFinish: (interrupted: boolean, displaced: boolean) => void,
         onMove: (worldCoord: Coord, event: MouseEvent) => void,
@@ -42,7 +45,7 @@ export default class PointTool implements ToolHandler {
         this.onKeyDown = (event: KeyboardEvent) => {
             this.keyHandlers.forEach(([k, h]) => {
                 if (k === event.keyCode) {
-                    h.fn(event);
+                    h.fn(event, () => this.refresh());
                 }
             });
         };
@@ -91,7 +94,9 @@ export default class PointTool implements ToolHandler {
     }
     onMouseMove(event: MouseEvent, context: CanvasContext) {
         this.moved = true;
-        this.onMove(context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY}), event);
+        this.lastEvent = event;
+        this.lastWc = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
+        this.onMove(this.lastWc, event);
         return UNHANDLED;
     }
     onMouseScroll(event: MouseEvent, context: CanvasContext) {
@@ -118,9 +123,13 @@ export default class PointTool implements ToolHandler {
             return true;
         }
     }
+
+    refresh() {
+        this.onMove(this.lastWc, this.lastEvent);
+    }
 }
 
 export interface KeyHandler {
     name: string;
-    fn(event: KeyboardEvent): void;
+    fn(event: KeyboardEvent, onRefresh: () => void): void;
 }

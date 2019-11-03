@@ -11,7 +11,7 @@ import * as _ from 'lodash';
 import Pipe from '@/htmlcanvas/objects/pipe';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-entity';
-import {addValveAndSplitPipe} from '@/htmlcanvas/lib/interactions/split-pipe';
+import {addValveAndSplitPipe} from '@/htmlcanvas/lib/black-magic/split-pipe';
 import {cloneSimple} from '@/lib/utils';
 
 export default function insertFlowSource(
@@ -103,7 +103,8 @@ export default function insertFlowSource(
                 newEntity.center = oc;
                 newEntity.parentUid = parentUid;
 
-                doc.drawing.entities.push(newEntity);
+
+                context.$store.dispatch('document/addEntity', newEntity);
 
                 context.processDocument();
 

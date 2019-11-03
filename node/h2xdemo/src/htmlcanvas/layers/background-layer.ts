@@ -7,6 +7,7 @@ import {ToolConfig} from '@/store/tools/types';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import {DrawingContext, ObjectStore} from '@/htmlcanvas/lib/types';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
+import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 
 export default class BackgroundLayer extends LayerImplementation {
     resizeBox: ResizeControl | null = null;
@@ -49,7 +50,6 @@ export default class BackgroundLayer extends LayerImplementation {
                 const obj: BackgroundImage = new BackgroundImage(
                     this.objectStore,
                     this,
-                    null,
                     background,
                     (event) => {
                         this.select([background.uid], event.ctrlKey ? SelectMode.Toggle : SelectMode.Replace);
@@ -69,7 +69,7 @@ export default class BackgroundLayer extends LayerImplementation {
             } else {
                 const obj = this.objectStore.get(background.uid)!;
                 if (obj instanceof BackgroundImage) {
-                    obj.refreshObject(null, background);
+                    obj.refreshObject(background);
                     if (this.isSelected(background.uid)) {
                         this.onSelect();
                     }

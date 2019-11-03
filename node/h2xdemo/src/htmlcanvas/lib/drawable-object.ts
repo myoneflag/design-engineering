@@ -11,15 +11,19 @@ import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 
 export default abstract class DrawableObject {
     abstract position: Matrix;
-    parent: DrawableObject | null; // null parents mean root objects
+    parentInternal: DrawableObject | null; // null parents mean root objects
     layer: Layer;
 
     selectable: boolean = false;
     draggable: boolean = false;
 
     constructor(parent: DrawableObject | null, layer: Layer) {
-        this.parent = parent;
+        this.parentInternal = parent;
         this.layer = layer;
+    }
+
+    get parent(): DrawableObject | null {
+        return this.parentInternal;
     }
 
     fromParentToObjectCoord(parent: Coord): Coord {
@@ -107,8 +111,9 @@ export default abstract class DrawableObject {
 
         this.drawInternal(context, ...args);
 
+        /*
         vp.prepareContext(ctx, ...transforms);
-        this.drawOwnShape(context);
+        this.drawOwnShape(context);*/
     }
 
     drawOwnShape(context: DrawingContext) {
@@ -117,7 +122,6 @@ export default abstract class DrawableObject {
         this.withWorld(context, currentWC00, () => {
            const s = this.shape();
            if (s instanceof Flatten.Polygon) {
-               console.log('drawing polygon');
                ctx.beginPath();
                ctx.strokeStyle = '#000000';
                ctx.lineWidth=5;

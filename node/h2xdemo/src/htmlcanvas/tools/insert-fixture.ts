@@ -6,7 +6,7 @@ import uuid from 'uuid';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 import {getInsertCoordsAt, parseCatalogNumberExact} from '@/htmlcanvas/lib/utils';
 import FixtureEntity from '@/store/document/entities/fixtures/fixture-entity';
-import {SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
+import {FlowConfiguration, SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
 import {StandardFlowSystemUids} from '@/store/catalog';
 import {SupportedPsdStandards} from '@/config';
 import {KeyCode} from '@/htmlcanvas/utils';
@@ -82,9 +82,12 @@ export default function insertFixture(
                 type: EntityType.SYSTEM_NODE,
                 systemUid: StandardFlowSystemUids.ColdWater,
                 uid: coldUid,
+                configuration: FlowConfiguration.INPUT,
             };
 
-            doc.drawing.entities.push(newEntity, coldEntity);
+
+            context.$store.dispatch('document/addEntity', newEntity);
+            context.$store.dispatch('document/addEntity', coldEntity);
 
             if (hasWarm) {
                 const warmEntity: SystemNodeEntity = {
@@ -94,9 +97,10 @@ export default function insertFixture(
                     type: EntityType.SYSTEM_NODE,
                     systemUid: StandardFlowSystemUids.WarmWater,
                     uid: warmUid,
+                    configuration: FlowConfiguration.INPUT,
                 };
 
-                doc.drawing.entities.push(warmEntity);
+                context.$store.dispatch('document/addEntity', warmEntity);
             }
 
             context.processDocument();
@@ -108,27 +112,21 @@ export default function insertFixture(
         'Insert Fixture',
         [
             [KeyCode.SHIFT, {name: '+ Precise Rotating', fn: (event: KeyboardEvent) => { /* */ }}],
-            [KeyCode.RIGHT, {name: 'Rotate Clockwise', fn: (event: KeyboardEvent) => {
-                if (event.shiftKey || event.ctrlKey) {
-                    angle += 1;
-                } else {
-                    angle += 15;
-                }
-                if (newEntity) {
-                    newEntity.rotation = angle;
-                }
-                context.scheduleDraw();
+            [KeyCode.RIGHT, {name: 'Rotate Clockwise', fn: (event: KeyboardEvent, onRefresh: () => void) => {
+                    if (event.shiftKey || event.ctrlKey) {
+                        angle += 1;
+                    } else {
+                        angle += 15;
+                    }
+                    onRefresh();
                 }}],
-            [KeyCode.LEFT, {name: 'Rotate Counter-clockwise', fn: (event: KeyboardEvent) => {
+            [KeyCode.LEFT, {name: 'Rotate Counter-clockwise', fn: (event: KeyboardEvent, onRefresh: () => void) => {
                     if (event.shiftKey || event.ctrlKey) {
                         angle -= 1;
                     } else {
                         angle -= 15;
                     }
-                    if (newEntity) {
-                        newEntity.rotation = angle;
-                    }
-                    context.scheduleDraw();
+                    onRefresh();
                 }}],
         ],
     ));

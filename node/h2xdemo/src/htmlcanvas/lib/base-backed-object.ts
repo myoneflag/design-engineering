@@ -12,7 +12,6 @@ import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 
 export default abstract class BaseBackedObject extends DrawableObject {
     entity: DrawableEntityConcrete;
-    parentEntity: DrawableEntity | null;
     objectStore: ObjectStore;
 
     protected onSelect: (event: MouseEvent | KeyboardEvent) => void;
@@ -22,14 +21,12 @@ export default abstract class BaseBackedObject extends DrawableObject {
     protected constructor(
         objectStore: ObjectStore,
         layer: Layer,
-        parentEntity: DrawableEntity | null,
         obj: DrawableEntityConcrete,
         onSelect: (event: MouseEvent | KeyboardEvent) => void,
         onChange: () => void,
         onCommit: (event: MouseEvent | KeyboardEvent) => void,
     ) {
         super(null, layer);
-        this.parentEntity = parentEntity;
         this.entity = obj;
         this.onSelect = onSelect;
         this.onChange = onChange;
@@ -39,29 +36,20 @@ export default abstract class BaseBackedObject extends DrawableObject {
     }
 
     get parent() {
-        if (this.parentEntity === null) {
+        if (this.entity.parentUid === null) {
             return null;
         } else {
-            const result = this.objectStore.get(this.parentEntity.uid);
+            const result = this.objectStore.get(this.entity.parentUid);
             if (result) {
                 return result;
             }
-            throw new Error('Parent object not created while ');
+            throw new Error('Parent object not created. parent uid: ' + this.entity.parentUid + ' this uid ' + this.entity.uid);
         }
     }
 
-    set parent(par: BaseBackedObject | null) {
-        if (par) {
-            this.parentEntity = par.parentEntity;
-        } else {
-            this.parentEntity = null;
-        }
-    }
-
-    refreshObject(parentEntity: DrawableEntity | null, obj: DrawableEntityConcrete) {
+    refreshObject(obj: DrawableEntityConcrete) {
         const old = this.entity;
         this.entity = obj;
-        this.parentEntity = parentEntity;
         this.refreshObjectInternal(obj, old);
     }
 

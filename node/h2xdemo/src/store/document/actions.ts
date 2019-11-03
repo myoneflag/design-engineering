@@ -56,6 +56,14 @@ export const actions: ActionTree<DocumentState, RootState> = {
         commit('scaleBackground', {background, factor});
     },
 
+    addEntity({commit, state}, entity) {
+        commit('addEntity', entity);
+    },
+
+    deleteEntity({commit, state}, entity) {
+        commit('deleteEntity', entity);
+    },
+
     // Call this action to commit the current operation transforms. TODO: make that atomic.
     commit({commit, state}) {
         // We have to clone to stop reactivity affecting the async post values later.

@@ -1,6 +1,7 @@
 import {Coord, FlowSystemParameters} from '@/store/document/types';
 import {EntityType} from '@/store/document/entities/types';
 import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import {FlowConfiguration} from '@/store/document/entities/tmv/tmv-entity';
 
 export interface PipeInteraction extends BaseInteraction {
     type: InteractionType.CONTINUING_PIPE | InteractionType.STARTING_PIPE;
@@ -30,7 +31,8 @@ export interface BaseInteraction {
 
 export interface ExtendNetworkInteraction extends BaseInteraction {
     type: InteractionType.EXTEND_NETWORK;
-    systemUid: string;
+    systemUid: string | null; // null means any
+    configuration: FlowConfiguration;
 }
 
 export type Interaction =

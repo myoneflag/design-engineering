@@ -123,4 +123,53 @@ export default class CalculationLayer extends LayerImplementation {
             done();
         });
     }
+
+
+    onMouseDown(event: MouseEvent, context: CanvasContext) {
+        for (let i = 0; i < this.uidsInOrder.length; i++) {
+            const uid = this.uidsInOrder[i];
+            if (this.messageStore.has(uid)) {
+                const object = this.messageStore.get(uid)!;
+                if (object.onMouseDown(event, context)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
+        for (let i = 0; i < this.uidsInOrder.length; i++) {
+            const uid = this.uidsInOrder[i];
+            if (this.messageStore.has(uid)) {
+                const object = this.messageStore.get(uid)!;
+                const res = object.onMouseMove(event, context);
+                if (res.handled) {
+                    return res;
+                }
+            }
+        }
+
+        return UNHANDLED;
+    }
+
+
+    onMouseUp(event: MouseEvent, context: CanvasContext) {
+        for (let i = 0; i < this.uidsInOrder.length; i++) {
+            const uid = this.uidsInOrder[i];
+            if (this.messageStore.has(uid)) {
+                const object = this.messageStore.get(uid)!;
+                if (object.onMouseUp(event, context)) {
+                    return true;
+                }
+            }
+        }
+
+        // this.selectedObject = null;
+        this.onSelect();
+        this.onChange();
+
+        return false;
+    }
 }

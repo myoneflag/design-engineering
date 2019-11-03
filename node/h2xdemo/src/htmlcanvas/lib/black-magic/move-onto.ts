@@ -5,7 +5,7 @@ import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 import {EntityType} from '@/store/document/entities/types';
 import assert from 'assert';
 import {replacePipeEndpointLocal} from '@/store/document/entities/pipe-entity';
-import {addValveAndSplitPipe} from '@/htmlcanvas/lib/interactions/split-pipe';
+import {addValveAndSplitPipe} from '@/htmlcanvas/lib/black-magic/split-pipe';
 
 /**
  * Moves object join source to object dest, regardless of compatability, and keeps
@@ -19,7 +19,7 @@ export function moveOnto(
     context: CanvasContext,
 ) {
     if (dest instanceof Pipe) {
-        const result = addValveAndSplitPipe(
+        const {focus} = addValveAndSplitPipe(
             context,
             dest,
             source.toWorldCoord({x: 0, y: 0}),
@@ -27,7 +27,7 @@ export function moveOnto(
             10,
             source.entity,
         );
-        assert(result.uid === source.uid);
+        assert(focus!.uid === source.uid);
     } else {
         const entity = dest.entity;
         const finalCenter = dest.entity.center;
@@ -58,6 +58,8 @@ export function moveOnto(
         });
         loser.entity.connections.splice(0);
 
-        context.deleteEntity(loser, false);
+        if (context.objectStore.has(loser.uid)) {
+            context.deleteEntity(loser, false);
+        }
     }
 }
