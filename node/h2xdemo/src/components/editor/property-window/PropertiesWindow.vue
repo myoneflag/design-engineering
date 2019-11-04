@@ -13,7 +13,7 @@ import {EntityType} from "@/store/document/entities/types";
                     :selected-entity="entity"
                     :selected-object="selectedObjects[0]"
                     :on-change="onChange"
-                    :target-property="targetProperty[0]"
+                    :target-property="targetProperty"
                     :on-delete="onDelete"
             />
             <ValveProperties

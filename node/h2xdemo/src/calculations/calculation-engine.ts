@@ -415,9 +415,15 @@ export default class CalculationEngine {
         this.objectStore.forEach((obj) => {
             if (obj.entity.type === EntityType.PIPE) {
                 const entity = obj.entity as PipeEntity;
+                if (entity.endpointUid[0] === null || entity.endpointUid[1] === null) {
+                    throw new Error('null found on ' + entity.type + ' ' + entity.uid);
+                }
                 this.luFlowGraph.addEdge(entity.endpointUid[0], entity.endpointUid[1], entity.uid, entity.uid);
             } else if (obj.entity.type === EntityType.TMV) {
                 const entity = obj.entity as TmvEntity;
+                if (entity.hotRoughInUid === null || entity.warmOutputUid === null) {
+                    throw new Error('null found on ' + entity.type + ' ' + entity.uid);
+                }
                 this.luFlowGraph.addDirectedEdge(
                     entity.hotRoughInUid,
                     entity.warmOutputUid,
@@ -425,6 +431,9 @@ export default class CalculationEngine {
                     entity.uid + HOT_WARM_EDGE_ID,
                 );
                 if (entity.coldOutputUid !== null) {
+                    if (entity.coldOutputUid === null || entity.coldRoughInUid === null) {
+                        throw new Error('null found on ' + entity.type + ' ' + entity.uid);
+                    }
                     this.luFlowGraph.addDirectedEdge(
                         entity.coldRoughInUid,
                         entity.coldOutputUid,
@@ -856,7 +865,7 @@ export default class CalculationEngine {
                         [object.entity.hotRoughInUid, object.entity.warmOutputUid],
                     );
 
-                    if (object.entity.coldRoughInUid) {
+                    if (object.entity.coldOutputUid) {
                         this.sizeDefiniteTransport(
                             object,
                             roots,
@@ -867,6 +876,9 @@ export default class CalculationEngine {
                     }
                     return null;
                 case EntityType.PIPE:
+                    if (object.entity.endpointUid[0] === null || object.entity.endpointUid[1] === null) {
+                        console.log('pipe has dry endpoint: '  + object.entity.uid);
+                    }
                     this.sizeDefiniteTransport(object, roots, totalReachedPsdU, object.uid, object.entity.endpointUid);
                     return null;
                 case EntityType.BACKGROUND_IMAGE:
@@ -959,6 +971,8 @@ export default class CalculationEngine {
 
         let psdUs = 0;
 
+        console.log(JSON.stringify(roots));
+        console.trace();
         roots.forEach((r) => {
             this.luFlowGraph.dfs(r, (n) => {
                     psdUs += this.getTerminalPsdU(this.objectStore.get(n)!.entity);
@@ -1005,6 +1019,7 @@ export default class CalculationEngine {
 
                 this.flowGraph.reachable(e.uid)[0].forEach((ouid) => {
                     if (this.objectStore.get(ouid)!.type === EntityType.FLOW_SOURCE) {
+                        console.log(ouid + ' ' + e.uid);
                         uf.join(ouid, e.uid);
                     }
                 });
@@ -1012,6 +1027,7 @@ export default class CalculationEngine {
         });
 
         const roots = uf.groups();
+        console.log('roots: ' + JSON.stringify(uf.groups()));
 
         return {sources: roots, biconnected: []};
     }

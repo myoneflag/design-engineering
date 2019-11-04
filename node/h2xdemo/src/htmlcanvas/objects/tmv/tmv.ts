@@ -35,7 +35,7 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> {
         const r = this.entity.pipeDistanceMM;
         const lm = l / 2;
         const rm = r / 2;
-        const b = this.entity.valveLengthMM;
+        const b = this.entity.valveLengthMM * 4;
         const bm = b / 2;
         const t = 0;
         const m = 0;
@@ -53,11 +53,8 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> {
         ctx.lineCap = 'round';
 
         ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.fillRect(boxl, boxt, boxw, boxh);
-        ctx.beginPath();
+        ctx.fillRect(l, t, r - l, bm);
         ctx.strokeStyle = '#000';
-        ctx.rect(boxl, boxt, boxw, boxh);
-        ctx.stroke();
 
         if (selected) {
             ctx.fillStyle = 'rgba(100, 100, 255, 0.2)';
@@ -66,34 +63,19 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> {
 
 
 
-        // Draw double hourglass
+        // Box and open
         // XX
         ctx.beginPath();
-        ctx.moveTo(l, t);
-        ctx.lineTo(r, t);
-        ctx.lineTo(m, bm);
-        ctx.lineTo(r, bm);
-        ctx.lineTo(m, t);
-        ctx.lineTo(l, bm);
-        ctx.lineTo(m, bm);
+        ctx.moveTo(l, bm);
         ctx.lineTo(l, t);
-
-        // |V|V|
-        ctx.stroke();
-
-        ctx.beginPath();
+        ctx.lineTo(r, t);
+        ctx.lineTo(r, bm);
+        ctx.lineTo(l, bm);
 
         ctx.moveTo(l, bm);
-        ctx.lineTo(l, b);
         ctx.lineTo(r, b);
-        ctx.lineTo(r, bm);
-        ctx.lineTo(rm, b);
-        ctx.lineTo(m, bm);
-        ctx.lineTo(lm, b);
-        ctx.lineTo(l, bm);
-        ctx.moveTo(m, bm);
-        ctx.lineTo(m, b);
 
+        // |V|V|
         ctx.stroke();
     }
 

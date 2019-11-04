@@ -32,3 +32,8 @@ export enum StandardFlowSystemUids {
     HotWater = 'hot-water',
     WarmWater = 'warm-water',
 }
+
+export enum StandardMaterialUids {
+    Copper = 'copperTypeB',
+    Pex = 'pexSdr74',
+}

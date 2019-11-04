@@ -105,8 +105,8 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> {
             // single
             ctx.moveTo(x4, y0);
             ctx.lineTo(x4, y3);
-            ctx.moveTo(x3, y2);
-            ctx.lineTo(x5, y2);
+            ctx.moveTo(x3, y1);
+            ctx.lineTo(x5, y1);
         }
 
         ctx.stroke();

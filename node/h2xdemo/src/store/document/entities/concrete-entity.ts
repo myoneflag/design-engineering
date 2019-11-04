@@ -6,6 +6,11 @@ import PopupEntity from '@/store/document/entities/calculations/popup-entity';
 import FixtureEntity from '@/store/document/entities/fixtures/fixture-entity';
 import TmvEntity, {SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
 import {CenteredEntity, ConnectableEntity} from '@/store/document/types';
+import FlowSourceCalculation from '@/store/document/calculations/flow-source-calculation';
+import PipeCalculation from '@/store/document/calculations/pipe-calculation';
+import TmvCalculation from '@/store/document/calculations/tmv-calculation';
+import ValveCalculation from '@/store/document/calculations/valve-calculation';
+import FixtureCalculation from '@/store/document/calculations/fixture-calculation';
 
 export type DrawableEntityConcrete =
     BackgroundEntity |
@@ -41,3 +46,11 @@ export type CalculatableEntityConcrete =
     TmvEntity |
     ValveEntity |
     FixtureEntity;
+
+export type CalculationConcrete =
+    FlowSourceCalculation |
+    PipeCalculation |
+    PipeCalculation |
+    TmvCalculation |
+    ValveCalculation |
+    FixtureCalculation;

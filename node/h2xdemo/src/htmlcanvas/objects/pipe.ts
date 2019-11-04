@@ -24,6 +24,8 @@ import {SelectableObject} from '@/htmlcanvas/lib/object-traits/selectable';
 import uuid from 'uuid';
 import ValveEntity from '@/store/document/entities/valve-entity';
 import assert from 'assert';
+import {PIPE_STUB_MAX_LENGTH_MM} from '@/htmlcanvas/lib/black-magic/auto-connect';
+import {EPS} from '@/calculations/pressure-drops';
 
 @SelectableObject
 @DraggableObject
@@ -58,8 +60,12 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                     targetWWidth = this.entity.calculation.realNominalPipeDiameterMM;
                 }
             }
-            if (!this.entity.calculation || !this.entity.calculation.realNominalPipeDiameterMM) {
-                baseColor = '#444444';
+            if (!this.entity.calculation ||
+                !this.entity.calculation.realNominalPipeDiameterMM ||
+                !this.entity.calculation.peakFlowRate ||
+                this.entity.calculation.peakFlowRate < EPS
+            ) {
+                baseColor = '#aaaaaa';
             }
         }
 
@@ -386,6 +392,15 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             case InteractionType.MOVE_ONTO_SEND:
                 return null;
             case InteractionType.EXTEND_NETWORK:
+                if (this.objectStore.get(this.entity.endpointUid[0])!.type === EntityType.SYSTEM_NODE ||
+                    this.objectStore.get(this.entity.endpointUid[1])!.type === EntityType.SYSTEM_NODE
+                ) {
+                    if (this.computedLengthM < PIPE_STUB_MAX_LENGTH_MM) {
+                        console.log('No interact because we\'re a stub');
+                        // we can't be the stub pipe of the system node
+                        return null;
+                    }
+                }
                 if (interaction.systemUid === null || interaction.systemUid === this.entity.systemUid) {
                     return [this.entity];
                 } else {
