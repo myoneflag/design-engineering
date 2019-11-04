@@ -88,6 +88,8 @@ export default function insertFlowSource(
                         });
 
                         toReplace = object as BackedDrawableObject<ConnectableEntityConcrete>;
+                        newEntity.connections.splice(0);
+                        newEntity.connections.push(...toReplace.entity.connections);
                         toReplace.entity.connections.splice(0);
                         context.deleteEntity(toReplace);
                         wc = object.toWorldCoord({x: 0, y: 0});

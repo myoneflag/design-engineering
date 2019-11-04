@@ -39,7 +39,7 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
     lastDrawnLength!: number;
 
     TURN_RADIUS_MM = 100;
-    FITTING_DIAMETER_PIXELS = 6;
+    FITTING_DIAMETER_PIXELS = 3;
     lastRadials!: Array<[Coord, BaseBackedObject]>;
 
     get position(): Matrix {
@@ -65,7 +65,7 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
 
         const minJointLength = this.FITTING_DIAMETER_PIXELS / scale;
 
-        const defaultWidth = Math.max(this.FITTING_DIAMETER_PIXELS / scale, 30 / this.toWorldLength(1));
+        const defaultWidth = Math.max(this.FITTING_DIAMETER_PIXELS / scale, 25 / this.toWorldLength(1));
         this.lastDrawnWidth = defaultWidth;
         this.lastDrawnLength = Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM));
 

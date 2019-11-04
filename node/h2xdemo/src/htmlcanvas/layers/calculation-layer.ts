@@ -18,8 +18,16 @@ import {getBoundingBox, getDocumentCenter} from '@/htmlcanvas/lib/utils';
 import assert from 'assert';
 import {CalculationTarget} from '@/store/document/calculations/types';
 import CatalogState, {Catalog} from '@/store/catalog/types';
-import {CalculatableEntityConcrete, DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import {
+    CalculatableEntityConcrete,
+    CalculationConcrete,
+    DrawableEntityConcrete
+} from '@/store/document/entities/concrete-entity';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
+import Calculations from '@/views/settings/Calculations.vue';
+import Pipe from '@/htmlcanvas/objects/pipe';
+
+const MINIMUM_SIGNIFICANT_PIPE_LENGTH_MM = 500;
 
 export default class CalculationLayer extends LayerImplementation {
 
@@ -78,17 +86,20 @@ export default class CalculationLayer extends LayerImplementation {
                             b = bx.b;
                         }
 
-                        const msg: Popup = new Popup(
-                            this.objectStore,
-                            this,
-                            te,
-                            {x: (l + r) / 2, y: (t + b) / 2},
-                            (event) => this.onSelected(event, te.uid),
-                            () => this.onChange(),
-                            () => {/**/},
-                        );
-                        this.messageStore.set(e.uid, msg);
-                        thisIds.push(e.uid);
+                        if (this.shouldShowPopup(te)) {
+                            const msg: Popup = new Popup(
+                                this.objectStore,
+                                this,
+                                te,
+                                {x: (l + r) / 2, y: (t + b) / 2},
+                                (event) => this.onSelected(event, te.uid),
+                                () => this.onChange(),
+                                () => {/**/},
+                            );
+                            this.messageStore.set(e.uid, msg);
+                            thisIds.push(e.uid);
+                        }
+
                     }
                 }
             }
@@ -102,6 +113,32 @@ export default class CalculationLayer extends LayerImplementation {
 
         this.uidsInOrder.splice(0);
         this.uidsInOrder.push(...thisIds);
+    }
+
+    shouldShowPopup(c: CalculatableEntityConcrete): boolean {
+        if (c.calculation === null) {
+            return false;
+        }
+        switch (c.type) {
+            case EntityType.FLOW_SOURCE:
+                return true;
+            case EntityType.PIPE:
+                if ((this.objectStore.get(c.uid) as Pipe).computedLengthM * 1000 > MINIMUM_SIGNIFICANT_PIPE_LENGTH_MM) {
+                    if (c.calculation!.psdUnits && c.calculation!.psdUnits > 0) {
+                        return true;
+                    }
+                    if (c.calculation!.peakFlowRate && c.calculation!.peakFlowRate > 0) {
+                        return true;
+                    }
+                }
+                return false;
+            case EntityType.TMV:
+                return true;
+            case EntityType.VALVE:
+                return false;
+            case EntityType.FIXTURE:
+                return true;
+        }
     }
 
     calculate(doc: DocumentState, catalog: Catalog, demandType: DemandType, done: () => void) {

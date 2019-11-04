@@ -571,7 +571,7 @@
             } else if (entityName === EntityType.VALVE) {
                 insertValve(this, system);
             } else if (entityName === EntityType.TMV) {
-                insertTmv(this, tmvHasCold ? true : false);
+                insertTmv(this, tmvHasCold ? true : false, 0);
             } else if (entityName === EntityType.FIXTURE) {
                 this.document.uiState.lastUsedFixtureUid = fixtureName;
                 insertFixture(this, fixtureName, 0);

@@ -116,7 +116,7 @@ export default function insertFixture(
                     if (event.shiftKey || event.ctrlKey) {
                         angle += 1;
                     } else {
-                        angle += 15;
+                        angle += 45;
                     }
                     onRefresh();
                 }}],
@@ -124,7 +124,7 @@ export default function insertFixture(
                     if (event.shiftKey || event.ctrlKey) {
                         angle -= 1;
                     } else {
-                        angle -= 15;
+                        angle -= 45;
                     }
                     onRefresh();
                 }}],

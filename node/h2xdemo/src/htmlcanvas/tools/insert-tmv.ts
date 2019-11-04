@@ -18,10 +18,12 @@ import {addValveAndSplitPipe} from '@/htmlcanvas/lib/black-magic/split-pipe';
 import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import {isConnectable} from '@/store/document';
 import ValveEntity from '@/store/document/entities/valve-entity';
+import {KeyCode} from '@/htmlcanvas/utils';
 
 export default function insertTmv(
     context: CanvasContext,
     tmvhasCold: boolean,
+    angle: number,
 ) {
     const tmvUid = uuid();
     const coldUid = uuid();
@@ -38,7 +40,7 @@ export default function insertTmv(
                 MainEventBus.$emit('set-tool-handler', null);
                 if (!interrupted) {
                     // stamp
-                    insertTmv(context, tmvhasCold);
+                    insertTmv(context, tmvhasCold, angle);
                 }
             }
         },
@@ -62,8 +64,8 @@ export default function insertTmv(
                 minFlowRateLS: null,
                 minInletPressureKPA: null,
                 pipeDistanceMM: 150,
-                rotation: 0,
-                valveLengthMM: 400,
+                rotation: angle,
+                valveLengthMM: 50,
 
                 type: EntityType.TMV,
                 center: oc,
@@ -192,6 +194,25 @@ export default function insertTmv(
             context.$store.dispatch('document/commit');
         },
         'Insert TMV',
+        [
+            [KeyCode.SHIFT, {name: '+ Precise Rotating', fn: (event: KeyboardEvent) => { /* */ }}],
+            [KeyCode.RIGHT, {name: 'Rotate Clockwise', fn: (event: KeyboardEvent, onRefresh: () => void) => {
+                    if (event.shiftKey || event.ctrlKey) {
+                        angle += 1;
+                    } else {
+                        angle += 45;
+                    }
+                    onRefresh();
+                }}],
+            [KeyCode.LEFT, {name: 'Rotate Counter-clockwise', fn: (event: KeyboardEvent, onRefresh: () => void) => {
+                    if (event.shiftKey || event.ctrlKey) {
+                        angle -= 1;
+                    } else {
+                        angle -= 45;
+                    }
+                    onRefresh();
+                }}],
+        ],
     ));
 }
 
@@ -239,7 +260,7 @@ function leadPipe(
         color: null,
         diameterMM: null,
         endpointUid: [valve.uid, connectTo.uid],
-        heightAboveFloorM: 70,
+        heightAboveFloorM: 1,
         lengthM: null,
         material: null,
         maximumVelocityMS: null,

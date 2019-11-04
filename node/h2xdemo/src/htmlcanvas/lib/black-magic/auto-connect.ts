@@ -18,20 +18,24 @@ import {FlowConfiguration} from '@/store/document/entities/tmv/tmv-entity';
 import {isConnectable} from '@/store/document';
 import assert from 'assert';
 import FlowSystemPicker from '@/components/editor/FlowSystemPicker.vue';
-import {StandardFlowSystemUids} from '@/store/catalog';
+import {StandardFlowSystemUids, StandardMaterialUids} from '@/store/catalog';
 import {MainEventBus} from '@/store/main-event-bus';
 import {Coord} from '@/store/document/types';
 import Graph from '@/calculations/graph';
 
 const CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM = 500;
-const FIXTURE_WALL_DIST_MM = 175;
-const FIXTURE_WALL_DIST_COLD_MM = 125;
+const FIXTURE_WALL_DIST_MM = 200;
+const FIXTURE_WALL_DIST_COLD_MM = 100;
 const TMV_WALL_DIST_MM = 50;
 const WALL_INSERT_JOIN_THRESHOLD_MM = 150;
 
 const WALL_SAME_ANGLE_THRESHOLD_DEG = 5;
 const WALL_SAME_DIST_THRESHOLD_MM = 900;
 const WALL_SNAP_DIST_THRESHOLD_MM = 900;
+
+const VALVE_CONNECT_HANDICAP_MM = 30;
+export const PIPE_STUB_MAX_LENGTH_MM = 300;
+const MIN_PIPE_LEN_MM = 300;
 
 export class AutoConnector {
     selected: BaseBackedObject[];
@@ -183,6 +187,10 @@ export class AutoConnector {
         //  => lead larger for fixtures which are protruding from the wall
         let ao = this.context.objectStore.get(a)!;
         let bo = this.context.objectStore.get(b)!;
+        if (doit) {
+            console.log("doing it with " + ao.type + ' ' + bo.type);
+        }
+
         if (!ao) {
             throw new Error('Object is missing: ' + a);
         }
@@ -328,12 +336,24 @@ export class AutoConnector {
             }
         });
 
+
+        if (doit) {
+            console.log("now it's with " + ao.type + ' ' + bo.type);
+        }
+
+
+        let bias = 0;
+        if (isConnectable(ao.type)) {
+            bias -= VALVE_CONNECT_HANDICAP_MM;
+        }
+        if (isConnectable(bo.type)) {
+            bias -= VALVE_CONNECT_HANDICAP_MM;
+        }
+        totLen += bias;
+
         if (solved) {
             return totLen;
         }
-
-        const dist = ao.shape()!.distanceTo(bo.shape()!);
-        totLen += dist[0];
 
         // Now, connect the remaining.
         let wallDist: number | null = null;
@@ -341,18 +361,30 @@ export class AutoConnector {
             // we have the option to go through the wall.
             const dist = this.connectThroughWalls(ao, bo, systemUid, false);
             if (dist !== null) {
-                wallDist = totLen + dist;
+                wallDist = dist;
             }
         }
 
         const roofDist = this.connectThroughRoof(ao, bo, systemUid, false);
 
+        if (doit) {
+            console.log('roofDist: ' + roofDist + ' wallDist ' + wallDist);
+        }
         if (roofDist === null && wallDist === null) {
             return null;
         } else if (wallDist === null || roofDist! < wallDist) {
-            return this.connectThroughRoof(ao, bo, systemUid, doit);
+
+            if (doit) {
+                console.log("through roof " + ao.uid + ' ' + bo.uid);
+            }
+
+            return totLen + this.connectThroughRoof(ao, bo, systemUid, doit)!;
         } else {
-            return this.connectThroughWalls(ao, bo,  systemUid, doit);
+            if (doit) {
+                console.log("through wall " + ao.uid + ' ' + bo.uid);
+            }
+
+            return totLen + this.connectThroughWalls(ao, bo,  systemUid, doit)!;
         }
     }
 
@@ -388,16 +420,19 @@ export class AutoConnector {
             }
         }
 
+        const auxLength =
+            (maxHeight - this.getEntityHeight(ao.entity)[1] +
+            maxHeight - this.getEntityHeight(bo.entity)[1]) * 1000;
         // Find grid
-        const ga = this.findClosestGrid(ao.toWorldCoord({x: 0, y: 0}));
-        const gb = this.findClosestGrid(bo.toWorldCoord({x: 0, y: 0}));
-        const ac = ao.toWorldCoord({x: 0, y: 0});
+        const ga = this.findClosestGrid(straight[1].start);
+        const gb = this.findClosestGrid(straight[1].end);
+        const ac = straight[1].start;
         const ap = Flatten.point(ac.x, ac.y);
-        const bc = bo.toWorldCoord({x: 0, y: 0});
+        const bc = straight[1].end;
         const bp = Flatten.point(bc.x, bc.y);
 
         let bestDist = Infinity;
-        let bestCorner!: Coord;
+        let bestCorner!: Flatten.Point;
 
         ga.lines.forEach((al) => {
             gb.lines.forEach((bl) => {
@@ -416,23 +451,36 @@ export class AutoConnector {
 
         if (bestCorner) {
             if (doit) {
-                const v: ValveEntity = {
-                    calculation: null,
-                    center: {x: bestCorner.x, y: bestCorner.y},
-                    color: null,
-                    connections: [],
-                    parentUid: null,
-                    systemUid,
-                    type: EntityType.VALVE,
-                    uid: uuid(),
-                    valveType: 'fitting',
-                };
+                if (Math.min(bestCorner.distanceTo(ap)[0], bestCorner.distanceTo(bp)[0]) < MIN_PIPE_LEN_MM) {
 
-                this.context.$store.dispatch('document/addEntity', v);
-                this.connectConnectablesWithPipe(v, ao.entity as ConnectableEntityConcrete, maxHeight, systemUid);
-                this.connectConnectablesWithPipe(v, bo.entity as ConnectableEntityConcrete, maxHeight, systemUid);
+                    // connect directly
+                    this.connectConnectablesWithPipe(
+                        ao.entity as ConnectableEntityConcrete,
+                        bo.entity as ConnectableEntityConcrete,
+                        maxHeight,
+                        systemUid,
+                    );
+                } else {
+                    const v: ValveEntity = {
+                        calculation: null,
+                        center: {x: bestCorner.x, y: bestCorner.y},
+                        color: null,
+                        connections: [],
+                        parentUid: null,
+                        systemUid,
+                        type: EntityType.VALVE,
+                        uid: uuid(),
+                        valveType: 'fitting',
+                    };
+
+                    this.context.$store.dispatch('document/addEntity', v);
+                    this.connectConnectablesWithPipe(v, ao.entity as ConnectableEntityConcrete, maxHeight, systemUid);
+                    this.connectConnectablesWithPipe(v, bo.entity as ConnectableEntityConcrete, maxHeight, systemUid);
+
+                }
+
             }
-            return bestDist;
+            return bestDist + auxLength;
         } else {
             return null;
         }
@@ -461,7 +509,7 @@ export class AutoConnector {
 
         this.walls.forEach((w) => {
             const wallD = w.line.distanceTo(o.shape()!);
-            if (wallD[0] <= WALL_SNAP_DIST_THRESHOLD_MM) {
+            if (wallD[0] <= WALL_SNAP_DIST_THRESHOLD_MM * 5) {
                 const sourceD = w.source.distanceTo(o.shape()!);
                 if (sourceD[0] < bestWallDist) {
                     bestWallDist = sourceD[0];
@@ -474,7 +522,7 @@ export class AutoConnector {
     }
 
     diffA(a: number, b: number) {
-        return Math.min((a - b + 360) % 360, (- a + b + 360*2) % 360);
+        return Math.min((a - b + 360) % 360, (- a + b + 360 * 2) % 360);
     }
 
     connectThroughWalls(ao: BaseBackedObject, bo: BaseBackedObject, systemUid: string, doit: boolean): number | null {
@@ -492,8 +540,13 @@ export class AutoConnector {
         const minHigh =
             Math.min(this.getEntityHeight(ao.entity)[1], this.getEntityHeight(bo.entity)[1]);
         const newHeight = Math.max(maxLow, minHigh);
-        const auxLength = Math.max(0, newHeight - minHigh) +
-            Math.abs(newHeight - this.context.document.drawing.calculationParams.ceilingPipeHeightM);
+        const auxLength = (Math.max(0, newHeight - minHigh) +
+            Math.abs(newHeight - this.context.document.drawing.calculationParams.ceilingPipeHeightM)) * 1000;
+
+        if (doit) {
+
+            console.log('wall aux len: ' + auxLength);
+        }
 
         const adeg = wa.line.norm.angleTo(wb.line.norm) / Math.PI * 180 ;
         const adiff = Math.min(this.diffA(adeg, 180), this.diffA(adeg, 0));
@@ -601,7 +654,10 @@ export class AutoConnector {
                 this.connectConnectablesWithPipe(v, bo.entity as ConnectableEntityConcrete, newHeight, systemUid);
             }
 
-            return pd + auxLength;
+            if (doit) {
+                console.log('pd: ' + pd + ' auxLen: ' + auxLength);
+            }
+            return (pd + auxLength);
         }
     }
 
@@ -709,7 +765,6 @@ export class AutoConnector {
 
                 // TODO: something faster. Like just inserting objects directly into the layer or something.
                 // this.context.processDocument(false);
-
             }
             this.context.$store.dispatch('document/commit');
         } finally {
@@ -730,7 +785,7 @@ export class AutoConnector {
             endpointUid: [a.uid, b.uid],
             heightAboveFloorM: height,
             lengthM: null,
-            material: null,
+            material: StandardMaterialUids.Pex,
             maximumVelocityMS: null,
             parentUid: null,
             systemUid,
