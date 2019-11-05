@@ -12,14 +12,13 @@ import {getInsertCoordsAt} from '@/htmlcanvas/lib/utils';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
 import Flatten from '@flatten-js/core';
 import {PIPE_HEIGHT_GRAPHIC_EPS_MM} from '@/config';
+import {CenteredObject} from '@/htmlcanvas/lib/object-traits/centered-object';
 
 export default interface Connectable {
     getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]>;
     getAngles(): number[];
     prepareDelete(context: CanvasContext): BaseBackedObject[];
     isStraight(tolerance: number): boolean;
-    debase(): void;
-    rebase(context: CanvasContext): void;
 
     drawInternal(context: DrawingContext, layerActive: boolean, selected: boolean): void;
 }
@@ -30,7 +29,7 @@ export function ConnectableObject<T extends new (...args: any[])
     => Connectable & BackedConnectable<ConnectableEntityConcrete>>(constructor: T) {
 
     // @ts-ignore abstract class expression limitation in the language. In practice this is fine.
-    return class extends constructor implements Connectable {
+    return (class extends constructor implements Connectable {
 
         drawInternal(context: DrawingContext, layerActive: boolean, selected: boolean): void {
             super.drawInternal(context, layerActive, selected);
@@ -104,7 +103,7 @@ export function ConnectableObject<T extends new (...args: any[])
 
                             ctx.lineWidth = maxWidth / 2;
                             ctx.strokeStyle = '#000';
-                            if (adiff > Math.PI) {
+                            if (adiff > Math.PI - EPS) {
                                 // round
                                 ctx.beginPath();
                                 ctx.moveTo(l1s.x, l1s.y);
@@ -168,8 +167,6 @@ export function ConnectableObject<T extends new (...args: any[])
             }
             let sum = 0;
             ret.forEach((n) => sum += n);
-            console.log(JSON.stringify(angles));
-            console.log(JSON.stringify(ret));
             assert(Math.abs(sum - 360) <= EPS || Math.abs(sum) <= EPS);
             return ret;
         }
@@ -203,18 +200,5 @@ export function ConnectableObject<T extends new (...args: any[])
 
             return result;
         }
-
-        debase(): void {
-            const wc = this.toWorldCoord({x: 0, y: 0});
-            this.entity.parentUid = null;
-            this.entity.center = wc;
-        }
-
-        rebase(context: CanvasContext) {
-            assert(this.entity.parentUid === null);
-            const [par, oc] = getInsertCoordsAt(context, this.entity.center);
-            this.entity.parentUid = par;
-            this.entity.center = oc;
-        }
-    };
+    });
 }

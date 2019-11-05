@@ -13,10 +13,12 @@ import {EntityType} from '@/store/document/entities/types';
 import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
 import {getDragPriority} from '@/store/document';
 import {SelectableObject} from '@/htmlcanvas/lib/object-traits/selectable';
+import {CenteredObject} from '@/htmlcanvas/lib/object-traits/centered-object';
 
 @SelectableObject
 @CenterDraggableObject
 @ConnectableObject
+@CenteredObject
 export default class FlowSource extends BackedConnectable<FlowSourceEntity> implements Connectable {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.FLOW_SOURCE, FlowSource);

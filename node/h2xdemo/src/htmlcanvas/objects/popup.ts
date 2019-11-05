@@ -28,8 +28,11 @@ import {DEFAULT_FONT_NAME} from '@/config';
 import Layer from '@/htmlcanvas/layers/layer';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
+import {ConnectableObject} from '@/htmlcanvas/lib/object-traits/connectable';
+import {CenteredObject} from '@/htmlcanvas/lib/object-traits/centered-object';
 
 @CenterDraggableObject
+@CenteredObject
 export default class Popup extends BackedDrawableObject<PopupEntity> {
     static MESSGAE_DISTANCE: number = 400;
 
@@ -112,6 +115,14 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
             throw new Error('no center defined in message ' + JSON.stringify(this.entity));
         }
         return TM.translate(this.entity.center.x, this.entity.center.y);
+    }
+
+    debase(): void {
+        throw new Error('Method not implemented.');
+    }
+
+    rebase(context: CanvasContext): void {
+        throw new Error('Method not implemented.');
     }
 
     getFields(context: DrawingContext): MessageField[] {

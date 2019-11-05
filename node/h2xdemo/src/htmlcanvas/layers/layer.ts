@@ -10,6 +10,7 @@ import {EntityType} from '@/store/document/entities/types';
 import {Draggable} from '@/htmlcanvas/lib/object-traits/draggable-object';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {MainEventBus} from '@/store/main-event-bus';
+import {rebaseAll} from '@/htmlcanvas/lib/black-magic/rebase-all';
 
 export default interface Layer {
     selectedEntities: WithID[];
@@ -337,7 +338,7 @@ export abstract class LayerImplementation implements Layer {
             const o = this.objectStore.get(uid)!;
             if (o.entity.parentUid) {
                 const po = this.objectStore.get(o.entity.parentUid)!;
-                if (po.layer.isSelected(po.uid)) {
+                if (this.isSelected(po.uid)) {
                     return false;
                 }
             }
@@ -410,6 +411,7 @@ export abstract class LayerImplementation implements Layer {
             const o = this.objectStore.get(uid) as BaseBackedObject & Draggable;
             o.onDragFinish(event, context, true);
         });
+        rebaseAll(context);
         this.onCommit(this.objectStore.get(grabState.toMoveUids[0])!.entity);
     }
 

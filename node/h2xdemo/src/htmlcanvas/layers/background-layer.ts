@@ -132,7 +132,6 @@ export default class BackgroundLayer extends LayerImplementation {
             this.resizeBox.draw(context);
         }
 
-        super.drawSelectionLayer(context, interactive);
     }
 
     getBackgroundAt(worldCoord: Coord, objectStore: ObjectStore) {

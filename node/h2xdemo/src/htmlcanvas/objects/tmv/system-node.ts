@@ -11,9 +11,11 @@ import {lighten} from '@/lib/utils';
 import {FlowConfiguration, SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
 import {getDragPriority} from '@/store/document';
 import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import Centered, {CenteredObject} from '@/htmlcanvas/lib/object-traits/centered-object';
+import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 
 @ConnectableObject
-export default class SystemNode extends InvisibleNode<SystemNodeEntity> {
+export default class SystemNode extends InvisibleNode<SystemNodeEntity> implements Centered {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.SYSTEM_NODE, SystemNode);
     }
@@ -21,6 +23,14 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> {
     minimumConnections = 0;
     maximumConnections = 1;
     dragPriority = getDragPriority(EntityType.SYSTEM_NODE);
+
+    debase(): void {
+        //
+    }
+
+    rebase(context: CanvasContext): void {
+        //
+    }
 
     offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
         switch (interaction.type) {

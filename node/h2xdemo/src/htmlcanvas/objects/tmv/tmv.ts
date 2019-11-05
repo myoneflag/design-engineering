@@ -17,15 +17,25 @@ import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity'
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 import {SelectableObject} from '@/htmlcanvas/lib/object-traits/selectable';
 import {assertUnreachable} from '@/lib/utils';
+import {CenteredObject} from '@/htmlcanvas/lib/object-traits/centered-object';
 
 @SelectableObject
 @CenterDraggableObject
+@CenteredObject
 export default class Tmv extends BackedDrawableObject<TmvEntity> {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.TMV, Tmv);
     }
 
     lastDrawnWorldRadius: number = 0; // for bounds detection
+
+    debase(): void {
+        throw new Error('Method not implemented.');
+    }
+
+    rebase(context: CanvasContext): void {
+        throw new Error('Method not implemented.');
+    }
 
     drawInternal(context: DrawingContext, layerActive: boolean, selected: boolean): void {
 

@@ -19,12 +19,22 @@ import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity'
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 import {SelectableObject} from '@/htmlcanvas/lib/object-traits/selectable';
 import Flatten from '@flatten-js/core';
+import {CenteredObject} from '@/htmlcanvas/lib/object-traits/centered-object';
 
 @SelectableObject
 @CenterDraggableObject
+@CenteredObject
 export default class Fixture extends BackedDrawableObject<FixtureEntity> {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.FIXTURE, Fixture);
+    }
+
+    debase(): void {
+        throw new Error('Method not implemented.');
+    }
+
+    rebase(context: CanvasContext): void {
+        throw new Error('Method not implemented.');
     }
 
     drawInternal(context: DrawingContext, layerActive: boolean, selected: boolean): void {

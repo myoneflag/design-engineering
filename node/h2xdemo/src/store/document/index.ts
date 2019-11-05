@@ -36,6 +36,22 @@ export function isConnectable(type: EntityType): boolean {
     }
 }
 
+export function isCentered(type: EntityType): boolean {
+    switch (type) {
+        case EntityType.VALVE:
+        case EntityType.SYSTEM_NODE:
+        case EntityType.FLOW_SOURCE:
+        case EntityType.FLOW_RETURN:
+        case EntityType.TMV:
+        case EntityType.FIXTURE:
+        case EntityType.RESULTS_MESSAGE:
+            return true;
+        case EntityType.BACKGROUND_IMAGE:
+        case EntityType.PIPE:
+            return false;
+    }
+}
+
 export function getDragPriority(type: EntityType): number {
     switch (type) {
         case EntityType.VALVE:

@@ -16,6 +16,7 @@ export default abstract class DrawableObject {
 
     selectable: boolean = false;
     draggable: boolean = false;
+    centered: boolean = false;
 
     constructor(parent: DrawableObject | null, layer: Layer) {
         this.parentInternal = parent;

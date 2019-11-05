@@ -21,10 +21,12 @@ import PipeEntity from '@/store/document/entities/pipe-entity';
 import uuid from 'uuid';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import {CenteredObject} from '@/htmlcanvas/lib/object-traits/centered-object';
 
 @SelectableObject
 @CenterDraggableObject
 @ConnectableObject
+@CenteredObject
 export default class Valve extends BackedConnectable<ValveEntity> implements Connectable {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.VALVE, Valve);
@@ -44,6 +46,14 @@ export default class Valve extends BackedConnectable<ValveEntity> implements Con
 
     get position(): Matrix {
         return TM.translate(this.entity.center.x, this.entity.center.y);
+    }
+
+    debase(): void {
+        throw new Error('Method not implemented.');
+    }
+
+    rebase(context: CanvasContext): void {
+        throw new Error('Method not implemented.');
     }
 
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to

@@ -22,6 +22,7 @@ import {StandardFlowSystemUids, StandardMaterialUids} from '@/store/catalog';
 import {MainEventBus} from '@/store/main-event-bus';
 import {Coord} from '@/store/document/types';
 import Graph from '@/calculations/graph';
+import {rebaseAll} from '@/htmlcanvas/lib/black-magic/rebase-all';
 
 const CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM = 500;
 const FIXTURE_WALL_DIST_MM = 200;
@@ -744,6 +745,8 @@ export class AutoConnector {
                 // TODO: something faster. Like just inserting objects directly into the layer or something.
                 // this.context.processDocument(false);
             }
+
+            rebaseAll(this.context);
             this.context.$store.dispatch('document/commit');
         } finally {
             this.teardown();
