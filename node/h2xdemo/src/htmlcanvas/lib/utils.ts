@@ -1,13 +1,11 @@
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 import {Coord, DocumentState, DrawableEntity} from '@/store/document/types';
-import * as _ from 'lodash';
 import {ObjectStore} from '@/htmlcanvas/lib/types';
-import doc = Mocha.reporters.doc;
-import * as webpack from 'webpack';
-import numberToIdentifer = webpack.Template.numberToIdentifer;
 import {cloneSimple} from '@/lib/utils';
 import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import {EntityType} from '@/store/document/entities/types';
+import {SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
+import {fillFixtureFields} from '@/store/document/entities/fixtures/fixture-entity';
 
 
 export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
@@ -239,8 +237,31 @@ export function upperBoundTable<T>(table: {[key: string]: T}, index: number, get
     return lowValue;
 }
 
+
+export function getSystemNodeHeightM(entity: SystemNodeEntity, context: CanvasContext): number {
+    const po = context.objectStore.get(entity.parentUid!)!;
+    switch (po.entity.type) {
+        case EntityType.TMV:
+            return po.entity.heightAboveFloorM;
+        case EntityType.FIXTURE:
+            const fe = fillFixtureFields(context.document, context.effectiveCatalog, po.entity);
+            return fe.outletAboveFloorM!;
+        case EntityType.VALVE:
+        case EntityType.PIPE:
+        case EntityType.FLOW_SOURCE:
+        case EntityType.RESULTS_MESSAGE:
+        case EntityType.SYSTEM_NODE:
+        case EntityType.BACKGROUND_IMAGE:
+            throw new Error('can\'t touch this');
+    }
+}
+
 export function maxHeightOfConnection(entity: ConnectableEntityConcrete, context: CanvasContext) {
     let height = -Infinity;
+    if (entity.type === EntityType.SYSTEM_NODE) {
+        height = getSystemNodeHeightM(entity, context);
+    }
+
     entity.connections.forEach((cuid) => {
         const o = context.objectStore.get(cuid)!;
         if (o.entity.type === EntityType.PIPE) {
@@ -255,6 +276,9 @@ export function maxHeightOfConnection(entity: ConnectableEntityConcrete, context
 
 export function minHeightOfConnection(entity: ConnectableEntityConcrete, context: CanvasContext) {
     let height = Infinity;
+    if (entity.type === EntityType.SYSTEM_NODE) {
+        height = getSystemNodeHeightM(entity, context);
+    }
     entity.connections.forEach((cuid) => {
         const o = context.objectStore.get(cuid)!;
         if (o.entity.type === EntityType.PIPE) {

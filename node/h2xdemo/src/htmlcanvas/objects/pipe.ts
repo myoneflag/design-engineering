@@ -396,7 +396,6 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                     this.objectStore.get(this.entity.endpointUid[1])!.type === EntityType.SYSTEM_NODE
                 ) {
                     if (this.computedLengthM < PIPE_STUB_MAX_LENGTH_MM) {
-                        console.log('No interact because we\'re a stub');
                         // we can't be the stub pipe of the system node
                         return null;
                     }

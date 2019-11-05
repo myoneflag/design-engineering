@@ -14,7 +14,7 @@ import Pipe from '@/htmlcanvas/objects/pipe';
 import PipeEntity from '@/store/document/entities/pipe-entity';
 import uuid from 'uuid';
 import ValveEntity from '@/store/document/entities/valve-entity';
-import {FlowConfiguration} from '@/store/document/entities/tmv/tmv-entity';
+import {FlowConfiguration, SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
 import {isConnectable} from '@/store/document';
 import assert from 'assert';
 import FlowSystemPicker from '@/components/editor/FlowSystemPicker.vue';
@@ -35,7 +35,7 @@ const WALL_SNAP_DIST_THRESHOLD_MM = 900;
 
 const VALVE_CONNECT_HANDICAP_MM = 30;
 export const PIPE_STUB_MAX_LENGTH_MM = 300;
-const MIN_PIPE_LEN_MM = 300;
+const MIN_PIPE_LEN_MM = 100;
 
 export class AutoConnector {
     selected: BaseBackedObject[];
@@ -337,11 +337,6 @@ export class AutoConnector {
         });
 
 
-        if (doit) {
-            console.log("now it's with " + ao.type + ' ' + bo.type);
-        }
-
-
         let bias = 0;
         if (isConnectable(ao.type)) {
             bias -= VALVE_CONNECT_HANDICAP_MM;
@@ -367,22 +362,11 @@ export class AutoConnector {
 
         const roofDist = this.connectThroughRoof(ao, bo, systemUid, false);
 
-        if (doit) {
-            console.log('roofDist: ' + roofDist + ' wallDist ' + wallDist);
-        }
         if (roofDist === null && wallDist === null) {
             return null;
         } else if (wallDist === null || roofDist! < wallDist) {
-
-            if (doit) {
-                console.log("through roof " + ao.uid + ' ' + bo.uid);
-            }
-
             return totLen + this.connectThroughRoof(ao, bo, systemUid, doit)!;
         } else {
-            if (doit) {
-                console.log("through wall " + ao.uid + ' ' + bo.uid);
-            }
 
             return totLen + this.connectThroughWalls(ao, bo,  systemUid, doit)!;
         }
@@ -509,7 +493,7 @@ export class AutoConnector {
 
         this.walls.forEach((w) => {
             const wallD = w.line.distanceTo(o.shape()!);
-            if (wallD[0] <= WALL_SNAP_DIST_THRESHOLD_MM * 5) {
+            if (wallD[0] <= WALL_SNAP_DIST_THRESHOLD_MM ) {
                 const sourceD = w.source.distanceTo(o.shape()!);
                 if (sourceD[0] < bestWallDist) {
                     bestWallDist = sourceD[0];
@@ -542,11 +526,6 @@ export class AutoConnector {
         const newHeight = Math.max(maxLow, minHigh);
         const auxLength = (Math.max(0, newHeight - minHigh) +
             Math.abs(newHeight - this.context.document.drawing.calculationParams.ceilingPipeHeightM)) * 1000;
-
-        if (doit) {
-
-            console.log('wall aux len: ' + auxLength);
-        }
 
         const adeg = wa.line.norm.angleTo(wb.line.norm) / Math.PI * 180 ;
         const adiff = Math.min(this.diffA(adeg, 180), this.diffA(adeg, 0));
@@ -654,9 +633,6 @@ export class AutoConnector {
                 this.connectConnectablesWithPipe(v, bo.entity as ConnectableEntityConcrete, newHeight, systemUid);
             }
 
-            if (doit) {
-                console.log('pd: ' + pd + ' auxLen: ' + auxLength);
-            }
             return (pd + auxLength);
         }
     }
@@ -667,6 +643,8 @@ export class AutoConnector {
         a.forEach((auid) => {
             b.forEach((buid) => {
                 const res = this.joinEntities(auid, buid, false);
+                const ao = this.context.objectStore.get(auid)!;
+                const bo = this.context.objectStore.get(buid)!;
                 if (res !== null) {
                     if (bestDist === null || res < bestDist) {
                         bestDist = res;
