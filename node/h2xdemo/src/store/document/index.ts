@@ -4,7 +4,6 @@ import {actions} from './actions';
 import {mutations} from './mutations';
 import {DocumentState, initialValue} from './types';
 import {RootState} from '../types';
-import * as _ from 'lodash';
 import {EntityType} from '@/store/document/entities/types';
 import {cloneSimple} from '@/lib/utils';
 
@@ -22,10 +21,11 @@ export const document: Module<DocumentState, RootState> = {
 
 export function isConnectable(type: EntityType): boolean {
     switch (type) {
-        case EntityType.VALVE:
+        case EntityType.FITTING:
         case EntityType.SYSTEM_NODE:
         case EntityType.FLOW_SOURCE:
         case EntityType.FLOW_RETURN:
+        case EntityType.DIRECTED_VALVE:
             return true;
         case EntityType.TMV:
         case EntityType.FIXTURE:
@@ -38,13 +38,14 @@ export function isConnectable(type: EntityType): boolean {
 
 export function isCentered(type: EntityType): boolean {
     switch (type) {
-        case EntityType.VALVE:
+        case EntityType.FITTING:
         case EntityType.SYSTEM_NODE:
         case EntityType.FLOW_SOURCE:
         case EntityType.FLOW_RETURN:
         case EntityType.TMV:
         case EntityType.FIXTURE:
         case EntityType.RESULTS_MESSAGE:
+        case EntityType.DIRECTED_VALVE:
             return true;
         case EntityType.BACKGROUND_IMAGE:
         case EntityType.PIPE:
@@ -54,12 +55,14 @@ export function isCentered(type: EntityType): boolean {
 
 export function getDragPriority(type: EntityType): number {
     switch (type) {
-        case EntityType.VALVE:
-            return 5;
         case EntityType.SYSTEM_NODE:
             return 100;
+        case EntityType.DIRECTED_VALVE:
+            return 30;
         case EntityType.FLOW_SOURCE:
             return 10;
+        case EntityType.FITTING:
+            return 5;
         case EntityType.FLOW_RETURN:
             return 0;
         case EntityType.TMV:

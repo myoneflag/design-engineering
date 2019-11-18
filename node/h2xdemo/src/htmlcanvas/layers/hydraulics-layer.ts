@@ -83,14 +83,15 @@ export default class  HydraulicsLayer extends LayerImplementation {
 
     entitySortOrder(entity: DrawableEntityConcrete): number {
         switch (entity.type) {
-            case EntityType.VALVE:
+            case EntityType.FITTING:
+            case EntityType.DIRECTED_VALVE:
                 return 100;
-            case EntityType.PIPE:
-                return 50;
             case EntityType.FLOW_SOURCE:
                 return 70;
             case EntityType.SYSTEM_NODE:
                 return 70;
+            case EntityType.PIPE:
+                return 50;
             case EntityType.TMV:
                 return 0;
             case EntityType.FIXTURE:

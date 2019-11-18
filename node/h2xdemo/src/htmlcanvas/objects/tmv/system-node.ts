@@ -13,6 +13,8 @@ import {getDragPriority} from '@/store/document';
 import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import Centered, {CenteredObject} from '@/htmlcanvas/lib/object-traits/centered-object';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
+import {CalculationContext} from '@/calculations/types';
+import {FlowNode, SELF_CONNECTION} from '@/calculations/calculation-engine';
 
 @ConnectableObject
 export default class SystemNode extends InvisibleNode<SystemNodeEntity> implements Centered {
@@ -96,5 +98,18 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
     }
     rememberToRegister(): void {
         //
+    }
+
+    getFrictionHeadLoss(context: CalculationContext,
+                        flowLS: number,
+                        from: FlowNode,
+                        to: FlowNode,
+                        signed: boolean,
+    ): number {
+        if (from.connection === this.entity.parentUid || to.connection === this.entity.parentUid) {
+            return 0;
+        } else {
+            throw new Error('system node shouldn\'t have any extra joints');
+        }
     }
 }

@@ -8,6 +8,7 @@ import {DrawingMode} from '@/htmlcanvas/types';
 import {DemandType} from '@/calculations/types';
 import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import {cloneSimple} from '@/lib/utils';
+import {ValveId} from '@/htmlcanvas/lib/types';
 
 // Because of how the diffing engine works, there are restrictions on the data structure for the document state.
 // Rules are:
@@ -77,6 +78,7 @@ export interface UIState {
     isCalculating: boolean;
 
     lastUsedFixtureUid: string | null;
+    lastUsedValveVid: ValveId | null;
 }
 
 /**
@@ -204,6 +206,7 @@ export const initialUIState: UIState = {
     viewPort: null,
 
     lastUsedFixtureUid: null,
+    lastUsedValveVid: null,
 
     lastCalculationId: 0,
     lastCalculationUiSettings: {

@@ -31,7 +31,8 @@ export function getConnectedFlowComponent(
         switch (o.entity.type) {
             case EntityType.SYSTEM_NODE:
             case EntityType.FLOW_SOURCE:
-            case EntityType.VALVE:
+            case EntityType.FITTING:
+            case EntityType.DIRECTED_VALVE:
                 q.push(...o.entity.connections);
                 break;
             case EntityType.PIPE:

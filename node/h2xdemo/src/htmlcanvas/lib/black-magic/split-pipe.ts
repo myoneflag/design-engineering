@@ -1,18 +1,15 @@
 import Pipe from '@/htmlcanvas/objects/pipe';
-import {ConnectableEntity, Coord, FlowSystemParameters} from '@/store/document/types';
+import {Coord} from '@/store/document/types';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
-import Flatten from '@flatten-js/core';
 import PipeEntity from '@/store/document/entities/pipe-entity';
-import * as _ from 'lodash';
-import ValveEntity from '@/store/document/entities/valve-entity';
 import {EntityType} from '@/store/document/entities/types';
 import uuid from 'uuid';
 import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
 import {ConnectableEntityConcrete, DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import {getInsertCoordsAt} from '@/htmlcanvas/lib/utils';
-import {cloneSimple} from '@/lib/utils';
 import {MagicResult} from '@/htmlcanvas/lib/black-magic/index';
-import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
+import FittingEntity from '@/store/document/entities/fitting-entity';
+import Fitting from '@/htmlcanvas/objects/fitting';
 
 export function addValveAndSplitPipe(
     context: CanvasContext,
@@ -48,16 +45,18 @@ export function addValveAndSplitPipe(
             connections: [pipe1uid, pipe2uid],
             parentUid,
             systemUid: system,
-            type: EntityType.VALVE,
+            type: EntityType.FITTING,
             uid: uuid(),
-            valveType: 'fitting',
             calculation: null,
         };
         created.push(newValve);
 
         context.$store.dispatch('document/addEntity', newValve);
     } else {
-        newValve.connections.push(pipe1uid, pipe2uid);
+        const nvo = context.objectStore.get(newValve.uid) as BackedConnectable<ConnectableEntityConcrete>;
+        nvo.connect(pipe1uid);
+        nvo.connect(pipe2uid);
+
         newValve.parentUid = parentUid;
         newValve.center = oc;
     }
@@ -91,25 +90,31 @@ export function addValveAndSplitPipe(
         uid: pipe2uid,
         calculation: null,
     };
-
-
-    (context.document.drawing.entities.find(
-            (o) => o.uid === pipe!.entity.endpointUid[0]) as ConnectableEntity
-    ).connections.push(newPipe1.uid);
-    (context.document.drawing.entities.find(
-            (o) => o.uid === pipe!.entity.endpointUid[1]) as ConnectableEntity
-    ).connections.push(newPipe2.uid);
-
-    created.push(newPipe1, newPipe2);
-
     context.$store.dispatch('document/addEntity', newPipe1);
     context.$store.dispatch('document/addEntity', newPipe2);
+
+    const newPipes = [newPipe1, newPipe2];
+    for (let i = 0; i < 2; i++) {
+        const o = context.objectStore.get(pipe!.entity.endpointUid[i])!;
+        if (o.type === EntityType.FITTING) {
+            (o as Fitting).connect(newPipes[i].uid);
+        }
+    }
+
+    context.deleteEntity(pipe);
+
+    for (let i = 0; i < 2; i++) {
+        const o = context.objectStore.get(pipe!.entity.endpointUid[i])!;
+        if (o.type !== EntityType.FITTING) {
+            (o as Fitting).connect(newPipes[i].uid);
+        }
+    }
+    created.push(newPipe1, newPipe2);
 
     if (wasInteractive) {
         context.interactive!.push(newPipe1, newPipe2);
     }
 
-    context.deleteEntity(pipe);
     return {
         deleted: [pipe.uid],
         created,

@@ -1,5 +1,5 @@
 import {BackgroundEntity} from '@/store/document/entities/background-entity';
-import ValveEntity from '@/store/document/entities/valve-entity';
+import FittingEntity from '@/store/document/entities/fitting-entity';
 import PipeEntity from '@/store/document/entities/pipe-entity';
 import FlowSourceEntity from '@/store/document/entities/flow-source-entity';
 import PopupEntity from '@/store/document/entities/calculations/popup-entity';
@@ -9,33 +9,37 @@ import {CenteredEntity, ConnectableEntity} from '@/store/document/types';
 import FlowSourceCalculation from '@/store/document/calculations/flow-source-calculation';
 import PipeCalculation from '@/store/document/calculations/pipe-calculation';
 import TmvCalculation from '@/store/document/calculations/tmv-calculation';
-import ValveCalculation from '@/store/document/calculations/valve-calculation';
+import FittingCalculation from '@/store/document/calculations/fitting-calculation';
 import FixtureCalculation from '@/store/document/calculations/fixture-calculation';
+import DirectedValveEntity from '@/store/document/entities/directed-valves/directed-valve-entity';
 
 export type DrawableEntityConcrete =
     BackgroundEntity |
-    ValveEntity |
+    FittingEntity |
     PipeEntity |
     FlowSourceEntity |
     PopupEntity |
     SystemNodeEntity |
     TmvEntity |
-    FixtureEntity;
+    FixtureEntity |
+    DirectedValveEntity;
 
 
 export type ConnectableEntityConcrete =
-    ValveEntity |
+    FittingEntity |
     FlowSourceEntity |
-    SystemNodeEntity;
+    SystemNodeEntity |
+    DirectedValveEntity;
 
 export type CenteredEntityConcrete =
     BackgroundEntity |
-    ValveEntity |
+    FittingEntity |
     FlowSourceEntity |
     SystemNodeEntity |
     TmvEntity |
     FixtureEntity |
-    PopupEntity;
+    PopupEntity |
+    DirectedValveEntity;
 
 export type InvisibleNodeEntityConcrete =
     SystemNodeEntity;
@@ -44,13 +48,14 @@ export type CalculatableEntityConcrete =
     FlowSourceEntity |
     PipeEntity |
     TmvEntity |
-    ValveEntity |
-    FixtureEntity;
+    FittingEntity |
+    FixtureEntity |
+    DirectedValveEntity;
 
 export type CalculationConcrete =
     FlowSourceCalculation |
     PipeCalculation |
     PipeCalculation |
     TmvCalculation |
-    ValveCalculation |
+    FittingCalculation |
     FixtureCalculation;

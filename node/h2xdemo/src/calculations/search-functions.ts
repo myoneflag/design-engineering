@@ -1,4 +1,5 @@
 import assert from 'assert';
+import {EPS} from '@/calculations/pressure-drops';
 
 // Works on concave functions
 export function ternarySearchForGlobalMin(fn: (num: number) => number): number {
@@ -6,8 +7,10 @@ export function ternarySearchForGlobalMin(fn: (num: number) => number): number {
     let high = 10;
     // careful search phase 1. Expand horizon.
 
+    let iters = 0;
+    let lowEscaped = false;
+    let highEscaped = false;
     while (true) {
-
         const mid1 = (low * 2 + high) / 3;
         const mid2 = (low + high * 2) / 3;
 
@@ -22,8 +25,16 @@ export function ternarySearchForGlobalMin(fn: (num: number) => number): number {
         } else {
             break;
         }
+
+        iters++;
+        if (iters > 50) {
+            lowEscaped = true;
+            break;
+        }
+
     }
 
+    iters = 0;
     while (true) {
         const mid1 = (low * 2 + high) / 3;
         const mid2 = (low + high * 2) / 3;
@@ -39,6 +50,16 @@ export function ternarySearchForGlobalMin(fn: (num: number) => number): number {
         } else {
             break;
         }
+
+        iters++;
+        if (iters > 50) {
+            highEscaped = true;
+            break;
+        }
+    }
+
+    if (lowEscaped && highEscaped) {
+        return 0;
     }
 
     // Phase 2. Center horizon
@@ -52,11 +73,12 @@ export function ternarySearchForGlobalMin(fn: (num: number) => number): number {
         const mv0 = fn(low);
         const mv3 = fn(high);
 
-        assert(mv1 <= mv0);
-        assert(mv2 <= mv3);
-        if (mv1 === mv2) {
-            assert(mv2 !== mv3);
-            assert(mv1 !== mv0);
+
+        if (mv1 > mv0) {
+            throw new Error('mv0 ' + mv0 + ' is less than mv1 ' + mv1 + ' low: ' + low + ' mid1: ' + mid1);
+        }
+        if (mv2 > mv3) {
+            throw new Error('mv2 ' + mv2 + ' is less than mv3 ' + mv3 + ' mid2: ' + mid2 + ' high: ' + high);
         }
 
         if (mv1 < mv2) {
@@ -65,5 +87,6 @@ export function ternarySearchForGlobalMin(fn: (num: number) => number): number {
             low = mid1;
         }
     }
+
     return low;
 }

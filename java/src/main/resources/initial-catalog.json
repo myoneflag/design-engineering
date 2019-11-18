@@ -1,5 +1,5 @@
 {
-  "lastModified": "2019-10-16T20:12:30-04",
+  "lastModified": "2019-11-18T19:26:20+11",
   "fixtures": {
     "ablutionTrough": {
       "abbreviation": "AT",
@@ -1323,8 +1323,8 @@
       "name": "Strainer",
       "uid": "strainer",
       "valvesBySize": {
-        "All": {
-          "diameterNominalMM": "All",
+        "0-1000000000": {
+          "diameterNominalMM": "0-1000000000",
           "kValue": "2",
           "symbol": null,
           "valveUid": "strainer"
@@ -1482,8 +1482,8 @@
       "name": "Water Meter",
       "uid": "waterMeter",
       "valvesBySize": {
-        "All": {
-          "diameterNominalMM": "All",
+        "0-1000000000": {
+          "diameterNominalMM": "0-1000000000",
           "kValue": "7",
           "symbol": null,
           "valveUid": "waterMeter"

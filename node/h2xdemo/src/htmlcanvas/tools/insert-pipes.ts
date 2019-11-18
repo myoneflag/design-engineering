@@ -4,7 +4,7 @@ import {InteractionType} from '@/htmlcanvas/lib/interaction';
 import {MainEventBus} from '@/store/main-event-bus';
 import PointTool from '@/htmlcanvas/tools/point-tool';
 import {EntityType} from '@/store/document/entities/types';
-import ValveEntity from '@/store/document/entities/valve-entity';
+import FittingEntity from '@/store/document/entities/fitting-entity';
 import uuid from 'uuid';
 import PipeEntity from '@/store/document/entities/pipe-entity';
 import {getInsertCoordsAt, maxHeightOfConnection} from '@/htmlcanvas/lib/utils';
@@ -18,6 +18,7 @@ import {isConnectable} from '@/store/document';
 import {SelectMode} from '@/htmlcanvas/layers/layer';
 import {KeyCode} from '@/htmlcanvas/utils';
 import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
+import {connect} from '@/lib/utils';
 
 export default function insertPipes(context: CanvasContext, system: FlowSystemParameters) {
     // strategy:
@@ -96,16 +97,14 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                 const [parentUid, oc] = getInsertCoordsAt(context, wc);
 
                 // Nope, we landed on nothing. We create new valve here.
-                const valveEntity: ValveEntity = {
+                const valveEntity: FittingEntity = {
                     center: oc,
                     color: null,
                     connections: [],
                     parentUid,
                     systemUid: system.uid,
-                    type: EntityType.VALVE,
+                    type: EntityType.FITTING,
                     uid: uuid(),
-                    // These names should come from databases.
-                    valveType: 'fitting',
                     calculation: null,
                 };
                 entity = valveEntity;
@@ -127,7 +126,7 @@ function insertPipeChain(
     system: FlowSystemParameters,
     heightM: number,
 ) {
-    let nextEntity: ConnectableEntityConcrete | ValveEntity;
+    let nextEntity: ConnectableEntityConcrete | FittingEntity;
     const pipeUid = uuid();
     let newPipe: PipeEntity | null = null;
 
@@ -174,8 +173,8 @@ function insertPipeChain(
             newPipe = pipe;
 
             context.$store.dispatch('document/addEntity', pipe);
-            (context.objectStore.get(lastAttachment.uid) as BackedConnectable<ConnectableEntityConcrete>)
-                .entity.connections.push(pipe.uid);
+
+            connect(context, lastAttachment.uid, pipe.uid);
 
             // maybe we drew onto an existing node.
 
@@ -207,10 +206,10 @@ function insertPipeChain(
                         pipe.systemUid,
                         30,
                     ).focus as ConnectableEntityConcrete;
-                    nextEntity.connections.push(pipe.uid);
+                    connect(context, nextEntity.uid, pipe.uid);
                 } else if (isConnectable(interactive[0].type)) {
                     nextEntity = interactive[0] as ConnectableEntityConcrete;
-                    nextEntity.connections.push(pipeUid);
+                    connect(context, nextEntity.uid, pipeUid);
                     context.hydraulicsLayer.select([context.objectStore.get(interactive[0].uid)!], SelectMode.Replace);
 
                 } else {
@@ -264,11 +263,8 @@ function insertPipeChain(
                     connections: [pipeUid],
                     parentUid,
                     systemUid: system.uid,
-                    type: EntityType.VALVE,
+                    type: EntityType.FITTING,
                     uid: uuid(),
-
-                    // These names should come from databases.
-                    valveType: 'fitting',
                     calculation: null,
                 };
 
@@ -314,6 +310,6 @@ function insertPipeChain(
             } else {
                 return [];
             }
-        }
+        },
     ));
 }

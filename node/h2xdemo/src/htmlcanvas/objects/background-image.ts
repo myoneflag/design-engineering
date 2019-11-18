@@ -20,6 +20,8 @@ import {cloneSimple} from '@/lib/utils';
 import {DraggableObject} from '@/htmlcanvas/lib/object-traits/draggable-object';
 import {SelectableObject} from '@/htmlcanvas/lib/object-traits/selectable';
 import CenterDraggableObject from '@/htmlcanvas/lib/object-traits/center-draggable-object';
+import {CalculationContext} from '@/calculations/types';
+import {FlowNode} from '@/calculations/calculation-engine';
 
 export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> implements Sizeable {
     static register(): void {
@@ -405,6 +407,15 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         const shape = new Flatten.Polygon();
         shape.addFace([a, b, c, d].map((p) => Flatten.point(p.x, p.y)));
         return shape;
+    }
+
+    getFrictionHeadLoss(context: CalculationContext,
+                        flowLS: number,
+                        from: FlowNode,
+                        to: FlowNode,
+                        sign: boolean,
+    ): number {
+        throw new Error('not implemented');
     }
 
     protected refreshObjectInternal(obj: BackgroundEntity, old: BackgroundEntity): void {

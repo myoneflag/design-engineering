@@ -3,16 +3,27 @@ import _ from 'lodash';
 import assert from 'assert';
 import TinyQueue from 'tinyqueue';
 import {cloneSimple} from '@/lib/utils';
+import stringify from 'json-stable-stringify';
 
-export default class Graph<N, E> {
-    adjacencyList: Map<N, Array<Edge<N, E>>> = new Map<N, Array<Edge<N, E>>>();
+function s<N>(val: N) {
+    return stringify(val);
+}
+
+export function serializeValue<N>(val: N): string {
+    return s(val);
+}
+
+export default class Graph<N , E> {
+    adjacencyList: Map<string, Array<Edge<N, E>>> = new Map<string, Array<Edge<N, E>>>();
     edgeList: Map<string, Edge<N, E>> = new Map<string, Edge<N, E>>();
-    reverseAdjacencyList: Map<N, Array<Edge<N, E>>> = new Map<N, Array<Edge<N, E>>>();
+    reverseAdjacencyList: Map<string, Array<Edge<N, E>>> = new Map<string, Array<Edge<N, E>>>();
+    id2Node: Map<string, N> = new Map<string, N>();
 
     addNode(node: N) {
-        if (!this.adjacencyList.has(node)) {
-            this.adjacencyList.set(node, []);
-            this.reverseAdjacencyList.set(node, []);
+        if (!this.adjacencyList.has(s(node))) {
+            this.adjacencyList.set(s(node), []);
+            this.reverseAdjacencyList.set(s(node), []);
+            this.id2Node.set(s(node), node);
         }
     }
 
@@ -22,8 +33,8 @@ export default class Graph<N, E> {
         }
         this.addNode(from);
         this.addNode(to);
-        const val = this.adjacencyList.get(from)!;
-        const reverseVal = this.reverseAdjacencyList.get(to)!;
+        const val = this.adjacencyList.get(s(from))!;
+        const reverseVal = this.reverseAdjacencyList.get(s(to))!;
         const forward = {
                 from, to, value: edgeValue, isDirected, uid, isReversed: false,
         };
@@ -55,29 +66,33 @@ export default class Graph<N, E> {
      */
     dagTraversal(roots: N[]): Array<Traversal<N, E>> {
         const traversals: Array<Traversal<N, E>> = new Array<Traversal<N, E>>();
-        const seen: Set<N>  = new Set<N>();
+        const seen: Set<string>  = new Set<string>();
         roots.forEach((root) => {
             this.dagTraversalRecursive(root, null, seen, traversals);
         });
         return traversals;
     }
 
-    dagTraversalRecursive(curr: N, parentPath: Edge<N, E> | null, seen: Set<N>, traversals: Array<Traversal<N, E>>) {
-        if (seen.has(curr)) {
+    dagTraversalRecursive(
+        curr: N,
+        parentPath: Edge<N, E> | null, seen: Set<string>,
+        traversals: Array<Traversal<N, E>>,
+    ) {
+        if (seen.has(s(curr))) {
             return;
         }
-        seen.add(curr);
+        seen.add(s(curr));
         const traversal: Traversal<N, E> = {
             node: curr, parent: parentPath, children: [],
         };
 
-        const nei = this.adjacencyList.get(curr);
+        const nei = this.adjacencyList.get(s(curr));
         if (nei) {
             nei.forEach((next) => {
                 if (parentPath === null || parentPath.from !== next.to) {
                     traversal.children.push(next);
                 }
-                if (!seen.has(next.to)) {
+                if (!seen.has(s(next.to))) {
                     this.dagTraversalRecursive(next.to, next, seen, traversals);
                 }
             });
@@ -98,7 +113,7 @@ export default class Graph<N, E> {
         leaveNode?: (node: N) => void,
         visitEdge?: (edge: Edge<N, E>) => (boolean | void),
         leaveEdge?: (edge: Edge<N, E>) => void,
-        seen?: Set<N>,
+        seen?: Set<string>,
         seenEdges?: Set<string>,
         directed: boolean = true,
         reversed: boolean = false,
@@ -107,13 +122,13 @@ export default class Graph<N, E> {
             seenEdges = new Set<string>();
         }
         if (seen === undefined) {
-            seen = new Set<N>();
+            seen = new Set<string>();
         }
 
-        if (seen.has(curr)) {
+        if (seen.has(s(curr))) {
             return;
         }
-        seen.add(curr);
+        seen.add(s(curr));
 
         if (visitNode) {
             const should = visitNode(curr);
@@ -126,10 +141,10 @@ export default class Graph<N, E> {
         }
 
         let nei;
-        const forward = this.adjacencyList.get(curr);
-        const backward = this.reverseAdjacencyList.get(curr);
+        const forward = this.adjacencyList.get(s(curr));
+        const backward = this.reverseAdjacencyList.get(s(curr));
         if (!forward || !backward) {
-            throw new Error('cannot find node ' + curr);
+            throw new Error('cannot find node ' + s(curr));
         }
         if (!reversed) {
             nei = forward;
@@ -139,6 +154,7 @@ export default class Graph<N, E> {
         if (!directed) {
             nei = [...forward, ...backward];
         }
+
         nei.forEach((next) => {
             if (seenEdges!.has(next.uid)) {
                 return;
@@ -156,7 +172,7 @@ export default class Graph<N, E> {
                     return;
                 }
             }
-            if (!seen!.has(next.to)) {
+            if (!seen!.has(s(next.to))) {
                 this.dfs(next.to, visitNode, leaveNode, visitEdge, leaveEdge, seen, seenEdges, directed, reversed);
             }
             if (leaveEdge) {
@@ -181,8 +197,9 @@ export default class Graph<N, E> {
         if (excludedEdges === undefined) {
             excludedEdges = new Set<string>();
         }
-        if (excludedNodes === undefined) {
-            excludedNodes = new Set<N>();
+        const exNodes = new Set<string>();
+        if (excludedNodes !== undefined) {
+            excludedNodes.forEach((n) => exNodes.add(s(n)));
         }
 
         const start: Array<DijkstraNode<N, E>> = [{
@@ -200,7 +217,7 @@ export default class Graph<N, E> {
                 continue;
             }
 
-            if (excludedNodes.has(top.node)) {
+            if (exNodes.has(s(top.node))) {
                 continue;
             }
 
@@ -208,10 +225,13 @@ export default class Graph<N, E> {
                 continue;
             }
 
-            excludedNodes.add(top.node);
+            exNodes.add(s(top.node));
 
-            const forward = cloneSimple(this.adjacencyList.get(top.node)!);
-            const backward = cloneSimple(this.reverseAdjacencyList.get(top.node)!);
+            const forward = cloneSimple(this.adjacencyList.get(s(top.node)));
+            const backward = cloneSimple(this.reverseAdjacencyList.get(s(top.node)));
+            if (!forward || !backward) {
+                throw new Error('cannot find node ' + s(top.node));
+            }
 
             let nei = reversed ? backward : forward;
             if (!directed) {
@@ -238,13 +258,13 @@ export default class Graph<N, E> {
      */
     connectedComponents(): Array<SubGraph<N, E>> {
         const components: Array<SubGraph<N, E>> = new Array<SubGraph<N, E>>();
-        const seen: Set<N> = new Set<N>();
+        const seen: Set<string> = new Set<string>();
 
         this.adjacencyList.forEach((adj, node) => {
             const subGraph: SubGraph<N, E> = [[], []];
             if (!seen.has(node)) {
                 this.dfs(
-                    node,
+                    this.id2Node.get(node)!,
                     (n) => {
                         subGraph[0].push(n);
                     },
@@ -274,10 +294,23 @@ export default class Graph<N, E> {
         let result: Array<Edge<N, E>> | null = null;
         let found = false;
 
+        let seenNodesS: Set<string> | undefined;
+        if (seenNodes) {
+            seenNodesS = new Set<string>();
+            seenNodes.forEach((n) => seenNodesS!.add(s(n)));
+        }
+
+        const toS = new Set<string>();
+        if (to instanceof Set || to instanceof Array) {
+            to.forEach((n: N) => toS.add(s(n)));
+        } else {
+            toS.add(s(to));
+        }
+
         this.dfs(
             from,
             (n) => {
-                if (to instanceof Set && to.has(n) || _.isArray(to) && to.indexOf(n) !== -1 || to === n) {
+                if (toS.has(s(n))) {
                     found = true;
                     result = cloneSimple(cache);
                 }
@@ -294,7 +327,7 @@ export default class Graph<N, E> {
             (e) => {
                 cache.pop();
             },
-            seenNodes,
+            seenNodesS,
             seenEdges,
             directed,
             reversed,
@@ -312,8 +345,17 @@ export default class Graph<N, E> {
         directed: boolean = true,
         reversed: boolean = false,
     ): [Array<Edge<N, E>>, number] | null {
-        const parentOf: Map<N, Edge<N, E>> = new Map<N, Edge<N, E>>();
+        const parentOf: Map<string, Edge<N, E>> = new Map<string, Edge<N, E>>();
         let found = false;
+
+        const toS: Set<string> = new Set<string>();
+        if (to instanceof Set) {
+            to.forEach((n) => toS.add(s(n)));
+        } else if (to instanceof Array) {
+            to.forEach((n) => toS.add(s(n)));
+        } else {
+            toS.add(s(to));
+        }
 
         let destination: N | null = null;
         let dist = 0;
@@ -323,15 +365,12 @@ export default class Graph<N, E> {
             getDistance,
             (dijk) => {
                 if (dijk.parent) {
-                    parentOf.set(dijk.node, dijk.parent);
+                    parentOf.set(s(dijk.node), dijk.parent);
                 }
                 if (found) {
                     return true;
                 }
-                if (to instanceof Set && to.has(dijk.node) ||
-                    to instanceof Array && to.indexOf(dijk.node) !== -1 ||
-                    to === dijk.node
-                ) {
+                if (toS.has(s(dijk.node))) {
                     destination = dijk.node;
                     found = true;
                     dist = dijk.weight;
@@ -352,8 +391,8 @@ export default class Graph<N, E> {
         const path: Array<Edge<N, E>> = [];
 
         let curr: N = destination;
-        while (curr !== from) {
-            const prev = parentOf.get(curr)!;
+        while (s(curr) !== s(from)) {
+            const prev = parentOf.get(s(curr))!;
             path.unshift(prev);
             curr = prev.from;
         }
@@ -402,7 +441,7 @@ export default class Graph<N, E> {
     }
 
 
-    sourceArcCover(sources: Set<N>, accountedFor?: Set<string>): Array<Array<Edge<N, E>>> {
+    sourceArcCover(sources: N[], accountedFor?: Set<string>): Array<Array<Edge<N, E>>> {
         const result: Array<Array<Edge<N, E>>> = [];
         const notAccountedFor = new Set<string>();
         // Find flows of bridges, which have definite flow. TODO: This can be reduced in algorithmic complexity.
@@ -417,11 +456,11 @@ export default class Graph<N, E> {
             }
 
             // Find two sources that can reach both ends.
-            const srcPath1 = this.anyPath(v.from, Array.from(sources.keys()), undefined, new Set([k]), false);
+            const srcPath1 = this.anyPath(v.from, sources, undefined, new Set([k]), false);
             if (srcPath1) {
                 const srcPath2 = this.anyPath(
                     v.to,
-                    Array.from(sources.keys()),
+                    sources,
                     undefined,
                     new Set([k]),
                     false,

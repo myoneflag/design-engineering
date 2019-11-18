@@ -14,6 +14,8 @@ import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
 import {getDragPriority} from '@/store/document';
 import {SelectableObject} from '@/htmlcanvas/lib/object-traits/selectable';
 import {CenteredObject} from '@/htmlcanvas/lib/object-traits/centered-object';
+import {CalculationContext} from '@/calculations/types';
+import {FlowNode, SELF_CONNECTION} from '@/calculations/calculation-engine';
 
 @SelectableObject
 @CenterDraggableObject
@@ -129,6 +131,30 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
             + (objectCoord.y) ** 2,
         );
         return dist <= this.toObjectLength(this.entity.diameterMM / 2) + (radius ? radius : 0);
+    }
+
+    getFrictionHeadLoss(context: CalculationContext,
+                        flowLS: number,
+                        from: FlowNode,
+                        to: FlowNode,
+                        signed: boolean,
+    ): number {
+        let sign = 1;
+        if (flowLS < 0) {
+            const oldFrom = from;
+            to = oldFrom;
+            flowLS = -flowLS;
+            if (signed) {
+                sign = -1;
+            }
+        }
+
+        // Avoid backflow
+        if (to.connection === SELF_CONNECTION) {
+            return sign * (1e10 + flowLS);
+        } else {
+            return 0;
+        }
     }
 
     prepareDelete(): BaseBackedObject[] {

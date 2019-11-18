@@ -13,12 +13,20 @@ import {DrawingContext} from '@/htmlcanvas/lib/types';
 import Flatten from '@flatten-js/core';
 import {PIPE_HEIGHT_GRAPHIC_EPS_MM} from '@/config';
 import {CenteredObject} from '@/htmlcanvas/lib/object-traits/centered-object';
+import {CalculationContext} from '@/calculations/types';
+import {FlowNode} from '@/calculations/calculation-engine';
+import {angleDiffRad} from '@/lib/utils';
+import SystemNode from '@/htmlcanvas/objects/tmv/system-node';
 
 export default interface Connectable {
     getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]>;
     getAngles(): number[];
     prepareDelete(context: CanvasContext): BaseBackedObject[];
     isStraight(tolerance: number): boolean;
+    getAngleOfRad(connection: string): number;
+
+    connect(uid: string): void;
+    disconnect(uid: string): void;
 
     drawInternal(context: DrawingContext, layerActive: boolean, selected: boolean): void;
 }
@@ -110,7 +118,7 @@ export function ConnectableObject<T extends new (...args: any[])
                                 ctx.lineTo(l1e.x, l1e.y);
                                 ctx.stroke();
                                 ctx.beginPath();
-                                ctx.arc(0, 0, maxWidth, a - Math.PI / 2,mya + Math.PI/2,  true);
+                                ctx.arc(0, 0, maxWidth, a - Math.PI / 2, mya + Math.PI / 2,  true);
                                 ctx.moveTo(l2e.x, l2e.y);
                                 ctx.lineTo(l2s.x, l2s.y);
                                 ctx.stroke();
@@ -159,7 +167,9 @@ export function ConnectableObject<T extends new (...args: any[])
         getAngles(): number[] {
             const ret = [];
             const radials = this.getRadials();
-            const angles = radials.map((r) => this.toObjectCoord(r[0])).map((r) => (Math.atan2(r.y, r.x) + 2 * Math.PI) % (2 * Math.PI));
+            const angles = radials
+                .map((r) => this.toObjectCoord(r[0]))
+                .map((r) => (Math.atan2(r.y, r.x) + 2 * Math.PI) % (2 * Math.PI));
             angles.sort();
             for (let i = 0; i < angles.length; i++) {
                 const diff = angles[(i + 1) % angles.length] - angles[i];
@@ -199,6 +209,92 @@ export function ConnectableObject<T extends new (...args: any[])
             result.push(this);
 
             return result;
+        }
+
+        getAngleOfRad(connection: string): number {
+            const c = this.toObjectCoord(this.getRadials().find((a) => a[1].uid === connection)![0]);
+            return Math.atan2(c.y, c.x);
+        }
+
+        getFrictionHeadLoss(
+            context: CalculationContext,
+            flowLS: number,
+            from: FlowNode,
+            to: FlowNode,
+            signed: boolean,
+        ): number {
+            if (this.entity.type === EntityType.SYSTEM_NODE) {
+                // @ts-ignore
+                return super.getFrictionHeadLoss(context, flowLS, from, to, signed);
+            }
+            const ga = context.drawing.calculationParams.gravitationalAcceleration;
+
+            const oFrom = from;
+            const oTo = to;
+            const oFlowLS = flowLS;
+
+            // automatically figure out pipe size change cost and add it to any other custom
+            // object specific friction loss calculations.
+            let sign = 1;
+            if (flowLS < 0) {
+                const oldFrom = from;
+                from = to;
+                to = oldFrom;
+                flowLS = -flowLS;
+                if (signed) {
+                    sign = -1;
+                }
+            }
+
+            const fromo = this.objectStore.get(from.connection);
+            const too = this.objectStore.get(to.connection);
+            if (!fromo || fromo.type !== EntityType.PIPE || !too || too.type !== EntityType.PIPE) {
+                return 0;
+            }
+
+            const sizes = [from, to].map((n) => {
+                const o = context.objectStore.get(n.connection);
+                if (o && o.type === EntityType.PIPE) {
+                    const p = o as Pipe;
+                    if (p.entity.calculation) {
+                        return p.entity.calculation.realInternalDiameterMM;
+                    }
+                }
+            });
+
+            if (sizes[0] === undefined || sizes[1] === undefined) {
+                throw new Error('pipe size undefined ' +
+                    this.entity.uid + ' ' + JSON.stringify(from) + ' ' + JSON.stringify(to));
+            }
+
+            const largeSize = Math.max(sizes[0]!, sizes[1]!);
+            const smallSize = Math.min(sizes[0]!, sizes[1]!);
+
+
+            const volLM = smallSize ** 2 * Math.PI / 4 / 1000;
+            const velocityMS = flowLS / volLM;
+
+            const angle =  angleDiffRad(this.getAngleOfRad(from.connection), this.getAngleOfRad(to.connection));
+
+            const k = 0.8 * (Math.sin(angle / 2)) * (1 - (largeSize ** 2 / smallSize ** 2));
+
+            return sign * (k * velocityMS ** 2 / (2 * ga)) +
+                // @ts-ignore
+                super.getFrictionHeadLoss(context, oFlowLS, oFrom, oTo, signed);
+        }
+
+        connect(uid: string) {
+            super.connect(uid);
+            this.entity.connections.push(uid);
+        }
+
+        disconnect(uid: string) {
+            super.disconnect(uid);
+            const ix = this.entity.connections.indexOf(uid);
+            if (ix === -1) {
+                throw new Error('disconnecting non existent connection');
+            }
+            this.entity.connections.splice(ix, 1);
         }
     });
 }

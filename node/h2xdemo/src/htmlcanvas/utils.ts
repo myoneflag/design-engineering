@@ -317,7 +317,7 @@ export function keycodeToImgName(keyCode: KeyCode): string {
 const imgStore: Map<string, HTMLImageElement> = new Map<string, HTMLImageElement>();
 
 export function keyCode2Image(keyCode: KeyCode): HTMLImageElement {
-    const name = keycodeToImgName(keyCode)
+    const name = keycodeToImgName(keyCode);
     if (!imgStore.has(name)) {
         const img = new Image();
         img.src = require('../assets/keyboard-keys/' + name + '.png');

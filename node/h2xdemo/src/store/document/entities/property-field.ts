@@ -9,6 +9,7 @@ export enum FieldType {
     Choice = 'choice',
     FlowSystemChoice = 'flow-system-choice',
     Rotation = 'rotation',
+    Boolean = 'boolean',
     TwoPointScale = 'two-point-scale',
 }
 
@@ -79,6 +80,11 @@ export interface TextField extends PropertyFieldBase {
     params: null;
 }
 
+export interface BooleanField extends PropertyFieldBase {
+    type: FieldType.Boolean;
+    params: null;
+}
+
 
 export type PropertyField =
     NumberField |
@@ -87,4 +93,5 @@ export type PropertyField =
     FlowSystemChoiceField |
     ColorField |
     RotationField |
-    TextField ;
+    TextField |
+    BooleanField;

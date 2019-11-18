@@ -28,7 +28,7 @@
     import Component from 'vue-class-component';
     import PropertiesFieldBuilder from '@/components/editor/lib/PropertiesFieldBuilder.vue';
     import {DocumentState} from '@/store/document/types';
-    import ValveEntity, {fillValveDefaultFields, makeValveFields} from '../../../store/document/entities/valve-entity';
+    import FittingEntity, {fillValveDefaultFields, makeValveFields} from '../../../store/document/entities/fitting-entity';
     import {Catalog, ValveSpec} from '@/store/catalog/types';
     import * as _ from 'lodash';
 
@@ -42,7 +42,7 @@
             onChange: Function,
         },
     })
-    export default class ValveProperties extends Vue {
+    export default class FittingProperties extends Vue {
 
         get fields() {
             return makeValveFields(
@@ -51,7 +51,7 @@
             );
         }
 
-        get reactiveData(): ValveEntity {
+        get reactiveData(): FittingEntity {
             return this.$props.selectedEntity;
         }
 
@@ -63,7 +63,7 @@
             return this.$store.getters['document/document'];
         }
 
-        get defaultData(): ValveEntity {
+        get defaultData(): FittingEntity {
             return fillValveDefaultFields(this.document, this.reactiveData);
         }
 

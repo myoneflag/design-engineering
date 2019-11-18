@@ -4,6 +4,7 @@ import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import PopupEntity from '@/store/document/entities/calculations/popup-entity';
 import Popup from '@/htmlcanvas/objects/popup';
+import {ValveType} from '@/store/document/entities/directed-valves/valve-types';
 
 export interface DrawingContext {
     ctx: CanvasRenderingContext2D;
@@ -23,4 +24,10 @@ export interface SelectionTarget {
     variant?: string;
     title?: string;
     recenter?: boolean;
+}
+
+export interface ValveId {
+    type: ValveType;
+    name: string;
+    catalogId: string;
 }

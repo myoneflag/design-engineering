@@ -20,7 +20,7 @@
                           v-b-tooltip.hover title="Pipes"
                 ><v-icon  name="wave-square" scale="1.2"/></b-button>
                 <b-button variant="outline-dark" class="insertBtn valve btn-sm"
-                          @click="$emit('insert', {entityName: entityNames.VALVE, system: selectedSystem})"
+                          @click="$emit('insert', {entityName: entityNames.FITTING, system: selectedSystem})"
                           v-b-tooltip.hover title="Valve"
                 ><v-icon  name="cross" scale="1.2"/></b-button>
 
@@ -38,6 +38,7 @@
                 ></b-button>
             </b-button-group>
         </b-col>
+
         <b-col>
             <b-button-group v-if="lastUsedFixtureUid">
                 <b-button
@@ -45,7 +46,7 @@
                         variant="outline-dark"
                         id="insertEntitySplitBtn"
                         :disabled="!lastUsedFixture"
-                        @click="$emit('insert', {entityName: entityNames.FIXTURE, system: selectedSystem, fixtureName: lastUsedFixtureUid})"
+                        @click="$emit('insert', {entityName: entityNames.FIXTURE, system: selectedSystem, catalogId: lastUsedFixtureUid})"
                 >
                     {{ lastUsedFixture.name }}
                 </b-button>
@@ -54,7 +55,7 @@
                             v-for="fixture in availableFixtureList"
                             variant="outline-dark"
                             class="shower btn-sm"
-                            @click="$emit('insert', {entityName: entityNames.FIXTURE, system: selectedSystem, fixtureName: fixture.uid})"
+                            @click="$emit('insert', {entityName: entityNames.FIXTURE, system: selectedSystem, catalogId: fixture.uid})"
                     >{{ fixture.name }}</b-dropdown-item>
                     <b-dropdown-item href="#" variant="info" @click="addRemoveFixturesClick">+/- Fixtures</b-dropdown-item>
                 </b-dropdown>
@@ -70,12 +71,49 @@
                         v-for="fixture in availableFixtureList"
                         variant="outline-dark"
                         class="shower btn-sm"
-                        @click="$emit('insert', {entityName: entityNames.FIXTURE, system: selectedSystem, fixtureName: fixture.uid})"
+                        @click="$emit('insert', {entityName: entityNames.FIXTURE, system: selectedSystem, catalogId: fixture.uid})"
                 >{{ fixture.name }}</b-dropdown-item>
                 <b-dropdown-item variant="info" @click="addRemoveFixturesClick">+/- Fixtures</b-dropdown-item>
             </b-dropdown>
-
         </b-col>
+
+        <b-col>
+            <b-button-group v-if="lastUsedValveVid">
+                <b-button
+                        class="insertEntityBtn"
+                        variant="outline-dark"
+                        id="insertEntityBtn"
+                        :disabled="!lastUsedValveVid"
+                        @click="$emit('insert', {entityName: entityNames.DIRECTED_VALVE, system: selectedSystem, catalogId: lastUsedValveVid.uid, valveType: lastUsedValveVid.type})"
+                >
+                    {{ lastUsedValveVid.name }}
+                </b-button>
+                <b-dropdown text="" class="insertEntityBtn" variant="outline-dark">
+                    <b-dropdown-item
+                            v-for="valve in availableValves"
+                            variant="outline-dark"
+                            class="shower btn-sm"
+                            @click="$emit('insert', {entityName: entityNames.DIRECTED_VALVE, system: selectedSystem, catalogId: valve.catalogId, valveType: valve.type})"
+                    >{{ valve.name }}</b-dropdown-item>
+                </b-dropdown>
+
+            </b-button-group>
+            <b-dropdown
+                    text="Valves..."
+                    class="insertEntityBtn"
+                    variant="outline-dark"
+                    v-else
+            >
+                <b-dropdown-item
+                        v-for="valve in availableValves"
+                        variant="outline-dark"
+                        class="shower btn-sm"
+                        @click="$emit('insert', {entityName: entityNames.DIRECTED_VALVE, system: selectedSystem, catalogId: valve.catalogId,  valveType: valve.type})"
+                >{{ valve.name }}</b-dropdown-item>
+            </b-dropdown>
+        </b-col>
+
+
     </b-row>
 </template>
 
@@ -92,7 +130,9 @@
             flowSystems: Array,
             fixtures: Object,
             availableFixtures: Array,
+            availableValves: Array,
             lastUsedFixtureUid: String,
+            lastUsedValveVid: Object,
         },
     })
     export default class HydraulicsInsertPanel extends Vue {

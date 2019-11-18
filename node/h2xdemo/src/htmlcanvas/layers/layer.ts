@@ -83,15 +83,9 @@ export abstract class LayerImplementation implements Layer {
     }
 
     onDeleteEntity = (e: DrawableEntityConcrete) => {
-        let i = this.selectedIds.indexOf(e.uid);
+        const i = this.selectedIds.indexOf(e.uid);
         if (i !== -1) {
             this.selectedIds.splice(i, 1);
-        }
-        if (this.draggedObjects) {
-            i = this.draggedObjects.findIndex((o) => o.uid === e.uid);
-            if (i !== -1) {
-                this.draggedObjects.splice(i, 1);
-            }
         }
     }
 
@@ -186,7 +180,6 @@ export abstract class LayerImplementation implements Layer {
                             }
                         }
                     }
-
                 }
             }
         }
@@ -275,6 +268,13 @@ export abstract class LayerImplementation implements Layer {
 
     dragObjects(objects: BaseBackedObject[], context: CanvasContext): void {
         context.isLayerDragging = true;
+        const undragged = this.draggedObjects ? this.draggedObjects
+            .filter((o) => objects.findIndex((oo) => oo.uid === o.uid) !== -1) : [];
+        undragged.forEach((o) => {
+            if (!this.uidsInOrder.includes(o.uid)) {
+                this.objectStore.delete(o.uid);
+            }
+        });
         this.draggedObjects = objects;
     }
 
@@ -312,14 +312,15 @@ export abstract class LayerImplementation implements Layer {
         }
     }
 
-    multiDragOrder(uid: string) {
+    multiDragOrder(uid: string): number {
         const e = this.objectStore.get(uid)!.entity;
         switch (e.type) {
             case EntityType.BACKGROUND_IMAGE:
                 return 0;
             case EntityType.FIXTURE:
-            case EntityType.VALVE:
+            case EntityType.FITTING:
             case EntityType.FLOW_SOURCE:
+            case EntityType.DIRECTED_VALVE:
             case EntityType.TMV:
                 return 1;
             case EntityType.PIPE:
@@ -349,16 +350,19 @@ export abstract class LayerImplementation implements Layer {
 
             switch (o.entity.type) {
                 case EntityType.BACKGROUND_IMAGE:
-                case EntityType.VALVE:
+                case EntityType.FITTING:
                 case EntityType.FLOW_SOURCE:
                 case EntityType.FIXTURE:
                 case EntityType.TMV:
+                case EntityType.DIRECTED_VALVE:
                     return true;
                 case EntityType.PIPE:
                     return o.entity.endpointUid.filter((euid) => this.isSelected(euid)).length < 2;
                 case EntityType.SYSTEM_NODE:
                 case EntityType.RESULTS_MESSAGE:
                     throw new Error('cannot handle multi dragging for this object');
+                default:
+                    assertUnreachable(o.entity);
             }
         });
 
@@ -452,7 +456,10 @@ export abstract class LayerImplementation implements Layer {
         }
 
         this.uidsInOrder.splice(ix, 1);
-        this.objectStore.delete(entity.uid);
+
+        if (!this.draggedObjects || this.draggedObjects.findIndex((o) => o.uid === entity.uid) === -1) {
+            this.objectStore.delete(entity.uid);
+        }
     }
 
     entitySortOrder(entity: DrawableEntityConcrete): number {

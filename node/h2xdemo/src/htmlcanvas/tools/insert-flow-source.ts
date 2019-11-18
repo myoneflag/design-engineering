@@ -12,7 +12,7 @@ import Pipe from '@/htmlcanvas/objects/pipe';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import {addValveAndSplitPipe} from '@/htmlcanvas/lib/black-magic/split-pipe';
-import {cloneSimple} from '@/lib/utils';
+import {cloneSimple, connect, disconnect} from '@/lib/utils';
 
 export default function insertFlowSource(
     context: CanvasContext,
@@ -40,7 +40,7 @@ export default function insertFlowSource(
                     type: InteractionType.INSERT,
                 },
                     (o) => {
-                    return o[0].type === EntityType.VALVE || o[0].type === EntityType.PIPE;
+                    return o[0].type === EntityType.FITTING || o[0].type === EntityType.PIPE;
                 });
 
 
@@ -63,6 +63,8 @@ export default function insertFlowSource(
                     uid: newUid,
                     calculation: null,
                 };
+
+                context.$store.dispatch('document/addEntity', newEntity);
 
                 if (interactive) {
                     const object = context.objectStore.get(interactive[0].uid)!;
@@ -88,9 +90,15 @@ export default function insertFlowSource(
                         });
 
                         toReplace = object as BackedDrawableObject<ConnectableEntityConcrete>;
-                        newEntity.connections.splice(0);
-                        newEntity.connections.push(...toReplace.entity.connections);
-                        toReplace.entity.connections.splice(0);
+                        newEntity.connections.slice().forEach((c) => {
+                            disconnect(context, newEntity.uid, c);
+                        });
+                        toReplace.entity.connections.forEach((c) => {
+                            connect(context, newEntity.uid, c);
+                        });
+                        toReplace.entity.connections.slice().forEach((c) => {
+                            disconnect(context, toReplace!.uid, c);
+                        });
                         context.deleteEntity(toReplace);
                         wc = object.toWorldCoord({x: 0, y: 0});
                     }
@@ -106,7 +114,6 @@ export default function insertFlowSource(
                 newEntity.parentUid = parentUid;
 
 
-                context.$store.dispatch('document/addEntity', newEntity);
 
                 context.processDocument();
 

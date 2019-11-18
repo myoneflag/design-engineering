@@ -17,7 +17,7 @@ import {EntityType} from "@/store/document/entities/types";
                     :on-delete="onDelete"
             />
             <ValveProperties
-                    v-else-if="entity.type === ENTITY_NAMES.VALVE"
+                    v-else-if="entity.type === ENTITY_NAMES.FITTING"
                     :selected-entity="entity"
                     :selected-object="selectedObjects[0]"
                     :on-change="onChange"
@@ -42,6 +42,14 @@ import {EntityType} from "@/store/document/entities/types";
             />
             <FixtureProperties
                     v-else-if="entity.type === ENTITY_NAMES.FIXTURE"
+                    :selected-entity="entity"
+                    :selected-object="selectedObjects[0]"
+                    :on-change="onChange"
+                    :target-property="targetProperty"
+                    :on-delete="onDelete"
+            />
+            <DirectedValveProperties
+                    v-else-if="entity.type === ENTITY_NAMES.DIRECTED_VALVE"
                     :selected-entity="entity"
                     :selected-object="selectedObjects[0]"
                     :on-change="onChange"
@@ -84,26 +92,28 @@ import {EntityType} from "@/store/document/entities/types";
 </template>
 
 <script lang="ts">
-    import Vue from "vue";
-    import Component from "vue-class-component";
-    import FloorPlanProperties from "@/components/editor/property-window/FloorPlanProperties.vue";
-    import FlowSourceProperties from "@/components/editor/property-window/FlowSourceProperties.vue";
-    import {DrawableEntity} from "@/store/document/types";
-    import ValveProperties from "@/components/editor/property-window/ValveProperties.vue";
-    import PipeProperties from "@/components/editor/property-window/PipeProperties.vue";
-    import {EntityType} from "@/store/document/entities/types";
-    import TMVProperties from "@/components/editor/property-window/TMVProperties.vue";
-    import FixtureProperties from "@/components/editor/property-window/FixtureProperties.vue";
-    import {MainEventBus} from "@/store/main-event-bus";
-    import MultiFieldBuilder from "@/components/editor/lib/MultiFieldBuilder.vue";
-    import BaseBackedObject from "@/htmlcanvas/lib/base-backed-object";
-    import {AutoConnector} from "@/htmlcanvas/lib/black-magic/auto-connect";
+    import Vue from 'vue';
+    import Component from 'vue-class-component';
+    import FloorPlanProperties from '@/components/editor/property-window/FloorPlanProperties.vue';
+    import FlowSourceProperties from '@/components/editor/property-window/FlowSourceProperties.vue';
+    import {DrawableEntity} from '@/store/document/types';
+    import FittingProperties from '@/components/editor/property-window/FittingProperties.vue';
+    import PipeProperties from '@/components/editor/property-window/PipeProperties.vue';
+    import {EntityType} from '@/store/document/entities/types';
+    import TMVProperties from '@/components/editor/property-window/TMVProperties.vue';
+    import FixtureProperties from '@/components/editor/property-window/FixtureProperties.vue';
+    import {MainEventBus} from '@/store/main-event-bus';
+    import MultiFieldBuilder from '@/components/editor/lib/MultiFieldBuilder.vue';
+    import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
+    import {AutoConnector} from '@/htmlcanvas/lib/black-magic/auto-connect';
+    import DirectedValveProperties from '@/components/editor/property-window/DirectedValveProperties.vue';
 
     @Component({
         components: {
+            DirectedValveProperties,
             MultiFieldBuilder,
             FixtureProperties,
-            TMVProperties, PipeProperties, ValveProperties, FlowSourceProperties, FloorPlanProperties},
+            TMVProperties, PipeProperties, ValveProperties: FittingProperties, FlowSourceProperties, FloorPlanProperties},
         props: {
             selectedEntities: Array,
             selectedObjects: Array,

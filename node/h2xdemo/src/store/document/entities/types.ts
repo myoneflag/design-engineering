@@ -3,7 +3,7 @@ export enum EntityType {
     FLOW_SOURCE = 'FLOW_SOURCE',
     FLOW_RETURN = 'FLOW_RETURN',
     PIPE = 'PIPE',
-    VALVE = 'VALVE',
+    FITTING = 'VALVE',
 
     TMV = 'TMV',
     SYSTEM_NODE = 'SYSTEM_NODE',
@@ -13,4 +13,5 @@ export enum EntityType {
 
     // Output
     RESULTS_MESSAGE = 'RESULTS_MESSAGE',
+    DIRECTED_VALVE = 'DIRECTED_VALVE',
 }

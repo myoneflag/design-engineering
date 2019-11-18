@@ -17,8 +17,9 @@ import SystemNode from '@/htmlcanvas/objects/tmv/system-node';
 import {addValveAndSplitPipe} from '@/htmlcanvas/lib/black-magic/split-pipe';
 import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import {isConnectable} from '@/store/document';
-import ValveEntity from '@/store/document/entities/valve-entity';
+import FittingEntity from '@/store/document/entities/fitting-entity';
 import {KeyCode} from '@/htmlcanvas/utils';
+import {connect} from '@/lib/utils';
 
 export default function insertTmv(
     context: CanvasContext,
@@ -230,7 +231,7 @@ function leadPipe(
     if (pipeSpec !== undefined) {
         const obj = context.objectStore.get(pipeSpec)!;
         if (obj.entity.type === EntityType.PIPE) {
-            valve = addValveAndSplitPipe(context, obj as Pipe, wc, systemUid, 30).focus as ValveEntity;
+            valve = addValveAndSplitPipe(context, obj as Pipe, wc, systemUid, 30).focus as FittingEntity;
         } else if (isConnectable(obj.type)) {
             valve = obj.entity as ConnectableEntityConcrete;
         } else {
@@ -242,7 +243,7 @@ function leadPipe(
             if (interactive[0].type === EntityType.PIPE) {
                 const pipeE = interactive[0];
                 pipe = context.objectStore.get(pipeE.uid) as Pipe;
-                valve = addValveAndSplitPipe(context, pipe, wc, systemUid, 30).focus as ValveEntity;
+                valve = addValveAndSplitPipe(context, pipe, wc, systemUid, 30).focus as FittingEntity;
 
             } else if (isConnectable(interactive[0].type)) {
                 valve = interactive[0] as ConnectableEntityConcrete;
@@ -271,10 +272,9 @@ function leadPipe(
         calculation: null,
     };
 
-    valve.connections.push(newPipe.uid);
-    connectTo.connections.push(newPipe.uid);
-
     context.$store.dispatch('document/addEntity', newPipe);
+    connect(context, valve.uid, newPipe.uid);
+    connect(context, connectTo.uid, newPipe.uid);
     return newPipe;
 
 }

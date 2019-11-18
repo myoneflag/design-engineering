@@ -1,3 +1,4 @@
+import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
 <template>
     <div ref="canvasFrame" class="fullFrame">
         <drop
@@ -22,8 +23,11 @@
                 :flow-systems="document.drawing.flowSystems"
                 @insert="hydraulicsInsert"
                 :fixtures="effectiveCatalog.fixtures"
+                :valves="effectiveCatalog.valves"
                 :available-fixtures="availableFixtures"
+                :available-valves="availableValves"
                 :last-used-fixture-uid="document.uiState.lastUsedFixtureUid"
+                :last-used-valve-vid="document.uiState.lastUsedValveCUid"
             />
 
             <CalculationBar
@@ -60,50 +64,52 @@
 </template>
 
 <script lang="ts">
-    import Vue from 'vue';
-    import Component from 'vue-class-component';
-    import {ViewPort} from '@/htmlcanvas/viewport';
-    import {Coord, DocumentState, FlowSystemParameters} from '@/store/document/types';
-    import {drawPaperScale} from '@/htmlcanvas/scale';
-    import ModeButtons from '@/components/editor/ModeButtons.vue';
-    import PropertiesWindow from '@/components/editor/property-window/PropertiesWindow.vue';
-    import {DrawingMode, MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
-    import BackgroundLayer from '@/htmlcanvas/layers/background-layer';
-    import * as TM from 'transformation-matrix';
-    import {decomposeMatrix, matrixScale} from '@/htmlcanvas/utils';
-    import Toolbar from '@/components/editor/Toolbar.vue';
-    import LoadingScreen from '@/views/LoadingScreen.vue';
-    import {MainEventBus} from '@/store/main-event-bus';
-    import {ToolConfig} from '@/store/tools/types';
-    import {DEFAULT_TOOL, ToolHandler} from '@/htmlcanvas/lib/tool';
-    import uuid from 'uuid';
-    import {renderPdf} from '@/api/pdf';
-    import HydraulicsLayer from '@/htmlcanvas/layers/hydraulics-layer';
-    import Layer, {SelectMode} from '@/htmlcanvas/layers/layer';
-    import HydraulicsInsertPanel from '@/components/editor/HydraulicsInsertPanel.vue';
-    import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
-    import {EntityType} from '@/store/document/entities/types';
-    import {Interaction} from '@/htmlcanvas/lib/interaction';
-    import insertFlowSource from '@/htmlcanvas/tools/insert-flow-source';
-    import insertPipes from '@/htmlcanvas/tools/insert-pipes';
-    import insertValve from '@/htmlcanvas/tools/insert-valve';
-    import {DrawingContext, ObjectStore, SelectionTarget} from '@/htmlcanvas/lib/types';
-    import {BackgroundEntity} from '@/store/document/entities/background-entity';
-    import insertTmv from '@/htmlcanvas/tools/insert-tmv';
-    import insertFixture from '@/htmlcanvas/tools/insert-fixture';
-    import FloorPlanInsertPanel from '@/components/editor/FloorPlanInsertPanel.vue';
-    import InstructionPage from '@/components/editor/InstructionPage.vue';
-    import CalculationBar from '@/components/CalculationBar.vue';
-    import {DemandType} from '@/calculations/types';
-    import CalculationEngine from '@/calculations/calculation-engine';
-    import CalculationLayer from '@/htmlcanvas/layers/calculation-layer';
-    import {getBoundingBox} from '@/htmlcanvas/lib/utils';
-    import {Catalog} from '@/store/catalog/types';
-    import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
-    import SelectBox from '@/htmlcanvas/objects/select-box';
-    import * as _ from 'lodash';
+    import Vue from "vue";
+    import Component from "vue-class-component";
+    import {ViewPort} from "@/htmlcanvas/viewport";
+    import {Coord, DocumentState, FlowSystemParameters} from "@/store/document/types";
+    import {drawPaperScale} from "@/htmlcanvas/scale";
+    import ModeButtons from "@/components/editor/ModeButtons.vue";
+    import PropertiesWindow from "@/components/editor/property-window/PropertiesWindow.vue";
+    import {DrawingMode, MouseMoveResult, UNHANDLED} from "@/htmlcanvas/types";
+    import BackgroundLayer from "@/htmlcanvas/layers/background-layer";
+    import * as TM from "transformation-matrix";
+    import {decomposeMatrix, matrixScale} from "@/htmlcanvas/utils";
+    import Toolbar from "@/components/editor/Toolbar.vue";
+    import LoadingScreen from "@/views/LoadingScreen.vue";
+    import {MainEventBus} from "@/store/main-event-bus";
+    import {ToolConfig} from "@/store/tools/types";
+    import {DEFAULT_TOOL, ToolHandler} from "@/htmlcanvas/lib/tool";
+    import uuid from "uuid";
+    import {renderPdf} from "@/api/pdf";
+    import HydraulicsLayer from "@/htmlcanvas/layers/hydraulics-layer";
+    import Layer, {SelectMode} from "@/htmlcanvas/layers/layer";
+    import HydraulicsInsertPanel from "@/components/editor/HydraulicsInsertPanel.vue";
+    import BaseBackedObject from "@/htmlcanvas/lib/base-backed-object";
+    import {EntityType} from "@/store/document/entities/types";
+    import {Interaction} from "@/htmlcanvas/lib/interaction";
+    import insertFlowSource from "@/htmlcanvas/tools/insert-flow-source";
+    import insertPipes from "@/htmlcanvas/tools/insert-pipes";
+    import insertValve from "@/htmlcanvas/tools/insert-valve";
+    import {DrawingContext, ObjectStore, SelectionTarget, ValveId} from "@/htmlcanvas/lib/types";
+    import {BackgroundEntity} from "@/store/document/entities/background-entity";
+    import insertTmv from "@/htmlcanvas/tools/insert-tmv";
+    import insertFixture from "@/htmlcanvas/tools/insert-fixture";
+    import FloorPlanInsertPanel from "@/components/editor/FloorPlanInsertPanel.vue";
+    import InstructionPage from "@/components/editor/InstructionPage.vue";
+    import CalculationBar from "@/components/CalculationBar.vue";
+    import {DemandType} from "@/calculations/types";
+    import CalculationEngine from "@/calculations/calculation-engine";
+    import CalculationLayer from "@/htmlcanvas/layers/calculation-layer";
+    import {getBoundingBox} from "@/htmlcanvas/lib/utils";
+    import {Catalog} from "@/store/catalog/types";
+    import {DrawableEntityConcrete} from "@/store/document/entities/concrete-entity";
+    import SelectBox from "@/htmlcanvas/objects/select-box";
+    import * as _ from "lodash";
     import {AutoConnector} from "@/htmlcanvas/lib/black-magic/auto-connect";
     import {assertUnreachable} from "@/lib/utils";
+    import insertDirectedValve from "@/htmlcanvas/tools/insert-directed-valve";
+    import {ValveType} from '@/store/document/entities/directed-valves/valve-types';
 
     @Component({
         components: {
@@ -130,7 +136,7 @@
                 this.scheduleDraw();
             },
             () => {
-                this.scheduleDraw();
+                this.onLayerSelect();
             },
             () => { // onCommit
                 this.$store.dispatch('document/commit');
@@ -142,7 +148,7 @@
                 this.scheduleDraw();
             },
             () => {
-                this.scheduleDraw();
+                this.onLayerSelect();
             },
             () => {
                 this.$store.dispatch('document/commit');
@@ -154,7 +160,7 @@
                 this.scheduleDraw();
             },
             () => {
-                this.scheduleDraw();
+                this.onLayerSelect();
             },
             () => {
                 this.$store.dispatch('document/commit');
@@ -233,6 +239,20 @@
 
         get availableFixtures(): string[] {
             return this.document.drawing.availableFixtures;
+        }
+
+        get availableValves(): ValveId[] {
+            return [
+                {type: ValveType.ISOLATION_VALVE, catalogId: 'gateValve', name: ''},
+                {type: ValveType.ISOLATION_VALVE, catalogId: 'ballValve', name: ''},
+                {type: ValveType.ISOLATION_VALVE, catalogId: 'butterflyValve', name: ''},
+                {type: ValveType.CHECK_VALVE, catalogId: 'checkValve', name: ''},
+                {type: ValveType.WATER_METER, catalogId: 'waterMeter', name: ''},
+                {type: ValveType.STRAINER, catalogId: 'strainer', name: ''},
+            ].map((a) => {
+                a.name = this.effectiveCatalog.valves[a.catalogId].name;
+                return a;
+            });
         }
 
         get activeLayer(): Layer | null {
@@ -330,6 +350,11 @@
             return this.document.uiState.isCalculating;
         }
 
+        onLayerSelect() {
+            this.targetProperty = null;
+            this.scheduleDraw();
+        }
+
         onAddEntity(entity: DrawableEntityConcrete) {
             switch (entity.type) {
                 case EntityType.BACKGROUND_IMAGE:
@@ -338,7 +363,8 @@
                 case EntityType.RESULTS_MESSAGE:
                     this.calculationLayer.addEntity(entity);
                     break;
-                case EntityType.VALVE:
+                case EntityType.FITTING:
+                case EntityType.DIRECTED_VALVE:
                 case EntityType.PIPE:
                 case EntityType.FLOW_SOURCE:
                 case EntityType.SYSTEM_NODE:
@@ -359,7 +385,8 @@
                 case EntityType.RESULTS_MESSAGE:
                     this.calculationLayer.deleteEntity(entity);
                     break;
-                case EntityType.VALVE:
+                case EntityType.FITTING:
+                case EntityType.DIRECTED_VALVE:
                 case EntityType.PIPE:
                 case EntityType.FLOW_SOURCE:
                 case EntityType.SYSTEM_NODE:
@@ -386,13 +413,11 @@
         deleteEntity(object: BaseBackedObject): Set<string> {
             const toDelete = object.prepareDelete(this);
             const deleted = new Set<string>();
-            console.log(JSON.stringify(toDelete.map((e) => e.uid)));
             toDelete.forEach((drawableObject) => {
                 if (deleted.has(drawableObject.uid)) {
                     return;
                 }
                 this.$store.dispatch('document/deleteEntity', drawableObject.entity);
-                console.log('deleted ' + drawableObject.uid);
                 deleted.add(drawableObject.uid);
             });
             return deleted;
@@ -557,8 +582,9 @@
         }
 
         hydraulicsInsert(
-            {entityName, system, fixtureName, tmvHasCold}:
-                {entityName: string, system: FlowSystemParameters, fixtureName: string, tmvHasCold: boolean},
+            {entityName, system, catalogId, tmvHasCold, valveType}:
+                {entityName: string, system: FlowSystemParameters, catalogId: string,
+                    tmvHasCold: boolean, valveType: ValveType},
         ) {
             this.hydraulicsLayer.select([], SelectMode.Replace);
 
@@ -568,13 +594,20 @@
                 this.insertFlowReturn(system);
             } else if (entityName === EntityType.PIPE) {
                 insertPipes(this, system);
-            } else if (entityName === EntityType.VALVE) {
+            } else if (entityName === EntityType.FITTING) {
                 insertValve(this, system);
             } else if (entityName === EntityType.TMV) {
-                insertTmv(this, tmvHasCold ? true : false, 0);
+                insertTmv(this, tmvHasCold, 0);
             } else if (entityName === EntityType.FIXTURE) {
-                this.document.uiState.lastUsedFixtureUid = fixtureName;
-                insertFixture(this, fixtureName, 0);
+                this.document.uiState.lastUsedFixtureUid = catalogId;
+                insertFixture(this, catalogId, 0);
+            } else if (entityName === EntityType.DIRECTED_VALVE) {
+                this.document.uiState.lastUsedValveVid = {
+                    catalogId,
+                    name: this.effectiveCatalog.valves[catalogId].name,
+                    type: valveType,
+                };
+                insertDirectedValve(this, valveType, catalogId, system);
             }
         }
 
@@ -628,8 +661,7 @@
                     || this.document.uiState.lastCalculationUiSettings.demandType !== this.demandType) {
 
                     this.calculationLayer.calculate(
-                        this.document,
-                        this.effectiveCatalog,
+                        this,
                         this.demandType,
                         () => {
                             this.scheduleDraw();

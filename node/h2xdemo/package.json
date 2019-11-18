@@ -1,6 +1,6 @@
 {
   "name": "h2xdemo",
-  "version": "0.1.27",
+  "version": "0.1.28",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -13,6 +13,7 @@
     "@flatten-js/core": "^1.0.17",
     "@types/assert": "^1.4.3",
     "@types/deep-equal": "^1.0.1",
+    "@types/json-stable-stringify": "^1.0.32",
     "@types/lodash": "^4.14.138",
     "@types/sockjs": "^0.3.31",
     "@types/sockjs-client": "^1.1.1",
@@ -27,6 +28,7 @@
     "core-js": "^2.6.5",
     "css-loader": "^3.2.0",
     "deep-equal": "^1.0.1",
+    "json-stable-stringify": "^1.0.1",
     "lodash": "^4.17.15",
     "register-service-worker": "^1.6.2",
     "stompjs": "^2.3.3",

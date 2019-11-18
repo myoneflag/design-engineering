@@ -1,7 +1,7 @@
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 import {EntityType} from '@/store/document/entities/types';
-import {assertUnreachable} from '@/lib/utils';
+import {assertUnreachable, connect} from '@/lib/utils';
 import {getConnectedFlowComponent} from '@/htmlcanvas/lib/black-magic/utils';
 import UnionFind from '@/calculations/union-find';
 import {ConnectableEntityConcrete, DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
@@ -13,7 +13,7 @@ import {addValveAndSplitPipe} from '@/htmlcanvas/lib/black-magic/split-pipe';
 import Pipe from '@/htmlcanvas/objects/pipe';
 import PipeEntity from '@/store/document/entities/pipe-entity';
 import uuid from 'uuid';
-import ValveEntity from '@/store/document/entities/valve-entity';
+import FittingEntity from '@/store/document/entities/fitting-entity';
 import {FlowConfiguration, SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
 import {isConnectable} from '@/store/document';
 import assert from 'assert';
@@ -95,7 +95,8 @@ export class AutoConnector {
                     break;
                 }
                 case EntityType.FLOW_SOURCE:
-                case EntityType.VALVE:
+                case EntityType.FITTING:
+                case EntityType.DIRECTED_VALVE:
                     this.unionFind.join(o.uid, o.uid);
                     break;
                 case EntityType.BACKGROUND_IMAGE:
@@ -117,7 +118,7 @@ export class AutoConnector {
 
                 const norm = Flatten
                     .vector([0, 1])
-                    .rotate(o.toWorldAngle(0) / 180 * Math.PI)
+                    .rotate(o.toWorldAngle(0) / 180 * Math.PI);
                 this.walls.push({
                     line: Flatten.line(
                         p.translate(norm.normalize().multiply(FIXTURE_WALL_DIST_MM)),
@@ -126,12 +127,10 @@ export class AutoConnector {
                     source: p,
                 });
 
-                //if (o.entity.type === EntityType.TMV) {
-                    this.gridLines.push({
-                        source: Flatten.point(c.x, c.y).translate(norm.normalize().multiply(TMV_WALL_DIST_MM)),
-                        lines: [norm, norm.rotate90CW()],
-                    });
-                //}
+                this.gridLines.push({
+                    source: Flatten.point(c.x, c.y).translate(norm.normalize().multiply(TMV_WALL_DIST_MM)),
+                    lines: [norm, norm.rotate90CW()],
+                });
             }
         });
     }
@@ -142,7 +141,8 @@ export class AutoConnector {
                 return [entity.heightAboveFloorM, entity.heightAboveFloorM];
             case EntityType.FLOW_SOURCE:
                 return [-Infinity, Infinity];
-            case EntityType.VALVE:
+            case EntityType.FITTING:
+            case EntityType.DIRECTED_VALVE:
             case EntityType.SYSTEM_NODE:
                 let maxh = maxHeightOfConnection(entity, this.context);
                 let minh = minHeightOfConnection(entity, this.context);
@@ -188,10 +188,6 @@ export class AutoConnector {
         //  => lead larger for fixtures which are protruding from the wall
         let ao = this.context.objectStore.get(a)!;
         let bo = this.context.objectStore.get(b)!;
-        if (doit) {
-            console.log("doing it with " + ao.type + ' ' + bo.type);
-        }
-
         if (!ao) {
             throw new Error('Object is missing: ' + a);
         }
@@ -242,21 +238,22 @@ export class AutoConnector {
                     case EntityType.FIXTURE:
                         vec = Flatten.vector([0, -1]).rotate(po.toWorldAngle(0) / 180 * Math.PI);
                         if (po.entity.type === EntityType.FIXTURE) {
-                            const a =
+                            const fe =
                                 fillFixtureFields(this.context.document, this.context.effectiveCatalog, po.entity);
                             if (me.entity.systemUid === StandardFlowSystemUids.ColdWater) {
                                 vec = vec.multiply(FIXTURE_WALL_DIST_COLD_MM);
                             } else {
                                 vec = vec.multiply(FIXTURE_WALL_DIST_MM);
                             }
-                            heightM = a.outletAboveFloorM!;
+                            heightM = fe.outletAboveFloorM!;
                         } else {
                             vec = vec.multiply(TMV_WALL_DIST_MM);
                             heightM = po.entity.heightAboveFloorM;
                         }
                         break;
                     case EntityType.BACKGROUND_IMAGE:
-                    case EntityType.VALVE:
+                    case EntityType.FITTING:
+                    case EntityType.DIRECTED_VALVE:
                     case EntityType.PIPE:
                     case EntityType.FLOW_SOURCE:
                     case EntityType.RESULTS_MESSAGE:
@@ -303,16 +300,15 @@ export class AutoConnector {
 
                 if (!solved) {
                     // extend
-                    const v: ValveEntity = {
+                    const v: FittingEntity = {
                         calculation: null,
                         center: {x: mntPt.x, y: mntPt.y},
                         color: null,
                         connections: [],
                         parentUid: null,
                         systemUid,
-                        type: EntityType.VALVE,
+                        type: EntityType.FITTING,
                         uid: uuid(),
-                        valveType: 'fitting',
                     };
 
                     if (doit) {
@@ -446,16 +442,15 @@ export class AutoConnector {
                         systemUid,
                     );
                 } else {
-                    const v: ValveEntity = {
+                    const v: FittingEntity = {
                         calculation: null,
                         center: {x: bestCorner.x, y: bestCorner.y},
                         color: null,
                         connections: [],
                         parentUid: null,
                         systemUid,
-                        type: EntityType.VALVE,
+                        type: EntityType.FITTING,
                         uid: uuid(),
-                        valveType: 'fitting',
                     };
 
                     this.context.$store.dispatch('document/addEntity', v);
@@ -616,16 +611,15 @@ export class AutoConnector {
 
                 const realCorner = aline.intersect(bline)[0];
 
-                const v: ValveEntity = {
+                const v: FittingEntity = {
                     calculation: null,
                     center: {x: realCorner.x, y: realCorner.y},
                     color: null,
                     connections: [],
                     parentUid: null,
                     systemUid,
-                    type: EntityType.VALVE,
+                    type: EntityType.FITTING,
                     uid: uuid(),
-                    valveType: 'fitting',
                 };
 
                 this.context.$store.dispatch('document/addEntity', v);
@@ -644,8 +638,6 @@ export class AutoConnector {
         a.forEach((auid) => {
             b.forEach((buid) => {
                 const res = this.joinEntities(auid, buid, false);
-                const ao = this.context.objectStore.get(auid)!;
-                const bo = this.context.objectStore.get(buid)!;
                 if (res !== null) {
                     if (bestDist === null || res < bestDist) {
                         bestDist = res;
@@ -665,10 +657,11 @@ export class AutoConnector {
 
     getEntitySystem(entity: DrawableEntityConcrete): string | null {
         switch (entity.type) {
-            case EntityType.VALVE:
+            case EntityType.FITTING:
             case EntityType.PIPE:
             case EntityType.FLOW_SOURCE:
             case EntityType.SYSTEM_NODE:
+            case EntityType.DIRECTED_VALVE:
                 return entity.systemUid;
             case EntityType.RESULTS_MESSAGE:
             case EntityType.BACKGROUND_IMAGE:
@@ -709,10 +702,12 @@ export class AutoConnector {
         if (i !== -1) {
             this.selected.splice(i, 1);
         }
+        // tslint:disable-next-line:semicolon
     };
 
     onAddEntity = (e: DrawableEntityConcrete) => {
         this.selected.push(this.context.objectStore.get(e.uid)!);
+        // tslint:disable-next-line:semicolon
     };
 
     rig() {
@@ -774,8 +769,8 @@ export class AutoConnector {
             uid: uuid(),
         };
 
-        a.connections.push(p.uid);
-        b.connections.push(p.uid);
+        connect(this.context, a.uid, p.uid);
+        connect(this.context, b.uid, p.uid);
 
         this.context.$store.dispatch('document/addEntity', p);
     }
