@@ -49,6 +49,7 @@
             selectedEntities: Array,
             onChange: Function,
             onDelete: Function,
+            objectStore: Map,
         },
     })
     export default class MultiFieldBuilder extends Vue {
@@ -133,7 +134,7 @@
                 case EntityType.FIXTURE:
                     return fillFixtureFields(this.document, this.defaultCatalog, obj.entity);
                 case EntityType.DIRECTED_VALVE:
-                    return fillDirectedValveFields(this.document, obj.entity);
+                    return fillDirectedValveFields(this.document, this.$props.objectStore, obj.entity);
                 case EntityType.RESULTS_MESSAGE:
                     throw new Error('Unsupported entity');
             }

@@ -6,10 +6,11 @@ import {getDragPriority, isConnectable} from '@/store/document';
 import {EntityType} from '@/store/document/entities/types';
 import Flatten from '@flatten-js/core';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
-import {FlowNode} from '@/calculations/calculation-engine';
-import {CalculationContext} from '@/calculations/types';
-import Pipe from '@/htmlcanvas/objects/pipe';
 import {Coord} from '@/store/document/types';
+import {
+    determineSystemUid,
+    fillDirectedValveFields,
+} from '@/store/document/entities/directed-valves/directed-valve-entity';
 
 // TODO: this entire abstract class is obsolete and should be encapsulated in the ConnectableObject
 // decorator.
@@ -89,7 +90,18 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                 return null;
             }
             case InteractionType.EXTEND_NETWORK:
-                if (interaction.systemUid === null || interaction.systemUid === this.entity.systemUid) {
+                let isSystemCorrect: boolean = false;
+                const entity = this.entity as ConnectableEntityConcrete;
+
+
+                if (entity.type === EntityType.DIRECTED_VALVE) {
+                    const suid = determineSystemUid(this.objectStore, entity);
+                    isSystemCorrect = interaction.systemUid === null || interaction.systemUid === suid;
+                } else {
+                    isSystemCorrect = interaction.systemUid === null || interaction.systemUid === entity.systemUid;
+                }
+
+                if (isSystemCorrect) {
                     if (this.numConnectionsInBound(this.entity.connections.length + 1)) {
                         return [this.entity];
                     } else {

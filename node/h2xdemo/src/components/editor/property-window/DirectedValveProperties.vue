@@ -1,3 +1,4 @@
+import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
 <template>
     <b-container>
         <b-row>
@@ -9,6 +10,13 @@
             <b-col>
                 <b-button variant="primary" @click="flip" :disabled="selectedEntity.connections.length === 0">
                     Flip Direction
+                </b-button>
+            </b-col>
+        </b-row>
+        <b-row style="margin-top: 10px;" v-if="selectedEntity.valve.type === ValveType.ISOLATION_VALVE">
+            <b-col>
+                <b-button variant="success" @click="openCloseIsolation">
+                    {{ selectedEntity.valve.isClosed ? "Click to Open" : "Click to Close"}}
                 </b-button>
             </b-col>
         </b-row>
@@ -31,18 +39,17 @@
 </template>
 
 <script lang="ts">
-    import Vue from 'vue';
-    import Component from 'vue-class-component';
-    import PropertiesFieldBuilder from '@/components/editor/lib/PropertiesFieldBuilder.vue';
-    import {DocumentState} from '@/store/document/types';
-    import FittingEntity, {fillValveDefaultFields, makeValveFields} from '../../../store/document/entities/fitting-entity';
-    import {Catalog, ValveSpec} from '@/store/catalog/types';
-    import * as _ from 'lodash';
+    import Vue from "vue";
+    import Component from "vue-class-component";
+    import PropertiesFieldBuilder from "@/components/editor/lib/PropertiesFieldBuilder.vue";
+    import {DocumentState} from "@/store/document/types";
+    import {Catalog} from "@/store/catalog/types";
     import DirectedValveEntity, {
         fillDirectedValveFields,
         makeDirectedValveFields,
     } from "../../../store/document/entities/directed-valves/directed-valve-entity";
-    import DirectedValve from '@/htmlcanvas/objects/directed-valve';
+    import DirectedValve from "@/htmlcanvas/objects/directed-valve";
+    import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
 
     @Component({
         components: {PropertiesFieldBuilder},
@@ -50,6 +57,7 @@
             selectedEntity: Object,
             selectedObject: Object,
             targetProperty: String,
+            objectStore: Map,
             onDelete: Function,
             onChange: Function,
         },
@@ -76,9 +84,12 @@
         }
 
         get defaultData(): DirectedValveEntity {
-            return fillDirectedValveFields(this.document, this.reactiveData);
+            return fillDirectedValveFields(this.document, this.$props.objectStore, this.reactiveData);
         }
 
+        get ValveType() {
+            return ValveType;
+        }
         onCommit() {
             this.$store.dispatch('document/commit');
         }
@@ -86,6 +97,13 @@
         flip() {
             (this.$props.selectedObject as DirectedValve).flip();
             this.onCommit();
+        }
+
+        openCloseIsolation() {
+            if (this.$props.selectedEntity.valve.type === ValveType.ISOLATION_VALVE) {
+                this.$props.selectedEntity.valve.isClosed = !this.$props.selectedEntity.valve.isClosed;
+                this.onCommit();
+            }
         }
     }
 
