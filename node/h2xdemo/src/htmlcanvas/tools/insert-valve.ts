@@ -28,7 +28,7 @@ export default function insertValve(context: CanvasContext, system: FlowSystemPa
             context.offerInteraction(
                 {
                     type: InteractionType.INSERT,
-                    entityType: EntityType.VALVE,
+                    entityType: EntityType.FITTING,
                     worldCoord: wc,
                     worldRadius: 30,
                 },

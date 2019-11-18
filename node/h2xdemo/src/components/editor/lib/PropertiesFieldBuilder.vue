@@ -147,6 +147,12 @@
                                 :disabled="isDisabled(field)"
                         />
 
+                        <boolean-picker
+                                v-else-if="field.type === 'boolean'"
+                                :value="renderedData(field.property)" @input="setRenderedData(field, $event, true)"
+                                :disabled="isDisabled(field)"
+                        />
+
                         <b-form-input
                                 v-else
                                 :value="renderedData(field.property)" @input="setRenderedData(field, $event)"
@@ -176,6 +182,8 @@
     import {FieldParams, PropertyField} from '@/store/document/entities/property-field';
     import RotationPicker from '@/components/editor/lib/RotationPicker.vue';
     import {Choice} from '@/lib/types';
+    import BooleanPicker from '@/components/editor/lib/BooleanPicker.vue';
+    import {getPropertyByString, setPropertyByString} from "@/lib/utils";
 
     @Component({
         props: {
@@ -187,6 +195,7 @@
             target: String,
         },
         components: {
+            BooleanPicker,
             RotationPicker,
             PopoutColourPicker,
             FlowSystemPicker,
@@ -208,9 +217,9 @@
 
         renderedData(property: string): any {
             if (this.$props.reactiveData[property] === null || this.$props.reactiveData[property] === undefined) {
-                return this.$props.defaultData[property];
+                return getPropertyByString(this.$props.defaultData, property);
             } else {
-                return this.$props.reactiveData[property];
+                return getPropertyByString(this.$props.reactiveData, property);
             }
         }
 
@@ -218,7 +227,7 @@
             if (this.isDisabled(field) && field.requiresInput !== true) {
                 // don't do it, unless it's a required input, which allows inputs.
             } else {
-                this.$props.reactiveData[field.property] = val;
+                setPropertyByString(this.$props.reactiveData, field.property, val);
                 if (this.$props.onChange) {
                     this.$props.onChange();
                 }

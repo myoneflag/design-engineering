@@ -9,23 +9,25 @@ import {matrixScale} from '@/htmlcanvas/utils';
 import Flatten from '@flatten-js/core';
 import {Draggable, DraggableObject} from '@/htmlcanvas/lib/object-traits/draggable-object';
 import * as _ from 'lodash';
-import {lighten} from '@/lib/utils';
+import {connect, disconnect, lighten} from '@/lib/utils';
 import {Interaction, InteractionType} from '@/htmlcanvas/lib/interaction';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
 import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
 import {PipeMaterial, PipeSpec} from '@/store/catalog/types';
-import {lowerBoundTable} from '@/htmlcanvas/lib/utils';
+import {interpolateTable, lowerBoundTable, parseCatalogNumberExact} from '@/htmlcanvas/lib/utils';
 import {CalculationContext} from '@/calculations/types';
 import {ConnectableEntityConcrete, DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 import {SelectableObject} from '@/htmlcanvas/lib/object-traits/selectable';
 import uuid from 'uuid';
-import ValveEntity from '@/store/document/entities/valve-entity';
+import FittingEntity from '@/store/document/entities/fitting-entity';
 import assert from 'assert';
 import {PIPE_STUB_MAX_LENGTH_MM} from '@/htmlcanvas/lib/black-magic/auto-connect';
-import {EPS} from '@/calculations/pressure-drops';
+import {EPS, getDarcyWeisbachFlatMH} from '@/calculations/pressure-drops';
+import {SIGNIFICANT_FLOW_THRESHOLD} from '@/htmlcanvas/layers/calculation-layer';
+import {FlowNode} from '@/calculations/calculation-engine';
 
 @SelectableObject
 @DraggableObject
@@ -63,7 +65,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             if (!this.entity.calculation ||
                 !this.entity.calculation.realNominalPipeDiameterMM ||
                 !this.entity.calculation.peakFlowRate ||
-                this.entity.calculation.peakFlowRate < EPS
+                this.entity.calculation.peakFlowRate < SIGNIFICANT_FLOW_THRESHOLD
             ) {
                 baseColor = '#aaaaaa';
             }
@@ -78,7 +80,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         if (layerActive && selected) {
             ctx.beginPath();
             ctx.lineWidth = baseWidth + 6.0 / s;
-            //this.lastDrawnWidth = baseWidth + 6.0 / s;
+            // this.lastDrawnWidth = baseWidth + 6.0 / s;
             ctx.strokeStyle = lighten(baseColor, 0, 0.5);
 
             ctx.moveTo(ao.x, ao.y);
@@ -181,7 +183,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         direction: Flatten.Vector,
         isStraight: boolean, // we need a precomputed variable because the object changes during a move.
         context: CanvasContext,
-    ): ValveEntity | boolean {
+    ): FittingEntity | boolean {
         const o = this.objectStore.get(epUid) as BackedConnectable<ConnectableEntityConcrete>;
         const e = o.entity as ConnectableEntityConcrete;
         if (e.type === EntityType.SYSTEM_NODE) {
@@ -193,7 +195,6 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
 
         if (isStraight) {
-            console.log('is straight');
             // Create pipe instead of extend it.
             const newValveUid = uuid();
             const pipe: PipeEntity = {
@@ -219,16 +220,15 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             const newLoc = perpLine.intersect(projLine);
             assert(newLoc.length === 1);
 
-            const valve: ValveEntity = {
+            const valve: FittingEntity = {
                 calculation: null,
                 center: {x: newLoc[0].x, y: newLoc[0].y},
                 color: this.entity.color,
                 connections: [this.uid, pipe.uid],
                 parentUid: null,
                 systemUid: this.entity.systemUid,
-                type: EntityType.VALVE,
+                type: EntityType.FITTING,
                 uid: newValveUid,
-                valveType: 'fitting',
             };
 
             if (this.entity.endpointUid[0] === epUid) {
@@ -238,26 +238,22 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 this.entity.endpointUid[1] = newValveUid;
             }
 
-            const i = e.connections.indexOf(this.uid);
-            if (i !== -1) {
-                e.connections.splice(i, 1, pipe.uid);
-            } else {
-                throw new Error('connection wasn\'t configured properly');
-            }
-
             context.$store.dispatch('document/addEntity', pipe);
             context.$store.dispatch('document/addEntity', valve);
+
+            disconnect(context, e.uid, this.uid);
+            connect(context, e.uid, pipe.uid);
+
             return valve;
         } else {
-            console.log('extending');
             // extend existing pipe
             // find other pipe
-            let opuid = e.connections[0] === this.uid ? e.connections[1] : e.connections[0];
-            let opo = this.objectStore.get(opuid) as Pipe;
+            const opuid = e.connections[0] === this.uid ? e.connections[1] : e.connections[0];
+            const opo = this.objectStore.get(opuid) as Pipe;
             const wep = opo.worldEndpoints();
             const incident = Flatten.line(Flatten.point(wep[0].x, wep[0].y), Flatten.point(wep[1].x, wep[1].y));
             const projLine = Flatten.line(Flatten.point(pointWc.x, pointWc.y), direction.rotate90CCW());
-            console.log('direction is ' + direction.x + ' ' + direction.y);
+
             const nwp = projLine.intersect(incident);
             assert(nwp.length === 1);
             o.debase();
@@ -280,7 +276,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             context.$store.dispatch('document/revert', false);
         }
         const needToReposition: string[] = [];
-        const spawnedEntities: ValveEntity[] = [];
+        const spawnedEntities: FittingEntity[] = [];
 
         const straights: boolean[] = [];
         this.entity.endpointUid.forEach((euid) => {
@@ -292,7 +288,6 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         this.entity.endpointUid.forEach((euid) => {
             const o = this.objectStore.get(euid)!;
             if (!o.layer.isSelected(o.uid)) {
-                console.log(JSON.stringify(eventObjectCoord));
                 const newProjection = {
                     x: grabState.pointOnPipe.x + eventObjectCoord.x - grabbedObjectCoord.x,
                     y: grabState.pointOnPipe.y + eventObjectCoord.y - grabbedObjectCoord.y,
@@ -308,8 +303,6 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             }
             i ++;
         });
-
-        console.log(JSON.stringify(needToReposition));
 
         if (needToReposition.length === 1) {
             // just plop the pipe to the other side
@@ -466,6 +459,56 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             );
         }
         return ts;
+    }
+
+    getFrictionHeadLoss(context: CalculationContext,
+                        flowLS: number,
+                        from: FlowNode,
+                        to: FlowNode,
+                        signed: boolean,
+    ): number {
+        const ga = context.drawing.calculationParams.gravitationalAcceleration;
+        const {drawing, catalog, objectStore} = context;
+        const entity = this.entity;
+        let sign = 1;
+        if (flowLS < 0) {
+            const oldFrom = from;
+            from = to;
+            to = oldFrom;
+            flowLS = -flowLS;
+            if (signed) {
+                sign = -1;
+            }
+        }
+
+        const system = drawing.flowSystems.find((s) => s.uid === entity.systemUid)!;
+        const fluid = catalog.fluids[system.fluid];
+
+        const volLM =
+            parseCatalogNumberExact(entity.calculation!.realInternalDiameterMM)! ** 2 * Math.PI / 4 / 1000;
+        const velocityMS = flowLS / volLM;
+
+        const page = this.getCatalogBySizePage(context);
+        if (!page) {
+            throw new Error('Cannot find pipe entry for this pipe.');
+        }
+
+        const dynamicViscosity = parseCatalogNumberExact(
+            // TODO: get temperature of the pipe.
+            interpolateTable(fluid.dynamicViscosityByTemperature, system.temperature),
+        );
+
+        const retval = sign * getDarcyWeisbachFlatMH(
+            parseCatalogNumberExact(page.diameterInternalMM)!,
+            parseCatalogNumberExact(page.colebrookWhiteCoefficient)!,
+            parseCatalogNumberExact(fluid.densityKGM3)!,
+            dynamicViscosity!,
+            this.computedLengthM,
+            velocityMS,
+            ga,
+        );
+
+        return retval;
     }
 
     protected refreshObjectInternal(obj: PipeEntity): void {

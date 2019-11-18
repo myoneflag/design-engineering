@@ -9,19 +9,18 @@ import {FieldType, PropertyField} from '@/store/document/entities/property-field
 import * as _ from 'lodash';
 import PipeEntity from '@/store/document/entities/pipe-entity';
 import {EntityType} from '@/store/document/entities/types';
-import ValveCalculation from '@/store/document/calculations/valve-calculation';
+import FittingCalculation from '@/store/document/calculations/fitting-calculation';
 import {CalculationTarget} from '@/store/document/calculations/types';
 import {Choice} from '@/lib/types';
 import {cloneSimple} from '@/lib/utils';
 
-export default interface ValveEntity extends ConnectableEntity, CalculationTarget<ValveCalculation> {
-    type: EntityType.VALVE;
+export default interface FittingEntity extends ConnectableEntity, CalculationTarget<FittingCalculation> {
+    type: EntityType.FITTING;
     center: Coord;
     systemUid: string;
-    valveType: string;
     color: Color | null;
 
-    calculation: ValveCalculation | null;
+    calculation: FittingCalculation | null;
 }
 
 export function makeValveFields(
@@ -32,9 +31,6 @@ export function makeValveFields(
         { property: 'systemUid', title: 'Flow System', hasDefault: false, isCalculated: false,
             type: FieldType.FlowSystemChoice, params: { systems },  multiFieldId: 'systemUid' },
 
-        { property: 'valveType', title: 'Valve Type', hasDefault: false, isCalculated: false,
-            type: FieldType.Choice, params: { choices: valveTypes },  multiFieldId: 'valveType' },
-
         { property: 'color', title: 'Color:', hasDefault: true, isCalculated: false,
             type: FieldType.Color, params: null,  multiFieldId: 'color' },
 
@@ -43,7 +39,7 @@ export function makeValveFields(
 
 export function fillValveDefaultFields(
     doc: DocumentState,
-    value: ValveEntity,
+    value: FittingEntity,
 ) {
     const result = cloneSimple(value);
 

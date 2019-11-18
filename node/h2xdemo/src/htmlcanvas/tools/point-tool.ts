@@ -57,7 +57,6 @@ export default class PointTool implements ToolHandler {
     }
 
     draw(context: DrawingContext) {
-        console.log('drawing toolhandler with ' + this.keyHandlers.length + ' handlers');
         const {ctx, vp} = context;
 
         let top = vp.height - 50 - this.keyHandlers.length * 40;

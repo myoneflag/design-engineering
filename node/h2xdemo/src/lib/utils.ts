@@ -1,6 +1,10 @@
 /* tslint:disable:no-bitwise */
 
 import * as _ from 'lodash';
+import {EPS} from '@/calculations/pressure-drops';
+import CanvasContext from '@/htmlcanvas/lib/canvas-context';
+import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
+import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-entity';
 
 export const lighten = (col: string, percent: number, alpha: number = 1.0) => {
 
@@ -75,5 +79,64 @@ export function cloneSimple<T>(obj: T): T {
         return res;
     } else {
         return obj;
+    }
+}
+
+export function canonizeAngleRad(a: number) {
+    return ((a + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
+}
+
+export function angleDiffRad(a: number, b: number) {
+    return canonizeAngleRad(a - b);
+}
+
+export function angleDiffDeg(a: number, b: number) {
+    return (((a - b) + 180 % (360)) + 360) % 360 - 180;
+}
+
+export function isRightAngleRad(a: number, tolerance: number = EPS) {
+    return angleDiffRad(canonizeAngleRad(a), Math.PI / 2) <= tolerance;
+}
+
+export function isStraightRad(a: number, tolerance: number = EPS) {
+    return angleDiffRad(canonizeAngleRad(a), Math.PI) <= tolerance;
+}
+
+export function isAcuteRad(a: number, tolerance: number = EPS) {
+    return canonizeAngleRad(a) <= Math.PI / 2 + tolerance;
+}
+
+export function connect(context: CanvasContext, connectable: string, pipe: string) {
+    const o = context.objectStore.get(connectable) as BackedConnectable<ConnectableEntityConcrete>;
+    o.connect(pipe);
+}
+
+export function disconnect(context: CanvasContext, connectable: string, pipe: string) {
+    const o = context.objectStore.get(connectable) as BackedConnectable<ConnectableEntityConcrete>;
+    o.disconnect(pipe);
+}
+
+export function getPropertyByString(obj: any, s: string) {
+    s = s.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
+    s = s.replace(/^\./, '');           // strip a leading dot
+    const a = s.split('.');
+    for (let i = 0, n = a.length; i < n; ++i) {
+        const k = a[i];
+        obj = obj[k];
+    }
+    return obj;
+}
+
+export function setPropertyByString(obj: any, s: string, val: any) {
+    s = s.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
+    s = s.replace(/^\./, '');           // strip a leading dot
+    const a = s.split('.');
+    for (let i = 0, n = a.length; i < n; ++i) {
+        const k = a[i];
+        if (i === a.length - 1) {
+            obj[k] = val;
+        } else {
+            obj = obj[k];
+        }
     }
 }

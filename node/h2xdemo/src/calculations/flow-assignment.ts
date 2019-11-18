@@ -1,4 +1,6 @@
 // FlowAssignment[key] = [flow, beginEndpoint]
+import {serializeValue} from '@/calculations/graph';
+
 export class FlowAssignment extends Map<string, [number, string]> {
     getFlow(edgeUid: string, fromUid?: string): number {
         const res = this.get(edgeUid);
@@ -25,5 +27,13 @@ export class FlowAssignment extends Map<string, [number, string]> {
         } else {
             res[0] -= flow;
         }
+    }
+
+    toString() {
+        let repr = '';
+        this.forEach((v, k) => {
+            repr += serializeValue(k) + ' ====> ' + serializeValue(v) + '\n\n';
+        });
+        return repr;
     }
 }

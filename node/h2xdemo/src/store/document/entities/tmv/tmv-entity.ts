@@ -8,7 +8,7 @@ import {
 import {EntityType} from '@/store/document/entities/types';
 import {FieldType, PropertyField} from '@/store/document/entities/property-field';
 import * as _ from 'lodash';
-import ValveEntity from '@/store/document/entities/valve-entity';
+import FittingEntity from '@/store/document/entities/fitting-entity';
 import CatalogState, {Catalog} from '@/store/catalog/types';
 import InvisibleNodeEntity from '@/store/document/entities/Invisible-node-entity';
 import TmvCalculation from '@/store/document/calculations/tmv-calculation';

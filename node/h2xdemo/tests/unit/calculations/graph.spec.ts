@@ -5,11 +5,11 @@ import * as _ from 'lodash';
 
 describe('graph.ts', () => {
     it('dfs single node or single edge', () => {
-        const graph: Graph<string, number> = new Graph<string, number>();
+        const graph: Graph<{node: string}, number> = new Graph<{node: string}, number>();
         addSingleNode(graph);
         const visited: string[] = [];
-        graph.dfs('A', (n) => {
-                visited.push(n);
+        graph.dfs({node: 'A'}, (n) => {
+                visited.push(n.node);
             },
             undefined,
             () => {
@@ -19,21 +19,21 @@ describe('graph.ts', () => {
         expect(visited.sort()).eql(['A']);
 
         const cc = graph.connectedComponents();
-        expect(cc).eql([[['A'], []]]);
+        expect(cc).eql([[[{node: 'A'}], []]]);
 
 
-        const graph2: Graph<string, number> = new Graph<string, number>();
+        const graph2: Graph<{node: string}, number> = new Graph<{node: string}, number>();
         addSingleEdge(graph2);
         const visited2: string[] = [];
         const visitedEdges: number[] = [];
-        graph2.dfs('B', (n) => {
-                visited2.push(n);
+        graph2.dfs({node: 'B'}, (n) => {
+                visited2.push(n.node);
             },
             undefined,
 
                 (e) => {
                 visitedEdges.push(e.value);
-                expect(e.to).equal('C');
+                expect(e.to).eql({node: 'C'});
             },
         );
         expect(visited2).eql(['B', 'C']);
@@ -41,11 +41,11 @@ describe('graph.ts', () => {
         expect(visitedEdges).eql([1]);
 
         const cc2 = graph2.connectedComponents();
-        expect(cc2.map((c) => c[0])).eql([['B', 'C']]);
+        expect(cc2.map((c) => c[0])).eql([[{node: 'B'}, {node: 'C'}]]);
     });
 
     it('traverses a directed graph', () => {
-        const graph = new Graph<string, number>();
+        const graph = new Graph<{node: string}, number>();
         addSimpleDirectedGraph(graph);
 
         const visitations: Array<[string, string]> = new Array<[string, string]>();
@@ -58,11 +58,11 @@ describe('graph.ts', () => {
          * E<--
          */
 
-        graph.dfs('D',
+        graph.dfs({node: 'D'},
             undefined,
             undefined,
             (edge) => {
-                visitations.push([edge.from, edge.to]);
+                visitations.push([edge.from.node, edge.to.node]);
             },
         );
 
@@ -73,14 +73,14 @@ describe('graph.ts', () => {
             ['F', 'G'],
         ]);
 
-        const traversal = graph.dagTraversal(['E']);
+        const traversal = graph.dagTraversal([{node: 'E'}]);
         removeUidForTesting(traversal);
         expect(traversal).eql([
             {
-                node: 'G',
+                node: {node: 'G'},
                 parent: {
-                    from: 'F',
-                    to: 'G',
+                    from: {node: 'F'},
+                    to: {node: 'G'},
                     value: 5,
                     isDirected: true,
                     isReversed: false,
@@ -90,25 +90,25 @@ describe('graph.ts', () => {
                 ],
             },
             {
-                node: 'F',
+                node: {node: 'F'},
                 parent: {
-                    from: 'D',
-                    to: 'F',
+                    from: {node: 'D'},
+                    to: {node: 'F'},
                     value: 3,
                     isDirected: true,
                     isReversed: false,
                 },
                 children: [
                     {
-                        from: 'F',
-                        to: 'E',
+                        from: {node: 'F'},
+                        to: {node: 'E'},
                         value: 4,
                         isDirected: true,
                         isReversed: false,
                     },
                     {
-                        from: 'F',
-                        to: 'G',
+                        from: {node: 'F'},
+                        to: {node: 'G'},
                         value: 5,
                         isDirected: true,
                         isReversed: false,
@@ -116,18 +116,18 @@ describe('graph.ts', () => {
                 ],
             },
             {
-                node: 'D',
+                node: {node: 'D'},
                 parent: {
-                    from: 'E',
-                    to: 'D',
+                    from: {node: 'E'},
+                    to: {node: 'D'},
                     value: 2,
                     isDirected: true,
                     isReversed: false,
                 },
                 children: [
                     {
-                        from: 'D',
-                        to: 'F',
+                        from: {node: 'D'},
+                        to: {node: 'F'},
                         value: 3,
                         isDirected: true,
                         isReversed: false,
@@ -135,12 +135,12 @@ describe('graph.ts', () => {
                 ],
             },
             {
-                node: 'E',
+                node: {node: 'E'},
                 parent: null,
                 children: [
                     {
-                        from: 'E',
-                        to: 'D',
+                        from: {node: 'E'},
+                        to: {node: 'D'},
                         value: 2,
                         isDirected: true,
                         isReversed: false,
@@ -151,17 +151,17 @@ describe('graph.ts', () => {
     });
 
     it ('traverses a simple tree', () => {
-        const graph = new Graph<string, number>();
+        const graph = new Graph<{node: string}, number>();
         addSimpleTree(graph);
 
         const visitations: Array<[string, string]> = new Array<[string, string]>();
         const seen = new Set<string>();
         graph.dfs(
-            'L',
+            {node: 'L'},
             undefined,
             undefined,
             (edge) => {
-                visitations.push([edge.from, edge.to]);
+                visitations.push([edge.from.node, edge.to.node]);
             },
         );
 
@@ -189,12 +189,12 @@ describe('graph.ts', () => {
         visitations.splice(0);
         seen.clear();
 
-        graph.dfs('K',
+        graph.dfs({node: 'K'},
             undefined,
             undefined,
             undefined,
             (edge) => {
-                visitations.push([edge.from, edge.to]);
+                visitations.push([edge.from.node, edge.to.node]);
             },
         );
 
@@ -209,7 +209,7 @@ describe('graph.ts', () => {
     });
 
     it('finds components', () => {
-        const graph = new Graph<string, number>();
+        const graph = new Graph<{node: string}, number>();
         addSimpleTree(graph);
         addSimpleDirectedGraph(graph);
         addSingleEdge(graph);
@@ -228,30 +228,30 @@ describe('graph.ts', () => {
     });
 
     it('finds a path', () => {
-        const graph = new Graph<string, number>();
+        const graph = new Graph<{node: string}, number>();
         addSimpleTree(graph);
 
-        const path = graph.anyPath('J', 'L');
+        const path = graph.anyPath({node: 'J'}, {node: 'L'});
         expect(path).not.eq(null);
-        expect(path!.map((e) => e.to)).eql(['I', 'K', 'L']);
+        expect(path!.map((e) => e.to)).eql([{node: 'I'}, {node: 'K'}, {node: 'L'}]);
 
-        const graph2 = new Graph<string, number>();
+        const graph2 = new Graph<{node: string}, number>();
         addSimpleDirectedGraph(graph2);
 
-        const path2 = graph2.anyPath('E', 'G');
+        const path2 = graph2.anyPath({node: 'E'}, {node: 'G'});
         expect(path2).not.eq(null);
-        expect(path2!.map((e) => e.to)).eql(['D', 'F', 'G']);
+        expect(path2!.map((e) => e.to)).eql([{node: 'D'}, {node: 'F'}, {node: 'G'}]);
 
-        const path3 = graph2.anyPath('G', 'E');
+        const path3 = graph2.anyPath({node: 'G'}, {node: 'E'});
         expect(path3).eq(null);
     });
 
     it('finds edge cycle cover', () => {
-        const graph = new Graph<string, number>();
+        const graph = new Graph<{node: string}, number>();
         addSimpleDirectedGraph(graph);
 
         const cycleCover = graph.edgeCycleCover(true);
-        expect(cycleCover.map((k) => k.map((e) => [e.from, e.to]).sort()).sort()).eql(
+        expect(cycleCover.map((k) => k.map((e) => [e.from.node, e.to.node]).sort()).sort()).eql(
             [
                 [
                     ['D', 'F'],
@@ -261,44 +261,44 @@ describe('graph.ts', () => {
             ],
         );
         for (let i = 1; i < cycleCover[0].length - 1; i++) {
-            expect(cycleCover[0][i].from).eq(cycleCover[0][i - 1].to);
+            expect(cycleCover[0][i].from).eql(cycleCover[0][i - 1].to);
         }
-        expect(cycleCover[0][0].from).eq(cycleCover[0][cycleCover[0].length - 1].to);
+        expect(cycleCover[0][0].from).eql(cycleCover[0][cycleCover[0].length - 1].to);
     });
 
     it('finds arc cover', () => {
-       const graph = new Graph<string, number>();
+       const graph = new Graph<{node: string}, number>();
        addSimpleTree(graph);
 
-       const arc = graph.sourceArcCover(new Set(['M', 'N', 'H']));
+       const arc = graph.sourceArcCover([{node: 'M'}, {node: 'N'}, {node: 'H'}]);
        expect(arc.length).eq(2);
        const endpoints = new Set<string>();
        arc.forEach((a) => {
-           endpoints.add(a[0].from);
-           endpoints.add(a[a.length - 1].to);
+           endpoints.add(a[0].from.node);
+           endpoints.add(a[a.length - 1].to.node);
        });
        expect(Array.from(endpoints.values()).sort()).eql(['H', 'M', 'N']);
        arc.forEach((a) => {
            for (let i = 1; i < a.length - 1; i++) {
-               expect(a[i].from).eq(a[i - 1].to);
+               expect(a[i].from).eql(a[i - 1].to);
            }
        });
     });
 
     it('dijkstra returns a path with one edge', () => {
-        const graph = new Graph<string, number>();
+        const graph = new Graph<{node: string}, number>();
         addSingleEdge(graph);
 
         const visitedNodes: string[] = [];
         const visitedEdges: number[] = [];
 
         graph.dijkstra(
-            'B',
+            {node: 'B'},
             (e) => {
                 return e.value;
             },
             (n) => {
-                visitedNodes.push(n.node);
+                visitedNodes.push(n.node.node);
             },
             (e) => {
                 visitedEdges.push(e.value);
@@ -311,19 +311,19 @@ describe('graph.ts', () => {
 
     it('traverses a directed cyclic graph with dijkstra', () => {
 
-        const graph = new Graph<string, number>();
+        const graph = new Graph<{node: string}, number>();
         addSimpleDirectedGraph(graph);
 
         const visitedNodes: string[] = [];
         const visitedEdges: number[] = [];
 
         graph.dijkstra(
-            'D',
+            {node: 'D'},
             (e) => {
                 return e.value;
             },
             (n) => {
-                visitedNodes.push(n.node);
+                visitedNodes.push(n.node.node);
             },
             (e) => {
                 visitedEdges.push(e.value);
@@ -336,19 +336,19 @@ describe('graph.ts', () => {
 
     it('traverses a tree with dijkstra and missing edges/nodes', () => {
 
-        const graph = new Graph<string, number>();
+        const graph = new Graph<{node: string}, number>();
         addSimpleTree(graph);
 
         const visitedNodes: string[] = [];
         const visitedEdges: number[] = [];
 
         graph.dijkstra(
-            'J',
+            {node: 'J'},
             (e) => {
                 return e.value;
             },
             (n) => {
-                visitedNodes.push(n.node);
+                visitedNodes.push(n.node.node);
             },
             (e) => {
                 visitedEdges.push(e.value);
@@ -356,7 +356,7 @@ describe('graph.ts', () => {
                     return true;
                 }
             },
-            new Set<string>(['M']),
+            new Set<{node: string}>([{node: 'M'}]),
             new Set<string>(['9']),
         );
 
@@ -365,26 +365,26 @@ describe('graph.ts', () => {
     });
 
     it('should find shortest path', () => {
-        const graph = new Graph<string, number>();
+        const graph = new Graph<{node: string}, number>();
         addSimpleDirectedGraph(graph);
 
-        const result = graph.shortestPath('E', 'G', (e) => e.value);
+        const result = graph.shortestPath({node: 'E'}, {node: 'G'}, (e) => e.value);
         expect(result);
         expect(result![1]).eq(10);
-        expect(result![0].map((e) => e.to)).eql(['D', 'F', 'G']);
+        expect(result![0].map((e) => e.to)).eql([{node: 'D'}, {node: 'F'}, {node: 'G'}]);
 
-        const result2 = graph.shortestPath('E', 'G', (e) => e.value, undefined, undefined, false);
+        const result2 = graph.shortestPath({node: 'E'}, {node: 'G'}, (e) => e.value, undefined, undefined, false);
         expect(result2);
         expect(result2![1]).eq(9);
-        expect(result2![0].map((e) => e.to)).eql(['F', 'G']);
+        expect(result2![0].map((e) => e.to)).eql([{node: 'F'}, {node: 'G'}]);
 
-        const result3 = graph.shortestPath('G', 'D', (e) => e.value);
+        const result3 = graph.shortestPath({node: 'G'}, {node: 'D'}, (e) => e.value);
         expect(result3).eq(null);
 
-        const result4 = graph.shortestPath('D', 'F', (e) => e.value, undefined, undefined, true, true);
+        const result4 = graph.shortestPath({node: 'D'}, {node: 'F'}, (e) => e.value, undefined, undefined, true, true);
         expect(result4);
         expect(result4![1]).eq(6);
-        expect(result4![0].map((e) => e.to)).eql(['E', 'F']);
+        expect(result4![0].map((e) => e.to)).eql([{node: 'E'}, {node: 'F'}]);
     });
 });
 
@@ -392,15 +392,15 @@ describe('graph.ts', () => {
 /**
  * A
  */
-function addSingleNode(graph: Graph<string, number>) {
-    graph.addNode('A');
+function addSingleNode(graph: Graph<{node: string}, number>) {
+    graph.addNode({node: 'A'});
 }
 
 /**
  * B -1- C
  */
-function addSingleEdge(graph: Graph<string, number>) {
-    graph.addEdge('B', 'C', 1);
+function addSingleEdge(graph: Graph<{node: string}, number>) {
+    graph.addEdge({node: 'B'}, {node: 'C'}, 1);
 }
 
 /**
@@ -410,12 +410,13 @@ function addSingleEdge(graph: Graph<string, number>) {
  * |    /
  * E<--
  */
-function addSimpleDirectedGraph(graph: Graph<string, number>) {
-    graph.addDirectedEdge('E', 'D', 2);
-    graph.addDirectedEdge('D', 'F',  3);
-    graph.addDirectedEdge('F', 'E',  4);
-    graph.addDirectedEdge('F', 'G',  5);
+function addSimpleDirectedGraph(graph: Graph<{node: string}, number>) {
+    graph.addDirectedEdge({node: 'E'}, {node: 'D'}, 2);
+    graph.addDirectedEdge({node: 'D'}, {node: 'F'},  3);
+    graph.addDirectedEdge({node: 'F'}, {node: 'E'},  4);
+    graph.addDirectedEdge({node: 'F'}, {node: 'G'},  5);
 }
+
 
 function removeUidForTesting(obj: any) {
     if (_.isArray(obj)) {
@@ -442,11 +443,11 @@ function removeUidForTesting(obj: any) {
  *      /            \
  *     H              L
  */
-function addSimpleTree(graph: Graph<string, number>) {
-    graph.addEdge('H', 'I', 6, '6');
-    graph.addEdge('J', 'I', 7, '7');
-    graph.addEdge('K', 'I', 8, '8');
-    graph.addEdge('K', 'N', 9, '9');
-    graph.addEdge('M', 'K', 10, '10');
-    graph.addEdge('K', 'L', 11, '11');
+function addSimpleTree(graph: Graph<{node: string}, number>) {
+    graph.addEdge({node: 'H'}, {node: 'I'}, 6, '6');
+    graph.addEdge({node: 'J'}, {node: 'I'}, 7, '7');
+    graph.addEdge({node: 'K'}, {node: 'I'}, 8, '8');
+    graph.addEdge({node: 'K'}, {node: 'N'}, 9, '9');
+    graph.addEdge({node: 'M'}, {node: 'K'}, 10, '10');
+    graph.addEdge({node: 'K'}, {node: 'L'}, 11, '11');
 }

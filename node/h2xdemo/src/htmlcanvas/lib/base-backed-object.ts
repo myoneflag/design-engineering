@@ -9,6 +9,8 @@ import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity'
 import Layer from '@/htmlcanvas/layers/layer';
 import {cloneSimple} from '@/lib/utils';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
+import {CalculationContext} from '@/calculations/types';
+import {FlowNode} from '@/calculations/calculation-engine';
 
 export default abstract class BaseBackedObject extends DrawableObject {
     entity: DrawableEntityConcrete;
@@ -43,7 +45,8 @@ export default abstract class BaseBackedObject extends DrawableObject {
             if (result) {
                 return result;
             }
-            throw new Error('Parent object not created. parent uid: ' + this.entity.parentUid + ' this uid ' + this.entity.uid);
+            throw new Error('Parent object not created. parent uid: '
+                + this.entity.parentUid + ' this uid ' + this.entity.uid);
         }
     }
 
@@ -60,7 +63,13 @@ export default abstract class BaseBackedObject extends DrawableObject {
 
     abstract inBounds(objectCoord: Coord, objectRadius?: number): boolean;
 
-    protected abstract refreshObjectInternal(obj: DrawableEntity, old?: DrawableEntity): void;
+    abstract getFrictionHeadLoss(
+        context: CalculationContext,
+        flowLS: number,
+        from: FlowNode,
+        to: FlowNode,
+        signed: boolean,
+    ): number;
 
     get uid() {
         return this.entity.uid;
@@ -69,4 +78,6 @@ export default abstract class BaseBackedObject extends DrawableObject {
     get type(): EntityType {
         return this.entity.type;
     }
+
+    protected abstract refreshObjectInternal(obj: DrawableEntity, old?: DrawableEntity): void;
 }

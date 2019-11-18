@@ -21,13 +21,15 @@ import CatalogState, {Catalog} from '@/store/catalog/types';
 import {
     CalculatableEntityConcrete,
     CalculationConcrete,
-    DrawableEntityConcrete
+    DrawableEntityConcrete,
 } from '@/store/document/entities/concrete-entity';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 import Calculations from '@/views/settings/Calculations.vue';
 import Pipe from '@/htmlcanvas/objects/pipe';
+import {EPS} from '@/calculations/pressure-drops';
 
 const MINIMUM_SIGNIFICANT_PIPE_LENGTH_MM = 500;
+export const SIGNIFICANT_FLOW_THRESHOLD = 1e-5;
 
 export default class CalculationLayer extends LayerImplementation {
 
@@ -98,6 +100,8 @@ export default class CalculationLayer extends LayerImplementation {
                             );
                             this.messageStore.set(e.uid, msg);
                             thisIds.push(e.uid);
+                        } else {
+                            this.messageStore.delete(e.uid);
                         }
 
                     }
@@ -127,33 +131,41 @@ export default class CalculationLayer extends LayerImplementation {
                     if (c.calculation!.psdUnits && c.calculation!.psdUnits > 0) {
                         return true;
                     }
-                    if (c.calculation!.peakFlowRate && c.calculation!.peakFlowRate > 0) {
+                    if (c.calculation!.peakFlowRate && c.calculation!.peakFlowRate > SIGNIFICANT_FLOW_THRESHOLD) {
                         return true;
                     }
                 }
                 return false;
             case EntityType.TMV:
                 return true;
-            case EntityType.VALVE:
+            case EntityType.FITTING:
+            case EntityType.DIRECTED_VALVE:
                 return false;
             case EntityType.FIXTURE:
                 return true;
         }
     }
 
-    calculate(doc: DocumentState, catalog: Catalog, demandType: DemandType, done: () => void) {
+    calculate(context: CanvasContext, demandType: DemandType, done: () => void) {
 
-        const middleWc = getDocumentCenter(this.objectStore, doc);
-        doc.uiState.isCalculating = true;
-        this.calculator.calculate(this.objectStore, doc, middleWc, catalog, demandType, (warnings) => {
+        const middleWc = getDocumentCenter(this.objectStore, context.document);
+        context.document.uiState.isCalculating = true;
 
-            doc.uiState.lastCalculationId = doc.nextId;
-            doc.uiState.lastCalculationUiSettings = {
+        this.calculator.calculate(
+            this.objectStore,
+            context.document,
+            middleWc,
+            context.effectiveCatalog,
+            demandType,
+            (warnings) => {
+
+            context.document.uiState.lastCalculationId = context.document.nextId;
+            context.document.uiState.lastCalculationUiSettings = {
                 demandType,
             };
-            doc.uiState.isCalculating = false;
+            context.document.uiState.isCalculating = false;
 
-            this.update(doc);
+            this.update(context.document);
 
             // Create new messages
 
@@ -163,6 +175,7 @@ export default class CalculationLayer extends LayerImplementation {
 
 
     onMouseDown(event: MouseEvent, context: CanvasContext) {
+        // tslint:disable-next-line:prefer-for-of
         for (let i = 0; i < this.uidsInOrder.length; i++) {
             const uid = this.uidsInOrder[i];
             if (this.messageStore.has(uid)) {
@@ -177,6 +190,7 @@ export default class CalculationLayer extends LayerImplementation {
     }
 
     onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
+        // tslint:disable-next-line:prefer-for-of
         for (let i = 0; i < this.uidsInOrder.length; i++) {
             const uid = this.uidsInOrder[i];
             if (this.messageStore.has(uid)) {
@@ -193,6 +207,7 @@ export default class CalculationLayer extends LayerImplementation {
 
 
     onMouseUp(event: MouseEvent, context: CanvasContext) {
+        // tslint:disable-next-line:prefer-for-of
         for (let i = 0; i < this.uidsInOrder.length; i++) {
             const uid = this.uidsInOrder[i];
             if (this.messageStore.has(uid)) {

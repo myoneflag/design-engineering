@@ -1,4 +1,4 @@
-import Graph, {Edge} from '@/calculations/graph';
+import Graph, {Edge, serializeValue} from '@/calculations/graph';
 import {ObjectStore} from '@/htmlcanvas/lib/types';
 import {Catalog} from '@/store/catalog/types';
 import {DocumentState} from '@/store/document/types';
@@ -7,19 +7,20 @@ import {ternarySearchForGlobalMin} from '@/calculations/search-functions';
 import FlowSourceEntity from '@/store/document/entities/flow-source-entity';
 import {FlowAssignment} from '@/calculations/flow-assignment';
 import { getObjectFrictionHeadLoss } from './entity-pressure-drops';
+import {FlowEdge, FlowNode, SELF_CONNECTION} from '@/calculations/calculation-engine';
 
 export const MINIMUM_FLOW_RATE_CHANGE = 0.0001;
 
 export default class FlowSolver {
 
-    network: Graph<string, string>;
+    network: Graph<FlowNode, FlowEdge>;
     objectStore: ObjectStore;
     catalog: Catalog;
     doc: DocumentState;
     ga: number;
 
     constructor(
-        network: Graph<string, string>,
+        network: Graph<FlowNode, FlowEdge>,
         objectStore: ObjectStore,
         doc: DocumentState,
         catalog: Catalog,
@@ -51,7 +52,9 @@ export default class FlowSolver {
             });
         });
 
-        const arcCover = this.network.sourceArcCover(new Set(suppliesKPA.keys()), accountedFor);
+        const sources =
+            Array.from(suppliesKPA.keys()).map((suid) => ({connectable: suid, connection: SELF_CONNECTION}));
+        const arcCover = this.network.sourceArcCover(sources, accountedFor);
         arcCover.forEach((arc) => {
             arc.forEach((e) => {
                 accountedFor.add(e.uid);
@@ -69,7 +72,7 @@ export default class FlowSolver {
         let iters = 0;
         while (true) {
             iters++;
-            if (iters > 200) {
+            if (iters > 100) {
                 break;
             }
             let adjustments = 0;
@@ -78,18 +81,18 @@ export default class FlowSolver {
             });
 
             arcCover.forEach((a) => {
-                const fromKPA = suppliesKPA.get(a[0].from);
-                const toKPA = suppliesKPA.get(a[a.length - 1].to);
+                const fromKPA = suppliesKPA.get(a[0].from.connectable);
+                const toKPA = suppliesKPA.get(a[a.length - 1].to.connectable);
                 if (fromKPA === undefined || toKPA === undefined) {
                     throw new Error('Endpoint of arc is not a source');
                 }
                 const fromDensity = getFluidDensityOfSystem(
-                    (this.objectStore.get(a[0].from)!.entity as FlowSourceEntity).systemUid,
+                    (this.objectStore.get(a[0].from.connectable)!.entity as FlowSourceEntity).systemUid,
                     this.doc,
                     this.catalog,
                 );
                 const toDensity = getFluidDensityOfSystem(
-                    (this.objectStore.get(a[a.length - 1].from)!.entity as FlowSourceEntity).systemUid,
+                    (this.objectStore.get(a[a.length - 1].from.connectable)!.entity as FlowSourceEntity).systemUid,
                     this.doc,
                     this.catalog,
                 );
@@ -101,38 +104,53 @@ export default class FlowSolver {
                 break;
             }
         }
-
         return flowRates;
     }
 
     // Tracks the pressure drop along the path, and augments the path so that the pressure difference is the same as
     // the expected difference.
     // Returns the delta speed, for iteration exit purposes.
-    adjustPath(flows: FlowAssignment, path: Array<Edge<string, string>>, expectedDifferenceHead: number = 0): number {
+    adjustPath(
+        flows: FlowAssignment,
+        path: Array<Edge<FlowNode, FlowEdge>>,
+        expectedDifferenceHead: number = 0,
+    ): number {
         // Augment the path backwards
         // Use ternary search to find the smallest value of the sum of concave functions.
         let totalHeadLoss: number  = 0;
-        const bestAdjustment = ternarySearchForGlobalMin((num) => {
-            totalHeadLoss = 0;
-            path.forEach((v) => {
-                const connector = this.objectStore.get(v.value)!;
-                const delta = getObjectFrictionHeadLoss(
-                    {drawing: this.doc.drawing, catalog: this.catalog, objectStore: this.objectStore},
-                    connector,
-                    flows.getFlow(v.uid, v.from) + num,
-                    v.from,
-                    v.to,
-                );
-                totalHeadLoss += delta;
+        try {
+
+            const bestAdjustment = ternarySearchForGlobalMin((num) => {
+                totalHeadLoss = 0;
+                path.forEach((v) => {
+                    const connector = this.objectStore.get(v.value.uid)!;
+
+                    const delta = getObjectFrictionHeadLoss(
+                        {drawing: this.doc.drawing, catalog: this.catalog, objectStore: this.objectStore},
+                        connector,
+                        flows.getFlow(v.uid, serializeValue(v.from)) + num,
+                        v.from,
+                        v.to,
+                    );
+                    totalHeadLoss += delta;
+                });
+                return Math.abs(-expectedDifferenceHead - totalHeadLoss);
             });
-            return Math.abs(-expectedDifferenceHead - totalHeadLoss);
-        });
 
-        path.forEach((v) => {
-            flows.addFlow(v.uid, v.from, bestAdjustment);
-        });
+            path.forEach((v) => {
+                flows.addFlow(v.uid, serializeValue(v.from), bestAdjustment);
+            });
 
-        return bestAdjustment;
+            return bestAdjustment;
+        } catch (e) {
+            // tslint:disable-next-line:no-console
+            console.log('error while adjusting path: ' +
+                JSON.stringify(path.map((v) => this.objectStore.get(v.value.uid)!.type)) +
+                ' expected difference: ' +
+                expectedDifferenceHead,
+            );
+            throw e;
+        }
     }
 
 
@@ -141,48 +159,22 @@ export default class FlowSolver {
 
         demandsLS.forEach((f, n) => {
             // find a source for this flow.
-            const path = this.network.anyPath(n, Array.from(suppliesKPA.keys()), undefined, undefined, true, true);
+            const path = this.network.anyPath(
+                {connectable: n, connection: this.objectStore.get(n)!.entity.parentUid!},
+                Array.from(suppliesKPA.keys()).map((k) => ({connectable: k, connection: SELF_CONNECTION})),
+                undefined,
+                undefined,
+                true,
+                true,
+            );
             if (path) {
                 path.reverse().forEach((e) => {
-                    result.addFlow(e.uid, e.to, f);
+                    result.addFlow(e.uid, serializeValue(e.to), f);
                 });
             }
         });
 
         return result;
-    }
-
-    getFlowAmountLS(
-        demandsLS: Map<string, number>,
-        suppliesKPA: Map<string, number>,
-        excludeNodes: Set<string>,
-        excludeEdges: Set<string>,
-    ): number {
-        const demandsMet = new Set<string>();
-        const seen = new Set<string>(excludeNodes);
-        const seenEdges = new Set<string>(excludeEdges);
-
-        suppliesKPA.forEach((s, k) => {
-            this.network.dfs(
-                k,
-                (n) => {
-                    if (demandsLS.has(n)) {
-                        demandsMet.add(n);
-                    }
-                },
-                undefined,
-                undefined,
-                undefined,
-                seen,
-                seenEdges,
-            );
-        });
-
-        let ans = 0;
-        demandsMet.forEach((d) => {
-            ans += demandsLS.get(d)!;
-        });
-        return ans;
     }
 }
 

@@ -20,6 +20,8 @@ import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 import {SelectableObject} from '@/htmlcanvas/lib/object-traits/selectable';
 import Flatten from '@flatten-js/core';
 import {CenteredObject} from '@/htmlcanvas/lib/object-traits/centered-object';
+import {CalculationContext} from '@/calculations/types';
+import {FlowNode} from '@/calculations/calculation-engine';
 
 @SelectableObject
 @CenterDraggableObject
@@ -170,6 +172,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> {
 
     shape() {
         const p = new Flatten.Polygon();
+        // tslint:disable-next-line:one-variable-per-declaration
         let l, t, r, b;
         if (this.entity.warmRoughInUid) {
             l = -this.entity.pipeDistanceMM * 5 / 4;
@@ -239,7 +242,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> {
             case InteractionType.STARTING_PIPE:
                 return this.offerJoiningInteraction(interaction.system.uid, interaction);
             case InteractionType.MOVE_ONTO_RECEIVE:
-                if (interaction.src.type === EntityType.VALVE) {
+                if (interaction.src.type === EntityType.FITTING) {
                     return this.offerJoiningInteraction(interaction.src.systemUid, interaction);
                 }
                 return null;
@@ -248,6 +251,15 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> {
             case InteractionType.EXTEND_NETWORK:
                 return null;
         }
+    }
+
+    getFrictionHeadLoss(context: CalculationContext,
+                        flowLS: number,
+                        from: FlowNode,
+                        to: FlowNode,
+                        sign: boolean,
+    ): number {
+        throw new Error('not implemented');
     }
 
     rememberToRegister(): void {

@@ -26,17 +26,21 @@
     import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
     import {makeBackgroundFields} from '@/store/document/entities/background-entity';
     import {fillPipeDefaultFields, makePipeFields} from '@/store/document/entities/pipe-entity';
-    import {fillValveDefaultFields, makeValveFields} from '@/store/document/entities/valve-entity';
+    import {fillValveDefaultFields, makeValveFields} from '@/store/document/entities/fitting-entity';
     import Component from 'vue-class-component';
     import {EntityType} from '@/store/document/entities/types';
     import {DocumentState} from '@/store/document/types';
     import {Catalog} from '@/store/catalog/types';
     import {fillFlowSourceDefaults, makeFlowSourceFields} from '@/store/document/entities/flow-source-entity';
     import {fillTMVFields, makeTMVFields} from '@/store/document/entities/tmv/tmv-entity';
-    import {fillFixtureFields, makeFixtureFields} from "@/store/document/entities/fixtures/fixture-entity";
+    import {fillFixtureFields, makeFixtureFields} from '@/store/document/entities/fixtures/fixture-entity';
     import PropertiesFieldBuilder from '@/components/editor/lib/PropertiesFieldBuilder.vue';
     import * as _ from 'lodash';
     import Pipe from '@/htmlcanvas/objects/pipe';
+    import {
+        fillDirectedValveFields,
+        makeDirectedValveFields,
+    } from "@/store/document/entities/directed-valves/directed-valve-entity";
 
     @Component({
         components: {PropertiesFieldBuilder},
@@ -52,13 +56,9 @@
             let ret: PropertyField[] = [];
             const seen = new Set<string>();
             const types = new Set<EntityType>();
-            this.$props.selectedObjects.forEach((obj: BaseBackedObject) => {
-                types.add(obj.entity.type);
-            });
-
             let first = true;
-            types.forEach((t) => {
-                const fields = this.getEntityFields(t);
+            this.$props.selectedObjects.forEach((obj: BaseBackedObject) => {
+                const fields = this.getEntityFields(obj.entity);
                 if (first) {
                     fields.forEach((f) => {
                         if (!seen.has(f.multiFieldId!)) {
@@ -72,6 +72,7 @@
                 }
                 first = false;
             });
+
             return this.convertToMultiProperties(ret);
         }
 
@@ -83,11 +84,11 @@
             });
         }
 
-        getEntityFields(type: EntityType): PropertyField[] {
-            switch (type) {
+        getEntityFields(entity: DrawableEntityConcrete): PropertyField[] {
+            switch (entity.type) {
                 case EntityType.BACKGROUND_IMAGE:
                     return makeBackgroundFields().filter((p) => p.multiFieldId);
-                case EntityType.VALVE:
+                case EntityType.FITTING:
                     return makeValveFields(
                         this.$store.getters['catalog/defaultValveChoices'],
                         this.document.drawing.flowSystems,
@@ -106,7 +107,9 @@
                     return makeTMVFields().filter((p) => p.multiFieldId);
                 case EntityType.FIXTURE:
                     return makeFixtureFields().filter((p) => p.multiFieldId);
-                case EntityType.FLOW_RETURN:
+                case EntityType.DIRECTED_VALVE:
+                    return makeDirectedValveFields(this.document.drawing.flowSystems, entity.valve)
+                        .filter((p) => p.multiFieldId);
                 case EntityType.RESULTS_MESSAGE:
                 case EntityType.SYSTEM_NODE:
                     throw new Error('Invalid object in multi select');
@@ -117,7 +120,7 @@
             switch (obj.entity.type) {
                 case EntityType.BACKGROUND_IMAGE:
                     return obj.entity;
-                case EntityType.VALVE:
+                case EntityType.FITTING:
                     return fillValveDefaultFields(this.document, obj.entity);
                 case EntityType.PIPE:
                     return fillPipeDefaultFields(this.document.drawing, (obj as Pipe).computedLengthM, obj.entity);
@@ -129,6 +132,8 @@
                     return fillTMVFields(this.document, this.defaultCatalog, obj.entity);
                 case EntityType.FIXTURE:
                     return fillFixtureFields(this.document, this.defaultCatalog, obj.entity);
+                case EntityType.DIRECTED_VALVE:
+                    return fillDirectedValveFields(this.document, obj.entity);
                 case EntityType.RESULTS_MESSAGE:
                     throw new Error('Unsupported entity');
             }
@@ -166,7 +171,7 @@
                     let concreteIdentical = true;
                     let foundField: PropertyField;
                     this.$props.selectedObjects.forEach((obj: BaseBackedObject) => {
-                        const fields = this.getEntityFields(obj.type);
+                        const fields = this.getEntityFields(obj.entity);
                         const field = fields.find((f) => f.multiFieldId === name);
                         if (field) {
                             foundField = field;
@@ -203,7 +208,7 @@
                     let someDefaultOrCalculated = false;
                     let foundField: PropertyField;
                     this.$props.selectedObjects.forEach((obj: BaseBackedObject) => {
-                        const fields = this.getEntityFields(obj.type);
+                        const fields = this.getEntityFields(obj.entity);
                         const field = fields.find((f) => f.multiFieldId === name);
                         if (field) {
                             foundField = field;
@@ -234,7 +239,7 @@
                 set: (target, name, value, receiver) => {
                     let success = false;
                     this.$props.selectedObjects.forEach((obj: BaseBackedObject) => {
-                        const fields = this.getEntityFields(obj.type);
+                        const fields = this.getEntityFields(obj.entity);
                         const field = fields.find((f) => f.multiFieldId === name);
                         if (field) {
                             (obj.entity as any)[field.property] = value;

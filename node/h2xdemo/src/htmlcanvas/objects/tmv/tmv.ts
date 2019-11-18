@@ -9,7 +9,7 @@ import Connectable from '@/htmlcanvas/lib/object-traits/connectable';
 import CenterDraggableObject from '@/htmlcanvas/lib/object-traits/center-draggable-object';
 import {Interaction, InteractionType} from '@/htmlcanvas/lib/interaction';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
-import TmvEntity from '@/store/document/entities/tmv/tmv-entity';
+import TmvEntity, {SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '@/store/document/entities/types';
 import {StandardFlowSystemUids} from '@/store/catalog';
@@ -18,6 +18,9 @@ import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 import {SelectableObject} from '@/htmlcanvas/lib/object-traits/selectable';
 import {assertUnreachable} from '@/lib/utils';
 import {CenteredObject} from '@/htmlcanvas/lib/object-traits/centered-object';
+import {interpolateTable, parseCatalogNumberExact} from '@/htmlcanvas/lib/utils';
+import {CalculationContext} from '@/calculations/types';
+import {FlowNode} from '@/calculations/calculation-engine';
 
 @SelectableObject
 @CenterDraggableObject
@@ -168,7 +171,7 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> {
             case InteractionType.STARTING_PIPE:
                 return this.offerJoiningInteraction(interaction.system.uid, interaction);
             case InteractionType.MOVE_ONTO_RECEIVE:
-                if (interaction.src.type === EntityType.VALVE) {
+                if (interaction.src.type === EntityType.FITTING) {
                     return this.offerJoiningInteraction(interaction.src.systemUid, interaction);
                 } else {
                     return null;
@@ -178,6 +181,56 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> {
             case InteractionType.EXTEND_NETWORK:
                 return null;
         }
+    }
+
+    getFrictionHeadLoss(context: CalculationContext,
+                        flowLS: number,
+                        from: FlowNode,
+                        to: FlowNode,
+                        signed: boolean,
+    ): number {
+
+        const ga = context.drawing.calculationParams.gravitationalAcceleration;
+        let sign = 1;
+        if (flowLS < 0) {
+            const oldFrom = from;
+            from = to;
+            to = oldFrom;
+            flowLS = -flowLS;
+            if (signed) {
+                sign = -1;
+            }
+        }
+
+        const {drawing, catalog, objectStore} = context;
+        const entity = this.entity;
+        // it is directional
+        let valid = false;
+        if (from.connectable === entity.hotRoughInUid && to.connectable === entity.warmOutputUid) {
+            valid = true;
+        }
+        if (from.connectable === entity.coldRoughInUid && to.connectable === entity.coldOutputUid) {
+            valid = true;
+        }
+        if (!valid) {
+            // Water not flowing the correct direction
+            return sign * (1e10 + flowLS);
+        }
+        const pdKPAfield = interpolateTable(catalog.mixingValves.tmv.pressureLossKPAbyFlowRateLS, flowLS);
+        const pdKPA = parseCatalogNumberExact(pdKPAfield);
+        if (pdKPA === null) {
+            throw new Error('pressure drop for TMV not available');
+        }
+
+        // We need the fluid density because TMV pressure stats are in KPA, not head loss
+        // which is what the rest of the calculations are base off of.
+
+        const systemUid = (objectStore.get(entity.warmOutputUid)!.entity as SystemNodeEntity).systemUid;
+        const fluid = drawing.flowSystems.find((s) => s.uid === systemUid)!.fluid;
+        const density = parseCatalogNumberExact(catalog.fluids[fluid].densityKGM3)!;
+
+        // https://neutrium.net/equipment/conversion-between-head-and-pressure/
+        return sign * (pdKPA * 1000 / (density * ga));
     }
 
     rememberToRegister(): void {

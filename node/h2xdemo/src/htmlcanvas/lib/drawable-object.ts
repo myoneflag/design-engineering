@@ -125,15 +125,12 @@ export default abstract class DrawableObject {
            if (s instanceof Flatten.Polygon) {
                ctx.beginPath();
                ctx.strokeStyle = '#000000';
-               ctx.lineWidth=5;
-               let began = false;
+               ctx.lineWidth = 5;
                s.edges.forEach((f: Flatten.Segment) => {
                    ctx.moveTo(f.start.x, f.start.y);
                    ctx.lineTo(f.end.x, f.end.y);
                });
                ctx.stroke();
-           } else {
-
            }
         });
     }

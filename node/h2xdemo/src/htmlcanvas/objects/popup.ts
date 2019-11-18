@@ -14,7 +14,7 @@ import Flatten from '@flatten-js/core';
 import uuid from 'uuid';
 import {MessageField} from '@/store/document/calculations/message-field';
 import {makePipeCalculationFields} from '@/store/document/calculations/pipe-calculation';
-import {makeValveCalculationFields} from '@/store/document/calculations/valve-calculation';
+import {makeFittingCalculationFields} from '@/store/document/calculations/fitting-calculation';
 import {makeTmvCalculationFields} from '@/store/document/calculations/tmv-calculation';
 import {makeFlowSourceCalculationFields} from '@/store/document/calculations/flow-source-calculation';
 import {makeFixtureCalculationFields} from '@/store/document/calculations/fixture-calculation';
@@ -30,6 +30,10 @@ import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 import {ConnectableObject} from '@/htmlcanvas/lib/object-traits/connectable';
 import {CenteredObject} from '@/htmlcanvas/lib/object-traits/centered-object';
+import {makeDirectedValveFields} from '@/store/document/entities/directed-valves/directed-valve-entity';
+import {makeDirectedValveCalculationFields} from '@/store/document/calculations/directed-valve-calculation';
+import {CalculationContext} from '@/calculations/types';
+import {FlowNode, SELF_CONNECTION} from '@/calculations/calculation-engine';
 
 @CenterDraggableObject
 @CenteredObject
@@ -131,12 +135,14 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
                 return makeFlowSourceCalculationFields();
             case EntityType.PIPE:
                 return makePipeCalculationFields(context.doc.drawing);
-            case EntityType.VALVE:
-                return makeValveCalculationFields();
+            case EntityType.FITTING:
+                return makeFittingCalculationFields();
             case EntityType.TMV:
                 return makeTmvCalculationFields(this.target);
             case EntityType.FIXTURE:
                 return makeFixtureCalculationFields();
+            case EntityType.DIRECTED_VALVE:
+                return makeDirectedValveCalculationFields();
         }
     }
 
@@ -269,6 +275,16 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
         this.fields = undefined;
         this.outputs = undefined;
     }
+
+    getFrictionHeadLoss(context: CalculationContext,
+                        flowLS: number,
+                        from: FlowNode,
+                        to: FlowNode,
+                        signed: boolean,
+    ): number {
+        throw new Error('don\'t do it');
+    }
+
 
     protected refreshObjectInternal(obj: DrawableEntity, old?: DrawableEntity): void {
         //

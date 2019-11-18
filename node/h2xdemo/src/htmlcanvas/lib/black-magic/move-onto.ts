@@ -6,6 +6,7 @@ import {EntityType} from '@/store/document/entities/types';
 import assert from 'assert';
 import {replacePipeEndpointLocal} from '@/store/document/entities/pipe-entity';
 import {addValveAndSplitPipe} from '@/htmlcanvas/lib/black-magic/split-pipe';
+import {connect, disconnect} from '@/lib/utils';
 
 /**
  * Moves object join source to object dest, regardless of compatability, and keeps
@@ -54,9 +55,12 @@ export function moveOnto(
             assert (pipe.type === EntityType.PIPE);
 
             replacePipeEndpointLocal(pipe.entity, loser.uid, survivor.uid);
-            survivor.entity.connections.push(pipe.uid);
+            survivor.connect(pipe.uid);
         });
-        loser.entity.connections.splice(0);
+
+        loser.entity.connections.slice().forEach((c) => {
+            loser.disconnect(c);
+        });
 
         if (context.objectStore.has(loser.uid)) {
             context.deleteEntity(loser, false);

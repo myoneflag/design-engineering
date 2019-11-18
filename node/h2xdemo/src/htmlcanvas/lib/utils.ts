@@ -121,7 +121,7 @@ export function interpolateTable<T>(
     table: {[key: string]: T},
     index: number,
     strict: boolean,
-    fn: (entry: T) => string | number,
+    fn: (entry: T) => string | number | null,
 ): number | null;
 
 // assumes keys in table are non overlapping
@@ -129,7 +129,7 @@ export function interpolateTable<T>(
     table: {[key: string]: T},
     index: number,
     strict: boolean = false,
-    fn?: (entry: T) => string | number,
+    fn?: (entry: T) => string | number | null,
 ): number | null {
     let lowKey = -Infinity;
     let highKey = Infinity;
@@ -194,7 +194,7 @@ export function lowerBoundTable<T>(table: {[key: string]: T}, index: number, get
         const value = table[key];
 
         if (min === null || max === null) {
-            throw new Error('key is not a number');
+            throw new Error('key is not a number: ' + key);
         }
 
         if (min <= index && max >= index) {
@@ -221,7 +221,7 @@ export function upperBoundTable<T>(table: {[key: string]: T}, index: number, get
         const value = table[key];
 
         if (min === null || max === null) {
-            throw new Error('key is not a number');
+            throw new Error('key is not a number: ' + key);
         }
 
         if (min <= index && max >= index) {
@@ -246,12 +246,13 @@ export function getSystemNodeHeightM(entity: SystemNodeEntity, context: CanvasCo
         case EntityType.FIXTURE:
             const fe = fillFixtureFields(context.document, context.effectiveCatalog, po.entity);
             return fe.outletAboveFloorM!;
-        case EntityType.VALVE:
+        case EntityType.FITTING:
         case EntityType.PIPE:
         case EntityType.FLOW_SOURCE:
         case EntityType.RESULTS_MESSAGE:
         case EntityType.SYSTEM_NODE:
         case EntityType.BACKGROUND_IMAGE:
+        case EntityType.DIRECTED_VALVE:
             throw new Error('can\'t touch this');
     }
 }

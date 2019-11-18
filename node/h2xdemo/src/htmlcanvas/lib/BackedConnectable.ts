@@ -5,15 +5,16 @@ import {Interaction, InteractionType} from '@/htmlcanvas/lib/interaction';
 import {getDragPriority, isConnectable} from '@/store/document';
 import {EntityType} from '@/store/document/entities/types';
 import Flatten from '@flatten-js/core';
-import Connectable from '@/htmlcanvas/lib/object-traits/connectable';
-import {Coord} from '@/store/document/types';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
+import {FlowNode} from '@/calculations/calculation-engine';
+import {CalculationContext} from '@/calculations/types';
+import Pipe from '@/htmlcanvas/objects/pipe';
+import {Coord} from '@/store/document/types';
 
 // TODO: this entire abstract class is obsolete and should be encapsulated in the ConnectableObject
 // decorator.
 export default abstract class BackedConnectable<T extends ConnectableEntityConcrete>
-    extends BackedDrawableObject<T>
-{
+    extends BackedDrawableObject<T> {
     abstract minimumConnections: number;
     abstract maximumConnections: number | null;
 
@@ -23,14 +24,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
     abstract dragPriority: number;
 
     prepareDeleteConnection(uid: string, context: CanvasContext): BaseBackedObject[] {
-        const index = this.entity.connections.indexOf(uid);
-        if (index === -1) {
-            throw new Error('Tried to delete a connection that doesn\'t exist: ' +
-                uid + ' in ' + JSON.stringify(this.entity),
-            );
-        }
-        this.entity.connections.splice(index, 1);
-
+        this.disconnect(uid);
         if (this.entity.connections.length < this.minimumConnections) {
             return this.prepareDelete(context);
         } else {
@@ -130,6 +124,9 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
         return Flatten.circle(Flatten.point(point.x, point.y), 30);
     }
 
+    getAngleOfRad(connection: string): number {
+        throw new Error('Method not implemented');
+    }
 
     getAngles(): number[] {
         throw new Error('Method not implemented.');
@@ -146,6 +143,19 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
     rebase(context: CanvasContext): void {
         throw new Error('Method not implemented.');
     }
+
+    getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]> { /* */
+        throw new Error('Method not implemented.');
+    }
+
+    connect(uid: string) {
+        //
+    }
+
+    disconnect(uid: string) {
+        //
+    }
+
 
 }
 

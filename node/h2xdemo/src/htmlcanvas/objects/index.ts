@@ -3,8 +3,9 @@ import Tmv from '@/htmlcanvas/objects/tmv/tmv';
 import {BackgroundImage} from '@/htmlcanvas/objects/background-image';
 import FlowSource from '@/htmlcanvas/objects/flow-source';
 import Pipe from '@/htmlcanvas/objects/pipe';
-import Valve from '@/htmlcanvas/objects/valve';
+import Fitting from '@/htmlcanvas/objects/fitting';
 import Fixture from '@/htmlcanvas/objects/fixture';
+import DirectedValve from '@/htmlcanvas/objects/directed-valve';
 
 export function registerObjectBuilders() {
     SystemNode.register();
@@ -12,6 +13,7 @@ export function registerObjectBuilders() {
     BackgroundImage.register();
     FlowSource.register();
     Pipe.register();
-    Valve.register();
+    Fitting.register();
     Fixture.register();
+    DirectedValve.register();
 }
