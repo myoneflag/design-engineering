@@ -14,9 +14,11 @@
                     <b-nav-item :to="{name: 'settings/document'}" active-class="active">Document</b-nav-item>
                 </b-nav>
             <b-col>
-                <router-view>
+                <div style="overflow-y: auto; overflow-x: hidden; height: calc(100vh - 200px)">
+                    <router-view>
 
-                </router-view>
+                    </router-view>
+                </div>
             </b-col>
         </b-row>
     </b-container>

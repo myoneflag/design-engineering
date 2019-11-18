@@ -44,6 +44,7 @@ import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
                     :mode="mode"
                     :on-change="scheduleDraw"
                     :on-delete="deleteSelected"
+                    :object-store="objectStore"
             >
 
             </PropertiesWindow>

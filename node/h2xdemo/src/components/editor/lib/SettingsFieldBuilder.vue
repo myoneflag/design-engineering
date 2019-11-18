@@ -1,77 +1,79 @@
 <template>
     <b-container>
 
-        <b-row>
-            <b-col>
-
-                <b-form-group
-                        v-for="field in fields"
-                        :key="field[0]"
-                        :id="'input-group-' + field[0]"
-                        :label="field[1]"
-                        :label-for="'input-' + field[0]"
-                        label-cols="4"
-                >
-                    <b-form-textarea
-                        v-if="field[2] === 'textarea'"
-                        v-model="reactiveData[field[0]]"
-                        :id="'input-' + field[0]"
-                        rows="5"
-                        :placeholder="'Enter ' + field[1]"
-                    ></b-form-textarea>
-
-                    <b-row v-else-if="field[2] === 'range'">
-                        <b-col cols="8">
-
-                            <b-form-input
-                                    v-model="reactiveData[field[0]]"
-                                    :id="'input-' + field[0]"
-                                    :min="field[3]"
-                                    :max="field[4]"
-                                    :type="field[2]"
-                                    :step="field[5] ? field[5] : 1"
-                                    :placeholder="'Enter ' + field[1]"
-                            />
-                        </b-col>
-                        <b-col cols="4">
-                        <b-form-input
-                                v-model="reactiveData[field[0]]"
-                                :id="'input-' + field[0]"
-                                type="number"
-                                :step="field[5] ? field[5] : 1"
-                                :placeholder="'Enter ' + field[1]"
-                        />
-                        </b-col>
-                    </b-row>
-
-                    <b-dropdown
-                            v-else-if="field[2] === 'choice'" class="float-left"
-                            size="md" id="dropdown-1" :text="choiceName(reactiveData[field[0]], field[3])" variant="outline-secondary" style="padding-bottom: 20px">
-                        <b-dropdown-item
-                                v-for="(choice, index) in field[3]"
-                                @click="reactiveData[field[0]] = choice.key"
-                                :key="index"
-                                :disabled="choice.disabled === undefined ? false : choice.disabled"
-                        >
-                            {{choice.name}}
-                        </b-dropdown-item>
-                    </b-dropdown>
-
-                    <compact-picker v-else-if="field[2] === 'color'" v-model="reactiveData[field[0]]"/>
-
-                    <b-form-input
-                        v-else
-                        v-model="reactiveData[field[0]]"
-                        :id="'input-' + field[0]"
-                        :type="field[2]"
-                        :placeholder="'Enter ' + field[1]"
-                    />
-                </b-form-group>
-            </b-col>
-        </b-row>
+        <div style="overflow-y: auto; overflow-x: hidden; height: calc(100vh - 270px); margin-bottom: 20px">
             <slot>
 
             </slot>
+            <b-row>
+                <b-col>
+
+                    <b-form-group
+                            v-for="field in fields"
+                            :key="field[0]"
+                            :id="'input-group-' + field[0]"
+                            :label="field[1]"
+                            :label-for="'input-' + field[0]"
+                            label-cols="4"
+                    >
+                        <b-form-textarea
+                            v-if="field[2] === 'textarea'"
+                            v-model="reactiveData[field[0]]"
+                            :id="'input-' + field[0]"
+                            rows="5"
+                            :placeholder="'Enter ' + field[1]"
+                        ></b-form-textarea>
+
+                        <b-row v-else-if="field[2] === 'range'">
+                            <b-col cols="8">
+
+                                <b-form-input
+                                        v-model="reactiveData[field[0]]"
+                                        :id="'input-' + field[0]"
+                                        :min="field[3]"
+                                        :max="field[4]"
+                                        :type="field[2]"
+                                        :step="field[5] ? field[5] : 1"
+                                        :placeholder="'Enter ' + field[1]"
+                                />
+                            </b-col>
+                            <b-col cols="4">
+                            <b-form-input
+                                    v-model="reactiveData[field[0]]"
+                                    :id="'input-' + field[0]"
+                                    type="number"
+                                    :step="field[5] ? field[5] : 1"
+                                    :placeholder="'Enter ' + field[1]"
+                            />
+                            </b-col>
+                        </b-row>
+
+                        <b-dropdown
+                                v-else-if="field[2] === 'choice'" class="float-left"
+                                size="md" id="dropdown-1" :text="choiceName(reactiveData[field[0]], field[3])" variant="outline-secondary" style="padding-bottom: 20px">
+                            <b-dropdown-item
+                                    v-for="(choice, index) in field[3]"
+                                    @click="reactiveData[field[0]] = choice.key"
+                                    :key="index"
+                                    :disabled="choice.disabled === undefined ? false : choice.disabled"
+                            >
+                                {{choice.name}}
+                            </b-dropdown-item>
+                        </b-dropdown>
+
+                        <compact-picker v-else-if="field[2] === 'color'" v-model="reactiveData[field[0]]"/>
+
+                        <b-form-input
+                            v-else
+                            v-model="reactiveData[field[0]]"
+                            :id="'input-' + field[0]"
+                            :type="field[2]"
+                            :placeholder="'Enter ' + field[1]"
+                        />
+                    </b-form-group>
+                </b-col>
+            </b-row>
+        </div>
         <b-row>
             <b-col cols="8">
 

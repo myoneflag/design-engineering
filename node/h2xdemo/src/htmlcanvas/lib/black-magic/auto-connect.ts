@@ -23,6 +23,7 @@ import {MainEventBus} from '@/store/main-event-bus';
 import {Coord} from '@/store/document/types';
 import Graph from '@/calculations/graph';
 import {rebaseAll} from '@/htmlcanvas/lib/black-magic/rebase-all';
+import {fillDirectedValveFields} from '@/store/document/entities/directed-valves/directed-valve-entity';
 
 const CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM = 500;
 const FIXTURE_WALL_DIST_MM = 200;
@@ -661,8 +662,10 @@ export class AutoConnector {
             case EntityType.PIPE:
             case EntityType.FLOW_SOURCE:
             case EntityType.SYSTEM_NODE:
-            case EntityType.DIRECTED_VALVE:
                 return entity.systemUid;
+            case EntityType.DIRECTED_VALVE:
+                const res = fillDirectedValveFields(this.context.document, this.context.objectStore, entity);
+                return res.systemUidOption;
             case EntityType.RESULTS_MESSAGE:
             case EntityType.BACKGROUND_IMAGE:
             case EntityType.TMV:

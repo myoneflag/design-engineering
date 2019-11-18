@@ -1,31 +1,6 @@
 <template>
     <div>
 
-        <b-row style="padding-bottom: 10px; padding-top: 20px;">
-            <b-col>
-                <h4 class="float-right">Settings for:</h4>
-            </b-col>
-            <b-col>
-                <FlowSystemPicker
-                    :selected-system-uid="selectedSystem.uid"
-                    :flow-systems="flowSystems"
-                    @selectSystem="selectSystem"
-                />
-            </b-col>
-        </b-row>
-        <b-row style="padding-bottom: 20px">
-            <b-col>
-            </b-col>
-            <b-col>
-                <b-button variant="light" @click="addNewSystem" class="float-left">
-                    <v-icon name="plus"/> Add New System
-                </b-button>
-                <b-button variant="light" @click="deleteSystem" class="float-left">
-                    <v-icon name="trash-alt"/> Delete
-                </b-button>
-            </b-col>
-        </b-row>
-
         <SettingsFieldBuilder
                 ref="fields"
                 :fields="fields"
@@ -34,6 +9,31 @@
                 :onSave="save"
                 :onBack="back"
         >
+            <b-row style="padding-bottom: 10px; padding-top: 20px;">
+                <b-col>
+                    <h4 class="float-right">Settings for:</h4>
+                </b-col>
+                <b-col>
+                    <FlowSystemPicker
+                            :selected-system-uid="selectedSystem.uid"
+                            :flow-systems="flowSystems"
+                            @selectSystem="selectSystem"
+                    />
+                </b-col>
+            </b-row>
+            <b-row style="padding-bottom: 20px">
+                <b-col>
+                </b-col>
+                <b-col>
+                    <b-button variant="light" @click="addNewSystem" class="float-left">
+                        <v-icon name="plus"/> Add New System
+                    </b-button>
+                    <b-button variant="light" @click="deleteSystem" class="float-left">
+                        <v-icon name="trash-alt"/> Delete
+                    </b-button>
+                </b-col>
+            </b-row>
+
         </SettingsFieldBuilder>
     </div>
 </template>

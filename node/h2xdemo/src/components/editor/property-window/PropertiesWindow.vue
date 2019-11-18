@@ -55,6 +55,7 @@ import {EntityType} from "@/store/document/entities/types";
                     :on-change="onChange"
                     :target-property="targetProperty"
                     :on-delete="onDelete"
+                    :object-store="objectStore"
             />
 
         </template>
@@ -70,6 +71,7 @@ import {EntityType} from "@/store/document/entities/types";
                     :selected-objects="selectedObjects"
                     :on-delete="onDelete"
                     :on-change="onChange"
+                    :object-store="objectStore"
             />
         </template>
 
@@ -119,6 +121,7 @@ import {EntityType} from "@/store/document/entities/types";
             selectedObjects: Array,
             targetProperty: String,
             mode: Number,
+            objectStore: Map,
             onChange: Function,
             onDelete: Function,
         },

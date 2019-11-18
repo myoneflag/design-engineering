@@ -22,8 +22,8 @@ import Pipe from '@/htmlcanvas/objects/pipe';
 import {matrixScale} from '@/htmlcanvas/utils';
 import {Catalog} from '@/store/catalog/types';
 
-export const VALVE_SIZE_MM = 200;
-export const VALVE_HEIGHT_MM = 150;
+export const VALVE_SIZE_MM = 140;
+export const VALVE_HEIGHT_MM = 100;
 export const VALVE_LINE_WIDTH_MM = 10;
 
 @SelectableObject
@@ -79,7 +79,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         const s = matrixScale(context.ctx.getTransform());
         context.ctx.rotate(this.rotationRad);
 
-        const e = fillDirectedValveFields(context.doc, this.entity);
+        const e = fillDirectedValveFields(context.doc, this.objectStore, this.entity);
         if (selected && layerActive) {
             context.ctx.fillStyle = lighten(e.color!.hex, 50, 0.8);
             context.ctx.fillRect(-VALVE_SIZE_MM * 1.2, -VALVE_SIZE_MM * 1.2, VALVE_SIZE_MM * 2.4, VALVE_SIZE_MM * 2.4);

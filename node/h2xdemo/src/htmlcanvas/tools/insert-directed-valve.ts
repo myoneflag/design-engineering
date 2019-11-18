@@ -48,7 +48,7 @@ export default function insertDirectedValve(
                 },
             );
 
-            const valveEntity: DirectedValveEntity = createBareValveEntity(valveType, catalogId, wc, system.uid);
+            const valveEntity: DirectedValveEntity = createBareValveEntity(valveType, catalogId, wc, null);
             context.$store.dispatch('document/addEntity', valveEntity);
 
             if (context.interactive && context.interactive.length) {
@@ -88,7 +88,12 @@ export default function insertDirectedValve(
     ));
 }
 
-function createBareValveEntity(type: ValveType, catalogId: string, wc: Coord, systemUid: string): DirectedValveEntity {
+function createBareValveEntity(
+    type: ValveType,
+    catalogId: string,
+    wc: Coord,
+    systemUidOption: string | null,
+): DirectedValveEntity {
     return {
         calculation: null,
         center: wc,
@@ -96,7 +101,7 @@ function createBareValveEntity(type: ValveType, catalogId: string, wc: Coord, sy
         connections: [],
         parentUid: null,
         sourceUid: '',
-        systemUid,
+        systemUidOption,
         type: EntityType.DIRECTED_VALVE,
         uid: uuid(),
         valve: createBareValve(type, catalogId),

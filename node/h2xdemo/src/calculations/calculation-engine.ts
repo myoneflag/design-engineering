@@ -39,7 +39,10 @@ import {PSDStandardType} from '@/store/catalog/psd-standard/types';
 import {isGermanStandard} from '@/config';
 import Tmv from '@/htmlcanvas/objects/tmv/tmv';
 // tslint:disable-next-line:max-line-length
-import DirectedValveEntity, {makeDirectedValveFields} from '@/store/document/entities/directed-valves/directed-valve-entity';
+import DirectedValveEntity, {
+    determineSystemUid,
+    makeDirectedValveFields,
+} from '@/store/document/entities/directed-valves/directed-valve-entity';
 import {ValveType} from '@/store/document/entities/directed-valves/valve-types';
 
 export const SELF_CONNECTION = 'SELF_CONNECTION';
@@ -337,7 +340,7 @@ export default class CalculationEngine {
                         }
                     case EdgeType.TMV_HOT_WARM:
                     case EdgeType.TMV_COLD_WARM:
-                    case EdgeType.TMV_COLD_COLD:
+                    case EdgeType.TMV_COLD_COLD: {
                         if (obj instanceof Tmv) {
                             if (!obj.entity.calculation) {
                                 return Infinity;
@@ -380,9 +383,10 @@ export default class CalculationEngine {
                         } else {
                             throw new Error('misconfigured flow graph');
                         }
+                    }
                     case EdgeType.FITTING_FLOW:
                     case EdgeType.CHECK_THROUGH:
-                    case EdgeType.ISOLATION_THROUGH:
+                    case EdgeType.ISOLATION_THROUGH: {
                         const sourcePipe = this.objectStore.get(flowFrom.connection) as Pipe;
                         let dist = 0;
                         if (!sourcePipe || sourcePipe.type !== EntityType.PIPE) {
@@ -396,6 +400,7 @@ export default class CalculationEngine {
                         } else {
                             dist = sourcePipe.entity.calculation!.peakFlowRate!;
                         }
+                        const systemUid = determineSystemUid(this.objectStore, (obj.entity as DirectedValveEntity))!;
                         return head2kpa(
                             getObjectFrictionHeadLoss(
                                 this,
@@ -404,10 +409,10 @@ export default class CalculationEngine {
                                 flowFrom,
                                 flowTo,
                             ),
-                            getFluidDensityOfSystem((obj.entity as DirectedValveEntity).systemUid,
-                                this.doc, this.catalog)!,
+                            getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
                             this.ga,
                         );
+                    }
                 }
             },
             undefined,
