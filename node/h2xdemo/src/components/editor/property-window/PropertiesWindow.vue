@@ -59,6 +59,16 @@ import {EntityType} from "@/store/document/entities/types";
 
         </template>
         <template v-else>
+            <h3>{{selectedObjects.length + ' Objects'}}</h3>
+            <div v-if="hasPsdUnits">
+                <b-row>
+                    <b-col>
+                        <h6>{{ coldPsdUnitsName }}: {{ psdUnits[StandardFlowSystemUids.ColdWater].units }}</h6>
+                        <h6>{{ hotPsdUnitsName }}: {{ psdUnits[StandardFlowSystemUids.HotWater].units }}</h6>
+                        <h6>Using: {{psdName}}</h6>
+                    </b-col>
+                </b-row>
+            </div>
             <div
                 v-if="canAutoConnect"
             >
@@ -96,7 +106,7 @@ import {EntityType} from "@/store/document/entities/types";
     import Component from 'vue-class-component';
     import FloorPlanProperties from '@/components/editor/property-window/FloorPlanProperties.vue';
     import FlowSourceProperties from '@/components/editor/property-window/FlowSourceProperties.vue';
-    import {DrawableEntity} from '@/store/document/types';
+    import {DocumentState, DrawableEntity} from "@/store/document/types";
     import FittingProperties from '@/components/editor/property-window/FittingProperties.vue';
     import PipeProperties from '@/components/editor/property-window/PipeProperties.vue';
     import {EntityType} from '@/store/document/entities/types';
@@ -107,6 +117,11 @@ import {EntityType} from "@/store/document/entities/types";
     import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
     import {AutoConnector} from '@/htmlcanvas/lib/black-magic/auto-connect';
     import DirectedValveProperties from '@/components/editor/property-window/DirectedValveProperties.vue';
+    import {Catalog} from "@/store/catalog/types";
+    import Fixture from "@/htmlcanvas/objects/fixture";
+    import {countPsdUnits, PsdUnitsByFlowSystem} from "@/calculations/utils";
+    import {isGermanStandard} from "@/config";
+    import {StandardFlowSystemUids} from "@/store/catalog";
 
     @Component({
         components: {
@@ -137,6 +152,44 @@ import {EntityType} from "@/store/document/entities/types";
             MainEventBus.$emit('auto-connect');
         }
 
+
+        get psdUnits(): PsdUnitsByFlowSystem | null {
+            const selectedObjects: BaseBackedObject[] = this.$props.selectedObjects;
+            return countPsdUnits(selectedObjects, this.document, this.effectiveCatalog);
+        }
+
+        get coldPsdUnitsName() {
+            if (isGermanStandard(this.document.drawing.calculationParams.psdMethod)) {
+                return "Cold Design Flow Rate (L/s)";
+            } else {
+                return "Cold Loading Units";
+            }
+        }
+
+        get hotPsdUnitsName() {
+            if (isGermanStandard(this.document.drawing.calculationParams.psdMethod)) {
+                return "Hot Design Flow Rate (L/s)";
+            } else {
+                return "Hot Loading Units";
+            }
+        }
+
+        get psdName() {
+            return this.effectiveCatalog.psdStandards[this.document.drawing.calculationParams.psdMethod].name;
+        }
+
+        get hasPsdUnits(): boolean {
+            return this.psdUnits !== null;
+        }
+
+        get document(): DocumentState {
+            return this.$store.getters['document/document'];
+        }
+
+        get effectiveCatalog(): Catalog {
+            return this.$store.getters['catalog/default'];
+        }
+
         // This is here to invoke type cohesion when working in the template.
         get entity(): DrawableEntity {
             return this.$props.selectedEntities[0];
@@ -151,6 +204,10 @@ import {EntityType} from "@/store/document/entities/types";
 
         get ENTITY_NAMES() {
             return EntityType;
+        }
+
+        get StandardFlowSystemUids() {
+            return StandardFlowSystemUids;
         }
     }
 </script>
