@@ -7,11 +7,13 @@ import {FieldType, PropertyField} from '@/store/document/entities/property-field
 import {assertUnreachable, cloneSimple} from '@/lib/utils';
 import {DirectedValveConcrete, ValveType} from '@/store/document/entities/directed-valves/valve-types';
 import {Prop} from 'vue/types/options';
+import {ObjectStore} from '@/htmlcanvas/lib/types';
+import Pipe from '@/htmlcanvas/objects/pipe';
 
 export default interface DirectedValveEntity extends ConnectableEntity, CalculationTarget<FittingCalculation> {
     type: EntityType.DIRECTED_VALVE;
     center: Coord;
-    systemUid: string;
+    systemUidOption: string | null;
     color: Color | null;
 
     sourceUid: string;
@@ -24,7 +26,7 @@ export function makeDirectedValveFields(
     valve: DirectedValveConcrete,
 ): PropertyField[] {
     const fields: PropertyField[] = [
-        { property: 'systemUid', title: 'Flow System', hasDefault: false, isCalculated: false,
+        { property: 'systemUidOption', title: 'Flow System', hasDefault: false, isCalculated: false,
             type: FieldType.FlowSystemChoice, params: { systems },  multiFieldId: 'systemUid' },
 
         { property: 'color', title: 'Color:', hasDefault: true, isCalculated: false,
@@ -35,10 +37,11 @@ export function makeDirectedValveFields(
         case ValveType.CHECK_VALVE:
             break;
         case ValveType.ISOLATION_VALVE:
+            /* This will be a custom part of the property box
             fields.push(
                 { property: 'valve.isClosed', title: 'Is Closed:', hasDefault: false, isCalculated: false,
                     type: FieldType.Boolean, params: null,  multiFieldId: 'isClosed' },
-            );
+            );*/
             break;
         case ValveType.PRESSURE_RELIEF_VALVE:
             fields.push(
@@ -60,21 +63,42 @@ export function makeDirectedValveFields(
     return fields;
 }
 
+export function determineSystemUid(objectStore: ObjectStore, value: DirectedValveEntity) {
+
+    if (value.systemUidOption) {
+        return value.systemUidOption;
+    } else {
+        // system will depend on neighbours
+        if (value.connections.length === 0) {
+            return undefined;
+        } else if (value.connections.length === 1) {
+            return (objectStore.get(value.connections[0]) as Pipe).entity.systemUid;
+        } else {
+            return (objectStore.get(value.sourceUid) as Pipe).entity.systemUid;
+        }
+    }
+}
+
 export function fillDirectedValveFields(
     doc: DocumentState,
+    objectStore: ObjectStore,
     value: DirectedValveEntity,
 ) {
     const result = cloneSimple(value);
 
-    // get system
-    const system = doc.drawing.flowSystems.find((s) => s.uid === value.systemUid);
+    const systemUid = determineSystemUid(objectStore, value);
+    const system = doc.drawing.flowSystems.find((s) => s.uid === systemUid);
+
+    result.systemUidOption = system ? system.uid : null;
 
     if (system) {
         if (result.color == null) {
             result.color = system.color;
         }
     } else {
-        throw new Error('Existing system not found for object ' + JSON.stringify(value));
+        if (result.color == null) {
+            result.color = {hex: '#000000'};
+        }
     }
 
     return result;
