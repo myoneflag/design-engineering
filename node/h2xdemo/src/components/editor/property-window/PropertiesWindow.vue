@@ -61,11 +61,11 @@ import {EntityType} from "@/store/document/entities/types";
         <template v-else>
             <h3>{{selectedObjects.length + ' Objects'}}</h3>
             <div v-if="hasPsdUnits">
-                <b-row>
+                <b-row v-b-tooltip.hover="{title: psdName}">
                     <b-col>
-                        <h6>{{ coldPsdUnitsName }}: {{ psdUnits[StandardFlowSystemUids.ColdWater].units }}</h6>
-                        <h6>{{ hotPsdUnitsName }}: {{ psdUnits[StandardFlowSystemUids.HotWater].units }}</h6>
-                        <h6>Using: {{psdName}}</h6>
+                        <h6>{{ coldPsdUnitsName }}: {{ psdUnits[StandardFlowSystemUids.ColdWater].units.toPrecision(2) }}</h6>
+                        <h6>{{ hotPsdUnitsName }}: {{ psdUnits[StandardFlowSystemUids.HotWater].units.toPrecision(2) }}</h6>
+
                     </b-col>
                 </b-row>
             </div>
@@ -89,8 +89,9 @@ import {EntityType} from "@/store/document/entities/types";
             <b-col>
 
                 <b-button style="opacity: 0.2" v-b-toggle.collapse-1 variant="primary" size="sm">Debug Info <v-icon name="info" scale="0.8"/></b-button>
-                <p>{{ selectedEntities.map((e) => e.uid) }}</p>
+
                 <b-collapse id="collapse-1" class="mt-2">
+                    <p>{{ selectedEntities.map((e) => e.uid) }}</p>
                         <pre style="font-size: 12px; text-align: left">{{ JSON.stringify(selectedEntities, null, 2) }}</pre>
                         <b-collapse id="collapse-1-inner" class="mt-2">
                             <b-card>Hello!</b-card>

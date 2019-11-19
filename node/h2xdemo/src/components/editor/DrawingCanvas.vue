@@ -68,7 +68,7 @@ import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
     import Component from "vue-class-component";
     import {ViewPort} from "@/htmlcanvas/viewport";
     import {Coord, DocumentState, FlowSystemParameters} from "@/store/document/types";
-    import {drawPaperScale} from "@/htmlcanvas/scale";
+    import {drawLoadingUnits, drawPaperScale} from "@/htmlcanvas/on-screen-items";
     import ModeButtons from "@/components/editor/ModeButtons.vue";
     import PropertiesWindow from "@/components/editor/property-window/PropertiesWindow.vue";
     import {DrawingMode, MouseMoveResult, UNHANDLED} from "@/htmlcanvas/types";
@@ -110,6 +110,7 @@ import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
     import {assertUnreachable} from "@/lib/utils";
     import insertDirectedValve from "@/htmlcanvas/tools/insert-directed-valve";
     import {ValveType} from '@/store/document/entities/directed-valves/valve-types';
+    import {countPsdUnits} from "@/calculations/utils";
 
     @Component({
         components: {
@@ -268,6 +269,25 @@ import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
 
         get propertiesVisible() {
             if (!this.selectedObjects) {
+                return false;
+            }
+
+            if (!this.currentTool.propertiesVisible) {
+                return false;
+            }
+
+            if (this.hasDragged || this.isLayerDragging) {
+                return false;
+            }
+
+            if (this.selectBox) {
+                return false;
+            }
+            return true;
+        }
+
+        get attributesVisible() {
+            if (this.selectedObjects && this.selectedObjects.length > 0) {
                 return false;
             }
 
@@ -648,6 +668,11 @@ import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
                 ctx.setTransform(TM.identity());
                 drawPaperScale(ctx, 1 / matrixScale(this.viewPort.position));
 
+                if (this.attributesVisible) {
+                    drawLoadingUnits(context, this.effectiveCatalog,
+                        countPsdUnits(Array.from(this.objectStore.values()), this.document, this.effectiveCatalog));
+                }
+
                 if (this.toolHandler) {
                     ctx.setTransform(TM.identity());
                     this.toolHandler.draw(context);
@@ -855,6 +880,7 @@ import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
                 const wasDragged = this.hasDragged;
                 this.hasDragged = false;
                 if (wasDragged) {
+                    this.scheduleDraw();
                     return true;
                 }
             }

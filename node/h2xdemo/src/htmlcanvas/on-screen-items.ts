@@ -1,5 +1,9 @@
-import {DEFAULT_FONT_NAME} from '@/config';
+import {DEFAULT_FONT_NAME, isGermanStandard} from '@/config';
 import * as TM from 'transformation-matrix';
+import {DrawingContext} from '@/htmlcanvas/lib/types';
+import {Catalog} from '@/store/catalog/types';
+import {PsdUnitsByFlowSystem} from '@/calculations/utils';
+import {StandardFlowSystemUids} from '@/store/catalog';
 
 const SENSIBLE_UNITS_MM: number[] = [
     1, 2, 4, 5, 8,
@@ -105,3 +109,26 @@ export const drawPaperScale = (ctx: CanvasRenderingContext2D, pxPerMm: number) =
     ctx.rect(     scaleLeftEdge, height - scaleBottomOffset, smallW * 50, scaleHeight);
     ctx.stroke();
 };
+
+export function drawLoadingUnits(context: DrawingContext, catalog: Catalog, units: PsdUnitsByFlowSystem | null) {
+    if (units == null) {
+        units = {};
+        units[StandardFlowSystemUids.ColdWater] = {units: 0, continuousFlowLS: 0};
+        units[StandardFlowSystemUids.HotWater] = {units: 0, continuousFlowLS: 0};
+    }
+    const ctx = context.ctx;
+
+
+    const height = ctx.canvas.height;
+
+    const psduSuffix = isGermanStandard(context.doc.drawing.calculationParams.psdMethod) ?
+        'Design Flow Rate (L/s)' : 'Loading Units';
+
+    let y = height - 100;
+
+    ctx.font = '12px ' + DEFAULT_FONT_NAME;
+    ctx.fillStyle = '#000000';
+    ctx.fillText('Cold ' + psduSuffix + ': ' + units[StandardFlowSystemUids.ColdWater].units.toPrecision(2), 20, y);
+    ctx.fillText('Hot ' + psduSuffix + ': ' + units[StandardFlowSystemUids.HotWater].units.toPrecision(2), 20, y + 20);
+    ctx.fillText('Total using ' + catalog.psdStandards[context.doc.drawing.calculationParams.psdMethod].name, 20, y + 40);
+}
