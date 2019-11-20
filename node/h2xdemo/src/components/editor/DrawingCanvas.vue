@@ -669,9 +669,15 @@ import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
                 ctx.setTransform(TM.identity());
                 drawPaperScale(ctx, 1 / matrixScale(this.viewPort.position));
 
-                if (this.attributesVisible) {
-                    drawLoadingUnits(context, this.effectiveCatalog,
-                        countPsdUnits(Array.from(this.objectStore.values()), this.document, this.effectiveCatalog));
+                if (this.propertiesVisible) {
+                    if (this.selectedObjects && this.selectedObjects.length > 0) {
+                        drawLoadingUnits(context, this.effectiveCatalog,
+                            countPsdUnits(this.selectedObjects, this.document, this.effectiveCatalog), true);
+                    } else {
+                        drawLoadingUnits(context, this.effectiveCatalog,
+                            countPsdUnits(Array.from(this.objectStore.values()), this.document, this.effectiveCatalog));
+                    }
+
                 }
 
                 if (this.toolHandler) {

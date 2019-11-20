@@ -44,6 +44,7 @@ import DirectedValveEntity, {
     makeDirectedValveFields,
 } from '@/store/document/entities/directed-valves/directed-valve-entity';
 import {ValveType} from '@/store/document/entities/directed-valves/valve-types';
+import {lookupFlowRate} from '@/calculations/utils';
 
 export const SELF_CONNECTION = 'SELF_CONNECTION';
 
@@ -654,7 +655,7 @@ export default class CalculationEngine {
             });
 
             if (totalPsdU) {
-                const recommendedFlowRate = this.lookupFlowRate(totalPsdU);
+                const recommendedFlowRate = lookupFlowRate(totalPsdU, this.doc, this.catalog);
                 if (recommendedFlowRate === null) {
                     throw new Error('Could not get flow rate from loading units');
                 }
@@ -802,7 +803,7 @@ export default class CalculationEngine {
                 entity.calculation = emptyPipeCalculation();
                 entity.calculation.psdUnits = psdU;
 
-                const flowRate = this.lookupFlowRate(psdU);
+                const flowRate = lookupFlowRate(psdU, this.doc, this.catalog);
 
                 if (flowRate === null) {
                     // out of range
@@ -828,7 +829,7 @@ export default class CalculationEngine {
                 if (!entity.calculation) {
                     entity.calculation = emptyTmvCalculation();
                 }
-                const flowRate = this.lookupFlowRate(psdU);
+                const flowRate = lookupFlowRate(psdU, this.doc, this.catalog);
 
                 if (flowEdge.type === EdgeType.TMV_COLD_COLD) {
                     entity.calculation.coldPsdUs = psdU;
@@ -875,26 +876,6 @@ export default class CalculationEngine {
                 getFluidDensityOfSystem(pipe.systemUid, this.doc, this.catalog)!,
                 this.ga,
             );
-        }
-    }
-
-    lookupFlowRate(psdU: number): number | null {
-        const psd = this.doc.drawing.calculationParams.psdMethod;
-        const standard = this.catalog.psdStandards[psd];
-        if (standard.type === PSDStandardType.LU_LOOKUP_TABLE) {
-            const table = standard.table;
-            return interpolateTable(table, psdU, true);
-        } else if (standard.type === PSDStandardType.EQUATION) {
-            if (standard.equation !== 'a*(sum(Q,q))^b-c') {
-                throw new Error('Only the german equation a*(sum(Q,q))^b-c is currently supported');
-            }
-            const a = parseCatalogNumberExact(standard.variables.a)!;
-            const b = parseCatalogNumberExact(standard.variables.b)!;
-            const c = parseCatalogNumberExact(standard.variables.c)!;
-
-            return a * (psdU ** b) - c;
-        } else {
-            throw new Error('PSD not supported');
         }
     }
 

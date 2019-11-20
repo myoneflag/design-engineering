@@ -4,8 +4,10 @@ import {assertUnreachable} from '@/lib/utils';
 import {isGermanStandard} from '@/config';
 import {DocumentState} from '@/store/document/types';
 import {StandardFlowSystemUids} from '@/store/catalog';
-import {Catalog} from '@/store/catalog/types';
+import {Catalog, PSDSpec} from '@/store/catalog/types';
 import {fillFixtureFields} from '@/store/document/entities/fixtures/fixture-entity';
+import {PsdStandard, PSDStandardType} from '@/store/catalog/psd-standard/types';
+import {interpolateTable, parseCatalogNumberExact} from '@/htmlcanvas/lib/utils';
 
 export interface PsdCountEntry {
     units: number;
@@ -65,4 +67,25 @@ export function countPsdUnits(
     });
 
     return result;
+}
+
+
+export function lookupFlowRate(psdU: number, doc: DocumentState, catalog: Catalog): number | null {
+    const psd = doc.drawing.calculationParams.psdMethod;
+    const standard = catalog.psdStandards[psd];
+    if (standard.type === PSDStandardType.LU_LOOKUP_TABLE) {
+        const table = standard.table;
+        return interpolateTable(table, psdU, true);
+    } else if (standard.type === PSDStandardType.EQUATION) {
+        if (standard.equation !== 'a*(sum(Q,q))^b-c') {
+            throw new Error('Only the german equation a*(sum(Q,q))^b-c is currently supported');
+        }
+        const a = parseCatalogNumberExact(standard.variables.a)!;
+        const b = parseCatalogNumberExact(standard.variables.b)!;
+        const c = parseCatalogNumberExact(standard.variables.c)!;
+
+        return a * (psdU ** b) - c;
+    } else {
+        throw new Error('PSD not supported');
+    }
 }

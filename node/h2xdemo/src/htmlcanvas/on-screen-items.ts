@@ -2,7 +2,7 @@ import {DEFAULT_FONT_NAME, isGermanStandard} from '@/config';
 import * as TM from 'transformation-matrix';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
 import {Catalog} from '@/store/catalog/types';
-import {PsdUnitsByFlowSystem} from '@/calculations/utils';
+import {lookupFlowRate, PsdUnitsByFlowSystem} from '@/calculations/utils';
 import {StandardFlowSystemUids} from '@/store/catalog';
 
 const SENSIBLE_UNITS_MM: number[] = [
@@ -110,7 +110,12 @@ export const drawPaperScale = (ctx: CanvasRenderingContext2D, pxPerMm: number) =
     ctx.stroke();
 };
 
-export function drawLoadingUnits(context: DrawingContext, catalog: Catalog, units: PsdUnitsByFlowSystem | null) {
+export function drawLoadingUnits(
+    context: DrawingContext,
+    catalog: Catalog,
+    units: PsdUnitsByFlowSystem | null,
+    selection: boolean = false,
+) {
     if (units == null) {
         units = {};
         units[StandardFlowSystemUids.ColdWater] = {units: 0, continuousFlowLS: 0};
@@ -121,14 +126,32 @@ export function drawLoadingUnits(context: DrawingContext, catalog: Catalog, unit
 
     const height = ctx.canvas.height;
 
-    const psduSuffix = isGermanStandard(context.doc.drawing.calculationParams.psdMethod) ?
-        'Design Flow Rate (L/s)' : 'Loading Units';
+    const psduSuffix = 'PSD';
 
     let y = height - 100;
 
     ctx.font = '12px ' + DEFAULT_FONT_NAME;
     ctx.fillStyle = '#000000';
-    ctx.fillText('Cold ' + psduSuffix + ': ' + units[StandardFlowSystemUids.ColdWater].units.toPrecision(2), 20, y);
-    ctx.fillText('Hot ' + psduSuffix + ': ' + units[StandardFlowSystemUids.HotWater].units.toPrecision(2), 20, y + 20);
-    ctx.fillText('Total using ' + catalog.psdStandards[context.doc.drawing.calculationParams.psdMethod].name, 20, y + 40);
+
+    if (selection) {
+        ctx.fillText('(In Selection)', 20, y - 20);
+    } else {
+        ctx.fillText('Total PSD: w/Space Capacity (w/o)', 20, y - 20);
+    }
+
+    const coldFR = lookupFlowRate(units[StandardFlowSystemUids.ColdWater].units, context.doc, catalog)!;
+    const hotFR = lookupFlowRate(units[StandardFlowSystemUids.HotWater].units, context.doc, catalog)!;
+    const coldFRSpare = coldFR * (1 + 0.01 * context.doc.drawing.flowSystems.find((s) => s.uid === StandardFlowSystemUids.ColdWater)!.spareCapacity);
+    const hotFRSpare = hotFR * (1 + 0.01 * context.doc.drawing.flowSystems.find((s) => s.uid === StandardFlowSystemUids.WarmWater)!.spareCapacity);
+
+    ctx.fillText('Cold: ', 20, y);
+    ctx.fillText((coldFR ? coldFRSpare.toPrecision(3) : 0) + ' L/s ', 80, y);
+    ctx.fillText('(' + (coldFR.toPrecision(3)) + ')', 180, y);
+
+
+    ctx.fillText('Hot: ', 20, y + 20);
+    ctx.fillText((hotFR ? hotFRSpare.toPrecision(3) : 0) + ' L/s ', 80, y + 20);
+    ctx.fillText('(' + (hotFR.toPrecision(3)) + ')', 180, y + 20);
+
+    ctx.fillText(catalog.psdStandards[context.doc.drawing.calculationParams.psdMethod].name, 20, y + 40);
 }

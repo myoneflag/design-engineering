@@ -1,5 +1,5 @@
 {
-  "lastModified": "2019-11-18T19:26:20+11",
+  "lastModified": "2019-11-20T10:06:28+11",
   "fixtures": {
     "ablutionTrough": {
       "abbreviation": "AT",
@@ -1560,7 +1560,7 @@
     },
     "barriesBookLoadingUnits": {
       "type": "LU_LOOKUP_TABLE",
-      "name": "Barrie's Bool Loading Units",
+      "name": "Barrie's Book Loading Units",
       "table": {
         "1": "0.1",
         "2": "0.12",
