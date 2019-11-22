@@ -139,18 +139,27 @@ export function drawLoadingUnits(
         ctx.fillText('Total PSD: w/Space Capacity (w/o)', 20, y - 20);
     }
 
-    const coldFR = lookupFlowRate(units[StandardFlowSystemUids.ColdWater].units, context.doc, catalog)!;
-    const hotFR = lookupFlowRate(units[StandardFlowSystemUids.HotWater].units, context.doc, catalog)!;
-    const coldFRSpare = coldFR * (1 + 0.01 * context.doc.drawing.flowSystems.find((s) => s.uid === StandardFlowSystemUids.ColdWater)!.spareCapacity);
-    const hotFRSpare = hotFR * (1 + 0.01 * context.doc.drawing.flowSystems.find((s) => s.uid === StandardFlowSystemUids.WarmWater)!.spareCapacity);
+    let coldFR = lookupFlowRate(units[StandardFlowSystemUids.ColdWater].units, context.doc, catalog)!;
+    let hotFR = lookupFlowRate(units[StandardFlowSystemUids.HotWater].units, context.doc, catalog)!;
+    let coldFRSpare = coldFR * (1 + 0.01 * context.doc.drawing.flowSystems.find((s) => s.uid === StandardFlowSystemUids.ColdWater)!.spareCapacity);
+    let hotFRSpare = hotFR * (1 + 0.01 * context.doc.drawing.flowSystems.find((s) => s.uid === StandardFlowSystemUids.WarmWater)!.spareCapacity);
+
+    if (coldFR === null) {
+        coldFR = 0;
+        coldFRSpare = 0;
+    }
+    if (hotFR === null) {
+        hotFR = 0;
+        hotFRSpare = 0;
+    }
 
     ctx.fillText('Cold: ', 20, y);
-    ctx.fillText((coldFR ? coldFRSpare.toPrecision(3) : 0) + ' L/s ', 80, y);
+    ctx.fillText((coldFRSpare.toPrecision(3)) + ' L/s ', 80, y);
     ctx.fillText('(' + (coldFR.toPrecision(3)) + ')', 180, y);
 
 
     ctx.fillText('Hot: ', 20, y + 20);
-    ctx.fillText((hotFR ? hotFRSpare.toPrecision(3) : 0) + ' L/s ', 80, y + 20);
+    ctx.fillText((hotFRSpare.toPrecision(3)) + ' L/s ', 80, y + 20);
     ctx.fillText('(' + (hotFR.toPrecision(3)) + ')', 180, y + 20);
 
     ctx.fillText(catalog.psdStandards[context.doc.drawing.calculationParams.psdMethod].name, 20, y + 40);

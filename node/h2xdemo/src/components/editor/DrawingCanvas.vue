@@ -1,3 +1,4 @@
+import {DrawingMode} from "@/htmlcanvas/types";
 import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
 <template>
     <div ref="canvasFrame" class="fullFrame">
@@ -110,7 +111,7 @@ import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
     import {AutoConnector} from "@/htmlcanvas/lib/black-magic/auto-connect";
     import {assertUnreachable} from "@/lib/utils";
     import insertDirectedValve from "@/htmlcanvas/tools/insert-directed-valve";
-    import {ValveType} from '@/store/document/entities/directed-valves/valve-types';
+    import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
     import {countPsdUnits} from "@/calculations/utils";
 
     @Component({
@@ -670,7 +671,7 @@ import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
                 drawPaperScale(ctx, 1 / matrixScale(this.viewPort.position));
 
                 if (this.propertiesVisible) {
-                    if (this.selectedObjects && this.selectedObjects.length > 0) {
+                    if (this.selectedObjects && this.selectedObjects.length > 0 && this.mode === DrawingMode.Hydraulics) {
                         drawLoadingUnits(context, this.effectiveCatalog,
                             countPsdUnits(this.selectedObjects, this.document, this.effectiveCatalog), true);
                     } else {
