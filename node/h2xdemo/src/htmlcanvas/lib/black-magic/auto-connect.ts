@@ -14,16 +14,16 @@ import Pipe from '@/htmlcanvas/objects/pipe';
 import PipeEntity from '@/store/document/entities/pipe-entity';
 import uuid from 'uuid';
 import FittingEntity from '@/store/document/entities/fitting-entity';
-import {FlowConfiguration, SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
+import {FlowConfiguration} from '@/store/document/entities/tmv/tmv-entity';
 import {isConnectable} from '@/store/document';
 import assert from 'assert';
-import FlowSystemPicker from '@/components/editor/FlowSystemPicker.vue';
 import {StandardFlowSystemUids, StandardMaterialUids} from '@/store/catalog';
 import {MainEventBus} from '@/store/main-event-bus';
 import {Coord} from '@/store/document/types';
-import Graph from '@/calculations/graph';
 import {rebaseAll} from '@/htmlcanvas/lib/black-magic/rebase-all';
 import {fillDirectedValveFields} from '@/store/document/entities/directed-valves/directed-valve-entity';
+import connectTmvToSource from '@/htmlcanvas/lib/black-magic/connect-tmv-to-source';
+import Tmv from '@/htmlcanvas/objects/tmv/tmv';
 
 const CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM = 500;
 const FIXTURE_WALL_DIST_MM = 200;
@@ -723,10 +723,21 @@ export class AutoConnector {
         MainEventBus.$off('add-entity', this.onAddEntity);
     }
 
+    connectAllTmvs() {
+        console.log('connecting TMVs');
+        this.selected.forEach((o) => {
+            if (o.type === EntityType.TMV) {
+                connectTmvToSource(this.context, o as Tmv);
+            }
+        });
+    }
+
     autoConnect() {
         this.rig();
 
         try {
+            // firstly
+            this.connectAllTmvs();
 
             let iters = 0;
             while (true) {

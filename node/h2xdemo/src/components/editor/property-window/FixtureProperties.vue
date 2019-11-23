@@ -5,6 +5,9 @@
                 <h3>Fixture ({{ reactiveData.name }})</h3>
             </b-col>
         </b-row>
+        <slot>
+
+        </slot>
         <PropertiesFieldBuilder
                 :fields="fields"
                 :reactive-data="reactiveData"

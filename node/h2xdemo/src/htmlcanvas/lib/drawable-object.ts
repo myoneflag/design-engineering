@@ -53,7 +53,7 @@ export default abstract class DrawableObject {
         return TM.applyToPoint(this.position, object);
     }
 
-    toWorldCoord(object: Coord): Coord {
+    toWorldCoord(object: Coord = {x: 0, y: 0}): Coord {
         if (this.parent == null) {
             return TM.applyToPoint(this.position, object);
         }

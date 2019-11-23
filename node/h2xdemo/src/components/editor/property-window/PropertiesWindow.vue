@@ -39,7 +39,11 @@ import {EntityType} from "@/store/document/entities/types";
                     :on-change="onChange"
                     :target-property="targetProperty"
                     :on-delete="onDelete"
-            />
+            >
+                <div v-if="canAutoConnect">
+                    <b-button variant="success" size="lg" @click="autoConnect">Auto Connect</b-button>
+                </div>
+            </TMVProperties>
             <FixtureProperties
                     v-else-if="entity.type === ENTITY_NAMES.FIXTURE"
                     :selected-entity="entity"
@@ -61,6 +65,9 @@ import {EntityType} from "@/store/document/entities/types";
         </template>
         <template v-else>
             <h3>{{selectedObjects.length + ' Objects'}}</h3>
+            <div v-if="canAutoConnect">
+                <b-button variant="success" size="lg" @click="autoConnect">Auto Connect</b-button>
+            </div>
             <div v-if="hasPsdUnits">
                 <b-row v-b-tooltip.hover="{title: psdName}">
                     <b-col>
@@ -69,11 +76,6 @@ import {EntityType} from "@/store/document/entities/types";
 
                     </b-col>
                 </b-row>
-            </div>
-            <div
-                v-if="canAutoConnect"
-            >
-                <b-button variant="success" size="lg" @click="autoConnect">Auto Connect</b-button>
             </div>
             <MultiFieldBuilder
                     v-else
@@ -203,7 +205,8 @@ import {EntityType} from "@/store/document/entities/types";
         get canAutoConnect(): boolean {
             // must contain a fixture
             const selectedObjects: BaseBackedObject[] = this.$props.selectedObjects;
-            return selectedObjects.findIndex((o) => o.type === EntityType.FIXTURE) !== -1;
+            const neededTypes: string[] = [EntityType.FIXTURE, EntityType.TMV];
+            return selectedObjects.findIndex((o) => neededTypes.includes(o.type)) !== -1;
         }
 
         get ENTITY_NAMES() {

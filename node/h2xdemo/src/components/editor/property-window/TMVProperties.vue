@@ -5,6 +5,9 @@
                 <h3>Flow Source</h3>
             </b-col>
         </b-row>
+        <slot>
+
+        </slot>
         <PropertiesFieldBuilder
                 :fields="fields"
                 :reactive-data="reactiveData"
