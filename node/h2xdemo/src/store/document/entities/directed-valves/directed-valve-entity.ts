@@ -2,13 +2,12 @@ import {Color, ConnectableEntity, Coord, DocumentState, FlowSystemParameters} fr
 import {CalculationTarget} from '@/store/document/calculations/types';
 import FittingCalculation from '@/store/document/calculations/fitting-calculation';
 import {EntityType} from '@/store/document/entities/types';
-import {Choice} from '@/lib/types';
 import {FieldType, PropertyField} from '@/store/document/entities/property-field';
 import {assertUnreachable, cloneSimple} from '@/lib/utils';
 import {DirectedValveConcrete, ValveType} from '@/store/document/entities/directed-valves/valve-types';
-import {Prop} from 'vue/types/options';
 import {ObjectStore} from '@/htmlcanvas/lib/types';
 import Pipe from '@/htmlcanvas/objects/pipe';
+import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-entity';
 
 export default interface DirectedValveEntity extends ConnectableEntity, CalculationTarget<FittingCalculation> {
     type: EntityType.DIRECTED_VALVE;
@@ -63,19 +62,31 @@ export function makeDirectedValveFields(
     return fields;
 }
 
-export function determineSystemUid(objectStore: ObjectStore, value: DirectedValveEntity) {
+export function determineConnectableSystemUid(
+    objectStore: ObjectStore,
+    value: ConnectableEntityConcrete,
+): string | undefined{
 
-    if (value.systemUidOption) {
-        return value.systemUidOption;
-    } else {
-        // system will depend on neighbours
-        if (value.connections.length === 0) {
-            return undefined;
-        } else if (value.connections.length === 1) {
-            return (objectStore.get(value.connections[0]) as Pipe).entity.systemUid;
-        } else {
-            return (objectStore.get(value.sourceUid) as Pipe).entity.systemUid;
-        }
+    switch (value.type) {
+        case EntityType.FITTING:
+        case EntityType.FLOW_SOURCE:
+        case EntityType.SYSTEM_NODE:
+            // system will depend on neighbours
+            return value.systemUid;
+        case EntityType.DIRECTED_VALVE:
+            if (value.systemUidOption) {
+                return value.systemUidOption;
+            } else {
+                // system will depend on neighbours
+                if (value.connections.length === 0) {
+                    return undefined;
+                } else if (value.connections.length === 1) {
+                    return (objectStore.get(value.connections[0]) as Pipe).entity.systemUid;
+                } else {
+                    return (objectStore.get(value.sourceUid) as Pipe).entity.systemUid;
+                }
+            }
+
     }
 }
 
@@ -86,7 +97,7 @@ export function fillDirectedValveFields(
 ) {
     const result = cloneSimple(value);
 
-    const systemUid = determineSystemUid(objectStore, value);
+    const systemUid = determineConnectableSystemUid(objectStore, value);
     const system = doc.drawing.flowSystems.find((s) => s.uid === systemUid);
 
     result.systemUidOption = system ? system.uid : null;

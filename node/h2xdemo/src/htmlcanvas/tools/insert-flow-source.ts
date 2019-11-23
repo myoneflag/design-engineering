@@ -13,6 +13,7 @@ import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import {addValveAndSplitPipe} from '@/htmlcanvas/lib/black-magic/split-pipe';
 import {cloneSimple, connect, disconnect} from '@/lib/utils';
+import {rebaseAll} from '@/htmlcanvas/lib/black-magic/rebase-all';
 
 export default function insertFlowSource(
     context: CanvasContext,
@@ -105,16 +106,8 @@ export default function insertFlowSource(
                 } else {
                     toReplace = null;
                 }
-
-                const doc = context.document as DocumentState;
-
-                // Maybe we drew onto a background
-                const [parentUid, oc] = getInsertCoordsAt(context, wc);
-                newEntity.center = oc;
-                newEntity.parentUid = parentUid;
-
-
-
+                
+                rebaseAll(context);
                 context.processDocument();
 
             });

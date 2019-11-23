@@ -40,7 +40,7 @@ import {isGermanStandard} from '@/config';
 import Tmv from '@/htmlcanvas/objects/tmv/tmv';
 // tslint:disable-next-line:max-line-length
 import DirectedValveEntity, {
-    determineSystemUid,
+    determineConnectableSystemUid,
     makeDirectedValveFields,
 } from '@/store/document/entities/directed-valves/directed-valve-entity';
 import {ValveType} from '@/store/document/entities/directed-valves/valve-types';
@@ -401,7 +401,7 @@ export default class CalculationEngine {
                         } else {
                             dist = sourcePipe.entity.calculation!.peakFlowRate!;
                         }
-                        const systemUid = determineSystemUid(this.objectStore, (obj.entity as DirectedValveEntity))!;
+                        const systemUid = determineConnectableSystemUid(this.objectStore, (obj.entity as DirectedValveEntity))!;
                         return head2kpa(
                             getObjectFrictionHeadLoss(
                                 this,

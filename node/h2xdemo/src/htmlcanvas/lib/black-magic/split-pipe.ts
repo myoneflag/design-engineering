@@ -10,6 +10,7 @@ import {getInsertCoordsAt} from '@/htmlcanvas/lib/utils';
 import {MagicResult} from '@/htmlcanvas/lib/black-magic/index';
 import FittingEntity from '@/store/document/entities/fitting-entity';
 import Fitting from '@/htmlcanvas/objects/fitting';
+import {rebaseAll} from '@/htmlcanvas/lib/black-magic/rebase-all';
 
 export function addValveAndSplitPipe(
     context: CanvasContext,
@@ -30,9 +31,6 @@ export function addValveAndSplitPipe(
         system = pipe.entity.systemUid;
     }
 
-    // Maybe we drew onto a background
-    const [parentUid, oc] = getInsertCoordsAt(context, hoverWc);
-
     const pipe1uid = uuid();
     const pipe2uid = uuid();
 
@@ -40,10 +38,10 @@ export function addValveAndSplitPipe(
 
     if (newValve === undefined) {
         newValve = {
-            center: oc,
+            center: hoverWc,
             color: null,
             connections: [pipe1uid, pipe2uid],
-            parentUid,
+            parentUid: null,
             systemUid: system,
             type: EntityType.FITTING,
             uid: uuid(),
@@ -57,8 +55,7 @@ export function addValveAndSplitPipe(
         nvo.connect(pipe1uid);
         nvo.connect(pipe2uid);
 
-        newValve.parentUid = parentUid;
-        newValve.center = oc;
+        newValve.center = hoverWc;
     }
 
     const newPipe1: PipeEntity = {

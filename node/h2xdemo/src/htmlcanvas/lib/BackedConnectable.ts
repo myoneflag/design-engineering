@@ -8,7 +8,7 @@ import Flatten from '@flatten-js/core';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 import {Coord} from '@/store/document/types';
 import {
-    determineSystemUid,
+    determineConnectableSystemUid,
     fillDirectedValveFields,
 } from '@/store/document/entities/directed-valves/directed-valve-entity';
 
@@ -95,7 +95,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
 
 
                 if (entity.type === EntityType.DIRECTED_VALVE) {
-                    const suid = determineSystemUid(this.objectStore, entity);
+                    const suid = determineConnectableSystemUid(this.objectStore, entity);
                     isSystemCorrect = interaction.systemUid === null || interaction.systemUid === suid;
                 } else {
                     isSystemCorrect = interaction.systemUid === null || interaction.systemUid === entity.systemUid;
