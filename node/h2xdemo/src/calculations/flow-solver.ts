@@ -8,6 +8,7 @@ import FlowSourceEntity from '@/store/document/entities/flow-source-entity';
 import {FlowAssignment} from '@/calculations/flow-assignment';
 import { getObjectFrictionHeadLoss } from './entity-pressure-drops';
 import {FlowEdge, FlowNode, SELF_CONNECTION} from '@/calculations/calculation-engine';
+import Fitting from '@/htmlcanvas/objects/fitting';
 
 export const MINIMUM_FLOW_RATE_CHANGE = 0.0001;
 
@@ -149,6 +150,22 @@ export default class FlowSolver {
                 ' expected difference: ' +
                 expectedDifferenceHead,
             );
+
+            console.log('og flows: ' + JSON.stringify(path.map((p) => flows.getFlow(p.uid, serializeValue(p.from)))));
+            console.log('uids: ' +  JSON.stringify(path.map((p) => p.value.uid)));
+
+            console.log('last ones:');
+            const o = this.objectStore.get(path[0].value.uid) as Fitting;
+            for (let i = -0.25; i <= 0.25; i += 0.01) {
+                console.log(o.getFrictionHeadLoss(
+                    {drawing: this.doc.drawing, catalog: this.catalog, objectStore: this.objectStore},
+                    i,
+                    path[1].from,
+                    path[1].to,
+                    true,
+                ));
+            }
+
             throw e;
         }
     }

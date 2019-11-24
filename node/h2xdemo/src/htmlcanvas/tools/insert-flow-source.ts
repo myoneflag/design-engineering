@@ -106,7 +106,7 @@ export default function insertFlowSource(
                 } else {
                     toReplace = null;
                 }
-                
+
                 rebaseAll(context);
                 context.processDocument();
 

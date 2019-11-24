@@ -227,6 +227,8 @@ export function ConnectableObject<T extends new (...args: any[])
                 // @ts-ignore
                 return super.getFrictionHeadLoss(context, flowLS, from, to, signed);
             }
+
+            // We going to do pipe size changes here for any connectable.
             const ga = context.drawing.calculationParams.gravitationalAcceleration;
 
             const oFrom = from;
@@ -270,13 +272,12 @@ export function ConnectableObject<T extends new (...args: any[])
             const largeSize = Math.max(sizes[0]!, sizes[1]!);
             const smallSize = Math.min(sizes[0]!, sizes[1]!);
 
-
             const volLM = smallSize ** 2 * Math.PI / 4 / 1000;
             const velocityMS = flowLS / volLM;
 
-            const angle =  angleDiffRad(this.getAngleOfRad(from.connection), this.getAngleOfRad(to.connection));
+            const angle = Math.abs(angleDiffRad(this.getAngleOfRad(from.connection), this.getAngleOfRad(to.connection)));
 
-            const k = 0.8 * (Math.sin(angle / 2)) * (1 - (largeSize ** 2 / smallSize ** 2));
+            const k = 0.8 * (Math.sin(angle / 2)) * (1 - (smallSize ** 2 / largeSize ** 2));
 
             return sign * (k * velocityMS ** 2 / (2 * ga)) +
                 // @ts-ignore

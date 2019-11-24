@@ -10,6 +10,7 @@ export function ternarySearchForGlobalMin(fn: (num: number) => number): number {
     let iters = 0;
     let lowEscaped = false;
     let highEscaped = false;
+
     while (true) {
         const mid1 = (low * 2 + high) / 3;
         const mid2 = (low + high * 2) / 3;
@@ -31,7 +32,6 @@ export function ternarySearchForGlobalMin(fn: (num: number) => number): number {
             lowEscaped = true;
             break;
         }
-
     }
 
     iters = 0;
@@ -72,7 +72,6 @@ export function ternarySearchForGlobalMin(fn: (num: number) => number): number {
         const mv2 = fn(mid2);
         const mv0 = fn(low);
         const mv3 = fn(high);
-
 
         if (mv1 > mv0) {
             throw new Error('mv0 ' + mv0 + ' is less than mv1 ' + mv1 + ' low: ' + low + ' mid1: ' + mid1);
