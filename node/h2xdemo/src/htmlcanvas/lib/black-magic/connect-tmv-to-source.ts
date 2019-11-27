@@ -19,14 +19,18 @@ import {FlowConfiguration} from '@/store/document/entities/tmv/tmv-entity';
 
 export default function connectTmvToSource(context: CanvasContext, newTmv: Tmv) {
     const wc = newTmv.toWorldCoord();
-    const selfUids: string[] = [newTmv.uid, newTmv.entity.hotRoughInUid, newTmv.entity.coldRoughInUid, newTmv.entity.warmOutputUid];
+    const selfUids: string[] = [
+        newTmv.uid,
+        newTmv.entity.hotRoughInUid,
+        newTmv.entity.coldRoughInUid,
+        newTmv.entity.warmOutputUid,
+    ];
     if (newTmv.entity.coldOutputUid) {
         selfUids.push(newTmv.entity.coldOutputUid);
     }
 
     const interactive = getClosestJoinable(context, StandardFlowSystemUids.ColdWater, wc, 3000, selfUids);
 
-    let tmvObj: Tmv | undefined;
     let coldObj: SystemNode | undefined;
     let hotObj: SystemNode | undefined;
     let coldDrawn = false;

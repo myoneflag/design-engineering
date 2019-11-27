@@ -36,6 +36,9 @@ export function getFrictionFactor(
             break;
         }
         curr = next;
+        if (iter > 500) {
+            throw new Error('infinite loop in friction calculation');
+        }
     }
     return curr;
 }
@@ -51,7 +54,7 @@ export function getDarcyWeisbachMH(
         ((internalDiameterMM / 1000) * ga * 2);
 }
 
-export function     getDarcyWeisbachFlatMH(
+export function getDarcyWeisbachFlatMH(
     internalDiameterMM: number,
     pipeRoughness: number,
     densityKGM3: number,

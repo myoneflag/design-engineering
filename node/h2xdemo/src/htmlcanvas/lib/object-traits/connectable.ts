@@ -222,6 +222,7 @@ export function ConnectableObject<T extends new (...args: any[])
             from: FlowNode,
             to: FlowNode,
             signed: boolean,
+            pipeSizes?: [number, number],
         ): number {
             if (this.entity.type === EntityType.SYSTEM_NODE) {
                 // @ts-ignore
@@ -254,7 +255,7 @@ export function ConnectableObject<T extends new (...args: any[])
                 return 0;
             }
 
-            const sizes = [from, to].map((n) => {
+            const sizes = pipeSizes || [from, to].map((n) => {
                 const o = context.objectStore.get(n.connection);
                 if (o && o.type === EntityType.PIPE) {
                     const p = o as Pipe;
@@ -275,7 +276,10 @@ export function ConnectableObject<T extends new (...args: any[])
             const volLM = smallSize ** 2 * Math.PI / 4 / 1000;
             const velocityMS = flowLS / volLM;
 
-            const angle = Math.abs(angleDiffRad(this.getAngleOfRad(from.connection), this.getAngleOfRad(to.connection)));
+            const angle = Math.abs(angleDiffRad(
+                this.getAngleOfRad(from.connection),
+                this.getAngleOfRad(to.connection),
+            ));
 
             const k = 0.8 * (Math.sin(angle / 2)) * (1 - (smallSize ** 2 / largeSize ** 2));
 

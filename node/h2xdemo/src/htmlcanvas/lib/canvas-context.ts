@@ -11,6 +11,7 @@ import {DrawingContext, ObjectStore} from '@/htmlcanvas/lib/types';
 import {Catalog} from '@/store/catalog/types';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import CalculationLayer from '@/htmlcanvas/layers/calculation-layer';
 
 
 // Expose the members of CanvasContext (a vue object) to other classes and methods
@@ -19,6 +20,8 @@ import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity'
 export default interface CanvasContext {
     backgroundLayer: BackgroundLayer;
     hydraulicsLayer: HydraulicsLayer;
+    calculationLayer: CalculationLayer;
+
     objectStore: ObjectStore;
     document: DocumentState;
     effectiveCatalog: Catalog;

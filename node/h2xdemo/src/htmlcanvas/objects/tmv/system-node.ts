@@ -109,7 +109,8 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
         if (from.connection === this.entity.parentUid || to.connection === this.entity.parentUid) {
             return 0;
         } else {
-            throw new Error('system node shouldn\'t have any extra joints');
+            throw new Error('system node shouldn\'t have any extra joints. ' +
+                'from: ' + JSON.stringify(from) + ' to ' + JSON.stringify(to) + ' parent: ' + this.entity.parentUid);
         }
     }
 }

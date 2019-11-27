@@ -151,12 +151,16 @@ export default class FlowSolver {
                 expectedDifferenceHead,
             );
 
+            // tslint:disable-next-line:no-console
             console.log('og flows: ' + JSON.stringify(path.map((p) => flows.getFlow(p.uid, serializeValue(p.from)))));
+            // tslint:disable-next-line:no-console
             console.log('uids: ' +  JSON.stringify(path.map((p) => p.value.uid)));
 
+            // tslint:disable-next-line:no-console
             console.log('last ones:');
             const o = this.objectStore.get(path[0].value.uid) as Fitting;
             for (let i = -0.25; i <= 0.25; i += 0.01) {
+                // tslint:disable-next-line:no-console
                 console.log(o.getFrictionHeadLoss(
                     {drawing: this.doc.drawing, catalog: this.catalog, objectStore: this.objectStore},
                     i,

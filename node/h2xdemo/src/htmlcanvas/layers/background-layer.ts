@@ -134,10 +134,10 @@ export default class BackgroundLayer extends LayerImplementation {
 
     }
 
-    getBackgroundAt(worldCoord: Coord, objectStore: ObjectStore) {
+    getBackgroundAt(worldCoord: Coord) {
         for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
             const selectId = this.uidsInOrder[i];
-            if (objectStore.get(selectId)) {
+            if (this.objectStore.get(selectId)) {
                 const background = this.objectStore.get(selectId);
                 if (background instanceof BackgroundImage) {
                     if (background.inBounds(background.toObjectCoord(worldCoord))) {

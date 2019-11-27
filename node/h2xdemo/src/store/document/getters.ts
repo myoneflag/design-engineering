@@ -1,5 +1,5 @@
 import { GetterTree } from 'vuex';
-import {DocumentState, initialValue} from './types';
+import {DocumentState, initialDocumentState} from './types';
 import { RootState } from '../types';
 
 export const getters: GetterTree<DocumentState, RootState> = {
@@ -14,6 +14,6 @@ export const getters: GetterTree<DocumentState, RootState> = {
     isBrandNew(state): boolean {
         return state.history.length === 0
             && state.optimisticHistory.length === 0
-            && state.nextId === initialValue.nextId;
+            && state.nextId === initialDocumentState.nextId;
     },
 };

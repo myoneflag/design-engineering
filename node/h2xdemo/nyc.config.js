@@ -4,12 +4,11 @@ module.exports = {
   'skip-full': true,
   all: true,
   include: [
-    'src/**/*.{js,vue}'
+    'src/**/*.{js,ts}'
   ],
   exclude: [
     'src/*.js',
     '**/index.js',
-	'node_modules/',
   ],
   reporter: [
     'lcov',
@@ -18,6 +17,7 @@ module.exports = {
   ],
   extension: [
     '.js',
+    '.ts',
     '.vue'
-  ]
+  ],
 };
