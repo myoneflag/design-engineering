@@ -13,6 +13,7 @@ import {MainEventBus} from '@/store/main-event-bus';
 import {rebaseAll} from '@/htmlcanvas/lib/black-magic/rebase-all';
 
 export default interface Layer {
+    uidsInOrder: string[];
     selectedEntities: WithID[];
     selectedObjects: BaseBackedObject[];
 
@@ -111,18 +112,20 @@ export abstract class LayerImplementation implements Layer {
         }
         switch (mode) {
             case SelectMode.Replace:
-                this.selectedIds = ids;
+                this.selectedIds.splice(0, this.selectedIds.length, ...ids);
                 return;
             case SelectMode.Toggle:
                 const common = this.selectedIds.filter((uid) => ids.includes(uid));
                 this.selectedIds.push(...ids);
-                this.selectedIds = this.selectedIds.filter((uid) => !common.includes(uid));
+                this.selectedIds.splice(0, this.selectedIds.length,
+                    ...this.selectedIds.filter((uid) => !common.includes(uid)));
                 return;
             case SelectMode.Add:
                 this.selectedIds.push(...ids.filter((uid) => !this.selectedIds.includes(uid)));
                 return;
             case SelectMode.Exclude:
-                this.selectedIds = this.selectedIds.filter((uid) => !ids.includes(uid));
+                this.selectedIds.splice(0, this.selectedIds.length,
+                    ...this.selectedIds.filter((uid) => !ids.includes(uid)));
                 return;
         }
         assertUnreachable(mode);
@@ -452,13 +455,18 @@ export abstract class LayerImplementation implements Layer {
     deleteEntity(entity: DrawableEntityConcrete): void {
         const ix = this.uidsInOrder.indexOf(entity.uid);
         if (ix === -1) {
-            throw new Error('Deleting object from layer that doesn\'t exist');
+            // Do not throw an error
+        } else {
+            this.uidsInOrder.splice(ix, 1);
         }
 
-        this.uidsInOrder.splice(ix, 1);
 
         if (!this.draggedObjects || this.draggedObjects.findIndex((o) => o.uid === entity.uid) === -1) {
             this.objectStore.delete(entity.uid);
+        }
+
+        if (this.selectedIds.includes(entity.uid)) {
+            this.selectedIds.splice(this.selectedIds.indexOf(entity.uid), 1);
         }
     }
 

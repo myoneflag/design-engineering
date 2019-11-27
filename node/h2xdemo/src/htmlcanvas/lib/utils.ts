@@ -9,7 +9,7 @@ import {fillFixtureFields} from '@/store/document/entities/fixtures/fixture-enti
 
 
 export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
-    const floor = context.backgroundLayer.getBackgroundAt(wc, context.objectStore);
+    const floor = context.backgroundLayer.getBackgroundAt(wc);
     let parentUid: string | null = null;
     let oc = cloneSimple(wc);
     if (floor != null) {

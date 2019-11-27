@@ -1,5 +1,5 @@
 import {MutationTree} from 'vuex';
-import {DocumentState, initialValue} from './types';
+import {DocumentState, initialDocumentState} from './types';
 import * as OT from './operation-transforms/operation-transforms';
 import {OPERATION_NAMES} from './operation-transforms/operation-transforms';
 import {MainEventBus} from '@/store/main-event-bus';
@@ -16,7 +16,7 @@ export const mutations: MutationTree<DocumentState> = {
      * @param state
      * @param operation
      */
-    applyOperation(state, operation: OT.OperationTransform) {
+    applyOperation(state, operation: OT.OperationTransformConcrete) {
         state.history.push(operation);
 
         if (state.optimisticHistory.length) {
@@ -114,7 +114,7 @@ export const mutations: MutationTree<DocumentState> = {
     },
 
     reset(state) {
-        Object.assign(state, cloneSimple(initialValue));
+        Object.assign(state, cloneSimple(initialDocumentState));
     },
 
     loaded(state, loaded) {

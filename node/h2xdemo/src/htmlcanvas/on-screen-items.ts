@@ -128,7 +128,7 @@ export function drawLoadingUnits(
 
     const psduSuffix = 'PSD';
 
-    let y = height - 100;
+    const y = height - 100;
 
     ctx.font = '12px ' + DEFAULT_FONT_NAME;
     ctx.fillStyle = '#000000';
@@ -141,8 +141,10 @@ export function drawLoadingUnits(
 
     let coldFR = lookupFlowRate(units[StandardFlowSystemUids.ColdWater].units, context.doc, catalog)!;
     let hotFR = lookupFlowRate(units[StandardFlowSystemUids.HotWater].units, context.doc, catalog)!;
-    let coldFRSpare = coldFR * (1 + 0.01 * context.doc.drawing.flowSystems.find((s) => s.uid === StandardFlowSystemUids.ColdWater)!.spareCapacity);
-    let hotFRSpare = hotFR * (1 + 0.01 * context.doc.drawing.flowSystems.find((s) => s.uid === StandardFlowSystemUids.WarmWater)!.spareCapacity);
+    let coldFRSpare = coldFR * (1 + 0.01 * context.doc.drawing.flowSystems.find((s) =>
+        s.uid === StandardFlowSystemUids.ColdWater)!.spareCapacity);
+    let hotFRSpare = hotFR * (1 + 0.01 * context.doc.drawing.flowSystems.find((s) =>
+        s.uid === StandardFlowSystemUids.WarmWater)!.spareCapacity);
 
     if (coldFR === null) {
         coldFR = 0;

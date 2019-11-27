@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import {shallowMount} from '@vue/test-utils';
 import * as _ from 'lodash';
-import {initialValue} from '@/store/document/types';
+import {initialDocumentState} from '@/store/document/types';
 import store from '@/store/store';
 import FlowSystems from '@/views/settings/FlowSystems.vue';
 
@@ -13,7 +13,7 @@ describe('FlowSystems.vue', () => {
 
         fieldIds.push('uid');
 
-        const expectedFields = _.keys(initialValue.drawing.flowSystems[0]);
+        const expectedFields = _.keys(initialDocumentState.drawing.flowSystems[0]);
 
         expect(fieldIds.sort()).eql(expectedFields.sort());
     });

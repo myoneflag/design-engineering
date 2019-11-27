@@ -401,7 +401,10 @@ export default class CalculationEngine {
                         } else {
                             dist = sourcePipe.entity.calculation!.peakFlowRate!;
                         }
-                        const systemUid = determineConnectableSystemUid(this.objectStore, (obj.entity as DirectedValveEntity))!;
+                        const systemUid = determineConnectableSystemUid(
+                            this.objectStore,
+                            (obj.entity as DirectedValveEntity),
+                        )!;
                         return head2kpa(
                             getObjectFrictionHeadLoss(
                                 this,

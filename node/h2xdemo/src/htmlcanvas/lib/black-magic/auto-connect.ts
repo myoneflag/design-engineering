@@ -724,7 +724,6 @@ export class AutoConnector {
     }
 
     connectAllTmvs() {
-        console.log('connecting TMVs');
         this.selected.forEach((o) => {
             if (o.type === EntityType.TMV) {
                 connectTmvToSource(this.context, o as Tmv);

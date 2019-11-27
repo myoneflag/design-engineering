@@ -2,12 +2,12 @@ import {Module} from 'vuex';
 import {getters} from './getters';
 import {actions} from './actions';
 import {mutations} from './mutations';
-import {DocumentState, initialValue} from './types';
+import {DocumentState, initialDocumentState} from './types';
 import {RootState} from '../types';
 import {EntityType} from '@/store/document/entities/types';
 import {cloneSimple} from '@/lib/utils';
 
-export const state: DocumentState = cloneSimple(initialValue);
+export const state: DocumentState = cloneSimple(initialDocumentState);
 
 const namespaced: boolean = true;
 

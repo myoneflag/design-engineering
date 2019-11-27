@@ -117,7 +117,7 @@ function prefixObject(obj: any, key: string): any {
     return newObj;
 }
 
-function prefixOperation(op: OT.OperationTransform, key: string): OT.OperationTransform {
+function prefixOperation(op: OT.OperationTransform, key: string): OT.OperationTransformConcrete {
     if (op.type === OT.OPERATION_NAMES.ADD_OPERATION || op.type === OT.OPERATION_NAMES.DELETE_OPERATION) {
         const top = op as OT.AddOperation;
         top.object = prefixObject(top.object, key);
@@ -136,9 +136,9 @@ function prefixOperation(op: OT.OperationTransform, key: string): OT.OperationTr
     }
 }
 
-function diffUidObjects(prev: any, next: any): OT.OperationTransform[] {
+function diffUidObjects(prev: any, next: any): OT.OperationTransformConcrete[] {
     if (_.isArray(prev)) {
-        const results: OT.OperationTransform[] = [];
+        const results: OT.OperationTransformConcrete[] = [];
         assert(_.isArray(next));
         if (prev.length === 0 && next.length === 0) {
             return [];
@@ -213,7 +213,7 @@ function diffUidObjects(prev: any, next: any): OT.OperationTransform[] {
             return [];
         }
     }  else if (_.isObject(prev)) {
-        const results: OT.OperationTransform[] = [];
+        const results: OT.OperationTransformConcrete[] = [];
         _.forOwn(prev, (value, key) => {
             diffUidObjects(value, next[key]).forEach((v) => {
                 results.push(prefixOperation(v, key));
@@ -229,9 +229,9 @@ function diffUidObjects(prev: any, next: any): OT.OperationTransform[] {
 // We will keep track of field-to-field diffs, up to objects that have a uid. Then, the whole object
 // is considered atomic and we should compare for equality on the whole object.
 //
-export const diffState = (prev: DrawingState, next: DrawingState): OT.OperationTransform[] => {
+export const diffState = (prev: DrawingState, next: DrawingState): OT.OperationTransformConcrete[] => {
     // get value diffs
-    const results: OT.OperationTransform[] = [];
+    const results: OT.OperationTransformConcrete[] = [];
     const fieldDeepDiff = diffFieldsOnly(prev, next);
     if (!_.isEmpty(fieldDeepDiff)) {
         const op: OT.UpdateOperation = {

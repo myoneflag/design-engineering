@@ -3,6 +3,9 @@ export interface OperationTransform {
     type: OPERATION_NAMES;
 }
 
+export type OperationTransformConcrete =
+    UpdateOperation | AddOperation | MoveOperation | DeleteOperation | CommittedOperation;
+
 export enum OPERATION_NAMES {
     UPDATE_OPERATION = 'UPDATE_OPERATION',
     ADD_OPERATION = 'ADD_OPERATION',
