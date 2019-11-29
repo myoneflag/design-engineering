@@ -35,6 +35,7 @@ import {makePipeCalculationFields} from '@/store/document/calculations/pipe-calc
 import {Calculated, CalculatedObject, FIELD_HEIGHT} from '@/htmlcanvas/lib/object-traits/calculated-object';
 
 export const TEXT_MAX_SCALE = 0.4;
+export const MIN_PIPE_PIXEL_WIDTH = 3.5;
 
 @CalculatedObject
 @SelectableObject
@@ -67,42 +68,51 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             return [];
         }
 
-        const tm = TM.identity();
+        const results: TM.Matrix[] = [];
 
-        const avgx = (shape.start.x + shape.end.x) / 2;
-        const avgy = (shape.start.y + shape.end.y) / 2;
+        [0.5, 0.60, 0.40, 0.70, 0.30, 0.80, 0.20, 0.90, 0.10].forEach((ratio) => {
+            const avgx = (shape.start.x * ratio + shape.end.x * (1 - ratio));
+            const avgy = (shape.start.y * ratio + shape.end.y * (1 - ratio));
 
-        const length = vp.toScreenLength(shape.length);
+            const length = vp.toScreenLength(shape.length);
 
-        if (length < 100) {
-            return [];
-        }
+            if (length < 100) {
+                return [];
+            }
 
+            let angle = Flatten.vector(shape.start, shape.end).angleTo(Flatten.vector([1, 0]));
+            angle = canonizeAngleRad(angle);
+            if (Math.abs(angle) > Math.PI / 2) {
+                angle += Math.PI;
+            }
 
+            results.push(
+                TM.transform(
+                    TM.identity(),
+                    TM.translate(avgx, avgy),
+                    TM.rotate(-angle),
+                    TM.scale(scale, scale),
+                    TM.translate(0, 0),
+                ),
 
-        let angle = Flatten.vector(shape.start, shape.end).angleTo(Flatten.vector([1, 0]));
-        angle = canonizeAngleRad(angle);
-        if (Math.abs(angle) > Math.PI / 2) {
-            angle += Math.PI;
-        }
+                TM.transform(
+                    TM.identity(),
+                    TM.translate(avgx, avgy),
+                    TM.rotate(-angle),
+                    TM.scale(scale, scale),
+                    TM.translate(0, (+ data.length * FIELD_HEIGHT) / 3),
+                ),
 
-        return [
-            TM.transform(
-                TM.identity(),
-                TM.translate(avgx, avgy),
-                TM.rotate(-angle),
-                TM.scale(scale, scale),
-                TM.translate(0, (- data.length * FIELD_HEIGHT) / 2)
-            ),
-
-            TM.transform(
-                TM.identity(),
-                TM.translate(avgx, avgy),
-                TM.rotate(-angle),
-                TM.scale(scale, scale),
-                TM.translate(0, (+ data.length * FIELD_HEIGHT) / 2)
-            ),
-        ];
+                TM.transform(
+                    TM.identity(),
+                    TM.translate(avgx, avgy),
+                    TM.rotate(-angle),
+                    TM.scale(scale, scale),
+                    TM.translate(0, (- data.length * FIELD_HEIGHT) / 3),
+                ),
+            );
+        });
+        return results;
     }
 
     drawCalculations(context: DrawingContext, filters: CalculationFilters) {
@@ -161,7 +171,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         let targetWWidth = 10;
         let baseColor = this.displayObject(doc).color!.hex;
 
-        const baseWidth = Math.max(2.0 / s, targetWWidth / this.toWorldLength(1));
+        const baseWidth = Math.max(MIN_PIPE_PIXEL_WIDTH / s, targetWWidth / this.toWorldLength(1));
         this.lastDrawnWidthInternal = baseWidth;
 
         if (calculationFilters) {

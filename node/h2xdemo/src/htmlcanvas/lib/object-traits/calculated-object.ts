@@ -96,7 +96,6 @@ export function CalculatedObject<T extends new (...args: any[])
                 boxShape.addFace(worldBox);
                 const line = this.shape()!.distanceTo(boxShape);
                 if (!boxShape.contains(line[1].start) || true) {
-                    console.log(JSON.stringify(line));
                     // line is now in world position. Transform line back to current position.
                     const world2curr = TM.transform(
                         TM.inverse(ctx.getTransform()),
@@ -104,7 +103,6 @@ export function CalculatedObject<T extends new (...args: any[])
                     );
 
                     const currLine = line[1].transform(tm2flatten(world2curr));
-                    console.log(JSON.stringify(currLine));
 
                     ctx.strokeStyle = '#AAA';
                     ctx.setLineDash([5, 5]);

@@ -232,8 +232,6 @@ import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
 
             this.calculationEngine = new CalculationEngine();
 
-            console.log('caclculation filters: ');
-
             setInterval(this.drawLoop, 20);
         }
 

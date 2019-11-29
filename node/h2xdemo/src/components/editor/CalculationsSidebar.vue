@@ -114,12 +114,7 @@ import {EntityType} from "@/store/document/entities/types";
             return build;
         }
 
-        debug(obj: any) {
-            console.log(JSON.stringify(obj));
-        }
-
         stageNewFilters() {
-            console.log('staging with filters: ' + JSON.stringify(this.filters));
             for (const eType in this.filters) {
                 // noinspection JSUnfilteredForInLoop
                 if (this.filters.hasOwnProperty(eType)) {
@@ -137,8 +132,6 @@ import {EntityType} from "@/store/document/entities/types";
         }
 
         onCheck(eType: string, prop: string, value: boolean, shouldChange: boolean = true) {
-            console.log('checking ' + eType + ' ' + prop + ' ' + value);
-
             if (!(eType in this.document.uiState.calculationFilters)) {
                 Vue.set(this.document.uiState.calculationFilters, eType, {
                     name: this.filters[eType].name,
