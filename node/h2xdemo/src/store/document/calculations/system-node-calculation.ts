@@ -3,12 +3,12 @@ import {PsdCalculation} from '@/store/document/calculations/types';
 import {isGermanStandard} from '@/config';
 import {DrawingState} from '@/store/document/types';
 
-export default interface FlowSourceCalculation extends PsdCalculation {
+export default interface SystemNodeCalculation extends PsdCalculation {
     pressureKPA: number | null;
     flowRateLS: number | null;
 }
 
-export function makeFlowSourceCalculationFields(settings: DrawingState): CalculationField[] {
+export function makeSystemNodeCalculationFields(settings: DrawingState): CalculationField[] {
     const psdUnit = isGermanStandard(settings.calculationParams.psdMethod) ? 'Design Flow Rate' : 'Loading Units';
     const psdUnitShort = isGermanStandard(settings.calculationParams.psdMethod) ? 'D. Flow' : 'LU';
     return [
@@ -33,7 +33,7 @@ export function makeFlowSourceCalculationFields(settings: DrawingState): Calcula
     ];
 }
 
-export function emptyFlowSourceCalculation(): FlowSourceCalculation {
+export function emptySystemNodeCalculation(): SystemNodeCalculation {
     return {
         flowRateLS: null, psdUnits: null, pressureKPA: null,
     };

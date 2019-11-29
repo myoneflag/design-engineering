@@ -16,12 +16,16 @@ import {SelectableObject} from '@/htmlcanvas/lib/object-traits/selectable';
 import {CenteredObject} from '@/htmlcanvas/lib/object-traits/centered-object';
 import {CalculationContext} from '@/calculations/types';
 import {FlowNode, SELF_CONNECTION} from '@/calculations/calculation-engine';
+import {DrawingArgs} from '@/htmlcanvas/lib/drawable-object';
+import {Calculated, CalculatedObject} from '@/htmlcanvas/lib/object-traits/calculated-object';
+import {CalculationData} from '@/store/document/calculations/calculation-field';
 
+@CalculatedObject
 @SelectableObject
 @CenterDraggableObject
 @ConnectableObject
 @CenteredObject
-export default class FlowSource extends BackedConnectable<FlowSourceEntity> implements Connectable {
+export default class FlowSource extends BackedConnectable<FlowSourceEntity> implements Connectable, Calculated {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.FLOW_SOURCE, FlowSource);
     }
@@ -34,7 +38,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
     MINIMUM_RADIUS_PX: number = 3;
     lastDrawnWorldRadius: number = 0; // for bounds detection
 
-    drawInternal({ctx, doc, vp}: DrawingContext, layerActive: boolean, selected: boolean): void {
+    drawInternal({ctx, doc, vp}: DrawingContext, {active, selected}: DrawingArgs): void {
         this.lastDrawnWorldRadius = 0;
 
         const mat = ctx.getTransform();
@@ -59,7 +63,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
             this.lastDrawnWorldRadius = Math.max(this.lastDrawnWorldRadius, haloSize);
         }
 
-        if (layerActive) {
+        if (active) {
             if (screenSize < this.MINIMUM_RADIUS_PX) {
                 // Flow sources are very important and should be visible, even when zoomed out.
 
@@ -96,6 +100,10 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         );
         ctx.fill();
 
+    }
+
+    locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
+        return [];
     }
 
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to

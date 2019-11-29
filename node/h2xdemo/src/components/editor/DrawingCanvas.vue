@@ -1,4 +1,5 @@
 import {DrawingMode} from "@/htmlcanvas/types";
+import {DrawingMode} from "@/htmlcanvas/types";
 import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
 <template>
     <div ref="canvasFrame" class="fullFrame">
@@ -49,6 +50,14 @@ import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
             >
 
             </PropertiesWindow>
+
+            <CalculationsSidebar
+                    v-if="mode === 2"
+                    :objects="allObjects"
+                    :on-change="scheduleDraw"
+            >
+
+            </CalculationsSidebar>
 
             <Toolbar
                     :current-tool-config="currentTool"
@@ -113,9 +122,11 @@ import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
     import insertDirectedValve from "@/htmlcanvas/tools/insert-directed-valve";
     import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
     import {countPsdUnits} from "@/calculations/utils";
+    import CalculationsSidebar from "@/components/editor/CalculationsSidebar.vue";
 
     @Component({
         components: {
+            CalculationsSidebar,
             CalculationBar,
             InstructionPage,
             FloorPlanInsertPanel,
@@ -221,6 +232,8 @@ import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
 
             this.calculationEngine = new CalculationEngine();
 
+            console.log('caclculation filters: ');
+
             setInterval(this.drawLoop, 20);
         }
 
@@ -256,6 +269,10 @@ import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
                 a.name = this.effectiveCatalog.valves[a.catalogId].name;
                 return a;
             });
+        }
+
+        get allObjects(): BaseBackedObject[] {
+            return Array.from(this.objectStore.values());
         }
 
         get activeLayer(): Layer | null {
@@ -651,8 +668,18 @@ import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
                 const context: DrawingContext = {ctx, vp: this.viewPort, doc: this.document};
                 this.lastDrawingContext = context;
                 this.backgroundLayer.draw(context, this.mode === DrawingMode.FloorPlan, this.currentTool);
-                this.hydraulicsLayer.draw(context, this.mode === DrawingMode.Hydraulics, this.mode);
-                this.calculationLayer.draw(context, this.mode === DrawingMode.Calculations);
+                const filters = this.mode === DrawingMode.Calculations ? this.document.uiState.calculationFilters : null;
+                this.hydraulicsLayer.draw(
+                    context,
+                    this.mode === DrawingMode.Hydraulics,
+                    this.mode,
+                    filters,
+                );
+                this.calculationLayer.draw(
+                    context,
+                    this.mode === DrawingMode.Calculations,
+                    filters,
+                );
 
                 // Draw hydraulics layer
 
@@ -664,7 +691,7 @@ import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
 
                 // draw selection box
                 if (this.selectBox) {
-                    this.selectBox.draw(context);
+                    this.selectBox.draw(context, {selected: true, active: true, calculationFilters: null});
                 }
 
                 ctx.setTransform(TM.identity());

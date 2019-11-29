@@ -8,6 +8,16 @@ import {Catalog, PSDSpec} from '@/store/catalog/types';
 import {fillFixtureFields} from '@/store/document/entities/fixtures/fixture-entity';
 import {PsdStandard, PSDStandardType} from '@/store/catalog/psd-standard/types';
 import {interpolateTable, parseCatalogNumberExact} from '@/htmlcanvas/lib/utils';
+import {DrawingContext} from '@/htmlcanvas/lib/types';
+import {CalculationField} from '@/store/document/calculations/calculation-field';
+import {makeFlowSourceCalculationFields} from '@/store/document/calculations/flow-source-calculation';
+import {makePipeCalculationFields} from '@/store/document/calculations/pipe-calculation';
+import {makeFittingCalculationFields} from '@/store/document/calculations/fitting-calculation';
+import {makeTmvCalculationFields} from '@/store/document/calculations/tmv-calculation';
+import {makeFixtureCalculationFields} from '@/store/document/calculations/fixture-calculation';
+import {makeDirectedValveCalculationFields} from '@/store/document/calculations/directed-valve-calculation';
+import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import {makeSystemNodeCalculationFields} from '@/store/document/calculations/system-node-calculation';
 
 export interface PsdCountEntry {
     units: number;
@@ -87,5 +97,27 @@ export function lookupFlowRate(psdU: number, doc: DocumentState, catalog: Catalo
         return a * (psdU ** b) - c;
     } else {
         throw new Error('PSD not supported');
+    }
+}
+
+export function getFields(entity: DrawableEntityConcrete, doc: DocumentState): CalculationField[] {
+    switch (entity.type) {
+        case EntityType.FLOW_SOURCE:
+            return makeFlowSourceCalculationFields(doc.drawing);
+        case EntityType.PIPE:
+            return makePipeCalculationFields(doc.drawing);
+        case EntityType.FITTING:
+            return makeFittingCalculationFields();
+        case EntityType.TMV:
+            return makeTmvCalculationFields(entity);
+        case EntityType.FIXTURE:
+            return makeFixtureCalculationFields();
+        case EntityType.DIRECTED_VALVE:
+            return makeDirectedValveCalculationFields();
+        case EntityType.SYSTEM_NODE:
+            return makeSystemNodeCalculationFields(doc.drawing);
+        case EntityType.BACKGROUND_IMAGE:
+        case EntityType.RESULTS_MESSAGE:
+            return [];
     }
 }

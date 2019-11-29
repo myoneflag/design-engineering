@@ -14,10 +14,10 @@
                           v-b-tooltip.hover="{title: 'Demand Type'}"
                 >Typical</b-button>
                 <b-button variant="outline-dark" class="calculationBtn source btn-sm"
-                          :pressed="demandType === DemandType.Zero"
-                          @click="$emit('update:demandType', DemandType.Zero)"
+                          :pressed="demandType === DemandType.Static"
+                          @click="$emit('update:demandType', DemandType.Static)"
                           v-b-tooltip.hover="{title: 'Demand Type'}"
-                >Zero</b-button>
+                >Static</b-button>
 
             </b-button-group>
         </b-col>

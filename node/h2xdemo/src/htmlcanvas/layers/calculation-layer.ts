@@ -1,5 +1,5 @@
 import Layer, {LayerImplementation} from '@/htmlcanvas/layers/layer';
-import {DocumentState, DrawableEntity, WithID} from '@/store/document/types';
+import {CalculationFilters, DocumentState, DrawableEntity, WithID} from '@/store/document/types';
 import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 import {DrawingContext, MessageStore, ObjectStore} from '@/htmlcanvas/lib/types';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
@@ -14,7 +14,7 @@ import {EntityType} from '@/store/document/entities/types';
 import PipeEntity from '@/store/document/entities/pipe-entity';
 import Popup from '@/htmlcanvas/objects/popup';
 import {isCalculated} from '@/store/document/calculations';
-import {getBoundingBox, getDocumentCenter} from '@/htmlcanvas/lib/utils';
+import {getBoundingBox, getDocumentCenter, tm2flatten} from '@/htmlcanvas/lib/utils';
 import assert from 'assert';
 import {CalculationTarget} from '@/store/document/calculations/types';
 import CatalogState, {Catalog} from '@/store/catalog/types';
@@ -27,6 +27,10 @@ import CanvasContext from '@/htmlcanvas/lib/canvas-context';
 import Calculations from '@/views/settings/Calculations.vue';
 import Pipe from '@/htmlcanvas/objects/pipe';
 import {EPS} from '@/calculations/pressure-drops';
+import {CalculationData} from '@/store/document/calculations/calculation-field';
+import Flatten from '@flatten-js/core';
+import {polygonsOverlap} from '@/htmlcanvas/utils';
+import * as TM from 'transformation-matrix';
 
 const MINIMUM_SIGNIFICANT_PIPE_LENGTH_MM = 500;
 export const SIGNIFICANT_FLOW_THRESHOLD = 1e-5;
@@ -34,22 +38,91 @@ export const SIGNIFICANT_FLOW_THRESHOLD = 1e-5;
 export default class CalculationLayer extends LayerImplementation {
 
     calculator: CalculationEngine = new CalculationEngine();
-    messageStore: MessageStore = new MessageStore();
+    draw(context: DrawingContext, active: boolean, calculationFilters: CalculationFilters | null): any {
+        const {ctx, vp} = context;
+        if (active && calculationFilters) {
+            // 1. Load all calculation data and record them
+            // 2. Load all message layout options for this data. Not explcitly needed as a separate step
+            // 3. Order objects by importance
+            // 4. Draw messages for objects, keeping track of what was drawn and avoid overlaps by drawing
+                    // in a new place.
 
-    draw(context: DrawingContext, active: boolean, ...args: any[]): any {
-        if (active) {
-            for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
-                const message = this.messageStore.get(this.uidsInOrder[i]);
-                if (message) {
-                    message.draw(
-                        context,
-                        active,
-                        this.isSelected(message),
-                    );
-                } else {
-                    throw new Error('Message not found');
+            const obj2props = new Map<string, CalculationData[]>();
+
+            this.objectStore.forEach((o) => {
+                if (o.calculated && o.type in calculationFilters &&
+                    (o.entity as CalculatableEntityConcrete).calculation) {
+                    const fields = o.getCalculationFields(context, calculationFilters);
+                    fields.forEach((f) => {
+                        if (!obj2props.has(f.attachUid)) {
+                            obj2props.set(f.attachUid, []);
+                        }
+                        obj2props.get(f.attachUid)!.push(f);
+                    });
                 }
-            }
+            });
+
+            const objList = Array.from(this.objectStore.values()).filter((o) => o.calculated && obj2props.has(o.uid));
+            objList.sort((a, b) => {
+                return -(this.messagePriority(a) - this.messagePriority(b));
+            });
+
+            const spentShapes: Flatten.Polygon[] = [];
+
+            objList.forEach((o) => {
+                vp.prepareContext(context.ctx);
+                const boxes = o.measureCalculationBox(context, obj2props.get(o.uid) || []);
+                let drawn = false;
+                boxes.forEach(([position, shape]) => {
+                    if (drawn) {
+                        return;
+                    }
+
+                    if (!vp.someOnScreen(shape)) {
+                        return;
+                    }
+
+                    let invalid = false;
+
+                    for (let i = 0; i < spentShapes.length; i++) {
+                        if (polygonsOverlap(spentShapes[i], shape)) {
+                            invalid = true;
+                            break;
+                        }
+                    }
+
+                    if (!invalid) {
+                        // Draw it!
+                        // Remember to prepare the context.
+
+                        vp.prepareContext(context.ctx, position);
+                        const box = o.drawCalculationBox(context, obj2props.get(o.uid)!, false);
+                        spentShapes.push(shape);
+                        drawn = true;
+                    }
+                });
+            });
+        }
+    }
+
+    messagePriority(object: BaseBackedObject): number {
+        switch (object.entity.type) {
+            case EntityType.FLOW_SOURCE:
+                return 120;
+            case EntityType.FIXTURE:
+                return 110;
+            case EntityType.TMV:
+            case EntityType.DIRECTED_VALVE:
+                return 100;
+            case EntityType.FITTING:
+                return 90;
+            case EntityType.SYSTEM_NODE:
+                return 80;
+            case EntityType.PIPE:
+                return 70 + 10 - 10 / ((object as Pipe).computedLengthM + 1);
+            case EntityType.RESULTS_MESSAGE:
+            case EntityType.BACKGROUND_IMAGE:
+                throw new Error('shouldn\'t have calculations');
         }
     }
 
@@ -58,103 +131,17 @@ export default class CalculationLayer extends LayerImplementation {
     }
 
     update(doc: DocumentState): any {
-        const thisIds: string[] = [];
 
-        let l: number;
-        let r: number;
-        let t: number;
-        let b: number;
-
-
-        doc.drawing.entities.forEach((e) => {
-            const o = this.messageStore.get(e.uid);
-            if (o) {
-                assert(isCalculated(e));
-                const te = e as CalculatableEntityConcrete;
-                if (te.calculation !== null) {
-                    o.updateTarget(te);
-                    thisIds.push(e.uid);
-                }
-            } else {
-                // create new message
-                if (isCalculated(e)) {
-                    const te = e as CalculatableEntityConcrete;
-                    if (te.calculation !== null) {
-                        if (l === undefined) {
-                            const bx = getBoundingBox(this.objectStore, doc);
-                            l = bx.l;
-                            r = bx.r;
-                            t = bx.t;
-                            b = bx.b;
-                        }
-
-                        if (this.shouldShowPopup(te)) {
-                            const msg: Popup = new Popup(
-                                this.objectStore,
-                                this,
-                                te,
-                                {x: (l + r) / 2, y: (t + b) / 2},
-                                (event) => this.onSelected(event, te.uid),
-                                () => this.onChange(),
-                                () => {/**/},
-                            );
-                            this.messageStore.set(e.uid, msg);
-                            thisIds.push(e.uid);
-                        } else {
-                            this.messageStore.delete(e.uid);
-                        }
-
-                    }
-                }
-            }
-        });
-
-        this.uidsInOrder.forEach((uid) => {
-            if (thisIds.indexOf(uid) === -1) {
-                this.messageStore.delete(uid);
-            }
-        });
-
-        this.uidsInOrder.splice(0);
-        this.uidsInOrder.push(...thisIds);
     }
 
-    shouldShowPopup(c: CalculatableEntityConcrete): boolean {
-        if (c.calculation === null) {
-            return false;
-        }
-        switch (c.type) {
-            case EntityType.FLOW_SOURCE:
-                return true;
-            case EntityType.PIPE:
-                if ((this.objectStore.get(c.uid) as Pipe).computedLengthM * 1000 > MINIMUM_SIGNIFICANT_PIPE_LENGTH_MM) {
-                    if (c.calculation!.psdUnits && c.calculation!.psdUnits > 0) {
-                        return true;
-                    }
-                    if (c.calculation!.peakFlowRate && c.calculation!.peakFlowRate > SIGNIFICANT_FLOW_THRESHOLD) {
-                        return true;
-                    }
-                }
-                return false;
-            case EntityType.TMV:
-                return true;
-            case EntityType.FITTING:
-            case EntityType.DIRECTED_VALVE:
-                return false;
-            case EntityType.FIXTURE:
-                return true;
-        }
-    }
 
     calculate(context: CanvasContext, demandType: DemandType, done: () => void) {
 
-        const middleWc = getDocumentCenter(this.objectStore, context.document);
         context.document.uiState.isCalculating = true;
 
         this.calculator.calculate(
             this.objectStore,
             context.document,
-            middleWc,
             context.effectiveCatalog,
             demandType,
             (warnings) => {
@@ -173,55 +160,16 @@ export default class CalculationLayer extends LayerImplementation {
         });
     }
 
-
     onMouseDown(event: MouseEvent, context: CanvasContext) {
-        // tslint:disable-next-line:prefer-for-of
-        for (let i = 0; i < this.uidsInOrder.length; i++) {
-            const uid = this.uidsInOrder[i];
-            if (this.messageStore.has(uid)) {
-                const object = this.messageStore.get(uid)!;
-                if (object.onMouseDown(event, context)) {
-                    return true;
-                }
-            }
-        }
-
         return false;
     }
 
     onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
-        // tslint:disable-next-line:prefer-for-of
-        for (let i = 0; i < this.uidsInOrder.length; i++) {
-            const uid = this.uidsInOrder[i];
-            if (this.messageStore.has(uid)) {
-                const object = this.messageStore.get(uid)!;
-                const res = object.onMouseMove(event, context);
-                if (res.handled) {
-                    return res;
-                }
-            }
-        }
-
         return UNHANDLED;
     }
 
 
     onMouseUp(event: MouseEvent, context: CanvasContext) {
-        // tslint:disable-next-line:prefer-for-of
-        for (let i = 0; i < this.uidsInOrder.length; i++) {
-            const uid = this.uidsInOrder[i];
-            if (this.messageStore.has(uid)) {
-                const object = this.messageStore.get(uid)!;
-                if (object.onMouseUp(event, context)) {
-                    return true;
-                }
-            }
-        }
-
-        // this.selectedObject = null;
-        this.onSelect();
-        this.onChange();
-
         return false;
     }
 }

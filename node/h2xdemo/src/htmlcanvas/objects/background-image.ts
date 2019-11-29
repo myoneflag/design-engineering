@@ -22,6 +22,7 @@ import {SelectableObject} from '@/htmlcanvas/lib/object-traits/selectable';
 import CenterDraggableObject from '@/htmlcanvas/lib/object-traits/center-draggable-object';
 import {CalculationContext} from '@/calculations/types';
 import {FlowNode} from '@/calculations/calculation-engine';
+import {DrawingArgs} from '@/htmlcanvas/lib/drawable-object';
 
 export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> implements Sizeable {
     static register(): void {
@@ -249,7 +250,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
 
 
     // Draw without world space concerns
-    drawInternal(context: DrawingContext, selected: boolean, active: boolean) {
+    drawInternal(context: DrawingContext, {selected, active}: DrawingArgs) {
         const {ctx, vp} = context;
         if ((selected && active) && this.image) {
             this.naturalClipDraw(

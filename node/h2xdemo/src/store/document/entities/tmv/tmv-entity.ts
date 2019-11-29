@@ -15,6 +15,7 @@ import TmvCalculation from '@/store/document/calculations/tmv-calculation';
 import {CalculationTarget} from '@/store/document/calculations/types';
 import {parseCatalogNumberOrMin} from '@/htmlcanvas/lib/utils';
 import {cloneSimple} from '@/lib/utils';
+import SystemNodeCalculation from '@/store/document/calculations/system-node-calculation';
 
 export default interface TmvEntity extends DrawableEntity, CalculationTarget<TmvCalculation> {
     center: Coord;
@@ -41,7 +42,7 @@ export default interface TmvEntity extends DrawableEntity, CalculationTarget<Tmv
     calculation: TmvCalculation | null;
 }
 
-export interface SystemNodeEntity extends InvisibleNodeEntity {
+export interface SystemNodeEntity extends InvisibleNodeEntity, CalculationTarget<SystemNodeCalculation> {
     type: EntityType.SYSTEM_NODE;
     systemUid: string;
     configuration: FlowConfiguration;

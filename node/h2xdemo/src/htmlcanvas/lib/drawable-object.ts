@@ -1,8 +1,8 @@
-import {Coord, Rectangle} from '@/store/document/types';
+import {CalculationFilters, Coord, Rectangle} from '@/store/document/types';
 import {ViewPort} from '@/htmlcanvas/viewport';
 import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
-import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
+import {DrawingMode, MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import {decomposeMatrix, matrixScale} from '@/htmlcanvas/utils';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
 import Flatten from '@flatten-js/core';
@@ -17,6 +17,7 @@ export default abstract class DrawableObject {
     selectable: boolean = false;
     draggable: boolean = false;
     centered: boolean = false;
+    calculated: boolean = false;
 
     constructor(parent: DrawableObject | null, layer: Layer) {
         this.parentInternal = parent;
@@ -85,20 +86,20 @@ export default abstract class DrawableObject {
         return this.parent.toWorldLength(this.toParentLength(object));
     }
 
-    toParentAngle(object: number) {
+    toParentAngleDeg(object: number) {
         return object + decomposeMatrix(this.position).a / Math.PI * 180;
     }
 
-    toWorldAngle(object: number): number {
+    toWorldAngleDeg(object: number): number {
         if (this.parent == null) {
-            return this.toParentAngle(object);
+            return this.toParentAngleDeg(object);
         }
-        return this.parent.toWorldAngle(this.toParentAngle(object));
+        return this.parent.toWorldAngleDeg(this.toParentAngleDeg(object));
     }
 
-    abstract drawInternal(context: DrawingContext, ...args: any[]): void;
+    abstract drawInternal(context: DrawingContext, args: DrawingArgs): void;
 
-    draw(context: DrawingContext, ...args: any[]) {
+    draw(context: DrawingContext, args: DrawingArgs) {
         const {ctx, vp} = context;
         // get parent positions
         const transforms: Matrix[] = [this.position];
@@ -110,7 +111,7 @@ export default abstract class DrawableObject {
 
         vp.prepareContext(ctx, ...transforms);
 
-        this.drawInternal(context, ...args);
+        this.drawInternal(context, args);
 
         /*
         vp.prepareContext(ctx, ...transforms);
@@ -143,6 +144,19 @@ export default abstract class DrawableObject {
 
         fun();
 
+        ctx.setTransform(oldTransform);
+    }
+
+    withScreenScale({ctx}: DrawingContext, current: Coord, fun: () => void) {
+        const oldTransform = ctx.getTransform();
+        const t = decomposeMatrix(ctx.getTransform());
+        const sc = TM.applyToPoint(ctx.getTransform(), current);
+        ctx.resetTransform();
+        ctx.translate(sc.x, sc.y);
+
+        ctx.rotate(t.a);
+
+        fun();
         ctx.setTransform(oldTransform);
     }
 
@@ -210,4 +224,10 @@ export default abstract class DrawableObject {
         const point = this.toWorldCoord({x: 0, y: 0});
         return Flatten.point(point.x, point.y);
     }
+}
+
+export interface DrawingArgs {
+    selected: boolean;
+    active: boolean;
+    calculationFilters: CalculationFilters | null;
 }

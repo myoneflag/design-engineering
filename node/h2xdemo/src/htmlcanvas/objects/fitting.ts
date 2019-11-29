@@ -24,12 +24,16 @@ import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-enti
 import {CenteredObject} from '@/htmlcanvas/lib/object-traits/centered-object';
 import {CalculationContext} from '@/calculations/types';
 import {FlowNode, SELF_CONNECTION} from '@/calculations/calculation-engine';
+import {DrawingArgs} from '@/htmlcanvas/lib/drawable-object';
+import {CalculationData} from '@/store/document/calculations/calculation-field';
+import {Calculated, CalculatedObject, FIELD_HEIGHT} from '@/htmlcanvas/lib/object-traits/calculated-object';
 
+@CalculatedObject
 @SelectableObject
 @CenterDraggableObject
 @ConnectableObject
 @CenteredObject
-export default class Fitting extends BackedConnectable<FittingEntity> implements Connectable {
+export default class Fitting extends BackedConnectable<FittingEntity> implements Connectable, Calculated {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.FITTING, Fitting);
     }
@@ -53,7 +57,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to
     // complete the type.
 
-    drawInternal({ctx, doc}: DrawingContext, layerActive: boolean, selected: boolean): void {
+    drawInternal({ctx, doc}: DrawingContext, {active, selected}: DrawingArgs): void {
 
         // asdf
         const scale = matrixScale(ctx.getTransform());
@@ -83,7 +87,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             const oc = this.toObjectCoord(wc);
             const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
             const small = vec.normalize().multiply(Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM)));
-            if (layerActive && selected) {
+            if (active && selected) {
                 ctx.beginPath();
                 ctx.lineWidth = targetWidth + this.FITTING_DIAMETER_PIXELS * 2 / scale;
 
@@ -101,6 +105,10 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             ctx.lineTo(small.x, small.y);
             ctx.stroke();
         });
+    }
+
+    locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
+        return [];
     }
 
     displayEntity(context: DocumentState) {

@@ -20,7 +20,7 @@ export default class SelectBox extends DrawableObject {
         return TM.identity();
     }
 
-    drawInternal(context: DrawingContext, ...args: any[]): void {
+    drawInternal(context: DrawingContext): void {
         const {ctx, vp} = context;
         ctx.fillStyle = 'rgba(50, 50, 100, 0.3)';
         ctx.lineWidth = vp.toWorldLength(1);

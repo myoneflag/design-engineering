@@ -83,6 +83,7 @@ export default function insertTmv(
                 systemUid: StandardFlowSystemUids.ColdWater,
                 uid: coldUid,
                 configuration: FlowConfiguration.INPUT,
+                calculation: null,
             };
 
             const newHot: SystemNodeEntity = {
@@ -93,6 +94,7 @@ export default function insertTmv(
                 systemUid: StandardFlowSystemUids.HotWater,
                 uid: hotUid,
                 configuration: FlowConfiguration.INPUT,
+                calculation: null,
             };
 
             const newWarm: SystemNodeEntity = {
@@ -103,6 +105,7 @@ export default function insertTmv(
                 systemUid: StandardFlowSystemUids.WarmWater,
                 uid: warmUid,
                 configuration: FlowConfiguration.OUTPUT,
+                calculation: null,
             };
 
             const newColdOut: SystemNodeEntity = {
@@ -113,6 +116,7 @@ export default function insertTmv(
                 systemUid: StandardFlowSystemUids.ColdWater,
                 uid: coldOutUid,
                 configuration: FlowConfiguration.OUTPUT,
+                calculation: null,
             };
 
             [newTmv, newCold, newHot, newWarm].forEach((e) => {

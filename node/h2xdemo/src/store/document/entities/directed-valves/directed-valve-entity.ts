@@ -8,8 +8,9 @@ import {DirectedValveConcrete, ValveType} from '@/store/document/entities/direct
 import {ObjectStore} from '@/htmlcanvas/lib/types';
 import Pipe from '@/htmlcanvas/objects/pipe';
 import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-entity';
+import DirectedValveCalculation from '@/store/document/calculations/directed-valve-calculation';
 
-export default interface DirectedValveEntity extends ConnectableEntity, CalculationTarget<FittingCalculation> {
+export default interface DirectedValveEntity extends ConnectableEntity, CalculationTarget<DirectedValveCalculation> {
     type: EntityType.DIRECTED_VALVE;
     center: Coord;
     systemUidOption: string | null;

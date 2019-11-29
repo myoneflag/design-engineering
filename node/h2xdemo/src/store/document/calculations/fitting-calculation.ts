@@ -1,4 +1,4 @@
-import {FieldCategory, MessageField} from '@/store/document/calculations/message-field';
+import {FieldCategory, CalculationField, Units} from '@/store/document/calculations/calculation-field';
 import {PsdCalculation} from '@/store/document/calculations/types';
 
 export interface DeadlegAttribute {
@@ -25,11 +25,26 @@ export default interface FittingCalculation {
     valveAttributes: DeadlegAttribute | TwoConnectionAttribute | ThreeConnectionAttribute | null;
 }
 
-export function makeFittingCalculationFields(): MessageField[] {
+export function makeFittingCalculationFields(): CalculationField[] {
     return [
-        {property: 'flowRateLS', title: 'Flow Rate (L/s)', category: FieldCategory.FlowRate},
-        {property: 'pressureDropKPA', title: 'Pressure Drop (kPa)', category: FieldCategory.Pressure},
-        {property: 'pressureKPA', title: 'Pressure (kPa)', category: FieldCategory.Pressure},
+        {property: 'flowRateLS',
+            title: 'Flow Rate',
+            short: 'Flow',
+            units: Units.LitersPerSecond,
+            category: FieldCategory.FlowRate,
+        },
+        {property: 'pressureDropKPA',
+            title: 'Pressure Drop',
+            short: 'Drop',
+            units: Units.KiloPascals,
+            category: FieldCategory.Pressure,
+        },
+        {property: 'pressureKPA',
+            title: 'Pressure',
+            short: '',
+            units: Units.KiloPascals,
+            category: FieldCategory.Pressure,
+        },
     ];
 }
 

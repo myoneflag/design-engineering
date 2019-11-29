@@ -144,14 +144,17 @@ export abstract class LayerImplementation implements Layer {
     drawSelectionLayer(context: DrawingContext, interactive: DrawableEntity[] | null) {
         if (this.selectedObjects) {
             this.selectedIds.forEach((uid) => {
-                this.objectStore.get(uid)!.draw(context, true, true);
+                this.objectStore.get(uid)!.draw(context, {active: true, selected: true, calculationFilters: null});
             });
         }
         if (interactive) {
             for (let i = interactive.length - 1; i >= 0; i--) {
                 const ii = interactive[i];
                 if (this.uidsInOrder.indexOf(ii.uid) !== -1) {
-                    this.objectStore.get(ii.uid)!.draw(context, true, true);
+                    this.objectStore.get(ii.uid)!.draw(
+                        context,
+                        {active: true, selected: true, calculationFilters: null},
+                    );
                 }
             }
         }
