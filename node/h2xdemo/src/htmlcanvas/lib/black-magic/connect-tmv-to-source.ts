@@ -45,7 +45,7 @@ export default function connectTmvToSource(context: CanvasContext, newTmv: Tmv) 
         // rotate our pipe and try again with correct position of cold water
 
         const closePoint = targetObj.shape()!.distanceTo(Flatten.point(wc.x, wc.y))[1].ps;
-        const currA = newTmv.toWorldAngle(0);
+        const currA = newTmv.toWorldAngleDeg(0);
         const desiredA = -Flatten.vector(
             Flatten.point(wc.x, wc.y)
             , closePoint,

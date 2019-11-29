@@ -12,7 +12,7 @@ import {EntityType} from '@/store/document/entities/types';
 import Pipe from '@/htmlcanvas/objects/pipe';
 import Flatten from '@flatten-js/core';
 import uuid from 'uuid';
-import {MessageField} from '@/store/document/calculations/message-field';
+import {CalculationField} from '@/store/document/calculations/calculation-field';
 import {makePipeCalculationFields} from '@/store/document/calculations/pipe-calculation';
 import {makeFittingCalculationFields} from '@/store/document/calculations/fitting-calculation';
 import {makeTmvCalculationFields} from '@/store/document/calculations/tmv-calculation';
@@ -34,6 +34,8 @@ import {makeDirectedValveFields} from '@/store/document/entities/directed-valves
 import {makeDirectedValveCalculationFields} from '@/store/document/calculations/directed-valve-calculation';
 import {CalculationContext} from '@/calculations/types';
 import {FlowNode, SELF_CONNECTION} from '@/calculations/calculation-engine';
+import {DrawingArgs} from '@/htmlcanvas/lib/drawable-object';
+import {getFields} from '@/calculations/utils';
 
 @CenterDraggableObject
 @CenteredObject
@@ -79,7 +81,7 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
 
     target: CalculatableEntityConcrete;
 
-    fields: MessageField[] | undefined;
+    fields: CalculationField[] | undefined;
     outputs: string[] | undefined;
 
     lastDrawnBox: Rectangle | undefined;
@@ -129,29 +131,12 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
         throw new Error('Method not implemented.');
     }
 
-    getFields(context: DrawingContext): MessageField[] {
-        switch (this.target.type) {
-            case EntityType.FLOW_SOURCE:
-                return makeFlowSourceCalculationFields();
-            case EntityType.PIPE:
-                return makePipeCalculationFields(context.doc.drawing);
-            case EntityType.FITTING:
-                return makeFittingCalculationFields();
-            case EntityType.TMV:
-                return makeTmvCalculationFields(this.target);
-            case EntityType.FIXTURE:
-                return makeFixtureCalculationFields();
-            case EntityType.DIRECTED_VALVE:
-                return makeDirectedValveCalculationFields();
-        }
-    }
-
     // add return type to invoke case complete check
     generateFields(context: DrawingContext) {
         if (this.target.calculation === null) {
             return;
         }
-        this.fields = this.getFields(context);
+        this.fields = getFields(this.target, context.doc);
         this.outputs = [];
         this.fields.forEach((f) => {
             const property = resolveProperty(f.property, this.target.calculation);
@@ -164,7 +149,7 @@ export default class Popup extends BackedDrawableObject<PopupEntity> {
         });
     }
 
-    drawInternal(context: DrawingContext, ...args: any[]): void {
+    drawInternal(context: DrawingContext, args: DrawingArgs): void {
         if (this.target.calculation === null) {
             // this case can happen legitimately, when a calculation is erased and
             // we render before we get a chance to process document.

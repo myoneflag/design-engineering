@@ -12,6 +12,7 @@ import TmvCalculation from '@/store/document/calculations/tmv-calculation';
 import FittingCalculation from '@/store/document/calculations/fitting-calculation';
 import FixtureCalculation from '@/store/document/calculations/fixture-calculation';
 import DirectedValveEntity from '@/store/document/entities/directed-valves/directed-valve-entity';
+import SystemNodeCalculation from '@/store/document/calculations/system-node-calculation';
 
 export type DrawableEntityConcrete =
     BackgroundEntity |
@@ -50,7 +51,8 @@ export type CalculatableEntityConcrete =
     TmvEntity |
     FittingEntity |
     FixtureEntity |
-    DirectedValveEntity;
+    DirectedValveEntity |
+    SystemNodeEntity;
 
 export type CalculationConcrete =
     FlowSourceCalculation |
@@ -58,4 +60,5 @@ export type CalculationConcrete =
     PipeCalculation |
     TmvCalculation |
     FittingCalculation |
-    FixtureCalculation;
+    FixtureCalculation |
+    SystemNodeCalculation;

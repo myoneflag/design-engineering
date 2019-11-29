@@ -2,7 +2,9 @@ import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
 import {Coord} from '@/store/document/types';
 import {scale} from 'transformation-matrix/scale';
-import {matrixScale} from '@/htmlcanvas/utils';
+import {matrixScale, polygonsOverlap} from '@/htmlcanvas/utils';
+import Flatten from '@flatten-js/core';
+import {tm2flatten} from '@/htmlcanvas/lib/utils';
 
 /*
  * A transformation specifically for the screen, with a center co-ordinate, rotation, and scale.
@@ -80,6 +82,10 @@ export class ViewPort {
         ctx.setTransform(m);
     }
 
+    get world2ScreenMatrix(): Matrix {
+        return TM.transform(TM.translate(this.width / 2, this.height / 2), TM.inverse(this.position));
+    }
+
     /**
      * Takes a screen coordinate and finds the world coordinate
      */
@@ -88,5 +94,18 @@ export class ViewPort {
             this.position,
             TM.translate(-this.width / 2, -this.height / 2),
         ), point);
+    }
+
+    someOnScreen(worldShape: Flatten.Polygon): boolean {
+        const screen = this.screenWorldShape;
+        return (polygonsOverlap(this.screenWorldShape, worldShape));
+    }
+
+    get screenWorldShape(): Flatten.Polygon {
+        const screenBox = new Flatten.Box(0, 0, this.width, this.height);
+        let p = new Flatten.Polygon();
+        p.addFace(screenBox);
+        p = p.transform(tm2flatten(TM.inverse(this.world2ScreenMatrix)));
+        return p;
     }
 }

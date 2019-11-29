@@ -5,7 +5,7 @@ import {ObjectStore} from '@/htmlcanvas/lib/types';
 export enum DemandType {
     PSD,
     Typical,
-    Zero,
+    Static,
 }
 
 export interface CalculationContext {

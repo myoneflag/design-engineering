@@ -1,6 +1,6 @@
 import {LayerImplementation, SelectMode} from '@/htmlcanvas/layers/layer';
 import {DrawingMode} from '@/htmlcanvas/types';
-import {Coord, DocumentState} from '@/store/document/types';
+import {CalculationFilters, Coord, DocumentState} from '@/store/document/types';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import DrawableObject from '@/htmlcanvas/lib/drawable-object';
 import {EntityType} from '@/store/document/entities/types';
@@ -12,9 +12,10 @@ export default class  HydraulicsLayer extends LayerImplementation {
 
     draggedObjects: BaseBackedObject[] | null = null;
 
-    draw(context: DrawingContext, active: boolean, mode: DrawingMode) {
+    draw(context: DrawingContext, active: boolean, mode: DrawingMode, calculationFilters: CalculationFilters | null) {
         this.uidsInOrder.forEach((v) => {
-            this.objectStore.get(v)!.draw(context, active, false, mode);
+            this.objectStore.get(v)!.draw(context,
+                {active, selected: false, calculationFilters});
         });
     }
 

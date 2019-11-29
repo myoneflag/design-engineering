@@ -79,8 +79,19 @@ export interface UIState {
 
     lastUsedFixtureUid: string | null;
     lastUsedValveVid: ValveId | null;
+
+    calculationFilters: CalculationFilters;
 }
 
+export interface CalculationFilters {[key: string]: CalculationFilter; }
+export interface CalculationFilter {
+    name: string;
+    filters: {[key: string]: FilterKey; };
+}
+export interface FilterKey {
+    name: string;
+    value: boolean;
+}
 /**
  * A document is a drawing + all of its history and meta attributes.
  */
@@ -213,6 +224,7 @@ export const initialUIState: UIState = {
         demandType: null,
     },
     isCalculating: false,
+    calculationFilters: {},
 };
 
 export const initialDocumentState: DocumentState = {

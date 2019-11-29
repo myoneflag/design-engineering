@@ -17,18 +17,24 @@ import {CalculationContext} from '@/calculations/types';
 import {FlowNode} from '@/calculations/calculation-engine';
 import {angleDiffRad} from '@/lib/utils';
 import SystemNode from '@/htmlcanvas/objects/tmv/system-node';
+import {DrawingArgs} from '@/htmlcanvas/lib/drawable-object';
+import {CalculationData} from '@/store/document/calculations/calculation-field';
+import * as TM from "transformation-matrix";
+import {FIELD_HEIGHT} from '@/htmlcanvas/lib/object-traits/calculated-object';
 
 export default interface Connectable {
     getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]>;
-    getAngles(): number[];
+    getAngleDiffs(): number[];
+    getSortedAngles(): number[];
     prepareDelete(context: CanvasContext): BaseBackedObject[];
+    locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[];
     isStraight(tolerance: number): boolean;
     getAngleOfRad(connection: string): number;
 
     connect(uid: string): void;
     disconnect(uid: string): void;
 
-    drawInternal(context: DrawingContext, layerActive: boolean, selected: boolean): void;
+    drawInternal(context: DrawingContext, args: DrawingArgs): void;
 }
 
 const EPS = 1e-5;
@@ -39,8 +45,9 @@ export function ConnectableObject<T extends new (...args: any[])
     // @ts-ignore abstract class expression limitation in the language. In practice this is fine.
     return (class extends constructor implements Connectable {
 
-        drawInternal(context: DrawingContext, layerActive: boolean, selected: boolean): void {
-            super.drawInternal(context, layerActive, selected);
+        drawInternal(context: DrawingContext, args: DrawingArgs): void {
+            const {active, selected} = args;
+            super.drawInternal(context, args);
 
             const {ctx} = context;
 
@@ -164,7 +171,7 @@ export function ConnectableObject<T extends new (...args: any[])
             return result;
         }
 
-        getAngles(): number[] {
+        getAngleDiffs(): number[] {
             const ret = [];
             const radials = this.getRadials();
             const angles = radials
@@ -181,8 +188,68 @@ export function ConnectableObject<T extends new (...args: any[])
             return ret;
         }
 
+        getSortedAngles(): number[] {
+            const ret = [];
+            const radials = this.getRadials();
+            const angles = radials
+                .map((r) => this.toObjectCoord(r[0]))
+                .map((r) => (Math.atan2(r.y, r.x) + 2 * Math.PI) % (2 * Math.PI));
+            angles.sort();
+            return angles;
+        }
+
+
+        locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
+            const ans = super.locateCalculationBoxWorld(context, data, scale);
+            if (ans && ans.length > 0) {
+                return ans;
+            }
+
+            // Put a candidate position in each gap, starting from largest to smallest.
+            const angles = this.getSortedAngles();
+            let candidates: Array<[number, number]> = [];
+
+            if (this.entity.connections.length >= 2) {
+                for (let i = 0; i < angles.length; i++) {
+                    const a = angles[i];
+                    const b = angles[(i + 1) % angles.length];
+                    const diff = (b - a + Math.PI * 2) % (Math.PI * 2);
+                    candidates.push([a + diff / 2, diff]);
+                }
+                candidates.sort((a, b) => - (a[1] - b[1]));
+            } else if (this.entity.connections.length === 1) {
+                candidates = [
+                    [angles[0] + Math.PI, -1],
+                    [angles[0] + Math.PI + Math.PI / 4, -1],
+                    [angles[0] + Math.PI - Math.PI / 4, -1],
+                    [angles[0] + Math.PI + Math.PI / 2, -1],
+                    [angles[0] + Math.PI - Math.PI / 2, -1],
+                    [angles[0] + Math.PI + Math.PI * 3 / 4, -1],
+                    [angles[0] + Math.PI - Math.PI * 3/ 4, -1],
+                ];
+            } else {
+                for (let i = 0; i < 8; i++) {
+                    candidates.push([Math.PI * i / 4, -1]);
+                }
+            }
+
+            const wc = this.toWorldCoord();
+
+            return candidates.map(([dir, gapAngle]) => {
+                return TM.transform(
+                    TM.identity(),
+                    TM.translate(wc.x, wc.y),
+                    TM.rotate(dir + Math.PI / 2),
+                    TM.scale(scale),
+                    TM.translate(0, - 80),
+                    TM.rotate(- dir - Math.PI / 2),
+                );
+            });
+        }
+
+
         isStraight(tolerance: number = EPS): boolean {
-            const angles = this.getAngles();
+            const angles = this.getAngleDiffs();
             if (angles.length !== 2) {
                 return false;
             }

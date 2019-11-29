@@ -140,19 +140,11 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
         throw new Error('Method not implemented');
     }
 
-    getAngles(): number[] {
+    getAngleDiffs(): number[] {
         throw new Error('Method not implemented.');
     }
 
     isStraight(tolerance?: number): boolean {
-        throw new Error('Method not implemented.');
-    }
-
-    debase(): void {
-        throw new Error('Method not implemented.');
-    }
-
-    rebase(context: CanvasContext): void {
         throw new Error('Method not implemented.');
     }
 

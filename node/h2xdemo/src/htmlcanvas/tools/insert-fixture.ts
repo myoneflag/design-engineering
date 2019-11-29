@@ -83,6 +83,7 @@ export default function insertFixture(
                 systemUid: StandardFlowSystemUids.ColdWater,
                 uid: coldUid,
                 configuration: FlowConfiguration.INPUT,
+                calculation: null,
             };
 
 
@@ -98,6 +99,7 @@ export default function insertFixture(
                     systemUid: StandardFlowSystemUids.WarmWater,
                     uid: warmUid,
                     configuration: FlowConfiguration.INPUT,
+                    calculation: null,
                 };
 
                 context.$store.dispatch('document/addEntity', warmEntity);

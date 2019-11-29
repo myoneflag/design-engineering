@@ -1,5 +1,4 @@
-import {FieldCategory, MessageField} from '@/store/document/calculations/message-field';
-import {PsdCalculation} from '@/store/document/calculations/types';
+import {FieldCategory, CalculationField, Units} from '@/store/document/calculations/calculation-field';
 
 export default interface DirectedValveCalculation {
     flowRateLS: number | null;
@@ -7,11 +6,26 @@ export default interface DirectedValveCalculation {
     pressureKPA: number | null;
 }
 
-export function makeDirectedValveCalculationFields(): MessageField[] {
+export function makeDirectedValveCalculationFields(): CalculationField[] {
     return [
-        {property: 'flowRateLS', title: 'Flow Rate (L/s)', category: FieldCategory.FlowRate},
-        {property: 'pressureDropKPA', title: 'Pressure Drop (kPa)', category: FieldCategory.Pressure},
-        {property: 'pressureKPA', title: 'Pressure (kPa)', category: FieldCategory.Pressure},
+        {property: 'flowRateLS',
+            title: 'Flow Rate',
+            short: 'Flow',
+            units: Units.LitersPerSecond,
+            category: FieldCategory.FlowRate,
+        },
+        {property: 'pressureDropKPA',
+            title: 'Pressure Drop',
+            short: 'Drop',
+            units: Units.KiloPascals,
+            category: FieldCategory.Pressure,
+        },
+        {property: 'pressureKPA',
+            title: 'Pressure',
+            short: 'In',
+            units: Units.KiloPascals,
+            category: FieldCategory.Pressure,
+        },
     ];
 }
 

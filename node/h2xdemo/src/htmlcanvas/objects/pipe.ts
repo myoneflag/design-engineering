@@ -1,15 +1,15 @@
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
-import PipeEntity, {fillPipeDefaultFields} from '@/store/document/entities/pipe-entity';
+import PipeEntity, {fillPipeDefaultFields, makePipeFields} from '@/store/document/entities/pipe-entity';
 import * as TM from 'transformation-matrix';
 import {Matrix} from 'transformation-matrix';
 import {DrawingMode} from '@/htmlcanvas/types';
-import {ConnectableEntity, Coord, DocumentState} from '@/store/document/types';
+import {CalculationFilter, CalculationFilters, ConnectableEntity, Coord, DocumentState} from '@/store/document/types';
 import {matrixScale} from '@/htmlcanvas/utils';
 import Flatten from '@flatten-js/core';
 import {Draggable, DraggableObject} from '@/htmlcanvas/lib/object-traits/draggable-object';
 import * as _ from 'lodash';
-import {connect, disconnect, lighten} from '@/lib/utils';
+import {canonizeAngleRad, connect, disconnect, getPropertyByString, lighten} from '@/lib/utils';
 import {Interaction, InteractionType} from '@/htmlcanvas/lib/interaction';
 import {DrawingContext} from '@/htmlcanvas/lib/types';
 import DrawableObjectFactory from '@/htmlcanvas/lib/drawable-object-factory';
@@ -28,10 +28,19 @@ import {PIPE_STUB_MAX_LENGTH_MM} from '@/htmlcanvas/lib/black-magic/auto-connect
 import {EPS, getDarcyWeisbachFlatMH} from '@/calculations/pressure-drops';
 import {SIGNIFICANT_FLOW_THRESHOLD} from '@/htmlcanvas/layers/calculation-layer';
 import {FlowNode} from '@/calculations/calculation-engine';
+import {DrawingArgs} from '@/htmlcanvas/lib/drawable-object';
+import {DEFAULT_FONT_NAME} from '@/config';
+import {CalculationData, CalculationField} from '@/store/document/calculations/calculation-field';
+import {makePipeCalculationFields} from '@/store/document/calculations/pipe-calculation';
+import {Calculated, CalculatedObject, FIELD_HEIGHT} from '@/htmlcanvas/lib/object-traits/calculated-object';
 
+export const TEXT_MAX_SCALE = 0.4;
+
+@CalculatedObject
 @SelectableObject
 @DraggableObject
-export default class Pipe extends BackedDrawableObject<PipeEntity> implements Draggable {
+export default class Pipe extends BackedDrawableObject<PipeEntity> implements Draggable, Calculated {
+
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.PIPE, Pipe);
     }
@@ -45,7 +54,103 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         return TM.identity();
     }
 
-    drawInternal({ctx, doc}: DrawingContext, layerActive: boolean, selected: boolean, mode: DrawingMode): void {
+    locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
+        const {ctx, vp} = context;
+        // Manage to draw on screen first
+
+        if (!this.entity.calculation) {
+            return [];
+        }
+        // Manage to draw rotated first
+        const shape = this.shape();
+        if (shape instanceof Flatten.Point) {
+            return [];
+        }
+
+        const tm = TM.identity();
+
+        const avgx = (shape.start.x + shape.end.x) / 2;
+        const avgy = (shape.start.y + shape.end.y) / 2;
+
+        const length = vp.toScreenLength(shape.length);
+
+        if (length < 100) {
+            return [];
+        }
+
+
+
+        let angle = Flatten.vector(shape.start, shape.end).angleTo(Flatten.vector([1, 0]));
+        angle = canonizeAngleRad(angle);
+        if (Math.abs(angle) > Math.PI / 2) {
+            angle += Math.PI;
+        }
+
+        return [
+            TM.transform(
+                TM.identity(),
+                TM.translate(avgx, avgy),
+                TM.rotate(-angle),
+                TM.scale(scale, scale),
+                TM.translate(0, (- data.length * FIELD_HEIGHT) / 2)
+            ),
+
+            TM.transform(
+                TM.identity(),
+                TM.translate(avgx, avgy),
+                TM.rotate(-angle),
+                TM.scale(scale, scale),
+                TM.translate(0, (+ data.length * FIELD_HEIGHT) / 2)
+            ),
+        ];
+    }
+
+    drawCalculations(context: DrawingContext, filters: CalculationFilters) {
+        const {ctx, vp} = context;
+        // Manage to draw on screen first
+
+        if (!this.entity.calculation) {
+            return;
+        }
+        // Manage to draw rotated first
+        const shape = this.shape();
+        if (shape instanceof Flatten.Point) {
+            return;
+        }
+
+        const oTM = ctx.getTransform();
+
+        const avgx = (shape.start.x + shape.end.x) / 2;
+        const avgy = (shape.start.y + shape.end.y) / 2;
+
+        const length = vp.toScreenLength(shape.length);
+
+        if (length < 100) {
+            return;
+        }
+
+        ctx.translate(avgx, avgy);
+
+        let angle = Flatten.vector(shape.start, shape.end).angleTo(Flatten.vector([1, 0]));
+        angle = canonizeAngleRad(angle);
+        if (Math.abs(angle) > Math.PI / 2) {
+            angle += Math.PI;
+        }
+
+        ctx.rotate(-angle);
+        ctx.translate(0, - this.lastDrawnWidthInternal / 2);
+
+        const s = matrixScale(ctx.getTransform());
+        if (s > TEXT_MAX_SCALE) {
+            ctx.scale(1 / TEXT_MAX_SCALE, 1 / TEXT_MAX_SCALE);
+        } else {
+            ctx.scale(1 / s, 1 / s);
+        }
+        ctx.setTransform(oTM);
+    }
+
+    drawInternal(context: DrawingContext, {active, selected, calculationFilters}: DrawingArgs): void {
+        const {ctx, doc} = context;
         const s = matrixScale(ctx.getTransform());
 
         // lol what are our coordinates
@@ -56,7 +161,10 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         let targetWWidth = 10;
         let baseColor = this.displayObject(doc).color!.hex;
 
-        if (mode === DrawingMode.Calculations) {
+        const baseWidth = Math.max(2.0 / s, targetWWidth / this.toWorldLength(1));
+        this.lastDrawnWidthInternal = baseWidth;
+
+        if (calculationFilters) {
             if (this.entity.calculation) {
                 if (this.entity.calculation.realNominalPipeDiameterMM) {
                     targetWWidth = this.entity.calculation.realNominalPipeDiameterMM;
@@ -71,13 +179,8 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             }
         }
 
-        const baseWidth = Math.max(2.0 / s, targetWWidth / this.toWorldLength(1));
-
-
-        this.lastDrawnWidthInternal = baseWidth;
-
         ctx.lineCap = 'round';
-        if (layerActive && selected) {
+        if (active && selected) {
             ctx.beginPath();
             ctx.lineWidth = baseWidth + 6.0 / s;
             // this.lastDrawnWidth = baseWidth + 6.0 / s;

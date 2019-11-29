@@ -1,4 +1,4 @@
-import {Coord, DocumentState, DrawingState} from '@/store/document/types';
+import {DocumentState, DrawingState} from '@/store/document/types';
 import {ObjectStore, SelectionTarget} from '@/htmlcanvas/lib/types';
 import {EntityType} from '@/store/document/entities/types';
 import PipeEntity, {fillPipeDefaultFields, makePipeFields} from '@/store/document/entities/pipe-entity';
@@ -6,7 +6,7 @@ import {makeValveFields} from '@/store/document/entities/fitting-entity';
 import {makeFlowSourceFields} from '@/store/document/entities/flow-source-entity';
 import TmvEntity, {makeTMVFields, SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
 import FixtureEntity, {fillFixtureFields, makeFixtureFields} from '@/store/document/entities/fixtures/fixture-entity';
-import PopupEntity, {MessageType} from '@/store/document/entities/calculations/popup-entity';
+import PopupEntity from '@/store/document/entities/calculations/popup-entity';
 import {DemandType} from '@/calculations/types';
 import Graph, {serializeValue} from '@/calculations/graph';
 import EquationEngine from '@/calculations/equation-engine';
@@ -15,10 +15,8 @@ import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import {isCalculated} from '@/store/document/calculations';
 import UnionFind from '@/calculations/union-find';
 import {assertUnreachable, cloneSimple} from '@/lib/utils';
-import uuid from 'uuid';
 import {emptyPipeCalculation} from '@/store/document/calculations/pipe-calculation';
 import {interpolateTable, lowerBoundTable, parseCatalogNumberExact, upperBoundTable} from '@/htmlcanvas/lib/utils';
-import Popup from '@/htmlcanvas/objects/popup';
 import Pipe from '@/htmlcanvas/objects/pipe';
 import {
     getDarcyWeisbachMH,
@@ -35,7 +33,6 @@ import {getObjectFrictionHeadLoss} from '@/calculations/entity-pressure-drops';
 import {DrawableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import {emptyTmvCalculation} from '@/store/document/calculations/tmv-calculation';
 import FlowSource from '@/htmlcanvas/objects/flow-source';
-import {PSDStandardType} from '@/store/catalog/psd-standard/types';
 import {isGermanStandard} from '@/config';
 import Tmv from '@/htmlcanvas/objects/tmv/tmv';
 // tslint:disable-next-line:max-line-length
@@ -45,6 +42,10 @@ import DirectedValveEntity, {
 } from '@/store/document/entities/directed-valves/directed-valve-entity';
 import {ValveType} from '@/store/document/entities/directed-valves/valve-types';
 import {lookupFlowRate} from '@/calculations/utils';
+import {emptyFittingCalculation} from '@/store/document/calculations/fitting-calculation';
+import {emptyFlowSourceCalculation} from '@/store/document/calculations/flow-source-calculation';
+import {emptyDirectedValveCalculation} from '@/store/document/calculations/directed-valve-calculation';
+import {emptySystemNodeCalculation} from '@/store/document/calculations/system-node-calculation';
 
 export const SELF_CONNECTION = 'SELF_CONNECTION';
 
@@ -58,8 +59,6 @@ export default class CalculationEngine {
     flowGraph!: Graph<FlowNode, FlowEdge>;
     equationEngine!: EquationEngine;
     catalog!: Catalog;
-    centerWc!: Coord;
-    extraWarnings!: PopupEntity[];
     extraErrors!: PopupEntity[];
     drawing!: DrawingState;
     ga!: number;
@@ -67,7 +66,6 @@ export default class CalculationEngine {
     calculate(
         objectStore: ObjectStore,
         doc: DocumentState,
-        centerWc: Coord,
         catalog: Catalog,
         demandType: DemandType,
         done: (entity: PopupEntity[]) => void,
@@ -76,8 +74,6 @@ export default class CalculationEngine {
         this.doc = doc;
         this.catalog = catalog;
         this.demandType = demandType;
-        this.centerWc = centerWc;
-        this.extraWarnings = [];
         this.extraErrors = [];
         this.drawing = this.doc.drawing;
         this.ga = this.doc.drawing.calculationParams.gravitationalAcceleration;
@@ -175,7 +171,7 @@ export default class CalculationEngine {
                 .map((o) => ({connectable: o.uid, connection: SELF_CONNECTION}));
             this.sizeDefiniteTransports(sources);
             this.sizeRingsAndRoots(sources);
-            this.calculateAllFixturesAbsolutePressure(sources);
+            this.calculateAllPointPressures(sources);
         }
 
         if (!this.equationEngine.isComplete()) {
@@ -185,7 +181,7 @@ export default class CalculationEngine {
         return [];
     }
 
-    calculateAllFixturesAbsolutePressure(sources: FlowNode[]) {
+    calculateAllPointPressures(sources: FlowNode[]) {
         this.objectStore.forEach((obj) => {
             const entity = obj.entity;
             switch (entity.type) {
@@ -196,13 +192,13 @@ export default class CalculationEngine {
                     }
 
                     entity.calculation.coldPressureKPA =
-                        this.getAbsolutePressureFixture(
+                        this.getAbsolutePressurePoint(
                             {connectable: entity.coldRoughInUid, connection: entity.uid},
                             sources,
                         );
                     if (entity.warmRoughInUid) {
                         entity.calculation.warmPressureKPA =
-                            this.getAbsolutePressureFixture(
+                            this.getAbsolutePressurePoint(
                                 {connectable: entity.warmRoughInUid, connection: entity.uid},
                                 sources,
                             );
@@ -211,24 +207,61 @@ export default class CalculationEngine {
                 case EntityType.TMV:
                     if (entity.calculation) {
                         entity.calculation.coldPressureKPA =
-                            this.getAbsolutePressureFixture(
+                            this.getAbsolutePressurePoint(
                                 {connectable: entity.coldRoughInUid, connection: entity.uid},
                                 sources,
                             );
                         entity.calculation.hotPressureKPA =
-                            this.getAbsolutePressureFixture(
+                            this.getAbsolutePressurePoint(
                                 {connectable: entity.hotRoughInUid, connection: entity.uid},
                                 sources,
                             );
                     }
                     break;
-                case EntityType.BACKGROUND_IMAGE:
-                case EntityType.FITTING:
-                case EntityType.DIRECTED_VALVE:
-                case EntityType.PIPE:
                 case EntityType.FLOW_SOURCE:
-                case EntityType.RESULTS_MESSAGE:
+                case EntityType.DIRECTED_VALVE:
+                case EntityType.FITTING:
                 case EntityType.SYSTEM_NODE:
+                    const candidates = cloneSimple(entity.connections);
+                    if (entity.type === EntityType.FLOW_SOURCE) {
+                        candidates.push(SELF_CONNECTION);
+                    } else if (entity.type === EntityType.SYSTEM_NODE) {
+                        candidates.push(entity.parentUid!);
+                    }
+                    let maxPressure: number | null = null;
+                    candidates.forEach((cuid) => {
+                        const thisPressure = this.getAbsolutePressurePoint(
+                            {connectable: entity.uid, connection: cuid},
+                            sources,
+                        );
+                        if (thisPressure != null && (maxPressure === null || thisPressure > maxPressure)) {
+                            maxPressure = thisPressure;
+                        }
+                    });
+                    if (!entity.calculation) {
+                        switch (entity.type) {
+                            case EntityType.FITTING:
+                                entity.calculation = emptyFittingCalculation();
+                                break;
+                            case EntityType.FLOW_SOURCE:
+                                entity.calculation = emptyFlowSourceCalculation();
+                                break;
+                            case EntityType.DIRECTED_VALVE:
+                                entity.calculation = emptyDirectedValveCalculation();
+                                break;
+                            case EntityType.SYSTEM_NODE:
+                                entity.calculation = emptySystemNodeCalculation();
+                                break;
+                            default:
+                                assertUnreachable(entity);
+                        }
+                    }
+                    // For the entry, we have to get the highest pressure (the entry pressure)
+                    entity.calculation!.pressureKPA = maxPressure;
+                    break;
+                case EntityType.BACKGROUND_IMAGE:
+                case EntityType.PIPE:
+                case EntityType.RESULTS_MESSAGE:
                     break;
                 default:
                     assertUnreachable(entity);
@@ -236,7 +269,7 @@ export default class CalculationEngine {
         });
     }
 
-    getAbsolutePressureFixture(node: FlowNode, sources: FlowNode[]) {
+    getAbsolutePressurePoint(node: FlowNode, sources: FlowNode[]) {
         if (this.demandType === DemandType.PSD) {
             return this.getPeakDemandKPAWithShortestPath(node, sources);
         } else {
@@ -425,7 +458,16 @@ export default class CalculationEngine {
             true,
         );
         if (rPath) {
-            const sourceObj = this.objectStore.get(rPath[0][rPath[0].length - 1].to.connectable)! as FlowSource;
+            let sourceObj: FlowSource;
+            if (rPath[0].length === 0) {
+                if (this.objectStore.get(node.connectable)!.type !== EntityType.FLOW_SOURCE ||
+                    node.connection !== SELF_CONNECTION) {
+                    throw new Error('Unexpected empty path while searching for ' + JSON.stringify(node));
+                }
+                sourceObj = this.objectStore.get(node.connectable) as FlowSource;
+            } else {
+                sourceObj = this.objectStore.get(rPath[0][rPath[0].length - 1].to.connectable)! as FlowSource;
+            }
             return sourceObj.entity.pressureKPA! - rPath[1];
         } else {
             return null;
@@ -809,18 +851,7 @@ export default class CalculationEngine {
                 const flowRate = lookupFlowRate(psdU, this.doc, this.catalog);
 
                 if (flowRate === null) {
-                    // out of range
-                    this.extraWarnings.push({
-                        center: Popup.findCenter(this.objectStore.get(entity.uid)!, this.centerWc),
-                        params: {
-                            type: MessageType.WARNING,
-                            text: 'Could not get flow rate for this entity using the current PSD standard',
-                        },
-                        parentUid: null,
-                        targetUids: [entity.uid],
-                        type: EntityType.RESULTS_MESSAGE,
-                        uid: uuid(),
-                    });
+                    // Warn for no PSD
                 } else {
                     this.sizePipeForFlowRate(entity, flowRate);
                 }
@@ -956,18 +987,7 @@ export default class CalculationEngine {
         });
 
         if (!a) {
-            // No pipe big enough
-            this.extraWarnings.push({
-                center: Popup.findCenter(this.objectStore.get(pipe.uid)!, this.centerWc),
-                params: {
-                    type: MessageType.WARNING,
-                    text: 'No pipe with this material in the database is big enough to handle the required demand',
-                },
-                parentUid: null,
-                targetUids: [pipe.uid],
-                type: EntityType.RESULTS_MESSAGE,
-                uid: uuid(),
-            });
+            // Todo: Warn No pipe big enough
             return null;
         } else {
             return a;
@@ -991,18 +1011,7 @@ export default class CalculationEngine {
         });
 
         if (!a) {
-            // No pipe big enough
-            this.extraWarnings.push({
-                center: Popup.findCenter(this.objectStore.get(pipe.uid)!, this.centerWc),
-                params: {
-                    type: MessageType.WARNING,
-                    text: 'No pipe with this material in the database is big enough to handle the required demand',
-                },
-                parentUid: null,
-                targetUids: [pipe.uid],
-                type: EntityType.RESULTS_MESSAGE,
-                uid: uuid(),
-            });
+            // Todo: Warn no pipe is big enough
             return null;
         } else {
             return a;
@@ -1085,18 +1094,7 @@ export default class CalculationEngine {
             );
 
             if (residualPsdU > exclusivePsdU) {
-                // the PSD Units for this pipe is ambiguous in this configuration.
-                this.extraWarnings.push({
-                    center: Popup.findCenter(object, this.centerWc),
-                    params: {
-                        type: MessageType.WARNING,
-                        text: 'Loading units for this pipe are ambiguous (but it is at least ' + exclusivePsdU + ')',
-                    },
-                    parentUid: null,
-                    targetUids: [object.uid],
-                    type: EntityType.RESULTS_MESSAGE,
-                    uid: uuid(),
-                });
+                // TODO: Info that flow rate is ambiguous, but some flow is exclusive to us
             } else {
                 // we have successfully calculated the pipe's loading units.
                 this.configureEntityForPSD(object.entity, exclusivePsdU, flowEdge);
@@ -1111,31 +1109,10 @@ export default class CalculationEngine {
             if (demands[0] === 0 && wets.indexOf(endpointUids[0]) === -1 ||
                 demands[1] === 0 && wets.indexOf(endpointUids[1]) === -1
             ) {
-                // redundant deadleg
-                this.extraWarnings.push({
-                    center: Popup.findCenter(object, this.centerWc),
-                    params: {
-                        type: MessageType.WARNING,
-                        text: 'Redundant deadleg',
-                    },
-                    parentUid: null,
-                    targetUids: [object.uid],
-                    type: EntityType.RESULTS_MESSAGE,
-                    uid: uuid(),
-                });
+                // TODO: Info no flow redundant deadleg
             } else {
                 // ambiguous
-                this.extraWarnings.push({
-                    center: Popup.findCenter(object, this.centerWc),
-                    params: {
-                        type: MessageType.WARNING,
-                        text: 'Loading units for this pipe are ambiguous',
-                    },
-                    parentUid: null,
-                    targetUids: [object.uid],
-                    type: EntityType.RESULTS_MESSAGE,
-                    uid: uuid(),
-                });
+                // TODO: Info that flow rate is ambiguous, and no flow is exclusive to us
             }
         }
 

@@ -119,7 +119,7 @@ export class AutoConnector {
 
                 const norm = Flatten
                     .vector([0, 1])
-                    .rotate(o.toWorldAngle(0) / 180 * Math.PI);
+                    .rotate(o.toWorldAngleDeg(0) / 180 * Math.PI);
                 this.walls.push({
                     line: Flatten.line(
                         p.translate(norm.normalize().multiply(FIXTURE_WALL_DIST_MM)),
@@ -237,7 +237,7 @@ export class AutoConnector {
                 switch (po.entity.type) {
                     case EntityType.TMV:
                     case EntityType.FIXTURE:
-                        vec = Flatten.vector([0, -1]).rotate(po.toWorldAngle(0) / 180 * Math.PI);
+                        vec = Flatten.vector([0, -1]).rotate(po.toWorldAngleDeg(0) / 180 * Math.PI);
                         if (po.entity.type === EntityType.FIXTURE) {
                             const fe =
                                 fillFixtureFields(this.context.document, this.context.effectiveCatalog, po.entity);

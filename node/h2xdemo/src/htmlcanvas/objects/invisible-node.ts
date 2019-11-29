@@ -11,13 +11,14 @@ import {ConnectableObject} from '../lib/object-traits/connectable';
 import BackedConnectable from '@/htmlcanvas/lib/BackedConnectable';
 import {InvisibleNodeEntityConcrete} from '@/store/document/entities/concrete-entity';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
+import {DrawingArgs} from '@/htmlcanvas/lib/drawable-object';
 
 export abstract class InvisibleNode<T extends InvisibleNodeEntityConcrete> extends BackedConnectable<T> {
     get position() {
         return TM.translate(this.entity.center.x, this.entity.center.y);
     }
 
-    drawInternal(context: DrawingContext, ...args: any[]): void {
+    drawInternal(context: DrawingContext, args: DrawingArgs): void {
         // TA-DA!
     }
 

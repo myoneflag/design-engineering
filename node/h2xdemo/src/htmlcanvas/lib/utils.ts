@@ -6,6 +6,8 @@ import {ConnectableEntityConcrete} from '@/store/document/entities/concrete-enti
 import {EntityType} from '@/store/document/entities/types';
 import {SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
 import {fillFixtureFields} from '@/store/document/entities/fixtures/fixture-entity';
+import * as TM from 'transformation-matrix';
+import Flatten from '@flatten-js/core';
 
 
 export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
@@ -290,4 +292,8 @@ export function minHeightOfConnection(entity: ConnectableEntityConcrete, context
         return height;
     }
     return null;
+}
+
+export function tm2flatten(m: TM.Matrix): Flatten.Matrix {
+    return new Flatten.Matrix(m.a, m.b, m.c, m.d, m.e, m.f);
 }

@@ -1,5 +1,5 @@
 import {LayerImplementation, SelectMode} from '@/htmlcanvas/layers/layer';
-import {Coord, DocumentState, DrawableEntity} from '@/store/document/types';
+import {CalculationFilters, Coord, DocumentState, DrawableEntity} from '@/store/document/types';
 import {BackgroundImage} from '@/htmlcanvas/objects/background-image';
 import {ResizeControl} from '@/htmlcanvas/objects/resize-control';
 import {MouseMoveResult} from '@/htmlcanvas/types';
@@ -20,7 +20,11 @@ export default class BackgroundLayer extends LayerImplementation {
                 if (!this.isSelected(selectId) || !active || !background.hasDragged) {
                     background.draw(
                         context,
-                        this.isSelected(selectId), active && !selectedTool.focusSelectedObject,
+                        {
+                            selected: this.isSelected(selectId),
+                            active: active && !selectedTool.focusSelectedObject,
+                            calculationFilters: null,
+                        },
                     );
                 }
             } else {
@@ -34,7 +38,10 @@ export default class BackgroundLayer extends LayerImplementation {
                 if (background && background instanceof BackgroundImage
                     && this.isSelected(background)
                     && (background.hasDragged || selectedTool.focusSelectedObject)) {
-                    background.draw(context, this.isSelected(selectId), active);
+                    background.draw(
+                        context,
+                        {selected: this.isSelected(selectId), active, calculationFilters: null},
+                    );
                 }
             });
         }
@@ -127,9 +134,10 @@ export default class BackgroundLayer extends LayerImplementation {
 
     drawSelectionLayer(
         context: DrawingContext,
-        interactive: DrawableEntity[] | null) {
+        interactive: DrawableEntity[] | null,
+    ) {
         if (this.resizeBox) {
-            this.resizeBox.draw(context);
+            this.resizeBox.draw(context, {active: true, selected: true, calculationFilters: null});
         }
 
     }

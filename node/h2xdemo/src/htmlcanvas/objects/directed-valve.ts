@@ -21,16 +21,20 @@ import {lowerBoundTable, parseCatalogNumberExact} from '@/htmlcanvas/lib/utils';
 import Pipe from '@/htmlcanvas/objects/pipe';
 import {matrixScale} from '@/htmlcanvas/utils';
 import {Catalog} from '@/store/catalog/types';
+import {DrawingArgs} from '@/htmlcanvas/lib/drawable-object';
+import {Calculated, CalculatedObject} from '@/htmlcanvas/lib/object-traits/calculated-object';
+import {CalculationData} from '@/store/document/calculations/calculation-field';
 
 export const VALVE_SIZE_MM = 140;
 export const VALVE_HEIGHT_MM = 100;
 export const VALVE_LINE_WIDTH_MM = 10;
 
+@CalculatedObject
 @SelectableObject
 @CenterDraggableObject
 @ConnectableObject
 @CenteredObject
-export default class DirectedValve extends BackedConnectable<DirectedValveEntity> {
+export default class DirectedValve extends BackedConnectable<DirectedValveEntity> implements Calculated {
 
     static register() {
         DrawableObjectFactory.registerEntity(EntityType.DIRECTED_VALVE, this);
@@ -75,12 +79,17 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         );
     }
 
-    drawInternal(context: DrawingContext, layerActive: boolean, selected: boolean): void {
+
+    locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
+        return [];
+    }
+
+    drawInternal(context: DrawingContext, {active, selected}: DrawingArgs): void {
         const s = matrixScale(context.ctx.getTransform());
         context.ctx.rotate(this.rotationRad);
 
         const e = fillDirectedValveFields(context.doc, this.objectStore, this.entity);
-        if (selected && layerActive) {
+        if (selected && active) {
             context.ctx.fillStyle = lighten(e.color!.hex, 50, 0.8);
             context.ctx.fillRect(-VALVE_SIZE_MM * 1.2, -VALVE_SIZE_MM * 1.2, VALVE_SIZE_MM * 2.4, VALVE_SIZE_MM * 2.4);
         }

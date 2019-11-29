@@ -1,4 +1,5 @@
 import {Matrix} from 'transformation-matrix';
+import Flatten from '@flatten-js/core';
 
 export interface Transformation {
     tx: number;
@@ -324,4 +325,21 @@ export function keyCode2Image(keyCode: KeyCode): HTMLImageElement {
         imgStore.set(name, img);
     }
     return imgStore.get(name)!;
+}
+
+export function polygonsOverlap(a: Flatten.Polygon, b: Flatten.Polygon) {
+    let found = false;
+    a.edges.forEach((s: Flatten.Segment) => {
+        if (!found && b.contains((s.start))) {
+            found = true;
+        }
+    });
+
+    b.edges.forEach((s: Flatten.Segment) => {
+        if (!found && a.contains(s.start)) {
+            found = true;
+        }
+    });
+
+    return found;
 }

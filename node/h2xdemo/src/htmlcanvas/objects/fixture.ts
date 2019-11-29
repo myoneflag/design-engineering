@@ -22,24 +22,39 @@ import Flatten from '@flatten-js/core';
 import {CenteredObject} from '@/htmlcanvas/lib/object-traits/centered-object';
 import {CalculationContext} from '@/calculations/types';
 import {FlowNode} from '@/calculations/calculation-engine';
+import {DrawingArgs} from '@/htmlcanvas/lib/drawable-object';
+import {Calculated, CalculatedObject, FIELD_HEIGHT} from '@/htmlcanvas/lib/object-traits/calculated-object';
+import {CalculationData} from '@/store/document/calculations/calculation-field';
 
+@CalculatedObject
 @SelectableObject
 @CenterDraggableObject
 @CenteredObject
-export default class Fixture extends BackedDrawableObject<FixtureEntity> {
+export default class Fixture extends BackedDrawableObject<FixtureEntity> implements Calculated {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.FIXTURE, Fixture);
     }
 
-    debase(): void {
-        throw new Error('Method not implemented.');
+    locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
+        const angle = this.toWorldAngleDeg(0) / 180 * Math.PI;
+        const height = data.length * FIELD_HEIGHT;
+        const wc = this.toWorldCoord();
+
+        return [0, Math.PI / 4, - Math.PI / 4, Math.PI / 2, - Math.PI / 2,
+            Math.PI * 3 / 4, - Math.PI * 3 / 4, Math.PI].map((delta) => {
+            return TM.transform(
+                TM.identity(),
+                TM.translate(wc.x, wc.y),
+                TM.rotate(angle + Math.PI + delta),
+                TM.translate(0, - this.entity.pipeDistanceMM * 2),
+                TM.scale(scale),
+                TM.translate(0, - height / 2),
+                TM.rotate(-angle - Math.PI - delta),
+            );
+        });
     }
 
-    rebase(context: CanvasContext): void {
-        throw new Error('Method not implemented.');
-    }
-
-    drawInternal(context: DrawingContext, layerActive: boolean, selected: boolean): void {
+    drawInternal(context: DrawingContext, {active, selected}: DrawingArgs): void {
 
         const scale = matrixScale(context.ctx.getTransform());
         const ww = Math.max(10 / this.toWorldLength(1), 1 / scale);
