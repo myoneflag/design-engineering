@@ -13,7 +13,7 @@ export function makeFlowSourceCalculationFields(settings: DrawingState): Calcula
     const psdUnitShort = isGermanStandard(settings.calculationParams.psdMethod) ? 'D. Flow' : 'LU';
     return [
         {property: 'pressureKPA',
-            title: '',
+            title: 'Pressure',
             short: '',
             units: Units.KiloPascals,
             category: FieldCategory.Pressure,
