@@ -1,36 +1,17 @@
-import Layer, {LayerImplementation} from '@/htmlcanvas/layers/layer';
-import {CalculationFilters, DocumentState, DrawableEntity, WithID} from '@/store/document/types';
-import DrawableObject from '@/htmlcanvas/lib/drawable-object';
-import {DrawingContext, MessageStore, ObjectStore} from '@/htmlcanvas/lib/types';
+import {LayerImplementation} from '@/htmlcanvas/layers/layer';
+import {CalculationFilters, DocumentState, DrawableEntity} from '@/store/document/types';
+import {DrawingContext} from '@/htmlcanvas/lib/types';
 import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
-import {BaseInteraction, Interaction, PipeInteraction} from '@/htmlcanvas/lib/interaction';
-import {ViewPort} from '@/htmlcanvas/viewport';
 import {MouseMoveResult, UNHANDLED} from '@/htmlcanvas/types';
 import CalculationEngine from '@/calculations/calculation-engine';
-import {BackgroundEntity} from '@/store/document/entities/background-entity';
 import {DemandType} from '@/calculations/types';
-import PipeProperties from '@/components/editor/property-window/PipeProperties.vue';
 import {EntityType} from '@/store/document/entities/types';
-import PipeEntity from '@/store/document/entities/pipe-entity';
-import Popup from '@/htmlcanvas/objects/popup';
-import {isCalculated} from '@/store/document/calculations';
-import {getBoundingBox, getDocumentCenter, tm2flatten} from '@/htmlcanvas/lib/utils';
-import assert from 'assert';
-import {CalculationTarget} from '@/store/document/calculations/types';
-import CatalogState, {Catalog} from '@/store/catalog/types';
-import {
-    CalculatableEntityConcrete,
-    CalculationConcrete,
-    DrawableEntityConcrete,
-} from '@/store/document/entities/concrete-entity';
+import {CalculatableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
-import Calculations from '@/views/settings/Calculations.vue';
 import Pipe from '@/htmlcanvas/objects/pipe';
-import {EPS} from '@/calculations/pressure-drops';
 import {CalculationData} from '@/store/document/calculations/calculation-field';
 import Flatten from '@flatten-js/core';
 import {polygonOverlapsShape, polygonsOverlap} from '@/htmlcanvas/utils';
-import * as TM from 'transformation-matrix';
 import {isConnectable} from '@/store/document';
 
 const MINIMUM_SIGNIFICANT_PIPE_LENGTH_MM = 500;
@@ -96,7 +77,8 @@ export default class CalculationLayer extends LayerImplementation {
                         // don't cover connectables
                         this.objectStore.forEach((o) => {
                             if (!invalid) {
-                                if (isConnectable(o.entity.type)) {
+                                if (isConnectable(o.entity.type) || o.entity.type === EntityType.FIXTURE ||
+                                    o.entity.type === EntityType.TMV) {
                                     if (polygonOverlapsShape(shape, o.shape()!)) {
                                         invalid = true;
                                     }

@@ -10,7 +10,7 @@ export function makeFixtureCalculationFields(): CalculationField[] {
     return [
         {property: 'coldPressureKPA',
             title: 'Cold water pressure',
-            short: '',
+            short: 'cold',
             systemUid: StandardFlowSystemUids.ColdWater,
             units: Units.KiloPascals,
             category: FieldCategory.Pressure,
@@ -18,7 +18,7 @@ export function makeFixtureCalculationFields(): CalculationField[] {
         },
         {property: 'warmPressureKPA',
             title: 'Warm water pressure',
-            short: '',
+            short: 'warm',
             systemUid: StandardFlowSystemUids.HotWater,
             units: Units.KiloPascals,
             category: FieldCategory.Pressure,

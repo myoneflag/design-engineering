@@ -44,6 +44,7 @@ export function makeFittingCalculationFields(): CalculationField[] {
             short: '',
             units: Units.KiloPascals,
             category: FieldCategory.Pressure,
+            defaultEnabled: true,
         },
     ];
 }

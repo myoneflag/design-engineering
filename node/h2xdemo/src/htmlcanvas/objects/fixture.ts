@@ -42,16 +42,27 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
 
         return [0, Math.PI / 4, - Math.PI / 4, Math.PI / 2, - Math.PI / 2,
             Math.PI * 3 / 4, - Math.PI * 3 / 4, Math.PI].map((delta) => {
-            return TM.transform(
-                TM.identity(),
-                TM.translate(wc.x, wc.y),
-                TM.rotate(angle + Math.PI + delta),
-                TM.translate(0, - this.entity.pipeDistanceMM * 2),
-                TM.scale(scale),
-                TM.translate(0, - height / 2),
-                TM.rotate(-angle - Math.PI - delta),
-            );
-        });
+            return [
+                TM.transform(
+                    TM.identity(),
+                    TM.translate(wc.x, wc.y),
+                    TM.rotate(angle + Math.PI + delta),
+                    TM.translate(0, - this.entity.pipeDistanceMM * 2),
+                    TM.scale(scale),
+                    TM.translate(0, - height / 2),
+                    TM.rotate(-angle - Math.PI - delta),
+                ),
+                TM.transform(
+                    TM.identity(),
+                    TM.translate(wc.x, wc.y),
+                    TM.rotate(angle + Math.PI + delta),
+                    TM.translate(0, - this.entity.pipeDistanceMM * 6),
+                    TM.scale(scale),
+                    TM.translate(0, - height / 2),
+                    TM.rotate(-angle - Math.PI - delta),
+                ),
+            ];
+        }).flat();
     }
 
     drawInternal(context: DrawingContext, {active, selected}: DrawingArgs): void {

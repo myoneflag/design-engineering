@@ -98,7 +98,7 @@ export default function insertTmv(
             };
 
             const newWarm: SystemNodeEntity = {
-                center: {x: 0, y: newTmv.valveLengthMM},
+                center: {x: tmvhasCold ? newTmv.pipeDistanceMM / 3 : 0, y: newTmv.valveLengthMM},
                 connections: [],
                 parentUid: tmvUid,
                 type: EntityType.SYSTEM_NODE,
@@ -109,7 +109,7 @@ export default function insertTmv(
             };
 
             const newColdOut: SystemNodeEntity = {
-                center: {x: -newTmv.pipeDistanceMM / 4, y: newTmv.valveLengthMM},
+                center: {x: -newTmv.pipeDistanceMM / 3, y: newTmv.valveLengthMM},
                 connections: [],
                 parentUid: tmvUid,
                 type: EntityType.SYSTEM_NODE,

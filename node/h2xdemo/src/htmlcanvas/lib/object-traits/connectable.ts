@@ -93,10 +93,12 @@ export function ConnectableObject<T extends new (...args: any[])
                     } else {
                         if (hasLowerInBetween) {
                             // draw
-                            const maxWidth = Math.max(
+                            const maxWidthWorld = Math.max(
                                 (this.objectStore.get(r.uid) as Pipe).lastDrawnWidth,
                                 (this.objectStore.get(huid) as Pipe).lastDrawnWidth,
-                            ) * 2;
+                            );
+                            const maxWidth = this.toObjectLength(maxWidthWorld) + 2;
+
                             const mya = radialAngles[ix][0];
 
                             const adiff = (a - mya + 4 * Math.PI - EPS) % (2 * Math.PI) + EPS;
@@ -217,6 +219,14 @@ export function ConnectableObject<T extends new (...args: any[])
                     candidates.push([a + diff / 2, diff]);
                 }
                 candidates.sort((a, b) => - (a[1] - b[1]));
+                candidates.push(
+                    [candidates[0][0] + Math.PI / 4, -1],
+                    [candidates[0][0] - Math.PI / 4, -1],
+                    [candidates[0][0] + Math.PI / 2, -1],
+                    [candidates[0][0] - Math.PI / 2, -1],
+                    [candidates[0][0] + Math.PI * 3 / 4, -1],
+                    [candidates[0][0] - Math.PI * 3 / 4, -1],
+                );
             } else if (this.entity.connections.length === 1) {
                 candidates = [
                     [angles[0] + Math.PI, -1],
@@ -225,7 +235,7 @@ export function ConnectableObject<T extends new (...args: any[])
                     [angles[0] + Math.PI + Math.PI / 2, -1],
                     [angles[0] + Math.PI - Math.PI / 2, -1],
                     [angles[0] + Math.PI + Math.PI * 3 / 4, -1],
-                    [angles[0] + Math.PI - Math.PI * 3/ 4, -1],
+                    [angles[0] + Math.PI - Math.PI * 3 / 4, -1],
                 ];
             } else {
                 for (let i = 0; i < 8; i++) {

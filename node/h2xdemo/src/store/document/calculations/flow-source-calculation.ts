@@ -21,7 +21,7 @@ export function makeFlowSourceCalculationFields(settings: DrawingState): Calcula
         {property: 'flowRateLS',
             title: 'Peak Flow rate',
             short: 'Peak',
-            units: Units.KiloPascals,
+            units: Units.LitersPerSecond,
             category: FieldCategory.FlowRate,
         },
         {property: 'psdUnits',

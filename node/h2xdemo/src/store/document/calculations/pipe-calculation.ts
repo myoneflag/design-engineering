@@ -32,6 +32,7 @@ export function makePipeCalculationFields(settings: DrawingState): CalculationFi
             short: 'Nominal',
             units: Units.Millimeters,
             category: FieldCategory.Size,
+            defaultEnabled: true,
         },
         {property: 'realInternalDiameterMM',
             title: 'Internal Diameter',

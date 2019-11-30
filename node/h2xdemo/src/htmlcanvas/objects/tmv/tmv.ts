@@ -73,7 +73,6 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Calc
 
 
         // Box and open
-        // XX
         ctx.beginPath();
         ctx.moveTo(l, bm);
         ctx.lineTo(l, t);
@@ -82,9 +81,8 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Calc
         ctx.lineTo(l, bm);
 
         ctx.moveTo(l, bm);
-        ctx.lineTo(r, b);
+        ctx.lineTo(r * 0.80, b * 0.80);
 
-        // |V|V|
         ctx.stroke();
     }
 
