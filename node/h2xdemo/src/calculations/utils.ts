@@ -103,19 +103,19 @@ export function lookupFlowRate(psdU: number, doc: DocumentState, catalog: Catalo
 export function getFields(entity: DrawableEntityConcrete, doc: DocumentState): CalculationField[] {
     switch (entity.type) {
         case EntityType.FLOW_SOURCE:
-            return makeFlowSourceCalculationFields(doc.drawing);
+            return makeFlowSourceCalculationFields(entity, doc.drawing);
         case EntityType.PIPE:
-            return makePipeCalculationFields(doc.drawing);
+            return makePipeCalculationFields(entity, doc.drawing);
         case EntityType.FITTING:
-            return makeFittingCalculationFields();
+            return makeFittingCalculationFields(entity);
         case EntityType.TMV:
             return makeTmvCalculationFields(entity);
         case EntityType.FIXTURE:
             return makeFixtureCalculationFields();
         case EntityType.DIRECTED_VALVE:
-            return makeDirectedValveCalculationFields();
+            return makeDirectedValveCalculationFields(entity);
         case EntityType.SYSTEM_NODE:
-            return makeSystemNodeCalculationFields(doc.drawing);
+            return makeSystemNodeCalculationFields(entity, doc.drawing);
         case EntityType.BACKGROUND_IMAGE:
         case EntityType.RESULTS_MESSAGE:
             return [];

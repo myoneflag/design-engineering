@@ -1,5 +1,6 @@
 import {FieldCategory, CalculationField, Units} from '@/store/document/calculations/calculation-field';
 import {PsdCalculation} from '@/store/document/calculations/types';
+import FittingEntity from '@/store/document/entities/fitting-entity';
 
 export interface DeadlegAttribute {
     numConnections: 1 | null;
@@ -25,24 +26,27 @@ export default interface FittingCalculation {
     valveAttributes: DeadlegAttribute | TwoConnectionAttribute | ThreeConnectionAttribute | null;
 }
 
-export function makeFittingCalculationFields(): CalculationField[] {
+export function makeFittingCalculationFields(entity: FittingEntity): CalculationField[] {
     return [
         {property: 'flowRateLS',
             title: 'Flow Rate',
             short: 'Flow',
             units: Units.LitersPerSecond,
+            systemUid: entity.systemUid,
             category: FieldCategory.FlowRate,
         },
         {property: 'pressureDropKPA',
             title: 'Pressure Drop',
             short: 'Drop',
             units: Units.KiloPascals,
+            systemUid: entity.systemUid,
             category: FieldCategory.Pressure,
         },
         {property: 'pressureKPA',
             title: 'Pressure',
             short: '',
             units: Units.KiloPascals,
+            systemUid: entity.systemUid,
             category: FieldCategory.Pressure,
             defaultEnabled: true,
         },

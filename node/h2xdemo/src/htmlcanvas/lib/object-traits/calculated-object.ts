@@ -8,7 +8,7 @@ import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import BackedDrawableObject from '@/htmlcanvas/lib/backed-drawable-object';
 import PopupEntity from '@/store/document/entities/calculations/popup-entity';
 import {DEFAULT_FONT_NAME} from '@/config';
-import {getPropertyByString} from '@/lib/utils';
+import {getPropertyByString, lighten} from '@/lib/utils';
 import {getFields} from '@/calculations/utils';
 import * as TM from 'transformation-matrix';
 import {tm2flatten} from '@/htmlcanvas/lib/utils';
@@ -48,7 +48,8 @@ export function CalculatedObject<T extends new (...args: any[])
                 const datum = data[i];
                 const value = datum.value;
                 if (value === undefined) {
-                    throw new Error('undefined value: ' + JSON.stringify(datum) + ' ' + JSON.stringify(this.objectStore.get(datum.attachUid)!.entity));
+                    throw new Error('undefined value: ' + JSON.stringify(datum) + ' '
+                        + JSON.stringify(this.objectStore.get(datum.attachUid)!.entity));
                 }
                 const numberText = (value === null ? 0 : value.toFixed(2));
                 ctx.font = FIELD_FONT_SIZE + 'px ' + DEFAULT_FONT_NAME;
@@ -72,6 +73,11 @@ export function CalculatedObject<T extends new (...args: any[])
                     const datum = data[i];
                     const value = datum.value;
                     const numberText = (value === null ? 0 : value.toFixed(2));
+                    ctx.fillStyle = '#000';
+                    if (datum.systemUid) {
+                        const col = context.doc.drawing.flowSystems.find((s) => s.uid === datum.systemUid)!.color;
+                        ctx.fillStyle = lighten(col.hex, -20);
+                    }
                     ctx.fillText(  numberText + ' ' + datum.units + ' ' + datum.short, -maxWidth / 2, y);
 
                     y -= FIELD_HEIGHT;

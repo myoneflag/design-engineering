@@ -1,4 +1,5 @@
 import {FieldCategory, CalculationField, Units} from '@/store/document/calculations/calculation-field';
+import DirectedValveEntity from '@/store/document/entities/directed-valves/directed-valve-entity';
 
 export default interface DirectedValveCalculation {
     flowRateLS: number | null;
@@ -6,8 +7,8 @@ export default interface DirectedValveCalculation {
     pressureKPA: number | null;
 }
 
-export function makeDirectedValveCalculationFields(): CalculationField[] {
-    return [
+export function makeDirectedValveCalculationFields(entity: DirectedValveEntity): CalculationField[] {
+    const fields: CalculationField[] = [
         {property: 'flowRateLS',
             title: 'Flow Rate',
             short: 'Flow',
@@ -27,6 +28,14 @@ export function makeDirectedValveCalculationFields(): CalculationField[] {
             category: FieldCategory.Pressure,
         },
     ];
+    if (entity.systemUidOption) {
+        return fields.map((f) => {
+            f.systemUid = entity.systemUidOption!;
+            return f;
+        });
+    } else {
+        return fields;
+    }
 }
 
 export function emptyDirectedValveCalculation(): DirectedValveCalculation {

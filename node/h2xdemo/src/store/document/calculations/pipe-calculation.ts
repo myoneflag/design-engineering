@@ -2,6 +2,7 @@ import {FieldCategory, CalculationField, Units} from '@/store/document/calculati
 import {PsdCalculation} from '@/store/document/calculations/types';
 import {DrawingState} from '@/store/document/types';
 import {isGermanStandard} from '@/config';
+import PipeEntity from '@/store/document/entities/pipe-entity';
 
 export default interface PipeCalculation extends PsdCalculation {
     peakFlowRate: number | null;
@@ -16,7 +17,7 @@ export default interface PipeCalculation extends PsdCalculation {
 }
 
 
-export function makePipeCalculationFields(settings: DrawingState): CalculationField[] {
+export function makePipeCalculationFields(entity: PipeEntity, settings: DrawingState): CalculationField[] {
     const psdUnit = isGermanStandard(settings.calculationParams.psdMethod) ? 'Design Flow Rate' : 'Loading Units';
     const psdUnitShort = isGermanStandard(settings.calculationParams.psdMethod) ? 'D. Flow' : 'LU';
     return [
@@ -25,6 +26,7 @@ export function makePipeCalculationFields(settings: DrawingState): CalculationFi
             short: 'Peak',
             units: Units.LitersPerSecond,
             category: FieldCategory.FlowRate,
+            systemUid: entity.systemUid,
             defaultEnabled: true,
         },
         {property: 'realNominalPipeDiameterMM',
@@ -32,6 +34,7 @@ export function makePipeCalculationFields(settings: DrawingState): CalculationFi
             short: 'Nominal',
             units: Units.Millimeters,
             category: FieldCategory.Size,
+            systemUid: entity.systemUid,
             defaultEnabled: true,
         },
         {property: 'realInternalDiameterMM',
@@ -39,30 +42,35 @@ export function makePipeCalculationFields(settings: DrawingState): CalculationFi
             short: 'Internal',
             units: Units.Millimeters,
             category: FieldCategory.Size,
+            systemUid: entity.systemUid,
         },
         {property: 'pressureDropKpa',
             title: 'Peak pressure drop',
             short: 'Drop',
             units: Units.KiloPascals,
             category: FieldCategory.Pressure,
+            systemUid: entity.systemUid,
         },
         {property: 'velocityRealMS',
             title: 'Peak Velocity',
             short: '',
             units: Units.MetersPerSecond,
             category: FieldCategory.Velocity,
+            systemUid: entity.systemUid,
         },
         {property: 'temperatureRange',
             title: 'Temperature range',
             short: '',
             units: Units.Celsius,
             category: FieldCategory.Temperature,
+            systemUid: entity.systemUid,
         },
         {property: 'psdUnits',
             title: psdUnit,
             short: psdUnitShort,
             units: Units.None,
             category: FieldCategory.LoadingUnits,
+            systemUid: entity.systemUid,
         },
     ];
 }
