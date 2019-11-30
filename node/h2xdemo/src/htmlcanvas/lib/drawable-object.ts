@@ -102,6 +102,16 @@ export default abstract class DrawableObject {
     draw(context: DrawingContext, args: DrawingArgs) {
         const {ctx, vp} = context;
         // get parent positions
+        vp.prepareContext(ctx, ...this.world2object);
+
+        this.drawInternal(context, args);
+
+        /*
+        vp.prepareContext(ctx, ...transforms);
+        this.drawOwnShape(context);*/
+    }
+
+    get world2object(): TM.Matrix[] {
         const transforms: Matrix[] = [this.position];
         let parent = this.parent;
         while (parent != null) {
@@ -109,13 +119,7 @@ export default abstract class DrawableObject {
             parent = parent.parent;
         }
 
-        vp.prepareContext(ctx, ...transforms);
-
-        this.drawInternal(context, args);
-
-        /*
-        vp.prepareContext(ctx, ...transforms);
-        this.drawOwnShape(context);*/
+        return transforms;
     }
 
     drawOwnShape(context: DrawingContext) {

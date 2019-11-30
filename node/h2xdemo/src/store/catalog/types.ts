@@ -64,6 +64,7 @@ export interface ValveSize {
 export interface PipeMaterial {
     name: string;
     uid: string;
+    abbreviation: string;
     pipesBySize: {[key: string]: PipeSpec};
 }
 

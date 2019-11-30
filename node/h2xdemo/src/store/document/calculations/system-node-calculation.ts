@@ -1,10 +1,10 @@
 import {FieldCategory, CalculationField, Units} from '@/store/document/calculations/calculation-field';
-import {PsdCalculation} from '@/store/document/calculations/types';
+import {Calculation, PsdCalculation} from '@/store/document/calculations/types';
 import {isGermanStandard} from '@/config';
 import {DrawingState} from '@/store/document/types';
 import {SystemNodeEntity} from '@/store/document/entities/tmv/tmv-entity';
 
-export default interface SystemNodeCalculation extends PsdCalculation {
+export default interface SystemNodeCalculation extends PsdCalculation, Calculation {
     pressureKPA: number | null;
     flowRateLS: number | null;
 }
@@ -39,6 +39,6 @@ export function makeSystemNodeCalculationFields(entity: SystemNodeEntity, settin
 
 export function emptySystemNodeCalculation(): SystemNodeCalculation {
     return {
-        flowRateLS: null, psdUnits: null, pressureKPA: null,
+        flowRateLS: null, psdUnits: null, pressureKPA: null, warning: null,
     };
 }

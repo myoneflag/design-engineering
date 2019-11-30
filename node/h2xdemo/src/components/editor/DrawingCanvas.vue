@@ -663,7 +663,8 @@ import {ValveType} from "@/store/document/entities/directed-valves/valve-types";
                 this.viewPort.width = width;
                 this.viewPort.height = height;
 
-                const context: DrawingContext = {ctx, vp: this.viewPort, doc: this.document};
+                const context: DrawingContext =
+                    {ctx, vp: this.viewPort, doc: this.document, catalog: this.effectiveCatalog};
                 this.lastDrawingContext = context;
                 this.backgroundLayer.draw(context, this.mode === DrawingMode.FloorPlan, this.currentTool);
                 const filters = this.mode === DrawingMode.Calculations ? this.document.uiState.calculationFilters : null;

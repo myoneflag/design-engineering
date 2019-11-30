@@ -1,5 +1,5 @@
 import {FieldCategory, CalculationField, Units} from '@/store/document/calculations/calculation-field';
-import {PsdCalculation} from '@/store/document/calculations/types';
+import {Calculation, PsdCalculation} from '@/store/document/calculations/types';
 import FittingEntity from '@/store/document/entities/fitting-entity';
 
 export interface DeadlegAttribute {
@@ -18,7 +18,7 @@ export interface ThreeConnectionAttribute {
     nominalDiameterMM: number | null;
 }
 
-export default interface FittingCalculation {
+export default interface FittingCalculation extends Calculation {
     flowRateLS: number | null;
     pressureDropKPA: number | null;
     pressureKPA: number | null;
@@ -59,5 +59,6 @@ export function emptyFittingCalculation(): FittingCalculation {
         pressureDropKPA: null,
         pressureKPA: null,
         valveAttributes: null,
+        warning: null,
     };
 }

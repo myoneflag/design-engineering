@@ -1,7 +1,8 @@
 import {FieldCategory, CalculationField, Units} from '@/store/document/calculations/calculation-field';
 import {StandardFlowSystemUids} from '@/store/catalog';
+import {Calculation} from '@/store/document/calculations/types';
 
-export default interface FixtureCalculation {
+export default interface FixtureCalculation extends Calculation {
     coldPressureKPA: number | null;
     warmPressureKPA: number | null;
 }
@@ -29,6 +30,6 @@ export function makeFixtureCalculationFields(): CalculationField[] {
 
 export function emptyFixtureCalculation(): FixtureCalculation {
     return {
-        coldPressureKPA: null, warmPressureKPA: null,
+        coldPressureKPA: null, warmPressureKPA: null, warning: null,
     };
 }
