@@ -343,3 +343,19 @@ export function polygonsOverlap(a: Flatten.Polygon, b: Flatten.Polygon) {
 
     return found;
 }
+export function polygonOverlapsShape(a: Flatten.Polygon, shape: Flatten.Shape) {
+    if (shape instanceof Flatten.Polygon) {
+        return polygonsOverlap(a, shape);
+    } else if (shape instanceof Flatten.Segment) {
+        return a.contains(shape.start) || a.contains(shape.end) || a.intersect(shape);
+    } else if (shape instanceof Flatten.Circle) {
+        // (un)fortunately, flatten reports distance of point to polygon's edge, not face which
+        // means that there is a >0 distance even if the point is inside the face. Which is
+        // what we need here.
+        return a.contains(shape.center) || a.distanceTo(shape)[0] <= shape.r;
+    } else if (shape instanceof Flatten.Point) {
+        return a.contains(shape);
+    } else {
+        throw new Error('Unknown shape type');
+    }
+}

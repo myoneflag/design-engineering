@@ -29,8 +29,9 @@ import Pipe from '@/htmlcanvas/objects/pipe';
 import {EPS} from '@/calculations/pressure-drops';
 import {CalculationData} from '@/store/document/calculations/calculation-field';
 import Flatten from '@flatten-js/core';
-import {polygonsOverlap} from '@/htmlcanvas/utils';
+import {polygonOverlapsShape, polygonsOverlap} from '@/htmlcanvas/utils';
 import * as TM from 'transformation-matrix';
+import {isConnectable} from '@/store/document';
 
 const MINIMUM_SIGNIFICANT_PIPE_LENGTH_MM = 500;
 export const SIGNIFICANT_FLOW_THRESHOLD = 1e-5;
@@ -89,6 +90,19 @@ export default class CalculationLayer extends LayerImplementation {
                             invalid = true;
                             break;
                         }
+                    }
+
+                    if (!invalid) {
+                        // don't cover connectables
+                        this.objectStore.forEach((o) => {
+                            if (!invalid) {
+                                if (isConnectable(o.entity.type)) {
+                                    if (polygonOverlapsShape(shape, o.shape()!)) {
+                                        invalid = true;
+                                    }
+                                }
+                            }
+                        });
                     }
 
                     if (!invalid) {
