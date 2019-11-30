@@ -25,6 +25,7 @@ export interface CalculationField {
     short: string;
     units: Units;
     category: FieldCategory;
+    defaultEnabled?: boolean;
     attachUid?: string;
     systemUid?: string;
 }

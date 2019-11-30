@@ -146,7 +146,7 @@ export function CalculatedObject<T extends new (...args: any[])
         getCalculationFields(context: DrawingContext, filters: CalculationFilters): CalculationData[] {
             const filter = filters[this.entity.type].filters;
             return getFields(this.entity, context.doc)
-                .filter((f) => f.property in filter && filter[f.property].value)
+                .filter((f) => f.property in filter && filter[f.property].enabled)
                 .map((f) => {
                     const ret: CalculationData = f as CalculationData;
                     if (f.attachUid === undefined) {

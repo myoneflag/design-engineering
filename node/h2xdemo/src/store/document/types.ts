@@ -86,11 +86,12 @@ export interface UIState {
 export interface CalculationFilters {[key: string]: CalculationFilter; }
 export interface CalculationFilter {
     name: string;
+    enabled: boolean;
     filters: {[key: string]: FilterKey; };
 }
 export interface FilterKey {
     name: string;
-    value: boolean;
+    enabled: boolean;
 }
 /**
  * A document is a drawing + all of its history and meta attributes.

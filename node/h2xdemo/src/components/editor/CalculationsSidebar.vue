@@ -24,10 +24,20 @@ import {EntityType} from "@/store/document/entities/types";
                 <div class="filterPanel">
                     <div v-for="(objectFilters, type) in filters">
                         <template v-if="Object.keys(objectFilters.filters).length">
-                            <h4>{{ objectFilters.name }}</h4>
-                            <b-check v-for="(filter, prop) in objectFilters.filters" :checked="filter.value" @input="onCheck(type, prop, $event)">
+                            <b-check
+                                :checked="objectFilters.enabled"
+                                @input="onObjectCheck(type, $event)"
+                            >
+                                <h4>{{ objectFilters.name }}</h4>
+                            </b-check>
+                            <b-check
+                                    :disabled="!objectFilters.enabled"
+                                    v-for="(filter, prop) in objectFilters.filters"
+                                    :checked="filter.enabled"
+                                    @input="onCheck(type, prop, $event)">
                                 {{ filter.name }}
                             </b-check>
+                            <hr>
                         </template>
                     </div>
                 </div>
@@ -63,6 +73,7 @@ import {EntityType} from "@/store/document/entities/types";
     import {isGermanStandard} from "@/config";
     import {StandardFlowSystemUids} from "@/store/catalog";
     import {makeDirectedValveCalculationFields} from "@/store/document/calculations/directed-valve-calculation";
+    import {cloneSimple} from "@/lib/utils";
 
     @Component({
         components: {},
@@ -83,31 +94,47 @@ import {EntityType} from "@/store/document/entities/types";
 
             const objects = this.$props.objects as BaseBackedObject[];
 
+            const existing = cloneSimple(this.document.uiState.calculationFilters as CalculationFilters);
+
             objects.forEach((o) => {
                 const fields = getFields(o.entity, this.document);
+                let wasInserted = false;
                 if (!(o.entity.type in build)) {
-                    Vue.set(build, o.entity.type, {name: getEntityName(o.entity.type), filters: {}});
+                    Vue.set(build, o.entity.type, {
+                        name: getEntityName(o.entity.type),
+                        filters: {},
+                        enabled: false,
+                    });
+                    wasInserted = true;
                 }
 
+                let hasEnabled = false;
                 fields.forEach((f) => {
                     if (!(f.property in build[o.entity.type])) {
                         Vue.set(build[o.entity.type].filters, f.property, {
                             name: f.title,
-                            value: true,
+                            value: false,
                         });
+                        if (f.defaultEnabled) {
+                            build[o.entity.type].filters[f.property].enabled = true;
+                            hasEnabled = true;
+                        }
                     }
-                })
+                });
+                if (wasInserted && hasEnabled) {
+                    build[o.entity.type].enabled = true;
+                }
             });
 
-            const existing = this.document.uiState.calculationFilters as CalculationFilters;
             for (const eType in existing) {
 
                 if (eType in build && existing.hasOwnProperty(eType)) {
                     for (const prop in existing[eType].filters) {
                         if (prop in build[eType].filters) {
-                            build[eType].filters[prop].value = existing[eType].filters[prop].value;
+                            build[eType].filters[prop].enabled = existing[eType].filters[prop].enabled;
                         }
                     }
+                    build[eType].enabled = existing[eType].enabled;
                 }
             }
 
@@ -115,13 +142,15 @@ import {EntityType} from "@/store/document/entities/types";
         }
 
         stageNewFilters() {
-            for (const eType in this.filters) {
+            const filters = cloneSimple(this.filters);
+            for (const eType in filters) {
                 // noinspection JSUnfilteredForInLoop
-                if (this.filters.hasOwnProperty(eType)) {
-                    for (const prop in this.filters[eType].filters) {
+                if (filters.hasOwnProperty(eType)) {
+                    for (const prop in filters[eType].filters) {
                         // noinspection JSUnfilteredForInLoop
-                        this.onCheck(eType, prop, this.filters[eType].filters[prop].value, false);
+                        this.onCheck(eType, prop, filters[eType].filters[prop].enabled, false);
                     }
+                    this.onObjectCheck(eType, filters[eType].enabled, false);
                 }
             }
             this.$props.onChange();
@@ -135,6 +164,7 @@ import {EntityType} from "@/store/document/entities/types";
             if (!(eType in this.document.uiState.calculationFilters)) {
                 Vue.set(this.document.uiState.calculationFilters, eType, {
                     name: this.filters[eType].name,
+                    enabled: false,
                     filters: {},
                 });
             }
@@ -142,10 +172,25 @@ import {EntityType} from "@/store/document/entities/types";
             if (!(prop in this.document.uiState.calculationFilters[eType].filters)) {
                 Vue.set(this.document.uiState.calculationFilters[eType].filters, prop, {
                     name: this.filters[eType].filters[prop].name,
-                    value,
+                    enabled: value,
                 });
             }
-            this.document.uiState.calculationFilters[eType].filters[prop].value = value;
+            this.document.uiState.calculationFilters[eType].filters[prop].enabled = value;
+            if (shouldChange) {
+                this.$props.onChange();
+            }
+        }
+
+        onObjectCheck(eType: string, value: boolean, shouldChange: boolean = true) {
+            if (!(eType in this.document.uiState.calculationFilters)) {
+                Vue.set(this.document.uiState.calculationFilters, eType, {
+                    name: this.filters[eType].name,
+                    enabled: false,
+                    filters: {},
+                });
+            }
+
+            this.document.uiState.calculationFilters[eType].enabled = value;
             if (shouldChange) {
                 this.$props.onChange();
             }

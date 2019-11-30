@@ -25,6 +25,7 @@ export function makePipeCalculationFields(settings: DrawingState): CalculationFi
             short: 'Peak',
             units: Units.LitersPerSecond,
             category: FieldCategory.FlowRate,
+            defaultEnabled: true,
         },
         {property: 'realNominalPipeDiameterMM',
             title: 'Pipe Diameter',
