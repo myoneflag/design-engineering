@@ -1,8 +1,9 @@
 import {FieldCategory, CalculationField, Units} from '@/store/document/calculations/calculation-field';
 import TmvEntity from '@/store/document/entities/tmv/tmv-entity';
 import {StandardFlowSystemUids} from '@/store/catalog';
+import {Calculation} from '@/store/document/calculations/types';
 
-export default interface TmvCalculation {
+export default interface TmvCalculation extends Calculation {
     coldTemperatureC: number | null;
     coldPressureKPA: number | null;
     coldPeakFlowRate: number | null;
@@ -70,5 +71,7 @@ export function emptyTmvCalculation(): TmvCalculation {
         coldOutPressureDropKPA: null,
         coldOutPressureKPA: null,
         coldOutTemperatureC: null,
+
+        warning: null,
     };
 }

@@ -119,7 +119,7 @@ describe('object\'s head losses', () => {
                                             .pipesBySize[size].diameterNominalMM),
                                     temperatureRange: null,
                                     velocityRealMS: null,
-
+                                    warning: null,
                                 };
                                 assertIncreasing(
                                     context,

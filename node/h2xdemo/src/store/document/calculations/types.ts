@@ -7,3 +7,7 @@ export interface CalculationTarget<T> extends DrawableEntity {
 export interface PsdCalculation {
     psdUnits: number | null;
 }
+
+export interface Calculation {
+    warning: string | null;
+}

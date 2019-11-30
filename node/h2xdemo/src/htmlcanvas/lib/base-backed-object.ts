@@ -60,7 +60,13 @@ export default abstract class BaseBackedObject extends DrawableObject {
     }
 
 
-    drawCalculationBox(context: DrawingContext, data: CalculationData[], dryRun: boolean = false): Flatten.Box {
+
+    drawCalculationBox(
+        context: DrawingContext,
+        data: CalculationData[],
+        dryRun?: boolean,
+        warnSingOnly?: boolean,
+    ): Flatten.Box {
         throw new Error('Not implemented. Please use @CalculatedObject to implement.');
     }
 
@@ -69,6 +75,10 @@ export default abstract class BaseBackedObject extends DrawableObject {
     }
 
     getCalculationFields(context: DrawingContext, filters: CalculationFilters): CalculationData[] {
+        throw new Error('Not implemented. Please use @CalculatedObject to implement.');
+    }
+
+    hasWarning(): boolean {
         throw new Error('Not implemented. Please use @CalculatedObject to implement.');
     }
 

@@ -26,17 +26,15 @@ export interface CalculationField {
     units: Units;
     category: FieldCategory;
     defaultEnabled?: boolean;
+    significantDigits?: number;
+    fontMultiplier?: number;
+    hideUnits?: boolean;
     attachUid?: string;
     systemUid?: string;
+    bold?: boolean;
 }
 
 export interface CalculationData extends CalculationField {
-    property: string;
-    title: string;
-    short: string;
-    units: Units;
-    category: FieldCategory;
     attachUid: string;
     value: number | null;
-    systemUid?: string;
 }

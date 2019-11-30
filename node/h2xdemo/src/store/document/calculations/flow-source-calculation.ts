@@ -1,10 +1,10 @@
 import {FieldCategory, CalculationField, Units} from '@/store/document/calculations/calculation-field';
-import {PsdCalculation} from '@/store/document/calculations/types';
+import {Calculation, PsdCalculation} from '@/store/document/calculations/types';
 import {isGermanStandard} from '@/config';
 import {DrawingState} from '@/store/document/types';
 import FlowSourceEntity from '@/store/document/entities/flow-source-entity';
 
-export default interface FlowSourceCalculation extends PsdCalculation {
+export default interface FlowSourceCalculation extends Calculation {
     pressureKPA: number | null;
     flowRateLS: number | null;
 }
@@ -27,18 +27,11 @@ export function makeFlowSourceCalculationFields(entity: FlowSourceEntity, settin
             systemUid: entity.systemUid,
             category: FieldCategory.FlowRate,
         },
-        {property: 'psdUnits',
-            title: psdUnit,
-            short: psdUnitShort,
-            units: Units.None,
-            systemUid: entity.systemUid,
-            category: FieldCategory.LoadingUnits,
-        },
     ];
 }
 
 export function emptyFlowSourceCalculation(): FlowSourceCalculation {
     return {
-        flowRateLS: null, psdUnits: null, pressureKPA: null,
+        flowRateLS: null, pressureKPA: null, warning: null,
     };
 }

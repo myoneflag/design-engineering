@@ -186,13 +186,17 @@ export function interpolateTable<T>(
 }
 
 // assumes keys in table are non overlapping
-export function lowerBoundTable<T>(table: {[key: string]: T}, index: number, getVal?: (t: T) => number): T | null {
+export function lowerBoundTable<T>(
+    table: {[key: string]: T},
+    index: number,
+    getVal?: (t: T, isMax?: boolean) => number,
+): T | null {
     let highKey = Infinity;
     let highValue: T | null = null;
 
     for (const key of Object.keys(table)) {
-        const min = getVal ? getVal(table[key]) : parseCatalogNumberOrMin(key);
-        const max = getVal ? getVal(table[key]) : parseCatalogNumberOrMax(key);
+        const min = getVal ? getVal(table[key], false) : parseCatalogNumberOrMin(key);
+        const max = getVal ? getVal(table[key], true) : parseCatalogNumberOrMax(key);
         const value = table[key];
 
         if (min === null || max === null) {
@@ -213,13 +217,17 @@ export function lowerBoundTable<T>(table: {[key: string]: T}, index: number, get
 }
 
 // assumes keys in table are non overlapping
-export function upperBoundTable<T>(table: {[key: string]: T}, index: number, getVal?: (t: T) => number): T | null {
+export function upperBoundTable<T>(
+    table: {[key: string]: T},
+    index: number,
+    getVal?: (t: T, isMax?: boolean) => number,
+): T | null {
     let lowKey = -Infinity;
     let lowValue: T | null = null;
 
     for (const key of Object.keys(table)) {
-        const min = getVal ? getVal(table[key]) : parseCatalogNumberOrMin(key);
-        const max = getVal ? getVal(table[key]) : parseCatalogNumberOrMax(key);
+        const min = getVal ? getVal(table[key], false) : parseCatalogNumberOrMin(key);
+        const max = getVal ? getVal(table[key], true) : parseCatalogNumberOrMax(key);
         const value = table[key];
 
         if (min === null || max === null) {
@@ -230,8 +238,8 @@ export function upperBoundTable<T>(table: {[key: string]: T}, index: number, get
             return value;
         }
 
-        if (max < index && max > lowKey) {
-            lowKey = max;
+        if (min <= index && Math.min(max, index) > lowKey) {
+            lowKey = Math.min(max, index);
             lowValue = value;
         }
     }

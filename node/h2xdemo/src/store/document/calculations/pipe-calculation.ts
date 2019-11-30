@@ -1,10 +1,11 @@
 import {FieldCategory, CalculationField, Units} from '@/store/document/calculations/calculation-field';
-import {PsdCalculation} from '@/store/document/calculations/types';
+import {Calculation, PsdCalculation} from '@/store/document/calculations/types';
 import {DrawingState} from '@/store/document/types';
 import {isGermanStandard} from '@/config';
-import PipeEntity from '@/store/document/entities/pipe-entity';
+import PipeEntity, {fillPipeDefaultFields} from '@/store/document/entities/pipe-entity';
+import {Catalog} from '@/store/catalog/types';
 
-export default interface PipeCalculation extends PsdCalculation {
+export default interface PipeCalculation extends PsdCalculation, Calculation {
     peakFlowRate: number | null;
     optimalInnerPipeDiameterMM: number | null;
     realNominalPipeDiameterMM: number | null;
@@ -17,9 +18,16 @@ export default interface PipeCalculation extends PsdCalculation {
 }
 
 
-export function makePipeCalculationFields(entity: PipeEntity, settings: DrawingState): CalculationField[] {
+export function makePipeCalculationFields(entity: PipeEntity, settings: DrawingState, catalog?: Catalog): CalculationField[] {
     const psdUnit = isGermanStandard(settings.calculationParams.psdMethod) ? 'Design Flow Rate' : 'Loading Units';
     const psdUnitShort = isGermanStandard(settings.calculationParams.psdMethod) ? 'D. Flow' : 'LU';
+
+    let materialName = '';
+    if (catalog) {
+        const pipe = fillPipeDefaultFields(settings, 0, entity);
+        materialName = ' (' + catalog.pipes[pipe.material!].abbreviation + ')';
+    }
+
     return [
         {property: 'peakFlowRate',
             title: 'Peak Flow rate',
@@ -31,9 +39,12 @@ export function makePipeCalculationFields(entity: PipeEntity, settings: DrawingS
         },
         {property: 'realNominalPipeDiameterMM',
             title: 'Pipe Diameter',
-            short: 'Nominal',
+            short: '\u00f8' + materialName!,
+            hideUnits: true,
             units: Units.Millimeters,
             category: FieldCategory.Size,
+            significantDigits: 0,
+            bold: true,
             systemUid: entity.systemUid,
             defaultEnabled: true,
         },
@@ -85,5 +96,6 @@ export function emptyPipeCalculation(): PipeCalculation {
         realNominalPipeDiameterMM: null,
         temperatureRange: null,
         velocityRealMS: null,
+        warning: null,
     };
 }

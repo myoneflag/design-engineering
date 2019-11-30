@@ -5,11 +5,13 @@ import BaseBackedObject from '@/htmlcanvas/lib/base-backed-object';
 import PopupEntity from '@/store/document/entities/calculations/popup-entity';
 import Popup from '@/htmlcanvas/objects/popup';
 import {ValveType} from '@/store/document/entities/directed-valves/valve-types';
+import {Catalog} from '@/store/catalog/types';
 
 export interface DrawingContext {
     ctx: CanvasRenderingContext2D;
     vp: ViewPort;
     doc: DocumentState;
+    catalog: Catalog;
 }
 
 export class ObjectStore extends Map<string, BaseBackedObject> {}

@@ -317,6 +317,9 @@ export function keycodeToImgName(keyCode: KeyCode): string {
 
 const imgStore: Map<string, HTMLImageElement> = new Map<string, HTMLImageElement>();
 
+export const warningSignImg = new Image();
+warningSignImg.src = require('../assets/warning-sign.svg');
+
 export function keyCode2Image(keyCode: KeyCode): HTMLImageElement {
     const name = keycodeToImgName(keyCode);
     if (!imgStore.has(name)) {
@@ -358,4 +361,38 @@ export function polygonOverlapsShape(a: Flatten.Polygon, shape: Flatten.Shape) {
     } else {
         throw new Error('Unknown shape type');
     }
+}
+
+export function wrapText(
+    context: CanvasRenderingContext2D,
+    text: string,
+    x: number,
+    y: number,
+    maxWidth: number,
+    lineHeight: number,
+    measure: boolean = false,
+): number {
+    const words = text.split(' ');
+    let line = '';
+    let lines = 1;
+
+    for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = context.measureText(testLine);
+        const testWidth = metrics.width;
+        if (testWidth > maxWidth && n > 0) {
+            if (!measure) {
+                context.fillText(line, x, y);
+            }
+            line = words[n] + ' ';
+            y += lineHeight;
+            lines ++;
+        } else {
+            line = testLine;
+        }
+    }
+    if (!measure) {
+        context.fillText(line, x, y);
+    }
+    return lines * lineHeight;
 }

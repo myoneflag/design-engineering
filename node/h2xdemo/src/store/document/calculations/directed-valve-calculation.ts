@@ -1,7 +1,8 @@
 import {FieldCategory, CalculationField, Units} from '@/store/document/calculations/calculation-field';
 import DirectedValveEntity from '@/store/document/entities/directed-valves/directed-valve-entity';
+import {Calculation} from '@/store/document/calculations/types';
 
-export default interface DirectedValveCalculation {
+export default interface DirectedValveCalculation extends Calculation {
     flowRateLS: number | null;
     pressureDropKPA: number | null;
     pressureKPA: number | null;
@@ -43,5 +44,6 @@ export function emptyDirectedValveCalculation(): DirectedValveCalculation {
         flowRateLS: null,
         pressureDropKPA: null,
         pressureKPA: null,
+        warning: null,
     };
 }

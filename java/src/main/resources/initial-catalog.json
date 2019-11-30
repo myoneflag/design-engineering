@@ -1,5 +1,5 @@
 {
-  "lastModified": "2019-11-20T10:06:28+11",
+  "lastModified": "2019-11-30T15:50:55+11",
   "fixtures": {
     "ablutionTrough": {
       "abbreviation": "AT",
@@ -503,6 +503,7 @@
   "pipes": {
     "castIronCoated": {
       "name": "Cast Iron (Coated)",
+      "abbreviation": "CICL",
       "pipesBySize": {
         "100": {
           "colebrookWhiteCoefficient": "0.3",
@@ -551,6 +552,7 @@
     },
     "copperTypeB": {
       "name": "Copper (Type B)",
+      "abbreviation": "CU",
       "pipesBySize": {
         "100": {
           "colebrookWhiteCoefficient": "0.0015",
@@ -634,6 +636,7 @@
     },
     "gmsMedium": {
       "name": "GMS (Medium)",
+      "abbreviation": "GMS",
       "pipesBySize": {
         "100": {
           "colebrookWhiteCoefficient": "0.15",
@@ -661,6 +664,7 @@
     },
     "hdpeSdr11": {
       "name": "HDPE (SDR11)",
+      "abbreviation": "HDPE",
       "pipesBySize": {
         "110": {
           "colebrookWhiteCoefficient": "0.0015",
@@ -758,6 +762,7 @@
     },
     "pexSdr74": {
       "name": "PEX (SDR 7.4)",
+      "abbreviation": "PEX",
       "pipesBySize": {
         "110": {
           "colebrookWhiteCoefficient": "0.0015",
@@ -834,6 +839,7 @@
     },
     "stainlessSteel": {
       "name": "Stainless Steel",
+      "abbreviation": "S/S",
       "pipesBySize": {
         "100": {
           "colebrookWhiteCoefficient": "0.0015",

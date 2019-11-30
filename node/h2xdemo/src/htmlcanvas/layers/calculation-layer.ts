@@ -8,11 +8,15 @@ import {DemandType} from '@/calculations/types';
 import {EntityType} from '@/store/document/entities/types';
 import {CalculatableEntityConcrete} from '@/store/document/entities/concrete-entity';
 import CanvasContext from '@/htmlcanvas/lib/canvas-context';
-import Pipe from '@/htmlcanvas/objects/pipe';
+import Pipe, {TEXT_MAX_SCALE} from '@/htmlcanvas/objects/pipe';
 import {CalculationData} from '@/store/document/calculations/calculation-field';
 import Flatten from '@flatten-js/core';
-import {polygonOverlapsShape, polygonsOverlap} from '@/htmlcanvas/utils';
+import {matrixScale, polygonOverlapsShape, polygonsOverlap} from '@/htmlcanvas/utils';
 import {isConnectable} from '@/store/document';
+import {isCalculated} from '@/store/document/calculations';
+import * as TM from 'transformation-matrix';
+import {tm2flatten} from '@/htmlcanvas/lib/utils';
+import {MIN_SCALE, SCALE_GRADIENT_MIN} from '@/htmlcanvas/lib/object-traits/calculated-object';
 
 const MINIMUM_SIGNIFICANT_PIPE_LENGTH_MM = 500;
 export const SIGNIFICANT_FLOW_THRESHOLD = 1e-5;
@@ -97,11 +101,33 @@ export default class CalculationLayer extends LayerImplementation {
                         drawn = true;
                     }
                 });
+
+                if (!drawn) {
+                    // warnings must be drawn
+                    if (o.calculated && o.hasWarning()) {
+                        vp.prepareContext(context.ctx, ...o.world2object);
+                        const s = matrixScale(context.ctx.getTransform());
+                        context.ctx.scale(MIN_SCALE / s, MIN_SCALE / s);
+
+                        const box = o.drawCalculationBox(context, [], false, true);
+                        let p = new Flatten.Polygon();
+                        p.addFace(box);
+                        p = p.transform(tm2flatten(TM.transform(TM.inverse(context.ctx.getTransform()), vp.position)));
+                        spentShapes.push(p);
+                    }
+                }
             });
         }
     }
 
     messagePriority(object: BaseBackedObject): number {
+        if (isCalculated(object.entity)) {
+            const calc = (object.entity as CalculatableEntityConcrete).calculation;
+            if (calc && calc.warning !== null) {
+                return 10000; // High priority to warnings.
+            }
+        }
+
         switch (object.entity.type) {
             case EntityType.FLOW_SOURCE:
                 return 120;
