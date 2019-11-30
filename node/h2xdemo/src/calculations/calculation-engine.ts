@@ -201,7 +201,7 @@ export default class CalculationEngine {
                 .filter((o) => o.type === EntityType.FLOW_SOURCE)
                 .map((o) => ({connectable: o.uid, connection: SELF_CONNECTION}));
             this.sizeDefiniteTransports(sources);
-            this.sizeRingsAndRoots(sources);
+            //this.sizeRingsAndRoots(sources);
             this.calculateAllPointPressures(sources);
             this.fillPressureDropFields();
             this.createWarnings();
@@ -904,7 +904,7 @@ export default class CalculationEngine {
         let page: PipeSpec | null = null;
 
         pipe.calculation!.optimalInnerPipeDiameterMM = this.calculateInnerDiameter(pipe);
-        if (!pipe.diameterMM) {
+        if (pipe.diameterMM === null) {
             page = this.getRealPipe(pipe);
         } else {
             pipe.calculation!.realNominalPipeDiameterMM = pipe.diameterMM;
@@ -1118,8 +1118,8 @@ export default class CalculationEngine {
 
 
         if (exclusivePsdU > 0) {
-            const [point] = this.getDryEndpoints(endpointUids, serializeValue(flowEdge), roots);
-            const [wet] = this.getWetEndpoints(endpointUids, serializeValue(flowEdge), roots);
+            const [point] = this.getDryEndpoints(endpointUids, flowEdge, roots);
+            const [wet] = this.getWetEndpoints(endpointUids, flowEdge, roots);
             const residualPsdU = this.getTotalReachedPsdU(
                 [{connectable: point, connection: object.uid}],
                 [wet],
@@ -1130,11 +1130,11 @@ export default class CalculationEngine {
                 // TODO: Info that flow rate is ambiguous, but some flow is exclusive to us
             } else {
                 // we have successfully calculated the pipe's loading units.
-                this.configureEntityForPSD(object.entity, exclusivePsdU, flowEdge);
+                this.configureEntityForPSD(object.entity, exclusivePsdU, flowEdge);// ambiguous
             }
         } else {
             // zero exclusive to us. Work out whether this is because we don't have any fixture demand.
-            const wets = this.getWetEndpoints(endpointUids, serializeValue(flowEdge), roots);
+            const wets = this.getWetEndpoints(endpointUids, flowEdge, roots);
             const demands = endpointUids.map((e) =>
                 this.getTotalReachedPsdU([{connectable: e, connection: object.uid}], [], [serializeValue(flowEdge)]),
             );
@@ -1322,9 +1322,9 @@ export default class CalculationEngine {
         return psdUs;
     }
 
-    getWetEndpoints(endpointUids: string[], edgeUid: string, roots: FlowNode[]): string[] {
+    getWetEndpoints(endpointUids: string[], edge: FlowEdge, roots: FlowNode[]): string[] {
         const seen = new Set<string>();
-        const seenEdges = new Set<string>([edgeUid]);
+        const seenEdges = new Set<string>([serializeValue(edge)]);
 
         roots.forEach((r) => {
             this.flowGraph.dfs(
@@ -1340,12 +1340,12 @@ export default class CalculationEngine {
 
         return endpointUids.filter((ep) => {
             // to be dry, we have to not have any sources.
-            return seen.has(ep);
+            return seen.has(serializeValue({connectable: ep, connection: edge.uid}));
         });
     }
 
-    getDryEndpoints(endpointUids: string[], edgeUid: string, roots: FlowNode[]): string[] {
-        const wet = this.getWetEndpoints(endpointUids, edgeUid, roots);
+    getDryEndpoints(endpointUids: string[], edge: FlowEdge, roots: FlowNode[]): string[] {
+        const wet = this.getWetEndpoints(endpointUids, edge, roots);
         return endpointUids.filter((ep) => {
             return wet.indexOf(ep) === -1;
         });
