@@ -5,6 +5,7 @@ import store from './store/store';
 import axios from 'axios';
 import LoadProfile from '@/views/LoadProfile.vue';
 import ChangePassword from '@/views/ChangePassword.vue';
+import Contact from '@/views/Contact.vue';
 
 Vue.use(Router);
 
@@ -102,6 +103,12 @@ const router = new Router({
             name: 'changePassword',
             component: ChangePassword,
         },
+
+        {
+            path: '/contact',
+            name: 'contact',
+            component: Contact,
+        }
     ],
 });
 

@@ -3,15 +3,20 @@
         <b-row class="text-center">
             <b-col>
                 <h1>
-                    H2x Demo
+                    H2X Engineering Solutions
                 </h1>
             </b-col>
         </b-row>
         <b-row class="text-center">
             <b-col>
                 <h5 class="text-center">
-                    Invite Only
+                    Hydraulics Designer Software - Login
                 </h5>
+            </b-col>
+        </b-row>
+        <b-row class="text-center">
+            <b-col>
+                <b-button to="contact" size="sm" variant="info">Request Demo</b-button>
             </b-col>
         </b-row>
         <b-row style="margin-top: 50px;">
@@ -76,7 +81,12 @@
                             solid: true,
                         });
                     }
-            });
+            }).catch((err) => {
+                (this as any).$bvToast.toast(err, {
+                    title: 'Login Error',
+                    variant: 'danger',
+                    solid: true,
+                });});
         }
     }
 </script>

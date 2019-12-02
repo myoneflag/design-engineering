@@ -41,6 +41,7 @@
     <mapping class="com.h2x.mvp.entities.Session"/>
     <mapping class="com.h2x.mvp.entities.Profile"/>
     <mapping class="com.h2x.mvp.entities.Catalog"/>
+      <mapping class="com.h2x.mvp.entities.ContactMessage"/>
 
 
   </session-factory>
