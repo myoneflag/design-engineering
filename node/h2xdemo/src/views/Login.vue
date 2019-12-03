@@ -3,7 +3,7 @@
         <b-row class="text-center">
             <b-col>
                 <h1>
-                    H2X Engineering Solutions
+                    H2X - Exponential Engineering
                 </h1>
             </b-col>
         </b-row>
