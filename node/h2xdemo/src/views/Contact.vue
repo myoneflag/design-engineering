@@ -13,15 +13,13 @@
                 <h5 class="text-center">
                     Thank you for your interest in H2X. If you are interested in having early access to our software, please contact us by completing the below form and we will be in touch shortly.
                 </h5>
+                <b-button variant="info" size="sm" to="login">Login (For Existing Users)</b-button>
             </b-col>
             <b-col></b-col>
         </b-row>
         <b-row style="margin-top: 50px;">
-            <b-col>
-
-            </b-col>
             <b-col cols="6">
-
+                <h3>Contact Us</h3>
                 <b-form>
                     <b-form-input v-model="name" @keyup.enter="login" placeholder="Name*"></b-form-input>
                     <b-form-input type="email" @keyup.enter="login" v-model="email" placeholder="Email*"></b-form-input>
@@ -32,14 +30,17 @@
                     </b-form-group>
                 </b-form>
             </b-col>
-            <b-col>
-
+            <b-col cols="6">
+                <iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:6606844300288499712" height="616" width="504" frameborder="0" allowfullscreen="" title="Embedded post"></iframe>
             </b-col>
         </b-row>
-        <b-row style="margin-top: 100px">
-            Are you tired of the tedious and time consuming design process?
-            H2X is a revolutionary hydraulic engineering software that increases the quality, efficiency, and consistency of designs.
-            Watch the video below to find out how.
+        <b-row style="margin-top: 20px">
+            <b-col>
+                <b-button-group>
+                    <b-button href="https://www.linkedin.com/company/h2x-exponential-engineering/?viewAsMember=true" variant="primary"><v-icon  name="brands/linkedin" scale="2"/></b-button>
+                    <b-button href="mailto:jonathanmousdell@gmail.com" variant="danger"><v-icon  name="envelope" scale="2"/></b-button>
+                </b-button-group>
+            </b-col>
         </b-row>
     </b-container>
 </template>

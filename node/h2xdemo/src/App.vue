@@ -26,7 +26,6 @@
     import VersionNumber from '@/components/VersionNumber.vue';
     import {MainEventBus} from '@/store/main-event-bus';
     import {registerObjectBuilders} from '@/htmlcanvas/objects';
-
     Vue.use(VueDragDrop);
 
     Vue.use(VueCookies);
