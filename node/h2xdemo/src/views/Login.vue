@@ -16,7 +16,7 @@
         </b-row>
         <b-row class="text-center">
             <b-col>
-                <b-button to="contact" size="sm" variant="info">Request Demo</b-button>
+                <b-button to="contact" size="sm" variant="info">Request Early Access</b-button>
             </b-col>
         </b-row>
         <b-row style="margin-top: 50px;">
