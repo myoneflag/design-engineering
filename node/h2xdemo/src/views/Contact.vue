@@ -59,7 +59,7 @@
 
         submit() {
 
-            axios.post('/api/contact', {name: this.name, password: this.email, message: this.message})
+            axios.post('/api/contact', {name: this.name, email: this.email, message: this.message})
 
                 .then(({data: {success, accessToken, message, username}}) => {
                     if (success === true) {
