@@ -2,10 +2,10 @@
   "name": "rest-api-node-ts-boilerplate",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "nodemon ./dist/index.js",
+    "start": "nodemon ./dist/backend/src/index.js --exec babel-node ./dist/backend/src/index.js",
     "dev": "nodemon --exec ts-node -- ./src/index.ts",
     "prod": "npm run build && npm run start",
     "clean": "rm -rf node_modules coverage dist .nyc_output",
@@ -44,7 +44,13 @@
     "tslib": "^1.10.0",
     "typeorm": "0.2.20",
     "uuid": "^3.3.3",
-    "webpack": "^4.41.2"
+    "webpack": "^4.41.2",
+  "@babel/cli": "^7.1.2",
+  "@babel/core": "^7.1.2",
+  "@babel/polyfill": "^7.0.0",
+  "@babel/preset-env": "^7.1.0",
+  "@babel/node": "^7.0.0",
+  "nodemon": "^1.18.4"
   },
   "devDependencies": {
     "@types/dotenv": "^4.0.3",

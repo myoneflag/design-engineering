@@ -7,7 +7,7 @@ import UnionFind from '../../../../src/calculations/union-find';
 import {ConnectableEntityConcrete, DrawableEntityConcrete} from '../../../../src/store/document/entities/concrete-entity';
 import {fillFixtureFields} from '../../../../src/store/document/entities/fixtures/fixture-entity';
 import {maxHeightOfConnection, minHeightOfConnection} from '../../../../src/htmlcanvas/lib/utils';
-import Flatten from '@flatten-js/core';
+import Flatten from '@flatten-js/core'
 import {InteractionType} from '../../../../src/htmlcanvas/lib/interaction';
 import {addValveAndSplitPipe} from '../../../../src/htmlcanvas/lib/black-magic/split-pipe';
 import Pipe from '../../../../src/htmlcanvas/objects/pipe';
