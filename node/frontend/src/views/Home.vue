@@ -10,6 +10,11 @@
                         </h1>
                     </b-col>
                 </b-row>
+                <b-row style="margin-bottom: 30px">
+                    <b-col>
+                        <b-button size="lg" variant="success" @click="createDocument"><v-icon name="plus"></v-icon> Create Document</b-button>
+                    </b-col>
+                </b-row>
                 <b-row>
                     <b-col>
                         <b-alert variant="success"  v-if="documents.length === 0 && loaded" show>You don't have any documents right now.</b-alert>
@@ -19,7 +24,7 @@
 
 
 
-                    <b-col cols="3" v-for="doc in documents">
+                    <b-col sm="6" md="4" lg="3" v-for="doc in documents">
                         <b-card
                                 :title="doc.metadata.title"
                                 img-src="https://conversionxl.com/wp-content/uploads/2013/03/blueprint-architecture.png"
@@ -39,9 +44,6 @@
                         </b-card>
                     </b-col>
 
-                    <b-col cols="3">
-                        <b-button size="lg" variant="success" @click="createDocument"><v-icon name="plus"></v-icon> Create Document</b-button>
-                    </b-col>
                 </b-row>
             </b-container>
         </div>
