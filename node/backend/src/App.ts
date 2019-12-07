@@ -1,15 +1,15 @@
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
-import * as express from 'express';
+import express from 'express';
 import * as helmet from 'helmet';
 import * as morgan from 'morgan';
-import * as expressWs from 'express-ws';
+import expressWs from 'express-ws';
 
 const expressApp = expressWs(express()).app;
 
 import apiV1 from './router';
 import * as errorHandler from './helpers/errorHandler';
-import * as cookieParser from "cookie-parser";
+import cookieParser from "cookie-parser";
 import {withAuth} from "./helpers/withAuth";
 
 

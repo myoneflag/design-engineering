@@ -695,7 +695,7 @@ export class AutoConnector {
         }
 
         if (currDist === null) {
-            return currDist;
+            return null;
         }
         return bestAns;
     }

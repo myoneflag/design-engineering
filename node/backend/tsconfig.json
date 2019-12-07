@@ -4,17 +4,21 @@
     "module": "commonjs",
     "outDir": "dist",
     "sourceMap": true,
+    "importHelpers": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "resolveJsonModule": true,
     "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "paths": {
       "@/*": [
         "../frontend/src/*"
       ]
-    }
+    },
+    "skipLibCheck": true // for flatten-js.
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "../frontend/node_modules/"]
 }

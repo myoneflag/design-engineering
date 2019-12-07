@@ -6,7 +6,7 @@ import * as initialCatalog from "../initial-catalog.json";
 import {Document} from '../entity/Document';
 import {AccessLevel, User} from "../entity/User";
 import * as bcrypt from 'bcrypt';
-import * as uuid from 'uuid';
+import uuid from 'uuid';
 import {ApiHandleError} from "../helpers/apiWrapper";
 import {log} from "util";
 
