@@ -23,7 +23,7 @@
                                 <b-col cols="3">{{ user.username }}</b-col>
                                 <b-col cols="3">{{ user.name }}</b-col>
                                 <b-col cols="3">{{ ['SUPERUSER', 'ADMIN', 'MANAGER', 'USER'][user.accessLevel]}}</b-col>
-                                <b-col cols="3">{{ user.organization ? user.organization.id : "<no org>" }}</b-col>
+                                <b-col cols="3">{{ user.organization ? user.organization.id : "[no org]" }}</b-col>
                             </b-row>
                         </b-list-group-item>
                     </b-list-group>
