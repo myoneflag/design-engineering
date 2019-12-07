@@ -162,6 +162,7 @@ export class DocumentController {
                     .orderBy('document.createdOn', 'DESC')
                     .getMany();
             }
+            await Promise.all(results.map((r) => r.reload()));
         } else {
             console.log('getting all documents');
             results = await Document.find( {order: {'createdOn' : 'DESC'}});

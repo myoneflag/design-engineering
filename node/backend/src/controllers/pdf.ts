@@ -86,9 +86,11 @@ async function getPdfDims(pdfPath: string) {
         paperSize = m[1];
     }
 
-    let [x1, y1, x2, y2] = (await pdfFile.getPage(1)).view;
-    let w = x2 - x1;
-    let h = y2 - y1;
+    const vp = (await pdfFile.getPage(1)).getViewport({scale: 1});
+    let w = vp.width;
+    let h = vp.height;
+
+    console.log('raw width: ' + w + ' height: ' + h);
 
     let maxw = 0;
     let maxh = 0;
