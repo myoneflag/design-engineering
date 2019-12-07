@@ -9,25 +9,37 @@ stages:
 
 cache:
     paths:
-        - node/h2xdemo/node_modules/
+        - node/frontend/node_modules/
+        - node/backend/node_modules/
+        - node/common/node_modules/
 
 
-build:node:
+build:frontend:
     stage: build
     image: node:latest
     script:
-        - cd node/h2xdemo/
+        - cd node/frontend/
+        - npm install
+        
+build:backend:
+    stage: build
+    image: node:latest
+    script:
+        - cd node/backend/
         - npm install
 
-build:java:
+build:common:
     stage: build
-    image: java:8
-    script: cd java/
+    image: node:latest
+    script: 
+        - cd node/common/
+        - npm install
 
-test:node:
+
+test:frontend:
     stage: test
     image: node:latest
     script: 
-        - cd node/h2xdemo/
+        - cd node/frontend/
         - npm run test:unit
 
