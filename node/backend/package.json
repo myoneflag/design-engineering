@@ -21,6 +21,8 @@
     "@types/image-size": "^0.8.0",
     "@types/nodemailer": "^6.2.2",
     "@types/uuid": "^3.4.6",
+	"cookie-parser": "^1.4.4",
+	"pdfjs-dist": "^2.2.228",
     "bcrypt": "^3.0.7",
     "body-parser": "^1.18.3",
     "child_process": "^1.0.2",
