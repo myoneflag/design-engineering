@@ -1,8 +1,8 @@
-import * as bodyParser from 'body-parser';
-import * as cors from 'cors';
+import bodyParser from 'body-parser';
+import cors from 'cors';
 import express from 'express';
-import * as helmet from 'helmet';
-import * as morgan from 'morgan';
+import helmet from 'helmet';
+import morgan from 'morgan';
 import expressWs from 'express-ws';
 
 const expressApp = expressWs(express()).app;
