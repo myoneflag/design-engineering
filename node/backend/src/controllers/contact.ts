@@ -28,7 +28,7 @@ export class ContactController {
 
         const mailOptions = {
             from: 'h2xnoreply@gmail.com',
-            to: 'jonathanmousdell@gmail.com',
+            to: 'info@h2xengineering.com',
             subject: 'New H2X Contact Submission',
             html: "<p>Hi Jonathan, here's a new contact message from the page at h2x.maxwu.cloud/contact</p>" +
                 "<p><b>From:</b><br> " + contact.name + "</p>" +

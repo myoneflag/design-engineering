@@ -249,7 +249,6 @@ async function receiveOperation(id: number, op: OperationTransformConcrete) {
     toStore.document = Promise.resolve(await Document.findOne({id}));
     toStore.orderIndex = op.id;
     toStore.save().then(() => {
-        console.log("saved new operation " + JSON.stringify(toStore));
     });
 
     const uh = updateHandlers.get(id)!;
@@ -297,7 +296,6 @@ router.ws('/:id/websocket', (ws, req) => {
                         const msg: DocumentWSMessage = {
                             operation: toSend, type: DocumentWSMessageType.OPERATION,
                         };
-                        console.log("Sending " + JSON.stringify(msg));
                         await ws.send(JSON.stringify(msg));
                     }
                 };
@@ -327,7 +325,6 @@ router.ws('/:id/websocket', (ws, req) => {
                 // expected to start giving us messages until after the document is loaded.
                 ws.on('message', message => {
                     // received operations
-                    console.log('Received -', message);
                     receiveOperation(doc.id, JSON.parse(message as string));
                 });
 
