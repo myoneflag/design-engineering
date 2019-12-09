@@ -1,14 +1,8 @@
 import {FileWebsocketMessageType} from "../../src/api/types";
 <template>
     <div>
-
-
-        <DrawingNavBar :loading="isLoading"></DrawingNavBar>
-
         <LoadingScreen v-if="isLoading"/>
         <RouterView v-else></RouterView>
-
-
     </div>
 </template>
 
@@ -27,6 +21,7 @@ import {FileWebsocketMessageType} from "../../src/api/types";
     import {Catalog} from '../../src/store/catalog/types';
     import {DocumentState} from '../../src/store/document/types';
     import {closeDocument, openDocument} from "../../src/api/document";
+    import {MainEventBus} from "../store/main-event-bus";
 
 
     @Component({
@@ -34,6 +29,8 @@ import {FileWebsocketMessageType} from "../../src/api/types";
     })
     export default class Document extends Vue {
         closeExpected = false;
+
+        uiMouseDisabled: boolean = false;
 
         mounted() {
             this.$store.dispatch('document/setId', Number(this.$route.params.id));
@@ -75,6 +72,19 @@ import {FileWebsocketMessageType} from "../../src/api/types";
                     });
                 }
             });
+
+            MainEventBus.$on('disable-ui-mouse', this.disableUiMouse);
+            MainEventBus.$on('enable-ui-mouse', this.enableUiMouse);
+        }
+
+
+
+        disableUiMouse() {
+            this.uiMouseDisabled = true;
+        }
+
+        enableUiMouse() {
+            this.uiMouseDisabled = false;
         }
 
 
@@ -91,6 +101,9 @@ import {FileWebsocketMessageType} from "../../src/api/types";
                     this.$store.dispatch('document/loaded', false),
                 );
             });
+
+            MainEventBus.$off('disable-ui-mouse', this.disableUiMouse);
+            MainEventBus.$off('enable-ui-mouse', this.enableUiMouse);
         }
 
         get document(): DocumentState {
@@ -114,4 +127,10 @@ import {FileWebsocketMessageType} from "../../src/api/types";
 
  */
 </script>
+
+<style>
+    .disableMouseEvents {
+        pointer-events: none;
+    }
+</style>
 
