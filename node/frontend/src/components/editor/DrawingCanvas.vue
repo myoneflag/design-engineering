@@ -2,18 +2,42 @@ import {DrawingMode} from "../../../src/htmlcanvas/types";
 import {DrawingMode} from "../../../src/htmlcanvas/types";
 import {ValveType} from "../../../src/store/document/entities/directed-valves/valve-types";
 <template>
-    <div ref="canvasFrame" class="fullFrame" v-bind:class="{ disableMouseEvents: shouldDisableUIMouseEvents }">
 
 
-        <drop
+    <drop
             @drop="onDrop"
+    >
+
+
+        <!--Anything that needs scrolling needs to be up here, outside of canvasFrame.-->
+        <PropertiesWindow
+                :selected-entities="selectedEntities"
+                :selected-objects="selectedObjects"
+                :target-property="targetProperty"
+                v-if="selectedObjects.length && propertiesVisible"
+                :mode="mode"
+                :on-change="scheduleDraw"
+                :on-delete="deleteSelected"
+                :object-store="objectStore"
+        >
+        </PropertiesWindow>
+
+
+        <CalculationsSidebar
+                v-if="mode === 2"
+                :objects="allObjects"
+                :on-change="scheduleDraw"
         >
 
+        </CalculationsSidebar>
+
+        <div ref="canvasFrame" class="fullFrame" v-bind:class="{ disableMouseEvents: shouldDisableUIMouseEvents }">
             <DrawingNavBar
                     :loading="isLoading"
             />
 
-            <canvas ref="drawingCanvas" @contextmenu="disableContextMenu" v-bind:style="{ backgroundColor: 'aliceblue', cursor: currentCursor, pointerEvents: 'auto', marginTop: '-60px'}">
+            <canvas ref="drawingCanvas" @contextmenu="disableContextMenu"
+                    v-bind:style="{ backgroundColor: 'aliceblue', cursor: currentCursor, pointerEvents: 'auto', marginTop: '-60px'}">
 
             </canvas>
 
@@ -23,48 +47,29 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
             />
 
             <FloorPlanInsertPanel
-                @insert-floor-plan="onFloorPlanSelected"
-                v-if="mode === 0"
+                    @insert-floor-plan="onFloorPlanSelected"
+                    v-if="mode === 0"
             />
 
             <HydraulicsInsertPanel
-                v-if="mode === 1"
-                :flow-systems="document.drawing.flowSystems"
-                @insert="hydraulicsInsert"
-                :fixtures="effectiveCatalog.fixtures"
-                :valves="effectiveCatalog.valves"
-                :available-fixtures="availableFixtures"
-                :available-valves="availableValves"
-                :last-used-fixture-uid="document.uiState.lastUsedFixtureUid"
-                :last-used-valve-vid="document.uiState.lastUsedValveCUid"
+                    v-if="mode === 1"
+                    :flow-systems="document.drawing.flowSystems"
+                    @insert="hydraulicsInsert"
+                    :fixtures="effectiveCatalog.fixtures"
+                    :valves="effectiveCatalog.valves"
+                    :available-fixtures="availableFixtures"
+                    :available-valves="availableValves"
+                    :last-used-fixture-uid="document.uiState.lastUsedFixtureUid"
+                    :last-used-valve-vid="document.uiState.lastUsedValveCUid"
             />
 
             <CalculationBar
-                v-if="mode === 2"
-                :demandType.sync="demandType"
-                :is-calculating="isCalculating"
+                    v-if="mode === 2"
+                    :demandType.sync="demandType"
+                    :is-calculating="isCalculating"
             />
 
-            <PropertiesWindow
-                    :selected-entities="selectedEntities"
-                    :selected-objects="selectedObjects"
-                    :target-property="targetProperty"
-                    v-if="selectedObjects.length && propertiesVisible"
-                    :mode="mode"
-                    :on-change="scheduleDraw"
-                    :on-delete="deleteSelected"
-                    :object-store="objectStore"
-            >
 
-            </PropertiesWindow>
-
-            <CalculationsSidebar
-                    v-if="mode === 2"
-                    :objects="allObjects"
-                    :on-change="scheduleDraw"
-            >
-
-            </CalculationsSidebar>
 
             <Toolbar
                     :current-tool-config="currentTool"
@@ -73,12 +78,12 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
             ></Toolbar>
 
             <InstructionPage
-                v-if="documentBrandNew && toolHandler === null"
+                    v-if="documentBrandNew && toolHandler === null"
             />
-        </drop>
-        <resize-observer @notify="draw"/>
+            <resize-observer @notify="draw"/>
 
-    </div>
+        </div>
+    </drop>
 </template>
 
 <script lang="ts">
@@ -140,7 +145,8 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
             InstructionPage,
             FloorPlanInsertPanel,
             LoadingScreen,
-            HydraulicsInsertPanel, Overlay: LoadingScreen, Toolbar, PropertiesWindow, ModeButtons},
+            HydraulicsInsertPanel, Overlay: LoadingScreen, Toolbar, PropertiesWindow, ModeButtons
+        },
     })
     export default class DrawingCanvas extends Vue {
 
@@ -365,6 +371,7 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
             console.log("Mode is now " + this.document.uiState.drawingMode);
             return this.document.uiState.drawingMode;
         }
+
         set mode(value) {
             this.document.uiState.drawingMode = value;
             console.log("Just set mode to " + value + " and the value is " + this.document.uiState.drawingMode);
@@ -374,6 +381,7 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
         get demandType() {
             return this.document.uiState.demandType;
         }
+
         set demandType(value: DemandType) {
             this.document.uiState.demandType = value;
             this.considerCalculating();
@@ -589,11 +597,11 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
         }
 
         lockDrawing() {
-            this.drawingLocked ++;
+            this.drawingLocked++;
         }
 
         unlockDrawing() {
-            this.drawingLocked --;
+            this.drawingLocked--;
             if (this.drawingLocked === 0) {
                 this.scheduleDraw();
             }
@@ -653,8 +661,10 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
 
         hydraulicsInsert(
             {entityName, system, catalogId, tmvHasCold, valveType}:
-                {entityName: string, system: FlowSystemParameters, catalogId: string,
-                    tmvHasCold: boolean, valveType: ValveType},
+                {
+                    entityName: string, system: FlowSystemParameters, catalogId: string,
+                    tmvHasCold: boolean, valveType: ValveType
+                },
         ) {
             this.hydraulicsLayer.select([], SelectMode.Replace);
 
@@ -747,7 +757,7 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
             }
         }
 
-            considerCalculating() {
+        considerCalculating() {
             if (this.mode === DrawingMode.Calculations) {
                 console.log("We are considering calulating and the mode is " + this.mode);
                 if (this.document.uiState.lastCalculationId < this.document.nextId
@@ -939,7 +949,7 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
         }
 
         onMouseUp(event: MouseEvent): boolean {
-            if (! this.mouseClicked) {
+            if (!this.mouseClicked) {
                 // This event happened when the user clicked from a non canvas control to the middle. Ignore it.
                 // Possibilities include when the user is trying to select text in the properties box and then let
                 // go on a position in the canvas.
@@ -1001,7 +1011,7 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
     }
 
     .fullFrame {
-        width:100%;
+        width: 100%;
         height: -webkit-calc(100vh);
     }
 
