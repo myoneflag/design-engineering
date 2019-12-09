@@ -188,7 +188,6 @@ export class DocumentController {
 
 let operationQueues = new  Map<number, OperationTransformConcrete[][]>();
 let isLoading = new Set<number>();
-let loadingFinishedCallbacks = new Map<number, Array<() => Promise<any>>>();
 
 export type OperationUpdateHandler = (deleted: boolean) => Promise<any>;
 let updateHandlers = new Map<number, OperationUpdateHandler[]>();
@@ -197,17 +196,12 @@ async function ensureDocumentLoaded(id: number) {
 
     // If another thread is already loading this document, wait in line and return when they finished.
     if (isLoading.has(id)) {
-        return new Promise((res, rej) => {
-            loadingFinishedCallbacks.get(id)!.push(async () => {
-                res();
-            })
-        });
+        return;
     }
 
     if (!operationQueues.has(id)) {
 
         isLoading.add(id);
-        loadingFinishedCallbacks.set(id, []);
 
         const operationQueue: OperationTransformConcrete[] = [];
 
@@ -223,12 +217,6 @@ async function ensureDocumentLoaded(id: number) {
         });
         operationQueues.set(id, [operationQueue]);
         isLoading.delete(id);
-
-        // Tell other early birds that I did the hard work of loading the document and now they can resume.
-        await Promise.all(loadingFinishedCallbacks.get(id)!.map((fn) => {
-            fn();
-        }));
-        loadingFinishedCallbacks.delete(id);
     }
 }
 
@@ -329,7 +317,10 @@ router.ws('/:id/websocket', (ws, req) => {
                     console.log('closed and removing ' + toRemove);
                     uh.splice(toRemove, 1);
                     clearInterval(pingPid);
-                    operationQueues.delete(doc.id);
+
+                    if (uh.length === 0) {
+                        operationQueues.delete(doc.id);
+                    }
                 });
 
                 uh.push(onUpdate);
