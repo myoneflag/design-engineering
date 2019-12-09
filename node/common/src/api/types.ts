@@ -22,7 +22,7 @@ export interface DocumentLoadedMessage {
 }
 
 
-export type DocumentWSMessage = OperationMessage | DocumentDeletedMessage | DocumentLoadedMessage;
+export type DocumentWSMessage = Array<OperationMessage | DocumentDeletedMessage | DocumentLoadedMessage>;
 
 
 export interface Success<T> {

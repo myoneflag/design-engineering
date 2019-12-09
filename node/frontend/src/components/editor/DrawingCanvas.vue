@@ -217,6 +217,8 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
         selectBoxMode: SelectMode | null = null;
         selectBoxStartSelected: string[] = [];
 
+        mouseClicked: boolean = false;
+
         mounted() {
             this.ctx = (this.$refs.drawingCanvas as any).getContext('2d');
 
@@ -820,6 +822,7 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
         }
 
         onMouseDown(event: MouseEvent): boolean {
+            this.mouseClicked = true;
             if (event.button === 2) {
                 if (event.shiftKey && !event.ctrlKey) {
                     this.selectBoxMode = SelectMode.Exclude;
@@ -866,6 +869,7 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
         }
 
         onMouseMove(event: MouseEvent): boolean {
+            console.log('moving');
             if (event.movementX === 0 && event.movementY === 0) {
                 return true; // Phantom movement - damn it chrome
             }
@@ -935,6 +939,13 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
         }
 
         onMouseUp(event: MouseEvent): boolean {
+            if (! this.mouseClicked) {
+                // This event happened when the user clicked from a non canvas control to the middle. Ignore it.
+                // Possibilities include when the user is trying to select text in the properties box and then let
+                // go on a position in the canvas.
+                return;
+            }
+            this.mouseClicked = false;
             if (this.selectBox && event.button === 2) {
                 // finish selection
                 event.preventDefault();
