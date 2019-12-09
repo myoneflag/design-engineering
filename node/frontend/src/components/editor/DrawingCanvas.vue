@@ -943,7 +943,7 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
                 // This event happened when the user clicked from a non canvas control to the middle. Ignore it.
                 // Possibilities include when the user is trying to select text in the properties box and then let
                 // go on a position in the canvas.
-                return;
+                return false;
             }
             this.mouseClicked = false;
             if (this.selectBox && event.button === 2) {
