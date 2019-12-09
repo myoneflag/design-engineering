@@ -311,6 +311,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         const w = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
         const o = this.toObjectCoord(w);
         if (this.inBounds(o)) {
+            context.isLayerDragging = true;
             this.grabbedPoint = [w.x, w.y];
             this.grabbedCenterState = [this.center.x, this.center.y];
             this.grabbedOffsetState = cloneSimple(this.entity.offset);
@@ -369,6 +370,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
 
     onMouseUp(event: MouseEvent, context: CanvasContext): boolean {
         if (this.grabbedPoint || this.grabbedCenterState) {
+            context.isLayerDragging = false;
             this.grabbedPoint = null;
             this.grabbedCenterState = null;
             this.hasDragged = false;

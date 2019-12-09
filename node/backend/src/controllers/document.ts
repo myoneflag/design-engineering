@@ -186,7 +186,7 @@ export class DocumentController {
     }
 }
 
-let operationQueues = new  Map<number, OperationTransformConcrete[]>();
+let operationQueues = new  Map<number, OperationTransformConcrete[][]>();
 let isLoading = new Set<number>();
 let loadingFinishedCallbacks = new Map<number, Array<() => Promise<any>>>();
 
@@ -209,7 +209,7 @@ async function ensureDocumentLoaded(id: number) {
         isLoading.add(id);
         loadingFinishedCallbacks.set(id, []);
 
-        const operationQueue = [];
+        const operationQueue: OperationTransformConcrete[] = [];
 
         const operations = await Operation
             .createQueryBuilder('operation')
@@ -221,7 +221,7 @@ async function ensureDocumentLoaded(id: number) {
         operations.forEach((o) => {
             operationQueue.push(JSON.parse(o.operation));
         });
-        operationQueues.set(id, operationQueue);
+        operationQueues.set(id, [operationQueue]);
         isLoading.delete(id);
 
         // Tell other early birds that I did the hard work of loading the document and now they can resume.
@@ -232,33 +232,44 @@ async function ensureDocumentLoaded(id: number) {
     }
 }
 
-async function receiveOperation(id: number, op: OperationTransformConcrete) {
+async function receiveOperations(id: number, ops: OperationTransformConcrete[]) {
+    if (ops.length === 0) {
+        return;
+    }
     if (!operationQueues.has(id)) {
         throw new Error('document ' + id + ' has no operation queue, it must be initialized before.');
     }
     const oq = operationQueues.get(id)!;
+    let firstId = 0;
     if (operationQueues.get(id)!.length) {
-        op.id = oq[oq.length - 1].id + 1;
-    } else {
-        op.id = 0;
+        firstId = oq[oq.length - 1][oq[oq.length - 1].length - 1].id + 1;
     }
-    oq.push(op);
-
-    const toStore = Operation.create();
-    toStore.operation = JSON.stringify(op);
-    toStore.document = Promise.resolve(await Document.findOne({id}));
-    toStore.orderIndex = op.id;
-    toStore.save().then(() => {
+    ops.forEach((o) => {
+        o.id = firstId;
+        firstId += 1;
     });
+    oq.push(ops);
+
+
+    const doc = await Document.findOne({id});
+
+    await Promise.all(ops.map((op) => {
+        const toStore = Operation.create();
+        toStore.document = Promise.resolve(doc);
+
+        toStore.operation = JSON.stringify(op);
+        toStore.orderIndex = op.id;
+        return toStore.save();
+    }));
 
     const uh = updateHandlers.get(id)!;
-    uh.forEach((fn) => {
+    await Promise.all(uh.map((fn) => {
         try {
-            fn(false);
+            return fn(false);
         } catch (e) {
             console.log("error updating operation: " + e.message);
         }
-    })
+    }));
 }
 
 
@@ -278,12 +289,11 @@ router.ws('/:id/websocket', (ws, req) => {
 
                 let upTo = 0;
 
-
                 const onUpdate = async (deleted: boolean) => {
                     if (deleted) {
-                        const msg: DocumentWSMessage = {
+                        const msg: DocumentWSMessage = [{
                             type: DocumentWSMessageType.DOCUMENT_DELETED,
-                        };
+                        }];
                         await ws.send(JSON.stringify(msg));
                         await ws.close();
                         return;
@@ -291,13 +301,16 @@ router.ws('/:id/websocket', (ws, req) => {
 
                     const oq = operationQueues.get(doc.id)!;
 
+                    const msg: DocumentWSMessage = [];
                     for (; upTo < oq.length; upTo) {
                         const toSend = oq[upTo++];
-                        const msg: DocumentWSMessage = {
-                            operation: toSend, type: DocumentWSMessageType.OPERATION,
-                        };
-                        await ws.send(JSON.stringify(msg));
+                        toSend.forEach((op) => {
+                            msg.push({
+                                operation: op, type: DocumentWSMessageType.OPERATION,
+                            });
+                        });
                     }
+                    await ws.send(JSON.stringify(msg));
                 };
 
                 let uh: OperationUpdateHandler[] = [];
@@ -325,15 +338,17 @@ router.ws('/:id/websocket', (ws, req) => {
                 // expected to start giving us messages until after the document is loaded.
                 ws.on('message', message => {
                     // received operations
-                    receiveOperation(doc.id, JSON.parse(message as string));
+                    const ops: OperationTransformConcrete[] = JSON.parse(message as string);
+                    receiveOperations(doc.id, ops);
                 });
 
 
                 await onUpdate(false);
 
-                await ws.send(JSON.stringify({
+                const msg: DocumentWSMessage = [{
                     type: DocumentWSMessageType.DOCUMENT_LOADED,
-                }));
+                }];
+                await ws.send(JSON.stringify(msg));
             });
         },
         (msg) => {

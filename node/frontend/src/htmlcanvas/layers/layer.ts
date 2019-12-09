@@ -273,6 +273,7 @@ export abstract class LayerImplementation implements Layer {
     }
 
     dragObjects(objects: BaseBackedObject[], context: CanvasContext): void {
+        console.log('is layer draggin? Yes');
         context.isLayerDragging = true;
         const undragged = this.draggedObjects ? this.draggedObjects
             .filter((o) => objects.findIndex((oo) => oo.uid === o.uid) !== -1) : [];
@@ -292,6 +293,7 @@ export abstract class LayerImplementation implements Layer {
                 }
             });
         }
+        console.log('is layer draggin? No');
         context.isLayerDragging = false;
         this.draggedObjects = null;
     }

@@ -88,6 +88,7 @@ export function DraggableObject<T extends new (...args: any[]) => Draggable & Dr
         }
 
         onDragStartPre(event: MouseEvent, world: Coord, objectCoord: Coord, context: CanvasContext): any {
+            context.isLayerDragging = true;
             if (this.isMultiSelected()) {
                 return this.layer.onMultiSelectDragStart(event, world, context);
             } else {
@@ -111,6 +112,7 @@ export function DraggableObject<T extends new (...args: any[]) => Draggable & Dr
         }
 
         onDragFinishPre(event: MouseEvent, grabState: any, context: CanvasContext): void {
+            context.isLayerDragging = false;
             if (this.isMultiSelected()) {
                 return this.layer.onMultiSelectDragFinish(event, grabState, context);
             } else {
