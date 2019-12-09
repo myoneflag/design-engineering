@@ -242,7 +242,9 @@ async function receiveOperations(id: number, ops: OperationTransformConcrete[]) 
     const oq = operationQueues.get(id)!;
     let firstId = 0;
     if (operationQueues.get(id)!.length) {
-        firstId = oq[oq.length - 1][oq[oq.length - 1].length - 1].id + 1;
+        if (oq[oq.length - 1].length) {
+            firstId = oq[oq.length - 1][oq[oq.length - 1].length - 1].id + 1;
+        }
     }
     ops.forEach((o) => {
         o.id = firstId;
