@@ -4,7 +4,6 @@
             <b-button-group>
                 <b-button variant="outline-dark" class="insertFloorPlanBtn source btn-sm"
                           @click="uploadFloorPlanClicked"
-                          v-b-tooltip.hover title="Flow Source"
                 ><b-col></b-col><v-icon name="upload" scale="1.3" style="float:left; margin-top:5px"></v-icon> Upload Floor Plan (PDF)</b-button>
                 <input
                         ref="uploadPdfButton"

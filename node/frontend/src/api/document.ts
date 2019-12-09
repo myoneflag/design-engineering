@@ -20,17 +20,19 @@ export function openDocument(id: number, onOperation: (ot: OT.OperationTransform
     ws.onmessage = ((msg: MessageEvent) => {
         if (msg.type === 'message') {
             const data: DocumentWSMessage = JSON.parse(msg.data as string);
-            switch (data.type) {
-                case DocumentWSMessageType.OPERATION:
-                    onOperation(data.operation);
-                    break;
-                case DocumentWSMessageType.DOCUMENT_DELETED:
-                    onDeleted();
-                    break;
-                case DocumentWSMessageType.DOCUMENT_LOADED:
-                    onLoaded();
-                    break;
-            }
+            data.forEach((msg) => {
+                switch (msg.type) {
+                    case DocumentWSMessageType.OPERATION:
+                        onOperation(msg.operation);
+                        break;
+                    case DocumentWSMessageType.DOCUMENT_DELETED:
+                        onDeleted();
+                        break;
+                    case DocumentWSMessageType.DOCUMENT_LOADED:
+                        onLoaded();
+                        break;
+                }
+            });
         } else {
             console.log("unknown websocket message type");
         }
@@ -72,23 +74,23 @@ export async function closeDocument(id: number) {
     }
 }
 
-export async function sendOperation(id: number, op: OT.OperationTransformConcrete) {
+export async function sendOperations(id: number, ops: OT.OperationTransformConcrete[]) {
     if (wss.has(id)) {
-        console.log('sending to id ' + id + " " + JSON.stringify(op));
-        await wss.get(id)!.send(JSON.stringify(op));
+        console.log('sending to id ' + id + " " + JSON.stringify(ops));
+        await wss.get(id)!.send(JSON.stringify(ops));
     } else {
         throw new Error("Document already closed");
     }
 }
 
-const queues = new Map<number, OT.OperationTransformConcrete[]>();
+const queues = new Map<number, OT.OperationTransformConcrete[][]>();
 const submitLoopRunning = new Set<number>();
 
 async function submitLoop(id: number) {
     submitLoopRunning.add(id);
     if (wss.has(id)) {
         const queue = queues.get(id)!;
-        await sendOperation(id, queue[0]);
+        await sendOperations(id, queue[0]);
         queue.splice(0, 1);
         if (queue.length) {
             await submitLoop(id);
@@ -102,7 +104,7 @@ export async function submitOperation(id: number, commit: any, ops: OT.Operation
     // yay it's javascript! There's no atomic concurrency issues!
     const queue = queues.get(id)!;
 
-    queue.push(...ops);
+    queue.push(ops);
     if (!submitLoopRunning.has(id)) {
         return await submitLoop(id);
     }

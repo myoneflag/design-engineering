@@ -2,11 +2,18 @@ import {DrawingMode} from "../../../src/htmlcanvas/types";
 import {DrawingMode} from "../../../src/htmlcanvas/types";
 import {ValveType} from "../../../src/store/document/entities/directed-valves/valve-types";
 <template>
-    <div ref="canvasFrame" class="fullFrame">
+    <div ref="canvasFrame" class="fullFrame" v-bind:class="{ disableMouseEvents: shouldDisableUIMouseEvents }">
+
+
         <drop
             @drop="onDrop"
         >
-            <canvas ref="drawingCanvas" @contextmenu="disableContextMenu" v-bind:style="{ backgroundColor: 'aliceblue', cursor: currentCursor}">
+
+            <DrawingNavBar
+                    :loading="isLoading"
+            />
+
+            <canvas ref="drawingCanvas" @contextmenu="disableContextMenu" v-bind:style="{ backgroundColor: 'aliceblue', cursor: currentCursor, pointerEvents: 'auto', marginTop: '-60px'}">
 
             </canvas>
 
@@ -123,9 +130,11 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
     import {countPsdUnits} from "../../../src/calculations/utils";
     import CalculationsSidebar from "../../../src/components/editor/CalculationsSidebar.vue";
     import {assertUnreachable} from "../../../src/config";
+    import DrawingNavBar from "../DrawingNavBar.vue";
 
     @Component({
         components: {
+            DrawingNavBar,
             CalculationsSidebar,
             CalculationBar,
             InstructionPage,
@@ -208,6 +217,8 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
         selectBoxMode: SelectMode | null = null;
         selectBoxStartSelected: string[] = [];
 
+        mouseClicked: boolean = false;
+
         mounted() {
             this.ctx = (this.$refs.drawingCanvas as any).getContext('2d');
 
@@ -221,7 +232,7 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
             (this.$refs.drawingCanvas as any).onmousedown = this.onMouseDown;
             (this.$refs.drawingCanvas as any).onmousemove = this.onMouseMove;
             (this.$refs.drawingCanvas as any).onmouseup = this.onMouseUp;
-            (this.$refs.drawingCanvas as any).onwheel = this.onWheel;
+            (this.$refs.canvasFrame as any).onwheel = this.onWheel;
 
             this.allLayers.push(this.backgroundLayer, this.hydraulicsLayer, this.calculationLayer);
             this.processDocument();
@@ -233,6 +244,26 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
             this.calculationEngine = new CalculationEngine();
 
             setInterval(this.drawLoop, 20);
+        }
+
+        get catalogLoaded(): boolean {
+            return this.$store.getters['catalog/loaded'];
+        }
+
+        get isLoading() {
+            return !this.catalogLoaded || !this.document.uiState.loaded;
+        }
+
+        get shouldDisableUIMouseEvents(): boolean {
+            if (this.hasDragged || this.isLayerDragging) {
+                return true;
+            }
+
+            if (this.selectBox) {
+                return true;
+            }
+
+            return false;
         }
 
         get initialViewport() {
@@ -331,10 +362,12 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
         }
 
         get mode() {
+            console.log("Mode is now " + this.document.uiState.drawingMode);
             return this.document.uiState.drawingMode;
         }
         set mode(value) {
             this.document.uiState.drawingMode = value;
+            console.log("Just set mode to " + value + " and the value is " + this.document.uiState.drawingMode);
             this.processDocument();
         }
 
@@ -714,8 +747,9 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
             }
         }
 
-        considerCalculating() {
+            considerCalculating() {
             if (this.mode === DrawingMode.Calculations) {
+                console.log("We are considering calulating and the mode is " + this.mode);
                 if (this.document.uiState.lastCalculationId < this.document.nextId
                     || this.document.uiState.lastCalculationUiSettings.demandType !== this.demandType) {
 
@@ -788,6 +822,7 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
         }
 
         onMouseDown(event: MouseEvent): boolean {
+            this.mouseClicked = true;
             if (event.button === 2) {
                 if (event.shiftKey && !event.ctrlKey) {
                     this.selectBoxMode = SelectMode.Exclude;
@@ -834,6 +869,7 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
         }
 
         onMouseMove(event: MouseEvent): boolean {
+            console.log('moving');
             if (event.movementX === 0 && event.movementY === 0) {
                 return true; // Phantom movement - damn it chrome
             }
@@ -903,6 +939,13 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
         }
 
         onMouseUp(event: MouseEvent): boolean {
+            if (! this.mouseClicked) {
+                // This event happened when the user clicked from a non canvas control to the middle. Ignore it.
+                // Possibilities include when the user is trying to select text in the properties box and then let
+                // go on a position in the canvas.
+                return false;
+            }
+            this.mouseClicked = false;
             if (this.selectBox && event.button === 2) {
                 // finish selection
                 event.preventDefault();
@@ -959,6 +1002,10 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
 
     .fullFrame {
         width:100%;
-        height: -webkit-calc(100vh - 65px);
+        height: -webkit-calc(100vh);
+    }
+
+    .disableMouseEvents {
+        pointer-events: none;
     }
 </style>

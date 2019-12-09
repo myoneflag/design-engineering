@@ -195,12 +195,4 @@ export default class BackgroundLayer extends LayerImplementation {
         this.resizeBox = null;
         return false;
     }
-
-    dragObjects(objects: BaseBackedObject[]): void {
-        //
-    }
-
-    releaseDrag(): void {
-        //
-    }
 }
