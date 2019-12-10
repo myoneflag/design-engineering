@@ -338,14 +338,17 @@ router.ws('/:id/websocket', (ws, req) => {
 
                 try {
                     await onUpdate(false);
+
+                    const msg: DocumentWSMessage = [{
+                        type: DocumentWSMessageType.DOCUMENT_LOADED,
+                    }];
+
+
+                    await ws.send(JSON.stringify(msg));
                 } catch (e) {
                     console.log('Error sending initial document to user. docid: ' + req.params.id + ' error: ' + e.message);
                 }
 
-                const msg: DocumentWSMessage = [{
-                    type: DocumentWSMessageType.DOCUMENT_LOADED,
-                }];
-                await ws.send(JSON.stringify(msg));
             });
         },
         (msg) => {

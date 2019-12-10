@@ -33,12 +33,29 @@ import {AccessLevel} from "../../../backend/src/entity/User";
                             >
                                 <b-form-input v-model="user.name"></b-form-input>
                             </b-form-group>
+
+                            <b-form-group
+                                    :label-cols="2"
+                                    label="Email"
+                            >
+                                <b-form-input required="false" type="email" v-model="user.email"></b-form-input>
+                            </b-form-group>
+
+
+                            <b-form-group
+                                    :label-cols="3"
+                                    label="Subscribe"
+                            >
+                                <b-form-checkbox v-model="user.subscribed">Subscribe to "Contact Us" messages?</b-form-checkbox>
+                            </b-form-group>
+
                             <b-form-group
                                     :label-cols="2"
                                     label="Organization ID"
                             >
                                 <b-form-input v-model="organization"></b-form-input>
                             </b-form-group>
+
                             <b-form-group
                                     :label-cols="2"
                                     label="Password"
@@ -52,7 +69,8 @@ import {AccessLevel} from "../../../backend/src/entity/User";
                                         :disabled="a.disabled"
                                         :pressed="a.level === user.accessLevel"
                                         :variant="a.level === user.accessLevel ? 'primary' : 'info'"
-                                >{{ a.name }}</b-button>
+                                >{{ a.name }}
+                                </b-button>
                             </b-button-group>
                         </b-form>
                         <b-button variant="success" style="margin-top:50px" @click="create">Create</b-button>
@@ -70,7 +88,6 @@ import {AccessLevel} from "../../../backend/src/entity/User";
     import MainNavBar from "../components/MainNavBar.vue";
     import {AccessLevel, User as IUser} from '../../../backend/src/entity/User';
     import {createUser} from "../api/users";
-    import {Profile} from "../store/profile/types";
 
     @Component({
         components: {MainNavBar},
@@ -82,13 +99,15 @@ import {AccessLevel} from "../../../backend/src/entity/User";
             organization: null,
             passwordHash: "",
             username: "",
+            email: "",
+            subscribed: false,
         };
 
         organization: string = "";
         password: string = "";
 
         create() {
-            createUser(this.user.username, this.user.name, this.password, this.user.accessLevel, this.organization || undefined).then((res) => {
+            createUser(this.user.username, this.user.name, this.user.email || undefined, this.user.subscribed, this.password, this.user.accessLevel, this.organization || undefined).then((res) => {
                 if (res.success) {
                     this.$router.push('/users');
                 } else {
@@ -100,16 +119,24 @@ import {AccessLevel} from "../../../backend/src/entity/User";
             })
         }
 
-        get profile(): Profile {
+        get profile(): IUser {
             return this.$store.getters['profile/profile'];
         }
 
         get levels() {
             if (this.profile) {
                 return [
-                    {name: "SUPERUSER", level: AccessLevel.SUPERUSER, disabled: this.profile.accessLevel > AccessLevel.SUPERUSER},
+                    {
+                        name: "SUPERUSER",
+                        level: AccessLevel.SUPERUSER,
+                        disabled: this.profile.accessLevel > AccessLevel.SUPERUSER
+                    },
                     {name: "ADMIN", level: AccessLevel.ADMIN, disabled: this.profile.accessLevel >= AccessLevel.ADMIN},
-                    {name: "MANAGER", level: AccessLevel.MANAGER, disabled: this.profile.accessLevel > AccessLevel.ADMIN},
+                    {
+                        name: "MANAGER",
+                        level: AccessLevel.MANAGER,
+                        disabled: this.profile.accessLevel > AccessLevel.ADMIN
+                    },
                     {name: "USER", level: AccessLevel.USER, disabled: this.profile.accessLevel > AccessLevel.ADMIN},
                 ];
             } else {

@@ -53,9 +53,10 @@
     import Vue from 'vue';
     import axios from 'axios';
     import router from '../../src/router';
+    import {sendContactMessage} from "../api/contact-message";
 
     @Component
-    export default class Contact extends Vue {
+    export default class ContactUs extends Vue {
         name: string = '';
         email: string = '';
         message: string = '';
@@ -63,31 +64,21 @@
         sent = false;
 
         submit() {
-
-            axios.post('/api/contact', {name: this.name, email: this.email, message: this.message})
-
-                .then(({data: {success, accessToken, message, username}}) => {
-                    if (success === true) {
-                        this.sent = true;
-                        (this as any).$bvToast.toast('Thank you for your interest! We will get in contact with you shortly', {
-                            title: 'Message Sent',
-                            variant: 'success',
-                            solid: true,
-                        });
-                    } else {
-                        (this as any).$bvToast.toast('Hmm... we were unable to receive your message. Please contact jonathanmousdell@gmail.com directly, thanks!', {
-                            title: message,
-                            variant: 'danger',
-                            solid: true,
-                        });
-                    }
-                }).catch((err) => {
-
-                (this as any).$bvToast.toast('Hmm... we were unable to receive your message. Please contact jonathanmousdell@gmail.com directly, thanks!', {
-                    title: 'Network Error',
-                    variant: 'danger',
-                    solid: true,
-                })
+            sendContactMessage(this.name, this.email, this.message).then((res) => {
+                if (res.success) {
+                    this.sent = true;
+                    (this as any).$bvToast.toast('Thank you for your interest! We will get in contact with you shortly', {
+                        title: 'Message Sent',
+                        variant: 'success',
+                        solid: true,
+                    });
+                } else {
+                    this.$bvToast.toast('Hmm... we were unable to receive your message. Please contact jonathanmousdell@gmail.com directly, thanks!', {
+                        title: res.message,
+                        variant: 'danger',
+                        solid: true,
+                    });
+                }
             });
         }
     }

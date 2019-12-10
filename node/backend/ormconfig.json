@@ -13,6 +13,7 @@
    "migrations": [
       "src/migration/**/*.ts"
    ],
+   "migrationsTableName": "migrations",
    "subscribers": [
       "src/subscriber/**/*.ts"
    ],

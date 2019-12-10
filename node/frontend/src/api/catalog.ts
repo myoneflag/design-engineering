@@ -7,7 +7,7 @@ export async function loadCatalog(docId: number): Promise<APIResult<Catalog>> {
         console.log('loading catalog');
         return (await axios.get('/api/catalog/', { params: { document: docId }})).data;
     } catch (e) {
-        if ('response' in e) {
+        if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
         } else {
             return { success: false, message: e.message };

@@ -8,6 +8,7 @@ import * as _ from 'lodash';
 import {cloneSimple} from '../../../src/lib/utils';
 import {DrawableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
 import {EntityType} from '../../../src/store/document/entities/types';
+import stringify from "json-stable-stringify";
 
 export const mutations: MutationTree<DocumentState> = {
     /**
@@ -22,7 +23,12 @@ export const mutations: MutationTree<DocumentState> = {
         if (state.optimisticHistory.length) {
             // optimistic history id typically would be 1. We trust the server to give us correct incrementing ids.
             state.optimisticHistory[0].id = operation.id;
-            if (_.isEqual(state.optimisticHistory[0], operation)) {
+
+            // Stringify both objects as a cheap[shot] way of dealing with float imprecision before comparing
+            if (stringify(state.optimisticHistory[0]) === stringify(operation)) {
+                if (!_.isEqual(state.optimisticHistory[0], operation)) {
+                    throw new Error('wouldn\'t have worked before but now would work');
+                }
                 // All g.
                 state.optimisticHistory.splice(0, 1);
                 state.nextId = Math.max(state.nextId, operation.id) + 1;

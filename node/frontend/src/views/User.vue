@@ -31,6 +31,21 @@
                             >
                                 <b-form-input v-model="user.name"></b-form-input>
                             </b-form-group>
+
+                            <b-form-group
+                                    :label-cols="2"
+                                    label="Email"
+                            >
+                                <b-form-input :required="false" type="email" v-model="user.email"></b-form-input>
+                            </b-form-group>
+
+                            <b-form-group
+                                    :label-cols="3"
+                                    label="Subscribe"
+                            >
+                                <b-form-checkbox v-model="user.subscribed">Subscribe to "Contact Us" messages?</b-form-checkbox>
+                            </b-form-group>
+
                             <b-form-group
                                     :label-cols="2"
                                     label="Organization ID"
@@ -64,7 +79,6 @@
     import {getOrganization, updateOrganization} from "../api/organizations";
     import {AccessLevel, User as IUser} from '../../../backend/src/entity/User';
     import {getUser, updateUser} from "../api/users";
-    import {Profile} from "../store/profile/types";
 
     @Component({
         components: {MainNavBar},
@@ -102,21 +116,28 @@
 
         save() {
             if (this.user) {
-                updateUser(this.user.username, this.user.name, this.user.accessLevel, this.organization || undefined).then((res) => {
+                updateUser(this.user.username, this.user.name, this.user.email || undefined, this.user.subscribed, this.user.accessLevel, this.organization || undefined).then((res) => {
                     if (res.success) {
                         this.$router.push('/users');
+
+
+                        if (this.user!.username === this.profile.username) {
+                            this.$store.dispatch("profile/setProfile", res.data);
+                        }
+
                     } else {
                         this.$bvToast.toast(res.message, {
                             title: "Error saving organization",
                             variant: "danger",
                         });
                     }
-                })
+                });
+
             }
         }
 
 
-        get profile(): Profile {
+        get profile(): IUser {
             return this.$store.getters['profile/profile'];
         }
 

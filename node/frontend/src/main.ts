@@ -3,6 +3,7 @@ import App from './App.vue';
 import router from './router';
 import store from './store/store';
 import './registerServiceWorker';
+import StackTrace from 'stacktrace-js';
 
 // @ts-ignore
 import VueInputAutowidth from 'vue-input-autowidth';
@@ -24,7 +25,13 @@ Vue.use(BootstrapVue);
 Vue.use(VueResize);
 Vue.component('v-icon', VueAwesome);
 
-new Vue({
+window.onerror = function(message, source, lineno, colno, error) {
+    if (error) {
+        console.log('error at ' + message + ' ' + source + ' ' + lineno + ' ' + colno + ' ' + JSON.stringify(error));
+    }
+};
+
+const vue = new Vue({
   router,
   store,
   render: (h) => h(App),

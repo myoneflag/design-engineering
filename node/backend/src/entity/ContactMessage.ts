@@ -17,4 +17,18 @@ export class ContactMessage extends BaseEntity {
     @Column()
     email: string;
 
+    @Column()
+    sentOn: Date;
+
+    @Column({select: false})
+    ip: string;
+}
+
+export function allContactMessageColumns(except?: (keyof ContactMessage)[]): (keyof ContactMessage)[] {
+    const res: (keyof ContactMessage)[] = ['id', 'name', 'message', 'email', 'sentOn', 'ip'];
+    if (except) {
+        return res.filter((c) => !except.includes(c));
+    } else {
+        return res;
+    }
 }

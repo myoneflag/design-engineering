@@ -21,7 +21,7 @@ export const renderPdf = async (file: File): Promise<APIResult<PDFRenderResult>>
             },
         })).data;
     } catch (e) {
-        if ('response' in e) {
+        if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
         } else {
             return { success: false, message: e.message };

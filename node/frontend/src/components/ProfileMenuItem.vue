@@ -16,6 +16,11 @@
                 <b-dropdown-item to="/users">Users</b-dropdown-item>
             </template>
 
+            <template v-if="profile.accessLevel <= AccessLevel.SUPERUSER">
+                <b-dropdown-divider></b-dropdown-divider>
+                <b-dropdown-item to="/contacts">Contact Messages</b-dropdown-item>
+                <b-dropdown-item to="/errors">Auto Error Reports</b-dropdown-item>
+            </template>
 
             <b-dropdown-divider></b-dropdown-divider>
             <b-dropdown-item @click="logout">Logout</b-dropdown-item>
@@ -30,12 +35,11 @@
     import axios from 'axios';
     import router from '../../src/router';
     import {logout} from "../../src/api/logins";
-    import {Profile} from "../store/profile/types";
-    import {AccessLevel} from "../../../backend/src/entity/User";
+    import {AccessLevel, User} from "../../../backend/src/entity/User";
 
     @Component
     export default class ProfileMenuItem extends Vue {
-        get profile(): Profile {
+        get profile(): User {
             return this.$store.getters['profile/profile'];
         }
 

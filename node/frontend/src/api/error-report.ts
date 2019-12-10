@@ -1,12 +1,12 @@
 import {APIResult} from "../../../common/src/api/types";
 import {Document} from "../../../backend/src/entity/Document";
 import axios from "axios";
-import {Organization} from "../../../backend/src/entity/Organization";
-import {AccessLevel, User} from "../../../backend/src/entity/User";
+import {ErrorReport, ErrorStatus} from "../../../backend/src/entity/Error";
+import {CreateErrorRequest} from "../../../backend/src/models/Error";
 
-export async function getUsers(): Promise<APIResult<User[]>> {
+export async function getErrorReports(statuses?: ErrorStatus[], from?: number, count?: number): Promise<APIResult<ErrorReport[]>> {
     try {
-        return (await axios.get('/api/users/')).data;
+        return (await axios.get('/api/errors/', {params: {statuses, from, count}})).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
@@ -16,9 +16,9 @@ export async function getUsers(): Promise<APIResult<User[]>> {
     }
 }
 
-export async function getUser(username: string): Promise<APIResult<User>> {
+export async function getErrorReport(id: number): Promise<APIResult<ErrorReport>> {
     try {
-        return (await axios.get('/api/users/' + username)).data;
+        return (await axios.get('/api/errors/id/' + id)).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
@@ -28,11 +28,12 @@ export async function getUser(username: string): Promise<APIResult<User>> {
     }
 }
 
-export async function createUser(username: string, name: string, email: string | undefined, subscribed: boolean, password: string, accessLevel: AccessLevel, organization?: string): Promise<APIResult<User>> {
+export async function submitErrorReport(appVersion: string, message: string, name: string, trace: string): Promise<APIResult<ErrorReport>> {
     try {
-        return (await axios.post('/api/users/', {
-            username, name, email, password, accessLevel, organization, subscribed,
-        })).data;
+        const request: CreateErrorRequest = {
+            appVersion, message, name, threwOn: new Date(), trace,
+        };
+        return (await axios.post('/api/errors/', request)).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
@@ -42,10 +43,10 @@ export async function createUser(username: string, name: string, email: string |
     }
 }
 
-export async function updateUser(username: string, name: string, email: string | undefined, subscribed: boolean, accessLevel: AccessLevel, organization?: string): Promise<APIResult<User>> {
+export async function updateErrorReport(id: number, status: ErrorStatus): Promise<APIResult<ErrorReport>> {
     try {
-        return (await axios.put('/api/users/' + username, {
-            name, accessLevel, email, organization, subscribed,
+        return (await axios.put('/api/errors/' + id, {
+            status,
         })).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {

@@ -53,7 +53,7 @@ export async function updateDocument(id: number, organization: string | undefine
             organization, metadata,
         })).data;
     } catch (e) {
-        if ('response' in e) {
+        if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
         } else {
             return { success: false, message: e.message };
@@ -114,7 +114,7 @@ export async function getDocuments(): Promise<APIResult<Document[]>> {
     try {
         return (await axios.get('/api/documents/')).data;
     } catch (e) {
-        if ('response' in e) {
+        if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
         } else {
             return { success: false, message: e.message };
@@ -128,7 +128,7 @@ export async function createDocument(orgId: string): Promise<APIResult<Document>
             organization: orgId,
         })).data;
     } catch (e) {
-        if ('response' in e) {
+        if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
         } else {
             return { success: false, message: e.message };

@@ -13,7 +13,7 @@ export class UserController {
     @ApiHandleError()
     @AuthRequired(AccessLevel.ADMIN)
     public async create(req: Request, res: Response, next: NextFunction, session: Session) {
-        const {username, name, accessLevel, organization, password} = req.body;
+        const {username, name, accessLevel, organization, password, email, subscribed} = req.body;
         const thisUser = await session.user;
         if (accessLevel <= thisUser.accessLevel && thisUser.accessLevel !== AccessLevel.SUPERUSER) {
             res.status(401).send({
@@ -44,7 +44,7 @@ export class UserController {
             return;
         }
 
-        const user = await registerUser(username, name, password, accessLevel);
+        const user = await registerUser(username, name, email, subscribed, password, accessLevel);
         user.organization = associate;
         await user.save();
         await associate.save()
@@ -110,7 +110,7 @@ export class UserController {
     @AuthRequired()
     public async update(req: Request, res: Response, next: NextFunction, session: Session) {
         await withUser(req.params.id, res, session, AccessType.UPDATE, async (user) => {
-            const {name, accessLevel, organization} = req.body;
+            const {name, accessLevel, organization, email, subscribed} = req.body;
             const me = await session.user;
             user.name = name;
             if (accessLevel < me.accessLevel || (accessLevel === me.accessLevel && me.accessLevel !== AccessLevel.SUPERUSER && me.username !== user.username) ) {
@@ -143,6 +143,8 @@ export class UserController {
 
             user.organization = newOrg;
             user.name = name;
+            user.email = email;
+            user.subscribed = subscribed;
             user.accessLevel = accessLevel;
 
             await user.save();

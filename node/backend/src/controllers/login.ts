@@ -10,10 +10,12 @@ import uuid from 'uuid';
 import {ApiHandleError} from "../helpers/apiWrapper";
 import {log} from "util";
 
-export async function registerUser(username: string, name: string, password: string, access: AccessLevel): Promise<User> {
+export async function registerUser(username: string, name: string, email: string, subscribed: boolean, password: string, access: AccessLevel): Promise<User> {
     const login = User.create();
     login.username = username;
     login.name = name;
+    login.email = email;
+    login.subscribed = subscribed;
     login.passwordHash = await bcrypt.hash(password, 10);
     login.accessLevel = access;
     return await login.save();

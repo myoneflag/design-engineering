@@ -7,7 +7,7 @@ export async function getOrganizations(): Promise<APIResult<Organization[]>> {
     try {
         return (await axios.get('/api/organizations/')).data;
     } catch (e) {
-        if ('response' in e) {
+        if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
         } else {
             return { success: false, message: e.message };
@@ -19,7 +19,7 @@ export async function getOrganization(id: string): Promise<APIResult<Organizatio
     try {
         return (await axios.get('/api/organizations/' + id)).data;
     } catch (e) {
-        if ('response' in e) {
+        if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
         } else {
             return { success: false, message: e.message };
@@ -33,7 +33,7 @@ export async function createOrganization(id: string, name: string): Promise<APIR
             id, name,
         })).data;
     } catch (e) {
-        if ('response' in e) {
+        if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
         } else {
             return { success: false, message: e.message };
@@ -47,7 +47,7 @@ export async function updateOrganization(id: string, name: string): Promise<APIR
             name,
         })).data;
     } catch (e) {
-        if ('response' in e) {
+        if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
         } else {
             return { success: false, message: e.message };

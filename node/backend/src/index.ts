@@ -15,7 +15,7 @@ async function initializeDatabase() {
     const logins = await User.count();
     if (logins === 0) {
 
-        const login = await registerUser('admin', "Root User",'pleasechange', AccessLevel.SUPERUSER);
+        const login = await registerUser('admin', "Root User",undefined, true, 'pleasechange', AccessLevel.SUPERUSER);
     }
 }
 

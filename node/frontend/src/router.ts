@@ -5,16 +5,18 @@ import store from './store/store';
 import axios from 'axios';
 import LoadProfile from '../src/views/LoadProfile.vue';
 import ChangePassword from '../src/views/ChangePassword.vue';
-import Contact from '../src/views/Contact.vue';
+import ContactUs from './views/ContactUs.vue';
 import {getSession} from "../src/api/logins";
 import {AccessLevel, User as IUser} from "../../backend/src/entity/User";
-import {Profile} from "./store/profile/types";
 import Organizations from "./views/Organizations.vue";
 import Users from "./views/Users.vue";
 import Organization from "./views/Organization.vue";
 import CreateOrganization from "./views/CreateOrganization.vue";
 import CreateUser from "./views/CreateUser.vue";
 import User from "./views/User.vue";
+import Contacts from "./views/Contacts.vue";
+import Errors from "./views/Errors.vue";
+import ViewError from './views/Error.vue';
 Vue.use(Router);
 
 const router = new Router({
@@ -155,6 +157,38 @@ const router = new Router({
             },
         },
 
+        {
+            path: '/contacts',
+            name: 'contacts',
+            component: Contacts,
+
+            meta: {
+                auth: true,
+                minAccessLevel: AccessLevel.SUPERUSER,
+            },
+        },
+
+        {
+            path: '/errors',
+            name: 'errors',
+            component: Errors,
+
+            meta: {
+                auth: true,
+                minAccessLevel: AccessLevel.SUPERUSER,
+            },
+        },
+
+        {
+            path: '/errors/id/:id',
+            name: 'error',
+            component: ViewError,
+
+            meta: {
+                auth: true,
+                minAccessLevel: AccessLevel.SUPERUSER,
+            },
+        },
 
         {
             path: '/login',
@@ -177,7 +211,7 @@ const router = new Router({
         {
             path: '/contact',
             name: 'contact',
-            component: Contact,
+            component: ContactUs,
         }
     ],
 });
@@ -202,13 +236,7 @@ router.beforeEach((to, from, next) => {
                 getSession().then((res) => {
                     if (res.success === true) {
                         const result = res.data as IUser;
-                        const param: Profile = {
-                            accessLevel: result.accessLevel,
-                            name: result.name,
-                            organization: result.organization || null,
-                            username: result.username,
-                        };
-                        store.dispatch('profile/setProfile', param)
+                        store.dispatch('profile/setProfile', result)
                             .then(() => {
                                 if (requiredAccess !== undefined && store.getters['profile/profile'].accessLevel > requiredAccess) {
                                     router.push('login');

@@ -879,7 +879,6 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
         }
 
         onMouseMove(event: MouseEvent): boolean {
-            console.log('moving');
             if (event.movementX === 0 && event.movementY === 0) {
                 return true; // Phantom movement - damn it chrome
             }

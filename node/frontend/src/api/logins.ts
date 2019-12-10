@@ -10,7 +10,7 @@ export async function changePasswords(currentPassword: string, newPassword: stri
             newPassword,
         })).data;
     } catch (e) {
-        if ('response' in e) {
+        if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
         } else {
             return { success: false, message: e.message };
@@ -22,7 +22,7 @@ export async function logout(): Promise<APIResult<null>> {
     try {
         return (await axios.get('/api/logout')).data;
     } catch (e) {
-        if ('response' in e) {
+        if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
         } else {
             return { success: false, message: e.message };
@@ -34,7 +34,7 @@ export async function login(username: string, password: string): Promise<APIResu
     try {
         return (await axios.post('/api/login', {username, password})).data;
     } catch (e) {
-        if ('response' in e) {
+        if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
         } else {
             return { success: false, message: e.message };
@@ -46,7 +46,7 @@ export async function getSession(): Promise<APIResult<User>> {
     try {
         return (await axios.post('/api/session')).data;
     } catch (e) {
-        if ('response' in e) {
+        if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
         } else {
             return { success: false, message: e.message };

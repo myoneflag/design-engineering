@@ -38,6 +38,21 @@ export class User extends BaseEntity {
     })
     accessLevel: AccessLevel;
 
+    @Column({nullable: true})
+    email: string | null;
+
+    @Column({default: false})
+    subscribed: boolean;
+
     @ManyToOne( () => Organization, {nullable: true, eager: true})
     organization: Organization | null;
+}
+
+export function allUserFields(except?: (keyof User)[]) {
+    const val: (keyof User)[] = ['username', 'name', 'passwordHash', 'accessLevel', 'email', 'subscribed', 'organization'];
+    if (except) {
+        return val.filter((v) => !except.includes(v));
+    } else {
+        return val;
+    }
 }

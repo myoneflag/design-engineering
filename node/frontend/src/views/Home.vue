@@ -57,7 +57,7 @@
     import {DocumentState} from '../../src/store/document/types';
     import {Document} from "../../../backend/src/entity/Document";
     import {createDocument, getDocuments} from "../api/document";
-    import {Profile} from "../store/profile/types";
+    import {User} from "../../../backend/src/entity/User";
 
     @Component({
         components: {
@@ -83,7 +83,7 @@
             })
         }
 
-        get profile(): Profile {
+        get profile(): User {
             return this.$store.getters['profile/profile'];
         }
 
