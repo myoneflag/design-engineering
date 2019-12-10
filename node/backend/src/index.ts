@@ -23,6 +23,8 @@ async function initializeDatabase() {
 createConnection().then(async connection => {
     await initializeDatabase();
 
+    app.enable('trust proxy');
+
     app.listen(PORT, err => {
         if (err) {
             return console.log(err);
