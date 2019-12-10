@@ -72,7 +72,7 @@
                                     :label-cols="2"
                                     label="Error Stack Trace"
                             >
-                                <b-textarea :value="JSON.parse(errorReport.trace).map((f) => f.source).join('\n')" :disabled="true" rows="10" wrap="off"></b-textarea>
+                                <b-textarea :value="errorReport.trace" :disabled="true" rows="10" wrap="off"></b-textarea>
                             </b-form-group>
 
                             <b-button-group>

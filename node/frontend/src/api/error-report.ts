@@ -43,10 +43,10 @@ export async function submitErrorReport(appVersion: string, message: string, nam
     }
 }
 
-export async function updateErrorReport(id: number, status: ErrorStatus): Promise<APIResult<ErrorReport>> {
+export async function updateErrorReport(id: number, status?: ErrorStatus, stack?: string): Promise<APIResult<ErrorReport>> {
     try {
         return (await axios.put('/api/errors/' + id, {
-            status,
+            status, stack,
         })).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {

@@ -63,7 +63,7 @@ export class ErrorController {
     @ApiHandleError()
     @AuthRequired(AccessLevel.SUPERUSER)
     public async update(req: Request, res: Response, next: NextFunction, session: Session) {
-        const status = req.body.status;
+        const {status, trace} = req.body;
 
         const error = await ErrorReport.findOne({id: Number(req.params.id)});
         if (!error) {
@@ -73,7 +73,15 @@ export class ErrorController {
             });
             return ;
         }
-        error.status = status;
+
+        if (status) {
+            error.status = status;
+        }
+
+        if (trace) {
+            error.trace = trace;
+        }
+
         await error.save();
         res.status(200).send({
             success: true,
