@@ -20,6 +20,7 @@ export class ErrorController {
             err.threwOn = body.threwOn;
             err.appVersion = body.appVersion;
             err.name = body.name;
+            err.url = body.url;
 
             err.ip = req.ip;
             if (session) {
@@ -31,9 +32,15 @@ export class ErrorController {
             err.status = ErrorStatus.NEW;
 
             await err.save();
+            return err;
         }
 
-        await withAuth(req, (s) => createError(s), () => createError());
+        const error = await withAuth(req, (s) => createError(s), () => createError());
+
+        res.status(200).send({
+            success: true,
+            data: error,
+        })
     }
 
     @ApiHandleError()

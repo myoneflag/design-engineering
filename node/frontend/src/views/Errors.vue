@@ -29,7 +29,7 @@
                 <b-row>
                     <b-col>
                         <b-list-group>
-                            <b-list-group-item v-for="e in errors" :key="e.id" :href="'/errors/' + e.id" target="_blank">
+                            <b-list-group-item v-for="e in errors" :key="e.id" :to="'/errors/id/' + e.id" :variant="['danger', 'primary', 'success', ''][e.status]">
                                 <b-row>
                                     <b-col cols="2">{{ e.user ? e.user.username : "[not logged in]" }}</b-col>
                                     <b-col cols="2">{{ new Date(e.threwOn).toLocaleString() }}</b-col>

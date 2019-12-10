@@ -8,4 +8,6 @@ export interface CreateErrorRequest {
     threwOn: Date;
 
     appVersion: string;
+
+    url: string;
 }

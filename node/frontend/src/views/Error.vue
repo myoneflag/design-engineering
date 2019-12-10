@@ -72,15 +72,16 @@
                                     :label-cols="2"
                                     label="Error Stack Trace"
                             >
-                                <b-textarea v-model="errorReport.trace" :disabled="true"></b-textarea>
+                                <b-textarea :value="JSON.parse(errorReport.trace).map((f) => f.source).join('\n')" :disabled="true" rows="10" wrap="off"></b-textarea>
                             </b-form-group>
 
                             <b-button-group>
 
-                                <b-button :variant="errorReport.status === ErrorStatus.NEW? 'danger' : 'light' " @click="errorReport = ErrorStatus.NEW" :pressed="errorReport.status === ErrorStatus.NEW">New</b-button>
-                                <b-button :variant="errorReport.status === ErrorStatus.DOING? 'danger' : 'light' " @click="errorReport = ErrorStatus.DOING" :pressed="errorReport.status === ErrorStatus.DOING">Doing</b-button>
-                                <b-button :variant="errorReport.status === ErrorStatus.RESOLVED? 'danger' : 'light' " @click="errorReport = ErrorStatus.RESOLVED" :pressed="errorReport.status === ErrorStatus.RESOLVED">Resolved</b-button>
-                                <b-button :variant="errorReport.status === ErrorStatus.HIDDEN? 'danger' : 'light' " @click="errorReport = ErrorStatus.HIDDEN" :pressed="errorReport.status === ErrorStatus.HIDDEN">Hidden</b-button>
+                                <b-button :variant="errorReport.status === ErrorStatus.NEW? 'danger' : 'light' " @click="errorReport.status = ErrorStatus.NEW" :pressed="errorReport.status === ErrorStatus.NEW">New</b-button>
+                                <b-button :variant="errorReport.status === ErrorStatus.DOING? 'primary' : 'light' " @click="errorReport.status = ErrorStatus.DOING" :pressed="errorReport.status === ErrorStatus.DOING">Doing</b-button>
+                                <b-button :variant="errorReport.status === ErrorStatus.RESOLVED? 'success' : 'light' " @click="errorReport.status = ErrorStatus.RESOLVED" :pressed="errorReport.status === ErrorStatus.RESOLVED">Resolved</b-button>
+                                <b-button :variant="errorReport.status === ErrorStatus.HIDDEN? 'dark' : 'light' " @click="errorReport.status = ErrorStatus.HIDDEN" :pressed="errorReport.status === ErrorStatus.HIDDEN">Hidden</b-button>
+
                             </b-button-group>
                         </b-form-group>
 
@@ -147,7 +148,7 @@
             }
         }
 
-        ErrorStatus() {
+        get ErrorStatus() {
             return ErrorStatus;
         }
     }
