@@ -187,7 +187,7 @@ function insertPipeChain(
                         : 0,
                     worldCoord: wc,
                 },
-                undefined,
+                (g) => g[0].uid !== pipe.uid && g[0].uid !== lastAttachment.uid, // the current pipe is in an invalid state so don't include that.
                 ([obj]) => {
                     if (obj.type === EntityType.PIPE) {
                         return 0;

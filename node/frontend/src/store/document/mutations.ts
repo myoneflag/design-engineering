@@ -26,9 +26,6 @@ export const mutations: MutationTree<DocumentState> = {
 
             // Stringify both objects as a cheap[shot] way of dealing with float imprecision before comparing
             if (stringify(state.optimisticHistory[0]) === stringify(operation)) {
-                if (!_.isEqual(state.optimisticHistory[0], operation)) {
-                    throw new Error('wouldn\'t have worked before but now would work');
-                }
                 // All g.
                 state.optimisticHistory.splice(0, 1);
                 state.nextId = Math.max(state.nextId, operation.id) + 1;

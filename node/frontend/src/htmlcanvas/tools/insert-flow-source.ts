@@ -70,7 +70,7 @@ export default function insertFlowSource(
                 if (interactive) {
                     const object = context.objectStore.get(interactive[0].uid)!;
                     if (object instanceof Pipe) {
-                        addValveAndSplitPipe(context, object, wc, object.entity.systemUid, 30, newEntity);
+                        addValveAndSplitPipe(context, object, wc, object.entity.systemUid, 50, newEntity);
                         wc = newEntity.center;
                     } else {
 
@@ -100,7 +100,9 @@ export default function insertFlowSource(
                         toReplace.entity.connections.slice().forEach((c) => {
                             disconnect(context, toReplace!.uid, c);
                         });
+                        newEntity.center = toReplace.entity.center;
                         context.deleteEntity(toReplace);
+
                         wc = object.toWorldCoord({x: 0, y: 0});
                     }
                 } else {
