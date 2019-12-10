@@ -219,16 +219,14 @@ const router = new Router({
 router.beforeEach((to, from, next) => {
     if (to.matched.some((record) => record.meta.auth)) {
         if ((Vue as any).cookies.get('session-id') == null) {
-            next({
-                name: 'login',
-            });
+            next('/login');
         } else {
             let levels = to.matched.filter((r) => 'minAccessLevel' in r.meta).map((r) => r.meta.minAccessLevel);
             const requiredAccess = Math.min(...levels);
 
             if (store.getters['profile/profile'] !== null) {
                 if (requiredAccess !== undefined && store.getters['profile/profile'].accessLevel > requiredAccess) {
-                    router.push('login');
+                    router.push('/login');
                 } else {
                     next();
                 }
@@ -239,22 +237,18 @@ router.beforeEach((to, from, next) => {
                         store.dispatch('profile/setProfile', result)
                             .then(() => {
                                 if (requiredAccess !== undefined && store.getters['profile/profile'].accessLevel > requiredAccess) {
-                                    router.push('login');
+                                    router.push('/login');
                                 } else {
                                     router.push(to);
                                 }
-                                });
+                            });
                     } else {
                         (Vue as any).cookies.remove('session-id');
-                        next({
-                            name: 'login',
-                        });
+                        next('/login');
                     }
                 });
 
-                next({
-                    name: 'loginComplete',
-                });
+                //next('/loginComplete');
             }
         }
     } else {

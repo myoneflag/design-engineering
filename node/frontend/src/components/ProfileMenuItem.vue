@@ -1,3 +1,4 @@
+import {AccessLevel} from "../../../backend/src/entity/User";
 <template>
     <b-navbar-nav class="ml-auto">
         <b-nav-item-dropdown :text=" profile.name  + ' '" right>
@@ -30,9 +31,7 @@
 
 <script lang="ts">
     import Component from 'vue-class-component';
-    import {mapGetters} from 'vuex';
     import Vue from 'vue';
-    import axios from 'axios';
     import router from '../../src/router';
     import {logout} from "../../src/api/logins";
     import {AccessLevel, User} from "../../../backend/src/entity/User";
@@ -40,7 +39,23 @@
     @Component
     export default class ProfileMenuItem extends Vue {
         get profile(): User {
-            return this.$store.getters['profile/profile'];
+            const profile = this.$store.getters['profile/profile'];
+            if (!profile) {
+                return {
+                    username: "",
+                    accessLevel: AccessLevel.USER,
+                    organization: {
+                        id: "",
+                        name: "",
+                    },
+                    email: "",
+                    subscribed: false,
+                    name: "",
+                    passwordHash: "",
+                }
+            } else {
+                return profile;
+            }
         }
 
         logout() {

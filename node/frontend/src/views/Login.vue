@@ -72,7 +72,7 @@
                     if (this.$route.query.next) {
                         router.push(this.$route.query.next as string);
                     } else {
-                        router.push({name: 'home'});
+                        router.push('/');
                     }
                 } else {
                     this.$bvToast.toast(res.message, {

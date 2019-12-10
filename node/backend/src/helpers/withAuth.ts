@@ -26,7 +26,7 @@ export function AuthRequired(minAccessLevel?: AccessLevel) {
 export async function withAuth<T>(
     req: Request,
     fn: (session: Session) => Promise<T>,
-    onFail: (msg: string) => void,
+    onFail: (msg: string) => any,
     minAccessLevel?: AccessLevel,
     ): Promise<T> {
     if (!req.cookies) {
@@ -57,7 +57,6 @@ export async function withAuth<T>(
         }
         return await fn(s);
     } else {
-        onFail("Unauthorized Access");
-        return;
+        return onFail("Unauthorized Access");
     }
 }

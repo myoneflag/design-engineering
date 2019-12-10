@@ -39,9 +39,25 @@ async function reportError(message: string, error: Error) {
             StackTrace.fromError(error).then((trace) => {
                 updateErrorReport(res.data.id, undefined, trace.map((frame) => frame.getSource()).join("\n"))
             });
-            window.alert("An error occurred: " + message.toString() + ". Our developers have been notified and will find a fix as soon as they can. You should perhaps refresh the page - if you don't, the document may become unreliable.\n\nIf the issue persists and is preventing you from working, please contact our team and we will assist immediately. Thank you for your patience.");
+            const msgstr = "An error occurred: " + message.toString() + ". Our developers have been notified and " +
+                "will find a fix as soon as they can. You should perhaps refresh the page - if you don't, the " +
+                "document may become unreliable. If the issue persists and is preventing you from working, " +
+                "please contact our team and we will assist immediately. Thank you for your patience.";
+
+            if (vue) {
+                vue.$bvModal.msgBoxOk(msgstr);
+            } else {
+                window.alert(msgstr);
+            }
         } else {
-            window.alert("An error occurred, but we couldn't even report the error! D'oh! If this is not a network issue, please contact the developers. Message: " + message.toString() + " and why we couldn't report it: " + res.message.toString());
+            const msgstr = "An error occurred, but we couldn't even report the error! D'oh! If this is not a " +
+                "network issue, please contact the developers. Message: " + message.toString() + " and why we " +
+                "couldn't report it: " + res.message.toString();
+            if (vue) {
+                vue.$bvModal.msgBoxOk(msgstr);
+            } else {
+                window.alert(msgstr);
+            }
         }
     });
 }
