@@ -37,7 +37,7 @@ async function reportError(message: string, error: Error) {
     submitErrorReport(store.getters.appVersion, message ? message.toString() : "[No Message]", error.name, error.stack || "No Stack", window.location.href).then((res) => {
         if (res.success) {
             StackTrace.fromError(error).then((trace) => {
-                updateErrorReport(res.data.id, undefined, trace.map((frame) => frame.getSource()).join("\n"))
+                updateErrorReport(res.data.id, undefined, trace.map((frame) => frame.functionName + ' ' + frame.fileName + ':' + frame.columnNumber + ':' + frame.lineNumber).join("\n"))
             });
             const msgstr = "An error occurred: " + message.toString() + ". Our developers have been notified and " +
                 "will find a fix as soon as they can. You should perhaps refresh the page - if you don't, the " +
