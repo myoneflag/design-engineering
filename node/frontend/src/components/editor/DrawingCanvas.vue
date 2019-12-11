@@ -454,6 +454,8 @@ export default class DrawingCanvas extends Vue {
             case EntityType.SYSTEM_NODE:
             case EntityType.TMV:
             case EntityType.FIXTURE:
+                console.log("Before hydro add entity. Document entities are ");
+                console.log(JSON.stringify(this.document.drawing.entities));
                 this.hydraulicsLayer.addEntity(entity);
                 break;
             default:
@@ -518,9 +520,8 @@ export default class DrawingCanvas extends Vue {
                 throw new Error('Selecting an object that doesn\'t exist');
             }
 
-            const background = this.document.drawing.backgrounds.find((b) => b.uid === selectionTarget.uid);
-            const drawable = this.document.drawing.entities.find((e) => e.uid === selectionTarget.uid);
-            if (background) {
+            const drawable = this.document.drawing.entities[selectionTarget.uid];
+            if (drawable.type === EntityType.BACKGROUND_IMAGE) {
                 this.mode = DrawingMode.FloorPlan;
             } else if (drawable) {
                 this.mode = DrawingMode.Hydraulics;
@@ -648,7 +649,7 @@ export default class DrawingCanvas extends Vue {
     }
 
     fitToView() {
-        if (this.document.drawing.entities.length === 0 && this.document.drawing.backgrounds.length === 0) {
+        if (_.isEmpty(this.document.drawing.entities)) {
             this.viewPort = this.initialViewport;
             this.scheduleDraw();
         } else {

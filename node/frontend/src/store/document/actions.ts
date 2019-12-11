@@ -6,8 +6,6 @@ import {DocumentState} from '../../../src/store/document/types';
 import {diffState} from '../../../src/store/document/operation-transforms/state-differ';
 import {applyOtOnState} from '../../../src/store/document/operation-transforms/state-ot-apply';
 import * as _ from 'lodash';
-import {MainEventBus} from '../../../src/store/main-event-bus';
-import {BackgroundEntity} from '../../../src/store/document/entities/background-entity';
 import {cloneSimple} from '../../../src/lib/utils';
 import {submitOperation, updateDocument} from "../../../src/api/document";
 
@@ -35,8 +33,13 @@ export const actions: ActionTree<DocumentState, RootState> = {
 
         // We have to clone to stop reactivity affecting the async post values later.
         // We choose to clone the resulting operations rather than the input for performance.
-        const diff = cloneSimple(diffState(state.committedDrawing, state.drawing));
-        diff.forEach((v: OT.OperationTransform) => applyOtOnState(state.committedDrawing, v));
+        const diff = cloneSimple(diffState(state.committedDrawing, state.drawing, undefined));
+        diff.forEach((v: OT.OperationTransformConcrete) => {
+                if (v.type !== OPERATION_NAMES.DIFF_OPERATION) {
+                    throw new Error('diffState gave a weird operation');
+                }
+                applyOtOnState(state.committedDrawing, v);
+        });
 
         if (diff.length === 0) {
             return;

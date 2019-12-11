@@ -40,8 +40,7 @@ export function getBoundingBox(objectStore: ObjectStore, document: DocumentState
         }
     };
 
-    document.drawing.backgrounds.forEach(look);
-    document.drawing.entities.forEach(look);
+    Object.values(document.drawing.entities).forEach(look);
 
     return {l, r, t, b};
 }

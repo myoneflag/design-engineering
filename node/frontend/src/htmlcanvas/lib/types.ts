@@ -14,7 +14,15 @@ export interface DrawingContext {
     catalog: Catalog;
 }
 
-export class ObjectStore extends Map<string, BaseBackedObject> {}
+export class ObjectStore extends Map<string, BaseBackedObject> {
+    delete(key: string): boolean {
+        console.log("Delete Called on Object Store with key " + key);
+        const err = new Error();
+        console.log(err.stack);
+        return super.delete(key);
+    }
+
+}
 
 // tslint:disable-next-line:max-classes-per-file
 export class MessageStore extends Map<string, Popup> {}

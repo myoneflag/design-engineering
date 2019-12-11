@@ -1,14 +1,13 @@
 import * as Operations from './operation-transforms/operation-transforms';
 import {PIPE_SIZING_METHODS, RING_MAIN_CALCULATION_METHODS, SupportedPsdStandards} from '../../../src/config';
-import * as _ from 'lodash';
 import {EntityType} from '../../../src/store/document/entities/types';
-import {BackgroundEntity} from '../../../src/store/document/entities/background-entity';
 import {ViewPort} from '../../../src/htmlcanvas/viewport';
 import {DrawingMode} from '../../../src/htmlcanvas/types';
 import {DemandType} from '../../../src/calculations/types';
 import {DrawableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
 import {cloneSimple} from '../../../src/lib/utils';
 import {ValveId} from '../../../src/htmlcanvas/lib/types';
+import {FlowConfiguration} from "./entities/tmv/tmv-entity";
 
 // Because of how the diffing engine works, there are restrictions on the data structure for the document state.
 // Rules are:
@@ -58,8 +57,7 @@ export interface DrawingState {
     flowSystems: FlowSystemParameters[];
     calculationParams: CalculationParameters;
 
-    backgrounds: BackgroundEntity[];
-    entities: DrawableEntityConcrete[];
+    entities: {[key: string]: DrawableEntityConcrete};
     availableFixtures: string[];
 }
 
@@ -208,8 +206,16 @@ export const initialDrawing: DrawingState = {
         roomTemperatureC: 20,
         gravitationalAcceleration: 9.80665,
     },
-    backgrounds: [],
-    entities: [],
+    entities: {asdf: {
+            type: EntityType.SYSTEM_NODE,
+            center: {x: 0, y: 0},
+            connections: [],
+            systemUid: '',
+            parentUid: null,
+            uid: 'asdf',
+            calculation: null,
+            configuration: FlowConfiguration.BOTH,
+        }},
     availableFixtures: ['basin', 'bath', 'shower', 'kitchenSink', 'wc', 'washingMachine', 'laundryTrough'],
 };
 

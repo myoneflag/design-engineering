@@ -278,6 +278,7 @@ export abstract class LayerImplementation implements Layer {
             .filter((o) => objects.findIndex((oo) => oo.uid === o.uid) !== -1) : [];
         undragged.forEach((o) => {
             if (!this.uidsInOrder.includes(o.uid)) {
+                console.log('shouldnt be here');
                 this.objectStore.delete(o.uid);
             }
         });
@@ -288,6 +289,7 @@ export abstract class LayerImplementation implements Layer {
         if (this.draggedObjects) {
             this.draggedObjects.forEach((o) => {
                 if (!this.uidsInOrder.includes(o.uid)) {
+                    console.log('shouldnt be here');
                     this.objectStore.delete(o.uid);
                 }
             });
@@ -441,7 +443,6 @@ export abstract class LayerImplementation implements Layer {
             }
         }
 
-
         DrawableObjectFactory.build(
             this,
             entity,
@@ -452,6 +453,9 @@ export abstract class LayerImplementation implements Layer {
                 onCommit: (e) => this.onCommit(entity),
             },
         );
+
+        console.log('Added entityy ' + entity.uid + '. Now object store has: ');
+        console.log('    ' + JSON.stringify(Array.from(this.objectStore.keys())));
     }
 
     deleteEntity(entity: DrawableEntityConcrete): void {
@@ -470,6 +474,10 @@ export abstract class LayerImplementation implements Layer {
         if (this.selectedIds.includes(entity.uid)) {
             this.selectedIds.splice(this.selectedIds.indexOf(entity.uid), 1);
         }
+
+
+        console.log('Deleted entity ' + entity.uid + '. Now object store has: ');
+        console.log('    ' + JSON.stringify(Array.from(this.objectStore.keys())));
     }
 
     entitySortOrder(entity: DrawableEntityConcrete): number {

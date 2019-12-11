@@ -9,6 +9,7 @@ import {cloneSimple} from '../../../src/lib/utils';
 import {DrawableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
 import {EntityType} from '../../../src/store/document/entities/types';
 import stringify from "json-stable-stringify";
+import Vue from 'vue';
 
 export const mutations: MutationTree<DocumentState> = {
     /**
@@ -48,10 +49,7 @@ export const mutations: MutationTree<DocumentState> = {
                 const toApply = state.stagedCommits[0];
                 let handled: boolean = true;
                 switch (toApply.type) {
-                    case OT.OPERATION_NAMES.ADD_OPERATION:
-                    case OT.OPERATION_NAMES.DELETE_OPERATION:
-                    case OT.OPERATION_NAMES.UPDATE_OPERATION:
-                    case OT.OPERATION_NAMES.MOVE_OPERATION: {
+                    case OT.OPERATION_NAMES.DIFF_OPERATION: {
                         applyOtOnState(state.drawing, cloneSimple(toApply));
                         applyOtOnState(state.committedDrawing, cloneSimple(toApply));
                         break;
@@ -90,11 +88,8 @@ export const mutations: MutationTree<DocumentState> = {
     },
 
     addEntity(state, entity: DrawableEntityConcrete) {
-        if (entity.type === EntityType.BACKGROUND_IMAGE) {
-            state.drawing.backgrounds.push(entity);
-        } else {
-            state.drawing.entities.push(entity);
-        }
+        console.log('Adding Entity '  + JSON.stringify(state.drawing.entities));
+        Vue.set(state.drawing.entities, entity.uid, entity);
         MainEventBus.$emit('add-entity', entity);
     },
 
@@ -103,20 +98,11 @@ export const mutations: MutationTree<DocumentState> = {
     },
 
     deleteEntity(state, entity: DrawableEntityConcrete) {
-        if (entity.type === EntityType.BACKGROUND_IMAGE) {
-            const i = state.drawing.backgrounds.findIndex((b) => b.uid === entity.uid);
-            if (i === -1) {
-                throw new Error('deleted something that doesn\'t exist');
-            } else {
-                state.drawing.backgrounds.splice(i, 1);
-            }
+        console.log('Deleting Entity ' + JSON.stringify(state.drawing.entities));
+        if (entity.uid in state.drawing.entities) {
+            Vue.delete(state.drawing.entities, entity.uid);
         } else {
-            const i = state.drawing.entities.findIndex((e) => e.uid === entity.uid);
-            if (i === -1) {
-                throw new Error('deleted an entitiy that doesn\'t exist');
-            } else {
-                state.drawing.entities.splice(i, 1);
-            }
+            throw new Error('Deleted an entity that doesn\'t exist ' + JSON.stringify(entity));
         }
         MainEventBus.$emit('delete-entity', entity);
     },

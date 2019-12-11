@@ -4,42 +4,21 @@ export interface OperationTransform {
 }
 
 export type OperationTransformConcrete =
-    UpdateOperation | AddOperation | MoveOperation | DeleteOperation | CommittedOperation;
+    DiffOperation | CommittedOperation;
 
 export enum OPERATION_NAMES {
-    UPDATE_OPERATION = 'UPDATE_OPERATION',
-    ADD_OPERATION = 'ADD_OPERATION',
-    MOVE_OPERATION = 'MOVE_OPERATION',
-    DELETE_OPERATION = 'DELETE_OPERATION',
+    DIFF_OPERATION = 'DIFF_OPERATION',
     COMMITTED_OPERATION = 'COMMITTED_OPERATION',
 }
 
 // the before, after and object objects contain the object embedded in its address,
-export interface UpdateOperation extends OperationTransform {
-    type: OPERATION_NAMES.UPDATE_OPERATION;
-    before: any;
-    after: any;
+export interface DiffOperation extends OperationTransform {
+    type: OPERATION_NAMES.DIFF_OPERATION;
+    diff: any;
+    inverse: any;
 }
 
-export interface AddOperation extends OperationTransform {
-    type: OPERATION_NAMES.ADD_OPERATION;
-    object: any;
-}
-
-export interface MoveOperation extends OperationTransform {
-    type: OPERATION_NAMES.MOVE_OPERATION;
-    reference: any;
-    // the array index to move to AFTER the item has been spliced for removing.
-    index: number;
-}
-
-export interface DeleteOperation extends OperationTransform {
-    type: OPERATION_NAMES.DELETE_OPERATION;
-    // We need the original object in order to make an undo operation.
-    object: any;
-    index: number;
-}
-
+// Committed separates logical chunks of operations for undo capabilities.
 export interface CommittedOperation extends OperationTransform {
     type: OPERATION_NAMES.COMMITTED_OPERATION;
 }

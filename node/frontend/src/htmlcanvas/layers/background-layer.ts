@@ -8,6 +8,7 @@ import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
 import {DrawingContext, ObjectStore} from '../../../src/htmlcanvas/lib/types';
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
 import {DrawableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
+import {EntityType} from "../../store/document/entities/types";
 
 export default class BackgroundLayer extends LayerImplementation {
     resizeBox: ResizeControl | null = null;
@@ -57,7 +58,13 @@ export default class BackgroundLayer extends LayerImplementation {
 
         const existingSids: string[] = [];
 
-        for (const background of doc.drawing.backgrounds) {
+        for (const entity of Object.values(doc.drawing.entities)) {
+            if (entity.type !== EntityType.BACKGROUND_IMAGE) {
+                continue;
+            }
+
+            const background = entity;
+
             if (!this.objectStore.has(background.uid)) {
                 const obj: BackgroundImage = new BackgroundImage(
                     this.objectStore,

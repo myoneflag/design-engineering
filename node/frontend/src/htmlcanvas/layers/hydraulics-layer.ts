@@ -20,7 +20,14 @@ export default class  HydraulicsLayer extends LayerImplementation {
     }
 
     resetDocument(doc: DocumentState) {
-        const thisIds = doc.drawing.entities.map((v) => v.uid);
+        const thisIds = Object.values(doc.drawing.entities)
+            .filter((e) => e.type !== EntityType.BACKGROUND_IMAGE)
+            .map((e) => e.uid);
+
+        console.log("this drawing: " + JSON.stringify(doc.drawing));
+        console.log("this entities: " + JSON.stringify(Object.values(doc.drawing.entities)));
+        console.log('this uids: ' + JSON.stringify(thisIds));
+
         const removed = this.uidsInOrder.filter((v: string) => {
             if (thisIds.indexOf(v) !== -1) {
                 return false;
@@ -34,6 +41,7 @@ export default class  HydraulicsLayer extends LayerImplementation {
         });
 
         removed.forEach((v) => {
+
             this.objectStore.delete(v);
             if (this.isSelected(v)) {
                 this.select([v], SelectMode.Exclude);
@@ -46,7 +54,10 @@ export default class  HydraulicsLayer extends LayerImplementation {
         // We have to create child objects from root to child with a tree.
         // Build tree.
         const adj: Map<string|null, string[]> = new Map<string|null, string[]>();
-        doc.drawing.entities.forEach((entity) => {
+        Object.values(doc.drawing.entities).forEach((entity) => {
+            if (entity.type === EntityType.BACKGROUND_IMAGE) {
+                return;
+            }
 
             let parent: BaseBackedObject | null = null;
             if (entity.parentUid) {
