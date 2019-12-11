@@ -45,79 +45,93 @@
 </template>
 
 <script lang="ts">
-    import {Component} from "vue-property-decorator";
-    import Vue from 'vue';
-    import {User} from "../../../backend/src/entity/User";
-    import {getUsers, updateUser} from "../api/users";
-    import MainNavBar from "../../src/components/MainNavBar.vue";
-    import DrawingNavBar from "../components/DrawingNavBar.vue";
-    import {ContactMessage} from "../../../backend/src/entity/ContactMessage";
-    import {getContactMessages} from "../api/contact-message";
+import {Component} from "vue-property-decorator";
+import Vue from 'vue';
+import {User} from "../../../backend/src/entity/User";
+import {getUsers, updateUser} from "../api/users";
+import MainNavBar from "../../src/components/MainNavBar.vue";
+import DrawingNavBar from "../components/DrawingNavBar.vue";
+import {ContactMessage} from "../../../backend/src/entity/ContactMessage";
+import {getContactMessages} from "../api/contact-message";
 
-    @Component({
-        components: {
-            MainNavBar,
-        },
-    })
-    export default class Contacts extends Vue {
-        contacts: ContactMessage[] = [];
-        isLoaded: boolean = false;
+@Component({
+    components: {
+        MainNavBar,
+    },
+})
+export default class Contacts extends Vue {
+    contacts: ContactMessage[] = [];
+    isLoaded: boolean = false;
 
-        mounted() {
-            // fill documents
-            getContactMessages().then((res) => {
-                if (res.success) {
-                    this.contacts.splice(0, this.contacts.length, ...res.data);
-                    this.isLoaded = true;
-                } else {
-                    this.$bvToast.toast(res.message, {
-                        variant: 'danger',
-                        title: 'Error retrieving contact list',
-                    });
-                }
-            })
-        }
-
-        get profile(): User {
-            return this.$store.getters["profile/profile"];
-        }
-
-        subscribe() {
-            updateUser(this.profile.username, this.profile.name, this.profile.email || undefined, true, this.profile.accessLevel, this.profile.organization ? this.profile.organization.id : undefined).then((res) => {
-                if (res.success) {
-                    this.$bvToast.toast('Successfully subscribed', {
-                        variant: "success",
-                        title: "Subscribed",
-                    });
-                    this.$store.dispatch("profile/setProfile", res.data);
-                } else {
-
-                    this.$bvToast.toast(res.message, {
-                        variant: "danger",
-                        title: "Error subscribing",
-                    })
-                }
-            });
-        }
-
-        unsubscribe() {
-            updateUser(this.profile.username, this.profile.name, this.profile.email || undefined, false, this.profile.accessLevel, this.profile.organization ? this.profile.organization.id : undefined).then((res) => {
-                if (res.success) {
-                    this.$bvToast.toast('Successfully unsubscribed', {
-                        variant: "success",
-                        title: "Unsubscribed",
-                    });
-                    this.$store.dispatch("profile/setProfile", res.data);
-                } else {
-
-                    this.$bvToast.toast(res.message, {
-                        variant: "danger",
-                        title: "Error unsubscribing",
-                    })
-                }
-            });
-        }
+    mounted() {
+        // fill documents
+        getContactMessages().then((res) => {
+            if (res.success) {
+                this.contacts.splice(0, this.contacts.length, ...res.data);
+                this.isLoaded = true;
+            } else {
+                this.$bvToast.toast(res.message, {
+                    variant: 'danger',
+                    title: 'Error retrieving contact list',
+                });
+            }
+        });
     }
+
+    get profile(): User {
+        return this.$store.getters["profile/profile"];
+    }
+
+    subscribe() {
+        updateUser(
+            this.profile.username,
+            this.profile.name,
+            this.profile.email || undefined,
+            true,
+            this.profile.accessLevel,
+            this.profile.organization ? this.profile.organization.id : undefined
+        ).then((res) => {
+            if (res.success) {
+                this.$bvToast.toast('Successfully subscribed', {
+                    variant: "success",
+                    title: "Subscribed",
+                });
+                this.$store.dispatch("profile/setProfile", res.data);
+            } else {
+
+                this.$bvToast.toast(res.message, {
+                    variant: "danger",
+                    title: "Error subscribing",
+                });
+            }
+        });
+    }
+
+    unsubscribe() {
+        updateUser(
+            this.profile.username,
+            this.profile.name,
+            this.profile.email || undefined,
+            false,
+            this.profile.accessLevel,
+            this.profile.organization ? this.profile.organization.id : undefined
+        ).then((res) => {
+            if (res.success) {
+                this.$bvToast.toast('Successfully unsubscribed', {
+                    variant: "success",
+                    title: "Unsubscribed",
+                });
+                this.$store.dispatch("profile/setProfile", res.data);
+            } else {
+
+                this.$bvToast.toast(res.message, {
+                    variant: "danger",
+                    title: "Error unsubscribing",
+                });
+            }
+        });
+    }
+}
 </script>
 
 <style lang="less">

@@ -453,7 +453,6 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             });
         }
         if (!isMultiDrag) {
-            context.processDocument(false);
             this.onChange();
         }
     }

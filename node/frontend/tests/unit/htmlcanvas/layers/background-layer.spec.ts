@@ -15,7 +15,7 @@ describe('background-layer.ts', () => {
 
     beforeEach(() => {
         canvas = createDummyCanvas(createExampleDocument());
-        canvas.backgroundLayer.update(canvas.document);
+        canvas.backgroundLayer.resetDocument(canvas.document);
     });
 
     it ('should accept background items only', () => {

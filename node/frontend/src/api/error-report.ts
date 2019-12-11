@@ -4,7 +4,11 @@ import axios from "axios";
 import {ErrorReport, ErrorStatus} from "../../../backend/src/entity/Error";
 import {CreateErrorRequest} from "../../../backend/src/models/Error";
 
-export async function getErrorReports(statuses?: ErrorStatus[], from?: number, count?: number): Promise<APIResult<ErrorReport[]>> {
+export async function getErrorReports(
+    statuses?: ErrorStatus[],
+    from?: number,
+    count?: number
+): Promise<APIResult<ErrorReport[]>> {
     try {
         return (await axios.get('/api/errors/', {params: {statuses, from, count}})).data;
     } catch (e) {
@@ -28,7 +32,13 @@ export async function getErrorReport(id: number): Promise<APIResult<ErrorReport>
     }
 }
 
-export async function submitErrorReport(appVersion: string, message: string, name: string, trace: string, url: string): Promise<APIResult<ErrorReport>> {
+export async function submitErrorReport(
+    appVersion: string,
+    message: string,
+    name: string,
+    trace: string,
+    url: string
+): Promise<APIResult<ErrorReport>> {
     try {
         const request: CreateErrorRequest = {
             appVersion, message, name, threwOn: new Date(), trace, url,
@@ -43,7 +53,11 @@ export async function submitErrorReport(appVersion: string, message: string, nam
     }
 }
 
-export async function updateErrorReport(id: number, status?: ErrorStatus, trace?: string): Promise<APIResult<ErrorReport>> {
+export async function updateErrorReport(
+    id: number,
+    status?: ErrorStatus,
+    trace?: string
+): Promise<APIResult<ErrorReport>> {
     try {
         return (await axios.put('/api/errors/' + id, {
             status, trace,

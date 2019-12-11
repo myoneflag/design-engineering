@@ -13,7 +13,7 @@ describe('calculation-layer.ts', () => {
 
     beforeEach(() => {
         canvas = createDummyCanvas(createExampleDocument());
-        canvas.hydraulicsLayer.update(canvas.document);
+        canvas.hydraulicsLayer.resetDocument(canvas.document);
     });
 
     canvas = createDummyCanvas(createExampleDocument());

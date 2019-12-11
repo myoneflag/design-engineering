@@ -212,7 +212,7 @@ const router = new Router({
             path: '/contact',
             name: 'contact',
             component: ContactUs,
-        }
+        },
     ],
 });
 
@@ -221,7 +221,7 @@ router.beforeEach((to, from, next) => {
         if ((Vue as any).cookies.get('session-id') == null) {
             next('/login');
         } else {
-            let levels = to.matched.filter((r) => 'minAccessLevel' in r.meta).map((r) => r.meta.minAccessLevel);
+            const levels = to.matched.filter((r) => 'minAccessLevel' in r.meta).map((r) => r.meta.minAccessLevel);
             const requiredAccess = Math.min(...levels);
 
             if (store.getters['profile/profile'] !== null) {
@@ -236,7 +236,9 @@ router.beforeEach((to, from, next) => {
                         const result = res.data as IUser;
                         store.dispatch('profile/setProfile', result)
                             .then(() => {
-                                if (requiredAccess !== undefined && store.getters['profile/profile'].accessLevel > requiredAccess) {
+                                if (requiredAccess !== undefined &&
+                                    store.getters['profile/profile'].accessLevel > requiredAccess
+                                ) {
                                     router.push('/login');
                                 } else {
                                     router.push(to);
@@ -248,7 +250,7 @@ router.beforeEach((to, from, next) => {
                     }
                 });
 
-                //next('/loginComplete');
+                // next('/loginComplete');
             }
         }
     } else {

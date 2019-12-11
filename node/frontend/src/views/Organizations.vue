@@ -38,37 +38,37 @@
 </template>
 
 <script lang="ts">
-    import {getOrganizations} from "../api/organizations";
-    import {Organization} from "../../../backend/src/entity/Organization";
-    import Vue from 'vue';
-    import MainNavBar from "../../src/components/MainNavBar.vue";
-    import Component from "vue-class-component";
-    import DrawingNavBar from "../components/DrawingNavBar.vue";
+import {getOrganizations} from "../api/organizations";
+import {Organization} from "../../../backend/src/entity/Organization";
+import Vue from 'vue';
+import MainNavBar from "../../src/components/MainNavBar.vue";
+import Component from "vue-class-component";
+import DrawingNavBar from "../components/DrawingNavBar.vue";
 
-    @Component({
-        components: {
-            MainNavBar,
-        },
-    })
-    export default class Organizations extends Vue {
-        organizations: Organization[] = [];
-        isLoaded: boolean = false;
+@Component({
+    components: {
+        MainNavBar,
+    },
+})
+export default class Organizations extends Vue {
+    organizations: Organization[] = [];
+    isLoaded: boolean = false;
 
-        mounted() {
-            // fill documents
-            getOrganizations().then((res) => {
-                if (res.success) {
-                    this.organizations.splice(0, this.organizations.length, ...res.data);
-                    this.isLoaded = true;
-                } else {
-                    this.$bvToast.toast(res.message, {
-                        variant: 'danger',
-                        title: 'Error retrieving org list',
-                    });
-                }
-            })
-        }
+    mounted() {
+        // fill documents
+        getOrganizations().then((res) => {
+            if (res.success) {
+                this.organizations.splice(0, this.organizations.length, ...res.data);
+                this.isLoaded = true;
+            } else {
+                this.$bvToast.toast(res.message, {
+                    variant: 'danger',
+                    title: 'Error retrieving org list',
+                });
+            }
+        });
     }
+}
 </script>
 
 <style lang="less">

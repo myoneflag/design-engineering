@@ -187,7 +187,8 @@ function insertPipeChain(
                         : 0,
                     worldCoord: wc,
                 },
-                (g) => g[0].uid !== pipe.uid && g[0].uid !== lastAttachment.uid, // the current pipe is in an invalid state so don't include that.
+                // the current pipe is in an invalid state so don't include that.
+                (g) => g[0].uid !== pipe.uid && g[0].uid !== lastAttachment.uid,
                 ([obj]) => {
                     if (obj.type === EntityType.PIPE) {
                         return 0;
@@ -272,8 +273,6 @@ function insertPipeChain(
             }
 
             pipe.endpointUid.splice(1, 1, nextEntity.uid);
-
-            context.processDocument();
         },
 
         (wc: Coord) => {

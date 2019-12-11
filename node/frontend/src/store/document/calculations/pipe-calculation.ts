@@ -18,7 +18,11 @@ export default interface PipeCalculation extends PsdCalculation, Calculation {
 }
 
 
-export function makePipeCalculationFields(entity: PipeEntity, settings: DrawingState, catalog?: Catalog): CalculationField[] {
+export function makePipeCalculationFields(
+    entity: PipeEntity,
+    settings: DrawingState,
+    catalog?: Catalog
+): CalculationField[] {
     const psdUnit = isGermanStandard(settings.calculationParams.psdMethod) ? 'Design Flow Rate' : 'Loading Units';
     const psdUnitShort = isGermanStandard(settings.calculationParams.psdMethod) ? 'D. Flow' : 'LU';
 

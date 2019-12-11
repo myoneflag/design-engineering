@@ -19,7 +19,7 @@ export default class  HydraulicsLayer extends LayerImplementation {
         });
     }
 
-    update(doc: DocumentState) {
+    resetDocument(doc: DocumentState) {
         const thisIds = doc.drawing.entities.map((v) => v.uid);
         const removed = this.uidsInOrder.filter((v: string) => {
             if (thisIds.indexOf(v) !== -1) {

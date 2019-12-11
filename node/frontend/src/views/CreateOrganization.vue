@@ -41,33 +41,33 @@
 </template>
 
 <script lang="ts">
-    import Vue from 'vue';
-    import Component from "vue-class-component";
-    import {Route} from "vue-router";
-    import MainNavBar from "../components/MainNavBar.vue";
-    import {createOrganization, getOrganization} from "../api/organizations";
-    import {Organization as IOrganization} from '../../../backend/src/entity/Organization';
+import Vue from 'vue';
+import Component from "vue-class-component";
+import {Route} from "vue-router";
+import MainNavBar from "../components/MainNavBar.vue";
+import {createOrganization, getOrganization} from "../api/organizations";
+import {Organization as IOrganization} from '../../../backend/src/entity/Organization';
 
-    @Component({
-        components: {MainNavBar},
-    })
-    export default class CreateOrganization extends Vue {
-        org: IOrganization = {
-            id: "",
-            name: "",
-        };
+@Component({
+    components: {MainNavBar},
+})
+export default class CreateOrganization extends Vue {
+    org: IOrganization = {
+        id: "",
+        name: "",
+    };
 
-        create() {
-            createOrganization(this.org.id, this.org.name).then((res) => {
-                if (res.success) {
-                    this.$router.push('/organizations');
-                } else {
-                    this.$bvToast.toast(res.message, {
-                        title: 'Error creating organization',
-                        variant: 'danger',
-                    });
-                }
-            })
-        }
+    create() {
+        createOrganization(this.org.id, this.org.name).then((res) => {
+            if (res.success) {
+                this.$router.push('/organizations');
+            } else {
+                this.$bvToast.toast(res.message, {
+                    title: 'Error creating organization',
+                    variant: 'danger',
+                });
+            }
+        });
     }
+}
 </script>

@@ -317,13 +317,16 @@ export function keycodeToImgName(keyCode: KeyCode): string {
 
 const imgStore: Map<string, HTMLImageElement> = new Map<string, HTMLImageElement>();
 
+
 export const warningSignImg = new Image();
+// @ts-ignore
 warningSignImg.src = require('../assets/warning-sign.svg');
 
 export function keyCode2Image(keyCode: KeyCode): HTMLImageElement {
     const name = keycodeToImgName(keyCode);
     if (!imgStore.has(name)) {
         const img = new Image();
+        // @ts-ignore
         img.src = require('../assets/keyboard-keys/' + name + '.png');
         imgStore.set(name, img);
     }

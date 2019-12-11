@@ -66,7 +66,6 @@
 
         login() {
             login(this.username, this.password).then((res) => {
-                console.log(JSON.stringify(res));
                 if (res.success === true) {
                     (this as any).$cookies.set('session-id', res.data);
                     if (this.$route.query.next) {

@@ -195,11 +195,8 @@
             if (this.file) {
                 renderPdf(this.file).then((res) => {
                     if (res.success) {
-                        this.$store.dispatch('document/updateBackgroundInPlace', {background, update: () => ({
-                                uri: res.data.uri,
-                                filename: this.file!.name,
-                            }),
-                        });
+                        background.uri = res.data.uri;
+                        background.filename = this.file!.name;
                         this.$store.dispatch('document/commit');
                     } else {
                         this.$bvToast.toast(res.message, {
@@ -221,7 +218,7 @@
             if (this.ABDistanceMeters) {
                 const factor = parseFloat(this.enteredDistance) / this.ABDistanceMeters;
 
-                this.$store.dispatch('document/scaleBackground', {background, factor});
+                this.background.scaleFactor *= factor;
                 this.$store.dispatch('document/commit');
             }
 
@@ -239,21 +236,17 @@
             }
         }
 
+        get background(): BackgroundEntity {
+            return this.$props.selectedEntity;
+        }
+
         rotateLeft() {
-            this.$store.dispatch('document/updateBackgroundInPlace',
-                {background: this.$props.selectedEntity,
-                    update: (background: BackgroundEntity) =>
-                        ({rotation: ((background.rotation - 45) % 360 + 360) % 360 }),
-                });
+            this.background.rotation = ((this.background.rotation - 45) % 360 + 360) % 360;
             this.$store.dispatch('document/commit');
         }
 
         rotateRight() {
-            this.$store.dispatch('document/updateBackgroundInPlace',
-                {background: this.$props.selectedEntity,
-                    update: (background: BackgroundEntity) =>
-                        ({ rotation: ((background.rotation + 45) % 360 + 360) % 360 }),
-                });
+            this.background.rotation = ((this.background.rotation + 45) % 360 + 360) % 360;
             this.$store.dispatch('document/commit');
         }
 
@@ -275,10 +268,7 @@
         pointAClick() {
             this.deployPointTool((worldCoord: Coord) => {
                 const d: DrawableObject = this.$props.selectedObject;
-                this.$store.dispatch('document/updateBackgroundInPlace',
-                    {background: this.$props.selectedEntity,
-                        update: () => ({ pointA: d.toObjectCoord(worldCoord)}),
-                    });
+                this.background.pointA = d.toObjectCoord(worldCoord);
                 this.$store.dispatch('document/commit');
             });
         }
@@ -286,10 +276,7 @@
         pointBClick() {
             this.deployPointTool((worldCoord: Coord) => {
                 const d: DrawableObject = this.$props.selectedObject;
-                this.$store.dispatch('document/updateBackgroundInPlace',
-                    {background: this.$props.selectedEntity,
-                        update: () => ({ pointB: d.toObjectCoord(worldCoord)}),
-                    });
+                this.background.pointB = d.toObjectCoord(worldCoord);
                 this.$store.dispatch('document/commit');
             });
         }

@@ -24,43 +24,44 @@
 // columns
 
 export function Column( typeOrOptions?: any, options?: any) {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
+
     };
 }
 
 
 export function CreateDateColumn( options?: any) {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function ObjectIdColumn( columnOptions?: any) {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function PrimaryColumn( typeOrOptions?: any, options?: any) {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function PrimaryGeneratedColumn( options?: any) {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function UpdateDateColumn( options?: any) {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function VersionColumn( options?: any) {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
@@ -68,19 +69,19 @@ export function VersionColumn( options?: any) {
 // entities
 
 export function ChildEntity( tableName?: any, options?: any) {
-    return function ( object?: any) {
+    return function( object?: any) {
     };
 }
 
 
 export function Entity( name?: any, options?: any) {
-    return function ( object?: any) {
+    return function( object?: any) {
     };
 }
 
 
 export function TableInheritance( type?: any) {
-    return function ( object?: any) {
+    return function( object?: any) {
     };
 }
 
@@ -88,49 +89,49 @@ export function TableInheritance( type?: any) {
 // listeners
 
 export function AfterInsert() {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function AfterLoad() {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function AfterRemove() {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function AfterUpdate() {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function BeforeInsert() {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function BeforeRemove() {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function BeforeUpdate() {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function EventSubscriber() {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
@@ -138,49 +139,49 @@ export function EventSubscriber() {
 // relations
 
 export function JoinColumn( options?: any) {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function JoinTable( options?: any) {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function ManyToMany( typeFunction?: any, inverseSideOrOptions?: any, options?: any) {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function ManyToOne( typeFunction?: any, inverseSideOrOptions?: any, options?: any, type?: any) {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function OneToMany( typeFunction?: any, inverseSideOrOptions?: any, options?: any) {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function OneToOne( typeFunction?: any, inverseSideOrOptions?: any, options?: any) {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function RelationCount( relation?: any) {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function RelationId( relation?: any) {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
@@ -188,31 +189,31 @@ export function RelationId( relation?: any) {
 // tree
 
 export function Tree( name?: any, options?: any) {
-    return function ( object?: any) {
+    return function( object?: any) {
     };
 }
 
 
 export function TreeChildren( options?: any) {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function TreeChildrenCount( options?: any) {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function TreeLevelColumn() {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function TreeParent( options?: any) {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
@@ -220,13 +221,13 @@ export function TreeParent( options?: any) {
 // other
 
 export function Generated( options?: any) {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 
 
 export function Index( options?: any) {
-    return function ( object?: any, propertyName?: any) {
+    return function( object?: any, propertyName?: any) {
     };
 }
 

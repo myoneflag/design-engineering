@@ -51,62 +51,62 @@
 </template>
 
 <script lang="ts">
-    import {Component, Vue} from 'vue-property-decorator';
-    import MainNavBar from '../../src/components/MainNavBar.vue';
-    import {State, Action, Getter} from 'vuex-class';
-    import {DocumentState} from '../../src/store/document/types';
-    import {Document} from "../../../backend/src/entity/Document";
-    import {createDocument, getDocuments} from "../api/document";
-    import {User} from "../../../backend/src/entity/User";
+import {Component, Vue} from 'vue-property-decorator';
+import MainNavBar from '../../src/components/MainNavBar.vue';
+import {State, Action, Getter} from 'vuex-class';
+import {DocumentState} from '../../src/store/document/types';
+import {Document} from "../../../backend/src/entity/Document";
+import {createDocument, getDocuments} from "../api/document";
+import {User} from "../../../backend/src/entity/User";
 
-    @Component({
-        components: {
-            MainNavBar,
-        },
-    })
-    export default class Home extends Vue {
-        documents: Document[] = [];
-        loaded: boolean = false;
+@Component({
+    components: {
+        MainNavBar,
+    },
+})
+export default class Home extends Vue {
+    documents: Document[] = [];
+    loaded: boolean = false;
 
-        mounted() {
-            // fill documents
-            getDocuments().then((res) => {
+    mounted() {
+        // fill documents
+        getDocuments().then((res) => {
+            if (res.success) {
+                this.documents.splice(0, this.documents.length, ...res.data);
+                this.loaded = true;
+            } else {
+                this.$bvToast.toast(res.message, {
+                    variant: 'danger',
+                    title: 'Error retrieving document list',
+                });
+            }
+        });
+    }
+
+    get profile(): User {
+        return this.$store.getters['profile/profile'];
+    }
+
+    createDocument() {
+        if (this.profile.organization) {
+            createDocument(this.profile.organization.id).then((res) => {
                 if (res.success) {
-                    this.documents.splice(0, this.documents.length, ...res.data);
-                    this.loaded = true;
+                    this.$router.push('/document/' + res.data.id);
                 } else {
                     this.$bvToast.toast(res.message, {
                         variant: 'danger',
-                        title: 'Error retrieving document list',
+                        title: 'Error creating new document',
                     });
                 }
-            })
-        }
-
-        get profile(): User {
-            return this.$store.getters['profile/profile'];
-        }
-
-        createDocument() {
-            if (this.profile.organization) {
-                createDocument(this.profile.organization.id).then((res) => {
-                    if (res.success) {
-                        this.$router.push('/document/' + res.data.id);
-                    } else {
-                        this.$bvToast.toast(res.message, {
-                            variant: 'danger',
-                            title: 'Error creating new document',
-                        });
-                    }
-                })
-            } else {
-                this.$bvToast.toast('You need to belong to an organization to create a document', {
-                    variant: 'danger',
-                    title: 'Error creating new document',
-                });
-            }
+            });
+        } else {
+            this.$bvToast.toast('You need to belong to an organization to create a document', {
+                variant: 'danger',
+                title: 'Error creating new document',
+            });
         }
     }
+}
 </script>
 
 <style lang="less">

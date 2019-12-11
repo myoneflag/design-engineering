@@ -57,55 +57,55 @@
 </template>
 
 <script lang="ts">
-    import Component from 'vue-class-component';
-    import Vue from 'vue';
-    import axios from 'axios';
-    import router from '../../src/router';
-    import {changePasswords} from "../../src/api/logins";
+import Component from 'vue-class-component';
+import Vue from 'vue';
+import axios from 'axios';
+import router from '../../src/router';
+import {changePasswords} from "../../src/api/logins";
 
-    @Component
-    export default class ChangePassword extends Vue {
-        currentPassword: string = '';
-        newPassword1: string = '';
-        newPassword2: string = '';
+@Component
+export default class ChangePassword extends Vue {
+    currentPassword: string = '';
+    newPassword1: string = '';
+    newPassword2: string = '';
 
-        confirm() {
-            if (this.newPassword1 !== this.newPassword2) {
-                (this as any).$bvToast.toast('Passwords didn\'t match', {
-                    title: 'Please try again',
-                    variant: 'info',
-                    solid: true,
-                });
-            } else {
-                changePasswords(this.currentPassword, this.newPassword1)
-                .then(res => {
-                    if (res.success) {
-                        this.$cookies.set('session-id', res.data);
+    confirm() {
+        if (this.newPassword1 !== this.newPassword2) {
+            (this as any).$bvToast.toast('Passwords didn\'t match', {
+                title: 'Please try again',
+                variant: 'info',
+                solid: true,
+            });
+        } else {
+            changePasswords(this.currentPassword, this.newPassword1)
+            .then((res) => {
+                if (res.success) {
+                    this.$cookies.set('session-id', res.data);
 
-                        if (this.$route.query.next) {
-                            router.push(this.$route.query.next as string).then(() =>
-                                (this as any).$bvToast.toast('Password change succeeded', {
-                                    variant: 'success',
-                                }),
-                            );
-                        } else {
-                            router.push({name: 'home'}).then(() =>
-                                (this as any).$bvToast.toast('Password change succeeded', {
-                                    variant: 'success',
-                                }),
-                            );
-                        }
+                    if (this.$route.query.next) {
+                        router.push(this.$route.query.next as string).then(() =>
+                            (this as any).$bvToast.toast('Password change succeeded', {
+                                variant: 'success',
+                            }),
+                        );
                     } else {
-                        (this as any).$bvToast.toast(res.message, {
-                            title: 'Password Change Error',
-                            variant: 'danger',
-                            solid: true,
-                        });
+                        router.push({name: 'home'}).then(() =>
+                            (this as any).$bvToast.toast('Password change succeeded', {
+                                variant: 'success',
+                            }),
+                        );
                     }
-                }).catch(() => {
-                    (this as any).$bvToast.toast('Something went wrong...');
-                });
-            }
+                } else {
+                    (this as any).$bvToast.toast(res.message, {
+                        title: 'Password Change Error',
+                        variant: 'danger',
+                        solid: true,
+                    });
+                }
+            }).catch(() => {
+                (this as any).$bvToast.toast('Something went wrong...');
+            });
         }
     }
+}
 </script>

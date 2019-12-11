@@ -1,4 +1,7 @@
-import {CalculatableEntityConcrete, ConnectableEntityConcrete} from '../../../../src/store/document/entities/concrete-entity';
+import {
+    CalculatableEntityConcrete,
+    ConnectableEntityConcrete
+} from '../../../../src/store/document/entities/concrete-entity';
 import {DrawingContext} from '../../../../src/htmlcanvas/lib/types';
 import {CalculationFilter, CalculationFilters, Coord} from '../../../../src/store/document/types';
 import {CalculationData, CalculationField} from '../../../../src/store/document/calculations/calculation-field';
@@ -222,7 +225,10 @@ export function CalculatedObject<T extends new (...args: any[])
             if (s > TEXT_MAX_SCALE) {
                 newScale = 1 / TEXT_MAX_SCALE;
             } else if (s > SCALE_GRADIENT_MIN) {
-                newScale = (1 * (s - SCALE_GRADIENT_MIN) + 0.7 * (TEXT_MAX_SCALE - s)) / (TEXT_MAX_SCALE - SCALE_GRADIENT_MIN) / s;
+                newScale =
+                    (1 * (s - SCALE_GRADIENT_MIN) + 0.7 * (TEXT_MAX_SCALE - s)) /
+                    (TEXT_MAX_SCALE - SCALE_GRADIENT_MIN) /
+                    s;
             } else {
                 newScale = MIN_SCALE / s;
             }

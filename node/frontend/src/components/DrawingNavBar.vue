@@ -8,7 +8,7 @@
         <b-navbar-nav style="padding-left: 20px">
 
             <span v-if="titleEditing && !loading">
-                <b-input v-model="title"
+                <b-input v-model="document.drawing.generalInfo.title"
                               v-autowidth="{maxWidth: '960px', minWidth: '20px', comfortZone: 0}"
                               v-on:blur="commit"
                               @keyup.enter="commit"
@@ -21,7 +21,7 @@
                     :to="{name: 'drawing'}"
                     v-else
                     @dblclick="titleEditing = true"
-                    v-b-tooltip.hover :title="title"
+                    v-b-tooltip.hover :title="document.drawing.generalInfo.title"
             >
                 {{shortTitle}}
             </b-navbar-brand>
@@ -41,7 +41,7 @@
 
 <script lang="ts">
     import {Vue } from 'vue-property-decorator';
-    import { DocumentState } from '../../src/store/document/types';
+    import { DocumentState } from '../store/document/types';
     import { State } from 'vuex-class';
     import Component from 'vue-class-component';
     import ProfileMenuItem from '../../src/components/ProfileMenuItem.vue';
@@ -60,16 +60,12 @@
             return this.$store.getters['profile/profile'];
         }
 
-        get title() {
-            return this.$store.getters['document/title'];
-        }
-
-        set title(value: string) {
-            this.$store.dispatch('document/setTitle', value);
+        get document(): DocumentState {
+            return this.$store.getters['document/document'];
         }
 
         get shortTitle() {
-            let title = this.title;
+            let title = this.document.drawing.generalInfo.title;
             if (title.length > 50) {
                 title = title.slice(0, 40) + '...' + title.slice(title.length - 7, title.length);
             }

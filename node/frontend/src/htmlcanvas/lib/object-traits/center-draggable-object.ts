@@ -71,7 +71,6 @@ export default function CenterDraggableObject<T extends new (...args: any[]) =>
                         const dest = this.objectStore.get(draggedOn[0].uid);
                         if (dest instanceof BackedConnectable || dest instanceof Pipe) {
                             moveOnto(this, dest, context);
-                            context.processDocument(false);
                         } else {
                             throw new Error('Somehow trying to move onto an incompatible entity');
                         }

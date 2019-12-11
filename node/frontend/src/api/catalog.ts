@@ -4,7 +4,6 @@ import {APIResult} from "../../../common/src/api/types";
 
 export async function loadCatalog(docId: number): Promise<APIResult<Catalog>> {
     try {
-        console.log('loading catalog');
         return (await axios.get('/api/catalog/', { params: { document: docId }})).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {

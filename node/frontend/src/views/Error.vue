@@ -95,61 +95,61 @@
 </template>
 
 <script lang="ts">
-    import Vue from 'vue';
-    import Component from "vue-class-component";
-    import {Route} from "vue-router";
-    import MainNavBar from "../components/MainNavBar.vue";
-    import {getErrorReport, updateErrorReport} from "../api/error-report";
-    import {ErrorReport, ErrorStatus} from "../../../backend/src/entity/Error";
+import Vue from 'vue';
+import Component from "vue-class-component";
+import {Route} from "vue-router";
+import MainNavBar from "../components/MainNavBar.vue";
+import {getErrorReport, updateErrorReport} from "../api/error-report";
+import {ErrorReport, ErrorStatus} from "../../../backend/src/entity/Error";
 
-    @Component({
-        components: {MainNavBar},
-        watch: {
-            $route(to, from) {
-                (this as ViewError).updateId(to.params.id);
+@Component({
+    components: {MainNavBar},
+    watch: {
+        $route(to, from) {
+            (this as ViewError).updateId(to.params.id);
+        },
+    },
+})
+export default class ViewError extends Vue {
+    errorReport: ErrorReport | null = null;
+
+    updateId(id: string) {
+        getErrorReport(Number(id)).then((res) => {
+            if (res.success) {
+                this.errorReport = res.data;
+            } else {
+                this.$bvToast.toast(res.message, {
+                    title: "Error retrieving data about error (kek)",
+                    variant: "danger",
+                });
             }
-        }
-    })
-    export default class ViewError extends Vue {
-        errorReport: ErrorReport | null = null;
+        });
+    }
 
-        updateId(id: string) {
-            getErrorReport(Number(id)).then((res) => {
+    mounted() {
+        this.updateId(this.$route.params.id);
+    }
+
+    save() {
+        if (this.errorReport) {
+            updateErrorReport(this.errorReport.id, this.errorReport.status).then((res) => {
                 if (res.success) {
-                    this.errorReport = res.data;
+                    this.$bvToast.toast("Success", {
+                        title: "Updated",
+                        variant: "success",
+                    });
                 } else {
                     this.$bvToast.toast(res.message, {
-                        title: "Error retrieving data about error (kek)",
+                        title: "Error saving organization",
                         variant: "danger",
                     });
                 }
-            })
-        }
-
-        mounted() {
-            this.updateId(this.$route.params.id);
-        }
-
-        save() {
-            if (this.errorReport) {
-                updateErrorReport(this.errorReport.id, this.errorReport.status).then((res) => {
-                    if (res.success) {
-                        this.$bvToast.toast("Success", {
-                            title: "Updated",
-                            variant: "success",
-                        });
-                    } else {
-                        this.$bvToast.toast(res.message, {
-                            title: "Error saving organization",
-                            variant: "danger",
-                        });
-                    }
-                })
-            }
-        }
-
-        get ErrorStatus() {
-            return ErrorStatus;
+            });
         }
     }
+
+    get ErrorStatus() {
+        return ErrorStatus;
+    }
+}
 </script>

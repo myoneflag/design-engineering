@@ -147,8 +147,9 @@ import {EntityType} from "../../../src/store/document/entities/types";
                 // noinspection JSUnfilteredForInLoop
                 if (filters.hasOwnProperty(eType)) {
                     for (const prop in filters[eType].filters) {
-                        // noinspection JSUnfilteredForInLoop
-                        this.onCheck(eType, prop, filters[eType].filters[prop].enabled, false);
+                        if (filters[eType].filters.hasOwnProperty(prop)) {
+                            this.onCheck(eType, prop, filters[eType].filters[prop].enabled, false);
+                        }
                     }
                     this.onObjectCheck(eType, filters[eType].enabled, false);
                 }

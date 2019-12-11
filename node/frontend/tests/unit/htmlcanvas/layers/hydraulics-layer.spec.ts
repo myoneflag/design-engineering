@@ -13,7 +13,7 @@ describe('hydraulics-layer.ts', () => {
 
     beforeEach(() => {
         canvas = createDummyCanvas(createExampleDocument());
-        canvas.hydraulicsLayer.update(canvas.document);
+        canvas.hydraulicsLayer.resetDocument(canvas.document);
     });
 
     it ('should only accept drawable entities', () => {

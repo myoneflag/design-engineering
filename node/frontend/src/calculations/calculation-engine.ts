@@ -5,7 +5,10 @@ import PipeEntity, {fillPipeDefaultFields, makePipeFields} from '../../src/store
 import {makeValveFields} from '../../src/store/document/entities/fitting-entity';
 import {makeFlowSourceFields} from '../../src/store/document/entities/flow-source-entity';
 import TmvEntity, {makeTMVFields, SystemNodeEntity} from '../../src/store/document/entities/tmv/tmv-entity';
-import FixtureEntity, {fillFixtureFields, makeFixtureFields} from '../../src/store/document/entities/fixtures/fixture-entity';
+import FixtureEntity, {
+    fillFixtureFields,
+    makeFixtureFields
+} from '../../src/store/document/entities/fixtures/fixture-entity';
 import PopupEntity from '../../src/store/document/entities/calculations/popup-entity';
 import {DemandType} from '../../src/calculations/types';
 import Graph, {serializeValue} from '../../src/calculations/graph';
@@ -201,7 +204,7 @@ export default class CalculationEngine {
                 .filter((o) => o.type === EntityType.FLOW_SOURCE)
                 .map((o) => ({connectable: o.uid, connection: SELF_CONNECTION}));
             this.sizeDefiniteTransports(sources);
-            //this.sizeRingsAndRoots(sources);
+            // this.sizeRingsAndRoots(sources);
             this.calculateAllPointPressures(sources);
             this.fillPressureDropFields();
             this.createWarnings();
@@ -1011,13 +1014,17 @@ export default class CalculationEngine {
             throw new Error('Material doesn\'t exist anymore ' + JSON.stringify(pipeFilled));
         }
 
-        const a = lowerBoundTable(table.pipesBySize, pipeFilled.calculation!.optimalInnerPipeDiameterMM!, (p) => {
-            const v = parseCatalogNumberExact(p.diameterInternalMM);
-            if (!v) {
-                throw new Error('no nominal diameter');
+        const a = lowerBoundTable(
+            table.pipesBySize,
+            pipeFilled.calculation!.optimalInnerPipeDiameterMM!,
+            (p) => {
+                const v = parseCatalogNumberExact(p.diameterInternalMM);
+                if (!v) {
+                    throw new Error('no nominal diameter');
+                }
+                return v;
             }
-            return v;
-        });
+        );
 
         if (!a) {
             // Todo: Warn No pipe big enough
@@ -1130,7 +1137,7 @@ export default class CalculationEngine {
                 // TODO: Info that flow rate is ambiguous, but some flow is exclusive to us
             } else {
                 // we have successfully calculated the pipe's loading units.
-                this.configureEntityForPSD(object.entity, exclusivePsdU, flowEdge);// ambiguous
+                this.configureEntityForPSD(object.entity, exclusivePsdU, flowEdge); // ambiguous
             }
         } else {
             // zero exclusive to us. Work out whether this is because we don't have any fixture demand.
@@ -1216,7 +1223,8 @@ export default class CalculationEngine {
                                 o.entity.calculation!.flowRateLS =
                                     Math.min(p1.entity.calculation!.peakFlowRate, p2.entity.calculation!.peakFlowRate);
 
-                                if (o.entity.type !== EntityType.FLOW_SOURCE && o.entity.type !== EntityType.SYSTEM_NODE) {
+                                if (o.entity.type !== EntityType.FLOW_SOURCE &&
+                                    o.entity.type !== EntityType.SYSTEM_NODE) {
                                     const dir1 = head2kpa(
                                         o.getFrictionHeadLoss(
                                             this,
@@ -1225,7 +1233,11 @@ export default class CalculationEngine {
                                             {connectable: o.uid, connection: o.entity.connections[1]},
                                             true,
                                         ),
-                                        getFluidDensityOfSystem(StandardFlowSystemUids.ColdWater, this.doc, this.catalog)!,
+                                        getFluidDensityOfSystem(
+                                            StandardFlowSystemUids.ColdWater,
+                                            this.doc,
+                                            this.catalog
+                                        )!,
                                         this.ga,
                                     );
                                     const dir2 = head2kpa(
@@ -1236,7 +1248,11 @@ export default class CalculationEngine {
                                             {connectable: o.uid, connection: o.entity.connections[0]},
                                             true,
                                         ),
-                                        getFluidDensityOfSystem(StandardFlowSystemUids.ColdWater, this.doc, this.catalog)!,
+                                        getFluidDensityOfSystem(
+                                            StandardFlowSystemUids.ColdWater,
+                                            this.doc,
+                                            this.catalog
+                                        )!,
                                         this.ga,
                                     );
                                     o.entity.calculation!.pressureDropKPA = Math.min(dir1, dir2);

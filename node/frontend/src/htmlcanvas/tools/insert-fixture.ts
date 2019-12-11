@@ -105,7 +105,6 @@ export default function insertFixture(
                 context.$store.dispatch('document/addEntity', warmEntity);
             }
 
-            context.processDocument();
         },
         (wc: Coord) => {
 

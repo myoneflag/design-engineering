@@ -28,7 +28,15 @@ export async function getUser(username: string): Promise<APIResult<User>> {
     }
 }
 
-export async function createUser(username: string, name: string, email: string | undefined, subscribed: boolean, password: string, accessLevel: AccessLevel, organization?: string): Promise<APIResult<User>> {
+export async function createUser(
+    username: string,
+    name: string,
+    email: string | undefined,
+    subscribed: boolean,
+    password: string,
+    accessLevel: AccessLevel,
+    organization?: string
+): Promise<APIResult<User>> {
     try {
         return (await axios.post('/api/users/', {
             username, name, email, password, accessLevel, organization, subscribed,
@@ -42,7 +50,14 @@ export async function createUser(username: string, name: string, email: string |
     }
 }
 
-export async function updateUser(username: string, name: string, email: string | undefined, subscribed: boolean, accessLevel: AccessLevel, organization?: string): Promise<APIResult<User>> {
+export async function updateUser(
+    username: string,
+    name: string,
+    email: string | undefined,
+    subscribed: boolean,
+    accessLevel: AccessLevel,
+    organization?: string
+): Promise<APIResult<User>> {
     try {
         return (await axios.put('/api/users/' + username, {
             name, accessLevel, email, organization, subscribed,

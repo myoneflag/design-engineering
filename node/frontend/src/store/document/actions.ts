@@ -17,45 +17,6 @@ export const actions: ActionTree<DocumentState, RootState> = {
         commit('applyOperation', op);
     },
 
-    setTitle({ commit, state}, title: string): any {
-        commit('setTitle', title);
-    },
-
-    addBackground({commit, state}, {background} ): any {
-        commit('addBackground', {background});
-    },
-
-    updateBackground({commit, state}, {background, index}): any {
-        commit('updateBackground', {background, index});
-    },
-
-    deleteBackground({commit, state}, background): any {
-        const index = state.drawing.backgrounds.findIndex((b) => b.uid === background.uid);
-        if (index === -1) {
-            throw new Error('tried to delete background ' + JSON.stringify(background) + ' but it doesn\'t exist');
-        }
-        commit('deleteBackground', background);
-    },
-
-    updateBackgroundInPlace(
-        {commit, state},
-        {background, update}: { background: BackgroundEntity, update: (background: BackgroundEntity) => object},
-    ) {
-        const index = state.drawing.backgrounds.findIndex((b) => b.uid === background.uid);
-        if (index === -1) {
-            throw new Error('tried to update background ' + JSON.stringify(background) + ' but it doesn\'t exist');
-        }
-        commit('updateBackgroundInPlace', {background, update: update(state.drawing.backgrounds[index])});
-    },
-
-    scaleBackground({commit, state}, {background, factor}) {
-        const index = state.drawing.backgrounds.findIndex((b) => b.uid === background.uid);
-        if (index === -1) {
-            throw new Error('tried to scale background ' + JSON.stringify(background) + ' but it doesn\'t exist');
-        }
-        commit('scaleBackground', {background, factor});
-    },
-
     addEntity({commit, state}, entity) {
         commit('addEntity', entity);
     },
@@ -68,7 +29,6 @@ export const actions: ActionTree<DocumentState, RootState> = {
     commit({commit, state}) {
 
         if (!_.isEqual(state.drawing.generalInfo, state.committedDrawing.generalInfo)) {
-            console.log('Updating general info');
             updateDocument(state.documentId, undefined, state.drawing.generalInfo);
         }
 
@@ -88,11 +48,10 @@ export const actions: ActionTree<DocumentState, RootState> = {
 
         state.optimisticHistory.push(...diff);
 
-        submitOperation(state.documentId, commit, diff);/*.catch((e) => {
-            window.alert('There is a connection issue with the server. Please refresh. \n' + e.message + "\n" + e.trace);
+        submitOperation(state.documentId, commit, diff); /*.catch((e) => {
+            window.alert('There is a connection issue with the server. Please refresh. \n' +
+             e.message + "\n" + e.trace);
         });*/
-
-        MainEventBus.$emit('ot-applied');
     },
 
     setId({commit, state}, payload) {

@@ -41,7 +41,6 @@ export default interface CanvasContext {
     ): DrawableEntityConcrete[] | null;
 
     scheduleDraw(): void;
-    processDocument(redraw?: boolean): void;
 
     deleteEntity(object: BaseBackedObject, throwIfNotFound?: boolean): void;
 }

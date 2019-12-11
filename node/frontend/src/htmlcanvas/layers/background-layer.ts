@@ -46,8 +46,13 @@ export default class BackgroundLayer extends LayerImplementation {
             });
         }
     }
+    select(objects: BaseBackedObject[] | string[], mode: SelectMode): void {
+        super.select(objects, mode);
 
-    update(doc: DocumentState) {
+        this.updateSelectionBox();
+    }
+
+    resetDocument(doc: DocumentState) {
         this.resizeBox = null; // We regenerate this if needed.
 
         const existingSids: string[] = [];

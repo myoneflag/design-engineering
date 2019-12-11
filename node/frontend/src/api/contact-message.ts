@@ -2,7 +2,11 @@ import axios from 'axios';
 import {APIResult} from "../../../common/src/api/types";
 import {ContactMessage} from "../../../backend/src/entity/ContactMessage";
 
-export async function sendContactMessage(name: string, email: string, message: string): Promise<APIResult<ContactMessage>> {
+export async function sendContactMessage(
+    name: string,
+    email: string,
+    message: string
+): Promise<APIResult<ContactMessage>> {
     try {
         return (await axios.post('/api/contacts', {
             name,

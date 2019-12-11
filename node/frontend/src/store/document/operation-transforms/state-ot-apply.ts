@@ -77,10 +77,6 @@ export const applyOtOnState = (state: DrawingState, op: OT.OperationTransform) =
             assert(_.isArray(arr));
 
             const itemIndex = arr.findIndex((v: WithID) => v.uid === obj.uid);
-            if (itemIndex !== top.index) {
-                console.log("item index to delete doesn't match. Expected :\n" + JSON.stringify(top) + " but was found on index " + itemIndex)
-                console.log("target array is " + JSON.stringify(arr));
-            }
             assert(itemIndex === top.index);
             arr.splice(itemIndex, 1);
         });

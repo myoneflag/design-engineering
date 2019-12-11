@@ -42,8 +42,6 @@ export default function insertValve(context: CanvasContext, system: FlowSystemPa
                 pipe = context.objectStore.get(pipeE.uid) as Pipe;
                 // Project onto pipe
                 addValveAndSplitPipe(context, pipe, wc, system.uid, 50);
-
-                context.processDocument();
             } else {
                 pipe = null;
             }

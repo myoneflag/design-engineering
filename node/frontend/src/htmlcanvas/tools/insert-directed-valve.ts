@@ -60,7 +60,6 @@ export default function insertDirectedValve(
                 if (flipped) {
                     (context.objectStore.get(valveEntity.uid)! as DirectedValve).flip();
                 }
-                context.processDocument();
             } else {
 
                 pipe = null;

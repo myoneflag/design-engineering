@@ -52,64 +52,64 @@
 </template>
 
 <script lang="ts">
-    import {Component} from "vue-property-decorator";
-    import Vue from 'vue';
-    import {User} from "../../../backend/src/entity/User";
-    import MainNavBar from "../../src/components/MainNavBar.vue";
-    import {ErrorReport, ErrorStatus} from "../../../backend/src/entity/Error";
-    import {getErrorReports} from "../api/error-report";
+import {Component} from "vue-property-decorator";
+import Vue from 'vue';
+import {User} from "../../../backend/src/entity/User";
+import MainNavBar from "../../src/components/MainNavBar.vue";
+import {ErrorReport, ErrorStatus} from "../../../backend/src/entity/Error";
+import {getErrorReports} from "../api/error-report";
 
-    @Component({
-        components: {
-            MainNavBar,
-        },
-    })
-    export default class Errors extends Vue {
-        errors: ErrorReport[] = [];
-        isLoaded: boolean = false;
-        triedToLoad = new Set<number>();
-        filters: ErrorStatus[] = [ ErrorStatus.NEW, ErrorStatus.DOING ];
+@Component({
+    components: {
+        MainNavBar,
+    },
+})
+export default class Errors extends Vue {
+    errors: ErrorReport[] = [];
+    isLoaded: boolean = false;
+    triedToLoad = new Set<number>();
+    filters: ErrorStatus[] = [ ErrorStatus.NEW, ErrorStatus.DOING ];
 
-        mounted() {
-            // fill documents
-            this.loadMoreErrors();
-        }
-
-        get profile(): User {
-            return this.$store.getters["profile/profile"];
-        }
-
-        loadMoreErrors() {
-            this.triedToLoad.add(this.errors.length);
-            getErrorReports(this.filters, this.errors.length, 50).then((res) => {
-                if (res.success) {
-                    this.errors.push(...res.data);
-                    this.isLoaded = true;
-                } else {
-                    this.$bvToast.toast(res.message, {
-                        variant: 'danger',
-                        title: 'Error retrieving error list (How ironic)',
-                    });
-                }
-            })
-        }
-
-        get ErrorStatus() {
-            return ErrorStatus;
-        }
-
-        toggleFilter(val: ErrorStatus) {
-            if (this.filters.includes(val)) {
-                this.filters.splice(this.filters.indexOf(val), 1);
-            } else {
-                this.filters.push(val);
-            }
-            this.errors.splice(0);
-            this.triedToLoad.clear();
-            this.isLoaded = false;
-            this.loadMoreErrors();
-        }
+    mounted() {
+        // fill documents
+        this.loadMoreErrors();
     }
+
+    get profile(): User {
+        return this.$store.getters["profile/profile"];
+    }
+
+    loadMoreErrors() {
+        this.triedToLoad.add(this.errors.length);
+        getErrorReports(this.filters, this.errors.length, 50).then((res) => {
+            if (res.success) {
+                this.errors.push(...res.data);
+                this.isLoaded = true;
+            } else {
+                this.$bvToast.toast(res.message, {
+                    variant: 'danger',
+                    title: 'Error retrieving error list (How ironic)',
+                });
+            }
+        });
+    }
+
+    get ErrorStatus() {
+        return ErrorStatus;
+    }
+
+    toggleFilter(val: ErrorStatus) {
+        if (this.filters.includes(val)) {
+            this.filters.splice(this.filters.indexOf(val), 1);
+        } else {
+            this.filters.push(val);
+        }
+        this.errors.splice(0);
+        this.triedToLoad.clear();
+        this.isLoaded = false;
+        this.loadMoreErrors();
+    }
+}
 </script>
 
 <style lang="less">

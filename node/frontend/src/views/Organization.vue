@@ -41,54 +41,54 @@
 </template>
 
 <script lang="ts">
-    import Vue from 'vue';
-    import Component from "vue-class-component";
-    import {Route} from "vue-router";
-    import MainNavBar from "../components/MainNavBar.vue";
-    import {getOrganization, updateOrganization} from "../api/organizations";
-    import {Organization as IOrganization} from '../../../backend/src/entity/Organization';
+import Vue from 'vue';
+import Component from "vue-class-component";
+import {Route} from "vue-router";
+import MainNavBar from "../components/MainNavBar.vue";
+import {getOrganization, updateOrganization} from "../api/organizations";
+import {Organization as IOrganization} from '../../../backend/src/entity/Organization';
 
-    @Component({
-        components: {MainNavBar},
-        watch: {
-            $route(to, from) {
-                (this as Organization).updateId(to.params.id);
+@Component({
+    components: {MainNavBar},
+    watch: {
+        $route(to, from) {
+            (this as Organization).updateId(to.params.id);
+        },
+    },
+})
+export default class Organization extends Vue {
+    org: IOrganization | null = null;
+
+    updateId(id: string) {
+        getOrganization(id).then((res) => {
+            if (res.success) {
+                this.org = res.data;
+            } else {
+                this.$bvToast.toast(res.message, {
+                    title: "Error retrieving data about organization",
+                    variant: "danger",
+                });
             }
-        }
-    })
-    export default class Organization extends Vue {
-        org: IOrganization | null = null;
+        });
+    }
 
-        updateId(id: string) {
-            getOrganization(id).then((res) => {
+    mounted() {
+        this.updateId(this.$route.params.id);
+    }
+
+    save() {
+        if (this.org) {
+            updateOrganization(this.org.id, this.org.name).then((res) => {
                 if (res.success) {
-                    this.org = res.data;
+                    this.$router.push('/organizations');
                 } else {
                     this.$bvToast.toast(res.message, {
-                        title: "Error retrieving data about organization",
+                        title: "Error saving organization",
                         variant: "danger",
                     });
                 }
-            })
-        }
-
-        mounted() {
-            this.updateId(this.$route.params.id);
-        }
-
-        save() {
-            if (this.org) {
-                updateOrganization(this.org.id, this.org.name).then((res) => {
-                    if (res.success) {
-                        this.$router.push('/organizations');
-                    } else {
-                        this.$bvToast.toast(res.message, {
-                            title: "Error saving organization",
-                            variant: "danger",
-                        });
-                    }
-                })
-            }
+            });
         }
     }
+}
 </script>

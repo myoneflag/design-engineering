@@ -83,69 +83,76 @@ import {AccessLevel} from "../../../backend/src/entity/User";
 </template>
 
 <script lang="ts">
-    import Vue from 'vue';
-    import Component from "vue-class-component";
-    import MainNavBar from "../components/MainNavBar.vue";
-    import {AccessLevel, User as IUser} from '../../../backend/src/entity/User';
-    import {createUser} from "../api/users";
+import Vue from 'vue';
+import Component from "vue-class-component";
+import MainNavBar from "../components/MainNavBar.vue";
+import {AccessLevel, User as IUser} from '../../../backend/src/entity/User';
+import {createUser} from "../api/users";
 
-    @Component({
-        components: {MainNavBar},
-    })
-    export default class CreateUser extends Vue {
-        user: IUser = {
-            accessLevel: AccessLevel.USER,
-            name: "",
-            organization: null,
-            passwordHash: "",
-            username: "",
-            email: "",
-            subscribed: false,
-        };
+@Component({
+    components: {MainNavBar},
+})
+export default class CreateUser extends Vue {
+    user: IUser = {
+        accessLevel: AccessLevel.USER,
+        name: "",
+        organization: null,
+        passwordHash: "",
+        username: "",
+        email: "",
+        subscribed: false,
+    };
 
-        organization: string = "";
-        password: string = "";
+    organization: string = "";
+    password: string = "";
 
-        create() {
-            createUser(this.user.username, this.user.name, this.user.email || undefined, this.user.subscribed, this.password, this.user.accessLevel, this.organization || undefined).then((res) => {
-                if (res.success) {
-                    this.$router.push('/users');
-                } else {
-                    this.$bvToast.toast(res.message, {
-                        title: 'Error creating user',
-                        variant: 'danger',
-                    });
-                }
-            })
-        }
-
-        get profile(): IUser {
-            return this.$store.getters['profile/profile'];
-        }
-
-        get levels() {
-            if (this.profile) {
-                return [
-                    {
-                        name: "SUPERUSER",
-                        level: AccessLevel.SUPERUSER,
-                        disabled: this.profile.accessLevel > AccessLevel.SUPERUSER
-                    },
-                    {name: "ADMIN", level: AccessLevel.ADMIN, disabled: this.profile.accessLevel >= AccessLevel.ADMIN},
-                    {
-                        name: "MANAGER",
-                        level: AccessLevel.MANAGER,
-                        disabled: this.profile.accessLevel > AccessLevel.ADMIN
-                    },
-                    {name: "USER", level: AccessLevel.USER, disabled: this.profile.accessLevel > AccessLevel.ADMIN},
-                ];
+    create() {
+        createUser(
+            this.user.username,
+            this.user.name,
+            this.user.email || undefined, this.user.subscribed,
+            this.password,
+            this.user.accessLevel,
+            this.organization || undefined,
+        ).then((res) => {
+            if (res.success) {
+                this.$router.push('/users');
             } else {
-                return [];
+                this.$bvToast.toast(res.message, {
+                    title: 'Error creating user',
+                    variant: 'danger',
+                });
             }
-        }
+        });
+    }
 
-        get AccessLevel() {
-            return AccessLevel;
+    get profile(): IUser {
+        return this.$store.getters['profile/profile'];
+    }
+
+    get levels() {
+        if (this.profile) {
+            return [
+                {
+                    name: "SUPERUSER",
+                    level: AccessLevel.SUPERUSER,
+                    disabled: this.profile.accessLevel > AccessLevel.SUPERUSER,
+                },
+                {name: "ADMIN", level: AccessLevel.ADMIN, disabled: this.profile.accessLevel >= AccessLevel.ADMIN},
+                {
+                    name: "MANAGER",
+                    level: AccessLevel.MANAGER,
+                    disabled: this.profile.accessLevel > AccessLevel.ADMIN,
+                },
+                {name: "USER", level: AccessLevel.USER, disabled: this.profile.accessLevel > AccessLevel.ADMIN},
+            ];
+        } else {
+            return [];
         }
     }
+
+    get AccessLevel() {
+        return AccessLevel;
+    }
+}
 </script>

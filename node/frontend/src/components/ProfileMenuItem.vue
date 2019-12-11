@@ -30,61 +30,61 @@ import {AccessLevel} from "../../../backend/src/entity/User";
 </template>
 
 <script lang="ts">
-    import Component from 'vue-class-component';
-    import Vue from 'vue';
-    import router from '../../src/router';
-    import {logout} from "../../src/api/logins";
-    import {AccessLevel, User} from "../../../backend/src/entity/User";
+import Component from 'vue-class-component';
+import Vue from 'vue';
+import router from '../../src/router';
+import {logout} from "../../src/api/logins";
+import {AccessLevel, User} from "../../../backend/src/entity/User";
 
-    @Component
-    export default class ProfileMenuItem extends Vue {
-        get profile(): User {
-            const profile = this.$store.getters['profile/profile'];
-            if (!profile) {
-                return {
-                    username: "",
-                    accessLevel: AccessLevel.USER,
-                    organization: {
-                        id: "",
-                        name: "",
-                    },
-                    email: "",
-                    subscribed: false,
+@Component
+export default class ProfileMenuItem extends Vue {
+    get profile(): User {
+        const profile = this.$store.getters['profile/profile'];
+        if (!profile) {
+            return {
+                username: "",
+                accessLevel: AccessLevel.USER,
+                organization: {
+                    id: "",
                     name: "",
-                    passwordHash: "",
-                }
-            } else {
-                return profile;
-            }
-        }
-
-        logout() {
-            logout().then((res) => {
-                if (res.success) {
-                    (this as any).$cookies.remove('session-id');
-                    this.$store.dispatch('profile/setProfile', null).then(() =>
-                        router.push({name: 'login'}),
-                    );
-                } else {
-                    this.$bvToast.toast(res.message, {
-                        title: 'Could not log out',
-                        variant: 'danger',
-                    })
-                }
-            });
-        }
-
-        get AccessLevel() {
-            return AccessLevel;
-        }
-
-        changePassword() {
-            router.push({
-                name: 'changePassword',
-                query: {
-                    next: this.$router.currentRoute.fullPath,
                 },
-            });
+                email: "",
+                subscribed: false,
+                name: "",
+                passwordHash: "",
+            };
+        } else {
+            return profile;
         }
     }
+
+    logout() {
+        logout().then((res) => {
+            if (res.success) {
+                (this as any).$cookies.remove('session-id');
+                this.$store.dispatch('profile/setProfile', null).then(() =>
+                    router.push({name: 'login'}),
+                );
+            } else {
+                this.$bvToast.toast(res.message, {
+                    title: 'Could not log out',
+                    variant: 'danger',
+                });
+            }
+        });
+    }
+
+    get AccessLevel() {
+        return AccessLevel;
+    }
+
+    changePassword() {
+        router.push({
+            name: 'changePassword',
+            query: {
+                next: this.$router.currentRoute.fullPath,
+            },
+        });
+    }
+}
 </script>

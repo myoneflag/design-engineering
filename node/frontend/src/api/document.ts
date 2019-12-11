@@ -5,21 +5,25 @@ import {Document} from "../../../backend/src/entity/Document";
 import {Organization} from "../../../backend/src/entity/Organization";
 import {GeneralInfo} from "../store/document/types";
 
-let wss = new Map<number, WebSocket>();
+const wss = new Map<number, WebSocket>();
 
-export function openDocument(id: number, onOperation: (ot: OT.OperationTransformConcrete) => void, onDeleted: () => void, onLoaded: () => void, onError: (msg: string) => void) {
+export function openDocument(
+    id: number,
+    onOperation: (ot: OT.OperationTransformConcrete) => void,
+    onDeleted: () => void,
+    onLoaded: () => void,
+    onError: (msg: string) => void
+) {
     if (wss.has(id)) {
-        console.log("warning: Document is already open");
-        return;
+        throw new Error("warning: Document is already open");
     }
     const HOST = location.origin.replace(/^https?/, 'wss');
     const ws = new WebSocket(HOST + '/api/documents/' + id + '/websocket');
     wss.set(id, ws);
-    console.log("trying to connect to " + HOST + '/api/documents/' + id + '/websocket');
 
-    ws.onmessage = ((msg: MessageEvent) => {
-        if (msg.type === 'message') {
-            const data: DocumentWSMessage = JSON.parse(msg.data as string);
+    ws.onmessage = ((wsmsg: MessageEvent) => {
+        if (wsmsg.type === 'message') {
+            const data: DocumentWSMessage = JSON.parse(wsmsg.data as string);
             data.forEach((msg) => {
                 switch (msg.type) {
                     case DocumentWSMessageType.OPERATION:
@@ -34,7 +38,8 @@ export function openDocument(id: number, onOperation: (ot: OT.OperationTransform
                 }
             });
         } else {
-            console.log("unknown websocket message type");
+            throw new Error("unknown websocket message type " +
+                JSON.stringify(wsmsg.type) + ' ' + JSON.stringify(wsmsg));
         }
     });
 
@@ -44,10 +49,14 @@ export function openDocument(id: number, onOperation: (ot: OT.OperationTransform
         if (ev.code !== 1000) {
             onError(ev.code + ' ' + ev.reason);
         }
-    }
+    };
 }
 
-export async function updateDocument(id: number, organization: string | undefined, metadata: GeneralInfo | undefined): Promise<APIResult<Document>> {
+export async function updateDocument(
+    id: number,
+    organization: string | undefined,
+    metadata: GeneralInfo | undefined
+): Promise<APIResult<Document>> {
     try {
         return (await axios.put('/api/documents/' + id, {
             organization, metadata,
@@ -63,7 +72,6 @@ export async function updateDocument(id: number, organization: string | undefine
 
 
 export async function closeDocument(id: number) {
-    console.log('closing document ' + id);
     if (wss.has(id)) {
         const ws = wss.get(id)!;
         queues.delete(id);
@@ -76,7 +84,6 @@ export async function closeDocument(id: number) {
 
 export async function sendOperations(id: number, ops: OT.OperationTransformConcrete[]) {
     if (wss.has(id)) {
-        console.log('sending to id ' + id + " " + JSON.stringify(ops));
         await wss.get(id)!.send(JSON.stringify(ops));
     } else {
         throw new Error("Document already closed");

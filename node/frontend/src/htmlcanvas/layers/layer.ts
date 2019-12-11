@@ -20,7 +20,7 @@ export default interface Layer {
     select(objects: BaseBackedObject[], mode: SelectMode): void;
 
     draw(context: DrawingContext, active: boolean, ...args: any[]): any;
-    update(doc: DocumentState): any;
+    resetDocument(doc: DocumentState): any;
     drawSelectionLayer(context: DrawingContext, interactive: DrawableEntityConcrete[] | null): any;
 
     onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult;
@@ -273,7 +273,6 @@ export abstract class LayerImplementation implements Layer {
     }
 
     dragObjects(objects: BaseBackedObject[], context: CanvasContext): void {
-        console.log('is layer draggin? Yes');
         context.isLayerDragging = true;
         const undragged = this.draggedObjects ? this.draggedObjects
             .filter((o) => objects.findIndex((oo) => oo.uid === o.uid) !== -1) : [];
@@ -293,7 +292,6 @@ export abstract class LayerImplementation implements Layer {
                 }
             });
         }
-        console.log('is layer draggin? No');
         context.isLayerDragging = false;
         this.draggedObjects = null;
     }
@@ -414,7 +412,6 @@ export abstract class LayerImplementation implements Layer {
                 true,
             );
         });
-        context.processDocument(false);
         this.onChange();
     }
 
@@ -479,7 +476,7 @@ export abstract class LayerImplementation implements Layer {
         return 0;
     }
 
-    abstract update(doc: DocumentState): any;
+    abstract resetDocument(doc: DocumentState): any;
 }
 
 export interface MultiSelectDragParams {

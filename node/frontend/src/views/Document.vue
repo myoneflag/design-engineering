@@ -7,24 +7,24 @@ import {FileWebsocketMessageType} from "../../src/api/types";
 </template>
 
 <script lang="ts">
-    import Vue from 'vue';
-    import Component from 'vue-class-component';
-    import DrawingNavBar from '../components/DrawingNavBar.vue';
-    import DrawingCanvas from '../../src/components/editor/DrawingCanvas.vue';
+import Vue from 'vue';
+import Component from 'vue-class-component';
+import DrawingNavBar from '../components/DrawingNavBar.vue';
+import DrawingCanvas from '../../src/components/editor/DrawingCanvas.vue';
 
 
-    import sockjs from 'sockjs-client';
-    import Stomp, {Client, Message} from 'stompjs';
-    import {DocumentWSMessage, DocumentWSMessageType} from '../../../common/src/api/types';
-    import {loadCatalog} from '../../src/api/catalog';
-    import LoadingScreen from '../../src/views/LoadingScreen.vue';
-    import {Catalog} from '../../src/store/catalog/types';
-    import {DocumentState} from '../../src/store/document/types';
-    import {closeDocument, openDocument} from "../../src/api/document";
-    import {MainEventBus} from "../store/main-event-bus";
+import sockjs from 'sockjs-client';
+import Stomp, {Client, Message} from 'stompjs';
+import {DocumentWSMessage, DocumentWSMessageType} from '../../../common/src/api/types';
+import {loadCatalog} from '../../src/api/catalog';
+import LoadingScreen from '../../src/views/LoadingScreen.vue';
+import {Catalog} from '../../src/store/catalog/types';
+import {DocumentState} from '../../src/store/document/types';
+import {closeDocument, openDocument} from "../../src/api/document";
+import {MainEventBus} from "../store/main-event-bus";
 
 
-    @Component({
+@Component({
         components: {LoadingScreen, DrawingCanvas, DrawingNavBar},
     })
     export default class Document extends Vue {
@@ -54,18 +54,16 @@ import {FileWebsocketMessageType} from "../../src/api/types";
                             {
                                 variant: 'danger',
                                 title: 'Connection Error',
-                            }
-                        )
+                            },
+                        );
                     }
-                }
+                },
             );
 
             loadCatalog(Number(this.$route.params.id)).then((catalog) => {
                 if (catalog.success) {
-                    console.log('catalog success');
                     this.$store.dispatch('catalog/setDefault', catalog.data);
                 } else {
-                    console.log('catalog fail');
                     this.$bvToast.toast(catalog.message, {
                         title: 'Error retrieving catalog',
                         variant: 'Danger',

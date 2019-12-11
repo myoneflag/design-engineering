@@ -48,9 +48,9 @@ export function createDummyCanvas(document: DocumentState = initialDocumentState
 
     registerObjectBuilders();
 
-    canvas.backgroundLayer.update(canvas.document);
-    canvas.hydraulicsLayer.update(canvas.document);
-    canvas.calculationLayer.update(canvas.document);
+    canvas.backgroundLayer.resetDocument(canvas.document);
+    canvas.hydraulicsLayer.resetDocument(canvas.document);
+    canvas.calculationLayer.resetDocument(canvas.document);
 
     return canvas;
 }

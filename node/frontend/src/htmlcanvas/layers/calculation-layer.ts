@@ -70,8 +70,8 @@ export default class CalculationLayer extends LayerImplementation {
 
                     let invalid = false;
 
-                    for (let i = 0; i < spentShapes.length; i++) {
-                        if (polygonsOverlap(spentShapes[i], shape)) {
+                    for (const shapeCheck of spentShapes) {
+                        if (polygonsOverlap(shapeCheck, shape)) {
                             invalid = true;
                             break;
                         }
@@ -79,11 +79,11 @@ export default class CalculationLayer extends LayerImplementation {
 
                     if (!invalid) {
                         // don't cover connectables
-                        this.objectStore.forEach((o) => {
+                        this.objectStore.forEach((c) => {
                             if (!invalid) {
-                                if (isConnectable(o.entity.type) || o.entity.type === EntityType.FIXTURE ||
-                                    o.entity.type === EntityType.TMV) {
-                                    if (polygonOverlapsShape(shape, o.shape()!)) {
+                                if (isConnectable(c.entity.type) || c.entity.type === EntityType.FIXTURE ||
+                                    c.entity.type === EntityType.TMV) {
+                                    if (polygonOverlapsShape(shape, c.shape()!)) {
                                         invalid = true;
                                     }
                                 }
@@ -152,8 +152,8 @@ export default class CalculationLayer extends LayerImplementation {
         //
     }
 
-    update(doc: DocumentState): any {
-
+    resetDocument(doc: DocumentState): any {
+        //
     }
 
 
@@ -174,7 +174,7 @@ export default class CalculationLayer extends LayerImplementation {
             };
             context.document.uiState.isCalculating = false;
 
-            this.update(context.document);
+            // this.resetDocument(context.document);
 
             // Create new messages
 
