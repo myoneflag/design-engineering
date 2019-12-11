@@ -63,9 +63,10 @@ export default function insertDirectedValve(
             } else {
 
                 pipe = null;
-                context.scheduleDraw();
             }
 
+
+            context.scheduleDraw();
         },
         (worldCoord, event) => {
             context.interactive = null;

@@ -128,6 +128,8 @@ export default function insertTmv(
             }
 
             connectTmvToSource(context, context.objectStore.get(newTmv.uid) as Tmv);
+
+            context.scheduleDraw();
         },
         (wc: Coord) => {
             context.$store.dispatch('document/commit');

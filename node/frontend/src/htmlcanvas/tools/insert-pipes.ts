@@ -134,14 +134,14 @@ function insertPipeChain(
         (interrupted, displaced) => {
             if (interrupted) {
                 // revert changes.
-                context.$store.dispatch('document/revert').then(() => {
+                context.$store.dispatch('document/revert', false).then(() => {
 
                     // it's possible that we are drawing the first connection, in which case we will have an
                     // orphaned valve. Delete it.
                     if (lastAttachment.connections.length === 0) {
                         context.deleteEntity(context.objectStore.get(lastAttachment.uid)!);
                     }
-                    context.$store.dispatch('document/commit');
+                    context.$store.dispatch('document/commit', false);
                 });
             }
 
@@ -273,6 +273,8 @@ function insertPipeChain(
             }
 
             pipe.endpointUid.splice(1, 1, nextEntity.uid);
+
+            context.scheduleDraw();
         },
 
         (wc: Coord) => {

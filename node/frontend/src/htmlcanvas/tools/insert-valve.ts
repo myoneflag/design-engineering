@@ -45,6 +45,9 @@ export default function insertValve(context: CanvasContext, system: FlowSystemPa
             } else {
                 pipe = null;
             }
+
+
+            context.scheduleDraw();
         },
         (worldCoord, event) => {
             context.interactive = null;

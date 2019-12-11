@@ -268,11 +268,6 @@ const controller = new DocumentController();
 
 router.ws('/:id/websocket', (ws, req) => {
 
-
-    const pingPid = setInterval(function timeout() {
-        ws.ping("heartbeat");
-    }, 500);
-
     console.log('connected to id ' + req.params.id);
     withAuth(req, async (session) => {
             withDocument(Number(req.params.id), null, session, AccessType.UPDATE, async (doc) => {
@@ -311,17 +306,31 @@ router.ws('/:id/websocket', (ws, req) => {
                 }
 
 
-                ws.on('close', () => {
-
-                    const toRemove = uh.indexOf(onUpdate);
-                    console.log('closed and removing ' + toRemove);
-                    uh.splice(toRemove, 1);
-                    clearInterval(pingPid);
-
-                    if (uh.length === 0) {
-                        operationQueues.delete(doc.id);
+                const pingPid = setInterval(function timeout() {
+                    try {
+                        ws.ping("heartbeat");
+                    } catch (e) {
+                        console.log("Error during ping");
+                        closeHandler();
                     }
-                });
+                }, 10000);
+
+                const closeHandler = () => {
+                    const toRemove = uh.indexOf(onUpdate);
+                    if (toRemove === -1) {
+                        console.log("Already removed, maybe ping and close command both wanted to close");
+                    } else {
+                        console.log('closed and removing ' + toRemove);
+                        uh.splice(toRemove, 1);
+                        clearInterval(pingPid);
+
+                        if (uh.length === 0) {
+                            operationQueues.delete(doc.id);
+                        }
+                    }
+                };
+
+                ws.on('close', closeHandler);
 
                 uh.push(onUpdate);
                 await ensureDocumentLoaded(doc.id);

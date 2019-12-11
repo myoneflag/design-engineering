@@ -110,6 +110,8 @@ export default function insertFlowSource(
                 }
 
                 rebaseAll(context);
+
+                context.scheduleDraw();
             });
         },
         () => {
