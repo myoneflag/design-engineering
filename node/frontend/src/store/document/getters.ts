@@ -1,14 +1,21 @@
 import { GetterTree } from 'vuex';
-import {DocumentState, initialDocumentState} from './types';
+import {DocumentState, initialDocumentState, Level} from './types';
 import { RootState } from '../types';
 
 export const getters: GetterTree<DocumentState, RootState> = {
     title(state): string {
-        return state.drawing.generalInfo.title;
+        return state.drawing.metadata.generalInfo.title;
     },
 
     document(state): DocumentState {
         return state;
+    },
+
+    currentLevel(state): Level | null {
+        if (!state.uiState.levelUid) {
+            return null;
+        }
+        return state.drawing.levels[state.uiState.levelUid];
     },
 
     isBrandNew(state): boolean {

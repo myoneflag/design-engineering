@@ -65,7 +65,7 @@ export class DocumentController {
             doc.organization = Promise.resolve(org);
             doc.createdBy = user;
             doc.createdOn = new Date();
-            doc.metadata = initialDocumentState.drawing.generalInfo;
+            doc.metadata = initialDocumentState.drawing.metadata.generalInfo;
 
 
             const catalog = Catalog.create();

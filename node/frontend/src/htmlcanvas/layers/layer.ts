@@ -453,9 +453,6 @@ export abstract class LayerImplementation implements Layer {
                 onCommit: (e) => this.onCommit(entity),
             },
         );
-
-        console.log('Added entityy ' + entity.uid + '. Now object store has: ');
-        console.log('    ' + JSON.stringify(Array.from(this.objectStore.keys())));
     }
 
     deleteEntity(entity: DrawableEntityConcrete): void {
@@ -474,10 +471,6 @@ export abstract class LayerImplementation implements Layer {
         if (this.selectedIds.includes(entity.uid)) {
             this.selectedIds.splice(this.selectedIds.indexOf(entity.uid), 1);
         }
-
-
-        console.log('Deleted entity ' + entity.uid + '. Now object store has: ');
-        console.log('    ' + JSON.stringify(Array.from(this.objectStore.keys())));
     }
 
     entitySortOrder(entity: DrawableEntityConcrete): number {

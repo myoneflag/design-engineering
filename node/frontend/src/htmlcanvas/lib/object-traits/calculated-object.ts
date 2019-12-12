@@ -164,7 +164,7 @@ export function CalculatedObject<T extends new (...args: any[])
                     ctx.font = (data[i].bold ? 'bold ' : '') +
                         (multiplier * FIELD_FONT_SIZE).toFixed(0) + 'px ' + DEFAULT_FONT_NAME;
                     if (data[i].systemUid) {
-                        const col = context.doc.drawing.flowSystems.find((s) => s.uid === data[i].systemUid)!.color;
+                        const col = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === data[i].systemUid)!.color;
                         ctx.fillStyle = lighten(col.hex, -20);
                     }
                     ctx.fillText(this.makeDatumText(data[i]), -maxWidth / 2, y);

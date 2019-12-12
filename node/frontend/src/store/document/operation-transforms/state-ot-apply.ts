@@ -17,7 +17,8 @@ export function applyDiffVue(target: any, diff: any): any {
         return diff;
     } else if (_.isObject(diff)) {
         for (const key of Object.keys(diff)) {
-            if ((diff as any)[key] === undefined) {
+            // we use {} to signal a deleted object (undefined is not valid JSON).
+            if (_.isEqual((diff as any)[key], {deleted: true})) {
                 if (target.hasOwnProperty(key)) {
                     Vue.delete(target, key);
                 }

@@ -40,7 +40,11 @@ export function getBoundingBox(objectStore: ObjectStore, document: DocumentState
         }
     };
 
-    Object.values(document.drawing.entities).forEach(look);
+    if (document.uiState.levelUid) {
+
+        Object.values(document.drawing.levels[document.uiState.levelUid].entities).forEach(look);
+    }
+
 
     return {l, r, t, b};
 }

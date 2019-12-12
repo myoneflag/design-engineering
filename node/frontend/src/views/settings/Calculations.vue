@@ -47,11 +47,11 @@
         }
 
         get calculationParams() {
-            return this.document.drawing.calculationParams;
+            return this.document.drawing.metadata.calculationParams;
         }
 
         get committedCalculationParams() {
-            return this.document.committedDrawing.calculationParams;
+            return this.document.committedDrawing.metadata.calculationParams;
         }
 
         save() {

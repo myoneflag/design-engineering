@@ -87,24 +87,36 @@ export const mutations: MutationTree<DocumentState> = {
         state.uiState.loaded = loaded;
     },
 
-    addEntity(state, entity: DrawableEntityConcrete) {
-        console.log('Adding Entity '  + JSON.stringify(state.drawing.entities));
-        Vue.set(state.drawing.entities, entity.uid, entity);
-        MainEventBus.$emit('add-entity', entity);
+    addEntityOn(state, {entity, levelUid}) {
+        Vue.set(state.drawing.levels[levelUid].entities, entity.uid, entity);
+        MainEventBus.$emit('add-entity', {entity, levelUid});
+    },
+
+    addEntity(state, entity) {
+        Vue.set(state.drawing.levels[state.uiState.levelUid!].entities, entity.uid, entity);
+        MainEventBus.$emit('add-entity', {entity, levelUid: state.uiState.levelUid!});
     },
 
     setId(state, id: number) {
         state.documentId = id;
     },
 
-    deleteEntity(state, entity: DrawableEntityConcrete) {
-        console.log('Deleting Entity ' + JSON.stringify(state.drawing.entities));
-        if (entity.uid in state.drawing.entities) {
-            Vue.delete(state.drawing.entities, entity.uid);
+    deleteEntity(state, entity) {
+        if (entity.uid in state.drawing.levels[state.uiState.levelUid!].entities) {
+            Vue.delete(state.drawing.levels[state.uiState.levelUid!].entities, entity.uid);
         } else {
             throw new Error('Deleted an entity that doesn\'t exist ' + JSON.stringify(entity));
         }
-        MainEventBus.$emit('delete-entity', entity);
+        MainEventBus.$emit('delete-entity', {entity, levelUid: state.uiState.levelUid!});
+    },
+
+    deleteEntityOn(state, {entity, levelUid}) {
+        if (entity.uid in state.drawing.levels[levelUid]) {
+            Vue.delete(state.drawing.levels[levelUid], entity.uid);
+        } else {
+            throw new Error('Deleted an entity that doesn\'t exist ' + JSON.stringify(entity));
+        }
+        MainEventBus.$emit('delete-entity', {entity, levelUid});
     },
 };
 

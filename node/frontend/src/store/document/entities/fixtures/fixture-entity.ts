@@ -115,7 +115,7 @@ export function fillFixtureFields(
         }
     });
 
-    const psdStrategy = doc.drawing.calculationParams.psdMethod;
+    const psdStrategy = doc.drawing.metadata.calculationParams.psdMethod;
 
     if (psdStrategy in defaultCatalog.fixtures[result.name].loadingUnits) {
         if (!result.loadingUnitsCold) {

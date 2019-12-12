@@ -49,16 +49,24 @@ export interface ConnectableEntity extends CenteredEntity {
     connections: string[];
 }
 
+export interface Level {
+    entities: {[key: string]: DrawableEntityConcrete};
+    name: string | null;
+    uid: string;
+}
+
 /**
  * A drawing is a snapshot of a drawing - its shapes, pipes, fixtures, entities, title, etc, as is.
  */
 export interface DrawingState {
-    generalInfo: GeneralInfo;
-    flowSystems: FlowSystemParameters[];
-    calculationParams: CalculationParameters;
+    metadata: {
+        generalInfo: GeneralInfo;
+        flowSystems: FlowSystemParameters[];
+        calculationParams: CalculationParameters;
+        availableFixtures: string[];
+    }
 
-    entities: {[key: string]: DrawableEntityConcrete};
-    availableFixtures: string[];
+    levels: {[key: string]: Level}
 }
 
 export interface CalculationUiSettings {
@@ -79,6 +87,7 @@ export interface UIState {
     lastUsedValveVid: ValveId | null;
 
     calculationFilters: CalculationFilters;
+    levelUid: string | null;
 }
 
 export interface CalculationFilters {[key: string]: CalculationFilter; }
@@ -153,70 +162,70 @@ export interface CalculationParameters {
 }
 
 export const initialDrawing: DrawingState = {
-    generalInfo: {
-        title: 'Untitled',
-        projectNumber: '',
-        projectStage: '',
-        designer: '',
-        reviewed: '',
-        approved: '',
-        revision: 1,
-        client: '',
-        description: '',
-    },
-    flowSystems: [
-        // TODO: these values should get got from the database.
-        {
-            name: 'Cold Water',
-            velocity: 1.5,
-            temperature: 20,
-            spareCapacity: 10,
-            material : 'copperTypeB',
-            color: {hex: '#009CE0'},
-            uid: 'cold-water',
-            fluid: 'water',
-        },
-        {
-            name: 'Hot Water',
-            velocity: 1.5,
-            temperature: 60,
-            spareCapacity: 10,
-            material : 'copperTypeB',
-            color: {hex: '#F44E3B'},
-            uid: 'hot-water',
-            fluid: 'water',
-        },
-        {
-            name: 'Warm Water',
-            velocity: 1.5,
-            temperature: 50,
-            spareCapacity: 10,
-            material : 'copperTypeB',
-            color: {hex: '#F49000'},
-            uid: 'warm-water',
-            fluid: 'water',
-        },
-    ],
-    calculationParams: {
-        psdMethod: SupportedPsdStandards.as35002018LoadingUnits,
-        ringMainCalculationMethod: RING_MAIN_CALCULATION_METHODS[0].key,
-        pipeSizingMethod: PIPE_SIZING_METHODS[0].key,
+    metadata: {
 
-        ceilingPipeHeightM: 3.0,
-        roomTemperatureC: 20,
-        gravitationalAcceleration: 9.80665,
+        generalInfo: {
+            title: 'Untitled',
+            projectNumber: '',
+            projectStage: '',
+            designer: '',
+            reviewed: '',
+            approved: '',
+            revision: 1,
+            client: '',
+            description: '',
+        },
+        flowSystems: [
+            // TODO: these values should get got from the database.
+            {
+                name: 'Cold Water',
+                velocity: 1.5,
+                temperature: 20,
+                spareCapacity: 10,
+                material : 'copperTypeB',
+                color: {hex: '#009CE0'},
+                uid: 'cold-water',
+                fluid: 'water',
+            },
+            {
+                name: 'Hot Water',
+                velocity: 1.5,
+                temperature: 60,
+                spareCapacity: 10,
+                material : 'copperTypeB',
+                color: {hex: '#F44E3B'},
+                uid: 'hot-water',
+                fluid: 'water',
+            },
+            {
+                name: 'Warm Water',
+                velocity: 1.5,
+                temperature: 50,
+                spareCapacity: 10,
+                material : 'copperTypeB',
+                color: {hex: '#F49000'},
+                uid: 'warm-water',
+                fluid: 'water',
+            },
+        ],
+        calculationParams: {
+            psdMethod: SupportedPsdStandards.as35002018LoadingUnits,
+            ringMainCalculationMethod: RING_MAIN_CALCULATION_METHODS[0].key,
+            pipeSizingMethod: PIPE_SIZING_METHODS[0].key,
+
+            ceilingPipeHeightM: 3.0,
+            roomTemperatureC: 20,
+            gravitationalAcceleration: 9.80665,
+        },
+        availableFixtures: ['basin', 'bath', 'shower', 'kitchenSink', 'wc', 'washingMachine', 'laundryTrough'],
     },
-    entities: {asdf: {
-            type: EntityType.SYSTEM_NODE,
-            center: {x: 0, y: 0},
-            connections: [],
-            systemUid: '',
-            parentUid: null,
-            uid: 'asdf',
-            calculation: null,
-            configuration: FlowConfiguration.BOTH,
-        }},
-    availableFixtures: ['basin', 'bath', 'shower', 'kitchenSink', 'wc', 'washingMachine', 'laundryTrough'],
+    levels: {
+        ground: {
+            entities: {},
+            name: "Ground Floor",
+            uid: "ground",
+        }
+    },
 };
 
 export const initialUIState: UIState = {
@@ -234,6 +243,7 @@ export const initialUIState: UIState = {
     },
     isCalculating: false,
     calculationFilters: {},
+    levelUid: "ground",
 };
 
 export const initialDocumentState: DocumentState = {
@@ -246,3 +256,8 @@ export const initialDocumentState: DocumentState = {
     uiState: cloneSimple(initialUIState),
     documentId: -1,
 };
+
+export interface EntityParam {
+    entity: DrawableEntityConcrete;
+    levelUid: string;
+}

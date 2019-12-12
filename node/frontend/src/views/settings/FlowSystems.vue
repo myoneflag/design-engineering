@@ -79,7 +79,7 @@
         }
 
         get flowSystems() {
-            return this.document.drawing.flowSystems;
+            return this.document.drawing.metadata.flowSystems;
         }
 
         selectSystem(value: number) {
@@ -95,23 +95,23 @@
 
         deleteSystem() {
             if (window.confirm('Are you sure you want to delete ' + this.selectedSystem.name + '?')) {
-                this.document.drawing.flowSystems.splice(this.selectedSystemId, 1);
+                this.document.drawing.metadata.flowSystems.splice(this.selectedSystemId, 1);
                 this.selectedSystemId = 1;
                 this.$store.dispatch('document/commit');
             }
         }
 
         get selectedSystem() {
-            return this.document.drawing.flowSystems[this.selectedSystemId];
+            return this.document.drawing.metadata.flowSystems[this.selectedSystemId];
         }
 
         get committedSelectedSystem() {
-            return this.document.committedDrawing.flowSystems[this.selectedSystemId];
+            return this.document.committedDrawing.metadata.flowSystems[this.selectedSystemId];
         }
 
         addNewSystem() {
             if ((this.$refs.fields as any).leave()) {
-                this.document.drawing.flowSystems.push({
+                this.document.drawing.metadata.flowSystems.push({
                     name: 'New Flow System',
                     velocity: 2.5,
                     temperature: 60,
@@ -122,7 +122,7 @@
                     fluid: 'water',
                 });
                 this.$store.dispatch('document/commit');
-                this.selectedSystemId = this.document.drawing.flowSystems.length - 1;
+                this.selectedSystemId = this.document.drawing.metadata.flowSystems.length - 1;
             } else {
                 // nup
             }

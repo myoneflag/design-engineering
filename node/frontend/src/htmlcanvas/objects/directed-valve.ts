@@ -266,7 +266,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         to: FlowNode,
         signed: boolean,
     ): number {
-        const ga = context.drawing.calculationParams.gravitationalAcceleration;
+        const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
 
         let sign = 1;
         if (flowLS < 0) {

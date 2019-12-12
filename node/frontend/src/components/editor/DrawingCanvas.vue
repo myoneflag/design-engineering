@@ -61,7 +61,7 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
 
             <HydraulicsInsertPanel
                     v-if="mode === 1"
-                    :flow-systems="document.drawing.flowSystems"
+                    :flow-systems="document.drawing.metadata.flowSystems"
                     @insert="hydraulicsInsert"
                     :fixtures="effectiveCatalog.fixtures"
                     :valves="effectiveCatalog.valves"
@@ -98,7 +98,7 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
 import Vue from "vue";
 import Component from "vue-class-component";
 import {ViewPort} from "../../../src/htmlcanvas/viewport";
-import {Coord, DocumentState, FlowSystemParameters} from "../../../src/store/document/types";
+import {Coord, DocumentState, EntityParam, FlowSystemParameters, Level} from "../../../src/store/document/types";
 import {drawLoadingUnits, drawPaperScale} from "../../../src/htmlcanvas/on-screen-items";
 import ModeButtons from "../../../src/components/editor/ModeButtons.vue";
 import PropertiesWindow from "../../../src/components/editor/property-window/PropertiesWindow.vue";
@@ -233,6 +233,8 @@ export default class DrawingCanvas extends Vue {
 
     mouseClicked: boolean = false;
 
+    levelChangeUnwatchers = new Map<string, () => void>();
+
     mounted() {
         this.ctx = (this.$refs.drawingCanvas as any).getContext('2d');
 
@@ -292,12 +294,16 @@ export default class DrawingCanvas extends Vue {
         return this.$store.getters['document/document'];
     }
 
+    get currentLevel(): Level | null {
+        return this.$store.getters['document/currentLevel'];
+    }
+
     get effectiveCatalog(): Catalog {
         return this.$store.getters['catalog/default'];
     }
 
     get availableFixtures(): string[] {
-        return this.document.drawing.availableFixtures;
+        return this.document.drawing.metadata.availableFixtures;
     }
 
     get availableValves(): ValveId[] {
@@ -439,49 +445,51 @@ export default class DrawingCanvas extends Vue {
         this.scheduleDraw();
     }
 
-    onAddEntity(entity: DrawableEntityConcrete) {
-        switch (entity.type) {
-            case EntityType.BACKGROUND_IMAGE:
-                this.backgroundLayer.addEntity(entity);
-                break;
-            case EntityType.RESULTS_MESSAGE:
-                this.calculationLayer.addEntity(entity);
-                break;
-            case EntityType.FITTING:
-            case EntityType.DIRECTED_VALVE:
-            case EntityType.PIPE:
-            case EntityType.FLOW_SOURCE:
-            case EntityType.SYSTEM_NODE:
-            case EntityType.TMV:
-            case EntityType.FIXTURE:
-                console.log("Before hydro add entity. Document entities are ");
-                console.log(JSON.stringify(this.document.drawing.entities));
-                this.hydraulicsLayer.addEntity(entity);
-                break;
-            default:
-                assertUnreachable(entity);
+    onAddEntity({entity, levelUid}: EntityParam) {
+        if (this.currentLevel && levelUid === this.currentLevel.uid) {
+            switch (entity.type) {
+                case EntityType.BACKGROUND_IMAGE:
+                    this.backgroundLayer.addEntity(entity);
+                    break;
+                case EntityType.RESULTS_MESSAGE:
+                    this.calculationLayer.addEntity(entity);
+                    break;
+                case EntityType.FITTING:
+                case EntityType.DIRECTED_VALVE:
+                case EntityType.PIPE:
+                case EntityType.FLOW_SOURCE:
+                case EntityType.SYSTEM_NODE:
+                case EntityType.TMV:
+                case EntityType.FIXTURE:
+                    this.hydraulicsLayer.addEntity(entity);
+                    break;
+                default:
+                    assertUnreachable(entity);
+            }
         }
     }
 
-    onDeleteEntity(entity: DrawableEntityConcrete) {
-        switch (entity.type) {
-            case EntityType.BACKGROUND_IMAGE:
-                this.backgroundLayer.deleteEntity(entity);
-                break;
-            case EntityType.RESULTS_MESSAGE:
-                this.calculationLayer.deleteEntity(entity);
-                break;
-            case EntityType.FITTING:
-            case EntityType.DIRECTED_VALVE:
-            case EntityType.PIPE:
-            case EntityType.FLOW_SOURCE:
-            case EntityType.SYSTEM_NODE:
-            case EntityType.TMV:
-            case EntityType.FIXTURE:
-                this.hydraulicsLayer.deleteEntity(entity);
-                break;
-            default:
-                assertUnreachable(entity);
+    onDeleteEntity({entity, levelUid}: EntityParam) {
+        if (this.currentLevel && levelUid === this.currentLevel.uid) {
+            switch (entity.type) {
+                case EntityType.BACKGROUND_IMAGE:
+                    this.backgroundLayer.deleteEntity(entity);
+                    break;
+                case EntityType.RESULTS_MESSAGE:
+                    this.calculationLayer.deleteEntity(entity);
+                    break;
+                case EntityType.FITTING:
+                case EntityType.DIRECTED_VALVE:
+                case EntityType.PIPE:
+                case EntityType.FLOW_SOURCE:
+                case EntityType.SYSTEM_NODE:
+                case EntityType.TMV:
+                case EntityType.FIXTURE:
+                    this.hydraulicsLayer.deleteEntity(entity);
+                    break;
+                default:
+                    assertUnreachable(entity);
+            }
         }
     }
 
@@ -520,7 +528,7 @@ export default class DrawingCanvas extends Vue {
                 throw new Error('Selecting an object that doesn\'t exist');
             }
 
-            const drawable = this.document.drawing.entities[selectionTarget.uid];
+            const drawable = this.currentLevel!.entities[selectionTarget.uid];
             if (drawable.type === EntityType.BACKGROUND_IMAGE) {
                 this.mode = DrawingMode.FloorPlan;
             } else if (drawable) {
@@ -581,15 +589,38 @@ export default class DrawingCanvas extends Vue {
     resetDocument(redraw: boolean = true) {
         this.updating = true;
         this.considerCalculating();
+
+        this.levelChangeUnwatchers.forEach((v, k) => this.unwatchLevel(k));
+
+        for (const key of Object.keys(this.document.drawing.levels)) {
+            this.watchLevel(key);
+        }
+
+
         this.allLayers.forEach((l) => l.resetDocument(this.document));
         this.updating = false;
         // finally, draw
         if (redraw) {
             this.scheduleDraw();
         }
-        this.$watch('document.drawing.entities', (oldVal, newVal) => {
-            //
-        });
+    }
+
+    // Note: Unfortunately, with the current vue reactivity system, this is going to be super slow because every time
+    // an object is created or deleted, the entire entity store is notified. However this is going to be changed in
+    // vue3 according to https://github.com/vuejs/vue/issues/8970, which will be coming out soon (hopefully).
+    // There are solutions like ReactiveX but that works in a separate stream of promises which could mean glitches
+    // in states when working with vue. So sticking with Vue's reactivity is preferred.
+    // To mitigate this perf issue, we will just watch levels.
+    watchLevel(key: string) {
+        const watcher = this.$watch(() => this.document.drawing.levels[key], (oldval, newval) => {
+
+        }, {deep: true});
+        this.levelChangeUnwatchers.set(key, watcher);
+    }
+
+    unwatchLevel(key: string) {
+        this.levelChangeUnwatchers.get(key)!();
+        this.levelChangeUnwatchers.delete(key);
     }
 
     scheduleDraw() {
@@ -649,23 +680,25 @@ export default class DrawingCanvas extends Vue {
     }
 
     fitToView() {
-        if (_.isEmpty(this.document.drawing.entities)) {
-            this.viewPort = this.initialViewport;
-            this.scheduleDraw();
-        } else {
+        if (this.currentLevel) {
+            if (_.isEmpty(this.currentLevel.entities)) {
+                this.viewPort = this.initialViewport;
+                this.scheduleDraw();
+            } else {
 
-            const {l, r, t, b} = getBoundingBox(this.objectStore, this.document);
+                const {l, r, t, b} = getBoundingBox(this.objectStore, this.document);
 
-            const w = this.viewPort.width;
-            const h = this.viewPort.height;
-            const s = Math.max((r - l + 1) / w, (b - t + 1) / h, 1) * 1.5;
-            this.viewPort =
-                new ViewPort(
-                    TM.transform(TM.translate((l + r) / 2, (t + b) / 2), TM.scale(s)),
-                    w,
-                    h,
-                );
-            this.scheduleDraw();
+                const w = this.viewPort.width;
+                const h = this.viewPort.height;
+                const s = Math.max((r - l + 1) / w, (b - t + 1) / h, 1) * 1.5;
+                this.viewPort =
+                    new ViewPort(
+                        TM.transform(TM.translate((l + r) / 2, (t + b) / 2), TM.scale(s)),
+                        w,
+                        h,
+                    );
+                this.scheduleDraw();
+            }
         }
     }
 

@@ -100,7 +100,7 @@ export function fillDirectedValveFields(
     const result = cloneSimple(value);
 
     const systemUid = determineConnectableSystemUid(objectStore, value);
-    const system = doc.drawing.flowSystems.find((s) => s.uid === systemUid);
+    const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === systemUid);
 
     result.systemUidOption = system ? system.uid : null;
 

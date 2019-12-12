@@ -10,7 +10,7 @@ describe('Calculations.vue', () => {
     it('can edit all general properties', () => {
         const wrapper = shallowMount(Calculations, { store });
         const fieldIds: string[] = (wrapper.vm as any).fields.map((v: [string, string]) => v[0]);
-        const expectedFields = _.keys(initialDocumentState.drawing.calculationParams);
+        const expectedFields = _.keys(initialDocumentState.drawing.metadata.calculationParams);
 
         expect(fieldIds.sort()).eql(expectedFields.sort());
     });

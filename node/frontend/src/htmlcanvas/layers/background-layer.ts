@@ -54,11 +54,16 @@ export default class BackgroundLayer extends LayerImplementation {
     }
 
     resetDocument(doc: DocumentState) {
+        let entities: DrawableEntityConcrete[] = [];
+        if (doc.uiState.levelUid) {
+            entities = Object.values(doc.drawing.levels[doc.uiState.levelUid].entities);
+        }
+
         this.resizeBox = null; // We regenerate this if needed.
 
         const existingSids: string[] = [];
 
-        for (const entity of Object.values(doc.drawing.entities)) {
+        for (const entity of entities) {
             if (entity.type !== EntityType.BACKGROUND_IMAGE) {
                 continue;
             }

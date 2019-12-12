@@ -307,7 +307,7 @@ export function ConnectableObject<T extends new (...args: any[])
             }
 
             // We going to do pipe size changes here for any connectable.
-            const ga = context.drawing.calculationParams.gravitationalAcceleration;
+            const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
 
             const oFrom = from;
             const oTo = to;

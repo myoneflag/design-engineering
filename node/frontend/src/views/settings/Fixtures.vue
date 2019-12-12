@@ -3,7 +3,7 @@
             ref="fields"
             :fields="[]"
             :reactiveData="{availableFixtureUids}"
-            :originalData="{availableFixtureUids: document.committedDrawing.availableFixtures}"
+            :originalData="{availableFixtureUids: document.committeddrawing.metadata.availableFixtures}"
             :onSave="save"
             :onBack="back"
             :on-revert="onRevert"
@@ -88,7 +88,7 @@
         }
 
         get availableFixtureUids(): string[] {
-            return this.document.drawing.availableFixtures;
+            return this.document.drawing.metadata.availableFixtures;
         }
 
         get availableFixtures(): FixtureSpec[] {
@@ -100,17 +100,17 @@
         }
 
         makeAvailable(fuid: string) {
-            this.document.drawing.availableFixtures.push(fuid);
+            this.document.drawing.metadata.availableFixtures.push(fuid);
         }
 
         makeUnavailable(fuid: string) {
-            const index = this.document.drawing.availableFixtures.indexOf(fuid);
-            this.document.drawing.availableFixtures.splice(index, 1);
+            const index = this.document.drawing.metadata.availableFixtures.indexOf(fuid);
+            this.document.drawing.metadata.availableFixtures.splice(index, 1);
         }
 
         onRevert() {
-            this.document.drawing.availableFixtures.splice(0);
-            this.document.drawing.availableFixtures.push(...this.document.committedDrawing.availableFixtures);
+            this.document.drawing.metadata.availableFixtures.splice(0);
+            this.document.drawing.metadata.availableFixtures.push(...this.document.committedDrawing.metadata.availableFixtures);
         }
 
         save() {

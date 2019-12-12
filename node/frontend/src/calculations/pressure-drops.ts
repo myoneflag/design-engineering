@@ -106,7 +106,7 @@ export function kpa2head(kpa: number, densityKGM3: number, ga: number): number {
 }
 
 export function getFluidDensityOfSystem(systemUid: string, doc: DocumentState, catalog: Catalog): number | null {
-    const system = doc.drawing.flowSystems.find((s) => s.uid === systemUid);
+    const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === systemUid);
     if (!system) {
         return null;
     }

@@ -86,7 +86,7 @@ export default class CalculationEngine {
         this.demandType = demandType;
         this.extraErrors = [];
         this.drawing = this.doc.drawing;
-        this.ga = this.doc.drawing.calculationParams.gravitationalAcceleration;
+        this.ga = this.doc.drawing.metadata.calculationParams.gravitationalAcceleration;
 
         const success = this.preValidate();
 
@@ -156,7 +156,7 @@ export default class CalculationEngine {
                     fields = makeFixtureFields();
                     break;
                 case EntityType.DIRECTED_VALVE:
-                    fields = makeDirectedValveFields(this.doc.drawing.flowSystems, obj.entity.valve);
+                    fields = makeDirectedValveFields(this.doc.drawing.metadata.flowSystems, obj.entity.valve);
                     break;
                 case EntityType.SYSTEM_NODE:
                 case EntityType.BACKGROUND_IMAGE:
@@ -821,13 +821,13 @@ export default class CalculationEngine {
                     const mainFixture = fillFixtureFields(this.doc, this.catalog, fixture);
 
                     if (node.uid === fixture.coldRoughInUid) {
-                        if (isGermanStandard(this.doc.drawing.calculationParams.psdMethod)) {
+                        if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
                             return Number(mainFixture.designFlowRateCold);
                         } else {
                             return Number(mainFixture.loadingUnitsCold!);
                         }
                     } else if (node.uid === fixture.warmRoughInUid) {
-                        if (isGermanStandard(this.doc.drawing.calculationParams.psdMethod)) {
+                        if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
                             return Number(mainFixture.designFlowRateHot);
                         } else {
                             return Number(mainFixture.loadingUnitsHot!);
@@ -934,7 +934,7 @@ export default class CalculationEngine {
         const computed = fillPipeDefaultFields(this.doc.drawing, 0, pipe);
 
         // depends on pipe sizing method
-        if (this.doc.drawing.calculationParams.pipeSizingMethod === 'velocity') {
+        if (this.doc.drawing.metadata.calculationParams.pipeSizingMethod === 'velocity') {
             // http://www.1728.org/flowrate.htm
             return Math.sqrt(
                 4000 * pipe.calculation!.peakFlowRate! / (Math.PI * computed.maximumVelocityMS!),
@@ -954,7 +954,7 @@ export default class CalculationEngine {
         const roughness = parseCatalogNumberExact(realPipe.colebrookWhiteCoefficient);
         const realInternalDiameter = parseCatalogNumberExact(realPipe.diameterInternalMM);
 
-        const system = this.doc.drawing.flowSystems.find((s) => s.uid === pipe.systemUid)!;
+        const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === pipe.systemUid)!;
 
         const fluidDensity =  parseCatalogNumberExact(this.catalog.fluids[system.fluid].densityKGM3);
         const dynamicViscosity = parseCatalogNumberExact(interpolateTable(

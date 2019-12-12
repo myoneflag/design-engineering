@@ -47,7 +47,7 @@
         get fields() {
             return makeValveFields(
                 this.$store.getters['catalog/defaultValveChoices'],
-                this.document.drawing.flowSystems,
+                this.document.drawing.metadata.flowSystems,
             );
         }
 

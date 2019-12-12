@@ -579,7 +579,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                         to: FlowNode,
                         signed: boolean,
     ): number {
-        const ga = context.drawing.calculationParams.gravitationalAcceleration;
+        const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
         const {drawing, catalog, objectStore} = context;
         const entity = this.entity;
         let sign = 1;
@@ -593,7 +593,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             }
         }
 
-        const system = drawing.flowSystems.find((s) => s.uid === entity.systemUid)!;
+        const system = drawing.metadata.flowSystems.find((s) => s.uid === entity.systemUid)!;
         const fluid = catalog.fluids[system.fluid];
 
         const volLM =

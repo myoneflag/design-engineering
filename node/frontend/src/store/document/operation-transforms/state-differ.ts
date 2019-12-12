@@ -39,8 +39,8 @@ export function diffObject(before: any, after: any, filter: any): any {
                         result[key] = val;
                     }
                 } else if (before.hasOwnProperty(key)) {
-                    // deleted item
-                    result[key] = undefined;
+                    // we use {} to signal a deleted object (undefined is not valid JSON).
+                    result[key] = {deleted: true};
                 } else if (after.hasOwnProperty(key)) {
                     // new item
                     result[key] = (after as any)[key];

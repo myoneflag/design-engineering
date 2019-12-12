@@ -121,7 +121,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
     }
 
     system(doc: DocumentState): FlowSystemParameters {
-        const result = doc.drawing.flowSystems.find((v) => v.uid === this.entity.systemUid);
+        const result = doc.drawing.metadata.flowSystems.find((v) => v.uid === this.entity.systemUid);
         if (result) {
             return result;
         } else {

@@ -65,7 +65,7 @@ export function fillPipeDefaultFields(
     const result = cloneSimple(value);
 
     // get system
-    const system = drawing.flowSystems.find((s) => s.uid === value.systemUid);
+    const system = drawing.metadata.flowSystems.find((s) => s.uid === value.systemUid);
 
     if (system) {
         if (result.maximumVelocityMS == null) {

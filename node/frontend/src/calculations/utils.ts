@@ -49,13 +49,13 @@ export function countPsdUnits(
                     }
                 });
 
-                if (isGermanStandard(doc.drawing.calculationParams.psdMethod)) {
+                if (isGermanStandard(doc.drawing.metadata.calculationParams.psdMethod)) {
                     result[StandardFlowSystemUids.ColdWater].units += mainFixture.designFlowRateCold!;
                 } else {
                     result[StandardFlowSystemUids.ColdWater].units += mainFixture.loadingUnitsCold!;
                 }
 
-                if (isGermanStandard(doc.drawing.calculationParams.psdMethod)) {
+                if (isGermanStandard(doc.drawing.metadata.calculationParams.psdMethod)) {
                     result[StandardFlowSystemUids.HotWater].units += mainFixture.designFlowRateHot!;
                 } else {
                     result[StandardFlowSystemUids.HotWater].units += mainFixture.loadingUnitsHot!;
@@ -80,7 +80,7 @@ export function countPsdUnits(
 
 
 export function lookupFlowRate(psdU: number, doc: DocumentState, catalog: Catalog): number | null {
-    const psd = doc.drawing.calculationParams.psdMethod;
+    const psd = doc.drawing.metadata.calculationParams.psdMethod;
     const standard = catalog.psdStandards[psd];
     if (standard.type === PSDStandardType.LU_LOOKUP_TABLE) {
         const table = standard.table;

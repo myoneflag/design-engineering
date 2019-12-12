@@ -30,7 +30,7 @@ export default class FlowSolver {
         this.objectStore = objectStore;
         this.catalog = catalog;
         this.doc = doc;
-        this.ga = doc.drawing.calculationParams.gravitationalAcceleration;
+        this.ga = doc.drawing.metadata.calculationParams.gravitationalAcceleration;
     }
 
     // Given a flow network of pipes, joints with given diameters, and the flow sources and sinks,
@@ -69,7 +69,7 @@ export default class FlowSolver {
         // give any valid flow initially.
         const flowRates = this.getInitialFlowRates(demandsLS, suppliesKPA);
 
-        // return flowRates;
+        // return flowRates;low-s
         let iters = 0;
         while (true) {
             iters++;

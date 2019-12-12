@@ -203,7 +203,7 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Calc
                         signed: boolean,
     ): number {
 
-        const ga = context.drawing.calculationParams.gravitationalAcceleration;
+        const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
         let sign = 1;
         if (flowLS < 0) {
             const oldFrom = from;
@@ -239,7 +239,7 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Calc
         // which is what the rest of the calculations are base off of.
 
         const systemUid = (objectStore.get(entity.warmOutputUid)!.entity as SystemNodeEntity).systemUid;
-        const fluid = drawing.flowSystems.find((s) => s.uid === systemUid)!.fluid;
+        const fluid = drawing.metadata.flowSystems.find((s) => s.uid === systemUid)!.fluid;
         const density = parseCatalogNumberExact(catalog.fluids[fluid].densityKGM3)!;
 
         // https://neutrium.net/equipment/conversion-between-head-and-pressure/

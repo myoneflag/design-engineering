@@ -26,8 +26,8 @@ export const actions: ActionTree<DocumentState, RootState> = {
     // Call this action to commit the current operation transforms. TODO: make that atomic.
     commit({commit, state}) {
 
-        if (!_.isEqual(state.drawing.generalInfo, state.committedDrawing.generalInfo)) {
-            updateDocument(state.documentId, undefined, state.drawing.generalInfo);
+        if (!_.isEqual(state.drawing.metadata.generalInfo, state.committedDrawing.metadata.generalInfo)) {
+            updateDocument(state.documentId, undefined, state.drawing.metadata.generalInfo);
         }
 
 

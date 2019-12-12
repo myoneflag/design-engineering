@@ -48,11 +48,11 @@
         }
 
         get generalInfo() {
-            return this.document.drawing.generalInfo;
+            return this.document.drawing.metadata.generalInfo;
         }
 
         get committedGeneralInfo() {
-            return this.document.committedDrawing.generalInfo;
+            return this.document.committedDrawing.metadata.generalInfo;
         }
 
 

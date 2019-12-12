@@ -44,7 +44,7 @@ export function fillValveDefaultFields(
     const result = cloneSimple(value);
 
     // get system
-    const system = doc.drawing.flowSystems.find((s) => s.uid === value.systemUid);
+    const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === value.systemUid);
 
     if (system) {
         if (result.color == null) {

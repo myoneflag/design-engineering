@@ -66,7 +66,7 @@ import {ValveType} from "../../../../src/store/document/entities/directed-valves
 
         get fields() {
             return makeDirectedValveFields(
-                this.document.drawing.flowSystems,
+                this.document.drawing.metadata.flowSystems,
                 (this.$props.selectedEntity as DirectedValveEntity).valve,
             );
         }

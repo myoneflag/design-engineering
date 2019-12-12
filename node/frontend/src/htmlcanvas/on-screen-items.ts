@@ -141,9 +141,9 @@ export function drawLoadingUnits(
 
     let coldFR = lookupFlowRate(units[StandardFlowSystemUids.ColdWater].units, context.doc, catalog)!;
     let hotFR = lookupFlowRate(units[StandardFlowSystemUids.HotWater].units, context.doc, catalog)!;
-    let coldFRSpare = coldFR * (1 + 0.01 * context.doc.drawing.flowSystems.find((s) =>
+    let coldFRSpare = coldFR * (1 + 0.01 * context.doc.drawing.metadata.flowSystems.find((s) =>
         s.uid === StandardFlowSystemUids.ColdWater)!.spareCapacity);
-    let hotFRSpare = hotFR * (1 + 0.01 * context.doc.drawing.flowSystems.find((s) =>
+    let hotFRSpare = hotFR * (1 + 0.01 * context.doc.drawing.metadata.flowSystems.find((s) =>
         s.uid === StandardFlowSystemUids.WarmWater)!.spareCapacity);
 
     if (coldFR === null) {
@@ -164,5 +164,5 @@ export function drawLoadingUnits(
     ctx.fillText((hotFRSpare.toPrecision(3)) + ' L/s ', 80, y + 20);
     ctx.fillText('(' + (hotFR.toPrecision(3)) + ')', 180, y + 20);
 
-    ctx.fillText(catalog.psdStandards[context.doc.drawing.calculationParams.psdMethod].name, 20, y + 40);
+    ctx.fillText(catalog.psdStandards[context.doc.drawing.metadata.calculationParams.psdMethod].name, 20, y + 40);
 }

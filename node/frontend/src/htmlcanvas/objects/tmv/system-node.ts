@@ -110,7 +110,7 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
     }
 
     system(doc: DocumentState) {
-        const system = doc.drawing.flowSystems.find((s) => s.uid === this.entity.systemUid);
+        const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === this.entity.systemUid);
         if (system) {
             return system;
         } else {

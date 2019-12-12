@@ -10,8 +10,8 @@ export default interface SystemNodeCalculation extends PsdCalculation, Calculati
 }
 
 export function makeSystemNodeCalculationFields(entity: SystemNodeEntity, settings: DrawingState): CalculationField[] {
-    const psdUnit = isGermanStandard(settings.calculationParams.psdMethod) ? 'Design Flow Rate' : 'Loading Units';
-    const psdUnitShort = isGermanStandard(settings.calculationParams.psdMethod) ? 'D. Flow' : 'LU';
+    const psdUnit = isGermanStandard(settings.metadata.calculationParams.psdMethod) ? 'Design Flow Rate' : 'Loading Units';
+    const psdUnitShort = isGermanStandard(settings.metadata.calculationParams.psdMethod) ? 'D. Flow' : 'LU';
     return [
         {property: 'pressureKPA',
             title: 'Pressure',

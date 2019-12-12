@@ -165,7 +165,7 @@ import {EntityType} from "../../../../src/store/document/entities/types";
         }
 
         get coldPsdUnitsName() {
-            if (isGermanStandard(this.document.drawing.calculationParams.psdMethod)) {
+            if (isGermanStandard(this.document.drawing.metadata.calculationParams.psdMethod)) {
                 return "Cold Design Flow Rate (L/s)";
             } else {
                 return "Cold Loading Units";
@@ -173,7 +173,7 @@ import {EntityType} from "../../../../src/store/document/entities/types";
         }
 
         get hotPsdUnitsName() {
-            if (isGermanStandard(this.document.drawing.calculationParams.psdMethod)) {
+            if (isGermanStandard(this.document.drawing.metadata.calculationParams.psdMethod)) {
                 return "Hot Design Flow Rate (L/s)";
             } else {
                 return "Hot Loading Units";
@@ -181,7 +181,7 @@ import {EntityType} from "../../../../src/store/document/entities/types";
         }
 
         get psdName() {
-            return this.effectiveCatalog.psdStandards[this.document.drawing.calculationParams.psdMethod].name;
+            return this.effectiveCatalog.psdStandards[this.document.drawing.metadata.calculationParams.psdMethod].name;
         }
 
         get hasPsdUnits(): boolean {

@@ -92,24 +92,24 @@
                 case EntityType.FITTING:
                     return makeValveFields(
                         this.$store.getters['catalog/defaultValveChoices'],
-                        this.document.drawing.flowSystems,
+                        this.document.drawing.metadata.flowSystems,
                     ).filter((p) => p.multiFieldId);
                 case EntityType.PIPE:
                     return makePipeFields(
                         this.$store.getters['catalog/defaultPipeMaterialChoices'],
-                        this.document.drawing.flowSystems,
+                        this.document.drawing.metadata.flowSystems,
                     ).filter((p) => p.multiFieldId);
                 case EntityType.FLOW_SOURCE:
                     return makeFlowSourceFields(
                         this.$store.getters['catalog/defaultPipeMaterialChoices'],
-                        this.document.drawing.flowSystems,
+                        this.document.drawing.metadata.flowSystems,
                     ).filter((p) => p.multiFieldId);
                 case EntityType.TMV:
                     return makeTMVFields().filter((p) => p.multiFieldId);
                 case EntityType.FIXTURE:
                     return makeFixtureFields().filter((p) => p.multiFieldId);
                 case EntityType.DIRECTED_VALVE:
-                    return makeDirectedValveFields(this.document.drawing.flowSystems, entity.valve)
+                    return makeDirectedValveFields(this.document.drawing.metadata.flowSystems, entity.valve)
                         .filter((p) => p.multiFieldId);
                 case EntityType.RESULTS_MESSAGE:
                 case EntityType.SYSTEM_NODE:

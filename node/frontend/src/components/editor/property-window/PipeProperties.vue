@@ -45,7 +45,7 @@
         get fields() {
             return makePipeFields(
                 this.$store.getters['catalog/defaultPipeMaterialChoices'],
-                this.document.drawing.flowSystems,
+                this.document.drawing.metadata.flowSystems,
             );
         }
 

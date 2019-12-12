@@ -164,7 +164,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             throw new Error('I don\'t like it');
         }
 
-        const ga = context.drawing.calculationParams.gravitationalAcceleration;
+        const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
 
         let sign = 1;
         if (flowLS < 0) {

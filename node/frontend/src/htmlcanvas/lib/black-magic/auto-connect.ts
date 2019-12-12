@@ -19,7 +19,7 @@ import {isConnectable} from '../../../../src/store/document';
 import assert from 'assert';
 import {StandardFlowSystemUids, StandardMaterialUids} from '../../../../src/store/catalog';
 import {MainEventBus} from '../../../../src/store/main-event-bus';
-import {Coord} from '../../../../src/store/document/types';
+import {Coord, EntityParam} from '../../../../src/store/document/types';
 import {rebaseAll} from '../../../../src/htmlcanvas/lib/black-magic/rebase-all';
 import {fillDirectedValveFields} from '../../../../src/store/document/entities/directed-valves/directed-valve-entity';
 import connectTmvToSource from '../../../../src/htmlcanvas/lib/black-magic/connect-tmv-to-source';
@@ -165,13 +165,13 @@ export class AutoConnector {
     }
 
     isRoofHeight(entity: DrawableEntityConcrete): boolean {
-        return this.getEntityHeight(entity)[1] > this.context.document.drawing.calculationParams.ceilingPipeHeightM -
+        return this.getEntityHeight(entity)[1] > this.context.document.drawing.metadata.calculationParams.ceilingPipeHeightM -
             CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM / 1000;
     }
 
     isWallHeight(entity: DrawableEntityConcrete): boolean {
         const [min, max] = this.getEntityHeight(entity);
-        return min <= this.context.document.drawing.calculationParams.ceilingPipeHeightM +
+        return min <= this.context.document.drawing.metadata.calculationParams.ceilingPipeHeightM +
             CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM / 1000; // && max >= 0; // leave that out 4 now
     }
 
@@ -377,7 +377,7 @@ export class AutoConnector {
 
         // OK now try the option of connecting it through the roof
         let maxHeight = Math.max(this.getEntityHeight(ao.entity)[1], this.getEntityHeight(bo.entity)[1]);
-        maxHeight = Math.max(maxHeight, this.context.document.drawing.calculationParams.ceilingPipeHeightM);
+        maxHeight = Math.max(maxHeight, this.context.document.drawing.metadata.calculationParams.ceilingPipeHeightM);
 
         const straight = ao.shape()!.distanceTo(bo.shape()!);
 
@@ -523,7 +523,7 @@ export class AutoConnector {
             Math.min(this.getEntityHeight(ao.entity)[1], this.getEntityHeight(bo.entity)[1]);
         const newHeight = Math.max(maxLow, minHigh);
         const auxLength = (Math.max(0, newHeight - minHigh) +
-            Math.abs(newHeight - this.context.document.drawing.calculationParams.ceilingPipeHeightM)) * 1000;
+            Math.abs(newHeight - this.context.document.drawing.metadata.calculationParams.ceilingPipeHeightM)) * 1000;
 
         const adeg = wa.line.norm.angleTo(wb.line.norm) / Math.PI * 180 ;
         const adiff = Math.min(this.diffA(adeg, 180), this.diffA(adeg, 0));
@@ -701,16 +701,20 @@ export class AutoConnector {
     }
 
 
-    onDeleteEntity = (e: DrawableEntityConcrete) => {
-        const i = this.selected.findIndex((o) => o.uid === e.uid);
-        if (i !== -1) {
-            this.selected.splice(i, 1);
+    onDeleteEntity = ({entity, levelUid}: EntityParam) => {
+        if (levelUid === this.context.document.uiState.levelUid) {
+            const i = this.selected.findIndex((o) => o.uid === entity.uid);
+            if (i !== -1) {
+                this.selected.splice(i, 1);
+            }
         }
         // tslint:disable-next-line:semicolon
     };
 
-    onAddEntity = (e: DrawableEntityConcrete) => {
-        this.selected.push(this.context.objectStore.get(e.uid)!);
+    onAddEntity = ({entity, levelUid}: EntityParam) => {
+        if (this.context.document.uiState.levelUid === levelUid) {
+            this.selected.push(this.context.objectStore.get(entity.uid)!);
+        }
         // tslint:disable-next-line:semicolon
     };
 
