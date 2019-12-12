@@ -387,6 +387,7 @@ export default class DrawingCanvas extends Vue {
 
     set mode(value) {
         this.document.uiState.drawingMode = value;
+        this.considerCalculating();
         this.scheduleDraw();
     }
 
@@ -805,10 +806,13 @@ export default class DrawingCanvas extends Vue {
     }
 
     considerCalculating() {
+        console.log(this.mode + ' ' + this.document.uiState.lastCalculationId + ' ' + this.document.nextId);
         if (this.mode === DrawingMode.Calculations) {
             if (this.document.uiState.lastCalculationId < this.document.nextId
                 || this.document.uiState.lastCalculationUiSettings.demandType !== this.demandType) {
 
+                console.log("called calculate");
+                console.log(new Error().stack);
                 this.calculationLayer.calculate(
                     this,
                     this.demandType,
