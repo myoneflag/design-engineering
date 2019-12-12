@@ -118,5 +118,24 @@ export const mutations: MutationTree<DocumentState> = {
         }
         MainEventBus.$emit('delete-entity', {entity, levelUid});
     },
+
+    addLevel(state, level) {
+        Vue.set(state.drawing.levels, level.uid, level);
+        MainEventBus.$emit('add-level', level);
+    },
+
+    deleteLevel(state, level) {
+        if (level.uid in state.drawing.levels) {
+            Vue.delete(state.drawing.levels, level.uid);
+        } else {
+            throw new Error('Deleted a level that doesn\'t exist ' + JSON.stringify(level));
+        }
+        MainEventBus.$emit('delete-level', level);
+    },
+
+    setCurrentLevelUid(state, levelUid) {
+        state.uiState.levelUid = levelUid;
+        MainEventBus.$emit('ot-applied');
+    },
 };
 

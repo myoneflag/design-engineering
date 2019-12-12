@@ -51,7 +51,9 @@ export interface ConnectableEntity extends CenteredEntity {
 
 export interface Level {
     entities: {[key: string]: DrawableEntityConcrete};
-    name: string | null;
+    floorHeightM: number;
+    name: string;
+    abbreviation: string;
     uid: string;
 }
 
@@ -222,7 +224,9 @@ export const initialDrawing: DrawingState = {
     levels: {
         ground: {
             entities: {},
+            floorHeightM: 0,
             name: "Ground Floor",
+            abbreviation: "G",
             uid: "ground",
         }
     },

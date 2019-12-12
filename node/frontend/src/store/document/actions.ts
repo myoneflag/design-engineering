@@ -2,7 +2,7 @@ import {ActionTree} from 'vuex';
 import * as OT from './operation-transforms/operation-transforms';
 import {OPERATION_NAMES} from './operation-transforms/operation-transforms';
 import {RootState} from '../types';
-import {DocumentState} from '../../../src/store/document/types';
+import {DocumentState, EntityParam} from '../../../src/store/document/types';
 import {diffState} from '../../../src/store/document/operation-transforms/state-differ';
 import {applyOtOnState} from '../../../src/store/document/operation-transforms/state-ot-apply';
 import * as _ from 'lodash';
@@ -21,6 +21,26 @@ export const actions: ActionTree<DocumentState, RootState> = {
 
     deleteEntity({commit, state}, entity) {
         commit('deleteEntity', entity);
+    },
+
+    addEntityOn({commit, state}, args: EntityParam) {
+        commit('addEntityOn', args);
+    },
+
+    deleteEntityOn({commit, state}, args: EntityParam) {
+        commit('deleteEntityOn', args);
+    },
+
+    addLevel({commit, state}, level) {
+        commit('addLevel', level);
+    },
+
+    deleteLevel({commit, state}, level) {
+        commit('deleteLevel', level);
+    },
+
+    setCurrentLevelUid({commit, state}, levelUid) {
+        commit('setCurrentLevelUid', levelUid);
     },
 
     // Call this action to commit the current operation transforms. TODO: make that atomic.

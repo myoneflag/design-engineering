@@ -1,6 +1,3 @@
-import {DrawingMode} from "../../../src/htmlcanvas/types";
-import {DrawingMode} from "../../../src/htmlcanvas/types";
-import {ValveType} from "../../../src/store/document/entities/directed-valves/valve-types";
 <template>
 
 
@@ -77,6 +74,12 @@ import {ValveType} from "../../../src/store/document/entities/directed-valves/va
                     :is-calculating="isCalculating"
             />
 
+            <LevelSelector
+                    :levels="document.drawing.levels"
+                    :current-level-uid="document.uiState.levelUid"
+            >
+
+            </LevelSelector>
 
 
             <Toolbar
@@ -144,9 +147,11 @@ import {countPsdUnits} from "../../../src/calculations/utils";
 import CalculationsSidebar from "../../../src/components/editor/CalculationsSidebar.vue";
 import {assertUnreachable} from "../../../src/config";
 import DrawingNavBar from "../DrawingNavBar.vue";
+import LevelSelector from "./LevelSelector.vue";
 
 @Component({
     components: {
+        LevelSelector,
         DrawingNavBar,
         CalculationsSidebar,
         CalculationBar,
@@ -244,6 +249,8 @@ export default class DrawingCanvas extends Vue {
         MainEventBus.$on('auto-connect', this.onAutoConnect);
         MainEventBus.$on('add-entity', this.onAddEntity);
         MainEventBus.$on('delete-entity', this.onDeleteEntity);
+        MainEventBus.$on('add-level', this.onAddLevel);
+        MainEventBus.$on('delete-level', this.onDeleteLevel);
 
         (this.$refs.drawingCanvas as any).onmousedown = this.onMouseDown;
         (this.$refs.drawingCanvas as any).onmousemove = this.onMouseMove;
@@ -492,6 +499,14 @@ export default class DrawingCanvas extends Vue {
                     assertUnreachable(entity);
             }
         }
+    }
+
+    onAddLevel(level: Level) {
+        this.watchLevel(level.uid);
+    }
+
+    onDeleteLevel(level: Level) {
+        this.unwatchLevel(level.uid);
     }
 
     disableContextMenu(e: Event) {
