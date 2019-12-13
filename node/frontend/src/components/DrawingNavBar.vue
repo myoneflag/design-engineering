@@ -25,6 +25,13 @@
             >
                 {{shortTitle}}
             </b-navbar-brand>
+            <b-navbar-brand
+                    v-if="currentLevel"
+                    @dblclick="titleEditing = true"
+                    :to="{name: 'drawing'}"
+            >
+                - {{ currentLevel.name }}
+            </b-navbar-brand>
 
             <b-nav-item :to="{name: 'settings/general'}" active-class="active" exact :disabled="loading">
                 <span>
@@ -41,7 +48,7 @@
 
 <script lang="ts">
     import {Vue } from 'vue-property-decorator';
-    import { DocumentState } from '../store/document/types';
+    import {DocumentState, Level} from '../store/document/types';
     import { State } from 'vuex-class';
     import Component from 'vue-class-component';
     import ProfileMenuItem from '../../src/components/ProfileMenuItem.vue';
@@ -70,6 +77,13 @@
                 title = title.slice(0, 40) + '...' + title.slice(title.length - 7, title.length);
             }
             return title;
+        }
+
+        get currentLevel(): Level | null {
+            if (this.document.uiState.levelUid === null) {
+                return null;
+            }
+            return this.document.drawing.levels[this.document.uiState.levelUid];
         }
 
         commit() {

@@ -32,6 +32,7 @@
         <LevelSelector
                 :levels="document.drawing.levels"
                 :current-level-uid="document.uiState.levelUid"
+                v-if="levelSelectorVisible"
         >
 
         </LevelSelector>
@@ -359,6 +360,21 @@ export default class DrawingCanvas extends Vue {
             return false;
         }
 
+        if (!this.currentTool.propertiesVisible) {
+            return false;
+        }
+
+        if (this.hasDragged || this.isLayerDragging) {
+            return false;
+        }
+
+        if (this.selectBox) {
+            return false;
+        }
+        return true;
+    }
+
+    get levelSelectorVisible() {
         if (!this.currentTool.propertiesVisible) {
             return false;
         }

@@ -67,7 +67,7 @@
 
                                     <b-col cols="3">
 
-                                        <label v-b-tooltip.hover.title="'Storey Height (m)'" type="number" size="sm">
+                                        <label v-b-tooltip.hover.title="'Fixture Count'" type="number" size="sm">
                                             <span v-for="psd in getLevelPsdFormatted(level)" :style="{color: psd.hex}">{{psd.text}}&nbsp;</span>
                                         </label>
                                     </b-col>
