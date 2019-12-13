@@ -1,21 +1,89 @@
 <template>
-    <div class="level-selector">
-        <b-btn-group vertical>
-            <b-button class="levelBtn" variant="outline-dark" @click="addAbove"><v-icon name="plus"></v-icon> LVL</b-button>
+    <div>
 
-            <b-button
-                    class="levelBtn"
-                    variant="outline-dark"
-                    v-for="level in sortedLevels"
-                    :key="level.uid"
-                    @click="selectLevel(level.uid)"
-                    :pressed="level.uid === currentLevelUid"
-            >
-                {{ level.abbreviation }}
-            </b-button>
-            <b-button class="levelBtn" variant="outline-dark" @click="addBelow"><v-icon name="plus"></v-icon> B</b-button>
+        <div class="level-selector">
 
-        </b-btn-group>
+            <b-list-group>
+                <b-list-group-item button
+                        size="sm" class="levelBtn" variant="outline-dark" @click="expanded = true" v-if="!expanded">
+                    <v-icon name="chevron-right"></v-icon><v-icon name="chevron-right"></v-icon>
+                </b-list-group-item>
+
+                <b-list-group-item button
+                        size="sm" class="levelBtn" variant="outline-dark" @click="expanded = false" v-else :active="true">
+                    <v-icon name="chevron-left"></v-icon><v-icon name="chevron-left"></v-icon>
+                </b-list-group-item>
+
+                <b-list-group-item button
+                        size="sm" class="levelBtn" variant="outline-dark" @click="addAbove"><v-icon name="plus"></v-icon> LVL</b-list-group-item>
+
+                <div class="level-selector-scroll">
+                        <b-list-group-item
+                                class="levelBtn"
+                                variant="outline-dark"
+                                v-for="level, idx in sortedLevels"
+                                :key="level.uid"
+
+                                :active="level.uid === currentLevelUid"
+                                :id="'level-button-' + level.uid"
+                                v-b-tooltip.hover.right="{title: level.name, boundary: 'viewport'}"
+                                button
+                                size="sm"
+                                @click="selectLevel(level.uid)"
+                        >
+                            <b-row>
+                                <b-col :cols="expanded? 1 : 12">
+
+                                    {{ level.abbreviation }}
+                                </b-col>
+                                <template v-if="expanded">
+
+                                    <b-col cols="1" style="padding: 0px">
+
+                                        <b-form-input v-b-tooltip.hover.title="'Abbreviation'" @click="$event.stopPropagation()" v-model="level.abbreviation" size="sm" col></b-form-input>
+                                    </b-col>
+                                    <b-col cols="3">
+
+                                        <b-form-input v-b-tooltip.hover.title="'Description'"  @click="$event.stopPropagation()" v-model="level.name" size="sm"></b-form-input>
+                                    </b-col>
+                                    <b-col cols="2">
+
+                                        <b-input-group size="sm">
+
+                                            <b-form-input class="border-right-0" @click="$event.stopPropagation()" v-b-tooltip.hover.title="'Floor Height (m)'" type="number" v-model="level.floorHeightM" size="sm">
+
+                                            </b-form-input>
+                                            <b-input-group-append>
+                                                <b-input-group-text class="bg-white">
+                                                    m
+                                                </b-input-group-text>
+                                            </b-input-group-append>
+                                        </b-input-group>
+                                    </b-col>
+                                    <b-col cols="1" style="padding: 0">
+
+                                        <label v-b-tooltip.hover.title="'Storey Height (m)'" type="number" size="sm">{{ sortedLevels[idx-1] ? (sortedLevels[idx-1].floorHeightM - level.floorHeightM).toFixed(2) : '??' }} m</label>
+                                    </b-col>
+
+                                    <b-col cols="3">
+
+                                        <label v-b-tooltip.hover.title="'Storey Height (m)'" type="number" size="sm">
+                                            <span v-for="psd in getLevelPsdFormatted(level)" :style="{color: psd.hex}">{{psd.text}}&nbsp;</span>
+                                        </label>
+                                    </b-col>
+
+                                    <b-col cols="1" style="padding: 0">
+                                        <b-button @click="$event.stopPropagation(); deleteLevel(level)" variant="danger" size="sm"><v-icon name="trash"></v-icon></b-button>
+                                    </b-col>
+                                </template>
+                            </b-row>
+                        </b-list-group-item>
+                </div>
+                <b-list-group-item button class="levelBtn" variant="outline-dark" @click="addBelow"><v-icon name="plus"></v-icon> B</b-list-group-item>
+
+            </b-list-group>
+
+        </div>
     </div>
 </template>
 
@@ -25,6 +93,9 @@
     import Component from "vue-class-component";
     import {DocumentState, Level} from "../../store/document/types";
     import uuid from 'uuid';
+    import {countPsdUnits, getPsdUnitName} from "../../calculations/utils";
+    import {Catalog} from "../../store/catalog/types";
+    import {lighten} from "../../lib/utils";
 
     export const GROUND_FLOOR_MIN_HEIGHT_M = -0.5;
     export const LEVEL_HEIGHT_DIFF_M = 3;
@@ -32,6 +103,8 @@
     @Component({
     })
     export default class LevelSelector extends Vue {
+
+        expanded = false;
 
         get sortedLevels(): Level[] {
             const levels = Object.values(this.document.drawing.levels) as Level[];
@@ -64,7 +137,7 @@
             const nMatch = highestFloor.abbreviation.match("[0-9]+");
             let num: number;
             if (nMatch) {
-                num = Number(nMatch[0]);
+                num = Number(nMatch[0]) + 1;
             } else {
                 num = this.numAboveFloors;
             }
@@ -99,24 +172,62 @@
             this.$store.dispatch('document/addLevel', newLvl);
             this.$store.dispatch('document/commit');
         }
+
+        get catalog(): Catalog {
+            return this.$store.getters['catalog/default'];
+        }
+
+        getLevelPsdFormatted(level: Level): Array<{hex: string, text: string}> {
+            const entities = Object.values(level.entities);
+            const result = countPsdUnits(entities, this.document, this.catalog);
+            if (result) {
+                return Object.keys(result).map((k) => {
+                    const system = this.document.drawing.metadata.flowSystems.find((fs) => fs.uid === k);
+                    const hex = system ? system.color.hex : '#555555';
+                    const text = result[k].units + getPsdUnitName(this.document.drawing.metadata.calculationParams.psdMethod)
+                        .abbreviation;
+                    return {hex, text};
+                });
+            } else {
+                return [];
+            }
+        }
+
+        deleteLevel(level: Level) {
+            this.$bvModal.msgBoxConfirm('Are you sure you want to delete '
+                + level.name + ' (' + level.abbreviation + ')?').then((res) => {
+                    if (res) {
+                        this.$store.dispatch('document/deleteLevel', level);
+                        this.$store.dispatch('document/commit');
+                    }
+            });
+        }
     }
 </script>
 
 <style lang="less">
     .level-selector {
         position: fixed;
-        top: 50%;
+        top: 45%;
         transform: translateY(-50%);
         left: -5px;
         min-height: 100px;
         border-left: none;
+        margin-top: 50px;
         border-radius: 0px 5px 5px 0px;
 
-        max-height: -webkit-calc(100vh - 30px);
-        overflow-y: auto;
-        overflow-x: hidden;
     }
     .levelBtn {
-        background-color:white;
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+
+    .levels-list {
+    }
+
+    .level-selector-scroll {
+
+        max-height: -webkit-calc(100vh - 50px);
+        overflow-y: auto;
     }
 </style>

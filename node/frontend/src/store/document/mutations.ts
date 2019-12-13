@@ -131,6 +131,10 @@ export const mutations: MutationTree<DocumentState> = {
             throw new Error('Deleted a level that doesn\'t exist ' + JSON.stringify(level));
         }
         MainEventBus.$emit('delete-level', level);
+        if (level.uid === state.uiState.levelUid) {
+            state.uiState.levelUid = null;
+            MainEventBus.$emit('ot-applied');
+        }
     },
 
     setCurrentLevelUid(state, levelUid) {

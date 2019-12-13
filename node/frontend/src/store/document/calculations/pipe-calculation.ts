@@ -4,6 +4,7 @@ import {DrawingState} from '../../../../src/store/document/types';
 import {isGermanStandard} from '../../../../src/config';
 import PipeEntity, {fillPipeDefaultFields} from '../../../../src/store/document/entities/pipe-entity';
 import {Catalog} from '../../../../src/store/catalog/types';
+import {getPsdUnitName} from "../../../calculations/utils";
 
 export default interface PipeCalculation extends PsdCalculation, Calculation {
     peakFlowRate: number | null;
@@ -23,8 +24,7 @@ export function makePipeCalculationFields(
     settings: DrawingState,
     catalog?: Catalog
 ): CalculationField[] {
-    const psdUnit = isGermanStandard(settings.metadata.calculationParams.psdMethod) ? 'Design Flow Rate' : 'Loading Units';
-    const psdUnitShort = isGermanStandard(settings.metadata.calculationParams.psdMethod) ? 'D. Flow' : 'LU';
+    const psdUnit = getPsdUnitName(settings.metadata.calculationParams.psdMethod);
 
     let materialName = '';
     if (catalog) {
@@ -81,8 +81,8 @@ export function makePipeCalculationFields(
             systemUid: entity.systemUid,
         },
         {property: 'psdUnits',
-            title: psdUnit,
-            short: psdUnitShort,
+            title: psdUnit.name,
+            short: psdUnit.abbreviation,
             units: Units.None,
             category: FieldCategory.LoadingUnits,
             systemUid: entity.systemUid,

@@ -204,7 +204,7 @@ export default class CalculationEngine {
                 .filter((o) => o.type === EntityType.FLOW_SOURCE)
                 .map((o) => ({connectable: o.uid, connection: SELF_CONNECTION}));
             this.sizeDefiniteTransports(sources);
-            // this.sizeRingsAndRoots(sources);
+            this.sizeRingsAndRoots(sources);
             this.calculateAllPointPressures(sources);
             this.fillPressureDropFields();
             this.createWarnings();

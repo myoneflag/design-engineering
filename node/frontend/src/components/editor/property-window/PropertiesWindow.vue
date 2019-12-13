@@ -124,9 +124,10 @@ import {EntityType} from "../../../../src/store/document/entities/types";
     import DirectedValveProperties from '../../../../src/components/editor/property-window/DirectedValveProperties.vue';
     import {Catalog} from "../../../../src/store/catalog/types";
     import Fixture from "../../../../src/htmlcanvas/objects/fixture";
-    import {countPsdUnits, PsdUnitsByFlowSystem} from "../../../../src/calculations/utils";
+    import {countPsdUnits, getPsdUnitName, PsdUnitsByFlowSystem} from "../../../../src/calculations/utils";
     import {isGermanStandard} from "../../../../src/config";
     import {StandardFlowSystemUids} from "../../../../src/store/catalog";
+    import {DrawableEntityConcrete} from "../../../store/document/entities/concrete-entity";
 
     @Component({
         components: {
@@ -160,24 +161,16 @@ import {EntityType} from "../../../../src/store/document/entities/types";
 
 
         get psdUnits(): PsdUnitsByFlowSystem | null {
-            const selectedObjects: BaseBackedObject[] = this.$props.selectedObjects;
-            return countPsdUnits(selectedObjects, this.document, this.effectiveCatalog);
+            const selectedEntities: DrawableEntityConcrete[] = this.$props.selectedEntities;
+            return countPsdUnits(selectedEntities, this.document, this.effectiveCatalog);
         }
 
         get coldPsdUnitsName() {
-            if (isGermanStandard(this.document.drawing.metadata.calculationParams.psdMethod)) {
-                return "Cold Design Flow Rate (L/s)";
-            } else {
-                return "Cold Loading Units";
-            }
+            return 'Cold ' + getPsdUnitName(this.document.drawing.metadata.calculationParams.psdMethod).name;
         }
 
         get hotPsdUnitsName() {
-            if (isGermanStandard(this.document.drawing.metadata.calculationParams.psdMethod)) {
-                return "Hot Design Flow Rate (L/s)";
-            } else {
-                return "Hot Loading Units";
-            }
+            return 'Hot ' + getPsdUnitName(this.document.drawing.metadata.calculationParams.psdMethod).name;
         }
 
         get psdName() {

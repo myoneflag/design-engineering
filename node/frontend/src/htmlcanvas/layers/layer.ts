@@ -14,7 +14,7 @@ import {assertUnreachable} from "../../../src/config";
 
 export default interface Layer {
     uidsInOrder: string[];
-    selectedEntities: WithID[];
+    selectedEntities: DrawableEntityConcrete[];
     selectedObjects: BaseBackedObject[];
 
     select(objects: BaseBackedObject[], mode: SelectMode): void;

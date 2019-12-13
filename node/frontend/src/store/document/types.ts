@@ -247,7 +247,7 @@ export const initialUIState: UIState = {
     },
     isCalculating: false,
     calculationFilters: {},
-    levelUid: "ground",
+    levelUid: null,
 };
 
 export const initialDocumentState: DocumentState = {

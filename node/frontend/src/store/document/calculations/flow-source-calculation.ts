@@ -3,6 +3,7 @@ import {Calculation, PsdCalculation} from '../../../../src/store/document/calcul
 import {isGermanStandard} from '../../../../src/config';
 import {DrawingState} from '../../../../src/store/document/types';
 import FlowSourceEntity from '../../../../src/store/document/entities/flow-source-entity';
+import {getPsdUnitName} from "../../../calculations/utils";
 
 export default interface FlowSourceCalculation extends Calculation {
     pressureKPA: number | null;
@@ -10,8 +11,6 @@ export default interface FlowSourceCalculation extends Calculation {
 }
 
 export function makeFlowSourceCalculationFields(entity: FlowSourceEntity, settings: DrawingState): CalculationField[] {
-    const psdUnit = isGermanStandard(settings.metadata.calculationParams.psdMethod) ? 'Design Flow Rate' : 'Loading Units';
-    const psdUnitShort = isGermanStandard(settings.metadata.calculationParams.psdMethod) ? 'D. Flow' : 'LU';
     return [
         {property: 'pressureKPA',
             title: 'Pressure',

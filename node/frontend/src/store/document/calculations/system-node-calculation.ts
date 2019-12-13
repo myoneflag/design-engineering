@@ -3,6 +3,8 @@ import {Calculation, PsdCalculation} from '../../../../src/store/document/calcul
 import {isGermanStandard} from '../../../../src/config';
 import {DrawingState} from '../../../../src/store/document/types';
 import {SystemNodeEntity} from '../../../../src/store/document/entities/tmv/tmv-entity';
+import {getPsdUnitName} from "../../../calculations/utils";
+import set = Reflect.set;
 
 export default interface SystemNodeCalculation extends PsdCalculation, Calculation {
     pressureKPA: number | null;
@@ -10,8 +12,7 @@ export default interface SystemNodeCalculation extends PsdCalculation, Calculati
 }
 
 export function makeSystemNodeCalculationFields(entity: SystemNodeEntity, settings: DrawingState): CalculationField[] {
-    const psdUnit = isGermanStandard(settings.metadata.calculationParams.psdMethod) ? 'Design Flow Rate' : 'Loading Units';
-    const psdUnitShort = isGermanStandard(settings.metadata.calculationParams.psdMethod) ? 'D. Flow' : 'LU';
+    const psdUnit = getPsdUnitName(settings.metadata.calculationParams.psdMethod);
     return [
         {property: 'pressureKPA',
             title: 'Pressure',
@@ -28,8 +29,8 @@ export function makeSystemNodeCalculationFields(entity: SystemNodeEntity, settin
             category: FieldCategory.FlowRate,
         },
         {property: 'psdUnits',
-            title: psdUnit,
-            short: psdUnitShort,
+            title: psdUnit.name,
+            short: psdUnit.abbreviation,
             units: Units.None,
             systemUid: entity.systemUid,
             category: FieldCategory.LoadingUnits,

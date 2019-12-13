@@ -28,6 +28,14 @@
 
         </CalculationsSidebar>
 
+
+        <LevelSelector
+                :levels="document.drawing.levels"
+                :current-level-uid="document.uiState.levelUid"
+        >
+
+        </LevelSelector>
+
         <div ref="canvasFrame" class="fullFrame" v-bind:class="{ disableMouseEvents: shouldDisableUIMouseEvents }">
             <DrawingNavBar
                     :loading="isLoading"
@@ -65,7 +73,7 @@
                     :available-fixtures="availableFixtures"
                     :available-valves="availableValves"
                     :last-used-fixture-uid="document.uiState.lastUsedFixtureUid"
-                    :last-used-valve-vid="document.uiState.lastUsedValveCUid"
+                    :last-used-valve-vid="document.uiState.lastUsedValveVid"
             />
 
             <CalculationBar
@@ -74,12 +82,7 @@
                     :is-calculating="isCalculating"
             />
 
-            <LevelSelector
-                    :levels="document.drawing.levels"
-                    :current-level-uid="document.uiState.levelUid"
-            >
 
-            </LevelSelector>
 
 
             <Toolbar
@@ -91,6 +94,10 @@
             <InstructionPage
                     v-if="documentBrandNew && toolHandler === null"
             />
+
+            <div v-if="document.uiState.levelUid === null" class="choose-level-instruction">
+                <v-icon name="arrow-left" scale="2"></v-icon> Please Choose a Level
+            </div>
             <resize-observer @notify="draw"/>
 
         </div>
@@ -260,11 +267,16 @@ export default class DrawingCanvas extends Vue {
         this.allLayers.push(this.backgroundLayer, this.hydraulicsLayer, this.calculationLayer);
         this.resetDocument();
 
+
+        // set view on groundiest floor
+        this.selectGroundFloor();
+
         if (this.document.uiState.viewPort === null) {
             this.fitToView();
         }
 
         this.calculationEngine = new CalculationEngine();
+
 
         setInterval(this.drawLoop, 20);
     }
@@ -435,6 +447,7 @@ export default class DrawingCanvas extends Vue {
         if (this.activeLayer) {
             return this.activeLayer.selectedEntities;
         }
+        return null;
     }
 
     get selectedObjects() {
@@ -474,6 +487,21 @@ export default class DrawingCanvas extends Vue {
                 default:
                     assertUnreachable(entity);
             }
+        }
+    }
+
+    selectGroundFloor() {
+        const levels: Level[] = Object.values(this.document.drawing.levels);
+        let bestDist = Infinity;
+        let bestLevel: Level | null = null;
+        levels.forEach((level) => {
+            if (Math.abs(level.floorHeightM) < bestDist) {
+                bestDist = Math.abs(level.floorHeightM);
+                bestLevel = level;
+            }
+        });
+        if (bestLevel) {
+            this.$store.dispatch('document/setCurrentLevelUid', (bestLevel as Level).uid);
         }
     }
 
@@ -603,6 +631,11 @@ export default class DrawingCanvas extends Vue {
     }
 
     resetDocument(redraw: boolean = true) {
+        if (this.document.uiState.levelUid === null && !_.isEmpty(this.document.drawing.levels)) {
+            this.selectGroundFloor();
+            return;
+        }
+
         this.updating = true;
         this.considerCalculating();
 
@@ -803,12 +836,12 @@ export default class DrawingCanvas extends Vue {
             drawPaperScale(ctx, 1 / matrixScale(this.viewPort.position));
 
             if (this.propertiesVisible) {
-                if (this.selectedObjects && this.selectedObjects.length > 0 && this.mode === DrawingMode.Hydraulics) {
+                if (this.selectedEntities && this.selectedEntities.length > 0 && this.mode === DrawingMode.Hydraulics) {
                     drawLoadingUnits(context, this.effectiveCatalog,
-                        countPsdUnits(this.selectedObjects, this.document, this.effectiveCatalog), true);
+                        countPsdUnits(this.selectedEntities, this.document, this.effectiveCatalog), true);
                 } else {
                     drawLoadingUnits(context, this.effectiveCatalog,
-                        countPsdUnits(Array.from(this.objectStore.values()), this.document, this.effectiveCatalog));
+                        countPsdUnits(Array.from(this.objectStore.values()).map((o) => o.entity), this.document, this.effectiveCatalog));
                 }
 
             }
@@ -1081,5 +1114,14 @@ export default class DrawingCanvas extends Vue {
 
     .disableMouseEvents {
         pointer-events: none;
+    }
+    .choose-level-instruction {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+
+        pointer-events: none;
+        font-size: 30px;
     }
 </style>

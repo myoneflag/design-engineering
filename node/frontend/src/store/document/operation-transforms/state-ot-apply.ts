@@ -16,6 +16,11 @@ export function applyDiffVue(target: any, diff: any): any {
     if (_.isArray(diff)) {
         return diff;
     } else if (_.isObject(diff)) {
+        if (_.isArray(target) || !_.isObject(target)) {
+            // convert those primitives and arrays into the object that it ought to be.
+            target = {};
+        }
+
         for (const key of Object.keys(diff)) {
             // we use {} to signal a deleted object (undefined is not valid JSON).
             if (_.isEqual((diff as any)[key], {deleted: true})) {

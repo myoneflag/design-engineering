@@ -1,6 +1,6 @@
 import BaseBackedObject from '../../src/htmlcanvas/lib/base-backed-object';
 import {EntityType} from '../../src/store/document/entities/types';
-import {assertUnreachable, isGermanStandard} from '../../src/config';
+import {assertUnreachable, isGermanStandard, SupportedPsdStandards} from '../../src/config';
 import {DocumentState} from '../../src/store/document/types';
 import {StandardFlowSystemUids} from '../../src/store/catalog';
 import {Catalog, PSDSpec} from '../../src/store/catalog/types';
@@ -26,13 +26,12 @@ export interface PsdCountEntry {
 export interface PsdUnitsByFlowSystem { [key: string]: PsdCountEntry; }
 
 export function countPsdUnits(
-    objects: BaseBackedObject[],
+    entities: DrawableEntityConcrete[],
     doc: DocumentState,
     catalog: Catalog,
 ): PsdUnitsByFlowSystem | null {
     let result: PsdUnitsByFlowSystem | null = null;
-    objects.forEach((o) => {
-        const e = o.entity;
+    entities.forEach((e) => {
         switch (e.type) {
             case EntityType.FIXTURE:
 
@@ -78,6 +77,23 @@ export function countPsdUnits(
     return result;
 }
 
+export function getPsdUnitName(psdMethod: SupportedPsdStandards): {name: string, abbreviation: string} {
+    switch (psdMethod) {
+        case SupportedPsdStandards.as35002018LoadingUnits:
+        case SupportedPsdStandards.barriesBookLoadingUnits:
+        case SupportedPsdStandards.barriesBookDwellings:
+            return {name: 'Loading Units', abbreviation: 'LU'};
+        case SupportedPsdStandards.din1988300Residential:
+        case SupportedPsdStandards.din1988300Hospital:
+        case SupportedPsdStandards.din1988300Hotel:
+        case SupportedPsdStandards.din1988300School:
+        case SupportedPsdStandards.din1988300Office:
+        case SupportedPsdStandards.din1988300AssistedLiving:
+        case SupportedPsdStandards.din1988300NursingHome:
+            return {name: 'Design Flow Rate', abbreviation: 'D. Flow'};
+    }
+    assertUnreachable(psdMethod);
+}
 
 export function lookupFlowRate(psdU: number, doc: DocumentState, catalog: Catalog): number | null {
     const psd = doc.drawing.metadata.calculationParams.psdMethod;
