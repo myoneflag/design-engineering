@@ -26,7 +26,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
 
     prepareDeleteConnection(uid: string, context: CanvasContext): BaseBackedObject[] {
         this.disconnect(uid);
-        if (this.entity.connections.length < this.minimumConnections) {
+        if (this.objectStore.getConnections(this.entity.uid).length < this.minimumConnections) {
             return this.prepareDelete(context);
         } else {
             return [];
@@ -44,7 +44,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                 return null;
             case InteractionType.CONTINUING_PIPE:
             case InteractionType.STARTING_PIPE: {
-                const resultingConnections = this.entity.connections.length + 1;
+                const resultingConnections = this.objectStore.getConnections(this.entity.uid).length + 1;
                 if (this.numConnectionsInBound(resultingConnections)) {
                     return [this.entity];
                 } else {
@@ -55,11 +55,13 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                 if (interaction.src.uid === this.uid) {
                     return null;
                 }
-                if ('connections' in interaction.src) {
+                if (isConnectable(interaction.src.type)) {
                     if (getDragPriority(interaction.src.type) >= this.dragPriority) {
                         return [this.entity];
                     }
-                    if (this.numConnectionsInBound(this.numConnectionsAfterMerging(interaction.src))) {
+                    if (this.numConnectionsInBound(
+                        this.numConnectionsAfterMerging(interaction.src as ConnectableEntityConcrete)
+                    )) {
                         return [this.entity];
                     }
                     return null;
@@ -71,19 +73,21 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                 if (interaction.dest.uid === this.uid) {
                     return null;
                 }
-                if ('connections' in interaction.dest) {
+                if (isConnectable(interaction.dest.type)) {
                     if (getDragPriority(interaction.dest.type) > this.dragPriority) {
                         return [this.entity];
                     }
-                    if (this.numConnectionsInBound(this.numConnectionsAfterMerging(interaction.dest))) {
+                    if (this.numConnectionsInBound(
+                        this.numConnectionsAfterMerging(interaction.dest as ConnectableEntityConcrete)
+                    )) {
                         return [this.entity];
                     }
                     return null;
                 } else if (interaction.dest.type === EntityType.PIPE) {
-                    if (this.entity.connections.includes(interaction.dest.uid)) {
+                    if (this.objectStore.getConnections(this.entity.uid).includes(interaction.dest.uid)) {
                         return null;
                     }
-                    if (this.numConnectionsInBound(this.entity.connections.length + 2)) {
+                    if (this.numConnectionsInBound(this.objectStore.getConnections(this.entity.uid).length + 2)) {
                         return [this.entity];
                     }
                 }
@@ -102,7 +106,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                 }
 
                 if (isSystemCorrect) {
-                    if (this.numConnectionsInBound(this.entity.connections.length + 1)) {
+                    if (this.numConnectionsInBound(this.objectStore.getConnections(this.entity.uid).length + 1)) {
                         return [this.entity];
                     } else {
                         return null;
@@ -114,9 +118,10 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
     }
 
     numConnectionsAfterMerging(other: ConnectableEntityConcrete): number {
-        let resultingConnections = other.connections.length + this.entity.connections.length;
-        const inCommon = other.connections.filter((puid) => {
-            return this.entity.connections.indexOf(puid) !== -1;
+        let resultingConnections = this.objectStore.getConnections(other.uid).length +
+            this.objectStore.getConnections(this.entity.uid).length;
+        const inCommon = this.objectStore.getConnections(other.uid).filter((puid) => {
+            return this.objectStore.getConnections(this.entity.uid).indexOf(puid) !== -1;
         }).length;
         resultingConnections -= inCommon;
         return resultingConnections;

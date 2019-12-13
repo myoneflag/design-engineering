@@ -251,7 +251,7 @@ export default class CalculationEngine {
                 case EntityType.DIRECTED_VALVE:
                 case EntityType.FITTING:
                 case EntityType.SYSTEM_NODE:
-                    const candidates = cloneSimple(entity.connections);
+                    const candidates = cloneSimple(this.objectStore.getConnections(entity.uid));
                     if (entity.type === EntityType.RISER) {
                         candidates.push(SELF_CONNECTION);
                     } else if (entity.type === EntityType.SYSTEM_NODE) {
@@ -557,7 +557,7 @@ export default class CalculationEngine {
                 case EntityType.RISER:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.FITTING:
-                    const toConnect = cloneSimple(obj.entity.connections);
+                    const toConnect = cloneSimple(this.objectStore.getConnections(obj.entity.uid));
                     if ( obj.entity.type === EntityType.RISER) {
                         this.flowGraph.addNode({connectable: obj.uid, connection: SELF_CONNECTION});
                         toConnect.push(SELF_CONNECTION);
@@ -601,15 +601,16 @@ export default class CalculationEngine {
     }
 
     configureDirectedValveLUGraph(entity: DirectedValveEntity) {
-        if (entity.connections.length === 2) {
+        const connections = this.objectStore.getConnections(entity.uid);
+        if (connections.length === 2) {
 
             if (entity.sourceUid === null) {
                 throw new Error('directed valve with unknown direction');
             }
-            if (!entity.connections.includes(entity.sourceUid)) {
+            if (!connections.includes(entity.sourceUid)) {
                 throw new Error('directed valve with invalid direction');
             }
-            const other = entity.connections.find((uid) => uid !== entity.sourceUid)!;
+            const other = connections.find((uid) => uid !== entity.sourceUid)!;
 
             switch (entity.valve.type) {
                 case ValveType.RPZD:
@@ -668,7 +669,7 @@ export default class CalculationEngine {
                     );
                     break;
             }
-        } else if (entity.connections.length > 2) {
+        } else if (connections.length > 2) {
             throw new Error('too many pipes coming out of this one');
         }
     }
@@ -1213,9 +1214,10 @@ export default class CalculationEngine {
                 case EntityType.RISER:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.DIRECTED_VALVE:
-                    if (o.entity.connections.length === 2) {
-                        const p1 = this.objectStore.get(o.entity.connections[0])!;
-                        const p2 = this.objectStore.get(o.entity.connections[1])!;
+                    const connections = this.objectStore.getConnections(o.entity.uid);
+                    if (connections.length === 2) {
+                        const p1 = this.objectStore.get(connections[0])!;
+                        const p2 = this.objectStore.get(connections[1])!;
                         if (p1 instanceof Pipe && p2 instanceof Pipe) {
                             if (p1.entity.calculation!.peakFlowRate !== null &&
                                 p2.entity.calculation!.peakFlowRate !== null) {
@@ -1229,8 +1231,8 @@ export default class CalculationEngine {
                                         o.getFrictionHeadLoss(
                                             this,
                                             o.entity.calculation!.flowRateLS,
-                                            {connectable: o.uid, connection: o.entity.connections[0]},
-                                            {connectable: o.uid, connection: o.entity.connections[1]},
+                                            {connectable: o.uid, connection: connections[0]},
+                                            {connectable: o.uid, connection: connections[1]},
                                             true,
                                         ),
                                         getFluidDensityOfSystem(
@@ -1244,8 +1246,8 @@ export default class CalculationEngine {
                                         o.getFrictionHeadLoss(
                                             this,
                                             o.entity.calculation!.flowRateLS,
-                                            {connectable: o.uid, connection: o.entity.connections[1]},
-                                            {connectable: o.uid, connection: o.entity.connections[0]},
+                                            {connectable: o.uid, connection: connections[1]},
+                                            {connectable: o.uid, connection: connections[0]},
                                             true,
                                         ),
                                         getFluidDensityOfSystem(

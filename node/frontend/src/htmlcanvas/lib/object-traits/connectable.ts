@@ -149,7 +149,7 @@ export function ConnectableObject<T extends new (...args: any[])
         getRadials(exclude: string | null = null)
             : Array<[Coord, BaseBackedObject]> {
             const result: Array<[Coord, BaseBackedObject]> = [];
-            this.entity.connections.forEach((uid) => {
+            this.objectStore.getConnections(this.entity.uid).forEach((uid) => {
                 if (uid === exclude) {
                     return;
                 }
@@ -163,7 +163,11 @@ export function ConnectableObject<T extends new (...args: any[])
                 if (connected.entity.type === EntityType.PIPE) {
                     const pipeObject = connected as Pipe;
                     const [other] = pipeObject.worldEndpoints(this.uid);
-                    assert(pipeObject.worldEndpoints(this.uid).length <= 1);
+                    if (pipeObject.worldEndpoints(this.uid).length > 1) {
+                        throw new Error('pipe object we are connected to doesn\'t connect to us: \n' +
+                            JSON.stringify(pipeObject.entity.endpointUid) + ' ' + pipeObject.uid + '\n' +
+                            JSON.stringify(this.objectStore.getConnections(this.entity.uid)) + ' ' + this.uid);
+                    }
 
                     if (other) {
                         result.push([other, pipeObject]);
@@ -211,7 +215,7 @@ export function ConnectableObject<T extends new (...args: any[])
             const angles = this.getSortedAngles();
             let candidates: Array<[number, number]> = [];
 
-            if (this.entity.connections.length >= 2) {
+            if (this.objectStore.getConnections(this.entity.uid).length >= 2) {
                 for (let i = 0; i < angles.length; i++) {
                     const a = angles[i];
                     const b = angles[(i + 1) % angles.length];
@@ -227,7 +231,7 @@ export function ConnectableObject<T extends new (...args: any[])
                     [candidates[0][0] + Math.PI * 3 / 4, -1],
                     [candidates[0][0] - Math.PI * 3 / 4, -1],
                 );
-            } else if (this.entity.connections.length === 1) {
+            } else if (this.objectStore.getConnections(this.entity.uid).length === 1) {
                 candidates = [
                     [angles[0] + Math.PI, -1],
                     [angles[0] + Math.PI + Math.PI / 4, -1],
@@ -271,7 +275,7 @@ export function ConnectableObject<T extends new (...args: any[])
             // don't think about adding 'this' since deleting our connecting pipes will automagically
             // make that work.
             const result: BaseBackedObject[] = [];
-            _.clone(this.entity.connections).forEach((c) => {
+            _.clone(this.objectStore.getConnections(this.entity.uid)).forEach((c) => {
                 const o = this.objectStore.get(c);
                 if (o instanceof BackedDrawableObject) {
                     result.push(...o.prepareDelete(context));
@@ -367,16 +371,12 @@ export function ConnectableObject<T extends new (...args: any[])
 
         connect(uid: string) {
             super.connect(uid);
-            this.entity.connections.push(uid);
+            // TODO: remove this function
         }
 
         disconnect(uid: string) {
             super.disconnect(uid);
-            const ix = this.entity.connections.indexOf(uid);
-            if (ix === -1) {
-                throw new Error('disconnecting non existent connection');
-            }
-            this.entity.connections.splice(ix, 1);
+            // TODO: remove this function
         }
     });
 }

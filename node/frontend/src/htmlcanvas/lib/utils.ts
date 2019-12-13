@@ -278,7 +278,7 @@ export function maxHeightOfConnection(entity: ConnectableEntityConcrete, context
         height = getSystemNodeHeightM(entity, context);
     }
 
-    entity.connections.forEach((cuid) => {
+    context.objectStore.getConnections(entity.uid).forEach((cuid) => {
         const o = context.objectStore.get(cuid)!;
         if (o.entity.type === EntityType.PIPE) {
             height = Math.max(o.entity.heightAboveFloorM, height);
@@ -295,7 +295,7 @@ export function minHeightOfConnection(entity: ConnectableEntityConcrete, context
     if (entity.type === EntityType.SYSTEM_NODE) {
         height = getSystemNodeHeightM(entity, context);
     }
-    entity.connections.forEach((cuid) => {
+    context.objectStore.getConnections(entity.uid).forEach((cuid) => {
         const o = context.objectStore.get(cuid)!;
         if (o.entity.type === EntityType.PIPE) {
             height = Math.min(o.entity.heightAboveFloorM, height);

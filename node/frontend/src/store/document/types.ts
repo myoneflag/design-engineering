@@ -47,7 +47,6 @@ export interface CenteredEntity extends DrawableEntity {
 }
 
 export interface ConnectableEntity extends CenteredEntity {
-    connections: string[];
 }
 
 export interface Level {

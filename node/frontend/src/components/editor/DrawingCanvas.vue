@@ -179,7 +179,7 @@ export default class DrawingCanvas extends Vue {
     hasDragged: boolean = false;
 
     objectStore: ObjectStore =
-        new ObjectStore();
+        new ObjectStore(this);
 
     // The layers
     backgroundLayer: BackgroundLayer = new BackgroundLayer(
@@ -251,6 +251,7 @@ export default class DrawingCanvas extends Vue {
     levelChangeUnwatchers = new Map<string, () => void>();
 
     mounted() {
+        this.objectStore.vm = this;
         this.ctx = (this.$refs.drawingCanvas as any).getContext('2d');
 
         MainEventBus.$on('ot-applied', this.onOT);
@@ -890,13 +891,10 @@ export default class DrawingCanvas extends Vue {
     }
 
     considerCalculating() {
-        console.log(this.mode + ' ' + this.document.uiState.lastCalculationId + ' ' + this.document.nextId);
         if (this.mode === DrawingMode.Calculations) {
             if (this.document.uiState.lastCalculationId < this.document.nextId
                 || this.document.uiState.lastCalculationUiSettings.demandType !== this.demandType) {
 
-                console.log("called calculate");
-                console.log(new Error().stack);
                 this.calculationLayer.calculate(
                     this,
                     this.demandType,

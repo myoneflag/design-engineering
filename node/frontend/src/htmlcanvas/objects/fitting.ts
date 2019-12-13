@@ -58,7 +58,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         // asdf
         const scale = matrixScale(ctx.getTransform());
 
-        if (this.entity.connections.length === 2) {
+        if (this.objectStore.getConnections(this.entity.uid).length === 2) {
             // TODO: draw an angled arc.
         } // else {
 
@@ -132,16 +132,17 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
     }
 
     get friendlyTypeName(): string {
-        if (this.entity.connections.length === 4) {
+        const connections = this.objectStore.getConnections(this.entity.uid);
+        if (connections.length === 4) {
             return 'Cross fitting';
-        } else if (this.entity.connections.length === 3) {
+        } else if (connections.length === 3) {
             return 'Tee fitting';
-        } else if (this.entity.connections.length === 2) {
+        } else if (connections.length === 2) {
             return 'Elbow/Coupling fitting';
-        } else if (this.entity.connections.length === 1) {
+        } else if (connections.length === 1) {
             return 'Deadleg';
         } else {
-            return this.entity.connections.length + '-way fitting';
+            return connections.length + '-way fitting';
         }
     }
 
@@ -179,7 +180,8 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
         let smallestDiameterMM: number | undefined;
         let largestDiameterMM: number | undefined;
-        this.entity.connections.forEach((p) => {
+        const connections = this.objectStore.getConnections(this.entity.uid);
+        connections.forEach((p) => {
             const pipe = this.objectStore.get(p) as Pipe;
             const thisDiameter = parseCatalogNumberExact(pipe.entity.calculation!.realInternalDiameterMM)!;
             if (smallestDiameterMM === undefined || thisDiameter < smallestDiameterMM) {
@@ -197,7 +199,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         let k: number | null = null;
         const angle =  angleDiffRad(this.getAngleOfRad(from.connection), this.getAngleOfRad(to.connection));
 
-        if (this.entity.connections.length === 2) {
+        if (connections.length === 2) {
             // through valve
             if (isRightAngleRad(angle, Math.PI / 8)) {
                 k = this.getValveK('90Elbow', context.catalog, smallestDiameterMM);
@@ -211,7 +213,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             } else {
                 k = this.getValveK('45Elbow', context.catalog, smallestDiameterMM);
             }
-        } else if (this.entity.connections.length >= 3) {
+        } else if (connections.length >= 3) {
             if (isStraightRad(angle, Math.PI / 4)) {
                 k = this.getValveK('tThruFlow', context.catalog, smallestDiameterMM);
             } else {

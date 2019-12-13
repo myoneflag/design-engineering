@@ -38,7 +38,7 @@ export default function connectTmvToSource(context: CanvasContext, newTmv: Tmv) 
     coldObj = context.objectStore.get(newTmv.entity.coldRoughInUid) as SystemNode;
     hotObj = context.objectStore.get(newTmv.entity.hotRoughInUid) as SystemNode;
 
-    if (interactive && coldObj.entity.connections.length === 0) {
+    if (interactive && context.objectStore.getConnections(coldObj.uid).length === 0) {
         coldDrawn = true;
         const target = interactive[0];
         const targetObj = context.objectStore.get(target.uid)!;
@@ -72,7 +72,7 @@ export default function connectTmvToSource(context: CanvasContext, newTmv: Tmv) 
     // do closest hot pipe
     if (coldDrawn) {
         const interactiveC = getClosestJoinable(context, StandardFlowSystemUids.HotWater, wc, 3000, selfUids);
-        if (interactiveC && interactiveC.length && hotObj.entity.connections.length === 0) {
+        if (interactiveC && interactiveC.length && context.objectStore.getConnections(hotObj.uid).length === 0) {
             const pipeE = interactiveC[0];
 
 

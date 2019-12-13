@@ -77,7 +77,6 @@ export default function insertTmv(
 
             const newCold: SystemNodeEntity = {
                 center: {x: newTmv.pipeDistanceMM / 2, y: 0},
-                connections: [],
                 parentUid: tmvUid,
                 type: EntityType.SYSTEM_NODE,
                 systemUid: StandardFlowSystemUids.ColdWater,
@@ -88,7 +87,6 @@ export default function insertTmv(
 
             const newHot: SystemNodeEntity = {
                 center: {x: -newTmv.pipeDistanceMM / 2, y: 0},
-                connections: [],
                 parentUid: tmvUid,
                 type: EntityType.SYSTEM_NODE,
                 systemUid: StandardFlowSystemUids.HotWater,
@@ -99,7 +97,6 @@ export default function insertTmv(
 
             const newWarm: SystemNodeEntity = {
                 center: {x: tmvhasCold ? newTmv.pipeDistanceMM / 3 : 0, y: newTmv.valveLengthMM},
-                connections: [],
                 parentUid: tmvUid,
                 type: EntityType.SYSTEM_NODE,
                 systemUid: StandardFlowSystemUids.WarmWater,
@@ -110,7 +107,6 @@ export default function insertTmv(
 
             const newColdOut: SystemNodeEntity = {
                 center: {x: -newTmv.pipeDistanceMM / 3, y: newTmv.valveLengthMM},
-                connections: [],
                 parentUid: tmvUid,
                 type: EntityType.SYSTEM_NODE,
                 systemUid: StandardFlowSystemUids.ColdWater,

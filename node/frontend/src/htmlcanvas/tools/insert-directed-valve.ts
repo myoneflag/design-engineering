@@ -98,7 +98,6 @@ function createBareValveEntity(
         calculation: null,
         center: wc,
         color: null,
-        connections: [],
         parentUid: null,
         sourceUid: '',
         systemUidOption,

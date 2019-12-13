@@ -88,11 +88,3 @@ export function fillPipeDefaultFields(
 
     return result;
 }
-
-export function replacePipeEndpointLocal(entity: PipeEntity, from: string, to: string) {
-    const index = entity.endpointUid.indexOf(from);
-    if (index === -1) {
-        throw new Error('Endpoint to replace doesn\'t exist');
-    }
-    entity.endpointUid.splice(index, 1, to);
-}

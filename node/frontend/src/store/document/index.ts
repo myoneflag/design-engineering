@@ -6,6 +6,7 @@ import {DocumentState, initialDocumentState} from './types';
 import {RootState} from '../types';
 import {EntityType} from '../../../src/store/document/entities/types';
 import {cloneSimple} from '../../../src/lib/utils';
+import {assertUnreachable} from "../../config";
 
 export const state: DocumentState = cloneSimple(initialDocumentState);
 
@@ -34,6 +35,7 @@ export function isConnectable(type: EntityType): boolean {
         case EntityType.RESULTS_MESSAGE:
             return false;
     }
+    assertUnreachable(type);
 }
 
 export function isCentered(type: EntityType): boolean {
@@ -51,6 +53,7 @@ export function isCentered(type: EntityType): boolean {
         case EntityType.PIPE:
             return false;
     }
+    assertUnreachable(type);
 }
 
 export function getDragPriority(type: EntityType): number {
@@ -72,4 +75,5 @@ export function getDragPriority(type: EntityType): number {
         case EntityType.RESULTS_MESSAGE:
             throw new Error('not a connectable');
     }
+    assertUnreachable(type);
 }

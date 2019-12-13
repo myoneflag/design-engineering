@@ -14,6 +14,8 @@ export default class  HydraulicsLayer extends LayerImplementation {
     draggedObjects: BaseBackedObject[] | null = null;
 
     draw(context: DrawingContext, active: boolean, mode: DrawingMode, calculationFilters: CalculationFilters | null) {
+        console.log('drawn');
+        console.log(new Error().stack);
         this.uidsInOrder.forEach((v) => {
             this.objectStore.get(v)!.draw(context,
                 {active, selected: false, calculationFilters});
@@ -83,6 +85,10 @@ export default class  HydraulicsLayer extends LayerImplementation {
                 object.refreshObject(
                     entity,
                 );
+
+                if (entity.type === EntityType.PIPE) {
+                    this.objectStore.updatePipeEndpoints(entity.uid, entity.endpointUid);
+                }
             } else {
                 DrawableObjectFactory.build(
                     this,

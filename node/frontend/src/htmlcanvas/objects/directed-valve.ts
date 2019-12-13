@@ -48,19 +48,20 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         // We must get the rotation outside of position() because these
         // rotation calculations depend on position(). So apply this rotation
         // to the context manually afterwards when drawing.
-        if (this.entity.connections.length === 0) {
+        const connections = this.objectStore.getConnections(this.entity.uid);
+        if (connections.length === 0) {
             return 0;
-        } else if (this.entity.connections.length === 1) {
+        } else if (connections.length === 1) {
             const oc = this.toObjectCoord(this.getRadials()[0][0]);
-            if (this.entity.connections[0] === this.entity.sourceUid) {
+            if (connections[0] === this.entity.sourceUid) {
                 return canonizeAngleRad(Math.atan2(oc.y, oc.x) + Math.PI);
             } else {
                 return canonizeAngleRad(Math.atan2(oc.y, oc.x));
             }
-        } else if (this.entity.connections.length === 2) {
+        } else if (connections.length === 2) {
             const s = this.objectStore.get(this.entity.sourceUid) as Pipe;
             const soc = this.toObjectCoord(s.worldEndpoints(this.uid)[0]);
-            const other = this.entity.connections.find((uid) => uid !== this.entity.sourceUid)!;
+            const other = connections.find((uid) => uid !== this.entity.sourceUid)!;
             const o = this.objectStore.get(other) as Pipe;
             const ooc = this.toObjectCoord(o.worldEndpoints(this.uid)[0]);
             const sa = Math.atan2(soc.y, soc.x);
@@ -206,18 +207,19 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
     flip() {
         const entity = this.entity;
+        const connections = this.objectStore.getConnections(entity.uid);
 
-        if (entity.connections.length === 1) {
-            if (entity.sourceUid === entity.connections[0]) {
+        if (connections.length === 1) {
+            if (entity.sourceUid === connections[0]) {
                 entity.sourceUid = "N/A";
             } else {
-                entity.sourceUid = entity.connections[0];
+                entity.sourceUid = connections[0];
             }
-        } else if (entity.connections.length === 2) {
-            if (entity.sourceUid === entity.connections[0]) {
-                entity.sourceUid = entity.connections[1];
+        } else if (connections.length === 2) {
+            if (entity.sourceUid === connections[0]) {
+                entity.sourceUid = connections[1];
             } else {
-                entity.sourceUid = entity.connections[0];
+                entity.sourceUid = connections[0];
             }
         } else {
             throw new Error('Directed valve is connected to too many things');
@@ -239,7 +241,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     }
 
     largestPipeSizeNominalMM(): number | null {
-        const sizes = this.entity.connections.map((uid) => {
+        const sizes = this.objectStore.getConnections(this.entity.uid).map((uid) => {
             const p = this.objectStore.get(uid) as Pipe;
             if (!p || p.type !== EntityType.PIPE) {
                 throw new Error('A non pipe object is connected to a valve');
@@ -279,7 +281,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             }
         }
 
-        if (this.entity.connections.length !== 2) {
+        if (this.objectStore.getConnections(this.entity.uid).length !== 2) {
             throw new Error('need 2 connections to have a calculation here.');
         }
 
@@ -340,10 +342,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     }
 
     connect(uid: string) {
-        if (this.entity.connections.length === 0) {
+        if (this.objectStore.getConnections(this.entity.uid).length === 0) {
             this.entity.sourceUid = uid;
-        } else if (this.entity.connections.length === 1) {
-            if (this.entity.sourceUid !== this.entity.connections[0]) {
+        } else if (this.objectStore.getConnections(this.entity.uid).length === 1) {
+            if (this.entity.sourceUid !== this.objectStore.getConnections(this.entity.uid)[0]) {
                 this.entity.sourceUid = uid;
             }
         } else {

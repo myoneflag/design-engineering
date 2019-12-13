@@ -50,7 +50,6 @@ export default function insertRiser(
                 const newEntity: RiserEntity = {
                     bottomHeightM: null,
                     topHeightM: null,
-                    connections,
                     center: cloneSimple(wc),
                     color: null,
                     pressureSourceHeightM: null,
@@ -76,15 +75,21 @@ export default function insertRiser(
                     } else {
 
                         const entity = object.entity as ConnectableEntity;
-                        connections = cloneSimple(entity.connections);
+                        connections = cloneSimple(context.objectStore.getConnections(entity.uid));
 
                         connections.forEach((e) => {
                             const other = context.objectStore.get(e);
                             if (other instanceof Pipe) {
                                 if (other.entity.endpointUid[0] === entity.uid) {
-                                    other.entity.endpointUid[0] = newUid;
+                                    context.objectStore.updatePipeEndpoints(
+                                        other.entity.uid,
+                                        [newUid, other.entity.endpointUid[1]],
+                                    );
                                 } else {
-                                    other.entity.endpointUid[1] = newUid;
+                                    context.objectStore.updatePipeEndpoints(
+                                        other.entity.uid,
+                                        [other.entity.endpointUid[0], newUid],
+                                    );
                                 }
                             } else {
                                 throw new Error('Connection is not a pipe');
@@ -92,13 +97,13 @@ export default function insertRiser(
                         });
 
                         toReplace = object as BackedDrawableObject<ConnectableEntityConcrete>;
-                        newEntity.connections.slice().forEach((c) => {
+                        context.objectStore.getConnections(newEntity.uid).slice().forEach((c) => {
                             disconnect(context, newEntity.uid, c);
                         });
-                        toReplace.entity.connections.forEach((c) => {
+                        context.objectStore.getConnections(toReplace.entity.uid).forEach((c) => {
                             connect(context, newEntity.uid, c);
                         });
-                        toReplace.entity.connections.slice().forEach((c) => {
+                        context.objectStore.getConnections(toReplace.entity.uid).slice().forEach((c) => {
                             disconnect(context, toReplace!.uid, c);
                         });
                         newEntity.center = toReplace.entity.center;

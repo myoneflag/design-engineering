@@ -33,6 +33,7 @@ import {DEFAULT_FONT_NAME} from '../../../src/config';
 import {CalculationData, CalculationField} from '../../../src/store/document/calculations/calculation-field';
 import {makePipeCalculationFields} from '../../../src/store/document/calculations/pipe-calculation';
 import {Calculated, CalculatedObject, FIELD_HEIGHT} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
+import {isConnectable} from "../../store/document";
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 3.5;
@@ -303,7 +304,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             return false;
         }
 
-        if (e.connections.length !== 2) {
+        if (this.objectStore.getConnections(e.uid).length !== 2) {
             return false;
         }
 
@@ -337,7 +338,6 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 calculation: null,
                 center: {x: newLoc[0].x, y: newLoc[0].y},
                 color: this.entity.color,
-                connections: [this.uid, pipe.uid],
                 parentUid: null,
                 systemUid: this.entity.systemUid,
                 type: EntityType.FITTING,
@@ -345,10 +345,10 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             };
 
             if (this.entity.endpointUid[0] === epUid) {
-                this.entity.endpointUid[0] = newValveUid;
+                this.objectStore.updatePipeEndpoints(this.entity.uid, [newValveUid, this.entity.endpointUid[1]]);
             } else {
                 assert(this.entity.endpointUid[1] === epUid);
-                this.entity.endpointUid[1] = newValveUid;
+                this.objectStore.updatePipeEndpoints(this.entity.uid, [this.entity.endpointUid[0], newValveUid]);
             }
 
             context.$store.dispatch('document/addEntity', pipe);
@@ -361,7 +361,8 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         } else {
             // extend existing pipe
             // find other pipe
-            const opuid = e.connections[0] === this.uid ? e.connections[1] : e.connections[0];
+            const econnections = this.objectStore.getConnections(e.uid);
+            const opuid = econnections[0] === this.uid ? econnections[1] : econnections[0];
             const opo = this.objectStore.get(opuid) as Pipe;
             const wep = opo.worldEndpoints();
             const incident = Flatten.line(Flatten.point(wep[0].x, wep[0].y), Flatten.point(wep[1].x, wep[1].y));
@@ -485,7 +486,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                     return null;
                 }
                 // We can receive valves.
-                if ('connections' in interaction.src) {
+                if (isConnectable(interaction.src.type)) {
                     return [this.entity];
                 } else {
                     return null;

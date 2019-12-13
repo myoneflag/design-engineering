@@ -80,10 +80,10 @@ export function determineConnectableSystemUid(
                 return value.systemUidOption;
             } else {
                 // system will depend on neighbours
-                if (value.connections.length === 0) {
+                if (objectStore.getConnections(value.uid).length === 0) {
                     return undefined;
-                } else if (value.connections.length === 1) {
-                    return (objectStore.get(value.connections[0]) as Pipe).entity.systemUid;
+                } else if (objectStore.getConnections(value.uid).length === 1) {
+                    return (objectStore.get(objectStore.getConnections(value.uid)[0]) as Pipe).entity.systemUid;
                 } else {
                     return (objectStore.get(value.sourceUid) as Pipe).entity.systemUid;
                 }

@@ -40,7 +40,6 @@ export function addValveAndSplitPipe(
         newValve = {
             center: hoverWc,
             color: null,
-            connections: [pipe1uid, pipe2uid],
             parentUid: null,
             systemUid: system,
             type: EntityType.FITTING,

@@ -4,9 +4,8 @@ import Pipe from '../../../../src/htmlcanvas/objects/pipe';
 import CanvasContext from '../../../../src/htmlcanvas/lib/canvas-context';
 import {EntityType} from '../../../../src/store/document/entities/types';
 import assert from 'assert';
-import {replacePipeEndpointLocal} from '../../../../src/store/document/entities/pipe-entity';
 import {addValveAndSplitPipe} from '../../../../src/htmlcanvas/lib/black-magic/split-pipe';
-import {connect, disconnect} from '../../../../src/lib/utils';
+import {cloneSimple, connect, disconnect} from '../../../../src/lib/utils';
 
 /**
  * Moves object join source to object dest, regardless of compatability, and keeps
@@ -33,7 +32,10 @@ export function moveOnto(
         const entity = dest.entity;
         const finalCenter = dest.entity.center;
         // delete incidental pipes
-        const incidental = source.entity.connections.filter((puid) => dest.entity.connections.includes(puid));
+        const incidental =
+            context.objectStore.getConnections(source.uid)
+                .filter((puid) => context.objectStore.getConnections(dest.uid)
+                .includes(puid));
         incidental.forEach((pipe) => {
             context.deleteEntity(context.objectStore.get(pipe)!);
         });
@@ -50,15 +52,20 @@ export function moveOnto(
         survivor.entity.center.x = finalCenter.x;
         survivor.entity.center.y = finalCenter.y;
 
-        loser.entity.connections.forEach((puid) => {
+        cloneSimple(context.objectStore.getConnections(loser.uid)).forEach((puid) => {
             const pipe = context.objectStore.get(puid) as Pipe;
             assert (pipe.type === EntityType.PIPE);
 
-            replacePipeEndpointLocal(pipe.entity, loser.uid, survivor.uid);
+            assert((pipe.entity.endpointUid[0] === loser.uid) !== (pipe.entity.endpointUid[1] === loser.uid));
+
+            context.objectStore.updatePipeEndpoints(pipe.uid, [
+                pipe.entity.endpointUid[0] === loser.uid ? survivor.uid : pipe.entity.endpointUid[0],
+                pipe.entity.endpointUid[1] === loser.uid ? survivor.uid : pipe.entity.endpointUid[1],
+            ]);
             survivor.connect(pipe.uid);
         });
 
-        loser.entity.connections.slice().forEach((c) => {
+        context.objectStore.getConnections(loser.uid).slice().forEach((c) => {
             loser.disconnect(c);
         });
 

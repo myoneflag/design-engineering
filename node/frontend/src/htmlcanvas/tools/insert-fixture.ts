@@ -77,7 +77,6 @@ export default function insertFixture(
 
             const coldEntity: SystemNodeEntity = {
                 center: hasWarm ? {x: -newEntity.pipeDistanceMM / 2, y: 0} : {x: 0, y: 0},
-                connections: [],
                 parentUid: fixtureUid,
                 type: EntityType.SYSTEM_NODE,
                 systemUid: StandardFlowSystemUids.ColdWater,
@@ -93,7 +92,6 @@ export default function insertFixture(
             if (hasWarm) {
                 const warmEntity: SystemNodeEntity = {
                     center: {x: newEntity.pipeDistanceMM / 2, y: 0},
-                    connections: [],
                     parentUid: fixtureUid,
                     type: EntityType.SYSTEM_NODE,
                     systemUid: StandardFlowSystemUids.WarmWater,

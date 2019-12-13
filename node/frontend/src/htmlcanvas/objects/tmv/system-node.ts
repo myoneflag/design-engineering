@@ -44,7 +44,7 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
         switch (interaction.type) {
             case InteractionType.STARTING_PIPE:
             case InteractionType.CONTINUING_PIPE:
-                if (this.entity.connections.length > 0) {
+                if (this.objectStore.getConnections(this.entity.uid).length > 0) {
                     return null;
                 }
                 if (interaction.system.uid !== this.entity.systemUid) {
@@ -52,7 +52,7 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
                 }
                 break;
             case InteractionType.MOVE_ONTO_RECEIVE:
-                if (this.entity.connections.length > 0) {
+                if (this.objectStore.getConnections(this.entity.uid).length > 0) {
                     return null;
                 }
                 break;
