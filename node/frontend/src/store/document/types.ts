@@ -8,6 +8,7 @@ import {DrawableEntityConcrete} from '../../../src/store/document/entities/concr
 import {cloneSimple} from '../../../src/lib/utils';
 import {ValveId} from '../../../src/htmlcanvas/lib/types';
 import {FlowConfiguration} from "./entities/tmv/tmv-entity";
+import RiserEntity from "./entities/riser-entity";
 
 // Because of how the diffing engine works, there are restrictions on the data structure for the document state.
 // Rules are:
@@ -68,7 +69,8 @@ export interface DrawingState {
         availableFixtures: string[];
     }
 
-    levels: {[key: string]: Level}
+    levels: {[key: string]: Level};
+    shared: {[key: string]: RiserEntity};
 }
 
 export interface CalculationUiSettings {
@@ -230,6 +232,7 @@ export const initialDrawing: DrawingState = {
             uid: "ground",
         }
     },
+    shared: {},
 };
 
 export const initialUIState: UIState = {

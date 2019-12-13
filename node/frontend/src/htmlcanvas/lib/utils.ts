@@ -1,5 +1,5 @@
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
-import {Coord, DocumentState, DrawableEntity} from '../../../src/store/document/types';
+import {Coord, DocumentState, DrawableEntity, Level} from '../../../src/store/document/types';
 import {ObjectStore} from '../../../src/htmlcanvas/lib/types';
 import {cloneSimple} from '../../../src/lib/utils';
 import {ConnectableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
@@ -8,6 +8,8 @@ import {SystemNodeEntity} from '../../../src/store/document/entities/tmv/tmv-ent
 import {fillFixtureFields} from '../../../src/store/document/entities/fixtures/fixture-entity';
 import * as TM from 'transformation-matrix';
 import Flatten from '@flatten-js/core';
+import RiserEntity from "../../store/document/entities/riser-entity";
+import {LEVEL_HEIGHT_DIFF_M} from "../../lib/types";
 
 
 export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
@@ -307,4 +309,24 @@ export function minHeightOfConnection(entity: ConnectableEntityConcrete, context
 
 export function tm2flatten(m: TM.Matrix): Flatten.Matrix {
     return new Flatten.Matrix(m.a, m.b, m.c, m.d, m.e, m.f);
+}
+
+export function levelIncludesRiser(level: Level, riser: RiserEntity, sortedLevels: Level[]): boolean {
+    if (riser.bottomHeightM === null && riser.topHeightM === null) {
+        return true;
+    } else if (riser.bottomHeightM === null) {
+        return riser.topHeightM! >= level.floorHeightM;
+    } else if (riser.topHeightM === null) {
+        const i = sortedLevels.findIndex((l) => l.uid === level.uid);
+        const roofheight = i > 0 ? sortedLevels[i-1].floorHeightM : level.floorHeightM + LEVEL_HEIGHT_DIFF_M;
+        return riser.bottomHeightM! <= roofheight;
+    } else {
+        if (riser.topHeightM >= level.floorHeightM) {
+            return true;
+        }
+
+        const i = sortedLevels.findIndex((l) => l.uid === level.uid);
+        const roofheight = i > 0 ? sortedLevels[i-1].floorHeightM : level.floorHeightM + LEVEL_HEIGHT_DIFF_M;
+        return riser.bottomHeightM <= roofheight;
+    }
 }

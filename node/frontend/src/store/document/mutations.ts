@@ -4,7 +4,6 @@ import * as OT from './operation-transforms/operation-transforms';
 import {OPERATION_NAMES} from './operation-transforms/operation-transforms';
 import {MainEventBus} from '../../../src/store/main-event-bus';
 import {applyOtOnState} from '../../../src/store/document/operation-transforms/state-ot-apply';
-import * as _ from 'lodash';
 import {cloneSimple} from '../../../src/lib/utils';
 import {DrawableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
 import {EntityType} from '../../../src/store/document/entities/types';
@@ -92,9 +91,14 @@ export const mutations: MutationTree<DocumentState> = {
         MainEventBus.$emit('add-entity', {entity, levelUid});
     },
 
-    addEntity(state, entity) {
-        Vue.set(state.drawing.levels[state.uiState.levelUid!].entities, entity.uid, entity);
-        MainEventBus.$emit('add-entity', {entity, levelUid: state.uiState.levelUid!});
+    addEntity(state, entity: DrawableEntityConcrete) {
+        if (entity.type === EntityType.RISER) {
+            Vue.set(state.drawing.shared, entity.uid, entity);
+            MainEventBus.$emit('add-entity', {entity, levelUid: null});
+        } else {
+            Vue.set(state.drawing.levels[state.uiState.levelUid!].entities, entity.uid, entity);
+            MainEventBus.$emit('add-entity', {entity, levelUid: state.uiState.levelUid!});
+        }
     },
 
     setId(state, id: number) {
@@ -102,12 +106,19 @@ export const mutations: MutationTree<DocumentState> = {
     },
 
     deleteEntity(state, entity) {
-        if (entity.uid in state.drawing.levels[state.uiState.levelUid!].entities) {
+        if (entity.type === EntityType.RISER) {
+            if (entity.uid in state.drawing.shared) {
+                Vue.delete(state.drawing.shared, entity.uid);
+                MainEventBus.$emit('delete-entity', {entity, levelUid: null});
+            } else {
+                throw new Error('Deleted an entity that doesn\'t exist ' + JSON.stringify(entity));
+            }
+        } else if (entity.uid in state.drawing.levels[state.uiState.levelUid!].entities) {
             Vue.delete(state.drawing.levels[state.uiState.levelUid!].entities, entity.uid);
+            MainEventBus.$emit('delete-entity', {entity, levelUid: state.uiState.levelUid!});
         } else {
             throw new Error('Deleted an entity that doesn\'t exist ' + JSON.stringify(entity));
         }
-        MainEventBus.$emit('delete-entity', {entity, levelUid: state.uiState.levelUid!});
     },
 
     deleteEntityOn(state, {entity, levelUid}) {

@@ -57,6 +57,7 @@ export class LoginController {
             existingSession.id = uuid();
             await existingSession.save();
         }
+
         const catalogs = await Catalog.find();
         res.status(200).send({
             success: true,

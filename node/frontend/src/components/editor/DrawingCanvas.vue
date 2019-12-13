@@ -1,3 +1,4 @@
+import {EntityType} from "../../store/document/entities/types";
 <template>
 
 
@@ -106,58 +107,59 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
-import {ViewPort} from "../../../src/htmlcanvas/viewport";
-import {Coord, DocumentState, EntityParam, FlowSystemParameters, Level} from "../../../src/store/document/types";
-import {drawLoadingUnits, drawPaperScale} from "../../../src/htmlcanvas/on-screen-items";
-import ModeButtons from "../../../src/components/editor/ModeButtons.vue";
-import PropertiesWindow from "../../../src/components/editor/property-window/PropertiesWindow.vue";
-import {DrawingMode, MouseMoveResult, UNHANDLED} from "../../../src/htmlcanvas/types";
-import BackgroundLayer from "../../../src/htmlcanvas/layers/background-layer";
-import * as TM from "transformation-matrix";
-import {decomposeMatrix, matrixScale} from "../../../src/htmlcanvas/utils";
-import Toolbar from "../../../src/components/editor/Toolbar.vue";
-import LoadingScreen from "../../../src/views/LoadingScreen.vue";
-import {MainEventBus} from "../../../src/store/main-event-bus";
-import {ToolConfig} from "../../../src/store/tools/types";
-import {DEFAULT_TOOL, ToolHandler} from "../../../src/htmlcanvas/lib/tool";
-import uuid from "uuid";
-import {renderPdf} from "../../../src/api/pdf";
-import HydraulicsLayer from "../../../src/htmlcanvas/layers/hydraulics-layer";
-import Layer, {SelectMode} from "../../../src/htmlcanvas/layers/layer";
-import HydraulicsInsertPanel from "../../../src/components/editor/HydraulicsInsertPanel.vue";
-import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
-import {EntityType} from "../../../src/store/document/entities/types";
-import {Interaction} from "../../../src/htmlcanvas/lib/interaction";
-import insertRiser from "../../htmlcanvas/tools/insert-riser";
-import insertPipes from "../../../src/htmlcanvas/tools/insert-pipes";
-import insertValve from "../../../src/htmlcanvas/tools/insert-valve";
-import {DrawingContext, ObjectStore, SelectionTarget, ValveId} from "../../../src/htmlcanvas/lib/types";
-import {BackgroundEntity} from "../../../src/store/document/entities/background-entity";
-import insertTmv from "../../../src/htmlcanvas/tools/insert-tmv";
-import insertFixture from "../../../src/htmlcanvas/tools/insert-fixture";
-import FloorPlanInsertPanel from "../../../src/components/editor/FloorPlanInsertPanel.vue";
-import InstructionPage from "../../../src/components/editor/InstructionPage.vue";
-import CalculationBar from "../../../src/components/CalculationBar.vue";
-import {DemandType} from "../../../src/calculations/types";
-import CalculationEngine from "../../../src/calculations/calculation-engine";
-import CalculationLayer from "../../../src/htmlcanvas/layers/calculation-layer";
-import {getBoundingBox} from "../../../src/htmlcanvas/lib/utils";
-import {Catalog} from "../../../src/store/catalog/types";
-import {DrawableEntityConcrete} from "../../../src/store/document/entities/concrete-entity";
-import SelectBox from "../../../src/htmlcanvas/objects/select-box";
-import * as _ from "lodash";
-import {AutoConnector} from "../../../src/htmlcanvas/lib/black-magic/auto-connect";
-import insertDirectedValve from "../../../src/htmlcanvas/tools/insert-directed-valve";
-import {ValveType} from "../../../src/store/document/entities/directed-valves/valve-types";
-import {countPsdUnits} from "../../../src/calculations/utils";
-import CalculationsSidebar from "../../../src/components/editor/CalculationsSidebar.vue";
-import {assertUnreachable} from "../../../src/config";
-import DrawingNavBar from "../DrawingNavBar.vue";
-import LevelSelector from "./LevelSelector.vue";
+    import Vue from "vue";
+    import Component from "vue-class-component";
+    import {ViewPort} from "../../../src/htmlcanvas/viewport";
+    import {Coord, DocumentState, EntityParam, FlowSystemParameters, Level} from "../../../src/store/document/types";
+    import {drawLoadingUnits, drawPaperScale} from "../../../src/htmlcanvas/on-screen-items";
+    import ModeButtons from "../../../src/components/editor/ModeButtons.vue";
+    import PropertiesWindow from "../../../src/components/editor/property-window/PropertiesWindow.vue";
+    import {DrawingMode, MouseMoveResult, UNHANDLED} from "../../../src/htmlcanvas/types";
+    import BackgroundLayer from "../../../src/htmlcanvas/layers/background-layer";
+    import * as TM from "transformation-matrix";
+    import {decomposeMatrix, matrixScale} from "../../../src/htmlcanvas/utils";
+    import Toolbar from "../../../src/components/editor/Toolbar.vue";
+    import LoadingScreen from "../../../src/views/LoadingScreen.vue";
+    import {MainEventBus} from "../../../src/store/main-event-bus";
+    import {ToolConfig} from "../../../src/store/tools/types";
+    import {DEFAULT_TOOL, ToolHandler} from "../../../src/htmlcanvas/lib/tool";
+    import uuid from "uuid";
+    import {renderPdf} from "../../../src/api/pdf";
+    import HydraulicsLayer from "../../../src/htmlcanvas/layers/hydraulics-layer";
+    import Layer, {SelectMode} from "../../../src/htmlcanvas/layers/layer";
+    import HydraulicsInsertPanel from "../../../src/components/editor/HydraulicsInsertPanel.vue";
+    import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
+    import {EntityType} from "../../../src/store/document/entities/types";
+    import {Interaction} from "../../../src/htmlcanvas/lib/interaction";
+    import insertRiser from "../../htmlcanvas/tools/insert-riser";
+    import insertPipes from "../../../src/htmlcanvas/tools/insert-pipes";
+    import insertValve from "../../../src/htmlcanvas/tools/insert-valve";
+    import {DrawingContext, ObjectStore, SelectionTarget, ValveId} from "../../../src/htmlcanvas/lib/types";
+    import {BackgroundEntity} from "../../../src/store/document/entities/background-entity";
+    import insertTmv from "../../../src/htmlcanvas/tools/insert-tmv";
+    import insertFixture from "../../../src/htmlcanvas/tools/insert-fixture";
+    import FloorPlanInsertPanel from "../../../src/components/editor/FloorPlanInsertPanel.vue";
+    import InstructionPage from "../../../src/components/editor/InstructionPage.vue";
+    import CalculationBar from "../../../src/components/CalculationBar.vue";
+    import {DemandType} from "../../../src/calculations/types";
+    import CalculationEngine from "../../../src/calculations/calculation-engine";
+    import CalculationLayer from "../../../src/htmlcanvas/layers/calculation-layer";
+    import {getBoundingBox, levelIncludesRiser} from "../../../src/htmlcanvas/lib/utils";
+    import {Catalog} from "../../../src/store/catalog/types";
+    import {DrawableEntityConcrete} from "../../../src/store/document/entities/concrete-entity";
+    import SelectBox from "../../../src/htmlcanvas/objects/select-box";
+    import * as _ from "lodash";
+    import {AutoConnector} from "../../../src/htmlcanvas/lib/black-magic/auto-connect";
+    import insertDirectedValve from "../../../src/htmlcanvas/tools/insert-directed-valve";
+    import {ValveType} from "../../../src/store/document/entities/directed-valves/valve-types";
+    import {countPsdUnits} from "../../../src/calculations/utils";
+    import CalculationsSidebar from "../../../src/components/editor/CalculationsSidebar.vue";
+    import {assertUnreachable} from "../../../src/config";
+    import DrawingNavBar from "../DrawingNavBar.vue";
+    import LevelSelector from "./LevelSelector.vue";
+    import {fillRiserDefaults} from "../../store/document/entities/riser-entity";
 
-@Component({
+    @Component({
     components: {
         LevelSelector,
         DrawingNavBar,
@@ -477,6 +479,10 @@ export default class DrawingCanvas extends Vue {
         return this.document.uiState.isCalculating;
     }
 
+    get sortedLevels() {
+        return this.$store.getters['document/sortedLevels'];
+    }
+
     onLayerSelect() {
         this.targetProperty = null;
         this.scheduleDraw();
@@ -502,6 +508,13 @@ export default class DrawingCanvas extends Vue {
                     break;
                 default:
                     assertUnreachable(entity);
+            }
+        } else if (entity.type === EntityType.RISER) {
+            // Determine if this guy belongs
+            if (this.currentLevel) {
+                if (levelIncludesRiser(this.currentLevel, entity, this.sortedLevels)) {
+                    this.hydraulicsLayer.addEntity(entity);
+                }
             }
         }
     }
@@ -541,6 +554,13 @@ export default class DrawingCanvas extends Vue {
                     break;
                 default:
                     assertUnreachable(entity);
+            }
+        } else if (entity.type === EntityType.RISER) {
+            // Determine if this guy belongs
+            if (this.currentLevel) {
+                if (levelIncludesRiser(this.currentLevel, entity, this.sortedLevels)) {
+                    this.hydraulicsLayer.deleteEntity(entity);
+                }
             }
         }
     }
@@ -588,7 +608,7 @@ export default class DrawingCanvas extends Vue {
                 throw new Error('Selecting an object that doesn\'t exist');
             }
 
-            const drawable = this.currentLevel!.entities[selectionTarget.uid];
+            const drawable = obj.entity;
             if (drawable.type === EntityType.BACKGROUND_IMAGE) {
                 this.mode = DrawingMode.FloorPlan;
             } else if (drawable) {

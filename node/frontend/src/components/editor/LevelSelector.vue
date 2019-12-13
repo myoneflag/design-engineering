@@ -105,8 +105,7 @@
         expanded = false;
 
         get sortedLevels(): Level[] {
-            const levels = Object.values(this.document.drawing.levels) as Level[];
-            return levels.sort((a, b) => -(a.floorHeightM - b.floorHeightM));
+            return this.$store.getters['document/sortedLevels'];
         }
 
         get numAboveFloors(): number {

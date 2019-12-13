@@ -7,6 +7,7 @@ import {EntityType} from '../../../src/store/document/entities/types';
 import {DrawingContext} from '../../../src/htmlcanvas/lib/types';
 import DrawableObjectFactory from '../lib/drawable-object-factory';
 import {DrawableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
+import {levelIncludesRiser} from "../lib/utils";
 
 export default class  HydraulicsLayer extends LayerImplementation {
 
@@ -21,8 +22,19 @@ export default class  HydraulicsLayer extends LayerImplementation {
 
     resetDocument(doc: DocumentState) {
         let entities: DrawableEntityConcrete[] = [];
+
         if (doc.uiState.levelUid) {
             entities = Object.values(doc.drawing.levels[doc.uiState.levelUid].entities);
+
+            const sortedLevels = Object.values(doc.drawing.levels).sort((a, b) =>
+                a.floorHeightM - b.floorHeightM);
+
+            const risers = Object.values(doc.drawing.shared);
+            risers.forEach((r) => {
+                if (levelIncludesRiser(doc.drawing.levels[doc.uiState.levelUid!], r, sortedLevels)) {
+                    entities.push(r);
+                }
+            });
         }
 
         const thisIds = entities
@@ -86,7 +98,6 @@ export default class  HydraulicsLayer extends LayerImplementation {
         });
 
         this.uidsInOrder = [];
-
 
         this.uidsInOrder = thisIds.sort((a, b) => {
             return this.entitySortOrder(this.objectStore.get(a)!.entity) -

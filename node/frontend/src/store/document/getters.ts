@@ -23,4 +23,9 @@ export const getters: GetterTree<DocumentState, RootState> = {
             && state.optimisticHistory.length === 0
             && state.nextId === initialDocumentState.nextId;
     },
+
+    sortedLevels(state): Level[] {
+        const levels = Object.values(state.drawing.levels) as Level[];
+        return levels.sort((a, b) => -(a.floorHeightM - b.floorHeightM));
+    }
 };
