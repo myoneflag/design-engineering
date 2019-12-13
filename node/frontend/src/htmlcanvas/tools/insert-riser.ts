@@ -1,7 +1,7 @@
 import {ConnectableEntity, Coord, DocumentState, FlowSystemParameters} from '../../../src/store/document/types';
 import {MainEventBus} from '../../../src/store/main-event-bus';
 import PointTool from '../../../src/htmlcanvas/tools/point-tool';
-import FlowSourceEntity from '../../../src/store/document/entities/flow-source-entity';
+import RiserEntity from '../../store/document/entities/riser-entity';
 import {EntityType} from '../../../src/store/document/entities/types';
 import uuid from 'uuid';
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
@@ -15,7 +15,7 @@ import {addValveAndSplitPipe} from '../../../src/htmlcanvas/lib/black-magic/spli
 import {cloneSimple, connect, disconnect} from '../../../src/lib/utils';
 import {rebaseAll} from '../../../src/htmlcanvas/lib/black-magic/rebase-all';
 
-export default function insertFlowSource(
+export default function insertRiser(
     context: CanvasContext,
     system: FlowSystemParameters,
 ) {
@@ -35,7 +35,7 @@ export default function insertFlowSource(
             context.$store.dispatch('document/revert', false).then(() => {
 
                 const interactive = context.offerInteraction({
-                    entityType: EntityType.FLOW_SOURCE,
+                    entityType: EntityType.RISER,
                     worldCoord: wc,
                     worldRadius: 10,
                     type: InteractionType.INSERT,
@@ -47,22 +47,23 @@ export default function insertFlowSource(
 
                 let connections: string[] = [];
 
-                const newEntity: FlowSourceEntity = {
+                const newEntity: RiserEntity = {
+                    bottomHeightM: null,
+                    topHeightM: null,
                     connections,
                     center: cloneSimple(wc),
                     color: null,
-                    heightAboveFloor: 0,
+                    pressureSourceHeightM: null,
                     material: null,
                     maximumVelocityMS: null,
                     parentUid: null,
                     pressureKPA: null,
-                    diameterMM: 100,
-                    spareCapacity: null,
+                    diameterMM: null,
                     systemUid: system.uid,
                     temperatureC: null,
-                    type: EntityType.FLOW_SOURCE,
+                    type: EntityType.RISER,
                     uid: newUid,
-                    calculation: null,
+                    calculation: null
                 };
 
                 context.$store.dispatch('document/addEntity', newEntity);

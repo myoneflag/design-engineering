@@ -27,7 +27,7 @@
     import Vue from 'vue';
     import Component from 'vue-class-component';
     import PropertiesFieldBuilder from '../../../../src/components/editor/lib/PropertiesFieldBuilder.vue';
-    import {fillFlowSourceDefaults, makeFlowSourceFields} from '../../../../src/store/document/entities/flow-source-entity';
+    import {fillRiserDefaults, makeRiserFields} from '../../../store/document/entities/riser-entity';
     import {DocumentState} from '../../../../src/store/document/types';
 
     @Component({
@@ -40,10 +40,10 @@
             onChange: Function,
         },
     })
-    export default class FlowSourceProperties extends Vue {
+    export default class RiserProperties extends Vue {
 
         get fields() {
-            return makeFlowSourceFields(
+            return makeRiserFields(
                 this.$store.getters['catalog/defaultPipeMaterialChoices'],
                 this.document.drawing.metadata.flowSystems,
             );
@@ -58,16 +58,13 @@
         }
 
         get defaultData() {
-            return fillFlowSourceDefaults(this.document, this.reactiveData);
+            return fillRiserDefaults(this.document, this.reactiveData);
         }
 
         onCommit() {
             this.$store.dispatch('document/commit');
         }
     }
-
-
-
 </script>
 
 <style lang="less">

@@ -4,7 +4,7 @@ import {Catalog} from '../../src/store/catalog/types';
 import {DocumentState} from '../../src/store/document/types';
 import {getFluidDensityOfSystem, kpa2head} from '../../src/calculations/pressure-drops';
 import {ternarySearchForGlobalMin} from '../../src/calculations/search-functions';
-import FlowSourceEntity from '../../src/store/document/entities/flow-source-entity';
+import RiserEntity from '../store/document/entities/riser-entity';
 import {FlowAssignment} from '../../src/calculations/flow-assignment';
 import { getObjectFrictionHeadLoss } from './entity-pressure-drops';
 import {FlowEdge, FlowNode, SELF_CONNECTION} from '../../src/calculations/calculation-engine';
@@ -88,12 +88,12 @@ export default class FlowSolver {
                     throw new Error('Endpoint of arc is not a source');
                 }
                 const fromDensity = getFluidDensityOfSystem(
-                    (this.objectStore.get(a[0].from.connectable)!.entity as FlowSourceEntity).systemUid,
+                    (this.objectStore.get(a[0].from.connectable)!.entity as RiserEntity).systemUid,
                     this.doc,
                     this.catalog,
                 );
                 const toDensity = getFluidDensityOfSystem(
-                    (this.objectStore.get(a[a.length - 1].from.connectable)!.entity as FlowSourceEntity).systemUid,
+                    (this.objectStore.get(a[a.length - 1].from.connectable)!.entity as RiserEntity).systemUid,
                     this.doc,
                     this.catalog,
                 );

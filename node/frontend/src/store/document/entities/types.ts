@@ -1,6 +1,6 @@
 export enum EntityType {
     BACKGROUND_IMAGE = 'BACKGROUND_IMAGE',
-    FLOW_SOURCE = 'FLOW_SOURCE',
+    RISER = 'RISER',
     FLOW_RETURN = 'FLOW_RETURN',
     PIPE = 'PIPE',
     FITTING = 'FITTING',
@@ -20,7 +20,7 @@ export function getEntityName(type: EntityType): string {
     switch (type) {
         case EntityType.BACKGROUND_IMAGE:
             return 'Background';
-        case EntityType.FLOW_SOURCE:
+        case EntityType.RISER:
             return 'Riser';
         case EntityType.FLOW_RETURN:
             return 'Return';

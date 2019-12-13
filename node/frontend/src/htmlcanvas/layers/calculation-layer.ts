@@ -129,7 +129,7 @@ export default class CalculationLayer extends LayerImplementation {
         }
 
         switch (object.entity.type) {
-            case EntityType.FLOW_SOURCE:
+            case EntityType.RISER:
                 return 120;
             case EntityType.FIXTURE:
                 return 110;

@@ -9,7 +9,7 @@ import {PsdStandard, PSDStandardType} from '../../src/store/catalog/psd-standard
 import {interpolateTable, parseCatalogNumberExact} from '../../src/htmlcanvas/lib/utils';
 import {DrawingContext} from '../../src/htmlcanvas/lib/types';
 import {CalculationField} from '../../src/store/document/calculations/calculation-field';
-import {makeFlowSourceCalculationFields} from '../../src/store/document/calculations/flow-source-calculation';
+import {makeRiserCalculationFields} from '../store/document/calculations/riser-calculations';
 import {makePipeCalculationFields} from '../../src/store/document/calculations/pipe-calculation';
 import {makeFittingCalculationFields} from '../../src/store/document/calculations/fitting-calculation';
 import {makeTmvCalculationFields} from '../../src/store/document/calculations/tmv-calculation';
@@ -63,7 +63,7 @@ export function countPsdUnits(
             case EntityType.BACKGROUND_IMAGE:
             case EntityType.FITTING:
             case EntityType.PIPE:
-            case EntityType.FLOW_SOURCE:
+            case EntityType.RISER:
             case EntityType.RESULTS_MESSAGE:
             case EntityType.SYSTEM_NODE:
             case EntityType.TMV:
@@ -117,8 +117,8 @@ export function lookupFlowRate(psdU: number, doc: DocumentState, catalog: Catalo
 
 export function getFields(entity: DrawableEntityConcrete, doc: DocumentState, catalog?: Catalog): CalculationField[] {
     switch (entity.type) {
-        case EntityType.FLOW_SOURCE:
-            return makeFlowSourceCalculationFields(entity, doc.drawing);
+        case EntityType.RISER:
+            return makeRiserCalculationFields(entity, doc.drawing);
         case EntityType.PIPE:
             return makePipeCalculationFields(entity, doc.drawing, catalog);
         case EntityType.FITTING:

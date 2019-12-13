@@ -8,47 +8,59 @@ import {
 import {FieldType, PropertyField} from '../../../../src/store/document/entities/property-field';
 import * as _ from 'lodash';
 import {EntityType} from '../../../../src/store/document/entities/types';
-import FlowSourceCalculation from '../../../../src/store/document/calculations/flow-source-calculation';
+import RiserCalculations from '../calculations/riser-calculations';
 import {CalculationTarget} from '../../../../src/store/document/calculations/types';
-import {Choice} from '../../../../src/lib/types';
+import {Choice, LEVEL_HEIGHT_DIFF_M} from '../../../../src/lib/types';
 import {cloneSimple} from '../../../../src/lib/utils';
 
-export default interface FlowSourceEntity extends ConnectableEntity, CalculationTarget<FlowSourceCalculation> {
-    type: EntityType.FLOW_SOURCE;
+export default interface RiserEntity extends ConnectableEntity, CalculationTarget<RiserCalculations> {
+    type: EntityType.RISER;
     center: Coord;
     systemUid: string;
 
-    diameterMM: number;
+    diameterMM: number | null;
     maximumVelocityMS: number | null; // null means default
-    heightAboveFloor: number;
+    pressureSourceHeightM: number | null;
     material: string | null;
-    spareCapacity: number | null;
     color: Color | null;
     temperatureC: number | null;
     pressureKPA: number | null;
 
-    calculation: FlowSourceCalculation | null;
+    bottomHeightM: number | null;
+    topHeightM: number | null;
+
+    calculation: RiserCalculations | null;
 }
 
-export function makeFlowSourceFields(materials: Choice[], systems: FlowSystemParameters[]): PropertyField[] {
+export function makeRiserFields(materials: Choice[], systems: FlowSystemParameters[]): PropertyField[] {
     return [
         { property: 'systemUid', title: 'Flow System', hasDefault: false, isCalculated: false,
             type: FieldType.FlowSystemChoice, params: { systems },  multiFieldId: 'systemUid' },
 
-        { property: 'diameterMM', title: 'Diameter (mm)', hasDefault: false, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'diameterMM' },
+
+        { property: 'pressureKPA', title: 'Pressure (kPA)', hasDefault: false, isCalculated: false, requiresInput: true,
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'pressureKPA' },
+
+        { property: 'pressureSourceHeightM', title: 'Source Height (m)', hasDefault: false, isCalculated: false, requiresInput: true,
+            type: FieldType.Number, params: { min: null, max: null },  multiFieldId: 'pressureSourceHeightM' },
+
+
+        { property: 'bottomHeightM', title: 'Bottom Height (M)', hasDefault: true, isCalculated: false,
+            type: FieldType.Number, params: { min: null, max: null },  multiFieldId: 'bottomHeightM' },
+
+        { property: 'topHeightM', title: 'Top Height (M)', hasDefault: true, isCalculated: false,
+            type: FieldType.Number, params: { min: null, max: null },  multiFieldId: 'topHeightM' },
 
         { property: 'maximumVelocityMS', title: 'Maximum Velocity (m/s)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'maximumVelocityMS' },
 
-        { property: 'heightAboveFloorM', title: 'Pressure Height (m)', hasDefault: false, isCalculated: false,
-            type: FieldType.Number, params: { min: null, max: null },  multiFieldId: 'heightAboveFloorM' },
+
+        { property: 'diameterMM', title: 'Diameter (mm)', hasDefault: false, isCalculated: true,
+            type: FieldType.Number, params: { min: 0, max: null, initialValue: 100 },  multiFieldId: 'diameterMM' },
+
 
         { property: 'material', title: 'Material', hasDefault: true, isCalculated: false,
             type: FieldType.Choice, params: { choices: materials},  multiFieldId: 'material' },
-
-        { property: 'spareCapacity', title: 'Spare Capacity (%)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: 100 },  multiFieldId: 'spareCapacity' },
 
         { property: 'color', title: 'Color:', hasDefault: true, isCalculated: false,
             type: FieldType.Color, params: null,  multiFieldId: 'color' },
@@ -56,12 +68,10 @@ export function makeFlowSourceFields(materials: Choice[], systems: FlowSystemPar
         { property: 'temperatureC', title: 'Temperature (C)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: 100 },  multiFieldId: 'temperatureC' },
 
-        { property: 'pressureKPA', title: 'Pressure (kPA)', hasDefault: false, isCalculated: false, requiresInput: true,
-            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'pressureKPA' },
     ];
 }
 
-export function fillFlowSourceDefaults(doc: DocumentState, value: FlowSourceEntity) {
+export function fillRiserDefaults(doc: DocumentState, value: RiserEntity) {
     const result = cloneSimple(value);
 
     // get system
@@ -74,14 +84,23 @@ export function fillFlowSourceDefaults(doc: DocumentState, value: FlowSourceEnti
         if (result.material == null) {
             result.material = system.material;
         }
-        if (result.spareCapacity == null) {
-            result.spareCapacity = system.spareCapacity;
-        }
         if (result.color == null) {
             result.color = system.color;
         }
         if (result.temperatureC == null) {
             result.temperatureC = system.temperature;
+        }
+        if (result.bottomHeightM == null) {
+            result.bottomHeightM = result.pressureSourceHeightM || 0;
+            Object.values(doc.drawing.levels).forEach((v) => {
+                result.bottomHeightM = Math.min(result.bottomHeightM!, v.floorHeightM);
+            });
+        }
+        if (result.topHeightM == null) {
+            result.topHeightM = result.pressureSourceHeightM || 0;
+            Object.values(doc.drawing.levels).forEach((v) => {
+                result.topHeightM = Math.max(result.topHeightM!, v.floorHeightM + LEVEL_HEIGHT_DIFF_M);
+            });
         }
     } else {
         throw new Error('Existing system not found for object ' + JSON.stringify(value));

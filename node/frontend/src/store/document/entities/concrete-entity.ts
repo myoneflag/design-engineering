@@ -1,12 +1,12 @@
 import {BackgroundEntity} from '../../../../src/store/document/entities/background-entity';
 import FittingEntity from '../../../../src/store/document/entities/fitting-entity';
 import PipeEntity from '../../../../src/store/document/entities/pipe-entity';
-import FlowSourceEntity from '../../../../src/store/document/entities/flow-source-entity';
+import RiserEntity from './riser-entity';
 import PopupEntity from '../../../../src/store/document/entities/calculations/popup-entity';
 import FixtureEntity from '../../../../src/store/document/entities/fixtures/fixture-entity';
 import TmvEntity, {SystemNodeEntity} from '../../../../src/store/document/entities/tmv/tmv-entity';
 import {CenteredEntity, ConnectableEntity} from '../../../../src/store/document/types';
-import FlowSourceCalculation from '../../../../src/store/document/calculations/flow-source-calculation';
+import RiserCalculations from '../calculations/riser-calculations';
 import PipeCalculation from '../../../../src/store/document/calculations/pipe-calculation';
 import TmvCalculation from '../../../../src/store/document/calculations/tmv-calculation';
 import FittingCalculation from '../../../../src/store/document/calculations/fitting-calculation';
@@ -18,7 +18,7 @@ export type DrawableEntityConcrete =
     BackgroundEntity |
     FittingEntity |
     PipeEntity |
-    FlowSourceEntity |
+    RiserEntity |
     PopupEntity |
     SystemNodeEntity |
     TmvEntity |
@@ -28,14 +28,14 @@ export type DrawableEntityConcrete =
 
 export type ConnectableEntityConcrete =
     FittingEntity |
-    FlowSourceEntity |
+    RiserEntity |
     SystemNodeEntity |
     DirectedValveEntity;
 
 export type CenteredEntityConcrete =
     BackgroundEntity |
     FittingEntity |
-    FlowSourceEntity |
+    RiserEntity |
     SystemNodeEntity |
     TmvEntity |
     FixtureEntity |
@@ -46,7 +46,7 @@ export type InvisibleNodeEntityConcrete =
     SystemNodeEntity;
 
 export type CalculatableEntityConcrete =
-    FlowSourceEntity |
+    RiserEntity |
     PipeEntity |
     TmvEntity |
     FittingEntity |
@@ -55,7 +55,7 @@ export type CalculatableEntityConcrete =
     SystemNodeEntity;
 
 export type CalculationConcrete =
-    FlowSourceCalculation |
+    RiserCalculations |
     PipeCalculation |
     PipeCalculation |
     TmvCalculation |

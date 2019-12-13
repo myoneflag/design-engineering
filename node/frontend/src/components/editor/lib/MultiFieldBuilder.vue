@@ -31,7 +31,7 @@
     import {EntityType} from '../../../../src/store/document/entities/types';
     import {DocumentState} from '../../../../src/store/document/types';
     import {Catalog} from '../../../../src/store/catalog/types';
-    import {fillFlowSourceDefaults, makeFlowSourceFields} from '../../../../src/store/document/entities/flow-source-entity';
+    import {fillRiserDefaults, makeRiserFields} from '../../../store/document/entities/riser-entity';
     import {fillTMVFields, makeTMVFields} from '../../../../src/store/document/entities/tmv/tmv-entity';
     import {fillFixtureFields, makeFixtureFields} from '../../../../src/store/document/entities/fixtures/fixture-entity';
     import PropertiesFieldBuilder from '../../../../src/components/editor/lib/PropertiesFieldBuilder.vue';
@@ -99,8 +99,8 @@
                         this.$store.getters['catalog/defaultPipeMaterialChoices'],
                         this.document.drawing.metadata.flowSystems,
                     ).filter((p) => p.multiFieldId);
-                case EntityType.FLOW_SOURCE:
-                    return makeFlowSourceFields(
+                case EntityType.RISER:
+                    return makeRiserFields(
                         this.$store.getters['catalog/defaultPipeMaterialChoices'],
                         this.document.drawing.metadata.flowSystems,
                     ).filter((p) => p.multiFieldId);
@@ -125,8 +125,8 @@
                     return fillValveDefaultFields(this.document, obj.entity);
                 case EntityType.PIPE:
                     return fillPipeDefaultFields(this.document.drawing, (obj as Pipe).computedLengthM, obj.entity);
-                case EntityType.FLOW_SOURCE:
-                    return fillFlowSourceDefaults(this.document, obj.entity);
+                case EntityType.RISER:
+                    return fillRiserDefaults(this.document, obj.entity);
                 case EntityType.SYSTEM_NODE:
                     return obj.entity;
                 case EntityType.TMV:

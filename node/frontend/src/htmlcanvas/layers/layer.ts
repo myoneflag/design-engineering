@@ -327,7 +327,7 @@ export abstract class LayerImplementation implements Layer {
                 return 0;
             case EntityType.FIXTURE:
             case EntityType.FITTING:
-            case EntityType.FLOW_SOURCE:
+            case EntityType.RISER:
             case EntityType.DIRECTED_VALVE:
             case EntityType.TMV:
                 return 1;
@@ -359,7 +359,7 @@ export abstract class LayerImplementation implements Layer {
             switch (o.entity.type) {
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.FITTING:
-                case EntityType.FLOW_SOURCE:
+                case EntityType.RISER:
                 case EntityType.FIXTURE:
                 case EntityType.TMV:
                 case EntityType.DIRECTED_VALVE:

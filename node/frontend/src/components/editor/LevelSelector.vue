@@ -96,9 +96,7 @@
     import {countPsdUnits, getPsdUnitName} from "../../calculations/utils";
     import {Catalog} from "../../store/catalog/types";
     import {lighten} from "../../lib/utils";
-
-    export const GROUND_FLOOR_MIN_HEIGHT_M = -0.5;
-    export const LEVEL_HEIGHT_DIFF_M = 3;
+    import {GROUND_FLOOR_MIN_HEIGHT_M, LEVEL_HEIGHT_DIFF_M} from "../../lib/types";
 
     @Component({
     })

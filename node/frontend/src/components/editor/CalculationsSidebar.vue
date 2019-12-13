@@ -50,7 +50,7 @@ import {EntityType} from "../../../src/store/document/entities/types";
     import Vue from 'vue';
     import Component from 'vue-class-component';
     import FloorPlanProperties from '../../../src/components/editor/property-window/FloorPlanProperties.vue';
-    import FlowSourceProperties from '../../../src/components/editor/property-window/FlowSourceProperties.vue';
+    import RiserProperties from './property-window/RiserProperties.vue';
     import {
         CalculationFilter,
         CalculationFilters,

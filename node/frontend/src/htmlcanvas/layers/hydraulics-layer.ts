@@ -99,7 +99,7 @@ export default class  HydraulicsLayer extends LayerImplementation {
             case EntityType.FITTING:
             case EntityType.DIRECTED_VALVE:
                 return 100;
-            case EntityType.FLOW_SOURCE:
+            case EntityType.RISER:
                 return 70;
             case EntityType.SYSTEM_NODE:
                 return 70;

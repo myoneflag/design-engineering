@@ -71,7 +71,7 @@ export function determineConnectableSystemUid(
 
     switch (value.type) {
         case EntityType.FITTING:
-        case EntityType.FLOW_SOURCE:
+        case EntityType.RISER:
         case EntityType.SYSTEM_NODE:
             // system will depend on neighbours
             return value.systemUid;

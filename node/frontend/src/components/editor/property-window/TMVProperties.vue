@@ -30,7 +30,7 @@
     import Vue from 'vue';
     import Component from 'vue-class-component';
     import PropertiesFieldBuilder from '../../../../src/components/editor/lib/PropertiesFieldBuilder.vue';
-    import {fillFlowSourceDefaults, makeFlowSourceFields} from '../../../../src/store/document/entities/flow-source-entity';
+    import {fillRiserDefaults, makeRiserFields} from '../../../store/document/entities/riser-entity';
     import {DocumentState} from '../../../../src/store/document/types';
     import {fillTMVFields, makeTMVFields} from '../../../store/document/entities/tmv/tmv-entity';
     import {Catalog} from '../../../store/catalog/types';

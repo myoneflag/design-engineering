@@ -2,15 +2,15 @@ import {FieldCategory, CalculationField, Units} from '../../../../src/store/docu
 import {Calculation, PsdCalculation} from '../../../../src/store/document/calculations/types';
 import {isGermanStandard} from '../../../../src/config';
 import {DrawingState} from '../../../../src/store/document/types';
-import FlowSourceEntity from '../../../../src/store/document/entities/flow-source-entity';
+import RiserEntity from '../entities/riser-entity';
 import {getPsdUnitName} from "../../../calculations/utils";
 
-export default interface FlowSourceCalculation extends Calculation {
+export default interface RiserCalculations extends Calculation {
     pressureKPA: number | null;
     flowRateLS: number | null;
 }
 
-export function makeFlowSourceCalculationFields(entity: FlowSourceEntity, settings: DrawingState): CalculationField[] {
+export function makeRiserCalculationFields(entity: RiserEntity, settings: DrawingState): CalculationField[] {
     return [
         {property: 'pressureKPA',
             title: 'Pressure',
@@ -29,7 +29,7 @@ export function makeFlowSourceCalculationFields(entity: FlowSourceEntity, settin
     ];
 }
 
-export function emptyFlowSourceCalculation(): FlowSourceCalculation {
+export function emptyRiserCalculations(): RiserCalculations {
     return {
         flowRateLS: null, pressureKPA: null, warning: null,
     };

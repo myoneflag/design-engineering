@@ -1,5 +1,5 @@
 import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
-import FlowSourceEntity from '../../../src/store/document/entities/flow-source-entity';
+import RiserEntity from '../../store/document/entities/riser-entity';
 import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
 import {Coord, DocumentState, DrawableEntity, FlowSystemParameters} from '../../../src/store/document/types';
@@ -25,18 +25,19 @@ import {CalculationData} from '../../../src/store/document/calculations/calculat
 @CenterDraggableObject
 @ConnectableObject
 @CenteredObject
-export default class FlowSource extends BackedConnectable<FlowSourceEntity> implements Connectable, Calculated {
+export default class Riser extends BackedConnectable<RiserEntity> implements Connectable, Calculated {
     static register(): void {
-        DrawableObjectFactory.registerEntity(EntityType.FLOW_SOURCE, FlowSource);
+        DrawableObjectFactory.registerEntity(EntityType.RISER, Riser);
     }
 
     minimumConnections = 0;
     maximumConnections = null;
 
-    dragPriority = getDragPriority(EntityType.FLOW_SOURCE);
+    dragPriority = getDragPriority(EntityType.RISER);
 
     MINIMUM_RADIUS_PX: number = 3;
     lastDrawnWorldRadius: number = 0; // for bounds detection
+    lastDrawnDiameterW: number = 100;
 
     drawInternal({ctx, doc, vp}: DrawingContext, {active, selected}: DrawingArgs): void {
         this.lastDrawnWorldRadius = 0;
@@ -44,7 +45,12 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         const mat = ctx.getTransform();
         const scale = matrixScale(mat);
         // Minimum screen size for them.
-        const screenSize = vp.toScreenLength(this.entity.diameterMM / 2);
+
+        const rawDiameter = 100;
+        const screenMin = vp.toWorldLength(10);
+        this.lastDrawnDiameterW = Math.max(rawDiameter, screenMin);
+
+        const screenSize = vp.toScreenLength(this.lastDrawnDiameterW / 2);
 
         ctx.lineWidth = 0;
 
@@ -90,16 +96,25 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         ctx.arc(
             0,
             0,
-            this.toObjectLength(this.entity.diameterMM / 2),
+            this.toObjectLength(this.lastDrawnDiameterW / 2),
             0,
             Math.PI * 2,
         );
         this.lastDrawnWorldRadius = Math.max(
             this.lastDrawnWorldRadius,
-            this.toObjectLength(this.entity.diameterMM / 2),
+            this.toObjectLength(this.lastDrawnDiameterW / 2),
         );
         ctx.fill();
 
+        ctx.beginPath();
+        ctx.fillStyle = "#000000";
+        // draw triangle
+        ctx.moveTo(0, -this.lastDrawnDiameterW * 0.45);
+        ctx.lineTo(this.lastDrawnDiameterW * 0.38, this.lastDrawnDiameterW * 0.25);
+        ctx.lineTo(0, this.lastDrawnDiameterW * 0.1);
+        ctx.lineTo(-this.lastDrawnDiameterW * 0.38, this.lastDrawnDiameterW * 0.25);
+        ctx.closePath();
+        ctx.fill();
     }
 
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
@@ -129,7 +144,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         }
     }
 
-    refreshObjectInternal(obj: FlowSourceEntity): void {
+    refreshObjectInternal(obj: RiserEntity): void {
         //
     }
 
@@ -138,7 +153,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
             (objectCoord.x) ** 2
             + (objectCoord.y) ** 2,
         );
-        return dist <= this.toObjectLength(this.entity.diameterMM / 2) + (radius ? radius : 0);
+        return dist <= this.toObjectLength(this.lastDrawnDiameterW / 2) + (radius ? radius : 0);
     }
 
     getFrictionHeadLoss(context: CalculationContext,

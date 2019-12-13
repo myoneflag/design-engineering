@@ -96,7 +96,7 @@ export class AutoConnector {
                     });
                     break;
                 }
-                case EntityType.FLOW_SOURCE:
+                case EntityType.RISER:
                 case EntityType.FITTING:
                 case EntityType.DIRECTED_VALVE:
                     this.unionFind.join(o.uid, o.uid);
@@ -141,7 +141,7 @@ export class AutoConnector {
         switch (entity.type) {
             case EntityType.PIPE:
                 return [entity.heightAboveFloorM, entity.heightAboveFloorM];
-            case EntityType.FLOW_SOURCE:
+            case EntityType.RISER:
                 return [-Infinity, Infinity];
             case EntityType.FITTING:
             case EntityType.DIRECTED_VALVE:
@@ -257,7 +257,7 @@ export class AutoConnector {
                     case EntityType.FITTING:
                     case EntityType.DIRECTED_VALVE:
                     case EntityType.PIPE:
-                    case EntityType.FLOW_SOURCE:
+                    case EntityType.RISER:
                     case EntityType.RESULTS_MESSAGE:
                     case EntityType.SYSTEM_NODE:
                         throw new Error('Can\'t do it');
@@ -661,7 +661,7 @@ export class AutoConnector {
         switch (entity.type) {
             case EntityType.FITTING:
             case EntityType.PIPE:
-            case EntityType.FLOW_SOURCE:
+            case EntityType.RISER:
             case EntityType.SYSTEM_NODE:
                 return entity.systemUid;
             case EntityType.DIRECTED_VALVE:

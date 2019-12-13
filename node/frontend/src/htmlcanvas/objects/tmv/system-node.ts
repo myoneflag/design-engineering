@@ -74,7 +74,7 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
         const po = this.objectStore.get(this.entity.parentUid!)!;
         switch (po.entity.type) {
             case EntityType.FITTING:
-            case EntityType.FLOW_SOURCE:
+            case EntityType.RISER:
             case EntityType.SYSTEM_NODE:
             case EntityType.TMV:
             case EntityType.FIXTURE:

@@ -16,7 +16,7 @@ import {CalculationField} from '../../../src/store/document/calculations/calcula
 import {makePipeCalculationFields} from '../../../src/store/document/calculations/pipe-calculation';
 import {makeFittingCalculationFields} from '../../../src/store/document/calculations/fitting-calculation';
 import {makeTmvCalculationFields} from '../../../src/store/document/calculations/tmv-calculation';
-import {makeFlowSourceCalculationFields} from '../../../src/store/document/calculations/flow-source-calculation';
+import {makeRiserCalculationFields} from '../../store/document/calculations/riser-calculations';
 import {makeFixtureCalculationFields} from '../../../src/store/document/calculations/fixture-calculation';
 import {decomposeMatrix, matrixScale} from '../../../src/htmlcanvas/utils';
 import {resolveProperty} from '../../../src/htmlcanvas/lib/utils';

@@ -9,7 +9,7 @@ import {EntityType} from "../../../../src/store/document/entities/types";
                     v-if="mode === 0"
             />
             <FlowSourceProperties
-                    v-else-if="entity.type === ENTITY_NAMES.FLOW_SOURCE"
+                    v-else-if="entity.type === ENTITY_NAMES.RISER"
                     :selected-entity="entity"
                     :selected-object="selectedObjects[0]"
                     :on-change="onChange"
@@ -110,7 +110,7 @@ import {EntityType} from "../../../../src/store/document/entities/types";
     import Vue from 'vue';
     import Component from 'vue-class-component';
     import FloorPlanProperties from '../../../../src/components/editor/property-window/FloorPlanProperties.vue';
-    import FlowSourceProperties from '../../../../src/components/editor/property-window/FlowSourceProperties.vue';
+    import RiserProperties from './RiserProperties.vue';
     import {DocumentState, DrawableEntity} from "../../../../src/store/document/types";
     import FittingProperties from '../../../../src/components/editor/property-window/FittingProperties.vue';
     import PipeProperties from '../../../../src/components/editor/property-window/PipeProperties.vue';
@@ -134,7 +134,7 @@ import {EntityType} from "../../../../src/store/document/entities/types";
             DirectedValveProperties,
             MultiFieldBuilder,
             FixtureProperties,
-            TMVProperties, PipeProperties, ValveProperties: FittingProperties, FlowSourceProperties, FloorPlanProperties},
+            TMVProperties, PipeProperties, ValveProperties: FittingProperties, FlowSourceProperties: RiserProperties, FloorPlanProperties},
         props: {
             selectedEntities: Array,
             selectedObjects: Array,

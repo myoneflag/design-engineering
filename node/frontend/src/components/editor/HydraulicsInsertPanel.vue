@@ -7,9 +7,9 @@
                         :flow-systems="flowSystems"
                         @selectSystem="selectSystem"
                 />
-                <b-button variant="outline-dark" class="insertBtn source btn-sm"
-                          @click="$emit('insert', {entityName: entityNames.FLOW_SOURCE, system: selectedSystem})"
-                          v-b-tooltip.hover title="Flow Source"
+                <b-button variant="outline-dark" class="insertBtn riser btn-sm"
+                          @click="$emit('insert', {entityName: entityNames.RISER, system: selectedSystem})"
+                          v-b-tooltip.hover title="Riser"
                 ><v-icon  name="arrow-up" scale="1.2"/></b-button>
                 <b-button variant="outline-dark" class="insertBtn return btn-sm"
                           @click="$emit('insert', {entityName: entityNames.FLOW_RETURN, system: selectedSystem})"

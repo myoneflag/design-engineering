@@ -3,7 +3,7 @@ import {ObjectStore, SelectionTarget} from '../../src/htmlcanvas/lib/types';
 import {EntityType} from '../../src/store/document/entities/types';
 import PipeEntity, {fillPipeDefaultFields, makePipeFields} from '../../src/store/document/entities/pipe-entity';
 import {makeValveFields} from '../../src/store/document/entities/fitting-entity';
-import {makeFlowSourceFields} from '../../src/store/document/entities/flow-source-entity';
+import {makeRiserFields} from '../store/document/entities/riser-entity';
 import TmvEntity, {makeTMVFields, SystemNodeEntity} from '../../src/store/document/entities/tmv/tmv-entity';
 import FixtureEntity, {
     fillFixtureFields,
@@ -41,7 +41,7 @@ import {emptyFixtureCalculation} from '../../src/store/document/calculations/fix
 import {getObjectFrictionHeadLoss} from '../../src/calculations/entity-pressure-drops';
 import {DrawableEntityConcrete} from '../../src/store/document/entities/concrete-entity';
 import {emptyTmvCalculation} from '../../src/store/document/calculations/tmv-calculation';
-import FlowSource from '../../src/htmlcanvas/objects/flow-source';
+import Riser from '../htmlcanvas/objects/riser';
 import {assertUnreachable, isGermanStandard} from '../../src/config';
 import Tmv from '../../src/htmlcanvas/objects/tmv/tmv';
 // tslint:disable-next-line:max-line-length
@@ -52,7 +52,7 @@ import DirectedValveEntity, {
 import {ValveType} from '../../src/store/document/entities/directed-valves/valve-types';
 import {lookupFlowRate} from '../../src/calculations/utils';
 import {emptyFittingCalculation} from '../../src/store/document/calculations/fitting-calculation';
-import {emptyFlowSourceCalculation} from '../../src/store/document/calculations/flow-source-calculation';
+import {emptyRiserCalculations} from '../store/document/calculations/riser-calculations';
 import {emptyDirectedValveCalculation} from '../../src/store/document/calculations/directed-valve-calculation';
 import {emptySystemNodeCalculation} from '../../src/store/document/calculations/system-node-calculation';
 import {StandardFlowSystemUids} from '../../src/store/catalog';
@@ -113,8 +113,8 @@ export default class CalculationEngine {
                 case EntityType.PIPE:
                     v.entity.calculation = emptyPipeCalculation();
                     break;
-                case EntityType.FLOW_SOURCE:
-                    v.entity.calculation = emptyFlowSourceCalculation();
+                case EntityType.RISER:
+                    v.entity.calculation = emptyRiserCalculations();
                     break;
                 case EntityType.RESULTS_MESSAGE:
                     break;
@@ -140,8 +140,8 @@ export default class CalculationEngine {
         this.objectStore.forEach((obj) => {
             let fields: PropertyField[] = [];
             switch (obj.entity.type) {
-                case EntityType.FLOW_SOURCE:
-                    fields = makeFlowSourceFields([], []);
+                case EntityType.RISER:
+                    fields = makeRiserFields([], []);
                     break;
                 case EntityType.PIPE:
                     fields = makePipeFields([], []);
@@ -201,7 +201,7 @@ export default class CalculationEngine {
         if (sanityCheckWarnings.length === 0) {
             // The remaining graph must be a rooted forest.
             const sources: FlowNode[] = Array.from(this.objectStore.values())
-                .filter((o) => o.type === EntityType.FLOW_SOURCE)
+                .filter((o) => o.type === EntityType.RISER)
                 .map((o) => ({connectable: o.uid, connection: SELF_CONNECTION}));
             this.sizeDefiniteTransports(sources);
             this.sizeRingsAndRoots(sources);
@@ -247,12 +247,12 @@ export default class CalculationEngine {
                             sources,
                         );
                     break;
-                case EntityType.FLOW_SOURCE:
+                case EntityType.RISER:
                 case EntityType.DIRECTED_VALVE:
                 case EntityType.FITTING:
                 case EntityType.SYSTEM_NODE:
                     const candidates = cloneSimple(entity.connections);
-                    if (entity.type === EntityType.FLOW_SOURCE) {
+                    if (entity.type === EntityType.RISER) {
                         candidates.push(SELF_CONNECTION);
                     } else if (entity.type === EntityType.SYSTEM_NODE) {
                         candidates.push(entity.parentUid!);
@@ -304,7 +304,7 @@ export default class CalculationEngine {
                             case EntityType.DIRECTED_VALVE:
                             case EntityType.FITTING:
                             case EntityType.BACKGROUND_IMAGE:
-                            case EntityType.FLOW_SOURCE:
+                            case EntityType.RISER:
                             case EntityType.RESULTS_MESSAGE:
                             case EntityType.SYSTEM_NODE:
                                 throw new Error('don\'t know how to calculate static pressure for this');
@@ -316,7 +316,7 @@ export default class CalculationEngine {
                     }
                     break;
                 case EntityType.BACKGROUND_IMAGE:
-                case EntityType.FLOW_SOURCE:
+                case EntityType.RISER:
                 case EntityType.PIPE:
                 case EntityType.FITTING:
                 case EntityType.DIRECTED_VALVE:
@@ -337,9 +337,9 @@ export default class CalculationEngine {
             node,
             (n) => {
                 if (sources.findIndex((s) => s.connectable === n.connectable) !== -1) {
-                    const source = this.objectStore.get(n.connectable) as FlowSource;
+                    const source = this.objectStore.get(n.connectable) as Riser;
                     const density = getFluidDensityOfSystem(source.entity.systemUid, this.doc, this.catalog)!;
-                    const mh = source.entity.heightAboveFloor - heightM;
+                    const mh = source.entity.pressureSourceHeightM! - heightM;
                     const thisPressure = Number(source.entity.pressureKPA!) + head2kpa(mh, density, this.ga);
                     if (highPressure === null || thisPressure > highPressure) {
                         highPressure = thisPressure;
@@ -469,15 +469,15 @@ export default class CalculationEngine {
             true,
         );
         if (rPath) {
-            let sourceObj: FlowSource;
+            let sourceObj: Riser;
             if (rPath[0].length === 0) {
-                if (this.objectStore.get(node.connectable)!.type !== EntityType.FLOW_SOURCE ||
+                if (this.objectStore.get(node.connectable)!.type !== EntityType.RISER ||
                     node.connection !== SELF_CONNECTION) {
                     throw new Error('Unexpected empty path while searching for ' + JSON.stringify(node));
                 }
-                sourceObj = this.objectStore.get(node.connectable) as FlowSource;
+                sourceObj = this.objectStore.get(node.connectable) as Riser;
             } else {
-                sourceObj = this.objectStore.get(rPath[0][rPath[0].length - 1].to.connectable)! as FlowSource;
+                sourceObj = this.objectStore.get(rPath[0][rPath[0].length - 1].to.connectable)! as Riser;
             }
             return sourceObj.entity.pressureKPA! - rPath[1];
         } else {
@@ -554,11 +554,11 @@ export default class CalculationEngine {
                         );
                     }
                     break;
-                case EntityType.FLOW_SOURCE:
+                case EntityType.RISER:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.FITTING:
                     const toConnect = cloneSimple(obj.entity.connections);
-                    if ( obj.entity.type === EntityType.FLOW_SOURCE) {
+                    if ( obj.entity.type === EntityType.RISER) {
                         this.flowGraph.addNode({connectable: obj.uid, connection: SELF_CONNECTION});
                         toConnect.push(SELF_CONNECTION);
                     } else if (obj.entity.type === EntityType.SYSTEM_NODE) {
@@ -694,7 +694,7 @@ export default class CalculationEngine {
 
         sources.forEach((s) => {
             const source = this.objectStore.get(s.connectable)!;
-            if (source.entity.type === EntityType.FLOW_SOURCE) {
+            if (source.entity.type === EntityType.RISER) {
                 sourcesKPA.set(s.connectable, source.entity.pressureKPA!);
             } else {
                 throw new Error('Flow coming in from an entity that isn\'t a source');
@@ -838,7 +838,7 @@ export default class CalculationEngine {
                         );
                     }
                 case EntityType.BACKGROUND_IMAGE:
-                case EntityType.FLOW_SOURCE:
+                case EntityType.RISER:
                 case EntityType.FLOW_RETURN:
                 case EntityType.PIPE:
                 case EntityType.FITTING:
@@ -888,7 +888,7 @@ export default class CalculationEngine {
                 return;
             }
             case EntityType.BACKGROUND_IMAGE:
-            case EntityType.FLOW_SOURCE:
+            case EntityType.RISER:
             case EntityType.FITTING:
             case EntityType.DIRECTED_VALVE:
             case EntityType.SYSTEM_NODE:
@@ -1098,7 +1098,7 @@ export default class CalculationEngine {
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.FITTING:
                 case EntityType.DIRECTED_VALVE:
-                case EntityType.FLOW_SOURCE:
+                case EntityType.RISER:
                 case EntityType.RESULTS_MESSAGE:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.FIXTURE:
@@ -1210,7 +1210,7 @@ export default class CalculationEngine {
                     }
                     break;
                 case EntityType.FITTING:
-                case EntityType.FLOW_SOURCE:
+                case EntityType.RISER:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.DIRECTED_VALVE:
                     if (o.entity.connections.length === 2) {
@@ -1223,7 +1223,7 @@ export default class CalculationEngine {
                                 o.entity.calculation!.flowRateLS =
                                     Math.min(p1.entity.calculation!.peakFlowRate, p2.entity.calculation!.peakFlowRate);
 
-                                if (o.entity.type !== EntityType.FLOW_SOURCE &&
+                                if (o.entity.type !== EntityType.RISER &&
                                     o.entity.type !== EntityType.SYSTEM_NODE) {
                                     const dir1 = head2kpa(
                                         o.getFrictionHeadLoss(
@@ -1280,7 +1280,7 @@ export default class CalculationEngine {
                     break;
                 case EntityType.PIPE:
                     break;
-                case EntityType.FLOW_SOURCE:
+                case EntityType.RISER:
                     break;
                 case EntityType.RESULTS_MESSAGE:
                     break;

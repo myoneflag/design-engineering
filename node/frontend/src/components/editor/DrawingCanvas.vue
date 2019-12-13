@@ -130,7 +130,7 @@ import HydraulicsInsertPanel from "../../../src/components/editor/HydraulicsInse
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import {EntityType} from "../../../src/store/document/entities/types";
 import {Interaction} from "../../../src/htmlcanvas/lib/interaction";
-import insertFlowSource from "../../../src/htmlcanvas/tools/insert-flow-source";
+import insertRiser from "../../htmlcanvas/tools/insert-riser";
 import insertPipes from "../../../src/htmlcanvas/tools/insert-pipes";
 import insertValve from "../../../src/htmlcanvas/tools/insert-valve";
 import {DrawingContext, ObjectStore, SelectionTarget, ValveId} from "../../../src/htmlcanvas/lib/types";
@@ -494,7 +494,7 @@ export default class DrawingCanvas extends Vue {
                 case EntityType.FITTING:
                 case EntityType.DIRECTED_VALVE:
                 case EntityType.PIPE:
-                case EntityType.FLOW_SOURCE:
+                case EntityType.RISER:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.TMV:
                 case EntityType.FIXTURE:
@@ -533,7 +533,7 @@ export default class DrawingCanvas extends Vue {
                 case EntityType.FITTING:
                 case EntityType.DIRECTED_VALVE:
                 case EntityType.PIPE:
-                case EntityType.FLOW_SOURCE:
+                case EntityType.RISER:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.TMV:
                 case EntityType.FIXTURE:
@@ -776,8 +776,8 @@ export default class DrawingCanvas extends Vue {
     ) {
         this.hydraulicsLayer.select([], SelectMode.Replace);
 
-        if (entityName === EntityType.FLOW_SOURCE) {
-            insertFlowSource(this, system);
+        if (entityName === EntityType.RISER) {
+            insertRiser(this, system);
         } else if (entityName === EntityType.FLOW_RETURN) {
             this.insertFlowReturn(system);
         } else if (entityName === EntityType.PIPE) {
