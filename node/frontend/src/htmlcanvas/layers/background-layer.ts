@@ -60,6 +60,9 @@ export default class BackgroundLayer extends LayerImplementation {
     resetDocument(doc: DocumentState) {
         let entities: DrawableEntityConcrete[] = [];
         if (doc.uiState.levelUid) {
+            if (!doc.drawing.levels[doc.uiState.levelUid]) {
+                throw new Error('level ' + doc.uiState.levelUid + ' doesn\'t exist ' + JSON.stringify(doc));
+            }
             entities = Object.values(doc.drawing.levels[doc.uiState.levelUid].entities);
         }
 

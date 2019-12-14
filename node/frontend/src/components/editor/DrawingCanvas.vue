@@ -464,6 +464,10 @@ export default class DrawingCanvas extends Vue {
     }
 
     onOT(redraw: boolean = true) {
+        if (this.document.uiState.levelUid &&
+            !this.document.drawing.levels.hasOwnProperty(this.document.uiState.levelUid)) {
+            this.document.uiState.levelUid = null;
+        }
         this.resetVisibleLevel(redraw);
         Object.values(this.document.drawing.levels).forEach((level) => {
             this.globalStore.resetLevel(level.uid, Object.values(level.entities));
