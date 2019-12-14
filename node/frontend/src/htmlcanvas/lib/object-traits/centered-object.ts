@@ -39,3 +39,18 @@ export function CenteredObject<T extends new (...args: any[])
         }
     };
 }
+
+export function CenteredObjectNoParent<T extends new (...args: any[])
+    => Centered & BackedDrawableObject<CenteredEntityConcrete>>(constructor: T) {
+
+    // @ts-ignore abstract class expression limitation in the language. In practice this is fine.
+    return class extends constructor implements Connectable {
+        centered: true = true;
+
+        debase(): void {
+        }
+
+        rebase(context: CanvasContext) {
+        }
+    };
+}

@@ -46,13 +46,10 @@ export default function insertFixture(
             context.$store.dispatch('document/revert', false);
             const doc = context.document as DocumentState;
 
-            // Maybe we drew onto a background
-            const [parentUid, oc] = getInsertCoordsAt(context, wc);
-
             newEntity = {
                 abbreviation,
-                center: oc,
-                parentUid,
+                center: wc,
+                parentUid: null,
                 type: EntityType.FIXTURE,
                 uid: fixtureUid,
 
@@ -88,6 +85,7 @@ export default function insertFixture(
 
             context.$store.dispatch('document/addEntity', newEntity);
             context.$store.dispatch('document/addEntity', coldEntity);
+            context.objectStore.get(newEntity.uid)!.rebase(context);
 
             if (hasWarm) {
                 const warmEntity: SystemNodeEntity = {

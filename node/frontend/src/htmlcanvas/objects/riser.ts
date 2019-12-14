@@ -13,18 +13,19 @@ import {EntityType} from '../../../src/store/document/entities/types';
 import BackedConnectable from '../../../src/htmlcanvas/lib/BackedConnectable';
 import {getDragPriority} from '../../../src/store/document';
 import {SelectableObject} from '../../../src/htmlcanvas/lib/object-traits/selectable';
-import {CenteredObject} from '../../../src/htmlcanvas/lib/object-traits/centered-object';
+import {CenteredObject, CenteredObjectNoParent} from '../../../src/htmlcanvas/lib/object-traits/centered-object';
 import {CalculationContext} from '../../../src/calculations/types';
 import {FlowNode, SELF_CONNECTION} from '../../../src/calculations/calculation-engine';
 import {DrawingArgs} from '../../../src/htmlcanvas/lib/drawable-object';
 import {Calculated, CalculatedObject} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
 import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
+import CanvasContext from "../lib/canvas-context";
 
 @CalculatedObject
 @SelectableObject
 @CenterDraggableObject
 @ConnectableObject
-@CenteredObject
+@CenteredObjectNoParent
 export default class Riser extends BackedConnectable<RiserEntity> implements Connectable, Calculated {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.RISER, Riser);
@@ -186,5 +187,13 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
 
     rememberToRegister(): void {
         //
+    }
+
+    debase(): void {
+        // nada
+    }
+
+    rebase(context: CanvasContext): void {
+        // nada
     }
 }

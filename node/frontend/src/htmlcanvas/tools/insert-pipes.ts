@@ -20,6 +20,7 @@ import {KeyCode} from '../../../src/htmlcanvas/utils';
 import BackedConnectable from '../../../src/htmlcanvas/lib/BackedConnectable';
 import {connect} from '../../../src/lib/utils';
 import Vue from 'vue';
+import {rebaseAll} from "../lib/black-magic/rebase-all";
 
 export default function insertPipes(context: CanvasContext, system: FlowSystemParameters) {
     // strategy:
@@ -95,13 +96,12 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
 
             } else {
                 // Maybe we drew onto a background
-                const [parentUid, oc] = getInsertCoordsAt(context, wc);
 
                 // Nope, we landed on nothing. We create new valve here.
                 const valveEntity: FittingEntity = {
-                    center: oc,
+                    center: wc,
                     color: null,
-                    parentUid,
+                    parentUid: null,
                     systemUid: system.uid,
                     type: EntityType.FITTING,
                     uid: uuid(),
@@ -109,6 +109,7 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                 };
                 entity = valveEntity;
                 context.$store.dispatch('document/addEntity', valveEntity);
+                context.objectStore.get(valveEntity.uid)!.rebase(context);
             }
 
             context.$store.dispatch('document/commit').then(() => {
@@ -254,14 +255,11 @@ function insertPipeChain(
 
                 }
 
-                // Maybe we drew onto a background
-                const [parentUid, oc] = getInsertCoordsAt(context, wc);
-
                 // Create 2nd valve
                 nextEntity = {
-                    center: oc,
+                    center: wc,
                     color: null,
-                    parentUid,
+                    parentUid: null,
                     systemUid: system.uid,
                     type: EntityType.FITTING,
                     uid: uuid(),
@@ -269,6 +267,7 @@ function insertPipeChain(
                 };
 
                 context.$store.dispatch('document/addEntity', nextEntity);
+                context.objectStore.get(nextEntity.uid)!.rebase(context);
             }
 
             context.objectStore.updatePipeEndpoints(pipe.uid, [pipe.endpointUid[0], nextEntity.uid]);
