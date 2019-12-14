@@ -9,7 +9,7 @@ import BackedDrawableObject from '../../../src/htmlcanvas/lib/backed-drawable-ob
 import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
 import {Interaction, InteractionType} from '../../../src/htmlcanvas/lib/interaction';
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
-import {DrawingContext} from '../../../src/htmlcanvas/lib/types';
+import {DrawingContext, GlobalStore} from '../../../src/htmlcanvas/lib/types';
 import {BackgroundEntity} from '../../../src/store/document/entities/background-entity';
 import DrawableObjectFactory from '../../../src/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '../../../src/store/document/entities/types';
@@ -24,13 +24,15 @@ import {CalculationContext} from '../../../src/calculations/types';
 import {FlowNode} from '../../../src/calculations/calculation-engine';
 import {DrawingArgs} from '../../../src/htmlcanvas/lib/drawable-object';
 
+export const imageStore = new Map<string, HTMLImageElement>();
+
 export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> implements Sizeable {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.BACKGROUND_IMAGE, BackgroundImage);
     }
 
-    image: HTMLImageElement | null = null;
-    imgScale: {x: number, y: number} = {x: 1, y: 1};
+    image!: HTMLImageElement | null;
+    imgScale!: {x: number, y: number};
 
     grabbedPoint: [number, number] | null = null;
     grabbedCenterState: [number, number] | null = null;
@@ -64,7 +66,14 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
     }
 
     initializeImage(onLoad: (image: BackgroundImage) => any) {
+        if (this.objectStore instanceof GlobalStore) {
+            // this is a ghost
+            return;
+        }
+
         this.image = null;
+
+
         // Try to load the image. If we can't, then show a loading screen.
         const retry = (expectedUri: string) => {
             if (expectedUri !== this.entity.uri) {
@@ -72,11 +81,34 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
                 return;
             }
 
+            if (imageStore.has(this.entity.uri)) {
+                this.image = imageStore.get(this.entity.uri)!;
+                if (this.image.complete && this.image.naturalWidth) {
+                    this.imgScale = {
+                        x: this.width / this.image.naturalWidth,
+                        y: this.height / this.image.naturalHeight,
+                    };
+
+                    // Now now, we all know the scales better be the same
+                    if (Math.abs(this.imgScale.x / this.imgScale.y - 1) > 0.05) {
+                        throw new Error('Image aspect ratio differs from paper aspect ratio by more than 5%');
+                    }
+
+                    this.imgScale.y = this.imgScale.x;
+                    onLoad(this);
+                    return;
+                } else {
+                    throw new Error('Not loaded image in cache :/ don\'t do that');
+                }
+            }
+
+
+
             axios.head(this.entity.uri).then(() => {
                     const image = new Image();
-                    image.src = this.entity.uri;
 
                     image.onload = () => {
+                        imageStore.set(this.entity.uri, image);
                         this.imgScale = {
                             x: this.width / image.naturalWidth,
                             y: this.height / image.naturalHeight,
@@ -94,14 +126,14 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
                     };
                     image.src = this.entity.uri;
                 },
-            ).catch(() => {
+            ).catch((e) => {
                 setTimeout(() => {
                     retry(expectedUri);
                 }, 1000);
             });
         };
 
-        retry(this.entity.uri);
+        retry.bind(this)(this.entity.uri);
     }
 
     get position() {
@@ -234,7 +266,6 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
 
 
         } else {
-
             const oldAlpha = ctx.globalAlpha;
             ctx.globalAlpha = 0.5;
             ctx.fillStyle = '#AAAAAA';
@@ -422,14 +453,17 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
     }
 
     protected refreshObjectInternal(obj: BackgroundEntity, old: BackgroundEntity): void {
+
         if (old) {
             if (this.entity.uri !== old.uri) {
                 this.initializeImage(() => {
+                    console.log('path1 ' + JSON.stringify(this.image));
                     this.onChange();
                 });
             }
         } else {
             this.initializeImage(() => {
+                console.log('path2 ' + JSON.stringify(this.image));
                 this.onChange();
             });
         }

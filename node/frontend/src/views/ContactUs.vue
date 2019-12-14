@@ -21,9 +21,9 @@
             <b-col cols="6">
                 <h3>Contact Us</h3>
                 <b-form v-if="!sent">
-                    <b-form-input v-model="name" @keyup.enter="login" placeholder="Name*"></b-form-input>
-                    <b-form-input type="email" @keyup.enter="login" v-model="email" placeholder="Email*"></b-form-input>
-                    <b-form-textarea @keyup.enter="login" v-model="message" rows="10" placeholder="Message" ></b-form-textarea>
+                    <b-form-input v-model="name" placeholder="Name*"></b-form-input>
+                    <b-form-input type="email" v-model="email" placeholder="Email*"></b-form-input>
+                    <b-form-textarea v-model="message" rows="10" placeholder="Message" ></b-form-textarea>
 
                     <b-form-group>
                         <b-button variant="success" @click="submit" align="right">Submit</b-button>

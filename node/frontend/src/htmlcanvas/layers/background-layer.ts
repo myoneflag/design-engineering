@@ -53,6 +53,10 @@ export default class BackgroundLayer extends LayerImplementation {
         this.updateSelectionBox();
     }
 
+    addEntity(entity: DrawableEntityConcrete): void {
+        super.addEntity(entity);
+    }
+
     resetDocument(doc: DocumentState) {
         let entities: DrawableEntityConcrete[] = [];
         if (doc.uiState.levelUid) {

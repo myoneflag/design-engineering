@@ -177,9 +177,11 @@ export class GlobalStore extends ObjectStore {
     }
 
     onLevelDelete(levelUid: string) {
-        this.entitiesInLevel.get(levelUid)!.forEach((euid) => {
-            this.delete(euid);
-        })
+        if (this.entitiesInLevel.get(levelUid)) {
+            this.entitiesInLevel.get(levelUid)!.forEach((euid) => {
+                this.delete(euid);
+            })
+        }
     }
 }
 

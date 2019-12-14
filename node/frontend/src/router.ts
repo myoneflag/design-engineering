@@ -247,7 +247,7 @@ router.beforeEach((to, from, next) => {
                                     router.push(to);
                                 }
                             });
-                    } else { 
+                    } else {
                         Vue.$cookies.remove('session-id');
                         next('/login');
                     }
