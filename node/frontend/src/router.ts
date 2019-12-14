@@ -219,6 +219,9 @@ const router = new Router({
 router.beforeEach((to, from, next) => {
     if (to.matched.some((record) => record.meta.auth)) {
         if ((Vue as any).cookies === undefined || (Vue as any).cookies.get('session-id') == null) {
+            if ((Vue as any).cookies === undefined) {
+                console.log("cookies undefined");
+            }
             next('/login');
         } else {
             const levels = to.matched.filter((r) => 'minAccessLevel' in r.meta).map((r) => r.meta.minAccessLevel);
