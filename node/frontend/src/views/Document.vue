@@ -88,7 +88,6 @@ import {MainEventBus} from "../store/main-event-bus";
 
         deleteFile() {
             window.alert('The document has been deleted');
-            window.location.reload();
         }
 
         destroyed() {

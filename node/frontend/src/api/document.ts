@@ -129,6 +129,18 @@ export async function getDocuments(): Promise<APIResult<Document[]>> {
     }
 }
 
+export async function getDocument(id: number): Promise<APIResult<Document>> {
+    try {
+        return (await axios.get('/api/documents/' + id)).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return { success: false, message: e.response.data.message };
+        } else {
+            return { success: false, message: e.message };
+        }
+    }
+}
+
 export async function createDocument(orgId: string): Promise<APIResult<Document>> {
     try {
         return (await axios.post('/api/documents/', {
@@ -139,6 +151,30 @@ export async function createDocument(orgId: string): Promise<APIResult<Document>
             return { success: false, message: e.response.data.message };
         } else {
             return { success: false, message: e.message };
+        }
+    }
+}
+
+export async function resetDocument(id: number): Promise<APIResult<void>> {
+    try {
+        return (await axios.post('/api/documents/' + id + '/reset')).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return {success: false, message: e.response.data.message};
+        } else {
+            return {success: false, message: e.message};
+        }
+    }
+}
+
+export async function deleteDocument(id: number): Promise<APIResult<void>> {
+    try {
+        return (await axios.delete('/api/documents/' + id)).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return {success: false, message: e.response.data.message};
+        } else {
+            return {success: false, message: e.message};
         }
     }
 }

@@ -29,6 +29,15 @@ export class DocumentController {
                     console.log('error: exception while deleting all existing sockets ' + e.message);
                 }
             }
+
+            if (operationQueues.has(doc.id)) {
+                operationQueues.set(doc.id, []);
+            }
+
+            await Promise.all((await doc.operations).map((o) => {
+                return o.remove();
+            }));
+
             res.status(200).send({
                 success: true,
                 data: null,
@@ -101,9 +110,19 @@ export class DocumentController {
                 operationQueues.delete(doc.id);
             }
 
-            const catalog = await Catalog.findOne({where: {id: doc.id}, relations: ['document']});
+            const catalog = await Catalog
+                .createQueryBuilder('catalog')
+                .where('catalog.document = :document', {document: doc.id})
+                .getOne();
 
-            await catalog.remove();
+            if (catalog) {
+                await catalog.remove();
+            }
+
+            await Promise.all((await doc.operations).map((o) => {
+                return o.remove();
+            }));
+
             await doc.remove();
             res.status(200).send({
                 success: true,
@@ -366,10 +385,10 @@ router.ws('/:id/websocket', (ws, req) => {
         });
 });
 
-router.post('/reset', controller.reset.bind(controller));
+router.post('/:id/reset', controller.reset.bind(controller));
 
 router.post('/', controller.create.bind(controller));
-router.delete('/', controller.delete.bind(controller));
+router.delete('/:id', controller.delete.bind(controller));
 router.put('/:id', controller.update.bind(controller));
 router.get('/:id', controller.findOne.bind(controller));
 router.get('/', controller.find.bind(controller));
