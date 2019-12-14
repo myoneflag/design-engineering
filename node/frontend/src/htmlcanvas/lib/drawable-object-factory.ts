@@ -1,6 +1,6 @@
 import {DrawableEntity} from '../../../src/store/document/types';
 import {EntityType} from '../../../src/store/document/entities/types';
-import {ObjectStore} from '../../../src/htmlcanvas/lib/types';
+import {GlobalStore, ObjectStore} from '../../../src/htmlcanvas/lib/types';
 import BackedDrawableObject, {
     BackedObjectConstructor,
     BaseBackedConstructor,
@@ -23,38 +23,43 @@ export default class DrawableObjectFactory {
 
     // Set hadndlers to false to create object without adding it to the state.
     // Use this if you just need an object instance for calculations, for example.
-    static build<T extends EntityType>(
+    static buildVisible<T extends EntityType>(
         layer: Layer,
         entity: DrawableEntity & {type: T},
         objectStore: ObjectStore,
-        handlers: Handlers | false,
+        handlers: Handlers,
     ) {
 
         const GenericDrawable = this.constructors.get(entity.type);
         if (GenericDrawable) {
-            if (handlers === false) {
-                const object: BaseBackedObject = new GenericDrawable(
-                    objectStore,
-                    layer,
-                    entity,
-                    () => { /**/ },
-                    () => { /**/ },
-                    () => { /**/ },
-                );
-                objectStore.set(entity.uid, object);
-                return object;
-            } else {
-                const object: BaseBackedObject = new GenericDrawable(
-                    objectStore,
-                    layer,
-                    entity,
-                    (e) => handlers.onSelected(e),
-                    handlers.onChange,
-                    (e) => handlers.onCommit(e),
-                );
-                objectStore.set(entity.uid, object);
-                return object;
-            }
+            const object: BaseBackedObject = new GenericDrawable(
+                objectStore,
+                layer,
+                entity,
+                (e) => handlers.onSelected(e),
+                handlers.onChange,
+                (e) => handlers.onCommit(e),
+            );
+            objectStore.set(entity.uid, object);
+            return object;
+        } else {
+            throw new Error('request to build unknown entity: ' + JSON.stringify(entity));
+        }
+    }
+
+    static buildGhost(entity: DrawableEntityConcrete, global: GlobalStore, levelUid: string | null) {
+        const GenericDrawable = this.constructors.get(entity.type);
+        if (GenericDrawable) {
+            const object: BaseBackedObject = new GenericDrawable(
+                global,
+                undefined as any,
+                entity,
+                () => {},
+                () => {},
+                () => {},
+            );
+            global.set(entity.uid, object, levelUid);
+            return object;
         } else {
             throw new Error('request to build unknown entity: ' + JSON.stringify(entity));
         }

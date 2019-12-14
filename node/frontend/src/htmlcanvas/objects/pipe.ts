@@ -9,9 +9,9 @@ import {matrixScale} from '../../../src/htmlcanvas/utils';
 import Flatten from '@flatten-js/core';
 import {Draggable, DraggableObject} from '../../../src/htmlcanvas/lib/object-traits/draggable-object';
 import * as _ from 'lodash';
-import {canonizeAngleRad, connect, disconnect, getPropertyByString, lighten} from '../../../src/lib/utils';
+import {canonizeAngleRad, cloneSimple, connect, disconnect, getPropertyByString, lighten} from '../../../src/lib/utils';
 import {Interaction, InteractionType} from '../../../src/htmlcanvas/lib/interaction';
-import {DrawingContext} from '../../../src/htmlcanvas/lib/types';
+import {DrawingContext, GlobalStore} from '../../../src/htmlcanvas/lib/types';
 import DrawableObjectFactory from '../../../src/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '../../../src/store/document/entities/types';
 import BackedConnectable from '../../../src/htmlcanvas/lib/BackedConnectable';
@@ -466,12 +466,16 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
     prepareDelete(context: CanvasContext): BaseBackedObject[] {
         const result: BaseBackedObject[] = [this];
+        const origEndpoints = cloneSimple(this.entity.endpointUid);
+        if (this.objectStore instanceof GlobalStore) {
+            this.objectStore.updatePipeEndpoints(this.uid, [undefined, undefined]);
+        }
         for (let i = 0; i < 2; i++) {
-            const a = this.objectStore.get(this.entity.endpointUid[i]);
+            const a = this.objectStore.get(origEndpoints[i]);
             if (a instanceof BackedConnectable) {
                 result.push(...a.prepareDeleteConnection(this.entity.uid, context));
             } else {
-                throw new Error('endpoint non existent on pipe ' + JSON.stringify(this.entity));
+                throw new Error('endpoint non existent on pipe. non existing is ' + this.entity.endpointUid[0] + ' entity is ' + JSON.stringify(this.entity) + ' ' + JSON.stringify(a ? a.entity : undefined));
             }
         }
         return result;

@@ -302,7 +302,7 @@ function insertPipeChain(
                 }}],
         ],
         () => {
-            if (newPipe) {
+            if (newPipe && context.objectStore.has(newPipe.uid)) {
                 return [
                     'Height: ' + heightM.toPrecision(3) + 'm',
                     'Length: ' + (context.objectStore.get(newPipe.uid) as Pipe).computedLengthM.toPrecision(4) + 'mm',

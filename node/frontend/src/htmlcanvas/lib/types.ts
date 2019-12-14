@@ -6,11 +6,10 @@ import {ValveType} from '../../../src/store/document/entities/directed-valves/va
 import {Catalog} from '../../../src/store/catalog/types';
 import Vue from 'vue';
 import {EntityType} from "../../store/document/entities/types";
-import {ConnectableEntityConcrete} from "../../store/document/entities/concrete-entity";
+import {ConnectableEntityConcrete, DrawableEntityConcrete} from "../../store/document/entities/concrete-entity";
 import BackedConnectable from "./BackedConnectable";
 import PipeEntity from "../../store/document/entities/pipe-entity";
-import * as _ from 'lodash';
-import Pipe from "../objects/pipe";
+import DrawableObjectFactory from "./drawable-object-factory";
 
 export interface DrawingContext {
     ctx: CanvasRenderingContext2D;
@@ -85,7 +84,10 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
             throw new Error('Not reactive');
         }
         if (this.has(key)) {
-            this.delete(key);
+            const val = this.get(key);
+            if (val && val.entity.type === EntityType.PIPE) {
+                this.detachEndpoints(val.entity);
+            }
         }
 
         if (value.entity.type === EntityType.PIPE) {
@@ -96,20 +98,83 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
         return result;
     }
 
-    updatePipeEndpoints(key: string, endpoints: [string, string]) {
+    updatePipeEndpoints(key: string, endpoints: [string | undefined, string | undefined]) {
 
-        console.log('assigning pipe ' + key + ' to have endpoints ' + JSON.stringify(endpoints));
         const e = this.get(key)!.entity as PipeEntity;
-        console.log('currently has ' + JSON.stringify(e.endpointUid));
         this.detachEndpoints(e);
         e.endpointUid.splice(0, 2, ...endpoints);
         this.attachEndpoints(e);
-        console.log('now has ' + JSON.stringify((this.get(key)!.entity as any).endpointUid));
     }
 }
-// We will do a more advanced one which will keep track of heights, calculation
-// objects and any other auxillary features that shouldn't belong to the underlying
-// data structure.
+
+// Stores auxillary data and objects for the entire document across all levels.
+export class GlobalStore extends ObjectStore {
+    entitiesInLevel = new Map<string | null, Set<string>>();
+    levelOfEntity = new Map<string, string | null>();
+
+    set(key: string, value: BaseBackedObject, levelUid?: string | null): this {
+        if (levelUid === undefined) {
+            throw new Error('Need a level to set in global store.');
+        }
+        if (!this.entitiesInLevel.has(levelUid)) {
+            this.entitiesInLevel.set(levelUid, new Set());
+        }
+        this.entitiesInLevel.get(levelUid)!.add(value.uid);
+        this.levelOfEntity.set(value.uid, levelUid);
+        return super.set(key, value);
+    }
+
+    store(value: DrawableEntityConcrete, levelUid: string): this {
+        const o = DrawableObjectFactory.buildGhost(value, this, levelUid);
+        // this.set(e.uid, o, levelUid); Already done by buildGhost
+        return this;
+    }
+
+    delete(key: string): boolean {
+        const lvl = this.levelOfEntity.get(key)!;
+        this.levelOfEntity.delete(key);
+        this.entitiesInLevel.get(lvl)!.delete(key);
+        return super.delete(key);
+    }
+
+    resetLevel(levelUid: string | null, entities: DrawableEntityConcrete[]) {
+        let inLevelNow = new Set<string>();
+        if (this.entitiesInLevel.has(levelUid)) {
+            inLevelNow = new Set(this.entitiesInLevel.get(levelUid)!);
+        }
+
+        const goal = new Set(entities.map((e) => e.uid));
+        // Delete gone ones
+        inLevelNow.forEach((u) => {
+            if (!goal.has(u)) {
+                this.delete(u);
+            }
+        });
+
+        // add new ones
+        entities.forEach((e) => {
+            if (!inLevelNow.has(e.uid)) {
+                const o = DrawableObjectFactory.buildGhost(e, this, levelUid);
+                // this.set(e.uid, o, levelUid); Already done by buildGhost
+            }
+        });
+
+        // update existing ones
+        entities.forEach((e) => {
+            if (inLevelNow.has(e.uid)) {
+                if (e.type === EntityType.PIPE) {
+                    this.updatePipeEndpoints(e.uid, e.endpointUid);
+                }
+            }
+        });
+    }
+
+    onLevelDelete(levelUid: string) {
+        this.entitiesInLevel.get(levelUid)!.forEach((euid) => {
+            this.delete(euid);
+        })
+    }
+}
 
 // tslint:disable-next-line:max-classes-per-file
 export class MessageStore extends Map<string, Popup> {}

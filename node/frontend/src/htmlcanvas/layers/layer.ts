@@ -443,7 +443,7 @@ export abstract class LayerImplementation implements Layer {
             }
         }
 
-        DrawableObjectFactory.build(
+        DrawableObjectFactory.buildVisible(
             this,
             entity,
             this.objectStore,

@@ -20,6 +20,8 @@ export const mutations: MutationTree<DocumentState> = {
     applyOperation(state, operation: OT.OperationTransformConcrete) {
         state.history.push(operation);
 
+        let newData = false;
+
         if (state.optimisticHistory.length) {
             // optimistic history id typically would be 1. We trust the server to give us correct incrementing ids.
             state.optimisticHistory[0].id = operation.id;
@@ -39,6 +41,8 @@ export const mutations: MutationTree<DocumentState> = {
                     JSON.stringify(state.optimisticHistory[0]),
                 );
             }
+        } else {
+            newData = true;
         }
 
 
@@ -70,12 +74,16 @@ export const mutations: MutationTree<DocumentState> = {
             state.stagedCommits.push(operation);
         }
 
-        MainEventBus.$emit('ot-applied');
+        if (newData) {
+            MainEventBus.$emit('ot-applied');
+        } // else, the data is already represented on screen
     },
 
     revert(state, redraw) {
+        // TODO: emit a reset-level for every changed level. At the moment, we are just resetting current visible
+        // level. This is to allow global state to save state.
         state.drawing = cloneSimple(state.committedDrawing);
-        MainEventBus.$emit('ot-applied', redraw);
+        MainEventBus.$emit('revert-level', state.uiState.levelUid);
     },
 
     reset(state) {
@@ -87,7 +95,11 @@ export const mutations: MutationTree<DocumentState> = {
     },
 
     addEntityOn(state, {entity, levelUid}) {
-        Vue.set(state.drawing.levels[levelUid].entities, entity.uid, entity);
+        if (levelUid === null) {
+            Vue.set(state.drawing.shared, entity.uid, entity);
+        } else {
+            Vue.set(state.drawing.levels[levelUid].entities, entity.uid, entity);
+        }
         MainEventBus.$emit('add-entity', {entity, levelUid});
     },
 
@@ -122,10 +134,15 @@ export const mutations: MutationTree<DocumentState> = {
     },
 
     deleteEntityOn(state, {entity, levelUid}) {
-        if (entity.uid in state.drawing.levels[levelUid]) {
-            Vue.delete(state.drawing.levels[levelUid], entity.uid);
+        if (levelUid === null) {
+            if (entity.type !== EntityType.RISER) {
+                throw new Error('Deleting a non shared object from the shared level ' + levelUid + ' ' + JSON.stringify(entity));
+            }
+            Vue.delete(state.drawing.shared, entity.uid);
+        } else if (entity.uid in state.drawing.levels[levelUid].entities) {
+            Vue.delete(state.drawing.levels[levelUid].entities, entity.uid);
         } else {
-            throw new Error('Deleted an entity that doesn\'t exist ' + JSON.stringify(entity));
+            throw new Error('Deleted an entity that doesn\'t exist ' + JSON.stringify(entity) + ' on level ' + levelUid);
         }
         MainEventBus.$emit('delete-entity', {entity, levelUid});
     },
@@ -144,13 +161,13 @@ export const mutations: MutationTree<DocumentState> = {
         MainEventBus.$emit('delete-level', level);
         if (level.uid === state.uiState.levelUid) {
             state.uiState.levelUid = null;
-            MainEventBus.$emit('ot-applied');
+            MainEventBus.$emit('current-level-changed');
         }
     },
 
     setCurrentLevelUid(state, levelUid) {
         state.uiState.levelUid = levelUid;
-        MainEventBus.$emit('ot-applied');
+        MainEventBus.$emit('current-level-changed');
     },
 };
 
