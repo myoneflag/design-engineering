@@ -218,8 +218,8 @@ const router = new Router({
 
 router.beforeEach((to, from, next) => {
     if (to.matched.some((record) => record.meta.auth)) {
-        if ((Vue as any).$cookies === undefined || (Vue as any).$cookies.get('session-id') == null) {
-            if ((Vue as any).$cookies === undefined) {
+        if (Vue.$cookies === undefined || Vue.$cookies.get('session-id') == null) {
+            if (Vue.$cookies === undefined) {
                 console.log("cookies undefined");
             }
             next('/login');
@@ -247,8 +247,8 @@ router.beforeEach((to, from, next) => {
                                     router.push(to);
                                 }
                             });
-                    } else {
-                        (Vue as any).$cookies.remove('session-id');
+                    } else { 
+                        Vue.$cookies.remove('session-id');
                         next('/login');
                     }
                 });
