@@ -43,9 +43,12 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
 
     private detachEndpoints(entity: PipeEntity) {
         this.oldEndpoints.get(entity.uid)!.forEach((oldVal) => {
+            if (oldVal === undefined) {
+                return;
+            }
             const arr = this.connections.get(oldVal);
             if (!arr) {
-                throw new Error('old value didn\'t register a connectable');
+                throw new Error('old value didn\'t register a connectable. ' + oldVal);
             }
             const ix = arr.indexOf(entity.uid);
             if (ix === -1) {
@@ -58,6 +61,9 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
 
     private attachEndpoints(entity: PipeEntity) {
         entity.endpointUid.forEach((newVal) => {
+            if (newVal === undefined) {
+                return;
+            }
             if (!this.connections.has(newVal)) {
                 this.connections.set(newVal, []);
             }
@@ -98,11 +104,12 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
         return result;
     }
 
+    // undefined values only for deleting values. So hacky but we need to hack now.
     updatePipeEndpoints(key: string, endpoints: [string | undefined, string | undefined]) {
 
         const e = this.get(key)!.entity as PipeEntity;
         this.detachEndpoints(e);
-        e.endpointUid.splice(0, 2, ...endpoints);
+        e.endpointUid.splice(0, 2, ...(endpoints as [string, string]));
         this.attachEndpoints(e);
     }
 }
