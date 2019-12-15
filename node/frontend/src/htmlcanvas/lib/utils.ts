@@ -264,7 +264,6 @@ export function getSystemNodeHeightM(entity: SystemNodeEntity, context: CanvasCo
         case EntityType.FITTING:
         case EntityType.PIPE:
         case EntityType.RISER:
-        case EntityType.RESULTS_MESSAGE:
         case EntityType.SYSTEM_NODE:
         case EntityType.BACKGROUND_IMAGE:
         case EntityType.DIRECTED_VALVE:

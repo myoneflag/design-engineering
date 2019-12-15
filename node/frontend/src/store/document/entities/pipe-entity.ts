@@ -10,11 +10,10 @@ import * as _ from 'lodash';
 import BackedDrawableObject from '../../../../src/htmlcanvas/lib/backed-drawable-object';
 import {EntityType} from '../../../../src/store/document/entities/types';
 import PipeCalculation from '../../../../src/store/document/calculations/pipe-calculation';
-import {CalculationTarget} from '../../../../src/store/document/calculations/types';
 import {Choice} from '../../../../src/lib/types';
 import {cloneSimple} from '../../../../src/lib/utils';
 
-export default interface PipeEntity extends DrawableEntity, CalculationTarget<PipeCalculation> {
+export default interface PipeEntity extends DrawableEntity {
     type: EntityType.PIPE;
 
     parentUid: null;
@@ -28,8 +27,6 @@ export default interface PipeEntity extends DrawableEntity, CalculationTarget<Pi
 
     color: Color | null;
     endpointUid: [string, string];
-
-    calculation: PipeCalculation | null;
 }
 
 export function makePipeFields(materials: Choice[], systems: FlowSystemParameters[]): PropertyField[] {

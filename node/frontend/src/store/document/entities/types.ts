@@ -11,8 +11,6 @@ export enum EntityType {
     // Fixtures
     FIXTURE = 'FIXTURE',
 
-    // Output
-    RESULTS_MESSAGE = 'RESULTS_MESSAGE',
     DIRECTED_VALVE = 'DIRECTED_VALVE',
 }
 
@@ -34,8 +32,6 @@ export function getEntityName(type: EntityType): string {
             return 'System Joints';
         case EntityType.FIXTURE:
             return 'Fixture';
-        case EntityType.RESULTS_MESSAGE:
-            return 'Results Message';
         case EntityType.DIRECTED_VALVE:
             return 'Valve';
     }

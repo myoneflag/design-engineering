@@ -102,7 +102,6 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
                     );
                 });
             case EntityType.PIPE:
-            case EntityType.RESULTS_MESSAGE:
             case EntityType.BACKGROUND_IMAGE:
                 throw new Error('invalid parent');
         }

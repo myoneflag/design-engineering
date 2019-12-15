@@ -69,7 +69,6 @@ export default function insertFixture(
                 rotation: angle,
                 warmRoughInUid: hasWarm ? warmUid : null,
                 warmTempC: null,
-                calculation: null,
             };
 
             const coldEntity: SystemNodeEntity = {
@@ -79,7 +78,6 @@ export default function insertFixture(
                 systemUid: StandardFlowSystemUids.ColdWater,
                 uid: coldUid,
                 configuration: FlowConfiguration.INPUT,
-                calculation: null,
             };
 
 
@@ -95,7 +93,6 @@ export default function insertFixture(
                     systemUid: StandardFlowSystemUids.WarmWater,
                     uid: warmUid,
                     configuration: FlowConfiguration.INPUT,
-                    calculation: null,
                 };
 
                 context.$store.dispatch('document/addEntity', warmEntity);

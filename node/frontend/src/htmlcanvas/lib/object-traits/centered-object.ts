@@ -27,8 +27,10 @@ export function CenteredObject<T extends new (...args: any[])
 
         debase(): void {
             const wc = this.toWorldCoord({x: 0, y: 0});
+            console.log('wc is ' + JSON.stringify(wc));
             this.entity.parentUid = null;
-            this.entity.center = wc;
+            this.entity.center.x = wc.x;
+            this.entity.center.y = wc.y;
         }
 
         rebase(context: CanvasContext) {

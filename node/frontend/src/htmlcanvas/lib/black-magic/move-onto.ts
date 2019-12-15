@@ -29,6 +29,8 @@ export function moveOnto(
         );
         assert(focus!.uid === source.uid);
     } else {
+        dest.debase();
+        source.debase();
         const entity = dest.entity;
         const finalCenter = dest.entity.center;
         // delete incidental pipes
@@ -49,8 +51,8 @@ export function moveOnto(
             loser = tmp;
         }
 
-        survivor.entity.center.x = finalCenter.x;
-        survivor.entity.center.y = finalCenter.y;
+        //survivor.entity.center.x = finalCenter.x;
+        //survivor.entity.center.y = finalCenter.y;
 
         cloneSimple(context.objectStore.getConnections(loser.uid)).forEach((puid) => {
             const pipe = context.objectStore.get(puid) as Pipe;
@@ -70,6 +72,7 @@ export function moveOnto(
         });
 
         if (context.objectStore.has(loser.uid)) {
+            console.log('loser connections: ' + JSON.stringify(context.objectStore.getConnections(loser.uid)));
             context.deleteEntity(loser, false);
         }
     }

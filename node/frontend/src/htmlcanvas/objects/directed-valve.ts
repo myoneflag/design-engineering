@@ -240,17 +240,18 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         //
     }
 
-    largestPipeSizeNominalMM(): number | null {
+    largestPipeSizeNominalMM(context: CalculationContext): number | null {
         const sizes = this.objectStore.getConnections(this.entity.uid).map((uid) => {
             const p = this.objectStore.get(uid) as Pipe;
             if (!p || p.type !== EntityType.PIPE) {
                 throw new Error('A non pipe object is connected to a valve');
             }
 
-            if (!p.entity.calculation || p.entity.calculation.realNominalPipeDiameterMM === null) {
+            const calculation = context.globalStore.getCalculation(p.entity);
+            if (!calculation || calculation.realNominalPipeDiameterMM === null) {
                 return null;
             } else {
-                return p.entity.calculation.realNominalPipeDiameterMM;
+                return calculation.realNominalPipeDiameterMM;
             }
         });
 
@@ -292,7 +293,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             case ValveType.WATER_METER:
             case ValveType.STRAINER:
                 const table = context.catalog.valves[this.entity.valve.catalogId];
-                const size = this.largestPipeSizeNominalMM();
+                const size = this.largestPipeSizeNominalMM(context);
                 if (size === null) {
                     throw new Error('No pipes are sized for this valve');
                 }
@@ -317,7 +318,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 break;
         }
 
-        const volLM = this.largestPipeSizeNominalMM()! ** 2 * Math.PI / 4 / 1000;
+        const volLM = this.largestPipeSizeNominalMM(context)! ** 2 * Math.PI / 4 / 1000;
         const velocityMS = flowLS / volLM;
         if (kValue) {
             return sign * (kValue * velocityMS ** 2) / (2 * ga);

@@ -146,7 +146,6 @@ function leadPipe(
         systemUid,
         type: EntityType.PIPE,
         uid: uuid(),
-        calculation: null,
     };
 
     context.$store.dispatch('document/addEntity', newPipe);

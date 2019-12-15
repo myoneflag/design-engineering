@@ -2,7 +2,6 @@ import {BackgroundEntity} from '../../../../src/store/document/entities/backgrou
 import FittingEntity from '../../../../src/store/document/entities/fitting-entity';
 import PipeEntity from '../../../../src/store/document/entities/pipe-entity';
 import RiserEntity from './riser-entity';
-import PopupEntity from '../../../../src/store/document/entities/calculations/popup-entity';
 import FixtureEntity from '../../../../src/store/document/entities/fixtures/fixture-entity';
 import TmvEntity, {SystemNodeEntity} from '../../../../src/store/document/entities/tmv/tmv-entity';
 import {CenteredEntity, ConnectableEntity} from '../../../../src/store/document/types';
@@ -19,7 +18,6 @@ export type DrawableEntityConcrete =
     FittingEntity |
     PipeEntity |
     RiserEntity |
-    PopupEntity |
     SystemNodeEntity |
     TmvEntity |
     FixtureEntity |
@@ -39,7 +37,6 @@ export type CenteredEntityConcrete =
     SystemNodeEntity |
     TmvEntity |
     FixtureEntity |
-    PopupEntity |
     DirectedValveEntity;
 
 export type InvisibleNodeEntityConcrete =

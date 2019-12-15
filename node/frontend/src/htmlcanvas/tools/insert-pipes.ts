@@ -105,7 +105,6 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                     systemUid: system.uid,
                     type: EntityType.FITTING,
                     uid: uuid(),
-                    calculation: null,
                 };
                 entity = valveEntity;
                 context.$store.dispatch('document/addEntity', valveEntity);
@@ -169,7 +168,6 @@ function insertPipeChain(
                 systemUid: system.uid,
                 type: EntityType.PIPE,
                 uid: pipeUid,
-                calculation: null,
             };
             newPipe = pipe;
 
@@ -263,7 +261,6 @@ function insertPipeChain(
                     systemUid: system.uid,
                     type: EntityType.FITTING,
                     uid: uuid(),
-                    calculation: null,
                 };
 
                 context.$store.dispatch('document/addEntity', nextEntity);

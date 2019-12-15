@@ -9,7 +9,6 @@ import Flatten from '@flatten-js/core';
 import Connectable from '../../../../src/htmlcanvas/lib/object-traits/connectable';
 import BaseBackedObject from '../../../../src/htmlcanvas/lib/base-backed-object';
 import BackedDrawableObject from '../../../../src/htmlcanvas/lib/backed-drawable-object';
-import PopupEntity from '../../../../src/store/document/entities/calculations/popup-entity';
 import {DEFAULT_FONT_NAME} from '../../../../src/config';
 import {getPropertyByString, lighten} from '../../../../src/lib/utils';
 import {getFields} from '../../../../src/calculations/utils';
@@ -29,7 +28,7 @@ export interface Calculated {
     measureCalculationBox(context: DrawingContext, data: CalculationData[]): Array<[TM.Matrix, Flatten.Polygon]>;
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[];
     getCalculationFields(context: DrawingContext, filters: CalculationFilters): CalculationData[];
-    hasWarning(): boolean;
+    hasWarning(context: DrawingContext): boolean;
 }
 
 
@@ -102,33 +101,35 @@ export function CalculatedObject<T extends new (...args: any[])
 
                 maxWidth = Math.max(maxWidth, metrics.width);
             }
-            if (this.hasWarning()) {
+            if (this.hasWarning(context)) {
                 maxWidth = Math.max(maxWidth, WARNING_HINT_WIDTH);
             }
 
+
+            const calculation = context.globalStore.getCalculation(this.entity);
 
             let height = 0;
             data.forEach((d) => {
                 height += (d.fontMultiplier === undefined ? 1 : d.fontMultiplier) * FIELD_FONT_SIZE;
             });
             let warnHeight = 0;
-            if (this.hasWarning()) {
+            if (this.hasWarning(context)) {
                 ctx.font = 'bold ' + FIELD_FONT_SIZE + 'px ' + DEFAULT_FONT_NAME;
-                warnHeight = wrapText(ctx, this.entity.calculation!.warning!, 0, 0, maxWidth, FIELD_HEIGHT, true);
+                warnHeight = wrapText(ctx, calculation!.warning!, 0, 0, maxWidth, FIELD_HEIGHT, true);
                 height += warnHeight;
             }
             let y = height / 2;
 
             const box = new Flatten.Box(-maxWidth / 2, - height / 2, maxWidth / 2, height / 2);
 
-            if (this.hasWarning()) {
+            if (this.hasWarning(context)) {
                 box.xmin -= WARNING_WIDTH;
             }
 
             if (!dryRun) {
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
                 ctx.strokeStyle = '#000';
-                if (this.hasWarning()) {
+                if (this.hasWarning(context)) {
                     ctx.fillStyle = 'rgba(255, 220, 150, 1)';
                 }
                 ctx.fillRect(-maxWidth / 2, -height / 2, maxWidth, height);
@@ -136,13 +137,13 @@ export function CalculatedObject<T extends new (...args: any[])
                 ctx.font = FIELD_FONT_SIZE + 'px ' + DEFAULT_FONT_NAME;
                 ctx.fillStyle = '#000';
 
-                if (this.hasWarning()) {
+                if (this.hasWarning(context)) {
                     ctx.fillStyle = '#000';
                     ctx.font = 'bold ' + FIELD_FONT_SIZE + 'px ' + DEFAULT_FONT_NAME;
 
                     y -= wrapText(
                         ctx,
-                        this.entity.calculation!.warning!,
+                        calculation!.warning!,
                         -maxWidth / 2,
                         y - warnHeight + FIELD_HEIGHT,
                         maxWidth,
@@ -180,7 +181,7 @@ export function CalculatedObject<T extends new (...args: any[])
                 const worldMax = vp.toWorldCoord(
                     TM.applyToPoint(context.ctx.getTransform(), {x: box.xmax, y: box.ymax}),
                 );
-                if (this.hasWarning()) {
+                if (this.hasWarning(context)) {
                     worldMin.x -= WARNING_WIDTH;
                 }
                 const worldBox = new Flatten.Box(
@@ -247,6 +248,7 @@ export function CalculatedObject<T extends new (...args: any[])
 
         getCalculationFields(context: DrawingContext, filters: CalculationFilters): CalculationData[] {
             const filter = filters[this.entity.type].filters;
+            const calculation = context.globalStore.getCalculation(this.entity);
             return getFields(this.entity, context.doc, context.catalog)
                 .filter((f) => f.property in filter && filter[f.property].enabled)
                 .map((f) => {
@@ -254,16 +256,17 @@ export function CalculatedObject<T extends new (...args: any[])
                     if (f.attachUid === undefined) {
                         ret.attachUid = this.entity.uid;
                     }
-                    ret.value = getPropertyByString(this.entity.calculation, f.property);
+                    ret.value = getPropertyByString(calculation, f.property);
                     return ret;
                 });
         }
 
-        hasWarning(): boolean {
-            if (this.entity.calculation && this.entity.calculation.warning === undefined) {
+        hasWarning(context: DrawingContext): boolean {
+            const calculation = context.globalStore.getCalculation(this.entity);
+            if (calculation && calculation.warning === undefined) {
                 throw new Error('undefined calculation: ' + JSON.stringify(this.entity));
             }
-            return this.entity.calculation !== null && this.entity.calculation.warning !== null;
+            return calculation !== undefined && calculation.warning !== null;
         }
     });
 }

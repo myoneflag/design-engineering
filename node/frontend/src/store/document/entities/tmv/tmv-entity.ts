@@ -12,12 +12,11 @@ import FittingEntity from '../../../../../src/store/document/entities/fitting-en
 import CatalogState, {Catalog} from '../../../../../src/store/catalog/types';
 import InvisibleNodeEntity from '../../../../../src/store/document/entities/Invisible-node-entity';
 import TmvCalculation from '../../../../../src/store/document/calculations/tmv-calculation';
-import {CalculationTarget} from '../../../../../src/store/document/calculations/types';
 import {parseCatalogNumberOrMin} from '../../../../../src/htmlcanvas/lib/utils';
 import {cloneSimple} from '../../../../../src/lib/utils';
 import SystemNodeCalculation from '../../../../../src/store/document/calculations/system-node-calculation';
 
-export default interface TmvEntity extends DrawableEntity, CalculationTarget<TmvCalculation> {
+export default interface TmvEntity extends DrawableEntity {
     center: Coord;
     type: EntityType.TMV;
     rotation: number;
@@ -38,11 +37,9 @@ export default interface TmvEntity extends DrawableEntity, CalculationTarget<Tmv
     maxHotColdPressureDifferentialPCT: number | null;
     minFlowRateLS: number | null;
     maxFlowRateLS: number | null;
-
-    calculation: TmvCalculation | null;
 }
 
-export interface SystemNodeEntity extends InvisibleNodeEntity, CalculationTarget<SystemNodeCalculation> {
+export interface SystemNodeEntity extends InvisibleNodeEntity{
     type: EntityType.SYSTEM_NODE;
     systemUid: string;
     configuration: FlowConfiguration;

@@ -60,7 +60,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         const {ctx, vp} = context;
         // Manage to draw on screen first
 
-        if (!this.entity.calculation) {
+        if (!context.globalStore.getCalculation(this.entity)) {
             return [];
         }
         // Manage to draw rotated first
@@ -120,7 +120,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         const {ctx, vp} = context;
         // Manage to draw on screen first
 
-        if (!this.entity.calculation) {
+        if (!context.globalStore.getCalculation(this.entity)) {
             return;
         }
         // Manage to draw rotated first
@@ -175,16 +175,17 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         const baseWidth = Math.max(MIN_PIPE_PIXEL_WIDTH / s, targetWWidth / this.toWorldLength(1));
         this.lastDrawnWidthInternal = baseWidth;
 
+        const calculation = context.globalStore.getCalculation(this.entity);
         if (calculationFilters) {
-            if (this.entity.calculation) {
-                if (this.entity.calculation.realNominalPipeDiameterMM) {
-                    targetWWidth = this.entity.calculation.realNominalPipeDiameterMM;
+            if (calculation) {
+                if (calculation.realNominalPipeDiameterMM) {
+                    targetWWidth = calculation.realNominalPipeDiameterMM;
                 }
             }
-            if (!this.entity.calculation ||
-                !this.entity.calculation.realNominalPipeDiameterMM ||
-                !this.entity.calculation.peakFlowRate ||
-                this.entity.calculation.peakFlowRate < SIGNIFICANT_FLOW_THRESHOLD
+            if (!calculation ||
+                !calculation.realNominalPipeDiameterMM ||
+                !calculation.peakFlowRate ||
+                calculation.peakFlowRate < SIGNIFICANT_FLOW_THRESHOLD
             ) {
                 baseColor = '#aaaaaa';
             }
@@ -312,7 +313,6 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             // Create pipe instead of extend it.
             const newValveUid = uuid();
             const pipe: PipeEntity = {
-                calculation: null,
                 color: this.entity.color,
                 diameterMM: this.entity.diameterMM,
                 endpointUid: [epUid, newValveUid],
@@ -335,7 +335,6 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             assert(newLoc.length === 1);
 
             const valve: FittingEntity = {
-                calculation: null,
                 center: {x: newLoc[0].x, y: newLoc[0].y},
                 color: this.entity.color,
                 parentUid: null,
@@ -531,12 +530,13 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
     }
 
-    getCatalogPage({drawing, catalog}: CalculationContext): PipeMaterial | null {
+    getCatalogPage({drawing, catalog, globalStore}: CalculationContext): PipeMaterial | null {
         const computed = fillPipeDefaultFields(drawing, this.computedLengthM, this.entity);
         if (!computed.material) {
             return null;
         }
-        if (!computed.calculation || !computed.calculation.realNominalPipeDiameterMM) {
+        const calculation = globalStore.getCalculation(this.entity);
+        if (!calculation || !calculation.realNominalPipeDiameterMM) {
             return null;
         }
         return catalog.pipes[computed.material];
@@ -544,8 +544,10 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
     getCatalogBySizePage(context: CalculationContext): PipeSpec | null {
         const {drawing} = context;
+
+        const calculation = context.globalStore.getCalculation(this.entity);
         const computed = fillPipeDefaultFields(drawing, this.computedLengthM, this.entity);
-        if (!computed.calculation || !computed.calculation.realNominalPipeDiameterMM) {
+        if (!calculation || !calculation.realNominalPipeDiameterMM) {
             return null;
         }
         const material = this.getCatalogPage(context);
@@ -554,7 +556,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
         const tableVal = lowerBoundTable(
             material.pipesBySize,
-            computed.calculation.realNominalPipeDiameterMM,
+            calculation.realNominalPipeDiameterMM,
         );
         return tableVal;
     }
@@ -585,7 +587,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                         signed: boolean,
     ): number {
         const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
-        const {drawing, catalog, objectStore} = context;
+        const {drawing, catalog, globalStore} = context;
         const entity = this.entity;
         let sign = 1;
         if (flowLS < 0) {
@@ -601,8 +603,9 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         const system = drawing.metadata.flowSystems.find((s) => s.uid === entity.systemUid)!;
         const fluid = catalog.fluids[system.fluid];
 
-        const volLM =
-            parseCatalogNumberExact(entity.calculation!.realInternalDiameterMM)! ** 2 * Math.PI / 4 / 1000;
+        const volLM = parseCatalogNumberExact(
+            context.globalStore.getCalculation(this.entity)!.realInternalDiameterMM
+        )! ** 2 * Math.PI / 4 / 1000;
         const velocityMS = flowLS / volLM;
 
         const page = this.getCatalogBySizePage(context);

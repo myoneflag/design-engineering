@@ -32,7 +32,6 @@ export function isConnectable(type: EntityType): boolean {
         case EntityType.FIXTURE:
         case EntityType.BACKGROUND_IMAGE:
         case EntityType.PIPE:
-        case EntityType.RESULTS_MESSAGE:
             return false;
     }
     assertUnreachable(type);
@@ -46,7 +45,6 @@ export function isCentered(type: EntityType): boolean {
         case EntityType.FLOW_RETURN:
         case EntityType.TMV:
         case EntityType.FIXTURE:
-        case EntityType.RESULTS_MESSAGE:
         case EntityType.DIRECTED_VALVE:
             return true;
         case EntityType.BACKGROUND_IMAGE:
@@ -72,7 +70,6 @@ export function getDragPriority(type: EntityType): number {
         case EntityType.FIXTURE:
         case EntityType.BACKGROUND_IMAGE:
         case EntityType.PIPE:
-        case EntityType.RESULTS_MESSAGE:
             throw new Error('not a connectable');
     }
     assertUnreachable(type);

@@ -215,7 +215,7 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Calc
             }
         }
 
-        const {drawing, catalog, objectStore} = context;
+        const {drawing, catalog, globalStore} = context;
         const entity = this.entity;
         // it is directional
         let valid = false;
@@ -238,7 +238,7 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Calc
         // We need the fluid density because TMV pressure stats are in KPA, not head loss
         // which is what the rest of the calculations are base off of.
 
-        const systemUid = (objectStore.get(entity.warmOutputUid)!.entity as SystemNodeEntity).systemUid;
+        const systemUid = (globalStore.get(entity.warmOutputUid)!.entity as SystemNodeEntity).systemUid;
         const fluid = drawing.metadata.flowSystems.find((s) => s.uid === systemUid)!.fluid;
         const density = parseCatalogNumberExact(catalog.fluids[fluid].densityKGM3)!;
 

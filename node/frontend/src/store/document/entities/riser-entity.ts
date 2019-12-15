@@ -9,11 +9,10 @@ import {FieldType, PropertyField} from '../../../../src/store/document/entities/
 import * as _ from 'lodash';
 import {EntityType} from '../../../../src/store/document/entities/types';
 import RiserCalculations from '../calculations/riser-calculations';
-import {CalculationTarget} from '../../../../src/store/document/calculations/types';
 import {Choice, LEVEL_HEIGHT_DIFF_M} from '../../../../src/lib/types';
 import {cloneSimple} from '../../../../src/lib/utils';
 
-export default interface RiserEntity extends ConnectableEntity, CalculationTarget<RiserCalculations> {
+export default interface RiserEntity extends ConnectableEntity {
     type: EntityType.RISER;
     center: Coord;
     systemUid: string;
@@ -28,8 +27,6 @@ export default interface RiserEntity extends ConnectableEntity, CalculationTarge
 
     bottomHeightM: number | null;
     topHeightM: number | null;
-
-    calculation: RiserCalculations | null;
 }
 
 export function makeRiserFields(materials: Choice[], systems: FlowSystemParameters[]): PropertyField[] {

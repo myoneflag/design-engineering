@@ -95,7 +95,6 @@ function createBareValveEntity(
     systemUidOption: string | null,
 ): DirectedValveEntity {
     return {
-        calculation: null,
         center: wc,
         color: null,
         parentUid: null,

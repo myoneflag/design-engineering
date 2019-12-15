@@ -1,5 +1,5 @@
 import {DocumentState, DrawingState} from '../../src/store/document/types';
-import {ObjectStore, SelectionTarget} from '../../src/htmlcanvas/lib/types';
+import {GlobalStore, ObjectStore, SelectionTarget} from '../../src/htmlcanvas/lib/types';
 import {EntityType} from '../../src/store/document/entities/types';
 import PipeEntity, {fillPipeDefaultFields, makePipeFields} from '../../src/store/document/entities/pipe-entity';
 import {makeValveFields} from '../../src/store/document/entities/fitting-entity';
@@ -9,7 +9,6 @@ import FixtureEntity, {
     fillFixtureFields,
     makeFixtureFields
 } from '../../src/store/document/entities/fixtures/fixture-entity';
-import PopupEntity from '../../src/store/document/entities/calculations/popup-entity';
 import {DemandType} from '../../src/calculations/types';
 import Graph, {serializeValue} from '../../src/calculations/graph';
 import EquationEngine from '../../src/calculations/equation-engine';
@@ -51,10 +50,10 @@ import DirectedValveEntity, {
 } from '../../src/store/document/entities/directed-valves/directed-valve-entity';
 import {ValveType} from '../../src/store/document/entities/directed-valves/valve-types';
 import {lookupFlowRate} from '../../src/calculations/utils';
-import {emptyFittingCalculation} from '../../src/store/document/calculations/fitting-calculation';
-import {emptyRiserCalculations} from '../store/document/calculations/riser-calculations';
-import {emptyDirectedValveCalculation} from '../../src/store/document/calculations/directed-valve-calculation';
-import {emptySystemNodeCalculation} from '../../src/store/document/calculations/system-node-calculation';
+import FittingCalculation, {emptyFittingCalculation} from '../../src/store/document/calculations/fitting-calculation';
+import RiserCalculations, {emptyRiserCalculations} from '../store/document/calculations/riser-calculations';
+import DirectedValveCalculation, {emptyDirectedValveCalculation} from '../../src/store/document/calculations/directed-valve-calculation';
+import SystemNodeCalculation, {emptySystemNodeCalculation} from '../../src/store/document/calculations/system-node-calculation';
 import {StandardFlowSystemUids} from '../../src/store/catalog';
 
 export const SELF_CONNECTION = 'SELF_CONNECTION';
@@ -63,28 +62,26 @@ export const SELF_CONNECTION = 'SELF_CONNECTION';
 
 export default class CalculationEngine {
 
-    objectStore!: ObjectStore;
+    globalStore!: GlobalStore;
     doc!: DocumentState;
     demandType!: DemandType;
     flowGraph!: Graph<FlowNode, FlowEdge>;
     equationEngine!: EquationEngine;
     catalog!: Catalog;
-    extraErrors!: PopupEntity[];
     drawing!: DrawingState;
     ga!: number;
 
     calculate(
-        objectStore: ObjectStore,
+        objectStore: GlobalStore,
         doc: DocumentState,
         catalog: Catalog,
         demandType: DemandType,
-        done: (entity: PopupEntity[]) => void,
+        done: () => void,
     ) {
-        this.objectStore = objectStore;
+        this.globalStore = objectStore;
         this.doc = doc;
         this.catalog = catalog;
         this.demandType = demandType;
-        this.extraErrors = [];
         this.drawing = this.doc.drawing;
         this.ga = this.doc.drawing.metadata.calculationParams.gravitationalAcceleration;
 
@@ -95,49 +92,21 @@ export default class CalculationEngine {
         }
 
         setTimeout(() => {
-            // let's do some random calculations for now.
-            done(this.doRealCalculation());
+            this.doRealCalculation();
+            done();
         },
             500);
         this.equationEngine = new EquationEngine();
     }
 
     clearCalculations() {
-        this.objectStore.forEach((v) => {
-            switch (v.entity.type) {
-                case EntityType.BACKGROUND_IMAGE:
-                    break;
-                case EntityType.FITTING:
-                    v.entity.calculation = emptyFittingCalculation();
-                    break;
-                case EntityType.PIPE:
-                    v.entity.calculation = emptyPipeCalculation();
-                    break;
-                case EntityType.RISER:
-                    v.entity.calculation = emptyRiserCalculations();
-                    break;
-                case EntityType.RESULTS_MESSAGE:
-                    break;
-                case EntityType.SYSTEM_NODE:
-                    v.entity.calculation = emptySystemNodeCalculation();
-                    break;
-                case EntityType.TMV:
-                    v.entity.calculation = emptyTmvCalculation();
-                    break;
-                case EntityType.FIXTURE:
-                    v.entity.calculation = emptyFixtureCalculation();
-                    break;
-                case EntityType.DIRECTED_VALVE:
-                    v.entity.calculation = emptyDirectedValveCalculation();
-                    break;
-            }
-        });
+        this.globalStore.clearCalculations();
     }
 
     preValidate(): boolean {
         let selectObject: SelectionTarget | null = null;
 
-        this.objectStore.forEach((obj) => {
+        this.globalStore.forEach((obj) => {
             let fields: PropertyField[] = [];
             switch (obj.entity.type) {
                 case EntityType.RISER:
@@ -160,7 +129,6 @@ export default class CalculationEngine {
                     break;
                 case EntityType.SYSTEM_NODE:
                 case EntityType.BACKGROUND_IMAGE:
-                case EntityType.RESULTS_MESSAGE:
                     break;
                 default:
                     assertUnreachable(obj.entity);
@@ -192,15 +160,15 @@ export default class CalculationEngine {
         return true;
     }
 
-    doRealCalculation(): PopupEntity[] {
+    doRealCalculation() {
         this.clearCalculations();
         this.configureLUFlowGraph();
 
-        const sanityCheckWarnings = this.sanityCheck(this.objectStore, this.doc);
+        const sanityPassed = this.sanityCheck(this.globalStore, this.doc);
 
-        if (sanityCheckWarnings.length === 0) {
+        if (sanityPassed) {
             // The remaining graph must be a rooted forest.
-            const sources: FlowNode[] = Array.from(this.objectStore.values())
+            const sources: FlowNode[] = Array.from(this.globalStore.values())
                 .filter((o) => o.type === EntityType.RISER)
                 .map((o) => ({connectable: o.uid, connection: SELF_CONNECTION}));
             this.sizeDefiniteTransports(sources);
@@ -213,45 +181,49 @@ export default class CalculationEngine {
         if (!this.equationEngine.isComplete()) {
             throw new Error('Calculations could not complete \n');
         }
-
-        return [];
     }
 
     calculateAllPointPressures(sources: FlowNode[]) {
-        this.objectStore.forEach((obj) => {
+        this.globalStore.forEach((obj) => {
             const entity = obj.entity;
             switch (entity.type) {
-                case EntityType.FIXTURE:
-                    entity.calculation!.coldPressureKPA =
+                case EntityType.FIXTURE: {
+                    const calculation = this.globalStore.getOrCreateCalculation(entity);
+                    calculation.coldPressureKPA =
                         this.getAbsolutePressurePoint(
                             {connectable: entity.coldRoughInUid, connection: entity.uid},
                             sources,
                         );
                     if (entity.warmRoughInUid) {
-                        entity.calculation!.warmPressureKPA =
+                        calculation.warmPressureKPA =
                             this.getAbsolutePressurePoint(
                                 {connectable: entity.warmRoughInUid, connection: entity.uid},
                                 sources,
                             );
                     }
-                    break;
-                case EntityType.TMV:
-                    entity.calculation!.coldPressureKPA =
+                }
+                break;
+                case EntityType.TMV: {
+                    const calculation = this.globalStore.getOrCreateCalculation(entity);
+                    calculation.coldPressureKPA =
                         this.getAbsolutePressurePoint(
                             {connectable: entity.coldRoughInUid, connection: entity.uid},
                             sources,
                         );
-                    entity.calculation!.hotPressureKPA =
+                    calculation.hotPressureKPA =
                         this.getAbsolutePressurePoint(
                             {connectable: entity.hotRoughInUid, connection: entity.uid},
                             sources,
                         );
-                    break;
+                }
+                break;
                 case EntityType.RISER:
                 case EntityType.DIRECTED_VALVE:
                 case EntityType.FITTING:
                 case EntityType.SYSTEM_NODE:
-                    const candidates = cloneSimple(this.objectStore.getConnections(entity.uid));
+                    const calculation = this.globalStore.getOrCreateCalculation(entity) as
+                        RiserCalculations | DirectedValveCalculation | FittingCalculation | SystemNodeCalculation;
+                    const candidates = cloneSimple(this.globalStore.getConnections(entity.uid));
                     if (entity.type === EntityType.RISER) {
                         candidates.push(SELF_CONNECTION);
                     } else if (entity.type === EntityType.SYSTEM_NODE) {
@@ -268,11 +240,10 @@ export default class CalculationEngine {
                         }
                     });
                     // For the entry, we have to get the highest pressure (the entry pressure)
-                    entity.calculation!.pressureKPA = maxPressure;
+                    calculation.pressureKPA = maxPressure;
                     break;
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.PIPE:
-                case EntityType.RESULTS_MESSAGE:
                     break;
                 default:
                     assertUnreachable(entity);
@@ -284,12 +255,12 @@ export default class CalculationEngine {
         if (this.demandType === DemandType.PSD) {
             return this.getPeakDemandKPAWithShortestPath(node, sources);
         } else {
-            const obj = this.objectStore.get(node.connectable)!;
+            const obj = this.globalStore.get(node.connectable)!;
             let height: number;
             switch (obj.entity.type) {
                 case EntityType.SYSTEM_NODE:
                     if (obj.entity.parentUid) {
-                        const par = this.objectStore.get(obj.entity.parentUid)!;
+                        const par = this.globalStore.get(obj.entity.parentUid)!;
                         switch (par.entity.type) {
                             case EntityType.PIPE:
                                 height = par.entity.heightAboveFloorM;
@@ -305,7 +276,6 @@ export default class CalculationEngine {
                             case EntityType.FITTING:
                             case EntityType.BACKGROUND_IMAGE:
                             case EntityType.RISER:
-                            case EntityType.RESULTS_MESSAGE:
                             case EntityType.SYSTEM_NODE:
                                 throw new Error('don\'t know how to calculate static pressure for this');
                             default:
@@ -322,7 +292,6 @@ export default class CalculationEngine {
                 case EntityType.DIRECTED_VALVE:
                 case EntityType.TMV:
                 case EntityType.FIXTURE:
-                case EntityType.RESULTS_MESSAGE:
                     throw new Error('don\'t know how to calculate static pressure for that');
                 default:
                     assertUnreachable(obj.entity);
@@ -337,7 +306,7 @@ export default class CalculationEngine {
             node,
             (n) => {
                 if (sources.findIndex((s) => s.connectable === n.connectable) !== -1) {
-                    const source = this.objectStore.get(n.connectable) as Riser;
+                    const source = this.globalStore.get(n.connectable) as Riser;
                     const density = getFluidDensityOfSystem(source.entity.systemUid, this.doc, this.catalog)!;
                     const mh = source.entity.pressureSourceHeightM! - heightM;
                     const thisPressure = Number(source.entity.pressureKPA!) + head2kpa(mh, density, this.ga);
@@ -368,7 +337,7 @@ export default class CalculationEngine {
             node,
             sources,
             (edge) => {
-                const obj = this.objectStore.get(edge.value.uid)!;
+                const obj = this.globalStore.get(edge.value.uid)!;
                 // Remember, this path is reversed
                 const flowFrom = edge.to;
                 const flowTo = edge.from;
@@ -376,10 +345,11 @@ export default class CalculationEngine {
                 switch (edge.value.type) {
                     case EdgeType.PIPE:
                         if (obj instanceof Pipe) {
-                            if (!obj.entity.calculation || obj.entity.calculation.pressureDropKpa === null) {
+                            const calculation = this.globalStore.getCalculation(obj.entity);
+                            if (!calculation || calculation.pressureDropKpa === null) {
                                 return Infinity;
                             }
-                            return obj.entity.calculation.pressureDropKpa;
+                            return calculation.pressureDropKpa;
                         } else {
                             throw new Error('misconfigured flow graph');
                         }
@@ -387,7 +357,8 @@ export default class CalculationEngine {
                     case EdgeType.TMV_COLD_WARM:
                     case EdgeType.TMV_COLD_COLD: {
                         if (obj instanceof Tmv) {
-                            if (!obj.entity.calculation) {
+                            const calculation = this.globalStore.getCalculation(obj.entity);
+                            if (!calculation) {
                                 return Infinity;
                             }
 
@@ -398,13 +369,13 @@ export default class CalculationEngine {
                             if (edge.value.type === EdgeType.TMV_COLD_COLD &&
                                 flowFrom.connectable === obj.entity.coldRoughInUid) {
 
-                                fr = obj.entity.calculation.coldPeakFlowRate;
-                                systemUid = (this.objectStore.get(obj.entity.coldRoughInUid)!
+                                fr = calculation.coldPeakFlowRate;
+                                systemUid = (this.globalStore.get(obj.entity.coldRoughInUid)!
                                     .entity as SystemNodeEntity).systemUid;
                             } else if (edge.value.type === EdgeType.TMV_HOT_WARM &&
                                 flowFrom.connectable === obj.entity.hotRoughInUid) {
-                                fr = obj.entity.calculation.hotPeakFlowRate;
-                                systemUid = (this.objectStore.get(obj.entity.hotRoughInUid)!
+                                fr = calculation.hotPeakFlowRate;
+                                systemUid = (this.globalStore.get(obj.entity.hotRoughInUid)!
                                     .entity as SystemNodeEntity).systemUid;
                             } else {
                                 throw new Error('Misused TMV');
@@ -432,21 +403,23 @@ export default class CalculationEngine {
                     case EdgeType.FITTING_FLOW:
                     case EdgeType.CHECK_THROUGH:
                     case EdgeType.ISOLATION_THROUGH: {
-                        const sourcePipe = this.objectStore.get(flowFrom.connection) as Pipe;
+                        const sourcePipe = this.globalStore.get(flowFrom.connection) as Pipe;
                         let dist = 0;
                         if (!sourcePipe || sourcePipe.type !== EntityType.PIPE) {
-                            const destPipe = this.objectStore.get(flowTo.connection) as Pipe;
-                            if (destPipe && destPipe.type === EntityType.PIPE) {
-                                dist = destPipe.entity.calculation!.peakFlowRate!;
+                            const destPipe = this.globalStore.get(flowTo.connection) as Pipe;
+                            if (destPipe && destPipe.entity.type === EntityType.PIPE) {
+                                const pipeCalc = this.globalStore.getCalculation(destPipe.entity);
+                                dist = pipeCalc!.peakFlowRate!;
                             } else {
                                 // no flow
                                 throw new Error('can\'t find any flow on this edge');
                             }
                         } else {
-                            dist = sourcePipe.entity.calculation!.peakFlowRate!;
+                            const srcCalc = this.globalStore.getCalculation(sourcePipe.entity);
+                            dist = srcCalc!.peakFlowRate!;
                         }
                         const systemUid = determineConnectableSystemUid(
-                            this.objectStore,
+                            this.globalStore,
                             (obj.entity as DirectedValveEntity),
                         )!;
                         return head2kpa(
@@ -471,13 +444,13 @@ export default class CalculationEngine {
         if (rPath) {
             let sourceObj: Riser;
             if (rPath[0].length === 0) {
-                if (this.objectStore.get(node.connectable)!.type !== EntityType.RISER ||
+                if (this.globalStore.get(node.connectable)!.type !== EntityType.RISER ||
                     node.connection !== SELF_CONNECTION) {
                     throw new Error('Unexpected empty path while searching for ' + JSON.stringify(node));
                 }
-                sourceObj = this.objectStore.get(node.connectable) as Riser;
+                sourceObj = this.globalStore.get(node.connectable) as Riser;
             } else {
-                sourceObj = this.objectStore.get(rPath[0][rPath[0].length - 1].to.connectable)! as Riser;
+                sourceObj = this.globalStore.get(rPath[0][rPath[0].length - 1].to.connectable)! as Riser;
             }
             return sourceObj.entity.pressureKPA! - rPath[1];
         } else {
@@ -488,7 +461,7 @@ export default class CalculationEngine {
     // Just like a flow graph, but only connects when loading units are transferred.
     configureLUFlowGraph() {
         this.flowGraph = new Graph<FlowNode, FlowEdge>();
-        this.objectStore.forEach((obj) => {
+        this.globalStore.forEach((obj) => {
             switch (obj.entity.type) {
                 case EntityType.PIPE:
                     if (obj.entity.endpointUid[0] === null || obj.entity.endpointUid[1] === null) {
@@ -557,7 +530,7 @@ export default class CalculationEngine {
                 case EntityType.RISER:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.FITTING:
-                    const toConnect = cloneSimple(this.objectStore.getConnections(obj.entity.uid));
+                    const toConnect = cloneSimple(this.globalStore.getConnections(obj.entity.uid));
                     if ( obj.entity.type === EntityType.RISER) {
                         this.flowGraph.addNode({connectable: obj.uid, connection: SELF_CONNECTION});
                         toConnect.push(SELF_CONNECTION);
@@ -591,7 +564,6 @@ export default class CalculationEngine {
                     this.configureDirectedValveLUGraph(obj.entity);
                     break;
                 case EntityType.BACKGROUND_IMAGE:
-                case EntityType.RESULTS_MESSAGE:
                 case EntityType.FIXTURE:
                     break;
                 default:
@@ -601,7 +573,7 @@ export default class CalculationEngine {
     }
 
     configureDirectedValveLUGraph(entity: DirectedValveEntity) {
-        const connections = this.objectStore.getConnections(entity.uid);
+        const connections = this.globalStore.getConnections(entity.uid);
         if (connections.length === 2) {
 
             if (entity.sourceUid === null) {
@@ -694,7 +666,7 @@ export default class CalculationEngine {
         const sourcesKPA = new Map<string, number>();
 
         sources.forEach((s) => {
-            const source = this.objectStore.get(s.connectable)!;
+            const source = this.globalStore.get(s.connectable)!;
             if (source.entity.type === EntityType.RISER) {
                 sourcesKPA.set(s.connectable, source.entity.pressureKPA!);
             } else {
@@ -733,16 +705,18 @@ export default class CalculationEngine {
             if (e.value.type !== EdgeType.PIPE) {
                 return;
             }
-            const pipeObj = this.objectStore.get(e.value.uid)!;
+            const pipeObj = this.globalStore.get(e.value.uid)!;
             if (pipeObj instanceof Pipe) {
-                if (pipeObj.entity.calculation === null) {
+                let calculation = this.globalStore.getCalculation(pipeObj.entity);
+                if (calculation === undefined) {
+                    calculation = this.globalStore.getOrCreateCalculation(pipeObj.entity);
                     const filled = fillPipeDefaultFields(this.doc.drawing, pipeObj.computedLengthM, pipeObj.entity);
                     let initialSize = lowerBoundTable(this.catalog.pipes[filled.material!].pipesBySize, 0)!;
                     if (pipeObj.entity.diameterMM) {
                         // there is a custom diameter
                         initialSize = this.getPipeByNominal(pipeObj.entity, pipeObj.entity.diameterMM)!;
                     }
-                    pipeObj.entity.calculation = {
+                    Object.assign(calculation, {
                         peakFlowRate: null,
                         psdUnits: null,
                         optimalInnerPipeDiameterMM: null,
@@ -752,15 +726,15 @@ export default class CalculationEngine {
                         temperatureRange: null,
                         velocityRealMS: null,
                         warning: null,
-                    };
+                    });
                     pipesThatNeedSizing.add(pipeObj.entity.uid);
-                } else if (pipeObj.entity.calculation.realInternalDiameterMM === null) {
+                } else if (calculation.realInternalDiameterMM === null) {
                     const filled = fillPipeDefaultFields(this.doc.drawing, pipeObj.computedLengthM, pipeObj.entity);
                     const initialSize = lowerBoundTable(this.catalog.pipes[filled.material!].pipesBySize, 0)!;
 
-                    pipeObj.entity.calculation.realInternalDiameterMM =
+                    calculation.realInternalDiameterMM =
                         parseCatalogNumberExact(initialSize.diameterInternalMM);
-                    pipeObj.entity.calculation.realNominalPipeDiameterMM =
+                    calculation.realNominalPipeDiameterMM =
                         parseCatalogNumberExact(initialSize.diameterNominalMM);
 
                     pipesThatNeedSizing.add(pipeObj.entity.uid);
@@ -768,7 +742,7 @@ export default class CalculationEngine {
             }
         });
 
-        const solver = new FlowSolver(this.flowGraph, this.objectStore, this.doc, this.catalog);
+        const solver = new FlowSolver(this.flowGraph, this.globalStore, this.doc, this.catalog);
 
         let iters = 0;
         while (true) {
@@ -784,10 +758,11 @@ export default class CalculationEngine {
 
                 // TODO: Size ring mains properly
                 // But for now, just size this main by this flow.
-                const pipe = this.objectStore.get(target) as Pipe;
-                const oldSize = pipe.entity.calculation!.realInternalDiameterMM;
+                const pipe = this.globalStore.get(target) as Pipe;
+                const calculation = this.globalStore.getOrCreateCalculation(pipe.entity);
+                const oldSize = calculation.realInternalDiameterMM;
                 this.sizePipeForFlowRate(pipe.entity, flow);
-                const newSize = pipe.entity.calculation!.realInternalDiameterMM;
+                const newSize = calculation.realInternalDiameterMM;
 
                 if (oldSize !== newSize) {
                     changed = true;
@@ -804,15 +779,15 @@ export default class CalculationEngine {
 
     // Checks basic validity stuff, like hot water/cold water shouldn't mix, all fixtures have
     // required water sources filled in, etc.
-    sanityCheck(objectStore: ObjectStore, doc: DocumentState): PopupEntity[] {
-        return [];
+    sanityCheck(objectStore: ObjectStore, doc: DocumentState): boolean {
+        return true;
     }
 
     getTerminalPsdU(flowNode: FlowNode): number {
-        const node = this.objectStore.get(flowNode.connectable)!;
+        const node = this.globalStore.get(flowNode.connectable)!;
 
         if (node.type === EntityType.SYSTEM_NODE) {
-            const parent = this.objectStore.get(flowNode.connection);
+            const parent = this.globalStore.get(flowNode.connection);
             if (parent === undefined) {
                 throw new Error('System node is missing parent. ' + JSON.stringify(node));
             }
@@ -845,7 +820,6 @@ export default class CalculationEngine {
                 case EntityType.FITTING:
                 case EntityType.TMV:
                 case EntityType.SYSTEM_NODE:
-                case EntityType.RESULTS_MESSAGE:
                 case EntityType.DIRECTED_VALVE:
                     return 0;
                 default:
@@ -861,7 +835,8 @@ export default class CalculationEngine {
     configureEntityForPSD(entity: DrawableEntityConcrete, psdU: number, flowEdge: FlowEdge) {
         switch (entity.type) {
             case EntityType.PIPE: {
-                entity.calculation!.psdUnits = psdU;
+                const calculation = this.globalStore.getOrCreateCalculation(entity);
+                calculation.psdUnits = psdU;
 
                 const flowRate = lookupFlowRate(psdU, this.doc, this.catalog);
 
@@ -874,14 +849,15 @@ export default class CalculationEngine {
                 return;
             }
             case EntityType.TMV: {
+                const calculation = this.globalStore.getOrCreateCalculation(entity);
                 const flowRate = lookupFlowRate(psdU, this.doc, this.catalog);
 
                 if (flowEdge.type === EdgeType.TMV_COLD_COLD) {
-                    entity.calculation!.coldPsdUs = psdU;
-                    entity.calculation!.coldPeakFlowRate = flowRate;
+                    calculation.coldPsdUs = psdU;
+                    calculation.coldPeakFlowRate = flowRate;
                 } else if (flowEdge.type === EdgeType.TMV_HOT_WARM) {
-                    entity.calculation!.hotPsdUs = psdU;
-                    entity.calculation!.hotPeakFlowRate = flowRate;
+                    calculation.hotPsdUs = psdU;
+                    calculation.hotPeakFlowRate = flowRate;
                 } else {
                     throw new Error('invalid edge in TMV');
                 }
@@ -894,7 +870,6 @@ export default class CalculationEngine {
             case EntityType.DIRECTED_VALVE:
             case EntityType.SYSTEM_NODE:
             case EntityType.FIXTURE:
-            case EntityType.RESULTS_MESSAGE:
                 throw new Error('Cannot configure this entity to accept loading units');
             default:
                 assertUnreachable(entity);
@@ -903,27 +878,29 @@ export default class CalculationEngine {
     }
 
     sizePipeForFlowRate(pipe: PipeEntity, flowRateLS: number) {
-        pipe.calculation!.peakFlowRate = flowRateLS;
+
+        const calculation = this.globalStore.getOrCreateCalculation(pipe);
+        calculation.peakFlowRate = flowRateLS;
 
         let page: PipeSpec | null = null;
 
-        pipe.calculation!.optimalInnerPipeDiameterMM = this.calculateInnerDiameter(pipe);
+        calculation.optimalInnerPipeDiameterMM = this.calculateInnerDiameter(pipe);
         if (pipe.diameterMM === null) {
             page = this.getRealPipe(pipe);
         } else {
-            pipe.calculation!.realNominalPipeDiameterMM = pipe.diameterMM;
+            calculation.realNominalPipeDiameterMM = pipe.diameterMM;
             page = this.getPipeByNominal(pipe, pipe.diameterMM);
         }
         if (!page) {
             page = this.getBiggestPipe(pipe);
         }
-        pipe.calculation!.realNominalPipeDiameterMM = parseCatalogNumberExact(page!.diameterNominalMM);
-        pipe.calculation!.realInternalDiameterMM = parseCatalogNumberExact(page!.diameterInternalMM);
+        calculation.realNominalPipeDiameterMM = parseCatalogNumberExact(page!.diameterNominalMM);
+        calculation.realInternalDiameterMM = parseCatalogNumberExact(page!.diameterInternalMM);
 
-        if (pipe.calculation!.realNominalPipeDiameterMM) {
-            pipe.calculation!.velocityRealMS = this.getVelocityRealMs(pipe);
+        if (calculation.realNominalPipeDiameterMM) {
+            calculation.velocityRealMS = this.getVelocityRealMs(pipe);
 
-            pipe.calculation!.pressureDropKpa = head2kpa(
+            calculation.pressureDropKpa = head2kpa(
                 this.getPipePressureDropMH(pipe),
                 getFluidDensityOfSystem(pipe.systemUid, this.doc, this.catalog)!,
                 this.ga,
@@ -934,11 +911,13 @@ export default class CalculationEngine {
     calculateInnerDiameter(pipe: PipeEntity): number {
         const computed = fillPipeDefaultFields(this.doc.drawing, 0, pipe);
 
+        const calculation = this.globalStore.getOrCreateCalculation(pipe);
+
         // depends on pipe sizing method
         if (this.doc.drawing.metadata.calculationParams.pipeSizingMethod === 'velocity') {
             // http://www.1728.org/flowrate.htm
             return Math.sqrt(
-                4000 * pipe.calculation!.peakFlowRate! / (Math.PI * computed.maximumVelocityMS!),
+                4000 * calculation.peakFlowRate! / (Math.PI * computed.maximumVelocityMS!),
             );
         } else {
             throw new Error('Pipe sizing strategy not supported');
@@ -946,11 +925,13 @@ export default class CalculationEngine {
     }
 
     getPipePressureDropMH(pipe: PipeEntity): number {
-        const obj = this.objectStore.get(pipe.uid) as Pipe;
+        const obj = this.globalStore.get(pipe.uid) as Pipe;
         const filled = fillPipeDefaultFields(this.doc.drawing, obj.computedLengthM, pipe);
+
+        const calculation = this.globalStore.getOrCreateCalculation(pipe);
         const realPipe = lowerBoundTable(
             this.catalog.pipes[filled.material!].pipesBySize,
-            pipe.calculation!.optimalInnerPipeDiameterMM!,
+            calculation.optimalInnerPipeDiameterMM!,
         )!;
         const roughness = parseCatalogNumberExact(realPipe.colebrookWhiteCoefficient);
         const realInternalDiameter = parseCatalogNumberExact(realPipe.diameterInternalMM);
@@ -969,14 +950,14 @@ export default class CalculationEngine {
                 roughness!,
                 getReynoldsNumber(
                     fluidDensity!,
-                    pipe.calculation!.velocityRealMS!,
+                    calculation.velocityRealMS!,
                     realInternalDiameter!,
                     dynamicViscosity!,
                 ),
             ),
             filled.lengthM!,
             realInternalDiameter!,
-            pipe.calculation!.velocityRealMS!,
+            calculation.velocityRealMS!,
             this.ga,
         );
     }
@@ -984,8 +965,9 @@ export default class CalculationEngine {
     getVelocityRealMs(pipe: PipeEntity) {
         // http://www.1728.org/flowrate.htm
 
-        return 4000 * pipe.calculation!.peakFlowRate! /
-            (Math.PI * parseCatalogNumberExact(pipe.calculation!.realInternalDiameterMM)! ** 2);
+        const calculation = this.globalStore.getOrCreateCalculation(pipe);
+        return 4000 * calculation.peakFlowRate! /
+            (Math.PI * parseCatalogNumberExact(calculation.realInternalDiameterMM)! ** 2);
     }
 
     getPipeByNominal(pipe: PipeEntity, maxNominalMM: number): PipeSpec | null {
@@ -1008,6 +990,8 @@ export default class CalculationEngine {
     }
 
     getRealPipe(pipe: PipeEntity): PipeSpec | null {
+
+        const calculation = this.globalStore.getOrCreateCalculation(pipe);
         const pipeFilled = fillPipeDefaultFields(this.doc.drawing, 0, pipe);
         const table = this.catalog.pipes[pipeFilled.material!];
 
@@ -1017,7 +1001,7 @@ export default class CalculationEngine {
 
         const a = lowerBoundTable(
             table.pipesBySize,
-            pipeFilled.calculation!.optimalInnerPipeDiameterMM!,
+            calculation.optimalInnerPipeDiameterMM!,
             (p) => {
                 const v = parseCatalogNumberExact(p.diameterInternalMM);
                 if (!v) {
@@ -1036,6 +1020,8 @@ export default class CalculationEngine {
     }
 
     getBiggestPipe(pipe: PipeEntity): PipeSpec | null {
+
+        const calculation = this.globalStore.getCalculation(pipe);
         const pipeFilled = fillPipeDefaultFields(this.doc.drawing, 0, pipe);
         const table = this.catalog.pipes[pipeFilled.material!];
 
@@ -1063,7 +1049,7 @@ export default class CalculationEngine {
         const totalReachedPsdU = this.getTotalReachedPsdU(roots);
 
         // Go through all pipes
-        this.objectStore.forEach((object) => {
+        this.globalStore.forEach((object) => {
             switch (object.entity.type) {
                 case EntityType.TMV:
                     this.sizeDefiniteTransport(
@@ -1100,7 +1086,6 @@ export default class CalculationEngine {
                 case EntityType.FITTING:
                 case EntityType.DIRECTED_VALVE:
                 case EntityType.RISER:
-                case EntityType.RESULTS_MESSAGE:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.FIXTURE:
                     break;
@@ -1160,12 +1145,14 @@ export default class CalculationEngine {
     }
 
     fillPressureDropFields() {
-        this.objectStore.forEach((o) => {
+        this.globalStore.forEach((o) => {
             switch (o.entity.type) {
-                case EntityType.TMV:
-                    const frw = o.entity.calculation!.hotPeakFlowRate;
+                case EntityType.TMV: {
+
+                    const calculation = this.globalStore.getOrCreateCalculation(o.entity);
+                    const frw = calculation.hotPeakFlowRate;
                     if (frw !== null) {
-                        o.entity.calculation!.warmOutPressureDropKPA = head2kpa(
+                        calculation.warmOutPressureDropKPA = head2kpa(
                             o.getFrictionHeadLoss(
                                 this,
                                 frw,
@@ -1179,9 +1166,9 @@ export default class CalculationEngine {
                     }
 
                     if (o.entity.coldOutputUid) {
-                        const fr = o.entity.calculation!.coldPeakFlowRate;
+                        const fr = calculation.coldPeakFlowRate;
                         if (fr !== null) {
-                            o.entity.calculation!.coldOutPressureDropKPA = head2kpa(
+                            calculation.coldOutPressureDropKPA = head2kpa(
                                 o.getFrictionHeadLoss(
                                     this,
                                     fr,
@@ -1195,12 +1182,14 @@ export default class CalculationEngine {
                         }
                     }
                     break;
-                case EntityType.PIPE:
-                    if (o.entity.calculation!.peakFlowRate !== null) {
-                        o.entity.calculation!.pressureDropKpa = head2kpa(
+                }
+                case EntityType.PIPE: {
+                    const calculation = this.globalStore.getOrCreateCalculation(o.entity);
+                    if (calculation.peakFlowRate !== null) {
+                        calculation.pressureDropKpa = head2kpa(
                             o.getFrictionHeadLoss(
                                 this,
-                                o.entity.calculation!.peakFlowRate,
+                                calculation.peakFlowRate,
                                 {connectable: o.uid, connection: o.entity.endpointUid[0]},
                                 {connectable: o.uid, connection: o.entity.endpointUid[1]},
                                 true,
@@ -1209,28 +1198,34 @@ export default class CalculationEngine {
                             this.ga,
                         );
                     }
-                    break;
+                }
+                break;
                 case EntityType.FITTING:
                 case EntityType.RISER:
-                case EntityType.SYSTEM_NODE:
                 case EntityType.DIRECTED_VALVE:
-                    const connections = this.objectStore.getConnections(o.entity.uid);
-                    if (connections.length === 2) {
-                        const p1 = this.objectStore.get(connections[0])!;
-                        const p2 = this.objectStore.get(connections[1])!;
-                        if (p1 instanceof Pipe && p2 instanceof Pipe) {
-                            if (p1.entity.calculation!.peakFlowRate !== null &&
-                                p2.entity.calculation!.peakFlowRate !== null) {
+                case EntityType.SYSTEM_NODE:
+                    const calculation = this.globalStore.getCalculation(o.entity) as
+                        FittingCalculation | RiserCalculations | SystemNodeCalculation | DirectedValveCalculation;
+                    const connections = this.globalStore.getConnections(o.entity.uid);
 
-                                o.entity.calculation!.flowRateLS =
-                                    Math.min(p1.entity.calculation!.peakFlowRate, p2.entity.calculation!.peakFlowRate);
+                    if (connections.length === 2) {
+                        const p1 = this.globalStore.get(connections[0])!;
+                        const p2 = this.globalStore.get(connections[1])!;
+                        if (p1 instanceof Pipe && p2 instanceof Pipe) {
+                            const pipeCalc1 = this.globalStore.getCalculation(p1.entity);
+                            const pipeCalc2 = this.globalStore.getCalculation(p2.entity);
+                            if (pipeCalc1!.peakFlowRate !== null &&
+                                pipeCalc2!.peakFlowRate !== null) {
+
+                                calculation.flowRateLS =
+                                    Math.min(pipeCalc1!.peakFlowRate, pipeCalc2!.peakFlowRate);
 
                                 if (o.entity.type !== EntityType.RISER &&
                                     o.entity.type !== EntityType.SYSTEM_NODE) {
                                     const dir1 = head2kpa(
                                         o.getFrictionHeadLoss(
                                             this,
-                                            o.entity.calculation!.flowRateLS,
+                                            calculation.flowRateLS,
                                             {connectable: o.uid, connection: connections[0]},
                                             {connectable: o.uid, connection: connections[1]},
                                             true,
@@ -1245,7 +1240,7 @@ export default class CalculationEngine {
                                     const dir2 = head2kpa(
                                         o.getFrictionHeadLoss(
                                             this,
-                                            o.entity.calculation!.flowRateLS,
+                                            calculation.flowRateLS,
                                             {connectable: o.uid, connection: connections[1]},
                                             {connectable: o.uid, connection: connections[0]},
                                             true,
@@ -1257,14 +1252,13 @@ export default class CalculationEngine {
                                         )!,
                                         this.ga,
                                     );
-                                    o.entity.calculation!.pressureDropKPA = Math.min(dir1, dir2);
+                                    (calculation as any).pressureDropKPA = Math.min(dir1, dir2);
                                 }
                             }
                         }
                     }
                     break;
                 case EntityType.FIXTURE:
-                case EntityType.RESULTS_MESSAGE:
                 case EntityType.BACKGROUND_IMAGE:
                     break;
                 default:
@@ -1274,7 +1268,7 @@ export default class CalculationEngine {
     }
 
     createWarnings() {
-        this.objectStore.forEach((o) => {
+        this.globalStore.forEach((o) => {
             switch (o.entity.type) {
                 case EntityType.BACKGROUND_IMAGE:
                     break;
@@ -1284,28 +1278,27 @@ export default class CalculationEngine {
                     break;
                 case EntityType.RISER:
                     break;
-                case EntityType.RESULTS_MESSAGE:
-                    break;
                 case EntityType.SYSTEM_NODE:
                     break;
                 case EntityType.TMV:
                     break;
                 case EntityType.FIXTURE:
                     const e = fillFixtureFields(this.doc, this.catalog, o.entity);
-                    if ((o.entity.calculation!.coldPressureKPA || 0) < e.minInletPressureKPA!) {
-                        o.entity.calculation!.warning = 'Not enough cold pressure. Required: '
+                    const calculation = this.globalStore.getOrCreateCalculation(o.entity);
+                    if ((calculation.coldPressureKPA || 0) < e.minInletPressureKPA!) {
+                        calculation.warning = 'Not enough cold pressure. Required: '
                             + e.minInletPressureKPA!.toFixed(0) + ' kPa';
-                    } else if ((o.entity.calculation!.coldPressureKPA || 0) > e.maxInletPressureKPA!) {
-                        o.entity.calculation!.warning = 'Cold pressure overload. Max: '
+                    } else if ((calculation.coldPressureKPA || 0) > e.maxInletPressureKPA!) {
+                        calculation.warning = 'Cold pressure overload. Max: '
                             + e.maxInletPressureKPA!.toFixed(0) + ' kPa';
                     }
 
                     if (o.entity.warmRoughInUid) {
-                        if ((o.entity.calculation!.warmPressureKPA || 0) < e.minInletPressureKPA!) {
-                            o.entity.calculation!.warning = 'Not enough warm pressure. Required: '
+                        if ((calculation.warmPressureKPA || 0) < e.minInletPressureKPA!) {
+                            calculation.warning = 'Not enough warm pressure. Required: '
                                 + e.minInletPressureKPA!.toFixed(0) + ' kPa';
-                        } else if ((o.entity.calculation!.warmPressureKPA || 0) > e.maxInletPressureKPA!) {
-                            o.entity.calculation!.warning = 'Warm pressure overload. Max: '
+                        } else if ((calculation.warmPressureKPA || 0) > e.maxInletPressureKPA!) {
+                            calculation.warning = 'Warm pressure overload. Max: '
                                 + e.maxInletPressureKPA!.toFixed(0) + ' kPa';
                         }
                     }

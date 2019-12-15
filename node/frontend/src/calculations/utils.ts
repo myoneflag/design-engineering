@@ -64,7 +64,6 @@ export function countPsdUnits(
             case EntityType.FITTING:
             case EntityType.PIPE:
             case EntityType.RISER:
-            case EntityType.RESULTS_MESSAGE:
             case EntityType.SYSTEM_NODE:
             case EntityType.TMV:
             case EntityType.DIRECTED_VALVE:
@@ -132,7 +131,6 @@ export function getFields(entity: DrawableEntityConcrete, doc: DocumentState, ca
         case EntityType.SYSTEM_NODE:
             return makeSystemNodeCalculationFields(entity, doc.drawing);
         case EntityType.BACKGROUND_IMAGE:
-        case EntityType.RESULTS_MESSAGE:
             return [];
     }
 }

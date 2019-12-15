@@ -1,6 +1,6 @@
 import {DrawingState} from '../../src/store/document/types';
 import {Catalog} from '../../src/store/catalog/types';
-import {ObjectStore} from '../../src/htmlcanvas/lib/types';
+import {GlobalStore, ObjectStore} from '../../src/htmlcanvas/lib/types';
 
 export enum DemandType {
     PSD,
@@ -11,5 +11,5 @@ export enum DemandType {
 export interface CalculationContext {
     drawing: DrawingState;
     catalog: Catalog;
-    objectStore: ObjectStore;
+    globalStore: GlobalStore;
 }

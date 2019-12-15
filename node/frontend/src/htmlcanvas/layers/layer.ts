@@ -2,7 +2,7 @@ import {Coord, DocumentState, DrawableEntity, WithID} from '../../../src/store/d
 import {MouseMoveResult, UNHANDLED} from '../../../src/htmlcanvas/types';
 import {Interaction} from '../../../src/htmlcanvas/lib/interaction';
 import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
-import {DrawingContext, ObjectStore} from '../../../src/htmlcanvas/lib/types';
+import {DrawingContext, GlobalStore, ObjectStore} from '../../../src/htmlcanvas/lib/types';
 import {DrawableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
 import {EntityType} from '../../../src/store/document/entities/types';
@@ -334,9 +334,9 @@ export abstract class LayerImplementation implements Layer {
             case EntityType.PIPE:
                 return 2;
             case EntityType.SYSTEM_NODE:
-            case EntityType.RESULTS_MESSAGE:
                 throw new Error('cannot handle entities of this maginitied');
         }
+        assertUnreachable(e);
     }
 
     onMultiSelectDragStart(event: MouseEvent, world: Coord, context: CanvasContext): MultiSelectDragParams {
@@ -367,7 +367,6 @@ export abstract class LayerImplementation implements Layer {
                 case EntityType.PIPE:
                     return o.entity.endpointUid.filter((euid) => this.isSelected(euid)).length < 2;
                 case EntityType.SYSTEM_NODE:
-                case EntityType.RESULTS_MESSAGE:
                     throw new Error('cannot handle multi dragging for this object');
                 default:
                     assertUnreachable(o.entity);

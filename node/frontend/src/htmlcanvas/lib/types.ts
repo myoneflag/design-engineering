@@ -1,21 +1,38 @@
 import {ViewPort} from '../../../src/htmlcanvas/viewport';
 import {DocumentState} from '../../../src/store/document/types';
 import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
-import Popup from '../../../src/htmlcanvas/objects/popup';
 import {ValveType} from '../../../src/store/document/entities/directed-valves/valve-types';
 import {Catalog} from '../../../src/store/catalog/types';
 import Vue from 'vue';
 import {EntityType} from "../../store/document/entities/types";
-import {ConnectableEntityConcrete, DrawableEntityConcrete} from "../../store/document/entities/concrete-entity";
+import {
+    CalculatableEntityConcrete,
+    CalculationConcrete,
+    ConnectableEntityConcrete,
+    DrawableEntityConcrete
+} from "../../store/document/entities/concrete-entity";
 import BackedConnectable from "./BackedConnectable";
 import PipeEntity from "../../store/document/entities/pipe-entity";
 import DrawableObjectFactory from "./drawable-object-factory";
+import PipeCalculation, {emptyPipeCalculation} from "../../store/document/calculations/pipe-calculation";
+import RiserCalculations, {emptyRiserCalculations, makeRiserCalculationFields} from "../../store/document/calculations/riser-calculations";
+import TmvCalculation, {emptyTmvCalculation} from "../../store/document/calculations/tmv-calculation";
+import FixtureCalculation, {emptyFixtureCalculation} from "../../store/document/calculations/fixture-calculation";
+import FittingCalculation, {emptyFittingCalculation} from "../../store/document/calculations/fitting-calculation";
+import DirectedValveCalculation, {emptyDirectedValveCalculation} from "../../store/document/calculations/directed-valve-calculation";
+import SystemNodeCalculation, {emptySystemNodeCalculation} from "../../store/document/calculations/system-node-calculation";
+import RiserEntity from "../../store/document/entities/riser-entity";
+import TmvEntity, {SystemNodeEntity} from "../../store/document/entities/tmv/tmv-entity";
+import FittingEntity from "../../store/document/entities/fitting-entity";
+import FixtureEntity from "../../store/document/entities/fixtures/fixture-entity";
+import DirectedValveEntity from "../../store/document/entities/directed-valves/directed-valve-entity";
 
 export interface DrawingContext {
     ctx: CanvasRenderingContext2D;
     vp: ViewPort;
     doc: DocumentState;
     catalog: Catalog;
+    globalStore: GlobalStore;
 }
 
 
@@ -183,10 +200,68 @@ export class GlobalStore extends ObjectStore {
             })
         }
     }
-}
 
-// tslint:disable-next-line:max-classes-per-file
-export class MessageStore extends Map<string, Popup> {}
+    calculationStore = new Map<string, CalculationConcrete>();
+
+    getOrCreateCalculation(entity: PipeEntity): PipeCalculation;
+    getOrCreateCalculation(entity: RiserEntity): RiserCalculations;
+    getOrCreateCalculation(entity: TmvEntity): TmvCalculation;
+    getOrCreateCalculation(entity: FittingEntity): FittingCalculation;
+    getOrCreateCalculation(entity: FixtureEntity): FixtureCalculation;
+    getOrCreateCalculation(entity: DirectedValveEntity): DirectedValveCalculation;
+    getOrCreateCalculation(entity: SystemNodeEntity): SystemNodeCalculation;
+    getOrCreateCalculation(entity: CalculatableEntityConcrete): CalculationConcrete;
+
+    getOrCreateCalculation(entity: CalculatableEntityConcrete): CalculationConcrete {
+        if (!this.calculationStore.has(entity.uid)) {
+            switch (entity.type) {
+                case EntityType.RISER:
+                    this.calculationStore.set(entity.uid, emptyRiserCalculations());
+                    break;
+                case EntityType.PIPE:
+                    this.calculationStore.set(entity.uid, emptyPipeCalculation());
+                    break;
+                case EntityType.TMV:
+                    this.calculationStore.set(entity.uid, emptyTmvCalculation());
+                    break;
+                case EntityType.FITTING:
+                    this.calculationStore.set(entity.uid, emptyFittingCalculation());
+                    break;
+                case EntityType.FIXTURE:
+                    this.calculationStore.set(entity.uid, emptyFixtureCalculation());
+                    break;
+                case EntityType.DIRECTED_VALVE:
+                    this.calculationStore.set(entity.uid, emptyDirectedValveCalculation());
+                    break;
+                case EntityType.SYSTEM_NODE:
+                    this.calculationStore.set(entity.uid, emptySystemNodeCalculation());
+                    break;
+            }
+        }
+
+        return this.calculationStore.get(entity.uid)!;
+    }
+
+    getCalculation(entity: PipeEntity): PipeCalculation | undefined;
+    getCalculation(entity: RiserEntity): RiserCalculations | undefined;
+    getCalculation(entity: TmvEntity): TmvCalculation | undefined;
+    getCalculation(entity: FittingEntity): FittingCalculation | undefined;
+    getCalculation(entity: FixtureEntity): FixtureCalculation | undefined;
+    getCalculation(entity: DirectedValveEntity): DirectedValveCalculation | undefined;
+    getCalculation(entity: SystemNodeEntity): SystemNodeCalculation | undefined;
+    getCalculation(entity: CalculatableEntityConcrete): CalculationConcrete | undefined;
+
+    getCalculation(entity: CalculatableEntityConcrete): CalculationConcrete | undefined {
+        return this.calculationStore.get(entity.uid);
+    }
+
+    clearCalculations() {
+        this.calculationStore.clear();
+        const p = {} as DirectedValveEntity;
+        const k = this.getOrCreateCalculation(p);
+
+    }
+}
 
 export interface SelectionTarget {
     uid: string | null;

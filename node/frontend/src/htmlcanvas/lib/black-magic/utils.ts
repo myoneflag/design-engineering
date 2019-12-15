@@ -41,7 +41,6 @@ export function getConnectedFlowComponent(
             case EntityType.TMV:
             case EntityType.BACKGROUND_IMAGE:
             case EntityType.FIXTURE:
-            case EntityType.RESULTS_MESSAGE:
                 throw new Error('invalid object here');
             default:
                 assertUnreachable(o.entity);

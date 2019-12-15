@@ -6,30 +6,6 @@ import {ViewPort} from '../../src/htmlcanvas/viewport';
 import * as TM from 'transformation-matrix';
 import {ValveType} from '../../src/store/document/entities/directed-valves/valve-types';
 
-// regexes to run to fix everything:
-// \n( *?[\])}])    ,\n$1
-// "(.*?)":         $1:
-// type: "(.*?)_OPERATION"  type: OPERATION_NAMES.$1_OPERATION
-// type: "(BACKGROUND_IMAGE|FLOW_SOURCE|FLOW_RETURN|PIPE|TMV|SYSTEM_NODE|FIXTURE|RESULTS_MESSAGE|DIRECTED_VALVE)"
-//      type: EntityType.$1
-// type: "VALVE"        type: EntityType.FITTING
-//
-// BACKGROUND_IMAGE = '',
-//     FLOW_SOURCE = '',
-//     FLOW_RETURN = '',
-//     PIPE = '',
-//     FITTING = '',
-// &nbsp;
-//     TMV = '',
-//     SYSTEM_NODE = '',
-// &nbsp;
-//     // Fixtures
-//     FIXTURE = ',
-// &nbsp;
-//     // Output
-//     RESULTS_MESSAGE = '',
-//     DIRECTED_VALVE = '',
-
 export function createExampleDocument(): DocumentState {
     return {
         documentId: 0,

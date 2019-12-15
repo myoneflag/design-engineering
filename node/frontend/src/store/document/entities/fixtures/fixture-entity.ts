@@ -13,11 +13,10 @@ import CatalogState, {Catalog} from '../../../../../src/store/catalog/types';
 import InvisibleNodeEntity from '../../../../../src/store/document/entities/Invisible-node-entity';
 import {DISPLAY_PSD_METHODS} from '../../../../config';
 import FixtureCalculation from '../../../../../src/store/document/calculations/fixture-calculation';
-import {CalculationTarget} from '../../../../../src/store/document/calculations/types';
 import {parseCatalogNumberOrMin} from '../../../../../src/htmlcanvas/lib/utils';
 import {cloneSimple} from '../../../../../src/lib/utils';
 
-export default interface FixtureEntity extends DrawableEntity, CalculationTarget<FixtureCalculation> {
+export default interface FixtureEntity extends DrawableEntity {
     center: Coord;
     type: EntityType.FIXTURE;
     name: string;
@@ -43,8 +42,6 @@ export default interface FixtureEntity extends DrawableEntity, CalculationTarget
 
     fixtureUnits: number | null;
     probabilityOfUsagePCT: number | null;
-
-    calculation: FixtureCalculation | null;
 }
 
 export function makeFixtureFields(): PropertyField[] {

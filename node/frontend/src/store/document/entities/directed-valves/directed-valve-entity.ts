@@ -1,5 +1,4 @@
 import {Color, ConnectableEntity, Coord, DocumentState, FlowSystemParameters} from '../../../../../src/store/document/types';
-import {CalculationTarget} from '../../../../../src/store/document/calculations/types';
 import FittingCalculation from '../../../../../src/store/document/calculations/fitting-calculation';
 import {EntityType} from '../../../../../src/store/document/entities/types';
 import {FieldType, PropertyField} from '../../../../../src/store/document/entities/property-field';
@@ -11,7 +10,7 @@ import {ConnectableEntityConcrete} from '../../../../../src/store/document/entit
 import DirectedValveCalculation from '../../../../../src/store/document/calculations/directed-valve-calculation';
 import {assertUnreachable} from "../../../../../src/config";
 
-export default interface DirectedValveEntity extends ConnectableEntity, CalculationTarget<DirectedValveCalculation> {
+export default interface DirectedValveEntity extends ConnectableEntity {
     type: EntityType.DIRECTED_VALVE;
     center: Coord;
     systemUidOption: string | null;

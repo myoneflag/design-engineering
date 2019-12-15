@@ -183,7 +183,8 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         const connections = this.objectStore.getConnections(this.entity.uid);
         connections.forEach((p) => {
             const pipe = this.objectStore.get(p) as Pipe;
-            const thisDiameter = parseCatalogNumberExact(pipe.entity.calculation!.realInternalDiameterMM)!;
+            const thisDiameter =
+                parseCatalogNumberExact(context.globalStore.getCalculation(pipe.entity)!.realInternalDiameterMM)!;
             if (smallestDiameterMM === undefined || thisDiameter < smallestDiameterMM) {
                 smallestDiameterMM = thisDiameter;
             }

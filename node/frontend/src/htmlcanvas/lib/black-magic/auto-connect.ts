@@ -102,7 +102,6 @@ export class AutoConnector {
                     this.unionFind.join(o.uid, o.uid);
                     break;
                 case EntityType.BACKGROUND_IMAGE:
-                case EntityType.RESULTS_MESSAGE:
                     break;
                 case EntityType.SYSTEM_NODE:
                     throw new Error('invalid object selected');
@@ -158,7 +157,6 @@ export class AutoConnector {
                 const fixture = fillFixtureFields(this.context.document, this.context.effectiveCatalog, entity);
                 return [fixture.outletAboveFloorM!, fixture.outletAboveFloorM!];
             case EntityType.BACKGROUND_IMAGE:
-            case EntityType.RESULTS_MESSAGE:
                 throw new Error('entity has no height');
         }
         assertUnreachable(entity);
@@ -258,7 +256,6 @@ export class AutoConnector {
                     case EntityType.DIRECTED_VALVE:
                     case EntityType.PIPE:
                     case EntityType.RISER:
-                    case EntityType.RESULTS_MESSAGE:
                     case EntityType.SYSTEM_NODE:
                         throw new Error('Can\'t do it');
                     default:
@@ -303,7 +300,6 @@ export class AutoConnector {
                 if (!solved) {
                     // extend
                     const v: FittingEntity = {
-                        calculation: null,
                         center: {x: mntPt.x, y: mntPt.y},
                         color: null,
                         parentUid: null,
@@ -444,7 +440,6 @@ export class AutoConnector {
                     );
                 } else {
                     const v: FittingEntity = {
-                        calculation: null,
                         center: {x: bestCorner.x, y: bestCorner.y},
                         color: null,
                         parentUid: null,
@@ -612,7 +607,6 @@ export class AutoConnector {
                 const realCorner = aline.intersect(bline)[0];
 
                 const v: FittingEntity = {
-                    calculation: null,
                     center: {x: realCorner.x, y: realCorner.y},
                     color: null,
                     parentUid: null,
@@ -664,7 +658,6 @@ export class AutoConnector {
             case EntityType.DIRECTED_VALVE:
                 const res = fillDirectedValveFields(this.context.document, this.context.objectStore, entity);
                 return res.systemUidOption;
-            case EntityType.RESULTS_MESSAGE:
             case EntityType.BACKGROUND_IMAGE:
             case EntityType.TMV:
             case EntityType.FIXTURE:
@@ -770,7 +763,6 @@ export class AutoConnector {
         systemUid: string,
     ) {
         const p: PipeEntity = {
-            calculation: null,
             color: null,
             diameterMM: null,
             endpointUid: [a.uid, b.uid],

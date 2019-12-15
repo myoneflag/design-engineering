@@ -531,9 +531,6 @@ export default class DrawingCanvas extends Vue {
                 case EntityType.BACKGROUND_IMAGE:
                     this.backgroundLayer.addEntity(entity);
                     break;
-                case EntityType.RESULTS_MESSAGE:
-                    this.calculationLayer.addEntity(entity);
-                    break;
                 case EntityType.FITTING:
                 case EntityType.DIRECTED_VALVE:
                 case EntityType.PIPE:
@@ -578,9 +575,6 @@ export default class DrawingCanvas extends Vue {
             switch (entity.type) {
                 case EntityType.BACKGROUND_IMAGE:
                     this.backgroundLayer.deleteEntity(entity);
-                    break;
-                case EntityType.RESULTS_MESSAGE:
-                    this.calculationLayer.deleteEntity(entity);
                     break;
                 case EntityType.FITTING:
                 case EntityType.DIRECTED_VALVE:
@@ -895,7 +889,8 @@ export default class DrawingCanvas extends Vue {
                 ctx,
                 vp: this.viewPort,
                 doc: this.document,
-                catalog: this.effectiveCatalog
+                catalog: this.effectiveCatalog,
+                globalStore: this.globalStore,
             };
             this.lastDrawingContext = context;
             this.backgroundLayer.draw(context, this.mode === DrawingMode.FloorPlan, this.currentTool);

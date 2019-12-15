@@ -337,11 +337,12 @@ export function ConnectableObject<T extends new (...args: any[])
             }
 
             const sizes = pipeSizes || [from, to].map((n) => {
-                const o = context.objectStore.get(n.connection);
+                const o = context.globalStore.get(n.connection);
                 if (o && o.type === EntityType.PIPE) {
                     const p = o as Pipe;
-                    if (p.entity.calculation) {
-                        return p.entity.calculation.realInternalDiameterMM;
+                    const calculation = context.globalStore.getCalculation(p.entity);
+                    if (calculation) {
+                        return calculation.realInternalDiameterMM;
                     }
                 }
             });

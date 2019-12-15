@@ -62,7 +62,6 @@ export default function insertRiser(
                     temperatureC: null,
                     type: EntityType.RISER,
                     uid: newUid,
-                    calculation: null
                 };
 
                 context.$store.dispatch('document/addEntity', newEntity);

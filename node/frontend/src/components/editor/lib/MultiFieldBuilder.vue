@@ -41,6 +41,7 @@
         fillDirectedValveFields,
         makeDirectedValveFields,
     } from "../../../../src/store/document/entities/directed-valves/directed-valve-entity";
+    import {assertUnreachable} from "../../../config";
 
     @Component({
         components: {PropertiesFieldBuilder},
@@ -111,10 +112,10 @@
                 case EntityType.DIRECTED_VALVE:
                     return makeDirectedValveFields(this.document.drawing.metadata.flowSystems, entity.valve)
                         .filter((p) => p.multiFieldId);
-                case EntityType.RESULTS_MESSAGE:
                 case EntityType.SYSTEM_NODE:
                     throw new Error('Invalid object in multi select');
             }
+            assertUnreachable(entity);
         }
 
         fillObjectFields(obj: BaseBackedObject): DrawableEntityConcrete {
@@ -135,9 +136,8 @@
                     return fillFixtureFields(this.document, this.defaultCatalog, obj.entity);
                 case EntityType.DIRECTED_VALVE:
                     return fillDirectedValveFields(this.document, this.$props.objectStore, obj.entity);
-                case EntityType.RESULTS_MESSAGE:
-                    throw new Error('Unsupported entity');
             }
+            assertUnreachable(obj.entity);
         }
 
         get document(): DocumentState {

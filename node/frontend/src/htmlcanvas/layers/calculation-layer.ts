@@ -17,6 +17,7 @@ import {isCalculated} from '../../../src/store/document/calculations';
 import * as TM from 'transformation-matrix';
 import {tm2flatten} from '../../../src/htmlcanvas/lib/utils';
 import {MIN_SCALE, SCALE_GRADIENT_MIN} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
+import * as _ from 'lodash';
 
 const MINIMUM_SIGNIFICANT_PIPE_LENGTH_MM = 500;
 export const SIGNIFICANT_FLOW_THRESHOLD = 1e-5;
@@ -36,8 +37,8 @@ export default class CalculationLayer extends LayerImplementation {
             const obj2props = new Map<string, CalculationData[]>();
 
             this.objectStore.forEach((o) => {
-                if (o.calculated && o.type in calculationFilters &&
-                    (o.entity as CalculatableEntityConcrete).calculation) {
+                if (isCalculated(o.entity) && o.type in calculationFilters &&
+                    context.globalStore.getCalculation(o.entity)) {
                     const fields = o.getCalculationFields(context, calculationFilters);
                     fields.forEach((f) => {
                         if (!obj2props.has(f.attachUid)) {
@@ -50,7 +51,7 @@ export default class CalculationLayer extends LayerImplementation {
 
             const objList = Array.from(this.objectStore.values()).filter((o) => o.calculated && obj2props.has(o.uid));
             objList.sort((a, b) => {
-                return -(this.messagePriority(a) - this.messagePriority(b));
+                return -(this.messagePriority(context, a) - this.messagePriority(context, b));
             });
 
             const spentShapes: Flatten.Polygon[] = [];
@@ -104,7 +105,7 @@ export default class CalculationLayer extends LayerImplementation {
 
                 if (!drawn) {
                     // warnings must be drawn
-                    if (o.calculated && o.hasWarning()) {
+                    if (o.calculated && o.hasWarning(context)) {
                         vp.prepareContext(context.ctx, ...o.world2object);
                         const s = matrixScale(context.ctx.getTransform());
                         context.ctx.scale(MIN_SCALE / s, MIN_SCALE / s);
@@ -120,9 +121,9 @@ export default class CalculationLayer extends LayerImplementation {
         }
     }
 
-    messagePriority(object: BaseBackedObject): number {
+    messagePriority(context: DrawingContext, object: BaseBackedObject): number {
         if (isCalculated(object.entity)) {
-            const calc = (object.entity as CalculatableEntityConcrete).calculation;
+            const calc = context.globalStore.getCalculation(object.entity);
             if (calc && calc.warning !== null) {
                 return 10000; // High priority to warnings.
             }
@@ -142,7 +143,6 @@ export default class CalculationLayer extends LayerImplementation {
                 return 80;
             case EntityType.PIPE:
                 return 70 + 10 - 10 / ((object as Pipe).computedLengthM + 1);
-            case EntityType.RESULTS_MESSAGE:
             case EntityType.BACKGROUND_IMAGE:
                 throw new Error('shouldn\'t have calculations');
         }
@@ -162,11 +162,11 @@ export default class CalculationLayer extends LayerImplementation {
         context.document.uiState.isCalculating = true;
 
         this.calculator.calculate(
-            this.objectStore,
+            context.globalStore,
             context.document,
             context.effectiveCatalog,
             demandType,
-            (warnings) => {
+            () => {
 
             context.document.uiState.lastCalculationId = context.document.nextId;
             context.document.uiState.lastCalculationUiSettings = {

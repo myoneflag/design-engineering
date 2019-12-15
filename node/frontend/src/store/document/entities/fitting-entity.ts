@@ -10,17 +10,14 @@ import * as _ from 'lodash';
 import PipeEntity from '../../../../src/store/document/entities/pipe-entity';
 import {EntityType} from '../../../../src/store/document/entities/types';
 import FittingCalculation from '../../../../src/store/document/calculations/fitting-calculation';
-import {CalculationTarget} from '../../../../src/store/document/calculations/types';
 import {Choice} from '../../../../src/lib/types';
 import {cloneSimple} from '../../../../src/lib/utils';
 
-export default interface FittingEntity extends ConnectableEntity, CalculationTarget<FittingCalculation> {
+export default interface FittingEntity extends ConnectableEntity {
     type: EntityType.FITTING;
     center: Coord;
     systemUid: string;
     color: Color | null;
-
-    calculation: FittingCalculation | null;
 }
 
 export function makeValveFields(
