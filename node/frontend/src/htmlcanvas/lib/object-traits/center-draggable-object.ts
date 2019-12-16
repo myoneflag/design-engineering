@@ -41,19 +41,21 @@ export default function CenterDraggableObject<T extends new (...args: any[]) =>
                 this.entity.center.y += after.y - before.y;
 
                 if (this instanceof BackedConnectable && !isMulti) {
+                    const worldCoord = this.toWorldCoord();
+
                     // try moving the entity to a destination
                     const draggedOn = context.offerInteraction(
                         {
                             type: InteractionType.MOVE_ONTO_RECEIVE,
                             src: this.entity,
-                            worldCoord: after,
+                            worldCoord,
                             worldRadius: 50,
                         },
                         (obj) => {
                             const result = this.offerInteraction({
                                 type: InteractionType.MOVE_ONTO_SEND,
                                 dest: obj[0],
-                                worldCoord: after,
+                                worldCoord,
                                 worldRadius: 10,
                             });
                             return result !== null && result[0].uid !== obj[0].uid;

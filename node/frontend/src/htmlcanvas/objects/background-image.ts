@@ -457,13 +457,11 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         if (old) {
             if (this.entity.uri !== old.uri) {
                 this.initializeImage(() => {
-                    console.log('path1 ' + JSON.stringify(this.image));
                     this.onChange();
                 });
             }
         } else {
             this.initializeImage(() => {
-                console.log('path2 ' + JSON.stringify(this.image));
                 this.onChange();
             });
         }

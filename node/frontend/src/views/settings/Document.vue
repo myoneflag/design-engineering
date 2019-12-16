@@ -82,7 +82,6 @@ import {AccessLevel} from "../../../../backend/src/entity/User";
             if (window.confirm('Are you sure you want to delete this document forever? This operation cannot be undone.')) {
                 deleteDocument(Number(this.$route.params.id)).then((res) => {
                     if (res.success) {
-                        console.log((res as any).message);
                         this.$bvModal.msgBoxConfirm('The document has been deleted.').then(() => {
                             this.$router.push('/');
                         })

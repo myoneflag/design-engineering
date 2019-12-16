@@ -554,6 +554,11 @@ export default class DrawingCanvas extends Vue {
             Object.values(levelUid ? this.document.drawing.levels[levelUid].entities : this.document.drawing.shared),
             this.document,
         );
+        this.globalStore.resetLevel(
+            null,
+            Object.values(this.document.drawing.shared),
+            this.document,
+        );
     }
 
     onAddEntity({entity, levelUid}: EntityParam) {
@@ -607,7 +612,6 @@ export default class DrawingCanvas extends Vue {
     }
 
     onDeleteEntity({entity, levelUid}: EntityParam) {
-        console.log('delete entity handler called for ' + entity.uid);
         if (this.currentLevel && levelUid === this.currentLevel.uid) {
             switch (entity.type) {
                 case EntityType.BACKGROUND_IMAGE:
@@ -620,9 +624,7 @@ export default class DrawingCanvas extends Vue {
                 case EntityType.SYSTEM_NODE:
                 case EntityType.TMV:
                 case EntityType.FIXTURE:
-                    console.log('deleting from hydro;');
                     this.hydraulicsLayer.deleteEntity(entity);
-                    console.log('done from hydro;');
                     break;
                 default:
                     assertUnreachable(entity);
@@ -636,7 +638,6 @@ export default class DrawingCanvas extends Vue {
             }
         }
 
-        console.log('now calling global store');
         this.globalStore.delete(entity.uid);
 
     }
@@ -673,7 +674,6 @@ export default class DrawingCanvas extends Vue {
             throw new Error('Can only delete objects from the global object store');
         }
         const toDelete = object.prepareDelete(this);
-        console.log('deleting a bunch: ' + JSON.stringify(toDelete.map((o) => o.uid)));
         const deleted = new Set<string>();
         toDelete.forEach((drawableObject) => {
             if (drawableObject.entity === undefined) {

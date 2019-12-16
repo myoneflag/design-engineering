@@ -46,16 +46,10 @@ export default class  HydraulicsLayer extends LayerImplementation {
             if (thisIds.indexOf(v) !== -1) {
                 return false;
             }
-            if (this.draggedObjects) {
-                if (this.draggedObjects.find((d) => d.uid === v)) {
-                    return false;
-                }
-            }
             return true;
         });
 
         removed.forEach((v) => {
-            console.log('resetting in hydraulics and deleting ' + v);
             this.objectStore.delete(v);
             if (this.isSelected(v)) {
                 this.select([v], SelectMode.Exclude);
@@ -78,7 +72,7 @@ export default class  HydraulicsLayer extends LayerImplementation {
                 parent = this.objectStore.get(entity.parentUid)!;
             }
 
-            if (this.objectStore.get(entity.uid) !== undefined) {
+            if (this.objectStore.has(entity.uid)) {
                 if (entity.type === EntityType.PIPE) {
                     this.objectStore.updatePipeEndpoints(entity.uid);
                 }

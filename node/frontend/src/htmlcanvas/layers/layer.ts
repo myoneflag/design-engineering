@@ -173,7 +173,7 @@ export abstract class LayerImplementation implements Layer {
             if (this.objectStore.has(uid)) {
                 const object = this.objectStore.get(uid)!;
                 if (object.entity === undefined) {
-                    console.log('object is deleted but still in this layer ' + uid);
+                    throw new Error('object is deleted but still in this layer ' + uid);
                 }
                 const objectCoord = object.toObjectCoord(interaction.worldCoord);
                 const objectLength = object.toObjectLength(interaction.worldRadius);
@@ -451,7 +451,6 @@ export abstract class LayerImplementation implements Layer {
             this.uidsInOrder.splice(ix, 1);
         }
 
-        console.log('here');
         this.objectStore.delete(entity.uid);
 
         if (this.selectedIds.includes(entity.uid)) {

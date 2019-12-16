@@ -59,16 +59,14 @@ export function moveOnto(
             return cloneSimple(context.objectStore.get(puid)!.entity) as PipeEntity;
         });
 
-        //survivor.entity.center.x = finalCenter.x;
-        //survivor.entity.center.y = finalCenter.y;
+        survivor.entity.center.x = finalCenter.x;
+        survivor.entity.center.y = finalCenter.y;
 
         cloneSimple(context.objectStore.getConnections(loser.uid)).forEach((puid) => {
             const pipe = context.objectStore.get(puid)!.entity as PipeEntity;
             assert (pipe.type === EntityType.PIPE);
 
             assert((pipe.endpointUid[0] === loser.uid) !== (pipe.endpointUid[1] === loser.uid));
-
-            console.log('loser: ' + loser.entity.uid + ' survivor: ' + survivor.entity.uid);
 
             context.$store.dispatch('document/updatePipeEndpoints', {
                 entity: pipe,
@@ -80,7 +78,6 @@ export function moveOnto(
         });
 
         if (context.objectStore.has(loser.uid)) {
-            console.log('loser connections: ' + JSON.stringify(context.objectStore.getConnections(loser.uid)));
             context.deleteEntity(loser, false);
         }
     }

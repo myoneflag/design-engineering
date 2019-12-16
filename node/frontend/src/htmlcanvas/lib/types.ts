@@ -59,7 +59,6 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
 
     get(key: string) {
         const res = super.get(key);
-        //console.log('getting ' + key + ' result ' + JSON.stringify(res ? res.entity : res));
         if (res) {
             return res;
         }
@@ -67,7 +66,6 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
     }
 
     private detatchOldEndpoints(uid: string) {
-        console.log('deleting connection ' + uid + ' from connectables ' + JSON.stringify(this.oldEndpoints.get(uid)));
         this.oldEndpoints.get(uid)!.forEach((oldVal) => {
             if (oldVal === undefined) {
                 return;
@@ -86,7 +84,6 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
     }
 
     private attachEndpoints(entity: PipeEntity) {
-        console.log('adding connection ' + entity.uid + ' connectablse ' + JSON.stringify(entity.endpointUid));
         entity.endpointUid.forEach((newVal) => {
             if (newVal === undefined) {
                 return;
@@ -127,6 +124,10 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
     }
 
     set(key: string, value: BaseBackedObject) {
+        if (this.graveyard.has(key)) {
+            value = this.graveyard.get(key)!;
+        }
+
         if (!(value.entity as any).__ob__) {
             throw new Error('Not reactive');
         }
@@ -138,7 +139,6 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
         }
 
         if (value.entity.type === EntityType.PIPE) {
-            console.log(JSON.stringify(value.entity.endpointUid));
             this.attachEndpoints(value.entity);
         }
 
@@ -160,7 +160,6 @@ export class GlobalStore extends ObjectStore {
     levelOfEntity = new Map<string, string | null>();
 
     set(key: string, value: BaseBackedObject, levelUid?: string | null): this {
-        console.log('global store setting ' + key);
         if (levelUid === undefined) {
             throw new Error('Need a level to set in global store.');
         }
@@ -173,7 +172,6 @@ export class GlobalStore extends ObjectStore {
     }
 
     delete(key: string): boolean {
-        console.log('global store deleting ' + key);
         const lvl = this.levelOfEntity.get(key)!;
         this.levelOfEntity.delete(key);
         this.entitiesInLevel.get(lvl)!.delete(key);
@@ -181,7 +179,6 @@ export class GlobalStore extends ObjectStore {
     }
 
     resetLevel(levelUid: string | null, entities: DrawableEntityConcrete[], doc: DocumentState) {
-        console.log('globally resetting level');
         let inLevelNow = new Set<string>();
         if (this.entitiesInLevel.has(levelUid)) {
             inLevelNow = new Set(this.entitiesInLevel.get(levelUid)!);
@@ -215,7 +212,6 @@ export class GlobalStore extends ObjectStore {
                 }
             }
         });
-        console.log('global done resetting level');
     }
 
     onLevelDelete(levelUid: string) {
@@ -296,7 +292,6 @@ export class GlobalStore extends ObjectStore {
         }
         this.lastDoc = doc;
 
-        console.log('checking');
         // test that there is an exact bijection from document to things.
 
         // 1. Everything in doc must be in us.

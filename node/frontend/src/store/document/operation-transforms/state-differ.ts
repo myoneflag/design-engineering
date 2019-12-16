@@ -5,7 +5,6 @@ import {OPERATION_NAMES, OperationTransformConcrete} from "./operation-transform
 // Returns the diff object. If no diff, returns undefined.
 export function diffObject(before: any, after: any, filter: any): any {
     if (before === undefined || after === undefined) {
-        console.log(JSON.stringify(before) + ' ' + JSON.stringify(after));
         throw new Error('Parent caller shouldn\'t have recursed');
     }
 
