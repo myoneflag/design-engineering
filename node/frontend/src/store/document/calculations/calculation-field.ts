@@ -33,6 +33,7 @@ export interface CalculationField {
     attachUid?: string;
     systemUid?: string;
     bold?: boolean;
+    format?: (v: any) => string;
 }
 
 export interface CalculationData extends CalculationField {

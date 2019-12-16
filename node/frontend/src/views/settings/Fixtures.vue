@@ -3,7 +3,7 @@
             ref="fields"
             :fields="[]"
             :reactiveData="{availableFixtureUids}"
-            :originalData="{availableFixtureUids: document.committeddrawing.metadata.availableFixtures}"
+            :originalData="{availableFixtureUids: document.committedDrawing.metadata.availableFixtures}"
             :onSave="save"
             :onBack="back"
             :on-revert="onRevert"

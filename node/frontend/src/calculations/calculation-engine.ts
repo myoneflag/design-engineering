@@ -57,7 +57,6 @@ import {isCalculated} from "../store/document/calculations";
 export const SELF_CONNECTION = 'SELF_CONNECTION';
 
 
-
 export default class CalculationEngine {
 
     globalStore!: GlobalStore;
@@ -90,9 +89,9 @@ export default class CalculationEngine {
         }
 
         setTimeout(() => {
-            this.doRealCalculation();
-            done();
-        },
+                this.doRealCalculation();
+                done();
+            },
             500);
         this.equationEngine = new EquationEngine();
     }
@@ -215,7 +214,7 @@ export default class CalculationEngine {
                             );
                     }
                 }
-                break;
+                    break;
                 case EntityType.TMV: {
                     const calculation = this.globalStore.getOrCreateCalculation(entity);
                     calculation.coldPressureKPA =
@@ -229,7 +228,7 @@ export default class CalculationEngine {
                             sources,
                         );
                 }
-                break;
+                    break;
                 case EntityType.RISER:
                 case EntityType.DIRECTED_VALVE:
                 case EntityType.FITTING:
@@ -364,7 +363,8 @@ export default class CalculationEngine {
                         if (obj instanceof Pipe) {
                             const calculation = this.globalStore.getOrCreateCalculation(obj.entity);
                             if (!calculation || calculation.pressureDropKpa === null) {
-                                return 69696969;
+                                // TODO: return a ">" symbol. 10 + ">0" = > 10.
+                                return 0;
                             }
                             return calculation.pressureDropKpa;
                         } else {
@@ -420,28 +420,37 @@ export default class CalculationEngine {
                     case EdgeType.FITTING_FLOW:
                     case EdgeType.CHECK_THROUGH:
                     case EdgeType.ISOLATION_THROUGH: {
-                        const sourcePipe = this.globalStore.get(flowFrom.connection) as Pipe;
+                        const sourcePipe = this.globalStore.get(flowFrom.connection);
+                        const destPipe = this.globalStore.get(flowTo.connection);
+                        let srcDist: number | null = null;
+                        let destDist: number | null = null;
                         let dist: number | null = null;
-                        if (!sourcePipe || sourcePipe.type !== EntityType.PIPE) {
-                            const destPipe = this.globalStore.get(flowTo.connection) as Pipe;
-                            if (destPipe && destPipe.entity.type === EntityType.PIPE) {
-                                const pipeCalc = this.globalStore.getOrCreateCalculation(destPipe.entity);
-                                dist = pipeCalc!.peakFlowRate!;
-                            } else {
-                                // no flow
-                                throw new Error('can\'t find any flow on this edge');
-                            }
-                        } else {
+
+                        if (sourcePipe instanceof Pipe) {
                             const srcCalc = this.globalStore.getOrCreateCalculation(sourcePipe.entity);
-                            dist = srcCalc.peakFlowRate;
+                            srcDist = srcCalc.peakFlowRate || 0;
                         }
+
+                        if (destPipe instanceof Pipe) {
+                            const destCalc = this.globalStore.getOrCreateCalculation(destPipe.entity);
+                            destDist = destCalc.peakFlowRate || 0;
+                        }
+
+                        if (srcDist != null && destDist != null) {
+                            dist = Math.min(srcDist, destDist);
+                        } else if (srcDist != null) {
+                            dist = srcDist;
+                        } else {
+                            dist = destDist;
+                        }
+
                         const systemUid = determineConnectableSystemUid(
                             this.globalStore,
                             (obj.entity as DirectedValveEntity),
                         )!;
 
                         if (dist !== null) {
-                            return head2kpa(
+                            const val = head2kpa(
                                 getObjectFrictionHeadLoss(
                                     this,
                                     obj,
@@ -452,6 +461,7 @@ export default class CalculationEngine {
                                 getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
                                 this.ga,
                             );
+                            return val;
                         } else {
                             return 1000;
                         }
@@ -474,6 +484,7 @@ export default class CalculationEngine {
             } else {
                 sourceObj = this.globalStore.get(rPath[0][rPath[0].length - 1].to.connectable)! as Riser;
             }
+            console.log(rPath[1]);
             return sourceObj.entity.pressureKPA! - rPath[1];
         } else {
             return null;
@@ -553,7 +564,7 @@ export default class CalculationEngine {
                 case EntityType.SYSTEM_NODE:
                 case EntityType.FITTING:
                     const toConnect = cloneSimple(this.globalStore.getConnections(obj.entity.uid));
-                    if ( obj.entity.type === EntityType.RISER) {
+                    if (obj.entity.type === EntityType.RISER) {
                         this.flowGraph.addNode({connectable: obj.uid, connection: SELF_CONNECTION});
                         toConnect.push(SELF_CONNECTION);
                     } else if (obj.entity.type === EntityType.SYSTEM_NODE) {
@@ -905,12 +916,14 @@ export default class CalculationEngine {
 
         // apply spare capacity
         const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === cpipe.systemUid!);
+        const rawFlowRate = flowRateLS;
         if (system) {
             flowRateLS = flowRateLS * (1 + system.spareCapacity / 100);
         }
 
         const calculation = this.globalStore.getOrCreateCalculation(pipe);
         calculation.peakFlowRate = flowRateLS;
+        calculation.rawPeakFlowRate = rawFlowRate;
 
         let page: PipeSpec | null = null;
 
@@ -968,7 +981,7 @@ export default class CalculationEngine {
 
         const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === pipe.systemUid)!;
 
-        const fluidDensity =  parseCatalogNumberExact(this.catalog.fluids[system.fluid].densityKGM3);
+        const fluidDensity = parseCatalogNumberExact(this.catalog.fluids[system.fluid].densityKGM3);
         const dynamicViscosity = parseCatalogNumberExact(interpolateTable(
             this.catalog.fluids[system.fluid].dynamicViscosityByTemperature,
             system.temperature, // TOOD: Use pipe's temperature
@@ -1102,7 +1115,7 @@ export default class CalculationEngine {
                     break;
                 case EntityType.PIPE:
                     if (object.entity.endpointUid[0] === null || object.entity.endpointUid[1] === null) {
-                        throw new Error('pipe has dry endpoint: '  + object.entity.uid);
+                        throw new Error('pipe has dry endpoint: ' + object.entity.uid);
                     }
                     this.sizeDefiniteTransport(
                         object,
@@ -1229,7 +1242,7 @@ export default class CalculationEngine {
                         );
                     }
                 }
-                break;
+                    break;
                 case EntityType.FITTING:
                 case EntityType.RISER:
                 case EntityType.DIRECTED_VALVE:

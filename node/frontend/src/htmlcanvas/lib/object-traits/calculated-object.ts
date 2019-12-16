@@ -58,7 +58,10 @@ export function CalculatedObject<T extends new (...args: any[])
 
             const fractionDigits = datum.significantDigits === undefined ? 2 : datum.significantDigits;
 
-            const numberText = (value === null ? '??' : value.toFixed(fractionDigits));
+            let numberText = (value === null ? '??' : value.toFixed(fractionDigits));
+            if (datum.format) {
+                numberText = datum.format(value);
+            }
             return numberText +
                 ' ' + (datum.hideUnits ? '' : datum.units + ' ') +
                 datum.short;

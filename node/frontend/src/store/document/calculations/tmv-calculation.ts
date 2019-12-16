@@ -6,11 +6,13 @@ import {Calculation} from '../../../../src/store/document/calculations/types';
 export default interface TmvCalculation extends Calculation {
     coldTemperatureC: number | null;
     coldPressureKPA: number | null;
+    coldRawPeakFlowRate: number | null;
     coldPeakFlowRate: number | null;
     coldPsdUs: number | null;
 
     hotTemperatureC: number | null;
     hotPressureKPA: number | null;
+    hotRawPeakFlowRate: number | null;
     hotPeakFlowRate: number | null;
     hotPsdUs: number | null;
 
@@ -56,11 +58,13 @@ export function emptyTmvCalculation(): TmvCalculation {
     return {
         coldPressureKPA: null,
         coldTemperatureC: null,
+        coldRawPeakFlowRate: null,
         coldPeakFlowRate: null,
         coldPsdUs: null,
 
         hotPressureKPA: null,
         hotTemperatureC: null,
+        hotRawPeakFlowRate: null,
         hotPeakFlowRate: null,
         hotPsdUs: null,
 

@@ -233,6 +233,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
         const volLM = smallestDiameterMM ** 2 * Math.PI / 4 / 1000;
         const velocityMS = flowLS / volLM;
+        console.log('result: ' + (sign * (k * velocityMS ** 2) / (2 * ga)) + 'velocity: ' + velocityMS);
         return sign * (k * velocityMS ** 2) / (2 * ga);
     }
 

@@ -367,6 +367,10 @@ export function ConnectableObject<T extends new (...args: any[])
 
             const k = 0.8 * (Math.sin(angle / 2)) * (1 - (smallSize ** 2 / largeSize ** 2));
 
+            if (Math.abs(flowLS) < EPS) {
+                // @ts-ignore
+                return super.getFrictionHeadLoss(context, oFlowLS, oFrom, oTo, signed);
+            }
             return sign * (k * velocityMS ** 2 / (2 * ga)) +
                 // @ts-ignore
                 super.getFrictionHeadLoss(context, oFlowLS, oFrom, oTo, signed);

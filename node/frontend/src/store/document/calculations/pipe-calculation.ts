@@ -5,9 +5,11 @@ import {isGermanStandard} from '../../../../src/config';
 import PipeEntity, {fillPipeDefaultFields} from '../../../../src/store/document/entities/pipe-entity';
 import {Catalog} from '../../../../src/store/catalog/types';
 import {getPsdUnitName} from "../../../calculations/utils";
+import set = Reflect.set;
 
 export default interface PipeCalculation extends PsdCalculation, Calculation {
     peakFlowRate: number | null;
+    rawPeakFlowRate: number | null;
     optimalInnerPipeDiameterMM: number | null;
     realNominalPipeDiameterMM: number | null;
     realInternalDiameterMM: number | null;
@@ -35,12 +37,21 @@ export function makePipeCalculationFields(
 
     return [
         {property: 'peakFlowRate',
-            title: 'Peak Flow rate',
+            title: 'Peak Flow Rate + Spare',
             short: 'Peak',
             units: Units.LitersPerSecond,
             category: FieldCategory.FlowRate,
             systemUid: entity.systemUid,
             defaultEnabled: true,
+        },
+        {property: 'rawPeakFlowRate',
+            title: 'Peak Flow Rate (raw)',
+            short: 'Peak',
+            units: Units.LitersPerSecond,
+            category: FieldCategory.FlowRate,
+            systemUid: entity.systemUid,
+            defaultEnabled: false,
+            format: (v: number | null) => '(' + (v === null ? '??' : v.toFixed(2)) + ')',
         },
         {property: 'realNominalPipeDiameterMM',
             title: 'Pipe Diameter',
@@ -102,6 +113,7 @@ export function makePipeCalculationFields(
 export function emptyPipeCalculation(): PipeCalculation {
     return {
         peakFlowRate: null,
+        rawPeakFlowRate: null,
         psdUnits: null,
         optimalInnerPipeDiameterMM: null,
         realInternalDiameterMM: null,

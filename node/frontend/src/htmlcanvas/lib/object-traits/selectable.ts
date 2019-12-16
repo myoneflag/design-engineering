@@ -45,14 +45,20 @@ export function SelectableObject<T extends new (...args: any[]) => Selectable & 
 
         onMouseUp(event: MouseEvent, context: CanvasContext): boolean {
             const wc = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
-            const oc = this.toObjectCoord(wc);
-            // Check bounds
-            let result = false;
-            if (this.inBounds(oc)) {
-                result = true;
-            }
+            if (this.entity) {
 
-            return super.onMouseUp(event, context) || result;
+                const oc = this.toObjectCoord(wc);
+                // Check bounds
+                let result = false;
+                if (this.inBounds(oc)) {
+                    result = true;
+                }
+
+                return super.onMouseUp(event, context) || result;
+            } else {
+                // we were deleted during this operation, probably drag
+                return super.onMouseUp(event, context);
+            }
         }
     };
 }

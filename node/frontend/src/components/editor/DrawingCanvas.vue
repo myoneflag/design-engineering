@@ -12,7 +12,7 @@ import {EntityType} from "../../store/document/entities/types";
                 :selected-entities="selectedEntities"
                 :selected-objects="selectedObjects"
                 :target-property="targetProperty"
-                v-if="selectedObjects.length && propertiesVisible"
+                v-if="selectedObjects.length && propertiesVisible && initialized"
                 :mode="mode"
                 :on-change="scheduleDraw"
                 :on-delete="deleteSelected"
@@ -22,7 +22,7 @@ import {EntityType} from "../../store/document/entities/types";
 
 
         <CalculationsSidebar
-                v-if="mode === 2"
+                v-if="mode === 2 && initialized"
                 :objects="allObjects"
                 :on-change="scheduleDraw"
         >
@@ -33,7 +33,7 @@ import {EntityType} from "../../store/document/entities/types";
         <LevelSelector
                 :levels="document.drawing.levels"
                 :current-level-uid="document.uiState.levelUid"
-                v-if="levelSelectorVisible"
+                v-if="levelSelectorVisible && initialized"
         >
 
         </LevelSelector>
@@ -58,7 +58,7 @@ import {EntityType} from "../../store/document/entities/types";
 
             <ModeButtons
                     :mode.sync="mode"
-                    v-if="currentTool.modesVisible"
+                    v-if="currentTool.modesVisible && initialized"
             />
 
             <FloorPlanInsertPanel
@@ -67,7 +67,7 @@ import {EntityType} from "../../store/document/entities/types";
             />
 
             <HydraulicsInsertPanel
-                    v-if="mode === 1"
+                    v-if="mode === 1 && initialized"
                     :flow-systems="document.drawing.metadata.flowSystems"
                     @insert="hydraulicsInsert"
                     :fixtures="effectiveCatalog.fixtures"
@@ -79,7 +79,7 @@ import {EntityType} from "../../store/document/entities/types";
             />
 
             <CalculationBar
-                    v-if="mode === 2"
+                    v-if="mode === 2 && initialized"
                     :demandType.sync="demandType"
                     :is-calculating="isCalculating"
             />
@@ -91,6 +91,7 @@ import {EntityType} from "../../store/document/entities/types";
                     :current-tool-config="currentTool"
                     :on-tool-click="changeTool"
                     :on-fit-to-view-click="fitToView"
+                    v-if="initialized"
             ></Toolbar>
 
             <InstructionPage
@@ -260,6 +261,8 @@ export default class DrawingCanvas extends Vue {
 
     levelChangeUnwatchers = new Map<string, () => void>();
 
+    initialized = false;
+
     mounted() {
         this.objectStore.vm = this;
         this.globalStore.vm = this;
@@ -300,6 +303,11 @@ export default class DrawingCanvas extends Vue {
 
 
         setInterval(this.drawLoop, 20);
+        this.initialized = true;
+    }
+
+    destroyed() {
+        console.log('destroyed');
     }
 
     get catalogLoaded(): boolean {
@@ -361,12 +369,21 @@ export default class DrawingCanvas extends Vue {
     }
 
     get allObjects(): BaseBackedObject[] {
+        if (!this.initialized) {
+            return [];
+        }
+
         const objects: BaseBackedObject[] =
             Object.keys(this.document.drawing.shared).map((e) => this.globalStore.get(e)!);
-
         if (this.currentLevel) {
             objects.push(...Object.keys(this.currentLevel.entities).map((e) => this.globalStore.get(e)!));
         }
+
+        objects.forEach((o) => {
+            if (o === undefined) {
+                throw new Error('Inconsistent state: an object in the document is not in the store');
+            }
+        });
 
         return objects;
     }
