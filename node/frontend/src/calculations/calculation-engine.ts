@@ -865,6 +865,7 @@ export default class CalculationEngine {
                 if (flowRate === null) {
                     // Warn for no PSD
                 } else {
+
                     this.sizePipeForFlowRate(entity, flowRate);
                 }
 
@@ -900,6 +901,13 @@ export default class CalculationEngine {
     }
 
     sizePipeForFlowRate(pipe: PipeEntity, flowRateLS: number) {
+        const cpipe = fillPipeDefaultFields(this.doc.drawing, 0, pipe);
+
+        // apply spare capacity
+        const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === cpipe.systemUid!);
+        if (system) {
+            flowRateLS = flowRateLS * (1 + system.spareCapacity / 100);
+        }
 
         const calculation = this.globalStore.getOrCreateCalculation(pipe);
         calculation.peakFlowRate = flowRateLS;
