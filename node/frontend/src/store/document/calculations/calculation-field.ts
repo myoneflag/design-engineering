@@ -14,6 +14,7 @@ export enum Units {
     None = '',
     LitersPerSecond = 'L/s',
     Millimeters = 'mm',
+    Meters = 'm',
     KiloPascals = 'kPa',
     MetersPerSecond = 'm/s',
     Celsius = '\u00B0C',

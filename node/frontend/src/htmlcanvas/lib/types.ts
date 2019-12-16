@@ -279,9 +279,6 @@ export class GlobalStore extends ObjectStore {
 
     clearCalculations() {
         this.calculationStore.clear();
-        const p = {} as DirectedValveEntity;
-        const k = this.getOrCreateCalculation(p);
-
     }
 
     lastDoc: DocumentState | undefined = undefined;

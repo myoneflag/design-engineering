@@ -16,7 +16,6 @@ import {Catalog, PipeSpec} from '../../src/store/catalog/types';
 import BaseBackedObject from '../../src/htmlcanvas/lib/base-backed-object';
 import UnionFind from '../../src/calculations/union-find';
 import {cloneSimple} from '../../src/lib/utils';
-import {emptyPipeCalculation} from '../../src/store/document/calculations/pipe-calculation';
 import {
     interpolateTable,
     lowerBoundTable,
@@ -36,10 +35,8 @@ import {
 import FlowSolver from '../../src/calculations/flow-solver';
 import {PropertyField} from '../../src/store/document/entities/property-field';
 import {MainEventBus} from '../../src/store/main-event-bus';
-import {emptyFixtureCalculation} from '../../src/store/document/calculations/fixture-calculation';
 import {getObjectFrictionHeadLoss} from '../../src/calculations/entity-pressure-drops';
 import {DrawableEntityConcrete} from '../../src/store/document/entities/concrete-entity';
-import {emptyTmvCalculation} from '../../src/store/document/calculations/tmv-calculation';
 import Riser from '../htmlcanvas/objects/riser';
 import {assertUnreachable, isGermanStandard} from '../../src/config';
 import Tmv from '../../src/htmlcanvas/objects/tmv/tmv';
@@ -50,10 +47,10 @@ import DirectedValveEntity, {
 } from '../../src/store/document/entities/directed-valves/directed-valve-entity';
 import {ValveType} from '../../src/store/document/entities/directed-valves/valve-types';
 import {lookupFlowRate} from '../../src/calculations/utils';
-import FittingCalculation, {emptyFittingCalculation} from '../../src/store/document/calculations/fitting-calculation';
-import RiserCalculations, {emptyRiserCalculations} from '../store/document/calculations/riser-calculations';
-import DirectedValveCalculation, {emptyDirectedValveCalculation} from '../../src/store/document/calculations/directed-valve-calculation';
-import SystemNodeCalculation, {emptySystemNodeCalculation} from '../../src/store/document/calculations/system-node-calculation';
+import FittingCalculation from '../../src/store/document/calculations/fitting-calculation';
+import RiserCalculations from '../store/document/calculations/riser-calculations';
+import DirectedValveCalculation from '../../src/store/document/calculations/directed-valve-calculation';
+import SystemNodeCalculation from '../../src/store/document/calculations/system-node-calculation';
 import {StandardFlowSystemUids} from '../../src/store/catalog';
 import {isCalculated} from "../store/document/calculations";
 
@@ -173,6 +170,7 @@ export default class CalculationEngine {
         const sanityPassed = this.sanityCheck(this.globalStore, this.doc);
 
         if (sanityPassed) {
+            this.preCompute();
             // The remaining graph must be a rooted forest.
             const sources: FlowNode[] = Array.from(this.globalStore.values())
                 .filter((o) => o.type === EntityType.RISER)
@@ -187,6 +185,15 @@ export default class CalculationEngine {
         if (!this.equationEngine.isComplete()) {
             throw new Error('Calculations could not complete \n');
         }
+    }
+
+    preCompute() {
+        this.globalStore.forEach((o) => {
+            if (o.entity.type === EntityType.PIPE) {
+                const c = this.globalStore.getOrCreateCalculation(o.entity);
+                c.lengthM = o.entity.lengthM == null ? (o as Pipe).computedLengthM : o.entity.lengthM;
+            }
+        });
     }
 
     calculateAllPointPressures(sources: FlowNode[]) {
@@ -236,6 +243,7 @@ export default class CalculationEngine {
                         candidates.push(entity.parentUid!);
                     }
                     let maxPressure: number | null = null;
+                    let minPressure: number | null = null;
                     candidates.forEach((cuid) => {
                         const thisPressure = this.getAbsolutePressurePoint(
                             {connectable: entity.uid, connection: cuid},
@@ -243,6 +251,9 @@ export default class CalculationEngine {
                         );
                         if (thisPressure != null && (maxPressure === null || thisPressure > maxPressure)) {
                             maxPressure = thisPressure;
+                        }
+                        if (minPressure === null || (thisPressure !== null && thisPressure < minPressure)) {
+                            minPressure = thisPressure;
                         }
                     });
                     // For the entry, we have to get the highest pressure (the entry pressure)
@@ -353,7 +364,7 @@ export default class CalculationEngine {
                         if (obj instanceof Pipe) {
                             const calculation = this.globalStore.getOrCreateCalculation(obj.entity);
                             if (!calculation || calculation.pressureDropKpa === null) {
-                                return Infinity;
+                                return 69696969;
                             }
                             return calculation.pressureDropKpa;
                         } else {
@@ -410,7 +421,7 @@ export default class CalculationEngine {
                     case EdgeType.CHECK_THROUGH:
                     case EdgeType.ISOLATION_THROUGH: {
                         const sourcePipe = this.globalStore.get(flowFrom.connection) as Pipe;
-                        let dist = 0;
+                        let dist: number | null = null;
                         if (!sourcePipe || sourcePipe.type !== EntityType.PIPE) {
                             const destPipe = this.globalStore.get(flowTo.connection) as Pipe;
                             if (destPipe && destPipe.entity.type === EntityType.PIPE) {
@@ -422,23 +433,28 @@ export default class CalculationEngine {
                             }
                         } else {
                             const srcCalc = this.globalStore.getOrCreateCalculation(sourcePipe.entity);
-                            dist = srcCalc.peakFlowRate!;
+                            dist = srcCalc.peakFlowRate;
                         }
                         const systemUid = determineConnectableSystemUid(
                             this.globalStore,
                             (obj.entity as DirectedValveEntity),
                         )!;
-                        return head2kpa(
-                            getObjectFrictionHeadLoss(
-                                this,
-                                obj,
-                                dist,
-                                flowFrom,
-                                flowTo,
-                            ),
-                            getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
-                            this.ga,
-                        );
+
+                        if (dist !== null) {
+                            return head2kpa(
+                                getObjectFrictionHeadLoss(
+                                    this,
+                                    obj,
+                                    dist,
+                                    flowFrom,
+                                    flowTo,
+                                ),
+                                getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
+                                this.ga,
+                            );
+                        } else {
+                            return 1000;
+                        }
                     }
                 }
             },
@@ -961,7 +977,7 @@ export default class CalculationEngine {
                     dynamicViscosity!,
                 ),
             ),
-            filled.lengthM!,
+            calculation.lengthM!,
             realInternalDiameter!,
             calculation.velocityRealMS!,
             this.ga,

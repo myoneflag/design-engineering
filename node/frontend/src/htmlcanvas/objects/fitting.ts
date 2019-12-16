@@ -23,6 +23,7 @@ import {FlowNode, SELF_CONNECTION} from '../../../src/calculations/calculation-e
 import {DrawingArgs} from '../../../src/htmlcanvas/lib/drawable-object';
 import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
 import {Calculated, CalculatedObject, FIELD_HEIGHT} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
+import {In} from "typeorm";
 
 @CalculatedObject
 @SelectableObject
@@ -178,23 +179,25 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             }
         }
 
-        let smallestDiameterMM: number | undefined;
-        let largestDiameterMM: number | undefined;
+        let smallestDiameterMM: number | undefined = undefined;
+        let largestDiameterMM: number | undefined = undefined;
         const connections = this.objectStore.getConnections(this.entity.uid);
+        const internals: string[] = [];
         connections.forEach((p) => {
             const pipe = this.objectStore.get(p) as Pipe;
             const thisDiameter =
                 parseCatalogNumberExact(context.globalStore.getCalculation(pipe.entity)!.realInternalDiameterMM)!;
-            if (smallestDiameterMM === undefined || thisDiameter < smallestDiameterMM) {
+            internals.push('' + thisDiameter);
+            if (smallestDiameterMM == null || (thisDiameter != null && thisDiameter < smallestDiameterMM)) {
                 smallestDiameterMM = thisDiameter;
             }
-            if (largestDiameterMM === undefined || thisDiameter > largestDiameterMM) {
+            if (largestDiameterMM == null || (thisDiameter != null && thisDiameter > largestDiameterMM)) {
                 largestDiameterMM = thisDiameter;
             }
         });
 
-        if (smallestDiameterMM === undefined || largestDiameterMM === undefined) {
-            throw new Error('can\'t find pipe sizes');
+        if (smallestDiameterMM == null || largestDiameterMM == null) {
+            throw new Error('can\'t find pipe sizes ' + JSON.stringify(internals));
         }
 
         let k: number | null = null;

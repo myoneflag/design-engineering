@@ -65,15 +65,17 @@ export function CalculatedObject<T extends new (...args: any[])
         }
 
         drawWarningSignOnly(context: DrawingContext, dryRun: boolean): Flatten.Box {
-            if (!dryRun) {
-                context.ctx.drawImage(
-                    warningSignImg,
-                    - WARNING_WIDTH / 2,
-                    - WARNING_HEIGHT / 2,
-                    WARNING_WIDTH,
-                    WARNING_HEIGHT,
-                );
-            }
+            this.withWorldAngle(context, {x: 0, y: 0}, () => {
+                if (!dryRun) {
+                    context.ctx.drawImage(
+                        warningSignImg,
+                        - WARNING_WIDTH / 2,
+                        - WARNING_HEIGHT / 2,
+                        WARNING_WIDTH,
+                        WARNING_HEIGHT,
+                    );
+                }
+            });
 
             return new Flatten.Box(-WARNING_WIDTH / 2, -WARNING_HEIGHT / 2, WARNING_WIDTH, WARNING_HEIGHT);
         }

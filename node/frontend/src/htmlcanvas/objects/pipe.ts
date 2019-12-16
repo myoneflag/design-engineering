@@ -632,7 +632,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             parseCatalogNumberExact(page.colebrookWhiteCoefficient)!,
             parseCatalogNumberExact(fluid.densityKGM3)!,
             dynamicViscosity!,
-            this.computedLengthM,
+            this.entity.lengthM == null ? this.computedLengthM : this.entity.lengthM,
             velocityMS,
             ga,
         );

@@ -12,6 +12,7 @@ export default interface PipeCalculation extends PsdCalculation, Calculation {
     realNominalPipeDiameterMM: number | null;
     realInternalDiameterMM: number | null;
     pressureDropKpa: number | null;
+    lengthM: number | null;
 
     velocityRealMS: number | null;
 
@@ -66,6 +67,14 @@ export function makePipeCalculationFields(
             category: FieldCategory.Pressure,
             systemUid: entity.systemUid,
         },
+
+        {property: 'lengthM',
+            title: 'Length',
+            short: '',
+            units: Units.Meters,
+            category: FieldCategory.Size,
+            systemUid: entity.systemUid,
+        },
         {property: 'velocityRealMS',
             title: 'Peak Velocity',
             short: '',
@@ -98,6 +107,7 @@ export function emptyPipeCalculation(): PipeCalculation {
         realInternalDiameterMM: null,
         pressureDropKpa: null,
         realNominalPipeDiameterMM: null,
+        lengthM: null,
         temperatureRange: null,
         velocityRealMS: null,
         warning: null,
