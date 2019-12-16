@@ -13,7 +13,7 @@ import {EntityType} from "../../store/document/entities/types";
                 :selected-objects="selectedObjects"
                 :target-property="targetProperty"
                 v-if="selectedObjects.length && propertiesVisible && initialized"
-                :mode="mode"
+                :mode="document.uiState.drawingMode"
                 :on-change="scheduleDraw"
                 :on-delete="deleteSelected"
                 :object-store="objectStore"
@@ -22,7 +22,7 @@ import {EntityType} from "../../store/document/entities/types";
 
 
         <CalculationsSidebar
-                v-if="mode === 2 && initialized"
+                v-if="document.uiState.drawingMode === 2 && initialized"
                 :objects="allObjects"
                 :on-change="scheduleDraw"
         >
@@ -57,17 +57,17 @@ import {EntityType} from "../../store/document/entities/types";
             </canvas>
 
             <ModeButtons
-                    :mode.sync="mode"
+                    :mode.sync="document.uiState.drawingMode"
                     v-if="currentTool.modesVisible && initialized"
             />
 
             <FloorPlanInsertPanel
                     @insert-floor-plan="onFloorPlanSelected"
-                    v-if="mode === 0"
+                    v-if="document.uiState.drawingMode === 0"
             />
 
             <HydraulicsInsertPanel
-                    v-if="mode === 1 && initialized"
+                    v-if="document.uiState.drawingMode === 1 && initialized"
                     :flow-systems="document.drawing.metadata.flowSystems"
                     @insert="hydraulicsInsert"
                     :fixtures="effectiveCatalog.fixtures"
@@ -79,7 +79,7 @@ import {EntityType} from "../../store/document/entities/types";
             />
 
             <CalculationBar
-                    v-if="mode === 2 && initialized"
+                    v-if="document.uiState.drawingMode === 2 && initialized"
                     :demandType.sync="demandType"
                     :is-calculating="isCalculating"
             />
@@ -283,6 +283,11 @@ export default class DrawingCanvas extends Vue {
         MainEventBus.$on('revert-level', this.onRevertLevel);
         MainEventBus.$on('update-pipe-endpoints', this.onPipeEndpoints);
 
+        this.$watch(() => this.document.uiState.drawingMode, (newVal) => {
+            this.considerCalculating();
+            this.scheduleDraw();
+        });
+
         (this.$refs.drawingCanvas as any).onmousedown = this.onMouseDown;
         (this.$refs.drawingCanvas as any).onmousemove = this.onMouseMove;
         (this.$refs.drawingCanvas as any).onmouseup = this.onMouseUp;
@@ -307,7 +312,7 @@ export default class DrawingCanvas extends Vue {
     }
 
     destroyed() {
-        console.log('destroyed');
+        this.document.uiState.lastCalculationId = -1;
     }
 
     get catalogLoaded(): boolean {
@@ -389,11 +394,11 @@ export default class DrawingCanvas extends Vue {
     }
 
     get activeLayer(): Layer | null {
-        if (this.mode === DrawingMode.FloorPlan) {
+        if (this.document.uiState.drawingMode === DrawingMode.FloorPlan) {
             return this.backgroundLayer;
-        } else if (this.mode === DrawingMode.Hydraulics) {
+        } else if (this.document.uiState.drawingMode === DrawingMode.Hydraulics) {
             return this.hydraulicsLayer;
-        } else if (this.mode === DrawingMode.Calculations) {
+        } else if (this.document.uiState.drawingMode === DrawingMode.Calculations) {
             return this.calculationLayer;
         }
         return null;
@@ -460,16 +465,6 @@ export default class DrawingCanvas extends Vue {
         }
     }
 
-    get mode() {
-        return this.document.uiState.drawingMode;
-    }
-
-    set mode(value) {
-        this.document.uiState.drawingMode = value;
-        this.considerCalculating();
-        this.scheduleDraw();
-    }
-
     get demandType() {
         return this.document.uiState.demandType;
     }
@@ -495,11 +490,14 @@ export default class DrawingCanvas extends Vue {
             !this.document.drawing.levels.hasOwnProperty(this.document.uiState.levelUid)) {
             this.document.uiState.levelUid = null;
         }
-        this.resetVisibleLevel(redraw);
         Object.values(this.document.drawing.levels).forEach((level) => {
             this.globalStore.resetLevel(level.uid, Object.values(level.entities), this.document);
         });
         this.globalStore.resetLevel(null, Object.values(this.document.drawing.shared), this.document);
+        this.resetVisibleLevel();
+        if (redraw) {
+            this.scheduleDraw();
+        }
     }
 
     setToolHandler(toolHandler: ToolHandler) {
@@ -559,12 +557,12 @@ export default class DrawingCanvas extends Vue {
 
     onCurrentLevelChanged() {
         this.resetVisibleLevel();
-
+        this.scheduleDraw();
     }
 
     onRevertLevel(levelUid: string) {
         if (levelUid === this.document.uiState.levelUid) {
-            this.resetVisibleLevel(false);
+            this.resetVisibleLevel();
         }
         this.globalStore.resetLevel(
             levelUid,
@@ -722,9 +720,9 @@ export default class DrawingCanvas extends Vue {
 
             const drawable = obj.entity;
             if (drawable.type === EntityType.BACKGROUND_IMAGE) {
-                this.mode = DrawingMode.FloorPlan;
+                this.document.uiState.drawingMode = DrawingMode.FloorPlan;
             } else if (drawable) {
-                this.mode = DrawingMode.Hydraulics;
+                this.document.uiState.drawingMode = DrawingMode.Hydraulics;
             }
 
             if (this.activeLayer) {
@@ -781,7 +779,7 @@ export default class DrawingCanvas extends Vue {
         }
     }
 
-    resetVisibleLevel(redraw: boolean = true) {
+    resetVisibleLevel() {
         if (this.document.uiState.levelUid === null && !_.isEmpty(this.document.drawing.levels)) {
             this.selectGroundFloor();
             return;
@@ -799,10 +797,6 @@ export default class DrawingCanvas extends Vue {
 
         this.allLayers.forEach((l) => l.resetDocument(this.document));
         this.updating = false;
-        // finally, draw
-        if (redraw) {
-            this.scheduleDraw();
-        }
     }
 
     // Note: Unfortunately, with the current vue reactivity system, this is going to be super slow because every time
@@ -958,17 +952,17 @@ export default class DrawingCanvas extends Vue {
                 globalStore: this.globalStore,
             };
             this.lastDrawingContext = context;
-            this.backgroundLayer.draw(context, this.mode === DrawingMode.FloorPlan, this.currentTool);
-            const filters = this.mode === DrawingMode.Calculations ? this.document.uiState.calculationFilters : null;
+            this.backgroundLayer.draw(context, this.document.uiState.drawingMode === DrawingMode.FloorPlan, this.currentTool);
+            const filters = this.document.uiState.drawingMode === DrawingMode.Calculations ? this.document.uiState.calculationFilters : null;
             this.hydraulicsLayer.draw(
                 context,
-                this.mode === DrawingMode.Hydraulics,
-                this.mode,
+                this.document.uiState.drawingMode === DrawingMode.Hydraulics,
+                this.document.uiState.drawingMode,
                 filters,
             );
             this.calculationLayer.draw(
                 context,
-                this.mode === DrawingMode.Calculations,
+                this.document.uiState.drawingMode === DrawingMode.Calculations,
                 filters,
             );
 
@@ -989,7 +983,8 @@ export default class DrawingCanvas extends Vue {
             drawPaperScale(ctx, 1 / matrixScale(this.viewPort.position));
 
             if (this.propertiesVisible) {
-                if (this.selectedEntities && this.selectedEntities.length > 0 && this.mode === DrawingMode.Hydraulics) {
+                if (this.selectedEntities && this.selectedEntities.length > 0 &&
+                    this.document.uiState.drawingMode === DrawingMode.Hydraulics) {
                     drawLoadingUnits(context, this.effectiveCatalog,
                         countPsdUnits(this.selectedEntities, this.document, this.effectiveCatalog), true);
                 } else {
@@ -1007,7 +1002,7 @@ export default class DrawingCanvas extends Vue {
     }
 
     considerCalculating() {
-        if (this.mode === DrawingMode.Calculations) {
+        if (this.document.uiState.drawingMode === DrawingMode.Calculations) {
             if (this.document.uiState.lastCalculationId < this.document.nextId
                 || this.document.uiState.lastCalculationUiSettings.demandType !== this.demandType) {
 
@@ -1145,7 +1140,7 @@ export default class DrawingCanvas extends Vue {
 
             event.preventDefault();
 
-            if (this.mode === DrawingMode.Hydraulics) {
+            if (this.document.uiState.drawingMode === DrawingMode.Hydraulics) {
                 this.hydraulicsLayer.select(_.clone(this.selectBoxStartSelected), SelectMode.Replace);
 
                 this.hydraulicsLayer.select(

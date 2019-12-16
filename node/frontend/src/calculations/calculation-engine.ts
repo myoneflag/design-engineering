@@ -484,7 +484,6 @@ export default class CalculationEngine {
             } else {
                 sourceObj = this.globalStore.get(rPath[0][rPath[0].length - 1].to.connectable)! as Riser;
             }
-            console.log(rPath[1]);
             return sourceObj.entity.pressureKPA! - rPath[1];
         } else {
             return null;

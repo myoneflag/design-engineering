@@ -47,6 +47,7 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
     protected oldEndpoints = new Map<string, [string, string]>();
     protected graveyard = new Map<string, BaseBackedObject>();
     protected preserveList = new Set<string>();
+    doc: DocumentState;
 
     constructor(vm: Vue) {
         super();
@@ -179,6 +180,10 @@ export class GlobalStore extends ObjectStore {
     }
 
     resetLevel(levelUid: string | null, entities: DrawableEntityConcrete[], doc: DocumentState) {
+        if (this.doc !== doc && this.doc !== undefined) {
+            throw new Error('doc is different');
+        }
+        this.doc = doc;
         let inLevelNow = new Set<string>();
         if (this.entitiesInLevel.has(levelUid)) {
             inLevelNow = new Set(this.entitiesInLevel.get(levelUid)!);
