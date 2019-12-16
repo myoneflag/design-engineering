@@ -19,7 +19,6 @@ import {ConnectableEntityConcrete} from '../../../src/store/document/entities/co
 import {isConnectable} from '../../../src/store/document';
 import FittingEntity from '../../../src/store/document/entities/fitting-entity';
 import {KeyCode} from '../../../src/htmlcanvas/utils';
-import {connect} from '../../../src/lib/utils';
 import connectTmvToSource from '../../../src/htmlcanvas/lib/black-magic/connect-tmv-to-source';
 
 export default function insertTmv(

@@ -100,16 +100,6 @@ export function isAcuteRad(a: number, tolerance: number = EPS) {
     return canonizeAngleRad(a) <= Math.PI / 2 + tolerance;
 }
 
-export function connect(context: CanvasContext, connectable: string, pipe: string) {
-    const o = context.objectStore.get(connectable) as BackedConnectable<ConnectableEntityConcrete>;
-    o.connect(pipe);
-}
-
-export function disconnect(context: CanvasContext, connectable: string, pipe: string) {
-    const o = context.objectStore.get(connectable) as BackedConnectable<ConnectableEntityConcrete>;
-    o.disconnect(pipe);
-}
-
 export function getPropertyByString(obj: any, s: string) {
     s = s.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
     s = s.replace(/^\./, '');           // strip a leading dot

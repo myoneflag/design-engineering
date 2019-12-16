@@ -165,6 +165,8 @@ import {EntityType} from "../../store/document/entities/types";
     import LevelSelector from "./LevelSelector.vue";
     import {fillRiserDefaults} from "../../store/document/entities/riser-entity";
     import DrawableObjectFactory from "../../htmlcanvas/lib/drawable-object-factory";
+    import {cloneSimple} from "../../lib/utils";
+    import PipeEntity from "../../store/document/entities/pipe-entity";
 
     @Component({
     components: {
@@ -276,6 +278,7 @@ export default class DrawingCanvas extends Vue {
         MainEventBus.$on('delete-level', this.onDeleteLevel);
         MainEventBus.$on('current-level-changed', this.onCurrentLevelChanged);
         MainEventBus.$on('revert-level', this.onRevertLevel);
+        MainEventBus.$on('update-pipe-endpoints', this.onPipeEndpoints);
 
         (this.$refs.drawingCanvas as any).onmousedown = this.onMouseDown;
         (this.$refs.drawingCanvas as any).onmousemove = this.onMouseMove;
@@ -358,7 +361,14 @@ export default class DrawingCanvas extends Vue {
     }
 
     get allObjects(): BaseBackedObject[] {
-        return Array.from(this.objectStore.values());
+        const objects: BaseBackedObject[] =
+            Object.keys(this.document.drawing.shared).map((e) => this.globalStore.get(e)!);
+
+        if (this.currentLevel) {
+            objects.push(...Object.keys(this.currentLevel.entities).map((e) => this.globalStore.get(e)!));
+        }
+
+        return objects;
     }
 
     get activeLayer(): Layer | null {
@@ -470,9 +480,9 @@ export default class DrawingCanvas extends Vue {
         }
         this.resetVisibleLevel(redraw);
         Object.values(this.document.drawing.levels).forEach((level) => {
-            this.globalStore.resetLevel(level.uid, Object.values(level.entities));
+            this.globalStore.resetLevel(level.uid, Object.values(level.entities), this.document);
         });
-        this.globalStore.resetLevel(null, Object.values(this.document.drawing.shared));
+        this.globalStore.resetLevel(null, Object.values(this.document.drawing.shared), this.document);
     }
 
     setToolHandler(toolHandler: ToolHandler) {
@@ -506,6 +516,25 @@ export default class DrawingCanvas extends Vue {
         return this.$store.getters['document/sortedLevels'];
     }
 
+    onPipeEndpoints({entity, endpoints}: {entity: PipeEntity, endpoints: [string, string]}) {
+        this.objectStore.updatePipeEndpoints(entity.uid);
+        this.globalStore.updatePipeEndpoints(entity.uid);
+    }
+
+    getEntityFromBase(euid: string, luid: string | null): DrawableEntityConcrete {
+        if (!luid) {
+            return this.document.drawing.shared[euid];
+        } else {
+            return this.document.drawing.levels[luid].entities[euid];
+        }
+    }
+
+    sanityCheckGlobalStore() {
+        if (window.location.host === 'localhost') {
+            this.globalStore.sanityCheck(this.document);
+        }
+    }
+
     onLayerSelect() {
         this.targetProperty = null;
         this.scheduleDraw();
@@ -513,6 +542,7 @@ export default class DrawingCanvas extends Vue {
 
     onCurrentLevelChanged() {
         this.resetVisibleLevel();
+
     }
 
     onRevertLevel(levelUid: string) {
@@ -522,6 +552,7 @@ export default class DrawingCanvas extends Vue {
         this.globalStore.resetLevel(
             levelUid,
             Object.values(levelUid ? this.document.drawing.levels[levelUid].entities : this.document.drawing.shared),
+            this.document,
         );
     }
 
@@ -529,7 +560,7 @@ export default class DrawingCanvas extends Vue {
         if (this.currentLevel && levelUid === this.currentLevel.uid) {
             switch (entity.type) {
                 case EntityType.BACKGROUND_IMAGE:
-                    this.backgroundLayer.addEntity(entity);
+                    this.backgroundLayer.addEntity(() => this.getEntityFromBase(entity.uid, levelUid));
                     break;
                 case EntityType.FITTING:
                 case EntityType.DIRECTED_VALVE:
@@ -538,7 +569,7 @@ export default class DrawingCanvas extends Vue {
                 case EntityType.SYSTEM_NODE:
                 case EntityType.TMV:
                 case EntityType.FIXTURE:
-                    this.hydraulicsLayer.addEntity(entity);
+                    this.hydraulicsLayer.addEntity(() => this.getEntityFromBase(entity.uid, levelUid));
                     break;
                 default:
                     assertUnreachable(entity);
@@ -547,12 +578,17 @@ export default class DrawingCanvas extends Vue {
             // Determine if this guy belongs
             if (this.currentLevel) {
                 if (levelIncludesRiser(this.currentLevel, entity, this.sortedLevels)) {
-                    this.hydraulicsLayer.addEntity(entity);
+                    this.hydraulicsLayer.addEntity(() => this.getEntityFromBase(entity.uid, levelUid));
                 }
             }
         }
 
-        const go = DrawableObjectFactory.buildGhost(entity, this.globalStore, levelUid);
+        const go = DrawableObjectFactory.buildGhost(
+            () => levelUid ? this.document.drawing.levels[levelUid].entities[entity.uid] :
+                this.document.drawing.shared[entity.uid],
+            this.globalStore,
+            levelUid
+        );
     }
 
     selectGroundFloor() {
@@ -571,6 +607,7 @@ export default class DrawingCanvas extends Vue {
     }
 
     onDeleteEntity({entity, levelUid}: EntityParam) {
+        console.log('delete entity handler called for ' + entity.uid);
         if (this.currentLevel && levelUid === this.currentLevel.uid) {
             switch (entity.type) {
                 case EntityType.BACKGROUND_IMAGE:
@@ -583,7 +620,9 @@ export default class DrawingCanvas extends Vue {
                 case EntityType.SYSTEM_NODE:
                 case EntityType.TMV:
                 case EntityType.FIXTURE:
+                    console.log('deleting from hydro;');
                     this.hydraulicsLayer.deleteEntity(entity);
+                    console.log('done from hydro;');
                     break;
                 default:
                     assertUnreachable(entity);
@@ -597,7 +636,9 @@ export default class DrawingCanvas extends Vue {
             }
         }
 
+        console.log('now calling global store');
         this.globalStore.delete(entity.uid);
+
     }
 
     onAddLevel(level: Level) {
@@ -605,7 +646,9 @@ export default class DrawingCanvas extends Vue {
         this.globalStore.resetLevel(
             level.uid,
             Object.values(level.entities),
+            this.document,
         );
+
     }
 
     onDeleteLevel(level: Level) {
@@ -630,8 +673,13 @@ export default class DrawingCanvas extends Vue {
             throw new Error('Can only delete objects from the global object store');
         }
         const toDelete = object.prepareDelete(this);
+        console.log('deleting a bunch: ' + JSON.stringify(toDelete.map((o) => o.uid)));
         const deleted = new Set<string>();
         toDelete.forEach((drawableObject) => {
+            if (drawableObject.entity === undefined) {
+                return;
+            }
+            const ouid = drawableObject.uid;
             if (deleted.has(drawableObject.uid)) {
                 return;
             }
@@ -639,7 +687,7 @@ export default class DrawingCanvas extends Vue {
                 entity: drawableObject.entity,
                 levelUid: this.globalStore.levelOfEntity.get(drawableObject.uid),
             });
-            deleted.add(drawableObject.uid);
+            deleted.add(ouid);
         });
         return deleted;
     }
@@ -694,11 +742,10 @@ export default class DrawingCanvas extends Vue {
     deleteSelected() {
         const deleted = new Set<string>();
         if (this.selectedEntities) {
-            this.selectedEntities.forEach((e) => {
+            this.selectedEntities.map((e) => e.uid).forEach((euid) => {
                 // Delete from the global store
-                const o = this.globalStore.get(e.uid)!;
-
-                if (!deleted.has(o.uid)) {
+                const o = this.globalStore.get(euid)!;
+                if (o) {
                     this.deleteEntity(o).forEach((uid) => {
                         deleted.add(uid);
                     });
@@ -873,6 +920,7 @@ export default class DrawingCanvas extends Vue {
     // For this to work, there is to be no local state at all. All state is to be stored in the vue store,
     // which is serialised by snapshots and operation transforms.
     draw() {
+        this.sanityCheckGlobalStore();
         this.lastDraw = Date.now();
         if (this.ctx != null && (this.$refs.canvasFrame as any) != null) {
             const ctx: CanvasRenderingContext2D = this.ctx;

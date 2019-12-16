@@ -21,10 +21,11 @@ export default class  HydraulicsLayer extends LayerImplementation {
     }
 
     resetDocument(doc: DocumentState) {
-        let entities: DrawableEntityConcrete[] = [];
+        let entities: Array<[DrawableEntityConcrete, string | null]> = [];
 
         if (doc.uiState.levelUid) {
-            entities = Object.values(doc.drawing.levels[doc.uiState.levelUid].entities);
+            entities = Object.values(doc.drawing.levels[doc.uiState.levelUid].entities).map((e) =>
+                [e, doc.uiState.levelUid]);
 
             const sortedLevels = Object.values(doc.drawing.levels).sort((a, b) =>
                 a.floorHeightM - b.floorHeightM);
@@ -32,14 +33,14 @@ export default class  HydraulicsLayer extends LayerImplementation {
             const risers = Object.values(doc.drawing.shared);
             risers.forEach((r) => {
                 if (levelIncludesRiser(doc.drawing.levels[doc.uiState.levelUid!], r, sortedLevels)) {
-                    entities.push(r);
+                    entities.push([r, null]);
                 }
             });
         }
 
         const thisIds = entities
-            .filter((e) => e.type !== EntityType.BACKGROUND_IMAGE)
-            .map((e) => e.uid);
+            .filter((e) => e[0].type !== EntityType.BACKGROUND_IMAGE)
+            .map((e) => e[0].uid);
 
         const removed = this.uidsInOrder.filter((v: string) => {
             if (thisIds.indexOf(v) !== -1) {
@@ -54,7 +55,7 @@ export default class  HydraulicsLayer extends LayerImplementation {
         });
 
         removed.forEach((v) => {
-
+            console.log('resetting in hydraulics and deleting ' + v);
             this.objectStore.delete(v);
             if (this.isSelected(v)) {
                 this.select([v], SelectMode.Exclude);
@@ -67,7 +68,7 @@ export default class  HydraulicsLayer extends LayerImplementation {
         // We have to create child objects from root to child with a tree.
         // Build tree.
         const adj: Map<string|null, string[]> = new Map<string|null, string[]>();
-        entities.forEach((entity) => {
+        entities.forEach(([entity, levelUid]) => {
             if (entity.type === EntityType.BACKGROUND_IMAGE) {
                 return;
             }
@@ -78,19 +79,15 @@ export default class  HydraulicsLayer extends LayerImplementation {
             }
 
             if (this.objectStore.get(entity.uid) !== undefined) {
-                // update existing object
-                const object = this.objectStore.get(entity.uid)!;
-                object.refreshObject(
-                    entity,
-                );
-
                 if (entity.type === EntityType.PIPE) {
-                    this.objectStore.updatePipeEndpoints(entity.uid, entity.endpointUid);
+                    this.objectStore.updatePipeEndpoints(entity.uid);
                 }
             } else {
                 DrawableObjectFactory.buildVisible(
                     this,
-                    entity,
+                    () => levelUid ?
+                        doc.drawing.levels[levelUid].entities[entity.uid] :
+                        doc.drawing.shared[entity.uid],
                     this.objectStore,
                     {
                         onSelected: (e) => this.onSelected(e, entity.uid),

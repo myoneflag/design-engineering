@@ -26,7 +26,7 @@ export default interface PipeEntity extends DrawableEntity {
     heightAboveFloorM: number;
 
     color: Color | null;
-    endpointUid: [string, string];
+    readonly endpointUid: readonly [string, string];
 }
 
 export function makePipeFields(materials: Choice[], systems: FlowSystemParameters[]): PropertyField[] {

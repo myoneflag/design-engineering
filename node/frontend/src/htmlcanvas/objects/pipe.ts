@@ -9,7 +9,7 @@ import {matrixScale} from '../../../src/htmlcanvas/utils';
 import Flatten from '@flatten-js/core';
 import {Draggable, DraggableObject} from '../../../src/htmlcanvas/lib/object-traits/draggable-object';
 import * as _ from 'lodash';
-import {canonizeAngleRad, cloneSimple, connect, disconnect, getPropertyByString, lighten} from '../../../src/lib/utils';
+import {canonizeAngleRad, cloneSimple, getPropertyByString, lighten} from '../../../src/lib/utils';
 import {Interaction, InteractionType} from '../../../src/htmlcanvas/lib/interaction';
 import {DrawingContext, GlobalStore} from '../../../src/htmlcanvas/lib/types';
 import DrawableObjectFactory from '../../../src/htmlcanvas/lib/drawable-object-factory';
@@ -344,17 +344,21 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             };
 
             if (this.entity.endpointUid[0] === epUid) {
-                this.objectStore.updatePipeEndpoints(this.entity.uid, [newValveUid, this.entity.endpointUid[1]]);
+
+                context.$store.dispatch('document/updatePipeEndpoints', {
+                    entity: this.entity,
+                    endpoints: [newValveUid, this.entity.endpointUid[1]],
+                });
             } else {
                 assert(this.entity.endpointUid[1] === epUid);
-                this.objectStore.updatePipeEndpoints(this.entity.uid, [this.entity.endpointUid[0], newValveUid]);
+                context.$store.dispatch('document/updatePipeEndpoints', {
+                    entity: this.entity,
+                    endpoints: [this.entity.endpointUid[0], newValveUid],
+                });
             }
 
             context.$store.dispatch('document/addEntity', pipe);
             context.$store.dispatch('document/addEntity', valve);
-
-            disconnect(context, e.uid, this.uid);
-            connect(context, e.uid, pipe.uid);
 
             return valve;
         } else {
@@ -467,15 +471,20 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         const result: BaseBackedObject[] = [this];
         const origEndpoints = cloneSimple(this.entity.endpointUid);
         if (this.objectStore instanceof GlobalStore) {
-            this.objectStore.updatePipeEndpoints(this.uid, [undefined, undefined]);
-        }
-        for (let i = 0; i < 2; i++) {
-            const a = this.objectStore.get(origEndpoints[i]);
-            if (a instanceof BackedConnectable) {
-                result.push(...a.prepareDeleteConnection(this.entity.uid, context));
-            } else {
-                throw new Error('endpoint non existent on pipe. non existing is ' + this.entity.endpointUid[0] + ' entity is ' + JSON.stringify(this.entity) + ' ' + JSON.stringify(a ? a.entity : undefined));
+            context.$store.dispatch('document/updatePipeEndpoints', {
+                entity: this.entity,
+                endpoints: [undefined, undefined],
+            });
+            for (let i = 0; i < 2; i++) {
+                const a = this.objectStore.get(origEndpoints[i]);
+                if (a instanceof BackedConnectable) {
+                    result.push(...a.prepareDeleteConnection(this.entity.uid, context));
+                } else {
+                    throw new Error('endpoint non existent on pipe. non existing is ' + JSON.stringify(a) + ' ' + JSON.stringify(origEndpoints) + ' entity is ' + JSON.stringify(this.entity) + ' ' + JSON.stringify(a ? a.entity : undefined));
+                }
             }
+        } else {
+            throw new Error('Can only delete with global store');
         }
         return result;
     }

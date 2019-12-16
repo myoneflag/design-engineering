@@ -37,7 +37,7 @@ export default interface Layer {
 
     isSelected(object: BaseBackedObject | string): boolean;
 
-    addEntity(entity: DrawableEntityConcrete): void;
+    addEntity(entity: () => DrawableEntityConcrete): void;
     deleteEntity(entity: DrawableEntityConcrete): void;
 
     offerInteraction(
@@ -172,6 +172,9 @@ export abstract class LayerImplementation implements Layer {
             const uid = this.uidsInOrder[i];
             if (this.objectStore.has(uid)) {
                 const object = this.objectStore.get(uid)!;
+                if (object.entity === undefined) {
+                    console.log('object is deleted but still in this layer ' + uid);
+                }
                 const objectCoord = object.toObjectCoord(interaction.worldCoord);
                 const objectLength = object.toObjectLength(interaction.worldRadius);
                 if (object.inBounds(objectCoord, objectLength)) {
@@ -274,26 +277,12 @@ export abstract class LayerImplementation implements Layer {
 
     dragObjects(objects: BaseBackedObject[], context: CanvasContext): void {
         context.isLayerDragging = true;
-        const undragged = this.draggedObjects ? this.draggedObjects
-            .filter((o) => objects.findIndex((oo) => oo.uid === o.uid) !== -1) : [];
-        undragged.forEach((o) => {
-            if (!this.uidsInOrder.includes(o.uid)) {
-                console.log('shouldnt be here');
-                this.objectStore.delete(o.uid);
-            }
-        });
+        this.objectStore.preserve(objects.map((o) => o.uid));
         this.draggedObjects = objects;
     }
 
     releaseDrag(context: CanvasContext): void {
-        if (this.draggedObjects) {
-            this.draggedObjects.forEach((o) => {
-                if (!this.uidsInOrder.includes(o.uid)) {
-                    console.log('shouldnt be here');
-                    this.objectStore.delete(o.uid);
-                }
-            });
-        }
+        this.objectStore.preserve([]);
         context.isLayerDragging = false;
         this.draggedObjects = null;
     }
@@ -425,15 +414,15 @@ export abstract class LayerImplementation implements Layer {
         this.onCommit(this.objectStore.get(grabState.toMoveUids[0])!.entity);
     }
 
-    addEntity(entity: DrawableEntityConcrete): void {
+    addEntity(entity: () => DrawableEntityConcrete): void {
         for (let i = 0; i <= this.uidsInOrder.length; i++) {
             const io = this.objectStore.get(this.uidsInOrder[i]);
 
             if (i === this.uidsInOrder.length ||
                 this.entitySortOrder(io!.entity) >=
-                this.entitySortOrder(entity)
+                this.entitySortOrder(entity())
             ) {
-                this.uidsInOrder.splice(i, 0, entity.uid);
+                this.uidsInOrder.splice(i, 0, entity().uid);
                 break;
             }
 
@@ -447,9 +436,9 @@ export abstract class LayerImplementation implements Layer {
             entity,
             this.objectStore,
             {
-                onSelected: (e) => this.onSelected(e, entity.uid),
+                onSelected: (e) => this.onSelected(e, entity().uid),
                 onChange: () => this.onChange(),
-                onCommit: (e) => this.onCommit(entity),
+                onCommit: (e) => this.onCommit(entity()),
             },
         );
     }
@@ -462,10 +451,8 @@ export abstract class LayerImplementation implements Layer {
             this.uidsInOrder.splice(ix, 1);
         }
 
-
-        if (!this.draggedObjects || this.draggedObjects.findIndex((o) => o.uid === entity.uid) === -1) {
-            this.objectStore.delete(entity.uid);
-        }
+        console.log('here');
+        this.objectStore.delete(entity.uid);
 
         if (this.selectedIds.includes(entity.uid)) {
             this.selectedIds.splice(this.selectedIds.indexOf(entity.uid), 1);

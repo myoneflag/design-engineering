@@ -350,7 +350,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 this.entity.sourceUid = uid;
             }
         } else {
-            throw new Error('shouldn\'t be extending here');
+            throw new Error('shouldn\'t be extending here. connections: ' + JSON.stringify(this.objectStore.getConnections(this.entity.uid)) + ' connecting ' + uid);
         }
     }
 

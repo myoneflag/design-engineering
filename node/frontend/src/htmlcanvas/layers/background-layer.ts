@@ -9,6 +9,7 @@ import {DrawingContext, ObjectStore} from '../../../src/htmlcanvas/lib/types';
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
 import {DrawableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
 import {EntityType} from "../../store/document/entities/types";
+import {BackgroundEntity} from "../../store/document/entities/background-entity";
 
 export default class BackgroundLayer extends LayerImplementation {
     resizeBox: ResizeControl | null = null;
@@ -53,7 +54,7 @@ export default class BackgroundLayer extends LayerImplementation {
         this.updateSelectionBox();
     }
 
-    addEntity(entity: DrawableEntityConcrete): void {
+    addEntity(entity: () => DrawableEntityConcrete): void {
         super.addEntity(entity);
     }
 
@@ -81,7 +82,10 @@ export default class BackgroundLayer extends LayerImplementation {
                 const obj: BackgroundImage = new BackgroundImage(
                     this.objectStore,
                     this,
-                    background,
+                    () => (doc.uiState.levelUid ?
+                        doc.drawing.levels[doc.uiState.levelUid].entities[entity.uid] :
+                        doc.drawing.shared[entity.uid])as
+                        BackgroundEntity,
                     (event) => {
                         this.select([background.uid], event.ctrlKey ? SelectMode.Toggle : SelectMode.Replace);
                         this.updateSelectionBox();
@@ -97,16 +101,6 @@ export default class BackgroundLayer extends LayerImplementation {
                 );
                 this.objectStore.set(background.uid, obj);
                 this.uidsInOrder.push(background.uid);
-            } else {
-                const obj = this.objectStore.get(background.uid)!;
-                if (obj instanceof BackgroundImage) {
-                    obj.refreshObject(background);
-                    if (this.isSelected(background.uid)) {
-                        this.onSelect();
-                    }
-                } else {
-                    throw new Error('Expected background object but got ' + JSON.stringify(background));
-                }
             }
 
             existingSids.push(background.uid);

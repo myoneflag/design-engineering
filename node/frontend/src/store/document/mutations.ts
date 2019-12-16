@@ -9,6 +9,7 @@ import {DrawableEntityConcrete} from '../../../src/store/document/entities/concr
 import {EntityType} from '../../../src/store/document/entities/types';
 import stringify from "json-stable-stringify";
 import Vue from 'vue';
+import PipeEntity from "./entities/pipe-entity";
 
 export const mutations: MutationTree<DocumentState> = {
     /**
@@ -80,6 +81,7 @@ export const mutations: MutationTree<DocumentState> = {
     },
 
     revert(state, redraw) {
+        console.log('revert');
         // TODO: emit a reset-level for every changed level. At the moment, we are just resetting current visible
         // level. This is to allow global state to save state.
         state.drawing = cloneSimple(state.committedDrawing);
@@ -104,6 +106,7 @@ export const mutations: MutationTree<DocumentState> = {
     },
 
     addEntity(state, entity: DrawableEntityConcrete) {
+        console.log('add entity: ' + entity.uid + ' ' + entity.type);
         if (entity.type === EntityType.RISER) {
             Vue.set(state.drawing.shared, entity.uid, entity);
             MainEventBus.$emit('add-entity', {entity, levelUid: null});
@@ -118,6 +121,7 @@ export const mutations: MutationTree<DocumentState> = {
     },
 
     deleteEntity(state, entity) {
+        console.log('mutation: deleting ' + entity.uid);
         if (entity.type === EntityType.RISER) {
             if (entity.uid in state.drawing.shared) {
                 Vue.delete(state.drawing.shared, entity.uid);
@@ -169,5 +173,11 @@ export const mutations: MutationTree<DocumentState> = {
         state.uiState.levelUid = levelUid;
         MainEventBus.$emit('current-level-changed');
     },
+
+    updatePipeEndpoints(state, {entity, endpoints}: {entity: PipeEntity, endpoints: [string, string]}) {
+        (entity.endpointUid as [string, string])[0] = endpoints[0];
+        (entity.endpointUid as [string, string])[1] = endpoints[1];
+        MainEventBus.$emit('update-pipe-endpoints', {entity, endpoints});
+    }
 };
 

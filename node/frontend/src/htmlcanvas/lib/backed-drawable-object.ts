@@ -14,13 +14,12 @@ export default abstract class BackedDrawableObject<T extends DrawableEntityConcr
     constructor(
         objectStore: ObjectStore,
         layer: Layer,
-        obj: T,
+        obj: () => T,
         onSelect: (event: MouseEvent | KeyboardEvent) => void,
         onChange: () => void,
         onCommit: (event: MouseEvent | KeyboardEvent) => void,
     ) {
         super(objectStore, layer, obj, onSelect, onChange, onCommit);
-        this.entity = obj; // to keep error checking happy
     }
 
     // Unfortunately, typescript does not allow abstract static methods. So this is just a human reminder
@@ -32,7 +31,7 @@ export default abstract class BackedDrawableObject<T extends DrawableEntityConcr
 export type BaseBackedConstructor = new (
     objectStore: ObjectStore,
     layer: Layer,
-    obj: DrawableEntity,
+    obj: () => DrawableEntity,
     onSelect: (event: MouseEvent | KeyboardEvent) => void,
     onChange: () => void,
     onCommit: (event: MouseEvent | KeyboardEvent) => void,
@@ -41,7 +40,7 @@ export type BaseBackedConstructor = new (
 export type BackedObjectConstructor<T extends DrawableEntityConcrete> = new (
     objectStore: ObjectStore,
     layer: Layer,
-    obj: T,
+    obj: () => T,
     onSelect: (event: MouseEvent | KeyboardEvent) => void,
     onChange: () => void,
     onCommit: (event: MouseEvent | KeyboardEvent) => void,

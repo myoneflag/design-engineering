@@ -50,8 +50,6 @@ export function addValveAndSplitPipe(
         context.$store.dispatch('document/addEntity', newValve);
     } else {
         const nvo = context.objectStore.get(newValve.uid) as BackedConnectable<ConnectableEntityConcrete>;
-        nvo.connect(pipe1uid);
-        nvo.connect(pipe2uid);
 
         newValve.center = hoverWc;
         newValve.parentUid = null;
@@ -84,11 +82,11 @@ export function addValveAndSplitPipe(
         type: EntityType.PIPE,
         uid: pipe2uid,
     };
+    const puid = pipe.uid;
+    context.$store.dispatch('document/deleteEntity', pipe.entity);
     context.$store.dispatch('document/addEntity', newPipe1);
     context.$store.dispatch('document/addEntity', newPipe2);
 
-    const newPipes = [newPipe1, newPipe2];
-    context.$store.dispatch('document/deleteEntity', pipe);
     created.push(newPipe1, newPipe2);
 
     if (wasInteractive) {
@@ -96,7 +94,7 @@ export function addValveAndSplitPipe(
     }
 
     return {
-        deleted: [pipe.uid],
+        deleted: [puid],
         created,
         focus: newValve,
     };

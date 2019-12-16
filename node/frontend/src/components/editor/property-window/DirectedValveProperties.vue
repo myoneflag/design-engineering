@@ -8,7 +8,11 @@ import {ValveType} from "../../../../src/store/document/entities/directed-valves
         </b-row>
         <b-row style="margin-top: 10px;">
             <b-col>
-                <b-button variant="primary" @click="flip" :disabled="selectedEntity.connections.length === 0">
+                <b-button
+                        variant="primary"
+                        @click="flip"
+                        :disabled="objectStore.getConnections(selectedObject.uid).length === 0"
+                >
                     Flip Direction
                 </b-button>
             </b-col>

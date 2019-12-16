@@ -166,7 +166,9 @@ export function ConnectableObject<T extends new (...args: any[])
                     if (pipeObject.worldEndpoints(this.uid).length > 1) {
                         throw new Error('pipe object we are connected to doesn\'t connect to us: \n' +
                             JSON.stringify(pipeObject.entity.endpointUid) + ' ' + pipeObject.uid + '\n' +
-                            JSON.stringify(this.objectStore.getConnections(this.entity.uid)) + ' ' + this.uid);
+                            JSON.stringify(this.objectStore.getConnections(this.entity.uid)) + ' \n' +
+                            JSON.stringify(this.objectStore.get(this.uid)!.entity),
+                        );
                     }
 
                     if (other) {

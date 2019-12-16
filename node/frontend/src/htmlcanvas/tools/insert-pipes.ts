@@ -18,7 +18,6 @@ import {isConnectable} from '../../../src/store/document';
 import {SelectMode} from '../../../src/htmlcanvas/layers/layer';
 import {KeyCode} from '../../../src/htmlcanvas/utils';
 import BackedConnectable from '../../../src/htmlcanvas/lib/BackedConnectable';
-import {connect} from '../../../src/lib/utils';
 import Vue from 'vue';
 import {rebaseAll} from "../lib/black-magic/rebase-all";
 
@@ -156,25 +155,6 @@ function insertPipeChain(
             context.$store.dispatch('document/revert', false);
 
             // create pipe
-            const pipe: PipeEntity = {
-                color: null,
-                diameterMM: null,
-                lengthM: null,
-                endpointUid: [lastAttachment.uid, lastAttachment.uid],
-                heightAboveFloorM: heightM,
-                material: null,
-                maximumVelocityMS: null,
-                parentUid: null,
-                systemUid: system.uid,
-                type: EntityType.PIPE,
-                uid: pipeUid,
-            };
-            newPipe = pipe;
-
-            context.$store.dispatch('document/addEntity', pipe);
-
-            connect(context, lastAttachment.uid, pipe.uid);
-
             // maybe we drew onto an existing node.
 
             const interactive = context.offerInteraction(
@@ -187,7 +167,7 @@ function insertPipeChain(
                     worldCoord: wc,
                 },
                 // the current pipe is in an invalid state so don't include that.
-                (g) => g[0].uid !== pipe.uid && g[0].uid !== lastAttachment.uid,
+                (g) => g[0].uid !== pipeUid && g[0].uid !== lastAttachment.uid,
                 ([obj]) => {
                     if (obj.type === EntityType.PIPE) {
                         return 0;
@@ -203,13 +183,11 @@ function insertPipeChain(
                         context,
                         context.objectStore.get(interactive[0].uid) as Pipe,
                         wc,
-                        pipe.systemUid,
+                        system.uid,
                         30,
                     ).focus as ConnectableEntityConcrete;
-                    connect(context, nextEntity.uid, pipe.uid);
                 } else if (isConnectable(interactive[0].type)) {
                     nextEntity = interactive[0] as ConnectableEntityConcrete;
-                    connect(context, nextEntity.uid, pipeUid);
                     context.hydraulicsLayer.select([context.objectStore.get(interactive[0].uid)!], SelectMode.Replace);
 
                 } else {
@@ -267,7 +245,22 @@ function insertPipeChain(
                 context.objectStore.get(nextEntity.uid)!.rebase(context);
             }
 
-            context.objectStore.updatePipeEndpoints(pipe.uid, [pipe.endpointUid[0], nextEntity.uid]);
+            const pipe: PipeEntity = {
+                color: null,
+                diameterMM: null,
+                lengthM: null,
+                endpointUid: [lastAttachment.uid, nextEntity.uid],
+                heightAboveFloorM: heightM,
+                material: null,
+                maximumVelocityMS: null,
+                parentUid: null,
+                systemUid: system.uid,
+                type: EntityType.PIPE,
+                uid: pipeUid,
+            };
+            newPipe = pipe;
+
+            context.$store.dispatch('document/addEntity', pipe);
 
             context.scheduleDraw();
         },

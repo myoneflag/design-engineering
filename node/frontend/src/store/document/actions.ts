@@ -93,4 +93,8 @@ export const actions: ActionTree<DocumentState, RootState> = {
     loaded({commit, state}, loaded) {
         commit('loaded', loaded);
     },
+
+    updatePipeEndpoints({commit, state}, params) {
+        commit('updatePipeEndpoints', params);
+    }
 };

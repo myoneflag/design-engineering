@@ -55,6 +55,7 @@ import RiserCalculations, {emptyRiserCalculations} from '../store/document/calcu
 import DirectedValveCalculation, {emptyDirectedValveCalculation} from '../../src/store/document/calculations/directed-valve-calculation';
 import SystemNodeCalculation, {emptySystemNodeCalculation} from '../../src/store/document/calculations/system-node-calculation';
 import {StandardFlowSystemUids} from '../../src/store/catalog';
+import {isCalculated} from "../store/document/calculations";
 
 export const SELF_CONNECTION = 'SELF_CONNECTION';
 
@@ -101,6 +102,11 @@ export default class CalculationEngine {
 
     clearCalculations() {
         this.globalStore.clearCalculations();
+        this.globalStore.forEach((v) => {
+            if (isCalculated(v.entity)) {
+                this.globalStore.getOrCreateCalculation(v.entity);
+            }
+        });
     }
 
     preValidate(): boolean {
@@ -172,7 +178,7 @@ export default class CalculationEngine {
                 .filter((o) => o.type === EntityType.RISER)
                 .map((o) => ({connectable: o.uid, connection: SELF_CONNECTION}));
             this.sizeDefiniteTransports(sources);
-            this.sizeRingsAndRoots(sources);
+            //this.sizeRingsAndRoots(sources);
             this.calculateAllPointPressures(sources);
             this.fillPressureDropFields();
             this.createWarnings();
@@ -345,7 +351,7 @@ export default class CalculationEngine {
                 switch (edge.value.type) {
                     case EdgeType.PIPE:
                         if (obj instanceof Pipe) {
-                            const calculation = this.globalStore.getCalculation(obj.entity);
+                            const calculation = this.globalStore.getOrCreateCalculation(obj.entity);
                             if (!calculation || calculation.pressureDropKpa === null) {
                                 return Infinity;
                             }
@@ -357,7 +363,7 @@ export default class CalculationEngine {
                     case EdgeType.TMV_COLD_WARM:
                     case EdgeType.TMV_COLD_COLD: {
                         if (obj instanceof Tmv) {
-                            const calculation = this.globalStore.getCalculation(obj.entity);
+                            const calculation = this.globalStore.getOrCreateCalculation(obj.entity);
                             if (!calculation) {
                                 return Infinity;
                             }
@@ -408,15 +414,15 @@ export default class CalculationEngine {
                         if (!sourcePipe || sourcePipe.type !== EntityType.PIPE) {
                             const destPipe = this.globalStore.get(flowTo.connection) as Pipe;
                             if (destPipe && destPipe.entity.type === EntityType.PIPE) {
-                                const pipeCalc = this.globalStore.getCalculation(destPipe.entity);
+                                const pipeCalc = this.globalStore.getOrCreateCalculation(destPipe.entity);
                                 dist = pipeCalc!.peakFlowRate!;
                             } else {
                                 // no flow
                                 throw new Error('can\'t find any flow on this edge');
                             }
                         } else {
-                            const srcCalc = this.globalStore.getCalculation(sourcePipe.entity);
-                            dist = srcCalc!.peakFlowRate!;
+                            const srcCalc = this.globalStore.getOrCreateCalculation(sourcePipe.entity);
+                            dist = srcCalc.peakFlowRate!;
                         }
                         const systemUid = determineConnectableSystemUid(
                             this.globalStore,
@@ -707,7 +713,7 @@ export default class CalculationEngine {
             }
             const pipeObj = this.globalStore.get(e.value.uid)!;
             if (pipeObj instanceof Pipe) {
-                let calculation = this.globalStore.getCalculation(pipeObj.entity);
+                let calculation = this.globalStore.getOrCreateCalculation(pipeObj.entity);
                 if (calculation === undefined) {
                     calculation = this.globalStore.getOrCreateCalculation(pipeObj.entity);
                     const filled = fillPipeDefaultFields(this.doc.drawing, pipeObj.computedLengthM, pipeObj.entity);
@@ -1021,7 +1027,7 @@ export default class CalculationEngine {
 
     getBiggestPipe(pipe: PipeEntity): PipeSpec | null {
 
-        const calculation = this.globalStore.getCalculation(pipe);
+        const calculation = this.globalStore.getOrCreateCalculation(pipe);
         const pipeFilled = fillPipeDefaultFields(this.doc.drawing, 0, pipe);
         const table = this.catalog.pipes[pipeFilled.material!];
 
@@ -1079,7 +1085,7 @@ export default class CalculationEngine {
                         roots,
                         totalReachedPsdU,
                         {type: EdgeType.PIPE, uid: object.uid},
-                        object.entity.endpointUid,
+                        [object.entity.endpointUid[0], object.entity.endpointUid[1]],
                     );
                     break;
                 case EntityType.BACKGROUND_IMAGE:
@@ -1204,7 +1210,7 @@ export default class CalculationEngine {
                 case EntityType.RISER:
                 case EntityType.DIRECTED_VALVE:
                 case EntityType.SYSTEM_NODE:
-                    const calculation = this.globalStore.getCalculation(o.entity) as
+                    const calculation = this.globalStore.getOrCreateCalculation(o.entity) as
                         FittingCalculation | RiserCalculations | SystemNodeCalculation | DirectedValveCalculation;
                     const connections = this.globalStore.getConnections(o.entity.uid);
 
@@ -1212,8 +1218,8 @@ export default class CalculationEngine {
                         const p1 = this.globalStore.get(connections[0])!;
                         const p2 = this.globalStore.get(connections[1])!;
                         if (p1 instanceof Pipe && p2 instanceof Pipe) {
-                            const pipeCalc1 = this.globalStore.getCalculation(p1.entity);
-                            const pipeCalc2 = this.globalStore.getCalculation(p2.entity);
+                            const pipeCalc1 = this.globalStore.getOrCreateCalculation(p1.entity);
+                            const pipeCalc2 = this.globalStore.getOrCreateCalculation(p2.entity);
                             if (pipeCalc1!.peakFlowRate !== null &&
                                 pipeCalc2!.peakFlowRate !== null) {
 

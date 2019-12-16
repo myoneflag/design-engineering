@@ -15,7 +15,7 @@ import BackedConnectable from "./BackedConnectable";
 import PipeEntity from "../../store/document/entities/pipe-entity";
 import DrawableObjectFactory from "./drawable-object-factory";
 import PipeCalculation, {emptyPipeCalculation} from "../../store/document/calculations/pipe-calculation";
-import RiserCalculations, {emptyRiserCalculations, makeRiserCalculationFields} from "../../store/document/calculations/riser-calculations";
+import RiserCalculations, {emptyRiserCalculations} from "../../store/document/calculations/riser-calculations";
 import TmvCalculation, {emptyTmvCalculation} from "../../store/document/calculations/tmv-calculation";
 import FixtureCalculation, {emptyFixtureCalculation} from "../../store/document/calculations/fixture-calculation";
 import FittingCalculation, {emptyFittingCalculation} from "../../store/document/calculations/fitting-calculation";
@@ -26,6 +26,9 @@ import TmvEntity, {SystemNodeEntity} from "../../store/document/entities/tmv/tmv
 import FittingEntity from "../../store/document/entities/fitting-entity";
 import FixtureEntity from "../../store/document/entities/fixtures/fixture-entity";
 import DirectedValveEntity from "../../store/document/entities/directed-valves/directed-valve-entity";
+import Pipe from "../objects/pipe";
+import { util } from 'chai';
+import {cloneSimple} from "../../lib/utils";
 
 export interface DrawingContext {
     ctx: CanvasRenderingContext2D;
@@ -40,8 +43,10 @@ export interface DrawingContext {
 // record visible objects only.
 export class ObjectStore extends Map<string, BaseBackedObject> {
     vm: Vue;
-    private connections = new Map<string, string[]>();
-    private oldEndpoints = new Map<string, [string, string]>();
+    protected connections = new Map<string, string[]>();
+    protected oldEndpoints = new Map<string, [string, string]>();
+    protected graveyard = new Map<string, BaseBackedObject>();
+    protected preserveList = new Set<string>();
 
     constructor(vm: Vue) {
         super();
@@ -55,11 +60,15 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
     get(key: string) {
         const res = super.get(key);
         //console.log('getting ' + key + ' result ' + JSON.stringify(res ? res.entity : res));
-        return res;
+        if (res) {
+            return res;
+        }
+        return this.graveyard.get(key);
     }
 
-    private detachEndpoints(entity: PipeEntity) {
-        this.oldEndpoints.get(entity.uid)!.forEach((oldVal) => {
+    private detatchOldEndpoints(uid: string) {
+        console.log('deleting connection ' + uid + ' from connectables ' + JSON.stringify(this.oldEndpoints.get(uid)));
+        this.oldEndpoints.get(uid)!.forEach((oldVal) => {
             if (oldVal === undefined) {
                 return;
             }
@@ -67,16 +76,17 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
             if (!arr) {
                 throw new Error('old value didn\'t register a connectable. ' + oldVal);
             }
-            const ix = arr.indexOf(entity.uid);
+            const ix = arr.indexOf(uid);
             if (ix === -1) {
                 throw new Error('connections are in an invalid state');
             }
             arr.splice(ix, 1);
         });
-        this.oldEndpoints.delete(entity.uid);
+        this.oldEndpoints.delete(uid);
     }
 
     private attachEndpoints(entity: PipeEntity) {
+        console.log('adding connection ' + entity.uid + ' connectablse ' + JSON.stringify(entity.endpointUid));
         entity.endpointUid.forEach((newVal) => {
             if (newVal === undefined) {
                 return;
@@ -93,10 +103,24 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
     }
 
 
+    preserve(uids: string[]) {
+        this.preserveList = new Set<string>(uids);
+        this.graveyard.forEach((o, k) => {
+            if (!this.preserveList.has(k)) {
+                this.graveyard.delete(k);
+            }
+        })
+    }
+
     delete(key: string) {
         const val = this.get(key);
-        if (val && val.entity.type === EntityType.PIPE) {
-            this.detachEndpoints(val.entity);
+
+        if (this.oldEndpoints.has(key)) {
+            this.detatchOldEndpoints(key);
+        }
+
+        if (this.preserveList.has(key) && val) {
+            this.graveyard.set(key, val);
         }
 
         return super.delete(key);
@@ -109,11 +133,12 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
         if (this.has(key)) {
             const val = this.get(key);
             if (val && val.entity.type === EntityType.PIPE) {
-                this.detachEndpoints(val.entity);
+                this.detatchOldEndpoints(key);
             }
         }
 
         if (value.entity.type === EntityType.PIPE) {
+            console.log(JSON.stringify(value.entity.endpointUid));
             this.attachEndpoints(value.entity);
         }
 
@@ -122,11 +147,9 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
     }
 
     // undefined values only for deleting values. So hacky but we need to hack now.
-    updatePipeEndpoints(key: string, endpoints: [string | undefined, string | undefined]) {
-
+    updatePipeEndpoints(key: string) {
         const e = this.get(key)!.entity as PipeEntity;
-        this.detachEndpoints(e);
-        e.endpointUid.splice(0, 2, ...(endpoints as [string, string]));
+        this.detatchOldEndpoints(key);
         this.attachEndpoints(e);
     }
 }
@@ -137,6 +160,7 @@ export class GlobalStore extends ObjectStore {
     levelOfEntity = new Map<string, string | null>();
 
     set(key: string, value: BaseBackedObject, levelUid?: string | null): this {
+        console.log('global store setting ' + key);
         if (levelUid === undefined) {
             throw new Error('Need a level to set in global store.');
         }
@@ -148,20 +172,16 @@ export class GlobalStore extends ObjectStore {
         return super.set(key, value);
     }
 
-    store(value: DrawableEntityConcrete, levelUid: string): this {
-        const o = DrawableObjectFactory.buildGhost(value, this, levelUid);
-        // this.set(e.uid, o, levelUid); Already done by buildGhost
-        return this;
-    }
-
     delete(key: string): boolean {
+        console.log('global store deleting ' + key);
         const lvl = this.levelOfEntity.get(key)!;
         this.levelOfEntity.delete(key);
         this.entitiesInLevel.get(lvl)!.delete(key);
         return super.delete(key);
     }
 
-    resetLevel(levelUid: string | null, entities: DrawableEntityConcrete[]) {
+    resetLevel(levelUid: string | null, entities: DrawableEntityConcrete[], doc: DocumentState) {
+        console.log('globally resetting level');
         let inLevelNow = new Set<string>();
         if (this.entitiesInLevel.has(levelUid)) {
             inLevelNow = new Set(this.entitiesInLevel.get(levelUid)!);
@@ -178,7 +198,11 @@ export class GlobalStore extends ObjectStore {
         // add new ones
         entities.forEach((e) => {
             if (!inLevelNow.has(e.uid)) {
-                const o = DrawableObjectFactory.buildGhost(e, this, levelUid);
+                const o = DrawableObjectFactory.buildGhost(
+                    () => levelUid ? doc.drawing.levels[levelUid].entities[e.uid] : doc.drawing.shared[e.uid],
+                    this,
+                    levelUid,
+                );
                 // this.set(e.uid, o, levelUid); Already done by buildGhost
             }
         });
@@ -187,18 +211,20 @@ export class GlobalStore extends ObjectStore {
         entities.forEach((e) => {
             if (inLevelNow.has(e.uid)) {
                 if (e.type === EntityType.PIPE) {
-                    this.updatePipeEndpoints(e.uid, e.endpointUid);
+                    this.updatePipeEndpoints(e.uid);
                 }
             }
         });
+        console.log('global done resetting level');
     }
 
     onLevelDelete(levelUid: string) {
         if (this.entitiesInLevel.get(levelUid)) {
             this.entitiesInLevel.get(levelUid)!.forEach((euid) => {
                 this.delete(euid);
-            })
+            });
         }
+        this.entitiesInLevel.delete(levelUid);
     }
 
     calculationStore = new Map<string, CalculationConcrete>();
@@ -261,7 +287,109 @@ export class GlobalStore extends ObjectStore {
         const k = this.getOrCreateCalculation(p);
 
     }
+
+    lastDoc: DocumentState | undefined = undefined;
+
+    sanityCheck(doc: DocumentState) {
+        if (this.lastDoc !== undefined && doc !== this.lastDoc) {
+            throw new Error('Document changed');
+        }
+        this.lastDoc = doc;
+
+        console.log('checking');
+        // test that there is an exact bijection from document to things.
+
+        // 1. Everything in doc must be in us.
+        Object.values(doc.drawing.levels).forEach((l) => {
+            Object.values(l.entities).forEach((e) => {
+                if (!this.has(e.uid)) {
+                    throw new Error('entity in document ' + JSON.stringify(e) + ' not found here');
+                }
+
+                if (this.get(e.uid)!.entity !== e) {
+                    throw new Error('entity in document ' + JSON.stringify(e) + ' not in sync with us ' +
+                        JSON.stringify(this.get(e.uid)!.entity));
+                }
+            })
+        });
+
+        Object.values(doc.drawing.shared).forEach((e) => {
+            if (!this.has(e.uid)) {
+                throw new Error('entity in document ' + JSON.stringify(e) + ' not found here');
+            }
+
+            if (this.get(e.uid)!.entity !== e) {
+                throw new Error('entity in document ' + JSON.stringify(e) + ' not in sync with us ' +
+                    JSON.stringify(this.get(e.uid)!.entity));
+            }
+        });
+
+        // 2. Everything in us must be in doc.
+        this.forEach((o, k) => {
+            if (o.entity === undefined) {
+                throw new Error('object ' + k + ' is deleted in document but still here');
+            }
+            const lvlUid = this.levelOfEntity.get(o.entity.uid)!;
+
+            if (lvlUid === null) {
+                if (!(o.entity.uid in doc.drawing.shared)) {
+                    throw new Error('Entity ' + JSON.stringify(o.entity) + ' not in document');
+                }
+            } else {
+                if (!(lvlUid in doc.drawing.levels)) {
+                    throw new Error('Level we have ' + lvlUid + ' doesn\'t exist on document');
+                }
+
+
+                if (!(o.entity.uid in doc.drawing.levels[lvlUid].entities)) {
+                    throw new Error('Entity ' + JSON.stringify(o.entity) + ' not in document');
+                }
+            }
+        });
+
+        this.entitiesInLevel.forEach((es, lvlUid) => {
+            if (lvlUid === null) {
+                return;
+            }
+
+            if (!(lvlUid in doc.drawing.levels)) {
+                throw new Error('Level we have ' + lvlUid + ' doesn\'t exist on document');
+            }
+
+
+            es.forEach((e) => {
+                if (!(e in doc.drawing.levels[lvlUid].entities)) {
+                    throw new Error('Entity ' + e + ' not in document');
+                }
+            });
+        });
+
+        // 3. Connections must be accurate
+        this.connections.forEach((cons, euid) => {
+            cons.forEach((c) => {
+                const p = this.get(c) as Pipe;
+                if (!p.entity.endpointUid.includes(euid)) {
+                    const co = this.get(euid);
+                    throw new Error('connection inconsistency in connectable ' + JSON.stringify(co ? co.entity : undefined) + ' to pipe ' + JSON.stringify(p.entity));
+                }
+            });
+        });
+
+        this.forEach((o) => {
+            if (o.entity.type === EntityType.PIPE) {
+                o.entity.endpointUid.forEach((euid) => {
+                    if (!this.connections.get(euid)) {
+                        throw new Error('connection ' + euid + ' on pipe ' + JSON.stringify(o.entity) + ' is not found');
+                    }
+                    if (!this.connections.get(euid)!.includes(o.entity.uid)) {
+                        throw new Error('connection inconsistency in pipe ' + JSON.stringify(o.entity) + ' to connectable ' + euid + ' with connections ' + JSON.stringify(this.connections.get(euid)));
+                    }
+                })
+            }
+        });
+    }
 }
+
 
 export interface SelectionTarget {
     uid: string | null;

@@ -25,12 +25,12 @@ export default class DrawableObjectFactory {
     // Use this if you just need an object instance for calculations, for example.
     static buildVisible<T extends EntityType>(
         layer: Layer,
-        entity: DrawableEntity & {type: T},
+        entity: () => DrawableEntity & {type: T},
         objectStore: ObjectStore,
         handlers: Handlers,
     ) {
 
-        const GenericDrawable = this.constructors.get(entity.type);
+        const GenericDrawable = this.constructors.get(entity().type);
         if (GenericDrawable) {
             const object: BaseBackedObject = new GenericDrawable(
                 objectStore,
@@ -40,15 +40,15 @@ export default class DrawableObjectFactory {
                 handlers.onChange,
                 (e) => handlers.onCommit(e),
             );
-            objectStore.set(entity.uid, object);
+            objectStore.set(entity().uid, object);
             return object;
         } else {
             throw new Error('request to build unknown entity: ' + JSON.stringify(entity));
         }
     }
 
-    static buildGhost(entity: DrawableEntityConcrete, global: GlobalStore, levelUid: string | null) {
-        const GenericDrawable = this.constructors.get(entity.type);
+    static buildGhost(entity: () => DrawableEntityConcrete, global: GlobalStore, levelUid: string | null) {
+        const GenericDrawable = this.constructors.get(entity().type);
         if (GenericDrawable) {
             const object: BaseBackedObject = new GenericDrawable(
                 global,
@@ -58,7 +58,7 @@ export default class DrawableObjectFactory {
                 () => {},
                 () => {},
             );
-            global.set(entity.uid, object, levelUid);
+            global.set(entity().uid, object, levelUid);
             return object;
         } else {
             throw new Error('request to build unknown entity: ' + JSON.stringify(entity));

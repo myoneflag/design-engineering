@@ -25,7 +25,6 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
     abstract dragPriority: number;
 
     prepareDeleteConnection(uid: string, context: CanvasContext): BaseBackedObject[] {
-        this.disconnect(uid);
         if (this.objectStore.getConnections(this.entity.uid).length < this.minimumConnections) {
             return this.prepareDelete(context);
         } else {

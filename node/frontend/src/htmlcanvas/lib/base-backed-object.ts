@@ -16,7 +16,7 @@ import {CalculationData, CalculationField} from '../../../src/store/document/cal
 import * as TM from "transformation-matrix";
 
 export default abstract class BaseBackedObject extends DrawableObject {
-    entity: DrawableEntityConcrete;
+    entityBacked: () => DrawableEntityConcrete;
     objectStore: ObjectStore;
 
     protected onSelect: (event: MouseEvent | KeyboardEvent) => void;
@@ -26,18 +26,17 @@ export default abstract class BaseBackedObject extends DrawableObject {
     protected constructor(
         objectStore: ObjectStore,
         layer: Layer,
-        obj: DrawableEntityConcrete,
+        obj: () => DrawableEntityConcrete,
         onSelect: (event: MouseEvent | KeyboardEvent) => void,
         onChange: () => void,
         onCommit: (event: MouseEvent | KeyboardEvent) => void,
     ) {
         super(null, layer);
-        this.entity = obj;
+        this.entityBacked = obj;
         this.onSelect = onSelect;
         this.onChange = onChange;
         this.onCommit = onCommit;
         this.objectStore = objectStore;
-        this.refreshObjectInternal(obj);
     }
 
     get parent() {
@@ -53,13 +52,9 @@ export default abstract class BaseBackedObject extends DrawableObject {
         }
     }
 
-    refreshObject(obj: DrawableEntityConcrete) {
-        const old = this.entity;
-        this.entity = obj;
-        this.refreshObjectInternal(obj, old);
+    get entity() {
+        return this.entityBacked();
     }
-
-
 
     drawCalculationBox(
         context: DrawingContext,

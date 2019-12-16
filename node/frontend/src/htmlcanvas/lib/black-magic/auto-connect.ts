@@ -1,7 +1,6 @@
 import BaseBackedObject from '../../../../src/htmlcanvas/lib/base-backed-object';
 import CanvasContext from '../../../../src/htmlcanvas/lib/canvas-context';
 import {EntityType} from '../../../../src/store/document/entities/types';
-import {connect} from '../../../../src/lib/utils';
 import {getConnectedFlowComponent} from '../../../../src/htmlcanvas/lib/black-magic/utils';
 import UnionFind from '../../../../src/calculations/union-find';
 import {ConnectableEntityConcrete, DrawableEntityConcrete} from '../../../../src/store/document/entities/concrete-entity';
@@ -775,9 +774,6 @@ export class AutoConnector {
             type: EntityType.PIPE,
             uid: uuid(),
         };
-
-        connect(this.context, a.uid, p.uid);
-        connect(this.context, b.uid, p.uid);
 
         this.context.$store.dispatch('document/addEntity', p);
     }

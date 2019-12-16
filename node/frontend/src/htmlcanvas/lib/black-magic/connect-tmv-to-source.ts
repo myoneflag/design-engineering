@@ -13,7 +13,6 @@ import {addValveAndSplitPipe} from '../../../../src/htmlcanvas/lib/black-magic/s
 import FittingEntity from '../../../../src/store/document/entities/fitting-entity';
 import {isConnectable} from '../../../../src/store/document';
 import uuid from 'uuid';
-import {connect} from '../../../../src/lib/utils';
 import {InteractionType} from '../../../../src/htmlcanvas/lib/interaction';
 import {FlowConfiguration} from '../../../../src/store/document/entities/tmv/tmv-entity';
 
@@ -149,8 +148,6 @@ function leadPipe(
     };
 
     context.$store.dispatch('document/addEntity', newPipe);
-    connect(context, valve.uid, newPipe.uid);
-    connect(context, connectTo.uid, newPipe.uid);
     return newPipe;
 
 }

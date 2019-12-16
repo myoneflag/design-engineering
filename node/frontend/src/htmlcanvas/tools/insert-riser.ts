@@ -12,7 +12,7 @@ import Pipe from '../../../src/htmlcanvas/objects/pipe';
 import BackedDrawableObject from '../../../src/htmlcanvas/lib/backed-drawable-object';
 import {ConnectableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
 import {addValveAndSplitPipe} from '../../../src/htmlcanvas/lib/black-magic/split-pipe';
-import {cloneSimple, connect, disconnect} from '../../../src/lib/utils';
+import {cloneSimple} from '../../../src/lib/utils';
 import {rebaseAll} from '../../../src/htmlcanvas/lib/black-magic/rebase-all';
 
 export default function insertRiser(
@@ -80,15 +80,15 @@ export default function insertRiser(
                             const other = context.objectStore.get(e);
                             if (other instanceof Pipe) {
                                 if (other.entity.endpointUid[0] === entity.uid) {
-                                    context.objectStore.updatePipeEndpoints(
-                                        other.entity.uid,
-                                        [newUid, other.entity.endpointUid[1]],
-                                    );
+                                    context.$store.dispatch('document/updatePipeEndpoints', {
+                                        entity: other.entity,
+                                        endpoints: [newUid, other.entity.endpointUid[1]],
+                                    });
                                 } else {
-                                    context.objectStore.updatePipeEndpoints(
-                                        other.entity.uid,
-                                        [other.entity.endpointUid[0], newUid],
-                                    );
+                                    context.$store.dispatch('document/updatePipeEndpoints', {
+                                        entity: other.entity,
+                                        endpoints: [other.entity.endpointUid[0], newUid],
+                                    });
                                 }
                             } else {
                                 throw new Error('Connection is not a pipe');
@@ -96,15 +96,6 @@ export default function insertRiser(
                         });
 
                         toReplace = object as BackedDrawableObject<ConnectableEntityConcrete>;
-                        context.objectStore.getConnections(newEntity.uid).slice().forEach((c) => {
-                            disconnect(context, newEntity.uid, c);
-                        });
-                        context.objectStore.getConnections(toReplace.entity.uid).forEach((c) => {
-                            connect(context, newEntity.uid, c);
-                        });
-                        context.objectStore.getConnections(toReplace.entity.uid).slice().forEach((c) => {
-                            disconnect(context, toReplace!.uid, c);
-                        });
                         newEntity.center = toReplace.entity.center;
                         context.deleteEntity(toReplace);
 
@@ -114,7 +105,7 @@ export default function insertRiser(
                     toReplace = null;
                 }
 
-                rebaseAll(context);
+                //rebaseAll(context);
 
                 context.scheduleDraw();
             });
