@@ -55,6 +55,7 @@ export default function insertRiser(
                     pressureSourceHeightM: null,
                     material: null,
                     maximumVelocityMS: null,
+                    calculationHeightM: null,
                     parentUid: null,
                     pressureKPA: null,
                     diameterMM: null,

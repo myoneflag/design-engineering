@@ -78,6 +78,7 @@ export default function insertTmv(
                 parentUid: tmvUid,
                 type: EntityType.SYSTEM_NODE,
                 systemUid: StandardFlowSystemUids.ColdWater,
+                calculationHeightM: null,
                 uid: coldUid,
                 configuration: FlowConfiguration.INPUT,
             };
@@ -86,6 +87,7 @@ export default function insertTmv(
                 center: {x: -newTmv.pipeDistanceMM / 2, y: 0},
                 parentUid: tmvUid,
                 type: EntityType.SYSTEM_NODE,
+                calculationHeightM: null,
                 systemUid: StandardFlowSystemUids.HotWater,
                 uid: hotUid,
                 configuration: FlowConfiguration.INPUT,
@@ -96,6 +98,7 @@ export default function insertTmv(
                 parentUid: tmvUid,
                 type: EntityType.SYSTEM_NODE,
                 systemUid: StandardFlowSystemUids.WarmWater,
+                calculationHeightM: null,
                 uid: warmUid,
                 configuration: FlowConfiguration.OUTPUT,
             };
@@ -104,6 +107,7 @@ export default function insertTmv(
                 center: {x: -newTmv.pipeDistanceMM / 3, y: newTmv.valveLengthMM},
                 parentUid: tmvUid,
                 type: EntityType.SYSTEM_NODE,
+                calculationHeightM: null,
                 systemUid: StandardFlowSystemUids.ColdWater,
                 uid: coldOutUid,
                 configuration: FlowConfiguration.OUTPUT,

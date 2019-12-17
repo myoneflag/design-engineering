@@ -1,10 +1,10 @@
 import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
 import RiserEntity from '../../store/document/entities/riser-entity';
-import {Matrix} from 'transformation-matrix';
 import * as TM from 'transformation-matrix';
-import {Coord, DocumentState, DrawableEntity, FlowSystemParameters} from '../../../src/store/document/types';
+import {Matrix} from 'transformation-matrix';
+import {Coord, DocumentState, FlowSystemParameters} from '../../../src/store/document/types';
 import {matrixScale} from '../../../src/htmlcanvas/utils';
-import {lighten} from '../../../src/lib/utils';
+import {cloneSimple, lighten} from '../../../src/lib/utils';
 import Connectable, {ConnectableObject} from '../../../src/htmlcanvas/lib/object-traits/connectable';
 import CenterDraggableObject from '../../../src/htmlcanvas/lib/object-traits/center-draggable-object';
 import {DrawingContext} from '../../../src/htmlcanvas/lib/types';
@@ -13,13 +13,15 @@ import {EntityType} from '../../../src/store/document/entities/types';
 import BackedConnectable from '../../../src/htmlcanvas/lib/BackedConnectable';
 import {getDragPriority} from '../../../src/store/document';
 import {SelectableObject} from '../../../src/htmlcanvas/lib/object-traits/selectable';
-import {CenteredObject, CenteredObjectNoParent} from '../../../src/htmlcanvas/lib/object-traits/centered-object';
+import {CenteredObjectNoParent} from '../../../src/htmlcanvas/lib/object-traits/centered-object';
 import {CalculationContext} from '../../../src/calculations/types';
 import {FlowNode, SELF_CONNECTION} from '../../../src/calculations/calculation-engine';
 import {DrawingArgs} from '../../../src/htmlcanvas/lib/drawable-object';
 import {Calculated, CalculatedObject} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
 import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
 import CanvasContext from "../lib/canvas-context";
+import {DrawableEntityConcrete} from "../../store/document/entities/concrete-entity";
+import PipeEntity from "../../store/document/entities/pipe-entity";
 
 @CalculatedObject
 @SelectableObject
@@ -195,5 +197,37 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
 
     rebase(context: CanvasContext): void {
         // nada
+    }
+
+    getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[] {
+        const tower = this.getCalculationTower(context);
+        const se = cloneSimple(this.entity);
+        se.uid += '.calculation';
+        se.calculationHeightM = se.pressureSourceHeightM;
+
+        if (tower.length === 0) {
+            return [se];
+        }
+
+        // Insert a flow source into the group somewhere to simulate the riser.
+        // TODO: Use a separate flow source entity in the future.
+
+        // KISS. Just plop it at the bottom. This will be incorrect if the riser is above the lowest floor.
+        // We will release with dedicated flow source instead.
+        const pe: PipeEntity = {
+            color: null,
+            diameterMM: null,
+            endpointUid: [se.uid, tower[0][0].uid],
+            heightAboveFloorM: 0,
+            lengthM: null,
+            material: null,
+            maximumVelocityMS: null,
+            parentUid: null,
+            systemUid: this.entity.systemUid,
+            type: EntityType.PIPE,
+            uid: this.uid + '.-1.p',
+        };
+
+        return [se, pe, ...tower.flat()];
     }
 }

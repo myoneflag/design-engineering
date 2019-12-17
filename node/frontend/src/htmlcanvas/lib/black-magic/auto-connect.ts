@@ -153,7 +153,7 @@ export class AutoConnector {
             case EntityType.TMV:
                 return [entity.heightAboveFloorM, entity.heightAboveFloorM];
             case EntityType.FIXTURE:
-                const fixture = fillFixtureFields(this.context.document, this.context.effectiveCatalog, entity);
+                const fixture = fillFixtureFields(this.context.document.drawing, this.context.effectiveCatalog, entity);
                 return [fixture.outletAboveFloorM!, fixture.outletAboveFloorM!];
             case EntityType.BACKGROUND_IMAGE:
                 throw new Error('entity has no height');
@@ -238,7 +238,11 @@ export class AutoConnector {
                         vec = Flatten.vector([0, -1]).rotate(po.toWorldAngleDeg(0) / 180 * Math.PI);
                         if (po.entity.type === EntityType.FIXTURE) {
                             const fe =
-                                fillFixtureFields(this.context.document, this.context.effectiveCatalog, po.entity);
+                                fillFixtureFields(
+                                    this.context.document.drawing,
+                                    this.context.effectiveCatalog,
+                                    po.entity,
+                                );
                             if (me.entity.systemUid === StandardFlowSystemUids.ColdWater) {
                                 vec = vec.multiply(FIXTURE_WALL_DIST_COLD_MM);
                             } else {
@@ -303,6 +307,7 @@ export class AutoConnector {
                         color: null,
                         parentUid: null,
                         systemUid,
+                        calculationHeightM: null,
                         type: EntityType.FITTING,
                         uid: uuid(),
                     };
@@ -443,6 +448,7 @@ export class AutoConnector {
                         color: null,
                         parentUid: null,
                         systemUid,
+                        calculationHeightM: null,
                         type: EntityType.FITTING,
                         uid: uuid(),
                     };
@@ -610,6 +616,7 @@ export class AutoConnector {
                     color: null,
                     parentUid: null,
                     systemUid,
+                    calculationHeightM: null,
                     type: EntityType.FITTING,
                     uid: uuid(),
                 };

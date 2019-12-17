@@ -24,6 +24,9 @@ import {DrawingArgs} from '../../../../src/htmlcanvas/lib/drawable-object';
 import {Calculated, CalculatedObject, FIELD_HEIGHT} from '../../../../src/htmlcanvas/lib/object-traits/calculated-object';
 import {CalculationData} from '../../../../src/store/document/calculations/calculation-field';
 import {assertUnreachable} from "../../../../src/config";
+import FixtureEntity from "../../../store/document/entities/fixtures/fixture-entity";
+import {cloneSimple} from "../../../lib/utils";
+import SystemNode from "./system-node";
 
 @CalculatedObject
 @SelectableObject
@@ -194,6 +197,24 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Calc
             case InteractionType.EXTEND_NETWORK:
                 return null;
         }
+    }
+
+    getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[] {
+        const e: TmvEntity = cloneSimple(this.entity);
+        e.uid += '.calculation';
+
+        e.hotRoughInUid = (this.objectStore.get(e.hotRoughInUid) as SystemNode)
+            .getCalculationNode(context, this.uid).uid;
+        e.warmOutputUid = (this.objectStore.get(e.warmOutputUid) as SystemNode)
+            .getCalculationNode(context, this.uid).uid;
+        e.coldRoughInUid = (this.objectStore.get(e.coldRoughInUid) as SystemNode)
+            .getCalculationNode(context, this.uid).uid;
+        if (e.coldOutputUid) {
+            e.coldOutputUid = (this.objectStore.get(e.coldOutputUid) as SystemNode)
+                .getCalculationNode(context, this.uid).uid;
+        }
+
+        return [e];
     }
 
     getFrictionHeadLoss(context: CalculationContext,

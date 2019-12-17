@@ -133,7 +133,7 @@
                 case EntityType.TMV:
                     return fillTMVFields(this.document, this.defaultCatalog, obj.entity);
                 case EntityType.FIXTURE:
-                    return fillFixtureFields(this.document, this.defaultCatalog, obj.entity);
+                    return fillFixtureFields(this.document.drawing, this.defaultCatalog, obj.entity);
                 case EntityType.DIRECTED_VALVE:
                     return fillDirectedValveFields(this.document, this.$props.objectStore, obj.entity);
             }

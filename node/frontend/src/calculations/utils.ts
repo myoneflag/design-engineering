@@ -35,7 +35,7 @@ export function countPsdUnits(
         switch (e.type) {
             case EntityType.FIXTURE:
 
-                const mainFixture = fillFixtureFields(doc, catalog, e);
+                const mainFixture = fillFixtureFields(doc.drawing, catalog, e);
                 if (result === null) {
                     result = {};
                 }

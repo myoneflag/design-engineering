@@ -29,6 +29,12 @@ export default interface PipeEntity extends DrawableEntity {
     readonly endpointUid: readonly [string, string];
 }
 
+export interface MutablePipe {
+    type: EntityType.PIPE;
+
+    endpointUid: readonly [string, string];
+}
+
 export function makePipeFields(materials: Choice[], systems: FlowSystemParameters[]): PropertyField[] {
     return [
         { property: 'systemUid', title: 'Flow System', hasDefault: false, isCalculated: false,

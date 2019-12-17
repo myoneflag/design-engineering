@@ -67,7 +67,6 @@ export function determineConnectableSystemUid(
     objectStore: ObjectStore,
     value: ConnectableEntityConcrete,
 ): string | undefined {
-
     switch (value.type) {
         case EntityType.FITTING:
         case EntityType.RISER:
@@ -87,8 +86,8 @@ export function determineConnectableSystemUid(
                     return (objectStore.get(value.sourceUid) as Pipe).entity.systemUid;
                 }
             }
-
     }
+    assertUnreachable(value);
 }
 
 export function fillDirectedValveFields(

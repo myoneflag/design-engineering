@@ -285,7 +285,7 @@ export default class CalculationEngine {
                                 height = par.entity.heightAboveFloorM;
                                 break;
                             case EntityType.FIXTURE:
-                                const filled = fillFixtureFields(this.doc, this.catalog, par.entity);
+                                const filled = fillFixtureFields(this.doc.drawing, this.catalog, par.entity);
                                 height = filled.outletAboveFloorM!;
                                 break;
                             case EntityType.DIRECTED_VALVE:
@@ -826,7 +826,7 @@ export default class CalculationEngine {
             switch (parent.type) {
                 case EntityType.FIXTURE:
                     const fixture = parent.entity as FixtureEntity;
-                    const mainFixture = fillFixtureFields(this.doc, this.catalog, fixture);
+                    const mainFixture = fillFixtureFields(this.doc.drawing, this.catalog, fixture);
 
                     if (node.uid === fixture.coldRoughInUid) {
                         if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
@@ -1325,7 +1325,7 @@ export default class CalculationEngine {
                 case EntityType.TMV:
                     break;
                 case EntityType.FIXTURE:
-                    const e = fillFixtureFields(this.doc, this.catalog, o.entity);
+                    const e = fillFixtureFields(this.doc.drawing, this.catalog, o.entity);
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity);
                     if ((calculation.coldPressureKPA || 0) < e.minInletPressureKPA!) {
                         calculation.warning = 'Not enough cold pressure. Required: '

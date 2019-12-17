@@ -7,10 +7,14 @@ import BaseBackedObject from '../../../../src/htmlcanvas/lib/base-backed-object'
 import {InvisibleNode} from '../../../../src/htmlcanvas/objects/invisible-node';
 import Flatten from '@flatten-js/core';
 import {DrawingContext} from '../../../../src/htmlcanvas/lib/types';
-import {lighten} from '../../../../src/lib/utils';
+import {cloneSimple, lighten} from '../../../../src/lib/utils';
 import {FlowConfiguration, SystemNodeEntity} from '../../../../src/store/document/entities/tmv/tmv-entity';
 import {getDragPriority} from '../../../../src/store/document';
-import {DrawableEntityConcrete} from '../../../../src/store/document/entities/concrete-entity';
+import {
+    ConnectableEntityConcrete,
+    DrawableEntityConcrete,
+    EdgeLikeEntity
+} from '../../../../src/store/document/entities/concrete-entity';
 import Centered, {CenteredObject} from '../../../../src/htmlcanvas/lib/object-traits/centered-object';
 import CanvasContext from '../../../../src/htmlcanvas/lib/canvas-context';
 import {CalculationContext} from '../../../../src/calculations/types';
@@ -20,6 +24,9 @@ import {Calculated, CalculatedObject} from '../../../../src/htmlcanvas/lib/objec
 import {CalculationData} from '../../../../src/store/document/calculations/calculation-field';
 import * as TM from "transformation-matrix";
 import {assertUnreachable} from "../../../../src/config";
+import PipeEntity from "../../../store/document/entities/pipe-entity";
+import FixtureEntity from "../../../store/document/entities/fixtures/fixture-entity";
+import FittingEntity from "../../../store/document/entities/fitting-entity";
 
 @CalculatedObject
 @ConnectableObject
@@ -142,6 +149,38 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
     }
     rememberToRegister(): void {
         //
+    }
+
+    getCalculationConnectionGroups(connections?: string[]): EdgeLikeEntity[][] {
+        if (!this.entity.parentUid) {
+            throw new Error('Parent of the system node is missing');
+        }
+        return super.getCalculationConnectionGroups([
+            ...this.objectStore.getConnections(this.uid),
+            this.entity.parentUid,
+        ]);
+    }
+
+    getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[] {
+        if (!this.entity.parentUid) {
+            throw new Error('Parent of the system node is missing');
+        }
+        const tower: Array<[ConnectableEntityConcrete, PipeEntity] | [ConnectableEntityConcrete]> =
+            this.getCalculationTower(context);
+
+        // find the fixture that our parent is connected to, and turn it back into a system node.
+        const connected = this.getCalculationNode(context, this.entity.parentUid);
+        for (let i = 0; i < tower.length; i++) {
+            if (tower[i][0].uid === connected.uid) {
+                // replace it with a system node (me).
+                const se: SystemNodeEntity = cloneSimple(this.entity);
+                se.uid = tower[i][0].uid;
+                se.calculationHeightM = tower[i][0].calculationHeightM;
+                tower[i][0] = se;
+            }
+        }
+
+        return tower.flat();
     }
 
     getFrictionHeadLoss(context: CalculationContext,

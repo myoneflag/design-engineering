@@ -1,6 +1,10 @@
 import BackedDrawableObject from '../../../src/htmlcanvas/lib/backed-drawable-object';
 import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
-import PipeEntity, {fillPipeDefaultFields, makePipeFields} from '../../../src/store/document/entities/pipe-entity';
+import PipeEntity, {
+    fillPipeDefaultFields,
+    makePipeFields,
+    MutablePipe
+} from '../../../src/store/document/entities/pipe-entity';
 import * as TM from 'transformation-matrix';
 import {Matrix} from 'transformation-matrix';
 import {DrawingMode} from '../../../src/htmlcanvas/types';
@@ -14,7 +18,7 @@ import {Interaction, InteractionType} from '../../../src/htmlcanvas/lib/interact
 import {DrawingContext, GlobalStore} from '../../../src/htmlcanvas/lib/types';
 import DrawableObjectFactory from '../../../src/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '../../../src/store/document/entities/types';
-import BackedConnectable from '../../../src/htmlcanvas/lib/BackedConnectable';
+import BackedConnectable, {BaseBackedConnectable} from '../../../src/htmlcanvas/lib/BackedConnectable';
 import {PipeMaterial, PipeSpec} from '../../../src/store/catalog/types';
 import {interpolateTable, lowerBoundTable, parseCatalogNumberExact} from '../../../src/htmlcanvas/lib/utils';
 import {CalculationContext} from '../../../src/calculations/types';
@@ -338,6 +342,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 center: {x: newLoc[0].x, y: newLoc[0].y},
                 color: this.entity.color,
                 parentUid: null,
+                calculationHeightM: null,
                 systemUid: this.entity.systemUid,
                 type: EntityType.FITTING,
                 uid: newValveUid,
@@ -638,6 +643,16 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         );
 
         return retval;
+    }
+
+    getCalculationEntities(context: CalculationContext): PipeEntity[] {
+        const pe = cloneSimple(this.entity);
+        pe.uid += '.calculation';
+        (pe as MutablePipe).endpointUid = [
+            (this.objectStore.get(pe.endpointUid[0]) as BaseBackedConnectable).getCalculationNode(context, pe.uid).uid,
+            (this.objectStore.get(pe.endpointUid[0]) as BaseBackedConnectable).getCalculationNode(context, pe.uid).uid,
+        ];
+        return [pe];
     }
 
     protected refreshObjectInternal(obj: PipeEntity): void {

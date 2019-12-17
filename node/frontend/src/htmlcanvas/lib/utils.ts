@@ -1,8 +1,8 @@
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
-import {Coord, DocumentState, DrawableEntity, Level} from '../../../src/store/document/types';
+import {Coord, DocumentState, DrawableEntity, DrawingState, Level} from '../../../src/store/document/types';
 import {ObjectStore} from '../../../src/htmlcanvas/lib/types';
 import {cloneSimple} from '../../../src/lib/utils';
-import {ConnectableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
+import {ConnectableEntityConcrete, EdgeLikeEntity} from '../../../src/store/document/entities/concrete-entity';
 import {EntityType} from '../../../src/store/document/entities/types';
 import {SystemNodeEntity} from '../../../src/store/document/entities/tmv/tmv-entity';
 import {fillFixtureFields} from '../../../src/store/document/entities/fixtures/fixture-entity';
@@ -10,6 +10,8 @@ import * as TM from 'transformation-matrix';
 import Flatten from '@flatten-js/core';
 import RiserEntity from "../../store/document/entities/riser-entity";
 import {LEVEL_HEIGHT_DIFF_M} from "../../lib/types";
+import {Catalog} from "../../store/catalog/types";
+import {assertUnreachable} from "../../config";
 
 
 export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
@@ -252,23 +254,28 @@ export function upperBoundTable<T>(
     return lowValue;
 }
 
+export function getEdgeLikeHeightM(
+    entity: EdgeLikeEntity,
+    context: {drawing: DrawingState, catalog: Catalog},
+): number {
+    switch (entity.type) {
+        case EntityType.TMV:
+            return entity.heightAboveFloorM;
+        case EntityType.FIXTURE:
+            const fe = fillFixtureFields(context.drawing, context.catalog, entity);
+            return fe.outletAboveFloorM!;
+        case EntityType.PIPE:
+            return entity.heightAboveFloorM;
+    }
+    assertUnreachable(entity);
+}
 
 export function getSystemNodeHeightM(entity: SystemNodeEntity, context: CanvasContext): number {
     const po = context.objectStore.get(entity.parentUid!)!;
-    switch (po.entity.type) {
-        case EntityType.TMV:
-            return po.entity.heightAboveFloorM;
-        case EntityType.FIXTURE:
-            const fe = fillFixtureFields(context.document, context.effectiveCatalog, po.entity);
-            return fe.outletAboveFloorM!;
-        case EntityType.FITTING:
-        case EntityType.PIPE:
-        case EntityType.RISER:
-        case EntityType.SYSTEM_NODE:
-        case EntityType.BACKGROUND_IMAGE:
-        case EntityType.DIRECTED_VALVE:
-            throw new Error('can\'t touch this');
-    }
+    return getEdgeLikeHeightM(
+        po.entity as EdgeLikeEntity,
+        {drawing: context.document.drawing, catalog: context.effectiveCatalog},
+    );
 }
 
 export function maxHeightOfConnection(entity: ConnectableEntityConcrete, context: CanvasContext) {

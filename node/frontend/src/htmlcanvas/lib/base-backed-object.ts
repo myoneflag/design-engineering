@@ -5,7 +5,11 @@ import * as _ from 'lodash';
 import {Interaction} from '../../../src/htmlcanvas/lib/interaction';
 import {EntityType} from '../../../src/store/document/entities/types';
 import BackedDrawableObject from '../../../src/htmlcanvas/lib/backed-drawable-object';
-import {DrawableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
+import {
+    ConnectableEntityConcrete,
+    DrawableEntityConcrete,
+    EdgeLikeEntity
+} from '../../../src/store/document/entities/concrete-entity';
 import Layer from '../../../src/htmlcanvas/layers/layer';
 import {cloneSimple} from '../../../src/lib/utils';
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
@@ -14,6 +18,8 @@ import {FlowNode} from '../../../src/calculations/calculation-engine';
 import Flatten from '@flatten-js/core';
 import {CalculationData, CalculationField} from '../../../src/store/document/calculations/calculation-field';
 import * as TM from "transformation-matrix";
+import FittingEntity from "../../store/document/entities/fitting-entity";
+import PipeEntity from "../../store/document/entities/pipe-entity";
 
 export default abstract class BaseBackedObject extends DrawableObject {
     entityBacked: () => DrawableEntityConcrete;
@@ -110,6 +116,20 @@ export default abstract class BaseBackedObject extends DrawableObject {
 
     get type(): EntityType {
         return this.entity.type;
+    }
+
+    abstract getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[];
+
+    getCalculationTower(context: CalculationContext): Array<[FittingEntity, PipeEntity] | [FittingEntity]> {
+        throw new Error('Method not implemented. Please use @Connectable to implement.');
+    }
+
+    getCalculationNode(context: CalculationContext, connectableUid: string): ConnectableEntityConcrete {
+        throw new Error('Method not implemented. Please use @Connectable to implement.');
+    }
+
+    getCalculationConnectionGroups(connections?: string[]): EdgeLikeEntity[][] {
+        throw new Error('Method not implemented. Please use @Connectable to implement.');
     }
 
     protected abstract refreshObjectInternal(obj: DrawableEntity, old?: DrawableEntity): void;

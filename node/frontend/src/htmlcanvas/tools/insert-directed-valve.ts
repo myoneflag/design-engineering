@@ -101,6 +101,7 @@ function createBareValveEntity(
         sourceUid: '',
         systemUidOption,
         type: EntityType.DIRECTED_VALVE,
+        calculationHeightM: null,
         uid: uuid(),
         valve: createBareValve(type, catalogId),
     };

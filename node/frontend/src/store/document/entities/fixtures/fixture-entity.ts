@@ -2,7 +2,7 @@ import {
     ConnectableEntity,
     Coord,
     DocumentState,
-    DrawableEntity,
+    DrawableEntity, DrawingState,
     FlowSystemParameters,
 } from '../../../../../src/store/document/types';
 import {EntityType} from '../../../../../src/store/document/entities/types';
@@ -83,12 +83,11 @@ export function makeFixtureFields(): PropertyField[] {
 }
 
 export function fillFixtureFields(
-    doc: DocumentState,
+    drawing: DrawingState,
     defaultCatalog: Catalog,
     value: FixtureEntity,
 ): FixtureEntity {
     const result = cloneSimple(value);
-
 
     const arr: Array<
         'minInletPressureKPA' |
@@ -112,7 +111,7 @@ export function fillFixtureFields(
         }
     });
 
-    const psdStrategy = doc.drawing.metadata.calculationParams.psdMethod;
+    const psdStrategy = drawing.metadata.calculationParams.psdMethod;
 
     if (psdStrategy in defaultCatalog.fixtures[result.name].loadingUnits) {
         if (!result.loadingUnitsCold) {

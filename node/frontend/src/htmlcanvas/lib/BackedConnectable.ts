@@ -11,6 +11,7 @@ import {
     determineConnectableSystemUid,
     fillDirectedValveFields,
 } from '../../../src/store/document/entities/directed-valves/directed-valve-entity';
+import PipeEntity from "../../store/document/entities/pipe-entity";
 
 // TODO: this entire abstract class is obsolete and should be encapsulated in the ConnectableObject
 // decorator.
@@ -163,7 +164,6 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
     disconnect(uid: string) {
         //
     }
-
-
 }
 
+export type BaseBackedConnectable = BackedConnectable<ConnectableEntityConcrete>;

@@ -15,7 +15,7 @@ import * as TM from 'transformation-matrix';
 import {CenteredObject} from '../../../src/htmlcanvas/lib/object-traits/centered-object';
 import CenterDraggableObject from '../../../src/htmlcanvas/lib/object-traits/center-draggable-object';
 import {SelectableObject} from '../../../src/htmlcanvas/lib/object-traits/selectable';
-import {canonizeAngleRad, lighten} from '../../../src/lib/utils';
+import {canonizeAngleRad, cloneSimple, lighten} from '../../../src/lib/utils';
 import {IsolationValve, ValveType} from '../../../src/store/document/entities/directed-valves/valve-types';
 import {lowerBoundTable, parseCatalogNumberExact} from '../../../src/htmlcanvas/lib/utils';
 import Pipe from '../../../src/htmlcanvas/objects/pipe';
@@ -25,6 +25,8 @@ import {DrawingArgs} from '../../../src/htmlcanvas/lib/drawable-object';
 import {Calculated, CalculatedObject} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
 import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
 import {assertUnreachable} from "../../../src/config";
+import {DrawableEntityConcrete} from "../../store/document/entities/concrete-entity";
+import {MutablePipe} from "../../store/document/entities/pipe-entity";
 
 export const VALVE_SIZE_MM = 140;
 export const VALVE_HEIGHT_MM = 100;
@@ -61,7 +63,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         } else if (connections.length === 2) {
             const s = this.objectStore.get(this.entity.sourceUid) as Pipe;
             const soc = this.toObjectCoord(s.worldEndpoints(this.uid)[0]);
-            const other = connections.find((uid) => uid !== this.entity.sourceUid)!;
+            const other = this.otherUid!;
             const o = this.objectStore.get(other) as Pipe;
             const ooc = this.toObjectCoord(o.worldEndpoints(this.uid)[0]);
             const sa = Math.atan2(soc.y, soc.x);
@@ -81,6 +83,9 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         );
     }
 
+    get otherUid(): string | undefined {
+        return this.objectStore.getConnections(this.uid).find((uid) => uid !== this.entity.sourceUid);
+    }
 
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
         return [];
@@ -351,6 +356,46 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             }
         } else {
             throw new Error('shouldn\'t be extending here. connections: ' + JSON.stringify(this.objectStore.getConnections(this.entity.uid)) + ' connecting ' + uid);
+        }
+    }
+
+    getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[] {
+        const tower = this.getCalculationTower(context);
+        if (tower.length === 0) {
+            return [];
+        } else if (tower.length === 1) {
+            // replace the connectable
+            const e = cloneSimple(this.entity);
+            e.uid = tower[0][0].uid;
+            e.calculationHeightM = tower[0][0].calculationHeightM;
+            if (this.objectStore.has(e.sourceUid)) {
+                e.sourceUid = this.objectStore.get(e.sourceUid)!.getCalculationEntities(context)[0].uid;
+            }
+            return [e];
+        } else if (tower.length === 2) {
+            // Plop us on the pipe in the middle.
+            const pipe = tower[0][1]!;
+            const p1 = cloneSimple(pipe);
+            const p2 = cloneSimple(pipe);
+            (p1 as MutablePipe).endpointUid = [p1.endpointUid[0], this.uid + '.calculation'];
+            (p2 as MutablePipe).endpointUid = [this.uid + '.calculation', p2.endpointUid[1]];
+
+            const e = cloneSimple(this.entity);
+            e.uid = e.uid + '.calculation';
+            e.calculationHeightM = (tower[0][0].calculationHeightM! + tower[1][0].calculationHeightM!) / 2;
+
+            // we have to figure out whether source is the lower one or higher one.
+            if ((this.objectStore.get(this.entity.sourceUid) as Pipe).entity.heightAboveFloorM <
+                (this.objectStore.get(this.otherUid!) as Pipe).entity.heightAboveFloorM) {
+                // source is #0
+                e.sourceUid = tower[0][0].uid;
+            } else {
+                e.sourceUid = tower[1][0].uid;
+            }
+
+            return [e, tower[0][0], p1, p2, tower[1][0]];
+        } else {
+            throw new Error('Invalid tower configuration on directed valve');
         }
     }
 

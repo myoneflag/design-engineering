@@ -59,3 +59,8 @@ export type CalculationConcrete =
     FittingCalculation |
     FixtureCalculation |
     SystemNodeCalculation;
+
+export type EdgeLikeEntity =
+    PipeEntity |
+    FixtureEntity |
+    TmvEntity;

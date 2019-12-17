@@ -42,6 +42,7 @@ export function addValveAndSplitPipe(
             color: null,
             parentUid: null,
             systemUid: system,
+            calculationHeightM: null,
             type: EntityType.FITTING,
             uid: uuid(),
         };

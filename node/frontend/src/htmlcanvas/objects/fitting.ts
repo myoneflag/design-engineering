@@ -23,6 +23,7 @@ import {FlowNode, SELF_CONNECTION} from '../../../src/calculations/calculation-e
 import {DrawingArgs} from '../../../src/htmlcanvas/lib/drawable-object';
 import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
 import {Calculated, CalculatedObject, FIELD_HEIGHT} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
+import {DrawableEntityConcrete} from "../../store/document/entities/concrete-entity";
 
 @CalculatedObject
 @SelectableObject
@@ -237,6 +238,10 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
     rememberToRegister(): void {
         //
+    }
+
+    getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[] {
+        return this.getCalculationTower(context).flat();
     }
 
     protected refreshObjectInternal(obj: FittingEntity): void {

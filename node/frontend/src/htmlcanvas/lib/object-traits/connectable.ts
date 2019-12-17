@@ -6,21 +6,24 @@ import assert from 'assert';
 import {EntityType} from '../../../../src/store/document/entities/types';
 import * as _ from 'lodash';
 import BackedConnectable from '../../../../src/htmlcanvas/lib/BackedConnectable';
-import {ConnectableEntityConcrete} from '../../../../src/store/document/entities/concrete-entity';
+import {
+    ConnectableEntityConcrete,
+    DrawableEntityConcrete, EdgeLikeEntity
+} from '../../../../src/store/document/entities/concrete-entity';
 import CanvasContext from '../../../../src/htmlcanvas/lib/canvas-context';
-import {getInsertCoordsAt} from '../../../../src/htmlcanvas/lib/utils';
 import {DrawingContext} from '../../../../src/htmlcanvas/lib/types';
 import Flatten from '@flatten-js/core';
 import {PIPE_HEIGHT_GRAPHIC_EPS_MM} from '../../../../src/config';
-import {CenteredObject} from '../../../../src/htmlcanvas/lib/object-traits/centered-object';
 import {CalculationContext} from '../../../../src/calculations/types';
 import {FlowNode} from '../../../../src/calculations/calculation-engine';
 import {angleDiffRad} from '../../../../src/lib/utils';
-import SystemNode from '../../../../src/htmlcanvas/objects/tmv/system-node';
 import {DrawingArgs} from '../../../../src/htmlcanvas/lib/drawable-object';
 import {CalculationData} from '../../../../src/store/document/calculations/calculation-field';
 import * as TM from "transformation-matrix";
-import {FIELD_HEIGHT} from '../../../../src/htmlcanvas/lib/object-traits/calculated-object';
+import PipeEntity from "../../../store/document/entities/pipe-entity";
+import {determineConnectableSystemUid} from "../../../store/document/entities/directed-valves/directed-valve-entity";
+import FittingEntity from "../../../store/document/entities/fitting-entity";
+import {getEdgeLikeHeightM, getSystemNodeHeightM} from "../utils";
 
 export default interface Connectable {
     getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]>;
@@ -35,9 +38,15 @@ export default interface Connectable {
     disconnect(uid: string): void;
 
     drawInternal(context: DrawingContext, args: DrawingArgs): void;
+
+    getCalculationTower(context: CalculationContext): Array<[FittingEntity, PipeEntity] | [FittingEntity]>;
+    getCalculationNode(context: CalculationContext, connectionUid: string): ConnectableEntityConcrete;
+    getCalculationConnectionGroups(connections?: string[]): EdgeLikeEntity[][];
 }
 
 const EPS = 1e-5;
+
+const MAX_PIPE_GROUP_SEPARATION_MM = 5;
 
 export function ConnectableObject<T extends new (...args: any[])
     => Connectable & BackedConnectable<ConnectableEntityConcrete>>(constructor: T) {
@@ -378,12 +387,114 @@ export function ConnectableObject<T extends new (...args: any[])
 
         connect(uid: string) {
             super.connect(uid);
-            // TODO: remove this function
         }
 
         disconnect(uid: string) {
             super.disconnect(uid);
-            // TODO: remove this function
+        }
+
+        getCalculationConnectionGroups(connections?: string[]): EdgeLikeEntity[][] {
+            if (!connections) {
+                connections = this.objectStore.getConnections(this.uid);
+            }
+            const pipes = connections
+                .map((puid) => this.objectStore.get(puid) as Pipe)
+                .sort((a, b) => a.entity.heightAboveFloorM - b.entity.heightAboveFloorM);
+
+
+            const res: PipeEntity[][] = [];
+            let group: PipeEntity[] = [];
+            pipes.forEach((p) => {
+                if (group.length == 0 ||
+                    p.entity.heightAboveFloorM <= group[0].heightAboveFloorM + MAX_PIPE_GROUP_SEPARATION_MM) {
+                    group.push(p.entity);
+                } else {
+                    res.push(group);
+                    group = [p.entity];
+                }
+            });
+
+            if (group.length) {
+                res.push(group);
+            }
+
+            return res;
+        }
+
+        getCalculationNode(context: CalculationContext, connectionUid: string): ConnectableEntityConcrete {
+            const groups = this.getCalculationConnectionGroups();
+            const index = groups.findIndex((l) => l.find((pe) => pe.uid === connectionUid));
+            if (index === -1) {
+                throw new Error('Requesting calculation node from a non neighbour');
+            }
+
+            return this.getCalculationTower(context)[index][0];
+        }
+
+        /**
+         *         etc...
+         *           |
+         * ---------uid.2-------puid-uid-- (btw pipes are done in pipe entities, not here)
+         *           |
+         *         uid.1.p
+         *           |
+         * ---------uid.1-------puid-uid--
+         *           |
+         *         uid.0.p
+         *           |
+         *         uid.0--------puid-uid--
+         */
+        getCalculationTower(context: CalculationContext): Array<[FittingEntity, PipeEntity] | [FittingEntity]> {
+            const groups = this.getCalculationConnectionGroups();
+
+            if (groups.length === 0) {
+                return [];
+            }
+
+            const result: Array<[FittingEntity, PipeEntity] | [FittingEntity]> = [];
+            let systemUid = determineConnectableSystemUid(this.objectStore, this.entity)!;
+
+            let lastGroup: EdgeLikeEntity[] | undefined;
+
+            let i = 0;
+            groups.forEach((g) => {
+                const minHeight = getEdgeLikeHeightM(g[0], context);
+                const maxHeight = getEdgeLikeHeightM(g[g.length - 1], context);
+
+                const ce: FittingEntity = {
+                    center: this.entity.center,
+                    color: null,
+                    parentUid: this.entity.parentUid,
+                    calculationHeightM: (minHeight + maxHeight) / 2,
+                    systemUid,
+                    type: EntityType.FITTING,
+                    uid: this.uid + '.' + i,
+                };
+
+                if (lastGroup) {
+                    const pe: PipeEntity = {
+                        color: null,
+                        diameterMM: null,
+                        endpointUid: [this.uid + '.' + i, this.uid + '.' + (i - 1)],
+                        heightAboveFloorM: 0,
+                        lengthM: null,
+                        material: null,
+                        maximumVelocityMS: null,
+                        parentUid: null,
+                        systemUid,
+                        type: EntityType.PIPE,
+                        uid: "",
+                    };
+                    result.push([ce, pe]);
+                } else {
+                    result.push([ce]);
+                }
+                lastGroup = g;
+
+                i++;
+            });
+
+            return result;
         }
     });
 }

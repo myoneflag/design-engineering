@@ -40,13 +40,12 @@ export interface DrawableEntity extends WithID {
     type: EntityType;
 }
 
-
-
 export interface CenteredEntity extends DrawableEntity {
     center: Coord;
 }
 
 export interface ConnectableEntity extends CenteredEntity {
+    calculationHeightM: number | null;
 }
 
 export interface Level {

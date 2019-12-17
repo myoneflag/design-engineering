@@ -64,7 +64,12 @@
         }
 
         get defaultData() {
-            return fillFixtureFields(this.document, this.defaultCatalog, this.reactiveData);
+            return fillFixtureFields(
+                this.document.drawing,
+                this.defaultCatalog,
+                this.reactiveData,
+            );
+
         }
 
         onCommit() {

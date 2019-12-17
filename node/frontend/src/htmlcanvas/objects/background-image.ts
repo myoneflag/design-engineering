@@ -452,6 +452,10 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         throw new Error('not implemented');
     }
 
+    getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[] {
+        return [];
+    }
+
     protected refreshObjectInternal(obj: BackgroundEntity, old: BackgroundEntity): void {
 
         if (old) {
