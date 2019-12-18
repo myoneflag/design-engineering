@@ -229,7 +229,6 @@ export default class CalculationEngine {
                 if (this.globalStore.has(e.uid)) {
                     throw new Error('Projected entity already exists: ' + JSON.stringify(e));
                 }
-                console.log(JSON.stringify(e));
 
                 // all z coordinates are thingos.
                 if (isConnectableEntity(e)) {
@@ -238,7 +237,6 @@ export default class CalculationEngine {
                     }
                     const floorId = this.globalStore.levelOfEntity.get(o.uid)!;
                     if (floorId !== null) {
-                        console.log(floorId);
                         e.calculationHeightM += this.doc.drawing.levels[floorId].floorHeightM;
                     }
                 }
@@ -253,7 +251,6 @@ export default class CalculationEngine {
                 this.networkObjectUids.push(e.uid);
             });
         });
-        console.log('built ' + this.networkObjectUids.length + ' network objects');
     }
 
     removeNetworkObjects() {

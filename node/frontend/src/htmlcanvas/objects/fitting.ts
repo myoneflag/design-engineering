@@ -223,9 +223,6 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
         const angle = Math.abs(canonizeAngleRad(Math.acos(fromv.normalize().dot(tov.normalize()))));
 
-        console.log(this.uid + ' ' + angle + ' nocanon: ' + (Math.acos(fromv.normalize().dot(tov.normalize()))));
-        console.log(JSON.stringify(fromc) + ' ' + JSON.stringify(toc));
-
         if (connections.length === 2) {
             // through valve
             if (isRightAngleRad(angle, Math.PI / 8)) {
@@ -287,10 +284,6 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         if (this.getCalculationConnectionGroups(context).flat().length === 2) {
             // that's fine
             if (this.getCalculationTower(context).length === 2) {
-                console.log('getting it twice ' + this.uid + '\n' +
-                    context.globalStore.getOrCreateCalculation(this.getCalculationTower(context)[0][0]).pressureDropKPA + ' ' +
-                    context.globalStore.getOrCreateCalculation(this.getCalculationTower(context)[1][0]).pressureDropKPA
-                );
                 res.pressureDropKPA =
                     context.globalStore.getOrCreateCalculation(this.getCalculationTower(context)[0][0]).pressureDropKPA! +
                     context.globalStore.getOrCreateCalculation(this.getCalculationTower(context)[1][0]).pressureDropKPA!;

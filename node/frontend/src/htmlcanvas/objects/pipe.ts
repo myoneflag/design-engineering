@@ -646,7 +646,6 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             interpolateTable(fluid.dynamicViscosityByTemperature, system.temperature),
         );
 
-        console.log('calculating head loss. length: ' + this.computedLengthM);
         const retval = sign * getDarcyWeisbachFlatMH(
             parseCatalogNumberExact(page.diameterInternalMM)!,
             parseCatalogNumberExact(page.colebrookWhiteCoefficient)!,
@@ -672,9 +671,6 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             throw new Error('pipe ' + this.uid + ' with no 3d');
         }
 
-        console.log("head loss in pipe " + this.uid + ' ' + heightHeadLoss + ' retval is ' + retval);
-        console.log(too.entity.calculationHeightM + ' ' + fromo.entity.calculationHeightM);
-        console.log(JSON.stringify(too.entity) + ' ' + JSON.stringify(fromo.entity));
         return retval + heightHeadLoss;
     }
 
