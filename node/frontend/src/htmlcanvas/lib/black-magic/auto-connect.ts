@@ -3,7 +3,10 @@ import CanvasContext from '../../../../src/htmlcanvas/lib/canvas-context';
 import {EntityType} from '../../../../src/store/document/entities/types';
 import {getConnectedFlowComponent} from '../../../../src/htmlcanvas/lib/black-magic/utils';
 import UnionFind from '../../../../src/calculations/union-find';
-import {ConnectableEntityConcrete, DrawableEntityConcrete} from '../../../../src/store/document/entities/concrete-entity';
+import {
+    ConnectableEntityConcrete,
+    DrawableEntityConcrete
+} from '../../../../src/store/document/entities/concrete-entity';
 import {fillFixtureFields} from '../../../../src/store/document/entities/fixtures/fixture-entity';
 import {maxHeightOfConnection, minHeightOfConnection} from '../../../../src/htmlcanvas/lib/utils';
 import Flatten from '@flatten-js/core';
@@ -696,6 +699,7 @@ export class AutoConnector {
                     if (bestDist === null || res < bestDist) {
                         bestDist = res;
                         bestPair = [auid, buid];
+                        cutoff = res;
                     }
                 }
             });
@@ -703,6 +707,13 @@ export class AutoConnector {
 
         if (doit && bestDist !== null) {
             const res = this.joinEntities(bestPair![0], bestPair![1], true);
+            if (res === null) {
+                // Cache needs to be invalidated because these two entities are no longer a valid pair.
+                const a = bestPair![0];
+                const b = bestPair![1];
+                const key = a < b ? a + b : b + a;
+                this.joinEntitiesCache.delete(key);
+            }
             return res;
         } else {
             return bestDist;
@@ -726,14 +737,8 @@ export class AutoConnector {
         }
     }
 
-    groupDistCache = new Map<string, number | null>();
     groupDist(a: string[], b: string[], cutoff: number | undefined): number | null {
-        const key = this.unionFind.find(a[0]) + this.unionFind.find(b[0]);
-        if (!this.groupDistCache.has(key)) {
-            this.groupDistCache.set(key, this.joinGroups(a, b, false, cutoff));
-        }
-
-        return this.groupDistCache.get(key)!;
+        return this.joinGroups(a, b, false, cutoff);
     }
 
     findCheapestJoin(groups: string[][]): [number, number] | null {
@@ -742,7 +747,10 @@ export class AutoConnector {
         let bestAns: [number, number] = [-1, -1];
         for (let a = 0; a < groups.length; a++) {
             for (let b = a + 1; b < groups.length; b++) {
-                const dist = this.groupDist(groups[a], groups[b], currDist === null ? undefined : currDist);
+                const dist = this.groupDistCache.get(
+                    this.unionFind.find(groups[a][0]),
+                    this.unionFind.find(groups[b][0]),
+                );
                 if (dist !== null) {
                     if (currDist === null || dist < currDist) {
                         currDist = dist;
@@ -758,8 +766,9 @@ export class AutoConnector {
         return bestAns;
     }
 
-
+    deleted = new Set<string>();
     onDeleteEntity = ({entity, levelUid}: EntityParam) => {
+        this.deleted.add(entity.uid);
         if (entity.type === EntityType.PIPE) {
             this.entityHeightCache.delete(entity.endpointUid[0]);
             this.entityHeightCache.delete(entity.endpointUid[1]);
@@ -768,9 +777,11 @@ export class AutoConnector {
         // tslint:disable-next-line:semicolon
     };
 
+    entitiesToConsider: DrawableEntityConcrete[] = [];
     onAddEntity = ({entity, levelUid}: EntityParam) => {
         if (this.context.document.uiState.levelUid === levelUid) {
             this.selected.push(this.context.objectStore.get(entity.uid)!);
+            this.entitiesToConsider.push(entity);
         }
         if (entity.type === EntityType.PIPE) {
             this.entityHeightCache.delete(entity.endpointUid[0]);
@@ -797,6 +808,7 @@ export class AutoConnector {
         });
     }
 
+    groupDistCache = new GroupDistCache();
     autoConnect() {
         this.rig();
         this.calls = 0;
@@ -805,33 +817,67 @@ export class AutoConnector {
             // firstly
             this.connectAllTmvs();
 
+            this.processInitialConnections();
+
+            // Intiialise group dist cache.
+            const groups = this.unionFind.groups();
+            for (let i = 0; i < groups.length; i++ ){
+                const id = this.unionFind.find(groups[i][0]);
+                const res = new Map<string, number | null>();
+                for (let j = i + 1; j < groups.length; j++) {
+                    const jd = this.unionFind.find(groups[j][0]);
+                    const dist = this.groupDist(groups[i], groups[j], undefined);
+                    res.set(jd, dist);
+                }
+                this.groupDistCache.addGroup(id, res);
+            }
+
             let iters = 0;
             while (true) {
                 iters++;
-                this.processInitialConnections();
-                const groups = this.unionFind.groups();
+                const groups = this.unionFind.groups().map((g) => g.filter((u) => !this.deleted.has(u)));
                 const res = this.findCheapestJoin(groups);
-                console.log(this.calls);
                 if (!res) {
                     break;
                 }
 
-                const toBustA = this.unionFind.find(groups[res[0]][0]);
-                const toBustB = this.unionFind.find(groups[res[1]][1]);
-                this.joinGroups(groups[res[0]], groups[res[1]], true);
-                Array.from(this.groupDistCache.keys()).forEach((k) => {
-                    if (k.includes(toBustA) || k.includes(toBustB)) {
-                        this.groupDistCache.delete(k);
+                // Maintain group dist cache.
+                const retval = this.joinGroups(groups[res[0]], groups[res[1]], true);
+
+                if (retval !== null) {
+                    const toBustA = this.unionFind.find(groups[res[0]][0]);
+                    const toBustB = this.unionFind.find(groups[res[1]][0]);
+                    this.unionFind.join(toBustA, toBustB);
+                    let newGroup = this.unionFind.find(toBustA);
+                    this.groupDistCache.join(toBustA, toBustB, newGroup);
+
+                    // Add new items to the groups.
+                    this.entitiesToConsider.forEach((e) => {
+                        const result = new Map<string, number | null>();
+                        groups.forEach((g) => {
+                            const id = this.unionFind.find(g[0]);
+                            if (id === newGroup) {
+                                return;
+                            }
+                            result.set(id, this.groupDist(g, [e.uid], undefined));
+                        });
+                        this.unionFind.join(e.uid, newGroup);
+                        const newnewGroup = this.unionFind.find(newGroup);
+                        this.groupDistCache.addGroup(e.uid, result);
+                        this.groupDistCache.join(e.uid, newGroup, newnewGroup);
+                        newGroup = newnewGroup;
+                    });
+                    this.entitiesToConsider.splice(0);
+                } else {
+                    console.log("warning: autoconnect failed to connect. Busting cache and trying again");
+                    if (this.entitiesToConsider.length) {
+                        throw new Error('new entities after autoconnect failure - don\'t know what to do');
                     }
-                });
+                }
 
-                // end loggin
-                console.log(' ' + this.calls);
 
-                // TODO: something faster. Like just inserting objects directly into the layer or something.
-                // this.context.processDocument(false);
 
-                console.log('  ' + this.calls);
+                console.log('calls: ' + this.calls + ' cache cardinality: ' + this.groupDistCache.cache.size);
             }
 
             rebaseAll(this.context);
@@ -879,9 +925,9 @@ export interface Wall {
 
 class GroupDistCache {
     // Parallel array, 2-way mapping. Remember to maintain that.
-    cache = new Map<string, Map<string, number>>();
+    cache = new Map<string, Map<string, number | null>>();
 
-    addGroup(gid: string, dists: Map<string, number>) {
+    addGroup(gid: string, dists: Map<string, number | null>) {
         dists.forEach((v, k) => {
             this.getOrSet(gid).set(k, v);
             this.getOrSet(k).set(gid, v);
@@ -895,7 +941,18 @@ class GroupDistCache {
         const newMap = _.clone(this.getOrSet(auid));
         this.getOrSet(buid).forEach((v, k) => {
             if (newMap.has(k)) {
-                newMap.set(k, Math.min(newMap.get(k)!, v));
+                const curr = newMap.get(k);
+                if (curr === undefined) {
+                    throw new Error('just for type checking');
+                }
+
+                if (curr === null) {
+                    newMap.set(k, v);
+                } else if (v === null) {
+                    newMap.set(k, curr);
+                } else {
+                    newMap.set(k, Math.min(curr, v));
+                }
             } else {
                 newMap.set(k, v);
             }
@@ -913,12 +970,12 @@ class GroupDistCache {
         if (v1 !== v2) {
             throw new Error('cache is inconsistent');
         }
-        return v1;
+        return v1!;
     }
 
     private getOrSet(key: string) {
         if (!this.cache.has(key)) {
-            this.cache.set(key, new Map<string, number>());
+            this.cache.set(key, new Map<string, number | null>());
         }
         return this.cache.get(key)!;
     }
