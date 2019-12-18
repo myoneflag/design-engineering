@@ -660,6 +660,10 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         const fromo = context.globalStore.get(from.connectable) as BaseBackedConnectable;
         const too = context.globalStore.get(to.connectable) as BaseBackedConnectable;
 
+        if (!this.entity.endpointUid.includes(from.connectable) || !this.entity.endpointUid.includes(to.connectable)) {
+            throw new Error('asking for flow from endpoints that don\'t exist');
+        }
+
         if (fromo.entity.calculationHeightM !== null) {
             if (too.entity.calculationHeightM === null) {
                 throw new Error('inconsistent 2d/3d paradigm');

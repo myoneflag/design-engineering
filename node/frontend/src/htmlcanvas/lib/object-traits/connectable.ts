@@ -23,7 +23,12 @@ import * as TM from "transformation-matrix";
 import PipeEntity from "../../../store/document/entities/pipe-entity";
 import {determineConnectableSystemUid} from "../../../store/document/entities/directed-valves/directed-valve-entity";
 import FittingEntity from "../../../store/document/entities/fitting-entity";
-import {getEdgeLikeHeightM, getSystemNodeHeightM} from "../utils";
+import {
+    getEdgeLikeHeightAboveFloorM,
+    getEdgeLikeHeightAboveGroundM,
+    getFloorHeight,
+    getSystemNodeHeightM
+} from "../utils";
 
 export default interface Connectable {
     getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]>;
@@ -419,15 +424,15 @@ export function ConnectableObject<T extends new (...args: any[])
         getCalculationConnectionGroups(context: CalculationContext): EdgeLikeEntity[][] {
             const edgeLikes = this.getCalculationConnections()
                 .map((puid) => this.objectStore.get(puid)!.entity as EdgeLikeEntity)
-                .sort((a, b) => getEdgeLikeHeightM(a, context) - getEdgeLikeHeightM(b, context));
+                .sort((a, b) => getEdgeLikeHeightAboveGroundM(a, context) - getEdgeLikeHeightAboveGroundM(b, context));
 
 
             const res: EdgeLikeEntity[][] = [];
             let group: EdgeLikeEntity[] = [];
             edgeLikes.forEach((entity) => {
                 if (group.length == 0 ||
-                    getEdgeLikeHeightM(entity, context) <=
-                    getEdgeLikeHeightM(group[0], context) + MAX_PIPE_GROUP_SEPARATION_M) {
+                    getEdgeLikeHeightAboveGroundM(entity, context) <=
+                    getEdgeLikeHeightAboveGroundM(group[0], context) + MAX_PIPE_GROUP_SEPARATION_M) {
                     group.push(entity);
                 } else {
                     res.push(group);
@@ -483,8 +488,8 @@ export function ConnectableObject<T extends new (...args: any[])
 
             let i = 0;
             groups.forEach((g) => {
-                const minHeight = getEdgeLikeHeightM(g[0], context);
-                const maxHeight = getEdgeLikeHeightM(g[g.length - 1], context);
+                const minHeight = getEdgeLikeHeightAboveGroundM(g[0], context);
+                const maxHeight = getEdgeLikeHeightAboveGroundM(g[g.length - 1], context);
 
                 const ce: FittingEntity = {
                     center: this.entity.center,
@@ -521,6 +526,7 @@ export function ConnectableObject<T extends new (...args: any[])
 
             return result;
         }
+
         getCalculationConnections(): string[] {
             return [...this.objectStore.getConnections(this.uid), ...super.getCalculationConnections()];
         }

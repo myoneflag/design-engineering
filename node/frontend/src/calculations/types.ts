@@ -1,4 +1,4 @@
-import {DrawingState} from '../../src/store/document/types';
+import {DocumentState, DrawingState} from '../../src/store/document/types';
 import {Catalog} from '../../src/store/catalog/types';
 import {GlobalStore, ObjectStore} from '../../src/htmlcanvas/lib/types';
 
@@ -12,4 +12,5 @@ export interface CalculationContext {
     drawing: DrawingState;
     catalog: Catalog;
     globalStore: GlobalStore;
+    doc: DocumentState;
 }

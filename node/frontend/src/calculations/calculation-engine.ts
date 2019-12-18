@@ -235,10 +235,6 @@ export default class CalculationEngine {
                     if (!e.calculationHeightM) {
                         throw new Error('entities in the calculation phase must be 3d');
                     }
-                    const floorId = this.globalStore.levelOfEntity.get(o.uid)!;
-                    if (floorId !== null) {
-                        e.calculationHeightM += this.doc.drawing.levels[floorId].floorHeightM;
-                    }
                 }
 
                 DrawableObjectFactory.buildGhost(

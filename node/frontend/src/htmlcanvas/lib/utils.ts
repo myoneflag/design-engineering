@@ -1,8 +1,13 @@
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
 import {Coord, DocumentState, DrawableEntity, DrawingState, Level} from '../../../src/store/document/types';
-import {ObjectStore} from '../../../src/htmlcanvas/lib/types';
+import {GlobalStore, ObjectStore} from '../../../src/htmlcanvas/lib/types';
 import {cloneSimple} from '../../../src/lib/utils';
-import {ConnectableEntityConcrete, EdgeLikeEntity} from '../../../src/store/document/entities/concrete-entity';
+import {
+    CalculationConcrete,
+    ConnectableEntityConcrete,
+    DrawableEntityConcrete,
+    EdgeLikeEntity
+} from '../../../src/store/document/entities/concrete-entity';
 import {EntityType} from '../../../src/store/document/entities/types';
 import {SystemNodeEntity} from '../../../src/store/document/entities/tmv/tmv-entity';
 import {fillFixtureFields} from '../../../src/store/document/entities/fixtures/fixture-entity';
@@ -12,6 +17,7 @@ import RiserEntity from "../../store/document/entities/riser-entity";
 import {LEVEL_HEIGHT_DIFF_M} from "../../lib/types";
 import {Catalog} from "../../store/catalog/types";
 import {assertUnreachable} from "../../config";
+import {CalculationContext} from "../../calculations/types";
 
 
 export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
@@ -254,9 +260,9 @@ export function upperBoundTable<T>(
     return lowValue;
 }
 
-export function getEdgeLikeHeightM(
+export function getEdgeLikeHeightAboveFloorM(
     entity: EdgeLikeEntity,
-    context: {drawing: DrawingState, catalog: Catalog},
+    context: CalculationContext,
 ): number {
     switch (entity.type) {
         case EntityType.TMV:
@@ -270,11 +276,34 @@ export function getEdgeLikeHeightM(
     assertUnreachable(entity);
 }
 
+export function getEdgeLikeHeightAboveGroundM(
+    entity: EdgeLikeEntity,
+    context: CalculationContext,
+): number {
+    return getEdgeLikeHeightAboveFloorM(entity, context) + getFloorHeight(context.globalStore, context.doc, entity);
+}
+
+export function getFloorHeight(globalStore: GlobalStore, doc: DocumentState, entity: DrawableEntityConcrete) {
+    const levelUid = globalStore.levelOfEntity.get(entity.uid);
+    if (levelUid === null) {
+        return 0;
+    } else if (levelUid === undefined) {
+        throw new Error('entity has no level');
+    } else {
+        return doc.drawing.levels[levelUid].floorHeightM;
+    }
+}
+
 export function getSystemNodeHeightM(entity: SystemNodeEntity, context: CanvasContext): number {
     const po = context.objectStore.get(entity.parentUid!)!;
-    return getEdgeLikeHeightM(
+    return getEdgeLikeHeightAboveFloorM(
         po.entity as EdgeLikeEntity,
-        {drawing: context.document.drawing, catalog: context.effectiveCatalog},
+        {
+            drawing: context.document.drawing,
+            catalog: context.effectiveCatalog,
+            doc: context.document,
+            globalStore: context.globalStore,
+        },
     );
 }
 

@@ -127,7 +127,7 @@ export default class FlowSolver {
                     const connector = this.globalStore.get(v.value.uid)!;
 
                     const delta = getObjectFrictionHeadLoss(
-                        {drawing: this.doc.drawing, catalog: this.catalog, globalStore: this.globalStore},
+                        {drawing: this.doc.drawing, catalog: this.catalog, globalStore: this.globalStore, doc: this.doc},
                         connector,
                         flows.getFlow(v.uid, serializeValue(v.from)) + num,
                         v.from,
@@ -162,7 +162,7 @@ export default class FlowSolver {
             for (let i = -0.25; i <= 0.25; i += 0.01) {
                 // tslint:disable-next-line:no-console
                 console.log(o.getFrictionHeadLoss(
-                    {drawing: this.doc.drawing, catalog: this.catalog, globalStore: this.globalStore},
+                    {drawing: this.doc.drawing, catalog: this.catalog, globalStore: this.globalStore, doc: this.doc},
                     i,
                     path[1].from,
                     path[1].to,
