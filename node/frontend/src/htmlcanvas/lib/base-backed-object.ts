@@ -1,11 +1,19 @@
 import DrawableObject from '../../../src/htmlcanvas/lib/drawable-object';
-import {CalculationFilter, CalculationFilters, Coord, DocumentState, DrawableEntity} from '../../../src/store/document/types';
+import {
+    CalculationFilter,
+    CalculationFilters,
+    Coord,
+    Coord3D,
+    DocumentState,
+    DrawableEntity
+} from '../../../src/store/document/types';
 import {DrawingContext, ObjectStore} from '../../../src/htmlcanvas/lib/types';
 import * as _ from 'lodash';
 import {Interaction} from '../../../src/htmlcanvas/lib/interaction';
 import {EntityType} from '../../../src/store/document/entities/types';
 import BackedDrawableObject from '../../../src/htmlcanvas/lib/backed-drawable-object';
 import {
+    CalculationConcrete,
     ConnectableEntityConcrete,
     DrawableEntityConcrete,
     EdgeLikeEntity
@@ -124,12 +132,20 @@ export default abstract class BaseBackedObject extends DrawableObject {
         throw new Error('Method not implemented. Please use @Connectable to implement.');
     }
 
+    get3DOffset(connection: string): Coord3D {
+        throw new Error('Method not implemented. Please use @Connectable to implement.');
+    }
+
     getCalculationNode(context: CalculationContext, connectableUid: string): ConnectableEntityConcrete {
         throw new Error('Method not implemented. Please use @Connectable to implement.');
     }
 
-    getCalculationConnectionGroups(connections?: string[]): EdgeLikeEntity[][] {
+    getCalculationConnectionGroups(context: CalculationContext): EdgeLikeEntity[][] {
         throw new Error('Method not implemented. Please use @Connectable to implement.');
+    }
+
+    getCalculationConnections(): string[] {
+        return [];
     }
 
     protected abstract refreshObjectInternal(obj: DrawableEntity, old?: DrawableEntity): void;

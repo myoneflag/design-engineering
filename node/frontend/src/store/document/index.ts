@@ -7,6 +7,8 @@ import {RootState} from '../types';
 import {EntityType} from '../../../src/store/document/entities/types';
 import {cloneSimple} from '../../../src/lib/utils';
 import {assertUnreachable} from "../../config";
+import {ConnectableEntityConcrete, DrawableEntityConcrete} from "./entities/concrete-entity";
+import BackedConnectable from "../../htmlcanvas/lib/BackedConnectable";
 
 export const state: DocumentState = cloneSimple(initialDocumentState);
 
@@ -35,6 +37,10 @@ export function isConnectable(type: EntityType): boolean {
             return false;
     }
     assertUnreachable(type);
+}
+
+export function isConnectableEntity(e: DrawableEntityConcrete): e is ConnectableEntityConcrete {
+    return isConnectable(e.type);
 }
 
 export function isCentered(type: EntityType): boolean {

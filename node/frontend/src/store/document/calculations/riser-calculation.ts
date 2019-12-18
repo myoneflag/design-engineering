@@ -5,7 +5,7 @@ import {DrawingState} from '../../../../src/store/document/types';
 import RiserEntity from '../entities/riser-entity';
 import {getPsdUnitName} from "../../../calculations/utils";
 
-export default interface RiserCalculations extends Calculation {
+export default interface RiserCalculation extends Calculation {
     pressureKPA: number | null;
     flowRateLS: number | null;
 }
@@ -29,7 +29,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, settings: Drawin
     ];
 }
 
-export function emptyRiserCalculations(): RiserCalculations {
+export function emptyRiserCalculations(): RiserCalculation {
     return {
         flowRateLS: null, pressureKPA: null, warning: null,
     };

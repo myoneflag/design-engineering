@@ -5,7 +5,7 @@ import RiserEntity from './riser-entity';
 import FixtureEntity from '../../../../src/store/document/entities/fixtures/fixture-entity';
 import TmvEntity, {SystemNodeEntity} from '../../../../src/store/document/entities/tmv/tmv-entity';
 import {CenteredEntity, ConnectableEntity} from '../../../../src/store/document/types';
-import RiserCalculations from '../calculations/riser-calculations';
+import RiserCalculation from '../calculations/riser-calculation';
 import PipeCalculation from '../../../../src/store/document/calculations/pipe-calculation';
 import TmvCalculation from '../../../../src/store/document/calculations/tmv-calculation';
 import FittingCalculation from '../../../../src/store/document/calculations/fitting-calculation';
@@ -52,7 +52,7 @@ export type CalculatableEntityConcrete =
     SystemNodeEntity;
 
 export type CalculationConcrete =
-    RiserCalculations |
+    RiserCalculation |
     PipeCalculation |
     PipeCalculation |
     TmvCalculation |

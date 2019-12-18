@@ -22,6 +22,8 @@ import {CalculationData} from '../../../src/store/document/calculations/calculat
 import CanvasContext from "../lib/canvas-context";
 import {DrawableEntityConcrete} from "../../store/document/entities/concrete-entity";
 import PipeEntity from "../../store/document/entities/pipe-entity";
+import FittingCalculation from "../../store/document/calculations/fitting-calculation";
+import RiserCalculation from "../../store/document/calculations/riser-calculation";
 
 @CalculatedObject
 @SelectableObject
@@ -229,5 +231,30 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         };
 
         return [se, pe, ...tower.flat()];
+    }
+
+    collectCalculations(context: CalculationContext): RiserCalculation {
+        const calc = context.globalStore.getOrCreateCalculation(this.entity);
+
+        // explicitly create this to help with refactors
+        const res: RiserCalculation = {
+            flowRateLS: calc.flowRateLS,
+            pressureKPA: calc.pressureKPA, // TODO: differentiate this in different levels
+            warning: calc.warning,
+        };
+
+        const tower = this.getCalculationTower(context);
+
+        if (this.getCalculationConnectionGroups(context).flat().length === 2) {
+            // that's fine
+        } else {
+            res.flowRateLS = null;
+        }
+
+        tower.forEach(([v, p]) => {
+            res.warning = res.warning || context.globalStore.getOrCreateCalculation(v).warning;
+        });
+
+        return res;
     }
 }

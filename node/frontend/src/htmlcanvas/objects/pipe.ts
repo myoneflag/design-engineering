@@ -8,7 +8,14 @@ import PipeEntity, {
 import * as TM from 'transformation-matrix';
 import {Matrix} from 'transformation-matrix';
 import {DrawingMode} from '../../../src/htmlcanvas/types';
-import {CalculationFilter, CalculationFilters, ConnectableEntity, Coord, DocumentState} from '../../../src/store/document/types';
+import {
+    CalculationFilter,
+    CalculationFilters,
+    ConnectableEntity,
+    Coord,
+    Coord3D,
+    DocumentState
+} from '../../../src/store/document/types';
 import {matrixScale} from '../../../src/htmlcanvas/utils';
 import Flatten from '@flatten-js/core';
 import {Draggable, DraggableObject} from '../../../src/htmlcanvas/lib/object-traits/draggable-object';
@@ -35,9 +42,10 @@ import {FlowNode} from '../../../src/calculations/calculation-engine';
 import {DrawingArgs} from '../../../src/htmlcanvas/lib/drawable-object';
 import {DEFAULT_FONT_NAME} from '../../../src/config';
 import {CalculationData, CalculationField} from '../../../src/store/document/calculations/calculation-field';
-import {makePipeCalculationFields} from '../../../src/store/document/calculations/pipe-calculation';
+import PipeCalculation, {makePipeCalculationFields} from '../../../src/store/document/calculations/pipe-calculation';
 import {Calculated, CalculatedObject, FIELD_HEIGHT} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
 import {isConnectable} from "../../store/document";
+import FixtureCalculation from "../../store/document/calculations/fixture-calculation";
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 3.5;
@@ -234,7 +242,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
     }
 
     // Returns the world coordinates of the two endpoints
-    worldEndpoints(excludeUid: string | null = null): Coord[] {
+    worldEndpoints(excludeUid: string | null = null): Coord3D[] {
         const a: ConnectableEntity =
             this.objectStore.get(this.entity.endpointUid[0])!.entity as ConnectableEntity;
         const b: ConnectableEntity =
@@ -244,15 +252,21 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             throw new Error('One of pipe\'s endpoints are missing. Pipe is: ' + JSON.stringify(this.entity));
         }
 
-        const ao = this.objectStore.get(a.uid) as BaseBackedObject;
-        const bo = this.objectStore.get(b.uid) as BaseBackedObject;
+        const ao = this.objectStore.get(a.uid) as BaseBackedConnectable;
+        const bo = this.objectStore.get(b.uid) as BaseBackedConnectable;
         if (ao && bo) {
-            const res: Coord[] = [];
+            const res: Coord3D[] = [];
+            if ((ao.entity.calculationHeightM === null) !== (bo.entity.calculationHeightM === null)) {
+                throw new Error('We are working with a 3d object and a 2d object - not allowed \n' +
+                    JSON.stringify(ao.entity) + '\n' +
+                    JSON.stringify(bo.entity),
+                );
+            }
             if (ao.uid !== excludeUid) {
-                res.push(ao.toWorldCoord({x: 0, y: 0}));
+                res.push({...ao.toWorldCoord({x: 0, y: 0}), z: (ao.entity.calculationHeightM || 0) * 1000});
             }
             if (bo.uid !== excludeUid) {
-                res.push(bo.toWorldCoord({x: 0, y: 0}));
+                res.push({...bo.toWorldCoord({x: 0, y: 0}), z: (bo.entity.calculationHeightM || 0) * 1000});
             }
             return res;
         } else {
@@ -277,7 +291,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
     get computedLengthM(): number {
         const [wa, wb] = this.worldEndpoints();
-        return Math.sqrt((wa.x - wb.x) ** 2 + (wa.y - wb.y) ** 2) / 1000;
+        return Math.sqrt((wa.x - wb.x) ** 2 + (wa.y - wb.y) ** 2 + (wa.z - wb.z) ** 2) / 1000;
     }
 
     displayObject(doc: DocumentState): PipeEntity {
@@ -632,6 +646,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             interpolateTable(fluid.dynamicViscosityByTemperature, system.temperature),
         );
 
+        console.log('calculating head loss. length: ' + this.computedLengthM);
         const retval = sign * getDarcyWeisbachFlatMH(
             parseCatalogNumberExact(page.diameterInternalMM)!,
             parseCatalogNumberExact(page.colebrookWhiteCoefficient)!,
@@ -642,17 +657,42 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             ga,
         );
 
-        return retval;
+        let heightHeadLoss = 0;
+        const fromo = context.globalStore.get(from.connectable) as BaseBackedConnectable;
+        const too = context.globalStore.get(to.connectable) as BaseBackedConnectable;
+
+        if (fromo.entity.calculationHeightM !== null) {
+            if (too.entity.calculationHeightM === null) {
+                throw new Error('inconsistent 2d/3d paradigm');
+            }
+            heightHeadLoss = -(too.entity.calculationHeightM - fromo.entity.calculationHeightM);
+        } else if (too.entity.calculationHeightM !== null) {
+            throw new Error('inconsistent 2d/3d paradigm');
+        } else {
+            throw new Error('pipe ' + this.uid + ' with no 3d');
+        }
+
+        console.log("head loss in pipe " + this.uid + ' ' + heightHeadLoss + ' retval is ' + retval);
+        console.log(too.entity.calculationHeightM + ' ' + fromo.entity.calculationHeightM);
+        console.log(JSON.stringify(too.entity) + ' ' + JSON.stringify(fromo.entity));
+        return retval + heightHeadLoss;
     }
 
-    getCalculationEntities(context: CalculationContext): PipeEntity[] {
+    getCalculationEntities(context: CalculationContext): [PipeEntity] {
         const pe = cloneSimple(this.entity);
         pe.uid += '.calculation';
         (pe as MutablePipe).endpointUid = [
-            (this.objectStore.get(pe.endpointUid[0]) as BaseBackedConnectable).getCalculationNode(context, pe.uid).uid,
-            (this.objectStore.get(pe.endpointUid[0]) as BaseBackedConnectable).getCalculationNode(context, pe.uid).uid,
+            (this.objectStore.get(pe.endpointUid[0]) as BaseBackedConnectable)
+                .getCalculationNode(context, this.uid).uid,
+
+            (this.objectStore.get(pe.endpointUid[1]) as BaseBackedConnectable)
+                .getCalculationNode(context, this.uid).uid,
         ];
         return [pe];
+    }
+
+    collectCalculations(context: CalculationContext): PipeCalculation {
+        return context.globalStore.getOrCreateCalculation(this.getCalculationEntities(context)[0])
     }
 
     protected refreshObjectInternal(obj: PipeEntity): void {

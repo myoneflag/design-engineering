@@ -2,28 +2,10 @@ import {FieldCategory, CalculationField, Units} from '../../../../src/store/docu
 import {Calculation, PsdCalculation} from '../../../../src/store/document/calculations/types';
 import FittingEntity from '../../../../src/store/document/entities/fitting-entity';
 
-export interface DeadlegAttribute {
-    numConnections: 1 | null;
-}
-
-export interface TwoConnectionAttribute {
-    numConnections: 2 | null;
-    nominalDiameterAMM: number | null;
-    nominalDiameterBMM: number | null;
-    angle: number | null;
-}
-
-export interface ThreeConnectionAttribute {
-    numConnections: 3 | null;
-    nominalDiameterMM: number | null;
-}
-
 export default interface FittingCalculation extends Calculation {
     flowRateLS: number | null;
     pressureDropKPA: number | null;
     pressureKPA: number | null;
-
-    valveAttributes: DeadlegAttribute | TwoConnectionAttribute | ThreeConnectionAttribute | null;
 }
 
 export function makeFittingCalculationFields(entity: FittingEntity): CalculationField[] {
@@ -58,7 +40,6 @@ export function emptyFittingCalculation(): FittingCalculation {
         flowRateLS: null,
         pressureDropKPA: null,
         pressureKPA: null,
-        valveAttributes: null,
         warning: null,
     };
 }

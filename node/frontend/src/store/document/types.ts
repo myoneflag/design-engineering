@@ -24,6 +24,10 @@ export interface Coord {
     y: number;
 }
 
+export interface Coord3D extends Coord {
+    z: number;
+}
+
 export interface Rectangle {
     x: number;
     y: number;

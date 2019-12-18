@@ -1,18 +1,8 @@
-import {
-    ConnectableEntity,
-    Coord,
-    DocumentState,
-    DrawableEntity, DrawingState,
-    FlowSystemParameters,
-} from '../../../../../src/store/document/types';
+import {Coord, DrawableEntity, DrawingState,} from '../../../../../src/store/document/types';
 import {EntityType} from '../../../../../src/store/document/entities/types';
 import {FieldType, PropertyField} from '../../../../../src/store/document/entities/property-field';
-import * as _ from 'lodash';
-import FittingEntity from '../../../../../src/store/document/entities/fitting-entity';
-import CatalogState, {Catalog} from '../../../../../src/store/catalog/types';
-import InvisibleNodeEntity from '../../../../../src/store/document/entities/Invisible-node-entity';
-import {DISPLAY_PSD_METHODS} from '../../../../config';
-import FixtureCalculation from '../../../../../src/store/document/calculations/fixture-calculation';
+import {Catalog} from '../../../../../src/store/catalog/types';
+import {SupportedPsdStandards} from '../../../../config';
 import {parseCatalogNumberOrMin} from '../../../../../src/htmlcanvas/lib/utils';
 import {cloneSimple} from '../../../../../src/lib/utils';
 
@@ -83,7 +73,7 @@ export function makeFixtureFields(): PropertyField[] {
 }
 
 export function fillFixtureFields(
-    drawing: DrawingState,
+    drawing: DrawingState | undefined,
     defaultCatalog: Catalog,
     value: FixtureEntity,
 ): FixtureEntity {
@@ -111,7 +101,8 @@ export function fillFixtureFields(
         }
     });
 
-    const psdStrategy = drawing.metadata.calculationParams.psdMethod;
+    const psdStrategy = drawing ? drawing.metadata.calculationParams.psdMethod :
+        SupportedPsdStandards.as35002018LoadingUnits;
 
     if (psdStrategy in defaultCatalog.fixtures[result.name].loadingUnits) {
         if (!result.loadingUnitsCold) {

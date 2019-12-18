@@ -6,7 +6,14 @@ import {Coord, DocumentState} from '../../../src/store/document/types';
 import {matrixScale} from '../../../src/htmlcanvas/utils';
 import Flatten from '@flatten-js/core';
 import Connectable, {ConnectableObject} from '../../../src/htmlcanvas/lib/object-traits/connectable';
-import {angleDiffRad, isAcuteRad, isRightAngleRad, isStraightRad, lighten} from '../../../src/lib/utils';
+import {
+    angleDiffRad,
+    canonizeAngleRad,
+    isAcuteRad,
+    isRightAngleRad,
+    isStraightRad,
+    lighten
+} from '../../../src/lib/utils';
 import CenterDraggableObject from '../../../src/htmlcanvas/lib/object-traits/center-draggable-object';
 import {DrawingContext} from '../../../src/htmlcanvas/lib/types';
 import DrawableObjectFactory from '../../../src/htmlcanvas/lib/drawable-object-factory';
@@ -24,6 +31,10 @@ import {DrawingArgs} from '../../../src/htmlcanvas/lib/drawable-object';
 import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
 import {Calculated, CalculatedObject, FIELD_HEIGHT} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
 import {DrawableEntityConcrete} from "../../store/document/entities/concrete-entity";
+import {EPS} from "../../calculations/pressure-drops";
+import FittingCalculation, {emptyFittingCalculation} from "../../store/document/calculations/fitting-calculation";
+import math3d from 'math3d';
+import PipeEntity from "../../store/document/entities/pipe-entity";
 
 @CalculatedObject
 @SelectableObject
@@ -166,6 +177,10 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             throw new Error('I don\'t like it');
         }
 
+        if (Math.abs(flowLS) < EPS) {
+            return 0;
+        }
+
         const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
 
         let sign = 1;
@@ -197,11 +212,19 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         });
 
         if (smallestDiameterMM == null || largestDiameterMM == null) {
-            throw new Error('can\'t find pipe sizes ' + JSON.stringify(internals));
+            throw new Error('can\'t find pipe sizes ' + JSON.stringify(internals) + ' ' + flowLS);
         }
 
         let k: number | null = null;
-        const angle =  angleDiffRad(this.getAngleOfRad(from.connection), this.getAngleOfRad(to.connection));
+        const fromc = this.get3DOffset(from.connection);
+        const toc = this.get3DOffset(to.connection);
+        const fromv = new math3d.Vector3(fromc.x, fromc.y, fromc.z);
+        const tov = new math3d.Vector3(toc.x, toc.y, toc.z);
+
+        const angle = Math.abs(canonizeAngleRad(Math.acos(fromv.normalize().dot(tov.normalize()))));
+
+        console.log(this.uid + ' ' + angle + ' nocanon: ' + (Math.acos(fromv.normalize().dot(tov.normalize()))));
+        console.log(JSON.stringify(fromc) + ' ' + JSON.stringify(toc));
 
         if (connections.length === 2) {
             // through valve
@@ -240,8 +263,49 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         //
     }
 
-    getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[] {
+    getCalculationEntities(context: CalculationContext): Array<FittingEntity | PipeEntity> {
         return this.getCalculationTower(context).flat();
+    }
+
+    collectCalculations(context: CalculationContext): FittingCalculation {
+        if (this.getCalculationTower(context).length === 0) {
+            return emptyFittingCalculation();
+        }
+
+        const calc = context.globalStore.getOrCreateCalculation(this.getCalculationTower(context)[0][0]);
+
+        // explicitly create this to help with refactors
+        const res: FittingCalculation = {
+            flowRateLS: calc.flowRateLS,
+            pressureDropKPA: calc.pressureDropKPA,
+            pressureKPA: calc.pressureKPA,
+            warning: calc.warning,
+        };
+
+        const tower = this.getCalculationTower(context);
+
+        if (this.getCalculationConnectionGroups(context).flat().length === 2) {
+            // that's fine
+            if (this.getCalculationTower(context).length === 2) {
+                console.log('getting it twice ' + this.uid + '\n' +
+                    context.globalStore.getOrCreateCalculation(this.getCalculationTower(context)[0][0]).pressureDropKPA + ' ' +
+                    context.globalStore.getOrCreateCalculation(this.getCalculationTower(context)[1][0]).pressureDropKPA
+                );
+                res.pressureDropKPA =
+                    context.globalStore.getOrCreateCalculation(this.getCalculationTower(context)[0][0]).pressureDropKPA! +
+                    context.globalStore.getOrCreateCalculation(this.getCalculationTower(context)[1][0]).pressureDropKPA!;
+            }
+        } else {
+            res.flowRateLS = null;
+            res.pressureDropKPA = null;
+        }
+
+
+        tower.forEach(([v, p]) => {
+            res.warning = res.warning || context.globalStore.getOrCreateCalculation(v).warning;
+        });
+
+        return res;
     }
 
     protected refreshObjectInternal(obj: FittingEntity): void {

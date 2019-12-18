@@ -16,7 +16,7 @@ import uuid from 'uuid';
 import {InteractionType} from '../../../../src/htmlcanvas/lib/interaction';
 import {FlowConfiguration} from '../../../../src/store/document/entities/tmv/tmv-entity';
 
-export default function connectTmvToSource(context: CanvasContext, newTmv: Tmv) {
+export default function connectTmvToSource(context: CanvasContext, newTmv: Tmv, radiusMM: number = 3000) {
     const wc = newTmv.toWorldCoord();
     const selfUids: string[] = [
         newTmv.uid,
@@ -28,7 +28,7 @@ export default function connectTmvToSource(context: CanvasContext, newTmv: Tmv) 
         selfUids.push(newTmv.entity.coldOutputUid);
     }
 
-    const interactive = getClosestJoinable(context, StandardFlowSystemUids.ColdWater, wc, 3000, selfUids);
+    const interactive = getClosestJoinable(context, StandardFlowSystemUids.ColdWater, wc, radiusMM, selfUids);
 
     let coldObj: SystemNode | undefined;
     let hotObj: SystemNode | undefined;
@@ -70,7 +70,7 @@ export default function connectTmvToSource(context: CanvasContext, newTmv: Tmv) 
 
     // do closest hot pipe
     if (coldDrawn) {
-        const interactiveC = getClosestJoinable(context, StandardFlowSystemUids.HotWater, wc, 3000, selfUids);
+        const interactiveC = getClosestJoinable(context, StandardFlowSystemUids.HotWater, wc, radiusMM, selfUids);
         if (interactiveC && interactiveC.length && context.objectStore.getConnections(hotObj.uid).length === 0) {
             const pipeE = interactiveC[0];
 

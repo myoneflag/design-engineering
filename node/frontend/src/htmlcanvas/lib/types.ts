@@ -15,7 +15,7 @@ import BackedConnectable from "./BackedConnectable";
 import PipeEntity from "../../store/document/entities/pipe-entity";
 import DrawableObjectFactory from "./drawable-object-factory";
 import PipeCalculation, {emptyPipeCalculation} from "../../store/document/calculations/pipe-calculation";
-import RiserCalculations, {emptyRiserCalculations} from "../../store/document/calculations/riser-calculations";
+import RiserCalculation, {emptyRiserCalculations} from "../../store/document/calculations/riser-calculation";
 import TmvCalculation, {emptyTmvCalculation} from "../../store/document/calculations/tmv-calculation";
 import FixtureCalculation, {emptyFixtureCalculation} from "../../store/document/calculations/fixture-calculation";
 import FittingCalculation, {emptyFittingCalculation} from "../../store/document/calculations/fitting-calculation";
@@ -129,7 +129,9 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
             value = this.graveyard.get(key)!;
         }
 
-        if (!(value.entity as any).__ob__) {
+        // __calc__ is an indicator for a calculatable network entity, which is transient and doesn't
+        // need to be reactive.
+        if (!(value.entity as any).__ob__ && !(value.entity as any).__calc__) {
             throw new Error('Not reactive');
         }
         if (this.has(key)) {
@@ -231,7 +233,7 @@ export class GlobalStore extends ObjectStore {
     calculationStore = new Map<string, CalculationConcrete>();
 
     getOrCreateCalculation(entity: PipeEntity): PipeCalculation;
-    getOrCreateCalculation(entity: RiserEntity): RiserCalculations;
+    getOrCreateCalculation(entity: RiserEntity): RiserCalculation;
     getOrCreateCalculation(entity: TmvEntity): TmvCalculation;
     getOrCreateCalculation(entity: FittingEntity): FittingCalculation;
     getOrCreateCalculation(entity: FixtureEntity): FixtureCalculation;
@@ -270,7 +272,7 @@ export class GlobalStore extends ObjectStore {
     }
 
     getCalculation(entity: PipeEntity): PipeCalculation | undefined;
-    getCalculation(entity: RiserEntity): RiserCalculations | undefined;
+    getCalculation(entity: RiserEntity): RiserCalculation | undefined;
     getCalculation(entity: TmvEntity): TmvCalculation | undefined;
     getCalculation(entity: FittingEntity): FittingCalculation | undefined;
     getCalculation(entity: FixtureEntity): FixtureCalculation | undefined;
@@ -280,6 +282,19 @@ export class GlobalStore extends ObjectStore {
 
     getCalculation(entity: CalculatableEntityConcrete): CalculationConcrete | undefined {
         return this.calculationStore.get(entity.uid);
+    }
+
+    setCalculation(uid: string, calculation: PipeCalculation): void;
+    setCalculation(uid: string, calculation: RiserCalculation): void;
+    setCalculation(uid: string, calculation: TmvCalculation): void;
+    setCalculation(uid: string, calculation: FittingCalculation): void;
+    setCalculation(uid: string, calculation: FixtureCalculation): void;
+    setCalculation(uid: string, calculation: DirectedValveCalculation): void;
+    setCalculation(uid: string, calculation: SystemNodeCalculation): void;
+    setCalculation(uid: string, calculation: CalculationConcrete): void;
+
+    setCalculation(uid: string, calculation: CalculationConcrete) {
+        this.calculationStore.set(uid, calculation);
     }
 
     clearCalculations() {

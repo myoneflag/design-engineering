@@ -27,6 +27,8 @@ import {assertUnreachable} from "../../../../src/config";
 import PipeEntity from "../../../store/document/entities/pipe-entity";
 import FixtureEntity from "../../../store/document/entities/fixtures/fixture-entity";
 import FittingEntity from "../../../store/document/entities/fitting-entity";
+import RiserCalculation from "../../../store/document/calculations/riser-calculation";
+import SystemNodeCalculation from "../../../store/document/calculations/system-node-calculation";
 
 @CalculatedObject
 @ConnectableObject
@@ -151,14 +153,13 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
         //
     }
 
-    getCalculationConnectionGroups(connections?: string[]): EdgeLikeEntity[][] {
+    getCalculationConnections(): string[] {
         if (!this.entity.parentUid) {
             throw new Error('Parent of the system node is missing');
         }
-        return super.getCalculationConnectionGroups([
-            ...this.objectStore.getConnections(this.uid),
+        return [
             this.entity.parentUid,
-        ]);
+        ];
     }
 
     getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[] {
@@ -176,6 +177,8 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
                 const se: SystemNodeEntity = cloneSimple(this.entity);
                 se.uid = tower[i][0].uid;
                 se.calculationHeightM = tower[i][0].calculationHeightM;
+                se.parentUid = (this.objectStore.get(se.parentUid!) as BaseBackedObject)
+                    .getCalculationEntities(context)[0].uid;
                 tower[i][0] = se;
             }
         }
@@ -195,5 +198,31 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
             throw new Error('system node shouldn\'t have any extra joints. ' +
                 'from: ' + JSON.stringify(from) + ' to ' + JSON.stringify(to) + ' parent: ' + this.entity.parentUid);
         }
+    }
+
+    collectCalculations(context: CalculationContext): SystemNodeCalculation {
+        const calc = context.globalStore.getOrCreateCalculation(this.entity);
+
+        // explicitly create this to help with refactors
+        const res: SystemNodeCalculation = {
+            psdUnits: calc.psdUnits,
+            flowRateLS: calc.flowRateLS,
+            pressureKPA: calc.pressureKPA, // TODO: differentiate this in different levels
+            warning: calc.warning
+        };
+
+        const tower = this.getCalculationTower(context);
+
+        if (this.getCalculationConnectionGroups(context).flat().length <= 2) {
+            // that's fine
+        } else {
+            throw new Error('Too many connections coming out of the system node ' + JSON.stringify(this.getCalculationConnections()));
+        }
+
+        tower.forEach(([v, p]) => {
+            res.warning = res.warning || context.globalStore.getOrCreateCalculation(v).warning;
+        });
+
+        return res;
     }
 }

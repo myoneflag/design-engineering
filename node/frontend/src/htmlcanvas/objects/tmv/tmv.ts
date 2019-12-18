@@ -27,6 +27,8 @@ import {assertUnreachable} from "../../../../src/config";
 import FixtureEntity from "../../../store/document/entities/fixtures/fixture-entity";
 import {cloneSimple} from "../../../lib/utils";
 import SystemNode from "./system-node";
+import FixtureCalculation from "../../../store/document/calculations/fixture-calculation";
+import TmvCalculation from "../../../store/document/calculations/tmv-calculation";
 
 @CalculatedObject
 @SelectableObject
@@ -199,7 +201,7 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Calc
         }
     }
 
-    getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[] {
+    getCalculationEntities(context: CalculationContext): [TmvEntity] {
         const e: TmvEntity = cloneSimple(this.entity);
         e.uid += '.calculation';
 
@@ -215,6 +217,11 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Calc
         }
 
         return [e];
+    }
+
+
+    collectCalculations(context: CalculationContext): TmvCalculation {
+        return context.globalStore.getOrCreateCalculation(this.getCalculationEntities(context)[0])
     }
 
     getFrictionHeadLoss(context: CalculationContext,

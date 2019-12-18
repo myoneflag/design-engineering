@@ -45,7 +45,7 @@ export default function insertTmv(
                 }
             }
         },
-        (wc: Coord) => {
+        (wc: Coord, event) => {
             context.$store.dispatch('document/revert', false);
 
             const doc = context.document as DocumentState;
@@ -121,7 +121,9 @@ export default function insertTmv(
                 context.$store.dispatch('document/addEntity', newColdOut);
             }
 
-            connectTmvToSource(context, context.objectStore.get(newTmv.uid) as Tmv);
+            if (!event.ctrlKey) {
+                connectTmvToSource(context, context.objectStore.get(newTmv.uid) as Tmv, 20000);
+            }
 
             context.scheduleDraw();
         },
@@ -147,6 +149,7 @@ export default function insertTmv(
                     }
                     onRefresh();
                 }}],
+            [KeyCode.CONTROL, {name: 'Don\'t auto-connect', fn: () => {}}],
         ],
     ));
 }

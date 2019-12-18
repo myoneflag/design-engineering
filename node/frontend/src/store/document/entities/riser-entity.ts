@@ -8,7 +8,7 @@ import {
 import {FieldType, PropertyField} from '../../../../src/store/document/entities/property-field';
 import * as _ from 'lodash';
 import {EntityType} from '../../../../src/store/document/entities/types';
-import RiserCalculations from '../calculations/riser-calculations';
+import RiserCalculation from '../calculations/riser-calculation';
 import {Choice, LEVEL_HEIGHT_DIFF_M} from '../../../../src/lib/types';
 import {cloneSimple} from '../../../../src/lib/utils';
 

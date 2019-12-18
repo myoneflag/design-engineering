@@ -9,7 +9,7 @@ import {PsdStandard, PSDStandardType} from '../../src/store/catalog/psd-standard
 import {interpolateTable, parseCatalogNumberExact} from '../../src/htmlcanvas/lib/utils';
 import {DrawingContext} from '../../src/htmlcanvas/lib/types';
 import {CalculationField} from '../../src/store/document/calculations/calculation-field';
-import {makeRiserCalculationFields} from '../store/document/calculations/riser-calculations';
+import {makeRiserCalculationFields} from '../store/document/calculations/riser-calculation';
 import {makePipeCalculationFields} from '../../src/store/document/calculations/pipe-calculation';
 import {makeFittingCalculationFields} from '../../src/store/document/calculations/fitting-calculation';
 import {makeTmvCalculationFields} from '../../src/store/document/calculations/tmv-calculation';

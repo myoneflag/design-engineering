@@ -25,8 +25,9 @@ import {DrawingArgs} from '../../../src/htmlcanvas/lib/drawable-object';
 import {Calculated, CalculatedObject} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
 import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
 import {assertUnreachable} from "../../../src/config";
-import {DrawableEntityConcrete} from "../../store/document/entities/concrete-entity";
-import {MutablePipe} from "../../store/document/entities/pipe-entity";
+import PipeEntity, {MutablePipe} from "../../store/document/entities/pipe-entity";
+import DirectedValveCalculation from "../../store/document/calculations/directed-valve-calculation";
+import FittingEntity from "../../store/document/entities/fitting-entity";
 
 export const VALVE_SIZE_MM = 140;
 export const VALVE_HEIGHT_MM = 100;
@@ -359,7 +360,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         }
     }
 
-    getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[] {
+    getCalculationEntities(context: CalculationContext): Array<DirectedValveEntity | PipeEntity | FittingEntity> {
         const tower = this.getCalculationTower(context);
         if (tower.length === 0) {
             return [];
@@ -397,6 +398,17 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         } else {
             throw new Error('Invalid tower configuration on directed valve');
         }
+    }
+
+    collectCalculations(context: CalculationContext): DirectedValveCalculation {
+        // find the only directed valve in there and take its calc.
+        const me = this.getCalculationEntities(context)
+            .find((e) => e.type === EntityType.DIRECTED_VALVE) as DirectedValveEntity;
+
+        if (!me) {
+            throw new Error('Can\'t find self in calculations');
+        }
+        return context.globalStore.getOrCreateCalculation(me);
     }
 
     protected refreshObjectInternal(obj: DrawableEntity, old?: DrawableEntity): void {

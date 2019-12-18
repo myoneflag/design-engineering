@@ -1,4 +1,4 @@
-import {Coord} from '../../../../src/store/document/types';
+import {Coord, Coord3D} from '../../../../src/store/document/types';
 import BackedDrawableObject from '../../../../src/htmlcanvas/lib/backed-drawable-object';
 import BaseBackedObject from '../../../../src/htmlcanvas/lib/base-backed-object';
 import Pipe from '../../../../src/htmlcanvas/objects/pipe';
@@ -33,6 +33,7 @@ export default interface Connectable {
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[];
     isStraight(tolerance: number): boolean;
     getAngleOfRad(connection: string): number;
+    get3DOffset(connection: string): Coord3D;
 
     connect(uid: string): void;
     disconnect(uid: string): void;
@@ -41,12 +42,14 @@ export default interface Connectable {
 
     getCalculationTower(context: CalculationContext): Array<[FittingEntity, PipeEntity] | [FittingEntity]>;
     getCalculationNode(context: CalculationContext, connectionUid: string): ConnectableEntityConcrete;
-    getCalculationConnectionGroups(connections?: string[]): EdgeLikeEntity[][];
+    getCalculationConnectionGroups(context: CalculationContext): EdgeLikeEntity[][];
+
+    getCalculationConnections(): string[];
 }
 
 const EPS = 1e-5;
 
-const MAX_PIPE_GROUP_SEPARATION_MM = 5;
+const MAX_PIPE_GROUP_SEPARATION_M = 0.05;
 
 export function ConnectableObject<T extends new (...args: any[])
     => Connectable & BackedConnectable<ConnectableEntityConcrete>>(constructor: T) {
@@ -156,8 +159,8 @@ export function ConnectableObject<T extends new (...args: any[])
         }
 
         getRadials(exclude: string | null = null)
-            : Array<[Coord, BaseBackedObject]> {
-            const result: Array<[Coord, BaseBackedObject]> = [];
+            : Array<[Coord3D, BaseBackedObject]> {
+            const result: Array<[Coord3D, BaseBackedObject]> = [];
             this.objectStore.getConnections(this.entity.uid).forEach((uid) => {
                 if (uid === exclude) {
                     return;
@@ -304,8 +307,28 @@ export function ConnectableObject<T extends new (...args: any[])
         }
 
         getAngleOfRad(connection: string): number {
+            if (!this.getRadials().find((a) => a[1].uid === connection)) {
+                throw new Error('connection not in radials ' + connection + ' \n' +
+                    '' + JSON.stringify(this.getRadials())) + '\n' +
+                '' + JSON.stringify(this.entity);
+            }
             const c = this.toObjectCoord(this.getRadials().find((a) => a[1].uid === connection)![0]);
             return Math.atan2(c.y, c.x);
+        }
+
+        get3DOffset(connection: string): Coord3D {
+            if (!this.getRadials().find((a) => a[1].uid === connection)) {
+                throw new Error('connection not in radials ' + connection + ' \n' +
+                    '' + JSON.stringify(this.getRadials())) + '\n' +
+                '' + JSON.stringify(this.entity);
+
+            }
+            const c = this.getRadials().find((a) => a[1].uid === connection)!;
+            if (this.entity.calculationHeightM === null) {
+                return {...this.toObjectCoord(c[0]), z: 0};
+            } else {
+                return {...this.toObjectCoord(c[0]), z: this.entity.calculationHeightM - c[0].z};
+            }
         }
 
         getFrictionHeadLoss(
@@ -393,24 +416,22 @@ export function ConnectableObject<T extends new (...args: any[])
             super.disconnect(uid);
         }
 
-        getCalculationConnectionGroups(connections?: string[]): EdgeLikeEntity[][] {
-            if (!connections) {
-                connections = this.objectStore.getConnections(this.uid);
-            }
-            const pipes = connections
-                .map((puid) => this.objectStore.get(puid) as Pipe)
-                .sort((a, b) => a.entity.heightAboveFloorM - b.entity.heightAboveFloorM);
+        getCalculationConnectionGroups(context: CalculationContext): EdgeLikeEntity[][] {
+            const edgeLikes = this.getCalculationConnections()
+                .map((puid) => this.objectStore.get(puid)!.entity as EdgeLikeEntity)
+                .sort((a, b) => getEdgeLikeHeightM(a, context) - getEdgeLikeHeightM(b, context));
 
 
-            const res: PipeEntity[][] = [];
-            let group: PipeEntity[] = [];
-            pipes.forEach((p) => {
+            const res: EdgeLikeEntity[][] = [];
+            let group: EdgeLikeEntity[] = [];
+            edgeLikes.forEach((entity) => {
                 if (group.length == 0 ||
-                    p.entity.heightAboveFloorM <= group[0].heightAboveFloorM + MAX_PIPE_GROUP_SEPARATION_MM) {
-                    group.push(p.entity);
+                    getEdgeLikeHeightM(entity, context) <=
+                    getEdgeLikeHeightM(group[0], context) + MAX_PIPE_GROUP_SEPARATION_M) {
+                    group.push(entity);
                 } else {
                     res.push(group);
-                    group = [p.entity];
+                    group = [entity];
                 }
             });
 
@@ -422,10 +443,14 @@ export function ConnectableObject<T extends new (...args: any[])
         }
 
         getCalculationNode(context: CalculationContext, connectionUid: string): ConnectableEntityConcrete {
-            const groups = this.getCalculationConnectionGroups();
+            const groups = this.getCalculationConnectionGroups(context);
             const index = groups.findIndex((l) => l.find((pe) => pe.uid === connectionUid));
             if (index === -1) {
-                throw new Error('Requesting calculation node from a non neighbour');
+                throw new Error('Requesting calculation node from a non neighbour. I am ' +
+                    JSON.stringify(this.entity) + '\n ' +
+                    'connections: ' + JSON.stringify(this.objectStore.getConnections(this.uid)) + '' +
+                    'arg: ' + connectionUid,
+                );
             }
 
             return this.getCalculationTower(context)[index][0];
@@ -445,7 +470,7 @@ export function ConnectableObject<T extends new (...args: any[])
          *         uid.0--------puid-uid--
          */
         getCalculationTower(context: CalculationContext): Array<[FittingEntity, PipeEntity] | [FittingEntity]> {
-            const groups = this.getCalculationConnectionGroups();
+            const groups = this.getCalculationConnectionGroups(context);
 
             if (groups.length === 0) {
                 return [];
@@ -483,7 +508,7 @@ export function ConnectableObject<T extends new (...args: any[])
                         parentUid: null,
                         systemUid,
                         type: EntityType.PIPE,
-                        uid: "",
+                        uid: this.uid + '.' + i + '.p',
                     };
                     result.push([ce, pe]);
                 } else {
@@ -495,6 +520,9 @@ export function ConnectableObject<T extends new (...args: any[])
             });
 
             return result;
+        }
+        getCalculationConnections(): string[] {
+            return [...this.objectStore.getConnections(this.uid), ...super.getCalculationConnections()];
         }
     });
 }

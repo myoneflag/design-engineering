@@ -48,11 +48,14 @@ import DirectedValveEntity, {
 import {ValveType} from '../../src/store/document/entities/directed-valves/valve-types';
 import {lookupFlowRate} from '../../src/calculations/utils';
 import FittingCalculation from '../../src/store/document/calculations/fitting-calculation';
-import RiserCalculations from '../store/document/calculations/riser-calculations';
+import RiserCalculation from '../store/document/calculations/riser-calculation';
 import DirectedValveCalculation from '../../src/store/document/calculations/directed-valve-calculation';
 import SystemNodeCalculation from '../../src/store/document/calculations/system-node-calculation';
 import {StandardFlowSystemUids} from '../../src/store/catalog';
 import {isCalculated} from "../store/document/calculations";
+import DrawableObjectFactory from "../htmlcanvas/lib/drawable-object-factory";
+import {Calculated} from "../htmlcanvas/lib/object-traits/calculated-object";
+import {isConnectable, isConnectableEntity} from "../store/document";
 
 export const SELF_CONNECTION = 'SELF_CONNECTION';
 
@@ -60,6 +63,9 @@ export const SELF_CONNECTION = 'SELF_CONNECTION';
 export default class CalculationEngine {
 
     globalStore!: GlobalStore;
+    networkObjectUids: string[] = [];
+    drawableObjectUids: string[] = [];
+
     doc!: DocumentState;
     demandType!: DemandType;
     flowGraph!: Graph<FlowNode, FlowEdge>;
@@ -67,6 +73,15 @@ export default class CalculationEngine {
     catalog!: Catalog;
     drawing!: DrawingState;
     ga!: number;
+
+    get networkObjects(): BaseBackedObject[] {
+        return this.networkObjectUids.map((u) => this.globalStore.get(u)!);
+    }
+
+    get drawableObjects(): BaseBackedObject[] {
+        return this.drawableObjectUids.map((u) => this.globalStore.get(u)!);
+    }
+
 
     calculate(
         objectStore: GlobalStore,
@@ -98,7 +113,7 @@ export default class CalculationEngine {
 
     clearCalculations() {
         this.globalStore.clearCalculations();
-        this.globalStore.forEach((v) => {
+        this.networkObjects.forEach((v) => {
             if (isCalculated(v.entity)) {
                 this.globalStore.getOrCreateCalculation(v.entity);
             }
@@ -164,30 +179,91 @@ export default class CalculationEngine {
 
     doRealCalculation() {
         this.clearCalculations();
-        this.configureLUFlowGraph();
 
         const sanityPassed = this.sanityCheck(this.globalStore, this.doc);
 
-        if (sanityPassed) {
-            this.preCompute();
-            // The remaining graph must be a rooted forest.
-            const sources: FlowNode[] = Array.from(this.globalStore.values())
-                .filter((o) => o.type === EntityType.RISER)
-                .map((o) => ({connectable: o.uid, connection: SELF_CONNECTION}));
-            this.sizeDefiniteTransports(sources);
-            //this.sizeRingsAndRoots(sources);
-            this.calculateAllPointPressures(sources);
-            this.fillPressureDropFields();
-            this.createWarnings();
+        try {
+            if (sanityPassed) {
+                this.buildNetworkObjects();
+                this.configureLUFlowGraph();
+
+                this.preCompute();
+                // The remaining graph must be a rooted forest.
+                const sources: FlowNode[] = this.networkObjects
+                    .filter((o) => o.type === EntityType.RISER)
+                    .map((o) => ({connectable: o.uid, connection: SELF_CONNECTION}));
+                this.sizeDefiniteTransports(sources);
+                //this.sizeRingsAndRoots(sources);
+                this.calculateAllPointPressures(sources);
+                this.fillPressureDropFields();
+                this.createWarnings();
+
+                this.collectResults();
+            }
+        } finally {
+            this.removeNetworkObjects();
+            this.networkObjectUids = [];
         }
+
 
         if (!this.equationEngine.isComplete()) {
             throw new Error('Calculations could not complete \n');
         }
     }
 
+    // Take the calcs from the invisible network and collect them into the visible results.
+    collectResults() {
+        this.drawableObjects.forEach((o) => {
+            if (isCalculated(o.entity)) {
+                this.globalStore.setCalculation(o.uid, (o as unknown as Calculated).collectCalculations(this));
+            }
+        });
+    }
+
+    buildNetworkObjects() {
+        this.drawableObjectUids = Array.from(this.globalStore.keys());
+        // We assume we have a fresh globalstore with no pollutants.
+        Array.from(this.globalStore.values()).forEach((o) => {
+            const es = o.getCalculationEntities(this);
+            es.forEach((e) => {
+                if (this.globalStore.has(e.uid)) {
+                    throw new Error('Projected entity already exists: ' + JSON.stringify(e));
+                }
+                console.log(JSON.stringify(e));
+
+                // all z coordinates are thingos.
+                if (isConnectableEntity(e)) {
+                    if (!e.calculationHeightM) {
+                        throw new Error('entities in the calculation phase must be 3d');
+                    }
+                    const floorId = this.globalStore.levelOfEntity.get(o.uid)!;
+                    if (floorId !== null) {
+                        console.log(floorId);
+                        e.calculationHeightM += this.doc.drawing.levels[floorId].floorHeightM;
+                    }
+                }
+
+                DrawableObjectFactory.buildGhost(
+                    () => ({...e, __calc__: true}),
+                    this.globalStore,
+                    this.globalStore.levelOfEntity.get(o.uid)!,
+                );
+                // this.globalStore.set(e.uid, e); this is already done by DrawableObjectFactory
+
+                this.networkObjectUids.push(e.uid);
+            });
+        });
+        console.log('built ' + this.networkObjectUids.length + ' network objects');
+    }
+
+    removeNetworkObjects() {
+        this.networkObjectUids.forEach((uid) => {
+            this.globalStore.delete(uid);
+        })
+    }
+
     preCompute() {
-        this.globalStore.forEach((o) => {
+        this.networkObjects.forEach((o) => {
             if (o.entity.type === EntityType.PIPE) {
                 const c = this.globalStore.getOrCreateCalculation(o.entity);
                 c.lengthM = o.entity.lengthM == null ? (o as Pipe).computedLengthM : o.entity.lengthM;
@@ -196,7 +272,7 @@ export default class CalculationEngine {
     }
 
     calculateAllPointPressures(sources: FlowNode[]) {
-        this.globalStore.forEach((obj) => {
+        this.networkObjects.forEach((obj) => {
             const entity = obj.entity;
             switch (entity.type) {
                 case EntityType.FIXTURE: {
@@ -234,7 +310,7 @@ export default class CalculationEngine {
                 case EntityType.FITTING:
                 case EntityType.SYSTEM_NODE:
                     const calculation = this.globalStore.getOrCreateCalculation(entity) as
-                        RiserCalculations | DirectedValveCalculation | FittingCalculation | SystemNodeCalculation;
+                        RiserCalculation | DirectedValveCalculation | FittingCalculation | SystemNodeCalculation;
                     const candidates = cloneSimple(this.globalStore.getConnections(entity.uid));
                     if (entity.type === EntityType.RISER) {
                         candidates.push(SELF_CONNECTION);
@@ -362,11 +438,19 @@ export default class CalculationEngine {
                     case EdgeType.PIPE:
                         if (obj instanceof Pipe) {
                             const calculation = this.globalStore.getOrCreateCalculation(obj.entity);
-                            if (!calculation || calculation.pressureDropKpa === null) {
+
+                            // recalculate with height
+
+
+                            if (!calculation || calculation.peakFlowRate === null) {
                                 // TODO: return a ">" symbol. 10 + ">0" = > 10.
                                 return 0;
                             }
-                            return calculation.pressureDropKpa;
+                            return head2kpa(
+                                obj.getFrictionHeadLoss(this, calculation.peakFlowRate, edge.from, edge.to, true),
+                                getFluidDensityOfSystem(obj.entity.systemUid, this.doc, this.catalog)!,
+                                this.ga,
+                            );
                         } else {
                             throw new Error('misconfigured flow graph');
                         }
@@ -493,7 +577,7 @@ export default class CalculationEngine {
     // Just like a flow graph, but only connects when loading units are transferred.
     configureLUFlowGraph() {
         this.flowGraph = new Graph<FlowNode, FlowEdge>();
-        this.globalStore.forEach((obj) => {
+        this.networkObjects.forEach((obj) => {
             switch (obj.entity.type) {
                 case EntityType.PIPE:
                     if (obj.entity.endpointUid[0] === null || obj.entity.endpointUid[1] === null) {
@@ -1091,7 +1175,7 @@ export default class CalculationEngine {
         const totalReachedPsdU = this.getTotalReachedPsdU(roots);
 
         // Go through all pipes
-        this.globalStore.forEach((object) => {
+        this.networkObjects.forEach((object) => {
             switch (object.entity.type) {
                 case EntityType.TMV:
                     this.sizeDefiniteTransport(
@@ -1187,7 +1271,7 @@ export default class CalculationEngine {
     }
 
     fillPressureDropFields() {
-        this.globalStore.forEach((o) => {
+        this.networkObjects.forEach((o) => {
             switch (o.entity.type) {
                 case EntityType.TMV: {
 
@@ -1198,8 +1282,8 @@ export default class CalculationEngine {
                             o.getFrictionHeadLoss(
                                 this,
                                 frw,
-                                {connectable: o.uid, connection: o.entity.hotRoughInUid},
-                                {connectable: o.uid, connection: o.entity.warmOutputUid},
+                                {connection: o.uid, connectable: o.entity.hotRoughInUid},
+                                {connection: o.uid, connectable: o.entity.warmOutputUid},
                                 true,
                             ),
                             getFluidDensityOfSystem(StandardFlowSystemUids.WarmWater, this.doc, this.catalog)!,
@@ -1214,8 +1298,8 @@ export default class CalculationEngine {
                                 o.getFrictionHeadLoss(
                                     this,
                                     fr,
-                                    {connectable: o.uid, connection: o.entity.coldRoughInUid},
-                                    {connectable: o.uid, connection: o.entity.coldOutputUid},
+                                    {connection: o.uid, connectable: o.entity.coldRoughInUid},
+                                    {connection: o.uid, connectable: o.entity.coldOutputUid},
                                     true,
                                 ),
                                 getFluidDensityOfSystem(StandardFlowSystemUids.ColdWater, this.doc, this.catalog)!,
@@ -1232,8 +1316,8 @@ export default class CalculationEngine {
                             o.getFrictionHeadLoss(
                                 this,
                                 calculation.peakFlowRate,
-                                {connectable: o.uid, connection: o.entity.endpointUid[0]},
-                                {connectable: o.uid, connection: o.entity.endpointUid[1]},
+                                {connection: o.uid, connectable: o.entity.endpointUid[0]},
+                                {connection: o.uid, connectable: o.entity.endpointUid[1]},
                                 true,
                             ),
                             getFluidDensityOfSystem(StandardFlowSystemUids.ColdWater, this.doc, this.catalog)!,
@@ -1247,7 +1331,7 @@ export default class CalculationEngine {
                 case EntityType.DIRECTED_VALVE:
                 case EntityType.SYSTEM_NODE:
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity) as
-                        FittingCalculation | RiserCalculations | SystemNodeCalculation | DirectedValveCalculation;
+                        FittingCalculation | RiserCalculation | SystemNodeCalculation | DirectedValveCalculation;
                     const connections = this.globalStore.getConnections(o.entity.uid);
 
                     if (connections.length === 2) {
@@ -1310,7 +1394,7 @@ export default class CalculationEngine {
     }
 
     createWarnings() {
-        this.globalStore.forEach((o) => {
+        this.networkObjects.forEach((o) => {
             switch (o.entity.type) {
                 case EntityType.BACKGROUND_IMAGE:
                     break;

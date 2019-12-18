@@ -1,5 +1,5 @@
 import {
-    CalculatableEntityConcrete,
+    CalculatableEntityConcrete, CalculationConcrete,
     ConnectableEntityConcrete
 } from '../../../../src/store/document/entities/concrete-entity';
 import {DrawingContext} from '../../../../src/htmlcanvas/lib/types';
@@ -17,6 +17,7 @@ import {tm2flatten} from '../../../../src/htmlcanvas/lib/utils';
 import {TEXT_MAX_SCALE} from '../../../../src/htmlcanvas/objects/pipe';
 import {matrixScale, warningSignImg, wrapText} from '../../../../src/htmlcanvas/utils';
 import {applyToPoint} from 'transformation-matrix/applyToPoint';
+import {CalculationContext} from "../../../calculations/types";
 
 export interface Calculated {
     drawCalculationBox(
@@ -29,6 +30,7 @@ export interface Calculated {
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[];
     getCalculationFields(context: DrawingContext, filters: CalculationFilters): CalculationData[];
     hasWarning(context: DrawingContext): boolean;
+    collectCalculations(context: CalculationContext): CalculationConcrete;
 }
 
 

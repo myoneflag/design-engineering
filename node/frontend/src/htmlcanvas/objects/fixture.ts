@@ -26,6 +26,7 @@ import {DrawingArgs} from '../../../src/htmlcanvas/lib/drawable-object';
 import {Calculated, CalculatedObject, FIELD_HEIGHT} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
 import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
 import {cloneSimple} from "../../lib/utils";
+import FixtureCalculation from "../../store/document/calculations/fixture-calculation";
 
 @CalculatedObject
 @SelectableObject
@@ -289,15 +290,19 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         throw new Error('not implemented');
     }
 
-    getCalculationEntities(context: CalculationContext): FixtureEntity[] {
+    getCalculationEntities(context: CalculationContext): [FixtureEntity] {
         const e: FixtureEntity = cloneSimple(this.entity);
         e.uid += '.calculation';
         if (e.warmRoughInUid) {
             e.warmRoughInUid = this.objectStore.get(e.warmRoughInUid)!
-                .getCalculationNode(context, e.warmRoughInUid).uid;
+                .getCalculationNode(context, this.uid).uid;
         }
-        e.coldRoughInUid = this.objectStore.get(e.coldRoughInUid)!.getCalculationNode(context, e.coldRoughInUid).uid;
+        e.coldRoughInUid = this.objectStore.get(e.coldRoughInUid)!.getCalculationNode(context, this.uid).uid;
         return [e];
+    }
+
+    collectCalculations(context: CalculationContext): FixtureCalculation {
+        return context.globalStore.getOrCreateCalculation(this.getCalculationEntities(context)[0])
     }
 
     rememberToRegister(): void {
