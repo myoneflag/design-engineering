@@ -24,6 +24,7 @@ import {fillDirectedValveFields} from '../../../../src/store/document/entities/d
 import connectTmvToSource from '../../../../src/htmlcanvas/lib/black-magic/connect-tmv-to-source';
 import Tmv from '../../../../src/htmlcanvas/objects/tmv/tmv';
 import {assertUnreachable} from "../../../../src/config";
+import * as _ from 'lodash';
 
 const CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM = 500;
 const FIXTURE_WALL_DIST_MM = 200;
@@ -47,6 +48,7 @@ const MIN_PIPE_LEN_MM = 100;
 //      null as entities becomes disqualified as auto-connect progresses and suffocates available
 //      connections. Ie, the only change in distance over time should be from a valid distance to
 //      null.
+// 3. Group distance cache: When joining two groups, distances between other groups are not affected.
 export class AutoConnector {
     selected: BaseBackedObject[];
     allowedUids: Set<string> = new Set<string>();
@@ -200,10 +202,22 @@ export class AutoConnector {
 
     joinEntitiesCache = new Map<string, number | null>();
 
-    joinEntities(a: string, b: string, doit: boolean = true): number | null {
+    calls = 0;
+    joinEntities(a: string, b: string, doit: boolean = true, cutoff?: number): number | null {
         const key = a < b ? a + b : b + a;
+        this.calls ++;
         if (!doit && this.joinEntitiesCache.has(key)) {
             return this.joinEntitiesCache.get(key)!;
+        }
+
+        if (cutoff !== undefined) {
+            // we avoid unnecessary calculations by ignoring all entities that can't possibly be closer
+            // than cutoff - euclidean distance.
+            const as = this.getOrSetShape(this.context.objectStore.get(a)!);
+            const bs = this.getOrSetShape(this.context.objectStore.get(b)!);
+            if (as.distanceTo(bs)[0] > cutoff) {
+                return Infinity;
+            }
         }
 
         const run = () => {
@@ -672,12 +686,12 @@ export class AutoConnector {
         }
     }
 
-    joinGroups(a: string[], b: string[], doit: boolean = true): number | null {
+    joinGroups(a: string[], b: string[], doit: boolean = true, cutoff?: number): number | null {
         let bestDist: number | null = null;
         let bestPair: [string, string] | null = null;
         a.forEach((auid) => {
             b.forEach((buid) => {
-                const res = this.joinEntities(auid, buid, false);
+                const res = this.joinEntities(auid, buid, false, cutoff);
                 if (res !== null) {
                     if (bestDist === null || res < bestDist) {
                         bestDist = res;
@@ -712,16 +726,23 @@ export class AutoConnector {
         }
     }
 
-    groupDist(a: string[], b: string[]): number | null {
-        return this.joinGroups(a, b, false);
+    groupDistCache = new Map<string, number | null>();
+    groupDist(a: string[], b: string[], cutoff: number | undefined): number | null {
+        const key = this.unionFind.find(a[0]) + this.unionFind.find(b[0]);
+        if (!this.groupDistCache.has(key)) {
+            this.groupDistCache.set(key, this.joinGroups(a, b, false, cutoff));
+        }
+
+        return this.groupDistCache.get(key)!;
     }
 
     findCheapestJoin(groups: string[][]): [number, number] | null {
+        console.log(JSON.stringify(groups.map((g) => g.length)));
         let currDist: number | null = null;
         let bestAns: [number, number] = [-1, -1];
         for (let a = 0; a < groups.length; a++) {
             for (let b = a + 1; b < groups.length; b++) {
-                const dist = this.groupDist(groups[a], groups[b]);
+                const dist = this.groupDist(groups[a], groups[b], currDist === null ? undefined : currDist);
                 if (dist !== null) {
                     if (currDist === null || dist < currDist) {
                         currDist = dist;
@@ -778,6 +799,7 @@ export class AutoConnector {
 
     autoConnect() {
         this.rig();
+        this.calls = 0;
 
         try {
             // firstly
@@ -789,16 +811,27 @@ export class AutoConnector {
                 this.processInitialConnections();
                 const groups = this.unionFind.groups();
                 const res = this.findCheapestJoin(groups);
+                console.log(this.calls);
                 if (!res) {
                     break;
                 }
 
-                // start logging
+                const toBustA = this.unionFind.find(groups[res[0]][0]);
+                const toBustB = this.unionFind.find(groups[res[1]][1]);
                 this.joinGroups(groups[res[0]], groups[res[1]], true);
+                Array.from(this.groupDistCache.keys()).forEach((k) => {
+                    if (k.includes(toBustA) || k.includes(toBustB)) {
+                        this.groupDistCache.delete(k);
+                    }
+                });
+
                 // end loggin
+                console.log(' ' + this.calls);
 
                 // TODO: something faster. Like just inserting objects directly into the layer or something.
                 // this.context.processDocument(false);
+
+                console.log('  ' + this.calls);
             }
 
             rebaseAll(this.context);
@@ -806,6 +839,8 @@ export class AutoConnector {
         } finally {
             this.teardown();
         }
+
+        console.log(this.calls);
     }
 
     connectConnectablesWithPipe(
@@ -840,4 +875,58 @@ export interface GridLine {
 export interface Wall {
     source: Flatten.Point;
     line: Flatten.Line;
+}
+
+class GroupDistCache {
+    // Parallel array, 2-way mapping. Remember to maintain that.
+    cache = new Map<string, Map<string, number>>();
+
+    addGroup(gid: string, dists: Map<string, number>) {
+        dists.forEach((v, k) => {
+            this.getOrSet(gid).set(k, v);
+            this.getOrSet(k).set(gid, v);
+        });
+    }
+
+    join(auid: string, buid: string, nuid: string) {
+        if (nuid !== auid && nuid !== buid) {
+            throw new Error('new uid must be one of the old ones when simulating a union join');
+        }
+        const newMap = _.clone(this.getOrSet(auid));
+        this.getOrSet(buid).forEach((v, k) => {
+            if (newMap.has(k)) {
+                newMap.set(k, Math.min(newMap.get(k)!, v));
+            } else {
+                newMap.set(k, v);
+            }
+        });
+        newMap.delete(auid);
+        newMap.delete(buid);
+        this.delete(auid);
+        this.delete(buid);
+        this.addGroup(nuid, newMap);
+    }
+
+    get(auid: string, buid: string) {
+        const v1 = this.cache.get(auid)!.get(buid);
+        const v2 = this.cache.get(buid)!.get(auid);
+        if (v1 !== v2) {
+            throw new Error('cache is inconsistent');
+        }
+        return v1;
+    }
+
+    private getOrSet(key: string) {
+        if (!this.cache.has(key)) {
+            this.cache.set(key, new Map<string, number>());
+        }
+        return this.cache.get(key)!;
+    }
+
+    private delete(key: string) {
+        this.getOrSet(key).forEach((v, k) => {
+            this.cache.get(k)!.delete(key);
+        });
+        this.cache.delete(key);
+    }
 }
