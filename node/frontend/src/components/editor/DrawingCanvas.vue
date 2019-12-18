@@ -692,6 +692,7 @@ export default class DrawingCanvas extends Vue {
         if (this.selectedObjects) {
             const ac = new AutoConnector(this.selectedObjects, this);
             ac.autoConnect();
+            this.scheduleDraw();
         }
     }
 

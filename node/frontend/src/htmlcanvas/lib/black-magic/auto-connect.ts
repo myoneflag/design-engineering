@@ -39,6 +39,14 @@ const VALVE_CONNECT_HANDICAP_MM = 30;
 export const PIPE_STUB_MAX_LENGTH_MM = 300;
 const MIN_PIPE_LEN_MM = 100;
 
+// Note: there are some aggressive caches that help improve performance. The caches will only be
+// correct if the following invariants are maintained:
+// 1. For height caching, the height of objects only change when adding pipes (because the connectable
+//      endpoints will have the new pipe's height to consider).
+// 2. For entity-entity distance caching, the distance is either the same, or goes from a number to
+//      null as entities becomes disqualified as auto-connect progresses and suffocates available
+//      connections. Ie, the only change in distance over time should be from a valid distance to
+//      null.
 export class AutoConnector {
     selected: BaseBackedObject[];
     allowedUids: Set<string> = new Set<string>();
@@ -47,6 +55,7 @@ export class AutoConnector {
     gridLines: GridLine[] = [];
     walls: Wall[] = [];
 
+    shapeCache = new Map<string, Flatten.Shape>();
 
     constructor(selected: BaseBackedObject[], context: CanvasContext) {
         if (selected === undefined || selected === null) {
@@ -55,6 +64,13 @@ export class AutoConnector {
         this.selected = selected;
         this.context = context;
         this.processWalls();
+    }
+
+    getOrSetShape(obj: BaseBackedObject) {
+        if (!this.shapeCache.has(obj.uid)) {
+            this.shapeCache.set(obj.uid, obj.shape()!);
+        }
+        return this.shapeCache.get(obj.uid)!;
     }
 
     processInitialConnections() {
@@ -135,32 +151,40 @@ export class AutoConnector {
         });
     }
 
-
-
+    entityHeightCache = new Map<string, [number, number]>();
     getEntityHeight(entity: DrawableEntityConcrete): [number, number] {
-        switch (entity.type) {
-            case EntityType.PIPE:
-                return [entity.heightAboveFloorM, entity.heightAboveFloorM];
-            case EntityType.RISER:
-                return [-Infinity, Infinity];
-            case EntityType.FITTING:
-            case EntityType.DIRECTED_VALVE:
-            case EntityType.SYSTEM_NODE:
-                let maxh = maxHeightOfConnection(entity, this.context);
-                let minh = minHeightOfConnection(entity, this.context);
-                maxh = maxh === null ? -Infinity : maxh;
-                minh = minh === null ? Infinity : minh;
-
-                return [minh, maxh];
-            case EntityType.TMV:
-                return [entity.heightAboveFloorM, entity.heightAboveFloorM];
-            case EntityType.FIXTURE:
-                const fixture = fillFixtureFields(this.context.document.drawing, this.context.effectiveCatalog, entity);
-                return [fixture.outletAboveFloorM!, fixture.outletAboveFloorM!];
-            case EntityType.BACKGROUND_IMAGE:
-                throw new Error('entity has no height');
+        if (this.entityHeightCache.has(entity.uid)) {
+            return this.entityHeightCache.get(entity.uid)!;
         }
-        assertUnreachable(entity);
+
+        const fun = (): [number, number] => {
+            switch (entity.type) {
+                case EntityType.PIPE:
+                    return [entity.heightAboveFloorM, entity.heightAboveFloorM];
+                case EntityType.RISER:
+                    return [-Infinity, Infinity];
+                case EntityType.FITTING:
+                case EntityType.DIRECTED_VALVE:
+                case EntityType.SYSTEM_NODE:
+                    let maxh = maxHeightOfConnection(entity, this.context);
+                    let minh = minHeightOfConnection(entity, this.context);
+                    maxh = maxh === null ? -Infinity : maxh;
+                    minh = minh === null ? Infinity : minh;
+
+                    return [minh, maxh];
+                case EntityType.TMV:
+                    return [entity.heightAboveFloorM, entity.heightAboveFloorM];
+                case EntityType.FIXTURE:
+                    const fixture = fillFixtureFields(this.context.document.drawing, this.context.effectiveCatalog, entity);
+                    return [fixture.outletAboveFloorM!, fixture.outletAboveFloorM!];
+                case EntityType.BACKGROUND_IMAGE:
+                    throw new Error('entity has no height');
+            }
+            assertUnreachable(entity);
+        };
+
+        this.entityHeightCache.set(entity.uid, fun.bind(this)());
+        return this.entityHeightCache.get(entity.uid)!;
     }
 
     isRoofHeight(entity: DrawableEntityConcrete): boolean {
@@ -177,8 +201,9 @@ export class AutoConnector {
     joinEntitiesCache = new Map<string, number | null>();
 
     joinEntities(a: string, b: string, doit: boolean = true): number | null {
-        if (!doit && this.joinEntitiesCache.has(a + b)) {
-            return this.joinEntitiesCache.get(a + b)!;
+        const key = a < b ? a + b : b + a;
+        if (!doit && this.joinEntitiesCache.has(key)) {
+            return this.joinEntitiesCache.get(key)!;
         }
 
         const run = () => {
@@ -280,9 +305,9 @@ export class AutoConnector {
 
                     // if the mount point is very close to the other bloke, then just connect it straight away.
                     if (them.entity.type !== EntityType.SYSTEM_NODE) {
-                        const d = them.shape()!.distanceTo(mntPt);
+                        const d = this.getOrSetShape(them).distanceTo(mntPt);
                         if (d[0] < WALL_INSERT_JOIN_THRESHOLD_MM) {
-                            totLen += d[1].distanceTo(me.shape()!)[0];
+                            totLen += d[1].distanceTo(this.getOrSetShape(me))[0];
                             if (doit) {
 
                                 let v = them.entity as ConnectableEntityConcrete;
@@ -378,24 +403,21 @@ export class AutoConnector {
 
                 return totLen + this.connectThroughWalls(ao, bo, systemUid, doit)!;
             }
-        }
+        };
 
         const res = run.bind(this)();
-        if (!doit) {
-            this.joinEntitiesCache.set(a + b, res);
-        }
+        this.joinEntitiesCache.set(key, res);
         return res;
     }
 
 
 
     connectThroughRoof(ao: BaseBackedObject, bo: BaseBackedObject, systemUid: string, doit: boolean): number | null {
-
         // OK now try the option of connecting it through the roof
         let maxHeight = Math.max(this.getEntityHeight(ao.entity)[1], this.getEntityHeight(bo.entity)[1]);
         maxHeight = Math.max(maxHeight, this.context.document.drawing.metadata.calculationParams.ceilingPipeHeightM);
 
-        const straight = ao.shape()!.distanceTo(bo.shape()!);
+        const straight = this.getOrSetShape(ao).distanceTo(this.getOrSetShape(bo));
 
         if (doit) {
             if (ao.type === EntityType.PIPE) {
@@ -504,7 +526,7 @@ export class AutoConnector {
         let bestWallDist = Infinity;
         let bestWall: Wall | null = null;
 
-        const oshape = o.shape();
+        const oshape = this.getOrSetShape(o);
 
         this.walls.forEach((w) => {
             const wallD = w.line.distanceTo(oshape!);
@@ -550,7 +572,7 @@ export class AutoConnector {
             // within 5 degrees? consider that the same angle.
             if (wa.source.distanceTo(wb.line)[0] < WALL_SAME_DIST_THRESHOLD_MM) {
                 // they snapped to the same wall. Just join directly.
-                const path = ao.shape()!.distanceTo(bo.shape()!);
+                const path = this.getOrSetShape(ao).distanceTo(this.getOrSetShape(bo));
                 if (doit) {
                     if (ao.type === EntityType.PIPE) {
                         ao = this.context.objectStore.get(addValveAndSplitPipe(
@@ -596,7 +618,7 @@ export class AutoConnector {
             if (corner === undefined) {
                 throw new Error('Walls should have intersected, but they didnt. adiff: ' + adiff);
             }
-            const pd = corner.distanceTo(ao.shape()!)[0] + corner.distanceTo(bo.shape()!)[0];
+            const pd = corner.distanceTo(this.getOrSetShape(ao))[0] + corner.distanceTo(this.getOrSetShape(bo))[0];
             if (doit) {
                 if (ao.type === EntityType.PIPE) {
                     ao = this.context.objectStore.get(addValveAndSplitPipe(
@@ -717,6 +739,10 @@ export class AutoConnector {
 
 
     onDeleteEntity = ({entity, levelUid}: EntityParam) => {
+        if (entity.type === EntityType.PIPE) {
+            this.entityHeightCache.delete(entity.endpointUid[0]);
+            this.entityHeightCache.delete(entity.endpointUid[1]);
+        }
         this.selected.splice(0, this.selected.length, ...this.selected.filter((o) => o.entity !== undefined));
         // tslint:disable-next-line:semicolon
     };
@@ -724,6 +750,10 @@ export class AutoConnector {
     onAddEntity = ({entity, levelUid}: EntityParam) => {
         if (this.context.document.uiState.levelUid === levelUid) {
             this.selected.push(this.context.objectStore.get(entity.uid)!);
+        }
+        if (entity.type === EntityType.PIPE) {
+            this.entityHeightCache.delete(entity.endpointUid[0]);
+            this.entityHeightCache.delete(entity.endpointUid[1]);
         }
         // tslint:disable-next-line:semicolon
     };
@@ -763,7 +793,9 @@ export class AutoConnector {
                     break;
                 }
 
+                // start logging
                 this.joinGroups(groups[res[0]], groups[res[1]], true);
+                // end loggin
 
                 // TODO: something faster. Like just inserting objects directly into the layer or something.
                 // this.context.processDocument(false);
