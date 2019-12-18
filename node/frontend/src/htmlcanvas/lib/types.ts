@@ -203,7 +203,12 @@ export class GlobalStore extends ObjectStore {
         entities.forEach((e) => {
             if (!inLevelNow.has(e.uid)) {
                 const o = DrawableObjectFactory.buildGhost(
-                    () => levelUid ? doc.drawing.levels[levelUid].entities[e.uid] : doc.drawing.shared[e.uid],
+                    () => {
+                        if (levelUid !== null && !doc.drawing.levels.hasOwnProperty(levelUid)) {
+                            throw new Error('level not found ' + levelUid);
+                        }
+                        return levelUid ? doc.drawing.levels[levelUid].entities[e.uid] : doc.drawing.shared[e.uid];
+                    },
                     this,
                     levelUid,
                 );

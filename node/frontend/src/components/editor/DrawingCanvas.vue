@@ -486,15 +486,27 @@ export default class DrawingCanvas extends Vue {
     }
 
     onOT(redraw: boolean = true) {
+        if (!redraw) {
+            this.drawingLocked ++;
+        }
         if (this.document.uiState.levelUid &&
             !this.document.drawing.levels.hasOwnProperty(this.document.uiState.levelUid)) {
             this.document.uiState.levelUid = null;
         }
+
+        // Todo: Take the diff and update only the diff.
         Object.values(this.document.drawing.levels).forEach((level) => {
             this.globalStore.resetLevel(level.uid, Object.values(level.entities), this.document);
         });
         this.globalStore.resetLevel(null, Object.values(this.document.drawing.shared), this.document);
+        Array.from(this.globalStore.entitiesInLevel.keys()).forEach((lvlUid) => {
+            if (lvlUid !== null && !this.document.drawing.levels.hasOwnProperty(lvlUid)) {
+                this.globalStore.onLevelDelete(lvlUid);
+            }
+        });
+
         this.resetVisibleLevel();
+        this.drawingLocked --;
         if (redraw) {
             this.scheduleDraw();
         }
@@ -780,7 +792,9 @@ export default class DrawingCanvas extends Vue {
     }
 
     resetVisibleLevel() {
-        if (this.document.uiState.levelUid === null && !_.isEmpty(this.document.drawing.levels)) {
+        if ((this.document.uiState.levelUid === null ||
+            !this.document.drawing.levels.hasOwnProperty(this.document.uiState.levelUid) &&
+            !_.isEmpty(this.document.drawing.levels))) {
             this.selectGroundFloor();
             return;
         }
