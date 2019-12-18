@@ -8,7 +8,7 @@ import {
     DrawableEntityConcrete
 } from '../../../../src/store/document/entities/concrete-entity';
 import {fillFixtureFields} from '../../../../src/store/document/entities/fixtures/fixture-entity';
-import {maxHeightOfConnection, minHeightOfConnection} from '../../../../src/htmlcanvas/lib/utils';
+import {getFloorHeight, maxHeightOfConnection, minHeightOfConnection} from '../../../../src/htmlcanvas/lib/utils';
 import Flatten from '@flatten-js/core';
 import {InteractionType} from '../../../../src/htmlcanvas/lib/interaction';
 import {addValveAndSplitPipe} from '../../../../src/htmlcanvas/lib/black-magic/split-pipe';
@@ -28,6 +28,7 @@ import connectTmvToSource from '../../../../src/htmlcanvas/lib/black-magic/conne
 import Tmv from '../../../../src/htmlcanvas/objects/tmv/tmv';
 import {assertUnreachable} from "../../../../src/config";
 import * as _ from 'lodash';
+import RiserEntity, {fillRiserDefaults} from "../../../store/document/entities/riser-entity";
 
 const CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM = 500;
 const FIXTURE_WALL_DIST_MM = 200;
@@ -97,6 +98,7 @@ export class AutoConnector {
                             subs.push(o.entity.warmOutputUid);
                             if (o.entity.coldOutputUid) {
                                 subs.push(o.entity.coldOutputUid);
+                                this.unionFind.join(o.entity.coldOutputUid, o.entity.coldRoughInUid);
                             }
                             break;
                         case EntityType.FIXTURE:
@@ -167,7 +169,12 @@ export class AutoConnector {
                 case EntityType.PIPE:
                     return [entity.heightAboveFloorM, entity.heightAboveFloorM];
                 case EntityType.RISER:
-                    return [-Infinity, Infinity];
+                    const re = this.context.globalStore.get(entity.uid)!.entity as RiserEntity;
+                    const fre = fillRiserDefaults(this.context.document, re);
+                    return [
+                        fre.bottomHeightM! - getFloorHeight(this.context.globalStore, this.context.document, re),
+                        fre.topHeightM! - getFloorHeight(this.context.globalStore, this.context.document, re),
+                    ];
                 case EntityType.FITTING:
                 case EntityType.DIRECTED_VALVE:
                 case EntityType.SYSTEM_NODE:
@@ -423,6 +430,9 @@ export class AutoConnector {
         };
 
         const res = run.bind(this)();
+        if (res !== null && isNaN(res)) {
+            throw new Error('Distance result is NaN ' + a + ' ' + b + ' ' + doit);
+        }
         this.joinEntitiesCache.set(key, res);
         return res;
     }
@@ -457,7 +467,6 @@ export class AutoConnector {
                 ).focus!.uid)!;
             }
         }
-
         const auxLength =
             (maxHeight - this.getEntityHeight(ao.entity)[1] +
             maxHeight - this.getEntityHeight(bo.entity)[1]) * 1000;
@@ -690,6 +699,28 @@ export class AutoConnector {
     }
 
     joinGroups(a: string[], b: string[], doit: boolean = true, cutoff?: number): number | null {
+        // skip this if the systems are not compatible.
+        const systems1 = new Set(a.map((uid) => {
+            const s = this.getEntitySystem(this.context.objectStore.get(uid)!.entity);
+            if (s === null) {
+                throw new Error('auto connecteded groups must belong to systems');
+            }
+            return s;
+        }));
+        const systems2 = new Set(b.map((uid) => {
+            const s = this.getEntitySystem(this.context.objectStore.get(uid)!.entity);
+            if (s === null) {
+                throw new Error('auto connecteded groups must belong to systems');
+            }
+            return s;
+        }));
+        if (systems1.size !== 1 || systems2.size !== 1) {
+            throw new Error('only one system in ecah connected componet allowed');
+        }
+        if (Array.from(systems1.keys())[0] !== Array.from(systems2.keys())[0]) {
+            return null;
+        }
+
         let bestDist: number | null = null;
         let bestPair: [string, string] | null = null;
         a.forEach((auid) => {
@@ -735,6 +766,7 @@ export class AutoConnector {
             case EntityType.FIXTURE:
                 return null;
         }
+        assertUnreachable(entity);
     }
 
     groupDist(a: string[], b: string[], cutoff: number | undefined): number | null {
@@ -742,7 +774,6 @@ export class AutoConnector {
     }
 
     findCheapestJoin(groups: string[][]): [number, number] | null {
-        console.log(JSON.stringify(groups.map((g) => g.length)));
         let currDist: number | null = null;
         let bestAns: [number, number] = [-1, -1];
         for (let a = 0; a < groups.length; a++) {
@@ -877,7 +908,6 @@ export class AutoConnector {
 
 
 
-                console.log('calls: ' + this.calls + ' cache cardinality: ' + this.groupDistCache.cache.size);
             }
 
             rebaseAll(this.context);
@@ -929,6 +959,9 @@ class GroupDistCache {
 
     addGroup(gid: string, dists: Map<string, number | null>) {
         dists.forEach((v, k) => {
+            if (v !== null && isNaN(v)) {
+                throw new Error('NaN found while adding group, key: ' + k + ' group: ' + gid);
+            }
             this.getOrSet(gid).set(k, v);
             this.getOrSet(k).set(gid, v);
         });
@@ -968,7 +1001,7 @@ class GroupDistCache {
         const v1 = this.cache.get(auid)!.get(buid);
         const v2 = this.cache.get(buid)!.get(auid);
         if (v1 !== v2) {
-            throw new Error('cache is inconsistent');
+            throw new Error('cache is inconsistent ' + auid + ' ' + buid + ' ' + v1 + ' ' + v2);
         }
         return v1!;
     }
