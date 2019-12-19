@@ -46,6 +46,7 @@ import PipeCalculation, {makePipeCalculationFields} from '../../../src/store/doc
 import {Calculated, CalculatedObject, FIELD_HEIGHT} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
 import {isConnectable} from "../../store/document";
 import FixtureCalculation from "../../store/document/calculations/fixture-calculation";
+import {MainEventBus} from "../../store/main-event-bus";
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 3.5;
@@ -243,17 +244,11 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
     // Returns the world coordinates of the two endpoints
     worldEndpoints(excludeUid: string | null = null): Coord3D[] {
-        const a: ConnectableEntity =
-            this.objectStore.get(this.entity.endpointUid[0])!.entity as ConnectableEntity;
-        const b: ConnectableEntity =
-            this.objectStore.get(this.entity.endpointUid[1])!.entity as ConnectableEntity;
-
-        if (!a || !b) {
+        const ao = this.objectStore.get(this.entity.endpointUid[0]) as BaseBackedConnectable;
+        const bo = this.objectStore.get(this.entity.endpointUid[1]) as BaseBackedConnectable;
+        if (!ao || !bo) {
             throw new Error('One of pipe\'s endpoints are missing. Pipe is: ' + JSON.stringify(this.entity));
         }
-
-        const ao = this.objectStore.get(a.uid) as BaseBackedConnectable;
-        const bo = this.objectStore.get(b.uid) as BaseBackedConnectable;
         if (ao && bo) {
             const res: Coord3D[] = [];
             if ((ao.entity.calculationHeightM === null) !== (bo.entity.calculationHeightM === null)) {
@@ -263,10 +258,12 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 );
             }
             if (ao.uid !== excludeUid) {
-                res.push({...ao.toWorldCoord({x: 0, y: 0}), z: (ao.entity.calculationHeightM || 0) * 1000});
+                const a = ao.toWorldCoord({x: 0, y: 0});
+                res.push({x: a.x, y: a.y, z: (ao.entity.calculationHeightM || 0) * 1000});
             }
             if (bo.uid !== excludeUid) {
-                res.push({...bo.toWorldCoord({x: 0, y: 0}), z: (bo.entity.calculationHeightM || 0) * 1000});
+                const b = bo.toWorldCoord({x: 0, y: 0});
+                res.push({x: b.x, y: b.y, z: (bo.entity.calculationHeightM || 0) * 1000});
             }
             return res;
         } else {

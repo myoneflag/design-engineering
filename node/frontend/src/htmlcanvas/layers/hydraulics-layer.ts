@@ -8,16 +8,21 @@ import {DrawingContext} from '../../../src/htmlcanvas/lib/types';
 import DrawableObjectFactory from '../lib/drawable-object-factory';
 import {DrawableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
 import {levelIncludesRiser} from "../lib/utils";
+import {cooperativeYield} from "../utils";
 
 export default class  HydraulicsLayer extends LayerImplementation {
 
     draggedObjects: BaseBackedObject[] | null = null;
 
-    draw(context: DrawingContext, active: boolean, mode: DrawingMode, calculationFilters: CalculationFilters | null) {
-        this.uidsInOrder.forEach((v) => {
+    async draw(context: DrawingContext, active: boolean, mode: DrawingMode, calculationFilters: CalculationFilters | null) {
+        for (let i = 0; i < this.uidsInOrder.length; i++) {
+            const v = this.uidsInOrder[i];
             this.objectStore.get(v)!.draw(context,
                 {active, selected: false, calculationFilters});
-        });
+            if (i % 100 === 9) {
+                await cooperativeYield();
+            }
+        }
     }
 
     resetDocument(doc: DocumentState) {

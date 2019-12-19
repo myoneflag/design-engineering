@@ -118,7 +118,7 @@ import {EntityType} from "../../store/document/entities/types";
     import {DrawingMode, MouseMoveResult, UNHANDLED} from "../../../src/htmlcanvas/types";
     import BackgroundLayer from "../../../src/htmlcanvas/layers/background-layer";
     import * as TM from "transformation-matrix";
-    import {decomposeMatrix, matrixScale} from "../../../src/htmlcanvas/utils";
+    import {cooperativeYield, decomposeMatrix, matrixScale} from "../../../src/htmlcanvas/utils";
     import Toolbar from "../../../src/components/editor/Toolbar.vue";
     import LoadingScreen from "../../../src/views/LoadingScreen.vue";
     import {MainEventBus} from "../../../src/store/main-event-bus";
@@ -168,6 +168,7 @@ import {EntityType} from "../../store/document/entities/types";
     import DrawableObjectFactory from "../../htmlcanvas/lib/drawable-object-factory";
     import {cloneSimple} from "../../lib/utils";
     import PipeEntity from "../../store/document/entities/pipe-entity";
+    import {compose} from "transformation-matrix/compose";
 
     @Component({
     components: {
@@ -183,820 +184,817 @@ import {EntityType} from "../../store/document/entities/types";
 })
 export default class DrawingCanvas extends Vue {
 
-    ctx: CanvasRenderingContext2D | null = null;
-
-    grabbedPoint: Coord | null = null;
-    hasDragged: boolean = false;
-
-    objectStore: ObjectStore =
-        new ObjectStore(this);
-    globalStore: GlobalStore = new GlobalStore(this);
-
-    // The layers
-    backgroundLayer: BackgroundLayer = new BackgroundLayer(
-        this.objectStore,
-        () => {
-            this.scheduleDraw();
-        },
-        () => {
-            this.onLayerSelect();
-        },
-        () => { // onCommit
-            this.$store.dispatch('document/commit');
-        },
-    );
-    hydraulicsLayer: HydraulicsLayer = new HydraulicsLayer(
-        this.objectStore,
-        () => {
-            this.scheduleDraw();
-        },
-        () => {
-            this.onLayerSelect();
-        },
-        () => {
-            this.$store.dispatch('document/commit');
-        },
-    );
-    calculationLayer: CalculationLayer = new CalculationLayer(
-        this.objectStore,
-        () => {
-            this.scheduleDraw();
-        },
-        () => {
-            this.onLayerSelect();
-        },
-        () => {
-            this.$store.dispatch('document/commit');
-        },
-    );
-    allLayers: Layer[] = [];
-
-
-    toolHandler: ToolHandler | null = null;
-    currentCursor: string = 'auto';
-
-    shouldDraw: boolean = true;
-    lastDraw: number = 0;
-
-
-    // The currently hovered element ready for interaction.
-    interactive: DrawableEntityConcrete[] | null = null;
-
-
-    updating: boolean = false;
-
-    drawingLocked: number = 0;
-
-    lastDrawingContext: DrawingContext | null = null;
-
-    calculationEngine!: CalculationEngine;
-    targetProperty: string | null = null;
-    isLayerDragging: boolean = false;
-
-    selectBox: SelectBox | null = null;
-    selectBoxMode: SelectMode | null = null;
-    selectBoxStartSelected: string[] = [];
-
-    mouseClicked: boolean = false;
-
-    levelChangeUnwatchers = new Map<string, () => void>();
-
-    initialized = false;
-
-    mounted() {
-        this.objectStore.vm = this;
-        this.globalStore.vm = this;
-        this.ctx = (this.$refs.drawingCanvas as any).getContext('2d');
-
-        // In the future, there will be 2 types of OTs to handle. Full snapshots, and diffable updates.
-        // At the moment, even small diffable updates go through the full treatment.
-        MainEventBus.$on('ot-applied', this.onOT);
-        MainEventBus.$on('set-tool-handler', this.setToolHandler);
-        MainEventBus.$on('select', this.onSelectRequest);
-        MainEventBus.$on('auto-connect', this.onAutoConnect);
-
-        MainEventBus.$on('add-entity', this.onAddEntity);
-        MainEventBus.$on('delete-entity', this.onDeleteEntity);
-        MainEventBus.$on('add-level', this.onAddLevel);
-        MainEventBus.$on('delete-level', this.onDeleteLevel);
-        MainEventBus.$on('current-level-changed', this.onCurrentLevelChanged);
-        MainEventBus.$on('revert-level', this.onRevertLevel);
-        MainEventBus.$on('update-pipe-endpoints', this.onPipeEndpoints);
-
-        this.$watch(() => this.document.uiState.drawingMode, (newVal) => {
-            this.considerCalculating();
-            this.scheduleDraw();
-        });
-
-        (this.$refs.drawingCanvas as any).onmousedown = this.onMouseDown;
-        (this.$refs.drawingCanvas as any).onmousemove = this.onMouseMove;
-        (this.$refs.drawingCanvas as any).onmouseup = this.onMouseUp;
-        (this.$refs.canvasFrame as any).onwheel = this.onWheel;
-
-        this.allLayers.push(this.backgroundLayer, this.hydraulicsLayer, this.calculationLayer);
-        this.onOT();
-
-
-        // set view on groundiest floor
-        this.selectGroundFloor();
-
-        if (this.document.uiState.viewPort === null) {
-            this.fitToView();
-        }
-
-        this.calculationEngine = new CalculationEngine();
-
-
-        setInterval(this.drawLoop, 20);
-        this.initialized = true;
-    }
-
-    destroyed() {
-        this.document.uiState.lastCalculationId = -1;
-    }
-
-    get catalogLoaded(): boolean {
-        return this.$store.getters['catalog/loaded'];
-    }
-
-    get isLoading() {
-        return !this.catalogLoaded || !this.document.uiState.loaded;
-    }
-
-    get shouldDisableUIMouseEvents(): boolean {
-        if (this.hasDragged || this.isLayerDragging) {
-            return true;
-        }
-
-        if (this.selectBox) {
-            return true;
-        }
-
-        return false;
-    }
-
-    get initialViewport() {
-        return new ViewPort(TM.transform(TM.translate(0, 0), TM.scale(50)), 5000, 5000);
-    }
-
-    get documentBrandNew() {
-        return this.$store.getters['document/isBrandNew'];
-    }
-
-    get document(): DocumentState {
-        return this.$store.getters['document/document'];
-    }
-
-    get currentLevel(): Level | null {
-        return this.$store.getters['document/currentLevel'];
-    }
-
-    get effectiveCatalog(): Catalog {
-        return this.$store.getters['catalog/default'];
-    }
-
-    get availableFixtures(): string[] {
-        return this.document.drawing.metadata.availableFixtures;
-    }
-
-    get availableValves(): ValveId[] {
-        return [
-            {type: ValveType.ISOLATION_VALVE, catalogId: 'gateValve', name: ''},
-            {type: ValveType.ISOLATION_VALVE, catalogId: 'ballValve', name: ''},
-            {type: ValveType.ISOLATION_VALVE, catalogId: 'butterflyValve', name: ''},
-            {type: ValveType.CHECK_VALVE, catalogId: 'checkValve', name: ''},
-            {type: ValveType.WATER_METER, catalogId: 'waterMeter', name: ''},
-            {type: ValveType.STRAINER, catalogId: 'strainer', name: ''},
-        ].map((a) => {
-            a.name = this.effectiveCatalog.valves[a.catalogId].name;
-            return a;
-        });
-    }
-
-    get allObjects(): BaseBackedObject[] {
-        if (!this.initialized) {
-            return [];
-        }
-
-        const objects: BaseBackedObject[] =
-            Object.keys(this.document.drawing.shared).map((e) => this.globalStore.get(e)!);
-        if (this.currentLevel) {
-            objects.push(...Object.keys(this.currentLevel.entities).map((e) => this.globalStore.get(e)!));
-        }
-
-        objects.forEach((o) => {
-            if (o === undefined) {
-                throw new Error('Inconsistent state: an object in the document is not in the store');
-            }
-        });
-
-        return objects;
-    }
-
-    get activeLayer(): Layer | null {
-        if (this.document.uiState.drawingMode === DrawingMode.FloorPlan) {
-            return this.backgroundLayer;
-        } else if (this.document.uiState.drawingMode === DrawingMode.Hydraulics) {
-            return this.hydraulicsLayer;
-        } else if (this.document.uiState.drawingMode === DrawingMode.Calculations) {
-            return this.calculationLayer;
-        }
-        return null;
-    }
-
-    get propertiesVisible() {
-        if (!this.selectedObjects) {
-            return false;
-        }
-
-        if (!this.currentTool.propertiesVisible) {
-            return false;
-        }
-
-        if (this.hasDragged || this.isLayerDragging) {
-            return false;
-        }
-
-        if (this.selectBox) {
-            return false;
-        }
-        return true;
-    }
-
-    get levelSelectorVisible() {
-        if (!this.currentTool.propertiesVisible) {
-            return false;
-        }
-
-        if (this.hasDragged || this.isLayerDragging) {
-            return false;
-        }
-
-        if (this.selectBox) {
-            return false;
-        }
-        return true;
-    }
-
-    get attributesVisible() {
-        if (this.selectedObjects && this.selectedObjects.length > 0) {
-            return false;
-        }
-
-        if (!this.currentTool.propertiesVisible) {
-            return false;
-        }
-
-        if (this.hasDragged || this.isLayerDragging) {
-            return false;
-        }
-
-        if (this.selectBox) {
-            return false;
-        }
-        return true;
-    }
-
-    get currentTool(): ToolConfig {
-        if (this.toolHandler) {
-            return this.toolHandler.config;
-        } else {
-            return DEFAULT_TOOL;
-        }
-    }
-
-    get demandType() {
-        return this.document.uiState.demandType;
-    }
-
-    set demandType(value: DemandType) {
-        this.document.uiState.demandType = value;
-        this.considerCalculating();
-    }
-
-    get viewPort(): ViewPort {
-        if (this.document.uiState.viewPort === null) {
-            this.document.uiState.viewPort = this.initialViewport;
-        }
-        return this.document.uiState.viewPort;
-    }
-
-    set viewPort(vp: ViewPort) {
-        this.document.uiState.viewPort = vp;
-    }
-
-    onOT(redraw: boolean = true) {
-        if (!redraw) {
-            this.drawingLocked ++;
-        }
-        if (this.document.uiState.levelUid &&
-            !this.document.drawing.levels.hasOwnProperty(this.document.uiState.levelUid)) {
-            this.document.uiState.levelUid = null;
-        }
-
-        // Todo: Take the diff and update only the diff.
-        Object.values(this.document.drawing.levels).forEach((level) => {
-            this.globalStore.resetLevel(level.uid, Object.values(level.entities), this.document);
-        });
-        this.globalStore.resetLevel(null, Object.values(this.document.drawing.shared), this.document);
-        Array.from(this.globalStore.entitiesInLevel.keys()).forEach((lvlUid) => {
-            if (lvlUid !== null && !this.document.drawing.levels.hasOwnProperty(lvlUid)) {
-                this.globalStore.onLevelDelete(lvlUid);
-            }
-        });
-
-        this.resetVisibleLevel();
-        this.drawingLocked --;
-        if (redraw) {
-            this.scheduleDraw();
-        }
-    }
-
-    setToolHandler(toolHandler: ToolHandler) {
-        if (toolHandler !== null && this.toolHandler !== null) {
-            this.toolHandler.finish(true, true);
-        }
-        this.interactive = null;
-        this.toolHandler = toolHandler;
-        this.scheduleDraw();
-    }
-
-    get selectedEntities() {
-        if (this.activeLayer) {
-            return this.activeLayer.selectedEntities;
-        }
-        return null;
-    }
-
-    get selectedObjects() {
-        if (this.activeLayer) {
-            return this.activeLayer.selectedObjects;
-        }
-        return null;
-    }
-
-    get isCalculating() {
-        return this.document.uiState.isCalculating;
-    }
-
-    get sortedLevels() {
-        return this.$store.getters['document/sortedLevels'];
-    }
-
-    onPipeEndpoints({entity, endpoints}: {entity: PipeEntity, endpoints: [string, string]}) {
-        this.objectStore.updatePipeEndpoints(entity.uid);
-        this.globalStore.updatePipeEndpoints(entity.uid);
-    }
-
-    getEntityFromBase(euid: string, luid: string | null): DrawableEntityConcrete {
-        if (!luid) {
-            return this.document.drawing.shared[euid];
-        } else {
-            return this.document.drawing.levels[luid].entities[euid];
-        }
-    }
-
-    sanityCheckGlobalStore() {
-        if (window.location.host === 'localhost') {
-            this.globalStore.sanityCheck(this.document);
-        }
-    }
-
-    onLayerSelect() {
-        this.targetProperty = null;
-        this.scheduleDraw();
-    }
-
-    onCurrentLevelChanged() {
-        this.resetVisibleLevel();
-        this.scheduleDraw();
-    }
-
-    onRevertLevel(levelUid: string) {
-        if (levelUid === this.document.uiState.levelUid) {
-            this.resetVisibleLevel();
-        }
-        this.globalStore.resetLevel(
-            levelUid,
-            Object.values(levelUid ? this.document.drawing.levels[levelUid].entities : this.document.drawing.shared),
-            this.document,
-        );
-        this.globalStore.resetLevel(
-            null,
-            Object.values(this.document.drawing.shared),
-            this.document,
-        );
-    }
-
-    onAddEntity({entity, levelUid}: EntityParam) {
-        if (this.currentLevel && levelUid === this.currentLevel.uid) {
-            switch (entity.type) {
-                case EntityType.BACKGROUND_IMAGE:
-                    this.backgroundLayer.addEntity(() => this.getEntityFromBase(entity.uid, levelUid));
-                    break;
-                case EntityType.FITTING:
-                case EntityType.DIRECTED_VALVE:
-                case EntityType.PIPE:
-                case EntityType.RISER:
-                case EntityType.SYSTEM_NODE:
-                case EntityType.TMV:
-                case EntityType.FIXTURE:
-                    this.hydraulicsLayer.addEntity(() => this.getEntityFromBase(entity.uid, levelUid));
-                    break;
-                default:
-                    assertUnreachable(entity);
-            }
-        } else if (entity.type === EntityType.RISER) {
-            // Determine if this guy belongs
-            if (this.currentLevel) {
-                if (levelIncludesRiser(this.currentLevel, entity, this.sortedLevels)) {
-                    this.hydraulicsLayer.addEntity(() => this.getEntityFromBase(entity.uid, levelUid));
-                }
-            }
-        }
-
-        const go = DrawableObjectFactory.buildGhost(
-            () => levelUid ? this.document.drawing.levels[levelUid].entities[entity.uid] :
-                this.document.drawing.shared[entity.uid],
-            this.globalStore,
-            levelUid
-        );
-    }
-
-    selectGroundFloor() {
-        const levels: Level[] = Object.values(this.document.drawing.levels);
-        let bestDist = Infinity;
-        let bestLevel: Level | null = null;
-        levels.forEach((level) => {
-            if (Math.abs(level.floorHeightM) < bestDist) {
-                bestDist = Math.abs(level.floorHeightM);
-                bestLevel = level;
-            }
-        });
-        if (bestLevel) {
-            this.$store.dispatch('document/setCurrentLevelUid', (bestLevel as Level).uid);
-        }
-    }
-
-    onDeleteEntity({entity, levelUid}: EntityParam) {
-        if (this.currentLevel && levelUid === this.currentLevel.uid) {
-            switch (entity.type) {
-                case EntityType.BACKGROUND_IMAGE:
-                    this.backgroundLayer.deleteEntity(entity);
-                    break;
-                case EntityType.FITTING:
-                case EntityType.DIRECTED_VALVE:
-                case EntityType.PIPE:
-                case EntityType.RISER:
-                case EntityType.SYSTEM_NODE:
-                case EntityType.TMV:
-                case EntityType.FIXTURE:
-                    this.hydraulicsLayer.deleteEntity(entity);
-                    break;
-                default:
-                    assertUnreachable(entity);
-            }
-        } else if (entity.type === EntityType.RISER) {
-            // Determine if this guy belongs
-            if (this.currentLevel) {
-                if (levelIncludesRiser(this.currentLevel, entity, this.sortedLevels)) {
-                    this.hydraulicsLayer.deleteEntity(entity);
-                }
-            }
-        }
-
-        this.globalStore.delete(entity.uid);
-
-    }
-
-    onAddLevel(level: Level) {
-        this.watchLevel(level.uid);
-        this.globalStore.resetLevel(
-            level.uid,
-            Object.values(level.entities),
-            this.document,
-        );
-
-    }
-
-    onDeleteLevel(level: Level) {
-        this.unwatchLevel(level.uid);
-        this.globalStore.onLevelDelete(level.uid);
-    }
-
-    disableContextMenu(e: Event) {
-        return e.preventDefault();
-    }
-
-    onAutoConnect() {
-        if (this.selectedObjects) {
-            const ac = new AutoConnector(this.selectedObjects, this);
-            ac.autoConnect();
-            this.scheduleDraw();
-        }
-    }
-
-    deleteEntity(object: BaseBackedObject): Set<string> {
-        object = this.globalStore.get(object.uid)!;
-        if (object.objectStore !== this.globalStore) {
-            throw new Error('Can only delete objects from the global object store');
-        }
-        const toDelete = object.prepareDelete(this);
-        const deleted = new Set<string>();
-        toDelete.forEach((drawableObject) => {
-            if (drawableObject.entity === undefined) {
-                return;
-            }
-            const ouid = drawableObject.uid;
-            if (deleted.has(drawableObject.uid)) {
-                return;
-            }
-            this.$store.dispatch('document/deleteEntityOn', {
-                entity: drawableObject.entity,
-                levelUid: this.globalStore.levelOfEntity.get(drawableObject.uid),
-            });
-            deleted.add(ouid);
-        });
-        return deleted;
-    }
-
-    onSelectRequest(selectionTarget: SelectionTarget) {
-        if (selectionTarget.uid === null) {
-            if (this.activeLayer) {
-                this.activeLayer.select([], SelectMode.Replace);
-            }
-        } else {
-            const obj = this.objectStore.get(selectionTarget.uid);
-            if (!obj) {
-                throw new Error('Selecting an object that doesn\'t exist');
-            }
-
-            const drawable = obj.entity;
-            if (drawable.type === EntityType.BACKGROUND_IMAGE) {
-                this.document.uiState.drawingMode = DrawingMode.FloorPlan;
-            } else if (drawable) {
-                this.document.uiState.drawingMode = DrawingMode.Hydraulics;
-            }
-
-            if (this.activeLayer) {
-                this.activeLayer.select([obj], SelectMode.Replace);
-            }
-
-            if (selectionTarget.property) {
-                this.targetProperty = selectionTarget.property;
-            } else {
-                this.targetProperty = null;
-            }
-
-            if (selectionTarget.recenter === true) {
-                // Move view to object
-                const shape = obj.shape();
-                if (shape) {
-                    this.viewPort.panToWc(shape.box.center);
-                }
-            }
-        }
-
-        if (selectionTarget.message) {
-            (this as any).$bvToast.toast(selectionTarget.message, {
-                variant: selectionTarget.variant!,
-                title: selectionTarget.title!,
-            });
-        }
-
-        this.scheduleDraw();
-    }
-
-    deleteSelected() {
-        const deleted = new Set<string>();
-        if (this.selectedEntities) {
-            this.selectedEntities.map((e) => e.uid).forEach((euid) => {
-                // Delete from the global store
-                const o = this.globalStore.get(euid)!;
-                if (o) {
-                    this.deleteEntity(o).forEach((uid) => {
-                        deleted.add(uid);
-                    });
-                }
-            });
-            this.$store.dispatch('document/commit');
-            this.scheduleDraw();
-        } else {
-            throw new Error('Delete selected was called but we didn\'t select anything');
-        }
-    }
-
-    changeTool(tool: ToolConfig) {
-        if (tool.name === DEFAULT_TOOL.name) {
-            this.$emit('set-tool-handler', null);
-        }
-    }
-
-    resetVisibleLevel() {
-        if ((this.document.uiState.levelUid === null ||
-            !this.document.drawing.levels.hasOwnProperty(this.document.uiState.levelUid) &&
-            !_.isEmpty(this.document.drawing.levels))) {
-            this.selectGroundFloor();
-            return;
-        }
-
-        this.updating = true;
-        this.considerCalculating();
-
-        this.levelChangeUnwatchers.forEach((v, k) => this.unwatchLevel(k));
-
-        for (const key of Object.keys(this.document.drawing.levels)) {
-            this.watchLevel(key);
-        }
-
-
-        this.allLayers.forEach((l) => l.resetDocument(this.document));
-        this.updating = false;
-    }
-
-    // Note: Unfortunately, with the current vue reactivity system, this is going to be super slow because every time
-    // an object is created or deleted, the entire entity store is notified. However this is going to be changed in
-    // vue3 according to https://github.com/vuejs/vue/issues/8970, which will be coming out soon (hopefully).
-    // There are solutions like ReactiveX but that works in a separate stream of promises which could mean glitches
-    // in states when working with vue. So sticking with Vue's reactivity is preferred.
-    // To mitigate this perf issue, we will just watch levels.
-    watchLevel(key: string) {
-        const watcher = this.$watch(() => this.document.drawing.levels[key], (oldval, newval) => {
-
-        }, {deep: true});
-        this.levelChangeUnwatchers.set(key, watcher);
-    }
-
-    unwatchLevel(key: string) {
-        this.levelChangeUnwatchers.get(key)!();
-        this.levelChangeUnwatchers.delete(key);
-    }
-
-    scheduleDraw() {
-        if (Date.now() - this.lastDraw < 25) {
-            this.shouldDraw = true;
-        } else if (this.updating) {
-            this.shouldDraw = true;
-        } else if (this.shouldDraw) {
-            this.shouldDraw = true;
-        } else if (this.drawingLocked > 0) {
-            this.shouldDraw = true;
-        } else { // throttle rendering.
-            this.draw();
-        }
-    }
-
-    lockDrawing() {
-        this.drawingLocked++;
-    }
-
-    unlockDrawing() {
-        this.drawingLocked--;
-        if (this.drawingLocked === 0) {
-            this.scheduleDraw();
-        }
-    }
-
-    drawLoop() {
-        if (this.shouldDraw) {
-            this.shouldDraw = false;
-            try {
-                this.draw();
-            } catch {
-                //
-            }
-        }
-    }
-
-    insertFlowReturn(system: FlowSystemParameters) {
-        window.alert('No can do returns just yet');
-    }
-
-    offerInteraction(
-        interaction: Interaction,
-        filter?: (objects: DrawableEntityConcrete[]) => boolean,
-        sortBy?: (objects: DrawableEntityConcrete[]) => any,
-    ): DrawableEntityConcrete[] | null {
-        this.interactive = null;
-        for (let i = this.allLayers.length - 1; i >= 0; i--) {
-            const result = this.allLayers[i].offerInteraction(interaction, filter, sortBy);
-            if (result && result.length > 0) {
-                this.interactive = result;
-                return this.interactive;
-            }
-        }
-        return this.interactive;
-    }
-
-    fitToView() {
-        if (this.currentLevel) {
-            if (_.isEmpty(this.currentLevel.entities)) {
-                this.viewPort = this.initialViewport;
+        ctx: CanvasRenderingContext2D | null = null;
+
+        grabbedPoint: Coord | null = null;
+        hasDragged: boolean = false;
+
+        objectStore: ObjectStore =
+            new ObjectStore(this);
+        globalStore: GlobalStore = new GlobalStore(this);
+
+        // The layers
+        backgroundLayer: BackgroundLayer = new BackgroundLayer(
+            this.objectStore,
+            () => {
                 this.scheduleDraw();
-            } else {
-
-                const {l, r, t, b} = getBoundingBox(this.objectStore, this.document);
-
-                const w = this.viewPort.width;
-                const h = this.viewPort.height;
-                const s = Math.max((r - l + 1) / w, (b - t + 1) / h, 1) * 1.5;
-                this.viewPort =
-                    new ViewPort(
-                        TM.transform(TM.translate((l + r) / 2, (t + b) / 2), TM.scale(s)),
-                        w,
-                        h,
-                    );
-                this.scheduleDraw();
-            }
-        }
-    }
-
-    hydraulicsInsert(
-        {entityName, system, catalogId, tmvHasCold, valveType}:
-            {
-                entityName: string, system: FlowSystemParameters, catalogId: string,
-                tmvHasCold: boolean, valveType: ValveType,
             },
-    ) {
-        this.hydraulicsLayer.select([], SelectMode.Replace);
+            () => {
+                this.onLayerSelect();
+            },
+            () => { // onCommit
+                this.$store.dispatch('document/commit');
+            },
+        );
+        hydraulicsLayer: HydraulicsLayer = new HydraulicsLayer(
+            this.objectStore,
+            () => {
+                this.scheduleDraw();
+            },
+            () => {
+                this.onLayerSelect();
+            },
+            () => {
+                this.$store.dispatch('document/commit');
+            },
+        );
+        calculationLayer: CalculationLayer = new CalculationLayer(
+            this.objectStore,
+            () => {
+                this.scheduleDraw();
+            },
+            () => {
+                this.onLayerSelect();
+            },
+            () => {
+                this.$store.dispatch('document/commit');
+            },
+        );
+        allLayers: Layer[] = [];
 
-        if (entityName === EntityType.RISER) {
-            insertRiser(this, system);
-        } else if (entityName === EntityType.FLOW_RETURN) {
-            this.insertFlowReturn(system);
-        } else if (entityName === EntityType.PIPE) {
-            insertPipes(this, system);
-        } else if (entityName === EntityType.FITTING) {
-            insertValve(this, system);
-        } else if (entityName === EntityType.TMV) {
-            insertTmv(this, tmvHasCold, 0);
-        } else if (entityName === EntityType.FIXTURE) {
-            this.document.uiState.lastUsedFixtureUid = catalogId;
-            insertFixture(this, catalogId, 0);
-        } else if (entityName === EntityType.DIRECTED_VALVE) {
-            this.document.uiState.lastUsedValveVid = {
-                catalogId,
-                name: this.effectiveCatalog.valves[catalogId].name,
-                type: valveType,
-            };
-            insertDirectedValve(this, valveType, catalogId, system);
+
+        toolHandler: ToolHandler | null = null;
+        currentCursor: string = 'auto';
+
+        shouldDraw: boolean = true;
+        lastDraw: number = 0;
+
+
+        // The currently hovered element ready for interaction.
+        interactive: DrawableEntityConcrete[] | null = null;
+
+
+        updating: boolean = false;
+
+        drawingLocked: number = 0;
+
+        lastDrawingContext: DrawingContext | null = null;
+
+        calculationEngine!: CalculationEngine;
+        targetProperty: string | null = null;
+        isLayerDragging: boolean = false;
+
+        selectBox: SelectBox | null = null;
+        selectBoxMode: SelectMode | null = null;
+        selectBoxStartSelected: string[] = [];
+
+        mouseClicked: boolean = false;
+
+        levelChangeUnwatchers = new Map<string, () => void>();
+
+        initialized = false;
+
+        mounted() {
+            this.objectStore.vm = this;
+            this.globalStore.vm = this;
+            this.ctx = (this.$refs.drawingCanvas as any).getContext('2d');
+
+            // In the future, there will be 2 types of OTs to handle. Full snapshots, and diffable updates.
+            // At the moment, even small diffable updates go through the full treatment.
+            MainEventBus.$on('ot-applied', this.onOT);
+            MainEventBus.$on('set-tool-handler', this.setToolHandler);
+            MainEventBus.$on('select', this.onSelectRequest);
+            MainEventBus.$on('auto-connect', this.onAutoConnect);
+
+            MainEventBus.$on('add-entity', this.onAddEntity);
+            MainEventBus.$on('delete-entity', this.onDeleteEntity);
+            MainEventBus.$on('add-level', this.onAddLevel);
+            MainEventBus.$on('delete-level', this.onDeleteLevel);
+            MainEventBus.$on('current-level-changed', this.onCurrentLevelChanged);
+            MainEventBus.$on('revert-level', this.onRevertLevel);
+            MainEventBus.$on('update-pipe-endpoints', this.onPipeEndpoints);
+
+            this.$watch(() => this.document.uiState.drawingMode, (newVal) => {
+                this.considerCalculating();
+                this.scheduleDraw();
+            });
+
+            (this.$refs.drawingCanvas as any).onmousedown = this.onMouseDown;
+            (this.$refs.drawingCanvas as any).onmousemove = this.onMouseMove;
+            (this.$refs.drawingCanvas as any).onmouseup = this.onMouseUp;
+            (this.$refs.canvasFrame as any).onwheel = this.onWheel;
+
+            this.allLayers.push(this.backgroundLayer, this.hydraulicsLayer, this.calculationLayer);
+            this.onOT();
+
+
+            // set view on groundiest floor
+            this.selectGroundFloor();
+
+            if (this.document.uiState.viewPort === null) {
+                this.fitToView();
+            }
+
+            this.calculationEngine = new CalculationEngine();
+
+
+            setInterval(this.drawLoop, 20);
+            this.initialized = true;
         }
-    }
 
-    // For this to work, there is to be no local state at all. All state is to be stored in the vue store,
-    // which is serialised by snapshots and operation transforms.
-    draw() {
-        this.sanityCheckGlobalStore();
-        this.lastDraw = Date.now();
-        if (this.ctx != null && (this.$refs.canvasFrame as any) != null) {
-            const ctx: CanvasRenderingContext2D = this.ctx;
+        destroyed() {
+            this.document.uiState.lastCalculationId = -1;
+        }
 
-            const width = (this.$refs.canvasFrame as any).clientWidth - 1;
-            const height = (this.$refs.canvasFrame as any).clientHeight;
-            ctx.canvas.width = width;
-            ctx.canvas.height = height;
+        get catalogLoaded(): boolean {
+            return this.$store.getters['catalog/loaded'];
+        }
 
-            this.viewPort.width = width;
-            this.viewPort.height = height;
+        get isLoading() {
+            return !this.catalogLoaded || !this.document.uiState.loaded;
+        }
+
+        get shouldDisableUIMouseEvents(): boolean {
+            if (this.hasDragged || this.isLayerDragging) {
+                return true;
+            }
+
+            if (this.selectBox) {
+                return true;
+            }
+
+            return false;
+        }
+
+        get initialViewport() {
+            return new ViewPort(TM.transform(TM.translate(0, 0), TM.scale(50)), 5000, 5000);
+        }
+
+        get documentBrandNew() {
+            return this.$store.getters['document/isBrandNew'];
+        }
+
+        get document(): DocumentState {
+            return this.$store.getters['document/document'];
+        }
+
+        get currentLevel(): Level | null {
+            return this.$store.getters['document/currentLevel'];
+        }
+
+        get effectiveCatalog(): Catalog {
+            return this.$store.getters['catalog/default'];
+        }
+
+        get availableFixtures(): string[] {
+            return this.document.drawing.metadata.availableFixtures;
+        }
+
+        get availableValves(): ValveId[] {
+            return [
+                {type: ValveType.ISOLATION_VALVE, catalogId: 'gateValve', name: ''},
+                {type: ValveType.ISOLATION_VALVE, catalogId: 'ballValve', name: ''},
+                {type: ValveType.ISOLATION_VALVE, catalogId: 'butterflyValve', name: ''},
+                {type: ValveType.CHECK_VALVE, catalogId: 'checkValve', name: ''},
+                {type: ValveType.WATER_METER, catalogId: 'waterMeter', name: ''},
+                {type: ValveType.STRAINER, catalogId: 'strainer', name: ''},
+            ].map((a) => {
+                a.name = this.effectiveCatalog.valves[a.catalogId].name;
+                return a;
+            });
+        }
+
+        get allObjects(): BaseBackedObject[] {
+            if (!this.initialized) {
+                return [];
+            }
+
+            const objects: BaseBackedObject[] =
+                Object.keys(this.document.drawing.shared).map((e) => this.globalStore.get(e)!);
+            if (this.currentLevel) {
+                objects.push(...Object.keys(this.currentLevel.entities).map((e) => this.globalStore.get(e)!));
+            }
+
+            objects.forEach((o) => {
+                if (o === undefined) {
+                    throw new Error('Inconsistent state: an object in the document is not in the store');
+                }
+            });
+
+            return objects;
+        }
+
+        get activeLayer(): Layer | null {
+            if (this.document.uiState.drawingMode === DrawingMode.FloorPlan) {
+                return this.backgroundLayer;
+            } else if (this.document.uiState.drawingMode === DrawingMode.Hydraulics) {
+                return this.hydraulicsLayer;
+            } else if (this.document.uiState.drawingMode === DrawingMode.Calculations) {
+                return this.calculationLayer;
+            }
+            return null;
+        }
+
+        get propertiesVisible() {
+            if (!this.selectedObjects) {
+                return false;
+            }
+
+            if (!this.currentTool.propertiesVisible) {
+                return false;
+            }
+
+            if (this.hasDragged || this.isLayerDragging) {
+                return false;
+            }
+
+            if (this.selectBox) {
+                return false;
+            }
+            return true;
+        }
+
+        get levelSelectorVisible() {
+            if (!this.currentTool.propertiesVisible) {
+                return false;
+            }
+
+            if (this.hasDragged || this.isLayerDragging) {
+                return false;
+            }
+
+            if (this.selectBox) {
+                return false;
+            }
+            return true;
+        }
+
+        get attributesVisible() {
+            if (this.selectedObjects && this.selectedObjects.length > 0) {
+                return false;
+            }
+
+            if (!this.currentTool.propertiesVisible) {
+                return false;
+            }
+
+            if (this.hasDragged || this.isLayerDragging) {
+                return false;
+            }
+
+            if (this.selectBox) {
+                return false;
+            }
+            return true;
+        }
+
+        get currentTool(): ToolConfig {
+            if (this.toolHandler) {
+                return this.toolHandler.config;
+            } else {
+                return DEFAULT_TOOL;
+            }
+        }
+
+        get demandType() {
+            return this.document.uiState.demandType;
+        }
+
+        set demandType(value: DemandType) {
+            this.document.uiState.demandType = value;
+            this.considerCalculating();
+        }
+
+        get viewPort(): ViewPort {
+            if (this.document.uiState.viewPort === null) {
+                this.document.uiState.viewPort = this.initialViewport;
+            }
+            return this.document.uiState.viewPort;
+        }
+
+        set viewPort(vp: ViewPort) {
+            this.document.uiState.viewPort = vp;
+        }
+
+        onOT(redraw: boolean = true) {
+            if (!redraw) {
+                this.drawingLocked++;
+            }
+            if (this.document.uiState.levelUid &&
+                !this.document.drawing.levels.hasOwnProperty(this.document.uiState.levelUid)) {
+                this.document.uiState.levelUid = null;
+            }
+
+            // Todo: Take the diff and update only the diff.
+            Object.values(this.document.drawing.levels).forEach((level) => {
+                this.globalStore.resetLevel(level.uid, Object.values(level.entities), this.document);
+            });
+            this.globalStore.resetLevel(null, Object.values(this.document.drawing.shared), this.document);
+            Array.from(this.globalStore.entitiesInLevel.keys()).forEach((lvlUid) => {
+                if (lvlUid !== null && !this.document.drawing.levels.hasOwnProperty(lvlUid)) {
+                    this.globalStore.onLevelDelete(lvlUid);
+                }
+            });
+
+            this.resetVisibleLevel();
+            this.drawingLocked--;
+            if (redraw) {
+                this.scheduleDraw();
+            }
+        }
+
+        setToolHandler(toolHandler: ToolHandler) {
+            if (toolHandler !== null && this.toolHandler !== null) {
+                this.toolHandler.finish(true, true);
+            }
+            this.interactive = null;
+            this.toolHandler = toolHandler;
+            this.scheduleDraw();
+        }
+
+        get selectedEntities() {
+            if (this.activeLayer) {
+                return this.activeLayer.selectedEntities;
+            }
+            return null;
+        }
+
+        get selectedObjects() {
+            if (this.activeLayer) {
+                return this.activeLayer.selectedObjects;
+            }
+            return null;
+        }
+
+        get isCalculating() {
+            return this.document.uiState.isCalculating;
+        }
+
+        get sortedLevels() {
+            return this.$store.getters['document/sortedLevels'];
+        }
+
+        onPipeEndpoints({entity, endpoints}: { entity: PipeEntity, endpoints: [string, string] }) {
+            this.objectStore.updatePipeEndpoints(entity.uid);
+            this.globalStore.updatePipeEndpoints(entity.uid);
+        }
+
+        getEntityFromBase(euid: string, luid: string | null): DrawableEntityConcrete {
+            if (!luid) {
+                return this.document.drawing.shared[euid];
+            } else {
+                return this.document.drawing.levels[luid].entities[euid];
+            }
+        }
+
+        sanityCheckGlobalStore() {
+            if (window.location.host === 'localhost') {
+                this.globalStore.sanityCheck(this.document);
+            }
+        }
+
+        onLayerSelect() {
+            this.targetProperty = null;
+            this.scheduleDraw();
+        }
+
+        onCurrentLevelChanged() {
+            this.resetVisibleLevel();
+            this.scheduleDraw();
+        }
+
+        onRevertLevel(levelUid: string) {
+            if (levelUid === this.document.uiState.levelUid) {
+                this.resetVisibleLevel();
+            }
+            this.globalStore.resetLevel(
+                levelUid,
+                Object.values(levelUid ? this.document.drawing.levels[levelUid].entities : this.document.drawing.shared),
+                this.document,
+            );
+            this.globalStore.resetLevel(
+                null,
+                Object.values(this.document.drawing.shared),
+                this.document,
+            );
+        }
+
+        onAddEntity({entity, levelUid}: EntityParam) {
+            if (this.currentLevel && levelUid === this.currentLevel.uid) {
+                switch (entity.type) {
+                    case EntityType.BACKGROUND_IMAGE:
+                        this.backgroundLayer.addEntity(() => this.getEntityFromBase(entity.uid, levelUid));
+                        break;
+                    case EntityType.FITTING:
+                    case EntityType.DIRECTED_VALVE:
+                    case EntityType.PIPE:
+                    case EntityType.RISER:
+                    case EntityType.SYSTEM_NODE:
+                    case EntityType.TMV:
+                    case EntityType.FIXTURE:
+                        this.hydraulicsLayer.addEntity(() => this.getEntityFromBase(entity.uid, levelUid));
+                        break;
+                    default:
+                        assertUnreachable(entity);
+                }
+            } else if (entity.type === EntityType.RISER) {
+                // Determine if this guy belongs
+                if (this.currentLevel) {
+                    if (levelIncludesRiser(this.currentLevel, entity, this.sortedLevels)) {
+                        this.hydraulicsLayer.addEntity(() => this.getEntityFromBase(entity.uid, levelUid));
+                    }
+                }
+            }
+
+            const go = DrawableObjectFactory.buildGhost(
+                () => levelUid ? this.document.drawing.levels[levelUid].entities[entity.uid] :
+                    this.document.drawing.shared[entity.uid],
+                this.globalStore,
+                levelUid
+            );
+        }
+
+        selectGroundFloor() {
+            const levels: Level[] = Object.values(this.document.drawing.levels);
+            let bestDist = Infinity;
+            let bestLevel: Level | null = null;
+            levels.forEach((level) => {
+                if (Math.abs(level.floorHeightM) < bestDist) {
+                    bestDist = Math.abs(level.floorHeightM);
+                    bestLevel = level;
+                }
+            });
+            if (bestLevel) {
+                this.$store.dispatch('document/setCurrentLevelUid', (bestLevel as Level).uid);
+            }
+        }
+
+        onDeleteEntity({entity, levelUid}: EntityParam) {
+            if (this.currentLevel && levelUid === this.currentLevel.uid) {
+                switch (entity.type) {
+                    case EntityType.BACKGROUND_IMAGE:
+                        this.backgroundLayer.deleteEntity(entity);
+                        break;
+                    case EntityType.FITTING:
+                    case EntityType.DIRECTED_VALVE:
+                    case EntityType.PIPE:
+                    case EntityType.RISER:
+                    case EntityType.SYSTEM_NODE:
+                    case EntityType.TMV:
+                    case EntityType.FIXTURE:
+                        this.hydraulicsLayer.deleteEntity(entity);
+                        break;
+                    default:
+                        assertUnreachable(entity);
+                }
+            } else if (entity.type === EntityType.RISER) {
+                // Determine if this guy belongs
+                if (this.currentLevel) {
+                    if (levelIncludesRiser(this.currentLevel, entity, this.sortedLevels)) {
+                        this.hydraulicsLayer.deleteEntity(entity);
+                    }
+                }
+            }
+
+            this.globalStore.delete(entity.uid);
+
+        }
+
+        onAddLevel(level: Level) {
+            this.watchLevel(level.uid);
+            this.globalStore.resetLevel(
+                level.uid,
+                Object.values(level.entities),
+                this.document,
+            );
+
+        }
+
+        onDeleteLevel(level: Level) {
+            this.unwatchLevel(level.uid);
+            this.globalStore.onLevelDelete(level.uid);
+        }
+
+        disableContextMenu(e: Event) {
+            return e.preventDefault();
+        }
+
+        onAutoConnect() {
+            if (this.selectedObjects) {
+                const ac = new AutoConnector(this.selectedObjects, this);
+                ac.autoConnect();
+                this.scheduleDraw();
+            }
+        }
+
+        deleteEntity(object: BaseBackedObject): Set<string> {
+            object = this.globalStore.get(object.uid)!;
+            if (object.objectStore !== this.globalStore) {
+                throw new Error('Can only delete objects from the global object store');
+            }
+            const toDelete = object.prepareDelete(this);
+            const deleted = new Set<string>();
+            toDelete.forEach((drawableObject) => {
+                if (drawableObject.entity === undefined) {
+                    return;
+                }
+                const ouid = drawableObject.uid;
+                if (deleted.has(drawableObject.uid)) {
+                    return;
+                }
+                this.$store.dispatch('document/deleteEntityOn', {
+                    entity: drawableObject.entity,
+                    levelUid: this.globalStore.levelOfEntity.get(drawableObject.uid),
+                });
+                deleted.add(ouid);
+            });
+            return deleted;
+        }
+
+        onSelectRequest(selectionTarget: SelectionTarget) {
+            if (selectionTarget.uid === null) {
+                if (this.activeLayer) {
+                    this.activeLayer.select([], SelectMode.Replace);
+                }
+            } else {
+                const obj = this.objectStore.get(selectionTarget.uid);
+                if (!obj) {
+                    throw new Error('Selecting an object that doesn\'t exist');
+                }
+
+                const drawable = obj.entity;
+                if (drawable.type === EntityType.BACKGROUND_IMAGE) {
+                    this.document.uiState.drawingMode = DrawingMode.FloorPlan;
+                } else if (drawable) {
+                    this.document.uiState.drawingMode = DrawingMode.Hydraulics;
+                }
+
+                if (this.activeLayer) {
+                    this.activeLayer.select([obj], SelectMode.Replace);
+                }
+
+                if (selectionTarget.property) {
+                    this.targetProperty = selectionTarget.property;
+                } else {
+                    this.targetProperty = null;
+                }
+
+                if (selectionTarget.recenter === true) {
+                    // Move view to object
+                    const shape = obj.shape();
+                    if (shape) {
+                        this.viewPort.panToWc(shape.box.center);
+                    }
+                }
+            }
+
+            if (selectionTarget.message) {
+                (this as any).$bvToast.toast(selectionTarget.message, {
+                    variant: selectionTarget.variant!,
+                    title: selectionTarget.title!,
+                });
+            }
+
+            this.scheduleDraw();
+        }
+
+        deleteSelected() {
+            const deleted = new Set<string>();
+            if (this.selectedEntities) {
+                this.selectedEntities.map((e) => e.uid).forEach((euid) => {
+                    // Delete from the global store
+                    const o = this.globalStore.get(euid)!;
+                    if (o) {
+                        this.deleteEntity(o).forEach((uid) => {
+                            deleted.add(uid);
+                        });
+                    }
+                });
+                this.$store.dispatch('document/commit');
+                this.scheduleDraw();
+            } else {
+                throw new Error('Delete selected was called but we didn\'t select anything');
+            }
+        }
+
+        changeTool(tool: ToolConfig) {
+            if (tool.name === DEFAULT_TOOL.name) {
+                this.$emit('set-tool-handler', null);
+            }
+        }
+
+        resetVisibleLevel() {
+            if ((this.document.uiState.levelUid === null ||
+                !this.document.drawing.levels.hasOwnProperty(this.document.uiState.levelUid) &&
+                !_.isEmpty(this.document.drawing.levels))) {
+                this.selectGroundFloor();
+                return;
+            }
+
+            this.updating = true;
+            this.considerCalculating();
+
+            this.levelChangeUnwatchers.forEach((v, k) => this.unwatchLevel(k));
+
+            for (const key of Object.keys(this.document.drawing.levels)) {
+                this.watchLevel(key);
+            }
+
+
+            this.allLayers.forEach((l) => l.resetDocument(this.document));
+            this.updating = false;
+        }
+
+        // Note: Unfortunately, with the current vue reactivity system, this is going to be super slow because every time
+        // an object is created or deleted, the entire entity store is notified. However this is going to be changed in
+        // vue3 according to https://github.com/vuejs/vue/issues/8970, which will be coming out soon (hopefully).
+        // There are solutions like ReactiveX but that works in a separate stream of promises which could mean glitches
+        // in states when working with vue. So sticking with Vue's reactivity is preferred.
+        // To mitigate this perf issue, we will just watch levels.
+        watchLevel(key: string) {
+            const watcher = this.$watch(() => this.document.drawing.levels[key], (oldval, newval) => {
+
+            }, {deep: true});
+            this.levelChangeUnwatchers.set(key, watcher);
+        }
+
+        unwatchLevel(key: string) {
+            this.levelChangeUnwatchers.get(key)!();
+            this.levelChangeUnwatchers.delete(key);
+        }
+
+        scheduleDraw() {
+            if (Date.now() - this.lastDraw < 25) {
+                this.shouldDraw = true;
+            } else if (this.updating) {
+                this.shouldDraw = true;
+            } else if (this.shouldDraw) {
+                this.shouldDraw = true;
+            } else if (this.drawingLocked > 0) {
+                this.shouldDraw = true;
+            } else { // throttle rendering.
+                this.draw();
+            }
+        }
+
+        lockDrawing() {
+            this.drawingLocked++;
+        }
+
+        unlockDrawing() {
+            this.drawingLocked--;
+            if (this.drawingLocked === 0) {
+                this.scheduleDraw();
+            }
+        }
+
+        drawLoop() {
+            if (this.shouldDraw) {
+                this.shouldDraw = false;
+                try {
+                    this.draw();
+                } catch {
+                    //
+                }
+            }
+        }
+
+        insertFlowReturn(system: FlowSystemParameters) {
+            window.alert('No can do returns just yet');
+        }
+
+        offerInteraction(
+            interaction: Interaction,
+            filter?: (objects: DrawableEntityConcrete[]) => boolean,
+            sortBy?: (objects: DrawableEntityConcrete[]) => any,
+        ): DrawableEntityConcrete[] | null {
+            this.interactive = null;
+            for (let i = this.allLayers.length - 1; i >= 0; i--) {
+                const result = this.allLayers[i].offerInteraction(interaction, filter, sortBy);
+                if (result && result.length > 0) {
+                    this.interactive = result;
+                    return this.interactive;
+                }
+            }
+            return this.interactive;
+        }
+
+        fitToView() {
+            if (this.currentLevel) {
+                if (_.isEmpty(this.currentLevel.entities)) {
+                    this.viewPort = this.initialViewport;
+                    this.scheduleDraw();
+                } else {
+
+                    const {l, r, t, b} = getBoundingBox(this.objectStore, this.document);
+
+                    const w = this.viewPort.width;
+                    const h = this.viewPort.height;
+                    const s = Math.max((r - l + 1) / w, (b - t + 1) / h, 1) * 1.5;
+                    this.viewPort =
+                        new ViewPort(
+                            TM.transform(TM.translate((l + r) / 2, (t + b) / 2), TM.scale(s)),
+                            w,
+                            h,
+                        );
+                    this.scheduleDraw();
+                }
+            }
+        }
+
+        hydraulicsInsert(
+            {entityName, system, catalogId, tmvHasCold, valveType}:
+                {
+                    entityName: string, system: FlowSystemParameters, catalogId: string,
+                    tmvHasCold: boolean, valveType: ValveType,
+                },
+        ) {
+            this.hydraulicsLayer.select([], SelectMode.Replace);
+
+            if (entityName === EntityType.RISER) {
+                insertRiser(this, system);
+            } else if (entityName === EntityType.FLOW_RETURN) {
+                this.insertFlowReturn(system);
+            } else if (entityName === EntityType.PIPE) {
+                insertPipes(this, system);
+            } else if (entityName === EntityType.FITTING) {
+                insertValve(this, system);
+            } else if (entityName === EntityType.TMV) {
+                insertTmv(this, tmvHasCold, 0);
+            } else if (entityName === EntityType.FIXTURE) {
+                this.document.uiState.lastUsedFixtureUid = catalogId;
+                insertFixture(this, catalogId, 0);
+            } else if (entityName === EntityType.DIRECTED_VALVE) {
+                this.document.uiState.lastUsedValveVid = {
+                    catalogId,
+                    name: this.effectiveCatalog.valves[catalogId].name,
+                    type: valveType,
+                };
+                insertDirectedValve(this, valveType, catalogId, system);
+            }
+        }
+
+        /**
+         * Drawing works by processing frame requests and putting them on the frame stack, storing with it the
+         */
+
+        buffer: Buffer;
+        renderQueue: Promise<any>[] = [];
+
+        draw() {
+            this.sanityCheckGlobalStore();
+            this.lastDraw = Date.now();
+            if (this.ctx != null && (this.$refs.canvasFrame as any) != null) {
+
+
+                const width = (this.$refs.canvasFrame as any).clientWidth - 1;
+                const height = (this.$refs.canvasFrame as any).clientHeight;
+                this.ctx.canvas.width = width;
+                this.ctx.canvas.height = height;
+
+                this.viewPort.width = width;
+                this.viewPort.height = height;
+
+                if (this.buffer === undefined) {
+                    this.buffer = new Buffer(width, height, this.viewPort.world2ScreenMatrix);
+                }
+
+                this.blitBuffer();
+
+                this.drawInternal().then(() => {
+                });
+
+            }
+        }
+
+        blitBuffer() {
+            this.ctx!.resetTransform();
+            this.ctx!.clearRect(0, 0, this.viewPort.width, this.viewPort.height);
+
+            this.buffer.drawOnto(this.ctx!, this.viewPort.world2ScreenMatrix);
+
+            // Draw on screen HUD
+            this.ctx!.setTransform(TM.identity());
+            drawPaperScale(this.ctx!, 1 / matrixScale(this.viewPort.position));
+
 
             const context: DrawingContext = {
-                ctx,
+                ctx: this.ctx!,
                 vp: this.viewPort,
                 doc: this.document,
                 catalog: this.effectiveCatalog,
                 globalStore: this.globalStore,
             };
-            this.lastDrawingContext = context;
-            this.backgroundLayer.draw(context, this.document.uiState.drawingMode === DrawingMode.FloorPlan, this.currentTool);
-            const filters = this.document.uiState.drawingMode === DrawingMode.Calculations ? this.document.uiState.calculationFilters : null;
-            this.hydraulicsLayer.draw(
-                context,
-                this.document.uiState.drawingMode === DrawingMode.Hydraulics,
-                this.document.uiState.drawingMode,
-                filters,
-            );
-            this.calculationLayer.draw(
-                context,
-                this.document.uiState.drawingMode === DrawingMode.Calculations,
-                filters,
-            );
-
-            // Draw hydraulics layer
-
-            // Draw selection layers
-            if (this.activeLayer) {
-                this.activeLayer.drawSelectionLayer(context, this.interactive);
-            }
-
-
-            // draw selection box
-            if (this.selectBox) {
-                this.selectBox.draw(context, {selected: true, active: true, calculationFilters: null});
-            }
-
-            ctx.setTransform(TM.identity());
-            drawPaperScale(ctx, 1 / matrixScale(this.viewPort.position));
-
             if (this.propertiesVisible) {
                 if (this.selectedEntities && this.selectedEntities.length > 0 &&
                     this.document.uiState.drawingMode === DrawingMode.Hydraulics) {
@@ -1006,259 +1004,350 @@ export default class DrawingCanvas extends Vue {
                     drawLoadingUnits(context, this.effectiveCatalog,
                         countPsdUnits(Array.from(this.objectStore.values()).map((o) => o.entity), this.document, this.effectiveCatalog));
                 }
+            }
+        }
 
+        async drawInternal() {
+
+            const run = async () => {
+                console.log('running');
+                const buffer = new Buffer(this.viewPort.width, this.viewPort.height, this.viewPort.world2ScreenMatrix);
+
+                const context: DrawingContext = {
+                    ctx: buffer.ctx,
+                    vp: this.viewPort.copy(),
+                    doc: this.document,
+                    catalog: this.effectiveCatalog,
+                    globalStore: this.globalStore,
+                };
+
+                // this.buffer.transform = this.viewPort.world2ScreenMatrix; do that at the end
+                this.lastDrawingContext = context;
+                await this.backgroundLayer.draw(context, this.document.uiState.drawingMode === DrawingMode.FloorPlan, this.currentTool);
+                await cooperativeYield();
+                const filters = this.document.uiState.drawingMode === DrawingMode.Calculations ? this.document.uiState.calculationFilters : null;
+                await this.hydraulicsLayer.draw(
+                    context,
+                    this.document.uiState.drawingMode === DrawingMode.Hydraulics,
+                    this.document.uiState.drawingMode,
+                    filters,
+                );
+                await cooperativeYield();
+                await this.calculationLayer.draw(
+                    context,
+                    this.document.uiState.drawingMode === DrawingMode.Calculations,
+                    filters,
+                );
+                await cooperativeYield();
+
+                // Draw hydraulics layer
+
+                // Draw selection layers
+                if (this.activeLayer) {
+                    await this.activeLayer.drawSelectionLayer(context, this.interactive);
+                    await cooperativeYield();
+                }
+
+
+                // draw selection box
+                if (this.selectBox) {
+                    this.selectBox.draw(context, {selected: true, active: true, calculationFilters: null});
+                }
+
+                if (this.toolHandler) {
+                    context.ctx.setTransform(TM.identity());
+                    this.toolHandler.draw(context);
+                }
+
+                this.buffer = buffer; // swap out the buffer, so that the new render shows the new frame.
+
+                this.blitBuffer();
+            };
+
+            if (this.renderQueue.length === 0) {
+                this.renderQueue.push(run.bind(this)().then(() => this.renderQueue.splice(0, 1)));
+                return this.renderQueue[this.renderQueue.length - 1];
+            } else if (this.renderQueue.length === 1) {
+                this.renderQueue.push(
+                    this.renderQueue[0]
+                        .then(() => run.bind(this)())
+                        .then(() => this.renderQueue.splice(0, 1))
+                );
+                return this.renderQueue[this.renderQueue.length - 1];
+            } else {
+                console.log('render queue too long, I am not necessary.');
+                return;
+            }
+        }
+
+        considerCalculating() {
+            if (this.document.uiState.drawingMode === DrawingMode.Calculations) {
+                if (this.document.uiState.lastCalculationId < this.document.nextId
+                    || this.document.uiState.lastCalculationUiSettings.demandType !== this.demandType) {
+
+                    this.calculationLayer.calculate(
+                        this,
+                        this.demandType,
+                        () => {
+                            this.scheduleDraw();
+                        },
+                    );
+                }
+            }
+        }
+
+        onDrop(value: any, event: DragEvent) {
+            if (event.dataTransfer) {
+                event.preventDefault();
+                for (let i = 0; i < event.dataTransfer.files.length; i++) {
+                    if (!(event.dataTransfer.files.item(i) as File).name.endsWith('pdf')) {
+                        continue;
+                    }
+
+                    const w = this.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
+
+                    this.insertFloorPlan(event.dataTransfer.files.item(i) as File, w);
+                }
+            }
+        }
+
+        onFloorPlanSelected(file: File) {
+            const m = decomposeMatrix(this.viewPort.position);
+            this.insertFloorPlan(file, {x: m.tx + this.viewPort.width / 2, y: m.ty + this.viewPort.height / 2});
+        }
+
+        insertFloorPlan(file: File, wc: Coord) {
+            renderPdf(file).then((res) => {
+                if (res.success) {
+                    const {paperSize, scale, scaleName, uri, totalPages} = res.data;
+                    const width = paperSize.widthMM / scale;
+                    const height = paperSize.heightMM / scale;
+                    // We create the operation here, not the server.
+                    const background: BackgroundEntity = {
+                        parentUid: null,
+                        type: EntityType.BACKGROUND_IMAGE,
+                        filename: file.name,
+                        center: wc,
+                        crop: {x: -width / 2, y: -height / 2, w: width, h: height},
+                        offset: {x: 0, y: 0},
+                        page: 1,
+                        paperSize,
+                        pointA: null,
+                        pointB: null,
+                        rotation: 0,
+                        scaleFactor: 1,
+                        scaleName,
+                        uid: uuid(),
+                        totalPages,
+                        uri,
+                    };
+
+                    this.$store.dispatch('document/addEntity', background);
+                    this.$store.dispatch('document/commit');
+                } else {
+                    this.$bvToast.toast(res.message, {
+                        title: 'Error Uploading PDF',
+                        variant: 'danger',
+                    });
+                }
+            });
+        }
+
+        onMouseDown(event: MouseEvent): boolean {
+            this.mouseClicked = true;
+            if (event.button === 2) {
+                if (event.shiftKey && !event.ctrlKey) {
+                    this.selectBoxMode = SelectMode.Exclude;
+                } else if (event.ctrlKey && !event.shiftKey) {
+                    this.selectBoxMode = SelectMode.Add;
+                } else if (event.shiftKey && event.ctrlKey) {
+                    this.selectBoxMode = SelectMode.Toggle;
+                } else {
+                    this.selectBoxMode = SelectMode.Replace;
+                }
+                this.selectBoxStartSelected = _.clone(this.hydraulicsLayer.selectedIds);
+                event.preventDefault();
+
+                // start box thingy
+                this.selectBox = new SelectBox(
+                    null,
+                    this.hydraulicsLayer,
+                    this.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY}),
+                    this.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY}),
+                );
+
+                return true;
             }
 
             if (this.toolHandler) {
-                ctx.setTransform(TM.identity());
-                this.toolHandler.draw(context);
-            }
-        }
-    }
-
-    considerCalculating() {
-        if (this.document.uiState.drawingMode === DrawingMode.Calculations) {
-            if (this.document.uiState.lastCalculationId < this.document.nextId
-                || this.document.uiState.lastCalculationUiSettings.demandType !== this.demandType) {
-
-                this.calculationLayer.calculate(
-                    this,
-                    this.demandType,
-                    () => {
-                        this.scheduleDraw();
-                    },
-                );
-            }
-        }
-    }
-
-    onDrop(value: any, event: DragEvent) {
-        if (event.dataTransfer) {
-            event.preventDefault();
-            for (let i = 0; i < event.dataTransfer.files.length; i++) {
-                if (!(event.dataTransfer.files.item(i) as File).name.endsWith('pdf')) {
-                    continue;
+                if (this.toolHandler.onMouseDown(event, this)) {
+                    return true;
                 }
-
-                const w = this.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
-
-                this.insertFloorPlan(event.dataTransfer.files.item(i) as File, w);
-            }
-        }
-    }
-
-    onFloorPlanSelected(file: File) {
-        const m = decomposeMatrix(this.viewPort.position);
-        this.insertFloorPlan(file, {x: m.tx + this.viewPort.width / 2, y: m.ty + this.viewPort.height / 2});
-    }
-
-    insertFloorPlan(file: File, wc: Coord) {
-        renderPdf(file).then((res) => {
-            if (res.success) {
-                const {paperSize, scale, scaleName, uri, totalPages} = res.data;
-                const width = paperSize.widthMM / scale;
-                const height = paperSize.heightMM / scale;
-                // We create the operation here, not the server.
-                const background: BackgroundEntity = {
-                    parentUid: null,
-                    type: EntityType.BACKGROUND_IMAGE,
-                    filename: file.name,
-                    center: wc,
-                    crop: {x: -width / 2, y: -height / 2, w: width, h: height},
-                    offset: {x: 0, y: 0},
-                    page: 1,
-                    paperSize,
-                    pointA: null,
-                    pointB: null,
-                    rotation: 0,
-                    scaleFactor: 1,
-                    scaleName,
-                    uid: uuid(),
-                    totalPages,
-                    uri,
-                };
-
-                this.$store.dispatch('document/addEntity', background);
-                this.$store.dispatch('document/commit');
             } else {
-                this.$bvToast.toast(res.message, {
-                    title: 'Error Uploading PDF',
-                    variant: 'danger',
-                });
+
+                // Pass the event down to layers below
+                if (this.activeLayer) {
+
+                    if (this.activeLayer.onMouseDown(event, this)) {
+                        return true;
+                    }
+                }
             }
-        });
-    }
 
-    onMouseDown(event: MouseEvent): boolean {
-        this.mouseClicked = true;
-        if (event.button === 2) {
-            if (event.shiftKey && !event.ctrlKey) {
-                this.selectBoxMode = SelectMode.Exclude;
-            } else if (event.ctrlKey && !event.shiftKey) {
-                this.selectBoxMode = SelectMode.Add;
-            } else if (event.shiftKey && event.ctrlKey) {
-                this.selectBoxMode = SelectMode.Toggle;
-            } else {
-                this.selectBoxMode = SelectMode.Replace;
-            }
-            this.selectBoxStartSelected = _.clone(this.hydraulicsLayer.selectedIds);
-            event.preventDefault();
-
-            // start box thingy
-            this.selectBox = new SelectBox(
-                null,
-                this.hydraulicsLayer,
-                this.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY}),
-                this.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY}),
-            );
-
+            // If no objects or tools wanted the events, we can always drag and shit.
+            this.grabbedPoint = this.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
+            this.hasDragged = false;
             return true;
         }
 
-        if (this.toolHandler) {
-            if (this.toolHandler.onMouseDown(event, this)) {
-                return true;
+        onMouseMove(event: MouseEvent): boolean {
+            if (event.movementX === 0 && event.movementY === 0) {
+                return true; // Phantom movement - damn it chrome
             }
-        } else {
+            const res = this.onMouseMoveInternal(event);
+            if (res.cursor) {
+                this.currentCursor = res.cursor;
+            } else {
+                this.currentCursor = this.currentTool.defaultCursor;
+            }
+            return res.handled;
+        }
 
-            // Pass the event down to layers below
-            if (this.activeLayer) {
+        onMouseMoveInternal(event: MouseEvent): MouseMoveResult {
+            if (this.selectBox) {
+                this.selectBox.pointB = this.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
 
-                if (this.activeLayer.onMouseDown(event, this)) {
-                    return true;
+                event.preventDefault();
+
+                if (this.document.uiState.drawingMode === DrawingMode.Hydraulics) {
+                    this.hydraulicsLayer.select(_.clone(this.selectBoxStartSelected), SelectMode.Replace);
+
+                    this.hydraulicsLayer.select(
+                        this.hydraulicsLayer.uidsInOrder.filter((uid) => {
+                            return this.selectBox!.inSelection(
+                                [this.objectStore.get(uid)!],
+                            ).length > 0;
+                        }),
+                        this.selectBoxMode!,
+                    );
                 }
-            }
-        }
 
-        // If no objects or tools wanted the events, we can always drag and shit.
-        this.grabbedPoint = this.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
-        this.hasDragged = false;
-        return true;
-    }
-
-    onMouseMove(event: MouseEvent): boolean {
-        if (event.movementX === 0 && event.movementY === 0) {
-            return true; // Phantom movement - damn it chrome
-        }
-        const res = this.onMouseMoveInternal(event);
-        if (res.cursor) {
-            this.currentCursor = res.cursor;
-        } else {
-            this.currentCursor = this.currentTool.defaultCursor;
-        }
-        return res.handled;
-    }
-
-    onMouseMoveInternal(event: MouseEvent): MouseMoveResult {
-        if (this.selectBox) {
-            this.selectBox.pointB = this.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
-
-            event.preventDefault();
-
-            if (this.document.uiState.drawingMode === DrawingMode.Hydraulics) {
-                this.hydraulicsLayer.select(_.clone(this.selectBoxStartSelected), SelectMode.Replace);
-
-                this.hydraulicsLayer.select(
-                    this.hydraulicsLayer.uidsInOrder.filter((uid) => {
-                        return this.selectBox!.inSelection(
-                            [this.objectStore.get(uid)!],
-                        ).length > 0;
-                    }),
-                    this.selectBoxMode!,
-                );
+                this.scheduleDraw();
+                // todo: select
+                return {cursor: null, handled: true};
             }
 
-            this.scheduleDraw();
-            // todo: select
-            return {cursor: null, handled: true};
-        }
-
-        if (this.toolHandler) {
-            const res = this.toolHandler.onMouseMove(event, this);
-            if (res.handled) {
-                return res;
-            }
-        } else {
-            // Pass the event down to layers below
-            if (this.activeLayer) {
-                const res = this.activeLayer.onMouseMove(event, this);
+            if (this.toolHandler) {
+                const res = this.toolHandler.onMouseMove(event, this);
                 if (res.handled) {
                     return res;
                 }
-            }
-        }
-
-        if (event.buttons && 1) {
-            if (this.grabbedPoint != null) {
-                const s = this.viewPort.toScreenCoord(this.grabbedPoint);
-                this.hasDragged = true;
-                this.viewPort.panAbs(s.x - event.offsetX, s.y - event.offsetY);
-                this.scheduleDraw();
-                return {handled: true, cursor: 'Move'};
             } else {
+                // Pass the event down to layers below
+                if (this.activeLayer) {
+                    const res = this.activeLayer.onMouseMove(event, this);
+                    if (res.handled) {
+                        return res;
+                    }
+                }
+            }
+
+            if (event.buttons && 1) {
+                if (this.grabbedPoint != null) {
+                    const s = this.viewPort.toScreenCoord(this.grabbedPoint);
+                    this.hasDragged = true;
+                    this.viewPort.panAbs(s.x - event.offsetX, s.y - event.offsetY);
+                    this.scheduleDraw();
+                    return {handled: true, cursor: 'Move'};
+                } else {
+                    return UNHANDLED;
+                }
+            } else {
+                this.grabbedPoint = null;
+                this.hasDragged = false;
                 return UNHANDLED;
             }
-        } else {
-            this.grabbedPoint = null;
-            this.hasDragged = false;
-            return UNHANDLED;
-        }
-    }
-
-    onMouseUp(event: MouseEvent): boolean {
-        if (!this.mouseClicked) {
-            // This event happened when the user clicked from a non canvas control to the middle. Ignore it.
-            // Possibilities include when the user is trying to select text in the properties box and then let
-            // go on a position in the canvas.
-            return false;
-        }
-        this.mouseClicked = false;
-        if (this.selectBox && event.button === 2) {
-            // finish selection
-            event.preventDefault();
-            this.selectBox = null;
-            this.scheduleDraw();
-            return false;
         }
 
-        this.interactive = null;
-
-        if (this.grabbedPoint) {
-            this.grabbedPoint = null;
-            const wasDragged = this.hasDragged;
-            this.hasDragged = false;
-            if (wasDragged) {
+        onMouseUp(event: MouseEvent): boolean {
+            if (!this.mouseClicked) {
+                // This event happened when the user clicked from a non canvas control to the middle. Ignore it.
+                // Possibilities include when the user is trying to select text in the properties box and then let
+                // go on a position in the canvas.
+                return false;
+            }
+            this.mouseClicked = false;
+            if (this.selectBox && event.button === 2) {
+                // finish selection
+                event.preventDefault();
+                this.selectBox = null;
                 this.scheduleDraw();
-                return true;
+                return false;
             }
-        }
 
-        if (this.toolHandler) {
-            if (this.toolHandler.onMouseUp(event, this)) {
-                return true;
-            }
-        } else {
-            // Pass the event down to layers below
-            if (this.activeLayer) {
-                if (this.activeLayer.onMouseUp(event, this)) {
+            this.interactive = null;
+
+            if (this.grabbedPoint) {
+                this.grabbedPoint = null;
+                const wasDragged = this.hasDragged;
+                this.hasDragged = false;
+                if (wasDragged) {
+                    this.scheduleDraw();
                     return true;
                 }
             }
+
+            if (this.toolHandler) {
+                if (this.toolHandler.onMouseUp(event, this)) {
+                    return true;
+                }
+            } else {
+                // Pass the event down to layers below
+                if (this.activeLayer) {
+                    if (this.activeLayer.onMouseUp(event, this)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
-        return false;
+        onWheel(event: WheelEvent) {
+            event.preventDefault();
+            let delta = 1 + event.deltaY / 500;
+            if (event.deltaY < 0) {
+                delta = 1 / (1 - event.deltaY / 500);
+            }
+            this.viewPort.rescale(delta, event.offsetX, event.offsetY);
+            this.scheduleDraw();
+        }
     }
 
-    onWheel(event: WheelEvent) {
-        event.preventDefault();
-        let delta = 1 + event.deltaY / 500;
-        if (event.deltaY < 0) {
-            delta = 1 / (1 - event.deltaY / 500);
+    class Buffer {
+        canvas: HTMLCanvasElement;
+        transform: TM.Matrix;
+
+        constructor (width: number, height: number, transform: TM.Matrix) {
+            this.canvas = document.createElement('canvas');
+            this.canvas.width = width;
+            this.canvas.height = height;
+            this.transform = transform;
         }
-        this.viewPort.rescale(delta, event.offsetX, event.offsetY);
-        this.scheduleDraw();
+
+        drawOnto (ctx: CanvasRenderingContext2D, newTransform: TM.Matrix) {
+            const appliedTransform = TM.transform(
+                newTransform,
+                TM.inverse(this.transform),
+            );
+            ctx.setTransform(appliedTransform);
+            ctx.drawImage(this.canvas, 0, 0);
+        }
+
+        get ctx() {
+            return this.canvas.getContext('2d')!;
+        }
     }
-}
 </script>
 
 <style lang="css">

@@ -165,6 +165,7 @@ export function ConnectableObject<T extends new (...args: any[])
 
         getRadials(exclude: string | null = null)
             : Array<[Coord3D, BaseBackedObject]> {
+
             const result: Array<[Coord3D, BaseBackedObject]> = [];
             this.objectStore.getConnections(this.entity.uid).forEach((uid) => {
                 if (uid === exclude) {

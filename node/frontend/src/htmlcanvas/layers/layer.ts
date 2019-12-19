@@ -19,7 +19,7 @@ export default interface Layer {
 
     select(objects: BaseBackedObject[], mode: SelectMode): void;
 
-    draw(context: DrawingContext, active: boolean, ...args: any[]): any;
+    draw(context: DrawingContext, active: boolean, ...args: any[]): Promise<any>;
     resetDocument(doc: DocumentState): any;
     drawSelectionLayer(context: DrawingContext, interactive: DrawableEntityConcrete[] | null): any;
 
@@ -139,7 +139,7 @@ export abstract class LayerImplementation implements Layer {
         }
     }
 
-    abstract draw(context: DrawingContext, active: boolean, ...args: any[]): any;
+    abstract draw(context: DrawingContext, active: boolean, ...args: any[]): Promise<any>;
 
     drawSelectionLayer(context: DrawingContext, interactive: DrawableEntity[] | null) {
         if (this.selectedObjects) {

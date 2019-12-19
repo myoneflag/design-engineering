@@ -20,6 +20,10 @@ export class ViewPort {
         this.position = TM.transform(position);
     }
 
+    copy(): ViewPort {
+        return new ViewPort(this.position, this.width, this.height);
+    }
+
     /**
      * Rescales with anchorX and anchorY as screen coordinates
      */
@@ -70,7 +74,6 @@ export class ViewPort {
     /**
      * Prepares the context so that drawing to it with real world coordinates will draw to screen
      * appropriately.
-     *
      *
      */
     prepareContext(ctx: CanvasRenderingContext2D, ...transform: Matrix[]) {

@@ -399,3 +399,9 @@ export function wrapText(
     }
     return lines * lineHeight;
 }
+
+export function cooperativeYield() {
+    return new Promise((resolve, reject) => {
+        setTimeout(resolve);
+    });
+}

@@ -10,13 +10,15 @@ import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
 import {DrawableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
 import {EntityType} from "../../store/document/entities/types";
 import {BackgroundEntity} from "../../store/document/entities/background-entity";
+import {cooperativeYield} from "../utils";
 
 export default class BackgroundLayer extends LayerImplementation {
     resizeBox: ResizeControl | null = null;
 
-    draw(context: DrawingContext, active: boolean, selectedTool: ToolConfig) {
+    async draw(context: DrawingContext, active: boolean, selectedTool: ToolConfig) {
         // draw selected one on top.
-        this.uidsInOrder.forEach((selectId) => {
+        for (let i = 0; i < this.uidsInOrder.length; i++) {
+            const selectId = this.uidsInOrder[i];
             const background = this.objectStore.get(selectId);
             if (background && background instanceof BackgroundImage) {
                 if (!this.isSelected(selectId) || !active || !background.hasDragged) {
@@ -32,10 +34,12 @@ export default class BackgroundLayer extends LayerImplementation {
             } else {
                 throw new Error('Expected background image, got ' + JSON.stringify(background) + ' instead');
             }
-        });
+            await cooperativeYield();
+        }
 
         if (active) {
-            this.uidsInOrder.forEach((selectId) => {
+            for (let i = 0; i < this.uidsInOrder.length; i++) {
+                const selectId = this.uidsInOrder[i];
                 const background = this.objectStore.get(selectId);
                 if (background && background instanceof BackgroundImage
                     && this.isSelected(background)
@@ -45,7 +49,8 @@ export default class BackgroundLayer extends LayerImplementation {
                         {selected: this.isSelected(selectId), active, calculationFilters: null},
                     );
                 }
-            });
+                await cooperativeYield();
+            }
         }
     }
     select(objects: BaseBackedObject[] | string[], mode: SelectMode): void {

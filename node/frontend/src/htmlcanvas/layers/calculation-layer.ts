@@ -25,7 +25,8 @@ export const SIGNIFICANT_FLOW_THRESHOLD = 1e-5;
 export default class CalculationLayer extends LayerImplementation {
 
     calculator: CalculationEngine = new CalculationEngine();
-    draw(context: DrawingContext, active: boolean, calculationFilters: CalculationFilters | null): any {
+    async draw(context: DrawingContext, active: boolean, calculationFilters: CalculationFilters | null) {
+        // TODO: asyncify
         const {ctx, vp} = context;
         if (active && calculationFilters) {
             // 1. Load all calculation data and record them
