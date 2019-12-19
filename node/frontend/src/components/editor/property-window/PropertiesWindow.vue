@@ -6,6 +6,7 @@ import {EntityType} from "../../../../src/store/document/entities/types";
                     :selected-entity="selectedEntities[0]"
                     :selected-object="selectedObjects[0]"
                     :on-delete="onDelete"
+                    :on-change="onChange"
                     v-if="mode === 0"
             />
             <FlowSourceProperties

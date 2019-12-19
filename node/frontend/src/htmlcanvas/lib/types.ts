@@ -181,7 +181,7 @@ export class GlobalStore extends ObjectStore {
         return super.delete(key);
     }
 
-    resetLevel(levelUid: string | null, entities: DrawableEntityConcrete[], doc: DocumentState) {
+    resetLevel(levelUid: string | null, entities: DrawableEntityConcrete[], doc: DocumentState, vm: Vue) {
         if (this.doc !== doc && this.doc !== undefined) {
             throw new Error('doc is different');
         }

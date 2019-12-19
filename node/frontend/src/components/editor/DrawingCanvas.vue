@@ -14,7 +14,7 @@ import {EntityType} from "../../store/document/entities/types";
                 :target-property="targetProperty"
                 v-if="selectedObjects.length && propertiesVisible && initialized"
                 :mode="document.uiState.drawingMode"
-                :on-change="scheduleDraw"
+                :on-change="onPropertiesChange"
                 :on-delete="deleteSelected"
                 :object-store="objectStore"
         >
@@ -118,7 +118,7 @@ import {EntityType} from "../../store/document/entities/types";
     import {DrawingMode, MouseMoveResult, UNHANDLED} from "../../../src/htmlcanvas/types";
     import BackgroundLayer from "../../../src/htmlcanvas/layers/background-layer";
     import * as TM from "transformation-matrix";
-    import {cooperativeYield, decomposeMatrix, matrixScale} from "../../../src/htmlcanvas/utils";
+    import {cooperativeYield, decomposeMatrix, InterruptedError, matrixScale} from "../../../src/htmlcanvas/utils";
     import Toolbar from "../../../src/components/editor/Toolbar.vue";
     import LoadingScreen from "../../../src/views/LoadingScreen.vue";
     import {MainEventBus} from "../../../src/store/main-event-bus";
@@ -196,9 +196,7 @@ export default class DrawingCanvas extends Vue {
         // The layers
         backgroundLayer: BackgroundLayer = new BackgroundLayer(
             this.objectStore,
-            () => {
-                this.scheduleDraw();
-            },
+            this.onChangeFromLayer,
             () => {
                 this.onLayerSelect();
             },
@@ -208,9 +206,7 @@ export default class DrawingCanvas extends Vue {
         );
         hydraulicsLayer: HydraulicsLayer = new HydraulicsLayer(
             this.objectStore,
-            () => {
-                this.scheduleDraw();
-            },
+            this.onChangeFromLayer,
             () => {
                 this.onLayerSelect();
             },
@@ -220,9 +216,7 @@ export default class DrawingCanvas extends Vue {
         );
         calculationLayer: CalculationLayer = new CalculationLayer(
             this.objectStore,
-            () => {
-                this.scheduleDraw();
-            },
+            this.onChangeFromLayer,
             () => {
                 this.onLayerSelect();
             },
@@ -486,6 +480,16 @@ export default class DrawingCanvas extends Vue {
             this.document.uiState.viewPort = vp;
         }
 
+        onChangeFromLayer(uids: string[]) {
+            uids.forEach((uid) => {
+                this.$store.dispatch('document/notifyEntityChange', {
+                    entity: uid,
+                    levelUid: this.globalStore.levelOfEntity.get(uid),
+                });
+            });
+            this.scheduleDraw();
+        }
+
         onOT(redraw: boolean = true) {
             if (!redraw) {
                 this.drawingLocked++;
@@ -542,6 +546,20 @@ export default class DrawingCanvas extends Vue {
 
         get sortedLevels() {
             return this.$store.getters['document/sortedLevels'];
+        }
+
+        onPropertiesChange() {
+            // Properties can change for selected objects.
+            if (this.selectedObjects) {
+                this.selectedObjects.forEach((o) => {
+                    this.$store.dispatch('document/notifyEntityChange', {
+                        entity: o.uid,
+                        levelUid: this.globalStore.levelOfEntity.get(o.uid),
+                    });
+                });
+            } else {
+                throw new Error('Properties changed but nothing is selected');
+            }
         }
 
         onPipeEndpoints({entity, endpoints}: { entity: PipeEntity, endpoints: [string, string] }) {
@@ -983,11 +1001,6 @@ export default class DrawingCanvas extends Vue {
 
             this.buffer.drawOnto(this.ctx!, this.viewPort.world2ScreenMatrix);
 
-            // Draw on screen HUD
-            this.ctx!.setTransform(TM.identity());
-            drawPaperScale(this.ctx!, 1 / matrixScale(this.viewPort.position));
-
-
             const context: DrawingContext = {
                 ctx: this.ctx!,
                 vp: this.viewPort,
@@ -995,6 +1008,15 @@ export default class DrawingCanvas extends Vue {
                 catalog: this.effectiveCatalog,
                 globalStore: this.globalStore,
             };
+
+            if (this.activeLayer) {
+                this.activeLayer.drawSelectionLayer(context, this.interactive);
+            }
+
+            // Draw on screen HUD
+            this.ctx!.setTransform(TM.identity());
+            drawPaperScale(this.ctx!, 1 / matrixScale(this.viewPort.position));
+
             if (this.propertiesVisible) {
                 if (this.selectedEntities && this.selectedEntities.length > 0 &&
                     this.document.uiState.drawingMode === DrawingMode.Hydraulics) {
@@ -1010,58 +1032,82 @@ export default class DrawingCanvas extends Vue {
         async drawInternal() {
 
             const run = async () => {
-                console.log('running');
-                const buffer = new Buffer(this.viewPort.width, this.viewPort.height, this.viewPort.world2ScreenMatrix);
+                try {
+                    const shouldContinue = (() => {
+                        const res = this.renderQueue.length < 2;
+                        if (!res) {
+                            console.log("interrupting");
+                        }
+                        return res;
+                    }).bind(this);
 
-                const context: DrawingContext = {
-                    ctx: buffer.ctx,
-                    vp: this.viewPort.copy(),
-                    doc: this.document,
-                    catalog: this.effectiveCatalog,
-                    globalStore: this.globalStore,
-                };
+                    console.log('running');
+                    const buffer = new Buffer(this.viewPort.width, this.viewPort.height, this.viewPort.world2ScreenMatrix);
 
-                // this.buffer.transform = this.viewPort.world2ScreenMatrix; do that at the end
-                this.lastDrawingContext = context;
-                await this.backgroundLayer.draw(context, this.document.uiState.drawingMode === DrawingMode.FloorPlan, this.currentTool);
-                await cooperativeYield();
-                const filters = this.document.uiState.drawingMode === DrawingMode.Calculations ? this.document.uiState.calculationFilters : null;
-                await this.hydraulicsLayer.draw(
-                    context,
-                    this.document.uiState.drawingMode === DrawingMode.Hydraulics,
-                    this.document.uiState.drawingMode,
-                    filters,
-                );
-                await cooperativeYield();
-                await this.calculationLayer.draw(
-                    context,
-                    this.document.uiState.drawingMode === DrawingMode.Calculations,
-                    filters,
-                );
-                await cooperativeYield();
+                    const context: DrawingContext = {
+                        ctx: buffer.ctx,
+                        vp: this.viewPort.copy(),
+                        doc: this.document,
+                        catalog: this.effectiveCatalog,
+                        globalStore: this.globalStore,
+                    };
 
-                // Draw hydraulics layer
+                    // this.buffer.transform = this.viewPort.world2ScreenMatrix; do that at the end
+                    this.lastDrawingContext = context;
+                    await this.backgroundLayer.draw(
+                        context,
+                        this.document.uiState.drawingMode === DrawingMode.FloorPlan,
+                        shouldContinue,
+                        this.currentTool,
+                    );
+                    await cooperativeYield(shouldContinue);
+                    const filters = this.document.uiState.drawingMode === DrawingMode.Calculations ? this.document.uiState.calculationFilters : null;
+                    await this.hydraulicsLayer.draw(
+                        context,
+                        this.document.uiState.drawingMode === DrawingMode.Hydraulics,
+                        shouldContinue,
+                        this.document.uiState.drawingMode,
+                        filters,
+                    );
+                    await cooperativeYield(shouldContinue);
+                    await this.calculationLayer.draw(
+                        context,
+                        this.document.uiState.drawingMode === DrawingMode.Calculations,
+                        shouldContinue,
+                        filters,
+                    );
+                    await cooperativeYield(shouldContinue);
 
-                // Draw selection layers
-                if (this.activeLayer) {
-                    await this.activeLayer.drawSelectionLayer(context, this.interactive);
-                    await cooperativeYield();
+                    // Draw hydraulics layer
+
+                    // Draw selection layers
+                    /*
+                    if (this.activeLayer) {
+                        await this.activeLayer.drawSelectionLayer(context, this.interactive);
+                        await cooperativeYield(shouldContinue);
+                    }*/
+
+
+                    // draw selection box
+                    if (this.selectBox) {
+                        this.selectBox.draw(context, {selected: true, active: true, calculationFilters: null});
+                    }
+
+                    if (this.toolHandler) {
+                        context.ctx.setTransform(TM.identity());
+                        this.toolHandler.draw(context);
+                    }
+
+                    this.buffer = buffer; // swap out the buffer, so that the new render shows the new frame.
+
+                    this.blitBuffer();
+                } catch (e) {
+                    if (e instanceof InterruptedError) {
+                        // that's fine, just exit, because a newer frame wants to render.
+                    } else {
+                        throw e;
+                    }
                 }
-
-
-                // draw selection box
-                if (this.selectBox) {
-                    this.selectBox.draw(context, {selected: true, active: true, calculationFilters: null});
-                }
-
-                if (this.toolHandler) {
-                    context.ctx.setTransform(TM.identity());
-                    this.toolHandler.draw(context);
-                }
-
-                this.buffer = buffer; // swap out the buffer, so that the new render shows the new frame.
-
-                this.blitBuffer();
             };
 
             if (this.renderQueue.length === 0) {

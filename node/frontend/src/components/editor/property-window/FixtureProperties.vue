@@ -69,7 +69,6 @@
                 this.defaultCatalog,
                 this.reactiveData,
             );
-
         }
 
         onCommit() {

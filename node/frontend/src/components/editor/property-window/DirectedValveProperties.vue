@@ -106,6 +106,7 @@ import {ValveType} from "../../../../src/store/document/entities/directed-valves
         openCloseIsolation() {
             if (this.$props.selectedEntity.valve.type === ValveType.ISOLATION_VALVE) {
                 this.$props.selectedEntity.valve.isClosed = !this.$props.selectedEntity.valve.isClosed;
+                this.$props.onChange();
                 this.onCommit();
             }
         }

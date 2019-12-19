@@ -19,7 +19,7 @@ export default interface Layer {
 
     select(objects: BaseBackedObject[], mode: SelectMode): void;
 
-    draw(context: DrawingContext, active: boolean, ...args: any[]): Promise<any>;
+    draw(context: DrawingContext, active: boolean, shouldContinue: () => boolean, ...args: any[]): Promise<any>;
     resetDocument(doc: DocumentState): any;
     drawSelectionLayer(context: DrawingContext, interactive: DrawableEntityConcrete[] | null): any;
 
@@ -61,13 +61,13 @@ export abstract class LayerImplementation implements Layer {
     selectedIds: string[] = [];
     draggedObjects: BaseBackedObject[] | null = null;
 
-    onChange: () => any;
+    onChange: (uids: string[]) => any;
     onSelect: () => any;
     onCommit: (obj: DrawableEntityConcrete) => any;
 
     constructor(
         objectStore: ObjectStore,
-        onChange: () => any,
+        onChange: (uids: string[]) => any,
         onSelect: () => any,
         onCommit: (obj: DrawableEntityConcrete) => any,
     ) {
@@ -228,6 +228,7 @@ export abstract class LayerImplementation implements Layer {
             context.$store.dispatch('document/revert', false);
             const res = this.draggedObjects[0].onMouseMove(event, context);
             if (res.handled) {
+
                 return res;
             }
         }
@@ -270,7 +271,6 @@ export abstract class LayerImplementation implements Layer {
         }
 
         this.onSelect();
-        this.onChange();
 
         return false;
     }
@@ -402,7 +402,7 @@ export abstract class LayerImplementation implements Layer {
                 true,
             );
         });
-        this.onChange();
+        this.onChange(grabState.toMoveUids);
     }
 
     onMultiSelectDragFinish(event: MouseEvent, grabState: MultiSelectDragParams, context: CanvasContext): void {
@@ -437,7 +437,7 @@ export abstract class LayerImplementation implements Layer {
             this.objectStore,
             {
                 onSelected: (e) => this.onSelected(e, entity().uid),
-                onChange: () => this.onChange(),
+                onChange: () => this.onChange([entity().uid]),
                 onCommit: (e) => this.onCommit(entity()),
             },
         );

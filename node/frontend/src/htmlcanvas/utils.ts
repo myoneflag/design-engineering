@@ -400,7 +400,14 @@ export function wrapText(
     return lines * lineHeight;
 }
 
-export function cooperativeYield() {
+export class InterruptedError extends Error {}
+
+export function cooperativeYield(shouldContinue?: () => boolean) {
+    if (shouldContinue) {
+        if (!shouldContinue()) {
+            throw new InterruptedError('Cooperative yield interrupted');
+        }
+    }
     return new Promise((resolve, reject) => {
         setTimeout(resolve);
     });

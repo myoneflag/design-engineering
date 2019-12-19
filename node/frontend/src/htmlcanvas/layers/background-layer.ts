@@ -15,7 +15,7 @@ import {cooperativeYield} from "../utils";
 export default class BackgroundLayer extends LayerImplementation {
     resizeBox: ResizeControl | null = null;
 
-    async draw(context: DrawingContext, active: boolean, selectedTool: ToolConfig) {
+    async draw(context: DrawingContext, active: boolean, shouldContinue: () => boolean, selectedTool: ToolConfig) {
         // draw selected one on top.
         for (let i = 0; i < this.uidsInOrder.length; i++) {
             const selectId = this.uidsInOrder[i];
@@ -34,7 +34,7 @@ export default class BackgroundLayer extends LayerImplementation {
             } else {
                 throw new Error('Expected background image, got ' + JSON.stringify(background) + ' instead');
             }
-            await cooperativeYield();
+            await cooperativeYield(shouldContinue);
         }
 
         if (active) {
@@ -49,7 +49,7 @@ export default class BackgroundLayer extends LayerImplementation {
                         {selected: this.isSelected(selectId), active, calculationFilters: null},
                     );
                 }
-                await cooperativeYield();
+                await cooperativeYield(shouldContinue);
             }
         }
     }

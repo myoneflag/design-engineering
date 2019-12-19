@@ -47,7 +47,7 @@ export default class DrawableObjectFactory {
         }
     }
 
-    static buildGhost(entity: () => DrawableEntityConcrete, global: GlobalStore, levelUid: string | null) {
+    static buildGhost(entity: () => DrawableEntityConcrete, global: GlobalStore, levelUid: string | null, vm?: Vue) {
         const GenericDrawable = this.constructors.get(entity().type);
         if (GenericDrawable) {
             const object: BaseBackedObject = new GenericDrawable(

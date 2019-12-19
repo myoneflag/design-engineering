@@ -2,7 +2,7 @@
     <b-container>
         <b-row>
             <b-col>
-                <h3>Flow Source</h3>
+                <h3>Riser</h3>
             </b-col>
         </b-row>
         <PropertiesFieldBuilder

@@ -133,6 +133,7 @@
             selectedObject: Object,
             onPointAChange: Function,
             onPointBChange: Function,
+            onChange: Function,
             onDelete: Function,
         },
     })
@@ -197,6 +198,7 @@
                     if (res.success) {
                         background.uri = res.data.uri;
                         background.filename = this.file!.name;
+                        this.$props.onChange();
                         this.$store.dispatch('document/commit');
                     } else {
                         this.$bvToast.toast(res.message, {
@@ -219,6 +221,8 @@
                 const factor = parseFloat(this.enteredDistance) / this.ABDistanceMeters;
 
                 this.background.scaleFactor *= factor;
+
+                this.$props.onChange();
                 this.$store.dispatch('document/commit');
             }
 
@@ -242,11 +246,13 @@
 
         rotateLeft() {
             this.background.rotation = ((this.background.rotation - 45) % 360 + 360) % 360;
+            this.$props.onChange();
             this.$store.dispatch('document/commit');
         }
 
         rotateRight() {
             this.background.rotation = ((this.background.rotation + 45) % 360 + 360) % 360;
+            this.$props.onChange();
             this.$store.dispatch('document/commit');
         }
 
@@ -269,6 +275,8 @@
             this.deployPointTool((worldCoord: Coord) => {
                 const d: DrawableObject = this.$props.selectedObject;
                 this.background.pointA = d.toObjectCoord(worldCoord);
+
+                this.$props.onChange();
                 this.$store.dispatch('document/commit');
             });
         }
@@ -277,6 +285,8 @@
             this.deployPointTool((worldCoord: Coord) => {
                 const d: DrawableObject = this.$props.selectedObject;
                 this.background.pointB = d.toObjectCoord(worldCoord);
+
+                this.$props.onChange();
                 this.$store.dispatch('document/commit');
             });
         }
