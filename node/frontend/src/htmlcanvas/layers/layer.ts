@@ -389,8 +389,8 @@ export abstract class LayerImplementation implements Layer {
         };
     }
 
-    onMultiSelectDrag(event: MouseEvent, world: Coord, grabState: MultiSelectDragParams, context: CanvasContext): void {
-        context.$store.dispatch('document/revert', false);
+    async onMultiSelectDrag(event: MouseEvent, world: Coord, grabState: MultiSelectDragParams, context: CanvasContext) {
+        await context.$store.dispatch('document/revert', false);
         grabState.toMoveUids.forEach((uid) => {
             const o = this.objectStore.get(uid) as BaseBackedObject & Draggable;
             o.onDrag(

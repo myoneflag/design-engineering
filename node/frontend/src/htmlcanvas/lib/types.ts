@@ -27,8 +27,6 @@ import FittingEntity from "../../store/document/entities/fitting-entity";
 import FixtureEntity from "../../store/document/entities/fixtures/fixture-entity";
 import DirectedValveEntity from "../../store/document/entities/directed-valves/directed-valve-entity";
 import Pipe from "../objects/pipe";
-import { util } from 'chai';
-import {cloneSimple} from "../../lib/utils";
 
 export interface DrawingContext {
     ctx: CanvasRenderingContext2D;
@@ -100,6 +98,11 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
         this.oldEndpoints.set(entity.uid, [entity.endpointUid[0], entity.endpointUid[1]]);
     }
 
+    onEntityChange(uid: string) {
+        if (this.get(uid)!.type === EntityType.PIPE) {
+            this.updatePipeEndpoints(uid);
+        }
+    }
 
     preserve(uids: string[]) {
         this.preserveList = new Set<string>(uids);
@@ -211,6 +214,7 @@ export class GlobalStore extends ObjectStore {
                     },
                     this,
                     levelUid,
+                    vm,
                 );
                 // this.set(e.uid, o, levelUid); Already done by buildGhost
             }

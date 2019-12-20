@@ -26,7 +26,7 @@ export default interface PipeEntity extends DrawableEntity {
     heightAboveFloorM: number;
 
     color: Color | null;
-    readonly endpointUid: readonly [string, string];
+    readonly endpointUid: [string, string];
 }
 
 export interface MutablePipe {

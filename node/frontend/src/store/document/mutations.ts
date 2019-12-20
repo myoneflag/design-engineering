@@ -1,5 +1,11 @@
 import {MutationTree} from 'vuex';
-import {DocumentState, initialDocumentState} from './types';
+import {
+    blankDiffFilter, DiffFilter,
+    DocumentState,
+    DrawingState,
+    initialDocumentState,
+    Level
+} from './types';
 import * as OT from './operation-transforms/operation-transforms';
 import {OPERATION_NAMES} from './operation-transforms/operation-transforms';
 import {MainEventBus} from '../../../src/store/main-event-bus';
@@ -10,6 +16,42 @@ import {EntityType} from '../../../src/store/document/entities/types';
 import stringify from "json-stable-stringify";
 import Vue from 'vue';
 import PipeEntity from "./entities/pipe-entity";
+import {diffState} from "./operation-transforms/state-differ";
+import * as _ from 'lodash';
+
+function logEntityMutation(state: DocumentState, {entityUid, levelUid}: {entityUid: string, levelUid: string | null}) {
+
+    if (levelUid === null) {
+        Vue.set(state.diffFilter.shared, entityUid, false);
+    } else {
+        if (!state.diffFilter.levels.hasOwnProperty(levelUid)) {
+            Vue.set(state.diffFilter.levels, levelUid, {});
+        }
+        if (state.diffFilter.levels[levelUid] === false) {
+            // that's ok, the entire level was being manipulated
+        } else {
+            if (!state.diffFilter.levels[levelUid].hasOwnProperty('entities')) {
+                state.diffFilter.levels[levelUid].entities = {};
+            }
+            if (state.diffFilter.levels[levelUid].entities !== false) {
+                Vue.set(state.diffFilter.levels[levelUid].entities, entityUid, false);
+            }
+        }
+    }
+
+}
+
+function logLevelMutation(state: DocumentState, levelUid: string) {
+    if (!state.diffFilter.levels.hasOwnProperty(levelUid)) {
+        state.diffFilter.levels[levelUid] = {};
+    }
+    Object.keys(state.drawing.levels[levelUid]).forEach((key) => {
+        if (key !== 'entities') {
+            state.diffFilter.levels[levelUid][key] = false;
+        }
+    })
+}
+
 
 export const mutations: MutationTree<DocumentState> = {
     /**
@@ -56,6 +98,7 @@ export const mutations: MutationTree<DocumentState> = {
                     case OT.OPERATION_NAMES.DIFF_OPERATION: {
                         applyOtOnState(state.drawing, cloneSimple(toApply));
                         applyOtOnState(state.committedDrawing, cloneSimple(toApply));
+                        proxyUpFromStateDiff(state, toApply.diff);
                         break;
                     }
 
@@ -83,7 +126,19 @@ export const mutations: MutationTree<DocumentState> = {
     revert(state, redraw) {
         // TODO: emit a reset-level for every changed level. At the moment, we are just resetting current visible
         // level. This is to allow global state to save state.
-        state.drawing = cloneSimple(state.committedDrawing);
+        const reverseDiff = diffState(state.drawing, state.committedDrawing, undefined);
+        reverseDiff.forEach((op) => {
+            switch (op.type) {
+                case OPERATION_NAMES.DIFF_OPERATION:
+                    applyOtOnState(state.drawing, op);
+                    proxyUpFromStateDiff(state, op.diff);
+                    break;
+                case OPERATION_NAMES.COMMITTED_OPERATION:
+                    break;
+            }
+        });
+        state.diffFilter = blankDiffFilter();
+        console.log('diffilter reset');
         MainEventBus.$emit('revert-level', state.uiState.levelUid);
     },
 
@@ -98,18 +153,25 @@ export const mutations: MutationTree<DocumentState> = {
     addEntityOn(state, {entity, levelUid}) {
         if (levelUid === null) {
             Vue.set(state.drawing.shared, entity.uid, entity);
+            logEntityMutation(state, {entityUid: entity.uid, levelUid});
         } else {
             Vue.set(state.drawing.levels[levelUid].entities, entity.uid, entity);
+            logEntityMutation(state, {entityUid: entity.uid, levelUid});
         }
         MainEventBus.$emit('add-entity', {entity, levelUid});
     },
 
     addEntity(state, entity: DrawableEntityConcrete) {
+
         if (entity.type === EntityType.RISER) {
+            entity = proxyEntity(entity, entityHandler(state, null, entity.uid));
             Vue.set(state.drawing.shared, entity.uid, entity);
+            logEntityMutation(state, {entityUid: entity.uid, levelUid: null});
             MainEventBus.$emit('add-entity', {entity, levelUid: null});
         } else {
+            entity = proxyEntity(entity, entityHandler(state, state.uiState.levelUid!, entity.uid));
             Vue.set(state.drawing.levels[state.uiState.levelUid!].entities, entity.uid, entity);
+            logEntityMutation(state, {entityUid: entity.uid, levelUid: state.uiState.levelUid});
             MainEventBus.$emit('add-entity', {entity, levelUid: state.uiState.levelUid!});
         }
     },
@@ -126,8 +188,12 @@ export const mutations: MutationTree<DocumentState> = {
             } else {
                 throw new Error('Deleted an entity that doesn\'t exist ' + JSON.stringify(entity));
             }
+
+            logEntityMutation(state, {entityUid: entity.uid, levelUid: null});
         } else if (entity.uid in state.drawing.levels[state.uiState.levelUid!].entities) {
             Vue.delete(state.drawing.levels[state.uiState.levelUid!].entities, entity.uid);
+
+            logEntityMutation(state, {entityUid: entity.uid, levelUid: state.uiState.levelUid});
             MainEventBus.$emit('delete-entity', {entity, levelUid: state.uiState.levelUid!});
         } else {
             throw new Error('Deleted an entity that doesn\'t exist ' + JSON.stringify(entity));
@@ -140,25 +206,35 @@ export const mutations: MutationTree<DocumentState> = {
                 throw new Error('Deleting a non shared object from the shared level ' + levelUid + ' ' + JSON.stringify(entity));
             }
             Vue.delete(state.drawing.shared, entity.uid);
+            logEntityMutation(state, {entityUid: entity.uid, levelUid: null});
         } else if (entity.uid in state.drawing.levels[levelUid].entities) {
             Vue.delete(state.drawing.levels[levelUid].entities, entity.uid);
+            logEntityMutation(state, {entityUid: entity.uid, levelUid: null});
         } else {
             throw new Error('Deleted an entity that doesn\'t exist ' + JSON.stringify(entity) + ' on level ' + levelUid);
         }
+
+        logEntityMutation(state, {entityUid: entity.uid, levelUid});
         MainEventBus.$emit('delete-entity', {entity, levelUid});
     },
 
-    addLevel(state, level) {
+    addLevel(state, level: Level) {
+        level = proxyLevel(level, state, level.uid);
+        Object.keys(level.entities).forEach((key) => {
+            proxyEntity(level.entities[key], entityHandler(state, level.uid, key));
+        });
+        logLevelMutation(state, level.uid);
         Vue.set(state.drawing.levels, level.uid, level);
         MainEventBus.$emit('add-level', level);
     },
 
-    deleteLevel(state, level) {
+    deleteLevel(state, level: Level) {
         if (level.uid in state.drawing.levels) {
             Vue.delete(state.drawing.levels, level.uid);
         } else {
             throw new Error('Deleted a level that doesn\'t exist ' + JSON.stringify(level));
         }
+        logLevelMutation(state, level.uid);
         MainEventBus.$emit('delete-level', level);
         if (level.uid === state.uiState.levelUid) {
             state.uiState.levelUid = null;
@@ -171,10 +247,95 @@ export const mutations: MutationTree<DocumentState> = {
         MainEventBus.$emit('current-level-changed');
     },
 
-    updatePipeEndpoints(state, {entity, endpoints}: {entity: PipeEntity, endpoints: [string, string]}) {
-        (entity.endpointUid as [string, string])[0] = endpoints[0];
-        (entity.endpointUid as [string, string])[1] = endpoints[1];
+    updatePipeEndpoints(state, {entity, endpoints}: { entity: PipeEntity, endpoints: [string, string] }) {
+        entity.endpointUid[0] = endpoints[0];
+        entity.endpointUid[1] = endpoints[1];
         MainEventBus.$emit('update-pipe-endpoints', {entity, endpoints});
-    }
+    },
 };
 
+function entityHandler(state: DocumentState, levelUid: string | null, entityUid: string) {
+    const handler = {
+        get(target: any, key: string): any {
+            if (key === '__customproxy__') {
+                return true;
+            }
+            return target[key];
+        },
+        set(target: any, key: string, value: any) {
+            if (value !== target[key]) {
+                logEntityMutation(state, {entityUid, levelUid});
+            }
+            if (_.isObject(value as any)) {
+                target[key] = proxyEntity(value, this);
+            } else {
+                target[key] = value;
+            }
+            return true;
+        }
+    };
+
+    return handler;
+}
+
+function levelHandler(state: DocumentState, levelUid: string) {
+    const handler = {
+        get(target: any, key: string): any {
+            if (key === '__customproxy__') {
+                return true;
+            }
+            return target[key];
+        },
+        set(target: any, key: string, value: any) {
+            logLevelMutation(state, levelUid);
+            target[key] = value;
+            return true;
+        }
+    };
+
+    return handler;
+}
+
+function proxyEntity<T>(obj: T, handler: ProxyHandler<any>): T {
+    if (_.isObject(obj)) {
+        if ((obj as any).__custom_proxy__) {
+            return obj;
+        }
+        const proxy = new Proxy(obj, handler);
+        Object.keys(obj).forEach((k) => {
+            proxy[k] = proxyEntity(proxy[k], handler);
+        });
+        return proxy;
+    } else {
+        return obj;
+    }
+}
+
+function proxyLevel(lvl: Level, state: DocumentState, levelUid: string) {
+    if ((lvl as any).__custom_proxy__) {
+        return lvl;
+    } else {
+        return new Proxy(lvl, levelHandler(state, levelUid));
+    }
+}
+
+function proxyUpFromStateDiff(state: DocumentState, diff: any) {
+    if (diff.shared && state.drawing.shared) {
+        Object.keys(diff.shared).forEach((uid) => {
+            if (state.drawing.shared.hasOwnProperty(uid)) {
+                proxyEntity(state.drawing.shared[uid], entityHandler(state, null, uid));
+            }
+        });
+    }
+
+    if (diff.levels && state.drawing.levels) {
+        Object.keys(diff.levels).forEach((lvlUid) => {
+            if (state.drawing.levels[lvlUid] && state.drawing.levels[lvlUid].entities) {
+                Object.keys(diff.levels[lvlUid].entities).forEach((uid) => {
+                    proxyEntity(state.drawing.levels[lvlUid].entities[uid], entityHandler(state, lvlUid, uid));
+                });
+                state.drawing.levels[lvlUid] = proxyLevel(state.drawing.levels[lvlUid], state, lvlUid);
+            }
+        })
+    }
+}

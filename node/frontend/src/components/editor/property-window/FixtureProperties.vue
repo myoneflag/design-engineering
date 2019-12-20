@@ -71,8 +71,8 @@
             );
         }
 
-        onCommit() {
-            this.$store.dispatch('document/commit');
+        async onCommit() {
+            await this.$store.dispatch('document/commit');
         }
     }
 

@@ -85,6 +85,7 @@ export default class BackgroundLayer extends LayerImplementation {
 
             if (!this.objectStore.has(background.uid)) {
                 const obj: BackgroundImage = new BackgroundImage(
+                    undefined,
                     this.objectStore,
                     this,
                     () => (doc.uiState.levelUid ?
@@ -98,7 +99,7 @@ export default class BackgroundLayer extends LayerImplementation {
                     },
                     () => {
                         this.updateSelectionBox();
-                        this.onChange();
+                        this.onChange([entity.uid]);
                     },
                     () => {
                         this.onCommit(obj.entity);
@@ -151,7 +152,7 @@ export default class BackgroundLayer extends LayerImplementation {
     // This is when our guy resizes
     onSelectedResize() {
         if (this.selectedIds) {
-            this.onChange();
+            this.onChange(this.selectedIds);
         }
     }
 

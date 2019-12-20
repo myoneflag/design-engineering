@@ -98,7 +98,7 @@ export default class  HydraulicsLayer extends LayerImplementation {
                     this.objectStore,
                     {
                         onSelected: (e) => this.onSelected(e, entity.uid),
-                        onChange: () => this.onChange(),
+                        onChange: () => this.onChange([entity.uid]),
                         onCommit: (e) => this.onCommit(entity),
                     },
                 );

@@ -1,43 +1,51 @@
 import DrawableObject from '../../../src/htmlcanvas/lib/drawable-object';
-import {
-    CalculationFilter,
-    CalculationFilters,
-    Coord,
-    Coord3D,
-    DocumentState,
-    DrawableEntity
-} from '../../../src/store/document/types';
-import {DrawingContext, ObjectStore} from '../../../src/htmlcanvas/lib/types';
-import * as _ from 'lodash';
+import {CalculationFilters, Coord, Coord3D, DrawableEntity} from '../../../src/store/document/types';
+import {DrawingContext, GlobalStore, ObjectStore} from '../../../src/htmlcanvas/lib/types';
 import {Interaction} from '../../../src/htmlcanvas/lib/interaction';
 import {EntityType} from '../../../src/store/document/entities/types';
-import BackedDrawableObject from '../../../src/htmlcanvas/lib/backed-drawable-object';
 import {
-    CalculationConcrete,
     ConnectableEntityConcrete,
     DrawableEntityConcrete,
     EdgeLikeEntity
 } from '../../../src/store/document/entities/concrete-entity';
 import Layer from '../../../src/htmlcanvas/layers/layer';
-import {cloneSimple} from '../../../src/lib/utils';
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
 import {CalculationContext} from '../../../src/calculations/types';
 import {FlowNode} from '../../../src/calculations/calculation-engine';
 import Flatten from '@flatten-js/core';
-import {CalculationData, CalculationField} from '../../../src/store/document/calculations/calculation-field';
+import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
 import * as TM from "transformation-matrix";
 import FittingEntity from "../../store/document/entities/fitting-entity";
 import PipeEntity from "../../store/document/entities/pipe-entity";
+import * as _ from 'lodash';
+
+const validator = {
+    get(target: any, key: string): any {
+        if (typeof target[key] === 'object' && target[key] !== null) {
+            return new Proxy(target[key], validator)
+        } else {
+            return target[key];
+        }
+    },
+    set (target: any, key: string, value: any) {
+        console.log(target);
+        console.log(key);
+        console.log(value);
+        return true
+    }
+}
 
 export default abstract class BaseBackedObject extends DrawableObject {
     entityBacked: () => DrawableEntityConcrete;
     objectStore: ObjectStore;
+    vm: Vue | undefined;
 
     protected onSelect: (event: MouseEvent | KeyboardEvent) => void;
     protected onChange: () => void;
     protected onCommit: (event: MouseEvent | KeyboardEvent) => void;
 
     protected constructor(
+        vm: Vue | undefined,
         objectStore: ObjectStore,
         layer: Layer,
         obj: () => DrawableEntityConcrete,
@@ -46,6 +54,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
         onCommit: (event: MouseEvent | KeyboardEvent) => void,
     ) {
         super(null, layer);
+        this.vm = vm;
         this.entityBacked = obj;
         this.onSelect = onSelect;
         this.onChange = onChange;

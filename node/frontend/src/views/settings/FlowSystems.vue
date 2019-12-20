@@ -121,8 +121,9 @@
                     uid: uuid(),
                     fluid: 'water',
                 });
-                this.$store.dispatch('document/commit');
-                this.selectedSystemId = this.document.drawing.metadata.flowSystems.length - 1;
+                this.$store.dispatch('document/commit').then(() => {
+                    this.selectedSystemId = this.document.drawing.metadata.flowSystems.length - 1;
+                });
             } else {
                 // nup
             }

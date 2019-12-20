@@ -200,8 +200,8 @@ export default class DrawingCanvas extends Vue {
             () => {
                 this.onLayerSelect();
             },
-            () => { // onCommit
-                this.$store.dispatch('document/commit');
+            async () => { // onCommit
+                await this.$store.dispatch('document/commit');
             },
         );
         hydraulicsLayer: HydraulicsLayer = new HydraulicsLayer(
@@ -210,8 +210,8 @@ export default class DrawingCanvas extends Vue {
             () => {
                 this.onLayerSelect();
             },
-            () => {
-                this.$store.dispatch('document/commit');
+            async () => {
+                await this.$store.dispatch('document/commit');
             },
         );
         calculationLayer: CalculationLayer = new CalculationLayer(
@@ -220,8 +220,8 @@ export default class DrawingCanvas extends Vue {
             () => {
                 this.onLayerSelect();
             },
-            () => {
-                this.$store.dispatch('document/commit');
+            async () => {
+                await this.$store.dispatch('document/commit');
             },
         );
         allLayers: Layer[] = [];
@@ -277,6 +277,7 @@ export default class DrawingCanvas extends Vue {
             MainEventBus.$on('current-level-changed', this.onCurrentLevelChanged);
             MainEventBus.$on('revert-level', this.onRevertLevel);
             MainEventBus.$on('update-pipe-endpoints', this.onPipeEndpoints);
+            MainEventBus.$on('update-entity', this.onUpdateEntity);
 
             this.$watch(() => this.document.uiState.drawingMode, (newVal) => {
                 this.considerCalculating();
@@ -481,12 +482,13 @@ export default class DrawingCanvas extends Vue {
         }
 
         onChangeFromLayer(uids: string[]) {
+            /*
             uids.forEach((uid) => {
                 this.$store.dispatch('document/notifyEntityChange', {
-                    entity: uid,
+                    entityUid: uid,
                     levelUid: this.globalStore.levelOfEntity.get(uid),
                 });
-            });
+            });*/
             this.scheduleDraw();
         }
 
@@ -501,9 +503,9 @@ export default class DrawingCanvas extends Vue {
 
             // Todo: Take the diff and update only the diff.
             Object.values(this.document.drawing.levels).forEach((level) => {
-                this.globalStore.resetLevel(level.uid, Object.values(level.entities), this.document);
+                this.globalStore.resetLevel(level.uid, Object.values(level.entities), this.document, this);
             });
-            this.globalStore.resetLevel(null, Object.values(this.document.drawing.shared), this.document);
+            this.globalStore.resetLevel(null, Object.values(this.document.drawing.shared), this.document, this);
             Array.from(this.globalStore.entitiesInLevel.keys()).forEach((lvlUid) => {
                 if (lvlUid !== null && !this.document.drawing.levels.hasOwnProperty(lvlUid)) {
                     this.globalStore.onLevelDelete(lvlUid);
@@ -550,16 +552,17 @@ export default class DrawingCanvas extends Vue {
 
         onPropertiesChange() {
             // Properties can change for selected objects.
+            /*
             if (this.selectedObjects) {
                 this.selectedObjects.forEach((o) => {
                     this.$store.dispatch('document/notifyEntityChange', {
-                        entity: o.uid,
+                        entityUid: o.uid,
                         levelUid: this.globalStore.levelOfEntity.get(o.uid),
                     });
                 });
             } else {
                 throw new Error('Properties changed but nothing is selected');
-            }
+            }*/
         }
 
         onPipeEndpoints({entity, endpoints}: { entity: PipeEntity, endpoints: [string, string] }) {
@@ -581,6 +584,10 @@ export default class DrawingCanvas extends Vue {
             }
         }
 
+        onUpdateEntity(uid: string) {
+            this.globalStore.onEntityChange(uid);
+        }
+
         onLayerSelect() {
             this.targetProperty = null;
             this.scheduleDraw();
@@ -599,11 +606,13 @@ export default class DrawingCanvas extends Vue {
                 levelUid,
                 Object.values(levelUid ? this.document.drawing.levels[levelUid].entities : this.document.drawing.shared),
                 this.document,
+                this,
             );
             this.globalStore.resetLevel(
                 null,
                 Object.values(this.document.drawing.shared),
                 this.document,
+                this,
             );
         }
 
@@ -638,7 +647,8 @@ export default class DrawingCanvas extends Vue {
                 () => levelUid ? this.document.drawing.levels[levelUid].entities[entity.uid] :
                     this.document.drawing.shared[entity.uid],
                 this.globalStore,
-                levelUid
+                levelUid,
+                this,
             );
         }
 
@@ -694,6 +704,7 @@ export default class DrawingCanvas extends Vue {
                 level.uid,
                 Object.values(level.entities),
                 this.document,
+                this,
             );
 
         }
@@ -798,8 +809,9 @@ export default class DrawingCanvas extends Vue {
                         });
                     }
                 });
-                this.$store.dispatch('document/commit');
-                this.scheduleDraw();
+                this.$store.dispatch('document/commit').then(() => {
+                    this.scheduleDraw();
+                });
             } else {
                 throw new Error('Delete selected was called but we didn\'t select anything');
             }

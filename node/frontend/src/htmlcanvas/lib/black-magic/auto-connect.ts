@@ -840,7 +840,7 @@ export class AutoConnector {
     }
 
     groupDistCache = new GroupDistCache();
-    autoConnect() {
+    async autoConnect() {
         this.rig();
         this.calls = 0;
 
@@ -911,7 +911,7 @@ export class AutoConnector {
             }
 
             rebaseAll(this.context);
-            this.context.$store.dispatch('document/commit');
+            await this.context.$store.dispatch('document/commit');
         } finally {
             this.teardown();
         }

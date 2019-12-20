@@ -67,8 +67,8 @@
             return fillValveDefaultFields(this.document, this.reactiveData);
         }
 
-        onCommit() {
-            this.$store.dispatch('document/commit');
+        async onCommit() {
+            await this.$store.dispatch('document/commit');
         }
     }
 

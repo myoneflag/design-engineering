@@ -68,13 +68,12 @@ export function moveOnto(
 
             assert((pipe.endpointUid[0] === loser.uid) !== (pipe.endpointUid[1] === loser.uid));
 
-            context.$store.dispatch('document/updatePipeEndpoints', {
-                entity: pipe,
-                endpoints: [
-                    pipe.endpointUid[0] === loser.uid ? survivor.uid : pipe.endpointUid[0],
-                    pipe.endpointUid[1] === loser.uid ? survivor.uid : pipe.endpointUid[1],
-                ]
-            });
+            if (pipe.endpointUid[0] === loser.uid) {
+                pipe.endpointUid[0] = survivor.uid;
+            }
+            if (pipe.endpointUid[1] === loser.uid) {
+                pipe.endpointUid[1] = survivor.uid;
+            }
         });
 
         if (context.objectStore.has(loser.uid)) {

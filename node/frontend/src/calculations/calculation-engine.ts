@@ -241,6 +241,7 @@ export default class CalculationEngine {
                     () => ({...e, __calc__: true}),
                     this.globalStore,
                     this.globalStore.levelOfEntity.get(o.uid)!,
+                    undefined,
                 );
                 // this.globalStore.set(e.uid, e); this is already done by DrawableObjectFactory
 

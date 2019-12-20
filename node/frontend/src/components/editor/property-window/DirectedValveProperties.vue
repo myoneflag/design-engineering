@@ -94,8 +94,8 @@ import {ValveType} from "../../../../src/store/document/entities/directed-valves
         get ValveType() {
             return ValveType;
         }
-        onCommit() {
-            this.$store.dispatch('document/commit');
+        async onCommit() {
+            await this.$store.dispatch('document/commit');
         }
 
         flip() {

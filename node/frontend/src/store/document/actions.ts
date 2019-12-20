@@ -2,13 +2,13 @@ import {ActionTree} from 'vuex';
 import * as OT from './operation-transforms/operation-transforms';
 import {OPERATION_NAMES} from './operation-transforms/operation-transforms';
 import {RootState} from '../types';
-import {DocumentState, EntityParam} from '../../../src/store/document/types';
+import {blankDiffFilter, DocumentState, EntityParam} from '../../../src/store/document/types';
 import {diffState} from '../../../src/store/document/operation-transforms/state-differ';
 import {applyOtOnState} from '../../../src/store/document/operation-transforms/state-ot-apply';
 import * as _ from 'lodash';
 import {cloneSimple} from '../../../src/lib/utils';
 import {submitOperation, updateDocument} from "../../../src/api/document";
-
+import Vue from 'vue';
 
 export const actions: ActionTree<DocumentState, RootState> = {
     applyRemoteOperation({commit, state}, op) {
@@ -45,6 +45,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
 
     // Call this action to commit the current operation transforms. TODO: make that atomic.
     commit({commit, state}) {
+        // We need to wait for entity mutation watchers to fire and update the filter.
 
         if (!_.isEqual(state.drawing.metadata.generalInfo, state.committedDrawing.metadata.generalInfo)) {
             updateDocument(state.documentId, undefined, state.drawing.metadata.generalInfo);
@@ -70,6 +71,8 @@ export const actions: ActionTree<DocumentState, RootState> = {
         }
 
         state.optimisticHistory.push(...diff);
+        state.diffFilter = blankDiffFilter();
+        console.log('diffilter reset');
 
         submitOperation(state.documentId, commit, diff); /*.catch((e) => {
             window.alert('There is a connection issue with the server. Please refresh. \n' +
@@ -81,7 +84,8 @@ export const actions: ActionTree<DocumentState, RootState> = {
         commit('setId', payload);
     },
 
-    revert({commit, state}, redraw) {
+    async revert({commit, state}, redraw) {
+        // We need to wait for entity mutation watchers to fire and update the filter.
         // Reverse all optimistic operations
         commit('revert', redraw);
     },
@@ -96,5 +100,5 @@ export const actions: ActionTree<DocumentState, RootState> = {
 
     updatePipeEndpoints({commit, state}, params) {
         commit('updatePipeEndpoints', params);
-    }
+    },
 };

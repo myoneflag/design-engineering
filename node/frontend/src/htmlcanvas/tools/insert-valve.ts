@@ -12,18 +12,18 @@ export default function insertValve(context: CanvasContext, system: FlowSystemPa
     let pipe: Pipe | null = null;
 
     MainEventBus.$emit('set-tool-handler', new PointTool(
-        (interrupted, displaced) => {
+        async (interrupted, displaced) => {
             MainEventBus.$emit('set-tool-handler', null);
             if (interrupted) {
-                context.$store.dispatch('document/revert');
+                await context.$store.dispatch('document/revert');
             } else {
                 if (!displaced) {
                     insertValve(context, system);
                 }
             }
         },
-        (wc, event) => {
-            context.$store.dispatch('document/revert', false);
+        async (wc, event) => {
+            await context.$store.dispatch('document/revert', false);
 
             context.offerInteraction(
                 {
@@ -51,7 +51,7 @@ export default function insertValve(context: CanvasContext, system: FlowSystemPa
         },
         (worldCoord, event) => {
             context.interactive = null;
-            context.$store.dispatch('document/commit');
+            context.$store.dispatch('document/commit').then(() => {});
         },
         'Insert',
     ));

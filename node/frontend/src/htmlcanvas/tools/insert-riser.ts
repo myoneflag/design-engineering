@@ -22,9 +22,9 @@ export default function insertRiser(
     const newUid = uuid();
     let toReplace: BackedDrawableObject<ConnectableEntityConcrete> | null = null;
     MainEventBus.$emit('set-tool-handler', new PointTool(
-        (interrupted, displaced) => {
+        async (interrupted, displaced) => {
             if (interrupted) {
-                context.$store.dispatch('document/revert');
+                await context.$store.dispatch('document/revert');
             }
             if (!displaced) {
                 MainEventBus.$emit('set-tool-handler', null);
@@ -112,10 +112,10 @@ export default function insertRiser(
             });
         },
         () => {
-            context.$store.dispatch('document/commit');
-
-            // Notify the user that there's fields to select
-            MainEventBus.$emit('select', {uid: newUid, property: 'pressureKPA', recenter: false});
+            context.$store.dispatch('document/commit').then(() => {
+                // Notify the user that there's fields to select
+                MainEventBus.$emit('select', {uid: newUid, property: 'pressureKPA', recenter: false});
+            });
         },
         'Insert Flow Source',
     ));
