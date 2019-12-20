@@ -72,7 +72,6 @@ export const actions: ActionTree<DocumentState, RootState> = {
 
         state.optimisticHistory.push(...diff);
         state.diffFilter = blankDiffFilter();
-        console.log('diffilter reset');
 
         submitOperation(state.documentId, commit, diff); /*.catch((e) => {
             window.alert('There is a connection issue with the server. Please refresh. \n' +
@@ -84,7 +83,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
         commit('setId', payload);
     },
 
-    async revert({commit, state}, redraw) {
+    revert({commit, state}, redraw) {
         // We need to wait for entity mutation watchers to fire and update the filter.
         // Reverse all optimistic operations
         commit('revert', redraw);

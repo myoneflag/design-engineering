@@ -23,7 +23,7 @@ export default function insertValve(context: CanvasContext, system: FlowSystemPa
             }
         },
         async (wc, event) => {
-            await context.$store.dispatch('document/revert', false);
+            context.$store.dispatch('document/revert', false);
 
             context.offerInteraction(
                 {

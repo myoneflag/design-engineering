@@ -23,18 +23,18 @@ export default function insertDirectedValve(
     let flipped = false;
 
     MainEventBus.$emit('set-tool-handler', new PointTool(
-        async (interrupted, displaced) => {
+        (interrupted, displaced) => {
             MainEventBus.$emit('set-tool-handler', null);
             if (interrupted) {
-                await context.$store.dispatch('document/revert');
+                context.$store.dispatch('document/revert');
             } else {
                 if (!displaced) {
                     insertDirectedValve(context, valveType, catalogId, system);
                 }
             }
         },
-        async (wc, event) => {
-            await context.$store.dispatch('document/revert', false);
+        (wc, event) => {
+            context.$store.dispatch('document/revert', false);
 
             context.offerInteraction(
                 {
@@ -49,7 +49,7 @@ export default function insertDirectedValve(
             );
 
             const valveEntity: DirectedValveEntity = createBareValveEntity(valveType, catalogId, wc, null);
-            await context.$store.dispatch('document/addEntity', valveEntity);
+            context.$store.dispatch('document/addEntity', valveEntity);
 
             if (context.interactive && context.interactive.length) {
                 const pipeE = context.interactive[0];

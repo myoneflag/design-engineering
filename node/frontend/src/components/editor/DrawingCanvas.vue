@@ -101,7 +101,7 @@ import {EntityType} from "../../store/document/entities/types";
             <div v-if="document.uiState.levelUid === null" class="choose-level-instruction">
                 <v-icon name="arrow-left" scale="2"></v-icon> Please Choose a Level
             </div>
-            <resize-observer @notify="draw"/>
+            <resize-observer @notify="scheduleDraw"/>
 
         </div>
     </drop>
@@ -169,6 +169,7 @@ import {EntityType} from "../../store/document/entities/types";
     import {cloneSimple} from "../../lib/utils";
     import PipeEntity from "../../store/document/entities/pipe-entity";
     import {compose} from "transformation-matrix/compose";
+    import util from 'util';
 
     @Component({
     components: {
@@ -200,8 +201,8 @@ export default class DrawingCanvas extends Vue {
             () => {
                 this.onLayerSelect();
             },
-            async () => { // onCommit
-                await this.$store.dispatch('document/commit');
+            () => { // onCommit
+                this.$store.dispatch('document/commit');
             },
         );
         hydraulicsLayer: HydraulicsLayer = new HydraulicsLayer(
@@ -210,8 +211,8 @@ export default class DrawingCanvas extends Vue {
             () => {
                 this.onLayerSelect();
             },
-            async () => {
-                await this.$store.dispatch('document/commit');
+            () => {
+                this.$store.dispatch('document/commit');
             },
         );
         calculationLayer: CalculationLayer = new CalculationLayer(
@@ -220,8 +221,8 @@ export default class DrawingCanvas extends Vue {
             () => {
                 this.onLayerSelect();
             },
-            async () => {
-                await this.$store.dispatch('document/commit');
+            () => {
+                this.$store.dispatch('document/commit');
             },
         );
         allLayers: Layer[] = [];
@@ -265,7 +266,7 @@ export default class DrawingCanvas extends Vue {
 
             // In the future, there will be 2 types of OTs to handle. Full snapshots, and diffable updates.
             // At the moment, even small diffable updates go through the full treatment.
-            MainEventBus.$on('ot-applied', this.onOT);
+            MainEventBus.$on('committed', this.onCommitted);
             MainEventBus.$on('set-tool-handler', this.setToolHandler);
             MainEventBus.$on('select', this.onSelectRequest);
             MainEventBus.$on('auto-connect', this.onAutoConnect);
@@ -290,7 +291,7 @@ export default class DrawingCanvas extends Vue {
             (this.$refs.canvasFrame as any).onwheel = this.onWheel;
 
             this.allLayers.push(this.backgroundLayer, this.hydraulicsLayer, this.calculationLayer);
-            this.onOT();
+            this.processDocumentInitial();
 
 
             // set view on groundiest floor
@@ -303,7 +304,7 @@ export default class DrawingCanvas extends Vue {
             this.calculationEngine = new CalculationEngine();
 
 
-            setInterval(this.drawLoop, 20);
+            //setInterval(this.drawLoop, 20);
             this.initialized = true;
         }
 
@@ -492,16 +493,15 @@ export default class DrawingCanvas extends Vue {
             this.scheduleDraw();
         }
 
-        onOT(redraw: boolean = true) {
-            if (!redraw) {
-                this.drawingLocked++;
-            }
+        processDocumentInitial() {
+
+            this.drawingLocked++;
             if (this.document.uiState.levelUid &&
                 !this.document.drawing.levels.hasOwnProperty(this.document.uiState.levelUid)) {
+                console.log('setting level to null');
                 this.document.uiState.levelUid = null;
             }
 
-            // Todo: Take the diff and update only the diff.
             Object.values(this.document.drawing.levels).forEach((level) => {
                 this.globalStore.resetLevel(level.uid, Object.values(level.entities), this.document, this);
             });
@@ -514,6 +514,9 @@ export default class DrawingCanvas extends Vue {
 
             this.resetVisibleLevel();
             this.drawingLocked--;
+        }
+
+        onCommitted(redraw: boolean = true) {
             if (redraw) {
                 this.scheduleDraw();
             }
@@ -585,6 +588,7 @@ export default class DrawingCanvas extends Vue {
         }
 
         onUpdateEntity(uid: string) {
+            console.log('on update entity ' + uid);
             this.globalStore.onEntityChange(uid);
         }
 
@@ -617,7 +621,9 @@ export default class DrawingCanvas extends Vue {
         }
 
         onAddEntity({entity, levelUid}: EntityParam) {
+            console.log('on add entity ' + entity.uid + ' ' + levelUid);
             if (this.currentLevel && levelUid === this.currentLevel.uid) {
+                console.log('passing to layers');
                 switch (entity.type) {
                     case EntityType.BACKGROUND_IMAGE:
                         this.backgroundLayer.addEntity(() => this.getEntityFromBase(entity.uid, levelUid));
@@ -629,18 +635,24 @@ export default class DrawingCanvas extends Vue {
                     case EntityType.SYSTEM_NODE:
                     case EntityType.TMV:
                     case EntityType.FIXTURE:
-                        this.hydraulicsLayer.addEntity(() => this.getEntityFromBase(entity.uid, levelUid));
+                        this.hydraulicsLayer.addEntity(() => {
+                            const val = this.getEntityFromBase(entity.uid, levelUid);
+                            return val;
+                        });
                         break;
                     default:
                         assertUnreachable(entity);
                 }
             } else if (entity.type === EntityType.RISER) {
+                console.log('passing to riser');
                 // Determine if this guy belongs
                 if (this.currentLevel) {
                     if (levelIncludesRiser(this.currentLevel, entity, this.sortedLevels)) {
                         this.hydraulicsLayer.addEntity(() => this.getEntityFromBase(entity.uid, levelUid));
                     }
                 }
+            } else {
+                console.log('ignoring');
             }
 
             const go = DrawableObjectFactory.buildGhost(
@@ -668,7 +680,9 @@ export default class DrawingCanvas extends Vue {
         }
 
         onDeleteEntity({entity, levelUid}: EntityParam) {
+            console.log('on delete entity ' + entity.uid);
             if (this.currentLevel && levelUid === this.currentLevel.uid) {
+                console.log('passing to layers');
                 switch (entity.type) {
                     case EntityType.BACKGROUND_IMAGE:
                         this.backgroundLayer.deleteEntity(entity);
@@ -686,12 +700,15 @@ export default class DrawingCanvas extends Vue {
                         assertUnreachable(entity);
                 }
             } else if (entity.type === EntityType.RISER) {
+                console.log('passing to riser');
                 // Determine if this guy belongs
                 if (this.currentLevel) {
                     if (levelIncludesRiser(this.currentLevel, entity, this.sortedLevels)) {
                         this.hydraulicsLayer.deleteEntity(entity);
                     }
                 }
+            } else {
+                console.log('ignoring ' + this.currentLevel + ' ' + levelUid + ' ' + (this.currentLevel ? this.currentLevel.uid : undefined));
             }
 
             this.globalStore.delete(entity.uid);
@@ -699,6 +716,7 @@ export default class DrawingCanvas extends Vue {
         }
 
         onAddLevel(level: Level) {
+            console.log('on add level ' + level.uid);
             this.watchLevel(level.uid);
             this.globalStore.resetLevel(
                 level.uid,
@@ -710,6 +728,7 @@ export default class DrawingCanvas extends Vue {
         }
 
         onDeleteLevel(level: Level) {
+            console.log('on delete level ' + level.uid);
             this.unwatchLevel(level.uid);
             this.globalStore.onLevelDelete(level.uid);
         }
@@ -864,16 +883,23 @@ export default class DrawingCanvas extends Vue {
         }
 
         scheduleDraw() {
-            if (Date.now() - this.lastDraw < 25) {
-                this.shouldDraw = true;
-            } else if (this.updating) {
-                this.shouldDraw = true;
-            } else if (this.shouldDraw) {
-                this.shouldDraw = true;
-            } else if (this.drawingLocked > 0) {
-                this.shouldDraw = true;
-            } else { // throttle rendering.
-                this.draw();
+
+            if (this.renderQueue.length === 0) {
+                this.renderQueue.push(this.draw().then(() => {
+                    this.renderQueue.splice(0, 1);
+
+                    console.log(this.renderQueue.length);
+                }).then(() => console.log('this is after')));
+            } else if (this.renderQueue.length === 1) {
+                this.renderQueue.push(this.renderQueue[0].then(() => {
+                    console.log('  .' + this.renderQueue.length);
+                    return this.draw().then(() => {
+                        this.renderQueue.splice(0, 1);
+                        console.log('      ' + this.renderQueue.length);
+                    });
+                }))
+            } else {
+                // drop frame
             }
         }
 
@@ -889,7 +915,7 @@ export default class DrawingCanvas extends Vue {
         }
 
         drawLoop() {
-            if (this.shouldDraw) {
+            if (this.shouldDraw && !this.waitingForRepaint) {
                 this.shouldDraw = false;
                 try {
                     this.draw();
@@ -980,12 +1006,16 @@ export default class DrawingCanvas extends Vue {
 
         buffer: Buffer;
         renderQueue: Promise<any>[] = [];
+        numSkipped = 0;
+        waitingForRepaint = false;
 
-        draw() {
+        async draw() {
             this.sanityCheckGlobalStore();
-            this.lastDraw = Date.now();
-            if (this.ctx != null && (this.$refs.canvasFrame as any) != null) {
 
+            console.log('draw called');
+
+            await util.promisify(requestAnimationFrame);
+            if (this.ctx != null && (this.$refs.canvasFrame as any) != null) {
 
                 const width = (this.$refs.canvasFrame as any).clientWidth - 1;
                 const height = (this.$refs.canvasFrame as any).clientHeight;
@@ -1001,9 +1031,11 @@ export default class DrawingCanvas extends Vue {
 
                 this.blitBuffer();
 
-                this.drawInternal().then(() => {
-                });
+                // console.log('   fast draw finished');
 
+                await util.promisify(requestAnimationFrame);
+                await this.drawInternal();
+                // console.log('   detailed draw exited');
             }
         }
 
@@ -1041,100 +1073,93 @@ export default class DrawingCanvas extends Vue {
             }
         }
 
+        simulDraws = 0;
         async drawInternal() {
+            this.simulDraws ++;
+            if (this.simulDraws === 2) {
+                throw new Error("Shound't be running 2 simulaneous draws");
+            }
+            try {
+                const shouldContinue = (() => {
+                    console.log('simul draws: ' + this.simulDraws);
+                    const res = this.renderQueue.length < 2 || this.numSkipped > 4;
+                    if (res === false) {
+                        this.numSkipped++;
+                    }
+                    // console.log(' checking ' + res);
+                    //return res;
+                    return true;
+                }).bind(this);
 
-            const run = async () => {
-                try {
-                    const shouldContinue = (() => {
-                        const res = this.renderQueue.length < 2;
-                        if (!res) {
-                            console.log("interrupting");
-                        }
-                        return res;
-                    }).bind(this);
+                const buffer = new Buffer(this.viewPort.width, this.viewPort.height, this.viewPort.world2ScreenMatrix);
 
-                    console.log('running');
-                    const buffer = new Buffer(this.viewPort.width, this.viewPort.height, this.viewPort.world2ScreenMatrix);
+                const context: DrawingContext = {
+                    ctx: buffer.ctx,
+                    vp: this.viewPort.copy(),
+                    doc: this.document,
+                    catalog: this.effectiveCatalog,
+                    globalStore: this.globalStore,
+                };
 
-                    const context: DrawingContext = {
-                        ctx: buffer.ctx,
-                        vp: this.viewPort.copy(),
-                        doc: this.document,
-                        catalog: this.effectiveCatalog,
-                        globalStore: this.globalStore,
-                    };
+                // this.buffer.transform = this.viewPort.world2ScreenMatrix; do that at the end
+                this.lastDrawingContext = context;
+                await this.backgroundLayer.draw(
+                    context,
+                    this.document.uiState.drawingMode === DrawingMode.FloorPlan,
+                    shouldContinue,
+                    this.currentTool,
+                );
+                await util.promisify(requestAnimationFrame);
+                const filters = this.document.uiState.drawingMode === DrawingMode.Calculations ? this.document.uiState.calculationFilters : null;
+                await this.hydraulicsLayer.draw(
+                    context,
+                    this.document.uiState.drawingMode === DrawingMode.Hydraulics,
+                    shouldContinue,
+                    this.document.uiState.drawingMode,
+                    filters,
+                );
+                await cooperativeYield(shouldContinue);
+                await this.calculationLayer.draw(
+                    context,
+                    this.document.uiState.drawingMode === DrawingMode.Calculations,
+                    shouldContinue,
+                    filters,
+                );
+                await cooperativeYield(shouldContinue);
 
-                    // this.buffer.transform = this.viewPort.world2ScreenMatrix; do that at the end
-                    this.lastDrawingContext = context;
-                    await this.backgroundLayer.draw(
-                        context,
-                        this.document.uiState.drawingMode === DrawingMode.FloorPlan,
-                        shouldContinue,
-                        this.currentTool,
-                    );
-                    await cooperativeYield(shouldContinue);
-                    const filters = this.document.uiState.drawingMode === DrawingMode.Calculations ? this.document.uiState.calculationFilters : null;
-                    await this.hydraulicsLayer.draw(
-                        context,
-                        this.document.uiState.drawingMode === DrawingMode.Hydraulics,
-                        shouldContinue,
-                        this.document.uiState.drawingMode,
-                        filters,
-                    );
-                    await cooperativeYield(shouldContinue);
-                    await this.calculationLayer.draw(
-                        context,
-                        this.document.uiState.drawingMode === DrawingMode.Calculations,
-                        shouldContinue,
-                        filters,
-                    );
-                    await cooperativeYield(shouldContinue);
+                // Draw hydraulics layer
 
-                    // Draw hydraulics layer
-
-                    // Draw selection layers
-                    /*
+                // Draw selection layers
+                /*
                     if (this.activeLayer) {
                         await this.activeLayer.drawSelectionLayer(context, this.interactive);
                         await cooperativeYield(shouldContinue);
                     }*/
 
 
-                    // draw selection box
-                    if (this.selectBox) {
-                        this.selectBox.draw(context, {selected: true, active: true, calculationFilters: null});
-                    }
-
-                    if (this.toolHandler) {
-                        context.ctx.setTransform(TM.identity());
-                        this.toolHandler.draw(context);
-                    }
-
-                    this.buffer = buffer; // swap out the buffer, so that the new render shows the new frame.
-
-                    this.blitBuffer();
-                } catch (e) {
-                    if (e instanceof InterruptedError) {
-                        // that's fine, just exit, because a newer frame wants to render.
-                    } else {
-                        throw e;
-                    }
+                // draw selection box
+                if (this.selectBox) {
+                    this.selectBox.draw(context, {selected: true, active: true, calculationFilters: null});
                 }
-            };
 
-            if (this.renderQueue.length === 0) {
-                this.renderQueue.push(run.bind(this)().then(() => this.renderQueue.splice(0, 1)));
-                return this.renderQueue[this.renderQueue.length - 1];
-            } else if (this.renderQueue.length === 1) {
-                this.renderQueue.push(
-                    this.renderQueue[0]
-                        .then(() => run.bind(this)())
-                        .then(() => this.renderQueue.splice(0, 1))
-                );
-                return this.renderQueue[this.renderQueue.length - 1];
-            } else {
-                console.log('render queue too long, I am not necessary.');
-                return;
+                if (this.toolHandler) {
+                    context.ctx.setTransform(TM.identity());
+                    this.toolHandler.draw(context);
+                }
+
+                this.buffer = buffer; // swap out the buffer, so that the new render shows the new frame.
+
+                this.blitBuffer();
+                this.numSkipped = 0;
+                console.log('   detailed draw finished');
+            } catch (e) {
+                if (e instanceof InterruptedError) {
+                    // that's fine, just exit, because a newer frame wants to render.
+                } else {
+                    throw e;
+                }
+            } finally {
+                this.simulDraws --;
             }
         }
 
@@ -1259,16 +1284,21 @@ export default class DrawingCanvas extends Vue {
         }
 
         onMouseMove(event: MouseEvent): boolean {
-            if (event.movementX === 0 && event.movementY === 0) {
-                return true; // Phantom movement - damn it chrome
-            }
-            const res = this.onMouseMoveInternal(event);
-            if (res.cursor) {
-                this.currentCursor = res.cursor;
-            } else {
-                this.currentCursor = this.currentTool.defaultCursor;
-            }
-            return res.handled;
+            window.requestAnimationFrame(() => {
+
+                if (event.movementX === 0 && event.movementY === 0) {
+                    return true; // Phantom movement - damn it chrome
+                }
+                const res = this.onMouseMoveInternal(event);
+                if (res.cursor) {
+                    this.currentCursor = res.cursor;
+                } else {
+                    this.currentCursor = this.currentTool.defaultCursor;
+                }
+                return true;
+            });
+            return true;
+            //return res.handled;
         }
 
         onMouseMoveInternal(event: MouseEvent): MouseMoveResult {

@@ -22,9 +22,9 @@ export default function insertRiser(
     const newUid = uuid();
     let toReplace: BackedDrawableObject<ConnectableEntityConcrete> | null = null;
     MainEventBus.$emit('set-tool-handler', new PointTool(
-        async (interrupted, displaced) => {
+        (interrupted, displaced) => {
             if (interrupted) {
-                await context.$store.dispatch('document/revert');
+                context.$store.dispatch('document/revert');
             }
             if (!displaced) {
                 MainEventBus.$emit('set-tool-handler', null);

@@ -389,8 +389,8 @@ export abstract class LayerImplementation implements Layer {
         };
     }
 
-    async onMultiSelectDrag(event: MouseEvent, world: Coord, grabState: MultiSelectDragParams, context: CanvasContext) {
-        await context.$store.dispatch('document/revert', false);
+    onMultiSelectDrag(event: MouseEvent, world: Coord, grabState: MultiSelectDragParams, context: CanvasContext) {
+        context.$store.dispatch('document/revert', false);
         grabState.toMoveUids.forEach((uid) => {
             const o = this.objectStore.get(uid) as BaseBackedObject & Draggable;
             o.onDrag(
@@ -415,6 +415,39 @@ export abstract class LayerImplementation implements Layer {
     }
 
     addEntity(entity: () => DrawableEntityConcrete): void {
+
+        DrawableObjectFactory.buildVisible(
+            this,
+            entity,
+            this.objectStore,
+            {
+                onSelected: (e) => this.onSelected(e, entity().uid),
+                onChange: () => this.onChange([entity().uid]),
+                onCommit: (e) => this.onCommit(entity()),
+            },
+        );
+/*
+        const getSortOrder = (i: number) => {
+            const io = this.objectStore.get(this.uidsInOrder[i]);
+            return this.entitySortOrder(io!.entity);
+        };
+
+        const myVal = this.entitySortOrder(entity());
+        let high = this.uidsInOrder.length;
+        let low = 0; // find first element
+        while (low < high) {
+            const mid = Math.floor((low + high) / 2);
+            const midVal = getSortOrder(mid);
+
+            if (midVal > myVal) {
+                high = mid;
+            } else {
+                low = mid + 1;
+            }
+        }
+        this.uidsInOrder.splice(low, 0, entity().uid);
+*/
+
         for (let i = 0; i <= this.uidsInOrder.length; i++) {
             const io = this.objectStore.get(this.uidsInOrder[i]);
 
@@ -431,16 +464,6 @@ export abstract class LayerImplementation implements Layer {
             }
         }
 
-        DrawableObjectFactory.buildVisible(
-            this,
-            entity,
-            this.objectStore,
-            {
-                onSelected: (e) => this.onSelected(e, entity().uid),
-                onChange: () => this.onChange([entity().uid]),
-                onCommit: (e) => this.onCommit(entity()),
-            },
-        );
     }
 
     deleteEntity(entity: DrawableEntityConcrete): void {

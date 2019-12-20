@@ -911,7 +911,7 @@ export class AutoConnector {
             }
 
             rebaseAll(this.context);
-            await this.context.$store.dispatch('document/commit');
+            this.context.$store.dispatch('document/commit');
         } finally {
             this.teardown();
         }

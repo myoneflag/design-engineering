@@ -33,9 +33,9 @@ export default function insertTmv(
     const coldOutUid = uuid();
 
     MainEventBus.$emit('set-tool-handler', new PointTool(
-        async (interrupted, displaced) => {
+        (interrupted, displaced) => {
             if (interrupted) {
-                await context.$store.dispatch('document/revert');
+                context.$store.dispatch('document/revert');
             }
             if (!displaced) {
                 MainEventBus.$emit('set-tool-handler', null);
@@ -45,8 +45,8 @@ export default function insertTmv(
                 }
             }
         },
-        async (wc: Coord, event) => {
-            await context.$store.dispatch('document/revert', false);
+        (wc: Coord, event) => {
+            context.$store.dispatch('document/revert', false);
 
             const doc = context.document as DocumentState;
 

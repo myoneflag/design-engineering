@@ -20,7 +20,6 @@ import {diffState} from "./operation-transforms/state-differ";
 import * as _ from 'lodash';
 
 function logEntityMutation(state: DocumentState, {entityUid, levelUid}: {entityUid: string, levelUid: string | null}) {
-
     if (levelUid === null) {
         Vue.set(state.diffFilter.shared, entityUid, false);
     } else {
@@ -97,8 +96,12 @@ export const mutations: MutationTree<DocumentState> = {
                 switch (toApply.type) {
                     case OT.OPERATION_NAMES.DIFF_OPERATION: {
                         applyOtOnState(state.drawing, cloneSimple(toApply));
+                        const changes = marshalChanges(state.committedDrawing, state.drawing, toApply.diff);
                         applyOtOnState(state.committedDrawing, cloneSimple(toApply));
                         proxyUpFromStateDiff(state, toApply.diff);
+                        changes.forEach(([e, v]) => {
+                            MainEventBus.$emit(e, v);
+                        });
                         break;
                     }
 
@@ -119,27 +122,33 @@ export const mutations: MutationTree<DocumentState> = {
         }
 
         if (newData) {
-            MainEventBus.$emit('ot-applied');
+            MainEventBus.$emit('committed', true);
         } // else, the data is already represented on screen
     },
 
     revert(state, redraw) {
+        console.log('  revert start.....');
+        console.log('diffFilter: ' + JSON.stringify(state.diffFilter));
         // TODO: emit a reset-level for every changed level. At the moment, we are just resetting current visible
         // level. This is to allow global state to save state.
-        const reverseDiff = diffState(state.drawing, state.committedDrawing, undefined);
+        const reverseDiff = diffState(state.drawing, state.committedDrawing, state.diffFilter);
+
         reverseDiff.forEach((op) => {
             switch (op.type) {
                 case OPERATION_NAMES.DIFF_OPERATION:
+                    const changes = marshalChanges(state.drawing, state.committedDrawing, op.diff);
                     applyOtOnState(state.drawing, op);
                     proxyUpFromStateDiff(state, op.diff);
+                    changes.forEach(([e, v]) => {
+                        MainEventBus.$emit(e, v);
+                    });
                     break;
                 case OPERATION_NAMES.COMMITTED_OPERATION:
+                    MainEventBus.$emit('committed', redraw);
                     break;
             }
         });
         state.diffFilter = blankDiffFilter();
-        console.log('diffilter reset');
-        MainEventBus.$emit('revert-level', state.uiState.levelUid);
     },
 
     reset(state) {
@@ -184,6 +193,7 @@ export const mutations: MutationTree<DocumentState> = {
         if (entity.type === EntityType.RISER) {
             if (entity.uid in state.drawing.shared) {
                 Vue.delete(state.drawing.shared, entity.uid);
+                console.log('emitting del 1 ' + entity.uid + ' ' + null);
                 MainEventBus.$emit('delete-entity', {entity, levelUid: null});
             } else {
                 throw new Error('Deleted an entity that doesn\'t exist ' + JSON.stringify(entity));
@@ -194,6 +204,7 @@ export const mutations: MutationTree<DocumentState> = {
             Vue.delete(state.drawing.levels[state.uiState.levelUid!].entities, entity.uid);
 
             logEntityMutation(state, {entityUid: entity.uid, levelUid: state.uiState.levelUid});
+            console.log('emitting del 2 ' + entity.uid + ' ' +  state.uiState.levelUid);
             MainEventBus.$emit('delete-entity', {entity, levelUid: state.uiState.levelUid!});
         } else {
             throw new Error('Deleted an entity that doesn\'t exist ' + JSON.stringify(entity));
@@ -215,6 +226,7 @@ export const mutations: MutationTree<DocumentState> = {
         }
 
         logEntityMutation(state, {entityUid: entity.uid, levelUid});
+        console.log('emitting del 2 ' + entity.uid + ' ' +  state.uiState.levelUid);
         MainEventBus.$emit('delete-entity', {entity, levelUid});
     },
 
@@ -257,19 +269,22 @@ export const mutations: MutationTree<DocumentState> = {
 function entityHandler(state: DocumentState, levelUid: string | null, entityUid: string) {
     const handler = {
         get(target: any, key: string): any {
-            if (key === '__customproxy__') {
+            if (key === '__custom_proxy__') {
                 return true;
             }
             return target[key];
         },
         set(target: any, key: string, value: any) {
             if (value !== target[key]) {
+
                 logEntityMutation(state, {entityUid, levelUid});
-            }
-            if (_.isObject(value as any)) {
-                target[key] = proxyEntity(value, this);
-            } else {
-                target[key] = value;
+
+
+                if (_.isObject(value as any) && value.__custom_proxy__ !== true) {
+                    target[key] = proxyEntity(value, this);
+                } else {
+                    target[key] = value;
+                }
             }
             return true;
         }
@@ -281,7 +296,7 @@ function entityHandler(state: DocumentState, levelUid: string | null, entityUid:
 function levelHandler(state: DocumentState, levelUid: string) {
     const handler = {
         get(target: any, key: string): any {
-            if (key === '__customproxy__') {
+            if (key === '__custom_proxy__') {
                 return true;
             }
             return target[key];
@@ -297,6 +312,7 @@ function levelHandler(state: DocumentState, levelUid: string) {
 }
 
 function proxyEntity<T>(obj: T, handler: ProxyHandler<any>): T {
+
     if (_.isObject(obj)) {
         if ((obj as any).__custom_proxy__) {
             return obj;
@@ -323,7 +339,8 @@ function proxyUpFromStateDiff(state: DocumentState, diff: any) {
     if (diff.shared && state.drawing.shared) {
         Object.keys(diff.shared).forEach((uid) => {
             if (state.drawing.shared.hasOwnProperty(uid)) {
-                proxyEntity(state.drawing.shared[uid], entityHandler(state, null, uid));
+                state.drawing.shared[uid] =
+                    proxyEntity(state.drawing.shared[uid], entityHandler(state, null, uid));
             }
         });
     }
@@ -332,10 +349,63 @@ function proxyUpFromStateDiff(state: DocumentState, diff: any) {
         Object.keys(diff.levels).forEach((lvlUid) => {
             if (state.drawing.levels[lvlUid] && state.drawing.levels[lvlUid].entities) {
                 Object.keys(diff.levels[lvlUid].entities).forEach((uid) => {
-                    proxyEntity(state.drawing.levels[lvlUid].entities[uid], entityHandler(state, lvlUid, uid));
+                    if (state.drawing.levels[lvlUid].entities.hasOwnProperty(uid)) {
+                        state.drawing.levels[lvlUid].entities[uid] =
+                            proxyEntity(state.drawing.levels[lvlUid].entities[uid], entityHandler(state, lvlUid, uid));
+                    }
                 });
                 state.drawing.levels[lvlUid] = proxyLevel(state.drawing.levels[lvlUid], state, lvlUid);
             }
         })
     }
+}
+
+// Call this before destroying the current state to figure out what we need to alert changes for.
+function marshalChanges(from: DrawingState, to: DrawingState, diff: any): Array<[string, any]> {
+    const res: Array<[string, any]> = [];
+    if (diff.shared && from.shared) {
+        Object.keys(diff.shared).forEach((uid) => {
+            if (to.shared.hasOwnProperty(uid) && from.shared.hasOwnProperty(uid)) {
+                res.push(['update-entity', uid]);
+            } else if (from.shared.hasOwnProperty(uid)) {
+                res.push(['delete-entity', {entity: from.shared[uid], levelUid: null}]);
+            } else if (to.shared.hasOwnProperty(uid)) {
+                res.push(['add-entity', {entity: to.shared[uid], levelUid: null}]);
+            } else {
+                throw new Error('invalid diff state - diffing something that no sides have');
+            }
+        });
+    }
+
+    if (diff.levels && to.levels) {
+        Object.keys(diff.levels).forEach((lvlUid) => {
+            if (from.levels.hasOwnProperty(lvlUid) && to.levels.hasOwnProperty(lvlUid)) {
+                // Diff elements here
+                Object.keys(diff.levels[lvlUid].entities).forEach((uid) => {
+                    if (to.levels[lvlUid].entities.hasOwnProperty(uid) && from.levels[lvlUid].entities.hasOwnProperty(uid)) {
+                        res.push(['update-entity', uid]);
+                    } else if (from.levels[lvlUid].entities.hasOwnProperty(uid)) {
+                        res.push(['delete-entity', {entity: from.levels[lvlUid].entities[uid], levelUid: lvlUid}]);
+                    } else if (to.levels[lvlUid].entities.hasOwnProperty(uid)) {
+                        res.push(['add-entity', {entity: to.levels[lvlUid].entities[uid], levelUid: lvlUid}]);
+                    } else {
+                        throw new Error('invalid diff state - diffing something that no sides have');
+                    }
+                })
+            } else if (from.levels.hasOwnProperty(lvlUid)) {
+                res.push(['delete-level', from.levels[lvlUid]]);
+            } else if (to.levels.hasOwnProperty(lvlUid)) {
+                res.push(['add-level', to.levels[lvlUid]]);
+            } else {
+                throw new Error('invalid diff state - diffing a level that doesn\'t exist on any');
+            }
+        });
+    }
+
+    // Delete entities first so not to trigger hydraulic layer's sorting edge case crash with missing
+    // entities in uid list
+    return res.sort((a, b) =>
+        (a[0] !== 'delete-entity' ? 1 : 0 ) -
+        (b[0] !== 'delete-entity' ? 1 : 0 )
+    );
 }

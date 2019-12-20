@@ -32,7 +32,7 @@ export default function insertFixture(
     MainEventBus.$emit('set-tool-handler', new PointTool(
         async (interrupted, displaced) => {
             if (interrupted) {
-                await context.$store.dispatch('document/revert');
+                context.$store.dispatch('document/revert');
                 if (!displaced) {
                     MainEventBus.$emit('set-tool-handler', null);
                 }
@@ -40,10 +40,10 @@ export default function insertFixture(
                 insertFixture(context, fixtureName, angle);
             }
         },
-        async (wc: Coord) => {
+        (wc: Coord) => {
             newEntity = null;
             // Preview
-            await context.$store.dispatch('document/revert', false);
+            context.$store.dispatch('document/revert', false);
             const doc = context.document as DocumentState;
 
             newEntity = {

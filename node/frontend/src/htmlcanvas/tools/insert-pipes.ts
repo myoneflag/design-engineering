@@ -131,17 +131,17 @@ function insertPipeChain(
     let newPipe: PipeEntity | null = null;
 
     MainEventBus.$emit('set-tool-handler', new PointTool(
-        async (interrupted, displaced) => {
+        (interrupted, displaced) => {
             if (interrupted) {
                 // revert changes.
-                await context.$store.dispatch('document/revert', false)
+                context.$store.dispatch('document/revert', false)
 
                 // it's possible that we are drawing the first connection, in which case we will have an
                 // orphaned valve. Delete it.
                 if (context.objectStore.getConnections(lastAttachment.uid).length === 0) {
                     context.deleteEntity(context.objectStore.get(lastAttachment.uid)!);
                 }
-                await context.$store.dispatch('document/commit', false);
+                context.$store.dispatch('document/commit', false);
             }
 
             if (!displaced) {
@@ -150,9 +150,9 @@ function insertPipeChain(
                 insertPipes(context, system);
             }
         },
-        async (wc: Coord, event: MouseEvent) => {
+        (wc: Coord, event: MouseEvent) => {
             newPipe = null;
-            await context.$store.dispatch('document/revert', false);
+            context.$store.dispatch('document/revert', false);
 
             // create pipe
             // maybe we drew onto an existing node.

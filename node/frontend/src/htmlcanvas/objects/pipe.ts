@@ -397,7 +397,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
     }
 
-    async onDrag(
+    onDrag(
         event: MouseEvent,
         grabbedObjectCoord: Coord,
         eventObjectCoord: Coord,
@@ -406,7 +406,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         isMultiDrag: boolean,
     ) {
         if (!isMultiDrag) {
-            await context.$store.dispatch('document/revert', false);
+            context.$store.dispatch('document/revert', false);
         }
         const needToReposition: string[] = [];
         const spawnedEntities: FittingEntity[] = [];
