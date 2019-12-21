@@ -127,8 +127,6 @@ export const mutations: MutationTree<DocumentState> = {
     },
 
     revert(state, redraw) {
-        console.log('  revert start.....');
-        console.log('diffFilter: ' + JSON.stringify(state.diffFilter));
         // TODO: emit a reset-level for every changed level. At the moment, we are just resetting current visible
         // level. This is to allow global state to save state.
         const reverseDiff = diffState(state.drawing, state.committedDrawing, state.diffFilter);
@@ -193,7 +191,6 @@ export const mutations: MutationTree<DocumentState> = {
         if (entity.type === EntityType.RISER) {
             if (entity.uid in state.drawing.shared) {
                 Vue.delete(state.drawing.shared, entity.uid);
-                console.log('emitting del 1 ' + entity.uid + ' ' + null);
                 MainEventBus.$emit('delete-entity', {entity, levelUid: null});
             } else {
                 throw new Error('Deleted an entity that doesn\'t exist ' + JSON.stringify(entity));
@@ -204,7 +201,6 @@ export const mutations: MutationTree<DocumentState> = {
             Vue.delete(state.drawing.levels[state.uiState.levelUid!].entities, entity.uid);
 
             logEntityMutation(state, {entityUid: entity.uid, levelUid: state.uiState.levelUid});
-            console.log('emitting del 2 ' + entity.uid + ' ' +  state.uiState.levelUid);
             MainEventBus.$emit('delete-entity', {entity, levelUid: state.uiState.levelUid!});
         } else {
             throw new Error('Deleted an entity that doesn\'t exist ' + JSON.stringify(entity));
@@ -226,7 +222,6 @@ export const mutations: MutationTree<DocumentState> = {
         }
 
         logEntityMutation(state, {entityUid: entity.uid, levelUid});
-        console.log('emitting del 2 ' + entity.uid + ' ' +  state.uiState.levelUid);
         MainEventBus.$emit('delete-entity', {entity, levelUid});
     },
 

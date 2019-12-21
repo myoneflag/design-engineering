@@ -695,6 +695,10 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
     protected refreshObjectInternal(obj: PipeEntity): void {
         //
     }
+
+    getNeighbours(): BaseBackedObject[] {
+        return this.entity.endpointUid.map((uid) => this.objectStore.get(uid)!);
+    }
 }
 
 DrawableObjectFactory.registerEntity(EntityType.PIPE, Pipe);

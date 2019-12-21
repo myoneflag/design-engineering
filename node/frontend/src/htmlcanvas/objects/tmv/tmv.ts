@@ -277,4 +277,15 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Calc
     rememberToRegister(): void {
         //
     }
+
+    getNeighbours(): BaseBackedObject[] {
+        const res: BaseBackedObject[] = [];
+        res.push(...this.objectStore.get(this.entity.coldRoughInUid)!.getNeighbours());
+        res.push(...this.objectStore.get(this.entity.hotRoughInUid)!.getNeighbours());
+        res.push(...this.objectStore.get(this.entity.warmOutputUid)!.getNeighbours());
+        if (this.entity.coldOutputUid) {
+            res.push(...this.objectStore.get(this.entity.coldOutputUid)!.getNeighbours());
+        }
+        return res;
+    }
 }

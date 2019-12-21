@@ -308,4 +308,13 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
     rememberToRegister(): void {
         //
     }
+
+    getNeighbours(): BaseBackedObject[] {
+        const res: BaseBackedObject[] = [];
+        res.push(...this.objectStore.get(this.entity.coldRoughInUid)!.getNeighbours());
+        if (this.entity.warmRoughInUid) {
+            res.push(...this.objectStore.get(this.entity.warmRoughInUid)!.getNeighbours());
+        }
+        return res;
+    }
 }

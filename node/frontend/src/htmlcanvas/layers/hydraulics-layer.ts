@@ -18,14 +18,17 @@ export default class  HydraulicsLayer extends LayerImplementation {
         context: DrawingContext,
         active: boolean,
         shouldContinue: () => boolean,
+        exclude: Set<string>,
         mode: DrawingMode,
         calculationFilters: CalculationFilters | null,
     ) {
         for (let i = 0; i < this.uidsInOrder.length; i++) {
             const v = this.uidsInOrder[i];
-            if (!active || !this.isSelected(v)) {
-                this.objectStore.get(v)!.draw(context,
-                    {active, selected: false, calculationFilters});
+            if (!exclude.has(v)) {
+                if (!active || !this.isSelected(v)) {
+                    this.objectStore.get(v)!.draw(context,
+                        {active, selected: false, calculationFilters});
+                }
             }
             if (i % 100 === 99) {
                 await cooperativeYield(shouldContinue);

@@ -15,7 +15,7 @@ import {cooperativeYield} from "../utils";
 export default class BackgroundLayer extends LayerImplementation {
     resizeBox: ResizeControl | null = null;
 
-    async draw(context: DrawingContext, active: boolean, shouldContinue: () => boolean, selectedTool: ToolConfig) {
+    async draw(context: DrawingContext, active: boolean, shouldContinue: () => boolean, reactive: Set<string>, selectedTool: ToolConfig) {
         // draw selected one on top.
         for (let i = 0; i < this.uidsInOrder.length; i++) {
             const selectId = this.uidsInOrder[i];
@@ -156,7 +156,7 @@ export default class BackgroundLayer extends LayerImplementation {
         }
     }
 
-    drawSelectionLayer(
+    drawReactiveLayer(
         context: DrawingContext,
         interactive: DrawableEntity[] | null,
     ) {

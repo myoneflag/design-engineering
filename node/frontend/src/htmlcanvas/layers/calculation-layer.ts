@@ -29,6 +29,7 @@ export default class CalculationLayer extends LayerImplementation {
         context: DrawingContext,
         active: boolean,
         shouldContinue: () => boolean,
+        reactive: Set<string>,
         calculationFilters: CalculationFilters | null,
     ) {
         // TODO: asyncify
@@ -154,7 +155,7 @@ export default class CalculationLayer extends LayerImplementation {
         }
     }
 
-    drawSelectionLayer(context: DrawingContext, interactive: DrawableEntity[] | null): any {
+    drawReactiveLayer(context: DrawingContext, interactive: DrawableEntity[] | null): any {
         //
     }
 

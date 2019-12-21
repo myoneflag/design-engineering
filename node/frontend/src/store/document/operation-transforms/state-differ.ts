@@ -19,7 +19,7 @@ export function diffObject(before: any, after: any, filter: any): any {
         return cloneSimple(after);
     } else if (_.isObject(before)) {
         if (_.isArray(after)) {
-            return after;
+            return cloneSimple(after);
         } else if (_.isObject(after)) {
 
             const result: any = {};
@@ -42,7 +42,7 @@ export function diffObject(before: any, after: any, filter: any): any {
                     result[key] = {deleted: true};
                 } else if (after.hasOwnProperty(key)) {
                     // new item
-                    result[key] = (after as any)[key];
+                    result[key] = cloneSimple((after as any)[key]);
                 } else {
                     // extraneous filter - ignore.
                 }
@@ -50,7 +50,7 @@ export function diffObject(before: any, after: any, filter: any): any {
 
             return _.isEmpty(result) ? undefined : result;
         } else {
-            return after;
+            return cloneSimple(after);
         }
 
     } else {
@@ -58,7 +58,7 @@ export function diffObject(before: any, after: any, filter: any): any {
         if (before === after) {
             return undefined;
         }
-        return after;
+        return cloneSimple(after);
     }
 }
 

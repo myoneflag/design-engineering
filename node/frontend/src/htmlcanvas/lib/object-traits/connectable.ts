@@ -531,5 +531,10 @@ export function ConnectableObject<T extends new (...args: any[])
         getCalculationConnections(): string[] {
             return [...this.objectStore.getConnections(this.uid), ...super.getCalculationConnections()];
         }
+
+        getNeighbours(): BaseBackedObject[] {
+            const conn = this.objectStore.getConnections(this.uid);
+            return [...conn.map((uid) => this.objectStore.get(uid)!), ...super.getNeighbours()];
+        }
     });
 }

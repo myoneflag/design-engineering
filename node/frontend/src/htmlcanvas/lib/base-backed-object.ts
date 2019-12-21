@@ -19,22 +19,6 @@ import FittingEntity from "../../store/document/entities/fitting-entity";
 import PipeEntity from "../../store/document/entities/pipe-entity";
 import * as _ from 'lodash';
 
-const validator = {
-    get(target: any, key: string): any {
-        if (typeof target[key] === 'object' && target[key] !== null) {
-            return new Proxy(target[key], validator)
-        } else {
-            return target[key];
-        }
-    },
-    set (target: any, key: string, value: any) {
-        console.log(target);
-        console.log(key);
-        console.log(value);
-        return true
-    }
-}
-
 export default abstract class BaseBackedObject extends DrawableObject {
     entityBacked: () => DrawableEntityConcrete;
     objectStore: ObjectStore;
@@ -154,6 +138,10 @@ export default abstract class BaseBackedObject extends DrawableObject {
     }
 
     getCalculationConnections(): string[] {
+        return [];
+    }
+
+    getNeighbours(): BaseBackedObject[] {
         return [];
     }
 
