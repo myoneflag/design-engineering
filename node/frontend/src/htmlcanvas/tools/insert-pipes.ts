@@ -51,7 +51,7 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
 
         },
         (wc: Coord, event: MouseEvent) => {
-            let heightM = context.document.drawing.metadata.calculationParams.ceilingPipeHeightM;
+            let heightM = Number(context.document.drawing.metadata.calculationParams.ceilingPipeHeightM);
 
             // Preview
             const interactive = context.offerInteraction(

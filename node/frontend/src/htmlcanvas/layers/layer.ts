@@ -76,24 +76,8 @@ export abstract class LayerImplementation implements Layer {
         this.onSelect = onSelect;
         this.onCommit = onCommit;
         this.objectStore = objectStore;
-        this.rig();
     }
 
-    rig() {
-        MainEventBus.$on('delete-entity', this.onDeleteEntity);
-        MainEventBus.$on('add-entity', this.onAddEntity);
-    }
-
-    onDeleteEntity = (e: DrawableEntityConcrete) => {
-        const i = this.selectedIds.indexOf(e.uid);
-        if (i !== -1) {
-            this.selectedIds.splice(i, 1);
-        }
-    }
-
-    onAddEntity = (e: DrawableEntityConcrete) => {
-        // who cares
-    }
 
     get selectedObjects() {
         return this.selectedIds.map((uid) => this.objectStore.get(uid)!);

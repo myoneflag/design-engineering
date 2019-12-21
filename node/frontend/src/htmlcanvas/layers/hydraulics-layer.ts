@@ -30,7 +30,7 @@ export default class  HydraulicsLayer extends LayerImplementation {
                         {active, selected: false, calculationFilters});
                 }
             }
-            if (i % 50 === 49) {
+            if (i % 100 === 99) {
                 await cooperativeYield(shouldContinue);
             }
         }

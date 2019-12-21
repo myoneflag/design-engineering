@@ -63,6 +63,13 @@ export default class BackgroundLayer extends LayerImplementation {
         super.addEntity(entity);
     }
 
+    deleteEntity(entity: DrawableEntityConcrete) {
+        if (this.isSelected(entity.uid)) {
+            this.resizeBox = null;
+        }
+        super.deleteEntity(entity);
+    }
+
     resetDocument(doc: DocumentState) {
         let entities: DrawableEntityConcrete[] = [];
         if (doc.uiState.levelUid) {
@@ -163,7 +170,6 @@ export default class BackgroundLayer extends LayerImplementation {
         if (this.resizeBox) {
             this.resizeBox.draw(context, {active: true, selected: true, calculationFilters: null});
         }
-
     }
 
     getBackgroundAt(worldCoord: Coord) {

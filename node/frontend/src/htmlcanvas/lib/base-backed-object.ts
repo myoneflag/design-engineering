@@ -44,6 +44,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
         this.onChange = onChange;
         this.onCommit = onCommit;
         this.objectStore = objectStore;
+        this.onUpdate();
     }
 
     get parent() {
@@ -145,5 +146,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
         return [];
     }
 
-    protected abstract refreshObjectInternal(obj: DrawableEntity, old?: DrawableEntity): void;
+    onUpdate() {
+
+    }
 }

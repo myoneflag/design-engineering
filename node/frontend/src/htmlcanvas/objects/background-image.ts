@@ -66,8 +66,10 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
     }
 
     initializeImage(onLoad: (image: BackgroundImage) => any) {
+        console.log('initializing background');
         if (this.objectStore instanceof GlobalStore) {
             // this is a ghost
+            console.log('i am a ghost');
             return;
         }
 
@@ -456,18 +458,13 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         return [];
     }
 
-    protected refreshObjectInternal(obj: BackgroundEntity, old: BackgroundEntity): void {
-
-        if (old) {
-            if (this.entity.uri !== old.uri) {
-                this.initializeImage(() => {
-                    this.onChange();
-                });
-            }
-        } else {
+    oldUri: string = '';
+    onUpdate() {
+        if (this.entity && this.entity.uri !== this.oldUri) {
             this.initializeImage(() => {
                 this.onChange();
             });
+            this.oldUri = this.entity.uri;
         }
     }
 }

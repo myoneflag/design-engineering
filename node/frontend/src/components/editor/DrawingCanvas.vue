@@ -570,10 +570,6 @@ export default class DrawingCanvas extends Vue {
             if (this.selectedIds) {
                 seed.push(...this.selectedIds);
             }
-            console.log('seed is ' + JSON.stringify(seed));
-            console.log('selectedIds is ' + JSON.stringify(this.selectedIds));
-            console.log('uncommitted: ' + JSON.stringify(this.uncommittedEntityUids));
-            console.log('diffFilter: ' + JSON.stringify(this.document.diffFilter));
             const result = new Set<string>();
 
             seed.forEach((ouid) => {
@@ -603,7 +599,7 @@ export default class DrawingCanvas extends Vue {
                         entityUid: o.uid,
                         levelUid: this.globalStore.levelOfEntity.get(o.uid),
                     });
-                });
+                });s
             } else {
                 throw new Error('Properties changed but nothing is selected');
             }*/
@@ -912,35 +908,30 @@ export default class DrawingCanvas extends Vue {
         }
 
         scheduleDraw() {
-            console.log('    scheduling');
             if (this.reactiveRenderQueue.length === 0) {
                 this.reactiveRenderQueue.push(this.drawFast().then(() => {
                     this.reactiveRenderQueue.splice(0, 1);
 
-                }).then(() => console.log('this is after')));
+                }));
             } else if (this.reactiveRenderQueue.length === 1) {
                 this.reactiveRenderQueue.push(this.reactiveRenderQueue[0].then(() => {
                     return this.drawFast().then(() => {
                         this.reactiveRenderQueue.splice(0, 1);
                     });
                 }))
-            } else {
-                console.log('    skipped');
             }
 
             if (this.fullRenderQueue.length === 0) {
                 this.fullRenderQueue.push(this.drawFull().then(() => {
                     this.fullRenderQueue.splice(0, 1);
 
-                }).then(() => console.log('this is after')));
+                }));
             } else if (this.fullRenderQueue.length === 1) {
                 this.fullRenderQueue.push(this.fullRenderQueue[0].then(() => {
                     return this.drawFull().then(() => {
                         this.fullRenderQueue.splice(0, 1);
                     });
                 }))
-            } else {
-                console.log('    skipped');
             }
         }
 
@@ -1079,7 +1070,6 @@ export default class DrawingCanvas extends Vue {
 
         async blitBuffer() {
             await util.promisify(requestAnimationFrame);
-            console.log('blitting ' + Math.random() + ' ' + this.reactiveDrawSet().size);
             this.ctx!.resetTransform();
             this.ctx!.clearRect(0, 0, this.viewPort.width, this.viewPort.height);
 
@@ -1205,7 +1195,6 @@ export default class DrawingCanvas extends Vue {
 
                 await this.blitBuffer();
                 this.numSkipped = 0;
-                console.log('   detailed draw finished');
             } catch (e) {
                 if (e instanceof InterruptedError) {
                     // that's fine, just exit, because a newer frame wants to render.

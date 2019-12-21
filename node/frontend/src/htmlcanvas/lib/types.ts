@@ -99,7 +99,9 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
     }
 
     onEntityChange(uid: string) {
-        if (this.get(uid)!.type === EntityType.PIPE) {
+        const o = this.get(uid)!;
+        o.onUpdate();
+        if (o.type === EntityType.PIPE) {
             this.updatePipeEndpoints(uid);
         }
     }
