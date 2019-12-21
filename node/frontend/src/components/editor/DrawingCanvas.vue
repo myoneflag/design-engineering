@@ -259,7 +259,7 @@ export default class DrawingCanvas extends Vue {
 
         initialized = false;
 
-        updateDrawList = new Set<string>();
+        undrawnAddedEntities = new Set<string>();
 
         mounted() {
             this.objectStore.vm = this;
@@ -563,14 +563,22 @@ export default class DrawingCanvas extends Vue {
             return this.$store.getters['document/sortedLevels'];
         }
 
-        get reactiveDrawSet(): Set<string> {
+        reactiveDrawSet(): Set<string> {
             const selected = this.selectedObjects;
             if (selected) {
-                const result = new Set(cloneSimple(this.selectedIds!));
+                const seed = selected.slice();
+                console.log('undrawn: ' + JSON.stringify(Array.from(this.undrawnAddedEntities.keys())));
+                const result = new Set<string>();
 
-                selected.forEach((o) => {
+                seed.forEach((o) => {
+                    result.add(o.uid);
                     o.getNeighbours().forEach((no) => {
-                        result.add(no.uid);
+                        if (!result.has(no.uid)) {
+                            result.add(no.uid);
+                            no.getNeighbours().forEach((nno) => {
+                                result.add(nno.uid);
+                            })
+                        }
                     });
                 });
 
@@ -615,7 +623,6 @@ export default class DrawingCanvas extends Vue {
         }
 
         onUpdateEntity(uid: string) {
-            this.updateDrawList.add(uid);
             this.globalStore.onEntityChange(uid);
             this.objectStore.onEntityChange(uid);
         }
@@ -677,7 +684,7 @@ export default class DrawingCanvas extends Vue {
                     }
                 }
             }
-            this.updateDrawList.add(entity.uid);
+            this.undrawnAddedEntities.add(entity.uid);
 
             const go = DrawableObjectFactory.buildGhost(
                 () => levelUid ? this.document.drawing.levels[levelUid].entities[entity.uid] :
@@ -730,7 +737,6 @@ export default class DrawingCanvas extends Vue {
                 }
             }
 
-            this.updateDrawList.add(entity.uid);
             this.globalStore.delete(entity.uid);
 
         }
@@ -1037,24 +1043,27 @@ export default class DrawingCanvas extends Vue {
                 this.viewPort.height = height;
 
                 if (this.buffer === undefined) {
-                    this.buffer = new Buffer(width, height, this.viewPort.world2ScreenMatrix);
+                    this.buffer = new Buffer(width, height, this.viewPort.world2ScreenMatrix, this.reactiveDrawSet());
                 }
 
-                this.blitBuffer(this.reactiveDrawSet);
+                this.blitBuffer();
 
                 // console.log('   fast draw finished');
 
-                await util.promisify(requestAnimationFrame);
+                //await util.promisify(requestAnimationFrame);
                 await this.drawInternal();
                 // console.log('   detailed draw exited');
             }
         }
 
-        blitBuffer(reactiveSet: Set<string>) {
+        blitBuffer() {
             this.ctx!.resetTransform();
             this.ctx!.clearRect(0, 0, this.viewPort.width, this.viewPort.height);
 
             this.buffer.drawOnto(this.ctx!, this.viewPort.world2ScreenMatrix);
+            this.buffer.included.forEach((uid) => {
+                this.undrawnAddedEntities.delete(uid);
+            });
 
             const context: DrawingContext = {
                 ctx: this.ctx!,
@@ -1062,10 +1071,18 @@ export default class DrawingCanvas extends Vue {
                 doc: this.document,
                 catalog: this.effectiveCatalog,
                 globalStore: this.globalStore,
+                onDrawEntity: () => {},
             };
 
             if (this.activeLayer) {
-                this.activeLayer.drawReactiveLayer(context, this.interactive, reactiveSet);
+                const reactive = new Set(this.buffer.included);
+                Array.from(this.undrawnAddedEntities.keys()).forEach((uid) => {
+                    if (!this.globalStore.has(uid)) {
+                        this.undrawnAddedEntities.delete(uid);
+                    }
+                    reactive.add(uid);
+                });
+                this.activeLayer.drawReactiveLayer(context, this.interactive, reactive);
             }
 
             // Draw on screen HUD
@@ -1092,7 +1109,7 @@ export default class DrawingCanvas extends Vue {
             }
             try {
                 const shouldContinue = (() => {
-                    const res = this.renderQueue.length < 2 || this.numSkipped > 4;
+                    const res = this.renderQueue.length < 2;// || this.numSkipped > 4;
                     if (res === false) {
                         this.numSkipped++;
                     }
@@ -1101,7 +1118,13 @@ export default class DrawingCanvas extends Vue {
                     //return true;
                 }).bind(this);
 
-                const buffer = new Buffer(this.viewPort.width, this.viewPort.height, this.viewPort.world2ScreenMatrix);
+                const reactive = this.reactiveDrawSet();
+                const buffer = new Buffer(
+                    this.viewPort.width,
+                    this.viewPort.height,
+                    this.viewPort.world2ScreenMatrix,
+                    reactive,
+                );
 
                 const context: DrawingContext = {
                     ctx: buffer.ctx,
@@ -1109,9 +1132,9 @@ export default class DrawingCanvas extends Vue {
                     doc: this.document,
                     catalog: this.effectiveCatalog,
                     globalStore: this.globalStore,
+                    onDrawEntity: (uid) => buffer.included.push(uid),
                 };
 
-                const reactive = this.reactiveDrawSet;
                 // this.buffer.transform = this.viewPort.world2ScreenMatrix; do that at the end
                 this.lastDrawingContext = context;
                 await this.backgroundLayer.draw(
@@ -1164,7 +1187,7 @@ export default class DrawingCanvas extends Vue {
 
                 this.buffer = buffer; // swap out the buffer, so that the new render shows the new frame.
 
-                this.blitBuffer(reactive);
+                this.blitBuffer();
                 this.numSkipped = 0;
                 console.log('   detailed draw finished');
             } catch (e) {
@@ -1428,12 +1451,15 @@ export default class DrawingCanvas extends Vue {
     class Buffer {
         canvas: HTMLCanvasElement;
         transform: TM.Matrix;
+        excluded: Set<string>;
+        included: string[] = [];
 
-        constructor (width: number, height: number, transform: TM.Matrix) {
+        constructor (width: number, height: number, transform: TM.Matrix, reactive: Set<string>) {
             this.canvas = document.createElement('canvas');
             this.canvas.width = width;
             this.canvas.height = height;
             this.transform = transform;
+            this.excluded = reactive;
         }
 
         drawOnto (ctx: CanvasRenderingContext2D, newTransform: TM.Matrix) {
