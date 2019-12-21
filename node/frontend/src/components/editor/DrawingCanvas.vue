@@ -259,8 +259,6 @@ export default class DrawingCanvas extends Vue {
 
         initialized = false;
 
-        undrawnAddedEntities = new Set<string>();
-
         mounted() {
             this.objectStore.vm = this;
             this.globalStore.vm = this;
@@ -456,6 +454,10 @@ export default class DrawingCanvas extends Vue {
             return true;
         }
 
+        get uncommittedEntityUids(): string[] {
+            return this.$store.getters['document/uncommittedEntityUids'];
+        }
+
         get currentTool(): ToolConfig {
             if (this.toolHandler) {
                 return this.toolHandler.config;
@@ -492,7 +494,7 @@ export default class DrawingCanvas extends Vue {
                     levelUid: this.globalStore.levelOfEntity.get(uid),
                 });
             });*/
-            //this.scheduleDraw();
+            this.scheduleDraw();
         }
 
         processDocumentInitial() {
@@ -564,13 +566,19 @@ export default class DrawingCanvas extends Vue {
         }
 
         reactiveDrawSet(): Set<string> {
-            const selected = this.selectedObjects;
-            if (selected) {
-                const seed = selected.slice();
-                console.log('undrawn: ' + JSON.stringify(Array.from(this.undrawnAddedEntities.keys())));
-                const result = new Set<string>();
+            const seed = this.uncommittedEntityUids.slice();
+            if (this.selectedIds) {
+                seed.push(...this.selectedIds);
+            }
+            console.log('seed is ' + JSON.stringify(seed));
+            console.log('selectedIds is ' + JSON.stringify(this.selectedIds));
+            console.log('uncommitted: ' + JSON.stringify(this.uncommittedEntityUids));
+            console.log('diffFilter: ' + JSON.stringify(this.document.diffFilter));
+            const result = new Set<string>();
 
-                seed.forEach((o) => {
+            seed.forEach((ouid) => {
+                const o = this.globalStore.get(ouid);
+                if (o) {
                     result.add(o.uid);
                     o.getNeighbours().forEach((no) => {
                         if (!result.has(no.uid)) {
@@ -580,12 +588,10 @@ export default class DrawingCanvas extends Vue {
                             })
                         }
                     });
-                });
+                }
+            });
 
-                return result;
-            } else {
-                return new Set();
-            }
+            return result;
         }
 
         onPropertiesChange() {
@@ -684,7 +690,6 @@ export default class DrawingCanvas extends Vue {
                     }
                 }
             }
-            this.undrawnAddedEntities.add(entity.uid);
 
             const go = DrawableObjectFactory.buildGhost(
                 () => levelUid ? this.document.drawing.levels[levelUid].entities[entity.uid] :
@@ -907,18 +912,35 @@ export default class DrawingCanvas extends Vue {
         }
 
         scheduleDraw() {
-
-            if (this.renderQueue.length === 0) {
-                this.renderQueue.push(this.draw().then(() => {
-                    this.renderQueue.splice(0, 1);
+            console.log('    scheduling');
+            if (this.reactiveRenderQueue.length === 0) {
+                this.reactiveRenderQueue.push(this.drawFast().then(() => {
+                    this.reactiveRenderQueue.splice(0, 1);
 
                 }).then(() => console.log('this is after')));
-            } else if (this.renderQueue.length === 1) {
-                this.renderQueue.push(this.renderQueue[0].then(() => {
-                    return this.draw().then(() => {
-                        this.renderQueue.splice(0, 1);
+            } else if (this.reactiveRenderQueue.length === 1) {
+                this.reactiveRenderQueue.push(this.reactiveRenderQueue[0].then(() => {
+                    return this.drawFast().then(() => {
+                        this.reactiveRenderQueue.splice(0, 1);
                     });
                 }))
+            } else {
+                console.log('    skipped');
+            }
+
+            if (this.fullRenderQueue.length === 0) {
+                this.fullRenderQueue.push(this.drawFull().then(() => {
+                    this.fullRenderQueue.splice(0, 1);
+
+                }).then(() => console.log('this is after')));
+            } else if (this.fullRenderQueue.length === 1) {
+                this.fullRenderQueue.push(this.fullRenderQueue[0].then(() => {
+                    return this.drawFull().then(() => {
+                        this.fullRenderQueue.splice(0, 1);
+                    });
+                }))
+            } else {
+                console.log('    skipped');
             }
         }
 
@@ -937,7 +959,7 @@ export default class DrawingCanvas extends Vue {
             if (this.shouldDraw && !this.waitingForRepaint) {
                 this.shouldDraw = false;
                 try {
-                    this.draw();
+                    this.drawFast();
                 } catch {
                     //
                 }
@@ -1024,14 +1046,15 @@ export default class DrawingCanvas extends Vue {
          */
 
         buffer: Buffer;
-        renderQueue: Promise<any>[] = [];
+        reactiveRenderQueue: Promise<any>[] = [];
+        fullRenderQueue: Promise<any>[] = [];
+
         numSkipped = 0;
         waitingForRepaint = false;
 
-        async draw() {
-            this.sanityCheckGlobalStore();
+        async drawFast() {
+            //this.sanityCheckGlobalStore();
 
-            await util.promisify(requestAnimationFrame);
             if (this.ctx != null && (this.$refs.canvasFrame as any) != null) {
 
                 const width = (this.$refs.canvasFrame as any).clientWidth - 1;
@@ -1046,24 +1069,21 @@ export default class DrawingCanvas extends Vue {
                     this.buffer = new Buffer(width, height, this.viewPort.world2ScreenMatrix, this.reactiveDrawSet());
                 }
 
-                this.blitBuffer();
+                await this.blitBuffer();
 
                 // console.log('   fast draw finished');
 
                 //await util.promisify(requestAnimationFrame);
-                await this.drawInternal();
-                // console.log('   detailed draw exited');
             }
         }
 
-        blitBuffer() {
+        async blitBuffer() {
+            await util.promisify(requestAnimationFrame);
+            console.log('blitting ' + Math.random() + ' ' + this.reactiveDrawSet().size);
             this.ctx!.resetTransform();
             this.ctx!.clearRect(0, 0, this.viewPort.width, this.viewPort.height);
 
             this.buffer.drawOnto(this.ctx!, this.viewPort.world2ScreenMatrix);
-            this.buffer.included.forEach((uid) => {
-                this.undrawnAddedEntities.delete(uid);
-            });
 
             const context: DrawingContext = {
                 ctx: this.ctx!,
@@ -1071,18 +1091,14 @@ export default class DrawingCanvas extends Vue {
                 doc: this.document,
                 catalog: this.effectiveCatalog,
                 globalStore: this.globalStore,
-                onDrawEntity: () => {},
             };
 
             if (this.activeLayer) {
-                const reactive = new Set(this.buffer.included);
-                Array.from(this.undrawnAddedEntities.keys()).forEach((uid) => {
-                    if (!this.globalStore.has(uid)) {
-                        this.undrawnAddedEntities.delete(uid);
-                    }
+                const reactive = new Set(this.buffer.excluded);
+                this.reactiveDrawSet().forEach((uid) => {
                     reactive.add(uid);
                 });
-                this.activeLayer.drawReactiveLayer(context, this.interactive, reactive);
+                this.activeLayer.drawReactiveLayer(context, this.uncommittedEntityUids, reactive);
             }
 
             // Draw on screen HUD
@@ -1099,23 +1115,35 @@ export default class DrawingCanvas extends Vue {
                         countPsdUnits(Array.from(this.objectStore.values()).map((o) => o.entity), this.document, this.effectiveCatalog));
                 }
             }
+
+
+            // draw selection box
+            if (this.selectBox) {
+                this.selectBox.draw(context, {selected: true, active: true, calculationFilters: null});
+            }
+
+            if (this.toolHandler) {
+                context.ctx.setTransform(TM.identity());
+                this.toolHandler.draw(context);
+            }
+
         }
 
         simulDraws = 0;
-        async drawInternal() {
+        async drawFull() {
             this.simulDraws ++;
             if (this.simulDraws === 2) {
                 throw new Error("Shound't be running 2 simulaneous draws");
             }
             try {
                 const shouldContinue = (() => {
-                    const res = this.renderQueue.length < 2;// || this.numSkipped > 4;
+                    const res = this.fullRenderQueue.length < 2;// || this.numSkipped > 4;
                     if (res === false) {
                         this.numSkipped++;
                     }
                     // console.log(' checking ' + res);
-                    return res;
-                    //return true;
+                    //return res;
+                    return true;
                 }).bind(this);
 
                 const reactive = this.reactiveDrawSet();
@@ -1132,7 +1160,6 @@ export default class DrawingCanvas extends Vue {
                     doc: this.document,
                     catalog: this.effectiveCatalog,
                     globalStore: this.globalStore,
-                    onDrawEntity: (uid) => buffer.included.push(uid),
                 };
 
                 // this.buffer.transform = this.viewPort.world2ScreenMatrix; do that at the end
@@ -1144,7 +1171,6 @@ export default class DrawingCanvas extends Vue {
                     reactive,
                     this.currentTool,
                 );
-                await util.promisify(requestAnimationFrame);
                 const filters = this.document.uiState.drawingMode === DrawingMode.Calculations ? this.document.uiState.calculationFilters : null;
 
                 await this.hydraulicsLayer.draw(
@@ -1175,19 +1201,9 @@ export default class DrawingCanvas extends Vue {
                     }*/
 
 
-                // draw selection box
-                if (this.selectBox) {
-                    this.selectBox.draw(context, {selected: true, active: true, calculationFilters: null});
-                }
-
-                if (this.toolHandler) {
-                    context.ctx.setTransform(TM.identity());
-                    this.toolHandler.draw(context);
-                }
-
                 this.buffer = buffer; // swap out the buffer, so that the new render shows the new frame.
 
-                this.blitBuffer();
+                await this.blitBuffer();
                 this.numSkipped = 0;
                 console.log('   detailed draw finished');
             } catch (e) {
@@ -1332,7 +1348,6 @@ export default class DrawingCanvas extends Vue {
             } else {
                 this.currentCursor = this.currentTool.defaultCursor;
             }
-            this.scheduleDraw();
             return true;
             //return res.handled;
         }

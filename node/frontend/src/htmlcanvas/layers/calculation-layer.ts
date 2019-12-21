@@ -155,7 +155,7 @@ export default class CalculationLayer extends LayerImplementation {
         }
     }
 
-    drawReactiveLayer(context: DrawingContext, interactive: DrawableEntity[] | null): any {
+    drawReactiveLayer(context: DrawingContext, interactive: string[]): any {
         //
     }
 

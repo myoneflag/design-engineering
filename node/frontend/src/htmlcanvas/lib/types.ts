@@ -34,7 +34,6 @@ export interface DrawingContext {
     doc: DocumentState;
     catalog: Catalog;
     globalStore: GlobalStore;
-    onDrawEntity: (uid: string) => void;
 }
 
 

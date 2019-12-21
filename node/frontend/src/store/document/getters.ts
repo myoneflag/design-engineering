@@ -27,5 +27,22 @@ export const getters: GetterTree<DocumentState, RootState> = {
     sortedLevels(state): Level[] {
         const levels = Object.values(state.drawing.levels) as Level[];
         return levels.sort((a, b) => -(a.floorHeightM - b.floorHeightM));
+    },
+
+    uncommittedEntityUids(state): string[] {
+        const res: string[] = [];
+
+        if (state.diffFilter.shared) {
+            res.push(...Object.keys(state.diffFilter.shared));
+        }
+        if (state.diffFilter.levels) {
+            Object.keys(state.diffFilter.levels).forEach((lvlUid) => {
+                if (state.diffFilter.levels[lvlUid] && state.diffFilter.levels[lvlUid].entities) {
+                    res.push(...Object.keys(state.diffFilter.levels[lvlUid].entities));
+                }
+            });
+        }
+        return res;
     }
+
 };

@@ -22,7 +22,7 @@ export default interface Layer {
 
     draw(context: DrawingContext, active: boolean, shouldContinue: () => boolean, exclude: Set<string>, ...args: any[]): Promise<any>;
     resetDocument(doc: DocumentState): any;
-    drawReactiveLayer(context: DrawingContext, interactive: DrawableEntityConcrete[] | null, reactive: Set<string>): any;
+    drawReactiveLayer(context: DrawingContext, interactive: string[], reactive: Set<string>): any;
 
     onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult;
     onMouseDown(event: MouseEvent, context: CanvasContext): boolean;
@@ -142,39 +142,38 @@ export abstract class LayerImplementation implements Layer {
 
     abstract draw(context: DrawingContext, active: boolean, ...args: any[]): Promise<any>;
 
-    drawReactiveLayer(context: DrawingContext, interactive: DrawableEntity[] | null, reactive: Set<string>) {
+    drawReactiveLayer(context: DrawingContext, uncommitted: string[], reactive: Set<string>) {
         const selectedSet = new Set(this.selectedIds);
+        const mySet = new Set(this.uidsInOrder);
+        const uncommittedSet = new Set(uncommitted);
+
         reactive.forEach((uid) => {
-            const o = this.objectStore.get(uid);
-            if (o) {
-                o.draw(context, {
-                    active: true,
-                    selected: selectedSet.has(uid),
-                    calculationFilters: null,
-                });
+            if (!selectedSet.has(uid) && !uncommittedSet.has(uid)) {
+                const o = this.objectStore.get(uid);
+                if (o) {
+                    o.draw(context, {
+                        active: true,
+                        selected: false,
+                        calculationFilters: null,
+                    });
+                }
             }
         });
 
-        if (this.selectedObjects) {
-            this.selectedIds.forEach((uid) => {
-                if (!reactive.has(uid)) {
-                    this.objectStore.get(uid)!.draw(context, {active: true, selected: true, calculationFilters: null});
-                }
-            });
-        }
-        if (interactive) {
-            for (let i = interactive.length - 1; i >= 0; i--) {
-                const ii = interactive[i];
-                if (!reactive.has(ii.uid) && !selectedSet.has(ii.uid)) {
-                    if (this.uidsInOrder.indexOf(ii.uid) !== -1) {
-                        this.objectStore.get(ii.uid)!.draw(
-                            context,
-                            {active: true, selected: true, calculationFilters: null},
-                        );
-                    }
-                }
+        this.selectedIds.forEach((uid) => {
+            if (!uncommittedSet.has(uid)) {
+                this.objectStore.get(uid)!.draw(context, {active: true, selected: true, calculationFilters: null});
             }
-        }
+        });
+
+        uncommitted.forEach((ii) => {
+            if (mySet.has(ii)) {
+                this.objectStore.get(ii)!.draw(
+                    context,
+                    {active: true, selected: true, calculationFilters: null},
+                );
+            }
+        });
     }
 
     offerInteraction(

@@ -62,6 +62,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
                 applyOtOnState(state.committedDrawing, v);
         });
 
+        Vue.set(state, 'diffFilter', blankDiffFilter());
         if (diff.length === 0) {
             return;
         }
@@ -71,7 +72,6 @@ export const actions: ActionTree<DocumentState, RootState> = {
         }
 
         state.optimisticHistory.push(...diff);
-        state.diffFilter = blankDiffFilter();
 
         submitOperation(state.documentId, commit, diff); /*.catch((e) => {
             window.alert('There is a connection issue with the server. Please refresh. \n' +

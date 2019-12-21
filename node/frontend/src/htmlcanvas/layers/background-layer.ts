@@ -21,7 +21,6 @@ export default class BackgroundLayer extends LayerImplementation {
             const selectId = this.uidsInOrder[i];
             const background = this.objectStore.get(selectId);
             if (background && background instanceof BackgroundImage) {
-                context.onDrawEntity(selectId);
                 if (!this.isSelected(selectId) || !active || !background.hasDragged) {
                     background.draw(
                         context,
@@ -159,7 +158,7 @@ export default class BackgroundLayer extends LayerImplementation {
 
     drawReactiveLayer(
         context: DrawingContext,
-        interactive: DrawableEntity[] | null,
+        interactive: string[],
     ) {
         if (this.resizeBox) {
             this.resizeBox.draw(context, {active: true, selected: true, calculationFilters: null});

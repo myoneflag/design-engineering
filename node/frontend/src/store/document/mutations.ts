@@ -30,7 +30,7 @@ function logEntityMutation(state: DocumentState, {entityUid, levelUid}: {entityU
             // that's ok, the entire level was being manipulated
         } else {
             if (!state.diffFilter.levels[levelUid].hasOwnProperty('entities')) {
-                state.diffFilter.levels[levelUid].entities = {};
+                Vue.set(state.diffFilter.levels[levelUid], 'entities', {});
             }
             if (state.diffFilter.levels[levelUid].entities !== false) {
                 Vue.set(state.diffFilter.levels[levelUid].entities, entityUid, false);
@@ -42,11 +42,11 @@ function logEntityMutation(state: DocumentState, {entityUid, levelUid}: {entityU
 
 function logLevelMutation(state: DocumentState, levelUid: string) {
     if (!state.diffFilter.levels.hasOwnProperty(levelUid)) {
-        state.diffFilter.levels[levelUid] = {};
+        Vue.set(state.diffFilter.levels, levelUid, {});
     }
     Object.keys(state.drawing.levels[levelUid]).forEach((key) => {
         if (key !== 'entities') {
-            state.diffFilter.levels[levelUid][key] = false;
+            Vue.set(state.diffFilter.levels[levelUid], key, false);
         }
     })
 }
@@ -87,6 +87,7 @@ export const mutations: MutationTree<DocumentState> = {
             newData = true;
         }
 
+        const ogFilter = cloneSimple(state.diffFilter);
 
         if (operation.type === OT.OPERATION_NAMES.COMMITTED_OPERATION) {
 
@@ -121,6 +122,8 @@ export const mutations: MutationTree<DocumentState> = {
             state.stagedCommits.push(operation);
         }
 
+        Vue.set(state, 'diffFilter', ogFilter);
+
         if (newData) {
             MainEventBus.$emit('committed', true);
         } // else, the data is already represented on screen
@@ -146,7 +149,7 @@ export const mutations: MutationTree<DocumentState> = {
                     break;
             }
         });
-        state.diffFilter = blankDiffFilter();
+        Vue.set(state, 'diffFilter', blankDiffFilter());
     },
 
     reset(state) {
@@ -259,6 +262,7 @@ export const mutations: MutationTree<DocumentState> = {
         entity.endpointUid[1] = endpoints[1];
         MainEventBus.$emit('update-pipe-endpoints', {entity, endpoints});
     },
+
 };
 
 function entityHandler(state: DocumentState, levelUid: string | null, entityUid: string) {
