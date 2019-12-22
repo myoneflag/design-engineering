@@ -47,6 +47,9 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
     protected preserveList = new Set<string>();
     doc: DocumentState;
 
+    dependsOn = new Map<string, Map<string, Set<string>>>();
+    dependedBy = new Map<string, Map<string, Set<string>>>();
+
     constructor(vm: Vue) {
         super();
         this.vm = vm;
@@ -69,6 +72,7 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
             if (oldVal === undefined) {
                 return;
             }
+            this.bustDependencies(oldVal);
             const arr = this.connections.get(oldVal);
             if (!arr) {
                 throw new Error('old value didn\'t register a connectable. ' + oldVal);
@@ -87,6 +91,7 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
             if (newVal === undefined) {
                 return;
             }
+            this.bustDependencies(newVal);
             if (!this.connections.has(newVal)) {
                 this.connections.set(newVal, []);
             }
@@ -98,7 +103,66 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
         this.oldEndpoints.set(entity.uid, [entity.endpointUid[0], entity.endpointUid[1]]);
     }
 
+    watchDependencies(uid: string, prop: string, deps: Set<string>) {
+        if (!this.dependsOn.has(uid)) {
+            this.dependsOn.set(uid, new Map<string, Set<string>>());
+        }
+        const depends = this.dependsOn.get(uid)!;
+        if (!depends.has(prop)) {
+            depends.set(prop, deps);
+        } else {
+            throw new Error('Property ' + uid + ' ' + prop + ' already has deps registered.');
+        }
+
+        deps.forEach((dep) => {
+            if (!this.dependedBy.has(dep)) {
+                this.dependedBy.set(dep, new Map<string, Set<string>>());
+            }
+            const depended = this.dependedBy.get(dep)!;
+            if (!depended.has(uid)) {
+                depended.set(uid, new Set<string>());
+            }
+            if(!depended.get(uid)!.has(prop)) {
+                depended.get(uid)!.add(prop);
+            } else {
+                throw new Error('Dependency ' + dep + ' already has prop ' + uid + ' ' + prop + ' registered.');
+            }
+        })
+    }
+
+    bustDependencies(uid: string) {
+        if (this.dependedBy.has(uid)) {
+            this.dependedBy.get(uid)!.forEach((props, target) => {
+                if (this.has(target)) {
+                    const o = this.get(target)!;
+                    props.forEach((prop) => {
+                        o.cache.delete(prop);
+                    });
+                }
+
+                const tprops = this.dependsOn.get(target)!;
+                Array.from(props).forEach((prop) => {
+                    const deps = tprops.get(prop)!;
+                    deps.forEach((dep) => {
+                        this.dependedBy.get(dep)!.get(target)!.delete(prop);
+                        if (!this.dependedBy.get(dep)!.get(target)!.size) {
+                            !this.dependedBy.get(dep)!.delete(target);
+                        }
+                        if (!this.dependedBy.get(dep)!.size) {
+                            this.dependedBy.delete(dep);
+                        }
+                    });
+
+                    if (!this.dependsOn.get(target)!.delete(prop)) {
+                        throw new Error('dependency graph inconsistency');
+                    }
+                });
+            })
+        }
+    }
+
     onEntityChange(uid: string) {
+        this.bustDependencies(uid);
         const o = this.get(uid)!;
         o.onUpdate();
         if (o.type === EntityType.PIPE) {
@@ -116,6 +180,7 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
     }
 
     delete(key: string) {
+        this.bustDependencies(key);
         const val = this.get(key);
 
         if (this.oldEndpoints.has(key)) {
@@ -130,6 +195,7 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
     }
 
     set(key: string, value: BaseBackedObject) {
+        this.bustDependencies(key);
         if (this.graveyard.has(key)) {
             value = this.graveyard.get(key)!;
         }
@@ -156,6 +222,7 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
 
     // undefined values only for deleting values. So hacky but we need to hack now.
     updatePipeEndpoints(key: string) {
+        this.bustDependencies(key);
         const e = this.get(key)!.entity as PipeEntity;
         this.detatchOldEndpoints(key);
         this.attachEndpoints(e);

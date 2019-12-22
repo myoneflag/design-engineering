@@ -47,6 +47,7 @@ import {Calculated, CalculatedObject, FIELD_HEIGHT} from '../../../src/htmlcanva
 import {isConnectable} from "../../store/document";
 import FixtureCalculation from "../../store/document/calculations/fixture-calculation";
 import {MainEventBus} from "../../store/main-event-bus";
+import Cached from '../lib/cached';
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 3.5;
@@ -243,6 +244,10 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
     }
 
     // Returns the world coordinates of the two endpoints
+    @Cached(
+        (kek) => new Set([kek, ...kek.getNeighbours().map((o) => o.getParentChain()).flat()].map((o) => o.uid)),
+        (excludeUid) => excludeUid,
+    )
     worldEndpoints(excludeUid: string | null = null): Coord3D[] {
         const ao = this.objectStore.get(this.entity.endpointUid[0]) as BaseBackedConnectable;
         const bo = this.objectStore.get(this.entity.endpointUid[1]) as BaseBackedConnectable;
@@ -605,6 +610,17 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         return ts;
     }
 
+    @Cached(
+        (kek) => new Set(
+            [kek]
+                .map((o) => [o, o.getNeighbours(), o.getParentChain()])
+                .flat(2)
+                .map((o) => o.getParentChain())
+                .flat()
+                .map((o) => o.uid)
+        ),
+        (context, flowLS, from, to, signed) => flowLS + from.connectable + to.connectable + signed,
+    )
     getFrictionHeadLoss(context: CalculationContext,
                         flowLS: number,
                         from: FlowNode,

@@ -29,6 +29,8 @@ import {
     getFloorHeight,
     getSystemNodeHeightM
 } from "../utils";
+import Cached from "../cached";
+import stringify from "json-stable-stringify";
 
 export default interface Connectable {
     getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]>;
@@ -56,11 +58,13 @@ const EPS = 1e-5;
 
 const MAX_PIPE_GROUP_SEPARATION_M = 0.05;
 
+let hlcounts = 0;
+
 export function ConnectableObject<T extends new (...args: any[])
     => Connectable & BackedConnectable<ConnectableEntityConcrete>>(constructor: T) {
 
     // @ts-ignore abstract class expression limitation in the language. In practice this is fine.
-    return (class extends constructor implements Connectable {
+    class Generated extends constructor implements Connectable {
 
         drawInternal(context: DrawingContext, args: DrawingArgs): void {
             const {active, selected} = args;
@@ -144,7 +148,7 @@ export function ConnectableObject<T extends new (...args: any[])
                                 ctx.lineTo(l1e.x, l1e.y);
                                 ctx.stroke();
                                 ctx.beginPath();
-                                ctx.arc(0, 0, maxWidth, a - Math.PI / 2, mya + Math.PI / 2,  true);
+                                ctx.arc(0, 0, maxWidth, a - Math.PI / 2, mya + Math.PI / 2, true);
                                 ctx.moveTo(l2e.x, l2e.y);
                                 ctx.lineTo(l2s.x, l2s.y);
                                 ctx.stroke();
@@ -163,6 +167,20 @@ export function ConnectableObject<T extends new (...args: any[])
             });
         }
 
+
+        @Cached(
+            (kek) => new Set(
+                [kek]
+                    .map((n) => [n, n.getParentChain(), n.getNeighbours()])
+                    .flat(2)
+                    .map((n) => [n, n.getParentChain(), n.getNeighbours()])
+                    .flat(2)
+                    .map((n) => n.getParentChain())
+                    .flat()
+                    .map((o) => o.uid),
+            ),
+            (exclude) => exclude,
+        )
         getRadials(exclude: string | null = null)
             : Array<[Coord3D, BaseBackedObject]> {
 
@@ -242,7 +260,7 @@ export function ConnectableObject<T extends new (...args: any[])
                     const diff = (b - a + Math.PI * 2) % (Math.PI * 2);
                     candidates.push([a + diff / 2, diff]);
                 }
-                candidates.sort((a, b) => - (a[1] - b[1]));
+                candidates.sort((a, b) => -(a[1] - b[1]));
                 candidates.push(
                     [candidates[0][0] + Math.PI / 4, -1],
                     [candidates[0][0] - Math.PI / 4, -1],
@@ -275,8 +293,8 @@ export function ConnectableObject<T extends new (...args: any[])
                     TM.translate(wc.x, wc.y),
                     TM.rotate(dir + Math.PI / 2),
                     TM.scale(scale),
-                    TM.translate(0, - 80),
-                    TM.rotate(- dir - Math.PI / 2),
+                    TM.translate(0, -80),
+                    TM.rotate(-dir - Math.PI / 2),
                 );
             });
         }
@@ -311,7 +329,20 @@ export function ConnectableObject<T extends new (...args: any[])
 
             return result;
         }
-
+        /*
+        @Cached(
+            (kek) => new Set(
+                [kek]
+                    .map((n) => [n, n.getParentChain(), n.getNeighbours()])
+                    .flat(2)
+                    .map((n) => [n, n.getParentChain(), n.getNeighbours()])
+                    .flat(2)
+                    .map((n) => n.getParentChain())
+                    .flat()
+                    .map((o) => o.uid),
+            ),
+            (exclude) => exclude,
+        )*/
         getAngleOfRad(connection: string): number {
             if (!this.getRadials().find((a) => a[1].uid === connection)) {
                 throw new Error('connection not in radials ' + connection + ' \n' +
@@ -337,6 +368,21 @@ export function ConnectableObject<T extends new (...args: any[])
             }
         }
 
+
+        @Cached(
+            (kek) => new Set(
+                [kek]
+                    .map((n) => [n, n.getParentChain(), n.getNeighbours()])
+                    .flat(2)
+                    .map((n) => [n, n.getParentChain(), n.getNeighbours()])
+                    .flat(2)
+                    .map((n) => n.getParentChain())
+                    .flat()
+                    .map((o) => o.uid),
+            ),
+            (context, flowLS, from, to, signed, pipeSizes) =>
+                flowLS + from.connectable + to.connectable + signed + stringify(pipeSizes),
+        )
         getFrictionHeadLoss(
             context: CalculationContext,
             flowLS: number,
@@ -345,6 +391,10 @@ export function ConnectableObject<T extends new (...args: any[])
             signed: boolean,
             pipeSizes?: [number, number],
         ): number {
+            hlcounts ++;
+            if (hlcounts % 1000 === 0) {
+                console.log(hlcounts);
+            }
             if (this.entity.type === EntityType.SYSTEM_NODE) {
                 // @ts-ignore
                 return super.getFrictionHeadLoss(context, flowLS, from, to, signed);
@@ -536,5 +586,8 @@ export function ConnectableObject<T extends new (...args: any[])
             const conn = this.objectStore.getConnections(this.uid);
             return [...conn.map((uid) => this.objectStore.get(uid)!), ...super.getNeighbours()];
         }
-    });
+
+    }
+
+    return Generated;
 }

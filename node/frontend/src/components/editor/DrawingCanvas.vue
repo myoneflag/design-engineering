@@ -1121,6 +1121,7 @@ export default class DrawingCanvas extends Vue {
 
         simulDraws = 0;
         async drawFull() {
+            const start = new Date();
             this.simulDraws ++;
             if (this.simulDraws === 2) {
                 throw new Error("Shound't be running 2 simulaneous draws");
@@ -1195,6 +1196,8 @@ export default class DrawingCanvas extends Vue {
 
                 await this.blitBuffer();
                 this.numSkipped = 0;
+                const end = new Date();
+                console.log((end.getMilliseconds() - start.getMilliseconds()).toFixed(2));
             } catch (e) {
                 if (e instanceof InterruptedError) {
                     // that's fine, just exit, because a newer frame wants to render.

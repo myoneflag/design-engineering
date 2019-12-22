@@ -23,6 +23,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
     entityBacked: () => DrawableEntityConcrete;
     objectStore: ObjectStore;
     vm: Vue | undefined;
+    cache = new Map<string, any>();
 
     protected onSelect: (event: MouseEvent | KeyboardEvent) => void;
     protected onChange: () => void;
@@ -144,6 +145,16 @@ export default abstract class BaseBackedObject extends DrawableObject {
 
     getNeighbours(): BaseBackedObject[] {
         return [];
+    }
+
+    getParentChain(): BaseBackedObject[] {
+        if (this.parent) {
+            const res = this.parent.getParentChain();
+            res.push(this);
+            return res;
+        } else {
+            return [this];
+        }
     }
 
     onUpdate() {
