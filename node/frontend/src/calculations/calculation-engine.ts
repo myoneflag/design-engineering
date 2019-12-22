@@ -237,8 +237,8 @@ export default class CalculationEngine {
 
                 // all z coordinates are thingos.
                 if (isConnectableEntity(e)) {
-                    if (!e.calculationHeightM) {
-                        throw new Error('entities in the calculation phase must be 3d');
+                    if (e.calculationHeightM === null) {
+                        throw new Error('entities in the calculation phase must be 3d - ' + e.uid + ' ' + e.type);
                     }
                 }
 
