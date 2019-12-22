@@ -349,7 +349,7 @@ export function polygonsOverlap(a: Flatten.Polygon, b: Flatten.Polygon) {
 
     return found;
 }
-export function polygonOverlapsShape(a: Flatten.Polygon, shape: Flatten.Shape) {
+export function polygonOverlapsShapeApprox(a: Flatten.Polygon, shape: Flatten.Shape) {
     if (shape instanceof Flatten.Polygon) {
         return polygonsOverlap(a, shape);
     } else if (shape instanceof Flatten.Segment) {
@@ -358,7 +358,10 @@ export function polygonOverlapsShape(a: Flatten.Polygon, shape: Flatten.Shape) {
         // (un)fortunately, flatten reports distance of point to polygon's edge, not face which
         // means that there is a >0 distance even if the point is inside the face. Which is
         // what we need here.
-        return a.contains(shape.center) || a.distanceTo(shape)[0] <= shape.r;
+        // We could be more accurate with || a.distanceTo(shape)[0] <= shape.r but it is super slow,
+        // and this is only ever used by the layout engine for rendering messages against fitting shapes
+        // so we'll let it pass.
+        return a.contains(shape.center);
     } else if (shape instanceof Flatten.Point) {
         return a.contains(shape);
     } else {

@@ -27,6 +27,7 @@ import {Calculated, CalculatedObject, FIELD_HEIGHT} from '../../../src/htmlcanva
 import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
 import {cloneSimple} from "../../lib/utils";
 import FixtureCalculation from "../../store/document/calculations/fixture-calculation";
+import Cached from "../lib/cached";
 
 @CalculatedObject
 @SelectableObject
@@ -198,6 +199,9 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         }
     }
 
+    @Cached(
+        (kek) => new Set(kek.getParentChain().map((o) => o.uid)),
+    )
     shape() {
         const p = new Flatten.Polygon();
         // tslint:disable-next-line:one-variable-per-declaration

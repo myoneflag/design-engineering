@@ -5,6 +5,7 @@ import {scale} from 'transformation-matrix/scale';
 import {matrixScale, polygonsOverlap} from '../../src/htmlcanvas/utils';
 import Flatten from '@flatten-js/core';
 import {tm2flatten} from '../../src/htmlcanvas/lib/utils';
+import {assertUnreachable} from "../config";
 
 /*
  * A transformation specifically for the screen, with a center co-ordinate, rotation, and scale.
@@ -99,9 +100,19 @@ export class ViewPort {
         ), point);
     }
 
-    someOnScreen(worldShape: Flatten.Polygon): boolean {
+    someOnScreen(worldShape: Flatten.Polygon | Flatten.Segment | Flatten.Point | Flatten.Circle): boolean {
         const screen = this.screenWorldShape;
-        return (polygonsOverlap(this.screenWorldShape, worldShape));
+        if (worldShape instanceof Flatten.Polygon) {
+            return (polygonsOverlap(screen, worldShape));
+        } else if (worldShape instanceof Flatten.Segment) {
+            return screen.contains(worldShape) || screen.intersect(worldShape).length > 0;
+        } else if (worldShape instanceof Flatten.Point) {
+            return screen.contains(worldShape);
+        } else if (worldShape instanceof Flatten.Circle) {
+            return screen.contains(worldShape.center); // TODO: boundaries if we really need dat
+        } else {
+            throw new Error('unknown shape');
+        }
     }
 
     get screenWorldShape(): Flatten.Polygon {

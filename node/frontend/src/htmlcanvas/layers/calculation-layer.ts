@@ -11,7 +11,7 @@ import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
 import Pipe, {TEXT_MAX_SCALE} from '../../../src/htmlcanvas/objects/pipe';
 import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
 import Flatten from '@flatten-js/core';
-import {matrixScale, polygonOverlapsShape, polygonsOverlap} from '../../../src/htmlcanvas/utils';
+import {cooperativeYield, matrixScale, polygonOverlapsShapeApprox, polygonsOverlap} from '../../../src/htmlcanvas/utils';
 import {isConnectable} from '../../../src/store/document';
 import {isCalculated} from '../../../src/store/document/calculations';
 import * as TM from 'transformation-matrix';
@@ -62,23 +62,38 @@ export default class CalculationLayer extends LayerImplementation {
             });
 
             const spentShapes: Flatten.Polygon[] = [];
+            let po = 0;
+            let pos = 0;
+            let nb = 0;
 
-            objList.forEach((o) => {
+            await cooperativeYield(shouldContinue);
+
+            const onScreenList: BaseBackedObject[] = objList.filter((o) => vp.someOnScreen(o.shape()!));
+            const allOnScreen = Array.from(this.objectStore.values()).filter((o) => vp.someOnScreen(o.shape()!));
+
+            await cooperativeYield(shouldContinue);
+
+            for (let i = 0; i < objList.length; i++) {
+                const o = objList[i];
+
+                if (!vp.someOnScreen(o.shape()!)) {
+                    continue;
+                }
+
                 vp.prepareContext(context.ctx);
                 const boxes = o.measureCalculationBox(context, obj2props.get(o.uid) || []);
+                nb += boxes.length;
                 let drawn = false;
-                boxes.forEach(([position, shape]) => {
-                    if (drawn) {
-                        return;
-                    }
+                for (const [position, shape] of boxes) {
 
                     if (!vp.someOnScreen(shape)) {
-                        return;
+                        continue
                     }
 
                     let invalid = false;
 
                     for (const shapeCheck of spentShapes) {
+                        po++;
                         if (polygonsOverlap(shapeCheck, shape)) {
                             invalid = true;
                             break;
@@ -87,16 +102,23 @@ export default class CalculationLayer extends LayerImplementation {
 
                     if (!invalid) {
                         // don't cover connectables
-                        this.objectStore.forEach((c) => {
-                            if (!invalid) {
-                                if (isConnectable(c.entity.type) || c.entity.type === EntityType.FIXTURE ||
-                                    c.entity.type === EntityType.TMV) {
-                                    if (polygonOverlapsShape(shape, c.shape()!)) {
-                                        invalid = true;
-                                    }
+                        for (const c of allOnScreen) {
+                            if (isConnectable(c.entity.type) || c.entity.type === EntityType.FIXTURE ||
+                                c.entity.type === EntityType.TMV) {
+                                pos++;
+
+
+                                if (pos % 5000 === 4999) {
+                                    await cooperativeYield(shouldContinue);
+                                    console.log(spentShapes.length + ' ' + po + ' ' + pos + ' ' + nb);
+                                }
+
+                                if (polygonOverlapsShapeApprox(shape, c.shape()!)) {
+                                    invalid = true;
+                                    break;
                                 }
                             }
-                        });
+                        }
                     }
 
                     if (!invalid) {
@@ -107,8 +129,9 @@ export default class CalculationLayer extends LayerImplementation {
                         const box = o.drawCalculationBox(context, obj2props.get(o.uid)!, false);
                         spentShapes.push(shape);
                         drawn = true;
+                        break;
                     }
-                });
+                }
 
                 if (!drawn) {
                     // warnings must be drawn
@@ -124,7 +147,7 @@ export default class CalculationLayer extends LayerImplementation {
                         spentShapes.push(p);
                     }
                 }
-            });
+            };
         }
     }
 

@@ -136,11 +136,6 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
         return false;
     }
 
-    shape(): Flatten.Segment | Flatten.Point | Flatten.Polygon | Flatten.Circle | null {
-        const point = this.toWorldCoord({x: 0, y: 0});
-        return Flatten.circle(Flatten.point(point.x, point.y), 30);
-    }
-
     getAngleOfRad(connection: string): number {
         throw new Error('Method not implemented');
     }

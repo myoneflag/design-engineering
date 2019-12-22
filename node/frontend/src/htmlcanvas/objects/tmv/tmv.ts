@@ -29,6 +29,8 @@ import {cloneSimple} from "../../../lib/utils";
 import SystemNode from "./system-node";
 import FixtureCalculation from "../../../store/document/calculations/fixture-calculation";
 import TmvCalculation from "../../../store/document/calculations/tmv-calculation";
+import Flatten from '@flatten-js/core';
+import Cached from "../../lib/cached";
 
 @CalculatedObject
 @SelectableObject
@@ -287,5 +289,12 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Calc
             res.push(...this.objectStore.get(this.entity.coldOutputUid)!.getNeighbours());
         }
         return res;
+    }
+
+    @Cached(
+        (kek) => new Set(kek.getParentChain().map((o) => o.uid)),
+    )
+    shape(): Flatten.Segment | Flatten.Point | Flatten.Polygon | Flatten.Circle | null {
+        return super.shape();
     }
 }

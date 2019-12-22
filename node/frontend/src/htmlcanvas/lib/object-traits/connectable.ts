@@ -587,6 +587,13 @@ export function ConnectableObject<T extends new (...args: any[])
             return [...conn.map((uid) => this.objectStore.get(uid)!), ...super.getNeighbours()];
         }
 
+        @Cached(
+            (kek) => new Set(kek.getParentChain().map((o) => o.uid)),
+        )
+        shape() {
+            const point = this.toWorldCoord({x: 0, y: 0});
+            return Flatten.circle(Flatten.point(point.x, point.y), 30);
+        }
     }
 
     return Generated;

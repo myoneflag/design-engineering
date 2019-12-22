@@ -1,4 +1,4 @@
-import Graph, {Edge, serializeValue} from '../../src/calculations/graph';
+import Graph, {Edge} from '../../src/calculations/graph';
 import {GlobalStore, ObjectStore} from '../../src/htmlcanvas/lib/types';
 import {Catalog} from '../../src/store/catalog/types';
 import {DocumentState} from '../../src/store/document/types';
@@ -129,7 +129,7 @@ export default class FlowSolver {
                     const delta = getObjectFrictionHeadLoss(
                         {drawing: this.doc.drawing, catalog: this.catalog, globalStore: this.globalStore, doc: this.doc},
                         connector,
-                        flows.getFlow(v.uid, serializeValue(v.from)) + num,
+                        flows.getFlow(v.uid, this.network.sn(v.from)) + num,
                         v.from,
                         v.to,
                     );
@@ -139,7 +139,7 @@ export default class FlowSolver {
             });
 
             path.forEach((v) => {
-                flows.addFlow(v.uid, serializeValue(v.from), bestAdjustment);
+                flows.addFlow(v.uid, this.network.sn(v.from), bestAdjustment);
             });
 
             return bestAdjustment;
@@ -152,7 +152,7 @@ export default class FlowSolver {
             );
 
             // tslint:disable-next-line:no-console
-            console.log('og flows: ' + JSON.stringify(path.map((p) => flows.getFlow(p.uid, serializeValue(p.from)))));
+            console.log('og flows: ' + JSON.stringify(path.map((p) => flows.getFlow(p.uid, this.network.sn(p.from)))));
             // tslint:disable-next-line:no-console
             console.log('uids: ' +  JSON.stringify(path.map((p) => p.value.uid)));
 
@@ -190,7 +190,7 @@ export default class FlowSolver {
             );
             if (path) {
                 path.reverse().forEach((e) => {
-                    result.addFlow(e.uid, serializeValue(e.to), f);
+                    result.addFlow(e.uid, this.network.sn(e.to), f);
                 });
             }
         });
