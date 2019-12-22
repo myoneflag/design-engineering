@@ -681,7 +681,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             if (too.entity.calculationHeightM === null) {
                 throw new Error('inconsistent 2d/3d paradigm');
             }
-            heightHeadLoss = -(too.entity.calculationHeightM - fromo.entity.calculationHeightM);
+            heightHeadLoss = (too.entity.calculationHeightM - fromo.entity.calculationHeightM);
         } else if (too.entity.calculationHeightM !== null) {
             throw new Error('inconsistent 2d/3d paradigm');
         } else {

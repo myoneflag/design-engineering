@@ -10,7 +10,7 @@ import FixtureEntity, {
     makeFixtureFields
 } from '../../src/store/document/entities/fixtures/fixture-entity';
 import {DemandType} from '../../src/calculations/types';
-import Graph, {serializeValue} from '../../src/calculations/graph';
+import Graph from '../../src/calculations/graph';
 import EquationEngine from '../../src/calculations/equation-engine';
 import {Catalog, PipeSpec} from '../../src/store/catalog/types';
 import BaseBackedObject from '../../src/htmlcanvas/lib/base-backed-object';
@@ -55,7 +55,8 @@ import {StandardFlowSystemUids} from '../../src/store/catalog';
 import {isCalculated} from "../store/document/calculations";
 import DrawableObjectFactory from "../htmlcanvas/lib/drawable-object-factory";
 import {Calculated} from "../htmlcanvas/lib/object-traits/calculated-object";
-import {isConnectable, isConnectableEntity} from "../store/document";
+import {isConnectableEntity} from "../store/document";
+import stringify from "json-stable-stringify";
 
 export const SELF_CONNECTION = 'SELF_CONNECTION';
 
@@ -107,7 +108,7 @@ export default class CalculationEngine {
                 this.doRealCalculation();
                 done();
             },
-            500);
+            0);
         this.equationEngine = new EquationEngine();
     }
 
@@ -192,13 +193,17 @@ export default class CalculationEngine {
                 const sources: FlowNode[] = this.networkObjects
                     .filter((o) => o.type === EntityType.RISER)
                     .map((o) => ({connectable: o.uid, connection: SELF_CONNECTION}));
+                console.log('start size definite');
                 this.sizeDefiniteTransports(sources);
+                console.log('start calculating point pressures');
                 //this.sizeRingsAndRoots(sources);
                 this.calculateAllPointPressures(sources);
+                console.log('start filling pressure fields, warnings, collecting results');
                 this.fillPressureDropFields();
                 this.createWarnings();
 
                 this.collectResults();
+                console.log('finish calculating');
             }
         } finally {
             this.removeNetworkObjects();
@@ -267,6 +272,8 @@ export default class CalculationEngine {
     }
 
     calculateAllPointPressures(sources: FlowNode[]) {
+        this.precomputePeakKPAPoints();
+
         this.networkObjects.forEach((obj) => {
             const entity = obj.entity;
             switch (entity.type) {
@@ -340,7 +347,7 @@ export default class CalculationEngine {
 
     getAbsolutePressurePoint(node: FlowNode, sources: FlowNode[]) {
         if (this.demandType === DemandType.PSD) {
-            return this.getPeakDemandKPAWithShortestPath(node, sources);
+            return this.entityMaxPressuresKPA.get(node.connectable) || null;
         } else {
             const obj = this.globalStore.get(node.connectable)!;
             let height: number;
@@ -413,165 +420,165 @@ export default class CalculationEngine {
         return highPressure == null ? -1 : highPressure;
     }
 
+
+    entityMaxPressuresKPA = new Map<string, number>();
+
     /**
      * In a peak flow graph, flow paths don't represent a valid network flow state, and sometimes, don't
      * even have a direction for each pipe.
      * One strategy to get a sane pressure drop to a point is to find the smallest pressure drop from it to
      * any source along the least pressure drop path.
      */
-    getPeakDemandKPAWithShortestPath(node: FlowNode, sources: FlowNode[]): number | null {
-        const rPath = this.flowGraph.shortestPath(
-            node,
-            sources,
-            (edge) => {
-                const obj = this.globalStore.get(edge.value.uid)!;
-                // Remember, this path is reversed
-                const flowFrom = edge.to;
-                const flowTo = edge.from;
+    precomputePeakKPAPoints() {
+        this.networkObjects.forEach((o) => {
+            if (o.entity.type === EntityType.RISER) {
+                const e = o.entity;
+                // Dijkstra to all objects, recording the max pressure that's arrived there.
+                console.log('riser found: ' + o.uid);
+                this.flowGraph.dijkstra(
+                    { connectable: o.uid, connection: SELF_CONNECTION },
+                    (edge) => {
+                        const obj = this.globalStore.get(edge.value.uid)!;
+                        const flowFrom = edge.from;
+                        const flowTo = edge.to;
 
-                switch (edge.value.type) {
-                    case EdgeType.PIPE:
-                        if (obj instanceof Pipe) {
-                            const calculation = this.globalStore.getOrCreateCalculation(obj.entity);
+                        switch (edge.value.type) {
+                            case EdgeType.PIPE:
+                                if (obj instanceof Pipe) {
+                                    const calculation = this.globalStore.getOrCreateCalculation(obj.entity);
 
-                            // recalculate with height
+                                    // recalculate with height
 
 
-                            if (!calculation || calculation.peakFlowRate === null) {
-                                // TODO: return a ">" symbol. 10 + ">0" = > 10.
-                                return 0;
+                                    if (!calculation || calculation.peakFlowRate === null) {
+                                        // TODO: return a ">" symbol. 10 + ">0" = > 10.
+                                        return 0;
+                                    }
+                                    return head2kpa(
+                                        obj.getFrictionHeadLoss(this, calculation.peakFlowRate, edge.from, edge.to, true),
+                                        getFluidDensityOfSystem(obj.entity.systemUid, this.doc, this.catalog)!,
+                                        this.ga,
+                                    );
+                                } else {
+                                    throw new Error('misconfigured flow graph');
+                                }
+                            case EdgeType.TMV_HOT_WARM:
+                            case EdgeType.TMV_COLD_WARM:
+                            case EdgeType.TMV_COLD_COLD: {
+                                if (obj instanceof Tmv) {
+                                    const calculation = this.globalStore.getOrCreateCalculation(obj.entity);
+                                    if (!calculation) {
+                                        return Infinity;
+                                    }
+
+                                    let fr: number | null = null;
+
+                                    let systemUid: string = '';
+
+                                    if (edge.value.type === EdgeType.TMV_COLD_COLD &&
+                                        flowFrom.connectable === obj.entity.coldRoughInUid) {
+
+                                        fr = calculation.coldPeakFlowRate;
+                                        systemUid = (this.globalStore.get(obj.entity.coldRoughInUid)!
+                                            .entity as SystemNodeEntity).systemUid;
+                                    } else if (edge.value.type === EdgeType.TMV_HOT_WARM &&
+                                        flowFrom.connectable === obj.entity.hotRoughInUid) {
+                                        fr = calculation.hotPeakFlowRate;
+                                        systemUid = (this.globalStore.get(obj.entity.hotRoughInUid)!
+                                            .entity as SystemNodeEntity).systemUid;
+                                    } else {
+                                        throw new Error('Misused TMV');
+                                    }
+
+                                    if (fr === null) {
+                                        return Infinity;
+                                    }
+
+                                    return head2kpa(
+                                        getObjectFrictionHeadLoss(
+                                            this,
+                                            obj,
+                                            fr,
+                                            flowFrom,
+                                            flowTo,
+                                        ),
+                                        getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
+                                        this.ga,
+                                    );
+                                } else {
+                                    throw new Error('misconfigured flow graph');
+                                }
                             }
-                            return head2kpa(
-                                obj.getFrictionHeadLoss(this, calculation.peakFlowRate, edge.from, edge.to, true),
-                                getFluidDensityOfSystem(obj.entity.systemUid, this.doc, this.catalog)!,
-                                this.ga,
-                            );
-                        } else {
-                            throw new Error('misconfigured flow graph');
+                            case EdgeType.FITTING_FLOW:
+                            case EdgeType.CHECK_THROUGH:
+                            case EdgeType.ISOLATION_THROUGH: {
+                                const sourcePipe = this.globalStore.get(flowFrom.connection);
+                                const destPipe = this.globalStore.get(flowTo.connection);
+                                let srcDist: number | null = null;
+                                let destDist: number | null = null;
+                                let dist: number | null = null;
+
+                                if (sourcePipe instanceof Pipe) {
+                                    const srcCalc = this.globalStore.getOrCreateCalculation(sourcePipe.entity);
+                                    srcDist = srcCalc.peakFlowRate || 0;
+                                }
+
+                                if (destPipe instanceof Pipe) {
+                                    const destCalc = this.globalStore.getOrCreateCalculation(destPipe.entity);
+                                    destDist = destCalc.peakFlowRate || 0;
+                                }
+
+                                if (srcDist != null && destDist != null) {
+                                    dist = Math.min(srcDist, destDist);
+                                } else if (srcDist != null) {
+                                    dist = srcDist;
+                                } else {
+                                    dist = destDist;
+                                }
+
+                                const systemUid = determineConnectableSystemUid(
+                                    this.globalStore,
+                                    (obj.entity as DirectedValveEntity),
+                                )!;
+
+                                if (dist !== null) {
+                                    const val = head2kpa(
+                                        getObjectFrictionHeadLoss(
+                                            this,
+                                            obj,
+                                            dist,
+                                            flowFrom,
+                                            flowTo,
+                                        ),
+                                        getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
+                                        this.ga,
+                                    );
+                                    return val;
+                                } else {
+                                    return 1000000;
+                                }
+                            }
                         }
-                    case EdgeType.TMV_HOT_WARM:
-                    case EdgeType.TMV_COLD_WARM:
-                    case EdgeType.TMV_COLD_COLD: {
-                        if (obj instanceof Tmv) {
-                            const calculation = this.globalStore.getOrCreateCalculation(obj.entity);
-                            if (!calculation) {
-                                return Infinity;
+                    },
+                    (dijk) => {
+                        const finalPressureKPA = e.pressureKPA! - dijk.weight;
+                        console.log(finalPressureKPA + ' ' + e.pressureKPA + ' ' + dijk.weight);
+                        if (this.entityMaxPressuresKPA.has(dijk.node.connectable)) {
+                            if (this.entityMaxPressuresKPA.get(dijk.node.connectable)! < finalPressureKPA) {
+                                this.entityMaxPressuresKPA.set(dijk.node.connectable, finalPressureKPA);
                             }
-
-                            let fr: number | null = null;
-
-                            let systemUid: string = '';
-
-                            if (edge.value.type === EdgeType.TMV_COLD_COLD &&
-                                flowFrom.connectable === obj.entity.coldRoughInUid) {
-
-                                fr = calculation.coldPeakFlowRate;
-                                systemUid = (this.globalStore.get(obj.entity.coldRoughInUid)!
-                                    .entity as SystemNodeEntity).systemUid;
-                            } else if (edge.value.type === EdgeType.TMV_HOT_WARM &&
-                                flowFrom.connectable === obj.entity.hotRoughInUid) {
-                                fr = calculation.hotPeakFlowRate;
-                                systemUid = (this.globalStore.get(obj.entity.hotRoughInUid)!
-                                    .entity as SystemNodeEntity).systemUid;
-                            } else {
-                                throw new Error('Misused TMV');
-                            }
-
-                            if (fr === null) {
-                                return Infinity;
-                            }
-
-                            return head2kpa(
-                                getObjectFrictionHeadLoss(
-                                    this,
-                                    obj,
-                                    fr,
-                                    flowFrom,
-                                    flowTo,
-                                ),
-                                getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
-                                this.ga,
-                            );
                         } else {
-                            throw new Error('misconfigured flow graph');
+                            this.entityMaxPressuresKPA.set(dijk.node.connectable, finalPressureKPA);
                         }
                     }
-                    case EdgeType.FITTING_FLOW:
-                    case EdgeType.CHECK_THROUGH:
-                    case EdgeType.ISOLATION_THROUGH: {
-                        const sourcePipe = this.globalStore.get(flowFrom.connection);
-                        const destPipe = this.globalStore.get(flowTo.connection);
-                        let srcDist: number | null = null;
-                        let destDist: number | null = null;
-                        let dist: number | null = null;
-
-                        if (sourcePipe instanceof Pipe) {
-                            const srcCalc = this.globalStore.getOrCreateCalculation(sourcePipe.entity);
-                            srcDist = srcCalc.peakFlowRate || 0;
-                        }
-
-                        if (destPipe instanceof Pipe) {
-                            const destCalc = this.globalStore.getOrCreateCalculation(destPipe.entity);
-                            destDist = destCalc.peakFlowRate || 0;
-                        }
-
-                        if (srcDist != null && destDist != null) {
-                            dist = Math.min(srcDist, destDist);
-                        } else if (srcDist != null) {
-                            dist = srcDist;
-                        } else {
-                            dist = destDist;
-                        }
-
-                        const systemUid = determineConnectableSystemUid(
-                            this.globalStore,
-                            (obj.entity as DirectedValveEntity),
-                        )!;
-
-                        if (dist !== null) {
-                            const val = head2kpa(
-                                getObjectFrictionHeadLoss(
-                                    this,
-                                    obj,
-                                    dist,
-                                    flowFrom,
-                                    flowTo,
-                                ),
-                                getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
-                                this.ga,
-                            );
-                            return val;
-                        } else {
-                            return 1000;
-                        }
-                    }
-                }
-            },
-            undefined,
-            undefined,
-            true,
-            true,
-        );
-        if (rPath) {
-            let sourceObj: Riser;
-            if (rPath[0].length === 0) {
-                if (this.globalStore.get(node.connectable)!.type !== EntityType.RISER ||
-                    node.connection !== SELF_CONNECTION) {
-                    throw new Error('Unexpected empty path while searching for ' + JSON.stringify(node));
-                }
-                sourceObj = this.globalStore.get(node.connectable) as Riser;
-            } else {
-                sourceObj = this.globalStore.get(rPath[0][rPath[0].length - 1].to.connectable)! as Riser;
+                )
             }
-            return sourceObj.entity.pressureKPA! - rPath[1];
-        } else {
-            return null;
-        }
+        })
     }
 
     // Just like a flow graph, but only connects when loading units are transferred.
     configureLUFlowGraph() {
-        this.flowGraph = new Graph<FlowNode, FlowEdge>();
+        this.flowGraph = new Graph<FlowNode, FlowEdge>((node) => node.connection + ' ' + node.connectable);
         this.networkObjects.forEach((obj) => {
             switch (obj.entity.type) {
                 case EntityType.PIPE:
@@ -592,7 +599,7 @@ export default class CalculationEngine {
                             connection: obj.entity.uid,
                         },
                         ev,
-                        serializeValue(ev),
+                        stringify(ev),
                     );
                     break;
                 case EntityType.TMV:
@@ -614,7 +621,7 @@ export default class CalculationEngine {
                             connection: entity.uid,
                         },
                         ev1,
-                        serializeValue(ev1),
+                        stringify(ev1),
                     );
                     if (entity.coldOutputUid !== null) {
                         if (entity.coldOutputUid === null || entity.coldRoughInUid === null) {
@@ -634,7 +641,7 @@ export default class CalculationEngine {
                                 connection: entity.uid,
                             },
                             ev2,
-                            serializeValue(ev2),
+                            stringify(ev2),
                         );
                     }
                     break;
@@ -865,7 +872,7 @@ export default class CalculationEngine {
             let changed = false;
 
             pipesThatNeedSizing.forEach((target) => {
-                const flow = assignment.getFlow(serializeValue({type: EdgeType.PIPE, uid: target}));
+                const flow = assignment.getFlow(stringify({type: EdgeType.PIPE, uid: target}));
 
                 // TODO: Size ring mains properly
                 // But for now, just size this main by this flow.
@@ -1173,6 +1180,7 @@ export default class CalculationEngine {
         this.networkObjects.forEach((object) => {
             switch (object.entity.type) {
                 case EntityType.TMV:
+                    console.log('tmv');
                     this.sizeDefiniteTransport(
                         object,
                         roots,
@@ -1192,6 +1200,7 @@ export default class CalculationEngine {
                     }
                     break;
                 case EntityType.PIPE:
+                    console.log('pipe');
                     if (object.entity.endpointUid[0] === null || object.entity.endpointUid[1] === null) {
                         throw new Error('pipe has dry endpoint: ' + object.entity.uid);
                     }
@@ -1227,7 +1236,7 @@ export default class CalculationEngine {
             throw new Error('invalid args');
         }
 
-        const reachedPsdU = this.getTotalReachedPsdU(roots, [], [serializeValue(flowEdge)]);
+        const reachedPsdU = this.getTotalReachedPsdU(roots, [], [stringify(flowEdge)]);
         const exclusivePsdU = totalReachedPsdU - reachedPsdU;
 
 
@@ -1237,7 +1246,7 @@ export default class CalculationEngine {
             const residualPsdU = this.getTotalReachedPsdU(
                 [{connectable: point, connection: object.uid}],
                 [wet],
-                [serializeValue(flowEdge)],
+                [stringify(flowEdge)],
             );
 
             if (residualPsdU > exclusivePsdU) {
@@ -1250,7 +1259,7 @@ export default class CalculationEngine {
             // zero exclusive to us. Work out whether this is because we don't have any fixture demand.
             const wets = this.getWetEndpoints(endpointUids, flowEdge, roots);
             const demands = endpointUids.map((e) =>
-                this.getTotalReachedPsdU([{connectable: e, connection: object.uid}], [], [serializeValue(flowEdge)]),
+                this.getTotalReachedPsdU([{connectable: e, connection: object.uid}], [], [stringify(flowEdge)]),
             );
 
             if (demands[0] === 0 && wets.indexOf(endpointUids[0]) === -1 ||
@@ -1456,7 +1465,7 @@ export default class CalculationEngine {
 
     getWetEndpoints(endpointUids: string[], edge: FlowEdge, roots: FlowNode[]): string[] {
         const seen = new Set<string>();
-        const seenEdges = new Set<string>([serializeValue(edge)]);
+        const seenEdges = new Set<string>([stringify(edge)]);
 
         roots.forEach((r) => {
             this.flowGraph.dfs(
@@ -1472,7 +1481,7 @@ export default class CalculationEngine {
 
         return endpointUids.filter((ep) => {
             // to be dry, we have to not have any sources.
-            return seen.has(serializeValue({connectable: ep, connection: edge.uid}));
+            return seen.has(stringify({connectable: ep, connection: edge.uid}));
         });
     }
 
