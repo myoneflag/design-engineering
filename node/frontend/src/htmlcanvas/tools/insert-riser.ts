@@ -98,9 +98,9 @@ export default function insertRiser(
 
                         toReplace = object as BackedDrawableObject<ConnectableEntityConcrete>;
                         newEntity.center = toReplace.entity.center;
+                        wc = object.toWorldCoord({x: 0, y: 0});
                         context.deleteEntity(toReplace);
 
-                        wc = object.toWorldCoord({x: 0, y: 0});
                     }
                 } else {
                     toReplace = null;

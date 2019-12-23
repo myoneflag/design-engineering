@@ -157,6 +157,9 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
                     if (!this.dependsOn.get(target)!.delete(prop)) {
                         throw new Error('dependency graph inconsistency');
                     }
+                    if (this.dependsOn.get(target)!.size === 0) {
+                        this.dependsOn.delete(target);
+                    }
                 });
             })
         }

@@ -94,10 +94,20 @@ export default class CalculationEngine {
         this.globalStore = objectStore;
         this.globalStore.forEach((o) => this.globalStore.bustDependencies(o.uid));
         if (this.globalStore.dependedBy.size) {
-            throw new Error("couldn't clear cache");
+            throw new Error("couldn't clear cache, dependedBy still " + JSON.stringify(this.globalStore.dependedBy, (key, value) => {
+                if (value instanceof Map) {
+                    return [...value];
+                }
+                return value;
+            }));
         }
         if (this.globalStore.dependsOn.size) {
-            throw new Error("couldn't clear cache");
+            throw new Error("couldn't clear cache, dependsOn still " + JSON.stringify([...this.globalStore.dependsOn], (key, value) => {
+                if (value instanceof Map) {
+                    return [...value];
+                }
+                return value;
+            }));
         }
         this.globalStore.forEach((o) => {
             if (o.cache.size) {
