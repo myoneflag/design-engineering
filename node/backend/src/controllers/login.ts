@@ -48,17 +48,18 @@ export class LoginController {
             .where('session.user = :user', {user : login.username})
             .getOne();
 
+
         if (!existingSession) {
             existingSession = Session.create();
-            const dayAfter = new Date();
-            dayAfter.setDate(dayAfter.getDate() + 2);
-            existingSession.expiresOn = dayAfter;
-            existingSession.user = Promise.resolve(login);
             existingSession.id = uuid();
-            await existingSession.save();
         }
 
-        const catalogs = await Catalog.find();
+        const dayAfter = new Date();
+        dayAfter.setDate(dayAfter.getDate() + 2);
+        existingSession.expiresOn = dayAfter;
+        existingSession.user = Promise.resolve(login);
+        await existingSession.save();
+
         res.status(200).send({
             success: true,
             data: existingSession.id,

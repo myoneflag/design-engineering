@@ -92,6 +92,18 @@ export default class CalculationEngine {
         done: () => void,
     ) {
         this.globalStore = objectStore;
+        this.globalStore.forEach((o) => this.globalStore.bustDependencies(o.uid));
+        if (this.globalStore.dependedBy.size) {
+            throw new Error("couldn't clear cache");
+        }
+        if (this.globalStore.dependsOn.size) {
+            throw new Error("couldn't clear cache");
+        }
+        this.globalStore.forEach((o) => {
+            if (o.cache.size) {
+                throw new Error("couldn't clear cache");
+            }
+        });
         this.doc = doc;
         this.catalog = catalog;
         this.demandType = demandType;
