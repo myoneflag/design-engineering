@@ -189,19 +189,19 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         const baseWidth = Math.max(MIN_PIPE_PIXEL_WIDTH / s, targetWWidth / this.toWorldLength(1));
         this.lastDrawnWidthInternal = baseWidth;
 
-        const calculation = context.globalStore.getCalculation(this.entity);
         if (calculationFilters) {
+            const calculation = context.globalStore.getCalculation(this.entity);
             if (calculation) {
                 if (calculation.realNominalPipeDiameterMM) {
                     targetWWidth = calculation.realNominalPipeDiameterMM;
                 }
             }
-            if (!calculation ||
-                !calculation.realNominalPipeDiameterMM ||
-                !calculation.peakFlowRate ||
-                calculation.peakFlowRate < SIGNIFICANT_FLOW_THRESHOLD
-            ) {
+            if (calculation && calculation.peakFlowRate !== null &&
+                calculation.peakFlowRate < SIGNIFICANT_FLOW_THRESHOLD) {
                 baseColor = '#aaaaaa';
+            }
+            if (!calculation || calculation.peakFlowRate === null) {
+                ctx.setLineDash([baseWidth * 3, baseWidth * 3]);
             }
         }
 
@@ -223,6 +223,8 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         ctx.moveTo(ao.x, ao.y);
         ctx.lineTo(bo.x, bo.y);
         ctx.stroke();
+
+        ctx.setLineDash([]);
 
         if (_.isEqual(ao, bo)) {
             // Because flatten throws an error when creating a line with two equal points, we make a point here instead.
@@ -626,7 +628,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                         from: FlowNode,
                         to: FlowNode,
                         signed: boolean,
-    ): number {
+    ): number | null {
         const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
         const {drawing, catalog, globalStore} = context;
         const entity = this.entity;
@@ -651,7 +653,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
         const page = this.getCatalogBySizePage(context);
         if (!page) {
-            throw new Error('Cannot find pipe entry for this pipe.');
+            return null;
         }
 
         const dynamicViscosity = parseCatalogNumberExact(

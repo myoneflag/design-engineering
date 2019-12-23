@@ -111,7 +111,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
         from: FlowNode,
         to: FlowNode,
         signed: boolean,
-    ): number;
+    ): number | null;
 
     get uid() {
         return this.entity.uid;

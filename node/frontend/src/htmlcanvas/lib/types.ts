@@ -52,6 +52,7 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
 
     constructor(vm: Vue) {
         super();
+        console.log('initializing global store');
         this.vm = vm;
     }
 
@@ -164,6 +165,9 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
     onEntityChange(uid: string) {
         this.bustDependencies(uid);
         const o = this.get(uid)!;
+        if (!o) {
+            console.log('uh oh! ' + uid);
+        }
         o.onUpdate();
         if (o.type === EntityType.PIPE) {
             this.updatePipeEndpoints(uid);

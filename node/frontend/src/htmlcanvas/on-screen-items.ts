@@ -138,31 +138,50 @@ export function drawLoadingUnits(
     } else {
         ctx.fillText('Total PSD: w/Space Capacity (w/o)', 20, y - 20);
     }
+    let coldFR: number | null | undefined = undefined;
+    let hotFR: number | null | undefined = undefined;
+    try {
+         coldFR = lookupFlowRate(units[StandardFlowSystemUids.ColdWater].units, context.doc, catalog);
+    } catch (e) {
+    }
+    try {
+        hotFR = lookupFlowRate(units[StandardFlowSystemUids.HotWater].units, context.doc, catalog);
+    } catch (e) {
+    }
 
-    let coldFR = lookupFlowRate(units[StandardFlowSystemUids.ColdWater].units, context.doc, catalog)!;
-    let hotFR = lookupFlowRate(units[StandardFlowSystemUids.HotWater].units, context.doc, catalog)!;
-    let coldFRSpare = coldFR * (1 + 0.01 * context.doc.drawing.metadata.flowSystems.find((s) =>
-        s.uid === StandardFlowSystemUids.ColdWater)!.spareCapacity);
-    let hotFRSpare = hotFR * (1 + 0.01 * context.doc.drawing.metadata.flowSystems.find((s) =>
-        s.uid === StandardFlowSystemUids.WarmWater)!.spareCapacity);
 
     if (coldFR === null) {
         coldFR = 0;
-        coldFRSpare = 0;
     }
     if (hotFR === null) {
         hotFR = 0;
-        hotFRSpare = 0;
     }
 
-    ctx.fillText('Cold: ', 20, y);
-    ctx.fillText((coldFRSpare.toPrecision(3)) + ' L/s ', 80, y);
-    ctx.fillText('(' + (coldFR.toPrecision(3)) + ')', 180, y);
+    let coldSpareText: string = 'error';
+    let hotSpareText: string = 'error';
+    let coldText: string = 'error';
+    let hotText: string = 'error';
+    if (coldFR !== undefined) {
+        let coldFRSpare = coldFR * (1 + 0.01 * context.doc.drawing.metadata.flowSystems.find((s) =>
+            s.uid === StandardFlowSystemUids.ColdWater)!.spareCapacity);
+        coldSpareText = coldFRSpare.toPrecision(3);
+        coldText = coldFR.toPrecision(3);
+    }
+    if (hotFR !== undefined) {
+        let hotFRSpare = hotFR * (1 + 0.01 * context.doc.drawing.metadata.flowSystems.find((s) =>
+            s.uid === StandardFlowSystemUids.WarmWater)!.spareCapacity);
+        hotSpareText = hotFRSpare.toPrecision(3);
+        hotText = hotFR.toPrecision(3);
+    }
 
+
+    ctx.fillText('Cold: ', 20, y);
+    ctx.fillText(coldSpareText + ' L/s ', 80, y);
+    ctx.fillText('(' + coldText + ')', 180, y);
 
     ctx.fillText('Hot: ', 20, y + 20);
-    ctx.fillText((hotFRSpare.toPrecision(3)) + ' L/s ', 80, y + 20);
-    ctx.fillText('(' + (hotFR.toPrecision(3)) + ')', 180, y + 20);
+    ctx.fillText(hotSpareText + ' L/s ', 80, y + 20);
+    ctx.fillText('(' + hotText + ')', 180, y + 20);
 
     ctx.fillText(catalog.psdStandards[context.doc.drawing.metadata.calculationParams.psdMethod].name, 20, y + 40);
 }

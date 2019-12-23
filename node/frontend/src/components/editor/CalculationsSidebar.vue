@@ -192,6 +192,7 @@ import {EntityType} from "../../../src/store/document/entities/types";
             }
 
             this.document.uiState.calculationFilters[eType].enabled = value;
+
             if (shouldChange) {
                 this.$props.onChange();
             }

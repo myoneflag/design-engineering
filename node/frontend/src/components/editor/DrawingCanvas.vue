@@ -190,8 +190,7 @@ export default class DrawingCanvas extends Vue {
         grabbedPoint: Coord | null = null;
         hasDragged: boolean = false;
 
-        objectStore: ObjectStore =
-            new ObjectStore(this);
+        objectStore: ObjectStore = new ObjectStore(this);
         globalStore: GlobalStore = new GlobalStore(this);
 
         // The layers
@@ -309,6 +308,20 @@ export default class DrawingCanvas extends Vue {
         }
 
         destroyed() {
+
+            MainEventBus.$off('committed', this.onCommitted);
+            MainEventBus.$off('set-tool-handler', this.setToolHandler);
+            MainEventBus.$off('select', this.onSelectRequest);
+            MainEventBus.$off('auto-connect', this.onAutoConnect);
+
+            MainEventBus.$off('add-entity', this.onAddEntity);
+            MainEventBus.$off('delete-entity', this.onDeleteEntity);
+            MainEventBus.$off('add-level', this.onAddLevel);
+            MainEventBus.$off('delete-level', this.onDeleteLevel);
+            MainEventBus.$off('current-level-changed', this.onCurrentLevelChanged);
+            MainEventBus.$off('revert-level', this.onRevertLevel);
+            MainEventBus.$off('update-pipe-endpoints', this.onPipeEndpoints);
+            MainEventBus.$off('update-entity', this.onUpdateEntity);
             this.document.uiState.lastCalculationId = -1;
         }
 
@@ -587,6 +600,12 @@ export default class DrawingCanvas extends Vue {
                 }
             });
 
+            if (this.interactive) {
+                this.interactive.forEach((o) => {
+                    result.add(o.uid);
+                });
+            }
+
             return result;
         }
 
@@ -624,11 +643,6 @@ export default class DrawingCanvas extends Vue {
             }
         }
 
-        onUpdateEntity(uid: string) {
-            this.globalStore.onEntityChange(uid);
-            this.objectStore.onEntityChange(uid);
-        }
-
         onLayerSelect() {
             this.targetProperty = null;
             this.scheduleDraw();
@@ -655,6 +669,15 @@ export default class DrawingCanvas extends Vue {
                 this.document,
                 this,
             );
+        }
+
+
+        onUpdateEntity(uid: string) {
+            this.globalStore.onEntityChange(uid);
+            const currLvl = this.globalStore.levelOfEntity.get(uid);
+            if (this.currentLevel && (currLvl === null || currLvl === this.currentLevel!.uid)) {
+                this.objectStore.onEntityChange(uid);
+            }
         }
 
         onAddEntity({entity, levelUid}: EntityParam) {
@@ -696,21 +719,6 @@ export default class DrawingCanvas extends Vue {
             );
         }
 
-        selectGroundFloor() {
-            const levels: Level[] = Object.values(this.document.drawing.levels);
-            let bestDist = Infinity;
-            let bestLevel: Level | null = null;
-            levels.forEach((level) => {
-                if (Math.abs(level.floorHeightM) < bestDist) {
-                    bestDist = Math.abs(level.floorHeightM);
-                    bestLevel = level;
-                }
-            });
-            if (bestLevel) {
-                this.$store.dispatch('document/setCurrentLevelUid', (bestLevel as Level).uid);
-            }
-        }
-
         onDeleteEntity({entity, levelUid}: EntityParam) {
             if (this.currentLevel && levelUid === this.currentLevel.uid) {
                 switch (entity.type) {
@@ -740,6 +748,21 @@ export default class DrawingCanvas extends Vue {
 
             this.globalStore.delete(entity.uid);
 
+        }
+
+        selectGroundFloor() {
+            const levels: Level[] = Object.values(this.document.drawing.levels);
+            let bestDist = Infinity;
+            let bestLevel: Level | null = null;
+            levels.forEach((level) => {
+                if (Math.abs(level.floorHeightM) < bestDist) {
+                    bestDist = Math.abs(level.floorHeightM);
+                    bestLevel = level;
+                }
+            });
+            if (bestLevel) {
+                this.$store.dispatch('document/setCurrentLevelUid', (bestLevel as Level).uid);
+            }
         }
 
         onAddLevel(level: Level) {
@@ -1023,6 +1046,7 @@ export default class DrawingCanvas extends Vue {
                 this.document.uiState.lastUsedFixtureUid = catalogId;
                 insertFixture(this, catalogId, 0);
             } else if (entityName === EntityType.DIRECTED_VALVE) {
+                console.log(catalogId);
                 this.document.uiState.lastUsedValveVid = {
                     catalogId,
                     name: this.effectiveCatalog.valves[catalogId].name,
@@ -1068,6 +1092,10 @@ export default class DrawingCanvas extends Vue {
             }
         }
 
+        get interactiveUids(): string[] {
+            return this.interactive ? this.interactive.map((o) => o.uid) : [];
+        }
+
         async blitBuffer() {
             await util.promisify(requestAnimationFrame);
             this.ctx!.resetTransform();
@@ -1088,7 +1116,11 @@ export default class DrawingCanvas extends Vue {
                 this.reactiveDrawSet().forEach((uid) => {
                     reactive.add(uid);
                 });
-                this.activeLayer.drawReactiveLayer(context, this.uncommittedEntityUids, reactive);
+                this.activeLayer.drawReactiveLayer(
+                    context,
+                    [...this.interactiveUids, ...this.uncommittedEntityUids],
+                    reactive,
+                );
             }
 
             // Draw on screen HUD

@@ -128,34 +128,22 @@ export abstract class LayerImplementation implements Layer {
 
     drawReactiveLayer(context: DrawingContext, uncommitted: string[], reactive: Set<string>) {
         const selectedSet = new Set(this.selectedIds);
-        const mySet = new Set(this.uidsInOrder);
+        const myMap = new Map(this.uidsInOrder.map((v, k) => [v, k]));
         const uncommittedSet = new Set(uncommitted);
 
-        reactive.forEach((uid) => {
-            if (!selectedSet.has(uid) && !uncommittedSet.has(uid)) {
-                const o = this.objectStore.get(uid);
-                if (o) {
-                    o.draw(context, {
-                        active: true,
-                        selected: false,
-                        calculationFilters: null,
-                    });
-                }
-            }
-        });
+        const uidsToDraw =
+            Array.from(new Set([...uncommitted, ...Array.from(reactive), ...this.selectedIds]))
+            .filter((uid) => myMap.has(uid));
+        uidsToDraw.sort((a, b) => myMap.get(a)! - myMap.get(b)!);
 
-        this.selectedIds.forEach((uid) => {
-            if (!uncommittedSet.has(uid)) {
-                this.objectStore.get(uid)!.draw(context, {active: true, selected: true, calculationFilters: null});
-            }
-        });
-
-        uncommitted.forEach((ii) => {
-            if (mySet.has(ii)) {
-                this.objectStore.get(ii)!.draw(
-                    context,
-                    {active: true, selected: true, calculationFilters: null},
-                );
+        uidsToDraw.forEach((uid) => {
+            const o = this.objectStore.get(uid);
+            if (o) {
+                o.draw(context, {
+                    active: true,
+                    selected: selectedSet.has(uid) || uncommittedSet.has(uid),
+                    calculationFilters: null,
+                });
             }
         });
     }

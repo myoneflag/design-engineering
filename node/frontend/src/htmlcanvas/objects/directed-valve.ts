@@ -26,7 +26,7 @@ import {Calculated, CalculatedObject} from '../../../src/htmlcanvas/lib/object-t
 import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
 import {assertUnreachable} from "../../../src/config";
 import PipeEntity, {MutablePipe} from "../../store/document/entities/pipe-entity";
-import DirectedValveCalculation from "../../store/document/calculations/directed-valve-calculation";
+import DirectedValveCalculation, {emptyDirectedValveCalculation} from "../../store/document/calculations/directed-valve-calculation";
 import FittingEntity from "../../store/document/entities/fitting-entity";
 
 export const VALVE_SIZE_MM = 140;
@@ -274,7 +274,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         from: FlowNode,
         to: FlowNode,
         signed: boolean,
-    ): number {
+    ): number | null {
         const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
 
         let sign = 1;
@@ -301,7 +301,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 const table = context.catalog.valves[this.entity.valve.catalogId];
                 const size = this.largestPipeSizeNominalMM(context);
                 if (size === null) {
-                    throw new Error('No pipes are sized for this valve');
+                    return null;
                 }
                 kValue = parseCatalogNumberExact(lowerBoundTable(table.valvesBySize, size)!.kValue);
 
@@ -406,9 +406,14 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             .find((e) => e.type === EntityType.DIRECTED_VALVE) as DirectedValveEntity;
 
         if (!me) {
-            throw new Error('Can\'t find self in calculations');
+            if (this.getCalculationEntities(context).length === 0) {
+                return emptyDirectedValveCalculation();
+            } else {
+                throw new Error('Can\'t find self in calculations ' + this.uid + ' ' + this.entity.valve.type);
+            }
+        } else {
+            return context.globalStore.getOrCreateCalculation(me);
         }
-        return context.globalStore.getOrCreateCalculation(me);
     }
 
     protected refreshObjectInternal(obj: DrawableEntity, old?: DrawableEntity): void {

@@ -89,7 +89,7 @@ export function getPsdUnitName(psdMethod: SupportedPsdStandards): {name: string,
         case SupportedPsdStandards.din1988300Office:
         case SupportedPsdStandards.din1988300AssistedLiving:
         case SupportedPsdStandards.din1988300NursingHome:
-            return {name: 'Design Flow Rate', abbreviation: 'D. Flow'};
+            return {name: 'Full Flow Rate', abbreviation: 'F. Flow'};
     }
     assertUnreachable(psdMethod);
 }
@@ -104,6 +104,19 @@ export function lookupFlowRate(psdU: number, doc: DocumentState, catalog: Catalo
         if (standard.equation !== 'a*(sum(Q,q))^b-c') {
             throw new Error('Only the german equation a*(sum(Q,q))^b-c is currently supported');
         }
+
+        if (psdU < 0) {
+            throw new Error('PSD units must be positive');
+        }
+
+        if (psdU <= 0.2) {
+            return psdU;
+        }
+
+        if (psdU > 500) {
+            throw new Error('Too much flow - PSD cannot be determined from this standard');
+        }
+
         const a = parseCatalogNumberExact(standard.variables.a)!;
         const b = parseCatalogNumberExact(standard.variables.b)!;
         const c = parseCatalogNumberExact(standard.variables.c)!;

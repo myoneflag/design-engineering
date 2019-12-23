@@ -36,7 +36,22 @@ export interface CalculationField {
     format?: (v: any) => string;
 }
 
-export interface CalculationData extends CalculationField {
+export enum CalculationDataType {
+    VALUE,
+    MESSAGE,
+}
+
+export interface CalculationFieldWithValue extends CalculationField {
+    type: CalculationDataType.VALUE;
     attachUid: string;
     value: number | null;
 }
+
+export interface CalculationMessage {
+    type: CalculationDataType.MESSAGE;
+    attachUid: string;
+    message: string;
+    systemUid?: string;
+}
+
+export type CalculationData = CalculationMessage | CalculationFieldWithValue;

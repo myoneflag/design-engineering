@@ -15,6 +15,6 @@ export function getObjectFrictionHeadLoss(
     from: FlowNode,
     to: FlowNode,
     signed = true,
-): number {
+): number | null {
     return object.getFrictionHeadLoss(context, flowLS, from, to, signed);
 }

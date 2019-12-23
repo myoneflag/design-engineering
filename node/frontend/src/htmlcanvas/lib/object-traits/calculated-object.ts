@@ -1,13 +1,8 @@
-import {
-    CalculatableEntityConcrete, CalculationConcrete,
-    ConnectableEntityConcrete
-} from '../../../../src/store/document/entities/concrete-entity';
+import {CalculatableEntityConcrete, CalculationConcrete} from '../../../../src/store/document/entities/concrete-entity';
 import {DrawingContext} from '../../../../src/htmlcanvas/lib/types';
-import {CalculationFilter, CalculationFilters, Coord} from '../../../../src/store/document/types';
-import {CalculationData, CalculationField} from '../../../../src/store/document/calculations/calculation-field';
+import {CalculationFilters} from '../../../../src/store/document/types';
+import {CalculationData, CalculationDataType} from '../../../../src/store/document/calculations/calculation-field';
 import Flatten from '@flatten-js/core';
-import Connectable from '../../../../src/htmlcanvas/lib/object-traits/connectable';
-import BaseBackedObject from '../../../../src/htmlcanvas/lib/base-backed-object';
 import BackedDrawableObject from '../../../../src/htmlcanvas/lib/backed-drawable-object';
 import {DEFAULT_FONT_NAME} from '../../../../src/config';
 import {getPropertyByString, lighten} from '../../../../src/lib/utils';
@@ -16,8 +11,8 @@ import * as TM from 'transformation-matrix';
 import {tm2flatten} from '../../../../src/htmlcanvas/lib/utils';
 import {TEXT_MAX_SCALE} from '../../../../src/htmlcanvas/objects/pipe';
 import {matrixScale, warningSignImg, wrapText} from '../../../../src/htmlcanvas/utils';
-import {applyToPoint} from 'transformation-matrix/applyToPoint';
 import {CalculationContext} from "../../../calculations/types";
+import {EntityType} from "../../../store/document/entities/types";
 
 export interface Calculated {
     drawCalculationBox(
@@ -50,23 +45,26 @@ export function CalculatedObject<T extends new (...args: any[])
     return (class extends constructor implements CalculatedObject {
         calculated: true = true;
 
-        makeDatumText(datum: CalculationData) {
+        makeDatumText(datum: CalculationData): string {
+            if (datum.type === CalculationDataType.VALUE) {
+                const value = datum.value;
+                if (value === undefined) {
+                    throw new Error('undefined value: ' + JSON.stringify(datum) + ' '
+                        + JSON.stringify(this.objectStore.get(datum.attachUid)!.entity));
+                }
 
-            const value = datum.value;
-            if (value === undefined) {
-                throw new Error('undefined value: ' + JSON.stringify(datum) + ' '
-                    + JSON.stringify(this.objectStore.get(datum.attachUid)!.entity));
+                const fractionDigits = datum.significantDigits === undefined ? 2 : datum.significantDigits;
+
+                let numberText = (value === null ? '??' : value.toFixed(fractionDigits));
+                if (datum.format) {
+                    numberText = datum.format(value);
+                }
+                return numberText +
+                    ' ' + (datum.hideUnits ? '' : datum.units + ' ') +
+                    datum.short;
+            } else {
+                return datum.message;
             }
-
-            const fractionDigits = datum.significantDigits === undefined ? 2 : datum.significantDigits;
-
-            let numberText = (value === null ? '??' : value.toFixed(fractionDigits));
-            if (datum.format) {
-                numberText = datum.format(value);
-            }
-            return numberText +
-                ' ' + (datum.hideUnits ? '' : datum.units + ' ') +
-                datum.short;
         }
 
         drawWarningSignOnly(context: DrawingContext, dryRun: boolean): Flatten.Box {
@@ -102,10 +100,14 @@ export function CalculatedObject<T extends new (...args: any[])
 
             let maxWidth = 0;
             for (let i = data.length - 1; i >= 0; i--) {
-                ctx.font = (data[i].bold ? 'bold ' : '') + FIELD_FONT_SIZE + 'px ' + DEFAULT_FONT_NAME;
-                ctx.fillStyle = '#000';
-                const metrics = ctx.measureText( this.makeDatumText(data[i]));
+                const datum = data[i];
+                if (datum.type === CalculationDataType.VALUE) {
+                    ctx.font = (datum.bold ? 'bold ' : '') + FIELD_FONT_SIZE + 'px ' + DEFAULT_FONT_NAME;
+                } else {
+                    ctx.font = FIELD_FONT_SIZE + 'px ' + DEFAULT_FONT_NAME;
+                }
 
+                const metrics = ctx.measureText( this.makeDatumText(datum));
                 maxWidth = Math.max(maxWidth, metrics.width);
             }
             if (this.hasWarning(context)) {
@@ -117,8 +119,13 @@ export function CalculatedObject<T extends new (...args: any[])
 
             let height = 0;
             data.forEach((d) => {
-                height += (d.fontMultiplier === undefined ? 1 : d.fontMultiplier) * FIELD_FONT_SIZE;
+                if (d.type === CalculationDataType.VALUE) {
+                    height += (d.fontMultiplier === undefined ? 1 : d.fontMultiplier) * FIELD_FONT_SIZE;
+                } else {
+                    height += FIELD_FONT_SIZE;
+                }
             });
+
             let warnHeight = 0;
             if (this.hasWarning(context)) {
                 ctx.font = 'bold ' + FIELD_FONT_SIZE + 'px ' + DEFAULT_FONT_NAME;
@@ -167,16 +174,25 @@ export function CalculatedObject<T extends new (...args: any[])
                 }
 
                 for (let i = data.length - 1; i >= 0; i--) {
-                    const multiplier = data[i].fontMultiplier === undefined ? 1 : data[i].fontMultiplier!;
+                    const datum = data[i];
+
+                    let multiplier = 1;
+                    if (datum.type === CalculationDataType.VALUE) {
+                        multiplier = datum.fontMultiplier === undefined ? 1 : datum.fontMultiplier!;
+                        ctx.font = (datum.bold ? 'bold ' : '') +
+                            (multiplier * FIELD_FONT_SIZE).toFixed(0) + 'px ' + DEFAULT_FONT_NAME;
+                    } else {
+                        ctx.font = (multiplier * FIELD_FONT_SIZE).toFixed(0) + 'px ' + DEFAULT_FONT_NAME;
+                    }
+
                     ctx.fillStyle = '#000';
-                    ctx.font = (data[i].bold ? 'bold ' : '') +
-                        (multiplier * FIELD_FONT_SIZE).toFixed(0) + 'px ' + DEFAULT_FONT_NAME;
-                    if (data[i].systemUid) {
+
+                    if (datum.systemUid) {
                         const col = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === data[i].systemUid)!.color;
                         ctx.fillStyle = lighten(col.hex, -20);
                     }
-                    ctx.fillText(this.makeDatumText(data[i]), -maxWidth / 2, y);
 
+                    ctx.fillText(this.makeDatumText(data[i]), -maxWidth / 2, y);
                     y -= multiplier * FIELD_HEIGHT;
                 }
 
@@ -254,16 +270,32 @@ export function CalculatedObject<T extends new (...args: any[])
         }
 
         getCalculationFields(context: DrawingContext, filters: CalculationFilters): CalculationData[] {
+
             const filter = filters[this.entity.type].filters;
             const calculation = context.globalStore.getCalculation(this.entity);
+
+            if (this.entity.type === EntityType.PIPE) {
+
+                const pCalc = context.globalStore.getCalculation(this.entity);
+                if (pCalc && pCalc.peakFlowRate === null) {
+                    return [{
+                        message: 'AMBIGUOUS',
+                        attachUid: this.uid,
+                        type: CalculationDataType.MESSAGE,
+                        systemUid: this.entity.systemUid,
+                    }];
+                }
+            }
+
             return getFields(this.entity, context.doc, context.catalog)
                 .filter((f) => f.property in filter && filter[f.property].enabled)
                 .map((f) => {
-                    const ret: CalculationData = f as CalculationData;
-                    if (f.attachUid === undefined) {
-                        ret.attachUid = this.entity.uid;
-                    }
-                    ret.value = getPropertyByString(calculation, f.property);
+                    const ret: CalculationData = {
+                        ...f,
+                        type: CalculationDataType.VALUE,
+                        value: getPropertyByString(calculation, f.property),
+                        attachUid: f.attachUid || this.entity.uid,
+                    };
                     return ret;
                 });
         }

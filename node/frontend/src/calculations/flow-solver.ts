@@ -133,6 +133,9 @@ export default class FlowSolver {
                         v.from,
                         v.to,
                     );
+                    if (delta === null) {
+                        throw new Error('Could not get friction loss of pipe');
+                    }
                     totalHeadLoss += delta;
                 });
                 return Math.abs(-expectedDifferenceHead - totalHeadLoss);

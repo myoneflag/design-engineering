@@ -105,20 +105,20 @@ export function fillFixtureFields(
         SupportedPsdStandards.as35002018LoadingUnits;
 
     if (psdStrategy in defaultCatalog.fixtures[result.name].loadingUnits) {
-        if (!result.loadingUnitsCold) {
+        if (result.loadingUnitsCold === null) {
             result.loadingUnitsCold =
                 parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy].cold);
         }
 
-        if (!result.loadingUnitsHot) {
+        if (result.loadingUnitsHot === null) {
             result.loadingUnitsHot =
                 parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy].hot);
         }
     }
-    if (!result.designFlowRateCold) {
+    if (result.designFlowRateCold === null) {
         result.designFlowRateCold = parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].qLS.cold);
     }
-    if (!result.designFlowRateHot) {
+    if (result.designFlowRateHot === null) {
         result.designFlowRateHot = parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].qLS.hot);
     }
 

@@ -84,7 +84,7 @@
                         variant="outline-dark"
                         id="insertEntityBtn"
                         :disabled="!lastUsedValveVid"
-                        @click="$emit('insert', {entityName: entityNames.DIRECTED_VALVE, system: selectedSystem, catalogId: lastUsedValveVid.uid, valveType: lastUsedValveVid.type})"
+                        @click="$emit('insert', {entityName: entityNames.DIRECTED_VALVE, system: selectedSystem, catalogId: lastUsedValveVid.catalogId, valveType: lastUsedValveVid.type})"
                 >
                     {{ lastUsedValveVid.name }}
                 </b-button>

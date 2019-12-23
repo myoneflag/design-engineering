@@ -56,7 +56,10 @@ export default class CalculationLayer extends LayerImplementation {
                 }
             });
 
-            const objList = Array.from(this.objectStore.values()).filter((o) => o.calculated && obj2props.has(o.uid));
+            const objList =
+                Array.from(this.objectStore.values())
+                    .filter((o) => calculationFilters[o.type] ? calculationFilters[o.type].enabled : false)
+                    .filter((o) => o.calculated && obj2props.has(o.uid));
             objList.sort((a, b) => {
                 return -(this.messagePriority(context, a) - this.messagePriority(context, b));
             });
@@ -147,7 +150,7 @@ export default class CalculationLayer extends LayerImplementation {
                         spentShapes.push(p);
                     }
                 }
-            };
+            }
         }
     }
 
