@@ -27,6 +27,7 @@ import FittingEntity from "../../store/document/entities/fitting-entity";
 import FixtureEntity from "../../store/document/entities/fixtures/fixture-entity";
 import DirectedValveEntity from "../../store/document/entities/directed-valves/directed-valve-entity";
 import Pipe from "../objects/pipe";
+import {cloneSimple} from "../../lib/utils";
 
 export interface DrawingContext {
     ctx: CanvasRenderingContext2D;
@@ -330,25 +331,25 @@ export class GlobalStore extends ObjectStore {
         if (!this.calculationStore.has(entity.uid)) {
             switch (entity.type) {
                 case EntityType.RISER:
-                    this.calculationStore.set(entity.uid, emptyRiserCalculations());
+                    this.calculationStore.set(entity.uid, cloneSimple(emptyRiserCalculations()));
                     break;
                 case EntityType.PIPE:
-                    this.calculationStore.set(entity.uid, emptyPipeCalculation());
+                    this.calculationStore.set(entity.uid, cloneSimple(emptyPipeCalculation()));
                     break;
                 case EntityType.TMV:
-                    this.calculationStore.set(entity.uid, emptyTmvCalculation());
+                    this.calculationStore.set(entity.uid, cloneSimple(emptyTmvCalculation()));
                     break;
                 case EntityType.FITTING:
-                    this.calculationStore.set(entity.uid, emptyFittingCalculation());
+                    this.calculationStore.set(entity.uid, cloneSimple(emptyFittingCalculation()));
                     break;
                 case EntityType.FIXTURE:
-                    this.calculationStore.set(entity.uid, emptyFixtureCalculation());
+                    this.calculationStore.set(entity.uid, cloneSimple(emptyFixtureCalculation()));
                     break;
                 case EntityType.DIRECTED_VALVE:
-                    this.calculationStore.set(entity.uid, emptyDirectedValveCalculation());
+                    this.calculationStore.set(entity.uid, cloneSimple(emptyDirectedValveCalculation()));
                     break;
                 case EntityType.SYSTEM_NODE:
-                    this.calculationStore.set(entity.uid, emptySystemNodeCalculation());
+                    this.calculationStore.set(entity.uid, cloneSimple(emptySystemNodeCalculation()));
                     break;
             }
         }

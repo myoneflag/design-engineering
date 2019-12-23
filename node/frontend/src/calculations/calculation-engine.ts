@@ -64,8 +64,8 @@ export const SELF_CONNECTION = 'SELF_CONNECTION';
 export default class CalculationEngine {
 
     globalStore!: GlobalStore;
-    networkObjectUids: string[] = [];
-    drawableObjectUids: string[] = [];
+    networkObjectUids!: string[] ;
+    drawableObjectUids!: string[];
 
     doc!: DocumentState;
     demandType!: DemandType;
@@ -75,12 +75,18 @@ export default class CalculationEngine {
     drawing!: DrawingState;
     ga!: number;
 
-    get networkObjects(): BaseBackedObject[] {
+    entityMaxPressuresKPA = new Map<string, number | null>();
+
+    networkObjects(): BaseBackedObject[] {
         return this.networkObjectUids.map((u) => this.globalStore.get(u)!);
     }
 
-    get drawableObjects(): BaseBackedObject[] {
+    drawableObjects(): BaseBackedObject[] {
         return this.drawableObjectUids.map((u) => this.globalStore.get(u)!);
+    }
+
+    constructor() {
+        console.log('constructed');
     }
 
 
@@ -91,6 +97,8 @@ export default class CalculationEngine {
         demandType: DemandType,
         done: () => void,
     ) {
+        this.networkObjectUids = [];
+        this.drawableObjectUids = [];
         this.globalStore = objectStore;
         this.globalStore.forEach((o) => this.globalStore.bustDependencies(o.uid));
         if (this.globalStore.dependedBy.size) {
@@ -126,21 +134,24 @@ export default class CalculationEngine {
             return;
         }
 
+        this.equationEngine = new EquationEngine();
         setTimeout(() => {
                 this.doRealCalculation();
                 done();
             },
             0);
-        this.equationEngine = new EquationEngine();
     }
 
     clearCalculations() {
         this.globalStore.clearCalculations();
-        this.networkObjects.forEach((v) => {
+
+
+        /*
+        this.networkObjects().forEach((v) => {
             if (isCalculated(v.entity)) {
                 this.globalStore.getOrCreateCalculation(v.entity);
             }
-        });
+        });*/
     }
 
     preValidate(): boolean {
@@ -212,7 +223,7 @@ export default class CalculationEngine {
 
                 this.preCompute();
                 // The remaining graph must be a rooted forest.
-                const sources: FlowNode[] = this.networkObjects
+                const sources: FlowNode[] = this.networkObjects()
                     .filter((o) => o.type === EntityType.RISER)
                     .map((o) => ({connectable: o.uid, connection: SELF_CONNECTION}));
                 console.log('start size definite');
@@ -229,7 +240,9 @@ export default class CalculationEngine {
             }
         } finally {
             this.removeNetworkObjects();
-            this.networkObjectUids = [];
+            this.networkObjectUids = undefined!;
+            this.drawableObjectUids = undefined!;
+            this.entityMaxPressuresKPA.clear();
         }
 
 
@@ -240,7 +253,7 @@ export default class CalculationEngine {
 
     // Take the calcs from the invisible network and collect them into the visible results.
     collectResults() {
-        this.drawableObjects.forEach((o) => {
+        this.drawableObjects().forEach((o) => {
             if (isCalculated(o.entity)) {
                 this.globalStore.setCalculation(o.uid, (o as unknown as Calculated).collectCalculations(this));
             }
@@ -285,7 +298,7 @@ export default class CalculationEngine {
     }
 
     preCompute() {
-        this.networkObjects.forEach((o) => {
+        this.networkObjects().forEach((o) => {
             if (o.entity.type === EntityType.PIPE) {
                 const c = this.globalStore.getOrCreateCalculation(o.entity);
                 c.lengthM = o.entity.lengthM == null ? (o as Pipe).computedLengthM : o.entity.lengthM;
@@ -294,9 +307,10 @@ export default class CalculationEngine {
     }
 
     calculateAllPointPressures(sources: FlowNode[]) {
+        console.log('sources: ' + JSON.stringify(sources));
         this.precomputePeakKPAPoints();
 
-        this.networkObjects.forEach((obj) => {
+        this.networkObjects().forEach((obj) => {
             const entity = obj.entity;
             switch (entity.type) {
                 case EntityType.FIXTURE: {
@@ -336,6 +350,9 @@ export default class CalculationEngine {
                     const calculation = this.globalStore.getOrCreateCalculation(entity) as
                         RiserCalculation | DirectedValveCalculation | FittingCalculation | SystemNodeCalculation;
                     const candidates = cloneSimple(this.globalStore.getConnections(entity.uid));
+                    if (entity.uid === '699c49de-1282-4bdb-ba87-5b1d7fd2f49b.0') {
+                        console.log('candidates: ' + JSON.stringify(candidates));
+                    }
                     if (entity.type === EntityType.RISER) {
                         candidates.push(SELF_CONNECTION);
                     } else if (entity.type === EntityType.SYSTEM_NODE) {
@@ -344,6 +361,7 @@ export default class CalculationEngine {
                     let maxPressure: number | null = null;
                     let minPressure: number | null = null;
                     candidates.forEach((cuid) => {
+
                         const thisPressure = this.getAbsolutePressurePoint(
                             {connectable: entity.uid, connection: cuid},
                             sources,
@@ -353,6 +371,9 @@ export default class CalculationEngine {
                         }
                         if (minPressure === null || (thisPressure !== null && thisPressure < minPressure)) {
                             minPressure = thisPressure;
+                        }
+                        if (entity.uid === '699c49de-1282-4bdb-ba87-5b1d7fd2f49b.0') {
+                            console.log('candidate ' + cuid + ' '  + thisPressure);
                         }
                     });
                     // For the entry, we have to get the highest pressure (the entry pressure)
@@ -444,7 +465,6 @@ export default class CalculationEngine {
     }
 
 
-    entityMaxPressuresKPA = new Map<string, number | null>();
 
     /**
      * In a peak flow graph, flow paths don't represent a valid network flow state, and sometimes, don't
@@ -453,7 +473,7 @@ export default class CalculationEngine {
      * any source along the least pressure drop path.
      */
     precomputePeakKPAPoints() {
-        this.networkObjects.forEach((o) => {
+        this.networkObjects().forEach((o) => {
             if (o.entity.type === EntityType.RISER) {
                 const e = o.entity;
                 // Dijkstra to all objects, recording the max pressure that's arrived there.
@@ -614,7 +634,7 @@ export default class CalculationEngine {
     // Just like a flow graph, but only connects when loading units are transferred.
     configureLUFlowGraph() {
         this.flowGraph = new Graph<FlowNode, FlowEdge>((node) => node.connection + ' ' + node.connectable);
-        this.networkObjects.forEach((obj) => {
+        this.networkObjects().forEach((obj) => {
             switch (obj.entity.type) {
                 case EntityType.PIPE:
                     if (obj.entity.endpointUid[0] === null || obj.entity.endpointUid[1] === null) {
@@ -1215,7 +1235,7 @@ export default class CalculationEngine {
         const totalReachedPsdU = this.getTotalReachedPsdU(roots);
 
         // Go through all pipes
-        this.networkObjects.forEach((object) => {
+        this.networkObjects().forEach((object) => {
             switch (object.entity.type) {
                 case EntityType.TMV:
                     console.log('tmv');
@@ -1330,7 +1350,7 @@ export default class CalculationEngine {
     }
 
     fillPressureDropFields() {
-        this.networkObjects.forEach((o) => {
+        this.networkObjects().forEach((o) => {
             switch (o.entity.type) {
                 case EntityType.TMV: {
 
@@ -1462,7 +1482,7 @@ export default class CalculationEngine {
     }
 
     createWarnings() {
-        this.networkObjects.forEach((o) => {
+        this.networkObjects().forEach((o) => {
             switch (o.entity.type) {
                 case EntityType.BACKGROUND_IMAGE:
                     break;

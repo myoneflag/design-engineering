@@ -391,6 +391,7 @@ export function ConnectableObject<T extends new (...args: any[])
             signed: boolean,
             pipeSizes?: [number, number],
         ): number {
+            console.log('recalculating head loss ' + this.uid);
             hlcounts ++;
             if (hlcounts % 1000 === 0) {
                 console.log(hlcounts);
