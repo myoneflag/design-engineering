@@ -32,6 +32,7 @@ import SystemNodeCalculation from "../../../store/document/calculations/system-n
 
 @CalculatedObject
 @ConnectableObject
+@CenteredObject
 export default class SystemNode extends InvisibleNode<SystemNodeEntity> implements Centered, Calculated {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.SYSTEM_NODE, SystemNode);
@@ -40,14 +41,6 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
     minimumConnections = 0;
     maximumConnections = 1;
     dragPriority = getDragPriority(EntityType.SYSTEM_NODE);
-
-    debase(): void {
-        //
-    }
-
-    rebase(context: CanvasContext): void {
-        //
-    }
 
     offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
         switch (interaction.type) {

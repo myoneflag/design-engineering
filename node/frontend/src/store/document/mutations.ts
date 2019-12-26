@@ -1,3 +1,4 @@
+
 import {MutationTree} from 'vuex';
 import {
     blankDiffFilter, DiffFilter,
@@ -278,12 +279,13 @@ function entityHandler(state: DocumentState, levelUid: string | null, entityUid:
 
                 logEntityMutation(state, {entityUid, levelUid});
 
-
                 if (_.isObject(value as any) && value.__custom_proxy__ !== true) {
                     target[key] = proxyEntity(value, this);
                 } else {
                     target[key] = value;
                 }
+
+                MainEventBus.$emit('update-entity', entityUid);
             }
             return true;
         }
@@ -316,10 +318,10 @@ function proxyEntity<T>(obj: T, handler: ProxyHandler<any>): T {
         if ((obj as any).__custom_proxy__) {
             return obj;
         }
-        const proxy = new Proxy(obj, handler);
         Object.keys(obj).forEach((k) => {
-            proxy[k] = proxyEntity(proxy[k], handler);
+            (obj as any)[k] = proxyEntity((obj as any)[k], handler);
         });
+        const proxy = new Proxy(obj, handler);
         return proxy;
     } else {
         return obj;

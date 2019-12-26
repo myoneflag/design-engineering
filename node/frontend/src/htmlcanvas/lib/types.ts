@@ -90,6 +90,7 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
 
     private attachEndpoints(entity: PipeEntity) {
         entity.endpointUid.forEach((newVal) => {
+            console.log('attaching new val ' + newVal);
             if (newVal === undefined) {
                 return;
             }

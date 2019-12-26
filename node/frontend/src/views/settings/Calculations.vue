@@ -35,7 +35,7 @@
                 ['psdMethod', 'PSD Calculation Method:', 'choice', getPsdMethods(this.$store.getters['catalog/default'])],
                 ['pipeSizingMethod', 'Pipe Sizing Method:', 'choice', PIPE_SIZING_METHODS],
                 //['ringMainCalculationMethod', 'Ring Main Calculation Method:', 'choice', RING_MAIN_CALCULATION_METHODS],
-                ['ceilingPipeHeightM', 'Ceiling Pipe Height Above Floor (m):', 'number'],
+                ['ceilingPipeHeightM', 'Default Pipe Height Above Floor (m):', 'number'],
                 ['roomTemperatureC', 'Room Temperature (C):', 'range', 10, 40],
                 ['gravitationalAcceleration', 'Gravitational Acceleration (m/s^2):', 'range', 9.77, 9.84, 0.001],
             ];

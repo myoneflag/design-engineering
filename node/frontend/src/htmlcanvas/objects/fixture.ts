@@ -240,14 +240,14 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
     prepareDelete(context: CanvasContext): BaseBackedObject[] {
         if (this.entity.warmRoughInUid) {
             return [
-                this,
                 ...this.objectStore.get(this.entity.coldRoughInUid)!.prepareDelete(context),
                 ...this.objectStore.get(this.entity.warmRoughInUid)!.prepareDelete(context),
+                this,
             ];
         } else {
             return [
-                this,
                 ...this.objectStore.get(this.entity.coldRoughInUid)!.prepareDelete(context),
+                this,
             ];
         }
     }

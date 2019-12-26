@@ -25,12 +25,15 @@ import {Calculated, CalculatedObject, FIELD_HEIGHT} from '../../../../src/htmlca
 import {CalculationData} from '../../../../src/store/document/calculations/calculation-field';
 import {assertUnreachable} from "../../../../src/config";
 import FixtureEntity from "../../../store/document/entities/fixtures/fixture-entity";
-import {cloneSimple} from "../../../lib/utils";
+import {cloneSimple, getValveK} from "../../../lib/utils";
 import SystemNode from "./system-node";
 import FixtureCalculation from "../../../store/document/calculations/fixture-calculation";
 import TmvCalculation from "../../../store/document/calculations/tmv-calculation";
 import Flatten from '@flatten-js/core';
 import Cached from "../../lib/cached";
+import {Catalog} from "../../../store/catalog/types";
+
+export const TMV_DEFAULT_PIPE_WIDTH_MM = 20;
 
 @CalculatedObject
 @SelectableObject
@@ -141,15 +144,16 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Calc
     }
 
     prepareDelete(context: CanvasContext): BaseBackedObject[] {
-        const list = [
-            this,
-            ...this.objectStore.get(this.entity.coldRoughInUid)!.prepareDelete(context),
-            ...this.objectStore.get(this.entity.hotRoughInUid)!.prepareDelete(context),
-            ...this.objectStore.get(this.entity.warmOutputUid)!.prepareDelete(context),
-        ];
+        const list: BaseBackedObject[] = [];
         if (this.entity.coldOutputUid) {
             list.push(...this.objectStore.get(this.entity.coldOutputUid)!.prepareDelete(context));
         }
+        list.push(
+            ...this.objectStore.get(this.entity.coldRoughInUid)!.prepareDelete(context),
+            ...this.objectStore.get(this.entity.hotRoughInUid)!.prepareDelete(context),
+            ...this.objectStore.get(this.entity.warmOutputUid)!.prepareDelete(context),
+            this,
+        );
         return list;
     }
 
@@ -231,7 +235,7 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Calc
                         from: FlowNode,
                         to: FlowNode,
                         signed: boolean,
-    ): number {
+    ): number | null {
 
         const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
         let sign = 1;
@@ -259,10 +263,27 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Calc
             // Water not flowing the correct direction
             return sign * (1e10 + flowLS);
         }
-        const pdKPAfield = interpolateTable(catalog.mixingValves.tmv.pressureLossKPAbyFlowRateLS, flowLS);
-        const pdKPA = parseCatalogNumberExact(pdKPAfield);
-        if (pdKPA === null) {
-            throw new Error('pressure drop for TMV not available');
+
+        let pdKPA: number | null = 0;
+        if (from.connectable === entity.hotRoughInUid) {
+            const pdKPAfield = interpolateTable(catalog.mixingValves.tmv.pressureLossKPAbyFlowRateLS, flowLS);
+            pdKPA = parseCatalogNumberExact(pdKPAfield);
+            if (pdKPA === null) {
+                throw new Error('pressure drop for TMV not available');
+            }
+        } else {
+            // pressure drop is an elbow and a tee for the cold part.
+            const k1 = getValveK('tThruBranch', context.catalog, TMV_DEFAULT_PIPE_WIDTH_MM);
+            const k2 = getValveK('90Elbow', context.catalog, TMV_DEFAULT_PIPE_WIDTH_MM);
+
+
+            if (k1 === null || k2 === null) {
+                return null;
+            }
+
+            const volLM = TMV_DEFAULT_PIPE_WIDTH_MM ** 2 * Math.PI / 4 / 1000;
+            const velocityMS = flowLS / volLM;
+            return sign * ((k1 + k2) * velocityMS ** 2) / (2 * ga);
         }
 
         // We need the fluid density because TMV pressure stats are in KPA, not head loss

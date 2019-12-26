@@ -673,10 +673,13 @@ export default class DrawingCanvas extends Vue {
 
 
         onUpdateEntity(uid: string) {
-            this.globalStore.onEntityChange(uid);
-            const currLvl = this.globalStore.levelOfEntity.get(uid);
-            if (this.currentLevel && (currLvl === null || currLvl === this.currentLevel!.uid)) {
-                this.objectStore.onEntityChange(uid);
+            console.log('updating ' + uid);
+            if (this.globalStore.has(uid)) {
+                this.globalStore.onEntityChange(uid);
+                const currLvl = this.globalStore.levelOfEntity.get(uid);
+                if (this.currentLevel && (currLvl === null || currLvl === this.currentLevel!.uid)) {
+                    this.objectStore.onEntityChange(uid);
+                }
             }
         }
 

@@ -2,9 +2,8 @@
 
 import * as _ from 'lodash';
 import {EPS} from '../../src/calculations/pressure-drops';
-import CanvasContext from '../../src/htmlcanvas/lib/canvas-context';
-import BackedConnectable from '../../src/htmlcanvas/lib/BackedConnectable';
-import {ConnectableEntityConcrete} from '../../src/store/document/entities/concrete-entity';
+import {Catalog} from "../store/catalog/types";
+import {interpolateTable, parseCatalogNumberExact} from "../htmlcanvas/lib/utils";
 
 export const lighten = (col: string, percent: number, alpha: number = 1.0) => {
 
@@ -123,4 +122,9 @@ export function setPropertyByString(obj: any, s: string, val: any) {
             obj = obj[k];
         }
     }
+}
+
+export function getValveK(catalogId: string, catalog: Catalog, pipeDiameterMM: number): number | null {
+    const table = catalog.valves[catalogId].valvesBySize;
+    return interpolateTable(table, pipeDiameterMM, false, (v) => parseCatalogNumberExact(v.kValue));
 }

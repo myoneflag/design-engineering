@@ -6,22 +6,14 @@ import {Coord, DocumentState} from '../../../src/store/document/types';
 import {matrixScale} from '../../../src/htmlcanvas/utils';
 import Flatten from '@flatten-js/core';
 import Connectable, {ConnectableObject} from '../../../src/htmlcanvas/lib/object-traits/connectable';
-import {
-    angleDiffRad,
-    canonizeAngleRad,
-    isAcuteRad,
-    isRightAngleRad,
-    isStraightRad,
-    lighten
-} from '../../../src/lib/utils';
+import {canonizeAngleRad, getValveK, isAcuteRad, isRightAngleRad, isStraightRad, lighten} from '../../../src/lib/utils';
 import CenterDraggableObject from '../../../src/htmlcanvas/lib/object-traits/center-draggable-object';
 import {DrawingContext} from '../../../src/htmlcanvas/lib/types';
 import DrawableObjectFactory from '../../../src/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '../../../src/store/document/entities/types';
 import BackedConnectable from '../../../src/htmlcanvas/lib/BackedConnectable';
 import {getDragPriority} from '../../../src/store/document';
-import {Catalog, ValveSize} from '../../../src/store/catalog/types';
-import {interpolateTable, lowerBoundTable, parseCatalogNumberExact} from '../../../src/htmlcanvas/lib/utils';
+import {parseCatalogNumberExact} from '../../../src/htmlcanvas/lib/utils';
 import Pipe from '../../../src/htmlcanvas/objects/pipe';
 import {SelectableObject} from '../../../src/htmlcanvas/lib/object-traits/selectable';
 import {CenteredObject} from '../../../src/htmlcanvas/lib/object-traits/centered-object';
@@ -29,8 +21,7 @@ import {CalculationContext} from '../../../src/calculations/types';
 import {FlowNode, SELF_CONNECTION} from '../../../src/calculations/calculation-engine';
 import {DrawingArgs} from '../../../src/htmlcanvas/lib/drawable-object';
 import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
-import {Calculated, CalculatedObject, FIELD_HEIGHT} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
-import {DrawableEntityConcrete} from "../../store/document/entities/concrete-entity";
+import {Calculated, CalculatedObject} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
 import {EPS} from "../../calculations/pressure-drops";
 import FittingCalculation, {emptyFittingCalculation} from "../../store/document/calculations/fitting-calculation";
 import math3d from 'math3d';
@@ -162,11 +153,6 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         return []; // this was handled by @Connectable
     }
 
-    getValveK(catalogId: string, catalog: Catalog, pipeLenMM: number): number | null {
-        const table = catalog.valves[catalogId].valvesBySize;
-        return interpolateTable(table, pipeLenMM, false, (v) => parseCatalogNumberExact(v.kValue));
-    }
-
     getFrictionHeadLoss(context: CalculationContext,
                         flowLS: number,
                         from: FlowNode,
@@ -226,22 +212,22 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         if (connections.length === 2) {
             // through valve
             if (isRightAngleRad(angle, Math.PI / 8)) {
-                k = this.getValveK('90Elbow', context.catalog, smallestDiameterMM);
+                k = getValveK('90Elbow', context.catalog, smallestDiameterMM);
             } else if (isAcuteRad(angle)) {
-                k = this.getValveK('90Elbow', context.catalog, smallestDiameterMM);
+                k = getValveK('90Elbow', context.catalog, smallestDiameterMM);
                 if (k) {
                     k *= 2;
                 }
             } else if (isStraightRad(angle, Math.PI / 8)) {
                 k = 0;
             } else {
-                k = this.getValveK('45Elbow', context.catalog, smallestDiameterMM);
+                k = getValveK('45Elbow', context.catalog, smallestDiameterMM);
             }
         } else if (connections.length >= 3) {
             if (isStraightRad(angle, Math.PI / 4)) {
-                k = this.getValveK('tThruFlow', context.catalog, smallestDiameterMM);
+                k = getValveK('tThruFlow', context.catalog, smallestDiameterMM);
             } else {
-                k = this.getValveK('tThruBranch', context.catalog, smallestDiameterMM);
+                k = getValveK('tThruBranch', context.catalog, smallestDiameterMM);
             }
         } else {
             throw new Error('edge shouldn\'t exist');

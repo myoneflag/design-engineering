@@ -1,15 +1,10 @@
 import {Coord, Coord3D} from '../../../../src/store/document/types';
-import BackedDrawableObject from '../../../../src/htmlcanvas/lib/backed-drawable-object';
 import BaseBackedObject from '../../../../src/htmlcanvas/lib/base-backed-object';
 import Pipe from '../../../../src/htmlcanvas/objects/pipe';
 import assert from 'assert';
 import {EntityType} from '../../../../src/store/document/entities/types';
-import * as _ from 'lodash';
 import BackedConnectable from '../../../../src/htmlcanvas/lib/BackedConnectable';
-import {
-    ConnectableEntityConcrete,
-    DrawableEntityConcrete, EdgeLikeEntity
-} from '../../../../src/store/document/entities/concrete-entity';
+import {ConnectableEntityConcrete, EdgeLikeEntity} from '../../../../src/store/document/entities/concrete-entity';
 import CanvasContext from '../../../../src/htmlcanvas/lib/canvas-context';
 import {DrawingContext} from '../../../../src/htmlcanvas/lib/types';
 import Flatten from '@flatten-js/core';
@@ -23,14 +18,11 @@ import * as TM from "transformation-matrix";
 import PipeEntity from "../../../store/document/entities/pipe-entity";
 import {determineConnectableSystemUid} from "../../../store/document/entities/directed-valves/directed-valve-entity";
 import FittingEntity from "../../../store/document/entities/fitting-entity";
-import {
-    getEdgeLikeHeightAboveFloorM,
-    getEdgeLikeHeightAboveGroundM,
-    getFloorHeight,
-    getSystemNodeHeightM
-} from "../utils";
+import {getEdgeLikeHeightAboveGroundM} from "../utils";
 import Cached from "../cached";
 import stringify from "json-stable-stringify";
+import uuid from 'uuid';
+import Fitting from "../../objects/fitting";
 
 export default interface Connectable {
     getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]>;
@@ -300,34 +292,99 @@ export function ConnectableObject<T extends new (...args: any[])
         }
 
 
-        isStraight(tolerance: number = EPS): boolean {
+        isStraight(toleranceDEG: number = EPS): boolean {
             const angles = this.getAngleDiffs();
             if (angles.length !== 2) {
                 return false;
             }
-            return Math.abs(angles[0] - 180) <= tolerance;
+            return Math.abs(angles[0] - 180) <= toleranceDEG;
         }
 
         prepareDelete(context: CanvasContext): BaseBackedObject[] {
+            this.debase();
             // Delete all connected pipes.
-            // don't think about adding 'this' since deleting our connecting pipes will automagically
             // make that work.
-            const result: BaseBackedObject[] = [];
-            _.clone(this.objectStore.getConnections(this.entity.uid)).forEach((c) => {
-                const o = this.objectStore.get(c);
-                if (o instanceof BackedDrawableObject) {
-                    result.push(...o.prepareDelete(context));
+            // If we are not a pipe,
+            const isStraight = this.isStraight(1);
+
+            if (isStraight) {
+                let onePipe!: PipeEntity;
+                // If we were straight, restore the pipe first
+                const ends = this.objectStore.getConnections(this.entity.uid).slice().map((cuid) => {
+                    const c = this.objectStore.get(cuid) as Pipe;
+                    onePipe = c.entity;
+                    const other = c.entity.endpointUid[0] === this.uid ?
+                        c.entity.endpointUid[1] : c.entity.endpointUid[0];
+
+                    return other;
+                });
+
+                const newPipe: PipeEntity = {
+                    ...onePipe,
+                    uid: uuid(),
+                    endpointUid: [ends[0], ends[1]],
+                };
+
+                context.$store.dispatch('document/addEntity', newPipe);
+            }
+
+            if (this.entity.type === EntityType.FITTING || isStraight) {
+
+
+                const result: BaseBackedObject[] = [];
+                this.objectStore.getConnections(this.entity.uid).slice().forEach((c) => {
+                    const o = this.objectStore.get(c);
+                    if (o instanceof Pipe) {
+                        result.push(...o.prepareDelete(context));
+                    } else {
+                        throw new Error('Non existent connection on valve ' + JSON.stringify(this.entity));
+                    }
+                });
+
+                const superResult = super.prepareDelete(context);
+                result.push(...superResult);
+                result.push(this);
+
+
+                return result;
+            } else {
+                // we are an irregular connetable. Instead of deleting, turn into a fixture instead.
+                const conns = this.objectStore.getConnections(this.uid);
+                if (conns.length === 0) {
+                    // just an hero
+                    return [this];
                 } else {
-                    throw new Error('Non existent connection on valve ' + JSON.stringify(this.entity));
+
+                    // turn into a fitting.
+                    const fitting: FittingEntity = {
+                        calculationHeightM: null,
+                        center: this.entity.center,
+                        color: null,
+                        parentUid: this.entity.parentUid,
+                        systemUid: determineConnectableSystemUid(this.objectStore, this.entity)!,
+                        type: EntityType.FITTING,
+                        uid: uuid(),
+                    };
+                    context.$store.dispatch('document/addEntity', fitting);
+
+                    console.log(JSON.stringify(conns));
+                    for (const uid of conns.slice()) {
+                        const p = this.objectStore.get(uid) as Pipe;
+                        if (p.entity.endpointUid[0] === this.uid) {
+                            console.log('changing endpoint 0 from ' + p.entity.endpointUid[0] + ' to ' + fitting.uid);
+                            p.entity.endpointUid[0] = fitting.uid;
+                        } else {
+                            console.log('changing endpoint 1 from ' + p.entity.endpointUid[1] + ' to ' + fitting.uid);
+                            p.entity.endpointUid[1] = fitting.uid;
+                        }
+                    }
+                    console.log('done with that');
+
+                    (this.objectStore.get(fitting.uid) as Fitting).rebase(context);
+
+                    return [this];
                 }
-            });
-
-            const superResult = super.prepareDelete(context);
-            result.push(...superResult);
-
-            result.push(this);
-
-            return result;
+            }
         }
         /*
         @Cached(
