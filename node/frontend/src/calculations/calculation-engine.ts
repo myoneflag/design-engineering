@@ -46,7 +46,14 @@ import DirectedValveEntity, {
     makeDirectedValveFields,
 } from '../../src/store/document/entities/directed-valves/directed-valve-entity';
 import {ValveType} from '../../src/store/document/entities/directed-valves/valve-types';
-import {lookupFlowRate} from '../../src/calculations/utils';
+import {
+    addPsdCounts,
+    equalPsdCounts,
+    isZeroPsdCounts,
+    lookupFlowRate,
+    PsdCountEntry,
+    subPsdCounts, zeroPsdCounts
+} from '../../src/calculations/utils';
 import FittingCalculation from '../../src/store/document/calculations/fitting-calculation';
 import RiserCalculation from '../store/document/calculations/riser-calculation';
 import DirectedValveCalculation from '../../src/store/document/calculations/directed-valve-calculation';
@@ -825,7 +832,7 @@ export default class CalculationEngine {
         // For each connected component, find the total PsdUs, thus the flow rates, then distribute
         // the flow rate equally to each fixture. From these flow rates, we can then calculate the
         // flow network, and iteratively re-size the pipes.
-        const leaf2PsdU = new Map<string, number>();
+        const leaf2PsdU = new Map<string, PsdCountEntry>();
         const flowConnectedUF = new UnionFind<string>();
         sources.forEach((s) => {
             this.flowGraph.dfs(s, (n) => {
@@ -849,24 +856,28 @@ export default class CalculationEngine {
 
         const flowComponents = flowConnectedUF.groups();
         flowComponents.forEach((group) => {
-            let totalPsdU = 0;
+            let totalPsdU = zeroPsdCounts();
             group.forEach((n) => {
                 if (leaf2PsdU.has(n)) {
-                    totalPsdU += leaf2PsdU.get(n)!;
+                    totalPsdU = addPsdCounts(totalPsdU, leaf2PsdU.get(n)!);
                 }
             });
 
             if (totalPsdU) {
-                const recommendedFlowRate = lookupFlowRate(totalPsdU, this.doc, this.catalog);
-                if (recommendedFlowRate === null) {
+                const frFromUnits = lookupFlowRate(totalPsdU.units, this.doc, this.catalog);
+                let recommendedFlowRate = frFromUnits;
+                if (recommendedFlowRate !== null) {
+                    recommendedFlowRate += totalPsdU.continuousFlowLS;
+                }
+                if (frFromUnits === null) {
                     throw new Error('Could not get flow rate from loading units');
                 }
 
-                const perUnit = recommendedFlowRate / totalPsdU;
+                const perUnit = frFromUnits / totalPsdU.units;
 
                 group.forEach((n) => {
-                    if (leaf2PsdU.has(n) && leaf2PsdU.get(n)! > 0) {
-                        demandLS.set(n, perUnit * leaf2PsdU.get(n)!);
+                    if (leaf2PsdU.has(n) && !isZeroPsdCounts(leaf2PsdU.get(n)!)) {
+                        demandLS.set(n, perUnit * leaf2PsdU.get(n)!.units + leaf2PsdU.get(n)!.continuousFlowLS);
                     }
                 });
             }
@@ -956,7 +967,7 @@ export default class CalculationEngine {
         return true;
     }
 
-    getTerminalPsdU(flowNode: FlowNode): number {
+    getTerminalPsdU(flowNode: FlowNode): PsdCountEntry {
         const node = this.globalStore.get(flowNode.connectable)!;
 
         if (node.type === EntityType.SYSTEM_NODE) {
@@ -971,15 +982,27 @@ export default class CalculationEngine {
 
                     if (node.uid === fixture.coldRoughInUid) {
                         if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
-                            return Number(mainFixture.designFlowRateCold);
+                            return {
+                                units: Number(mainFixture.designFlowRateCold),
+                                continuousFlowLS: mainFixture.continuousFlowColdLS!
+                            };
                         } else {
-                            return Number(mainFixture.loadingUnitsCold!);
+                            return {
+                                units: Number(mainFixture.loadingUnitsCold),
+                                continuousFlowLS: mainFixture.continuousFlowColdLS!
+                            };
                         }
                     } else if (node.uid === fixture.warmRoughInUid) {
                         if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
-                            return Number(mainFixture.designFlowRateHot);
+                            return {
+                                units: Number(mainFixture.designFlowRateHot),
+                                continuousFlowLS: mainFixture.continuousFlowHotLS!
+                            };
                         } else {
-                            return Number(mainFixture.loadingUnitsHot!);
+                            return {
+                                units: Number(mainFixture.loadingUnitsHot),
+                                continuousFlowLS: mainFixture.continuousFlowHotLS!
+                            };
                         }
                     } else {
                         throw new Error('Invalid connection to fixture ' +
@@ -994,28 +1017,31 @@ export default class CalculationEngine {
                 case EntityType.TMV:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.DIRECTED_VALVE:
-                    return 0;
+                    return { units: 0, continuousFlowLS: 0 };
                 default:
                     assertUnreachable(parent.type);
             }
             // Sadly, typescript type checking for return value was not smart enough to avoid these two lines.
             throw new Error('parent type is not a correct value');
         } else {
-            return 0;
+            return { units: 0, continuousFlowLS: 0 };
         }
     }
 
-    configureEntityForPSD(entity: DrawableEntityConcrete, psdU: number, flowEdge: FlowEdge) {
+    configureEntityForPSD(entity: DrawableEntityConcrete, psdU: PsdCountEntry, flowEdge: FlowEdge) {
         switch (entity.type) {
             case EntityType.PIPE: {
                 const calculation = this.globalStore.getOrCreateCalculation(entity);
                 calculation.psdUnits = psdU;
 
-                const flowRate = lookupFlowRate(psdU, this.doc, this.catalog);
+                let flowRate = lookupFlowRate(psdU.units, this.doc, this.catalog);
+                if (flowRate !== null) {
+                    flowRate += psdU.continuousFlowLS;
+                }
 
                 if (flowRate === null) {
                     // Warn for no PSD
-                    if (psdU === 0) {
+                    if (isZeroPsdCounts(psdU)) {
                         this.sizePipeForFlowRate(entity, 0);
                     }
                 } else {
@@ -1027,7 +1053,10 @@ export default class CalculationEngine {
             }
             case EntityType.TMV: {
                 const calculation = this.globalStore.getOrCreateCalculation(entity);
-                const flowRate = lookupFlowRate(psdU, this.doc, this.catalog);
+                let flowRate = lookupFlowRate(psdU.units, this.doc, this.catalog);
+                if (flowRate !== null) {
+                    flowRate += psdU.continuousFlowLS;
+                }
 
                 if (flowEdge.type === EdgeType.TMV_COLD_COLD) {
                     calculation.coldPsdUs = psdU;
@@ -1286,7 +1315,7 @@ export default class CalculationEngine {
     sizeDefiniteTransport(
         object: BaseBackedObject,
         roots: FlowNode[],
-        totalReachedPsdU: number,
+        totalReachedPsdU: PsdCountEntry,
         flowEdge: FlowEdge,
         endpointUids: string[],
     ) {
@@ -1296,10 +1325,10 @@ export default class CalculationEngine {
 
         console.log('sizing ' + object.uid);
         const reachedPsdU = this.getTotalReachedPsdU(roots, [], [stringify(flowEdge)]);
-        const exclusivePsdU = totalReachedPsdU - reachedPsdU;
+        const exclusivePsdU = subPsdCounts(totalReachedPsdU, reachedPsdU);
 
 
-        if (exclusivePsdU > 0) {
+        if (!isZeroPsdCounts(exclusivePsdU)) {
             const [point] = this.getDryEndpoints(endpointUids, flowEdge, roots);
             const [wet] = this.getWetEndpoints(endpointUids, flowEdge, roots);
             const residualPsdU = this.getTotalReachedPsdU(
@@ -1320,7 +1349,7 @@ export default class CalculationEngine {
             // zero exclusive to us. Work out whether this is because we don't have any fixture demand.
 
             const wets = this.getWetEndpoints(endpointUids, flowEdge, roots);
-            let residualPsdU = 0;
+            let residualPsdU = zeroPsdCounts();
             if (wets.length === 1) {
                 const [point] = this.getDryEndpoints(endpointUids, flowEdge, roots);
                 residualPsdU = this.getTotalReachedPsdU(
@@ -1338,9 +1367,9 @@ export default class CalculationEngine {
 
 
             console.log('zero ' + object.uid + ' ' + exclusivePsdU + ' ' + residualPsdU );
-            if (residualPsdU === 0) {
+            if (isZeroPsdCounts(residualPsdU)) {
                 // TODO: Info no flow redundant deadleg
-                this.configureEntityForPSD(object.entity, 0, flowEdge);
+                this.configureEntityForPSD(object.entity, residualPsdU, flowEdge);
             } else {
                 // ambiguous
                 // TODO: Info that flow rate is ambiguous, and no flow is exclusive to us
@@ -1525,15 +1554,15 @@ export default class CalculationEngine {
         });
     }
 
-    getTotalReachedPsdU(roots: FlowNode[], excludedNodes: string[] = [], excludedEdges: string[] = []): number {
+    getTotalReachedPsdU(roots: FlowNode[], excludedNodes: string[] = [], excludedEdges: string[] = []): PsdCountEntry {
         const seen = new Set<string>(excludedNodes);
         const seenEdges = new Set<string>(excludedEdges);
 
-        let psdUs = 0;
+        let psdUs = zeroPsdCounts();
 
         roots.forEach((r) => {
             this.flowGraph.dfs(r, (n) => {
-                    psdUs += this.getTerminalPsdU(n);
+                    psdUs = addPsdCounts(psdUs, this.getTerminalPsdU(n));
                     return false;
                 },
                 undefined,

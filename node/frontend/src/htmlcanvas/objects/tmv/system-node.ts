@@ -15,7 +15,10 @@ import {
     DrawableEntityConcrete,
     EdgeLikeEntity
 } from '../../../../src/store/document/entities/concrete-entity';
-import Centered, {CenteredObject} from '../../../../src/htmlcanvas/lib/object-traits/centered-object';
+import Centered, {
+    CenteredObject,
+    CenteredObjectNoParent
+} from '../../../../src/htmlcanvas/lib/object-traits/centered-object';
 import CanvasContext from '../../../../src/htmlcanvas/lib/canvas-context';
 import {CalculationContext} from '../../../../src/calculations/types';
 import {FlowNode, SELF_CONNECTION} from '../../../../src/calculations/calculation-engine';
@@ -32,7 +35,7 @@ import SystemNodeCalculation from "../../../store/document/calculations/system-n
 
 @CalculatedObject
 @ConnectableObject
-@CenteredObject
+@CenteredObjectNoParent
 export default class SystemNode extends InvisibleNode<SystemNodeEntity> implements Centered, Calculated {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.SYSTEM_NODE, SystemNode);

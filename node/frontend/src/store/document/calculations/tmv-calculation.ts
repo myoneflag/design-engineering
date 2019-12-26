@@ -2,19 +2,20 @@ import {FieldCategory, CalculationField, Units} from '../../../../src/store/docu
 import TmvEntity from '../../../../src/store/document/entities/tmv/tmv-entity';
 import {StandardFlowSystemUids} from '../../../../src/store/catalog';
 import {Calculation} from '../../../../src/store/document/calculations/types';
+import {PsdCountEntry} from "../../../calculations/utils";
 
 export default interface TmvCalculation extends Calculation {
     coldTemperatureC: number | null;
     coldPressureKPA: number | null;
     coldRawPeakFlowRate: number | null;
     coldPeakFlowRate: number | null;
-    coldPsdUs: number | null;
+    coldPsdUs: PsdCountEntry | null;
 
     hotTemperatureC: number | null;
     hotPressureKPA: number | null;
     hotRawPeakFlowRate: number | null;
     hotPeakFlowRate: number | null;
-    hotPsdUs: number | null;
+    hotPsdUs: PsdCountEntry | null;
 
     warmOutTemperatureC: number | null;
     warmOutPressureKPA: number | null;

@@ -59,6 +59,8 @@ export default function insertFixture(
                 loadingUnitsHot: null,
                 designFlowRateCold: null,
                 designFlowRateHot: null,
+                continuousFlowColdLS: null,
+                continuousFlowHotLS: null,
 
                 maxInletPressureKPA: null,
                 minInletPressureKPA: null,

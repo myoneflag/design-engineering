@@ -3,7 +3,7 @@ import {EntityType} from '../../../../../src/store/document/entities/types';
 import {FieldType, PropertyField} from '../../../../../src/store/document/entities/property-field';
 import {Catalog} from '../../../../../src/store/catalog/types';
 import {SupportedPsdStandards} from '../../../../config';
-import {parseCatalogNumberOrMin} from '../../../../../src/htmlcanvas/lib/utils';
+import {parseCatalogNumberExact, parseCatalogNumberOrMin} from '../../../../../src/htmlcanvas/lib/utils';
 import {cloneSimple} from '../../../../../src/lib/utils';
 
 export default interface FixtureEntity extends DrawableEntity {
@@ -30,6 +30,9 @@ export default interface FixtureEntity extends DrawableEntity {
     designFlowRateCold: number | null;
     designFlowRateHot: number | null;
 
+    continuousFlowColdLS: number | null;
+    continuousFlowHotLS: number | null;
+
     fixtureUnits: number | null;
     probabilityOfUsagePCT: number | null;
 }
@@ -45,7 +48,6 @@ export function makeFixtureFields(): PropertyField[] {
         { property: 'warmTempC', title: 'Warm Water Temperature (C)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: 100 },  multiFieldId: 'warmTempC' },
 
-
         { property: 'minInletPressureKPA', title: 'Min. Inlet Pressure (KPA)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'minInletPressureKPA' },
 
@@ -55,14 +57,20 @@ export function makeFixtureFields(): PropertyField[] {
         { property: 'loadingUnitsCold', title: 'Loading Units (Cold)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'loadingUnitsCold' },
 
-        { property: 'loadingUnitsHot', title: 'Loading Units (Hot)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'loadingUnitsHot' },
+        { property: 'coldContinuousFlowLS', title: 'Loading Units (Cold)', hasDefault: true, isCalculated: false,
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'loadingUnitsCold' },
 
         { property: 'designFlowRateCold', title: 'Design Flow Rate (Cold, L/s)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'designFlowRateCold' },
 
         { property: 'designFlowRateHot', title: 'Design Flow Rate (Hot, L/s)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'designFlowRateHot' },
+
+        { property: 'continuousFlowColdLS', title: 'Continuous Flow (Cold, L/s)', hasDefault: true, isCalculated: false,
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'continuousFlowColdLS' },
+
+        { property: 'continuousFlowHotLS', title: 'Continuous Flow (Hot, L/s)', hasDefault: true, isCalculated: false,
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'continuousFlowHotLS' },
 
         { property: 'fixtureUnits', title: 'Fixture Units', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'fixtureUnits' },
@@ -120,6 +128,23 @@ export function fillFixtureFields(
     }
     if (result.designFlowRateHot === null) {
         result.designFlowRateHot = parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].qLS.hot);
+    }
+
+    let kek = defaultCatalog.fixtures[result.name].continuousFlowLS;
+    if (kek) {
+        if (result.continuousFlowColdLS == null) {
+            result.continuousFlowColdLS = parseCatalogNumberExact(kek.cold);
+        }
+        if (result.continuousFlowHotLS == null) {
+            result.continuousFlowHotLS = parseCatalogNumberExact(kek.hot);
+        }
+    } else {
+        if (result.continuousFlowColdLS == null) {
+            result.continuousFlowColdLS = 0;
+        }
+        if (result.continuousFlowHotLS == null) {
+            result.continuousFlowHotLS = 0;
+        }
     }
 
     return result;

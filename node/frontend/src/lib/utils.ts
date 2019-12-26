@@ -99,13 +99,19 @@ export function isAcuteRad(a: number, tolerance: number = EPS) {
     return canonizeAngleRad(a) <= Math.PI / 2 + tolerance;
 }
 
-export function getPropertyByString(obj: any, s: string) {
+export function getPropertyByString(obj: any, s: string, existential: boolean = false) {
     s = s.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
     s = s.replace(/^\./, '');           // strip a leading dot
     const a = s.split('.');
     for (let i = 0, n = a.length; i < n; ++i) {
         const k = a[i];
-        obj = obj[k];
+        if (existential) {
+            if (obj) {
+                obj = obj[k];
+            }
+        } else {
+            obj = obj[k]; // ensure an error is thrown
+        }
     }
     return obj;
 }

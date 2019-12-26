@@ -17,6 +17,7 @@ import {makeFixtureCalculationFields} from '../../src/store/document/calculation
 import {makeDirectedValveCalculationFields} from '../../src/store/document/calculations/directed-valve-calculation';
 import {DrawableEntityConcrete} from '../../src/store/document/entities/concrete-entity';
 import {makeSystemNodeCalculationFields} from '../../src/store/document/calculations/system-node-calculation';
+import {EPS} from "./pressure-drops";
 
 export interface PsdCountEntry {
     units: number;
@@ -59,6 +60,10 @@ export function countPsdUnits(
                 } else {
                     result[StandardFlowSystemUids.HotWater].units += mainFixture.loadingUnitsHot!;
                 }
+
+                result[StandardFlowSystemUids.ColdWater].continuousFlowLS += mainFixture.continuousFlowColdLS!;
+                result[StandardFlowSystemUids.HotWater].continuousFlowLS += mainFixture.continuousFlowHotLS!;
+
                 break;
             case EntityType.BACKGROUND_IMAGE:
             case EntityType.FITTING:
@@ -74,6 +79,58 @@ export function countPsdUnits(
     });
 
     return result;
+}
+
+export function addPsdCounts(a: PsdCountEntry, b: PsdCountEntry): PsdCountEntry {
+    return {
+        units: a.units + b.units,
+        continuousFlowLS: a.continuousFlowLS + b.continuousFlowLS
+    }
+}
+
+export function subPsdCounts(a: PsdCountEntry, b: PsdCountEntry): PsdCountEntry {
+    return {
+        units: a.units - b.units,
+        continuousFlowLS: a.continuousFlowLS - b.continuousFlowLS
+    }
+}
+
+export function scalePsdCounts(a: PsdCountEntry, scale: number): PsdCountEntry {
+    return {
+        units: a.units * scale,
+        continuousFlowLS: a.continuousFlowLS * scale,
+    }
+}
+
+export function equalPsdCounts(a: PsdCountEntry, b: PsdCountEntry): boolean {
+    return Math.abs(a.units - b.units) < EPS && Math.abs(a.continuousFlowLS - b.continuousFlowLS) < EPS;
+}
+
+export function isZeroPsdCounts(a: PsdCountEntry): boolean {
+    return Math.abs(a.units) < EPS && Math.abs(a.continuousFlowLS) < EPS;
+}
+
+export function comparePsdCounts(a: PsdCountEntry, b: PsdCountEntry): number | null {
+    const unitDiff = a.units + EPS < b.units ? -1 : (a.units - EPS > b.units ? 1 : 0);
+    const cfDiff = a.continuousFlowLS + EPS < b.continuousFlowLS ?
+        -1 : (a.continuousFlowLS - EPS > b.continuousFlowLS ? 1 : 0);
+
+    if (cfDiff === 0) {
+        return unitDiff;
+    } else if (unitDiff === 0) {
+        return cfDiff;
+    } else if (unitDiff !== cfDiff) {
+        return null;
+    } else {
+        return unitDiff;
+    }
+}
+
+export function zeroPsdCounts(): PsdCountEntry {
+    return {
+        units: 0,
+        continuousFlowLS: 0,
+    }
 }
 
 export function getPsdUnitName(psdMethod: SupportedPsdStandards): {name: string, abbreviation: string} {

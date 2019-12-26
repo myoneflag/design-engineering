@@ -26,7 +26,9 @@ export interface FixtureSpec {
 
     fixtureUnits: string | null;
     loadingUnits: {[key: string]: LoadingUnit};
-    qLS: DesignFlowRate;
+    qLS: FlowRateSpec;
+    continuousFlowLS?: FlowRateSpec;
+
 
     maxInletPressureKPA: string | null;
     minInletPressureKPA: string | null;
@@ -42,7 +44,7 @@ export interface LoadingUnit {
     hot: string | null;
 }
 
-export interface DesignFlowRate {
+export interface FlowRateSpec {
     cold: string | null;
     hot: string | null;
 }

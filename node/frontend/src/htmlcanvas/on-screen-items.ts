@@ -133,6 +133,7 @@ export function drawLoadingUnits(
     ctx.font = '12px ' + DEFAULT_FONT_NAME;
     ctx.fillStyle = '#000000';
 
+    // Fill for selection
     if (selection) {
         ctx.fillText('(In Selection)', 20, y - 20);
     } else {
@@ -155,6 +156,13 @@ export function drawLoadingUnits(
     }
     if (hotFR === null) {
         hotFR = 0;
+    }
+
+    if (coldFR !== undefined) {
+        coldFR += units[StandardFlowSystemUids.ColdWater].continuousFlowLS;
+    }
+    if (hotFR !== undefined) {
+        hotFR += units[StandardFlowSystemUids.HotWater].continuousFlowLS;
     }
 
     let coldSpareText: string = 'error';

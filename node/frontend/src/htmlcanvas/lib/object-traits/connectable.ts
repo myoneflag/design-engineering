@@ -367,6 +367,8 @@ export function ConnectableObject<T extends new (...args: any[])
                     };
                     context.$store.dispatch('document/addEntity', fitting);
 
+
+
                     console.log(JSON.stringify(conns));
                     for (const uid of conns.slice()) {
                         const p = this.objectStore.get(uid) as Pipe;
@@ -380,6 +382,7 @@ export function ConnectableObject<T extends new (...args: any[])
                     }
                     console.log('done with that');
 
+                    (this.objectStore.get(fitting.uid) as Fitting).debase();
                     (this.objectStore.get(fitting.uid) as Fitting).rebase(context);
 
                     return [this];
