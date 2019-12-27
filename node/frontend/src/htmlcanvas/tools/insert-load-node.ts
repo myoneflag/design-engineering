@@ -15,6 +15,7 @@ import Fitting from "../objects/fitting";
 
 export default function insertLoadNode(
     context: CanvasContext,
+    type: NodeType,
 ) {
     const newUid = uuid();
     let toReplace: BackedDrawableObject<ConnectableEntityConcrete> | null = null;
@@ -26,7 +27,7 @@ export default function insertLoadNode(
                     MainEventBus.$emit('set-tool-handler', null);
                 }
             } else {
-                insertLoadNode(context);
+                insertLoadNode(context, type);
             }
         },
         (wc: Coord) => {
@@ -47,21 +48,45 @@ export default function insertLoadNode(
 
                 let connections: string[] = [];
 
-                const newEntity: LoadNodeEntity = {
-                    node: {
-                        type: NodeType.LOAD_NODE,
-                        continuousFlowLS: 0,
-                        designFlowRateLS: 0,
-                        loadingUnits: 0,
-                    },
-                    systemUidOption: null,
-                    center: cloneSimple(wc),
-                    color: null,
-                    calculationHeightM: null,
-                    parentUid: null,
-                    type: EntityType.LOAD_NODE,
-                    uid: newUid
-                };
+                let newEntity: LoadNodeEntity;
+                switch (type) {
+                    case NodeType.LOAD_NODE:
+
+                        newEntity = {
+                            node: {
+                                type: NodeType.LOAD_NODE,
+                                continuousFlowLS: 0,
+                                designFlowRateLS: 0,
+                                loadingUnits: 0,
+                            },
+                            systemUidOption: null,
+                            center: cloneSimple(wc),
+                            color: null,
+                            calculationHeightM: null,
+                            parentUid: null,
+                            type: EntityType.LOAD_NODE,
+                            uid: newUid
+                        };
+
+                        break;
+                    case NodeType.DWELLING:
+
+                        newEntity = {
+                            node: {
+                                type: NodeType.DWELLING,
+                                dwellings: 0,
+                            },
+                            systemUidOption: null,
+                            center: cloneSimple(wc),
+                            color: null,
+                            calculationHeightM: null,
+                            parentUid: null,
+                            type: EntityType.LOAD_NODE,
+                            uid: newUid
+                        }
+                        break;
+
+                }
 
                 context.$store.dispatch('document/addEntity', newEntity);
 

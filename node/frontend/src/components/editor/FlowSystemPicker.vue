@@ -36,11 +36,6 @@
     })
     export default class FlowSystemPicker extends Vue {
 
-        mounted() {
-            console.log('in selector');
-            console.log(this.selectedSystem);
-        }
-
         selectSystem(index: number) {
             this.$emit('selectSystem', index);
         }

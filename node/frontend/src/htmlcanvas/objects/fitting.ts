@@ -265,8 +265,6 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             warning: calc.warning,
         };
 
-        console.log('collected calc pressure: ' + calc.pressureKPA + ' ' + this.uid);
-
         const tower = this.getCalculationTower(context);
 
         if (this.getCalculationConnectionGroups(context).flat().length === 2) {

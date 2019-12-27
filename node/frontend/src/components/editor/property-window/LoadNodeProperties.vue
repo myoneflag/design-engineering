@@ -44,10 +44,6 @@
     })
     export default class LoadNodeProperties extends Vue {
 
-        mounted() {
-            console.log(JSON.stringify(this.defaultData));
-        }
-
         get fields() {
             return makeLoadNodesFields(
                 this.document.drawing.metadata.flowSystems,

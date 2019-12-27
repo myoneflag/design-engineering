@@ -9,7 +9,7 @@ export default interface CatalogState {
 }
 
 export interface DwellingUnitHotColdTable {
-    type: DwellingStandardType.DWELLING_LOOKUP_TABLE_HOT_COLD;
+    type: DwellingStandardType.DWELLING_HOT_COLD_LOOKUP_TABLE;
     name: string;
     table: {[key: string]: {cold: string, hot: string}};
 }

@@ -1,26 +1,14 @@
 import BackedDrawableObject from '../../../src/htmlcanvas/lib/backed-drawable-object';
 import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
-import PipeEntity, {
-    fillPipeDefaultFields,
-    makePipeFields,
-    MutablePipe
-} from '../../../src/store/document/entities/pipe-entity';
+import PipeEntity, {fillPipeDefaultFields, MutablePipe} from '../../../src/store/document/entities/pipe-entity';
 import * as TM from 'transformation-matrix';
 import {Matrix} from 'transformation-matrix';
-import {DrawingMode} from '../../../src/htmlcanvas/types';
-import {
-    CalculationFilter,
-    CalculationFilters,
-    ConnectableEntity,
-    Coord,
-    Coord3D,
-    DocumentState
-} from '../../../src/store/document/types';
+import {CalculationFilters, Coord, Coord3D, DocumentState} from '../../../src/store/document/types';
 import {matrixScale} from '../../../src/htmlcanvas/utils';
 import Flatten from '@flatten-js/core';
 import {Draggable, DraggableObject} from '../../../src/htmlcanvas/lib/object-traits/draggable-object';
 import * as _ from 'lodash';
-import {canonizeAngleRad, cloneSimple, getPropertyByString, lighten} from '../../../src/lib/utils';
+import {canonizeAngleRad, cloneSimple, lighten} from '../../../src/lib/utils';
 import {Interaction, InteractionType} from '../../../src/htmlcanvas/lib/interaction';
 import {DrawingContext, GlobalStore} from '../../../src/htmlcanvas/lib/types';
 import DrawableObjectFactory from '../../../src/htmlcanvas/lib/drawable-object-factory';
@@ -36,17 +24,14 @@ import uuid from 'uuid';
 import FittingEntity from '../../../src/store/document/entities/fitting-entity';
 import assert from 'assert';
 import {PIPE_STUB_MAX_LENGTH_MM} from '../../../src/htmlcanvas/lib/black-magic/auto-connect';
-import {EPS, getDarcyWeisbachFlatMH} from '../../../src/calculations/pressure-drops';
+import {getDarcyWeisbachFlatMH} from '../../../src/calculations/pressure-drops';
 import {SIGNIFICANT_FLOW_THRESHOLD} from '../../../src/htmlcanvas/layers/calculation-layer';
 import {FlowNode} from '../../../src/calculations/calculation-engine';
 import {DrawingArgs} from '../../../src/htmlcanvas/lib/drawable-object';
-import {DEFAULT_FONT_NAME} from '../../../src/config';
-import {CalculationData, CalculationField} from '../../../src/store/document/calculations/calculation-field';
-import PipeCalculation, {makePipeCalculationFields} from '../../../src/store/document/calculations/pipe-calculation';
+import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
+import PipeCalculation from '../../../src/store/document/calculations/pipe-calculation';
 import {Calculated, CalculatedObject, FIELD_HEIGHT} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
 import {isConnectable} from "../../store/document";
-import FixtureCalculation from "../../store/document/calculations/fixture-calculation";
-import {MainEventBus} from "../../store/main-event-bus";
 import Cached from '../lib/cached';
 
 export const TEXT_MAX_SCALE = 0.4;
@@ -248,9 +233,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
     // Returns the world coordinates of the two endpoints
     @Cached(
         (kek) => {
-            const rekt = new Set([kek, ...kek.getNeighbours().map((o) => o.getParentChain()).flat()].map((o) => o.uid));
-            console.log([kek, ...kek.getNeighbours()]);
-            return rekt;
+            return new Set([kek, ...kek.getNeighbours().map((o) => o.getParentChain()).flat()].map((o) => o.uid));
         },
                 (excludeUid) => excludeUid,
     )

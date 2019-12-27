@@ -316,7 +316,6 @@ export default class CalculationEngine {
     }
 
     calculateAllPointPressures(sources: FlowNode[]) {
-        console.log('sources: ' + JSON.stringify(sources));
         this.precomputePeakKPAPoints();
 
         this.networkObjects().forEach((obj) => {
@@ -1109,6 +1108,7 @@ export default class CalculationEngine {
                 calculation.psdUnits = psdU;
 
                 let flowRate = lookupFlowRate(psdU, this.doc, this.catalog, entity.systemUid);
+                console.log('psdu ' + JSON.stringify(psdU) + ' got flow rate ' + flowRate);
 
                 if (flowRate === null) {
                     // Warn for no PSD
@@ -1396,11 +1396,12 @@ export default class CalculationEngine {
             throw new Error('invalid args');
         }
 
-        console.log('sizing ' + object.uid);
+        console.log('sizing ' + object.uid + ' total: ' + JSON.stringify(totalReachedPsdU));
         const reachedPsdU = this.getTotalReachedPsdU(roots, [], [stringify(flowEdge)]);
         const exclusivePsdU = subPsdCounts(totalReachedPsdU, reachedPsdU);
 
 
+        console.log('psdus: reached: ' + JSON.stringify(reachedPsdU) + ' exclusive: ' + JSON.stringify(exclusivePsdU));
         if (!isZeroPsdCounts(exclusivePsdU)) {
             const [point] = this.getDryEndpoints(endpointUids, flowEdge, roots);
             const [wet] = this.getWetEndpoints(endpointUids, flowEdge, roots);
@@ -1439,13 +1440,14 @@ export default class CalculationEngine {
             } // else, with 0 sources, residual is always 0.
 
 
-            console.log('zero ' + object.uid + ' ' + exclusivePsdU + ' ' + residualPsdU );
+            console.log('zero ' + object.uid + ' ' + JSON.stringify(exclusivePsdU) + ' ' + JSON.stringify(residualPsdU));
             if (isZeroPsdCounts(residualPsdU)) {
                 // TODO: Info no flow redundant deadleg
                 this.configureEntityForPSD(object.entity, residualPsdU, flowEdge);
             } else {
                 // ambiguous
                 // TODO: Info that flow rate is ambiguous, and no flow is exclusive to us
+                console.log('none are exclusive ' + JSON.stringify(residualPsdU) + ' exclusive: ' + JSON.stringify(exclusivePsdU));
             }
         }
 
@@ -1637,7 +1639,13 @@ export default class CalculationEngine {
 
         roots.forEach((r) => {
             this.flowGraph.dfs(r, (n) => {
-                    psdUs = addPsdCounts(psdUs, this.getTerminalPsdU(n));
+                const thisTerminal = this.getTerminalPsdU(n);
+                    psdUs = addPsdCounts(psdUs, thisTerminal);
+                    if (this.doc.drawing.metadata.calculationParams.dwellingMethod) {
+                        if (thisTerminal.dwellings > 0) {
+                            return true; // Don't search for more load after encountering a dwelling node.
+                        }
+                    }
                     return false;
                 },
                 undefined,

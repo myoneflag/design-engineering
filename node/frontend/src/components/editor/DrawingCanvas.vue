@@ -170,6 +170,7 @@ import {EntityType} from "../../store/document/entities/types";
     import PipeEntity from "../../store/document/entities/pipe-entity";
     import util from 'util';
     import insertLoadNode from "../../htmlcanvas/tools/insert-load-node";
+    import {NodeType} from "../../store/document/entities/load-node-entity";
 
     @Component({
     components: {
@@ -1029,10 +1030,10 @@ export default class DrawingCanvas extends Vue {
         }
 
         hydraulicsInsert(
-            {entityName, system, catalogId, tmvHasCold, valveType}:
+            {entityName, system, catalogId, tmvHasCold, valveType, nodeType}:
                 {
                     entityName: string, system: FlowSystemParameters, catalogId: string,
-                    tmvHasCold: boolean, valveType: ValveType,
+                    tmvHasCold: boolean, valveType: ValveType, nodeType: NodeType,
                 },
         ) {
             this.hydraulicsLayer.select([], SelectMode.Replace);
@@ -1059,7 +1060,7 @@ export default class DrawingCanvas extends Vue {
                 };
                 insertDirectedValve(this, valveType, catalogId, system);
             } else if (entityName === EntityType.LOAD_NODE) {
-                insertLoadNode(this);
+                insertLoadNode(this, nodeType);
             }
         }
 

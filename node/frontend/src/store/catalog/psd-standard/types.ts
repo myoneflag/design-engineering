@@ -5,7 +5,7 @@ export enum PSDStandardType {
 }
 
 export enum DwellingStandardType {
-    DWELLING_LOOKUP_TABLE_HOT_COLD = 'DWELLING_LOOKUP_TABLE_HOT_COLD',
+    DWELLING_HOT_COLD_LOOKUP_TABLE = 'DWELLING_HOT_COLD_LOOKUP_TABLE',
     EQUATION = 'EQUATION',
 }
 

@@ -119,13 +119,13 @@
                 <b-dropdown-item
                         variant="outline-dark"
                         class="shower btn-sm"
-                        @click="$emit('insert', {entityName: entityNames.LOAD_NODE})"
+                        @click="$emit('insert', {entityName: entityNames.LOAD_NODE, nodeType: NodeType.LOAD_NODE})"
                 >Fixture Node</b-dropdown-item>
                 <b-dropdown-item
                         :disabled="document.drawing.metadata.calculationParams.psdMethod !== SupportedPsdStandards.as35002018LoadingUnits"
                         variant="outline-dark"
                         class="shower btn-sm"
-                        @click="$emit('insert', {entityName: entityNames.LOAD_NODE})"
+                        @click="$emit('insert', {entityName: entityNames.LOAD_NODE, nodeType: NodeType.DWELLING})"
                 >Dwelling Node</b-dropdown-item>
             </b-dropdown>
         </b-col>
@@ -142,6 +142,7 @@
     import {FixtureSpec} from '../../../src/store/catalog/types';
     import {DocumentState} from "../../store/document/types";
     import { SupportedPsdStandards } from '../../../src/config';
+    import {NodeType} from "../../store/document/entities/load-node-entity";
 
     @Component({
         components: {FlowSystemPicker},
@@ -159,6 +160,10 @@
 
         get SupportedPsdStandards() {
             return SupportedPsdStandards;
+        }
+
+        get NodeType() {
+            return NodeType;
         }
 
         get entityNames() {

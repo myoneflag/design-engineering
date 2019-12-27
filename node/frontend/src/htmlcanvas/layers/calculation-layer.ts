@@ -117,7 +117,6 @@ export default class CalculationLayer extends LayerImplementation {
 
                                 if (pos % 5000 === 4999) {
                                     await cooperativeYield(shouldContinue);
-                                    console.log(spentShapes.length + ' ' + po + ' ' + pos + ' ' + nb);
                                 }
 
                                 if (polygonOverlapsShapeApprox(shape, c.shape()!)) {

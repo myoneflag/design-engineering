@@ -368,20 +368,14 @@ export function ConnectableObject<T extends new (...args: any[])
                     context.$store.dispatch('document/addEntity', fitting);
 
 
-
-                    console.log(JSON.stringify(conns));
                     for (const uid of conns.slice()) {
                         const p = this.objectStore.get(uid) as Pipe;
                         if (p.entity.endpointUid[0] === this.uid) {
-                            console.log('changing endpoint 0 from ' + p.entity.endpointUid[0] + ' to ' + fitting.uid);
                             p.entity.endpointUid[0] = fitting.uid;
                         } else {
-                            console.log('changing endpoint 1 from ' + p.entity.endpointUid[1] + ' to ' + fitting.uid);
                             p.entity.endpointUid[1] = fitting.uid;
                         }
                     }
-                    console.log('done with that');
-
                     (this.objectStore.get(fitting.uid) as Fitting).debase();
                     (this.objectStore.get(fitting.uid) as Fitting).rebase(context);
 
@@ -451,11 +445,7 @@ export function ConnectableObject<T extends new (...args: any[])
             signed: boolean,
             pipeSizes?: [number, number],
         ): number {
-            console.log('recalculating head loss ' + this.uid);
             hlcounts ++;
-            if (hlcounts % 1000 === 0) {
-                console.log(hlcounts);
-            }
             if (this.entity.type === EntityType.SYSTEM_NODE) {
                 // @ts-ignore
                 return super.getFrictionHeadLoss(context, flowLS, from, to, signed);

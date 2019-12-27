@@ -233,13 +233,17 @@ export function lookupFlowRate(
         throw new Error('PSD not supported');
     }
 
+    if (fromLoading === null && psdU.units === 0) {
+        fromLoading = 0;
+    }
+
     let fromDwellings: number | null = null;
     const dMethod = doc.drawing.metadata.calculationParams.dwellingMethod;
     if (dMethod) {
         const dStandard = catalog.dwellingStandards[dMethod];
 
         switch (dStandard.type) {
-            case DwellingStandardType.DWELLING_LOOKUP_TABLE_HOT_COLD:
+            case DwellingStandardType.DWELLING_HOT_COLD_LOOKUP_TABLE:
                 if (systemUid === StandardFlowSystemUids.ColdWater) {
                     fromDwellings = interpolateTable(dStandard.table, psdU.dwellings, true, (e) => e.cold);
                 } else if (systemUid === StandardFlowSystemUids.HotWater ||
@@ -265,6 +269,8 @@ export function lookupFlowRate(
             default:
                 assertUnreachable(dStandard);
         }
+    } else {
+        fromDwellings = 0;
     }
 
     if (fromLoading === null || fromDwellings === null) {
