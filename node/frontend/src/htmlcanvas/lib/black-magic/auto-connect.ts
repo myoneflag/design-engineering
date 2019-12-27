@@ -29,6 +29,7 @@ import Tmv from '../../../../src/htmlcanvas/objects/tmv/tmv';
 import {assertUnreachable} from "../../../../src/config";
 import * as _ from 'lodash';
 import RiserEntity, {fillRiserDefaults} from "../../../store/document/entities/riser-entity";
+import {fillDefaultLoadNodeFields} from "../../../store/document/entities/load-node-entity";
 
 const CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM = 500;
 const FIXTURE_WALL_DIST_MM = 200;
@@ -120,6 +121,7 @@ export class AutoConnector {
                 }
                 case EntityType.RISER:
                 case EntityType.FITTING:
+                case EntityType.LOAD_NODE:
                 case EntityType.DIRECTED_VALVE:
                     this.unionFind.join(o.uid, o.uid);
                     break;
@@ -175,6 +177,8 @@ export class AutoConnector {
                         fre.bottomHeightM! - getFloorHeight(this.context.globalStore, this.context.document, re),
                         fre.topHeightM! - getFloorHeight(this.context.globalStore, this.context.document, re),
                     ];
+                case EntityType.LOAD_NODE:
+                    return [-Infinity, Infinity];
                 case EntityType.FITTING:
                 case EntityType.DIRECTED_VALVE:
                 case EntityType.SYSTEM_NODE:
@@ -318,6 +322,7 @@ export class AutoConnector {
                         case EntityType.DIRECTED_VALVE:
                         case EntityType.PIPE:
                         case EntityType.RISER:
+                        case EntityType.LOAD_NODE:
                         case EntityType.SYSTEM_NODE:
                             throw new Error('Can\'t do it');
                         default:
@@ -758,9 +763,14 @@ export class AutoConnector {
             case EntityType.RISER:
             case EntityType.SYSTEM_NODE:
                 return entity.systemUid;
-            case EntityType.DIRECTED_VALVE:
+            case EntityType.DIRECTED_VALVE: {
                 const res = fillDirectedValveFields(this.context.document, this.context.objectStore, entity);
                 return res.systemUidOption;
+            }
+            case EntityType.LOAD_NODE: {
+                const res = fillDefaultLoadNodeFields(this.context.document, this.context.objectStore, entity);
+                return res.systemUidOption;
+            }
             case EntityType.BACKGROUND_IMAGE:
             case EntityType.TMV:
             case EntityType.FIXTURE:

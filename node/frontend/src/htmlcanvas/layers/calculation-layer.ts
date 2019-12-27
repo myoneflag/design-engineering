@@ -1,23 +1,27 @@
 import {LayerImplementation} from '../../../src/htmlcanvas/layers/layer';
-import {CalculationFilters, DocumentState, DrawableEntity} from '../../../src/store/document/types';
+import {CalculationFilters, DocumentState} from '../../../src/store/document/types';
 import {DrawingContext} from '../../../src/htmlcanvas/lib/types';
 import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
 import {MouseMoveResult, UNHANDLED} from '../../../src/htmlcanvas/types';
 import CalculationEngine from '../../../src/calculations/calculation-engine';
 import {DemandType} from '../../../src/calculations/types';
 import {EntityType} from '../../../src/store/document/entities/types';
-import {CalculatableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
-import Pipe, {TEXT_MAX_SCALE} from '../../../src/htmlcanvas/objects/pipe';
+import Pipe from '../../../src/htmlcanvas/objects/pipe';
 import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
 import Flatten from '@flatten-js/core';
-import {cooperativeYield, matrixScale, polygonOverlapsShapeApprox, polygonsOverlap} from '../../../src/htmlcanvas/utils';
+import {
+    cooperativeYield,
+    matrixScale,
+    polygonOverlapsShapeApprox,
+    polygonsOverlap
+} from '../../../src/htmlcanvas/utils';
 import {isConnectable} from '../../../src/store/document';
 import {isCalculated} from '../../../src/store/document/calculations';
 import * as TM from 'transformation-matrix';
 import {tm2flatten} from '../../../src/htmlcanvas/lib/utils';
-import {MIN_SCALE, SCALE_GRADIENT_MIN} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
-import * as _ from 'lodash';
+import {MIN_SCALE} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
+import {assertUnreachable} from "../../config";
 
 const MINIMUM_SIGNIFICANT_PIPE_LENGTH_MM = 500;
 export const SIGNIFICANT_FLOW_THRESHOLD = 1e-5;
@@ -165,6 +169,7 @@ export default class CalculationLayer extends LayerImplementation {
         switch (object.entity.type) {
             case EntityType.RISER:
                 return 120;
+            case EntityType.LOAD_NODE:
             case EntityType.FIXTURE:
                 return 110;
             case EntityType.TMV:
@@ -179,6 +184,7 @@ export default class CalculationLayer extends LayerImplementation {
             case EntityType.BACKGROUND_IMAGE:
                 throw new Error('shouldn\'t have calculations');
         }
+        assertUnreachable(object.entity);
     }
 
     drawReactiveLayer(context: DrawingContext, interactive: string[]): any {

@@ -234,8 +234,9 @@ export const mutations: MutationTree<DocumentState> = {
         Object.keys(level.entities).forEach((key) => {
             proxyEntity(level.entities[key], entityHandler(state, level.uid, key));
         });
-        logLevelMutation(state, level.uid);
+        console.log('adding level ' + JSON.stringify(level));
         Vue.set(state.drawing.levels, level.uid, level);
+        logLevelMutation(state, level.uid);
         MainEventBus.$emit('add-level', level);
     },
 

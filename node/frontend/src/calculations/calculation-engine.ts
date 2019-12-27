@@ -48,11 +48,11 @@ import DirectedValveEntity, {
 import {ValveType} from '../../src/store/document/entities/directed-valves/valve-types';
 import {
     addPsdCounts,
-    equalPsdCounts,
     isZeroPsdCounts,
     lookupFlowRate,
     PsdCountEntry,
-    subPsdCounts, zeroPsdCounts
+    subPsdCounts,
+    zeroPsdCounts
 } from '../../src/calculations/utils';
 import FittingCalculation from '../../src/store/document/calculations/fitting-calculation';
 import RiserCalculation from '../store/document/calculations/riser-calculation';
@@ -187,6 +187,7 @@ export default class CalculationEngine {
                     break;
                 case EntityType.SYSTEM_NODE:
                 case EntityType.BACKGROUND_IMAGE:
+                case EntityType.LOAD_NODE:
                     break;
                 default:
                     assertUnreachable(obj.entity);
@@ -354,12 +355,10 @@ export default class CalculationEngine {
                 case EntityType.DIRECTED_VALVE:
                 case EntityType.FITTING:
                 case EntityType.SYSTEM_NODE:
+                case EntityType.LOAD_NODE:
                     const calculation = this.globalStore.getOrCreateCalculation(entity) as
                         RiserCalculation | DirectedValveCalculation | FittingCalculation | SystemNodeCalculation;
                     const candidates = cloneSimple(this.globalStore.getConnections(entity.uid));
-                    if (entity.uid === '699c49de-1282-4bdb-ba87-5b1d7fd2f49b.0') {
-                        console.log('candidates: ' + JSON.stringify(candidates));
-                    }
                     if (entity.type === EntityType.RISER) {
                         candidates.push(SELF_CONNECTION);
                     } else if (entity.type === EntityType.SYSTEM_NODE) {
@@ -422,6 +421,7 @@ export default class CalculationEngine {
                             case EntityType.BACKGROUND_IMAGE:
                             case EntityType.RISER:
                             case EntityType.SYSTEM_NODE:
+                            case EntityType.LOAD_NODE:
                                 throw new Error('don\'t know how to calculate static pressure for this');
                             default:
                                 assertUnreachable(par.entity);
@@ -429,6 +429,9 @@ export default class CalculationEngine {
                     } else {
                         throw new Error('don\'t know how to calculate static pressure for an orphaned node');
                     }
+                    break;
+                case EntityType.LOAD_NODE:
+                    height = obj.entity.calculationHeightM!;
                     break;
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.RISER:
@@ -708,6 +711,7 @@ export default class CalculationEngine {
                     }
                     break;
                 case EntityType.RISER:
+                case EntityType.LOAD_NODE:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.FITTING:
                     const toConnect = cloneSimple(this.globalStore.getConnections(obj.entity.uid));
@@ -1009,6 +1013,7 @@ export default class CalculationEngine {
                             JSON.stringify(node) + '\n' + JSON.stringify(fixture),
                         );
                     }
+                case EntityType.LOAD_NODE:
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.RISER:
                 case EntityType.FLOW_RETURN:
@@ -1023,6 +1028,18 @@ export default class CalculationEngine {
             }
             // Sadly, typescript type checking for return value was not smart enough to avoid these two lines.
             throw new Error('parent type is not a correct value');
+        } else if (node.entity.type === EntityType.LOAD_NODE) {
+            if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
+                return {
+                    units: node.entity.designFlowRateLS,
+                    continuousFlowLS: node.entity.continuousFlowLS,
+                };
+            } else {
+                return {
+                    units: node.entity.loadingUnits,
+                    continuousFlowLS: node.entity.continuousFlowLS,
+                };
+            }
         } else {
             return { units: 0, continuousFlowLS: 0 };
         }
@@ -1070,6 +1087,7 @@ export default class CalculationEngine {
 
                 return;
             }
+            case EntityType.LOAD_NODE:
             case EntityType.BACKGROUND_IMAGE:
             case EntityType.RISER:
             case EntityType.FITTING:
@@ -1299,6 +1317,7 @@ export default class CalculationEngine {
                         [object.entity.endpointUid[0], object.entity.endpointUid[1]],
                     );
                     break;
+                case EntityType.LOAD_NODE:
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.FITTING:
                 case EntityType.DIRECTED_VALVE:
@@ -1439,6 +1458,7 @@ export default class CalculationEngine {
                     break;
                 case EntityType.FITTING:
                 case EntityType.RISER:
+                case EntityType.LOAD_NODE:
                 case EntityType.DIRECTED_VALVE:
                 case EntityType.SYSTEM_NODE:
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity) as
@@ -1547,6 +1567,7 @@ export default class CalculationEngine {
                     }
                     break;
                 case EntityType.DIRECTED_VALVE:
+                case EntityType.LOAD_NODE:
                     break;
                 default:
                     assertUnreachable(o.entity);

@@ -57,8 +57,8 @@ export function makeFixtureFields(): PropertyField[] {
         { property: 'loadingUnitsCold', title: 'Loading Units (Cold)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'loadingUnitsCold' },
 
-        { property: 'coldContinuousFlowLS', title: 'Loading Units (Cold)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'loadingUnitsCold' },
+        { property: 'loadingUnitsHot', title: 'Loading Units (Hot)', hasDefault: true, isCalculated: false,
+            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'loadingUnitsHot' },
 
         { property: 'designFlowRateCold', title: 'Design Flow Rate (Cold, L/s)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'designFlowRateCold' },

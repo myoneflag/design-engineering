@@ -62,6 +62,15 @@ import {EntityType} from "../../../../src/store/document/entities/types";
                     :on-delete="onDelete"
                     :object-store="objectStore"
             />
+            <LoadNodeProperties
+                    v-else-if="entity.type === ENTITY_NAMES.LOAD_NODE"
+                    :selected-entity="entity"
+                    :selected-object="selectedObjects[0]"
+                    :on-change="onChange"
+                    :target-property="targetProperty"
+                    :on-delete="onDelete"
+                    :object-store="objectStore"
+            />
 
         </template>
         <template v-else>
@@ -129,9 +138,11 @@ import {EntityType} from "../../../../src/store/document/entities/types";
     import {isGermanStandard} from "../../../../src/config";
     import {StandardFlowSystemUids} from "../../../../src/store/catalog";
     import {DrawableEntityConcrete} from "../../../store/document/entities/concrete-entity";
+    import LoadNodeProperties from "./LoadNodeProperties.vue";
 
     @Component({
         components: {
+            LoadNodeProperties,
             DirectedValveProperties,
             MultiFieldBuilder,
             FixtureProperties,

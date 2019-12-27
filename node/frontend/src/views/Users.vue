@@ -35,7 +35,7 @@
                     </b-list-group>
                 </b-col>
             </b-row>
-            <b-row style="margin-top: 30px">
+            <b-row style="margin-top: 30px" v-if="profile && profile.accessLevel <= AccessLevel.ADMIN">
 
                 <b-col>
                     <b-button size="lg" variant="success" to="/users/create"><v-icon name="plus"></v-icon>
@@ -50,10 +50,11 @@
 <script lang="ts">
 import {Component} from "vue-property-decorator";
 import Vue from 'vue';
-import {User} from "../../../backend/src/entity/User";
+import {AccessLevel, User} from "../../../backend/src/entity/User";
 import {getUsers} from "../api/users";
 import MainNavBar from "../../src/components/MainNavBar.vue";
 import DrawingNavBar from "../components/DrawingNavBar.vue";
+import ProfileState from "../store/profile/types";
 
 @Component({
     components: {
@@ -77,6 +78,14 @@ export default class Users extends Vue {
                 });
             }
         });
+    }
+
+    get profile(): ProfileState | null {
+        return this.$store.getters['profile/profile'];
+    }
+
+    get AccessLevel() {
+        return AccessLevel;
     }
 }
 </script>

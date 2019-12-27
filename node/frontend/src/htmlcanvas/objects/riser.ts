@@ -130,12 +130,6 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
     // complete the type.
     getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]> { /* */ }
 
-    get position(): Matrix {
-        return TM.transform(
-            TM.translate(this.entity.center.x, this.entity.center.y),
-        );
-    }
-
     color(doc: DocumentState) {
         return this.entity.color == null ? this.system(doc).color : this.entity.color;
     }

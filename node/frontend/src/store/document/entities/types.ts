@@ -12,6 +12,7 @@ export enum EntityType {
     FIXTURE = 'FIXTURE',
 
     DIRECTED_VALVE = 'DIRECTED_VALVE',
+    LOAD_NODE = 'LOAD_NODE',
 }
 
 export function getEntityName(type: EntityType): string {
@@ -34,5 +35,7 @@ export function getEntityName(type: EntityType): string {
             return 'Fixture';
         case EntityType.DIRECTED_VALVE:
             return 'Valve';
+        case EntityType.LOAD_NODE:
+            return 'Load Node';
     }
 }

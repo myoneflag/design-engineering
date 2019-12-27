@@ -8,7 +8,6 @@ import {EntityType} from '../../../src/store/document/entities/types';
 import {cloneSimple} from '../../../src/lib/utils';
 import {assertUnreachable} from "../../config";
 import {ConnectableEntityConcrete, DrawableEntityConcrete} from "./entities/concrete-entity";
-import BackedConnectable from "../../htmlcanvas/lib/BackedConnectable";
 
 export const state: DocumentState = cloneSimple(initialDocumentState);
 
@@ -29,6 +28,7 @@ export function isConnectable(type: EntityType): boolean {
         case EntityType.RISER:
         case EntityType.FLOW_RETURN:
         case EntityType.DIRECTED_VALVE:
+        case EntityType.LOAD_NODE:
             return true;
         case EntityType.TMV:
         case EntityType.FIXTURE:
@@ -51,6 +51,7 @@ export function isCentered(type: EntityType): boolean {
         case EntityType.FLOW_RETURN:
         case EntityType.TMV:
         case EntityType.FIXTURE:
+        case EntityType.LOAD_NODE:
         case EntityType.DIRECTED_VALVE:
             return true;
         case EntityType.BACKGROUND_IMAGE:
@@ -63,6 +64,7 @@ export function isCentered(type: EntityType): boolean {
 export function getDragPriority(type: EntityType): number {
     switch (type) {
         case EntityType.SYSTEM_NODE:
+        case EntityType.LOAD_NODE:
             return 100;
         case EntityType.DIRECTED_VALVE:
             return 30;

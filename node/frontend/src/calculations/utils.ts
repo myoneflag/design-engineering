@@ -1,13 +1,11 @@
-import BaseBackedObject from '../../src/htmlcanvas/lib/base-backed-object';
 import {EntityType} from '../../src/store/document/entities/types';
 import {assertUnreachable, isGermanStandard, SupportedPsdStandards} from '../../src/config';
 import {DocumentState} from '../../src/store/document/types';
 import {StandardFlowSystemUids} from '../../src/store/catalog';
-import {Catalog, PSDSpec} from '../../src/store/catalog/types';
+import {Catalog} from '../../src/store/catalog/types';
 import {fillFixtureFields} from '../../src/store/document/entities/fixtures/fixture-entity';
-import {PsdStandard, PSDStandardType} from '../../src/store/catalog/psd-standard/types';
+import {PSDStandardType} from '../../src/store/catalog/psd-standard/types';
 import {interpolateTable, parseCatalogNumberExact} from '../../src/htmlcanvas/lib/utils';
-import {DrawingContext} from '../../src/htmlcanvas/lib/types';
 import {CalculationField} from '../../src/store/document/calculations/calculation-field';
 import {makeRiserCalculationFields} from '../store/document/calculations/riser-calculation';
 import {makePipeCalculationFields} from '../../src/store/document/calculations/pipe-calculation';
@@ -18,6 +16,7 @@ import {makeDirectedValveCalculationFields} from '../../src/store/document/calcu
 import {DrawableEntityConcrete} from '../../src/store/document/entities/concrete-entity';
 import {makeSystemNodeCalculationFields} from '../../src/store/document/calculations/system-node-calculation';
 import {EPS} from "./pressure-drops";
+import {makeLoadNodeCalculationFields} from "../store/document/calculations/load-node-calculation";
 
 export interface PsdCountEntry {
     units: number;
@@ -64,6 +63,23 @@ export function countPsdUnits(
                 result[StandardFlowSystemUids.ColdWater].continuousFlowLS += mainFixture.continuousFlowColdLS!;
                 result[StandardFlowSystemUids.HotWater].continuousFlowLS += mainFixture.continuousFlowHotLS!;
 
+                break;
+            case EntityType.LOAD_NODE:
+                if (e.systemUidOption) {
+                    if (result === null) {
+                        result = {};
+                    }
+                    if (!result.hasOwnProperty(e.systemUidOption)) {
+                        result[e.systemUidOption] = zeroPsdCounts();
+                    }
+
+                    if (isGermanStandard(doc.drawing.metadata.calculationParams.psdMethod)) {
+                        result[e.systemUidOption].units += e.designFlowRateLS;
+                    } else {
+                        result[e.systemUidOption].units += e.loadingUnits;
+                    }
+                    result[e.systemUidOption].continuousFlowLS += e.continuousFlowLS;
+                }
                 break;
             case EntityType.BACKGROUND_IMAGE:
             case EntityType.FITTING:
@@ -200,6 +216,8 @@ export function getFields(entity: DrawableEntityConcrete, doc: DocumentState, ca
             return makeDirectedValveCalculationFields(entity);
         case EntityType.SYSTEM_NODE:
             return makeSystemNodeCalculationFields(entity, doc.drawing);
+        case EntityType.LOAD_NODE:
+            return makeLoadNodeCalculationFields(entity);
         case EntityType.BACKGROUND_IMAGE:
             return [];
     }

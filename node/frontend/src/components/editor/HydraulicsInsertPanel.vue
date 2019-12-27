@@ -6,6 +6,7 @@
                         :selected-system-uid="selectedSystem.uid"
                         :flow-systems="flowSystems"
                         @selectSystem="selectSystem"
+                        :disabled="isDrawing"
                 />
                 <b-button variant="outline-dark" class="insertBtn riser btn-sm"
                           @click="$emit('insert', {entityName: entityNames.RISER, system: selectedSystem})"
@@ -21,17 +22,13 @@
                 ><v-icon  name="wave-square" scale="1.2"/></b-button>
                 <b-button variant="outline-dark" class="insertBtn valve btn-sm"
                           @click="$emit('insert', {entityName: entityNames.FITTING, system: selectedSystem})"
-                          v-b-tooltip.hover title="Valve"
+                          v-b-tooltip.hover title="Fitting"
                 ><v-icon  name="cross" scale="1.2"/></b-button>
 
             </b-button-group>
         </b-col>
         <b-col>
             <b-button-group>
-                <b-button variant="outline-dark" class="insertBtn tmv btn-sm"
-                          @click="$emit('insert', {entityName: entityNames.TMV, system: selectedSystem})"
-                          v-b-tooltip.hover title="TMV"
-                ></b-button>
                 <b-button variant="outline-dark" class="insertBtn tmv btn-sm"
                           @click="$emit('insert', {entityName: entityNames.TMV, system: selectedSystem, tmvHasCold: true})"
                           v-b-tooltip.hover title="TMV with cold water out"
@@ -62,7 +59,7 @@
 
             </b-button-group>
             <b-dropdown
-                    text="Fixtures..."
+                    text="Fixtures"
                     class="insertEntityBtn"
                     variant="outline-dark"
                     v-else
@@ -99,7 +96,7 @@
 
             </b-button-group>
             <b-dropdown
-                    text="Valves..."
+                    text="Valves"
                     class="insertEntityBtn"
                     variant="outline-dark"
                     v-else
@@ -110,6 +107,26 @@
                         class="shower btn-sm"
                         @click="$emit('insert', {entityName: entityNames.DIRECTED_VALVE, system: selectedSystem, catalogId: valve.catalogId,  valveType: valve.type})"
                 >{{ valve.name }}</b-dropdown-item>
+            </b-dropdown>
+        </b-col>
+        <b-col>
+
+            <b-dropdown
+                    text="Nodes"
+                    class="insertEntityBtn"
+                    variant="outline-dark"
+            >
+                <b-dropdown-item
+                        variant="outline-dark"
+                        class="shower btn-sm"
+                        @click="$emit('insert', {entityName: entityNames.LOAD_NODE})"
+                >Fixture Node</b-dropdown-item>
+                <b-dropdown-item
+                        :disabled="document.drawing.metadata.calculationParams.psdMethod !== SupportedPsdStandards.as35002018LoadingUnits"
+                        variant="outline-dark"
+                        class="shower btn-sm"
+                        @click="$emit('insert', {entityName: entityNames.LOAD_NODE})"
+                >Dwelling Node</b-dropdown-item>
             </b-dropdown>
         </b-col>
 
@@ -123,6 +140,8 @@
     import FlowSystemPicker from '../../../src/components/editor/FlowSystemPicker.vue';
     import {EntityType} from '../../../src/store/document/entities/types';
     import {FixtureSpec} from '../../../src/store/catalog/types';
+    import {DocumentState} from "../../store/document/types";
+    import { SupportedPsdStandards } from '../../../src/config';
 
     @Component({
         components: {FlowSystemPicker},
@@ -133,9 +152,14 @@
             availableValves: Array,
             lastUsedFixtureUid: String,
             lastUsedValveVid: Object,
+            isDrawing: Boolean,
         },
     })
     export default class HydraulicsInsertPanel extends Vue {
+
+        get SupportedPsdStandards() {
+            return SupportedPsdStandards;
+        }
 
         get entityNames() {
             return EntityType;
@@ -145,6 +169,10 @@
 
         get selectedSystem() {
             return this.$props.flowSystems[this.selectedSystemId];
+        }
+
+        get document(): DocumentState {
+            return this.$store.getters['document/document'];
         }
 
         get lastUsedFixture() {

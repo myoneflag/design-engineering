@@ -1,5 +1,13 @@
 <template>
-    <b-dropdown size="md" id="dropdown-1" :text="selectedSystem.name" variant="outline-dark" class="float-left" :style="'border-radius: 5px; background-color: ' + lighten(selectedSystem.color.hex, 50, 0.5)">
+    <b-dropdown
+            size="md"
+            id="dropdown-1"
+            :text="selectedSystem.name"
+            variant="outline-dark"
+            class="float-left"
+            :style="'border-radius: 5px; background-color: ' + lighten(selectedSystem.color.hex, 50, 0.5)"
+            :disabled="disabled"
+    >
         <b-dropdown-item
                 v-for="(system, index) in flowSystems"
                 @click="selectSystem(index)"
@@ -21,11 +29,18 @@
 
     @Component({
         props: {
+            disabled: Boolean,
             flowSystems: Array,
             selectedSystemUid: String,
         },
     })
     export default class FlowSystemPicker extends Vue {
+
+        mounted() {
+            console.log('in selector');
+            console.log(this.selectedSystem);
+        }
+
         selectSystem(index: number) {
             this.$emit('selectSystem', index);
         }

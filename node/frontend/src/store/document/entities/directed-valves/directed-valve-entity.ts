@@ -74,16 +74,15 @@ export function determineConnectableSystemUid(
             // system will depend on neighbours
             return value.systemUid;
         case EntityType.DIRECTED_VALVE:
+        case EntityType.LOAD_NODE:
             if (value.systemUidOption) {
                 return value.systemUidOption;
             } else {
                 // system will depend on neighbours
                 if (objectStore.getConnections(value.uid).length === 0) {
                     return undefined;
-                } else if (objectStore.getConnections(value.uid).length === 1) {
-                    return (objectStore.get(objectStore.getConnections(value.uid)[0]) as Pipe).entity.systemUid;
                 } else {
-                    return (objectStore.get(value.sourceUid) as Pipe).entity.systemUid;
+                    return (objectStore.get(objectStore.getConnections(value.uid)[0]) as Pipe).entity.systemUid;
                 }
             }
     }
@@ -108,7 +107,7 @@ export function fillDirectedValveFields(
         }
     } else {
         if (result.color == null) {
-            result.color = {hex: '#000000'};
+            result.color = {hex: '#888888'};
         }
     }
 

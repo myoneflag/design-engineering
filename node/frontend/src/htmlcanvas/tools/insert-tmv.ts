@@ -1,23 +1,12 @@
-import {ConnectableEntity, Coord, DocumentState, DrawableEntity} from '../../../src/store/document/types';
+import {Coord, DocumentState} from '../../../src/store/document/types';
 import {MainEventBus} from '../../../src/store/main-event-bus';
 import PointTool from '../../../src/htmlcanvas/tools/point-tool';
 import {EntityType} from '../../../src/store/document/entities/types';
 import uuid from 'uuid';
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
 import TmvEntity, {FlowConfiguration, SystemNodeEntity} from '../../../src/store/document/entities/tmv/tmv-entity';
-import {getInsertCoordsAt} from '../../../src/htmlcanvas/lib/utils';
-import {InteractionType} from '../../../src/htmlcanvas/lib/interaction';
-import Pipe from '../../../src/htmlcanvas/objects/pipe';
-import Flatten from '@flatten-js/core';
-import PipeEntity from '../../../src/store/document/entities/pipe-entity';
 import {StandardFlowSystemUids} from '../../../src/store/catalog';
-import DrawableObjectFactory from '../../../src/htmlcanvas/lib/drawable-object-factory';
 import Tmv from '../../../src/htmlcanvas/objects/tmv/tmv';
-import SystemNode from '../../../src/htmlcanvas/objects/tmv/system-node';
-import {addValveAndSplitPipe} from '../../../src/htmlcanvas/lib/black-magic/split-pipe';
-import {ConnectableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
-import {isConnectable} from '../../../src/store/document';
-import FittingEntity from '../../../src/store/document/entities/fitting-entity';
 import {KeyCode} from '../../../src/htmlcanvas/utils';
 import connectTmvToSource from '../../../src/htmlcanvas/lib/black-magic/connect-tmv-to-source';
 

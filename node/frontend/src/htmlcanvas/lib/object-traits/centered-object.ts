@@ -12,6 +12,8 @@ import {getInsertCoordsAt} from '../../../../src/htmlcanvas/lib/utils';
 import {DrawingContext} from '../../../../src/htmlcanvas/lib/types';
 import Flatten from '@flatten-js/core';
 import {PIPE_HEIGHT_GRAPHIC_EPS_MM} from '../../../../src/config';
+import {Matrix} from "transformation-matrix";
+import * as TM from "transformation-matrix";
 
 export default interface Centered {
     debase(): void;
@@ -24,6 +26,12 @@ export function CenteredObject<T extends new (...args: any[])
     // @ts-ignore abstract class expression limitation in the language. In practice this is fine.
     return class extends constructor implements Connectable {
         centered: true = true;
+
+        get position(): Matrix {
+            return TM.transform(
+                TM.translate(this.entity.center.x, this.entity.center.y),
+            );
+        }
 
         debase(): void {
             const wc = this.toWorldCoord({x: 0, y: 0});
@@ -47,6 +55,12 @@ export function CenteredObjectNoParent<T extends new (...args: any[])
     // @ts-ignore abstract class expression limitation in the language. In practice this is fine.
     return class extends constructor implements Connectable {
         centered: true = true;
+
+        get position(): Matrix {
+            return TM.transform(
+                TM.translate(this.entity.center.x, this.entity.center.y),
+            );
+        }
 
         debase(): void {
         }

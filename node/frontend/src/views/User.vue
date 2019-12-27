@@ -1,15 +1,17 @@
+import {AccessLevel} from "../../../backend/src/entity/User";
+import {AccessLevel} from "../../../backend/src/entity/User";
 <template>
     <div>
         <MainNavBar></MainNavBar>
         <b-container>
             <b-row>
                 <b-col>
-                    <b-button class="float-left" to="/users">Back</b-button>
+                    <b-button class="float-left" :to="backlink">Back</b-button>
                 </b-col>
             </b-row>
             <b-row>
                 <b-col>
-                    <h2>View / Edit Organization</h2>
+                    <h2>View / Edit Profile</h2>
                 </b-col>
             </b-row>
             <b-row>
@@ -52,7 +54,10 @@
                                     :label-cols="2"
                                     label="Organization ID"
                             >
-                                <b-form-input v-model="organization"></b-form-input>
+                                <b-form-input
+                                        v-model="organization"
+                                        :disabled="!profile || profile.accessLevel >= AccessLevel.MANAGER"
+                                ></b-form-input>
                             </b-form-group>
                             <b-button-group>
                                 <b-button
@@ -74,15 +79,13 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import Component from "vue-class-component";
-import {Route} from "vue-router";
-import MainNavBar from "../components/MainNavBar.vue";
-import {getOrganization, updateOrganization} from "../api/organizations";
-import {AccessLevel, User as IUser} from '../../../backend/src/entity/User';
-import {getUser, updateUser} from "../api/users";
+    import Vue from 'vue';
+    import Component from "vue-class-component";
+    import MainNavBar from "../components/MainNavBar.vue";
+    import {AccessLevel, User as IUser} from '../../../backend/src/entity/User';
+    import {getUser, updateUser} from "../api/users";
 
-@Component({
+    @Component({
     components: {MainNavBar},
     watch: {
         $route(to, from) {
@@ -127,7 +130,7 @@ export default class User extends Vue {
                 this.organization || undefined
             ).then((res) => {
                 if (res.success) {
-                    this.$router.push('/users');
+                    this.$router.push(this.backlink);
 
 
                     if (this.user!.username === this.profile.username) {
@@ -158,32 +161,58 @@ export default class User extends Vue {
 
     get levels() {
         if (this.profile) {
-            return [
-                {
-                    name: "SUPERUSER",
-                    level: AccessLevel.SUPERUSER,
-                    disabled: this.profile.accessLevel > AccessLevel.SUPERUSER || this.editingMyself
-                },
-                {
-                    name: "ADMIN",
-                    level: AccessLevel.ADMIN,
-                    disabled: this.profile.accessLevel >= AccessLevel.ADMIN || this.editingMyself
-                },
-                {
-                    name: "MANAGER",
-                    level: AccessLevel.MANAGER,
-                    disabled: this.profile.accessLevel > AccessLevel.ADMIN || this.editingMyself
-                },
-                {
-                    name: "USER",
-                    level: AccessLevel.USER,
-                    disabled: this.profile.accessLevel > AccessLevel.ADMIN || this.editingMyself
-                },
-            ];
+            if (this.profile.accessLevel <= AccessLevel.ADMIN) {
+                return [
+                    {
+                        name: "SUPERUSER",
+                        level: AccessLevel.SUPERUSER,
+                        disabled: this.profile.accessLevel > AccessLevel.SUPERUSER || this.editingMyself
+                    },
+                    {
+                        name: "ADMIN",
+                        level: AccessLevel.ADMIN,
+                        disabled: this.profile.accessLevel >= AccessLevel.ADMIN || this.editingMyself
+                    },
+                    {
+                        name: "MANAGER",
+                        level: AccessLevel.MANAGER,
+                        disabled: this.profile.accessLevel > AccessLevel.ADMIN || this.editingMyself
+                    },
+                    {
+                        name: "USER",
+                        level: AccessLevel.USER,
+                        disabled: this.profile.accessLevel > AccessLevel.ADMIN || this.editingMyself
+                    },
+                ];
+            } else {
+                return [
+                    {
+                        name: "MANAGER",
+                            level: AccessLevel.MANAGER,
+                        disabled: this.profile.accessLevel > AccessLevel.ADMIN || this.editingMyself
+                    },
+                    {
+                        name: "USER",
+                            level: AccessLevel.USER,
+                        disabled: this.profile.accessLevel > AccessLevel.ADMIN || this.editingMyself
+                    }
+                ];
+            }
         } else {
             return [];
         }
     }
 
+    get AccessLevel() {
+        return AccessLevel;
+    }
+
+    get backlink() {
+        if (!this.profile || this.profile.accessLevel >= AccessLevel.USER) {
+            return '/';
+        } else {
+            return '/users';
+        }
+    }
 }
 </script>

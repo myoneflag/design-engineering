@@ -12,6 +12,7 @@ export function isCalculated(e: DrawableEntityConcrete): e is CalculatableEntity
         case EntityType.SYSTEM_NODE:
         case EntityType.TMV:
         case EntityType.FIXTURE:
+        case EntityType.LOAD_NODE:
             return true;
         case EntityType.BACKGROUND_IMAGE:
             return false;

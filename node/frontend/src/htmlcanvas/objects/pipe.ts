@@ -247,8 +247,12 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
     // Returns the world coordinates of the two endpoints
     @Cached(
-        (kek) => new Set([kek, ...kek.getNeighbours().map((o) => o.getParentChain()).flat()].map((o) => o.uid)),
-        (excludeUid) => excludeUid,
+        (kek) => {
+            const rekt = new Set([kek, ...kek.getNeighbours().map((o) => o.getParentChain()).flat()].map((o) => o.uid));
+            console.log([kek, ...kek.getNeighbours()]);
+            return rekt;
+        },
+                (excludeUid) => excludeUid,
     )
     worldEndpoints(excludeUid: string | null = null): Coord3D[] {
         const ao = this.objectStore.get(this.entity.endpointUid[0]) as BaseBackedConnectable;

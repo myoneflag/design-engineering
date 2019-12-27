@@ -293,5 +293,3 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         //
     }
 }
-
-DrawableObjectFactory.registerEntity(EntityType.FITTING, Fitting);

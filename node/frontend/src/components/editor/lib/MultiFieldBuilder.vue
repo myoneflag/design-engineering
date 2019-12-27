@@ -1,3 +1,4 @@
+import {EntityType} from "../../../store/document/entities/types";
 <template>
     <b-container>
         <PropertiesFieldBuilder
@@ -33,7 +34,10 @@
     import {Catalog} from '../../../../src/store/catalog/types';
     import {fillRiserDefaults, makeRiserFields} from '../../../store/document/entities/riser-entity';
     import {fillTMVFields, makeTMVFields} from '../../../../src/store/document/entities/tmv/tmv-entity';
-    import {fillFixtureFields, makeFixtureFields} from '../../../../src/store/document/entities/fixtures/fixture-entity';
+    import {
+        fillFixtureFields,
+        makeFixtureFields
+    } from '../../../../src/store/document/entities/fixtures/fixture-entity';
     import PropertiesFieldBuilder from '../../../../src/components/editor/lib/PropertiesFieldBuilder.vue';
     import * as _ from 'lodash';
     import Pipe from '../../../../src/htmlcanvas/objects/pipe';
@@ -42,6 +46,7 @@
         makeDirectedValveFields,
     } from "../../../../src/store/document/entities/directed-valves/directed-valve-entity";
     import {assertUnreachable} from "../../../config";
+    import {fillDefaultLoadNodeFields, makeLoadNodesFields} from "../../../store/document/entities/load-node-entity";
 
     @Component({
         components: {PropertiesFieldBuilder},
@@ -114,6 +119,10 @@
                         .filter((p) => p.multiFieldId);
                 case EntityType.SYSTEM_NODE:
                     throw new Error('Invalid object in multi select');
+                case EntityType.LOAD_NODE:
+                    return makeLoadNodesFields(
+                        this.document.drawing.metadata.flowSystems,
+                    );
             }
             assertUnreachable(entity);
         }
@@ -136,6 +145,8 @@
                     return fillFixtureFields(this.document.drawing, this.defaultCatalog, obj.entity);
                 case EntityType.DIRECTED_VALVE:
                     return fillDirectedValveFields(this.document, this.$props.objectStore, obj.entity);
+                case EntityType.LOAD_NODE:
+                    return fillDefaultLoadNodeFields(this.document, obj.objectStore, obj.entity);
             }
             assertUnreachable(obj.entity);
         }

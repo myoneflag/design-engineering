@@ -28,6 +28,8 @@ import FixtureEntity from "../../store/document/entities/fixtures/fixture-entity
 import DirectedValveEntity from "../../store/document/entities/directed-valves/directed-valve-entity";
 import Pipe from "../objects/pipe";
 import {cloneSimple} from "../../lib/utils";
+import LoadNodeEntity from "../../store/document/entities/load-node-entity";
+import LoadNodeCalculation from "../../store/document/calculations/load-node-calculation";
 
 export interface DrawingContext {
     ctx: CanvasRenderingContext2D;
@@ -326,6 +328,7 @@ export class GlobalStore extends ObjectStore {
     getOrCreateCalculation(entity: FixtureEntity): FixtureCalculation;
     getOrCreateCalculation(entity: DirectedValveEntity): DirectedValveCalculation;
     getOrCreateCalculation(entity: SystemNodeEntity): SystemNodeCalculation;
+    getOrCreateCalculation(entity: LoadNodeEntity): LoadNodeCalculation;
     getOrCreateCalculation(entity: CalculatableEntityConcrete): CalculationConcrete;
 
     getOrCreateCalculation(entity: CalculatableEntityConcrete): CalculationConcrete {
@@ -352,6 +355,9 @@ export class GlobalStore extends ObjectStore {
                 case EntityType.SYSTEM_NODE:
                     this.calculationStore.set(entity.uid, cloneSimple(emptySystemNodeCalculation()));
                     break;
+                case EntityType.LOAD_NODE:
+                    this.calculationStore.set(entity.uid, cloneSimple(emptySystemNodeCalculation()));
+                    break;
             }
         }
 
@@ -365,6 +371,7 @@ export class GlobalStore extends ObjectStore {
     getCalculation(entity: FixtureEntity): FixtureCalculation | undefined;
     getCalculation(entity: DirectedValveEntity): DirectedValveCalculation | undefined;
     getCalculation(entity: SystemNodeEntity): SystemNodeCalculation | undefined;
+    getCalculation(entity: LoadNodeEntity): LoadNodeCalculation | undefined;
     getCalculation(entity: CalculatableEntityConcrete): CalculationConcrete | undefined;
 
     getCalculation(entity: CalculatableEntityConcrete): CalculationConcrete | undefined {

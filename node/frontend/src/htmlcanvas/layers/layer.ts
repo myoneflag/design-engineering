@@ -303,6 +303,7 @@ export abstract class LayerImplementation implements Layer {
             case EntityType.BACKGROUND_IMAGE:
                 return 0;
             case EntityType.FIXTURE:
+            case EntityType.LOAD_NODE:
             case EntityType.FITTING:
             case EntityType.RISER:
             case EntityType.DIRECTED_VALVE:
@@ -311,7 +312,7 @@ export abstract class LayerImplementation implements Layer {
             case EntityType.PIPE:
                 return 2;
             case EntityType.SYSTEM_NODE:
-                throw new Error('cannot handle entities of this maginitied');
+                throw new Error('cannot handle entities of this magnitude');
         }
         assertUnreachable(e);
     }
@@ -338,6 +339,7 @@ export abstract class LayerImplementation implements Layer {
                 case EntityType.FITTING:
                 case EntityType.RISER:
                 case EntityType.FIXTURE:
+                case EntityType.LOAD_NODE:
                 case EntityType.TMV:
                 case EntityType.DIRECTED_VALVE:
                     return true;

@@ -67,6 +67,7 @@
         login() {
             login(this.username, this.password).then((res) => {
                 if (res.success === true) {
+                    this.$store.dispatch('profile/setProfile', null);
                     (this as any).$cookies.set('session-id', res.data);
                     if (this.$route.query.next) {
                         router.push(this.$route.query.next as string);

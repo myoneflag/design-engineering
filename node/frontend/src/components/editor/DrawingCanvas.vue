@@ -1,4 +1,5 @@
 import {EntityType} from "../../store/document/entities/types";
+import {EntityType} from "../../store/document/entities/types";
 <template>
 
 
@@ -76,6 +77,7 @@ import {EntityType} from "../../store/document/entities/types";
                     :available-valves="availableValves"
                     :last-used-fixture-uid="document.uiState.lastUsedFixtureUid"
                     :last-used-valve-vid="document.uiState.lastUsedValveVid"
+                    :is-drawing="toolHandler !== null"
             />
 
             <CalculationBar
@@ -164,12 +166,10 @@ import {EntityType} from "../../store/document/entities/types";
     import {assertUnreachable} from "../../../src/config";
     import DrawingNavBar from "../DrawingNavBar.vue";
     import LevelSelector from "./LevelSelector.vue";
-    import {fillRiserDefaults} from "../../store/document/entities/riser-entity";
     import DrawableObjectFactory from "../../htmlcanvas/lib/drawable-object-factory";
-    import {cloneSimple} from "../../lib/utils";
     import PipeEntity from "../../store/document/entities/pipe-entity";
-    import {compose} from "transformation-matrix/compose";
     import util from 'util';
+    import insertLoadNode from "../../htmlcanvas/tools/insert-load-node";
 
     @Component({
     components: {
@@ -696,6 +696,7 @@ export default class DrawingCanvas extends Vue {
                     case EntityType.SYSTEM_NODE:
                     case EntityType.TMV:
                     case EntityType.FIXTURE:
+                    case EntityType.LOAD_NODE:
                         this.hydraulicsLayer.addEntity(() => {
                             const val = this.getEntityFromBase(entity.uid, levelUid);
                             return val;
@@ -735,6 +736,7 @@ export default class DrawingCanvas extends Vue {
                     case EntityType.SYSTEM_NODE:
                     case EntityType.TMV:
                     case EntityType.FIXTURE:
+                    case EntityType.LOAD_NODE:
                         this.hydraulicsLayer.deleteEntity(entity);
                         break;
                     default:
@@ -1056,6 +1058,8 @@ export default class DrawingCanvas extends Vue {
                     type: valveType,
                 };
                 insertDirectedValve(this, valveType, catalogId, system);
+            } else if (entityName === EntityType.LOAD_NODE) {
+                insertLoadNode(this);
             }
         }
 
@@ -1140,7 +1144,6 @@ export default class DrawingCanvas extends Vue {
                         countPsdUnits(Array.from(this.objectStore.values()).map((o) => o.entity), this.document, this.effectiveCatalog));
                 }
             }
-
 
             // draw selection box
             if (this.selectBox) {

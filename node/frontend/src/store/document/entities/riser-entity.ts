@@ -34,13 +34,11 @@ export function makeRiserFields(materials: Choice[], systems: FlowSystemParamete
         { property: 'systemUid', title: 'Flow System', hasDefault: false, isCalculated: false,
             type: FieldType.FlowSystemChoice, params: { systems },  multiFieldId: 'systemUid' },
 
-
         { property: 'pressureKPA', title: 'Pressure (kPA)', hasDefault: false, isCalculated: false, requiresInput: true,
             type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'pressureKPA' },
 
         { property: 'pressureSourceHeightM', title: 'Source Height (m)', hasDefault: false, isCalculated: false, requiresInput: true,
             type: FieldType.Number, params: { min: null, max: null },  multiFieldId: 'pressureSourceHeightM' },
-
 
         { property: 'bottomHeightM', title: 'Bottom Height (M)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: null, max: null },  multiFieldId: 'bottomHeightM' },
@@ -51,10 +49,8 @@ export function makeRiserFields(materials: Choice[], systems: FlowSystemParamete
         { property: 'maximumVelocityMS', title: 'Maximum Velocity (m/s)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'maximumVelocityMS' },
 
-
         { property: 'diameterMM', title: 'Diameter (mm)', hasDefault: false, isCalculated: true,
             type: FieldType.Number, params: { min: 0, max: null, initialValue: 100 },  multiFieldId: 'diameterMM' },
-
 
         { property: 'material', title: 'Material', hasDefault: true, isCalculated: false,
             type: FieldType.Choice, params: { choices: materials},  multiFieldId: 'material' },

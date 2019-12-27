@@ -4,14 +4,10 @@ import {ConnectableEntityConcrete, DrawableEntityConcrete} from '../../../src/st
 import {Interaction, InteractionType} from '../../../src/htmlcanvas/lib/interaction';
 import {getDragPriority, isConnectable} from '../../../src/store/document';
 import {EntityType} from '../../../src/store/document/entities/types';
-import Flatten from '@flatten-js/core';
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
 import {Coord} from '../../../src/store/document/types';
-import {
-    determineConnectableSystemUid,
-    fillDirectedValveFields,
-} from '../../../src/store/document/entities/directed-valves/directed-valve-entity';
-import PipeEntity from "../../store/document/entities/pipe-entity";
+import {determineConnectableSystemUid,} from '../../../src/store/document/entities/directed-valves/directed-valve-entity';
+import {Matrix} from "transformation-matrix";
 
 // TODO: this entire abstract class is obsolete and should be encapsulated in the ConnectableObject
 // decorator.
@@ -98,7 +94,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                 const entity = this.entity as ConnectableEntityConcrete;
 
 
-                if (entity.type === EntityType.DIRECTED_VALVE) {
+                if (entity.type === EntityType.DIRECTED_VALVE || entity.type === EntityType.LOAD_NODE) {
                     const suid = determineConnectableSystemUid(this.objectStore, entity);
                     isSystemCorrect = interaction.systemUid === null || interaction.systemUid === suid;
                 } else {
@@ -158,6 +154,10 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
 
     disconnect(uid: string) {
         //
+    }
+
+    get position(): Matrix {
+        throw new Error('Method not implemented - use @Connectable');
     }
 }
 
