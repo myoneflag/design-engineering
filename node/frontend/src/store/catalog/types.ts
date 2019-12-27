@@ -1,6 +1,6 @@
 import LoadingUnitTable from '../../../src/store/catalog/psd-standard/loading-unit-table';
 import LoadingUnitHotColdTable from '../../../src/store/catalog/psd-standard/loading-unit-hot-cold-table';
-import Equation from '../../../src/store/catalog/psd-standard/equation';
+import PsdEquation from './psd-standard/psdEquation';
 import {DwellingStandardType, PsdStandard, PSDStandardType} from "./psd-standard/types";
 
 export default interface CatalogState {
@@ -9,15 +9,21 @@ export default interface CatalogState {
 }
 
 export interface DwellingUnitHotColdTable {
-    type: PSDStandardType.LU_HOT_COLD_LOOKUP_TABLE;
+    type: DwellingStandardType.DWELLING_LOOKUP_TABLE_HOT_COLD;
     name: string;
     table: {[key: string]: {cold: string, hot: string}};
 }
 
+export interface DwellingEquation extends PsdStandard {
+    type: PSDStandardType.EQUATION;
+    name: string;
+    equation: string;
+    variables: {[key: string]: string};
+}
 
 export type Diameter = number | string;
-export type PSDSpec = LoadingUnitTable | LoadingUnitHotColdTable | Equation;
-export type DwellingSpec = DwellingUnitHotColdTable | Equation;
+export type PSDSpec = LoadingUnitTable | LoadingUnitHotColdTable | PsdEquation;
+export type DwellingSpec = DwellingUnitHotColdTable | DwellingEquation;
 
 export interface Catalog {
     fixtures: {[key: string]: FixtureSpec};

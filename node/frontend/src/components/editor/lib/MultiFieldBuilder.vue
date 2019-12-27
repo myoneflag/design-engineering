@@ -122,6 +122,7 @@ import {EntityType} from "../../../store/document/entities/types";
                 case EntityType.LOAD_NODE:
                     return makeLoadNodesFields(
                         this.document.drawing.metadata.flowSystems,
+                        entity,
                     );
             }
             assertUnreachable(entity);

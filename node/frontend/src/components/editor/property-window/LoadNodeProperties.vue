@@ -51,6 +51,7 @@
         get fields() {
             return makeLoadNodesFields(
                 this.document.drawing.metadata.flowSystems,
+                this.$props.selectedEntity,
             );
         }
 

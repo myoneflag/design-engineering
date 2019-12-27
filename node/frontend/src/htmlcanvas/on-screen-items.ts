@@ -2,7 +2,7 @@ import {DEFAULT_FONT_NAME, isGermanStandard} from '../../src/config';
 import * as TM from 'transformation-matrix';
 import {DrawingContext} from '../../src/htmlcanvas/lib/types';
 import {Catalog} from '../../src/store/catalog/types';
-import {lookupFlowRate, PsdUnitsByFlowSystem} from '../../src/calculations/utils';
+import {lookupFlowRate, PsdUnitsByFlowSystem, zeroPsdCounts} from '../../src/calculations/utils';
 import {StandardFlowSystemUids} from '../../src/store/catalog';
 
 const SENSIBLE_UNITS_MM: number[] = [
@@ -118,8 +118,8 @@ export function drawLoadingUnits(
 ) {
     if (units == null) {
         units = {};
-        units[StandardFlowSystemUids.ColdWater] = {units: 0, continuousFlowLS: 0};
-        units[StandardFlowSystemUids.HotWater] = {units: 0, continuousFlowLS: 0};
+        units[StandardFlowSystemUids.ColdWater] = zeroPsdCounts();
+        units[StandardFlowSystemUids.HotWater] = zeroPsdCounts();
     }
     const ctx = context.ctx;
 
@@ -142,14 +142,23 @@ export function drawLoadingUnits(
     let coldFR: number | null | undefined = undefined;
     let hotFR: number | null | undefined = undefined;
     try {
-         coldFR = lookupFlowRate(units[StandardFlowSystemUids.ColdWater].units, context.doc, catalog);
+         coldFR = lookupFlowRate(
+             units[StandardFlowSystemUids.ColdWater],
+             context.doc,
+             catalog,
+             StandardFlowSystemUids.ColdWater,
+         );
     } catch (e) {
     }
     try {
-        hotFR = lookupFlowRate(units[StandardFlowSystemUids.HotWater].units, context.doc, catalog);
+        hotFR = lookupFlowRate(
+            units[StandardFlowSystemUids.HotWater],
+            context.doc,
+            catalog,
+            StandardFlowSystemUids.HotWater,
+        );
     } catch (e) {
     }
-
 
     if (coldFR === null) {
         coldFR = 0;
@@ -158,12 +167,6 @@ export function drawLoadingUnits(
         hotFR = 0;
     }
 
-    if (coldFR !== undefined) {
-        coldFR += units[StandardFlowSystemUids.ColdWater].continuousFlowLS;
-    }
-    if (hotFR !== undefined) {
-        hotFR += units[StandardFlowSystemUids.HotWater].continuousFlowLS;
-    }
 
     let coldSpareText: string = 'error';
     let hotSpareText: string = 'error';

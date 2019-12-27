@@ -6,6 +6,7 @@ export enum PSDStandardType {
 
 export enum DwellingStandardType {
     DWELLING_LOOKUP_TABLE_HOT_COLD = 'DWELLING_LOOKUP_TABLE_HOT_COLD',
+    EQUATION = 'EQUATION',
 }
 
 export interface PsdStandard {

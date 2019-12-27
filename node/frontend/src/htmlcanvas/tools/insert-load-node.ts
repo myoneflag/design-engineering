@@ -1,19 +1,15 @@
-import {ConnectableEntity, Coord, DocumentState, FlowSystemParameters} from '../../../src/store/document/types';
+import {Coord} from '../../../src/store/document/types';
 import {MainEventBus} from '../../../src/store/main-event-bus';
 import PointTool from '../../../src/htmlcanvas/tools/point-tool';
 import {EntityType} from '../../../src/store/document/entities/types';
 import uuid from 'uuid';
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
-import {getInsertCoordsAt} from '../../../src/htmlcanvas/lib/utils';
 import {InteractionType} from '../../../src/htmlcanvas/lib/interaction';
-import * as _ from 'lodash';
 import Pipe from '../../../src/htmlcanvas/objects/pipe';
 import BackedDrawableObject from '../../../src/htmlcanvas/lib/backed-drawable-object';
 import {ConnectableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
-import {addValveAndSplitPipe} from '../../../src/htmlcanvas/lib/black-magic/split-pipe';
 import {cloneSimple} from '../../../src/lib/utils';
-import {rebaseAll} from '../../../src/htmlcanvas/lib/black-magic/rebase-all';
-import LoadNodeEntity from "../../store/document/entities/load-node-entity";
+import LoadNodeEntity, {NodeType} from "../../store/document/entities/load-node-entity";
 import FittingEntity from "../../store/document/entities/fitting-entity";
 import Fitting from "../objects/fitting";
 
@@ -52,9 +48,12 @@ export default function insertLoadNode(
                 let connections: string[] = [];
 
                 const newEntity: LoadNodeEntity = {
-                    continuousFlowLS: 0,
-                    designFlowRateLS: 0,
-                    loadingUnits: 0,
+                    node: {
+                        type: NodeType.LOAD_NODE,
+                        continuousFlowLS: 0,
+                        designFlowRateLS: 0,
+                        loadingUnits: 0,
+                    },
                     systemUidOption: null,
                     center: cloneSimple(wc),
                     color: null,

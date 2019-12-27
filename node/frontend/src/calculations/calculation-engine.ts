@@ -64,6 +64,7 @@ import DrawableObjectFactory from "../htmlcanvas/lib/drawable-object-factory";
 import {Calculated} from "../htmlcanvas/lib/object-traits/calculated-object";
 import {isConnectableEntity} from "../store/document";
 import stringify from "json-stable-stringify";
+import {NodeType} from "../store/document/entities/load-node-entity";
 
 export const SELF_CONNECTION = 'SELF_CONNECTION';
 
@@ -867,21 +868,59 @@ export default class CalculationEngine {
                 }
             });
 
-            if (totalPsdU) {
-                const frFromUnits = lookupFlowRate(totalPsdU.units, this.doc, this.catalog);
-                let recommendedFlowRate = frFromUnits;
-                if (recommendedFlowRate !== null) {
-                    recommendedFlowRate += totalPsdU.continuousFlowLS;
+            let systemUid: string | undefined;
+            for (const uid of group) {
+                const o = this.globalStore.get(uid);
+                if (o) {
+                    if (isConnectableEntity(o.entity)) {
+                        systemUid = determineConnectableSystemUid(this.globalStore, o.entity);
+                    } else if (o.entity.type === EntityType.PIPE) {
+                        systemUid = o.entity.systemUid;
+                    }
+                    if (systemUid) {
+                        break;
+                    }
                 }
+            }
+
+
+            if (!isZeroPsdCounts(totalPsdU)) {
+
+                if (!systemUid) {
+                    throw new Error('Cannot determine system UID but we need it');
+                }
+
+                const frFromUnits = lookupFlowRate({
+                    units: totalPsdU.units,
+                    dwellings: 0,
+                    continuousFlowLS: 0,
+                }, this.doc, this.catalog, systemUid);
+
+                const frFromDwellings = lookupFlowRate({
+                    units: 0,
+                    dwellings: totalPsdU.dwellings,
+                    continuousFlowLS: 0,
+                }, this.doc, this.catalog, systemUid);
+
+
                 if (frFromUnits === null) {
                     throw new Error('Could not get flow rate from loading units');
                 }
+                if (frFromDwellings === null) {
+                    throw new Error('Could not get flow rate from dwellings');
+                }
 
                 const perUnit = frFromUnits / totalPsdU.units;
+                const perDwelling = totalPsdU.dwellings ?
+                    frFromDwellings / totalPsdU.dwellings : 0;
 
                 group.forEach((n) => {
                     if (leaf2PsdU.has(n) && !isZeroPsdCounts(leaf2PsdU.get(n)!)) {
-                        demandLS.set(n, perUnit * leaf2PsdU.get(n)!.units + leaf2PsdU.get(n)!.continuousFlowLS);
+                        demandLS.set(n,
+                            perUnit * leaf2PsdU.get(n)!.units +
+                            perDwelling * leaf2PsdU.get(n)!.dwellings +
+                            leaf2PsdU.get(n)!.continuousFlowLS,
+                        );
                     }
                 });
             }
@@ -988,24 +1027,28 @@ export default class CalculationEngine {
                         if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
                             return {
                                 units: Number(mainFixture.designFlowRateCold),
-                                continuousFlowLS: mainFixture.continuousFlowColdLS!
+                                continuousFlowLS: mainFixture.continuousFlowColdLS!,
+                                dwellings: 0,
                             };
                         } else {
                             return {
                                 units: Number(mainFixture.loadingUnitsCold),
-                                continuousFlowLS: mainFixture.continuousFlowColdLS!
+                                continuousFlowLS: mainFixture.continuousFlowColdLS!,
+                                dwellings: 0,
                             };
                         }
                     } else if (node.uid === fixture.warmRoughInUid) {
                         if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
                             return {
                                 units: Number(mainFixture.designFlowRateHot),
-                                continuousFlowLS: mainFixture.continuousFlowHotLS!
+                                continuousFlowLS: mainFixture.continuousFlowHotLS!,
+                                dwellings: 0,
                             };
                         } else {
                             return {
                                 units: Number(mainFixture.loadingUnitsHot),
-                                continuousFlowLS: mainFixture.continuousFlowHotLS!
+                                continuousFlowLS: mainFixture.continuousFlowHotLS!,
+                                dwellings: 0,
                             };
                         }
                     } else {
@@ -1022,26 +1065,40 @@ export default class CalculationEngine {
                 case EntityType.TMV:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.DIRECTED_VALVE:
-                    return { units: 0, continuousFlowLS: 0 };
+                    return zeroPsdCounts();
                 default:
-                    assertUnreachable(parent.type);
             }
+            assertUnreachable(parent.type);
             // Sadly, typescript type checking for return value was not smart enough to avoid these two lines.
             throw new Error('parent type is not a correct value');
         } else if (node.entity.type === EntityType.LOAD_NODE) {
-            if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
-                return {
-                    units: node.entity.designFlowRateLS,
-                    continuousFlowLS: node.entity.continuousFlowLS,
-                };
-            } else {
-                return {
-                    units: node.entity.loadingUnits,
-                    continuousFlowLS: node.entity.continuousFlowLS,
-                };
+            switch(node.entity.node.type) {
+                case NodeType.LOAD_NODE:
+                    if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
+                        return {
+                            units: node.entity.node.designFlowRateLS,
+                            continuousFlowLS: node.entity.node.continuousFlowLS,
+                            dwellings: 0,
+                        };
+                    } else {
+                        return {
+                            units: node.entity.node.loadingUnits,
+                            continuousFlowLS: node.entity.node.continuousFlowLS,
+                            dwellings: 0,
+                        };
+                    }
+                case NodeType.DWELLING:
+                    return {
+                        units: 0,
+                        continuousFlowLS: 0,
+                        dwellings: node.entity.node.dwellings,
+                    };
+                default:
             }
+            assertUnreachable(node.entity.node);
+            throw new Error('invalid node type');
         } else {
-            return { units: 0, continuousFlowLS: 0 };
+            return zeroPsdCounts();
         }
     }
 
@@ -1051,10 +1108,7 @@ export default class CalculationEngine {
                 const calculation = this.globalStore.getOrCreateCalculation(entity);
                 calculation.psdUnits = psdU;
 
-                let flowRate = lookupFlowRate(psdU.units, this.doc, this.catalog);
-                if (flowRate !== null) {
-                    flowRate += psdU.continuousFlowLS;
-                }
+                let flowRate = lookupFlowRate(psdU, this.doc, this.catalog, entity.systemUid);
 
                 if (flowRate === null) {
                     // Warn for no PSD
@@ -1070,10 +1124,10 @@ export default class CalculationEngine {
             }
             case EntityType.TMV: {
                 const calculation = this.globalStore.getOrCreateCalculation(entity);
-                let flowRate = lookupFlowRate(psdU.units, this.doc, this.catalog);
-                if (flowRate !== null) {
-                    flowRate += psdU.continuousFlowLS;
-                }
+
+                const systemUid = flowEdge.type === EdgeType.TMV_COLD_COLD ?
+                    StandardFlowSystemUids.ColdWater : StandardFlowSystemUids.HotWater;
+                let flowRate = lookupFlowRate(psdU, this.doc, this.catalog, systemUid);
 
                 if (flowEdge.type === EdgeType.TMV_COLD_COLD) {
                     calculation.coldPsdUs = psdU;
