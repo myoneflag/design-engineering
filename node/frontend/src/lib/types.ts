@@ -1,6 +1,6 @@
 export interface Choice {
     name: string;
-    key: string;
+    key: string | null;
     disabled?: boolean;
 }
 

@@ -1,5 +1,10 @@
 import * as Operations from './operation-transforms/operation-transforms';
-import {PIPE_SIZING_METHODS, RING_MAIN_CALCULATION_METHODS, SupportedPsdStandards} from '../../../src/config';
+import {
+    PIPE_SIZING_METHODS,
+    RING_MAIN_CALCULATION_METHODS,
+    SupportedDwellingStandards,
+    SupportedPsdStandards
+} from '../../../src/config';
 import {EntityType} from '../../../src/store/document/entities/types';
 import {ViewPort} from '../../../src/htmlcanvas/viewport';
 import {DrawingMode} from '../../../src/htmlcanvas/types';
@@ -7,7 +12,6 @@ import {DemandType} from '../../../src/calculations/types';
 import {DrawableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
 import {cloneSimple} from '../../../src/lib/utils';
 import {ValveId} from '../../../src/htmlcanvas/lib/types';
-import {FlowConfiguration} from "./entities/tmv/tmv-entity";
 import RiserEntity from "./entities/riser-entity";
 
 // Because of how the diffing engine works, there are restrictions on the data structure for the document state.
@@ -166,6 +170,7 @@ export interface FlowSystemParameters extends WithID {
 
 export interface CalculationParameters {
     psdMethod: SupportedPsdStandards;
+    dwellingMethod: SupportedDwellingStandards | null;
     ringMainCalculationMethod: string;
     pipeSizingMethod: string;
 
@@ -223,8 +228,10 @@ export const initialDrawing: DrawingState = {
         ],
         calculationParams: {
             psdMethod: SupportedPsdStandards.as35002018LoadingUnits,
-            ringMainCalculationMethod: RING_MAIN_CALCULATION_METHODS[0].key,
-            pipeSizingMethod: PIPE_SIZING_METHODS[0].key,
+            dwellingMethod: null,
+            ringMainCalculationMethod: RING_MAIN_CALCULATION_METHODS[0].key!,
+            pipeSizingMethod: PIPE_SIZING_METHODS[0].key!,
+
 
             ceilingPipeHeightM: 3.0,
             roomTemperatureC: 20,

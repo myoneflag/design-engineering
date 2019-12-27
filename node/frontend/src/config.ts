@@ -8,7 +8,6 @@ export const DEFAULT_FONT_NAME: string = 'Helvetica';
 export enum SupportedPsdStandards {
     as35002018LoadingUnits = 'as35002018LoadingUnits',
     barriesBookLoadingUnits = 'barriesBookLoadingUnits',
-    barriesBookDwellings = 'barriesBookDwellings',
 
     din1988300Residential = 'din1988300Residential',
     din1988300Hospital = 'din1988300Hospital',
@@ -17,6 +16,11 @@ export enum SupportedPsdStandards {
     din1988300Office = 'din1988300Office',
     din1988300AssistedLiving = 'din1988300AssistedLiving',
     din1988300NursingHome = 'din1988300NursingHome',
+}
+
+export enum SupportedDwellingStandards {
+    as35002018Dwellings = 'as35002018Dwellings',
+    barriesBookDwellings = 'barriesBookDwellings',
 }
 
 export function assertUnreachable(x: never, shouldThrow: boolean = true) {
@@ -29,7 +33,6 @@ export function isGermanStandard(psd: SupportedPsdStandards) {
     switch (psd) {
         case SupportedPsdStandards.as35002018LoadingUnits:
         case SupportedPsdStandards.barriesBookLoadingUnits:
-        case SupportedPsdStandards.barriesBookDwellings:
             return false;
         case SupportedPsdStandards.din1988300Residential:
         case SupportedPsdStandards.din1988300Hospital:
@@ -48,9 +51,7 @@ export function isGermanStandard(psd: SupportedPsdStandards) {
 //
 export const DISPLAY_PSD_METHODS: Choice[] = [
     {name: 'AS3500 2018 Loading Units', key: SupportedPsdStandards.as35002018LoadingUnits},
-    {name: 'AS3500 2018 Dwellings', disabled: true, key: 'as3500D2018Dwellings'},
     {name: 'Barrie\'s Book Loading Units', key: SupportedPsdStandards.barriesBookLoadingUnits},
-    {name: 'Barrie\'s Book Dwellings', key: SupportedPsdStandards.barriesBookDwellings},
     {name: 'DIN 1988-300 - Residential', key: SupportedPsdStandards.din1988300Residential},
     {name: 'DIN 1988-300 - Hospital',  key: SupportedPsdStandards.din1988300Hospital},
     {name: 'DIN 1988-300 - Hotel', key: SupportedPsdStandards.din1988300Hotel},
@@ -69,6 +70,30 @@ export function getPsdMethods(catalog: Catalog): Choice[] {
 
     for (const key of Object.keys(catalog.psdStandards)) {
         const standard = catalog.psdStandards[key];
+        const index = methods.findIndex((p) => p.key === key);
+        if (index === -1) {
+            methods.push({
+                disabled: false, key, name: standard.name,
+            });
+        } else {
+            methods[index].disabled = false;
+        }
+    }
+
+    return methods;
+}
+
+export const DISPLAY_DWELLING_METHODS: Choice[] = [
+    {name: "AS3500 2018 Dwellings", key: SupportedDwellingStandards.as35002018Dwellings},
+    {name: "Barrie\'s Book Dwellings", key: SupportedDwellingStandards.barriesBookDwellings},
+    {name: "None", key: null},
+];
+
+export function getDwellingMethods(catalog: Catalog): Choice[] {
+    const methods: Choice[] = cloneSimple(DISPLAY_DWELLING_METHODS);
+
+    for (const key of Object.keys(catalog.dwellingStandards)) {
+        const standard = catalog.dwellingStandards[key];
         const index = methods.findIndex((p) => p.key === key);
         if (index === -1) {
             methods.push({

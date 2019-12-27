@@ -15,7 +15,12 @@
     import Component from 'vue-class-component';
     import {DocumentState} from '../../../src/store/document/types';
     import SettingsFieldBuilder from '../../../src/components/editor/lib/SettingsFieldBuilder.vue';
-    import {PIPE_SIZING_METHODS, RING_MAIN_CALCULATION_METHODS, getPsdMethods} from '../../../src/config';
+    import {
+        PIPE_SIZING_METHODS,
+        RING_MAIN_CALCULATION_METHODS,
+        getPsdMethods,
+        getDwellingMethods
+    } from '../../../src/config';
 
     @Component({
         components: {SettingsFieldBuilder},
@@ -33,6 +38,14 @@
         get fields(): any[][] {
             return [
                 ['psdMethod', 'PSD Calculation Method:', 'choice', getPsdMethods(this.$store.getters['catalog/default'])],
+                [
+                    'dwellingMethod',
+                    'Dwelling Calculation Method:',
+                    'choice',
+                    getDwellingMethods(this.$store.getters['catalog/default']),
+                ],
+
+
                 ['pipeSizingMethod', 'Pipe Sizing Method:', 'choice', PIPE_SIZING_METHODS],
                 //['ringMainCalculationMethod', 'Ring Main Calculation Method:', 'choice', RING_MAIN_CALCULATION_METHODS],
                 ['ceilingPipeHeightM', 'Default Pipe Height Above Floor (m):', 'number'],

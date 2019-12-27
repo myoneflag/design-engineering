@@ -153,7 +153,6 @@ export function getPsdUnitName(psdMethod: SupportedPsdStandards): {name: string,
     switch (psdMethod) {
         case SupportedPsdStandards.as35002018LoadingUnits:
         case SupportedPsdStandards.barriesBookLoadingUnits:
-        case SupportedPsdStandards.barriesBookDwellings:
             return {name: 'Loading Units', abbreviation: 'LU'};
         case SupportedPsdStandards.din1988300Residential:
         case SupportedPsdStandards.din1988300Hospital:

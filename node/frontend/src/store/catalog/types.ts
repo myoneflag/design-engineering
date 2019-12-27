@@ -1,14 +1,23 @@
 import LoadingUnitTable from '../../../src/store/catalog/psd-standard/loading-unit-table';
 import LoadingUnitHotColdTable from '../../../src/store/catalog/psd-standard/loading-unit-hot-cold-table';
 import Equation from '../../../src/store/catalog/psd-standard/equation';
+import {DwellingStandardType, PsdStandard, PSDStandardType} from "./psd-standard/types";
 
 export default interface CatalogState {
     defaultCatalog: Catalog;
     loaded: boolean;
 }
 
+export interface DwellingUnitHotColdTable {
+    type: PSDStandardType.LU_HOT_COLD_LOOKUP_TABLE;
+    name: string;
+    table: {[key: string]: {cold: string, hot: string}};
+}
+
+
 export type Diameter = number | string;
 export type PSDSpec = LoadingUnitTable | LoadingUnitHotColdTable | Equation;
+export type DwellingSpec = DwellingUnitHotColdTable | Equation;
 
 export interface Catalog {
     fixtures: {[key: string]: FixtureSpec};
@@ -16,6 +25,7 @@ export interface Catalog {
     valves: {[key: string]: ValveSpec};
     mixingValves: {[key: string]: MixingValveSpec};
     psdStandards: {[key: string]: PSDSpec};
+    dwellingStandards: {[key: string]: DwellingSpec};
     fluids: {[key: string]: FluidsSpec};
 }
 
