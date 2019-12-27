@@ -2,7 +2,7 @@
     <b-container>
         <b-row>
             <b-col>
-                <h3>Load Node</h3>
+                <h3>{{ title }}</h3>
             </b-col>
         </b-row>
         <PropertiesFieldBuilder
@@ -29,7 +29,11 @@
     import PropertiesFieldBuilder from '../../../../src/components/editor/lib/PropertiesFieldBuilder.vue';
     import {DocumentState} from '../../../../src/store/document/types';
     import PipeEntity, {fillPipeDefaultFields, makePipeFields} from '../../../store/document/entities/pipe-entity';
-    import LoadNodeEntity, {fillDefaultLoadNodeFields, makeLoadNodesFields} from "../../../store/document/entities/load-node-entity";
+    import LoadNodeEntity, {
+        fillDefaultLoadNodeFields,
+        makeLoadNodesFields,
+        NodeType
+    } from "../../../store/document/entities/load-node-entity";
     import LoadNode from "../../../htmlcanvas/objects/load-node";
 
     @Component({
@@ -69,6 +73,16 @@
 
         onCommit() {
             this.$store.dispatch('document/commit');
+        }
+
+        get title() {
+            const entity: LoadNodeEntity = this.$props.selectedEntity;
+            switch (entity.node.type) {
+                case NodeType.LOAD_NODE:
+                    return "Loading Node";
+                case NodeType.DWELLING:
+                    return "Dwelling Node";
+            }
         }
     }
 

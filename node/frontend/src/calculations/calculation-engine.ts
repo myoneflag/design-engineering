@@ -47,7 +47,7 @@ import DirectedValveEntity, {
 } from '../../src/store/document/entities/directed-valves/directed-valve-entity';
 import {ValveType} from '../../src/store/document/entities/directed-valves/valve-types';
 import {
-    addPsdCounts,
+    addPsdCounts, comparePsdCounts,
     isZeroPsdCounts,
     lookupFlowRate,
     PsdCountEntry,
@@ -1013,7 +1013,7 @@ export default class CalculationEngine {
         const node = this.globalStore.get(flowNode.connectable)!;
 
         if (node.type === EntityType.SYSTEM_NODE) {
-            const parent = this.globalStore.get(flowNode.connection);
+            const parent = this.globalStore.get(node.entity.parentUid!);
             if (parent === undefined) {
                 throw new Error('System node is missing parent. ' + JSON.stringify(node));
             }
@@ -1021,6 +1021,8 @@ export default class CalculationEngine {
                 case EntityType.FIXTURE:
                     const fixture = parent.entity as FixtureEntity;
                     const mainFixture = fillFixtureFields(this.doc.drawing, this.catalog, fixture);
+
+                    console.log('mainFixture: ' + JSON.stringify(mainFixture));
 
                     if (node.uid === fixture.coldRoughInUid) {
                         if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
@@ -1411,12 +1413,25 @@ export default class CalculationEngine {
                 [stringify(flowEdge)],
             );
 
-            if (residualPsdU > exclusivePsdU) {
+            const cmp = comparePsdCounts(residualPsdU, exclusivePsdU);
+            if (cmp === null) {
+                throw new Error('Impossible PSD situation');
+            }
+            if (cmp > 0) {
                 console.log('some but not all ' + object.uid + ' ' + residualPsdU + ' ' + exclusivePsdU + ' ' + JSON.stringify(this.getDryEndpoints(endpointUids, flowEdge, roots)) + ' ' + JSON.stringify(this.getWetEndpoints(endpointUids, flowEdge, roots)));
                 // TODO: Info that flow rate is ambiguous, but some flow is exclusive to us
             } else {
+                if (cmp < 0) {
+                    throw new Error('Invalid PSD situation');
+                }
                 console.log('success ' + object.uid);
                 // we have successfully calculated the pipe's loading units.
+                const actualPsdU = this.getTotalReachedPsdU(
+                    [{connectable: point, connection: object.uid}],
+                    [wet],
+                    [stringify(flowEdge)],
+                    true,
+                );
                 this.configureEntityForPSD(object.entity, exclusivePsdU, flowEdge);
             }
         } else {
@@ -1631,19 +1646,33 @@ export default class CalculationEngine {
         });
     }
 
-    getTotalReachedPsdU(roots: FlowNode[], excludedNodes: string[] = [], excludedEdges: string[] = []): PsdCountEntry {
+    getTotalReachedPsdU(
+        roots: FlowNode[],
+        excludedNodes: string[] = [],
+        excludedEdges: string[] = [],
+        stopAtDwellings: boolean = false,
+    ): PsdCountEntry {
         const seen = new Set<string>(excludedNodes);
         const seenEdges = new Set<string>(excludedEdges);
 
         let psdUs = zeroPsdCounts();
 
+        const seenEntities = new Set<string>();
+
         roots.forEach((r) => {
-            this.flowGraph.dfs(r, (n) => {
-                const thisTerminal = this.getTerminalPsdU(n);
-                    psdUs = addPsdCounts(psdUs, thisTerminal);
-                    if (this.doc.drawing.metadata.calculationParams.dwellingMethod) {
-                        if (thisTerminal.dwellings > 0) {
-                            return true; // Don't search for more load after encountering a dwelling node.
+            this.flowGraph.dfs(r,
+                (n) => {
+                    if (!seenEntities.has(n.connectable)) {
+                        seenEntities.add(n.connectable);
+                        const thisTerminal = this.getTerminalPsdU(n);
+                        console.log(n.connectable + ' psdu: ' + JSON.stringify(thisTerminal));
+                        console.log(JSON.stringify(this.globalStore.get(n.connectable)!.entity));
+                        console.log(JSON.stringify(JSON.stringify(n)));
+                        psdUs = addPsdCounts(psdUs, thisTerminal);
+                        if (this.doc.drawing.metadata.calculationParams.dwellingMethod) {
+                            if (thisTerminal.dwellings > 0) {
+                                return stopAtDwellings; // Don't search for more load after encountering a dwelling node.
+                            }
                         }
                     }
                     return false;
