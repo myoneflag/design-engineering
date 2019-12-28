@@ -53,6 +53,12 @@ const router = new Router({
 
                     children: [
                         {
+                            path: 'catalog/:prop?',
+                            name: 'settings/catalog',
+                            component: () => import(/* webpackChunkName: "catalog" */ './views/catalog/CatalogView.vue'),
+                        },
+
+                        {
                             path: 'general',
                             name: 'settings/general',
                             component: () => import(/* webpackChunkName: "general" */ './views/settings/General.vue'),

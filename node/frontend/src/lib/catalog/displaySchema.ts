@@ -20,18 +20,18 @@ export type Page<V> = {
         name: string,
         displayField?: keyof V[K],
         table?: Table<V[K][keyof V[K]]>,
-        link?: Page<any>,
     } | null;
 };
 
 export interface Table<TV> {
     primaryName: string | null,
-    columns: ([keyof TV | null, string])[] | null,
+    columns: ([keyof TV | null, string])[],
     link?: Page<TV> | null,
 }
 
+export type CatalogSchema = Page<Catalog>;
 
-export default function getDisplaySchema(catalog: CatalogState): Page<Catalog> {
+export function getCatalogDisplaySchema(): CatalogSchema {
     return {
         fixtures: {
             order: 1,
@@ -40,20 +40,15 @@ export default function getDisplaySchema(catalog: CatalogState): Page<Catalog> {
                 primaryName: null,
                 columns: [
                     ['name', 'Name'],
-                    ['abbreviation', 'Abb.'],
-                    ['fixtureUnits', 'Fixture Units'],
-                    ['loadingUnits', 'Loading Units'],
-                    ['qLS', 'Design Flow Rate'],
-                    ['continuousFlowLS', 'Continuous Flow'],
+                    ['abbreviation', 'Abbreaviation'],
 
                     ['maxInletPressureKPA', 'Max. Inlet Pressure (kPa)'],
                     ['minInletPressureKPA', 'Min. Inlet Pressure (kPa)'],
                     ['outletAboveFloorM', 'Outlet Height (M)'],
-                    ['warmTempC', 'Warm Temperature C'],
                 ],
                 link: {
-                    name: {order: 1, name: 'Fixtures'},
-                    abbreviation: {order: 2, name: 'Abb.'},
+                    name: {order: 1, name: 'Fixture Name'},
+                    abbreviation: {order: 2, name: 'Abbreaviation'},
                     uid: null,
                     fixtureUnits: {order: 3, name: 'Fixture Units'},
                     loadingUnits: {
@@ -67,7 +62,16 @@ export default function getDisplaySchema(catalog: CatalogState): Page<Catalog> {
                             ]
                         }
                     },
-                    qLS: {order: 5, name: 'Design Flow Rate'},
+                    qLS: {
+                        order: 5,
+                        name: 'Design Flow Rate (L/s)',
+                        table: {
+                            primaryName: ' ',
+                            columns: [
+                                [null, 'Flow Rate'],
+                            ]
+                        }
+                    },
                     continuousFlowLS: {order: 6, name: 'Continuous Flow Rate'},
 
                     maxInletPressureKPA: {order: 7, name: 'Max. Inlet Pressure (kPa)'},
@@ -198,7 +202,7 @@ export default function getDisplaySchema(catalog: CatalogState): Page<Catalog> {
                 ],
                 link: {
                     name: {order: 1, name: 'Material'},
-                    abbreviation: {order: 2, name: 'Abb.'},
+                    abbreviation: {order: 2, name: 'Abbreaviation'},
                     uid: null,
                     pipesBySize: {
                         order: 3,
@@ -207,7 +211,7 @@ export default function getDisplaySchema(catalog: CatalogState): Page<Catalog> {
                             primaryName: 'Nominal Diameter (mm)',
                             columns: [
                                 ['diameterInternalMM', 'Internal Diameter (mm)'],
-                                ['colebrookWhiteCoefficient', 'Internal Diameter (mm)'],
+                                ['colebrookWhiteCoefficient', 'Colebrook White Coefficient'],
                                 ['safeWorkingPressureKPA', 'Safe Working Pressure (kPa)'],
                             ]
                         }
@@ -223,12 +227,12 @@ export default function getDisplaySchema(catalog: CatalogState): Page<Catalog> {
                 primaryName: null,
                 columns: [
                     ['name', 'Name'],
-                    ['abbreviation', 'Abb.'],
+                    ['abbreviation', 'Abbreaviation'],
                 ],
                 link: {
                     name: {order: 1, name: 'Name'},
                     uid: null,
-                    abbreviation: {order: 2, name: 'Abb.'},
+                    abbreviation: {order: 2, name: 'Abbreaviation'},
                     valvesBySize: {
                         order: 3,
                         name: 'K values By Size',

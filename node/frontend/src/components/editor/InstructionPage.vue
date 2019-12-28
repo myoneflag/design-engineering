@@ -39,11 +39,11 @@
         counter-reset:li;
     }
 
-    ol > li {
+    #instructions-div > ol > li {
         list-style: none;
     }
 
-    ol > li:before {
+    #instructions-div >  ol > li:before {
 
         content:counter(li);
         counter-increment:li;
