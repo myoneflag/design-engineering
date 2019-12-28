@@ -221,7 +221,7 @@ export function lookupFlowRate(
         fromLoading = a * (psdU.units ** b) - c;
     } else if (standard.type === PSDStandardType.LU_HOT_COLD_LOOKUP_TABLE) {
 
-        const table = standard.table;
+        const table = standard.hotColdTable;
         if (systemUid === StandardFlowSystemUids.ColdWater) {
             fromLoading = interpolateTable(table, psdU.units, true, (e) => e.cold);
         } else if (systemUid === StandardFlowSystemUids.HotWater || systemUid === StandardFlowSystemUids.WarmWater) {
@@ -245,10 +245,10 @@ export function lookupFlowRate(
         switch (dStandard.type) {
             case DwellingStandardType.DWELLING_HOT_COLD_LOOKUP_TABLE:
                 if (systemUid === StandardFlowSystemUids.ColdWater) {
-                    fromDwellings = interpolateTable(dStandard.table, psdU.dwellings, true, (e) => e.cold);
+                    fromDwellings = interpolateTable(dStandard.hotColdTable, psdU.dwellings, true, (e) => e.cold);
                 } else if (systemUid === StandardFlowSystemUids.HotWater ||
                     systemUid === StandardFlowSystemUids.WarmWater) {
-                    fromDwellings = interpolateTable(dStandard.table, psdU.dwellings, true, (e) => e.hot);
+                    fromDwellings = interpolateTable(dStandard.hotColdTable, psdU.dwellings, true, (e) => e.hot);
                 } else {
                     if (psdU.dwellings) {
                         throw new Error('Cannot determine flow rate with this metric');
@@ -257,7 +257,7 @@ export function lookupFlowRate(
                     }
                 }
                 break;
-            case PSDStandardType.EQUATION:
+            case DwellingStandardType.EQUATION:
                 if (dStandard.equation !== "a*D+b*sqrt(D)") {
                     throw new Error('Only the equation a*D+b*sqrt(D) is supported');
                 }

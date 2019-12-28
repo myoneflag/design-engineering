@@ -11,11 +11,11 @@ export default interface CatalogState {
 export interface DwellingUnitHotColdTable {
     type: DwellingStandardType.DWELLING_HOT_COLD_LOOKUP_TABLE;
     name: string;
-    table: {[key: string]: {cold: string, hot: string}};
+    hotColdTable: {[key: string]: {cold: string, hot: string}};
 }
 
-export interface DwellingEquation extends PsdStandard {
-    type: PSDStandardType.EQUATION;
+export interface DwellingEquation {
+    type: DwellingStandardType.EQUATION;
     name: string;
     equation: string;
     variables: {[key: string]: string};
@@ -87,6 +87,7 @@ export interface PipeMaterial {
 }
 
 export interface PipeSpec {
+    pipeUid: string;
     diameterNominalMM: Diameter | null;
     diameterInternalMM: Diameter | null;
     colebrookWhiteCoefficient: string | null;
@@ -94,6 +95,8 @@ export interface PipeSpec {
 }
 
 export interface MixingValveSpec {
+    name: string;
+    uid: string;
     minInletPressureKPA: string;
     maxInletPressureKPA: string;
     maxHotColdPressureDifferentialPCT: string;

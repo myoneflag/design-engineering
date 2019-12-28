@@ -620,6 +620,7 @@ export default class CalculationEngine {
                         }
                     },
                     (dijk) => {
+                        // TODO: Bellman Ford
                         let finalPressureKPA: number | null;
                         if (dijk.weight >= 0) {
                             finalPressureKPA = e.pressureKPA! - dijk.weight;

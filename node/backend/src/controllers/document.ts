@@ -10,8 +10,9 @@ import {AccessLevel, User} from "../entity/User";
 import {AccessType, withDocument, withOrganization} from "../helpers/withResources";
 import {initialDocumentState} from "../../../frontend/src/store/document/types";
 import {Catalog} from "../entity/Catalog";
-import * as initialCatalog from "../initial-catalog.json";
 import {Catalog as ICatalog} from "../../../frontend/src/store/catalog/types";
+import {initialCatalog} from "../../../frontend/src/store/catalog/initial-catalog/initial-catalog";
+import * as _ from 'lodash';
 
 export class DocumentController {
     @ApiHandleError()
@@ -78,7 +79,7 @@ export class DocumentController {
 
 
             const catalog = Catalog.create();
-            catalog.content = initialCatalog as ICatalog;
+            catalog.content = _.cloneDeep(initialCatalog);
             catalog.savedOn = new Date();
             catalog.document = Promise.resolve(doc);
             await doc.save();
