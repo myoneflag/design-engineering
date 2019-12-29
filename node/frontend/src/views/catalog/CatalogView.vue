@@ -36,7 +36,8 @@
                                          select-mode="single"
                                          :selectable="true"
                                          @row-selected="(d) => onRowClick(prop, d)"
-                                ></b-table>
+                                >
+                                </b-table>
                                 <b-table
                                         small
                                         v-else

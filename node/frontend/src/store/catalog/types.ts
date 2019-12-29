@@ -25,11 +25,25 @@ export type Diameter = number | string;
 export type PSDSpec = LoadingUnitTable | LoadingUnitHotColdTable | PsdEquation;
 export type DwellingSpec = DwellingUnitHotColdTable | DwellingEquation;
 
+export interface BackflowValveSize {
+    minInletPressureKPA: string | null;
+    maxInletPressureKPA: string | null;
+    minFlowRateLS: string | null;
+    maxFlowRateLS: string | null;
+    pressureLossKPAByFlowRateLS: {[key: string]: string};
+}
+
+export interface BackflowValveSpec {
+    name: string,
+    valvesBySize: {[key: string]: BackflowValveSize};
+}
+
 export interface Catalog {
     fixtures: {[key: string]: FixtureSpec};
     pipes: {[key: string]: PipeMaterial};
     valves: {[key: string]: ValveSpec};
     mixingValves: {[key: string]: MixingValveSpec};
+    backflowValves: {[key: string]: BackflowValveSpec}
     psdStandards: {[key: string]: PSDSpec};
     dwellingStandards: {[key: string]: DwellingSpec};
     fluids: {[key: string]: FluidsSpec};

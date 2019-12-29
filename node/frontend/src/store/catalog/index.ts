@@ -14,6 +14,7 @@ export const state: CatalogState = {
         psdStandards: {},
         dwellingStandards: {},
         fluids: {},
+        backflowValves: {},
     },
     loaded: false,
 };

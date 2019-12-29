@@ -281,6 +281,48 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                     }
                 }
             }
+        },
+        backflowValves: {
+            order: 8,
+            name: 'Backflow Valves',
+            table: {
+                primaryName: null,
+                columns: [
+                    ['name', 'Name'],
+                ],
+                link: {
+                    name: {order: 1, name: 'Name'},
+                    valvesBySize: {
+                        order: 1,
+                        name: 'Valves By Size',
+                        table: {
+                            primaryName: 'Diameter (m)',
+                            columns: [
+                                ['minInletPressureKPA', 'Min. Inlet Pressure (kPa)'],
+                                ['maxInletPressureKPA', 'Max. Inlet Pressure (kPa)'],
+                                ['minFlowRateLS', 'Min. Flow Rate (L/s)'],
+                                ['maxFlowRateLS', 'Max. Flow Rate (L/s)'],
+                            ],
+                            link: {
+                                minInletPressureKPA: {order: 1, name: 'Min. Inlet Pressure (kPa)'},
+                                maxInletPressureKPA: {order: 2, name: 'Max. Inlet Pressure (kPa)'},
+                                minFlowRateLS: {order: 3, name: 'Min. Flow Rate (L/s)'},
+                                maxFlowRateLS: {order: 4, name: 'Max. Flow Rate (L/s)'},
+                                pressureLossKPAByFlowRateLS: {
+                                    order: 1,
+                                    name: 'Pressure Loss (kPa) by Flow Rate (L/s)',
+                                    table: {
+                                        primaryName: 'Flow Rate (L/s)',
+                                        columns: [
+                                            [null, 'Pressure Loss (kPa)'],
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
