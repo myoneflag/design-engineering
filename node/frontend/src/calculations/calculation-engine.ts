@@ -47,7 +47,8 @@ import DirectedValveEntity, {
 } from '../../src/store/document/entities/directed-valves/directed-valve-entity';
 import {ValveType} from '../../src/store/document/entities/directed-valves/valve-types';
 import {
-    addPsdCounts, comparePsdCounts,
+    addPsdCounts,
+    comparePsdCounts,
     isZeroPsdCounts,
     lookupFlowRate,
     PsdCountEntry,
@@ -770,9 +771,12 @@ export default class CalculationEngine {
             const other = connections.find((uid) => uid !== entity.sourceUid)!;
 
             switch (entity.valve.type) {
-                case ValveType.RPZD:
+                case ValveType.RPZD_SINGLE:
+                case ValveType.RPZD_DOUBLE_ISOLATED:
+                case ValveType.RPZD_DOUBLE_SHARED:
                 case ValveType.CHECK_VALVE:
                     // from start to finish only
+                    console.log('source: ' + entity.sourceUid);
                     this.flowGraph.addDirectedEdge(
                         {
                             connectable: entity.uid,
@@ -825,6 +829,8 @@ export default class CalculationEngine {
                         },
                     );
                     break;
+                default:
+                    assertUnreachable(entity.valve);
             }
         } else if (connections.length > 2) {
             throw new Error('too many pipes coming out of this one');
@@ -1338,7 +1344,7 @@ export default class CalculationEngine {
     sizeDefiniteTransports(roots: FlowNode[]) {
         const totalReachedPsdU = this.getTotalReachedPsdU(roots);
 
-        // Go through all pipes
+        // Size all pipes first
         this.networkObjects().forEach((object) => {
             switch (object.entity.type) {
                 case EntityType.TMV:
@@ -1374,10 +1380,10 @@ export default class CalculationEngine {
                         [object.entity.endpointUid[0], object.entity.endpointUid[1]],
                     );
                     break;
+                case EntityType.DIRECTED_VALVE:
                 case EntityType.LOAD_NODE:
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.FITTING:
-                case EntityType.DIRECTED_VALVE:
                 case EntityType.RISER:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.FIXTURE:
@@ -1386,6 +1392,75 @@ export default class CalculationEngine {
                     assertUnreachable(object.entity);
             }
         });
+
+        // Now size RPZD's, based on pipe peak flow rates
+        this.networkObjects().forEach((obj) => {
+            switch (obj.entity.type) {
+                case EntityType.DIRECTED_VALVE:
+                    const conns = this.globalStore.getConnections(obj.entity.uid);
+                    switch (obj.entity.valve.type) {
+                        case ValveType.RPZD_SINGLE:
+                        case ValveType.RPZD_DOUBLE_SHARED:
+                        case ValveType.RPZD_DOUBLE_ISOLATED:
+                            if (conns.length === 2) {
+                                console.log('eligable rpzd found');
+                                const p = this.globalStore.get(conns[0]) as Pipe;
+                                const pCalc = this.globalStore.getOrCreateCalculation(p.entity);
+
+                                if (pCalc.peakFlowRate !== null) {
+                                    let fr = pCalc.peakFlowRate;
+                                    if (obj.entity.valve.type === ValveType.RPZD_DOUBLE_SHARED) {
+                                        fr = fr / 2;
+                                    }
+                                    console.log(JSON.stringify(obj.entity.valve));
+                                    const entry = lowerBoundTable(
+                                        this.catalog.backflowValves[obj.entity.valve.catalogId].valvesBySize,
+                                        fr,
+                                        (t, m) => parseCatalogNumberExact(m ? t.maxFlowRateLS : t.minFlowRateLS)!,
+                                    );
+
+                                    if (entry) {
+                                        const pd = interpolateTable(
+                                            entry.pressureLossKPAByFlowRateLS,
+                                            fr,
+                                        );
+
+                                        if (pd !== null) {
+                                            const calc = this.globalStore.getOrCreateCalculation(obj.entity);
+                                            calc.sizeMM = parseCatalogNumberExact(entry.sizeMM);
+                                            console.log('size is now ' + calc.sizeMM + ' ' + JSON.stringify(entry));
+                                        } else {
+                                            console.log('oopsies');
+                                        }
+                                    } else {
+                                        console.log('entry doesn\'t exist');
+                                    }
+                                } else {
+                                    console.log('neighbour pipe peak flow rate is not good');
+                                }
+                            }
+                            break;
+                        case ValveType.CHECK_VALVE:
+                        case ValveType.ISOLATION_VALVE:
+                        case ValveType.PRESSURE_RELIEF_VALVE:
+                        case ValveType.WATER_METER:
+                        case ValveType.STRAINER:
+                            break;
+                        default:
+                            assertUnreachable(obj.entity.valve);
+                    }
+                    break;
+                case EntityType.BACKGROUND_IMAGE:
+                case EntityType.FITTING:
+                case EntityType.PIPE:
+                case EntityType.RISER:
+                case EntityType.SYSTEM_NODE:
+                case EntityType.TMV:
+                case EntityType.FIXTURE:
+                case EntityType.LOAD_NODE:
+                    break;
+            }
+        })
     }
 
     sizeDefiniteTransport(

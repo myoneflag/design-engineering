@@ -26,6 +26,7 @@ export type PSDSpec = LoadingUnitTable | LoadingUnitHotColdTable | PsdEquation;
 export type DwellingSpec = DwellingUnitHotColdTable | DwellingEquation;
 
 export interface BackflowValveSize {
+    sizeMM: string;
     minInletPressureKPA: string | null;
     maxInletPressureKPA: string | null;
     minFlowRateLS: string | null;

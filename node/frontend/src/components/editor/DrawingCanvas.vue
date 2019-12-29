@@ -370,7 +370,7 @@ export default class DrawingCanvas extends Vue {
             return this.document.drawing.metadata.availableFixtures;
         }
 
-        get availableValves(): ValveId[] {
+        get availableValves(): Array<ValveId | {name: string, valves: ValveId[]}> {
             return [
                 {type: ValveType.ISOLATION_VALVE, catalogId: 'gateValve', name: ''},
                 {type: ValveType.ISOLATION_VALVE, catalogId: 'ballValve', name: ''},
@@ -378,8 +378,14 @@ export default class DrawingCanvas extends Vue {
                 {type: ValveType.CHECK_VALVE, catalogId: 'checkValve', name: ''},
                 {type: ValveType.WATER_METER, catalogId: 'waterMeter', name: ''},
                 {type: ValveType.STRAINER, catalogId: 'strainer', name: ''},
+
+                {type: ValveType.RPZD_SINGLE, catalogId: 'RPZD', name: 'RPZD'},
+                {type: ValveType.RPZD_DOUBLE_SHARED, catalogId: 'RPZD', name: 'RPZD Double Parallel'},
+                {type: ValveType.RPZD_DOUBLE_ISOLATED, catalogId: 'RPZD', name: 'RPZD Double Isolated'},
             ].map((a) => {
-                a.name = this.effectiveCatalog.valves[a.catalogId].name;
+                if (a.name === '') {
+                    a.name = this.effectiveCatalog.valves[a.catalogId].name;
+                }
                 return a;
             });
         }
@@ -1030,12 +1036,15 @@ export default class DrawingCanvas extends Vue {
         }
 
         hydraulicsInsert(
-            {entityName, system, catalogId, tmvHasCold, valveType, nodeType}:
+            params:
                 {
                     entityName: string, system: FlowSystemParameters, catalogId: string,
                     tmvHasCold: boolean, valveType: ValveType, nodeType: NodeType,
+                    valveName: string,
                 },
         ) {
+            const  {entityName, system, catalogId, tmvHasCold, valveType, nodeType, valveName} = params;
+            console.log('inserting ' + JSON.stringify(params));
             this.hydraulicsLayer.select([], SelectMode.Replace);
 
             if (entityName === EntityType.RISER) {
@@ -1055,9 +1064,10 @@ export default class DrawingCanvas extends Vue {
                 console.log(catalogId);
                 this.document.uiState.lastUsedValveVid = {
                     catalogId,
-                    name: this.effectiveCatalog.valves[catalogId].name,
+                    name: valveName,
                     type: valveType,
                 };
+                console.log('uid is now ' + JSON.stringify(this.document.uiState.lastUsedValveVid));
                 insertDirectedValve(this, valveType, catalogId, system);
             } else if (entityName === EntityType.LOAD_NODE) {
                 insertLoadNode(this, nodeType);

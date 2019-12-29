@@ -304,10 +304,11 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                                 ['maxFlowRateLS', 'Max. Flow Rate (L/s)'],
                             ],
                             link: {
-                                minInletPressureKPA: {order: 1, name: 'Min. Inlet Pressure (kPa)'},
-                                maxInletPressureKPA: {order: 2, name: 'Max. Inlet Pressure (kPa)'},
-                                minFlowRateLS: {order: 3, name: 'Min. Flow Rate (L/s)'},
-                                maxFlowRateLS: {order: 4, name: 'Max. Flow Rate (L/s)'},
+                                sizeMM: {order: 1, name: 'Size (mm)'},
+                                minInletPressureKPA: {order: 2, name: 'Min. Inlet Pressure (kPa)'},
+                                maxInletPressureKPA: {order: 3, name: 'Max. Inlet Pressure (kPa)'},
+                                minFlowRateLS: {order: 4, name: 'Min. Flow Rate (L/s)'},
+                                maxFlowRateLS: {order: 5, name: 'Max. Flow Rate (L/s)'},
                                 pressureLossKPAByFlowRateLS: {
                                     order: 1,
                                     name: 'Pressure Loss (kPa) by Flow Rate (L/s)',

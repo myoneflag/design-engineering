@@ -1,6 +1,9 @@
 import BackedConnectable from '../../../src/htmlcanvas/lib/BackedConnectable';
 // tslint:disable-next-line:max-line-length
-import DirectedValveEntity, {fillDirectedValveFields} from '../../../src/store/document/entities/directed-valves/directed-valve-entity';
+import DirectedValveEntity, {
+    determineConnectableSystemUid,
+    fillDirectedValveFields
+} from '../../../src/store/document/entities/directed-valves/directed-valve-entity';
 import {DrawingContext} from '../../../src/htmlcanvas/lib/types';
 import {Coord, DrawableEntity} from '../../../src/store/document/types';
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
@@ -17,7 +20,12 @@ import CenterDraggableObject from '../../../src/htmlcanvas/lib/object-traits/cen
 import {SelectableObject} from '../../../src/htmlcanvas/lib/object-traits/selectable';
 import {canonizeAngleRad, cloneSimple, lighten} from '../../../src/lib/utils';
 import {IsolationValve, ValveType} from '../../../src/store/document/entities/directed-valves/valve-types';
-import {lowerBoundTable, parseCatalogNumberExact} from '../../../src/htmlcanvas/lib/utils';
+import {
+    interpolateTable,
+    lowerBoundTable,
+    parseCatalogNumberExact,
+    upperBoundTable
+} from '../../../src/htmlcanvas/lib/utils';
 import Pipe from '../../../src/htmlcanvas/objects/pipe';
 import {matrixScale} from '../../../src/htmlcanvas/utils';
 import {Catalog} from '../../../src/store/catalog/types';
@@ -28,6 +36,8 @@ import {assertUnreachable} from "../../../src/config";
 import PipeEntity, {MutablePipe} from "../../store/document/entities/pipe-entity";
 import DirectedValveCalculation, {emptyDirectedValveCalculation} from "../../store/document/calculations/directed-valve-calculation";
 import FittingEntity from "../../store/document/entities/fitting-entity";
+import {getFluidDensityOfSystem, kpa2head} from "../../calculations/pressure-drops";
+import uuid from 'uuid';
 
 export const VALVE_SIZE_MM = 140;
 export const VALVE_HEIGHT_MM = 100;
@@ -118,8 +128,13 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             case ValveType.PRESSURE_RELIEF_VALVE:
                 this.drawPressureReliefValve(context);
                 break;
-            case ValveType.RPZD:
-                this.drawRpzd(context);
+            case ValveType.RPZD_SINGLE:
+                this.drawRpzdSingle(context);
+                break;
+
+            case ValveType.RPZD_DOUBLE_ISOLATED:
+            case ValveType.RPZD_DOUBLE_SHARED:
+                this.drawRpzdDouble(context);
                 break;
             case ValveType.WATER_METER:
                 this.drawWaterMeter(context);
@@ -169,8 +184,51 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         //
     }
 
-    drawRpzd(context: DrawingContext) {
-        //
+    drawRpzdSingle(context: DrawingContext) {
+        const ctx = context.ctx;
+        const oldfs = ctx.fillStyle;
+        ctx.fillStyle = '#ffffff';
+
+        ctx.fillRect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * 1.3, VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * 2.6);
+
+        ctx.beginPath();
+        ctx.rect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * 1.3, VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * 2.6);
+        ctx.stroke();
+
+
+        ctx.fillStyle = oldfs;
+        ctx.beginPath();
+        ctx.moveTo(-VALVE_HEIGHT_MM, -VALVE_HEIGHT_MM);
+        ctx.lineTo(-VALVE_HEIGHT_MM, VALVE_HEIGHT_MM);
+        ctx.lineTo(VALVE_HEIGHT_MM, 0);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    drawRpzdDouble(context: DrawingContext) {
+
+        const ctx = context.ctx;
+
+        const oldfs = ctx.fillStyle;
+        ctx.fillStyle = '#ffffff';
+
+        ctx.fillRect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * 2.3, VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * 4.6);
+
+        ctx.beginPath();
+        ctx.rect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * 2.3, VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * 4.6);
+        ctx.stroke();
+
+
+        ctx.fillStyle = oldfs;
+
+        for (let off = -VALVE_HEIGHT_MM; off <= VALVE_HEIGHT_MM; off += VALVE_HEIGHT_MM * 2) {
+            ctx.beginPath();
+            ctx.moveTo(-VALVE_HEIGHT_MM, -VALVE_HEIGHT_MM + off);
+            ctx.lineTo(-VALVE_HEIGHT_MM, VALVE_HEIGHT_MM + off);
+            ctx.lineTo(VALVE_HEIGHT_MM, 0 + off);
+            ctx.closePath();
+            ctx.fill();
+        }
     }
 
     drawWaterMeter(context: DrawingContext) {
@@ -297,7 +355,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             case ValveType.CHECK_VALVE:
             case ValveType.ISOLATION_VALVE:
             case ValveType.WATER_METER:
-            case ValveType.STRAINER:
+            case ValveType.STRAINER: {
                 const table = context.catalog.valves[this.entity.valve.catalogId];
                 const size = this.largestPipeSizeNominalMM(context);
                 if (size === null) {
@@ -316,10 +374,52 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                     }
                 }
                 break;
+            }
+
+            case ValveType.RPZD_SINGLE:
+            case ValveType.RPZD_DOUBLE_SHARED:
+            case ValveType.RPZD_DOUBLE_ISOLATED: {
+                if (from.connection !== this.entity.sourceUid) {
+                    return sign * (1e10 + flowLS);
+                }
+
+                const calcs = context.globalStore.getOrCreateCalculation(this.entity);
+                const size = calcs.sizeMM;
+                if (size === null) {
+                    return null;
+                }
+
+                const rpzdEntry =
+                    upperBoundTable(context.catalog.backflowValves[this.entity.valve.catalogId].valvesBySize, size);
+                if (!rpzdEntry) {
+                    return null;
+                }
+
+                if (this.entity.valve.type === ValveType.RPZD_DOUBLE_SHARED) {
+                    flowLS /= 2;
+                }
+
+                const plKPA = interpolateTable(rpzdEntry.pressureLossKPAByFlowRateLS, flowLS, true);
+                if (plKPA === null) {
+                    return null;
+                }
+
+                const systemUid = determineConnectableSystemUid(context.globalStore, this.entity);
+                if (systemUid === undefined) {
+                    return null;
+                }
+                const density = getFluidDensityOfSystem(systemUid, context.doc, context.catalog);
+                if (density === null) {
+                    return null;
+                }
+
+                return kpa2head(
+                    plKPA,
+                    density,
+                    context.doc.drawing.metadata.calculationParams.gravitationalAcceleration,
+                );
+            }
             case ValveType.PRESSURE_RELIEF_VALVE:
-                // TODO
-                break;
-            case ValveType.RPZD:
                 // TODO
                 break;
         }
@@ -340,8 +440,12 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             case ValveType.WATER_METER:
             case ValveType.STRAINER:
                 return catalog.valves[this.entity.valve.catalogId].name;
-            case ValveType.RPZD:
+            case ValveType.RPZD_DOUBLE_ISOLATED:
+                    return 'RPZD Double - Isolated';
+            case ValveType.RPZD_SINGLE:
                 return 'RPZD';
+            case ValveType.RPZD_DOUBLE_SHARED:
+                return 'RPZD Double - Shared';
             case ValveType.PRESSURE_RELIEF_VALVE:
                 return 'PRV';
         }
@@ -350,13 +454,14 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
     connect(uid: string) {
         if (this.objectStore.getConnections(this.entity.uid).length === 0) {
-            this.entity.sourceUid = uid;
+            //this.entity.sourceUid = uid;
         } else if (this.objectStore.getConnections(this.entity.uid).length === 1) {
             if (this.entity.sourceUid !== this.objectStore.getConnections(this.entity.uid)[0]) {
                 this.entity.sourceUid = uid;
             }
         } else {
-            throw new Error('shouldn\'t be extending here. connections: ' + JSON.stringify(this.objectStore.getConnections(this.entity.uid)) + ' connecting ' + uid);
+            // The following error is disabled to allow intermittent connecting / disconnecting.
+            //throw new Error('shouldn\'t be extending here. connections: ' + JSON.stringify(this.objectStore.getConnections(this.entity.uid)) + ' connecting ' + uid);
         }
     }
 
@@ -365,6 +470,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         if (tower.length === 0) {
             return [];
         } else if (tower.length === 1) {
+            console.log('single lengths');
             // replace the connectable
             const e = cloneSimple(this.entity);
             e.uid = tower[0][0].uid;
@@ -372,14 +478,30 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             if (this.objectStore.has(e.sourceUid)) {
                 e.sourceUid = this.objectStore.get(e.sourceUid)!.getCalculationEntities(context)[0].uid;
             }
+            console.log('my source: ' + this.entity.sourceUid + ' produced source: ' + e.sourceUid);
             return [e];
         } else if (tower.length === 2) {
+            console.log('separate lengths ' + JSON.stringify(tower));
             // Plop us on the pipe in the middle.
-            const pipe = tower[0][1]!;
+            const pipe = tower[1][1]!;
             const p1 = cloneSimple(pipe);
             const p2 = cloneSimple(pipe);
+            p2.uid = uuid();
             (p1 as MutablePipe).endpointUid = [p1.endpointUid[0], this.uid + '.calculation'];
             (p2 as MutablePipe).endpointUid = [this.uid + '.calculation', p2.endpointUid[1]];
+            let lower: string;
+            let higher: string;
+            if (p1.endpointUid[0] === tower[0][0].uid) {
+                lower = p1.uid;
+                higher = p2.uid;
+            } else {
+                lower = p2.uid;
+                higher = p1.uid;
+            }
+
+            if (lower === undefined || higher === undefined) {
+                throw new Error('Invalid tower configuration');
+            }
 
             const e = cloneSimple(this.entity);
             e.uid = e.uid + '.calculation';
@@ -389,9 +511,9 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             if ((this.objectStore.get(this.entity.sourceUid) as Pipe).entity.heightAboveFloorM <
                 (this.objectStore.get(this.otherUid!) as Pipe).entity.heightAboveFloorM) {
                 // source is #0
-                e.sourceUid = tower[0][0].uid;
+                e.sourceUid = lower;
             } else {
-                e.sourceUid = tower[1][0].uid;
+                e.sourceUid = higher;
             }
 
             return [e, tower[0][0], p1, p2, tower[1][0]];

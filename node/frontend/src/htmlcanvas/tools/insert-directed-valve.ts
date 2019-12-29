@@ -112,11 +112,6 @@ function createBareValve(type: ValveType, catalogId: string): DirectedValveConcr
         case ValveType.CHECK_VALVE:
         case ValveType.WATER_METER:
         case ValveType.STRAINER:
-        case ValveType.RPZD:
-            return {
-                catalogId: catalogId as any,
-                type,
-            };
         case ValveType.ISOLATION_VALVE:
             return {
                 isClosed: true,
@@ -129,5 +124,13 @@ function createBareValve(type: ValveType, catalogId: string): DirectedValveConcr
                 catalogId: catalogId as any,
                 type,
             };
+        case ValveType.RPZD_DOUBLE_ISOLATED:
+        case ValveType.RPZD_SINGLE:
+        case ValveType.RPZD_DOUBLE_SHARED:
+            return {
+                type,
+                catalogId: catalogId as any,
+                sizeMM: null,
+            }
     }
 }

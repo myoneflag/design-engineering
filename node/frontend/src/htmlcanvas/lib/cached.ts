@@ -6,7 +6,7 @@ export default function Cached<T extends BaseBackedObject>(
     serializeArgs?: (...args: any[]) => string,
 ) {
 
-    return function( target: T, propertyKey: string, descriptor: PropertyDescriptor) {
+    return function( target: T, propertyKey: string, descriptor: PropertyDescriptor) { /*
         const originalMethod = descriptor.value;
         descriptor.value = function (this: T) {
             const cacheKey = propertyKey +
@@ -16,7 +16,7 @@ export default function Cached<T extends BaseBackedObject>(
                 this.cache.set(cacheKey, originalMethod.apply(this, arguments));
             }
             return this.cache.get(cacheKey);
-        };
+        };*/
         return descriptor;
     }
 

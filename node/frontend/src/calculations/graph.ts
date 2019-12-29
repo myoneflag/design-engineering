@@ -26,6 +26,7 @@ export default class Graph<N , E> {
     }
 
     addDirectedEdge(from: N, to: N, edgeValue: E, uid?: string, isDirected: boolean = true) {
+        console.log('from: ' + JSON.stringify(from) + ' to: ' + JSON.stringify(to));
         if (uid === undefined) {
             uid = uuid();
         }

@@ -20,10 +20,6 @@
                           @click="$emit('insert', {entityName: entityNames.PIPE, system: selectedSystem})"
                           v-b-tooltip.hover title="Pipes"
                 ><v-icon  name="wave-square" scale="1.2"/></b-button>
-                <b-button variant="outline-dark" class="insertBtn valve btn-sm"
-                          @click="$emit('insert', {entityName: entityNames.FITTING, system: selectedSystem})"
-                          v-b-tooltip.hover title="Fitting"
-                ><v-icon  name="cross" scale="1.2"/></b-button>
 
             </b-button-group>
         </b-col>
@@ -81,7 +77,7 @@
                         variant="outline-dark"
                         id="insertEntityBtn"
                         :disabled="!lastUsedValveVid"
-                        @click="$emit('insert', {entityName: entityNames.DIRECTED_VALVE, system: selectedSystem, catalogId: lastUsedValveVid.catalogId, valveType: lastUsedValveVid.type})"
+                        @click="$emit('insert', {entityName: entityNames.DIRECTED_VALVE, system: selectedSystem, catalogId: lastUsedValveVid.catalogId, valveType: lastUsedValveVid.type, valveName: valve.name})"
                 >
                     {{ lastUsedValveVid.name }}
                 </b-button>
@@ -90,7 +86,7 @@
                             v-for="valve in availableValves"
                             variant="outline-dark"
                             class="shower btn-sm"
-                            @click="$emit('insert', {entityName: entityNames.DIRECTED_VALVE, system: selectedSystem, catalogId: valve.catalogId, valveType: valve.type})"
+                            @click="$emit('insert', {entityName: entityNames.DIRECTED_VALVE, system: selectedSystem, catalogId: valve.catalogId, valveType: valve.type, valveName: valve.name})"
                     >{{ valve.name }}</b-dropdown-item>
                 </b-dropdown>
 
@@ -105,7 +101,7 @@
                         v-for="valve in availableValves"
                         variant="outline-dark"
                         class="shower btn-sm"
-                        @click="$emit('insert', {entityName: entityNames.DIRECTED_VALVE, system: selectedSystem, catalogId: valve.catalogId,  valveType: valve.type})"
+                        @click="$emit('insert', {entityName: entityNames.DIRECTED_VALVE, system: selectedSystem, catalogId: valve.catalogId,  valveType: valve.type, valveName: valve.name})"
                 >{{ valve.name }}</b-dropdown-item>
             </b-dropdown>
         </b-col>
@@ -157,6 +153,10 @@
         },
     })
     export default class HydraulicsInsertPanel extends Vue {
+
+        mounted() {
+            console.log(JSON.stringify(this.$props.availableValves));
+        }
 
         get SupportedPsdStandards() {
             return SupportedPsdStandards;

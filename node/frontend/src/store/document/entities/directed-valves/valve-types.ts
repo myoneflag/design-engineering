@@ -2,9 +2,11 @@ export type DirectedValveConcrete =
     CheckValve |
     IsolationValve |
     PressureReliefValve |
-    RPZDValve |
     WaterMeter |
-    Strainer;
+    Strainer |
+    RPZDSingle |
+    RPZDDoubleShared |
+    RPZDDoubleIsolated;
 
 export interface DirectedValve {
     type: ValveType;
@@ -28,11 +30,6 @@ export interface PressureReliefValve extends DirectedValve {
     targetPressureKPA: number | null;
 }
 
-export interface RPZDValve extends DirectedValve {
-    type: ValveType.RPZD;
-    catalogId: 'rpzd';
-}
-
 export interface WaterMeter extends DirectedValve {
     type: ValveType.WATER_METER;
     catalogId: 'waterMeter';
@@ -43,12 +40,31 @@ export interface Strainer extends DirectedValve {
     catalogId: 'strainer';
 }
 
+export interface RPZDSingle extends DirectedValve {
+    type: ValveType.RPZD_SINGLE;
+    catalogId: 'RPZD';
+    sizeMM: number | null;
+}
+
+export interface RPZDDoubleShared extends DirectedValve {
+    type: ValveType.RPZD_DOUBLE_SHARED;
+    catalogId: 'RPZD';
+    sizeMM: number | null;
+}
+
+export interface RPZDDoubleIsolated extends DirectedValve {
+    type: ValveType.RPZD_DOUBLE_ISOLATED;
+    catalogId: 'RPZD';
+    sizeMM: number | null;
+}
 
 export enum ValveType {
     CHECK_VALVE = 'CHECK_VALVE',
     ISOLATION_VALVE = 'ISOLATION_VALVE',
     PRESSURE_RELIEF_VALVE = 'PRESSURE_RELIEF_VALVE',
-    RPZD = 'RPZD',
+    RPZD_SINGLE = 'RPZD',
+    RPZD_DOUBLE_SHARED = 'RPZD_DOUBLE_SHARED',
+    RPZD_DOUBLE_ISOLATED = 'RPZD_DOUBLE_ISOLATED',
     WATER_METER = 'WATER_METER',
     STRAINER = 'STRAINER',
 }

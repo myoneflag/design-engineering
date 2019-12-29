@@ -57,7 +57,7 @@ export default function insertLoadNode(
                                 type: NodeType.LOAD_NODE,
                                 continuousFlowLS: 0,
                                 designFlowRateLS: 0,
-                                loadingUnits: 0,
+                                loadingUnits: 1,
                             },
                             systemUidOption: null,
                             center: cloneSimple(wc),
@@ -74,7 +74,7 @@ export default function insertLoadNode(
                         newEntity = {
                             node: {
                                 type: NodeType.DWELLING,
-                                dwellings: 0,
+                                dwellings: 1,
                             },
                             systemUidOption: null,
                             center: cloneSimple(wc),

@@ -1891,6 +1891,7 @@ export const initialCatalog: Catalog = {
             name: 'RPZD',
             valvesBySize: {
                 '15': {
+                    sizeMM: '15',
                     minInletPressureKPA: "200",
                     maxInletPressureKPA: "2000",
                     minFlowRateLS: "0",
@@ -1904,6 +1905,7 @@ export const initialCatalog: Catalog = {
                 },
 
                 '20': {
+                    sizeMM: '20',
                     minInletPressureKPA: "200",
                     maxInletPressureKPA: "2000",
                     minFlowRateLS: "0.48",
@@ -1917,6 +1919,7 @@ export const initialCatalog: Catalog = {
                 },
 
                 '25': {
+                    sizeMM: '25',
                     minInletPressureKPA: "200",
                     maxInletPressureKPA: "2000",
                     minFlowRateLS: "0.83",
@@ -1930,6 +1933,7 @@ export const initialCatalog: Catalog = {
                 },
 
                 '32': {
+                    sizeMM: '32',
                     minInletPressureKPA: '200',
                     maxInletPressureKPA: '2000',
                     minFlowRateLS: '1.36',
@@ -1942,6 +1946,7 @@ export const initialCatalog: Catalog = {
                     }
                 },
                 '40': {
+                    sizeMM: '40',
                     minInletPressureKPA: '200',
                     maxInletPressureKPA: '2000',
                     minFlowRateLS: '2.3',
@@ -1954,6 +1959,7 @@ export const initialCatalog: Catalog = {
                     }
                 },
                 '50': {
+                    sizeMM: '50',
                     minInletPressureKPA: '200',
                     maxInletPressureKPA: '2000',
                     minFlowRateLS: '3.25',
@@ -1966,6 +1972,7 @@ export const initialCatalog: Catalog = {
                     }
                 },
                 '65': {
+                    sizeMM: '65',
                     minInletPressureKPA: '200',
                     maxInletPressureKPA: '2000',
                     minFlowRateLS: '5.15',
@@ -1978,6 +1985,7 @@ export const initialCatalog: Catalog = {
                     }
                 },
                 '80': {
+                    sizeMM: '80',
                     minInletPressureKPA: '200',
                     maxInletPressureKPA: '2000',
                     minFlowRateLS: '7.5',
@@ -1990,6 +1998,7 @@ export const initialCatalog: Catalog = {
                     }
                 },
                 '100': {
+                    sizeMM: '100',
                     minInletPressureKPA: '200',
                     maxInletPressureKPA: '2000',
                     minFlowRateLS: '12',
@@ -2002,6 +2011,7 @@ export const initialCatalog: Catalog = {
                     }
                 },
                 '150': {
+                    sizeMM: '150',
                     minInletPressureKPA: '200',
                     maxInletPressureKPA: '2000',
                     minFlowRateLS: '20',

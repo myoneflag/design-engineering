@@ -50,7 +50,14 @@ export function makeDirectedValveFields(
                     multiFieldId: 'targetPressure', requiresInput: true },
             );
             break;
-        case ValveType.RPZD:
+        case ValveType.RPZD_DOUBLE_ISOLATED:
+        case ValveType.RPZD_DOUBLE_SHARED:
+        case ValveType.RPZD_SINGLE:
+            fields.push(
+                { property: 'valve.sizeMM', title: 'Size (mm):', hasDefault: false,
+                    isCalculated: false, type: FieldType.Number, params: {min: 0, max: null},
+                    multiFieldId: 'diameterMM', requiresInput: false },
+            );
             break;
         case ValveType.WATER_METER:
             break;
