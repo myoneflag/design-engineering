@@ -2,6 +2,8 @@ import LoadingUnitTable from '../../../src/store/catalog/psd-standard/loading-un
 import LoadingUnitHotColdTable from '../../../src/store/catalog/psd-standard/loading-unit-hot-cold-table';
 import PsdEquation from './psd-standard/psdEquation';
 import {DwellingStandardType, PsdStandard, PSDStandardType} from "./psd-standard/types";
+import {EntityType} from "../document/entities/types";
+import {StandardFlowSystemUids} from "./index";
 
 export default interface CatalogState {
     defaultCatalog: Catalog;
@@ -59,7 +61,7 @@ export interface FixtureSpec {
     loadingUnits: {[key: string]: LoadingUnit};
     qLS: FlowRateSpec;
     continuousFlowLS?: FlowRateSpec;
-
+    roughIns: string[];
 
     maxInletPressureKPA: string | null;
     minInletPressureKPA: string | null;
@@ -70,15 +72,9 @@ export interface FixtureSpec {
     warmTempC: string | null;
 }
 
-export interface LoadingUnit {
-    cold: string | null;
-    hot: string | null;
-}
+export interface LoadingUnit {[key: string]: string | null}
 
-export interface FlowRateSpec {
-    cold: string | null;
-    hot: string | null;
-}
+export interface FlowRateSpec {[key: string]: string | null}
 
 export interface  ValveSpec {
     name: string;

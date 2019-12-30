@@ -8,26 +8,27 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "3",
             loadingUnits: {
                 "as35002018LoadingUnits": {
-                    cold: "3",
-                    hot: "3"
+                    "cold-water": "3",
+                    "warm-water": "3"
                 },
                 barriesBookLoadingUnits: {
-                    cold: "3",
-                    hot: "3"
+                    "cold-water": "3",
+                    "warm-water": "3"
                 },
                 barriesBookDwellings: {
-                    cold: "3",
-                    hot: "3"
+                    "cold-water": "3",
+                    "warm-water": "3"
                 }
             },
+            roughIns: ['cold-water', 'warm-water'],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Ablution Trough",
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                cold: "0.15",
-                hot: "0.15"
+                "cold-water": "0.15",
+                "warm-water": "0.15"
             },
             uid: "ablutionTrough",
             warmTempC: "42"
@@ -37,26 +38,27 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "1",
             loadingUnits: {
                 "as35002018LoadingUnits": {
-                    cold: "1",
-                    hot: "1"
+                    "cold-water": "1",
+                    "warm-water": "1"
                 },
                 barriesBookLoadingUnits: {
-                    cold: "1",
-                    hot: "1"
+                    "cold-water": "1",
+                    "warm-water": "1"
                 },
                 barriesBookDwellings: {
-                    cold: "1",
-                    hot: "1"
+                    "cold-water": "1",
+                    "warm-water": "1"
                 }
             },
+            roughIns: ['cold-water', 'warm-water'],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Basin",
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                cold: "0.1",
-                hot: "0.1"
+                "cold-water": "0.1",
+                "warm-water": "0.1"
             },
             uid: "basin",
             warmTempC: "42"
@@ -66,26 +68,27 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "4",
             loadingUnits: {
                 "as35002018LoadingUnits": {
-                    cold: "8",
-                    hot: "4"
+                    "cold-water": "8",
+                    "warm-water": "4"
                 },
                 barriesBookLoadingUnits: {
-                    cold: "8",
-                    hot: "8"
+                    "cold-water": "8",
+                    "warm-water": "8"
                 },
                 barriesBookDwellings: {
-                    cold: "8",
-                    hot: "8"
+                    "cold-water": "8",
+                    "warm-water": "8"
                 }
             },
+            roughIns: ['cold-water', 'warm-water'],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Bath",
             outletAboveFloorM: "0.75",
             probabilityOfUsagePCT: "1",
             qLS: {
-                cold: "0.3",
-                hot: "0.3"
+                "cold-water": "0.3",
+                "warm-water": "0.3"
             },
             uid: "bath",
             warmTempC: "42"
@@ -95,26 +98,24 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "6",
             loadingUnits: {
                 "as35002018LoadingUnits": {
-                    cold: "2",
-                    hot: "0"
+                    "cold-water": "2",
                 },
                 barriesBookLoadingUnits: {
-                    cold: "2",
-                    hot: "0"
+                    "cold-water": "2",
                 },
                 barriesBookDwellings: {
-                    cold: "2",
-                    hot: "0"
+                    "cold-water": "2",
                 }
             },
+            roughIns: ['cold-water'],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Bedpan Sanitiser",
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                cold: "0.15",
-                hot: "0"
+                "cold-water": "0.15",
+
             },
             uid: "bedpanSanitiser",
             warmTempC: null
@@ -124,26 +125,27 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "1",
             loadingUnits: {
                 "as35002018LoadingUnits": {
-                    cold: "2",
-                    hot: "2"
+                    "cold-water": "2",
+                    "warm-water": "2"
                 },
                 barriesBookLoadingUnits: {
-                    cold: "2",
-                    hot: "2"
+                    "cold-water": "2",
+                    "warm-water": "2"
                 },
                 barriesBookDwellings: {
-                    cold: "2",
-                    hot: "2"
+                    "cold-water": "2",
+                    "warm-water": "2"
                 }
             },
+            roughIns: ['cold-water', 'warm-water'],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Beverage Bay",
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                cold: "0.1",
-                hot: "0.1"
+                "cold-water": "0.1",
+                "warm-water": "0.1"
             },
             uid: "beverageBay",
             warmTempC: "42"
@@ -153,26 +155,27 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "8",
             loadingUnits: {
                 "as35002018LoadingUnits": {
-                    cold: "16",
-                    hot: "8"
+                    "cold-water": "16",
+                    "warm-water": "8"
                 },
                 barriesBookLoadingUnits: {
-                    cold: "16",
-                    hot: "8"
+                    "cold-water": "16",
+                    "warm-water": "8"
                 },
                 barriesBookDwellings: {
-                    cold: "16",
-                    hot: "8"
+                    "cold-water": "16",
+                    "warm-water": "8"
                 }
             },
+            roughIns: ['cold-water', 'warm-water'],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Birthing Pool",
             outletAboveFloorM: "0.75",
             probabilityOfUsagePCT: "1",
             qLS: {
-                cold: "1",
-                hot: "1"
+                "cold-water": "1",
+                "warm-water": "1"
             },
             uid: "birthingPool",
             warmTempC: "38"
@@ -182,26 +185,27 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "1",
             loadingUnits: {
                 "as35002018LoadingUnits": {
-                    cold: "2",
-                    hot: "2"
+                    "cold-water": "2",
+                    "hot-water": "2"
                 },
                 barriesBookLoadingUnits: {
-                    cold: "2",
-                    hot: "3"
+                    "cold-water": "2",
+                    "hot-water": "3"
                 },
                 barriesBookDwellings: {
-                    cold: "2",
-                    hot: "3"
+                    "cold-water": "2",
+                    "hot-water": "3"
                 }
             },
+            roughIns: ['cold-water', 'hot-water'],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Cleaners sink",
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                cold: "0.15",
-                hot: "0.15"
+                "cold-water": "0.15",
+                "hot-water": "0.15"
             },
             uid: "cleanersSink",
             warmTempC: null
@@ -211,26 +215,27 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "3",
             loadingUnits: {
                 "as35002018LoadingUnits": {
-                    cold: "3",
-                    hot: "2"
+                    "ColdWater": "3",
+                    "hot-water": "2"
                 },
                 barriesBookLoadingUnits: {
-                    cold: "3",
-                    hot: "3"
+                    "cold-water": "3",
+                    "hot-water": "3"
                 },
                 barriesBookDwellings: {
-                    cold: "3",
-                    hot: "3"
+                    "cold-water": "3",
+                    "hot-water": "3"
                 }
             },
+            roughIns: ['cold-water', 'hot-water'],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Dishwasher",
             outletAboveFloorM: "0.8",
             probabilityOfUsagePCT: "0.5",
             qLS: {
-                cold: "0.2",
-                hot: "0.2"
+                "cold-water": "0.2",
+                "hot-water": "0.2"
             },
             uid: "dishwasher",
             warmTempC: null
@@ -240,26 +245,27 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "6",
             loadingUnits: {
                 "as35002018LoadingUnits": {
-                    cold: "2",
-                    hot: "0"
+                    "cold-water": "2",
+
                 },
                 barriesBookLoadingUnits: {
-                    cold: "2",
-                    hot: "0"
+                    "cold-water": "2",
+
                 },
                 barriesBookDwellings: {
-                    cold: "2",
-                    hot: "0"
+                    "cold-water": "2",
+
                 }
             },
+            roughIns: ['cold-water'],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Flishing Rim Sink",
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                cold: "0.1",
-                hot: "0"
+                "cold-water": "0.1",
+
             },
             uid: "flishingRimSink",
             warmTempC: null
@@ -269,26 +275,27 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "0",
             loadingUnits: {
                 "as35002018LoadingUnits": {
-                    cold: "8",
-                    hot: "0"
+                    "cold-water": "8",
+
                 },
                 barriesBookLoadingUnits: {
-                    cold: "8",
-                    hot: "0"
+                    "cold-water": "8",
+
                 },
                 barriesBookDwellings: {
-                    cold: "8",
-                    hot: "0"
+                    "cold-water": "8",
+
                 }
             },
+            roughIns: ['cold-water'],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Hose tap",
             outletAboveFloorM: "0.5",
             probabilityOfUsagePCT: "0",
             qLS: {
-                cold: "0.3",
-                hot: "0"
+                "cold-water": "0.3",
+
             },
             uid: "hoseTap",
             warmTempC: null
@@ -298,26 +305,27 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "3",
             loadingUnits: {
                 "as35002018LoadingUnits": {
-                    cold: "2",
-                    hot: "2"
+                    "cold-water": "2",
+                    "warm-water": "2"
                 },
                 barriesBookLoadingUnits: {
-                    cold: "3",
-                    hot: "3"
+                    "cold-water": "3",
+                    "warm-water": "3"
                 },
                 barriesBookDwellings: {
-                    cold: "3",
-                    hot: "3"
+                    "cold-water": "3",
+                    "warm-water": "3"
                 }
             },
+            roughIns: ['cold-water', 'warm-water'],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Kitchen sink",
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                cold: "0.1",
-                hot: "0.1"
+                "cold-water": "0.1",
+                "warm-water": "0.1"
             },
             uid: "kitchenSink",
             warmTempC: null
@@ -327,26 +335,27 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "5",
             loadingUnits: {
                 "as35002018LoadingUnits": {
-                    cold: "3",
-                    hot: "3"
+                    "cold-water": "3",
+                    "warm-water": "3"
                 },
                 barriesBookLoadingUnits: {
-                    cold: "3",
-                    hot: "3"
+                    "cold-water": "3",
+                    "warm-water": "3"
                 },
                 barriesBookDwellings: {
-                    cold: "3",
-                    hot: "3"
+                    "cold-water": "3",
+                    "warm-water": "3"
                 }
             },
+            roughIns: ['cold-water', 'warm-water'],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Laundry Trough",
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                cold: "0.12",
-                hot: "0.12"
+                "cold-water": "0.12",
+                "warm-water": "0.12"
             },
             uid: "laundryTrough",
             warmTempC: null
@@ -356,26 +365,27 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "2",
             loadingUnits: {
                 "as35002018LoadingUnits": {
-                    cold: "2",
-                    hot: "2"
+                    "cold-water": "2",
+                    "warm-water": "2"
                 },
                 barriesBookLoadingUnits: {
-                    cold: "3",
-                    hot: "2"
+                    "cold-water": "3",
+                    "warm-water": "2"
                 },
                 barriesBookDwellings: {
-                    cold: "3",
-                    hot: "2"
+                    "cold-water": "3",
+                    "warm-water": "2"
                 }
             },
+            roughIns: ['cold-water', 'warm-water'],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Shower",
             outletAboveFloorM: "1.5",
             probabilityOfUsagePCT: "4.5",
             qLS: {
-                cold: "0.15",
-                hot: "0.15"
+                "cold-water": "0.15",
+                "warm-water": "0.15"
             },
             uid: "shower",
             warmTempC: "42"
@@ -385,26 +395,27 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "1",
             loadingUnits: {
                 "as35002018LoadingUnits": {
-                    cold: "2",
-                    hot: "0"
+                    "cold-water": "2",
+
                 },
                 barriesBookLoadingUnits: {
-                    cold: "2",
-                    hot: "0"
+                    "cold-water": "2",
+
                 },
                 barriesBookDwellings: {
-                    cold: "2",
-                    hot: "0"
+                    "cold-water": "2",
+
                 }
             },
+            roughIns: ['cold-water'],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Urinal",
             outletAboveFloorM: null,
             probabilityOfUsagePCT: "4.5",
             qLS: {
-                cold: "0.1",
-                hot: "0"
+                "cold-water": "0.1",
+
             },
             uid: "urinal",
             warmTempC: null
@@ -414,26 +425,27 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "5",
             loadingUnits: {
                 "as35002018LoadingUnits": {
-                    cold: "3",
-                    hot: "2"
+                    "cold-water": "3",
+                    "warm-water": "2"
                 },
                 barriesBookLoadingUnits: {
-                    cold: "3",
-                    hot: "3"
+                    "cold-water": "3",
+                    "warm-water": "3"
                 },
                 barriesBookDwellings: {
-                    cold: "3",
-                    hot: "3"
+                    "cold-water": "3",
+                    "warm-water": "3"
                 }
             },
+            roughIns: ['cold-water', 'warm-water'],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Washing Machine",
             outletAboveFloorM: "0.8",
             probabilityOfUsagePCT: "5.5",
             qLS: {
-                cold: "0.2",
-                hot: "0.2"
+                "cold-water": "0.2",
+                "warm-water": "0.2"
             },
             uid: "washingMachine",
             warmTempC: null
@@ -443,26 +455,27 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "4",
             loadingUnits: {
                 "as35002018LoadingUnits": {
-                    cold: "2",
-                    hot: "0"
+                    "cold-water": "2",
+
                 },
                 barriesBookLoadingUnits: {
-                    cold: "2",
-                    hot: "0"
+                    "cold-water": "2",
+
                 },
                 barriesBookDwellings: {
-                    cold: "2",
-                    hot: "0"
+                    "cold-water": "2",
+
                 }
             },
+            roughIns: ['cold-water'],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "WC",
             outletAboveFloorM: "0.75",
             probabilityOfUsagePCT: "1",
             qLS: {
-                cold: "0.1",
-                hot: "0"
+                "cold-water": "0.1",
+
             },
             uid: "wc",
             warmTempC: null

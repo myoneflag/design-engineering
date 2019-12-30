@@ -342,7 +342,7 @@ export class GlobalStore extends ObjectStore {
                     this.calculationStore.set(entity.uid, cloneSimple(emptyFittingCalculation()));
                     break;
                 case EntityType.FIXTURE:
-                    this.calculationStore.set(entity.uid, cloneSimple(emptyFixtureCalculation()));
+                    this.calculationStore.set(entity.uid, cloneSimple(emptyFixtureCalculation(entity)));
                     break;
                 case EntityType.DIRECTED_VALVE:
                     this.calculationStore.set(entity.uid, cloneSimple(emptyDirectedValveCalculation()));

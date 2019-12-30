@@ -153,6 +153,10 @@
                                 :disabled="isDisabled(field)"
                         />
 
+                        <h5 v-else-if="field.type === 'title'">
+                            {{ field.title }}
+                        </h5>
+
                         <b-form-input
                                 v-else
                                 :value="renderedData(field.property)" @input="setRenderedData(field, $event)"

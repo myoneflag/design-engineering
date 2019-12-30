@@ -19,11 +19,15 @@
                 <b-button variant="outline-dark" class="insertBtn pipes btn-sm"
                           @click="$emit('insert', {entityName: entityNames.PIPE, system: selectedSystem, networkType: NetworkType.RETICULATIONS})"
                           v-b-tooltip.hover title="Reticulation Pipe"
-                ><v-icon  name="wave-square" scale="1.2"/></b-button>
+                ><v-icon  name="wave-square" scale="1.2"/>{{
+                    catalog.pipes[selectedSystem.networks[NetworkType.RETICULATIONS].material].abbreviation
+                    }}</b-button>
                 <b-button variant="outline-dark" class="insertBtn pipes btn-sm"
                           @click="$emit('insert', {entityName: entityNames.PIPE, system: selectedSystem, networkType: NetworkType.CONNECTIONS})"
-                          v-b-tooltip.hover title="Connection (PEX) Pipe"
-                ><v-icon  name="wave-square" scale="1.2"/></b-button>
+                          v-b-tooltip.hover title="Connection Pipe"
+                ><v-icon  name="wave-square" scale="1.2"/>{{
+                     catalog.pipes[selectedSystem.networks[NetworkType.CONNECTIONS].material].abbreviation
+                    }}</b-button>
 
             </b-button-group>
         </b-col>
@@ -143,6 +147,7 @@
     import {DocumentState, NetworkType} from "../../store/document/types";
     import { SupportedPsdStandards } from '../../../src/config';
     import {NodeType} from "../../store/document/entities/load-node-entity";
+    import {Catalog} from "../../../../backend/src/entity/Catalog";
 
     @Component({
         components: {FlowSystemPicker},
@@ -207,6 +212,10 @@
 
         selectSystem(value: number) {
             this.selectedSystemId = value;
+        }
+
+        get catalog(): Catalog {
+            return this.$store.getters['catalog/default'];
         }
     }
 </script>

@@ -1,4 +1,4 @@
-import {Coord, DrawableEntity, DrawingState,} from '../../../../../src/store/document/types';
+import {Coord, DocumentState, DrawableEntity, DrawingState,} from '../../../../../src/store/document/types';
 import {EntityType} from '../../../../../src/store/document/entities/types';
 import {FieldType, PropertyField} from '../../../../../src/store/document/entities/property-field';
 import {Catalog} from '../../../../../src/store/catalog/types';
@@ -6,39 +6,36 @@ import {SupportedPsdStandards} from '../../../../config';
 import {parseCatalogNumberExact, parseCatalogNumberOrMin} from '../../../../../src/htmlcanvas/lib/utils';
 import {cloneSimple} from '../../../../../src/lib/utils';
 
+export interface RoughInRecord {
+    uid: string,
+    minPressureKPA: number | null;
+    maxPressureKPA: number | null;
+    loadingUnits: number | null;
+    designFlowRateLS: number | null;
+    continuousFlowLS: number | null;
+}
+
 export default interface FixtureEntity extends DrawableEntity {
     center: Coord;
     type: EntityType.FIXTURE;
     name: string;
     abbreviation: string;
-
     rotation: number;
-    coldRoughInUid: string;
-    warmRoughInUid: string | null;
+
+    roughIns: {
+        [key: string]: RoughInRecord,
+    }
+    roughInsInOrder: string[];
 
     pipeDistanceMM: number;
     outletAboveFloorM: number | null;
-
     warmTempC: number | null;
-
-    minInletPressureKPA: number | null;
-    maxInletPressureKPA: number | null;
-
-    loadingUnitsCold: number | null;
-    loadingUnitsHot: number | null;
-
-    designFlowRateCold: number | null;
-    designFlowRateHot: number | null;
-
-    continuousFlowColdLS: number | null;
-    continuousFlowHotLS: number | null;
-
     fixtureUnits: number | null;
     probabilityOfUsagePCT: number | null;
 }
 
-export function makeFixtureFields(): PropertyField[] {
-    return [
+export function makeFixtureFields(doc: DocumentState, entity: FixtureEntity): PropertyField[] {
+    const res: PropertyField[] = [
         { property: 'rotation', title: 'Rotation: (Degrees)', hasDefault: false, isCalculated: false,
             type: FieldType.Rotation, params: null, multiFieldId: null },
 
@@ -48,36 +45,35 @@ export function makeFixtureFields(): PropertyField[] {
         { property: 'warmTempC', title: 'Warm Water Temperature (C)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: 100 },  multiFieldId: 'warmTempC' },
 
-        { property: 'minInletPressureKPA', title: 'Min. Inlet Pressure (KPA)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'minInletPressureKPA' },
-
-        { property: 'maxInletPressureKPA', title: 'Max. Inlet Pressure (KPA)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'maxInletPressureKPA' },
-
-        { property: 'loadingUnitsCold', title: 'Loading Units (Cold)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'loadingUnitsCold' },
-
-        { property: 'loadingUnitsHot', title: 'Loading Units (Hot)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'loadingUnitsHot' },
-
-        { property: 'designFlowRateCold', title: 'Design Flow Rate (Cold, L/s)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'designFlowRateCold' },
-
-        { property: 'designFlowRateHot', title: 'Design Flow Rate (Hot, L/s)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'designFlowRateHot' },
-
-        { property: 'continuousFlowColdLS', title: 'Continuous Flow (Cold, L/s)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'continuousFlowColdLS' },
-
-        { property: 'continuousFlowHotLS', title: 'Continuous Flow (Hot, L/s)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'continuousFlowHotLS' },
-
         { property: 'fixtureUnits', title: 'Fixture Units', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'fixtureUnits' },
 
         { property: 'probabilityOfUsagePCT', title: 'Prob. of Usage (%)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'probabilityOfUsagePCT' },
     ];
+
+    for (const suid of Object.keys(entity.roughIns)) {
+        const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === suid)!;
+        res.push(
+            { property: suid + '.title', title: system.name, hasDefault: false, isCalculated: false,
+                type: FieldType.Title,  multiFieldId: suid + '.title' },
+
+            { property: 'roughIns.' + suid + '.designFlowRateLS', title: 'Design Flow Rate (L/s)', hasDefault: true, isCalculated: false,
+                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '.designFlowRateLS' },
+            { property: 'roughIns.' + suid + 'continuousFlowColdLS', title: 'Continuous Flow (Cold, L/s)', hasDefault: true, isCalculated: false,
+                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'continuousFlowColdLS' },
+            { property: 'roughIns.' + suid + '.loadingUnits', title: 'Loading Units', hasDefault: true, isCalculated: false,
+                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '.loadingUnits' },
+            { property: 'roughIns.' + suid + '.minPressureKPA', title: 'Min. Inlet Pressure (KPA)', hasDefault: true, isCalculated: false,
+                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'minPressureKPA' },
+            { property: 'roughIns.' + suid +  '.maxPressureKPA', title: 'Max. Inlet Pressure (KPA)', hasDefault: true, isCalculated: false,
+                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '.maxPressureKPA' },
+
+        );
+    }
+
+
+    return res;
 }
 
 export function fillFixtureFields(
@@ -88,15 +84,11 @@ export function fillFixtureFields(
     const result = cloneSimple(value);
 
     const arr: Array<
-        'minInletPressureKPA' |
-        'maxInletPressureKPA' |
         'warmTempC' |
         'outletAboveFloorM' |
         'fixtureUnits' |
         'probabilityOfUsagePCT'
         > = [
-        'minInletPressureKPA',
-        'maxInletPressureKPA',
         'warmTempC',
         'outletAboveFloorM',
         'fixtureUnits',
@@ -112,38 +104,36 @@ export function fillFixtureFields(
     const psdStrategy = drawing ? drawing.metadata.calculationParams.psdMethod :
         SupportedPsdStandards.as35002018LoadingUnits;
 
-    if (psdStrategy in defaultCatalog.fixtures[result.name].loadingUnits) {
-        if (result.loadingUnitsCold === null) {
-            result.loadingUnitsCold =
-                parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy].cold);
+    let continuousFlowLS = defaultCatalog.fixtures[result.name].continuousFlowLS;
+
+    for (const systemUid of Object.keys(result.roughIns)) {
+        const target = result.roughIns[systemUid];
+        if (target.minPressureKPA === null) {
+            target.minPressureKPA = parseCatalogNumberExact(defaultCatalog.fixtures[result.name].minInletPressureKPA);
+        }
+        if (target.maxPressureKPA === null) {
+            target.maxPressureKPA = parseCatalogNumberExact(defaultCatalog.fixtures[result.name].maxInletPressureKPA);
         }
 
-        if (result.loadingUnitsHot === null) {
-            result.loadingUnitsHot =
-                parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy].hot);
+        if (psdStrategy in defaultCatalog.fixtures[result.name].loadingUnits) {
+            if (target.loadingUnits === null) {
+                target.loadingUnits =
+                    parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy][systemUid]);
+            }
         }
-    }
-    if (result.designFlowRateCold === null) {
-        result.designFlowRateCold = parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].qLS.cold);
-    }
-    if (result.designFlowRateHot === null) {
-        result.designFlowRateHot = parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].qLS.hot);
-    }
 
-    let kek = defaultCatalog.fixtures[result.name].continuousFlowLS;
-    if (kek) {
-        if (result.continuousFlowColdLS == null) {
-            result.continuousFlowColdLS = parseCatalogNumberExact(kek.cold);
+        if (target.designFlowRateLS === null) {
+            target.designFlowRateLS = parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].qLS[systemUid]);
         }
-        if (result.continuousFlowHotLS == null) {
-            result.continuousFlowHotLS = parseCatalogNumberExact(kek.hot);
-        }
-    } else {
-        if (result.continuousFlowColdLS == null) {
-            result.continuousFlowColdLS = 0;
-        }
-        if (result.continuousFlowHotLS == null) {
-            result.continuousFlowHotLS = 0;
+
+        if (continuousFlowLS) {
+            if (target.continuousFlowLS == null) {
+                target.continuousFlowLS = parseCatalogNumberExact(continuousFlowLS[systemUid]);
+            }
+        } else {
+            if (target.continuousFlowLS == null) {
+                target.continuousFlowLS = 0;
+            }
         }
     }
 

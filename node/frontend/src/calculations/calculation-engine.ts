@@ -182,7 +182,7 @@ export default class CalculationEngine {
                     fields = makeTMVFields();
                     break;
                 case EntityType.FIXTURE:
-                    fields = makeFixtureFields();
+                    fields = makeFixtureFields(this.doc, obj.entity);
                     break;
                 case EntityType.DIRECTED_VALVE:
                     fields = makeDirectedValveFields(this.doc.drawing.metadata.flowSystems, obj.entity.valve);

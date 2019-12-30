@@ -291,7 +291,7 @@ export function getFields(entity: DrawableEntityConcrete, doc: DocumentState, ca
         case EntityType.TMV:
             return makeTmvCalculationFields(entity);
         case EntityType.FIXTURE:
-            return makeFixtureCalculationFields();
+            return makeFixtureCalculationFields(doc, entity);
         case EntityType.DIRECTED_VALVE:
             return makeDirectedValveCalculationFields(entity);
         case EntityType.SYSTEM_NODE:
