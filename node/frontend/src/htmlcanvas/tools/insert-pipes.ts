@@ -1,4 +1,10 @@
-import {ConnectableEntity, Coord, DocumentState, FlowSystemParameters} from '../../../src/store/document/types';
+import {
+    ConnectableEntity,
+    Coord,
+    DocumentState,
+    FlowSystemParameters,
+    NetworkType
+} from '../../../src/store/document/types';
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
 import {InteractionType} from '../../../src/htmlcanvas/lib/interaction';
 import {MainEventBus} from '../../../src/store/main-event-bus';
@@ -21,7 +27,7 @@ import BackedConnectable from '../../../src/htmlcanvas/lib/BackedConnectable';
 import Vue from 'vue';
 import {rebaseAll} from "../lib/black-magic/rebase-all";
 
-export default function insertPipes(context: CanvasContext, system: FlowSystemParameters) {
+export default function insertPipes(context: CanvasContext, system: FlowSystemParameters, network: NetworkType) {
     // strategy:
     // 1. create new pipe at click point
     // 2. endpoint of pipe is at 2nd click point and follows the move in order to preview
@@ -113,7 +119,7 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
 
             context.$store.dispatch('document/commit').then(() => {
                 context.interactive = null;
-                insertPipeChain(context, entity, system, heightM);
+                insertPipeChain(context, entity, system, network, heightM);
             });
         },
         'Start Pipe',
@@ -124,6 +130,7 @@ function insertPipeChain(
     context: CanvasContext,
     lastAttachment: ConnectableEntity,
     system: FlowSystemParameters,
+    network: NetworkType,
     heightM: number,
 ) {
     let nextEntity: ConnectableEntityConcrete | FittingEntity;
@@ -147,7 +154,7 @@ function insertPipeChain(
             if (!displaced) {
                 MainEventBus.$emit('set-tool-handler', null);
                 // stamp and draw another pipe
-                insertPipes(context, system);
+                insertPipes(context, system, network);
             }
         },
         (wc: Coord, event: MouseEvent) => {
@@ -256,6 +263,7 @@ function insertPipeChain(
                 maximumVelocityMS: null,
                 parentUid: null,
                 systemUid: system.uid,
+                network,
                 type: EntityType.PIPE,
                 uid: pipeUid,
             };
@@ -270,7 +278,7 @@ function insertPipeChain(
             context.interactive = null;
             // committed to the point. And also create new pipe, continue the chain.
             context.$store.dispatch('document/commit').then(() => {
-                insertPipeChain(context, nextEntity, system, heightM);
+                insertPipeChain(context, nextEntity, system, network, heightM);
             });
         },
 

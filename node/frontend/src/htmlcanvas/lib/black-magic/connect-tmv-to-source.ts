@@ -2,9 +2,8 @@ import {StandardFlowSystemUids} from '../../../../src/store/catalog';
 import Tmv from '../../../../src/htmlcanvas/objects/tmv/tmv';
 import SystemNode from '../../../../src/htmlcanvas/objects/tmv/system-node';
 import Flatten from '@flatten-js/core';
-import DrawableObjectFactory from '../../../../src/htmlcanvas/lib/drawable-object-factory';
 import CanvasContext from '../../../../src/htmlcanvas/lib/canvas-context';
-import {ConnectableEntity, Coord, DrawableEntity} from '../../../../src/store/document/types';
+import {ConnectableEntity, Coord, DrawableEntity, NetworkType} from '../../../../src/store/document/types';
 import PipeEntity from '../../../../src/store/document/entities/pipe-entity';
 import Pipe from '../../../../src/htmlcanvas/objects/pipe';
 import {ConnectableEntityConcrete} from '../../../../src/store/document/entities/concrete-entity';
@@ -143,6 +142,7 @@ function leadPipe(
         maximumVelocityMS: null,
         parentUid: null,
         systemUid,
+        network: NetworkType.CONNECTIONS,
         type: EntityType.PIPE,
         uid: uuid(),
     };

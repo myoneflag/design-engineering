@@ -32,6 +32,7 @@ import FixtureEntity from "../../../store/document/entities/fixtures/fixture-ent
 import FittingEntity from "../../../store/document/entities/fitting-entity";
 import RiserCalculation from "../../../store/document/calculations/riser-calculation";
 import SystemNodeCalculation from "../../../store/document/calculations/system-node-calculation";
+import {Matrix} from "transformation-matrix";
 
 @CalculatedObject
 @ConnectableObject
@@ -44,6 +45,13 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
     minimumConnections = 0;
     maximumConnections = 1;
     dragPriority = getDragPriority(EntityType.SYSTEM_NODE);
+
+    get position(): Matrix {
+        return TM.transform(
+            TM.translate(this.entity.center.x, this.entity.center.y),
+        );
+    }
+
 
     offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
         switch (interaction.type) {

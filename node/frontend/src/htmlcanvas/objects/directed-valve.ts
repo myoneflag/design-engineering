@@ -441,11 +441,11 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             case ValveType.STRAINER:
                 return catalog.valves[this.entity.valve.catalogId].name;
             case ValveType.RPZD_DOUBLE_ISOLATED:
-                    return 'RPZD Double - Isolated';
+                    return 'RPZD Parallel - Isolated';
             case ValveType.RPZD_SINGLE:
                 return 'RPZD';
             case ValveType.RPZD_DOUBLE_SHARED:
-                return 'RPZD Double - Shared';
+                return 'RPZD Parallel - Simultaneous';
             case ValveType.PRESSURE_RELIEF_VALVE:
                 return 'PRV';
         }

@@ -1,8 +1,7 @@
 import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
 import RiserEntity from '../../store/document/entities/riser-entity';
 import * as TM from 'transformation-matrix';
-import {Matrix} from 'transformation-matrix';
-import {Coord, DocumentState, FlowSystemParameters} from '../../../src/store/document/types';
+import {Coord, DocumentState, FlowSystemParameters, NetworkType} from '../../../src/store/document/types';
 import {matrixScale} from '../../../src/htmlcanvas/utils';
 import {cloneSimple, lighten} from '../../../src/lib/utils';
 import Connectable, {ConnectableObject} from '../../../src/htmlcanvas/lib/object-traits/connectable';
@@ -22,7 +21,6 @@ import {CalculationData} from '../../../src/store/document/calculations/calculat
 import CanvasContext from "../lib/canvas-context";
 import {DrawableEntityConcrete} from "../../store/document/entities/concrete-entity";
 import PipeEntity from "../../store/document/entities/pipe-entity";
-import FittingCalculation from "../../store/document/calculations/fitting-calculation";
 import RiserCalculation from "../../store/document/calculations/riser-calculation";
 
 @CalculatedObject
@@ -43,6 +41,14 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
     MINIMUM_RADIUS_PX: number = 3;
     lastDrawnWorldRadius: number = 0; // for bounds detection
     lastDrawnDiameterW: number = 100;
+
+    get position(): TM.Matrix {
+        const scale = 1 / this.fromParentToWorldLength(1);
+        return TM.transform(
+            TM.translate(this.entity.center.x, this.entity.center.y),
+            TM.scale(scale, scale),
+        );
+    }
 
     drawInternal({ctx, doc, vp}: DrawingContext, {active, selected}: DrawingArgs): void {
         this.lastDrawnWorldRadius = 0;
@@ -219,6 +225,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
             material: null,
             maximumVelocityMS: null,
             parentUid: null,
+            network: NetworkType.RISERS,
             systemUid: this.entity.systemUid,
             type: EntityType.PIPE,
             uid: this.uid + '.-1.p',

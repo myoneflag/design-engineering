@@ -22,6 +22,7 @@ import {SelectableObject} from "../lib/object-traits/selectable";
 import CenterDraggableObject from "../lib/object-traits/center-draggable-object";
 import PipeEntity from "../../store/document/entities/pipe-entity";
 import FittingEntity from "../../store/document/entities/fitting-entity";
+import {Matrix} from "transformation-matrix";
 
 @SelectableObject
 @CenterDraggableObject
@@ -39,6 +40,14 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         }
     };
     minimumConnections = 0;
+
+    get position(): TM.Matrix {
+        const scale = 1 / this.fromParentToWorldLength(1);
+        return TM.transform(
+            TM.translate(this.entity.center.x, this.entity.center.y),
+            TM.scale(scale, scale),
+        );
+    }
 
     drawInternal(context: DrawingContext, args: DrawingArgs): void {
         const {ctx, vp} = context;

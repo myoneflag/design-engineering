@@ -405,14 +405,14 @@ export abstract class LayerImplementation implements Layer {
     }
 
     addEntity(entity: () => DrawableEntityConcrete): void {
-
+        const uid = entity().uid;
         DrawableObjectFactory.buildVisible(
             this,
             entity,
             this.objectStore,
             {
-                onSelected: (e) => this.onSelected(e, entity().uid),
-                onChange: () => this.onChange([entity().uid]),
+                onSelected: (e) => this.onSelected(e, uid),
+                onChange: () => this.onChange([uid]),
                 onCommit: (e) => this.onCommit(entity()),
             },
         );

@@ -42,10 +42,12 @@
 
     import Vue from 'vue';
     import Component from 'vue-class-component';
-    import {DocumentState} from '../../../src/store/document/types';
+    import {DocumentState, initialDocumentState, initialDrawing} from '../../../src/store/document/types';
     import SettingsFieldBuilder from '../../../src/components/editor/lib/SettingsFieldBuilder.vue';
     import uuid from 'uuid';
     import FlowSystemPicker from '../../../src/components/editor/FlowSystemPicker.vue';
+    import * as _ from 'lodash';
+    import {cloneSimple} from "../../lib/utils";
 
     @Component({
         components: {SettingsFieldBuilder, FlowSystemPicker},
@@ -62,15 +64,26 @@
         selectedSystemId: number = 0;
 
         get fields(): any[][] {
-            return [
+            const fields = [
                 ['name', 'System Name:', 'text'],
                 ['fluid', 'Fluid:', 'choice', this.$store.getters['catalog/defaultFluidChoices']],
-                ['velocity', 'Velocity: (m/s)', 'number'],
                 ['temperature', 'Entry temperature: (c)', 'range', 10, 100],
-                ['spareCapacity', 'Spare Capacity: %', 'range', 0, 100],
-                ['material', 'Material:', 'choice', this.$store.getters['catalog/defaultPipeMaterialChoices']],
                 ['color', 'Colour:', 'color'],
+                ['', 'Network Properties', 'title3'],
             ];
+
+
+
+            for (const netKey of Object.keys(this.selectedSystem.networks)) {
+                fields.push(
+                    [netKey, _.startCase(netKey.toLowerCase()), 'title4'],
+                    ['networks.' + netKey + '.velocityMS', 'Velocity: (m/s)', 'number'],
+                    ['networks.' + netKey + '.material', 'Material:', 'choice', this.$store.getters['catalog/defaultPipeMaterialChoices']],
+                    ['networks.' + netKey + '.spareCapacityPCT', 'Spare Capacity: %', 'range', 0, 100],
+                );
+            }
+
+            return fields;
         }
 
 
@@ -113,13 +126,11 @@
             if ((this.$refs.fields as any).leave()) {
                 this.document.drawing.metadata.flowSystems.push({
                     name: 'New Flow System',
-                    velocity: 2.5,
                     temperature: 60,
-                    spareCapacity: 20,
-                    material: 'Material A',
                     color: {hex: '#FCDC00'},
                     uid: uuid(),
                     fluid: 'water',
+                    networks: cloneSimple(initialDrawing.metadata.flowSystems[0].networks),
                 });
                 this.$store.dispatch('document/commit').then(() => {
                     this.selectedSystemId = this.document.drawing.metadata.flowSystems.length - 1;

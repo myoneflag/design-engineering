@@ -21,7 +21,7 @@ import {isConnectable} from '../../../../src/store/document';
 import assert from 'assert';
 import {StandardFlowSystemUids, StandardMaterialUids} from '../../../../src/store/catalog';
 import {MainEventBus} from '../../../../src/store/main-event-bus';
-import {Coord, EntityParam} from '../../../../src/store/document/types';
+import {Coord, EntityParam, NetworkType} from '../../../../src/store/document/types';
 import {rebaseAll} from '../../../../src/htmlcanvas/lib/black-magic/rebase-all';
 import {fillDirectedValveFields} from '../../../../src/store/document/entities/directed-valves/directed-valve-entity';
 import connectTmvToSource from '../../../../src/htmlcanvas/lib/black-magic/connect-tmv-to-source';
@@ -938,6 +938,7 @@ export class AutoConnector {
         const p: PipeEntity = {
             color: null,
             diameterMM: null,
+            network: NetworkType.CONNECTIONS,
             endpointUid: [a.uid, b.uid],
             heightAboveFloorM: height,
             lengthM: null,

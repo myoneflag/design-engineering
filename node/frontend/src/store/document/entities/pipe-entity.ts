@@ -2,7 +2,7 @@ import {
     Color,
     DocumentState,
     DrawableEntity, DrawingState,
-    FlowSystemParameters,
+    FlowSystemParameters, NetworkType,
     WithID,
 } from '../../../../src/store/document/types';
 import {FieldType, PropertyField} from '../../../../src/store/document/entities/property-field';
@@ -19,6 +19,8 @@ export default interface PipeEntity extends DrawableEntity {
     parentUid: null;
 
     systemUid: string;
+    network: NetworkType;
+
     material: string | null;
     lengthM: number | null;
     maximumVelocityMS: number | null;
@@ -39,6 +41,12 @@ export function makePipeFields(materials: Choice[], systems: FlowSystemParameter
     return [
         { property: 'systemUid', title: 'Flow System', hasDefault: false, isCalculated: false,
             type: FieldType.FlowSystemChoice, params: { systems },  multiFieldId: 'systemUid' },
+        { property: 'network', title: 'Network Type', hasDefault: false, isCalculated: false,
+            type: FieldType.Choice,  multiFieldId: 'network', params: { choices: [
+                    { name: 'Riser', key: NetworkType.RISERS, disabled: true },
+                    { name: 'Reticulation', key: NetworkType.RETICULATIONS, disabled: false },
+                    { name: 'Connection', key: NetworkType.CONNECTIONS, disabled: false },
+                ]} },
 
         { property: 'material', title: 'Material', hasDefault: true, isCalculated: false,
             type: FieldType.Choice, params: { choices: materials },  multiFieldId: 'material' },
@@ -72,10 +80,10 @@ export function fillPipeDefaultFields(
 
     if (system) {
         if (result.maximumVelocityMS == null) {
-            result.maximumVelocityMS = system.velocity;
+            result.maximumVelocityMS = system.networks[result.network].velocityMS;
         }
         if (result.material == null) {
-            result.material = system.material;
+            result.material = system.networks[result.network].material;
         }
         if (result.lengthM == null) {
             // We don't want entities to depend on objects. So their distance is to be provided instead, because

@@ -621,7 +621,7 @@ export default class CalculationEngine {
                         }
                     },
                     (dijk) => {
-                        // TODO: Bellman Ford
+                        // xTODO: Bellman Ford
                         let finalPressureKPA: number | null;
                         if (dijk.weight >= 0) {
                             finalPressureKPA = e.pressureKPA! - dijk.weight;
@@ -1171,7 +1171,7 @@ export default class CalculationEngine {
         const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === cpipe.systemUid!);
         const rawFlowRate = flowRateLS;
         if (system) {
-            flowRateLS = flowRateLS * (1 + system.spareCapacity / 100);
+            flowRateLS = flowRateLS * (1 + system.networks[pipe.network].spareCapacityPCT / 100);
         }
 
         const calculation = this.globalStore.getOrCreateCalculation(pipe);

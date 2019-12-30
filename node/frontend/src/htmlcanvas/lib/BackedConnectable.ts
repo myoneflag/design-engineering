@@ -8,6 +8,7 @@ import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
 import {Coord} from '../../../src/store/document/types';
 import {determineConnectableSystemUid,} from '../../../src/store/document/entities/directed-valves/directed-valve-entity';
 import {Matrix} from "transformation-matrix";
+import * as TM from "transformation-matrix";
 
 // TODO: this entire abstract class is obsolete and should be encapsulated in the ConnectableObject
 // decorator.
@@ -20,6 +21,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
      * Entity with higher drag priority is kept when dragging one connectable onto another.
      */
     abstract dragPriority: number;
+
 
     prepareDeleteConnection(uid: string, context: CanvasContext): BaseBackedObject[] {
         if (this.objectStore.getConnections(this.entity.uid).length < this.minimumConnections) {

@@ -113,7 +113,14 @@ import {EntityType} from "../../store/document/entities/types";
     import Vue from "vue";
     import Component from "vue-class-component";
     import {ViewPort} from "../../../src/htmlcanvas/viewport";
-    import {Coord, DocumentState, EntityParam, FlowSystemParameters, Level} from "../../../src/store/document/types";
+    import {
+        Coord,
+        DocumentState,
+        EntityParam,
+        FlowSystemParameters,
+        Level,
+        NetworkType
+    } from "../../../src/store/document/types";
     import {drawLoadingUnits, drawPaperScale} from "../../../src/htmlcanvas/on-screen-items";
     import ModeButtons from "../../../src/components/editor/ModeButtons.vue";
     import PropertiesWindow from "../../../src/components/editor/property-window/PropertiesWindow.vue";
@@ -380,8 +387,8 @@ export default class DrawingCanvas extends Vue {
                 {type: ValveType.STRAINER, catalogId: 'strainer', name: ''},
 
                 {type: ValveType.RPZD_SINGLE, catalogId: 'RPZD', name: 'RPZD'},
-                {type: ValveType.RPZD_DOUBLE_SHARED, catalogId: 'RPZD', name: 'RPZD Double Parallel'},
-                {type: ValveType.RPZD_DOUBLE_ISOLATED, catalogId: 'RPZD', name: 'RPZD Double Isolated'},
+                {type: ValveType.RPZD_DOUBLE_SHARED, catalogId: 'RPZD', name: 'RPZD Parallel Simultaneous'},
+                {type: ValveType.RPZD_DOUBLE_ISOLATED, catalogId: 'RPZD', name: 'RPZD Parallel Isolated'},
             ].map((a) => {
                 if (a.name === '') {
                     a.name = this.effectiveCatalog.valves[a.catalogId].name;
@@ -1040,10 +1047,10 @@ export default class DrawingCanvas extends Vue {
                 {
                     entityName: string, system: FlowSystemParameters, catalogId: string,
                     tmvHasCold: boolean, valveType: ValveType, nodeType: NodeType,
-                    valveName: string,
+                    valveName: string, networkType: NetworkType,
                 },
         ) {
-            const  {entityName, system, catalogId, tmvHasCold, valveType, nodeType, valveName} = params;
+            const  {entityName, system, catalogId, tmvHasCold, valveType, nodeType, valveName, networkType} = params;
             console.log('inserting ' + JSON.stringify(params));
             this.hydraulicsLayer.select([], SelectMode.Replace);
 
@@ -1052,7 +1059,7 @@ export default class DrawingCanvas extends Vue {
             } else if (entityName === EntityType.FLOW_RETURN) {
                 this.insertFlowReturn(system);
             } else if (entityName === EntityType.PIPE) {
-                insertPipes(this, system);
+                insertPipes(this, system, networkType);
             } else if (entityName === EntityType.FITTING) {
                 insertValve(this, system);
             } else if (entityName === EntityType.TMV) {

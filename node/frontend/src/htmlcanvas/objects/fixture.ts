@@ -3,7 +3,7 @@ import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
 import * as TM from 'transformation-matrix';
 import {Matrix} from 'transformation-matrix';
 import {Coord} from '../../../src/store/document/types';
-import {matrixScale} from '../../../src/htmlcanvas/utils';
+import {decomposeMatrix, matrixScale} from '../../../src/htmlcanvas/utils';
 import {MouseMoveResult, UNHANDLED} from '../../../src/htmlcanvas/types';
 import Connectable from '../../../src/htmlcanvas/lib/object-traits/connectable';
 import CenterDraggableObject from '../../../src/htmlcanvas/lib/object-traits/center-draggable-object';
@@ -69,6 +69,10 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
     }
 
     drawInternal(context: DrawingContext, {active, selected}: DrawingArgs): void {
+
+        console.log(this.entity.rotation);
+        console.log(JSON.stringify(decomposeMatrix(this.position)));
+        console.log(JSON.stringify(decomposeMatrix(context.ctx.getTransform())));
 
         const scale = matrixScale(context.ctx.getTransform());
         const ww = Math.max(10 / this.toWorldLength(1), 1 / scale);

@@ -17,8 +17,12 @@
                           v-b-tooltip.hover title="Flow Return"
                 ><v-icon  name="arrow-down" scale="1.2"/></b-button>
                 <b-button variant="outline-dark" class="insertBtn pipes btn-sm"
-                          @click="$emit('insert', {entityName: entityNames.PIPE, system: selectedSystem})"
-                          v-b-tooltip.hover title="Pipes"
+                          @click="$emit('insert', {entityName: entityNames.PIPE, system: selectedSystem, networkType: NetworkType.RETICULATIONS})"
+                          v-b-tooltip.hover title="Reticulation Pipe"
+                ><v-icon  name="wave-square" scale="1.2"/></b-button>
+                <b-button variant="outline-dark" class="insertBtn pipes btn-sm"
+                          @click="$emit('insert', {entityName: entityNames.PIPE, system: selectedSystem, networkType: NetworkType.CONNECTIONS})"
+                          v-b-tooltip.hover title="Connection (PEX) Pipe"
                 ><v-icon  name="wave-square" scale="1.2"/></b-button>
 
             </b-button-group>
@@ -136,7 +140,7 @@
     import FlowSystemPicker from '../../../src/components/editor/FlowSystemPicker.vue';
     import {EntityType} from '../../../src/store/document/entities/types';
     import {FixtureSpec} from '../../../src/store/catalog/types';
-    import {DocumentState} from "../../store/document/types";
+    import {DocumentState, NetworkType} from "../../store/document/types";
     import { SupportedPsdStandards } from '../../../src/config';
     import {NodeType} from "../../store/document/entities/load-node-entity";
 
@@ -156,6 +160,10 @@
 
         mounted() {
             console.log(JSON.stringify(this.$props.availableValves));
+        }
+
+        get NetworkType() {
+            return NetworkType;
         }
 
         get SupportedPsdStandards() {

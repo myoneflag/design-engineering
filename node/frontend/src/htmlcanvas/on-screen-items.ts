@@ -4,6 +4,7 @@ import {DrawingContext} from '../../src/htmlcanvas/lib/types';
 import {Catalog} from '../../src/store/catalog/types';
 import {lookupFlowRate, PsdUnitsByFlowSystem, zeroPsdCounts} from '../../src/calculations/utils';
 import {StandardFlowSystemUids} from '../../src/store/catalog';
+import {NetworkType} from "../store/document/types";
 
 const SENSIBLE_UNITS_MM: number[] = [
     1, 2, 4, 5, 8,
@@ -128,7 +129,7 @@ export function drawLoadingUnits(
 
     const psduSuffix = 'PSD';
 
-    const y = height - 100;
+    const y = height - 120;
 
     ctx.font = '12px ' + DEFAULT_FONT_NAME;
     ctx.fillStyle = '#000000';
@@ -137,7 +138,7 @@ export function drawLoadingUnits(
     if (selection) {
         ctx.fillText('(In Selection)', 20, y - 20);
     } else {
-        ctx.fillText('Total PSD: w/Space Capacity (w/o)', 20, y - 20);
+        ctx.fillText('Total PSD:', 80, y - 20);
     }
     let coldFR: number | null | undefined = undefined;
     let hotFR: number | null | undefined = undefined;
@@ -174,13 +175,13 @@ export function drawLoadingUnits(
     let hotText: string = 'error';
     if (coldFR !== undefined) {
         let coldFRSpare = coldFR * (1 + 0.01 * context.doc.drawing.metadata.flowSystems.find((s) =>
-            s.uid === StandardFlowSystemUids.ColdWater)!.spareCapacity);
+            s.uid === StandardFlowSystemUids.ColdWater)!.networks[NetworkType.RETICULATIONS].spareCapacityPCT);
         coldSpareText = coldFRSpare.toPrecision(3);
         coldText = coldFR.toPrecision(3);
     }
     if (hotFR !== undefined) {
         let hotFRSpare = hotFR * (1 + 0.01 * context.doc.drawing.metadata.flowSystems.find((s) =>
-            s.uid === StandardFlowSystemUids.WarmWater)!.spareCapacity);
+            s.uid === StandardFlowSystemUids.WarmWater)!.networks[NetworkType.RETICULATIONS].spareCapacityPCT);
         hotSpareText = hotFRSpare.toPrecision(3);
         hotText = hotFR.toPrecision(3);
     }
@@ -188,11 +189,12 @@ export function drawLoadingUnits(
 
     ctx.fillText('Cold: ', 20, y);
     ctx.fillText(coldSpareText + ' L/s ', 80, y);
-    ctx.fillText('(' + coldText + ')', 180, y);
 
     ctx.fillText('Hot: ', 20, y + 20);
     ctx.fillText(hotSpareText + ' L/s ', 80, y + 20);
-    ctx.fillText('(' + hotText + ')', 180, y + 20);
 
+    ctx.font = '10px ' + DEFAULT_FONT_NAME;
     ctx.fillText(catalog.psdStandards[context.doc.drawing.metadata.calculationParams.psdMethod].name, 20, y + 40);
+    ctx.fillText('Inc. Continuous Flow', 20, y + 50);
+    ctx.fillText('Inc. Reticulation Spare Capacity', 20, y + 60);
 }

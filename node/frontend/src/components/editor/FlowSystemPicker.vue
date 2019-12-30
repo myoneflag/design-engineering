@@ -54,12 +54,26 @@
             return {
                 color: {hex: '#eeeeee'},
                 fluid: '',
-                material: '',
                 name: this.$props.selectedSystemUid,
-                spareCapacity: 0,
                 temperature: 0,
                 uid: this.$props.selectedSystemUid,
-                velocity: 0,
+                networks: {
+                    RISERS: {
+                        velocityMS: 0,
+                        spareCapacityPCT: 0,
+                        material: '',
+                    },
+                    RETICULATIONS: {
+                        velocityMS: 0,
+                        spareCapacityPCT: 0,
+                        material: '',
+                    },
+                    CONNECTIONS: {
+                        velocityMS: 0,
+                        spareCapacityPCT: 0,
+                        material: '',
+                    },
+                }
             };
         }
     }

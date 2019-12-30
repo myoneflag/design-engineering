@@ -158,14 +158,25 @@ export interface Color {
     hex: string;
 }
 
+export enum NetworkType {
+    RISERS = "RISERS",
+    RETICULATIONS = "RETICULATIONS",
+    CONNECTIONS = "CONNECTIONS",
+}
+
+export interface NetworkParams {
+    velocityMS: number;
+    spareCapacityPCT: number;
+    material: string;
+}
+
 export interface FlowSystemParameters extends WithID {
     name: string;
-    velocity: number;
     temperature: number;
-    spareCapacity: number;
-    material: string;
     color: Color;
     fluid: string;
+
+    networks: { [key in keyof typeof NetworkType]: NetworkParams }
 }
 
 export interface CalculationParameters {
@@ -197,33 +208,75 @@ export const initialDrawing: DrawingState = {
             // TODO: these values should get got from the database.
             {
                 name: 'Cold Water',
-                velocity: 1.5,
                 temperature: 20,
-                spareCapacity: 10,
-                material : 'copperTypeB',
                 color: {hex: '#009CE0'},
                 uid: 'cold-water',
                 fluid: 'water',
+                networks: {
+                    RISERS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 1.5,
+                        material: 'copperTypeB',
+                    },
+                    RETICULATIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 1.5,
+                        material: 'copperTypeB',
+                    },
+                    CONNECTIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 3,
+                        material: 'pexSdr74',
+                    },
+                }
             },
             {
                 name: 'Hot Water',
-                velocity: 1.5,
                 temperature: 60,
-                spareCapacity: 10,
-                material : 'copperTypeB',
                 color: {hex: '#F44E3B'},
                 uid: 'hot-water',
                 fluid: 'water',
+                networks: {
+                    RISERS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 1.2,
+                        material: 'copperTypeB',
+                    },
+                    RETICULATIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 1.2,
+                        material: 'copperTypeB',
+                    },
+                    CONNECTIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 3,
+                        material: 'pexSdr74',
+                    },
+                }
             },
             {
                 name: 'Warm Water',
-                velocity: 1.5,
                 temperature: 50,
-                spareCapacity: 10,
-                material : 'copperTypeB',
                 color: {hex: '#F49000'},
                 uid: 'warm-water',
                 fluid: 'water',
+                networks: {
+                    RISERS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 1.2,
+                        material: 'copperTypeB',
+                    },
+                    RETICULATIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 1.2,
+                        material: 'copperTypeB',
+                    },
+                    CONNECTIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 3,
+                        material: 'pexSdr74',
+                    },
+                }
             },
         ],
         calculationParams: {

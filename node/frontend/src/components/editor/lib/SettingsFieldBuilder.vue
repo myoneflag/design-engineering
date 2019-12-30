@@ -12,13 +12,13 @@
                             v-for="field in fields"
                             :key="field[0]"
                             :id="'input-group-' + field[0]"
-                            :label="field[1]"
+                            :label="field[2].startsWith('title') ? '' : field[1]"
                             :label-for="'input-' + field[0]"
                             label-cols="4"
                     >
                         <b-form-textarea
                             v-if="field[2] === 'textarea'"
-                            v-model="reactiveData[field[0]]"
+                            v-model="reactiveDataProxy[field[0]]"
                             :id="'input-' + field[0]"
                             rows="5"
                             :placeholder="'Enter ' + field[1]"
@@ -28,7 +28,7 @@
                             <b-col cols="8">
 
                                 <b-form-input
-                                        v-model="reactiveData[field[0]]"
+                                        v-model="reactiveDataProxy[field[0]]"
                                         :id="'input-' + field[0]"
                                         :min="field[3]"
                                         :max="field[4]"
@@ -39,7 +39,7 @@
                             </b-col>
                             <b-col cols="4">
                             <b-form-input
-                                    v-model="reactiveData[field[0]]"
+                                    v-model="reactiveDataProxy[field[0]]"
                                     :id="'input-' + field[0]"
                                     type="number"
                                     :step="field[5] ? field[5] : 1"
@@ -50,10 +50,10 @@
 
                         <b-dropdown
                                 v-else-if="field[2] === 'choice'" class="float-left"
-                                size="md" id="dropdown-1" :text="choiceName(reactiveData[field[0]], field[3])" variant="outline-secondary" style="padding-bottom: 20px">
+                                size="md" id="dropdown-1" :text="choiceName(reactiveDataProxy[field[0]], field[3])" variant="outline-secondary" style="padding-bottom: 20px">
                             <b-dropdown-item
                                     v-for="(choice, index) in field[3]"
-                                    @click="reactiveData[field[0]] = choice.key"
+                                    @click="reactiveDataProxy[field[0]] = choice.key"
                                     :key="index"
                                     :disabled="choice.disabled === undefined ? false : choice.disabled"
                             >
@@ -61,11 +61,25 @@
                             </b-dropdown-item>
                         </b-dropdown>
 
-                        <compact-picker v-else-if="field[2] === 'color'" v-model="reactiveData[field[0]]"/>
+                        <compact-picker v-else-if="field[2] === 'color'" v-model="reactiveDataProxy[field[0]]"/>
+
+                        <h2 v-else-if="field[2] === 'title2'">
+                            {{ field[1] }}
+                        </h2>
+                        <h3 v-else-if="field[2] === 'title3'">
+                            {{ field[1] }}
+                        </h3>
+                        <h4 v-else-if="field[2] === 'title4'">
+                            {{ field[1] }}
+                        </h4>
+
+                        <h5 v-else-if="field[2] === 'title5'">
+                            {{ field[1] }}
+                        </h5>
 
                         <b-form-input
                             v-else
-                            v-model="reactiveData[field[0]]"
+                            v-model="reactiveDataProxy[field[0]]"
                             :id="'input-' + field[0]"
                             :type="field[2]"
                             :placeholder="'Enter ' + field[1]"
@@ -99,6 +113,7 @@
     import * as _ from 'lodash';
     import { isString } from 'lodash';
     import {Choice} from '../../../../src/lib/types';
+    import {getPropertyByString, setPropertyByString} from "../../../lib/utils";
 
     @Component({
         props: {
@@ -120,6 +135,20 @@
 
         get isUnchanged() {
             return _.isEqual(this.$props.reactiveData, this.$props.originalData);
+        }
+
+        get reactiveDataProxy() {
+            const proxy = new Proxy(this.$props.reactiveData, {
+                get(target: any, key: string) {
+                    return getPropertyByString(target, key);
+                },
+                set(target: any, key: string, value: any) {
+                    setPropertyByString(target, key, value);
+                    return true;
+                },
+            });
+
+            return proxy;
         }
 
         save() {

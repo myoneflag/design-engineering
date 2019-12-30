@@ -3,7 +3,7 @@ import {
     Color,
     Coord,
     DocumentState,
-    FlowSystemParameters,
+    FlowSystemParameters, NetworkType,
 } from '../../../../src/store/document/types';
 import {FieldType, PropertyField} from '../../../../src/store/document/entities/property-field';
 import * as _ from 'lodash';
@@ -72,10 +72,10 @@ export function fillRiserDefaults(doc: DocumentState, value: RiserEntity) {
 
     if (system) {
         if (result.maximumVelocityMS == null) {
-            result.maximumVelocityMS = system.velocity;
+            result.maximumVelocityMS = system.networks[NetworkType.RISERS].velocityMS;
         }
         if (result.material == null) {
-            result.material = system.material;
+            result.material = system.networks[NetworkType.RISERS].material;
         }
         if (result.color == null) {
             result.color = system.color;

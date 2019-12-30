@@ -1,4 +1,4 @@
-import {Coord, Coord3D} from '../../../../src/store/document/types';
+import {Coord, Coord3D, NetworkType} from '../../../../src/store/document/types';
 import BaseBackedObject from '../../../../src/htmlcanvas/lib/base-backed-object';
 import Pipe from '../../../../src/htmlcanvas/objects/pipe';
 import assert from 'assert';
@@ -16,7 +16,10 @@ import {DrawingArgs} from '../../../../src/htmlcanvas/lib/drawable-object';
 import {CalculationData} from '../../../../src/store/document/calculations/calculation-field';
 import * as TM from "transformation-matrix";
 import PipeEntity from "../../../store/document/entities/pipe-entity";
-import {determineConnectableSystemUid} from "../../../store/document/entities/directed-valves/directed-valve-entity";
+import {
+    determineConnectableNetwork,
+    determineConnectableSystemUid
+} from "../../../store/document/entities/directed-valves/directed-valve-entity";
 import FittingEntity from "../../../store/document/entities/fitting-entity";
 import {getEdgeLikeHeightAboveGroundM} from "../utils";
 import Cached from "../cached";
@@ -588,6 +591,8 @@ export function ConnectableObject<T extends new (...args: any[])
 
             let lastGroup: EdgeLikeEntity[] | undefined;
 
+            let spawnedPipeNetwork = determineConnectableNetwork(context.globalStore, this.entity);
+
             let i = 0;
             groups.forEach((g) => {
                 const minHeight = getEdgeLikeHeightAboveGroundM(g[0], context);
@@ -614,6 +619,7 @@ export function ConnectableObject<T extends new (...args: any[])
                         maximumVelocityMS: null,
                         parentUid: null,
                         systemUid,
+                        network: spawnedPipeNetwork!,
                         type: EntityType.PIPE,
                         uid: this.uid + '.' + i + '.p',
                     };

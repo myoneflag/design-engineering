@@ -66,6 +66,7 @@ export function addValveAndSplitPipe(
         maximumVelocityMS: pipe.entity.maximumVelocityMS,
         parentUid: null,
         systemUid: pipe.entity.systemUid,
+        network: pipe.entity.network,
         type: EntityType.PIPE,
         uid: pipe1uid,
     };
@@ -80,6 +81,7 @@ export function addValveAndSplitPipe(
         maximumVelocityMS: pipe.entity.maximumVelocityMS,
         parentUid: null,
         systemUid: pipe.entity.systemUid,
+        network: pipe.entity.network,
         type: EntityType.PIPE,
         uid: pipe2uid,
     };

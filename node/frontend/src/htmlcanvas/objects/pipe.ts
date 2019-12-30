@@ -33,6 +33,7 @@ import PipeCalculation from '../../../src/store/document/calculations/pipe-calcu
 import {Calculated, CalculatedObject, FIELD_HEIGHT} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
 import {isConnectable} from "../../store/document";
 import Cached from '../lib/cached';
+import {determineConnectableNetwork} from "../../store/document/entities/directed-valves/directed-valve-entity";
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 3.5;
@@ -330,6 +331,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 material: this.entity.material,
                 maximumVelocityMS: this.entity.maximumVelocityMS,
                 parentUid: null,
+                network: determineConnectableNetwork(this.objectStore, e)!,
                 systemUid: this.entity.systemUid,
                 type: EntityType.PIPE,
                 uid: uuid(),

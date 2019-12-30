@@ -1,4 +1,11 @@
-import {Color, ConnectableEntity, Coord, DocumentState, FlowSystemParameters} from '../../../../../src/store/document/types';
+import {
+    Color,
+    ConnectableEntity,
+    Coord,
+    DocumentState,
+    FlowSystemParameters,
+    NetworkType
+} from '../../../../../src/store/document/types';
 import FittingCalculation from '../../../../../src/store/document/calculations/fitting-calculation';
 import {EntityType} from '../../../../../src/store/document/entities/types';
 import {FieldType, PropertyField} from '../../../../../src/store/document/entities/property-field';
@@ -94,6 +101,24 @@ export function determineConnectableSystemUid(
             }
     }
     assertUnreachable(value);
+}
+
+export function determineConnectableNetwork(
+    objectStore: ObjectStore,
+    value: ConnectableEntityConcrete,
+): NetworkType | undefined {
+    let retVal = NetworkType.RETICULATIONS;
+    if (value.type === EntityType.RISER) {
+        retVal = NetworkType.RISERS;
+    } else {
+        for (const conn of objectStore.getConnections(value.uid)) {
+            const o = objectStore.get(conn) as Pipe;
+            if (o.entity.network === NetworkType.CONNECTIONS) {
+                retVal = NetworkType.CONNECTIONS;
+            }
+        }
+    }
+    return retVal;
 }
 
 export function fillDirectedValveFields(
