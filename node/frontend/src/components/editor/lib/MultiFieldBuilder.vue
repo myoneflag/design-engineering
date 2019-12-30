@@ -47,6 +47,7 @@ import {EntityType} from "../../../store/document/entities/types";
     } from "../../../../src/store/document/entities/directed-valves/directed-valve-entity";
     import {assertUnreachable} from "../../../config";
     import {fillDefaultLoadNodeFields, makeLoadNodesFields} from "../../../store/document/entities/load-node-entity";
+    import {cloneSimple, getPropertyByString, setPropertyByString} from "../../../lib/utils";
 
     @Component({
         components: {PropertiesFieldBuilder},
@@ -85,7 +86,7 @@ import {EntityType} from "../../../store/document/entities/types";
 
         convertToMultiProperties(fields: PropertyField[]): PropertyField[] {
             return fields.map((f) => {
-                const ret =  _.clone(f);
+                const ret =  cloneSimple(f);
                 ret.property = ret.multiFieldId!;
                 return ret;
             });
@@ -188,8 +189,8 @@ import {EntityType} from "../../../store/document/entities/types";
                         const field = fields.find((f) => f.multiFieldId === name);
                         if (field) {
                             foundField = field;
-                            const defVal = (this.fillObjectFields(obj) as any)[field.property];
-                            const conVal = (obj.entity as any)[field.property];
+                            const defVal = getPropertyByString(this.fillObjectFields(obj) as any, field.property);
+                            const conVal = getPropertyByString(obj.entity as any, field.property);
                             const dispVal = conVal === null ? defVal : conVal;
                             if (concreteValue === null || concreteValue === dispVal) {
                                 concreteValue = dispVal;
@@ -225,7 +226,7 @@ import {EntityType} from "../../../store/document/entities/types";
                         const field = fields.find((f) => f.multiFieldId === name);
                         if (field) {
                             foundField = field;
-                            const val = (obj.entity as any)[field.property];
+                            const val = getPropertyByString(obj.entity as any, field.property);
                             if (val !== null) {
                                 if (concreteValue === undefined || concreteValue === val) {
                                     concreteValue = val;
@@ -250,12 +251,16 @@ import {EntityType} from "../../../store/document/entities/types";
                     }
                 },
                 set: (target, name, value, receiver) => {
+                    if (value === undefined) {
+                        return true;
+                    }
+
                     let success = false;
                     this.$props.selectedObjects.forEach((obj: BaseBackedObject) => {
                         const fields = this.getEntityFields(obj.entity);
                         const field = fields.find((f) => f.multiFieldId === name);
                         if (field) {
-                            (obj.entity as any)[field.property] = value;
+                            setPropertyByString(obj.entity as any, field.property, value);
                             success = true;
                         }
                     });

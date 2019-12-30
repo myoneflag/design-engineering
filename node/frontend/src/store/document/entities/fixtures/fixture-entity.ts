@@ -59,15 +59,15 @@ export function makeFixtureFields(doc: DocumentState, entity: FixtureEntity): Pr
                 type: FieldType.Title, params: null, multiFieldId: suid + '.title' },
 
             { property: 'roughIns.' + suid + '.designFlowRateLS', title: 'Design Flow Rate (L/s)', hasDefault: true, isCalculated: false,
-                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '.designFlowRateLS' },
+                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '-designFlowRateLS' },
             { property: 'roughIns.' + suid + '.continuousFlowLS', title: 'Continuous Flow (L/s)', hasDefault: true, isCalculated: false,
-                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '.continuousFlowLS' },
+                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '-continuousFlowLS' },
             { property: 'roughIns.' + suid + '.loadingUnits', title: 'Loading Units', hasDefault: true, isCalculated: false,
-                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '.loadingUnits' },
+                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '-loadingUnits' },
             { property: 'roughIns.' + suid + '.minPressureKPA', title: 'Min. Inlet Pressure (KPA)', hasDefault: true, isCalculated: false,
-                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '.minPressureKPA' },
+                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '-minPressureKPA' },
             { property: 'roughIns.' + suid +  '.maxPressureKPA', title: 'Max. Inlet Pressure (KPA)', hasDefault: true, isCalculated: false,
-                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '.maxPressureKPA' },
+                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '-maxPressureKPA' },
 
         );
     }

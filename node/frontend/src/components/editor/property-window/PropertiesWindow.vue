@@ -89,7 +89,7 @@ import {EntityType} from "../../../../src/store/document/entities/types";
                 </b-row>
             </div>
             <MultiFieldBuilder
-                    v-else
+
                     :selected-entities="selectedEntities"
                     :selected-objects="selectedObjects"
                     :on-delete="onDelete"

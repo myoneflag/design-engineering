@@ -279,6 +279,7 @@
         }
 
         isDefaultOverridden(prop: string) {
+            console.log('checking prop ' + prop);
             return getPropertyByString(this.$props.reactiveData, prop) != null;
         }
 
