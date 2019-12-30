@@ -74,7 +74,7 @@ export interface FixtureSpec {
 
 export interface LoadingUnit {[key: string]: string | null}
 
-export interface FlowRateSpec {[key: string]: string | null}
+export interface FlowRateSpec {[key: string]: (string | null)}
 
 export interface  ValveSpec {
     name: string;

@@ -306,18 +306,18 @@ export const initialCatalog: Catalog = {
             loadingUnits: {
                 "as35002018LoadingUnits": {
                     "cold-water": "2",
-                    "warm-water": "2"
+                    "hot-water": "2"
                 },
                 barriesBookLoadingUnits: {
                     "cold-water": "3",
-                    "warm-water": "3"
+                    "hot-water": "3"
                 },
                 barriesBookDwellings: {
                     "cold-water": "3",
-                    "warm-water": "3"
+                    "hot-water": "3"
                 }
             },
-            roughIns: ['cold-water', 'warm-water'],
+            roughIns: ['cold-water', 'hot-water'],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Kitchen sink",
@@ -325,7 +325,7 @@ export const initialCatalog: Catalog = {
             probabilityOfUsagePCT: "2",
             qLS: {
                 "cold-water": "0.1",
-                "warm-water": "0.1"
+                "hot-water": "0.1"
             },
             uid: "kitchenSink",
             warmTempC: null
@@ -426,18 +426,18 @@ export const initialCatalog: Catalog = {
             loadingUnits: {
                 "as35002018LoadingUnits": {
                     "cold-water": "3",
-                    "warm-water": "2"
+                    "hot-water": "2"
                 },
                 barriesBookLoadingUnits: {
                     "cold-water": "3",
-                    "warm-water": "3"
+                    "hot-water": "3"
                 },
                 barriesBookDwellings: {
                     "cold-water": "3",
-                    "warm-water": "3"
+                    "hot-water": "3"
                 }
             },
-            roughIns: ['cold-water', 'warm-water'],
+            roughIns: ['cold-water', 'hot-water'],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Washing Machine",
@@ -445,7 +445,7 @@ export const initialCatalog: Catalog = {
             probabilityOfUsagePCT: "5.5",
             qLS: {
                 "cold-water": "0.2",
-                "warm-water": "0.2"
+                "hot-water": "0.2"
             },
             uid: "washingMachine",
             warmTempC: null
@@ -464,7 +464,6 @@ export const initialCatalog: Catalog = {
                 },
                 barriesBookDwellings: {
                     "cold-water": "2",
-
                 }
             },
             roughIns: ['cold-water'],

@@ -25,8 +25,8 @@
                                v-b-tooltip.hover title="Override Default">
                             <b-check
                                     class="float-right"
-                                    :checked="isDefined(reactiveData[field.property])"
-                                    :indeterminate="reactiveData[field.property] === undefined"
+                                    :checked="isDefaultOverridden(field.property)"
+                                    :indeterminate="isDefaultIndeterminate(field.property)"
                                     @input="setIsDefault(field.property, !$event, true)"
                             />
                         </b-col>
@@ -220,7 +220,7 @@
         }
 
         renderedData(property: string): any {
-            if (this.$props.reactiveData[property] === null || this.$props.reactiveData[property] === undefined) {
+            if (getPropertyByString(this.$props.reactiveData, property) == null) {
                 return getPropertyByString(this.$props.defaultData, property);
             } else {
                 return getPropertyByString(this.$props.reactiveData, property);
@@ -244,9 +244,9 @@
 
         setIsDefault(property: string, val: boolean, commit: boolean = false) {
             if (val) {
-                this.$props.reactiveData[property] = null;
+                setPropertyByString(this.$props.reactiveData, property, null);
             } else {
-                this.$props.reactiveData[property] = this.renderedData(property);
+                setPropertyByString(this.$props.reactiveData, property, this.renderedData(property));
             }
             this.$props.onChange();
             if (commit) {
@@ -256,26 +256,34 @@
 
         missingRequired(field: PropertyField) {
             return field.requiresInput &&
-                (this.$props.reactiveData[field.property] === null ||
-                    this.$props.reactiveData[field.property] === ''
+                (getPropertyByString(this.$props.reactiveData, field.property) === null ||
+                    getPropertyByString(this.$props.reactiveData, field.property) === ''
                 );
         }
 
         setIsComputed(field: PropertyField, val: boolean, commit: boolean = false) {
             const property = field.property;
             if (val) {
-                this.$props.reactiveData[property] = null;
+                setPropertyByString(this.$props.reactiveData, property, null);
             } else {
                 if (this.renderedData(property) != null) {
-                    this.$props.reactiveData[property] = this.renderedData(property);
+                    setPropertyByString(this.$props.reactiveData, property, this.renderedData(property));
                 } else {
-                    this.$props.reactiveData[property] = (field.params as FieldParams).initialValue;
+                    setPropertyByString(this.$props.reactiveData, property, (field.params as FieldParams).initialValue);
                 }
             }
             this.$props.onChange();
             if (commit) {
                 this.$props.onCommit();
             }
+        }
+
+        isDefaultOverridden(prop: string) {
+            return getPropertyByString(this.$props.reactiveData, prop) != null;
+        }
+
+        isDefaultIndeterminate(prop: string) {
+            return getPropertyByString(this.$props.reactiveData, prop) === undefined;
         }
 
         choiceName(key: string, choices: Choice[]): string {
@@ -290,8 +298,7 @@
             if (field.requiresInput) {
                 return false;
             }
-            return (this.$props.reactiveData[field.property] === null ||
-                this.$props.reactiveData[field.property] === undefined)
+            return (getPropertyByString(this.$props.reactiveData, field.property, true) == null)
                 && (field.isCalculated || field.hasDefault);
         }
 

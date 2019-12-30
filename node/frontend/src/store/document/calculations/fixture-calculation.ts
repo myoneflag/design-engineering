@@ -19,7 +19,7 @@ export function makeFixtureCalculationFields(doc: DocumentState, entity: Fixture
             }
 
             return {
-                property: 'pressures.' + suid + '.coldPressureKPA',
+                property: 'pressures.' + suid,
                 title: system.name + ' Pressure',
                 short: system.name.split(' ')[0].toLowerCase(),
                 systemUid: suid,

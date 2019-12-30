@@ -81,8 +81,9 @@ import {EntityType} from "../../../../src/store/document/entities/types";
             <div v-if="hasPsdUnits">
                 <b-row v-b-tooltip.hover="{title: psdName}">
                     <b-col>
-                        <h6>{{ coldPsdUnitsName }}: {{ psdUnits[StandardFlowSystemUids.ColdWater].units.toPrecision(2) }}</h6>
-                        <h6>{{ hotPsdUnitsName }}: {{ psdUnits[StandardFlowSystemUids.HotWater].units.toPrecision(2) }}</h6>
+                        <h6 v-for="suid in Object.keys(psdUnits)" :key="suid">
+                            {{ systemPsdUnitName(suid) }}: {{ psdUnits[suid].units.toPrecision(2) }}
+                        </h6>
 
                     </b-col>
                 </b-row>
@@ -177,12 +178,9 @@ import {EntityType} from "../../../../src/store/document/entities/types";
             return countPsdUnits(selectedEntities, this.document, this.effectiveCatalog);
         }
 
-        get coldPsdUnitsName() {
-            return 'Cold ' + getPsdUnitName(this.document.drawing.metadata.calculationParams.psdMethod).name;
-        }
-
-        get hotPsdUnitsName() {
-            return 'Hot ' + getPsdUnitName(this.document.drawing.metadata.calculationParams.psdMethod).name;
+        systemPsdUnitName(suid: string) {
+            const system = this.document.drawing.metadata.flowSystems.find((s) => s.uid === suid)!;
+            return system.name + ' ' + getPsdUnitName(this.document.drawing.metadata.calculationParams.psdMethod).name;
         }
 
         get psdName() {

@@ -48,7 +48,7 @@
     export default class TMVProperties extends Vue {
 
         get fields() {
-            return makeFixtureFields();
+            return makeFixtureFields(this.document, this.$props.selectedEntity);
         }
 
         get reactiveData() {

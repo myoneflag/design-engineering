@@ -56,16 +56,16 @@ export function makeFixtureFields(doc: DocumentState, entity: FixtureEntity): Pr
         const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === suid)!;
         res.push(
             { property: suid + '.title', title: system.name, hasDefault: false, isCalculated: false,
-                type: FieldType.Title,  multiFieldId: suid + '.title' },
+                type: FieldType.Title, params: null, multiFieldId: suid + '.title' },
 
             { property: 'roughIns.' + suid + '.designFlowRateLS', title: 'Design Flow Rate (L/s)', hasDefault: true, isCalculated: false,
                 type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '.designFlowRateLS' },
-            { property: 'roughIns.' + suid + 'continuousFlowColdLS', title: 'Continuous Flow (Cold, L/s)', hasDefault: true, isCalculated: false,
-                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'continuousFlowColdLS' },
+            { property: 'roughIns.' + suid + '.continuousFlowLS', title: 'Continuous Flow (L/s)', hasDefault: true, isCalculated: false,
+                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '.continuousFlowLS' },
             { property: 'roughIns.' + suid + '.loadingUnits', title: 'Loading Units', hasDefault: true, isCalculated: false,
                 type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '.loadingUnits' },
             { property: 'roughIns.' + suid + '.minPressureKPA', title: 'Min. Inlet Pressure (KPA)', hasDefault: true, isCalculated: false,
-                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'minPressureKPA' },
+                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '.minPressureKPA' },
             { property: 'roughIns.' + suid +  '.maxPressureKPA', title: 'Max. Inlet Pressure (KPA)', hasDefault: true, isCalculated: false,
                 type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '.maxPressureKPA' },
 

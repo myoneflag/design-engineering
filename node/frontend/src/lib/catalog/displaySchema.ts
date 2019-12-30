@@ -57,9 +57,10 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                         table: {
                             primaryName: 'PSD Method',
                             columns: [
-                                ['hot', 'Hot LUs'],
-                                ['cold', 'Cold LUs'],
-                            ]
+                                ['hot-water', 'Hot LUs'],
+                                ['warm-water', 'Hot (Warm) LUs'],
+                                ['cold-water', 'Cold LUs'],
+                            ],
                         }
                     },
                     qLS: {
@@ -68,11 +69,21 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                         table: {
                             primaryName: ' ',
                             columns: [
-                                [null, 'Flow Rate'],
-                            ]
+                                [null, 'Flow Rate (L/s)'],
+                            ],
                         }
                     },
-                    continuousFlowLS: {order: 6, name: 'Continuous Flow Rate'},
+                    roughIns: null,
+                    continuousFlowLS: {
+                        order: 6,
+                        name: 'Continuous Flow Rate',
+                        table: {
+                            primaryName: ' ',
+                            columns: [
+                                [null, 'Flow Rate (L/s)'],
+                            ],
+                        },
+                    },
 
                     maxInletPressureKPA: {order: 7, name: 'Max. Inlet Pressure (kPa)'},
                     minInletPressureKPA: {order: 8, name: 'Min. Inlet Pressure (kPa)'},

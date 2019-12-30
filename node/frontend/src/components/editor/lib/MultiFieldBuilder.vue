@@ -113,7 +113,7 @@ import {EntityType} from "../../../store/document/entities/types";
                 case EntityType.TMV:
                     return makeTMVFields().filter((p) => p.multiFieldId);
                 case EntityType.FIXTURE:
-                    return makeFixtureFields().filter((p) => p.multiFieldId);
+                    return makeFixtureFields(this.document, entity).filter((p) => p.multiFieldId);
                 case EntityType.DIRECTED_VALVE:
                     return makeDirectedValveFields(this.document.drawing.metadata.flowSystems, entity.valve)
                         .filter((p) => p.multiFieldId);

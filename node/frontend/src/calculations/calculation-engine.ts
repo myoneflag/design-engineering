@@ -324,18 +324,14 @@ export default class CalculationEngine {
             switch (entity.type) {
                 case EntityType.FIXTURE: {
                     const calculation = this.globalStore.getOrCreateCalculation(entity);
-                    calculation.coldPressureKPA =
-                        this.getAbsolutePressurePoint(
-                            {connectable: entity.coldRoughInUid, connection: entity.uid},
+
+                    for (const suid of entity.roughInsInOrder) {
+                        calculation.pressures[suid] = this.getAbsolutePressurePoint(
+                            {connectable: entity.roughIns[suid].uid, connection: entity.uid},
                             sources,
                         );
-                    if (entity.warmRoughInUid) {
-                        calculation.warmPressureKPA =
-                            this.getAbsolutePressurePoint(
-                                {connectable: entity.warmRoughInUid, connection: entity.uid},
-                                sources,
-                            );
                     }
+
                 }
                     break;
                 case EntityType.TMV: {
@@ -1031,39 +1027,24 @@ export default class CalculationEngine {
 
                     console.log('mainFixture: ' + JSON.stringify(mainFixture));
 
-                    if (node.uid === fixture.coldRoughInUid) {
-                        if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
-                            return {
-                                units: Number(mainFixture.designFlowRateCold),
-                                continuousFlowLS: mainFixture.continuousFlowColdLS!,
-                                dwellings: 0,
-                            };
-                        } else {
-                            return {
-                                units: Number(mainFixture.loadingUnitsCold),
-                                continuousFlowLS: mainFixture.continuousFlowColdLS!,
-                                dwellings: 0,
-                            };
+                    for (const suid of fixture.roughInsInOrder) {
+                        if (node.uid === fixture.roughIns[suid].uid) {
+                            if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
+                                return {
+                                    units: Number(mainFixture.roughIns[suid].designFlowRateLS),
+                                    continuousFlowLS: mainFixture.roughIns[suid].continuousFlowLS!,
+                                    dwellings: 0,
+                                };
+                            } else {
+                                return {
+                                    units: Number(mainFixture.roughIns[suid].loadingUnits),
+                                    continuousFlowLS: mainFixture.roughIns[suid].continuousFlowLS!,
+                                    dwellings: 0,
+                                };
+                            }
                         }
-                    } else if (node.uid === fixture.warmRoughInUid) {
-                        if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
-                            return {
-                                units: Number(mainFixture.designFlowRateHot),
-                                continuousFlowLS: mainFixture.continuousFlowHotLS!,
-                                dwellings: 0,
-                            };
-                        } else {
-                            return {
-                                units: Number(mainFixture.loadingUnitsHot),
-                                continuousFlowLS: mainFixture.continuousFlowHotLS!,
-                                dwellings: 0,
-                            };
-                        }
-                    } else {
-                        throw new Error('Invalid connection to fixture ' +
-                            JSON.stringify(node) + '\n' + JSON.stringify(fixture),
-                        );
                     }
+                    throw new Error('Invalid connection to fixture');
                 case EntityType.LOAD_NODE:
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.RISER:
@@ -1695,21 +1676,16 @@ export default class CalculationEngine {
                 case EntityType.FIXTURE:
                     const e = fillFixtureFields(this.doc.drawing, this.catalog, o.entity);
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity);
-                    if ((calculation.coldPressureKPA || 0) < e.minInletPressureKPA!) {
-                        calculation.warning = 'Not enough cold pressure. Required: '
-                            + e.minInletPressureKPA!.toFixed(0) + ' kPa';
-                    } else if ((calculation.coldPressureKPA || 0) > e.maxInletPressureKPA!) {
-                        calculation.warning = 'Cold pressure overload. Max: '
-                            + e.maxInletPressureKPA!.toFixed(0) + ' kPa';
-                    }
 
-                    if (o.entity.warmRoughInUid) {
-                        if ((calculation.warmPressureKPA || 0) < e.minInletPressureKPA!) {
-                            calculation.warning = 'Not enough warm pressure. Required: '
-                                + e.minInletPressureKPA!.toFixed(0) + ' kPa';
-                        } else if ((calculation.warmPressureKPA || 0) > e.maxInletPressureKPA!) {
-                            calculation.warning = 'Warm pressure overload. Max: '
-                                + e.maxInletPressureKPA!.toFixed(0) + ' kPa';
+                    for (const suid of e.roughInsInOrder) {
+                        if ((calculation.pressures[suid] || 0) < e.roughIns[suid].minPressureKPA!) {
+                            const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === suid)!;
+                            calculation.warning = 'Not enough ' + system.name + ' pressure. Required: '
+                                + e.roughIns[suid].minPressureKPA!.toFixed(0) + ' kPa';
+                        } else if ((calculation.pressures[suid] || 0) > e.roughIns[suid].maxPressureKPA!) {
+                            const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === suid)!;
+                            calculation.warning = system.name + ' pressure overload. Max: '
+                                + e.roughIns[suid].maxPressureKPA!.toFixed(0) + ' kPa';
                         }
                     }
                     break;

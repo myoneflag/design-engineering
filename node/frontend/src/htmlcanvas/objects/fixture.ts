@@ -108,7 +108,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         ctx.fillStyle = 'rgba(230, 255, 230, 0.8)';
         ctx.strokeStyle = '#000';
         ctx.beginPath();
-        if (this.entity.warmRoughInUid) {
+        if (this.entity.roughInsInOrder.length > 1) {
             ctx.fillRect(xm1, ym1, x9 - xm1, y7 - ym1);
             ctx.rect(xm1, ym1, x9 - xm1, y7 - ym1);
         } else {
@@ -119,7 +119,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
 
         if (selected) {
             ctx.fillStyle = 'rgba(150, 200, 150, 1)';
-            if (this.entity.warmRoughInUid) {
+            if (this.entity.roughInsInOrder.length > 1) {
                 ctx.fillRect(xm1, ym1, x9 - xm1, y7 - ym1);
             } else {
                 ctx.fillRect(x2, ym1, x6 - x2, y4 - ym1);
@@ -129,7 +129,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         ctx.strokeStyle = '#228800';
 
         ctx.beginPath();
-        if (this.entity.warmRoughInUid) {
+        if (this.entity.roughInsInOrder.length > 1) {
             // double (cross)
             ctx.moveTo(x0, y1);
             ctx.lineTo(x8, y1);
@@ -184,7 +184,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
     }
 
     inBounds(objectCoord: Coord) {
-        if (this.entity.warmRoughInUid) {
+        if (this.entity.roughInsInOrder.length > 1) {
             // double
             if (objectCoord.x >= -this.entity.pipeDistanceMM && objectCoord.x <= this.entity.pipeDistanceMM) {
                 if (objectCoord.y >= 0 && objectCoord.y <= this.entity.pipeDistanceMM * 2) {
@@ -210,7 +210,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         const p = new Flatten.Polygon();
         // tslint:disable-next-line:one-variable-per-declaration
         let l, t, r, b;
-        if (this.entity.warmRoughInUid) {
+        if (this.entity.roughInsInOrder.length > 1) {
             l = -this.entity.pipeDistanceMM * 5 / 4;
             r = this.entity.pipeDistanceMM * 5 / 4;
             t = -this.entity.pipeDistanceMM * 1 / 4;
@@ -242,31 +242,21 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
     }
 
     prepareDelete(context: CanvasContext): BaseBackedObject[] {
-        if (this.entity.warmRoughInUid) {
-            return [
-                ...this.objectStore.get(this.entity.coldRoughInUid)!.prepareDelete(context),
-                ...this.objectStore.get(this.entity.warmRoughInUid)!.prepareDelete(context),
-                this,
-            ];
-        } else {
-            return [
-                ...this.objectStore.get(this.entity.coldRoughInUid)!.prepareDelete(context),
-                this,
-            ];
+        const result: BaseBackedObject[] = [];
+        for (const suid of this.entity.roughInsInOrder) {
+            result.push(...this.objectStore.get(this.entity.roughIns[suid].uid)!.prepareDelete(context));
         }
+        result.push(this);
+
+        return result;
     }
 
 
     offerJoiningInteraction(systemUid: string, interaction: Interaction) {
-        if (systemUid === StandardFlowSystemUids.ColdWater) {
-            const coldObj = this.objectStore.get(this.entity.coldRoughInUid);
-            if (coldObj && coldObj.offerInteraction(interaction)) {
-                return [coldObj.entity, this.entity];
-            }
-        } else if (systemUid === StandardFlowSystemUids.WarmWater && this.entity.warmRoughInUid) {
-            const warmObj = this.objectStore.get(this.entity.warmRoughInUid);
-            if (warmObj && warmObj.offerInteraction(interaction)) {
-                return [warmObj.entity, this.entity];
+        if (systemUid in this.entity.roughIns) {
+            const obj = this.objectStore.get(this.entity.roughIns[systemUid].uid);
+            if (obj && obj.offerInteraction(interaction)) {
+                return [obj.entity, this.entity];
             }
         }
         return null;
@@ -301,11 +291,12 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
     getCalculationEntities(context: CalculationContext): [FixtureEntity] {
         const e: FixtureEntity = cloneSimple(this.entity);
         e.uid += '.calculation';
-        if (e.warmRoughInUid) {
-            e.warmRoughInUid = this.objectStore.get(e.warmRoughInUid)!
+
+        for (const suid of e.roughInsInOrder) {
+            e.roughIns[suid].uid = this.objectStore.get(e.roughIns[suid].uid)!
                 .getCalculationNode(context, this.uid).uid;
         }
-        e.coldRoughInUid = this.objectStore.get(e.coldRoughInUid)!.getCalculationNode(context, this.uid).uid;
+
         return [e];
     }
 
@@ -319,9 +310,8 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
 
     getNeighbours(): BaseBackedObject[] {
         const res: BaseBackedObject[] = [];
-        res.push(...this.objectStore.get(this.entity.coldRoughInUid)!.getNeighbours());
-        if (this.entity.warmRoughInUid) {
-            res.push(...this.objectStore.get(this.entity.warmRoughInUid)!.getNeighbours());
+        for (const suid of this.entity.roughInsInOrder) {
+            res.push(...this.objectStore.get(this.entity.roughIns[suid].uid)!.getNeighbours());
         }
         return res;
     }

@@ -41,26 +41,23 @@ export function countPsdUnits(
                 if (result === null) {
                     result = {};
                 }
-                [StandardFlowSystemUids.ColdWater, StandardFlowSystemUids.HotWater].forEach((suid) => {
+                mainFixture.roughInsInOrder.forEach((suid) => {
                     if (!(suid in result!)) {
                         result![suid] = zeroPsdCounts();
                     }
                 });
 
-                if (isGermanStandard(doc.drawing.metadata.calculationParams.psdMethod)) {
-                    result[StandardFlowSystemUids.ColdWater].units += mainFixture.designFlowRateCold!;
-                } else {
-                    result[StandardFlowSystemUids.ColdWater].units += mainFixture.loadingUnitsCold!;
-                }
+                for (const suid of mainFixture.roughInsInOrder) {
 
-                if (isGermanStandard(doc.drawing.metadata.calculationParams.psdMethod)) {
-                    result[StandardFlowSystemUids.HotWater].units += mainFixture.designFlowRateHot!;
-                } else {
-                    result[StandardFlowSystemUids.HotWater].units += mainFixture.loadingUnitsHot!;
-                }
+                    if (isGermanStandard(doc.drawing.metadata.calculationParams.psdMethod)) {
+                        result[suid].units += mainFixture.roughIns[suid].designFlowRateLS!;
+                    } else {
+                        result[suid].units += mainFixture.roughIns[suid].loadingUnits!;
+                    }
 
-                result[StandardFlowSystemUids.ColdWater].continuousFlowLS += mainFixture.continuousFlowColdLS!;
-                result[StandardFlowSystemUids.HotWater].continuousFlowLS += mainFixture.continuousFlowHotLS!;
+                    result[suid].continuousFlowLS += mainFixture.roughIns[suid].continuousFlowLS!;
+
+                }
 
                 break;
             case EntityType.LOAD_NODE:

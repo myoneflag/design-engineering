@@ -103,9 +103,8 @@ export class AutoConnector {
                             }
                             break;
                         case EntityType.FIXTURE:
-                            subs.push(o.entity.coldRoughInUid);
-                            if (o.entity.warmRoughInUid) {
-                                subs.push(o.entity.warmRoughInUid);
+                            for (const suid of o.entity.roughInsInOrder) {
+                                subs.push(o.entity.roughIns[suid].uid);
                             }
                             break;
                     }

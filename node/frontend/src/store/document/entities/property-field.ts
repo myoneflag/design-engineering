@@ -90,6 +90,7 @@ export interface TitleField extends PropertyFieldBase {
     type: FieldType.Title;
     hasDefault: false;
     isCalculated: false;
+    params: null;
 }
 
 export type PropertyField =

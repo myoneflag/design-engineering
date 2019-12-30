@@ -16,17 +16,8 @@ export default function insertFixture(
     fixtureName: string,
     angle: number,
 ) {
-    const coldUid = uuid();
-    const warmUid = uuid();
     const fixtureUid = uuid();
     let newEntity: FixtureEntity | null = null;
-
-    let hasWarm = false;
-    if (parseCatalogNumberExact(
-        context.effectiveCatalog.fixtures[fixtureName].loadingUnits[SupportedPsdStandards.as35002018LoadingUnits].hot,
-        )) {
-        hasWarm = true;
-    }
     const abbreviation =  context.effectiveCatalog.fixtures[fixtureName].abbreviation;
 
     MainEventBus.$emit('set-tool-handler', new PointTool(
@@ -53,56 +44,54 @@ export default function insertFixture(
                 type: EntityType.FIXTURE,
                 uid: fixtureUid,
 
-                coldRoughInUid: coldUid,
                 fixtureUnits: null,
-                loadingUnitsCold: null,
-                loadingUnitsHot: null,
-                designFlowRateCold: null,
-                designFlowRateHot: null,
-                continuousFlowColdLS: null,
-                continuousFlowHotLS: null,
 
-                maxInletPressureKPA: null,
-                minInletPressureKPA: null,
                 name: fixtureName,
                 outletAboveFloorM: null,
                 pipeDistanceMM: 200,
                 probabilityOfUsagePCT: null,
                 rotation: angle,
-                warmRoughInUid: hasWarm ? warmUid : null,
                 warmTempC: null,
+                roughInsInOrder: context.effectiveCatalog.fixtures[fixtureName].roughIns,
+                roughIns: {},
             };
 
-            const coldEntity: SystemNodeEntity = {
-                center: hasWarm ? {x: newEntity.pipeDistanceMM / 2, y: 0} : {x: 0, y: 0},
-                parentUid: fixtureUid,
-                type: EntityType.SYSTEM_NODE,
-                calculationHeightM: null,
-                systemUid: StandardFlowSystemUids.ColdWater,
-                uid: coldUid,
-                configuration: FlowConfiguration.INPUT,
-            };
-
+            for (const suid of newEntity.roughInsInOrder) {
+                newEntity.roughIns[suid] = {
+                    continuousFlowLS: null,
+                    designFlowRateLS: null,
+                    loadingUnits: null,
+                    maxPressureKPA: null,
+                    minPressureKPA: null,
+                    uid: uuid(),
+                }
+            }
 
             context.$store.dispatch('document/addEntity', newEntity);
-            context.$store.dispatch('document/addEntity', coldEntity);
-            context.objectStore.get(newEntity.uid)!.rebase(context);
 
-            if (hasWarm) {
-                const warmEntity: SystemNodeEntity = {
-                    center: {x: -newEntity.pipeDistanceMM / 2, y: 0},
+
+            for (let i = 0; i < newEntity.roughInsInOrder.length; i++) {
+                const suid = newEntity.roughInsInOrder[i];
+                const snuid = newEntity.roughIns[suid].uid;
+                const snEntity: SystemNodeEntity = {
+                    center: {
+                        x: newEntity.pipeDistanceMM * i -
+                            (newEntity.pipeDistanceMM * (newEntity.roughInsInOrder.length - 1)) / 2,
+                        y: 0,
+                    },
                     parentUid: fixtureUid,
                     type: EntityType.SYSTEM_NODE,
                     calculationHeightM: null,
-                    systemUid: StandardFlowSystemUids.WarmWater,
-                    uid: warmUid,
+                    systemUid: suid,
+                    uid: snuid,
                     configuration: FlowConfiguration.INPUT,
                 };
-
-                context.$store.dispatch('document/addEntity', warmEntity);
+                context.$store.dispatch('document/addEntity', snEntity);
             }
 
 
+
+            context.objectStore.get(newEntity.uid)!.rebase(context);
             context.scheduleDraw();
         },
         (wc: Coord) => {
