@@ -56,6 +56,7 @@ export interface RPZDDoubleIsolated extends DirectedValve {
     type: ValveType.RPZD_DOUBLE_ISOLATED;
     catalogId: 'RPZD';
     sizeMM: number | null;
+    isolateOneWhenCalculatingHeadLoss: boolean;
 }
 
 export enum ValveType {

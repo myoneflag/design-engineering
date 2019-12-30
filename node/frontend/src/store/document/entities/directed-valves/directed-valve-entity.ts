@@ -6,7 +6,6 @@ import {
     FlowSystemParameters,
     NetworkType
 } from '../../../../../src/store/document/types';
-import FittingCalculation from '../../../../../src/store/document/calculations/fitting-calculation';
 import {EntityType} from '../../../../../src/store/document/entities/types';
 import {FieldType, PropertyField} from '../../../../../src/store/document/entities/property-field';
 import {cloneSimple} from '../../../../../src/lib/utils';
@@ -14,7 +13,6 @@ import {DirectedValveConcrete, ValveType} from '../../../../../src/store/documen
 import {ObjectStore} from '../../../../../src/htmlcanvas/lib/types';
 import Pipe from '../../../../../src/htmlcanvas/objects/pipe';
 import {ConnectableEntityConcrete} from '../../../../../src/store/document/entities/concrete-entity';
-import DirectedValveCalculation from '../../../../../src/store/document/calculations/directed-valve-calculation';
 import {assertUnreachable} from "../../../../../src/config";
 
 export default interface DirectedValveEntity extends ConnectableEntity {
@@ -65,6 +63,13 @@ export function makeDirectedValveFields(
                     isCalculated: false, type: FieldType.Number, params: {min: 0, max: null},
                     multiFieldId: 'diameterMM', requiresInput: false },
             );
+            if (valve.type === ValveType.RPZD_DOUBLE_ISOLATED) {
+                fields.push({
+                    property: 'valve.isolateOneWhenCalculatingHeadLoss',
+                    title: 'Isolate one when calculation head loss?', hasDefault: false, isCalculated: false,
+                    params: null, type: FieldType.Boolean, multiFieldId: 'isolateOneWhenCalculatingHeadLoss',
+                });
+            }
             break;
         case ValveType.WATER_METER:
             break;

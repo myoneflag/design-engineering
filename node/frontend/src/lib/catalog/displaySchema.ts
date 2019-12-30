@@ -268,7 +268,6 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                     ['name', 'Name'],
                     ['minInletPressureKPA', 'Min. Inlet Pressure (kPa)'],
                     ['maxInletPressureKPA', 'Max. Inlet Pressure (kPa)'],
-                    ['maxHotColdPressureDifferentialPCT', 'Max Hot/Cold Pressure Differential (%)'],
                     ['minFlowRateLS', 'Min. Flow Rate (L/s)'],
                     ['maxFlowRateLS', 'Max. Flow Rate (L/s)'],
                 ],
@@ -277,7 +276,6 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                     uid: null,
                     minInletPressureKPA: {order: 2, name: 'Min. Inlet Pressure (kPa)'},
                     maxInletPressureKPA: {order: 3, name: 'Max. Inlet Pressure (kPa)'},
-                    maxHotColdPressureDifferentialPCT: {order: 4, name: 'Max Hot/Cold Pressure Differential (%)'},
                     minFlowRateLS: {order: 5, name: 'Min. Flow Rate (L/s)'},
                     maxFlowRateLS: {order: 6, name: 'Max. Flow Rate (L/s)'},
                     pressureLossKPAbyFlowRateLS: {

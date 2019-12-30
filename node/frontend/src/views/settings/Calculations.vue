@@ -1,8 +1,10 @@
+import {SupportedPsdStandards} from "../../config";
+import {SupportedPsdStandards} from "../../config";
 <template>
     <SettingsFieldBuilder
             ref="fields"
             :fields="fields"
-            :reactiveData="calculationParams"
+            :reactiveData="reactiveData"
             :originalData="committedCalculationParams"
             :onSave="save"
             :onBack="back"
@@ -16,10 +18,13 @@
     import {DocumentState} from '../../../src/store/document/types';
     import SettingsFieldBuilder from '../../../src/components/editor/lib/SettingsFieldBuilder.vue';
     import {
-        PIPE_SIZING_METHODS,
-        RING_MAIN_CALCULATION_METHODS,
+        assertUnreachable,
+        getDwellingMethods,
         getPsdMethods,
-        getDwellingMethods
+        isSupportedDwellingStandard, isSupportedPsdStandard,
+        PIPE_SIZING_METHODS,
+        SupportedDwellingStandards,
+        SupportedPsdStandards
     } from '../../../src/config';
 
     @Component({
@@ -36,22 +41,36 @@
 
 
         get fields(): any[][] {
-            return [
-                ['psdMethod', 'PSD Calculation Method:', 'choice', getPsdMethods(this.$store.getters['catalog/default'])],
+            const result: any[][] = [];
+
+            result.push(['psdDwellingMethod',
+                'Peak Flow Rate Calculation Method:',
+                'choice',
                 [
-                    'dwellingMethod',
-                    'Dwelling Calculation Method:',
-                    'choice',
-                    getDwellingMethods(this.$store.getters['catalog/default']),
+                    ...getPsdMethods(this.$store.getters['catalog/default']),
+                    ...getDwellingMethods(this.$store.getters['catalog/default']),
                 ],
+            ]);
 
+            if (this.calculationParams.dwellingMethod !== null) {
+                result.push(['psdMethod',
+                    'Peak Flow Rate Inside Dwellings:',
+                    'choice',
+                    [
+                        ...getPsdMethods(this.$store.getters['catalog/default']),
+                    ],
+                ]);
+            }
 
+            result.push(
                 ['pipeSizingMethod', 'Pipe Sizing Method:', 'choice', PIPE_SIZING_METHODS],
                 //['ringMainCalculationMethod', 'Ring Main Calculation Method:', 'choice', RING_MAIN_CALCULATION_METHODS],
                 ['ceilingPipeHeightM', 'Default Pipe Height Above Floor (m):', 'number'],
                 ['roomTemperatureC', 'Room Temperature (C):', 'range', 10, 40],
                 ['gravitationalAcceleration', 'Gravitational Acceleration (m/s^2):', 'range', 9.77, 9.84, 0.001],
-            ];
+            );
+
+            return result;
         }
 
         get document(): DocumentState {
@@ -64,6 +83,49 @@
 
         get committedCalculationParams() {
             return this.document.committedDrawing.metadata.calculationParams;
+        }
+
+        get reactiveData() {
+            // do a little MacGyver to get the PSD and Dwelling method that way :/
+            return new Proxy(this.calculationParams, {
+                get(target, name) {
+                    if (name === 'psdDwellingMethod') {
+                        if (target.dwellingMethod !== null) {
+                            return target.dwellingMethod;
+                        } else {
+                            return target.psdMethod;
+                        }
+                    } else {
+                        return (target as any)[name];
+                    }
+                },
+                set(target, name, value) {
+                    if (name === 'psdDwellingMethod') {
+                        if (isSupportedDwellingStandard(value)) {
+                            switch (value) {
+                                case SupportedDwellingStandards.as35002018Dwellings:
+                                    target.psdMethod = SupportedPsdStandards.as35002018LoadingUnits;
+                                    break;
+                                case SupportedDwellingStandards.barriesBookDwellings:
+                                    target.psdMethod = SupportedPsdStandards.barriesBookLoadingUnits;
+                                    break;
+                                default:
+                                    assertUnreachable(value);
+                            }
+                            target.dwellingMethod = value;
+                        } else {
+                            if (!isSupportedPsdStandard(value)) {
+                                throw new Error('Invalid value to set psdDwellingMethod');
+                            }
+                            target.dwellingMethod = null;
+                            target.psdMethod = value;
+                        }
+                    } else {
+                        (target as any)[name] = value;
+                    }
+                    return true;
+                }
+            });
         }
 
         save() {

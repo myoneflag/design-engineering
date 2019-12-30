@@ -397,6 +397,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
                 if (this.entity.valve.type === ValveType.RPZD_DOUBLE_SHARED) {
                     flowLS /= 2;
+                } else if (this.entity.valve.type === ValveType.RPZD_DOUBLE_ISOLATED &&
+                    !this.entity.valve.isolateOneWhenCalculatingHeadLoss
+                ) {
+                    flowLS /= 2;
                 }
 
                 const plKPA = interpolateTable(rpzdEntry.pressureLossKPAByFlowRateLS, flowLS, true);
@@ -441,11 +445,11 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             case ValveType.STRAINER:
                 return catalog.valves[this.entity.valve.catalogId].name;
             case ValveType.RPZD_DOUBLE_ISOLATED:
-                    return 'RPZD Parallel - Isolated';
+                    return 'RPZD Double Isolated - 100% Load';
             case ValveType.RPZD_SINGLE:
                 return 'RPZD';
             case ValveType.RPZD_DOUBLE_SHARED:
-                return 'RPZD Parallel - Simultaneous';
+                return 'RPZD Double - 50/50 Load';
             case ValveType.PRESSURE_RELIEF_VALVE:
                 return 'PRV';
         }

@@ -483,7 +483,6 @@ export const initialCatalog: Catalog = {
     mixingValves: {
         temperingValve: {
             maxFlowRateLS: "0.6",
-            maxHotColdPressureDifferentialPCT: "10",
             maxInletPressureKPA: "500",
             minFlowRateLS: "0.066",
             minInletPressureKPA: "20",
@@ -499,7 +498,6 @@ export const initialCatalog: Catalog = {
         },
         tmv: {
             maxFlowRateLS: "0.65",
-            maxHotColdPressureDifferentialPCT: "10",
             maxInletPressureKPA: "500",
             minFlowRateLS: "0.066",
             minInletPressureKPA: "20",
@@ -583,63 +581,63 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "5290"
                 },
                 "150": {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.00015",
                     diameterInternalMM: "148.2",
                     diameterNominalMM: "150",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "1000"
                 },
                 "20": {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.00015",
                     diameterInternalMM: "16.9",
                     diameterNominalMM: "20",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "3970"
                 },
                 "200": {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.00015",
                     diameterInternalMM: "198.9",
                     diameterNominalMM: "200",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "720"
                 },
                 "25": {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.00015",
                     diameterInternalMM: "22.8",
                     diameterNominalMM: "25",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "3500"
                 },
                 "32": {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.00015",
                     diameterInternalMM: "29.1",
                     diameterNominalMM: "32",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "2780"
                 },
                 "40": {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.00015",
                     diameterInternalMM: "35.4",
                     diameterNominalMM: "40",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "2300"
                 },
                 "50": {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.00015",
                     diameterInternalMM: "48.3",
                     diameterNominalMM: "50",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "1710"
                 },
                 "65": {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.00015",
                     diameterInternalMM: "61",
                     diameterNominalMM: "65",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "1370"
                 },
                 "80": {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.00015",
                     diameterInternalMM: "72.9",
                     diameterNominalMM: "80",
                     pipeUid: "copperTypeB",

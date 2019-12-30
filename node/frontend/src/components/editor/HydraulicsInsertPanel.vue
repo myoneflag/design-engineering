@@ -126,7 +126,7 @@
                         @click="$emit('insert', {entityName: entityNames.LOAD_NODE, nodeType: NodeType.LOAD_NODE})"
                 >Fixture Node</b-dropdown-item>
                 <b-dropdown-item
-                        :disabled="document.drawing.metadata.calculationParams.psdMethod !== SupportedPsdStandards.as35002018LoadingUnits"
+                        :disabled="document.drawing.metadata.calculationParams.dwellingMethod === null"
                         variant="outline-dark"
                         class="shower btn-sm"
                         @click="$emit('insert', {entityName: entityNames.LOAD_NODE, nodeType: NodeType.DWELLING})"

@@ -2,6 +2,7 @@
 import {Choice} from '../src/lib/types';
 import {Catalog} from '../src/store/catalog/types';
 import {cloneSimple} from '../src/lib/utils';
+import {DwellingStandardType} from "./store/catalog/psd-standard/types";
 
 export const DEFAULT_FONT_NAME: string = 'Helvetica';
 
@@ -18,10 +19,19 @@ export enum SupportedPsdStandards {
     din1988300NursingHome = 'din1988300NursingHome',
 }
 
+export function isSupportedPsdStandard(arg: any): arg is SupportedPsdStandards {
+    return Object.values(SupportedPsdStandards).includes(arg);
+}
+
 export enum SupportedDwellingStandards {
     as35002018Dwellings = 'as35002018Dwellings',
     barriesBookDwellings = 'barriesBookDwellings',
 }
+
+export function isSupportedDwellingStandard(arg: any): arg is SupportedDwellingStandards {
+    return Object.values(SupportedDwellingStandards).includes(arg);
+}
+
 
 export function assertUnreachable(x: never, shouldThrow: boolean = true) {
     if (shouldThrow) {

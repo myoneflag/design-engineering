@@ -131,6 +131,7 @@ function createBareValve(type: ValveType, catalogId: string): DirectedValveConcr
                 type,
                 catalogId: catalogId as any,
                 sizeMM: null,
+                isolateOneWhenCalculatingHeadLoss: false,
             }
     }
 }

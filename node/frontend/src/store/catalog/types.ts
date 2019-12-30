@@ -109,8 +109,7 @@ export interface MixingValveSpec {
     name: string;
     uid: string;
     minInletPressureKPA: string;
-    maxInletPressureKPA: string;
-    maxHotColdPressureDifferentialPCT: string;
+    maxInletPressureKPA: string;\
     minFlowRateLS: string;
     maxFlowRateLS: string;
     pressureLossKPAbyFlowRateLS: {[key: string]: string};

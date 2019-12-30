@@ -246,12 +246,11 @@ export function lookupFlowRate(
                 } else if (systemUid === StandardFlowSystemUids.HotWater ||
                     systemUid === StandardFlowSystemUids.WarmWater) {
                     fromDwellings = interpolateTable(dStandard.hotColdTable, psdU.dwellings, true, (e) => e.hot);
+                }
+                if (psdU.dwellings) {
+                    throw new Error('Cannot determine flow rate with this metric');
                 } else {
-                    if (psdU.dwellings) {
-                        throw new Error('Cannot determine flow rate with this metric');
-                    } else {
-                        fromDwellings = 0;
-                    }
+                    fromDwellings = 0;
                 }
                 break;
             case DwellingStandardType.EQUATION:
@@ -270,6 +269,7 @@ export function lookupFlowRate(
         fromDwellings = 0;
     }
 
+    console.log(fromLoading + ' ' + fromDwellings);
     if (fromLoading === null || fromDwellings === null) {
         return null;
     }

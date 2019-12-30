@@ -387,8 +387,8 @@ export default class DrawingCanvas extends Vue {
                 {type: ValveType.STRAINER, catalogId: 'strainer', name: ''},
 
                 {type: ValveType.RPZD_SINGLE, catalogId: 'RPZD', name: 'RPZD'},
-                {type: ValveType.RPZD_DOUBLE_SHARED, catalogId: 'RPZD', name: 'RPZD Parallel Simultaneous'},
-                {type: ValveType.RPZD_DOUBLE_ISOLATED, catalogId: 'RPZD', name: 'RPZD Parallel Isolated'},
+                {type: ValveType.RPZD_DOUBLE_SHARED, catalogId: 'RPZD', name: 'Double RPZD - 50/50 Load Each'},
+                {type: ValveType.RPZD_DOUBLE_ISOLATED, catalogId: 'RPZD', name: 'Double RPZD - 100% Load Each'},
             ].map((a) => {
                 if (a.name === '') {
                     a.name = this.effectiveCatalog.valves[a.catalogId].name;

@@ -62,10 +62,6 @@ export function makeTMVFields(): PropertyField[] {
         { property: 'maxInletPressureKPA', title: 'Max. Inlet Pressure (KPA)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'maxInletPressureKPA' },
 
-        { property: 'maxHotColdPressureDifferentialPCT', title: 'Max. Hot/Cold Pressure Differential (%):',
-            hasDefault: true, isCalculated: false, type: FieldType.Number, params: { min: 0, max: 100 },
-            multiFieldId: 'maxHotColdPressureDifferentialPCT' },
-
         { property: 'minFlowRateLS', title: 'Min. Flow Rate (L/s)', hasDefault: true, isCalculated: false,
             type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'minFlowRateLS' },
 
@@ -84,12 +80,10 @@ export function fillTMVFields(
     const arr: Array<
         'minInletPressureKPA' |
         'maxInletPressureKPA' |
-        'maxHotColdPressureDifferentialPCT' |
         'minFlowRateLS' |
         'maxFlowRateLS'> = [
         'minInletPressureKPA',
         'maxInletPressureKPA',
-        'maxHotColdPressureDifferentialPCT',
         'minFlowRateLS',
         'maxFlowRateLS',
     ];
