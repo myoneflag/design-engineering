@@ -91,13 +91,14 @@ export default class BackgroundLayer extends LayerImplementation {
             const background = entity;
 
             if (!this.objectStore.has(background.uid)) {
+                const entityLvlUid = doc.uiState.levelUid;
                 const obj: BackgroundImage = new BackgroundImage(
                     undefined,
                     this.objectStore,
                     this,
-                    () => (doc.uiState.levelUid ?
-                        doc.drawing.levels[doc.uiState.levelUid].entities[entity.uid] :
-                        doc.drawing.shared[entity.uid])as
+                    () => (entityLvlUid ?
+                        doc.drawing.levels[entityLvlUid].entities[entity.uid] :
+                        doc.drawing.shared[entity.uid]) as
                         BackgroundEntity,
                     (event) => {
                         this.select([background.uid], event.ctrlKey ? SelectMode.Toggle : SelectMode.Replace);
