@@ -1,6 +1,6 @@
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
 import {Coord, DocumentState, DrawableEntity, Level} from '../../../src/store/document/types';
-import {GlobalStore, ObjectStore} from '../../../src/htmlcanvas/lib/types';
+import {DrawingContext, GlobalStore, ObjectStore} from '../../../src/htmlcanvas/lib/types';
 import {cloneSimple} from '../../../src/lib/utils';
 import {
     ConnectableEntityConcrete,
@@ -18,6 +18,7 @@ import {assertUnreachable} from "../../config";
 import {CalculationContext} from "../../calculations/types";
 import {ValveType} from "../../store/document/entities/directed-valves/valve-types";
 import {getFluidDensityOfSystem, kpa2head} from "../../calculations/pressure-drops";
+import {matrixScale} from "../utils";
 
 
 export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
@@ -413,4 +414,46 @@ export function getRpzdHeadLoss(
         density,
         context.doc.drawing.metadata.calculationParams.gravitationalAcceleration,
     );
+}
+
+export const VALVE_HEIGHT_MM = 100;
+
+export const VALVE_LINE_WIDTH_MM = 10;
+
+export const VALVE_SIZE_MM = 140;
+
+export function drawRpzdDouble(context: DrawingContext, colors: [string, string], selected: boolean = false) {
+
+    const s = matrixScale(context.ctx.getTransform());
+    const baseWidth = Math.max(2.0 / s, VALVE_LINE_WIDTH_MM / context.vp.toWorldLength(1));
+    const ctx = context.ctx;
+    ctx.lineWidth = baseWidth;
+
+    ctx.fillStyle = '#ffffff';
+    if (selected) {
+        ctx.fillStyle = 'rgba(100, 100, 255, 0.2)';
+    }
+
+    ctx.fillRect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * 2.3, VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * 4.6);
+
+    if (colors[0] !== colors[1]) {
+        ctx.strokeStyle = '#444444';
+    }
+
+    ctx.beginPath();
+    ctx.rect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * 2.3, VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * 4.6);
+    ctx.stroke();
+
+
+    let i = 0;
+    for (let off = -VALVE_HEIGHT_MM; off <= VALVE_HEIGHT_MM; off += VALVE_HEIGHT_MM * 2) {
+        ctx.fillStyle = colors[i];
+        i++;
+        ctx.beginPath();
+        ctx.moveTo(-VALVE_HEIGHT_MM, -VALVE_SIZE_MM / 2 + off);
+        ctx.lineTo(-VALVE_HEIGHT_MM, VALVE_SIZE_MM / 2 + off);
+        ctx.lineTo(VALVE_HEIGHT_MM, 0 + off);
+        ctx.closePath();
+        ctx.fill();
+    }
 }

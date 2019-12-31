@@ -20,7 +20,15 @@ import CenterDraggableObject from '../../../src/htmlcanvas/lib/object-traits/cen
 import {SelectableObject} from '../../../src/htmlcanvas/lib/object-traits/selectable';
 import {canonizeAngleRad, cloneSimple, lighten} from '../../../src/lib/utils';
 import {IsolationValve, ValveType} from '../../../src/store/document/entities/directed-valves/valve-types';
-import {getRpzdHeadLoss, lowerBoundTable, parseCatalogNumberExact} from '../../../src/htmlcanvas/lib/utils';
+import {
+    drawRpzdDouble,
+    getRpzdHeadLoss,
+    lowerBoundTable,
+    parseCatalogNumberExact,
+    VALVE_HEIGHT_MM,
+    VALVE_LINE_WIDTH_MM,
+    VALVE_SIZE_MM
+} from '../../../src/htmlcanvas/lib/utils';
 import Pipe from '../../../src/htmlcanvas/objects/pipe';
 import {matrixScale} from '../../../src/htmlcanvas/utils';
 import {Catalog} from '../../../src/store/catalog/types';
@@ -32,10 +40,6 @@ import PipeEntity, {MutablePipe} from "../../store/document/entities/pipe-entity
 import DirectedValveCalculation, {emptyDirectedValveCalculation} from "../../store/document/calculations/directed-valve-calculation";
 import FittingEntity from "../../store/document/entities/fitting-entity";
 import uuid from 'uuid';
-
-export const VALVE_SIZE_MM = 140;
-export const VALVE_HEIGHT_MM = 100;
-export const VALVE_LINE_WIDTH_MM = 10;
 
 @CalculatedObject
 @SelectableObject
@@ -128,7 +132,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
             case ValveType.RPZD_DOUBLE_ISOLATED:
             case ValveType.RPZD_DOUBLE_SHARED:
-                this.drawRpzdDouble(context);
+                drawRpzdDouble(context, [context.ctx.fillStyle, context.ctx.fillStyle]);
                 break;
             case ValveType.WATER_METER:
                 this.drawWaterMeter(context);
@@ -192,37 +196,11 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
         ctx.fillStyle = oldfs;
         ctx.beginPath();
-        ctx.moveTo(-VALVE_HEIGHT_MM, -VALVE_HEIGHT_MM);
-        ctx.lineTo(-VALVE_HEIGHT_MM, VALVE_HEIGHT_MM);
+        ctx.moveTo(-VALVE_HEIGHT_MM, -VALVE_SIZE_MM / 2);
+        ctx.lineTo(-VALVE_HEIGHT_MM, VALVE_SIZE_MM / 2);
         ctx.lineTo(VALVE_HEIGHT_MM, 0);
         ctx.closePath();
         ctx.fill();
-    }
-
-    drawRpzdDouble(context: DrawingContext) {
-
-        const ctx = context.ctx;
-
-        const oldfs = ctx.fillStyle;
-        ctx.fillStyle = '#ffffff';
-
-        ctx.fillRect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * 2.3, VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * 4.6);
-
-        ctx.beginPath();
-        ctx.rect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * 2.3, VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * 4.6);
-        ctx.stroke();
-
-
-        ctx.fillStyle = oldfs;
-
-        for (let off = -VALVE_HEIGHT_MM; off <= VALVE_HEIGHT_MM; off += VALVE_HEIGHT_MM * 2) {
-            ctx.beginPath();
-            ctx.moveTo(-VALVE_HEIGHT_MM, -VALVE_HEIGHT_MM + off);
-            ctx.lineTo(-VALVE_HEIGHT_MM, VALVE_HEIGHT_MM + off);
-            ctx.lineTo(VALVE_HEIGHT_MM, 0 + off);
-            ctx.closePath();
-            ctx.fill();
-        }
     }
 
     drawWaterMeter(context: DrawingContext) {

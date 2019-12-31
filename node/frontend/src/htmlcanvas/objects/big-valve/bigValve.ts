@@ -17,7 +17,12 @@ import {DrawableEntityConcrete} from '../../../../src/store/document/entities/co
 import CanvasContext from '../../../../src/htmlcanvas/lib/canvas-context';
 import {SelectableObject} from '../../../../src/htmlcanvas/lib/object-traits/selectable';
 import {CenteredObject} from '../../../../src/htmlcanvas/lib/object-traits/centered-object';
-import {getRpzdHeadLoss, interpolateTable, parseCatalogNumberExact} from '../../../../src/htmlcanvas/lib/utils';
+import {
+    drawRpzdDouble,
+    getRpzdHeadLoss,
+    interpolateTable,
+    parseCatalogNumberExact, VALVE_HEIGHT_MM
+} from '../../../../src/htmlcanvas/lib/utils';
 import {CalculationContext} from '../../../../src/calculations/types';
 import {FlowNode} from '../../../../src/calculations/calculation-engine';
 import {DrawingArgs} from '../../../../src/htmlcanvas/lib/drawable-object';
@@ -34,6 +39,7 @@ import BigValveCalculation from "../../../store/document/calculations/big-valve-
 import Flatten from '@flatten-js/core';
 import Cached from "../../lib/cached";
 import {ValveType} from "../../../store/document/entities/directed-valves/valve-types";
+import {StandardFlowSystemUids} from "../../../store/catalog";
 
 export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 
@@ -48,15 +54,31 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
 
     lastDrawnWorldRadius: number = 0; // for bounds detection
 
-    drawInternal(context: DrawingContext, {active, selected}: DrawingArgs): void {
+    drawInternal(context: DrawingContext, args: DrawingArgs): void {
 
+
+        switch (this.entity.valve.type) {
+            case BigValveType.TMV:
+                this.drawTmv(context, args);
+                break;
+            case BigValveType.TEMPERING:
+                this.drawTemperingValve(context, args);
+                break;
+            case BigValveType.RPZD_HOT_COLD:
+                this.drawHotColdRPZD(context, args);
+                break;
+
+        }
+    }
+
+    drawTmv(context: DrawingContext, {active, selected}: DrawingArgs) {
         const {ctx, vp} = context;
 
         const l = -this.entity.pipeDistanceMM;
         const r = this.entity.pipeDistanceMM;
         const lm = l / 2;
         const rm = r / 2;
-        const b = this.entity.valveLengthMM * 4;
+        const b = this.entity.valveLengthMM;
         const bm = b / 2;
         const t = 0;
         const m = 0;
@@ -83,7 +105,6 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         }
 
 
-
         // Box and open
         ctx.beginPath();
         ctx.moveTo(l, bm);
@@ -96,6 +117,55 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         ctx.lineTo(r * 0.80, b * 0.80);
 
         ctx.stroke();
+    }
+
+    drawTemperingValve(context: DrawingContext, {active, selected}: DrawingArgs) {
+        const {ctx, vp} = context;
+
+        const l = -this.entity.pipeDistanceMM;
+        const r = this.entity.pipeDistanceMM;
+        const b = this.entity.valveLengthMM;
+        const t = 0;
+
+        ctx.lineWidth = this.entity.valveLengthMM * 0.1;
+        ctx.strokeStyle = '#222222';
+        ctx.lineCap = 'square';
+
+        if (selected) {
+            ctx.fillStyle = 'rgba(100, 100, 255, 0.2)';
+            ctx.fillRect( l * 1.2, 0 - b * 0.1, (r - l) * 1.2, b * 1.2);
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(l, t);
+        ctx.lineTo(r, t);
+        ctx.moveTo(0, t);
+        ctx.lineTo(0, b);
+        ctx.stroke();
+    }
+
+    drawHotColdRPZD(context: DrawingContext, {active, selected}: DrawingArgs) {
+        const {ctx, vp} = context;
+        const hotSystem = context.doc.drawing.metadata.flowSystems.find((s) =>
+            s.uid === StandardFlowSystemUids.HotWater)!;
+        const coldSystem = context.doc.drawing.metadata.flowSystems.find((s) =>
+            s.uid === StandardFlowSystemUids.ColdWater)!;
+
+
+        const l = -this.entity.pipeDistanceMM;
+        const r = this.entity.pipeDistanceMM;
+        const b = this.entity.valveLengthMM;
+        const t = 0;
+        if (selected) {
+            ctx.fillStyle = 'rgba(100, 100, 255, 0.2)';
+            ctx.fillRect( l * 1.2, 0 - b * 0.1, (r - l) * 1.2, b * 1.2);
+        }
+
+        ctx.rotate(Math.PI / 2);
+        ctx.translate(VALVE_HEIGHT_MM, 0);
+        drawRpzdDouble(context, [coldSystem.color.hex, hotSystem.color.hex], selected);
+        ctx.translate(-VALVE_HEIGHT_MM, 0);
+        ctx.rotate(-Math.PI / 2);
     }
 
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to

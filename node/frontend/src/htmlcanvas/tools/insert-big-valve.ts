@@ -90,7 +90,7 @@ export default function insertBigValve(
                 minInletPressureKPA: null,
                 pipeDistanceMM: 150,
                 rotation: angle,
-                valveLengthMM: 50,
+                valveLengthMM: 200,
 
                 valve,
 

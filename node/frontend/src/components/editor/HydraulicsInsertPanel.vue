@@ -35,15 +35,15 @@
             <b-button-group>
                 <b-button variant="outline-dark" class="insertBtn rpzd-hot-cold btn-sm"
                           @click="$emit('insert', {entityName: entityNames.BIG_VALVE, system: selectedSystem, tmvHasCold: true, bigValveType: BigValveType.RPZD_HOT_COLD})"
-                          v-b-tooltip.hover title="TMV with cold water out"
+                          v-b-tooltip.hover title="RPZD (Hot + Cold)"
                 ></b-button>
                 <b-button variant="outline-dark" class="insertBtn tmv btn-sm"
                           @click="$emit('insert', {entityName: entityNames.BIG_VALVE, system: selectedSystem, tmvHasCold: true, bigValveType: BigValveType.TMV})"
-                          v-b-tooltip.hover title="TMV with cold water out"
+                          v-b-tooltip.hover title="TMV (Warm + Cold)"
                 ></b-button>
                 <b-button variant="outline-dark" class="insertBtn tempering-valve btn-sm"
                           @click="$emit('insert', {entityName: entityNames.BIG_VALVE, system: selectedSystem, tmvHasCold: true, bigValveType: BigValveType.TEMPERING})"
-                          v-b-tooltip.hover title="TMV with cold water out"
+                          v-b-tooltip.hover title="Tempering Valve (Warm)"
                 ></b-button>
             </b-button-group>
         </b-col>
@@ -248,7 +248,21 @@
     }
 
     .insertBtn.tmv {
-        background-image: url('../../../src/assets/object-icons/mixer-valves/tmv/tmv.png');
+        background-image: url('../../../src/assets/object-icons/big-valves/TMV.png');
+        background-size: 35px;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    .insertBtn.tempering-valve {
+        background-image: url('../../../src/assets/object-icons/big-valves/tempering-valve.png');
+        background-size: 35px;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    .insertBtn.rpzd-hot-cold {
+        background-image: url('../../../src/assets/object-icons/big-valves/hot-cold-rpzd.png');
         background-size: 35px;
         background-repeat: no-repeat;
         background-position: center;
