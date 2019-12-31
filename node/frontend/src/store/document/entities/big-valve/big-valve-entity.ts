@@ -1,20 +1,14 @@
 import {
-    ConnectableEntity,
     Coord,
     DocumentState,
     DrawableEntity,
-    FlowSystemParameters,
 } from '../../../../../src/store/document/types';
 import {EntityType} from '../../../../../src/store/document/entities/types';
 import {FieldType, PropertyField} from '../../../../../src/store/document/entities/property-field';
-import * as _ from 'lodash';
-import FittingEntity from '../../../../../src/store/document/entities/fitting-entity';
-import CatalogState, {Catalog} from '../../../../../src/store/catalog/types';
+import {Catalog} from '../../../../../src/store/catalog/types';
 import InvisibleNodeEntity from '../../../../../src/store/document/entities/Invisible-node-entity';
-import BigValveCalculation from '../../calculations/big-valve-calculation';
 import {parseCatalogNumberOrMin} from '../../../../../src/htmlcanvas/lib/utils';
 import {cloneSimple} from '../../../../../src/lib/utils';
-import SystemNodeCalculation from '../../../../../src/store/document/calculations/system-node-calculation';
 
 
 export enum BigValveType {

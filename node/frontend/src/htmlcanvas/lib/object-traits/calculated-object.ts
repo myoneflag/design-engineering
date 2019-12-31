@@ -258,6 +258,7 @@ export function CalculatedObject<T extends new (...args: any[])
             }
 
             const locs: TM.Matrix[] = this.locateCalculationBoxWorld(context, data, newScale);
+            console.log(this.entity.type + ' locs: ' + JSON.stringify(locs));
 
             const box = this.drawCalculationBox(context, data, true);
 
@@ -293,7 +294,7 @@ export function CalculatedObject<T extends new (...args: any[])
                     const ret: CalculationData = {
                         ...f,
                         type: CalculationDataType.VALUE,
-                        value: getPropertyByString(calculation, f.property, true),
+                        value: getPropertyByString(calculation, f.property),
                         attachUid: f.attachUid || this.entity.uid,
                     };
                     return ret;

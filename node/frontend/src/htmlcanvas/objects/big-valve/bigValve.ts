@@ -116,7 +116,8 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         const height = data.length * FIELD_HEIGHT;
         const wc = this.toWorldCoord();
 
-        return [0, Math.PI / 4, - Math.PI / 4, Math.PI / 2, - Math.PI / 2,
+        console.log('locating for big valve');
+        const res = [0, Math.PI / 4, - Math.PI / 4, Math.PI / 2, - Math.PI / 2,
             Math.PI * 3 / 4, - Math.PI * 3 / 4, Math.PI].map((delta) => {
             return TM.transform(
                 TM.identity(),
@@ -128,6 +129,8 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
                 TM.rotate(-angle - Math.PI - delta),
             );
         });
+        console.log(JSON.stringify(res));
+        return res;
     }
 
     refreshObjectInternal(obj: BigValveEntity): void {
@@ -321,7 +324,8 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
             const systemUid = (globalStore.get(from.connectable)!.entity as SystemNodeEntity).systemUid;
             const calcs = context.globalStore.getOrCreateCalculation(this.entity);
             const size = calcs.rpzdSizeMM![systemUid]!;
-            return getRpzdHeadLoss(
+            console.log('calling rpzd hl ' + systemUid + ' ' + size + ' flow: ' + flowLS);
+            const res = getRpzdHeadLoss(
                 context,
                 this.entity.valve.catalogId,
                 size,
@@ -329,6 +333,8 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
                 systemUid,
                 ValveType.RPZD_SINGLE,
             );
+            console.log(res);
+            return res;
         } else if (from.connectable === entity.coldRoughInUid) {
             if (entity.valve.type === BigValveType.TEMPERING || to.connectable !== entity.valve.coldOutputUid) {
                 throw new Error('Invalid configuration - cold input must connect to cold out only');

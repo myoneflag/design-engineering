@@ -107,7 +107,11 @@ import {EntityType} from "../../../../src/store/document/entities/types";
 
                 <b-collapse id="collapse-1" class="mt-2">
                     <p>{{ selectedEntities.map((e) => e.uid) }}</p>
-                        <pre style="font-size: 12px; text-align: left">{{ JSON.stringify(selectedEntities, null, 2) }}</pre>
+                        <pre style="font-size: 12px; text-align: left">
+                            {{ JSON.stringify(selectedEntities, null, 2) }}
+
+                            calculations: {{ selectedEntities.map((e) => getCalculation(e)) }}
+                        </pre>
                         <b-collapse id="collapse-1-inner" class="mt-2">
                             <b-card>Hello!</b-card>
                         </b-collapse>
@@ -140,6 +144,8 @@ import {EntityType} from "../../../../src/store/document/entities/types";
     import {StandardFlowSystemUids} from "../../../../src/store/catalog";
     import {DrawableEntityConcrete} from "../../../store/document/entities/concrete-entity";
     import LoadNodeProperties from "./LoadNodeProperties.vue";
+    import {GlobalStore} from "../../../htmlcanvas/lib/types";
+    import {isCalculated} from "../../../store/document/calculations";
 
     @Component({
         components: {
@@ -153,7 +159,7 @@ import {EntityType} from "../../../../src/store/document/entities/types";
             selectedObjects: Array,
             targetProperty: String,
             mode: Number,
-            objectStore: Map,
+            objectStore: Map, // MAP. don't change it
             onChange: Function,
             onDelete: Function,
         },
@@ -218,6 +224,15 @@ import {EntityType} from "../../../../src/store/document/entities/types";
 
         get StandardFlowSystemUids() {
             return StandardFlowSystemUids;
+        }
+
+        getCalculation(entity: DrawableEntityConcrete) {
+            const g: GlobalStore = this.$props.objectStore;
+            if (isCalculated(entity)) {
+                return g.getOrCreateCalculation(entity);
+            } else {
+                return "Not calculated";
+            }
         }
     }
 </script>

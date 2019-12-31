@@ -540,7 +540,8 @@ export default class CalculationEngine {
                                         fr = calculation.coldPeakFlowRate;
                                         systemUid = (this.globalStore.get(obj.entity.coldRoughInUid)!
                                             .entity as SystemNodeEntity).systemUid;
-                                    } else if (edge.value.type === EdgeType.BIG_VALVE_HOT_WARM &&
+                                    } else if ((edge.value.type === EdgeType.BIG_VALVE_HOT_WARM ||
+                                        edge.value.type === EdgeType.BIG_VALVE_HOT_HOT) &&
                                         flowFrom.connectable === obj.entity.hotRoughInUid) {
                                         fr = calculation.hotPeakFlowRate;
                                         systemUid = (this.globalStore.get(obj.entity.hotRoughInUid)!
@@ -1135,6 +1136,7 @@ export default class CalculationEngine {
                 let flowRate = lookupFlowRate(psdU, this.doc, this.catalog, systemUid);
 
                 if (entity.valve.type === BigValveType.RPZD_HOT_COLD && flowRate !== null) {
+                    console.log('sizing hc rpzd: ' + flowRate);
                     if (flowEdge.type === EdgeType.BIG_VALVE_HOT_HOT) {
                         calculation.rpzdSizeMM![StandardFlowSystemUids.HotWater] = this.sizeRpzdForFlowRate(
                             entity.valve.catalogId,
@@ -1150,6 +1152,7 @@ export default class CalculationEngine {
                     } else {
                         throw new Error('Invalid edge on hot-cold RPZD');
                     }
+                    console.log('got: ' + JSON.stringify(calculation.rpzdSizeMM));
                 }
 
                 if (flowEdge.type === EdgeType.BIG_VALVE_COLD_COLD) {
@@ -1501,16 +1504,7 @@ export default class CalculationEngine {
         );
 
         if (entry) {
-            const pd = interpolateTable(
-                entry.pressureLossKPAByFlowRateLS,
-                fr,
-            );
-
-            if (pd !== null) {
-                return pd;
-            } else {
-                console.log('oopsies');
-            }
+            return parseCatalogNumberExact(entry.sizeMM);
         } else {
             console.log('entry doesn\'t exist');
         }

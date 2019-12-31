@@ -208,6 +208,7 @@ export function lowerBoundTable<T>(
     let highValue: T | null = null;
 
     for (const key of Object.keys(table)) {
+        console.log('lower bound going through key ' + key);
         const min = getVal ? getVal(table[key], false) : parseCatalogNumberOrMin(key);
         const max = getVal ? getVal(table[key], true) : parseCatalogNumberOrMax(key);
         const value = table[key];
@@ -379,6 +380,7 @@ export function getRpzdHeadLoss(
     const rpzdEntry =
         upperBoundTable(context.catalog.backflowValves[catalogId].valvesBySize, size);
     if (!rpzdEntry) {
+        console.log('no entry');
         return null;
     }
 
@@ -392,14 +394,17 @@ export function getRpzdHeadLoss(
 
     const plKPA = interpolateTable(rpzdEntry.pressureLossKPAByFlowRateLS, flowLS, true);
     if (plKPA === null) {
+        console.log('no plKPA');
         return null;
     }
 
     if (systemUid === undefined) {
+        console.log('no systemUID');
         return null;
     }
     const density = getFluidDensityOfSystem(systemUid, context.doc, context.catalog);
     if (density === null) {
+        console.log('no density');
         return null;
     }
 

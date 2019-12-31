@@ -1,5 +1,3 @@
-import {EntityType} from "../../store/document/entities/types";
-import {EntityType} from "../../store/document/entities/types";
 <template>
 
 
@@ -17,7 +15,7 @@ import {EntityType} from "../../store/document/entities/types";
                 :mode="document.uiState.drawingMode"
                 :on-change="onPropertiesChange"
                 :on-delete="deleteSelected"
-                :object-store="objectStore"
+                :object-store="globalStore"
         >
         </PropertiesWindow>
 
@@ -178,6 +176,7 @@ import {EntityType} from "../../store/document/entities/types";
     import util from 'util';
     import insertLoadNode from "../../htmlcanvas/tools/insert-load-node";
     import {NodeType} from "../../store/document/entities/load-node-entity";
+    import {BigValveType} from "../../store/document/entities/big-valve/big-valve-entity";
 
     @Component({
     components: {
@@ -1046,11 +1045,11 @@ export default class DrawingCanvas extends Vue {
             params:
                 {
                     entityName: string, system: FlowSystemParameters, catalogId: string,
-                    valveType: ValveType, nodeType: NodeType,
+                    valveType: ValveType, nodeType: NodeType, bigValveType: BigValveType,
                     valveName: string, networkType: NetworkType,
                 },
         ) {
-            const  {entityName, system, catalogId, valveType, nodeType, valveName, networkType} = params;
+            const  {entityName, system, catalogId, valveType, nodeType, valveName, networkType, bigValveType} = params;
             console.log('inserting ' + JSON.stringify(params));
             this.hydraulicsLayer.select([], SelectMode.Replace);
 
@@ -1063,7 +1062,7 @@ export default class DrawingCanvas extends Vue {
             } else if (entityName === EntityType.FITTING) {
                 insertValve(this, system);
             } else if (entityName === EntityType.BIG_VALVE) {
-                insertBigValve(this, 0);
+                insertBigValve(this, bigValveType, 0);
             } else if (entityName === EntityType.FIXTURE) {
                 this.document.uiState.lastUsedFixtureUid = catalogId;
                 insertFixture(this, catalogId, 0);

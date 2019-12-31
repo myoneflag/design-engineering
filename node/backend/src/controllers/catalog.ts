@@ -2,9 +2,6 @@ import {AuthRequired} from "../helpers/withAuth";
 import {Catalog} from "../entity/Catalog";
 import {NextFunction, Request, Response, Router} from "express";
 import {Session} from "../entity/Session";
-import * as initialCatalog from "../initial-catalog.json";
-import {Document} from '../entity/Document';
-import {Catalog as ICatalog} from "../../../frontend/src/store/catalog/types"
 import {AccessType, withDocument} from "../helpers/withResources";
 
 export class CatalogController {

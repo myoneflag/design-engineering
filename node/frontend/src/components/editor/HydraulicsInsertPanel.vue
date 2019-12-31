@@ -33,8 +33,16 @@
         </b-col>
         <b-col>
             <b-button-group>
+                <b-button variant="outline-dark" class="insertBtn rpzd-hot-cold btn-sm"
+                          @click="$emit('insert', {entityName: entityNames.BIG_VALVE, system: selectedSystem, tmvHasCold: true, bigValveType: BigValveType.RPZD_HOT_COLD})"
+                          v-b-tooltip.hover title="TMV with cold water out"
+                ></b-button>
                 <b-button variant="outline-dark" class="insertBtn tmv btn-sm"
-                          @click="$emit('insert', {entityName: entityNames.BIG_VALVE, system: selectedSystem, tmvHasCold: true})"
+                          @click="$emit('insert', {entityName: entityNames.BIG_VALVE, system: selectedSystem, tmvHasCold: true, bigValveType: BigValveType.TMV})"
+                          v-b-tooltip.hover title="TMV with cold water out"
+                ></b-button>
+                <b-button variant="outline-dark" class="insertBtn tempering-valve btn-sm"
+                          @click="$emit('insert', {entityName: entityNames.BIG_VALVE, system: selectedSystem, tmvHasCold: true, bigValveType: BigValveType.TEMPERING})"
                           v-b-tooltip.hover title="TMV with cold water out"
                 ></b-button>
             </b-button-group>
@@ -148,6 +156,7 @@
     import { SupportedPsdStandards } from '../../../src/config';
     import {NodeType} from "../../store/document/entities/load-node-entity";
     import {Catalog} from "../../../../backend/src/entity/Catalog";
+    import {BigValveType} from "../../store/document/entities/big-valve/big-valve-entity";
 
     @Component({
         components: {FlowSystemPicker},
@@ -204,6 +213,10 @@
             return this.$props.availableFixtures.map((key: string) => {
                 return this.$props.fixtures[key];
             });
+        }
+
+        get BigValveType() {
+            return BigValveType;
         }
 
         addRemoveFixturesClick() {

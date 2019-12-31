@@ -54,7 +54,7 @@ export function makeBigValveCalculationFields(doc: DocumentState, entity: BigVal
             for (let i = 0; i < 2; i++) {
                 const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === suids[i])!;
                 result.push(
-                    {property: 'outputs.' + suids[i] + '.sizeMM',
+                    {property: 'rpzdSizeMM.' + suids[i],
                         title:  system.name + ' RPZD Size',
                         short: '',
                         attachUid: attachments[i] as string,

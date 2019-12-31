@@ -48,9 +48,12 @@ export default class CalculationLayer extends LayerImplementation {
             const obj2props = new Map<string, CalculationData[]>();
 
             this.objectStore.forEach((o) => {
-                if (isCalculated(o.entity) && o.type in calculationFilters &&
+                if (isCalculated(o.entity) && o.type in calculationFilters && calculationFilters[o.type].enabled &&
                     context.globalStore.getCalculation(o.entity)) {
                     const fields = o.getCalculationFields(context, calculationFilters);
+                    if (o.type === EntityType.BIG_VALVE) {
+                        console.log('big valve got ' + JSON.stringify(fields));
+                    }
                     fields.forEach((f) => {
                         if (!obj2props.has(f.attachUid)) {
                             obj2props.set(f.attachUid, []);
@@ -62,7 +65,6 @@ export default class CalculationLayer extends LayerImplementation {
 
             const objList =
                 Array.from(this.objectStore.values())
-                    .filter((o) => calculationFilters[o.type] ? calculationFilters[o.type].enabled : false)
                     .filter((o) => o.calculated && obj2props.has(o.uid));
             objList.sort((a, b) => {
                 return -(this.messagePriority(context, a) - this.messagePriority(context, b));

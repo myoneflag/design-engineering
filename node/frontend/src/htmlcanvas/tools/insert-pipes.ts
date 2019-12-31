@@ -23,7 +23,7 @@ import Pipe from '../../../src/htmlcanvas/objects/pipe';
 import {isConnectable} from '../../../src/store/document';
 import {SelectMode} from '../../../src/htmlcanvas/layers/layer';
 import {KeyCode} from '../../../src/htmlcanvas/utils';
-import BackedConnectable from '../../../src/htmlcanvas/lib/BackedConnectable';
+import BackedConnectable, {BaseBackedConnectable} from '../../../src/htmlcanvas/lib/BackedConnectable';
 import Vue from 'vue';
 import {rebaseAll} from "../lib/black-magic/rebase-all";
 
@@ -143,9 +143,11 @@ function insertPipeChain(
                 // revert changes.
                 context.$store.dispatch('document/revert', false)
 
+
                 // it's possible that we are drawing the first connection, in which case we will have an
                 // orphaned valve. Delete it.
-                if (context.objectStore.getConnections(lastAttachment.uid).length === 0) {
+                if (context.objectStore.getConnections(lastAttachment.uid).length <
+                    (context.globalStore.get(lastAttachment.uid) as BaseBackedConnectable).minimumConnections) {
                     context.deleteEntity(context.objectStore.get(lastAttachment.uid)!);
                 }
                 context.$store.dispatch('document/commit', false);
