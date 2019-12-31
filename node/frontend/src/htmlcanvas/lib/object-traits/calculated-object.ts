@@ -10,7 +10,7 @@ import {getFields} from '../../../../src/calculations/utils';
 import * as TM from 'transformation-matrix';
 import {tm2flatten} from '../../../../src/htmlcanvas/lib/utils';
 import {TEXT_MAX_SCALE} from '../../../../src/htmlcanvas/objects/pipe';
-import {matrixScale, warningSignImg, wrapText} from '../../../../src/htmlcanvas/utils';
+import {getWarningSignImg, matrixScale, warningSignImg, wrapText} from '../../../../src/htmlcanvas/utils';
 import {CalculationContext} from "../../../calculations/types";
 import {EntityType} from "../../../store/document/entities/types";
 
@@ -71,7 +71,7 @@ export function CalculatedObject<T extends new (...args: any[])
             this.withWorldAngle(context, {x: 0, y: 0}, () => {
                 if (!dryRun) {
                     context.ctx.drawImage(
-                        warningSignImg,
+                        getWarningSignImg(),
                         - WARNING_WIDTH / 2,
                         - WARNING_HEIGHT / 2,
                         WARNING_WIDTH,
@@ -165,7 +165,7 @@ export function CalculatedObject<T extends new (...args: any[])
                     );
 
                     ctx.drawImage(
-                        warningSignImg,
+                        getWarningSignImg(),
                         -maxWidth / 2 - WARNING_WIDTH,
                         - WARNING_HEIGHT / 2,
                         WARNING_WIDTH,

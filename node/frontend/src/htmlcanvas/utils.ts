@@ -318,9 +318,16 @@ export function keycodeToImgName(keyCode: KeyCode): string {
 const imgStore: Map<string, HTMLImageElement> = new Map<string, HTMLImageElement>();
 
 
-export const warningSignImg = new Image();
+export let warningSignImg: HTMLImageElement;
+
+export function getWarningSignImg() {
+    if (warningSignImg === undefined) {
+        warningSignImg = new Image();
+        warningSignImg.src = require('../assets/warning-sign.svg');
+    }
+    return warningSignImg;
+}
 // @ts-ignore
-warningSignImg.src = require('../assets/warning-sign.svg');
 
 export function keyCode2Image(keyCode: KeyCode): HTMLImageElement {
     const name = keycodeToImgName(keyCode);

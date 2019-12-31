@@ -2,8 +2,6 @@ import LoadingUnitTable from '../../../src/store/catalog/psd-standard/loading-un
 import LoadingUnitHotColdTable from '../../../src/store/catalog/psd-standard/loading-unit-hot-cold-table';
 import PsdEquation from './psd-standard/psdEquation';
 import {DwellingStandardType, PsdStandard, PSDStandardType} from "./psd-standard/types";
-import {EntityType} from "../document/entities/types";
-import {StandardFlowSystemUids} from "./index";
 
 export default interface CatalogState {
     defaultCatalog: Catalog;
