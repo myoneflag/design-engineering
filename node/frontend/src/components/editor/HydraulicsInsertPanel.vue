@@ -34,7 +34,7 @@
         <b-col>
             <b-button-group>
                 <b-button variant="outline-dark" class="insertBtn tmv btn-sm"
-                          @click="$emit('insert', {entityName: entityNames.TMV, system: selectedSystem, tmvHasCold: true})"
+                          @click="$emit('insert', {entityName: entityNames.BIG_VALVE, system: selectedSystem, tmvHasCold: true})"
                           v-b-tooltip.hover title="TMV with cold water out"
                 ></b-button>
             </b-button-group>

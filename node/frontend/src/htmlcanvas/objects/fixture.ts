@@ -9,7 +9,7 @@ import Connectable from '../../../src/htmlcanvas/lib/object-traits/connectable';
 import CenterDraggableObject from '../../../src/htmlcanvas/lib/object-traits/center-draggable-object';
 import {Interaction, InteractionType} from '../../../src/htmlcanvas/lib/interaction';
 import {DrawingContext} from '../../../src/htmlcanvas/lib/types';
-import TmvEntity from '../../../src/store/document/entities/tmv/tmv-entity';
+import BigValveEntity from '../../store/document/entities/big-valve/big-valve-entity';
 import DrawableObjectFactory from '../../../src/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '../../../src/store/document/entities/types';
 import FixtureEntity from '../../../src/store/document/entities/fixtures/fixture-entity';
@@ -175,7 +175,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         );
     }
 
-    refreshObjectInternal(obj: TmvEntity): void {
+    refreshObjectInternal(obj: BigValveEntity): void {
         //
     }
 

@@ -28,6 +28,14 @@ export interface Coord {
     y: number;
 }
 
+export function coordDist2(a: Coord, b: Coord) {
+    return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
+}
+
+export function coordDist(a: Coord, b: Coord) {
+    return Math.sqrt(coordDist2(a, b));
+}
+
 export interface Coord3D extends Coord {
     z: number;
 }

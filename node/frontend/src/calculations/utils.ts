@@ -10,7 +10,7 @@ import {CalculationField} from '../../src/store/document/calculations/calculatio
 import {makeRiserCalculationFields} from '../store/document/calculations/riser-calculation';
 import {makePipeCalculationFields} from '../../src/store/document/calculations/pipe-calculation';
 import {makeFittingCalculationFields} from '../../src/store/document/calculations/fitting-calculation';
-import {makeTmvCalculationFields} from '../../src/store/document/calculations/tmv-calculation';
+import {makeBigValveCalculationFields} from '../store/document/calculations/big-valve-calculation';
 import {makeFixtureCalculationFields} from '../../src/store/document/calculations/fixture-calculation';
 import {makeDirectedValveCalculationFields} from '../../src/store/document/calculations/directed-valve-calculation';
 import {DrawableEntityConcrete} from '../../src/store/document/entities/concrete-entity';
@@ -89,7 +89,7 @@ export function countPsdUnits(
             case EntityType.PIPE:
             case EntityType.RISER:
             case EntityType.SYSTEM_NODE:
-            case EntityType.TMV:
+            case EntityType.BIG_VALVE:
             case EntityType.DIRECTED_VALVE:
                 break;
             default:
@@ -285,8 +285,8 @@ export function getFields(entity: DrawableEntityConcrete, doc: DocumentState, ca
             return makePipeCalculationFields(entity, doc.drawing, catalog);
         case EntityType.FITTING:
             return makeFittingCalculationFields(entity);
-        case EntityType.TMV:
-            return makeTmvCalculationFields(entity);
+        case EntityType.BIG_VALVE:
+            return makeBigValveCalculationFields(entity);
         case EntityType.FIXTURE:
             return makeFixtureCalculationFields(doc, entity);
         case EntityType.DIRECTED_VALVE:

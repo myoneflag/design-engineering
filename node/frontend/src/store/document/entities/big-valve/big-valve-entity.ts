@@ -11,20 +11,46 @@ import * as _ from 'lodash';
 import FittingEntity from '../../../../../src/store/document/entities/fitting-entity';
 import CatalogState, {Catalog} from '../../../../../src/store/catalog/types';
 import InvisibleNodeEntity from '../../../../../src/store/document/entities/Invisible-node-entity';
-import TmvCalculation from '../../../../../src/store/document/calculations/tmv-calculation';
+import BigValveCalculation from '../../calculations/big-valve-calculation';
 import {parseCatalogNumberOrMin} from '../../../../../src/htmlcanvas/lib/utils';
 import {cloneSimple} from '../../../../../src/lib/utils';
 import SystemNodeCalculation from '../../../../../src/store/document/calculations/system-node-calculation';
 
-export default interface TmvEntity extends DrawableEntity {
+
+export enum BigValveType {
+    TMV = 'TMV',
+    RPZD_HOT_COLD = 'RPZD_HOT_COLD',
+    TEMPERING = 'TEMPERING',
+}
+
+export interface TmvValve { // ATM Machine. Sigh
+    type: BigValveType.TMV;
+    catalogId: 'tmv';
+    warmOutputUid: string;
+    coldOutputUid: string;
+}
+
+export interface TemperingValve {
+    type: BigValveType.TEMPERING;
+    catalogId: 'temperingValve';
+    warmOutputUid: string;
+}
+
+export interface RpzdHotColdValve {
+    type: BigValveType.RPZD_HOT_COLD;
+    catalogId: 'RPZD';
+    hotOutputUid: string;
+    coldOutputUid: string;
+}
+
+export default interface BigValveEntity extends DrawableEntity {
     center: Coord;
-    type: EntityType.TMV;
+    type: EntityType.BIG_VALVE;
     rotation: number;
     coldRoughInUid: string;
     hotRoughInUid: string;
-    warmOutputUid: string;
-    coldOutputUid: string | null;
 
+    valve: TmvValve | TemperingValve | RpzdHotColdValve;
 
     pipeDistanceMM: number;
     valveLengthMM: number;
@@ -45,7 +71,7 @@ export interface SystemNodeEntity extends InvisibleNodeEntity{
     configuration: FlowConfiguration;
 }
 
-export function makeTMVFields(): PropertyField[] {
+export function makeBigValveFields(entity: BigValveEntity): PropertyField[] {
     return [
         { property: 'rotation', title: 'Rotation: (Degrees)', hasDefault: false, isCalculated: false,
             type: FieldType.Rotation, params: null,  multiFieldId: 'rotation' },
@@ -70,10 +96,10 @@ export function makeTMVFields(): PropertyField[] {
     ];
 }
 
-export function fillTMVFields(
+export function fillDefaultBigValveFields(
     doc: DocumentState,
     defaultCatalog: Catalog,
-    value: TmvEntity,
+    value: BigValveEntity,
 ) {
     const result = cloneSimple(value);
 

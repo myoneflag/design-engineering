@@ -389,38 +389,20 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                     return null;
                 }
 
-                const rpzdEntry =
-                    upperBoundTable(context.catalog.backflowValves[this.entity.valve.catalogId].valvesBySize, size);
-                if (!rpzdEntry) {
-                    return null;
-                }
-
-                if (this.entity.valve.type === ValveType.RPZD_DOUBLE_SHARED) {
-                    flowLS /= 2;
-                } else if (this.entity.valve.type === ValveType.RPZD_DOUBLE_ISOLATED &&
-                    !this.entity.valve.isolateOneWhenCalculatingHeadLoss
-                ) {
-                    flowLS /= 2;
-                }
-
-                const plKPA = interpolateTable(rpzdEntry.pressureLossKPAByFlowRateLS, flowLS, true);
-                if (plKPA === null) {
-                    return null;
-                }
-
                 const systemUid = determineConnectableSystemUid(context.globalStore, this.entity);
                 if (systemUid === undefined) {
                     return null;
                 }
-                const density = getFluidDensityOfSystem(systemUid, context.doc, context.catalog);
-                if (density === null) {
-                    return null;
-                }
 
-                return kpa2head(
-                    plKPA,
-                    density,
-                    context.doc.drawing.metadata.calculationParams.gravitationalAcceleration,
+                return getRpzdHeadLoss(
+                    context,
+                    this.entity.valve.catalogId,
+                    calcs.sizeMM!,
+                    flowLS,
+                    systemUid,
+                    this.entity.valve.type,
+                    this.entity.valve.type === ValveType.RPZD_DOUBLE_ISOLATED ?
+                    this.entity.valve.isolateOneWhenCalculatingHeadLoss : false,
                 );
             }
             case ValveType.PRESSURE_RELIEF_VALVE:
@@ -545,4 +527,49 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     protected refreshObjectInternal(obj: DrawableEntity, old?: DrawableEntity): void {
         //
     }
+}
+
+
+export function getRpzdHeadLoss(
+    context: CalculationContext,
+    catalogId: string,
+    size: number,
+    flowLS: number,
+    systemUid: string,
+    type: ValveType.RPZD_SINGLE | ValveType.RPZD_DOUBLE_SHARED | ValveType.RPZD_DOUBLE_ISOLATED,
+    isolateOneWhenCalculatingHeadLoss: boolean = false,
+) {
+
+    const rpzdEntry =
+        upperBoundTable(context.catalog.backflowValves[catalogId].valvesBySize, size);
+    if (!rpzdEntry) {
+        return null;
+    }
+
+    if (type === ValveType.RPZD_DOUBLE_SHARED) {
+        flowLS /= 2;
+    } else if (type === ValveType.RPZD_DOUBLE_ISOLATED &&
+        !isolateOneWhenCalculatingHeadLoss
+    ) {
+        flowLS /= 2;
+    }
+
+    const plKPA = interpolateTable(rpzdEntry.pressureLossKPAByFlowRateLS, flowLS, true);
+    if (plKPA === null) {
+        return null;
+    }
+
+    if (systemUid === undefined) {
+        return null;
+    }
+    const density = getFluidDensityOfSystem(systemUid, context.doc, context.catalog);
+    if (density === null) {
+        return null;
+    }
+
+    return kpa2head(
+        plKPA,
+        density,
+        context.doc.drawing.metadata.calculationParams.gravitationalAcceleration,
+    );
 }

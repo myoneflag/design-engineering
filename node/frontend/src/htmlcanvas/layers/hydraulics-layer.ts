@@ -128,7 +128,7 @@ export default class  HydraulicsLayer extends LayerImplementation {
                 return 70;
             case EntityType.PIPE:
                 return 50;
-            case EntityType.TMV:
+            case EntityType.BIG_VALVE:
                 return 0;
             case EntityType.FIXTURE:
                 return 0;

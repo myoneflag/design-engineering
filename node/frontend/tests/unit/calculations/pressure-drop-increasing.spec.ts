@@ -133,7 +133,7 @@ describe('object\'s head losses', () => {
                         pipeDone = true;
                     }
                     break;
-                case EntityType.TMV:
+                case EntityType.BIG_VALVE:
                     assertIncreasing(
                         context,
                         o,
@@ -200,7 +200,7 @@ describe('object\'s head losses', () => {
                 case EntityType.RISER:
                 case EntityType.RESULTS_MESSAGE:
                 case EntityType.SYSTEM_NODE:
-                case EntityType.TMV:
+                case EntityType.BIG_VALVE:
                 case EntityType.FIXTURE:
                     break;
                 default:

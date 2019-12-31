@@ -60,7 +60,7 @@ import {EntityType} from "../../../src/store/document/entities/types";
     import FittingProperties from '../../../src/components/editor/property-window/FittingProperties.vue';
     import PipeProperties from '../../../src/components/editor/property-window/PipeProperties.vue';
     import {EntityType, getEntityName} from "../../../src/store/document/entities/types";
-    import TMVProperties from '../../../src/components/editor/property-window/TMVProperties.vue';
+    import BigValveProperties from './property-window/BigValveProperties.vue';
     import FixtureProperties from '../../../src/components/editor/property-window/FixtureProperties.vue';
     import {MainEventBus} from '../../../src/store/main-event-bus';
     import MultiFieldBuilder from '../../../src/components/editor/lib/MultiFieldBuilder.vue';

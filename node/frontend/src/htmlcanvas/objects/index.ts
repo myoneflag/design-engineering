@@ -1,5 +1,5 @@
-import SystemNode from '../../../src/htmlcanvas/objects/tmv/system-node';
-import Tmv from '../../../src/htmlcanvas/objects/tmv/tmv';
+import SystemNode from './big-valve/system-node';
+import BigValve from './big-valve/bigValve';
 import {BackgroundImage} from '../../../src/htmlcanvas/objects/background-image';
 import Riser from './riser';
 import Pipe from '../../../src/htmlcanvas/objects/pipe';
@@ -10,7 +10,7 @@ import LoadNode from "./load-node";
 
 export function registerObjectBuilders() {
     SystemNode.register();
-    Tmv.register();
+    BigValve.register();
     BackgroundImage.register();
     Riser.register();
     Pipe.register();

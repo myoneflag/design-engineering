@@ -4,13 +4,13 @@ import PointTool from '../../../src/htmlcanvas/tools/point-tool';
 import {EntityType} from '../../../src/store/document/entities/types';
 import uuid from 'uuid';
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
-import TmvEntity, {FlowConfiguration, SystemNodeEntity} from '../../../src/store/document/entities/tmv/tmv-entity';
+import BigValveEntity, {FlowConfiguration, SystemNodeEntity} from '../../store/document/entities/big-valve/big-valve-entity';
 import {StandardFlowSystemUids} from '../../../src/store/catalog';
-import Tmv from '../../../src/htmlcanvas/objects/tmv/tmv';
+import BigValve from '../objects/big-valve/bigValve';
 import {KeyCode} from '../../../src/htmlcanvas/utils';
-import connectTmvToSource from '../../../src/htmlcanvas/lib/black-magic/connect-tmv-to-source';
+import connectBigValveToSource from '../lib/black-magic/connect-big-valve-to-source';
 
-export default function insertTmv(
+export default function insertBigValve(
     context: CanvasContext,
     tmvhasCold: boolean,
     angle: number,
@@ -30,7 +30,7 @@ export default function insertTmv(
                 MainEventBus.$emit('set-tool-handler', null);
                 if (!interrupted) {
                     // stamp
-                    insertTmv(context, tmvhasCold, angle);
+                    insertBigValve(context, tmvhasCold, angle);
                 }
             }
         },
@@ -39,7 +39,7 @@ export default function insertTmv(
 
             const doc = context.document as DocumentState;
 
-            const newTmv: TmvEntity = {
+            const newTmv: BigValveEntity = {
                 coldRoughInUid: coldUid,
                 hotRoughInUid: hotUid,
                 warmOutputUid: warmUid,
@@ -54,7 +54,7 @@ export default function insertTmv(
                 rotation: angle,
                 valveLengthMM: 50,
 
-                type: EntityType.TMV,
+                type: EntityType.BIG_VALVE,
                 center: wc,
                 heightAboveFloorM: 1,
                 parentUid: null,
@@ -111,7 +111,7 @@ export default function insertTmv(
             }
 
             if (!event.ctrlKey) {
-                connectTmvToSource(context, context.objectStore.get(newTmv.uid) as Tmv, 20000);
+                connectBigValveToSource(context, context.objectStore.get(newTmv.uid) as BigValve, 20000);
             }
 
             context.scheduleDraw();

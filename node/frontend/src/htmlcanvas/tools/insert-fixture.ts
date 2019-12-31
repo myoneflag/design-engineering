@@ -6,7 +6,7 @@ import uuid from 'uuid';
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
 import {getInsertCoordsAt, parseCatalogNumberExact} from '../../../src/htmlcanvas/lib/utils';
 import FixtureEntity from '../../../src/store/document/entities/fixtures/fixture-entity';
-import {FlowConfiguration, SystemNodeEntity} from '../../../src/store/document/entities/tmv/tmv-entity';
+import {FlowConfiguration, SystemNodeEntity} from '../../store/document/entities/big-valve/big-valve-entity';
 import {StandardFlowSystemUids} from '../../../src/store/catalog';
 import {SupportedPsdStandards} from '../../../src/config';
 import {KeyCode} from '../../../src/htmlcanvas/utils';

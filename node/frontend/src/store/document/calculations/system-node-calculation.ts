@@ -2,7 +2,7 @@ import {FieldCategory, CalculationField, Units} from '../../../../src/store/docu
 import {Calculation, PsdCalculation} from '../../../../src/store/document/calculations/types';
 import {isGermanStandard} from '../../../../src/config';
 import {DrawingState} from '../../../../src/store/document/types';
-import {SystemNodeEntity} from '../../../../src/store/document/entities/tmv/tmv-entity';
+import {SystemNodeEntity} from '../entities/big-valve/big-valve-entity';
 import {getPsdUnitName} from "../../../calculations/utils";
 import set = Reflect.set;
 

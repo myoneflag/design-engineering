@@ -4,7 +4,7 @@ import {EntityType} from '../../src/store/document/entities/types';
 import PipeEntity, {fillPipeDefaultFields, makePipeFields} from '../../src/store/document/entities/pipe-entity';
 import {makeValveFields} from '../../src/store/document/entities/fitting-entity';
 import {makeRiserFields} from '../store/document/entities/riser-entity';
-import TmvEntity, {makeTMVFields, SystemNodeEntity} from '../../src/store/document/entities/tmv/tmv-entity';
+import BigValveEntity, {makeBigValveFields, SystemNodeEntity} from '../store/document/entities/big-valve/big-valve-entity';
 import FixtureEntity, {
     fillFixtureFields,
     makeFixtureFields
@@ -39,7 +39,7 @@ import {getObjectFrictionHeadLoss} from '../../src/calculations/entity-pressure-
 import {DrawableEntityConcrete} from '../../src/store/document/entities/concrete-entity';
 import Riser from '../htmlcanvas/objects/riser';
 import {assertUnreachable, isGermanStandard} from '../../src/config';
-import Tmv from '../../src/htmlcanvas/objects/tmv/tmv';
+import BigValve from '../htmlcanvas/objects/big-valve/bigValve';
 // tslint:disable-next-line:max-line-length
 import DirectedValveEntity, {
     determineConnectableSystemUid,
@@ -178,8 +178,8 @@ export default class CalculationEngine {
                 case EntityType.FITTING:
                     fields = makeValveFields([], []);
                     break;
-                case EntityType.TMV:
-                    fields = makeTMVFields();
+                case EntityType.BIG_VALVE:
+                    fields = makeBigValveFields(obj.entity);
                     break;
                 case EntityType.FIXTURE:
                     fields = makeFixtureFields(this.doc, obj.entity);
@@ -334,7 +334,7 @@ export default class CalculationEngine {
 
                 }
                     break;
-                case EntityType.TMV: {
+                case EntityType.BIG_VALVE: {
                     const calculation = this.globalStore.getOrCreateCalculation(entity);
                     calculation.coldPressureKPA =
                         this.getAbsolutePressurePoint(
@@ -406,7 +406,7 @@ export default class CalculationEngine {
                             case EntityType.PIPE:
                                 height = par.entity.heightAboveFloorM;
                                 break;
-                            case EntityType.TMV:
+                            case EntityType.BIG_VALVE:
                                 height = par.entity.heightAboveFloorM;
                                 break;
                             case EntityType.FIXTURE:
@@ -435,7 +435,7 @@ export default class CalculationEngine {
                 case EntityType.PIPE:
                 case EntityType.FITTING:
                 case EntityType.DIRECTED_VALVE:
-                case EntityType.TMV:
+                case EntityType.BIG_VALVE:
                 case EntityType.FIXTURE:
                     throw new Error('don\'t know how to calculate static pressure for that');
                 default:
@@ -516,10 +516,11 @@ export default class CalculationEngine {
                                 } else {
                                     throw new Error('misconfigured flow graph');
                                 }
-                            case EdgeType.TMV_HOT_WARM:
-                            case EdgeType.TMV_COLD_WARM:
-                            case EdgeType.TMV_COLD_COLD: {
-                                if (obj instanceof Tmv) {
+                            case EdgeType.BIG_VALVE_HOT_HOT:
+                            case EdgeType.BIG_VALVE_HOT_WARM:
+                            case EdgeType.BIG_VALVE_COLD_WARM:
+                            case EdgeType.BIG_VALVE_COLD_COLD: {
+                                if (obj instanceof BigValve) {
                                     const calculation = this.globalStore.getOrCreateCalculation(obj.entity);
                                     if (!calculation) {
                                         return Infinity;
@@ -529,13 +530,13 @@ export default class CalculationEngine {
 
                                     let systemUid: string = '';
 
-                                    if (edge.value.type === EdgeType.TMV_COLD_COLD &&
+                                    if (edge.value.type === EdgeType.BIG_VALVE_COLD_COLD &&
                                         flowFrom.connectable === obj.entity.coldRoughInUid) {
 
                                         fr = calculation.coldPeakFlowRate;
                                         systemUid = (this.globalStore.get(obj.entity.coldRoughInUid)!
                                             .entity as SystemNodeEntity).systemUid;
-                                    } else if (edge.value.type === EdgeType.TMV_HOT_WARM &&
+                                    } else if (edge.value.type === EdgeType.BIG_VALVE_HOT_WARM &&
                                         flowFrom.connectable === obj.entity.hotRoughInUid) {
                                         fr = calculation.hotPeakFlowRate;
                                         systemUid = (this.globalStore.get(obj.entity.hotRoughInUid)!
@@ -665,13 +666,10 @@ export default class CalculationEngine {
                         stringify(ev),
                     );
                     break;
-                case EntityType.TMV:
-                    const entity = obj.entity as TmvEntity;
-                    if (entity.hotRoughInUid === null || entity.warmOutputUid === null) {
-                        throw new Error('null found on ' + entity.type + ' ' + entity.uid);
-                    }
+                case EntityType.BIG_VALVE:
+                    const entity = obj.entity as BigValveEntity;
                     const ev1 = {
-                        type: EdgeType.TMV_HOT_WARM,
+                        type: EdgeType.BIG_VALVE_HOT_WARM,
                         uid: entity.uid,
                     };
                     this.flowGraph.addDirectedEdge(
@@ -691,7 +689,7 @@ export default class CalculationEngine {
                             throw new Error('null found on ' + entity.type + ' ' + entity.uid);
                         }
                         const ev2 = {
-                            type: EdgeType.TMV_COLD_COLD,
+                            type: EdgeType.BIG_VALVE_COLD_COLD,
                             uid: entity.uid,
                         };
                         this.flowGraph.addDirectedEdge(
@@ -1051,7 +1049,7 @@ export default class CalculationEngine {
                 case EntityType.FLOW_RETURN:
                 case EntityType.PIPE:
                 case EntityType.FITTING:
-                case EntityType.TMV:
+                case EntityType.BIG_VALVE:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.DIRECTED_VALVE:
                     return zeroPsdCounts();
@@ -1112,17 +1110,17 @@ export default class CalculationEngine {
 
                 return;
             }
-            case EntityType.TMV: {
+            case EntityType.BIG_VALVE: {
                 const calculation = this.globalStore.getOrCreateCalculation(entity);
 
-                const systemUid = flowEdge.type === EdgeType.TMV_COLD_COLD ?
+                const systemUid = flowEdge.type === EdgeType.BIG_VALVE_COLD_COLD ?
                     StandardFlowSystemUids.ColdWater : StandardFlowSystemUids.HotWater;
                 let flowRate = lookupFlowRate(psdU, this.doc, this.catalog, systemUid);
 
-                if (flowEdge.type === EdgeType.TMV_COLD_COLD) {
+                if (flowEdge.type === EdgeType.BIG_VALVE_COLD_COLD) {
                     calculation.coldPsdUs = psdU;
                     calculation.coldPeakFlowRate = flowRate;
-                } else if (flowEdge.type === EdgeType.TMV_HOT_WARM) {
+                } else if (flowEdge.type === EdgeType.BIG_VALVE_HOT_WARM) {
                     calculation.hotPsdUs = psdU;
                     calculation.hotPeakFlowRate = flowRate;
                 } else {
@@ -1328,13 +1326,13 @@ export default class CalculationEngine {
         // Size all pipes first
         this.networkObjects().forEach((object) => {
             switch (object.entity.type) {
-                case EntityType.TMV:
+                case EntityType.BIG_VALVE:
                     console.log('tmv');
                     this.sizeDefiniteTransport(
                         object,
                         roots,
                         totalReachedPsdU,
-                        {type: EdgeType.TMV_HOT_WARM, uid: object.uid},
+                        {type: EdgeType.BIG_VALVE_HOT_WARM, uid: object.uid},
                         [object.entity.hotRoughInUid, object.entity.warmOutputUid],
                     );
 
@@ -1343,7 +1341,7 @@ export default class CalculationEngine {
                             object,
                             roots,
                             totalReachedPsdU,
-                            {type: EdgeType.TMV_COLD_COLD, uid: object.uid},
+                            {type: EdgeType.BIG_VALVE_COLD_COLD, uid: object.uid},
                             [object.entity.coldRoughInUid, object.entity.coldOutputUid!],
                         );
                     }
@@ -1436,7 +1434,7 @@ export default class CalculationEngine {
                 case EntityType.PIPE:
                 case EntityType.RISER:
                 case EntityType.SYSTEM_NODE:
-                case EntityType.TMV:
+                case EntityType.BIG_VALVE:
                 case EntityType.FIXTURE:
                 case EntityType.LOAD_NODE:
                     break;
@@ -1528,7 +1526,7 @@ export default class CalculationEngine {
     fillPressureDropFields() {
         this.networkObjects().forEach((o) => {
             switch (o.entity.type) {
-                case EntityType.TMV: {
+                case EntityType.BIG_VALVE: {
 
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity);
                     const frw = calculation.hotPeakFlowRate;
@@ -1671,7 +1669,7 @@ export default class CalculationEngine {
                     break;
                 case EntityType.SYSTEM_NODE:
                     break;
-                case EntityType.TMV:
+                case EntityType.BIG_VALVE:
                     break;
                 case EntityType.FIXTURE:
                     const e = fillFixtureFields(this.doc.drawing, this.catalog, o.entity);
@@ -1776,9 +1774,10 @@ function randInt(minInclusive: number, maxExclusive: number) {
 
 export enum EdgeType {
     PIPE,
-    TMV_HOT_WARM,
-    TMV_COLD_WARM,
-    TMV_COLD_COLD,
+    BIG_VALVE_HOT_HOT,
+    BIG_VALVE_HOT_WARM,
+    BIG_VALVE_COLD_WARM,
+    BIG_VALVE_COLD_COLD,
     FITTING_FLOW,
 
     // reserve some for check valve, pump and isolation types.

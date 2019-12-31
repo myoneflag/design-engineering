@@ -3,11 +3,11 @@ import FittingEntity from '../../../../src/store/document/entities/fitting-entit
 import PipeEntity from '../../../../src/store/document/entities/pipe-entity';
 import RiserEntity from './riser-entity';
 import FixtureEntity from '../../../../src/store/document/entities/fixtures/fixture-entity';
-import TmvEntity, {SystemNodeEntity} from '../../../../src/store/document/entities/tmv/tmv-entity';
+import BigValveEntity, {SystemNodeEntity} from './big-valve/big-valve-entity';
 import {CenteredEntity, ConnectableEntity, FlowSystemParameters} from '../../../../src/store/document/types';
 import RiserCalculation from '../calculations/riser-calculation';
 import PipeCalculation from '../../../../src/store/document/calculations/pipe-calculation';
-import TmvCalculation from '../../../../src/store/document/calculations/tmv-calculation';
+import BigValveCalculation from '../calculations/big-valve-calculation';
 import FittingCalculation from '../../../../src/store/document/calculations/fitting-calculation';
 import FixtureCalculation from '../../../../src/store/document/calculations/fixture-calculation';
 import DirectedValveEntity from '../../../../src/store/document/entities/directed-valves/directed-valve-entity';
@@ -21,7 +21,7 @@ export type DrawableEntityConcrete =
     PipeEntity |
     RiserEntity |
     SystemNodeEntity |
-    TmvEntity |
+    BigValveEntity |
     FixtureEntity |
     DirectedValveEntity |
     LoadNodeEntity;
@@ -39,7 +39,7 @@ export type CenteredEntityConcrete =
     FittingEntity |
     RiserEntity |
     SystemNodeEntity |
-    TmvEntity |
+    BigValveEntity |
     FixtureEntity |
     DirectedValveEntity |
     LoadNodeEntity;
@@ -50,7 +50,7 @@ export type InvisibleNodeEntityConcrete =
 export type CalculatableEntityConcrete =
     RiserEntity |
     PipeEntity |
-    TmvEntity |
+    BigValveEntity |
     FittingEntity |
     FixtureEntity |
     DirectedValveEntity |
@@ -61,7 +61,7 @@ export type CalculationConcrete =
     RiserCalculation |
     PipeCalculation |
     PipeCalculation |
-    TmvCalculation |
+    BigValveCalculation |
     FittingCalculation |
     FixtureCalculation |
     SystemNodeCalculation |
@@ -70,4 +70,4 @@ export type CalculationConcrete =
 export type EdgeLikeEntity =
     PipeEntity |
     FixtureEntity |
-    TmvEntity;
+    BigValveEntity;

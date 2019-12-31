@@ -307,7 +307,7 @@ export abstract class LayerImplementation implements Layer {
             case EntityType.FITTING:
             case EntityType.RISER:
             case EntityType.DIRECTED_VALVE:
-            case EntityType.TMV:
+            case EntityType.BIG_VALVE:
                 return 1;
             case EntityType.PIPE:
                 return 2;
@@ -340,7 +340,7 @@ export abstract class LayerImplementation implements Layer {
                 case EntityType.RISER:
                 case EntityType.FIXTURE:
                 case EntityType.LOAD_NODE:
-                case EntityType.TMV:
+                case EntityType.BIG_VALVE:
                 case EntityType.DIRECTED_VALVE:
                     return true;
                 case EntityType.PIPE:

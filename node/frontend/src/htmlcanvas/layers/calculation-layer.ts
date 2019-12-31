@@ -111,7 +111,7 @@ export default class CalculationLayer extends LayerImplementation {
                         // don't cover connectables
                         for (const c of allOnScreen) {
                             if (isConnectable(c.entity.type) || c.entity.type === EntityType.FIXTURE ||
-                                c.entity.type === EntityType.TMV) {
+                                c.entity.type === EntityType.BIG_VALVE) {
                                 pos++;
 
 
@@ -171,7 +171,7 @@ export default class CalculationLayer extends LayerImplementation {
             case EntityType.LOAD_NODE:
             case EntityType.FIXTURE:
                 return 110;
-            case EntityType.TMV:
+            case EntityType.BIG_VALVE:
             case EntityType.DIRECTED_VALVE:
                 return 100;
             case EntityType.FITTING:

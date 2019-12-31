@@ -39,7 +39,7 @@ export function getConnectedFlowComponent(
             case EntityType.PIPE:
                 q.push(...o.entity.endpointUid);
                 break;
-            case EntityType.TMV:
+            case EntityType.BIG_VALVE:
             case EntityType.BACKGROUND_IMAGE:
             case EntityType.FIXTURE:
                 throw new Error('invalid object here');

@@ -2,46 +2,49 @@ import BackedDrawableObject from '../../../../src/htmlcanvas/lib/backed-drawable
 import BaseBackedObject from '../../../../src/htmlcanvas/lib/base-backed-object';
 import * as TM from 'transformation-matrix';
 import {Matrix} from 'transformation-matrix';
-import {Coord} from '../../../../src/store/document/types';
+import {Coord, coordDist2} from '../../../../src/store/document/types';
 import {matrixScale} from '../../../../src/htmlcanvas/utils';
-import {MouseMoveResult, UNHANDLED} from '../../../../src/htmlcanvas/types';
-import Connectable from '../../../../src/htmlcanvas/lib/object-traits/connectable';
 import CenterDraggableObject from '../../../../src/htmlcanvas/lib/object-traits/center-draggable-object';
 import {Interaction, InteractionType} from '../../../../src/htmlcanvas/lib/interaction';
 import {DrawingContext} from '../../../../src/htmlcanvas/lib/types';
-import TmvEntity, {SystemNodeEntity} from '../../../../src/store/document/entities/tmv/tmv-entity';
+import BigValveEntity, {
+    BigValveType,
+    SystemNodeEntity
+} from '../../../store/document/entities/big-valve/big-valve-entity';
 import DrawableObjectFactory from '../../../../src/htmlcanvas/lib/drawable-object-factory';
 import {EntityType} from '../../../../src/store/document/entities/types';
-import {StandardFlowSystemUids} from '../../../../src/store/catalog';
 import {DrawableEntityConcrete} from '../../../../src/store/document/entities/concrete-entity';
 import CanvasContext from '../../../../src/htmlcanvas/lib/canvas-context';
 import {SelectableObject} from '../../../../src/htmlcanvas/lib/object-traits/selectable';
-import Centered, {CenteredObject} from '../../../../src/htmlcanvas/lib/object-traits/centered-object';
+import {CenteredObject} from '../../../../src/htmlcanvas/lib/object-traits/centered-object';
 import {interpolateTable, parseCatalogNumberExact} from '../../../../src/htmlcanvas/lib/utils';
 import {CalculationContext} from '../../../../src/calculations/types';
 import {FlowNode} from '../../../../src/calculations/calculation-engine';
 import {DrawingArgs} from '../../../../src/htmlcanvas/lib/drawable-object';
-import {Calculated, CalculatedObject, FIELD_HEIGHT} from '../../../../src/htmlcanvas/lib/object-traits/calculated-object';
+import {
+    Calculated,
+    CalculatedObject,
+    FIELD_HEIGHT
+} from '../../../../src/htmlcanvas/lib/object-traits/calculated-object';
 import {CalculationData} from '../../../../src/store/document/calculations/calculation-field';
 import {assertUnreachable} from "../../../../src/config";
-import FixtureEntity from "../../../store/document/entities/fixtures/fixture-entity";
 import {cloneSimple, getValveK} from "../../../lib/utils";
 import SystemNode from "./system-node";
-import FixtureCalculation from "../../../store/document/calculations/fixture-calculation";
-import TmvCalculation from "../../../store/document/calculations/tmv-calculation";
+import BigValveCalculation from "../../../store/document/calculations/big-valve-calculation";
 import Flatten from '@flatten-js/core';
 import Cached from "../../lib/cached";
-import {Catalog} from "../../../store/catalog/types";
+import {getRpzdHeadLoss} from "../directed-valve";
+import {ValveType} from "../../../store/document/entities/directed-valves/valve-types";
 
-export const TMV_DEFAULT_PIPE_WIDTH_MM = 20;
+export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 
 @CalculatedObject
 @SelectableObject
 @CenterDraggableObject
 @CenteredObject
-export default class Tmv extends BackedDrawableObject<TmvEntity> implements Calculated {
+export default class BigValve extends BackedDrawableObject<BigValveEntity> implements Calculated {
     static register(): void {
-        DrawableObjectFactory.registerEntity(EntityType.TMV, Tmv);
+        DrawableObjectFactory.registerEntity(EntityType.BIG_VALVE, BigValve);
     }
 
     lastDrawnWorldRadius: number = 0; // for bounds detection
@@ -128,7 +131,7 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Calc
         });
     }
 
-    refreshObjectInternal(obj: TmvEntity): void {
+    refreshObjectInternal(obj: BigValveEntity): void {
         //
     }
 
@@ -145,45 +148,60 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Calc
 
     prepareDelete(context: CanvasContext): BaseBackedObject[] {
         const list: BaseBackedObject[] = [];
-        if (this.entity.coldOutputUid) {
-            list.push(...this.objectStore.get(this.entity.coldOutputUid)!.prepareDelete(context));
+        switch (this.entity.valve.type) {
+            case BigValveType.TMV:
+                list.push(...this.objectStore.get(this.entity.valve.coldOutputUid)!.prepareDelete(context));
+                list.push(...this.objectStore.get(this.entity.valve.warmOutputUid)!.prepareDelete(context));
+                break;
+            case BigValveType.TEMPERING:
+                list.push(...this.objectStore.get(this.entity.valve.warmOutputUid)!.prepareDelete(context));
+                break;
+            case BigValveType.RPZD_HOT_COLD:
+                list.push(...this.objectStore.get(this.entity.valve.coldOutputUid)!.prepareDelete(context));
+                list.push(...this.objectStore.get(this.entity.valve.hotOutputUid)!.prepareDelete(context));
+                break;
+            default:
+                assertUnreachable(this.entity.valve);
         }
         list.push(
             ...this.objectStore.get(this.entity.coldRoughInUid)!.prepareDelete(context),
             ...this.objectStore.get(this.entity.hotRoughInUid)!.prepareDelete(context),
-            ...this.objectStore.get(this.entity.warmOutputUid)!.prepareDelete(context),
             this,
         );
         return list;
     }
 
-    offerJoiningInteraction(requestSystemUid: string, interaction: Interaction): DrawableEntityConcrete[] | null {
-        if (requestSystemUid === StandardFlowSystemUids.ColdWater) {
-            const {y} = this.toObjectCoord(interaction.worldCoord);
-            let preference: string[] = [this.entity.coldRoughInUid];
-            if (this.entity.coldOutputUid) {
-                if (y < this.entity.valveLengthMM / 2) {
-                    preference = [this.entity.coldRoughInUid, this.entity.coldOutputUid];
-                } else {
-                    preference = [this.entity.coldOutputUid, this.entity.coldRoughInUid];
-                }
-            }
 
-            for (const uid of preference) {
-                const coldObj = this.objectStore.get(uid);
-                if (coldObj && coldObj.offerInteraction(interaction)) {
-                    return [coldObj.entity, this.entity];
+    getInletsOutlets(): SystemNode[] {
+        const result: string[] = [this.entity.coldRoughInUid, this.entity.hotRoughInUid];
+        switch (this.entity.valve.type) {
+            case BigValveType.TMV:
+                result.push(this.entity.valve.warmOutputUid, this.entity.valve.coldOutputUid);
+                break;
+            case BigValveType.TEMPERING:
+                result.push(this.entity.valve.warmOutputUid);
+                break;
+            case BigValveType.RPZD_HOT_COLD:
+                result.push(this.entity.valve.hotOutputUid, this.entity.valve.coldOutputUid);
+                break;
+            default:
+                assertUnreachable(this.entity.valve);
+        }
+        return result.map((uid) => this.objectStore.get(uid) as SystemNode);
+    }
+
+    offerJoiningInteraction(requestSystemUid: string, interaction: Interaction): DrawableEntityConcrete[] | null {
+        const inouts = this.getInletsOutlets();
+        inouts.sort((a, b) => {
+            const awc = a.toWorldCoord();
+            const bwc = b.toWorldCoord();
+            return coordDist2(awc, interaction.worldCoord) - coordDist2(bwc, interaction.worldCoord);
+        });
+        for (const sys of inouts) {
+            if (sys.entity.systemUid === requestSystemUid) {
+                if (sys.offerInteraction(interaction)) {
+                    return [sys.entity, this.entity];
                 }
-            }
-        } else if (requestSystemUid === StandardFlowSystemUids.WarmWater && this.entity.warmOutputUid) {
-            const warmObj = this.objectStore.get(this.entity.warmOutputUid);
-            if (warmObj && warmObj.offerInteraction(interaction)) {
-                return [warmObj.entity, this.entity];
-            }
-        } else if (requestSystemUid === StandardFlowSystemUids.HotWater && this.entity.hotRoughInUid) {
-            const hotObj = this.objectStore.get(this.entity.hotRoughInUid);
-            if (hotObj && hotObj.offerInteraction(interaction)) {
-                return [hotObj.entity, this.entity];
             }
         }
         return null;
@@ -207,26 +225,41 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Calc
         }
     }
 
-    getCalculationEntities(context: CalculationContext): [TmvEntity] {
-        const e: TmvEntity = cloneSimple(this.entity);
+    getCalculationEntities(context: CalculationContext): [BigValveEntity] {
+        const e: BigValveEntity = cloneSimple(this.entity);
         e.uid += '.calculation';
 
         e.hotRoughInUid = (this.objectStore.get(e.hotRoughInUid) as SystemNode)
             .getCalculationNode(context, this.uid).uid;
-        e.warmOutputUid = (this.objectStore.get(e.warmOutputUid) as SystemNode)
-            .getCalculationNode(context, this.uid).uid;
         e.coldRoughInUid = (this.objectStore.get(e.coldRoughInUid) as SystemNode)
             .getCalculationNode(context, this.uid).uid;
-        if (e.coldOutputUid) {
-            e.coldOutputUid = (this.objectStore.get(e.coldOutputUid) as SystemNode)
-                .getCalculationNode(context, this.uid).uid;
+
+        switch (e.valve.type) {
+            case BigValveType.TMV:
+                e.valve.warmOutputUid = (this.objectStore.get(e.valve.warmOutputUid) as SystemNode)
+                    .getCalculationNode(context, this.uid).uid;
+                e.valve.coldOutputUid = (this.objectStore.get(e.valve.coldOutputUid) as SystemNode)
+                    .getCalculationNode(context, this.uid).uid;
+                break;
+            case BigValveType.TEMPERING:
+                e.valve.warmOutputUid = (this.objectStore.get(e.valve.warmOutputUid) as SystemNode)
+                    .getCalculationNode(context, this.uid).uid;
+                break;
+            case BigValveType.RPZD_HOT_COLD:
+                e.valve.hotOutputUid = (this.objectStore.get(e.valve.hotOutputUid) as SystemNode)
+                    .getCalculationNode(context, this.uid).uid;
+                e.valve.coldOutputUid = (this.objectStore.get(e.valve.coldOutputUid) as SystemNode)
+                    .getCalculationNode(context, this.uid).uid;
+                break;
+            default:
+                assertUnreachable(e.valve);
         }
 
         return [e];
     }
 
 
-    collectCalculations(context: CalculationContext): TmvCalculation {
+    collectCalculations(context: CalculationContext): BigValveCalculation {
         return context.globalStore.getOrCreateCalculation(this.getCalculationEntities(context)[0])
     }
 
@@ -251,45 +284,90 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Calc
 
         const {drawing, catalog, globalStore} = context;
         const entity = this.entity;
-        // it is directional
+
+
+        // it is directional so we must guard every one.
         let valid = false;
-        if (from.connectable === entity.hotRoughInUid && to.connectable === entity.warmOutputUid) {
-            valid = true;
-        }
-        if (from.connectable === entity.coldRoughInUid && to.connectable === entity.coldOutputUid) {
-            valid = true;
+        switch (entity.valve.type) {
+            case BigValveType.TMV:
+                if (from.connectable === entity.hotRoughInUid && to.connectable === entity.valve.warmOutputUid) {
+                    valid = true;
+                }
+                if (from.connectable === entity.coldRoughInUid && to.connectable === entity.valve.coldOutputUid) {
+                    valid = true;
+                }
+                break;
+            case BigValveType.TEMPERING:
+                if (from.connectable === entity.hotRoughInUid && to.connectable === entity.valve.warmOutputUid) {
+                    valid = true;
+                }
+                break;
+            case BigValveType.RPZD_HOT_COLD:
+                if (from.connectable === entity.hotRoughInUid && to.connectable === entity.valve.hotOutputUid) {
+                    valid = true;
+                }
+                if (from.connectable === entity.coldRoughInUid && to.connectable === entity.valve.coldOutputUid) {
+                    valid = true;
+                }
+                break;
         }
         if (!valid) {
             // Water not flowing the correct direction
             return sign * (1e10 + flowLS);
         }
 
-        let pdKPA: number | null = 0;
-        if (from.connectable === entity.hotRoughInUid) {
-            const pdKPAfield = interpolateTable(catalog.mixingValves.tmv.pressureLossKPAbyFlowRateLS, flowLS);
-            pdKPA = parseCatalogNumberExact(pdKPAfield);
-            if (pdKPA === null) {
-                throw new Error('pressure drop for TMV not available');
+        // The actial pressure drop depends on the connection
+        let pdKPA: number | null = null;
+        if (entity.valve.type === BigValveType.RPZD_HOT_COLD) {
+            const systemUid = (globalStore.get(from.connectable)!.entity as SystemNodeEntity).systemUid;
+            const calcs = context.globalStore.getOrCreateCalculation(this.entity);
+            const size = calcs.rpzdSizeMM![systemUid]!;
+            return getRpzdHeadLoss(
+                context,
+                this.entity.valve.catalogId,
+                size,
+                flowLS,
+                systemUid,
+                ValveType.RPZD_SINGLE,
+            );
+        } else if (from.connectable === entity.coldRoughInUid) {
+            if (entity.valve.type === BigValveType.TEMPERING || to.connectable !== entity.valve.coldOutputUid) {
+                throw new Error('Invalid configuration - cold input must connect to cold out only');
             }
-        } else {
+
             // pressure drop is an elbow and a tee for the cold part.
-            const k1 = getValveK('tThruBranch', context.catalog, TMV_DEFAULT_PIPE_WIDTH_MM);
-            const k2 = getValveK('90Elbow', context.catalog, TMV_DEFAULT_PIPE_WIDTH_MM);
+            const k1 = getValveK('tThruBranch', context.catalog, BIG_VALVE_DEFAULT_PIPE_WIDTH_MM);
+            const k2 = getValveK('90Elbow', context.catalog, BIG_VALVE_DEFAULT_PIPE_WIDTH_MM);
 
 
             if (k1 === null || k2 === null) {
                 return null;
             }
 
-            const volLM = TMV_DEFAULT_PIPE_WIDTH_MM ** 2 * Math.PI / 4 / 1000;
+            const volLM = BIG_VALVE_DEFAULT_PIPE_WIDTH_MM ** 2 * Math.PI / 4 / 1000;
             const velocityMS = flowLS / volLM;
             return sign * ((k1 + k2) * velocityMS ** 2) / (2 * ga);
+        } else {
+            switch (entity.valve.type) {
+                case BigValveType.TMV: {
+                    const pdKPAfield = interpolateTable(catalog.mixingValves.tmv.pressureLossKPAbyFlowRateLS, flowLS);
+                    pdKPA = parseCatalogNumberExact(pdKPAfield);
+                    break;
+                }
+                case BigValveType.TEMPERING: {
+                    const pdKPAfield = interpolateTable(catalog.mixingValves.temperingValve.pressureLossKPAbyFlowRateLS, flowLS);
+                    pdKPA = parseCatalogNumberExact(pdKPAfield);
+                    break;
+                }
+                default:
+                    assertUnreachable(entity.valve);
+            }
+            if (pdKPA === null) {
+                throw new Error('pressure drop for TMV not available');
+            }
         }
 
-        // We need the fluid density because TMV pressure stats are in KPA, not head loss
-        // which is what the rest of the calculations are base off of.
-
-        const systemUid = (globalStore.get(entity.warmOutputUid)!.entity as SystemNodeEntity).systemUid;
+        const systemUid = (globalStore.get(from.connectable)!.entity as SystemNodeEntity).systemUid;
         const fluid = drawing.metadata.flowSystems.find((s) => s.uid === systemUid)!.fluid;
         const density = parseCatalogNumberExact(catalog.fluids[fluid].densityKGM3)!;
 
@@ -303,11 +381,8 @@ export default class Tmv extends BackedDrawableObject<TmvEntity> implements Calc
 
     getNeighbours(): BaseBackedObject[] {
         const res: BaseBackedObject[] = [];
-        res.push(...this.objectStore.get(this.entity.coldRoughInUid)!.getNeighbours());
-        res.push(...this.objectStore.get(this.entity.hotRoughInUid)!.getNeighbours());
-        res.push(...this.objectStore.get(this.entity.warmOutputUid)!.getNeighbours());
-        if (this.entity.coldOutputUid) {
-            res.push(...this.objectStore.get(this.entity.coldOutputUid)!.getNeighbours());
+        for (const sn of this.getInletsOutlets()) {
+            res.push(...sn.getNeighbours());
         }
         return res;
     }

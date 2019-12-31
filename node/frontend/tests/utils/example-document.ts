@@ -296,7 +296,7 @@ export function createExampleDocument(): DocumentState {
                     pipeDistanceMM: 150,
                     rotation: 11.309932474020172,
                     valveLengthMM: 50,
-                    type: EntityType.TMV,
+                    type: EntityType.BIG_VALVE,
                     center: {
                         x: -2009.0266351342234,
                         y: -2890.2740122968826,
@@ -1073,7 +1073,7 @@ export function createExampleDocument(): DocumentState {
                     pipeDistanceMM: 150,
                     rotation: 11.309932474020172,
                     valveLengthMM: 50,
-                    type: EntityType.TMV,
+                    type: EntityType.BIG_VALVE,
                     center: {
                         x: -2009.0266351342234,
                         y: -2890.2740122968826,
@@ -2500,7 +2500,7 @@ export function createExampleDocument(): DocumentState {
                         pipeDistanceMM: 150,
                         rotation: 11.309932474020172,
                         valveLengthMM: 50,
-                        type: EntityType.TMV,
+                        type: EntityType.BIG_VALVE,
                         center: {
                             x: 524.2662176240028,
                             y: -9996.201456045575,
@@ -2760,7 +2760,7 @@ export function createExampleDocument(): DocumentState {
                         pipeDistanceMM: 150,
                         rotation: 11.309932474020172,
                         valveLengthMM: 50,
-                        type: EntityType.TMV,
+                        type: EntityType.BIG_VALVE,
                         center: {
                             x: 524.2662176240028,
                             y: -9996.201456045575,
@@ -5656,7 +5656,7 @@ export function createExampleDocument(): DocumentState {
                         pipeDistanceMM: 150,
                         rotation: 11.309932474020172,
                         valveLengthMM: 50,
-                        type: EntityType.TMV,
+                        type: EntityType.BIG_VALVE,
                         center: {
                             x: -2009.0266351342234,
                             y: -2890.2740122968826,
@@ -5682,7 +5682,7 @@ export function createExampleDocument(): DocumentState {
                         pipeDistanceMM: 150,
                         rotation: 11.309932474020172,
                         valveLengthMM: 50,
-                        type: EntityType.TMV,
+                        type: EntityType.BIG_VALVE,
                         center: {
                             x: 524.2662176240028,
                             y: -9996.201456045575,

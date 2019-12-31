@@ -9,7 +9,7 @@ import {
     EdgeLikeEntity
 } from '../../../src/store/document/entities/concrete-entity';
 import {EntityType} from '../../../src/store/document/entities/types';
-import {SystemNodeEntity} from '../../../src/store/document/entities/tmv/tmv-entity';
+import {SystemNodeEntity} from '../../store/document/entities/big-valve/big-valve-entity';
 import {fillFixtureFields} from '../../../src/store/document/entities/fixtures/fixture-entity';
 import * as TM from 'transformation-matrix';
 import Flatten from '@flatten-js/core';
@@ -265,7 +265,7 @@ export function getEdgeLikeHeightAboveFloorM(
     context: CalculationContext,
 ): number {
     switch (entity.type) {
-        case EntityType.TMV:
+        case EntityType.BIG_VALVE:
             return entity.heightAboveFloorM;
         case EntityType.FIXTURE:
             const fe = fillFixtureFields(context.drawing, context.catalog, entity);

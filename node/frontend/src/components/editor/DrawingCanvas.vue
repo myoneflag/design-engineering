@@ -152,7 +152,7 @@ import {EntityType} from "../../store/document/entities/types";
         ValveId
     } from "../../../src/htmlcanvas/lib/types";
     import {BackgroundEntity} from "../../../src/store/document/entities/background-entity";
-    import insertTmv from "../../../src/htmlcanvas/tools/insert-tmv";
+    import insertBigValve from "../../htmlcanvas/tools/insert-big-valve";
     import insertFixture from "../../../src/htmlcanvas/tools/insert-fixture";
     import FloorPlanInsertPanel from "../../../src/components/editor/FloorPlanInsertPanel.vue";
     import InstructionPage from "../../../src/components/editor/InstructionPage.vue";
@@ -708,7 +708,7 @@ export default class DrawingCanvas extends Vue {
                     case EntityType.PIPE:
                     case EntityType.RISER:
                     case EntityType.SYSTEM_NODE:
-                    case EntityType.TMV:
+                    case EntityType.BIG_VALVE:
                     case EntityType.FIXTURE:
                     case EntityType.LOAD_NODE:
                         this.hydraulicsLayer.addEntity(() => {
@@ -748,7 +748,7 @@ export default class DrawingCanvas extends Vue {
                     case EntityType.PIPE:
                     case EntityType.RISER:
                     case EntityType.SYSTEM_NODE:
-                    case EntityType.TMV:
+                    case EntityType.BIG_VALVE:
                     case EntityType.FIXTURE:
                     case EntityType.LOAD_NODE:
                         this.hydraulicsLayer.deleteEntity(entity);
@@ -1062,8 +1062,8 @@ export default class DrawingCanvas extends Vue {
                 insertPipes(this, system, networkType);
             } else if (entityName === EntityType.FITTING) {
                 insertValve(this, system);
-            } else if (entityName === EntityType.TMV) {
-                insertTmv(this, tmvHasCold, 0);
+            } else if (entityName === EntityType.BIG_VALVE) {
+                insertBigValve(this, tmvHasCold, 0);
             } else if (entityName === EntityType.FIXTURE) {
                 this.document.uiState.lastUsedFixtureUid = catalogId;
                 insertFixture(this, catalogId, 0);

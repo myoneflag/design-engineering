@@ -30,7 +30,7 @@ export function isConnectable(type: EntityType): boolean {
         case EntityType.DIRECTED_VALVE:
         case EntityType.LOAD_NODE:
             return true;
-        case EntityType.TMV:
+        case EntityType.BIG_VALVE:
         case EntityType.FIXTURE:
         case EntityType.BACKGROUND_IMAGE:
         case EntityType.PIPE:
@@ -49,7 +49,7 @@ export function isCentered(type: EntityType): boolean {
         case EntityType.SYSTEM_NODE:
         case EntityType.RISER:
         case EntityType.FLOW_RETURN:
-        case EntityType.TMV:
+        case EntityType.BIG_VALVE:
         case EntityType.FIXTURE:
         case EntityType.LOAD_NODE:
         case EntityType.DIRECTED_VALVE:
@@ -74,7 +74,7 @@ export function getDragPriority(type: EntityType): number {
             return 5;
         case EntityType.FLOW_RETURN:
             return 0;
-        case EntityType.TMV:
+        case EntityType.BIG_VALVE:
         case EntityType.FIXTURE:
         case EntityType.BACKGROUND_IMAGE:
         case EntityType.PIPE:

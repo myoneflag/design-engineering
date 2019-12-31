@@ -1,7 +1,7 @@
 import {Coord, FlowSystemParameters} from '../../../src/store/document/types';
 import {EntityType} from '../../../src/store/document/entities/types';
 import {DrawableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
-import {FlowConfiguration} from '../../../src/store/document/entities/tmv/tmv-entity';
+import {FlowConfiguration} from '../../store/document/entities/big-valve/big-valve-entity';
 
 export interface PipeInteraction extends BaseInteraction {
     type: InteractionType.CONTINUING_PIPE | InteractionType.STARTING_PIPE;

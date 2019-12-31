@@ -16,13 +16,13 @@ import PipeEntity from "../../store/document/entities/pipe-entity";
 import DrawableObjectFactory from "./drawable-object-factory";
 import PipeCalculation, {emptyPipeCalculation} from "../../store/document/calculations/pipe-calculation";
 import RiserCalculation, {emptyRiserCalculations} from "../../store/document/calculations/riser-calculation";
-import TmvCalculation, {emptyTmvCalculation} from "../../store/document/calculations/tmv-calculation";
+import BigValveCalculation, {EmptyBigValveCalculations} from "../../store/document/calculations/big-valve-calculation";
 import FixtureCalculation, {emptyFixtureCalculation} from "../../store/document/calculations/fixture-calculation";
 import FittingCalculation, {emptyFittingCalculation} from "../../store/document/calculations/fitting-calculation";
 import DirectedValveCalculation, {emptyDirectedValveCalculation} from "../../store/document/calculations/directed-valve-calculation";
 import SystemNodeCalculation, {emptySystemNodeCalculation} from "../../store/document/calculations/system-node-calculation";
 import RiserEntity from "../../store/document/entities/riser-entity";
-import TmvEntity, {SystemNodeEntity} from "../../store/document/entities/tmv/tmv-entity";
+import BigValveEntity, {SystemNodeEntity} from "../../store/document/entities/big-valve/big-valve-entity";
 import FittingEntity from "../../store/document/entities/fitting-entity";
 import FixtureEntity from "../../store/document/entities/fixtures/fixture-entity";
 import DirectedValveEntity from "../../store/document/entities/directed-valves/directed-valve-entity";
@@ -318,7 +318,7 @@ export class GlobalStore extends ObjectStore {
 
     getOrCreateCalculation(entity: PipeEntity): PipeCalculation;
     getOrCreateCalculation(entity: RiserEntity): RiserCalculation;
-    getOrCreateCalculation(entity: TmvEntity): TmvCalculation;
+    getOrCreateCalculation(entity: BigValveEntity): BigValveCalculation;
     getOrCreateCalculation(entity: FittingEntity): FittingCalculation;
     getOrCreateCalculation(entity: FixtureEntity): FixtureCalculation;
     getOrCreateCalculation(entity: DirectedValveEntity): DirectedValveCalculation;
@@ -335,8 +335,8 @@ export class GlobalStore extends ObjectStore {
                 case EntityType.PIPE:
                     this.calculationStore.set(entity.uid, cloneSimple(emptyPipeCalculation()));
                     break;
-                case EntityType.TMV:
-                    this.calculationStore.set(entity.uid, cloneSimple(emptyTmvCalculation()));
+                case EntityType.BIG_VALVE:
+                    this.calculationStore.set(entity.uid, cloneSimple(EmptyBigValveCalculations()));
                     break;
                 case EntityType.FITTING:
                     this.calculationStore.set(entity.uid, cloneSimple(emptyFittingCalculation()));
@@ -361,7 +361,7 @@ export class GlobalStore extends ObjectStore {
 
     getCalculation(entity: PipeEntity): PipeCalculation | undefined;
     getCalculation(entity: RiserEntity): RiserCalculation | undefined;
-    getCalculation(entity: TmvEntity): TmvCalculation | undefined;
+    getCalculation(entity: BigValveEntity): BigValveCalculation | undefined;
     getCalculation(entity: FittingEntity): FittingCalculation | undefined;
     getCalculation(entity: FixtureEntity): FixtureCalculation | undefined;
     getCalculation(entity: DirectedValveEntity): DirectedValveCalculation | undefined;
@@ -375,7 +375,7 @@ export class GlobalStore extends ObjectStore {
 
     setCalculation(uid: string, calculation: PipeCalculation): void;
     setCalculation(uid: string, calculation: RiserCalculation): void;
-    setCalculation(uid: string, calculation: TmvCalculation): void;
+    setCalculation(uid: string, calculation: BigValveCalculation): void;
     setCalculation(uid: string, calculation: FittingCalculation): void;
     setCalculation(uid: string, calculation: FixtureCalculation): void;
     setCalculation(uid: string, calculation: DirectedValveCalculation): void;

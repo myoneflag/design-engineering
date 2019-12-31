@@ -33,7 +33,7 @@ import {EntityType} from "../../../store/document/entities/types";
     import {DocumentState} from '../../../../src/store/document/types';
     import {Catalog} from '../../../../src/store/catalog/types';
     import {fillRiserDefaults, makeRiserFields} from '../../../store/document/entities/riser-entity';
-    import {fillTMVFields, makeTMVFields} from '../../../../src/store/document/entities/tmv/tmv-entity';
+    import {fillDefaultBigValveFields, makeBigValveFields} from '../../../store/document/entities/big-valve/big-valve-entity';
     import {
         fillFixtureFields,
         makeFixtureFields
@@ -111,8 +111,8 @@ import {EntityType} from "../../../store/document/entities/types";
                         this.$store.getters['catalog/defaultPipeMaterialChoices'],
                         this.document.drawing.metadata.flowSystems,
                     ).filter((p) => p.multiFieldId);
-                case EntityType.TMV:
-                    return makeTMVFields().filter((p) => p.multiFieldId);
+                case EntityType.BIG_VALVE:
+                    return makeBigValveFields().filter((p) => p.multiFieldId);
                 case EntityType.FIXTURE:
                     return makeFixtureFields(this.document, entity).filter((p) => p.multiFieldId);
                 case EntityType.DIRECTED_VALVE:
@@ -141,8 +141,8 @@ import {EntityType} from "../../../store/document/entities/types";
                     return fillRiserDefaults(this.document, obj.entity);
                 case EntityType.SYSTEM_NODE:
                     return obj.entity;
-                case EntityType.TMV:
-                    return fillTMVFields(this.document, this.defaultCatalog, obj.entity);
+                case EntityType.BIG_VALVE:
+                    return fillDefaultBigValveFields(this.document, this.defaultCatalog, obj.entity);
                 case EntityType.FIXTURE:
                     return fillFixtureFields(this.document.drawing, this.defaultCatalog, obj.entity);
                 case EntityType.DIRECTED_VALVE:

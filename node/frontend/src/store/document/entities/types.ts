@@ -5,7 +5,7 @@ export enum EntityType {
     PIPE = 'PIPE',
     FITTING = 'FITTING',
 
-    TMV = 'TMV',
+    BIG_VALVE = 'BIG_VALVE',
     SYSTEM_NODE = 'SYSTEM_NODE',
 
     // Fixtures
@@ -27,10 +27,10 @@ export function getEntityName(type: EntityType): string {
             return 'Pipe';
         case EntityType.FITTING:
             return 'Fitting';
-        case EntityType.TMV:
-            return 'TMV';
+        case EntityType.BIG_VALVE:
+            return 'Big Valve';
         case EntityType.SYSTEM_NODE:
-            return 'System Joints';
+            return 'Inlet/Outlet';
         case EntityType.FIXTURE:
             return 'Fixture';
         case EntityType.DIRECTED_VALVE:

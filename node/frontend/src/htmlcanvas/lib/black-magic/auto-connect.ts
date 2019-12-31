@@ -16,7 +16,7 @@ import Pipe from '../../../../src/htmlcanvas/objects/pipe';
 import PipeEntity from '../../../../src/store/document/entities/pipe-entity';
 import uuid from 'uuid';
 import FittingEntity from '../../../../src/store/document/entities/fitting-entity';
-import {FlowConfiguration} from '../../../../src/store/document/entities/tmv/tmv-entity';
+import {FlowConfiguration} from '../../../store/document/entities/big-valve/big-valve-entity';
 import {isConnectable} from '../../../../src/store/document';
 import assert from 'assert';
 import {StandardFlowSystemUids, StandardMaterialUids} from '../../../../src/store/catalog';
@@ -24,8 +24,8 @@ import {MainEventBus} from '../../../../src/store/main-event-bus';
 import {Coord, EntityParam, NetworkType} from '../../../../src/store/document/types';
 import {rebaseAll} from '../../../../src/htmlcanvas/lib/black-magic/rebase-all';
 import {fillDirectedValveFields} from '../../../../src/store/document/entities/directed-valves/directed-valve-entity';
-import connectTmvToSource from '../../../../src/htmlcanvas/lib/black-magic/connect-tmv-to-source';
-import Tmv from '../../../../src/htmlcanvas/objects/tmv/tmv';
+import connectBigValveToSource from './connect-big-valve-to-source';
+import BigValve from '../../objects/big-valve/bigValve';
 import {assertUnreachable} from "../../../../src/config";
 import * as _ from 'lodash';
 import RiserEntity, {fillRiserDefaults} from "../../../store/document/entities/riser-entity";
@@ -34,7 +34,7 @@ import {fillDefaultLoadNodeFields} from "../../../store/document/entities/load-n
 const CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM = 500;
 const FIXTURE_WALL_DIST_MM = 200;
 const FIXTURE_WALL_DIST_COLD_MM = 100;
-const TMV_WALL_DIST_MM = 50;
+const BIG_VALVE_WALL_DIST_MM = 50;
 const WALL_INSERT_JOIN_THRESHOLD_MM = 150;
 
 const WALL_SAME_ANGLE_THRESHOLD_DEG = 5;
@@ -92,10 +92,10 @@ export class AutoConnector {
                     this.unionFind.join(o.entity.endpointUid[1], o.uid);
                     break;
                 case EntityType.FIXTURE:
-                case EntityType.TMV: {
+                case EntityType.BIG_VALVE: {
                     const subs: string[] = [];
                     switch (o.entity.type) {
-                        case EntityType.TMV:
+                        case EntityType.BIG_VALVE:
                             subs.push(o.entity.warmOutputUid);
                             if (o.entity.coldOutputUid) {
                                 subs.push(o.entity.coldOutputUid);
@@ -136,7 +136,7 @@ export class AutoConnector {
 
     processWalls() {
         this.selected.forEach((o) => {
-            if (o.entity.type === EntityType.FIXTURE || o.entity.type === EntityType.TMV) {
+            if (o.entity.type === EntityType.FIXTURE || o.entity.type === EntityType.BIG_VALVE) {
                 const c = o.toWorldCoord({x: 0, y: 0});
                 const p = Flatten.point(c.x, c.y);
 
@@ -152,7 +152,7 @@ export class AutoConnector {
                 });
 
                 this.gridLines.push({
-                    source: Flatten.point(c.x, c.y).translate(norm.normalize().multiply(TMV_WALL_DIST_MM)),
+                    source: Flatten.point(c.x, c.y).translate(norm.normalize().multiply(BIG_VALVE_WALL_DIST_MM)),
                     lines: [norm, norm.rotate90CW()],
                 });
             }
@@ -187,7 +187,7 @@ export class AutoConnector {
                     minh = minh === null ? Infinity : minh;
 
                     return [minh, maxh];
-                case EntityType.TMV:
+                case EntityType.BIG_VALVE:
                     return [entity.heightAboveFloorM, entity.heightAboveFloorM];
                 case EntityType.FIXTURE:
                     const fixture = fillFixtureFields(this.context.document.drawing, this.context.effectiveCatalog, entity);
@@ -237,7 +237,7 @@ export class AutoConnector {
 
             // types of things to join:
             // system nodes from fixtures
-            // system nodes from TMVs
+            // system nodes from big valves
             // pipes and stuff
 
             // rules:
@@ -245,7 +245,7 @@ export class AutoConnector {
             // Pipes at wall height can travel via wall and through roof after a bring up
             // nodes at wall height can lead straight into pipes.
             // Otherwise, nodes at wall height must lead into wall, then it behaves like a pipe.
-            //  => lead smaller for TMVs which are already in the wall
+            //  => lead smaller for big valves which are already in the wall
             //  => lead larger for fixtures which are protruding from the wall
             let ao = this.context.objectStore.get(a)!;
             let bo = this.context.objectStore.get(b)!;
@@ -295,7 +295,7 @@ export class AutoConnector {
                     const po = this.context.objectStore.get(me.entity.parentUid)!;
                     let heightM: number;
                     switch (po.entity.type) {
-                        case EntityType.TMV:
+                        case EntityType.BIG_VALVE:
                         case EntityType.FIXTURE:
                             vec = Flatten.vector([0, -1]).rotate(po.toWorldAngleDeg(0) / 180 * Math.PI);
                             if (po.entity.type === EntityType.FIXTURE) {
@@ -312,7 +312,7 @@ export class AutoConnector {
                                 }
                                 heightM = fe.outletAboveFloorM!;
                             } else {
-                                vec = vec.multiply(TMV_WALL_DIST_MM);
+                                vec = vec.multiply(BIG_VALVE_WALL_DIST_MM);
                                 heightM = po.entity.heightAboveFloorM;
                             }
                             break;
@@ -771,7 +771,7 @@ export class AutoConnector {
                 return res.systemUidOption;
             }
             case EntityType.BACKGROUND_IMAGE:
-            case EntityType.TMV:
+            case EntityType.BIG_VALVE:
             case EntityType.FIXTURE:
                 return null;
         }
@@ -840,10 +840,10 @@ export class AutoConnector {
         MainEventBus.$off('add-entity', this.onAddEntity);
     }
 
-    connectAllTmvs() {
+    connectAllBigValves() {
         this.selected.forEach((o) => {
-            if (o.type === EntityType.TMV) {
-                connectTmvToSource(this.context, o as Tmv);
+            if (o.type === EntityType.BIG_VALVE) {
+                connectBigValveToSource(this.context, o as BigValve);
             }
         });
     }
@@ -855,7 +855,7 @@ export class AutoConnector {
 
         try {
             // firstly
-            this.connectAllTmvs();
+            this.connectAllBigValves();
 
             this.processInitialConnections();
 

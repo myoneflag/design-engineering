@@ -45,7 +45,7 @@
             onChange: Function,
         },
     })
-    export default class TMVProperties extends Vue {
+    export default class FixtureProperties extends Vue {
 
         get fields() {
             return makeFixtureFields(this.document, this.$props.selectedEntity);

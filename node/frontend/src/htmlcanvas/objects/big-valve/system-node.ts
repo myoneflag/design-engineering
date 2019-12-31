@@ -8,7 +8,7 @@ import {InvisibleNode} from '../../../../src/htmlcanvas/objects/invisible-node';
 import Flatten from '@flatten-js/core';
 import {DrawingContext} from '../../../../src/htmlcanvas/lib/types';
 import {cloneSimple, lighten} from '../../../../src/lib/utils';
-import {FlowConfiguration, SystemNodeEntity} from '../../../../src/store/document/entities/tmv/tmv-entity';
+import {FlowConfiguration, SystemNodeEntity} from '../../../store/document/entities/big-valve/big-valve-entity';
 import {getDragPriority} from '../../../../src/store/document';
 import {
     ConnectableEntityConcrete,
@@ -89,7 +89,7 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
             case EntityType.FITTING:
             case EntityType.RISER:
             case EntityType.SYSTEM_NODE:
-            case EntityType.TMV:
+            case EntityType.BIG_VALVE:
             case EntityType.LOAD_NODE:
             case EntityType.FIXTURE:
             case EntityType.DIRECTED_VALVE:

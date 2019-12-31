@@ -34,7 +34,7 @@ import {EntityType} from "../../../../src/store/document/entities/types";
                     :on-delete="onDelete"
             />
             <TMVProperties
-                    v-else-if="entity.type === ENTITY_NAMES.TMV"
+                    v-else-if="entity.type === ENTITY_NAMES.BIG_VALVE"
                     :selected-entity="entity"
                     :selected-object="selectedObjects[0]"
                     :on-change="onChange"
@@ -126,7 +126,7 @@ import {EntityType} from "../../../../src/store/document/entities/types";
     import FittingProperties from '../../../../src/components/editor/property-window/FittingProperties.vue';
     import PipeProperties from '../../../../src/components/editor/property-window/PipeProperties.vue';
     import {EntityType} from '../../../../src/store/document/entities/types';
-    import TMVProperties from '../../../../src/components/editor/property-window/TMVProperties.vue';
+    import BigValveProperties from './BigValveProperties.vue';
     import FixtureProperties from '../../../../src/components/editor/property-window/FixtureProperties.vue';
     import {MainEventBus} from '../../../../src/store/main-event-bus';
     import MultiFieldBuilder from '../../../../src/components/editor/lib/MultiFieldBuilder.vue';
@@ -147,7 +147,7 @@ import {EntityType} from "../../../../src/store/document/entities/types";
             DirectedValveProperties,
             MultiFieldBuilder,
             FixtureProperties,
-            TMVProperties, PipeProperties, ValveProperties: FittingProperties, FlowSourceProperties: RiserProperties, FloorPlanProperties},
+            TMVProperties: BigValveProperties, PipeProperties, ValveProperties: FittingProperties, FlowSourceProperties: RiserProperties, FloorPlanProperties},
         props: {
             selectedEntities: Array,
             selectedObjects: Array,
@@ -208,7 +208,7 @@ import {EntityType} from "../../../../src/store/document/entities/types";
         get canAutoConnect(): boolean {
             // must contain a fixture
             const selectedObjects: BaseBackedObject[] = this.$props.selectedObjects;
-            const neededTypes: string[] = [EntityType.FIXTURE, EntityType.TMV];
+            const neededTypes: string[] = [EntityType.FIXTURE, EntityType.BIG_VALVE];
             return selectedObjects.findIndex((o) => neededTypes.includes(o.type)) !== -1;
         }
 

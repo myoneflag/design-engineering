@@ -1,6 +1,6 @@
 import {StandardFlowSystemUids} from '../../../../src/store/catalog';
-import Tmv from '../../../../src/htmlcanvas/objects/tmv/tmv';
-import SystemNode from '../../../../src/htmlcanvas/objects/tmv/system-node';
+import BigValve from '../../objects/big-valve/bigValve';
+import SystemNode from '../../objects/big-valve/system-node';
 import Flatten from '@flatten-js/core';
 import CanvasContext from '../../../../src/htmlcanvas/lib/canvas-context';
 import {ConnectableEntity, Coord, DrawableEntity, NetworkType} from '../../../../src/store/document/types';
@@ -13,19 +13,11 @@ import FittingEntity from '../../../../src/store/document/entities/fitting-entit
 import {isConnectable} from '../../../../src/store/document';
 import uuid from 'uuid';
 import {InteractionType} from '../../../../src/htmlcanvas/lib/interaction';
-import {FlowConfiguration} from '../../../../src/store/document/entities/tmv/tmv-entity';
+import {FlowConfiguration} from '../../../store/document/entities/big-valve/big-valve-entity';
 
-export default function connectTmvToSource(context: CanvasContext, newTmv: Tmv, radiusMM: number = 3000) {
-    const wc = newTmv.toWorldCoord();
-    const selfUids: string[] = [
-        newTmv.uid,
-        newTmv.entity.hotRoughInUid,
-        newTmv.entity.coldRoughInUid,
-        newTmv.entity.warmOutputUid,
-    ];
-    if (newTmv.entity.coldOutputUid) {
-        selfUids.push(newTmv.entity.coldOutputUid);
-    }
+export default function connectBigValveToSource(context: CanvasContext, newBigValve: BigValve, radiusMM: number = 3000) {
+    const wc = newBigValve.toWorldCoord();
+    const selfUids: string[] = newBigValve.getNeighbours().map((o) => o.uid);
 
     const interactive = getClosestJoinable(context, StandardFlowSystemUids.ColdWater, wc, radiusMM, selfUids);
 
@@ -33,8 +25,8 @@ export default function connectTmvToSource(context: CanvasContext, newTmv: Tmv, 
     let hotObj: SystemNode | undefined;
     let coldDrawn = false;
 
-    coldObj = context.objectStore.get(newTmv.entity.coldRoughInUid) as SystemNode;
-    hotObj = context.objectStore.get(newTmv.entity.hotRoughInUid) as SystemNode;
+    coldObj = context.objectStore.get(newBigValve.entity.coldRoughInUid) as SystemNode;
+    hotObj = context.objectStore.get(newBigValve.entity.hotRoughInUid) as SystemNode;
 
     if (interactive && context.objectStore.getConnections(coldObj.uid).length === 0) {
         coldDrawn = true;
@@ -43,7 +35,7 @@ export default function connectTmvToSource(context: CanvasContext, newTmv: Tmv, 
         // rotate our pipe and try again with correct position of cold water
 
         const closePoint = targetObj.shape()!.distanceTo(Flatten.point(wc.x, wc.y))[1].ps;
-        const currA = newTmv.toWorldAngleDeg(0);
+        const currA = newBigValve.toWorldAngleDeg(0);
         const desiredA = -Flatten.vector(
             Flatten.point(wc.x, wc.y)
             , closePoint,
@@ -51,7 +43,7 @@ export default function connectTmvToSource(context: CanvasContext, newTmv: Tmv, 
             Flatten.vector(0, -1),
         ) / Math.PI * 180;
 
-        newTmv.entity.rotation = ((desiredA - currA) % 360 + 360) % 360;
+        newBigValve.entity.rotation = ((desiredA - currA) % 360 + 360) % 360;
 
         const coldLoc = coldObj.toWorldCoord({x: 0, y: 0});
 

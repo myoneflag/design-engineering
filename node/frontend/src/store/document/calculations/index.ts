@@ -10,7 +10,7 @@ export function isCalculated(e: DrawableEntityConcrete): e is CalculatableEntity
         case EntityType.PIPE:
         case EntityType.FITTING:
         case EntityType.SYSTEM_NODE:
-        case EntityType.TMV:
+        case EntityType.BIG_VALVE:
         case EntityType.FIXTURE:
         case EntityType.LOAD_NODE:
             return true;

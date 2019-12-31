@@ -2,7 +2,7 @@
     <b-container>
         <b-row>
             <b-col>
-                <h3>TMV</h3>
+                <h3>{{ title }}</h3>
             </b-col>
         </b-row>
         <slot>
@@ -32,7 +32,11 @@
     import PropertiesFieldBuilder from '../../../../src/components/editor/lib/PropertiesFieldBuilder.vue';
     import {fillRiserDefaults, makeRiserFields} from '../../../store/document/entities/riser-entity';
     import {DocumentState} from '../../../../src/store/document/types';
-    import {fillTMVFields, makeTMVFields} from '../../../store/document/entities/tmv/tmv-entity';
+    import BigValveEntity, {
+        BigValveType,
+        fillDefaultBigValveFields,
+        makeBigValveFields
+    } from '../../../store/document/entities/big-valve/big-valve-entity';
     import {Catalog} from '../../../store/catalog/types';
 
     @Component({
@@ -45,13 +49,24 @@
             onChange: Function,
         },
     })
-    export default class TMVProperties extends Vue {
+    export default class BigValveProperties extends Vue {
 
         get fields() {
-            return makeTMVFields();
+            return makeBigValveFields(this.reactiveData);
         }
 
-        get reactiveData() {
+        get title() {
+            switch (this.reactiveData.valve.type) {
+                case BigValveType.TMV:
+                    return "TMV";
+                case BigValveType.TEMPERING:
+                    return "Tempering Valve";
+                case BigValveType.RPZD_HOT_COLD:
+                    return "RPZD Hot/Cold Valve";
+            }
+        }
+
+        get reactiveData(): BigValveEntity {
             return this.$props.selectedEntity;
         }
 
@@ -64,7 +79,7 @@
         }
 
         get defaultData() {
-            return fillTMVFields(this.document, this.defaultCatalog, this.reactiveData);
+            return fillDefaultBigValveFields(this.document, this.defaultCatalog, this.reactiveData);
         }
 
         onCommit() {
