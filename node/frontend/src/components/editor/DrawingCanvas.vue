@@ -303,10 +303,6 @@ export default class DrawingCanvas extends Vue {
             // set view on groundiest floor
             this.selectGroundFloor();
 
-            if (this.document.uiState.viewPort === null) {
-                this.fitToView();
-            }
-
             this.calculationEngine = new CalculationEngine();
 
 
@@ -1027,8 +1023,8 @@ export default class DrawingCanvas extends Vue {
 
                     const {l, r, t, b} = getBoundingBox(this.objectStore, this.document);
 
-                    const w = this.viewPort.width;
-                    const h = this.viewPort.height;
+                    const w = this.ctx!.canvas.width;
+                    const h = this.ctx!.canvas.height;
                     const s = Math.max((r - l + 1) / w, (b - t + 1) / h, 1) * 1.5;
                     this.viewPort =
                         new ViewPort(
@@ -1096,10 +1092,15 @@ export default class DrawingCanvas extends Vue {
 
             if (this.ctx != null && (this.$refs.canvasFrame as any) != null) {
 
+
                 const width = (this.$refs.canvasFrame as any).clientWidth - 1;
                 const height = (this.$refs.canvasFrame as any).clientHeight;
                 this.ctx.canvas.width = width;
                 this.ctx.canvas.height = height;
+
+                if (this.document.uiState.viewPort === null) {
+                    this.fitToView();
+                }
 
                 this.viewPort.width = width;
                 this.viewPort.height = height;
