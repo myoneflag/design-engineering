@@ -286,7 +286,7 @@ export function getFields(entity: DrawableEntityConcrete, doc: DocumentState, ca
         case EntityType.FITTING:
             return makeFittingCalculationFields(entity);
         case EntityType.BIG_VALVE:
-            return makeBigValveCalculationFields(entity);
+            return makeBigValveCalculationFields(doc, entity);
         case EntityType.FIXTURE:
             return makeFixtureCalculationFields(doc, entity);
         case EntityType.DIRECTED_VALVE:

@@ -16,7 +16,7 @@ import Pipe from '../../../../src/htmlcanvas/objects/pipe';
 import PipeEntity from '../../../../src/store/document/entities/pipe-entity';
 import uuid from 'uuid';
 import FittingEntity from '../../../../src/store/document/entities/fitting-entity';
-import {FlowConfiguration} from '../../../store/document/entities/big-valve/big-valve-entity';
+import {BigValveType, FlowConfiguration} from '../../../store/document/entities/big-valve/big-valve-entity';
 import {isConnectable} from '../../../../src/store/document';
 import assert from 'assert';
 import {StandardFlowSystemUids, StandardMaterialUids} from '../../../../src/store/catalog';
@@ -82,6 +82,7 @@ export class AutoConnector {
 
     processInitialConnections() {
         this.unionFind = new UnionFind<string>();
+        const selectedUids = new Set(this.selected.map((o) => o.uid));
         this.selected.forEach((o) => {
             this.allowedUids.add(o.uid);
             switch (o.entity.type) {
@@ -96,10 +97,34 @@ export class AutoConnector {
                     const subs: string[] = [];
                     switch (o.entity.type) {
                         case EntityType.BIG_VALVE:
-                            subs.push(o.entity.warmOutputUid);
-                            if (o.entity.coldOutputUid) {
-                                subs.push(o.entity.coldOutputUid);
-                                this.unionFind.join(o.entity.coldOutputUid, o.entity.coldRoughInUid);
+                            switch (o.entity.valve.type) {
+                                case BigValveType.TMV:
+                                    subs.push(o.entity.valve.coldOutputUid);
+                                    subs.push(o.entity.valve.warmOutputUid);
+                                    // Check that the rough in inlet is unable to wrongly join to downstream fixtures
+                                    // before adding it to the system to help prevent accidentally selected upstream
+                                    // pipes from being weirdly connected. Convenience feature for the user.
+                                    if (this.context.globalStore.getConnections(o.entity.coldRoughInUid).length > 0) {
+                                        this.unionFind.join(o.entity.valve.coldOutputUid, o.entity.coldRoughInUid);
+                                    }
+                                    break;
+                                case BigValveType.TEMPERING:
+                                    // Don't attach the hot to the warm - while it is correct to do so, it is also
+                                    // correct not to do so and it interferes with optimizations later that improves
+                                    // performance when every component has only once system.
+                                    subs.push(o.entity.valve.warmOutputUid);
+                                    break;
+                                case BigValveType.RPZD_HOT_COLD:
+                                    subs.push(o.entity.valve.coldOutputUid);
+                                    subs.push(o.entity.valve.hotOutputUid);
+                                    if (this.context.globalStore.getConnections(o.entity.coldRoughInUid).length > 0) {
+                                        this.unionFind.join(o.entity.valve.coldOutputUid, o.entity.coldRoughInUid);
+                                    }
+                                    if (this.context.globalStore.getConnections(o.entity.hotRoughInUid).length > 0) {
+                                        this.unionFind.join(o.entity.valve.hotOutputUid, o.entity.hotRoughInUid);
+                                    }
+                                    break;
+
                             }
                             break;
                         case EntityType.FIXTURE:

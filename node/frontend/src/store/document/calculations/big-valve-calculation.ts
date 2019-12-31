@@ -22,7 +22,6 @@ export default interface BigValveCalculation extends Calculation {
     outputs: {
         [key: string]: {
             temperatureC: number | null;
-            pressureKPA: number | null;
             pressureDropKPA: number | null;
         }
     }
@@ -83,18 +82,6 @@ export function makeBigValveCalculationFields(doc: DocumentState, entity: BigVal
                 category: FieldCategory.Pressure,
             },
         );
-
-        result.push(
-            {property: 'outputs.' + suids[i] + '.pressureKPA',
-                title:  system.name + ' Pressure',
-                short: '',
-                attachUid: attachments[i] as string,
-                systemUid: suids[i],
-                units: Units.KiloPascals,
-                category: FieldCategory.Pressure,
-            },
-        );
-
     }
 
     return result;
@@ -143,7 +130,6 @@ export function EmptyBigValveCalculations(entity: BigValveEntity): BigValveCalcu
     for (const suid of suids) {
         result.outputs[suid] = {
             temperatureC: null,
-            pressureKPA: null,
             pressureDropKPA: null,
         };
     }

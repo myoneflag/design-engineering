@@ -112,7 +112,7 @@ import {EntityType} from "../../../store/document/entities/types";
                         this.document.drawing.metadata.flowSystems,
                     ).filter((p) => p.multiFieldId);
                 case EntityType.BIG_VALVE:
-                    return makeBigValveFields().filter((p) => p.multiFieldId);
+                    return makeBigValveFields(entity).filter((p) => p.multiFieldId);
                 case EntityType.FIXTURE:
                     return makeFixtureFields(this.document, entity).filter((p) => p.multiFieldId);
                 case EntityType.DIRECTED_VALVE:

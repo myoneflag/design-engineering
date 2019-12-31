@@ -20,12 +20,7 @@ import CenterDraggableObject from '../../../src/htmlcanvas/lib/object-traits/cen
 import {SelectableObject} from '../../../src/htmlcanvas/lib/object-traits/selectable';
 import {canonizeAngleRad, cloneSimple, lighten} from '../../../src/lib/utils';
 import {IsolationValve, ValveType} from '../../../src/store/document/entities/directed-valves/valve-types';
-import {
-    interpolateTable,
-    lowerBoundTable,
-    parseCatalogNumberExact,
-    upperBoundTable
-} from '../../../src/htmlcanvas/lib/utils';
+import {getRpzdHeadLoss, lowerBoundTable, parseCatalogNumberExact} from '../../../src/htmlcanvas/lib/utils';
 import Pipe from '../../../src/htmlcanvas/objects/pipe';
 import {matrixScale} from '../../../src/htmlcanvas/utils';
 import {Catalog} from '../../../src/store/catalog/types';
@@ -36,7 +31,6 @@ import {assertUnreachable} from "../../../src/config";
 import PipeEntity, {MutablePipe} from "../../store/document/entities/pipe-entity";
 import DirectedValveCalculation, {emptyDirectedValveCalculation} from "../../store/document/calculations/directed-valve-calculation";
 import FittingEntity from "../../store/document/entities/fitting-entity";
-import {getFluidDensityOfSystem, kpa2head} from "../../calculations/pressure-drops";
 import uuid from 'uuid';
 
 export const VALVE_SIZE_MM = 140;
@@ -530,46 +524,3 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 }
 
 
-export function getRpzdHeadLoss(
-    context: CalculationContext,
-    catalogId: string,
-    size: number,
-    flowLS: number,
-    systemUid: string,
-    type: ValveType.RPZD_SINGLE | ValveType.RPZD_DOUBLE_SHARED | ValveType.RPZD_DOUBLE_ISOLATED,
-    isolateOneWhenCalculatingHeadLoss: boolean = false,
-) {
-
-    const rpzdEntry =
-        upperBoundTable(context.catalog.backflowValves[catalogId].valvesBySize, size);
-    if (!rpzdEntry) {
-        return null;
-    }
-
-    if (type === ValveType.RPZD_DOUBLE_SHARED) {
-        flowLS /= 2;
-    } else if (type === ValveType.RPZD_DOUBLE_ISOLATED &&
-        !isolateOneWhenCalculatingHeadLoss
-    ) {
-        flowLS /= 2;
-    }
-
-    const plKPA = interpolateTable(rpzdEntry.pressureLossKPAByFlowRateLS, flowLS, true);
-    if (plKPA === null) {
-        return null;
-    }
-
-    if (systemUid === undefined) {
-        return null;
-    }
-    const density = getFluidDensityOfSystem(systemUid, context.doc, context.catalog);
-    if (density === null) {
-        return null;
-    }
-
-    return kpa2head(
-        plKPA,
-        density,
-        context.doc.drawing.metadata.calculationParams.gravitationalAcceleration,
-    );
-}

@@ -1046,11 +1046,11 @@ export default class DrawingCanvas extends Vue {
             params:
                 {
                     entityName: string, system: FlowSystemParameters, catalogId: string,
-                    tmvHasCold: boolean, valveType: ValveType, nodeType: NodeType,
+                    valveType: ValveType, nodeType: NodeType,
                     valveName: string, networkType: NetworkType,
                 },
         ) {
-            const  {entityName, system, catalogId, tmvHasCold, valveType, nodeType, valveName, networkType} = params;
+            const  {entityName, system, catalogId, valveType, nodeType, valveName, networkType} = params;
             console.log('inserting ' + JSON.stringify(params));
             this.hydraulicsLayer.select([], SelectMode.Replace);
 
@@ -1063,7 +1063,7 @@ export default class DrawingCanvas extends Vue {
             } else if (entityName === EntityType.FITTING) {
                 insertValve(this, system);
             } else if (entityName === EntityType.BIG_VALVE) {
-                insertBigValve(this, tmvHasCold, 0);
+                insertBigValve(this, 0);
             } else if (entityName === EntityType.FIXTURE) {
                 this.document.uiState.lastUsedFixtureUid = catalogId;
                 insertFixture(this, catalogId, 0);

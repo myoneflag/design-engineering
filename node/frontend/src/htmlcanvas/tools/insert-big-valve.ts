@@ -4,7 +4,11 @@ import PointTool from '../../../src/htmlcanvas/tools/point-tool';
 import {EntityType} from '../../../src/store/document/entities/types';
 import uuid from 'uuid';
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
-import BigValveEntity, {FlowConfiguration, SystemNodeEntity} from '../../store/document/entities/big-valve/big-valve-entity';
+import BigValveEntity, {
+    BigValveType,
+    FlowConfiguration,
+    SystemNodeEntity
+} from '../../store/document/entities/big-valve/big-valve-entity';
 import {StandardFlowSystemUids} from '../../../src/store/catalog';
 import BigValve from '../objects/big-valve/bigValve';
 import {KeyCode} from '../../../src/htmlcanvas/utils';
@@ -12,7 +16,6 @@ import connectBigValveToSource from '../lib/black-magic/connect-big-valve-to-sou
 
 export default function insertBigValve(
     context: CanvasContext,
-    tmvhasCold: boolean,
     angle: number,
 ) {
     const tmvUid = uuid();
@@ -30,7 +33,7 @@ export default function insertBigValve(
                 MainEventBus.$emit('set-tool-handler', null);
                 if (!interrupted) {
                     // stamp
-                    insertBigValve(context, tmvhasCold, angle);
+                    insertBigValve(context, angle);
                 }
             }
         },
@@ -42,8 +45,6 @@ export default function insertBigValve(
             const newTmv: BigValveEntity = {
                 coldRoughInUid: coldUid,
                 hotRoughInUid: hotUid,
-                warmOutputUid: warmUid,
-                coldOutputUid: tmvhasCold ? coldOutUid : null,
 
                 maxFlowRateLS: null,
                 maxHotColdPressureDifferentialPCT: null,
@@ -53,6 +54,13 @@ export default function insertBigValve(
                 pipeDistanceMM: 150,
                 rotation: angle,
                 valveLengthMM: 50,
+
+                valve: {
+                    type: BigValveType.TMV,
+                    coldOutputUid: coldOutUid,
+                    warmOutputUid: warmUid,
+                    catalogId: "tmv",
+                },
 
                 type: EntityType.BIG_VALVE,
                 center: wc,
@@ -83,7 +91,7 @@ export default function insertBigValve(
             };
 
             const newWarm: SystemNodeEntity = {
-                center: {x: tmvhasCold ? newTmv.pipeDistanceMM / 3 : 0, y: newTmv.valveLengthMM},
+                center: {x: newTmv.pipeDistanceMM / 3, y: newTmv.valveLengthMM},
                 parentUid: tmvUid,
                 type: EntityType.SYSTEM_NODE,
                 systemUid: StandardFlowSystemUids.WarmWater,
@@ -102,13 +110,9 @@ export default function insertBigValve(
                 configuration: FlowConfiguration.OUTPUT,
             };
 
-            [newTmv, newCold, newHot, newWarm].forEach((e) => {
+            [newTmv, newCold, newHot, newWarm, newColdOut].forEach((e) => {
                 context.$store.dispatch('document/addEntity', e);
             });
-
-            if (tmvhasCold) {
-                context.$store.dispatch('document/addEntity', newColdOut);
-            }
 
             if (!event.ctrlKey) {
                 connectBigValveToSource(context, context.objectStore.get(newTmv.uid) as BigValve, 20000);

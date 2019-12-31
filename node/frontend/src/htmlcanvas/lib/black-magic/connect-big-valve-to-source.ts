@@ -17,7 +17,8 @@ import {FlowConfiguration} from '../../../store/document/entities/big-valve/big-
 
 export default function connectBigValveToSource(context: CanvasContext, newBigValve: BigValve, radiusMM: number = 3000) {
     const wc = newBigValve.toWorldCoord();
-    const selfUids: string[] = newBigValve.getNeighbours().map((o) => o.uid);
+    const selfUids: string[] = newBigValve.getInletsOutlets().map((o) => o.uid);
+    console.log('self uids: ' + JSON.stringify(selfUids));
 
     const interactive = getClosestJoinable(context, StandardFlowSystemUids.ColdWater, wc, radiusMM, selfUids);
 

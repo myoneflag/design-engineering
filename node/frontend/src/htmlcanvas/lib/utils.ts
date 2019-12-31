@@ -1,9 +1,8 @@
 import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
-import {Coord, DocumentState, DrawableEntity, DrawingState, Level} from '../../../src/store/document/types';
+import {Coord, DocumentState, DrawableEntity, Level} from '../../../src/store/document/types';
 import {GlobalStore, ObjectStore} from '../../../src/htmlcanvas/lib/types';
 import {cloneSimple} from '../../../src/lib/utils';
 import {
-    CalculationConcrete,
     ConnectableEntityConcrete,
     DrawableEntityConcrete,
     EdgeLikeEntity
@@ -15,9 +14,10 @@ import * as TM from 'transformation-matrix';
 import Flatten from '@flatten-js/core';
 import RiserEntity from "../../store/document/entities/riser-entity";
 import {LEVEL_HEIGHT_DIFF_M} from "../../lib/types";
-import {Catalog} from "../../store/catalog/types";
 import {assertUnreachable} from "../../config";
 import {CalculationContext} from "../../calculations/types";
+import {ValveType} from "../../store/document/entities/directed-valves/valve-types";
+import {getFluidDensityOfSystem, kpa2head} from "../../calculations/pressure-drops";
 
 
 export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
@@ -364,4 +364,48 @@ export function levelIncludesRiser(level: Level, riser: RiserEntity, sortedLevel
         const roofheight = i > 0 ? sortedLevels[i-1].floorHeightM : level.floorHeightM + LEVEL_HEIGHT_DIFF_M;
         return riser.bottomHeightM <= roofheight;
     }
+}
+
+export function getRpzdHeadLoss(
+    context: CalculationContext,
+    catalogId: string,
+    size: number,
+    flowLS: number,
+    systemUid: string,
+    type: ValveType.RPZD_SINGLE | ValveType.RPZD_DOUBLE_SHARED | ValveType.RPZD_DOUBLE_ISOLATED,
+    isolateOneWhenCalculatingHeadLoss: boolean = false,
+) {
+
+    const rpzdEntry =
+        upperBoundTable(context.catalog.backflowValves[catalogId].valvesBySize, size);
+    if (!rpzdEntry) {
+        return null;
+    }
+
+    if (type === ValveType.RPZD_DOUBLE_SHARED) {
+        flowLS /= 2;
+    } else if (type === ValveType.RPZD_DOUBLE_ISOLATED &&
+        !isolateOneWhenCalculatingHeadLoss
+    ) {
+        flowLS /= 2;
+    }
+
+    const plKPA = interpolateTable(rpzdEntry.pressureLossKPAByFlowRateLS, flowLS, true);
+    if (plKPA === null) {
+        return null;
+    }
+
+    if (systemUid === undefined) {
+        return null;
+    }
+    const density = getFluidDensityOfSystem(systemUid, context.doc, context.catalog);
+    if (density === null) {
+        return null;
+    }
+
+    return kpa2head(
+        plKPA,
+        density,
+        context.doc.drawing.metadata.calculationParams.gravitationalAcceleration,
+    );
 }

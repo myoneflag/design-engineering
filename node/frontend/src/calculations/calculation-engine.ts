@@ -4,7 +4,11 @@ import {EntityType} from '../../src/store/document/entities/types';
 import PipeEntity, {fillPipeDefaultFields, makePipeFields} from '../../src/store/document/entities/pipe-entity';
 import {makeValveFields} from '../../src/store/document/entities/fitting-entity';
 import {makeRiserFields} from '../store/document/entities/riser-entity';
-import BigValveEntity, {makeBigValveFields, SystemNodeEntity} from '../store/document/entities/big-valve/big-valve-entity';
+import {
+    BigValveType,
+    makeBigValveFields,
+    SystemNodeEntity
+} from '../store/document/entities/big-valve/big-valve-entity';
 import FixtureEntity, {
     fillFixtureFields,
     makeFixtureFields
@@ -640,6 +644,16 @@ export default class CalculationEngine {
         })
     }
 
+    addDirectedEdge(type: EdgeType, connection: string, fromConnectable: string, toConnectable: string) {
+        const ev = {type, uid: connection};
+        this.flowGraph.addDirectedEdge(
+            { connectable: fromConnectable, connection },
+            { connectable: toConnectable, connection },
+            ev,
+            stringify(ev),
+        );
+    }
+
     // Just like a flow graph, but only connects when loading units are transferred.
     configureLUFlowGraph() {
         this.flowGraph = new Graph<FlowNode, FlowEdge>((node) => node.connection + ' ' + node.connectable);
@@ -667,43 +681,46 @@ export default class CalculationEngine {
                     );
                     break;
                 case EntityType.BIG_VALVE:
-                    const entity = obj.entity as BigValveEntity;
-                    const ev1 = {
-                        type: EdgeType.BIG_VALVE_HOT_WARM,
-                        uid: entity.uid,
-                    };
-                    this.flowGraph.addDirectedEdge(
-                        {
-                            connectable: entity.hotRoughInUid,
-                            connection: entity.uid,
-                        },
-                        {
-                            connectable: entity.warmOutputUid,
-                            connection: entity.uid,
-                        },
-                        ev1,
-                        stringify(ev1),
-                    );
-                    if (entity.coldOutputUid !== null) {
-                        if (entity.coldOutputUid === null || entity.coldRoughInUid === null) {
-                            throw new Error('null found on ' + entity.type + ' ' + entity.uid);
-                        }
-                        const ev2 = {
-                            type: EdgeType.BIG_VALVE_COLD_COLD,
-                            uid: entity.uid,
-                        };
-                        this.flowGraph.addDirectedEdge(
-                            {
-                                connectable: entity.coldRoughInUid,
-                                connection: entity.uid,
-                            },
-                            {
-                                connectable: entity.coldOutputUid,
-                                connection: entity.uid,
-                            },
-                            ev2,
-                            stringify(ev2),
-                        );
+                    const entity = obj.entity;
+                    switch (entity.valve.type) {
+                        case BigValveType.TMV:
+                            this.addDirectedEdge(
+                                EdgeType.BIG_VALVE_COLD_COLD,
+                                entity.uid,
+                                entity.coldRoughInUid,
+                                entity.valve.coldOutputUid,
+                            );
+                            this.addDirectedEdge(
+                                EdgeType.BIG_VALVE_HOT_WARM,
+                                entity.uid,
+                                entity.hotRoughInUid,
+                                entity.valve.warmOutputUid,
+                            );
+                            break;
+                        case BigValveType.TEMPERING:
+                            this.addDirectedEdge(
+                                EdgeType.BIG_VALVE_HOT_WARM,
+                                entity.uid,
+                                entity.hotRoughInUid,
+                                entity.valve.warmOutputUid,
+                            );
+                            break;
+                        case BigValveType.RPZD_HOT_COLD:
+                            this.addDirectedEdge(
+                                EdgeType.BIG_VALVE_COLD_COLD,
+                                entity.uid,
+                                entity.coldRoughInUid,
+                                entity.valve.coldOutputUid,
+                            );
+                            this.addDirectedEdge(
+                                EdgeType.BIG_VALVE_HOT_HOT,
+                                entity.uid,
+                                entity.hotRoughInUid,
+                                entity.valve.hotOutputUid,
+                            );
+                            break;
+                        default:
+                            assertUnreachable(entity.valve);
                     }
                     break;
                 case EntityType.RISER:
@@ -1117,10 +1134,29 @@ export default class CalculationEngine {
                     StandardFlowSystemUids.ColdWater : StandardFlowSystemUids.HotWater;
                 let flowRate = lookupFlowRate(psdU, this.doc, this.catalog, systemUid);
 
+                if (entity.valve.type === BigValveType.RPZD_HOT_COLD && flowRate !== null) {
+                    if (flowEdge.type === EdgeType.BIG_VALVE_HOT_HOT) {
+                        calculation.rpzdSizeMM![StandardFlowSystemUids.HotWater] = this.sizeRpzdForFlowRate(
+                            entity.valve.catalogId,
+                            ValveType.RPZD_SINGLE,
+                            flowRate,
+                        );
+                    } else if (flowEdge.type === EdgeType.BIG_VALVE_COLD_COLD) {
+                        calculation.rpzdSizeMM![StandardFlowSystemUids.ColdWater] = this.sizeRpzdForFlowRate(
+                            entity.valve.catalogId,
+                            ValveType.RPZD_SINGLE,
+                            flowRate,
+                        );
+                    } else {
+                        throw new Error('Invalid edge on hot-cold RPZD');
+                    }
+                }
+
                 if (flowEdge.type === EdgeType.BIG_VALVE_COLD_COLD) {
                     calculation.coldPsdUs = psdU;
                     calculation.coldPeakFlowRate = flowRate;
-                } else if (flowEdge.type === EdgeType.BIG_VALVE_HOT_WARM) {
+                } else if (flowEdge.type === EdgeType.BIG_VALVE_HOT_WARM ||
+                    flowEdge.type === EdgeType.BIG_VALVE_HOT_HOT) {
                     calculation.hotPsdUs = psdU;
                     calculation.hotPeakFlowRate = flowRate;
                 } else {
@@ -1327,23 +1363,50 @@ export default class CalculationEngine {
         this.networkObjects().forEach((object) => {
             switch (object.entity.type) {
                 case EntityType.BIG_VALVE:
-                    console.log('tmv');
-                    this.sizeDefiniteTransport(
-                        object,
-                        roots,
-                        totalReachedPsdU,
-                        {type: EdgeType.BIG_VALVE_HOT_WARM, uid: object.uid},
-                        [object.entity.hotRoughInUid, object.entity.warmOutputUid],
-                    );
-
-                    if (object.entity.coldOutputUid) {
-                        this.sizeDefiniteTransport(
-                            object,
-                            roots,
-                            totalReachedPsdU,
-                            {type: EdgeType.BIG_VALVE_COLD_COLD, uid: object.uid},
-                            [object.entity.coldRoughInUid, object.entity.coldOutputUid!],
-                        );
+                    switch (object.entity.valve.type) {
+                        case BigValveType.TMV:
+                            this.sizeDefiniteTransport(
+                                object,
+                                roots,
+                                totalReachedPsdU,
+                                {type: EdgeType.BIG_VALVE_HOT_WARM, uid: object.uid},
+                                [object.entity.hotRoughInUid, object.entity.valve.warmOutputUid],
+                            );
+                            this.sizeDefiniteTransport(
+                                object,
+                                roots,
+                                totalReachedPsdU,
+                                {type: EdgeType.BIG_VALVE_COLD_COLD, uid: object.uid},
+                                [object.entity.coldRoughInUid, object.entity.valve.coldOutputUid],
+                            );
+                            break;
+                        case BigValveType.TEMPERING:
+                            this.sizeDefiniteTransport(
+                                object,
+                                roots,
+                                totalReachedPsdU,
+                                {type: EdgeType.BIG_VALVE_HOT_WARM, uid: object.uid},
+                                [object.entity.hotRoughInUid, object.entity.valve.warmOutputUid],
+                            );
+                            break;
+                        case BigValveType.RPZD_HOT_COLD:
+                            this.sizeDefiniteTransport(
+                                object,
+                                roots,
+                                totalReachedPsdU,
+                                {type: EdgeType.BIG_VALVE_COLD_COLD, uid: object.uid},
+                                [object.entity.coldRoughInUid, object.entity.valve.coldOutputUid],
+                            );
+                            this.sizeDefiniteTransport(
+                                object,
+                                roots,
+                                totalReachedPsdU,
+                                {type: EdgeType.BIG_VALVE_HOT_HOT, uid: object.uid},
+                                [object.entity.hotRoughInUid, object.entity.valve.hotOutputUid],
+                            );
+                            break;
+                        default:
+                            assertUnreachable(object.entity.valve);
                     }
                     break;
                 case EntityType.PIPE:
@@ -1382,37 +1445,18 @@ export default class CalculationEngine {
                         case ValveType.RPZD_DOUBLE_SHARED:
                         case ValveType.RPZD_DOUBLE_ISOLATED:
                             if (conns.length === 2) {
-                                console.log('eligable rpzd found');
                                 const p = this.globalStore.get(conns[0]) as Pipe;
                                 const pCalc = this.globalStore.getOrCreateCalculation(p.entity);
 
                                 if (pCalc.peakFlowRate !== null) {
-                                    let fr = pCalc.peakFlowRate;
-                                    if (obj.entity.valve.type === ValveType.RPZD_DOUBLE_SHARED) {
-                                        fr = fr / 2;
-                                    }
-                                    console.log(JSON.stringify(obj.entity.valve));
-                                    const entry = lowerBoundTable(
-                                        this.catalog.backflowValves[obj.entity.valve.catalogId].valvesBySize,
-                                        fr,
-                                        (t, m) => parseCatalogNumberExact(m ? t.maxFlowRateLS : t.minFlowRateLS)!,
+                                    const size = this.sizeRpzdForFlowRate(
+                                        obj.entity.valve.catalogId,
+                                        obj.entity.valve.type,
+                                        pCalc.peakFlowRate,
                                     );
-
-                                    if (entry) {
-                                        const pd = interpolateTable(
-                                            entry.pressureLossKPAByFlowRateLS,
-                                            fr,
-                                        );
-
-                                        if (pd !== null) {
-                                            const calc = this.globalStore.getOrCreateCalculation(obj.entity);
-                                            calc.sizeMM = parseCatalogNumberExact(entry.sizeMM);
-                                            console.log('size is now ' + calc.sizeMM + ' ' + JSON.stringify(entry));
-                                        } else {
-                                            console.log('oopsies');
-                                        }
-                                    } else {
-                                        console.log('entry doesn\'t exist');
+                                    if (size !== null) {
+                                        const calc = this.globalStore.getOrCreateCalculation(obj.entity);
+                                        calc.sizeMM = size;
                                     }
                                 } else {
                                     console.log('neighbour pipe peak flow rate is not good');
@@ -1440,6 +1484,37 @@ export default class CalculationEngine {
                     break;
             }
         })
+    }
+
+    sizeRpzdForFlowRate(
+        catalogId: string,
+        type: ValveType.RPZD_SINGLE | ValveType.RPZD_DOUBLE_ISOLATED | ValveType.RPZD_DOUBLE_SHARED,
+        fr: number,
+    ): number | null {
+        if (type === ValveType.RPZD_DOUBLE_SHARED) {
+            fr = fr / 2;
+        }
+        const entry = lowerBoundTable(
+            this.catalog.backflowValves[catalogId].valvesBySize,
+            fr,
+            (t, m) => parseCatalogNumberExact(m ? t.maxFlowRateLS : t.minFlowRateLS)!,
+        );
+
+        if (entry) {
+            const pd = interpolateTable(
+                entry.pressureLossKPAByFlowRateLS,
+                fr,
+            );
+
+            if (pd !== null) {
+                return pd;
+            } else {
+                console.log('oopsies');
+            }
+        } else {
+            console.log('entry doesn\'t exist');
+        }
+        return null;
     }
 
     sizeDefiniteTransport(
@@ -1529,39 +1604,100 @@ export default class CalculationEngine {
                 case EntityType.BIG_VALVE: {
 
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity);
-                    const frw = calculation.hotPeakFlowRate;
-                    if (frw !== null) {
-                        const hl = o.getFrictionHeadLoss(
-                            this,
-                            frw,
-                            {connection: o.uid, connectable: o.entity.hotRoughInUid},
-                            {connection: o.uid, connectable: o.entity.warmOutputUid},
-                            true,
-                        );
-                        calculation.warmOutPressureDropKPA = hl === null ? null : head2kpa(
-                            hl,
-                            getFluidDensityOfSystem(StandardFlowSystemUids.WarmWater, this.doc, this.catalog)!,
-                            this.ga,
-                        );
-                    }
 
-                    if (o.entity.coldOutputUid) {
-                        const fr = calculation.coldPeakFlowRate;
-                        if (fr !== null) {
-                            const hl = o.getFrictionHeadLoss(
-                                this,
-                                fr,
-                                {connection: o.uid, connectable: o.entity.coldRoughInUid},
-                                {connection: o.uid, connectable: o.entity.coldOutputUid},
-                                true,
-                            );
-                            calculation.coldOutPressureDropKPA = hl === null ? hl : head2kpa(
-                                hl,
-                                getFluidDensityOfSystem(StandardFlowSystemUids.ColdWater, this.doc, this.catalog)!,
-                                this.ga,
-                            );
+                    switch (o.entity.valve.type) {
+                        case BigValveType.TMV: {
+                            const fr = calculation.coldPeakFlowRate;
+                            if (fr !== null) {
+                                const hl = o.getFrictionHeadLoss(
+                                    this,
+                                    fr,
+                                    {connection: o.uid, connectable: o.entity.coldRoughInUid},
+                                    {connection: o.uid, connectable: o.entity.valve.coldOutputUid},
+                                    true,
+                                );
+                                calculation.outputs[StandardFlowSystemUids.ColdWater].pressureDropKPA =
+                                    hl === null ? hl : head2kpa(
+                                        hl,
+                                        getFluidDensityOfSystem(
+                                            StandardFlowSystemUids.ColdWater,
+                                            this.doc,
+                                            this.catalog,
+                                        )!,
+                                        this.ga,
+                                    );
+                            }
+                        }
+                        /* fall through */
+                        case BigValveType.TEMPERING: {
+                            const frw = calculation.hotPeakFlowRate;
+                            if (frw !== null) {
+                                const hl = o.getFrictionHeadLoss(
+                                    this,
+                                    frw,
+                                    {connection: o.uid, connectable: o.entity.hotRoughInUid},
+                                    {connection: o.uid, connectable: o.entity.valve.warmOutputUid},
+                                    true,
+                                );
+                                calculation.outputs[StandardFlowSystemUids.WarmWater].pressureDropKPA =
+                                    hl === null ? null : head2kpa(
+                                        hl,
+                                        getFluidDensityOfSystem(
+                                            StandardFlowSystemUids.WarmWater,
+                                            this.doc,
+                                            this.catalog,
+                                        )!,
+                                        this.ga,
+                                    );
+                            }
+                            break;
+                        }
+                        case BigValveType.RPZD_HOT_COLD: {
+                            const fr = calculation.coldPeakFlowRate;
+                            if (fr !== null) {
+                                const hl = o.getFrictionHeadLoss(
+                                    this,
+                                    fr,
+                                    {connection: o.uid, connectable: o.entity.coldRoughInUid},
+                                    {connection: o.uid, connectable: o.entity.valve.coldOutputUid},
+                                    true,
+                                );
+                                calculation.outputs[StandardFlowSystemUids.ColdWater].pressureDropKPA =
+                                    hl === null ? hl : head2kpa(
+                                        hl,
+                                        getFluidDensityOfSystem(
+                                            StandardFlowSystemUids.ColdWater,
+                                            this.doc,
+                                            this.catalog,
+                                        )!,
+                                        this.ga,
+                                    );
+                            }
+
+                            const frh = calculation.hotPeakFlowRate;
+                            if (frh !== null) {
+                                const hl = o.getFrictionHeadLoss(
+                                    this,
+                                    frh,
+                                    {connection: o.uid, connectable: o.entity.hotRoughInUid},
+                                    {connection: o.uid, connectable: o.entity.valve.hotOutputUid},
+                                    true,
+                                );
+                                calculation.outputs[StandardFlowSystemUids.HotWater].pressureDropKPA =
+                                    hl === null ? hl : head2kpa(
+                                        hl,
+                                        getFluidDensityOfSystem(
+                                            StandardFlowSystemUids.HotWater,
+                                            this.doc,
+                                            this.catalog,
+                                        )!,
+                                        this.ga,
+                                    );
+                            }
+                            break;
                         }
                     }
+
                     break;
                 }
                 case EntityType.PIPE: {

@@ -17,7 +17,7 @@ import {DrawableEntityConcrete} from '../../../../src/store/document/entities/co
 import CanvasContext from '../../../../src/htmlcanvas/lib/canvas-context';
 import {SelectableObject} from '../../../../src/htmlcanvas/lib/object-traits/selectable';
 import {CenteredObject} from '../../../../src/htmlcanvas/lib/object-traits/centered-object';
-import {interpolateTable, parseCatalogNumberExact} from '../../../../src/htmlcanvas/lib/utils';
+import {getRpzdHeadLoss, interpolateTable, parseCatalogNumberExact} from '../../../../src/htmlcanvas/lib/utils';
 import {CalculationContext} from '../../../../src/calculations/types';
 import {FlowNode} from '../../../../src/calculations/calculation-engine';
 import {DrawingArgs} from '../../../../src/htmlcanvas/lib/drawable-object';
@@ -33,7 +33,6 @@ import SystemNode from "./system-node";
 import BigValveCalculation from "../../../store/document/calculations/big-valve-calculation";
 import Flatten from '@flatten-js/core';
 import Cached from "../../lib/cached";
-import {getRpzdHeadLoss} from "../directed-valve";
 import {ValveType} from "../../../store/document/entities/directed-valves/valve-types";
 
 export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
