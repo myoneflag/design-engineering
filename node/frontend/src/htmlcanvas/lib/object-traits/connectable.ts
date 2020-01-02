@@ -10,7 +10,7 @@ import { DrawingContext } from "../../../../src/htmlcanvas/lib/types";
 import Flatten from "@flatten-js/core";
 import { PIPE_HEIGHT_GRAPHIC_EPS_MM } from "../../../../src/config";
 import { CalculationContext } from "../../../../src/calculations/types";
-import { FlowNode } from "../../../../src/calculations/calculation-engine";
+import { FlowEdge, FlowNode } from "../../../../src/calculations/calculation-engine";
 import { angleDiffRad } from "../../../../src/lib/utils";
 import { DrawingArgs } from "../../../../src/htmlcanvas/lib/drawable-object";
 import { CalculationData } from "../../../../src/store/document/calculations/calculation-field";

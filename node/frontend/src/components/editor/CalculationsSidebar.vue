@@ -29,7 +29,7 @@
         <b-row v-if="filterShown">
             <b-col>
                 <div class="filterPanel">
-                    <div v-for="(objectFilters, type) in filters">
+                    <div v-for="(objectFilters, type) in filters" :key="type">
                         <template v-if="Object.keys(objectFilters.filters).length">
                             <b-check :checked="objectFilters.enabled" @input="onObjectCheck(type, $event)">
                                 <h4>{{ objectFilters.name }}</h4>
@@ -39,6 +39,7 @@
                                     v-for="(filter, prop) in objectFilters.filters"
                                     :checked="filter.enabled"
                                     @input="onCheck(type, prop, $event)"
+                                    :key="prop"
                             >
                                 {{ filter.name }}
                             </b-check>

@@ -49,6 +49,7 @@ import {AccessLevel} from "../../../backend/src/entity/User"; import {AccessLeve
                                     :disabled="a.disabled"
                                     :pressed="a.level === user.accessLevel"
                                     :variant="a.level === user.accessLevel ? 'primary' : 'info'"
+                                    :key="a.name"
                                     >{{ a.name }}</b-button
                                 >
                             </b-button-group>

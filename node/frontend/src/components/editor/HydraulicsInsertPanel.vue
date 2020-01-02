@@ -125,6 +125,7 @@
                 <b-dropdown text="" class="insertEntityBtn" variant="outline-dark">
                     <b-dropdown-item
                         v-for="fixture in availableFixtureList"
+                        :key="fixture.uid"
                         variant="outline-dark"
                         class="shower btn-sm"
                         @click="
@@ -144,6 +145,7 @@
             <b-dropdown text="Fixtures" class="insertEntityBtn" variant="outline-dark" v-else>
                 <b-dropdown-item
                     v-for="fixture in availableFixtureList"
+                    :key="fixture.uid"
                     variant="outline-dark"
                     class="shower btn-sm"
                     @click="
@@ -181,6 +183,7 @@
                 <b-dropdown text="" class="insertEntityBtn" variant="outline-dark">
                     <b-dropdown-item
                         v-for="valve in availableValves"
+                        :key="valve.name"
                         variant="outline-dark"
                         class="shower btn-sm"
                         @click="
@@ -199,6 +202,7 @@
             <b-dropdown text="Valves" class="insertEntityBtn" variant="outline-dark" v-else>
                 <b-dropdown-item
                     v-for="valve in availableValves"
+                    :key="valve.name"
                     variant="outline-dark"
                     class="shower btn-sm"
                     @click="

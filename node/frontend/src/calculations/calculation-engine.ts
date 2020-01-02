@@ -75,6 +75,30 @@ import { ObjectStore } from "../htmlcanvas/lib/object-store";
 
 export const SELF_CONNECTION = "SELF_CONNECTION";
 
+export enum EdgeType {
+    PIPE,
+    BIG_VALVE_HOT_HOT,
+    BIG_VALVE_HOT_WARM,
+    BIG_VALVE_COLD_WARM,
+    BIG_VALVE_COLD_COLD,
+    FITTING_FLOW,
+
+    // reserve some for check valve, pump and isolation types.
+    CHECK_THROUGH,
+    ISOLATION_THROUGH
+}
+
+export interface FlowEdge {
+    type: EdgeType;
+    uid: string;
+}
+
+export interface FlowNode {
+    connection: string;
+    connectable: string;
+}
+
+
 export default class CalculationEngine {
     globalStore!: GlobalStore;
     networkObjectUids!: string[];
@@ -1870,31 +1894,4 @@ export default class CalculationEngine {
             return wet.indexOf(ep) === -1;
         });
     }
-}
-
-function randInt(minInclusive: number, maxExclusive: number) {
-    return Math.floor(Math.random() * (maxExclusive - minInclusive)) + minInclusive;
-}
-
-export enum EdgeType {
-    PIPE,
-    BIG_VALVE_HOT_HOT,
-    BIG_VALVE_HOT_WARM,
-    BIG_VALVE_COLD_WARM,
-    BIG_VALVE_COLD_COLD,
-    FITTING_FLOW,
-
-    // reserve some for check valve, pump and isolation types.
-    CHECK_THROUGH,
-    ISOLATION_THROUGH
-}
-
-export interface FlowEdge {
-    type: EdgeType;
-    uid: string;
-}
-
-export interface FlowNode {
-    connection: string;
-    connectable: string;
 }

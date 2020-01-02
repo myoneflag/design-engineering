@@ -24,6 +24,7 @@
                 <b-list-group>
                     <b-list-group-item
                         v-for="fixture in unavailableFixtures"
+                        :key="fixture.uid"
                         @click="makeAvailable(fixture.uid)"
                         href="#"
                         >{{ fixture.name }}
@@ -38,6 +39,7 @@
                     <b-list-group-item
                         @click="makeUnavailable(fixture.uid)"
                         v-for="fixture in availableFixtures"
+                        :key="fixture.uid"
                         href="#"
                         >{{ fixture.name }}
                     </b-list-group-item>

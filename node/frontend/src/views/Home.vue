@@ -25,7 +25,7 @@
                     </b-col>
                 </b-row>
                 <b-row>
-                    <b-col sm="6" md="4" lg="3" v-for="doc in documents">
+                    <b-col sm="6" md="4" lg="3" v-for="doc in documents" :key="doc.id">
                         <b-card
                             :title="doc.metadata.title"
                             img-src="https://conversionxl.com/wp-content/uploads/2013/03/blueprint-architecture.png"
