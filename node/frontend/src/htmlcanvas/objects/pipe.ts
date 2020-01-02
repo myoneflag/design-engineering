@@ -10,7 +10,7 @@ import { Draggable, DraggableObject } from "../../../src/htmlcanvas/lib/object-t
 import * as _ from "lodash";
 import { canonizeAngleRad, cloneSimple, lighten } from "../../../src/lib/utils";
 import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
-import { DrawingContext} from "../../../src/htmlcanvas/lib/types";
+import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
 import { EntityType } from "../../../src/store/document/entities/types";
 import BackedConnectable, { BaseBackedConnectable } from "../../../src/htmlcanvas/lib/BackedConnectable";

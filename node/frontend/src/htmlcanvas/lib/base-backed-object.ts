@@ -1,6 +1,6 @@
 import DrawableObject from "../../../src/htmlcanvas/lib/drawable-object";
 import { CalculationFilters, Coord, Coord3D, DrawableEntity } from "../../../src/store/document/types";
-import { DrawingContext} from "../../../src/htmlcanvas/lib/types";
+import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
 import { EntityType } from "../../../src/store/document/entities/types";
 import {
@@ -160,5 +160,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
         }
     }
 
-    onUpdate() { /**/ }
+    onUpdate() {
+        /**/
+    }
 }

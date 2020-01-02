@@ -80,6 +80,7 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
             case EntityType.FITTING:
             case EntityType.RISER:
             case EntityType.SYSTEM_NODE:
+            case EntityType.FLOW_SOURCE:
             case EntityType.BIG_VALVE:
             case EntityType.LOAD_NODE:
             case EntityType.FIXTURE:
@@ -168,8 +169,9 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
         if (!this.entity.parentUid) {
             throw new Error("Parent of the system node is missing");
         }
-        const tower: Array<[ConnectableEntityConcrete, PipeEntity] | [ConnectableEntityConcrete]> =
-            this.getCalculationTower(context);
+        const tower: Array<
+            [ConnectableEntityConcrete, PipeEntity] | [ConnectableEntityConcrete]
+        > = this.getCalculationTower(context);
 
         // find the fixture that our parent is connected to, and turn it back into a system node.
         const connected = this.getCalculationNode(context, this.entity.parentUid);
@@ -201,12 +203,12 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
         } else {
             throw new Error(
                 "system node shouldn't have any extra joints. " +
-                "from: " +
-                JSON.stringify(from) +
-                " to " +
-                JSON.stringify(to) +
-                " parent: " +
-                this.entity.parentUid
+                    "from: " +
+                    JSON.stringify(from) +
+                    " to " +
+                    JSON.stringify(to) +
+                    " parent: " +
+                    this.entity.parentUid
             );
         }
     }

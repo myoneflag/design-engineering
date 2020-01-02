@@ -207,7 +207,15 @@ export default function insertBigValve(context: CanvasContext, bigValveType: Big
                         }
                     }
                 ],
-                [KeyCode.CONTROL, { name: "Don't auto-connect", fn: () => { /**/ } }]
+                [
+                    KeyCode.CONTROL,
+                    {
+                        name: "Don't auto-connect",
+                        fn: () => {
+                            /**/
+                        }
+                    }
+                ]
             ]
         )
     );

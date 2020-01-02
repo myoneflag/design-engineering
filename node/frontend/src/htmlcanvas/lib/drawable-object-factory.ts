@@ -59,9 +59,15 @@ export default class DrawableObjectFactory {
                 global,
                 undefined as any,
                 entity,
-                () => { /**/ },
-                () => { /**/ },
-                () => { /**/ }
+                () => {
+                    /**/
+                },
+                () => {
+                    /**/
+                },
+                () => {
+                    /**/
+                }
             );
             global.set(entity().uid, object, levelUid);
             return object;

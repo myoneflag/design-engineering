@@ -2,7 +2,7 @@ import { Coord, DocumentState, DrawableEntity, WithID } from "../../../src/store
 import { MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
 import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
-import { DrawingContext} from "../../../src/htmlcanvas/lib/types";
+import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import { DrawableEntityConcrete } from "../../../src/store/document/entities/concrete-entity";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { EntityType } from "../../../src/store/document/entities/types";
@@ -314,6 +314,7 @@ export abstract class LayerImplementation implements Layer {
             case EntityType.LOAD_NODE:
             case EntityType.FITTING:
             case EntityType.RISER:
+            case EntityType.FLOW_SOURCE:
             case EntityType.DIRECTED_VALVE:
             case EntityType.BIG_VALVE:
                 return 1;
@@ -348,6 +349,7 @@ export abstract class LayerImplementation implements Layer {
                 case EntityType.RISER:
                 case EntityType.FIXTURE:
                 case EntityType.LOAD_NODE:
+                case EntityType.FLOW_SOURCE:
                 case EntityType.BIG_VALVE:
                 case EntityType.DIRECTED_VALVE:
                     return true;

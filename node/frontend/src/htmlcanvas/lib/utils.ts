@@ -1,6 +1,6 @@
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { Coord, DocumentState, DrawableEntity, Level } from "../../../src/store/document/types";
-import { DrawingContext} from "../../../src/htmlcanvas/lib/types";
+import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import { cloneSimple } from "../../../src/lib/utils";
 import {
     ConnectableEntityConcrete,
@@ -305,6 +305,10 @@ export function maxHeightOfConnection(entity: ConnectableEntityConcrete, context
     let height = -Infinity;
     if (entity.type === EntityType.SYSTEM_NODE) {
         height = getSystemNodeHeightM(entity, context);
+    } else if (entity.type === EntityType.FLOW_SOURCE) {
+        if (entity.heightAboveGroundM !== null) {
+            height = entity.heightAboveGroundM - getFloorHeight(context.globalStore, context.document, entity);
+        }
     }
 
     context.objectStore.getConnections(entity.uid).forEach((cuid) => {

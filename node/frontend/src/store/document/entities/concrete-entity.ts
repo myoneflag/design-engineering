@@ -4,7 +4,6 @@ import PipeEntity from "../../../../src/store/document/entities/pipe-entity";
 import RiserEntity from "./riser-entity";
 import FixtureEntity from "../../../../src/store/document/entities/fixtures/fixture-entity";
 import BigValveEntity, { SystemNodeEntity } from "./big-valve/big-valve-entity";
-import { CenteredEntity, ConnectableEntity, FlowSystemParameters } from "../../../../src/store/document/types";
 import RiserCalculation from "../calculations/riser-calculation";
 import PipeCalculation from "../../../../src/store/document/calculations/pipe-calculation";
 import BigValveCalculation from "../calculations/big-valve-calculation";
@@ -14,6 +13,8 @@ import DirectedValveEntity from "../../../../src/store/document/entities/directe
 import SystemNodeCalculation from "../../../../src/store/document/calculations/system-node-calculation";
 import LoadNodeEntity from "./load-node-entity";
 import LoadNodeCalculation from "../calculations/load-node-calculation";
+import FlowSourceCalculation from "../calculations/flow-source-calculation";
+import FlowSourceEntity from "./flow-source-entity";
 
 export type DrawableEntityConcrete =
     | BackgroundEntity
@@ -24,14 +25,16 @@ export type DrawableEntityConcrete =
     | BigValveEntity
     | FixtureEntity
     | DirectedValveEntity
-    | LoadNodeEntity;
+    | LoadNodeEntity
+    | FlowSourceEntity;
 
 export type ConnectableEntityConcrete =
     | FittingEntity
     | RiserEntity
     | SystemNodeEntity
     | DirectedValveEntity
-    | LoadNodeEntity;
+    | LoadNodeEntity
+    | FlowSourceEntity;
 
 export type CenteredEntityConcrete =
     | BackgroundEntity
@@ -41,7 +44,8 @@ export type CenteredEntityConcrete =
     | BigValveEntity
     | FixtureEntity
     | DirectedValveEntity
-    | LoadNodeEntity;
+    | LoadNodeEntity
+    | FlowSourceEntity;
 
 export type InvisibleNodeEntityConcrete = SystemNodeEntity;
 
@@ -53,7 +57,8 @@ export type CalculatableEntityConcrete =
     | FixtureEntity
     | DirectedValveEntity
     | SystemNodeEntity
-    | LoadNodeEntity;
+    | LoadNodeEntity
+    | FlowSourceEntity;
 
 export type CalculationConcrete =
     | RiserCalculation
@@ -63,6 +68,7 @@ export type CalculationConcrete =
     | FittingCalculation
     | FixtureCalculation
     | SystemNodeCalculation
-    | LoadNodeCalculation;
+    | LoadNodeCalculation
+    | FlowSourceCalculation;
 
 export type EdgeLikeEntity = PipeEntity | FixtureEntity | BigValveEntity;

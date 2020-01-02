@@ -2,11 +2,11 @@ import {EntityType} from "../../../store/document/entities/types";
 <template>
     <b-container>
         <PropertiesFieldBuilder
-            :fields="fields"
-            :reactiveData="reactiveData"
-            :default-data="defaultData"
-            :on-change="onChange"
-            :on-commit="onCommit"
+                :fields="fields"
+                :reactiveData="reactiveData"
+                :default-data="defaultData"
+                :on-change="onChange"
+                :on-commit="onCommit"
         >
         </PropertiesFieldBuilder>
 
@@ -20,259 +20,272 @@ import {EntityType} from "../../../store/document/entities/types";
     </b-container>
 </template>
 <script lang="ts">
-import Vue from "vue";
-import BaseBackedObject from "../../../htmlcanvas/lib/base-backed-object";
-import { FieldType, PropertyField } from "../../../../src/store/document/entities/property-field";
-import { DrawableEntityConcrete } from "../../../../src/store/document/entities/concrete-entity";
-import { makeBackgroundFields } from "../../../../src/store/document/entities/background-entity";
-import { fillPipeDefaultFields, makePipeFields } from "../../../../src/store/document/entities/pipe-entity";
-import { fillValveDefaultFields, makeValveFields } from "../../../../src/store/document/entities/fitting-entity";
-import Component from "vue-class-component";
-import { EntityType } from "../../../../src/store/document/entities/types";
-import { DocumentState } from "../../../../src/store/document/types";
-import { Catalog } from "../../../../src/store/catalog/types";
-import { fillRiserDefaults, makeRiserFields } from "../../../store/document/entities/riser-entity";
-import {
-    fillDefaultBigValveFields,
-    makeBigValveFields
-} from "../../../store/document/entities/big-valve/big-valve-entity";
-import { fillFixtureFields, makeFixtureFields } from "../../../../src/store/document/entities/fixtures/fixture-entity";
-import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
-import * as _ from "lodash";
-import Pipe from "../../../../src/htmlcanvas/objects/pipe";
-import {
-    fillDirectedValveFields,
-    makeDirectedValveFields
-} from "../../../../src/store/document/entities/directed-valves/directed-valve-entity";
-import { assertUnreachable } from "../../../config";
-import { fillDefaultLoadNodeFields, makeLoadNodesFields } from "../../../store/document/entities/load-node-entity";
-import { cloneSimple, getPropertyByString, setPropertyByString } from "../../../lib/utils";
+    import Vue from "vue";
+    import BaseBackedObject from "../../../htmlcanvas/lib/base-backed-object";
+    import { FieldType, PropertyField } from "../../../../src/store/document/entities/property-field";
+    import { DrawableEntityConcrete } from "../../../../src/store/document/entities/concrete-entity";
+    import { makeBackgroundFields } from "../../../../src/store/document/entities/background-entity";
+    import { fillPipeDefaultFields, makePipeFields } from "../../../../src/store/document/entities/pipe-entity";
+    import { fillValveDefaultFields, makeValveFields } from "../../../../src/store/document/entities/fitting-entity";
+    import Component from "vue-class-component";
+    import { EntityType } from "../../../../src/store/document/entities/types";
+    import { DocumentState } from "../../../../src/store/document/types";
+    import { Catalog } from "../../../../src/store/catalog/types";
+    import { fillRiserDefaults, makeRiserFields } from "../../../store/document/entities/riser-entity";
+    import {
+        fillDefaultBigValveFields,
+        makeBigValveFields
+    } from "../../../store/document/entities/big-valve/big-valve-entity";
+    import {
+        fillFixtureFields,
+        makeFixtureFields
+    } from "../../../../src/store/document/entities/fixtures/fixture-entity";
+    import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
+    import Pipe from "../../../../src/htmlcanvas/objects/pipe";
+    import {
+        fillDirectedValveFields,
+        makeDirectedValveFields
+    } from "../../../../src/store/document/entities/directed-valves/directed-valve-entity";
+    import { assertUnreachable } from "../../../config";
+    import { fillDefaultLoadNodeFields, makeLoadNodesFields } from "../../../store/document/entities/load-node-entity";
+    import { cloneSimple, getPropertyByString, setPropertyByString } from "../../../lib/utils";
+    import { fillFlowSourceDefaults, makeFlowSourceFields } from "../../../store/document/entities/flow-source-entity";
 
-@Component({
-    components: { PropertiesFieldBuilder },
-    props: {
-        selectedObjects: Array,
-        selectedEntities: Array,
-        onChange: Function,
-        onDelete: Function,
-        objectStore: Map
-    }
-})
-export default class MultiFieldBuilder extends Vue {
-    get fields() {
-        let ret: PropertyField[] = [];
-        const seen = new Set<string>();
-        const types = new Set<EntityType>();
-        let first = true;
-        this.$props.selectedObjects.forEach((obj: BaseBackedObject) => {
-            const fields = this.getEntityFields(obj.entity);
-            if (first) {
-                fields.forEach((f) => {
-                    if (!seen.has(f.multiFieldId!)) {
-                        seen.add(f.multiFieldId!);
-                        ret.push(f);
-                    }
-                });
-            } else {
-                const thisSet = new Set<string>(fields.map((f) => f.multiFieldId!));
-                ret = ret.filter((f) => thisSet.has(f.multiFieldId!));
-            }
-            first = false;
-        });
-
-        return this.convertToMultiProperties(ret);
-    }
-
-    convertToMultiProperties(fields: PropertyField[]): PropertyField[] {
-        return fields.map((f) => {
-            const ret = cloneSimple(f);
-            ret.property = ret.multiFieldId!;
-            return ret;
-        });
-    }
-
-    getEntityFields(entity: DrawableEntityConcrete): PropertyField[] {
-        switch (entity.type) {
-            case EntityType.BACKGROUND_IMAGE:
-                return makeBackgroundFields().filter((p) => p.multiFieldId);
-            case EntityType.FITTING:
-                return makeValveFields(
-                    this.$store.getters["catalog/defaultValveChoices"],
-                    this.document.drawing.metadata.flowSystems
-                ).filter((p) => p.multiFieldId);
-            case EntityType.PIPE:
-                return makePipeFields(
-                    this.$store.getters["catalog/defaultPipeMaterialChoices"],
-                    this.document.drawing.metadata.flowSystems
-                ).filter((p) => p.multiFieldId);
-            case EntityType.RISER:
-                return makeRiserFields(
-                    this.$store.getters["catalog/defaultPipeMaterialChoices"],
-                    this.document.drawing.metadata.flowSystems
-                ).filter((p) => p.multiFieldId);
-            case EntityType.BIG_VALVE:
-                return makeBigValveFields(entity).filter((p) => p.multiFieldId);
-            case EntityType.FIXTURE:
-                return makeFixtureFields(this.document, entity).filter((p) => p.multiFieldId);
-            case EntityType.DIRECTED_VALVE:
-                return makeDirectedValveFields(this.document.drawing.metadata.flowSystems, entity.valve).filter(
-                    (p) => p.multiFieldId
-                );
-            case EntityType.SYSTEM_NODE:
-                throw new Error("Invalid object in multi select");
-            case EntityType.LOAD_NODE:
-                return makeLoadNodesFields(this.document.drawing.metadata.flowSystems, entity);
+    @Component({
+        components: { PropertiesFieldBuilder },
+        props: {
+            selectedObjects: Array,
+            selectedEntities: Array,
+            onChange: Function,
+            onDelete: Function,
+            objectStore: Map
         }
-        assertUnreachable(entity);
-    }
-
-    fillObjectFields(obj: BaseBackedObject): DrawableEntityConcrete {
-        switch (obj.entity.type) {
-            case EntityType.BACKGROUND_IMAGE:
-                return obj.entity;
-            case EntityType.FITTING:
-                return fillValveDefaultFields(this.document, obj.entity);
-            case EntityType.PIPE:
-                return fillPipeDefaultFields(this.document.drawing, (obj as Pipe).computedLengthM, obj.entity);
-            case EntityType.RISER:
-                return fillRiserDefaults(this.document, obj.entity);
-            case EntityType.SYSTEM_NODE:
-                return obj.entity;
-            case EntityType.BIG_VALVE:
-                return fillDefaultBigValveFields(this.document, this.defaultCatalog, obj.entity);
-            case EntityType.FIXTURE:
-                return fillFixtureFields(this.document.drawing, this.defaultCatalog, obj.entity);
-            case EntityType.DIRECTED_VALVE:
-                return fillDirectedValveFields(this.document, this.$props.objectStore, obj.entity);
-            case EntityType.LOAD_NODE:
-                return fillDefaultLoadNodeFields(this.document, obj.objectStore, obj.entity);
-        }
-        assertUnreachable(obj.entity);
-    }
-
-    get document(): DocumentState {
-        return this.$store.getters["document/document"];
-    }
-
-    get defaultCatalog(): Catalog {
-        return this.$store.getters["catalog/default"];
-    }
-
-    getEmptyValue(type: FieldType) {
-        switch (type) {
-            case FieldType.Text:
-            case FieldType.TextArea:
-                return "";
-            case FieldType.Rotation:
-            case FieldType.Number:
-                return "";
-            case FieldType.Choice:
-                return "(mixed)";
-            case FieldType.FlowSystemChoice:
-                return "(mixed)";
-            case FieldType.Color:
-                return { hex: "#eeeeee" };
-        }
-    }
-
-    get defaultData() {
-        return new Proxy(
-            {},
-            {
-                get: (target, name, receiver): any => {
-                    let concreteValue: any = null;
-                    let concreteIdentical = true;
-                    let foundField: PropertyField;
-                    this.$props.selectedObjects.forEach((obj: BaseBackedObject) => {
-                        const fields = this.getEntityFields(obj.entity);
-                        const field = fields.find((f) => f.multiFieldId === name);
-                        if (field) {
-                            foundField = field;
-                            const defVal = getPropertyByString(this.fillObjectFields(obj) as any, field.property);
-                            const conVal = getPropertyByString(obj.entity as any, field.property);
-                            const dispVal = conVal === null ? defVal : conVal;
-                            if (concreteValue === null || concreteValue === dispVal) {
-                                concreteValue = dispVal;
-                            } else {
-                                concreteIdentical = false;
-                            }
+    })
+    export default class MultiFieldBuilder extends Vue {
+        get fields() {
+            let ret: PropertyField[] = [];
+            const seen = new Set<string>();
+            const types = new Set<EntityType>();
+            let first = true;
+            this.$props.selectedObjects.forEach((obj: BaseBackedObject) => {
+                const fields = this.getEntityFields(obj.entity);
+                if (first) {
+                    fields.forEach((f) => {
+                        if (!seen.has(f.multiFieldId!)) {
+                            seen.add(f.multiFieldId!);
+                            ret.push(f);
                         }
                     });
-
-                    if (concreteIdentical) {
-                        return concreteValue;
-                    } else {
-                        return this.getEmptyValue(foundField!.type);
-                    }
+                } else {
+                    const thisSet = new Set<string>(fields.map((f) => f.multiFieldId!));
+                    ret = ret.filter((f) => thisSet.has(f.multiFieldId!));
                 }
-            }
-        );
-    }
+                first = false;
+            });
 
-    get reactiveData() {
-        return new Proxy(
-            {},
-            {
-                get: (target, name, receiver) => {
-                    // Undefined means mixed and input value will be default.
-                    // Null means definitely computed or definitely default.
-                    // Value means all items were explicit and has same value.
-                    let concreteValue: any;
-                    let concreteIdentical = true;
-                    let allDefaultOrCalculated = true;
-                    let someDefaultOrCalculated = false;
-                    let foundField: PropertyField;
-                    this.$props.selectedObjects.forEach((obj: BaseBackedObject) => {
-                        const fields = this.getEntityFields(obj.entity);
-                        const field = fields.find((f) => f.multiFieldId === name);
-                        if (field) {
-                            foundField = field;
-                            const val = getPropertyByString(obj.entity as any, field.property);
-                            if (val !== null) {
-                                if (concreteValue === undefined || concreteValue === val) {
-                                    concreteValue = val;
+            return this.convertToMultiProperties(ret);
+        }
+
+        convertToMultiProperties(fields: PropertyField[]): PropertyField[] {
+            return fields.map((f) => {
+                const ret = cloneSimple(f);
+                ret.property = ret.multiFieldId!;
+                return ret;
+            });
+        }
+
+        getEntityFields(entity: DrawableEntityConcrete): PropertyField[] {
+            switch (entity.type) {
+                case EntityType.BACKGROUND_IMAGE:
+                    return makeBackgroundFields().filter((p) => p.multiFieldId);
+                case EntityType.FITTING:
+                    return makeValveFields(
+                        this.$store.getters["catalog/defaultValveChoices"],
+                        this.document.drawing.metadata.flowSystems
+                    ).filter((p) => p.multiFieldId);
+                case EntityType.PIPE:
+                    return makePipeFields(
+                        this.$store.getters["catalog/defaultPipeMaterialChoices"],
+                        this.document.drawing.metadata.flowSystems
+                    ).filter((p) => p.multiFieldId);
+                case EntityType.RISER:
+                    return makeRiserFields(
+                        this.$store.getters["catalog/defaultPipeMaterialChoices"],
+                        this.document.drawing.metadata.flowSystems
+                    ).filter((p) => p.multiFieldId);
+                case EntityType.BIG_VALVE:
+                    return makeBigValveFields(entity).filter((p) => p.multiFieldId)
+                        .filter((p) => p.multiFieldId);
+                case EntityType.FIXTURE:
+                    return makeFixtureFields(this.document, entity).filter((p) => p.multiFieldId)
+                        .filter((p) => p.multiFieldId);
+                case EntityType.DIRECTED_VALVE:
+                    return makeDirectedValveFields(this.document.drawing.metadata.flowSystems, entity.valve).filter(
+                        (p) => p.multiFieldId
+                    ).filter((p) => p.multiFieldId);
+                case EntityType.SYSTEM_NODE:
+                    throw new Error("Invalid object in multi select");
+                case EntityType.LOAD_NODE:
+                    return makeLoadNodesFields(this.document.drawing.metadata.flowSystems, entity)
+                        .filter((p) => p.multiFieldId);
+                case EntityType.FLOW_SOURCE:
+                    return makeFlowSourceFields(
+                        this.$store.getters["catalog/defaultPipeMaterialChoices"],
+                        this.document.drawing.metadata.flowSystems,
+                    ).filter((p) => p.multiFieldId);
+            }
+            assertUnreachable(entity);
+        }
+
+        fillObjectFields(obj: BaseBackedObject): DrawableEntityConcrete {
+            switch (obj.entity.type) {
+                case EntityType.BACKGROUND_IMAGE:
+                    return obj.entity;
+                case EntityType.FITTING:
+                    return fillValveDefaultFields(this.document, obj.entity);
+                case EntityType.PIPE:
+                    return fillPipeDefaultFields(this.document.drawing, (obj as Pipe).computedLengthM, obj.entity);
+                case EntityType.RISER:
+                    return fillRiserDefaults(this.document, obj.entity);
+                case EntityType.SYSTEM_NODE:
+                    return obj.entity;
+                case EntityType.BIG_VALVE:
+                    return fillDefaultBigValveFields(this.document, this.defaultCatalog, obj.entity);
+                case EntityType.FIXTURE:
+                    return fillFixtureFields(this.document.drawing, this.defaultCatalog, obj.entity);
+                case EntityType.DIRECTED_VALVE:
+                    return fillDirectedValveFields(this.document, this.$props.objectStore, obj.entity);
+                case EntityType.LOAD_NODE:
+                    return fillDefaultLoadNodeFields(this.document, obj.objectStore, obj.entity);
+                case EntityType.FLOW_SOURCE:
+                    return fillFlowSourceDefaults(this.document, obj.entity);
+            }
+            assertUnreachable(obj.entity);
+        }
+
+        get document(): DocumentState {
+            return this.$store.getters["document/document"];
+        }
+
+        get defaultCatalog(): Catalog {
+            return this.$store.getters["catalog/default"];
+        }
+
+        getEmptyValue(type: FieldType) {
+            switch (type) {
+                case FieldType.Text:
+                case FieldType.TextArea:
+                    return "";
+                case FieldType.Rotation:
+                case FieldType.Number:
+                    return "";
+                case FieldType.Choice:
+                    return "(mixed)";
+                case FieldType.FlowSystemChoice:
+                    return "(mixed)";
+                case FieldType.Color:
+                    return { hex: "#eeeeee" };
+            }
+        }
+
+        get defaultData() {
+            return new Proxy(
+                {},
+                {
+                    get: (target, name, receiver): any => {
+                        let concreteValue: any = null;
+                        let concreteIdentical = true;
+                        let foundField: PropertyField;
+                        this.$props.selectedObjects.forEach((obj: BaseBackedObject) => {
+                            const fields = this.getEntityFields(obj.entity);
+                            const field = fields.find((f) => f.multiFieldId === name);
+                            if (field) {
+                                foundField = field;
+                                const defVal = getPropertyByString(this.fillObjectFields(obj) as any, field.property);
+                                const conVal = getPropertyByString(obj.entity as any, field.property);
+                                const dispVal = conVal === null ? defVal : conVal;
+                                if (concreteValue === null || concreteValue === dispVal) {
+                                    concreteValue = dispVal;
                                 } else {
                                     concreteIdentical = false;
                                 }
-                                allDefaultOrCalculated = false;
-                            } else {
-                                someDefaultOrCalculated = true;
                             }
-                        }
-                    });
+                        });
 
-                    if (allDefaultOrCalculated) {
-                        return null;
-                    } else if (someDefaultOrCalculated) {
-                        return undefined;
-                    } else if (concreteIdentical) {
-                        return concreteValue;
-                    } else {
-                        return this.getEmptyValue(foundField!.type);
-                    }
-                },
-                set: (target, name, value, receiver) => {
-                    if (value === undefined) {
-                        return true;
-                    }
-
-                    let success = false;
-                    this.$props.selectedObjects.forEach((obj: BaseBackedObject) => {
-                        const fields = this.getEntityFields(obj.entity);
-                        const field = fields.find((f) => f.multiFieldId === name);
-                        if (field) {
-                            setPropertyByString(obj.entity as any, field.property, value);
-                            success = true;
+                        if (concreteIdentical) {
+                            return concreteValue;
+                        } else {
+                            return this.getEmptyValue(foundField!.type);
                         }
-                    });
-                    return success;
+                    }
                 }
-            }
-        );
-    }
+            );
+        }
 
-    onCommit() {
-        this.$store.dispatch("document/commit");
+        get reactiveData() {
+            return new Proxy(
+                {},
+                {
+                    get: (target, name, receiver) => {
+                        // Undefined means mixed and input value will be default.
+                        // Null means definitely computed or definitely default.
+                        // Value means all items were explicit and has same value.
+                        let concreteValue: any;
+                        let concreteIdentical = true;
+                        let allDefaultOrCalculated = true;
+                        let someDefaultOrCalculated = false;
+                        let foundField: PropertyField;
+                        this.$props.selectedObjects.forEach((obj: BaseBackedObject) => {
+                            const fields = this.getEntityFields(obj.entity);
+                            const field = fields.find((f) => f.multiFieldId === name);
+                            if (field) {
+                                foundField = field;
+                                const val = getPropertyByString(obj.entity as any, field.property);
+                                if (val !== null) {
+                                    if (concreteValue === undefined || concreteValue === val) {
+                                        concreteValue = val;
+                                    } else {
+                                        concreteIdentical = false;
+                                    }
+                                    allDefaultOrCalculated = false;
+                                } else {
+                                    someDefaultOrCalculated = true;
+                                }
+                            }
+                        });
+
+                        if (allDefaultOrCalculated) {
+                            return null;
+                        } else if (someDefaultOrCalculated) {
+                            return undefined;
+                        } else if (concreteIdentical) {
+                            return concreteValue;
+                        } else {
+                            return this.getEmptyValue(foundField!.type);
+                        }
+                    },
+                    set: (target, name, value, receiver) => {
+                        if (value === undefined) {
+                            return true;
+                        }
+
+                        let success = false;
+                        this.$props.selectedObjects.forEach((obj: BaseBackedObject) => {
+                            const fields = this.getEntityFields(obj.entity);
+                            const field = fields.find((f) => f.multiFieldId === name);
+                            if (field) {
+                                setPropertyByString(obj.entity as any, field.property, value);
+                                success = true;
+                            }
+                        });
+                        return success;
+                    }
+                }
+            );
+        }
+
+        onCommit() {
+            this.$store.dispatch("document/commit");
+        }
     }
-}
 </script>

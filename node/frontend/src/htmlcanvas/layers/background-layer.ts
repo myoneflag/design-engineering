@@ -5,7 +5,7 @@ import { ResizeControl } from "../../../src/htmlcanvas/objects/resize-control";
 import { MouseMoveResult } from "../../../src/htmlcanvas/types";
 import { ToolConfig } from "../../../src/store/tools/types";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
-import { DrawingContext} from "../../../src/htmlcanvas/lib/types";
+import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { DrawableEntityConcrete } from "../../../src/store/document/entities/concrete-entity";
 import { EntityType } from "../../store/document/entities/types";

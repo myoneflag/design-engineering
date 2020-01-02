@@ -8,8 +8,8 @@ export default function Cached<T extends BaseBackedObject>(
     return (target: T, propertyKey: string, descriptor: PropertyDescriptor) => {
         const originalMethod = descriptor.value;
         descriptor.value = function(this: T) {
-            const cacheKey = propertyKey +
-                (serializeArgs ? serializeArgs(...arguments) : stringify(Array.from(arguments)));
+            const cacheKey =
+                propertyKey + (serializeArgs ? serializeArgs(...arguments) : stringify(Array.from(arguments)));
             if (!this.cache.has(cacheKey)) {
                 this.objectStore.watchDependencies(this.uid, cacheKey, getDependencies(this));
                 this.cache.set(cacheKey, originalMethod.apply(this, arguments));

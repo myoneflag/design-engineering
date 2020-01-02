@@ -9,7 +9,7 @@ import {EntityType} from "../../../../src/store/document/entities/types";
                 :on-change="onChange"
                 v-if="mode === 0"
             />
-            <FlowSourceProperties
+            <RiserProperties
                 v-else-if="entity.type === ENTITY_NAMES.RISER"
                 :selected-entity="entity"
                 :selected-object="selectedObjects[0]"
@@ -17,7 +17,7 @@ import {EntityType} from "../../../../src/store/document/entities/types";
                 :target-property="targetProperty"
                 :on-delete="onDelete"
             />
-            <ValveProperties
+            <FittingProperties
                 v-else-if="entity.type === ENTITY_NAMES.FITTING"
                 :selected-entity="entity"
                 :selected-object="selectedObjects[0]"
@@ -33,7 +33,7 @@ import {EntityType} from "../../../../src/store/document/entities/types";
                 :target-property="targetProperty"
                 :on-delete="onDelete"
             />
-            <TMVProperties
+            <BigValveProperties
                 v-else-if="entity.type === ENTITY_NAMES.BIG_VALVE"
                 :selected-entity="entity"
                 :selected-object="selectedObjects[0]"
@@ -44,7 +44,7 @@ import {EntityType} from "../../../../src/store/document/entities/types";
                 <div v-if="canAutoConnect">
                     <b-button variant="success" size="lg" @click="autoConnect">Auto Connect</b-button>
                 </div>
-            </TMVProperties>
+            </BigValveProperties>
             <FixtureProperties
                 v-else-if="entity.type === ENTITY_NAMES.FIXTURE"
                 :selected-entity="entity"
@@ -71,6 +71,15 @@ import {EntityType} from "../../../../src/store/document/entities/types";
                 :on-delete="onDelete"
                 :object-store="objectStore"
             />
+            <FlowSourceProperties
+                v-else-if="entity.type === ENTITY_NAMES.FLOW_SOURCE"
+                :selected-entity="entity"
+                :selected-object="selectedObjects[0]"
+                :on-change="onChange"
+                :target-property="targetProperty"
+                :on-delete="onDelete"
+            />
+
         </template>
         <template v-else>
             <h3>{{ selectedObjects.length + " Objects" }}</h3>
@@ -144,6 +153,7 @@ import { DrawableEntityConcrete } from "../../../store/document/entities/concret
 import LoadNodeProperties from "./LoadNodeProperties.vue";
 import { isCalculated } from "../../../store/document/calculations";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
+import FlowSourceProperties from "./FlowSourceProperties.vue";
 
 @Component({
     components: {
@@ -151,11 +161,12 @@ import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
         DirectedValveProperties,
         MultiFieldBuilder,
         FixtureProperties,
-        TMVProperties: BigValveProperties,
+        BigValveProperties,
         PipeProperties,
-        ValveProperties: FittingProperties,
-        FlowSourceProperties: RiserProperties,
-        FloorPlanProperties
+        FittingProperties,
+        RiserProperties,
+        FloorPlanProperties,
+        FlowSourceProperties,
     },
     props: {
         selectedEntities: Array,

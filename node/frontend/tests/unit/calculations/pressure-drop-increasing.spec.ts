@@ -179,7 +179,7 @@ describe('object\'s head losses', () => {
 
         Object.keys(EntityType).map((k) => expectedEntityTypes.add(EntityType[k as EntityType]));
         expectedEntityTypes.delete(EntityType.RESULTS_MESSAGE);
-        expectedEntityTypes.delete(EntityType.FLOW_RETURN); // TODO: require this later
+        expectedEntityTypes.delete(EntityType.RETURN); // TODO: require this later
 
         const seenValveTypes = new Set<ValveType>();
         const expectedValveTypes = new Set<ValveType>();

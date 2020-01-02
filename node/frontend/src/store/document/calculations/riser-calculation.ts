@@ -1,40 +1,67 @@
-import { FieldCategory, CalculationField, Units } from "../../../../src/store/document/calculations/calculation-field";
-import { Calculation, PsdCalculation } from "../../../../src/store/document/calculations/types";
-import { isGermanStandard } from "../../../../src/config";
+import { CalculationField, FieldCategory, Units } from "../../../../src/store/document/calculations/calculation-field";
+import { Calculation } from "../../../../src/store/document/calculations/types";
 import { DrawingState } from "../../../../src/store/document/types";
 import RiserEntity from "../entities/riser-entity";
 import { getPsdUnitName } from "../../../calculations/utils";
 
 export default interface RiserCalculation extends Calculation {
-    pressureKPA: number | null;
-    flowRateLS: number | null;
+    heights: {
+        [levelUid: string]: {
+            pressureKPA: number | null;
+            flowRateLS: number | null;
+            heightAboveGround: number | null;
+            psdUnits: number | null;
+        };
+    };
 }
 
-export function makeRiserCalculationFields(entity: RiserEntity, settings: DrawingState): CalculationField[] {
-    return [
-        {
-            property: "pressureKPA",
-            title: "Pressure",
-            short: "",
-            units: Units.KiloPascals,
-            systemUid: entity.systemUid,
-            category: FieldCategory.Pressure
-        },
-        {
-            property: "flowRateLS",
-            title: "Peak Flow rate",
-            short: "Peak",
-            units: Units.LitersPerSecond,
-            systemUid: entity.systemUid,
-            category: FieldCategory.FlowRate
-        }
-    ];
+export function makeRiserCalculationFields(entity: RiserEntity, drawing: DrawingState): CalculationField[] {
+    const result: CalculationField[] = [];
+
+    const psdUnit = getPsdUnitName(drawing.metadata.calculationParams.psdMethod);
+
+    for (const lvlUid of Object.keys(drawing.levels)) {
+        result.push(
+            {
+                property: "heights." + lvlUid + ".pressureKPA",
+                title: "Pressure (kPa)",
+                short: "",
+                units: Units.KiloPascals,
+                systemUid: entity.systemUid,
+                category: FieldCategory.Pressure
+            },
+            {
+                property: "heights." + lvlUid + ".psdUnits",
+                title: psdUnit.name,
+                short: psdUnit.abbreviation,
+                units: Units.None,
+                systemUid: entity.systemUid,
+                category: FieldCategory.LoadingUnits
+            },
+            {
+                property: "heights." + lvlUid + ".flowRateLS",
+                title: "Flow Rate (L/s)",
+                short: "",
+                units: Units.KiloPascals,
+                systemUid: entity.systemUid,
+                category: FieldCategory.Pressure
+            },
+            {
+                property: "heights." + lvlUid + ".heightAboveGround",
+                title: "Height Above Ground (m)",
+                short: "",
+                units: Units.Meters,
+                systemUid: entity.systemUid,
+                category: FieldCategory.Height
+            }
+        );
+    }
+    return result;
 }
 
 export function emptyRiserCalculations(): RiserCalculation {
     return {
-        flowRateLS: null,
-        pressureKPA: null,
-        warning: null
+        warning: null,
+        heights: {}
     };
 }

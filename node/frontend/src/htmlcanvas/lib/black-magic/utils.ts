@@ -32,6 +32,7 @@ export function getConnectedFlowComponent(
             case EntityType.SYSTEM_NODE:
             case EntityType.RISER:
             case EntityType.LOAD_NODE:
+            case EntityType.FLOW_SOURCE:
             case EntityType.FITTING:
             case EntityType.DIRECTED_VALVE:
                 q.push(...objectStore.getConnections(o.entity.uid));

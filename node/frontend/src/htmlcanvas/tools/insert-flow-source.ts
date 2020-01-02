@@ -14,8 +14,9 @@ import { ConnectableEntityConcrete } from "../../../src/store/document/entities/
 import { addValveAndSplitPipe } from "../../../src/htmlcanvas/lib/black-magic/split-pipe";
 import { cloneSimple } from "../../../src/lib/utils";
 import { rebaseAll } from "../../../src/htmlcanvas/lib/black-magic/rebase-all";
+import FlowSourceEntity from "../../store/document/entities/flow-source-entity";
 
-export default function insertRiser(context: CanvasContext, system: FlowSystemParameters) {
+export default function insertFlowSource(context: CanvasContext, system: FlowSystemParameters) {
     const newUid = uuid();
     let toReplace: BackedDrawableObject<ConnectableEntityConcrete> | null = null;
     MainEventBus.$emit(
@@ -46,19 +47,15 @@ export default function insertRiser(context: CanvasContext, system: FlowSystemPa
 
                     let connections: string[] = [];
 
-                    const newEntity: RiserEntity = {
-                        bottomHeightM: null,
-                        topHeightM: null,
+                    const newEntity: FlowSourceEntity = {
                         center: cloneSimple(wc),
                         color: null,
-                        material: null,
-                        maximumVelocityMS: null,
                         calculationHeightM: null,
                         parentUid: null,
-                        diameterMM: null,
                         systemUid: system.uid,
-                        temperatureC: null,
-                        type: EntityType.RISER,
+                        type: EntityType.FLOW_SOURCE,
+                        heightAboveGroundM: null,
+                        pressureKPA: null,
                         uid: newUid
                     };
 
@@ -109,6 +106,7 @@ export default function insertRiser(context: CanvasContext, system: FlowSystemPa
             () => {
                 context.$store.dispatch("document/commit").then(() => {
                     // Notify the user that there's fields to select
+                    MainEventBus.$emit("select", { uid: newUid, property: "pressureKPA", recenter: false });
                 });
             },
             "Insert Flow Source"

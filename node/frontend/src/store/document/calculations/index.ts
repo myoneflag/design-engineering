@@ -11,6 +11,7 @@ export function isCalculated(e: DrawableEntityConcrete): e is CalculatableEntity
         case EntityType.FITTING:
         case EntityType.SYSTEM_NODE:
         case EntityType.BIG_VALVE:
+        case EntityType.FLOW_SOURCE:
         case EntityType.FIXTURE:
         case EntityType.LOAD_NODE:
             return true;

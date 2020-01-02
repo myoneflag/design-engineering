@@ -20,11 +20,9 @@ export default interface RiserEntity extends ConnectableEntity {
 
     diameterMM: number | null;
     maximumVelocityMS: number | null; // null means default
-    pressureSourceHeightM: number | null;
     material: string | null;
     color: Color | null;
     temperatureC: number | null;
-    pressureKPA: number | null;
 
     bottomHeightM: number | null;
     topHeightM: number | null;
@@ -40,28 +38,6 @@ export function makeRiserFields(materials: Choice[], systems: FlowSystemParamete
             type: FieldType.FlowSystemChoice,
             params: { systems },
             multiFieldId: "systemUid"
-        },
-
-        {
-            property: "pressureKPA",
-            title: "Pressure (kPA)",
-            hasDefault: false,
-            isCalculated: false,
-            requiresInput: true,
-            type: FieldType.Number,
-            params: { min: 0, max: null },
-            multiFieldId: "pressureKPA"
-        },
-
-        {
-            property: "pressureSourceHeightM",
-            title: "Source Height (m)",
-            hasDefault: false,
-            isCalculated: false,
-            requiresInput: true,
-            type: FieldType.Number,
-            params: { min: null, max: null },
-            multiFieldId: "pressureSourceHeightM"
         },
 
         {
@@ -156,13 +132,13 @@ export function fillRiserDefaults(doc: DocumentState, value: RiserEntity) {
             result.temperatureC = system.temperature;
         }
         if (result.bottomHeightM == null) {
-            result.bottomHeightM = result.pressureSourceHeightM || 0;
+            result.bottomHeightM = 0;
             Object.values(doc.drawing.levels).forEach((v) => {
                 result.bottomHeightM = Math.min(result.bottomHeightM!, v.floorHeightM);
             });
         }
         if (result.topHeightM == null) {
-            result.topHeightM = result.pressureSourceHeightM || 0;
+            result.topHeightM = 0;
             Object.values(doc.drawing.levels).forEach((v) => {
                 result.topHeightM = Math.max(result.topHeightM!, v.floorHeightM + LEVEL_HEIGHT_DIFF_M);
             });

@@ -157,6 +157,7 @@ export class AutoConnector {
                 case EntityType.RISER:
                 case EntityType.FITTING:
                 case EntityType.LOAD_NODE:
+                case EntityType.FLOW_SOURCE:
                 case EntityType.DIRECTED_VALVE:
                     this.unionFind.join(o.uid, o.uid);
                     break;
@@ -189,6 +190,7 @@ export class AutoConnector {
             }
         });
     }
+
     getEntityHeight(entity: DrawableEntityConcrete): [number, number] {
         if (this.entityHeightCache.has(entity.uid)) {
             return this.entityHeightCache.get(entity.uid)!;
@@ -207,6 +209,7 @@ export class AutoConnector {
                     ];
                 case EntityType.LOAD_NODE:
                     return [-Infinity, Infinity];
+                case EntityType.FLOW_SOURCE:
                 case EntityType.FITTING:
                 case EntityType.DIRECTED_VALVE:
                 case EntityType.SYSTEM_NODE:
@@ -239,7 +242,7 @@ export class AutoConnector {
         return (
             this.getEntityHeight(entity)[1] >
             this.context.document.drawing.metadata.calculationParams.ceilingPipeHeightM -
-                CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM / 1000
+            CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM / 1000
         );
     }
 
@@ -248,9 +251,10 @@ export class AutoConnector {
         return (
             min <=
             this.context.document.drawing.metadata.calculationParams.ceilingPipeHeightM +
-                CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM / 1000
+            CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM / 1000
         ); // && max >= 0; // leave that out 4 now
     }
+
     joinEntities(a: string, b: string, doit: boolean = true, cutoff?: number): number | null {
         const key = a < b ? a + b : b + a;
         this.calls++;
@@ -359,6 +363,7 @@ export class AutoConnector {
                         case EntityType.FITTING:
                         case EntityType.DIRECTED_VALVE:
                         case EntityType.PIPE:
+                        case EntityType.FLOW_SOURCE:
                         case EntityType.RISER:
                         case EntityType.LOAD_NODE:
                         case EntityType.SYSTEM_NODE:
@@ -785,6 +790,7 @@ export class AutoConnector {
             case EntityType.FITTING:
             case EntityType.PIPE:
             case EntityType.RISER:
+            case EntityType.FLOW_SOURCE:
             case EntityType.SYSTEM_NODE:
                 return entity.systemUid;
             case EntityType.DIRECTED_VALVE: {
@@ -830,6 +836,7 @@ export class AutoConnector {
         }
         return bestAns;
     }
+
     onDeleteEntity = ({ entity, levelUid }: EntityParam) => {
         this.deleted.add(entity.uid);
         if (entity.type === EntityType.PIPE) {
@@ -868,6 +875,7 @@ export class AutoConnector {
             }
         });
     }
+
     async autoConnect() {
         this.rig();
         this.calls = 0;
@@ -975,4 +983,3 @@ export interface Wall {
     source: Flatten.Point;
     line: Flatten.Line;
 }
-

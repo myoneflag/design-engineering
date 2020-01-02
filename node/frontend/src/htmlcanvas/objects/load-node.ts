@@ -139,7 +139,9 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         return [];
     }
 
-    rememberToRegister(): void { /**/ }
+    rememberToRegister(): void {
+        /**/
+    }
 
     collectCalculations(context: CalculationContext): LoadNodeCalculation {
         const calcEnts = this.getCalculationEntities(context);

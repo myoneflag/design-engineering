@@ -18,6 +18,8 @@ import { makeSystemNodeCalculationFields } from "../../src/store/document/calcul
 import { EPS } from "./pressure-drops";
 import { makeLoadNodeCalculationFields } from "../store/document/calculations/load-node-calculation";
 import { NodeType } from "../store/document/entities/load-node-entity";
+import { makeFlowSourceFields } from "../store/document/entities/flow-source-entity";
+import { makeFlowSourceCalculationFields } from "../store/document/calculations/flow-source-calculation";
 
 export interface PsdCountEntry {
     units: number;
@@ -87,6 +89,7 @@ export function countPsdUnits(
             case EntityType.FITTING:
             case EntityType.PIPE:
             case EntityType.RISER:
+            case EntityType.FLOW_SOURCE:
             case EntityType.SYSTEM_NODE:
             case EntityType.BIG_VALVE:
             case EntityType.DIRECTED_VALVE:
@@ -294,6 +297,8 @@ export function getFields(entity: DrawableEntityConcrete, doc: DocumentState, ca
             return makeSystemNodeCalculationFields(entity, doc.drawing);
         case EntityType.LOAD_NODE:
             return makeLoadNodeCalculationFields(entity);
+        case EntityType.FLOW_SOURCE:
+            return makeFlowSourceCalculationFields(entity, doc.drawing);
         case EntityType.BACKGROUND_IMAGE:
             return [];
     }

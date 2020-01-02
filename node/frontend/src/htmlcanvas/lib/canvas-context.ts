@@ -7,7 +7,7 @@ import { Store } from "vuex";
 import { RootState } from "../../../src/store/types";
 import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
 import HydraulicsLayer from "../../../src/htmlcanvas/layers/hydraulics-layer";
-import { DrawingContext} from "../../../src/htmlcanvas/lib/types";
+import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import { Catalog } from "../../../src/store/catalog/types";
 import { ViewPort } from "../../../src/htmlcanvas/viewport";
 import { DrawableEntityConcrete } from "../../../src/store/document/entities/concrete-entity";

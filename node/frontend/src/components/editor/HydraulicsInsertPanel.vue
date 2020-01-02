@@ -9,6 +9,13 @@
                     :disabled="isDrawing"
                 />
                 <b-button
+                        variant="outline-dark"
+                        class="insertBtn flowsource btn-sm"
+                        @click="$emit('insert', { entityName: entityNames.FLOW_SOURCE, system: selectedSystem })"
+                        v-b-tooltip.hover
+                        title="Flow Source"
+                ></b-button>
+                <b-button
                     variant="outline-dark"
                     class="insertBtn riser btn-sm"
                     @click="$emit('insert', { entityName: entityNames.RISER, system: selectedSystem })"
@@ -19,9 +26,10 @@
                 <b-button
                     variant="outline-dark"
                     class="insertBtn return btn-sm"
-                    @click="$emit('insert', { entityName: entityNames.FLOW_RETURN, system: selectedSystem })"
+                    :disabled="true"
+                    @click="$emit('insert', { entityName: entityNames.RETURN, system: selectedSystem })"
                     v-b-tooltip.hover
-                    title="Flow Return"
+                    title="Return"
                     ><v-icon name="arrow-down" scale="1.2"
                 /></b-button>
                 <b-button
@@ -351,6 +359,13 @@ export default class HydraulicsInsertPanel extends Vue {
 .insertBtn.rpzd-hot-cold {
     background-image: url("../../../src/assets/object-icons/big-valves/hot-cold-rpzd.png");
     background-size: 35px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.insertBtn.flowsource {
+    background-image: url("../../../src/assets/object-icons/pipework/flow-source.png");
+    background-size: 25px;
     background-repeat: no-repeat;
     background-position: center;
 }

@@ -1,7 +1,7 @@
 export enum EntityType {
     BACKGROUND_IMAGE = "BACKGROUND_IMAGE",
     RISER = "RISER",
-    FLOW_RETURN = "FLOW_RETURN",
+    RETURN = "FLOW_RETURN",
     PIPE = "PIPE",
     FITTING = "FITTING",
 
@@ -12,7 +12,9 @@ export enum EntityType {
     FIXTURE = "FIXTURE",
 
     DIRECTED_VALVE = "DIRECTED_VALVE",
-    LOAD_NODE = "LOAD_NODE"
+    LOAD_NODE = "LOAD_NODE",
+
+    FLOW_SOURCE = "FLOW_SOURCE"
 }
 
 export function getEntityName(type: EntityType): string {
@@ -21,7 +23,7 @@ export function getEntityName(type: EntityType): string {
             return "Background";
         case EntityType.RISER:
             return "Riser";
-        case EntityType.FLOW_RETURN:
+        case EntityType.RETURN:
             return "Return";
         case EntityType.PIPE:
             return "Pipe";
@@ -37,5 +39,7 @@ export function getEntityName(type: EntityType): string {
             return "Valve";
         case EntityType.LOAD_NODE:
             return "Load Node";
+        case EntityType.FLOW_SOURCE:
+            return "Flow Source";
     }
 }

@@ -152,22 +152,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         to: FlowNode,
         signed: boolean
     ): number {
-        let sign = 1;
-        if (flowLS < 0) {
-            const oldFrom = from;
-            to = oldFrom;
-            flowLS = -flowLS;
-            if (signed) {
-                sign = -1;
-            }
-        }
-
-        // Avoid backflow
-        if (to.connection === SELF_CONNECTION) {
-            return sign * (1e10 + flowLS);
-        } else {
-            return 0;
-        }
+        throw new Error("This entity shouldn't be part of calculations");
     }
 
     prepareDelete(): BaseBackedObject[] {
@@ -188,35 +173,10 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
 
     getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[] {
         const tower = this.getCalculationTower(context);
-        const se = cloneSimple(this.entity);
-        se.uid += ".calculation";
-        se.calculationHeightM = se.pressureSourceHeightM;
-
-        if (tower.length === 0) {
-            return [se];
-        }
-
         // Insert a flow source into the group somewhere to simulate the riser.
         // TODO: Use a separate flow source entity in the future.
 
-        // KISS. Just plop it at the bottom. This will be incorrect if the riser is above the lowest floor.
-        // We will release with dedicated flow source instead.
-        const pe: PipeEntity = {
-            color: null,
-            diameterMM: null,
-            endpointUid: [se.uid, tower[0][0].uid],
-            heightAboveFloorM: 0,
-            lengthM: null,
-            material: null,
-            maximumVelocityMS: null,
-            parentUid: null,
-            network: NetworkType.RISERS,
-            systemUid: this.entity.systemUid,
-            type: EntityType.PIPE,
-            uid: this.uid + ".-1.p"
-        };
-
-        return [se, pe, ...tower.flat()];
+        return [...tower.flat()];
     }
 
     collectCalculations(context: CalculationContext): RiserCalculation {
@@ -224,23 +184,11 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
 
         // explicitly create this to help with refactors
         const res: RiserCalculation = {
-            flowRateLS: calc.flowRateLS,
-            pressureKPA: calc.pressureKPA, // TODO: differentiate this in different levels
+            heights: {},
             warning: calc.warning
         };
 
-        const tower = this.getCalculationTower(context);
-
-        if (this.getCalculationConnectionGroups(context).flat().length === 2) {
-            // that's fine
-        } else {
-            res.flowRateLS = null;
-        }
-
-        tower.forEach(([v, p]) => {
-            res.warning = res.warning || context.globalStore.getOrCreateCalculation(v).warning;
-        });
-
+        // TODO:
         return res;
     }
 }

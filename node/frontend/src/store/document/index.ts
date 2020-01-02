@@ -26,8 +26,9 @@ export function isConnectable(type: EntityType): boolean {
         case EntityType.FITTING:
         case EntityType.SYSTEM_NODE:
         case EntityType.RISER:
-        case EntityType.FLOW_RETURN:
+        case EntityType.RETURN:
         case EntityType.DIRECTED_VALVE:
+        case EntityType.FLOW_SOURCE:
         case EntityType.LOAD_NODE:
             return true;
         case EntityType.BIG_VALVE:
@@ -48,9 +49,10 @@ export function isCentered(type: EntityType): boolean {
         case EntityType.FITTING:
         case EntityType.SYSTEM_NODE:
         case EntityType.RISER:
-        case EntityType.FLOW_RETURN:
+        case EntityType.RETURN:
         case EntityType.BIG_VALVE:
         case EntityType.FIXTURE:
+        case EntityType.FLOW_SOURCE:
         case EntityType.LOAD_NODE:
         case EntityType.DIRECTED_VALVE:
             return true;
@@ -61,19 +63,21 @@ export function isCentered(type: EntityType): boolean {
     assertUnreachable(type);
 }
 
+// Higher priority gets replaced less
 export function getDragPriority(type: EntityType): number {
     switch (type) {
         case EntityType.SYSTEM_NODE:
         case EntityType.LOAD_NODE:
             return 100;
+        case EntityType.FLOW_SOURCE:
+            return 50;
         case EntityType.DIRECTED_VALVE:
             return 30;
         case EntityType.RISER:
+        case EntityType.RETURN:
             return 10;
         case EntityType.FITTING:
             return 5;
-        case EntityType.FLOW_RETURN:
-            return 0;
         case EntityType.BIG_VALVE:
         case EntityType.FIXTURE:
         case EntityType.BACKGROUND_IMAGE:

@@ -7,7 +7,8 @@ export enum FieldCategory {
     Size,
     Temperature,
     LoadingUnits,
-    FixtureUnits
+    FixtureUnits,
+    Height
 }
 
 export enum Units {

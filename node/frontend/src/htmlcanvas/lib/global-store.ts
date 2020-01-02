@@ -15,21 +15,30 @@ import RiserEntity from "../../store/document/entities/riser-entity";
 import RiserCalculation, { emptyRiserCalculations } from "../../store/document/calculations/riser-calculation";
 import BigValveEntity, { SystemNodeEntity } from "../../store/document/entities/big-valve/big-valve-entity";
 // tslint:disable-next-line:max-line-length
-import BigValveCalculation, { EmptyBigValveCalculations } from "../../store/document/calculations/big-valve-calculation";
+import BigValveCalculation, {
+    EmptyBigValveCalculations
+} from "../../store/document/calculations/big-valve-calculation";
 import FittingEntity from "../../store/document/entities/fitting-entity";
 import FittingCalculation, { emptyFittingCalculation } from "../../store/document/calculations/fitting-calculation";
 import FixtureEntity from "../../store/document/entities/fixtures/fixture-entity";
 import FixtureCalculation, { emptyFixtureCalculation } from "../../store/document/calculations/fixture-calculation";
 import DirectedValveEntity from "../../store/document/entities/directed-valves/directed-valve-entity";
 // tslint:disable-next-line:max-line-length
-import DirectedValveCalculation, { emptyDirectedValveCalculation } from "../../store/document/calculations/directed-valve-calculation";
+import DirectedValveCalculation, {
+    emptyDirectedValveCalculation
+} from "../../store/document/calculations/directed-valve-calculation";
 // tslint:disable-next-line:max-line-length
-import SystemNodeCalculation, { emptySystemNodeCalculation } from "../../store/document/calculations/system-node-calculation";
+import SystemNodeCalculation, {
+    emptySystemNodeCalculation
+} from "../../store/document/calculations/system-node-calculation";
 import LoadNodeEntity from "../../store/document/entities/load-node-entity";
 import LoadNodeCalculation from "../../store/document/calculations/load-node-calculation";
 import { cloneSimple } from "../../lib/utils";
 import Pipe from "../objects/pipe";
 import { ObjectStore } from "./object-store";
+import FlowSourceEntity from "../../store/document/entities/flow-source-entity";
+import FlowSourceCalculation, { emptyFlowSourceCalculation } from "../../store/document/calculations/flow-source-calculation";
+import { assertUnreachable } from "../../config";
 
 export class GlobalStore extends ObjectStore {
     entitiesInLevel = new Map<string | null, Set<string>>();
@@ -121,6 +130,7 @@ export class GlobalStore extends ObjectStore {
     getOrCreateCalculation(entity: DirectedValveEntity): DirectedValveCalculation;
     getOrCreateCalculation(entity: SystemNodeEntity): SystemNodeCalculation;
     getOrCreateCalculation(entity: LoadNodeEntity): LoadNodeCalculation;
+    getOrCreateCalculation(entity: FlowSourceEntity): FlowSourceCalculation;
     getOrCreateCalculation(entity: CalculatableEntityConcrete): CalculationConcrete;
 
     getOrCreateCalculation(entity: CalculatableEntityConcrete): CalculationConcrete {
@@ -150,6 +160,11 @@ export class GlobalStore extends ObjectStore {
                 case EntityType.LOAD_NODE:
                     this.calculationStore.set(entity.uid, cloneSimple(emptySystemNodeCalculation()));
                     break;
+                case EntityType.FLOW_SOURCE:
+                    this.calculationStore.set(entity.uid, cloneSimple(emptyFlowSourceCalculation()));
+                    break;
+                default:
+                    assertUnreachable(entity);
             }
         }
 
@@ -164,6 +179,7 @@ export class GlobalStore extends ObjectStore {
     getCalculation(entity: DirectedValveEntity): DirectedValveCalculation | undefined;
     getCalculation(entity: SystemNodeEntity): SystemNodeCalculation | undefined;
     getCalculation(entity: LoadNodeEntity): LoadNodeCalculation | undefined;
+    getCalculation(entity: FlowSourceEntity): FlowSourceCalculation | undefined;
     getCalculation(entity: CalculatableEntityConcrete): CalculationConcrete | undefined;
 
     getCalculation(entity: CalculatableEntityConcrete): CalculationConcrete | undefined {
@@ -196,9 +212,9 @@ export class GlobalStore extends ObjectStore {
                 if (this.get(e.uid)!.entity !== e) {
                     throw new Error(
                         "entity in document " +
-                        JSON.stringify(e) +
-                        " not in sync with us " +
-                        JSON.stringify(this.get(e.uid)!.entity)
+                            JSON.stringify(e) +
+                            " not in sync with us " +
+                            JSON.stringify(this.get(e.uid)!.entity)
                     );
                 }
             });
@@ -212,9 +228,9 @@ export class GlobalStore extends ObjectStore {
             if (this.get(e.uid)!.entity !== e) {
                 throw new Error(
                     "entity in document " +
-                    JSON.stringify(e) +
-                    " not in sync with us " +
-                    JSON.stringify(this.get(e.uid)!.entity)
+                        JSON.stringify(e) +
+                        " not in sync with us " +
+                        JSON.stringify(this.get(e.uid)!.entity)
                 );
             }
         });
@@ -265,9 +281,9 @@ export class GlobalStore extends ObjectStore {
                     const co = this.get(euid);
                     throw new Error(
                         "connection inconsistency in connectable " +
-                        JSON.stringify(co ? co.entity : undefined) +
-                        " to pipe " +
-                        JSON.stringify(p.entity)
+                            JSON.stringify(co ? co.entity : undefined) +
+                            " to pipe " +
+                            JSON.stringify(p.entity)
                     );
                 }
             });
@@ -284,11 +300,11 @@ export class GlobalStore extends ObjectStore {
                     if (!this.connections.get(euid)!.includes(o.entity.uid)) {
                         throw new Error(
                             "connection inconsistency in pipe " +
-                            JSON.stringify(o.entity) +
-                            " to connectable " +
-                            euid +
-                            " with connections " +
-                            JSON.stringify(this.connections.get(euid))
+                                JSON.stringify(o.entity) +
+                                " to connectable " +
+                                euid +
+                                " with connections " +
+                                JSON.stringify(this.connections.get(euid))
                         );
                     }
                 });
