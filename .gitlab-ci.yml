@@ -5,7 +5,6 @@ variables:
 
 stages:
     - build
-    - test
 
 cache:
     paths:
@@ -36,10 +35,10 @@ build:common:
         - npm install
 
 
-test:frontend:
-    stage: test
-    image: node:latest
-    script: 
-        - cd node/frontend/
-        - npm run test:unit
+#test:frontend:
+#    stage: test
+#    image: node:latest
+#    script: 
+#        - cd node/frontend/
+#        - npm run test:unit
 

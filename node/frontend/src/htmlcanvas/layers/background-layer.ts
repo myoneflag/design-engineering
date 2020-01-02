@@ -1,63 +1,111 @@
-import {LayerImplementation, SelectMode} from '../../../src/htmlcanvas/layers/layer';
-import {CalculationFilters, Coord, DocumentState, DrawableEntity} from '../../../src/store/document/types';
-import {BackgroundImage} from '../../../src/htmlcanvas/objects/background-image';
-import {ResizeControl} from '../../../src/htmlcanvas/objects/resize-control';
-import {MouseMoveResult} from '../../../src/htmlcanvas/types';
-import {ToolConfig} from '../../../src/store/tools/types';
-import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
-import {DrawingContext, ObjectStore} from '../../../src/htmlcanvas/lib/types';
-import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
-import {DrawableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
+import { LayerImplementation, SelectMode } from "../../../src/htmlcanvas/layers/layer";
+import { CalculationFilters, Coord, DocumentState, DrawableEntity } from "../../../src/store/document/types";
+import { BackgroundImage } from "../../../src/htmlcanvas/objects/background-image";
+import { ResizeControl } from "../../../src/htmlcanvas/objects/resize-control";
+import { MouseMoveResult } from "../../../src/htmlcanvas/types";
+import { ToolConfig } from "../../../src/store/tools/types";
+import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
+import { DrawingContext} from "../../../src/htmlcanvas/lib/types";
+import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
+import { DrawableEntityConcrete } from "../../../src/store/document/entities/concrete-entity";
+import { EntityType } from "../../store/document/entities/types";
+import { BackgroundEntity } from "../../store/document/entities/background-entity";
+import { cooperativeYield } from "../utils";
+import { ObjectStore } from "../lib/object-store";
 
 export default class BackgroundLayer extends LayerImplementation {
     resizeBox: ResizeControl | null = null;
 
-    draw(context: DrawingContext, active: boolean, selectedTool: ToolConfig) {
+    async draw(
+        context: DrawingContext,
+        active: boolean,
+        shouldContinue: () => boolean,
+        reactive: Set<string>,
+        selectedTool: ToolConfig
+    ) {
         // draw selected one on top.
-        this.uidsInOrder.forEach((selectId) => {
+        // tslint:disable-next-line:prefer-for-of
+        for (let i = 0; i < this.uidsInOrder.length; i++) {
+            const selectId = this.uidsInOrder[i];
             const background = this.objectStore.get(selectId);
             if (background && background instanceof BackgroundImage) {
                 if (!this.isSelected(selectId) || !active || !background.hasDragged) {
-                    background.draw(
-                        context,
-                        {
-                            selected: this.isSelected(selectId),
-                            active: active && !selectedTool.focusSelectedObject,
-                            calculationFilters: null,
-                        },
-                    );
+                    background.draw(context, {
+                        selected: this.isSelected(selectId),
+                        active: active && !selectedTool.focusSelectedObject,
+                        calculationFilters: null
+                    });
                 }
             } else {
-                throw new Error('Expected background image, got ' + JSON.stringify(background) + ' instead');
+                throw new Error("Expected background image, got " + JSON.stringify(background) + " instead");
             }
-        });
+            await cooperativeYield(shouldContinue);
+        }
 
         if (active) {
-            this.uidsInOrder.forEach((selectId) => {
+            // tslint:disable-next-line:prefer-for-of
+            for (let i = 0; i < this.uidsInOrder.length; i++) {
+                const selectId = this.uidsInOrder[i];
                 const background = this.objectStore.get(selectId);
-                if (background && background instanceof BackgroundImage
-                    && this.isSelected(background)
-                    && (background.hasDragged || selectedTool.focusSelectedObject)) {
-                    background.draw(
-                        context,
-                        {selected: this.isSelected(selectId), active, calculationFilters: null},
-                    );
+                if (
+                    background &&
+                    background instanceof BackgroundImage &&
+                    this.isSelected(background) &&
+                    (background.hasDragged || selectedTool.focusSelectedObject)
+                ) {
+                    background.draw(context, { selected: this.isSelected(selectId), active, calculationFilters: null });
                 }
-            });
+                await cooperativeYield(shouldContinue);
+            }
         }
     }
+    select(objects: BaseBackedObject[] | string[], mode: SelectMode): void {
+        super.select(objects, mode);
 
-    update(doc: DocumentState) {
+        this.updateSelectionBox();
+    }
+
+    addEntity(entity: () => DrawableEntityConcrete): void {
+        super.addEntity(entity);
+    }
+
+    deleteEntity(entity: DrawableEntityConcrete) {
+        if (this.isSelected(entity.uid)) {
+            this.resizeBox = null;
+        }
+        super.deleteEntity(entity);
+    }
+
+    resetDocument(doc: DocumentState) {
+        let entities: DrawableEntityConcrete[] = [];
+        if (doc.uiState.levelUid) {
+            if (!doc.drawing.levels[doc.uiState.levelUid]) {
+                throw new Error("level " + doc.uiState.levelUid + " doesn't exist " + JSON.stringify(doc));
+            }
+            entities = Object.values(doc.drawing.levels[doc.uiState.levelUid].entities);
+        }
+
         this.resizeBox = null; // We regenerate this if needed.
 
         const existingSids: string[] = [];
 
-        for (const background of doc.drawing.backgrounds) {
+        for (const entity of entities) {
+            if (entity.type !== EntityType.BACKGROUND_IMAGE) {
+                continue;
+            }
+
+            const background = entity;
+
             if (!this.objectStore.has(background.uid)) {
+                const entityLvlUid = doc.uiState.levelUid;
                 const obj: BackgroundImage = new BackgroundImage(
+                    undefined,
                     this.objectStore,
                     this,
-                    background,
+                    () =>
+                        (entityLvlUid
+                            ? doc.drawing.levels[entityLvlUid].entities[entity.uid]
+                            : doc.drawing.shared[entity.uid]) as BackgroundEntity,
                     (event) => {
                         this.select([background.uid], event.ctrlKey ? SelectMode.Toggle : SelectMode.Replace);
                         this.updateSelectionBox();
@@ -65,24 +113,14 @@ export default class BackgroundLayer extends LayerImplementation {
                     },
                     () => {
                         this.updateSelectionBox();
-                        this.onChange();
+                        this.onChange([entity.uid]);
                     },
                     () => {
                         this.onCommit(obj.entity);
-                    },
+                    }
                 );
                 this.objectStore.set(background.uid, obj);
                 this.uidsInOrder.push(background.uid);
-            } else {
-                const obj = this.objectStore.get(background.uid)!;
-                if (obj instanceof BackgroundImage) {
-                    obj.refreshObject(background);
-                    if (this.isSelected(background.uid)) {
-                        this.onSelect();
-                    }
-                } else {
-                    throw new Error('Expected background object but got ' + JSON.stringify(background));
-                }
             }
 
             existingSids.push(background.uid);
@@ -98,7 +136,6 @@ export default class BackgroundLayer extends LayerImplementation {
                 }
                 toDelete.push(selectId);
             }
-
         });
         toDelete.forEach((s) => this.objectStore.delete(s));
 
@@ -114,12 +151,12 @@ export default class BackgroundLayer extends LayerImplementation {
                 this.resizeBox = new ResizeControl(
                     background,
                     this,
-                    () =>  this.onSelectedResize(),
+                    () => this.onSelectedResize(),
                     () => {
                         // Do deh operation transform.
                         // TODO: Deh operation transform
                         this.onCommit(background.entity);
-                    },
+                    }
                 );
             }
         });
@@ -128,18 +165,14 @@ export default class BackgroundLayer extends LayerImplementation {
     // This is when our guy resizes
     onSelectedResize() {
         if (this.selectedIds) {
-            this.onChange();
+            this.onChange(this.selectedIds);
         }
     }
 
-    drawSelectionLayer(
-        context: DrawingContext,
-        interactive: DrawableEntity[] | null,
-    ) {
+    drawReactiveLayer(context: DrawingContext, interactive: string[]) {
         if (this.resizeBox) {
-            this.resizeBox.draw(context, {active: true, selected: true, calculationFilters: null});
+            this.resizeBox.draw(context, { active: true, selected: true, calculationFilters: null });
         }
-
     }
 
     getBackgroundAt(worldCoord: Coord) {
@@ -152,7 +185,7 @@ export default class BackgroundLayer extends LayerImplementation {
                         return background;
                     }
                 } else {
-                    throw new Error('Exepected background image, got' + JSON.stringify(background) + 'instead');
+                    throw new Error("Exepected background image, got" + JSON.stringify(background) + "instead");
                 }
             }
         }
@@ -179,7 +212,6 @@ export default class BackgroundLayer extends LayerImplementation {
 
         return super.onMouseMove(event, context);
     }
-
 
     onMouseUp(event: MouseEvent, context: CanvasContext) {
         if (this.resizeBox) {

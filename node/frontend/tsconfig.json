@@ -9,7 +9,6 @@
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "sourceMap": true,
     "baseUrl": ".",
     "types": [
       "webpack-env",
@@ -18,7 +17,7 @@
     ],
     "emitDecoratorMetadata": true,
     "paths": {
-      "typeorm": ["./src/typeorm.ts"]
+      "typeorm": ["./src/typeorm.d.ts"]
     },
     "lib": [
       "esnext",
@@ -32,9 +31,7 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
-    "src/**/*.vue",
-    "tests/**/*.ts",
-    "tests/**/*.tsx"
+    "src/**/*.vue"
   ],
   "exclude": [
     "node_modules"

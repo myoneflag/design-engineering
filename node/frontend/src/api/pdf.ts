@@ -1,6 +1,6 @@
-import axios from 'axios';
-import {PaperSize} from "../../../common/src/paper-config";
-import {APIResult} from "../../../common/src/api/types";
+import axios from "axios";
+import { PaperSize } from "../../../common/src/paper-config";
+import { APIResult } from "../../../common/src/api/types";
 
 export interface PDFRenderResult {
     scaleName: string;
@@ -12,14 +12,16 @@ export interface PDFRenderResult {
 
 export const renderPdf = async (file: File): Promise<APIResult<PDFRenderResult>> => {
     const formData = new FormData();
-    formData.append('pdf', file);
+    formData.append("pdf", file);
 
     try {
-        return (await axios.post('/api/uploadPdf', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        })).data;
+        return (
+            await axios.post("/api/uploadPdf", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data"
+                }
+            })
+        ).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };

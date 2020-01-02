@@ -32,7 +32,7 @@ export function shouldBehaveLikeLayer(layer: Layer, canvas: CanvasContext) {
     beforeEach (() => {
         layer.select([], SelectMode.Replace);
         canvas.document = createExampleDocument();
-        layer.update(canvas.document);
+        layer.resetDocument(canvas.document);
     });
 
     it ('should clear its selection', () => {
@@ -97,6 +97,6 @@ export function shouldBehaveLikeLayer(layer: Layer, canvas: CanvasContext) {
 
     afterEach (() => {
         layer.select([], SelectMode.Replace);
-        layer.update(initialDocumentState);
+        layer.resetDocument(initialDocumentState);
     });
 }

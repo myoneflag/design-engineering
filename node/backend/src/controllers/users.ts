@@ -87,14 +87,6 @@ export class UserController {
                     seenUsernames.add(u.username);
                     return u.reload();
                 }));
-
-                // and admins + managers
-                (await User.find({where: {accessLevel: LessThanOrEqual(AccessLevel.ADMIN)}, relations: ['organization']})).forEach((u) => {
-                    if (!seenUsernames.has(u.username)) {
-                        result.push(u);
-                        seenUsernames.add(u.username);
-                    }
-                });
             }
         } else {
             result = await User.find({relations: ['organization']});
@@ -132,7 +124,11 @@ export class UserController {
             let newOrg: Organization | undefined = undefined;
             if (organization) {
                 let success = false;
-                await withOrganization(organization, res, session, AccessType.UPDATE, async (orgTo) => {
+                let accessType = AccessType.UPDATE;
+                if (user.organization && user.organization.id === organization) {
+                    accessType = AccessType.READ;
+                }
+                await withOrganization(organization, res, session, accessType, async (orgTo) => {
                     newOrg = orgTo;
                     success = true;
                 });

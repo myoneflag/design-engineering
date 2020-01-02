@@ -1,5 +1,5 @@
-import {Matrix} from 'transformation-matrix';
-import Flatten from '@flatten-js/core';
+import { Matrix } from "transformation-matrix";
+import Flatten from "@flatten-js/core";
 
 export interface Transformation {
     tx: number;
@@ -10,7 +10,7 @@ export interface Transformation {
 }
 
 export const parseScale = (repr: string) => {
-    const match = repr.match('^([0-9]+):([0-9]+)$');
+    const match = repr.match("^([0-9]+):([0-9]+)$");
     if (match) {
         const [, l, r] = match;
         return parseInt(l, 10) / parseInt(r, 10);
@@ -29,7 +29,7 @@ export const decomposeMatrix = (mat: Matrix): Transformation => {
         ty: mat.f,
         sx: (mat.a >= 0 ? 1 : -1) * Math.sqrt(mat.a * mat.a + mat.c * mat.c),
         sy: (mat.d >= 0 ? 1 : -1) * Math.sqrt(mat.b * mat.b + mat.d * mat.d),
-        a: Math.atan2(mat.b, mat.d),
+        a: Math.atan2(mat.b, mat.d)
     };
 };
 
@@ -153,7 +153,7 @@ export enum KeyCode {
     BACK_SLASH = 220,
     CLOSE_BRACKET = 221,
     QUOTE = 222,
-    META = 224,
+    META = 224
 }
 
 export function keycodeToImgName(keyCode: KeyCode): string {
@@ -180,50 +180,50 @@ export function keycodeToImgName(keyCode: KeyCode): string {
         case KeyCode.F23:
         case KeyCode.F24:
         case KeyCode.META:
-            throw new Error('wtf');
+            throw new Error("wtf");
         case KeyCode.BACK_SPACE:
-            return 'backspace';
+            return "backspace";
         case KeyCode.TAB:
-            return 'tab';
+            return "tab";
         case KeyCode.ENTER:
         case KeyCode.RETURN:
-            return 'enter';
+            return "enter";
         case KeyCode.SHIFT:
-            return 'shift';
+            return "shift";
         case KeyCode.CONTROL:
-            return 'ctrl';
+            return "ctrl";
         case KeyCode.ALT:
-            return 'alt';
+            return "alt";
         case KeyCode.PAUSE:
-            return 'pause';
+            return "pause";
         case KeyCode.CAPS_LOCK:
-            return 'capslock';
+            return "capslock";
         case KeyCode.ESCAPE:
-            return 'esc';
+            return "esc";
         case KeyCode.SPACE:
-            return 'spacebar';
+            return "spacebar";
         case KeyCode.PAGE_UP:
-            return 'page-up';
+            return "page-up";
         case KeyCode.PAGE_DOWN:
-            return 'page-down';
+            return "page-down";
         case KeyCode.END:
-            return 'end';
+            return "end";
         case KeyCode.HOME:
-            return 'home';
+            return "home";
         case KeyCode.LEFT:
-            return 'cursor-left';
+            return "cursor-left";
         case KeyCode.UP:
-            return 'cursor-up';
+            return "cursor-up";
         case KeyCode.RIGHT:
-            return 'cursor-right';
+            return "cursor-right";
         case KeyCode.DOWN:
-            return 'cursor-down';
+            return "cursor-down";
         case KeyCode.PRINTSCREEN:
-            return 'print';
+            return "print";
         case KeyCode.INSERT:
-            return 'insert';
+            return "insert";
         case KeyCode.DELETE:
-            return 'delete';
+            return "delete";
         case KeyCode.NUM_0:
         case KeyCode.NUM_1:
         case KeyCode.NUM_2:
@@ -236,9 +236,9 @@ export function keycodeToImgName(keyCode: KeyCode): string {
         case KeyCode.NUM_9:
             return (keyCode - KeyCode.NUM_0).toString();
         case KeyCode.SEMICOLON:
-            return 'semicolon-dble';
+            return "semicolon-dble";
         case KeyCode.EQUALS:
-            return 'equals-plus';
+            return "equals-plus";
         case KeyCode.A:
         case KeyCode.B:
         case KeyCode.C:
@@ -265,9 +265,9 @@ export function keycodeToImgName(keyCode: KeyCode): string {
         case KeyCode.X:
         case KeyCode.Y:
         case KeyCode.Z:
-            return String.fromCharCode(keyCode - KeyCode.A + 'a'.charCodeAt(0));
+            return String.fromCharCode(keyCode - KeyCode.A + "a".charCodeAt(0));
         case KeyCode.CONTEXT_MENU:
-            return 'context-menu';
+            return "context-menu";
         case KeyCode.NUMPAD0:
         case KeyCode.NUMPAD1:
         case KeyCode.NUMPAD2:
@@ -278,7 +278,7 @@ export function keycodeToImgName(keyCode: KeyCode): string {
         case KeyCode.NUMPAD7:
         case KeyCode.NUMPAD8:
         case KeyCode.NUMPAD9:
-            return 'keypad-' + (keyCode - KeyCode.NUMPAD0);
+            return "keypad-" + (keyCode - KeyCode.NUMPAD0);
         case KeyCode.F1:
         case KeyCode.F2:
         case KeyCode.F3:
@@ -291,40 +291,49 @@ export function keycodeToImgName(keyCode: KeyCode): string {
         case KeyCode.F10:
         case KeyCode.F11:
         case KeyCode.F12:
-            return 'f' + (keyCode + 1 - KeyCode.F1);
+            return "f" + (keyCode + 1 - KeyCode.F1);
         case KeyCode.NUM_LOCK:
-            return 'num-lock';
+            return "num-lock";
         case KeyCode.SCROLL_LOCK:
-            return 'scroll-lock';
+            return "scroll-lock";
         case KeyCode.COMMA:
-            return 'comma';
+            return "comma";
         case KeyCode.PERIOD:
-            return 'period-gt';
+            return "period-gt";
         case KeyCode.SLASH:
-            return 'slash-questionmark';
+            return "slash-questionmark";
         case KeyCode.BACK_QUOTE:
-            return 'apostroph';
+            return "apostroph";
         case KeyCode.OPEN_BRACKET:
-            return 'bracket-open';
+            return "bracket-open";
         case KeyCode.BACK_SLASH:
-            return 'backslash';
+            return "backslash";
         case KeyCode.CLOSE_BRACKET:
-            return 'closebracket';
+            return "closebracket";
         case KeyCode.QUOTE:
-            return 'comma';
+            return "comma";
     }
 }
 
 const imgStore: Map<string, HTMLImageElement> = new Map<string, HTMLImageElement>();
 
-export const warningSignImg = new Image();
-warningSignImg.src = require('../assets/warning-sign.svg');
+export let warningSignImg: HTMLImageElement;
+
+export function getWarningSignImg() {
+    if (warningSignImg === undefined) {
+        warningSignImg = new Image();
+        warningSignImg.src = require("../assets/warning-sign.svg");
+    }
+    return warningSignImg;
+}
+// @ts-ignore
 
 export function keyCode2Image(keyCode: KeyCode): HTMLImageElement {
     const name = keycodeToImgName(keyCode);
     if (!imgStore.has(name)) {
         const img = new Image();
-        img.src = require('../assets/keyboard-keys/' + name + '.png');
+        // @ts-ignore
+        img.src = require("../assets/keyboard-keys/" + name + ".png");
         imgStore.set(name, img);
     }
     return imgStore.get(name)!;
@@ -333,7 +342,7 @@ export function keyCode2Image(keyCode: KeyCode): HTMLImageElement {
 export function polygonsOverlap(a: Flatten.Polygon, b: Flatten.Polygon) {
     let found = false;
     a.edges.forEach((s: Flatten.Segment) => {
-        if (!found && b.contains((s.start))) {
+        if (!found && b.contains(s.start)) {
             found = true;
         }
     });
@@ -346,7 +355,7 @@ export function polygonsOverlap(a: Flatten.Polygon, b: Flatten.Polygon) {
 
     return found;
 }
-export function polygonOverlapsShape(a: Flatten.Polygon, shape: Flatten.Shape) {
+export function polygonOverlapsShapeApprox(a: Flatten.Polygon, shape: Flatten.Shape) {
     if (shape instanceof Flatten.Polygon) {
         return polygonsOverlap(a, shape);
     } else if (shape instanceof Flatten.Segment) {
@@ -355,11 +364,14 @@ export function polygonOverlapsShape(a: Flatten.Polygon, shape: Flatten.Shape) {
         // (un)fortunately, flatten reports distance of point to polygon's edge, not face which
         // means that there is a >0 distance even if the point is inside the face. Which is
         // what we need here.
-        return a.contains(shape.center) || a.distanceTo(shape)[0] <= shape.r;
+        // We could be more accurate with || a.distanceTo(shape)[0] <= shape.r but it is super slow,
+        // and this is only ever used by the layout engine for rendering messages against fitting shapes
+        // so we'll let it pass.
+        return a.contains(shape.center);
     } else if (shape instanceof Flatten.Point) {
         return a.contains(shape);
     } else {
-        throw new Error('Unknown shape type');
+        throw new Error("Unknown shape type");
     }
 }
 
@@ -370,23 +382,23 @@ export function wrapText(
     y: number,
     maxWidth: number,
     lineHeight: number,
-    measure: boolean = false,
+    measure: boolean = false
 ): number {
-    const words = text.split(' ');
-    let line = '';
+    const words = text.split(" ");
+    let line = "";
     let lines = 1;
 
     for (let n = 0; n < words.length; n++) {
-        const testLine = line + words[n] + ' ';
+        const testLine = line + words[n] + " ";
         const metrics = context.measureText(testLine);
         const testWidth = metrics.width;
         if (testWidth > maxWidth && n > 0) {
             if (!measure) {
                 context.fillText(line, x, y);
             }
-            line = words[n] + ' ';
+            line = words[n] + " ";
             y += lineHeight;
-            lines ++;
+            lines++;
         } else {
             line = testLine;
         }
@@ -395,4 +407,19 @@ export function wrapText(
         context.fillText(line, x, y);
     }
     return lines * lineHeight;
+}
+
+export class InterruptedError extends Error {
+    /**/
+}
+
+export function cooperativeYield(shouldContinue?: () => boolean) {
+    if (shouldContinue) {
+        if (!shouldContinue()) {
+            throw new InterruptedError("Cooperative yield interrupted");
+        }
+    }
+    return new Promise((resolve, reject) => {
+        setTimeout(resolve);
+    });
 }

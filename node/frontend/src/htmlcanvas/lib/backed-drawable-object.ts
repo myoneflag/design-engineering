@@ -1,26 +1,26 @@
-import DrawableObject from '../../../src/htmlcanvas/lib/drawable-object';
-import {Coord, DocumentState, DrawableEntity, WithID} from '../../../src/store/document/types';
-import * as _ from 'lodash';
-import {Interaction} from '../../../src/htmlcanvas/lib/interaction';
-import {ObjectStore} from '../../../src/htmlcanvas/lib/types';
-import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
-import {DrawableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
-import Layer from '../../../src/htmlcanvas/layers/layer';
-import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
+import DrawableObject from "../../../src/htmlcanvas/lib/drawable-object";
+import { Coord, DocumentState, DrawableEntity, WithID } from "../../../src/store/document/types";
+import * as _ from "lodash";
+import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
+import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
+import { DrawableEntityConcrete } from "../../../src/store/document/entities/concrete-entity";
+import Layer from "../../../src/htmlcanvas/layers/layer";
+import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
+import { ObjectStore } from "./object-store";
 
 export default abstract class BackedDrawableObject<T extends DrawableEntityConcrete> extends BaseBackedObject {
     entity: T;
 
     constructor(
+        vm: Vue | undefined,
         objectStore: ObjectStore,
         layer: Layer,
-        obj: T,
+        obj: () => T,
         onSelect: (event: MouseEvent | KeyboardEvent) => void,
         onChange: () => void,
-        onCommit: (event: MouseEvent | KeyboardEvent) => void,
+        onCommit: (event: MouseEvent | KeyboardEvent) => void
     ) {
-        super(objectStore, layer, obj, onSelect, onChange, onCommit);
-        this.entity = obj; // to keep error checking happy
+        super(vm, objectStore, layer, obj, onSelect, onChange, onCommit);
     }
 
     // Unfortunately, typescript does not allow abstract static methods. So this is just a human reminder
@@ -30,19 +30,21 @@ export default abstract class BackedDrawableObject<T extends DrawableEntityConcr
 }
 
 export type BaseBackedConstructor = new (
+    vm: Vue | undefined,
     objectStore: ObjectStore,
     layer: Layer,
-    obj: DrawableEntity,
+    obj: () => DrawableEntity,
     onSelect: (event: MouseEvent | KeyboardEvent) => void,
     onChange: () => void,
-    onCommit: (event: MouseEvent | KeyboardEvent) => void,
+    onCommit: (event: MouseEvent | KeyboardEvent) => void
 ) => BaseBackedObject;
 
 export type BackedObjectConstructor<T extends DrawableEntityConcrete> = new (
+    vm: Vue | undefined,
     objectStore: ObjectStore,
     layer: Layer,
-    obj: T,
+    obj: () => T,
     onSelect: (event: MouseEvent | KeyboardEvent) => void,
     onChange: () => void,
-    onCommit: (event: MouseEvent | KeyboardEvent) => void,
+    onCommit: (event: MouseEvent | KeyboardEvent) => void
 ) => BackedDrawableObject<T>;

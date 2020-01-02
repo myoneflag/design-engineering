@@ -1,12 +1,12 @@
-import {ObjectStore} from '../types';
-import {EntityType} from '../../../store/document/entities/types';
-import BaseBackedObject from '../../../../src/htmlcanvas/lib/base-backed-object';
-import {assertUnreachable} from "../../../config";
+import { EntityType } from "../../../store/document/entities/types";
+import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
+import { assertUnreachable } from "../../../config";
+import { ObjectStore } from "../object-store";
 
 export function getConnectedFlowComponent(
     targetUid: string,
     objectStore: ObjectStore,
-    allowed?: Set<string>,
+    allowed?: Set<string>
 ): BaseBackedObject[] {
     const q = [targetUid];
 
@@ -30,19 +30,19 @@ export function getConnectedFlowComponent(
         result.push(o);
         switch (o.entity.type) {
             case EntityType.SYSTEM_NODE:
-            case EntityType.FLOW_SOURCE:
+            case EntityType.RISER:
+            case EntityType.LOAD_NODE:
             case EntityType.FITTING:
             case EntityType.DIRECTED_VALVE:
-                q.push(...o.entity.connections);
+                q.push(...objectStore.getConnections(o.entity.uid));
                 break;
             case EntityType.PIPE:
                 q.push(...o.entity.endpointUid);
                 break;
-            case EntityType.TMV:
+            case EntityType.BIG_VALVE:
             case EntityType.BACKGROUND_IMAGE:
             case EntityType.FIXTURE:
-            case EntityType.RESULTS_MESSAGE:
-                throw new Error('invalid object here');
+                throw new Error("invalid object here");
             default:
                 assertUnreachable(o.entity);
         }

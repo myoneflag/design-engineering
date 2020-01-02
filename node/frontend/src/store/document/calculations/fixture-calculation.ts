@@ -1,35 +1,45 @@
-import {FieldCategory, CalculationField, Units} from '../../../../src/store/document/calculations/calculation-field';
-import {StandardFlowSystemUids} from '../../../../src/store/catalog';
-import {Calculation} from '../../../../src/store/document/calculations/types';
+import { FieldCategory, CalculationField, Units } from "../../../../src/store/document/calculations/calculation-field";
+import { StandardFlowSystemUids } from "../../../../src/store/catalog";
+import { Calculation } from "../../../../src/store/document/calculations/types";
+import FixtureEntity from "../entities/fixtures/fixture-entity";
+import { DocumentState } from "../types";
 
 export default interface FixtureCalculation extends Calculation {
-    coldPressureKPA: number | null;
-    warmPressureKPA: number | null;
+    pressures: {
+        [key: string]: number | null;
+    };
 }
 
-export function makeFixtureCalculationFields(): CalculationField[] {
-    return [
-        {property: 'coldPressureKPA',
-            title: 'Cold water pressure',
-            short: 'cold',
-            systemUid: StandardFlowSystemUids.ColdWater,
+export function makeFixtureCalculationFields(doc: DocumentState, entity: FixtureEntity): CalculationField[] {
+    return entity.roughInsInOrder.map((suid) => {
+        const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === suid);
+        if (!system) {
+            throw new Error("System not found");
+        }
+
+        return {
+            property: "pressures." + suid,
+            title: system.name + " Pressure",
+            short: system.name.split(" ")[0].toLowerCase(),
+            systemUid: suid,
             units: Units.KiloPascals,
             category: FieldCategory.Pressure,
-            defaultEnabled: true,
-        },
-        {property: 'warmPressureKPA',
-            title: 'Warm water pressure',
-            short: 'warm',
-            systemUid: StandardFlowSystemUids.WarmWater,
-            units: Units.KiloPascals,
-            category: FieldCategory.Pressure,
-            defaultEnabled: true,
-        },
-    ];
+            defaultEnabled: true
+        };
+    });
 }
 
-export function emptyFixtureCalculation(): FixtureCalculation {
+export function emptyFixtureCalculation(entity: FixtureEntity): FixtureCalculation {
+    const pressures: {
+        [key: string]: number | null;
+    } = {};
+
+    for (const suid of entity.roughInsInOrder) {
+        pressures[suid] = null;
+    }
+
     return {
-        coldPressureKPA: null, warmPressureKPA: null, warning: null,
+        pressures,
+        warning: null
     };
 }

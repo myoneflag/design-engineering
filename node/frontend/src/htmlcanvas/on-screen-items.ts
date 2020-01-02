@@ -1,33 +1,62 @@
-import {DEFAULT_FONT_NAME, isGermanStandard} from '../../src/config';
-import * as TM from 'transformation-matrix';
-import {DrawingContext} from '../../src/htmlcanvas/lib/types';
-import {Catalog} from '../../src/store/catalog/types';
-import {lookupFlowRate, PsdUnitsByFlowSystem} from '../../src/calculations/utils';
-import {StandardFlowSystemUids} from '../../src/store/catalog';
+import { DEFAULT_FONT_NAME, isGermanStandard } from "../../src/config";
+import * as TM from "transformation-matrix";
+import { DrawingContext } from "../../src/htmlcanvas/lib/types";
+import { Catalog } from "../../src/store/catalog/types";
+import { lookupFlowRate, PsdUnitsByFlowSystem, zeroPsdCounts } from "../../src/calculations/utils";
+import { StandardFlowSystemUids } from "../../src/store/catalog";
+import { NetworkType } from "../store/document/types";
 
 const SENSIBLE_UNITS_MM: number[] = [
-    1, 2, 4, 5, 8,
-    10, 20, 40, 50, 80,
-    100, 200, 400, 500, 800,
-    1000, 2000, 4000, 5000, 8000, // 1m to 8m
-    10000, 20000, 40000, 50000, 80000,
-    100000, 200000, 400000, 500000, 800000,
-    1000000, 2000000, 4000000, 5000000, 8000000, // 1km to 8km
+    1,
+    2,
+    4,
+    5,
+    8,
+    10,
+    20,
+    40,
+    50,
+    80,
+    100,
+    200,
+    400,
+    500,
+    800,
+    1000,
+    2000,
+    4000,
+    5000,
+    8000, // 1m to 8m
+    10000,
+    20000,
+    40000,
+    50000,
+    80000,
+    100000,
+    200000,
+    400000,
+    500000,
+    800000,
+    1000000,
+    2000000,
+    4000000,
+    5000000,
+    8000000 // 1km to 8km
 ];
 
 export const getFriendlyDistanceUnit = (mm: number): [string, number] => {
     if (mm < 10) {
-        return  ['mm', 1];
+        return ["mm", 1];
     }
     mm /= 10;
     if (mm < 100) {
-        return ['cm', 10];
+        return ["cm", 10];
     }
     mm /= 100;
     if (mm < 1000) {
-        return ['m', 10 * 100];
+        return ["m", 10 * 100];
     }
-    return ['km', 10 * 100 * 1000];
+    return ["km", 10 * 100 * 1000];
 };
 
 export const drawPaperScale = (ctx: CanvasRenderingContext2D, pxPerMm: number) => {
@@ -52,35 +81,33 @@ export const drawPaperScale = (ctx: CanvasRenderingContext2D, pxPerMm: number) =
     const scaleHeight = 10;
     const scaleBottomOffset = 30;
 
-
     const scaleLeftEdge = ctx.canvas.width - minSmallWidth * 2 * 50 - 10;
 
     let left: number = scaleLeftEdge;
 
-
     for (let i = 0; i < 10; i++) {
         if (i % 2 === 0) {
-            ctx.fillStyle = '#000000';
+            ctx.fillStyle = "#000000";
         } else {
-            ctx.fillStyle = '#FFFFFF';
+            ctx.fillStyle = "#FFFFFF";
         }
         ctx.fillRect(left, height - scaleBottomOffset, smallW, scaleHeight);
         left += smallW;
     }
     for (let i = 0; i < 4; i++) {
         if (i % 2 === 0) {
-            ctx.fillStyle = '#000000';
+            ctx.fillStyle = "#000000";
         } else {
-            ctx.fillStyle = '#FFFFFF';
+            ctx.fillStyle = "#FFFFFF";
         }
         ctx.fillRect(left, height - scaleBottomOffset, medW, scaleHeight);
         left += medW;
     }
     for (let i = 0; i < 2; i++) {
         if (i % 2 === 0) {
-            ctx.fillStyle = '#000000';
+            ctx.fillStyle = "#000000";
         } else {
-            ctx.fillStyle = '#FFFFFF';
+            ctx.fillStyle = "#FFFFFF";
         }
         ctx.fillRect(left, height - scaleBottomOffset, largeW, scaleHeight);
         left += largeW;
@@ -90,23 +117,23 @@ export const drawPaperScale = (ctx: CanvasRenderingContext2D, pxPerMm: number) =
     const [uname, unit] = getFriendlyDistanceUnit(smallestUnit * 10);
     left = scaleLeftEdge;
     ctx.beginPath();
-    ctx.font = '9px ' + DEFAULT_FONT_NAME;
+    ctx.font = "9px " + DEFAULT_FONT_NAME;
     for (let i = 0; i < 6; i++) {
         if (i % 2 === 0) {
-            ctx.fillStyle = '#000000';
+            ctx.fillStyle = "#000000";
         } else {
-            ctx.fillStyle = '#FFFFFF';
+            ctx.fillStyle = "#FFFFFF";
         }
-        ctx.strokeStyle = '#000000';
+        ctx.strokeStyle = "#000000";
         ctx.moveTo(left, height - 32);
         ctx.lineTo(left, height - scaleBottomOffset + scaleHeight + 2);
-        ctx.fillStyle = '#000000';
+        ctx.fillStyle = "#000000";
 
-        ctx.fillText((smallestUnit * 10 / unit * i) + uname, left, height - scaleBottomOffset - 5);
+        ctx.fillText(((smallestUnit * 10) / unit) * i + uname, left, height - scaleBottomOffset - 5);
         left += largeW;
     }
 
-    ctx.rect(     scaleLeftEdge, height - scaleBottomOffset, smallW * 50, scaleHeight);
+    ctx.rect(scaleLeftEdge, height - scaleBottomOffset, smallW * 50, scaleHeight);
     ctx.stroke();
 };
 
@@ -114,55 +141,95 @@ export function drawLoadingUnits(
     context: DrawingContext,
     catalog: Catalog,
     units: PsdUnitsByFlowSystem | null,
-    selection: boolean = false,
+    selection: boolean = false
 ) {
     if (units == null) {
-        units = {};
-        units[StandardFlowSystemUids.ColdWater] = {units: 0, continuousFlowLS: 0};
-        units[StandardFlowSystemUids.HotWater] = {units: 0, continuousFlowLS: 0};
+        units = {
+            /**/
+        };
+        units[StandardFlowSystemUids.ColdWater] = zeroPsdCounts();
+        units[StandardFlowSystemUids.HotWater] = zeroPsdCounts();
     }
     const ctx = context.ctx;
 
-
     const height = ctx.canvas.height;
 
-    const psduSuffix = 'PSD';
+    const psduSuffix = "PSD";
 
-    const y = height - 100;
+    const y = height - 120;
 
-    ctx.font = '12px ' + DEFAULT_FONT_NAME;
-    ctx.fillStyle = '#000000';
+    ctx.font = "12px " + DEFAULT_FONT_NAME;
+    ctx.fillStyle = "#000000";
 
+    // Fill for selection
     if (selection) {
-        ctx.fillText('(In Selection)', 20, y - 20);
+        ctx.fillText("(In Selection)", 20, y - 20);
     } else {
-        ctx.fillText('Total PSD: w/Space Capacity (w/o)', 20, y - 20);
+        ctx.fillText("Total PSD:", 80, y - 20);
     }
-
-    let coldFR = lookupFlowRate(units[StandardFlowSystemUids.ColdWater].units, context.doc, catalog)!;
-    let hotFR = lookupFlowRate(units[StandardFlowSystemUids.HotWater].units, context.doc, catalog)!;
-    let coldFRSpare = coldFR * (1 + 0.01 * context.doc.drawing.flowSystems.find((s) =>
-        s.uid === StandardFlowSystemUids.ColdWater)!.spareCapacity);
-    let hotFRSpare = hotFR * (1 + 0.01 * context.doc.drawing.flowSystems.find((s) =>
-        s.uid === StandardFlowSystemUids.WarmWater)!.spareCapacity);
+    let coldFR: number | null | undefined;
+    let hotFR: number | null | undefined;
+    try {
+        coldFR = lookupFlowRate(
+            units[StandardFlowSystemUids.ColdWater],
+            context.doc,
+            catalog,
+            StandardFlowSystemUids.ColdWater
+        );
+    } catch (e) {
+        /**/
+    }
+    try {
+        hotFR = lookupFlowRate(
+            units[StandardFlowSystemUids.HotWater],
+            context.doc,
+            catalog,
+            StandardFlowSystemUids.HotWater
+        );
+    } catch (e) {
+        /**/
+    }
 
     if (coldFR === null) {
         coldFR = 0;
-        coldFRSpare = 0;
     }
     if (hotFR === null) {
         hotFR = 0;
-        hotFRSpare = 0;
     }
 
-    ctx.fillText('Cold: ', 20, y);
-    ctx.fillText((coldFRSpare.toPrecision(3)) + ' L/s ', 80, y);
-    ctx.fillText('(' + (coldFR.toPrecision(3)) + ')', 180, y);
+    let coldSpareText: string = "error";
+    let hotSpareText: string = "error";
+    let coldText: string = "error";
+    let hotText: string = "error";
+    if (coldFR !== undefined) {
+        const coldFRSpare =
+            coldFR *
+            (1 +
+                0.01 *
+                    context.doc.drawing.metadata.flowSystems.find((s) => s.uid === StandardFlowSystemUids.ColdWater)!
+                        .networks[NetworkType.RETICULATIONS].spareCapacityPCT);
+        coldSpareText = coldFRSpare.toPrecision(3);
+        coldText = coldFR.toPrecision(3);
+    }
+    if (hotFR !== undefined) {
+        const hotFRSpare =
+            hotFR *
+            (1 +
+                0.01 *
+                    context.doc.drawing.metadata.flowSystems.find((s) => s.uid === StandardFlowSystemUids.WarmWater)!
+                        .networks[NetworkType.RETICULATIONS].spareCapacityPCT);
+        hotSpareText = hotFRSpare.toPrecision(3);
+        hotText = hotFR.toPrecision(3);
+    }
 
+    ctx.fillText("Cold: ", 20, y);
+    ctx.fillText(coldSpareText + " L/s ", 80, y);
 
-    ctx.fillText('Hot: ', 20, y + 20);
-    ctx.fillText((hotFRSpare.toPrecision(3)) + ' L/s ', 80, y + 20);
-    ctx.fillText('(' + (hotFR.toPrecision(3)) + ')', 180, y + 20);
+    ctx.fillText("Hot: ", 20, y + 20);
+    ctx.fillText(hotSpareText + " L/s ", 80, y + 20);
 
-    ctx.fillText(catalog.psdStandards[context.doc.drawing.calculationParams.psdMethod].name, 20, y + 40);
+    ctx.font = "10px " + DEFAULT_FONT_NAME;
+    ctx.fillText(catalog.psdStandards[context.doc.drawing.metadata.calculationParams.psdMethod].name, 20, y + 40);
+    ctx.fillText("Inc. Continuous Flow", 20, y + 50);
+    ctx.fillText("Inc. Reticulation Spare Capacity", 20, y + 60);
 }

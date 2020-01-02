@@ -3,7 +3,6 @@ import {Interaction} from '../../src/htmlcanvas/lib/interaction';
 import {DrawableEntityConcrete} from '../../src/store/document/entities/concrete-entity';
 import BaseBackedObject from '../../src/htmlcanvas/lib/base-backed-object';
 import BackgroundLayer from '../../src/htmlcanvas/layers/background-layer';
-import {ObjectStore} from '../../src/htmlcanvas/lib/types';
 import {ViewPort} from '../../src/htmlcanvas/viewport';
 import * as TM from 'transformation-matrix';
 import {Store} from 'vuex';
@@ -16,6 +15,7 @@ import CalculationLayer from '../../src/htmlcanvas/layers/calculation-layer';
 import {registerObjectBuilders} from '../../src/htmlcanvas/objects';
 import { expect } from 'chai';
 import {createTestCatalog} from './default-test-catalog';
+import { ObjectStore } from "../../src/htmlcanvas/lib/object-store";
 
 export function createDummyCanvas(document: DocumentState = initialDocumentState): CanvasContext {
     const objectStore = new ObjectStore();
@@ -48,9 +48,9 @@ export function createDummyCanvas(document: DocumentState = initialDocumentState
 
     registerObjectBuilders();
 
-    canvas.backgroundLayer.update(canvas.document);
-    canvas.hydraulicsLayer.update(canvas.document);
-    canvas.calculationLayer.update(canvas.document);
+    canvas.backgroundLayer.resetDocument(canvas.document);
+    canvas.hydraulicsLayer.resetDocument(canvas.document);
+    canvas.calculationLayer.resetDocument(canvas.document);
 
     return canvas;
 }

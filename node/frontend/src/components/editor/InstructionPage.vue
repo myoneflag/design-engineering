@@ -1,7 +1,6 @@
 <template>
     <div id="instructions-div">
-
-        <ol style="font-size: 20px" >
+        <ol style="font-size: 20px">
             <li>
                 <p>Drag and drop a floor plan, or click "Upload Floor Plan" in Floor Plan View</p>
             </li>
@@ -16,50 +15,47 @@
 </template>
 
 <script lang="ts">
-    import Vue from 'vue';
-    import Component from 'vue-class-component';
+import Vue from "vue";
+import Component from "vue-class-component";
 
-    @Component
-    export default class InstructionPage extends Vue {
-
-    }
+@Component
+export default class InstructionPage extends Vue {}
 </script>
 
 <style lang="less">
-    #instructions-div {
-        position: fixed;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
+#instructions-div {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
 
-        pointer-events: none;
-    }
+    pointer-events: none;
+}
 
-    ol {
-        counter-reset:li;
-    }
+ol {
+    counter-reset: li;
+}
 
-    ol > li {
-        list-style: none;
-    }
+#instructions-div > ol > li {
+    list-style: none;
+}
 
-    ol > li:before {
+#instructions-div > ol > li:before {
+    content: counter(li);
+    counter-increment: li;
 
-        content:counter(li);
-        counter-increment:li;
+    float: left;
 
-        float: left;
-
-        border-radius: 50%;
-        margin-left: 20px;
-        margin-right: 20px;
-        width: 40px;
-        height: 40px;
-        padding: 8px;
-        background: #fff;
-        border: 2px solid #666;
-        color: #666;
-        text-align: center;
-        font: 20px Arial, sans-serif;
-    }
+    border-radius: 50%;
+    margin-left: 20px;
+    margin-right: 20px;
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+    background: #fff;
+    border: 2px solid #666;
+    color: #666;
+    text-align: center;
+    font: 20px Arial, sans-serif;
+}
 </style>

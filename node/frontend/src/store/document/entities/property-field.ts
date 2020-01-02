@@ -1,16 +1,17 @@
-import {FlowSystemParameters} from '../../../../src/store/document/types';
-import {Choice} from '../../../../src/lib/types';
+import { FlowSystemParameters } from "../../../../src/store/document/types";
+import { Choice } from "../../../../src/lib/types";
 
 export enum FieldType {
-    Text = 'text',
-    TextArea = 'textarea',
-    Number = 'number',
-    Color = 'color',
-    Choice = 'choice',
-    FlowSystemChoice = 'flow-system-choice',
-    Rotation = 'rotation',
-    Boolean = 'boolean',
-    TwoPointScale = 'two-point-scale',
+    Text = "text",
+    TextArea = "textarea",
+    Number = "number",
+    Color = "color",
+    Choice = "choice",
+    FlowSystemChoice = "flow-system-choice",
+    Rotation = "rotation",
+    Boolean = "boolean",
+    TwoPointScale = "two-point-scale",
+    Title = "title"
 }
 
 export interface NumberParams extends FieldParams {
@@ -85,13 +86,20 @@ export interface BooleanField extends PropertyFieldBase {
     params: null;
 }
 
+export interface TitleField extends PropertyFieldBase {
+    type: FieldType.Title;
+    hasDefault: false;
+    isCalculated: false;
+    params: null;
+}
 
 export type PropertyField =
-    NumberField |
-    ChoiceField |
-    TextAreaField |
-    FlowSystemChoiceField |
-    ColorField |
-    RotationField |
-    TextField |
-    BooleanField;
+    | NumberField
+    | ChoiceField
+    | TextAreaField
+    | FlowSystemChoiceField
+    | ColorField
+    | RotationField
+    | TextField
+    | BooleanField
+    | TitleField;

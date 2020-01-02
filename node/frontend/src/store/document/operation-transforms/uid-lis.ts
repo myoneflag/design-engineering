@@ -1,4 +1,3 @@
-
 // Returns array of [value, isInLIS?] in original order.
 export function longestIncreasingSubsequence(values: string[], order: string[]): Array<[string, boolean]> {
     const dp: Array<[number, number]> = []; // length, prevIndex
@@ -18,7 +17,7 @@ export function longestIncreasingSubsequence(values: string[], order: string[]):
         if (thisBest[0] > high[0]) {
             high = [thisBest[0], i];
         }
-        thisBest[0] ++;
+        thisBest[0]++;
         dp.push(thisBest);
     }
 
@@ -49,7 +48,7 @@ export function findOptimalSwaps(before: string[], after: string[]): Array<[stri
 
             // Look for the first in-order that is greater than ours.
             for (let j = 0; j <= progress.length; j++) {
-                if (j === progress.length || after.indexOf(progress[j][0]) > after.indexOf(val) && progress[j][1]) {
+                if (j === progress.length || (after.indexOf(progress[j][0]) > after.indexOf(val) && progress[j][1])) {
                     progress.splice(j, 0, [val, true]);
                     results.push([val, j]);
                     break;

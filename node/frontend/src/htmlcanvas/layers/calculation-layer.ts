@@ -1,43 +1,58 @@
-import {LayerImplementation} from '../../../src/htmlcanvas/layers/layer';
-import {CalculationFilters, DocumentState, DrawableEntity} from '../../../src/store/document/types';
-import {DrawingContext} from '../../../src/htmlcanvas/lib/types';
-import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
-import {MouseMoveResult, UNHANDLED} from '../../../src/htmlcanvas/types';
-import CalculationEngine from '../../../src/calculations/calculation-engine';
-import {DemandType} from '../../../src/calculations/types';
-import {EntityType} from '../../../src/store/document/entities/types';
-import {CalculatableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
-import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
-import Pipe, {TEXT_MAX_SCALE} from '../../../src/htmlcanvas/objects/pipe';
-import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
-import Flatten from '@flatten-js/core';
-import {matrixScale, polygonOverlapsShape, polygonsOverlap} from '../../../src/htmlcanvas/utils';
-import {isConnectable} from '../../../src/store/document';
-import {isCalculated} from '../../../src/store/document/calculations';
-import * as TM from 'transformation-matrix';
-import {tm2flatten} from '../../../src/htmlcanvas/lib/utils';
-import {MIN_SCALE, SCALE_GRADIENT_MIN} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
+import { LayerImplementation } from "../../../src/htmlcanvas/layers/layer";
+import { CalculationFilters, DocumentState } from "../../../src/store/document/types";
+import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
+import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
+import { MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
+import CalculationEngine from "../../../src/calculations/calculation-engine";
+import { DemandType } from "../../../src/calculations/types";
+import { EntityType } from "../../../src/store/document/entities/types";
+import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
+import Pipe from "../../../src/htmlcanvas/objects/pipe";
+import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
+import Flatten from "@flatten-js/core";
+import {
+    cooperativeYield,
+    matrixScale,
+    polygonOverlapsShapeApprox,
+    polygonsOverlap
+} from "../../../src/htmlcanvas/utils";
+import { isConnectable } from "../../../src/store/document";
+import { isCalculated } from "../../../src/store/document/calculations";
+import * as TM from "transformation-matrix";
+import { tm2flatten } from "../../../src/htmlcanvas/lib/utils";
+import { MIN_SCALE } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
+import { assertUnreachable } from "../../config";
 
 const MINIMUM_SIGNIFICANT_PIPE_LENGTH_MM = 500;
 export const SIGNIFICANT_FLOW_THRESHOLD = 1e-5;
 
 export default class CalculationLayer extends LayerImplementation {
-
     calculator: CalculationEngine = new CalculationEngine();
-    draw(context: DrawingContext, active: boolean, calculationFilters: CalculationFilters | null): any {
-        const {ctx, vp} = context;
+    async draw(
+        context: DrawingContext,
+        active: boolean,
+        shouldContinue: () => boolean,
+        reactive: Set<string>,
+        calculationFilters: CalculationFilters | null
+    ) {
+        // TODO: asyncify
+        const { ctx, vp } = context;
         if (active && calculationFilters) {
             // 1. Load all calculation data and record them
             // 2. Load all message layout options for this data. Not explcitly needed as a separate step
             // 3. Order objects by importance
             // 4. Draw messages for objects, keeping track of what was drawn and avoid overlaps by drawing
-                    // in a new place.
+            // in a new place.
 
             const obj2props = new Map<string, CalculationData[]>();
 
             this.objectStore.forEach((o) => {
-                if (o.calculated && o.type in calculationFilters &&
-                    (o.entity as CalculatableEntityConcrete).calculation) {
+                if (
+                    isCalculated(o.entity) &&
+                    o.type in calculationFilters &&
+                    calculationFilters[o.type].enabled &&
+                    context.globalStore.getCalculation(o.entity)
+                ) {
                     const fields = o.getCalculationFields(context, calculationFilters);
                     fields.forEach((f) => {
                         if (!obj2props.has(f.attachUid)) {
@@ -50,28 +65,43 @@ export default class CalculationLayer extends LayerImplementation {
 
             const objList = Array.from(this.objectStore.values()).filter((o) => o.calculated && obj2props.has(o.uid));
             objList.sort((a, b) => {
-                return -(this.messagePriority(a) - this.messagePriority(b));
+                return -(this.messagePriority(context, a) - this.messagePriority(context, b));
             });
 
             const spentShapes: Flatten.Polygon[] = [];
+            let po = 0;
+            let pos = 0;
+            let nb = 0;
 
-            objList.forEach((o) => {
+            await cooperativeYield(shouldContinue);
+
+            const onScreenList: BaseBackedObject[] = objList.filter((o) => vp.someOnScreen(o.shape()!));
+            const allOnScreen = Array.from(this.objectStore.values()).filter((o) => vp.someOnScreen(o.shape()!));
+
+            await cooperativeYield(shouldContinue);
+
+            // tslint:disable-next-line:prefer-for-of
+            for (let i = 0; i < objList.length; i++) {
+                const o = objList[i];
+
+                if (!vp.someOnScreen(o.shape()!)) {
+                    continue;
+                }
+
                 vp.prepareContext(context.ctx);
                 const boxes = o.measureCalculationBox(context, obj2props.get(o.uid) || []);
+                nb += boxes.length;
                 let drawn = false;
-                boxes.forEach(([position, shape]) => {
-                    if (drawn) {
-                        return;
-                    }
-
+                for (const [position, shape] of boxes) {
                     if (!vp.someOnScreen(shape)) {
-                        return;
+                        continue;
                     }
 
                     let invalid = false;
 
-                    for (let i = 0; i < spentShapes.length; i++) {
-                        if (polygonsOverlap(spentShapes[i], shape)) {
+                    for (const shapeCheck of spentShapes) {
+                        po++;
+                        if (polygonsOverlap(shapeCheck, shape)) {
                             invalid = true;
                             break;
                         }
@@ -79,16 +109,24 @@ export default class CalculationLayer extends LayerImplementation {
 
                     if (!invalid) {
                         // don't cover connectables
-                        this.objectStore.forEach((o) => {
-                            if (!invalid) {
-                                if (isConnectable(o.entity.type) || o.entity.type === EntityType.FIXTURE ||
-                                    o.entity.type === EntityType.TMV) {
-                                    if (polygonOverlapsShape(shape, o.shape()!)) {
-                                        invalid = true;
-                                    }
+                        for (const c of allOnScreen) {
+                            if (
+                                isConnectable(c.entity.type) ||
+                                c.entity.type === EntityType.FIXTURE ||
+                                c.entity.type === EntityType.BIG_VALVE
+                            ) {
+                                pos++;
+
+                                if (pos % 5000 === 4999) {
+                                    await cooperativeYield(shouldContinue);
+                                }
+
+                                if (polygonOverlapsShapeApprox(shape, c.shape()!)) {
+                                    invalid = true;
+                                    break;
                                 }
                             }
-                        });
+                        }
                     }
 
                     if (!invalid) {
@@ -99,12 +137,13 @@ export default class CalculationLayer extends LayerImplementation {
                         const box = o.drawCalculationBox(context, obj2props.get(o.uid)!, false);
                         spentShapes.push(shape);
                         drawn = true;
+                        break;
                     }
-                });
+                }
 
                 if (!drawn) {
                     // warnings must be drawn
-                    if (o.calculated && o.hasWarning()) {
+                    if (o.calculated && o.hasWarning(context)) {
                         vp.prepareContext(context.ctx, ...o.world2object);
                         const s = matrixScale(context.ctx.getTransform());
                         context.ctx.scale(MIN_SCALE / s, MIN_SCALE / s);
@@ -116,24 +155,25 @@ export default class CalculationLayer extends LayerImplementation {
                         spentShapes.push(p);
                     }
                 }
-            });
+            }
         }
     }
 
-    messagePriority(object: BaseBackedObject): number {
+    messagePriority(context: DrawingContext, object: BaseBackedObject): number {
         if (isCalculated(object.entity)) {
-            const calc = (object.entity as CalculatableEntityConcrete).calculation;
+            const calc = context.globalStore.getCalculation(object.entity);
             if (calc && calc.warning !== null) {
                 return 10000; // High priority to warnings.
             }
         }
 
         switch (object.entity.type) {
-            case EntityType.FLOW_SOURCE:
+            case EntityType.RISER:
                 return 120;
+            case EntityType.LOAD_NODE:
             case EntityType.FIXTURE:
                 return 110;
-            case EntityType.TMV:
+            case EntityType.BIG_VALVE:
             case EntityType.DIRECTED_VALVE:
                 return 100;
             case EntityType.FITTING:
@@ -142,39 +182,31 @@ export default class CalculationLayer extends LayerImplementation {
                 return 80;
             case EntityType.PIPE:
                 return 70 + 10 - 10 / ((object as Pipe).computedLengthM + 1);
-            case EntityType.RESULTS_MESSAGE:
             case EntityType.BACKGROUND_IMAGE:
-                throw new Error('shouldn\'t have calculations');
+                throw new Error("shouldn't have calculations");
         }
+        assertUnreachable(object.entity);
     }
 
-    drawSelectionLayer(context: DrawingContext, interactive: DrawableEntity[] | null): any {
+    drawReactiveLayer(context: DrawingContext, interactive: string[]): any {
         //
     }
 
-    update(doc: DocumentState): any {
-
+    resetDocument(doc: DocumentState): any {
+        //
     }
 
-
     calculate(context: CanvasContext, demandType: DemandType, done: () => void) {
-
         context.document.uiState.isCalculating = true;
 
-        this.calculator.calculate(
-            this.objectStore,
-            context.document,
-            context.effectiveCatalog,
-            demandType,
-            (warnings) => {
-
+        this.calculator.calculate(context.globalStore, context.document, context.effectiveCatalog, demandType, () => {
             context.document.uiState.lastCalculationId = context.document.nextId;
             context.document.uiState.lastCalculationUiSettings = {
-                demandType,
+                demandType
             };
             context.document.uiState.isCalculating = false;
 
-            this.update(context.document);
+            // this.resetDocument(context.document);
 
             // Create new messages
 
@@ -189,7 +221,6 @@ export default class CalculationLayer extends LayerImplementation {
     onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
         return UNHANDLED;
     }
-
 
     onMouseUp(event: MouseEvent, context: CanvasContext) {
         return false;

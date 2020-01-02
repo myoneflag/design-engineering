@@ -1,10 +1,16 @@
-import {Coord, DrawableEntity, DrawingState, FlowSystemParameters, Rectangle} from '../../../../src/store/document/types';
-import {EntityType} from '../../../../src/store/document/entities/types';
-import {Choice} from '../../../../src/lib/types';
-import {FieldType, PropertyField} from '../../../../src/store/document/entities/property-field';
-import {cloneSimple} from '../../../../src/lib/utils';
-import PipeEntity from '../../../../src/store/document/entities/pipe-entity';
-import {PaperSize} from "../../../../../common/src/paper-config";
+import {
+    Coord,
+    DrawableEntity,
+    DrawingState,
+    FlowSystemParameters,
+    Rectangle
+} from "../../../../src/store/document/types";
+import { EntityType } from "../../../../src/store/document/entities/types";
+import { Choice } from "../../../../src/lib/types";
+import { FieldType, PropertyField } from "../../../../src/store/document/entities/property-field";
+import { cloneSimple } from "../../../../src/lib/utils";
+import PipeEntity from "../../../../src/store/document/entities/pipe-entity";
+import { PaperSize } from "../../../../../common/src/paper-config";
 
 export interface BackgroundEntity extends DrawableEntity {
     type: EntityType.BACKGROUND_IMAGE;
@@ -31,11 +37,24 @@ export interface BackgroundEntity extends DrawableEntity {
 
 export function makeBackgroundFields(): PropertyField[] {
     return [
-
-        { property: 'filename', title: 'Title', hasDefault: false, isCalculated: false,
-            type: FieldType.Text, params: null, readonly: true,  multiFieldId: 'filename' },
-        { property: 'rotation', title: 'Rotation', hasDefault: false, isCalculated: false,
-            type: FieldType.Rotation, params: null,  multiFieldId: 'rotation' },
-
+        {
+            property: "filename",
+            title: "Title",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.Text,
+            params: null,
+            readonly: true,
+            multiFieldId: "filename"
+        },
+        {
+            property: "rotation",
+            title: "Rotation",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.Rotation,
+            params: null,
+            multiFieldId: "rotation"
+        }
     ];
 }

@@ -1,88 +1,42 @@
-import {DrawingState, WithID} from '../../../../src/store/document/types';
-import * as OT from './operation-transforms';
-import * as _ from 'lodash';
-import assert from 'assert';
-import Vue from 'vue';
-import {cloneSimple} from '../../../../src/lib/utils';
+import { DrawingState, WithID } from "../../../../src/store/document/types";
+import * as OT from "./operation-transforms";
+import * as _ from "lodash";
+import assert from "assert";
+import Vue from "vue";
+import { cloneSimple } from "../../../../src/lib/utils";
+import { DiffOperation, OperationTransformConcrete } from "./operation-transforms";
 
-/**
- * Modifies the given state object *in place* with the given path and modifier function.
- * @param object
- * @param path
- * @param op A function that modifies a leaf node in place. Eg. Given an array, push and pop it. For primitives, though
- * you should return the new value and that's the only exception.
- */
-function walkToEnds(object: any, path: any, op: (object: any, path: any)
-    => string | number | undefined): string | number | undefined {
-    if (_.isArray(object)) {
-        // We stop here always.
-        // If it is a literal array (without distinguishable elements, ie elemenets without uid) then we want to replace
-        // it. If it is an itemed array, we want to give the operation a chance to modify it.
-        op(object, path);
-        return undefined;
-    } else if (_.isObject(object)) {
-        _.forOwn(path, (value, key) => {
-            // @ts-ignore
-            const val = walkToEnds((object as any)[key], path[key], op);
-            if (val !== undefined) {
-                // @ts-ignore;
-                object[key] = val;
+export function applyDiffVue(target: any, diff: any): any {
+    if (diff === undefined || target === undefined) {
+        throw new Error("Parent caller should have deleted the entry, not recurse");
+    }
+
+    if (_.isArray(diff)) {
+        return diff;
+    } else if (_.isObject(diff)) {
+        if (_.isArray(target) || !_.isObject(target)) {
+            // convert those primitives and arrays into the object that it ought to be.
+            target = {};
+        }
+
+        for (const key of Object.keys(diff)) {
+            // we use {} to signal a deleted object (undefined is not valid JSON).
+            if (_.isEqual((diff as any)[key], { deleted: true })) {
+                if (target.hasOwnProperty(key)) {
+                    Vue.delete(target, key);
+                }
+            } else if (target.hasOwnProperty(key)) {
+                (target as any)[key] = applyDiffVue((target as any)[key], (diff as any)[key]);
+            } else {
+                Vue.set(target, key, (diff as any)[key]);
             }
-        });
-        return undefined;
+        }
+        return target;
     } else {
-        return op(object, path);
+        return diff;
     }
 }
 
-export const applyOtOnState = (state: DrawingState, op: OT.OperationTransform) => {
-    if (op.type === OT.OPERATION_NAMES.ADD_OPERATION) {
-        const top = op as OT.AddOperation;
-        walkToEnds(state, top.object, (arr: any, obj: any): any => {
-            assert(_.isArray(arr));
-            arr.push(cloneSimple(obj));
-        });
-    } else if (op.type === OT.OPERATION_NAMES.MOVE_OPERATION) {
-        const top = op as OT.MoveOperation;
-        walkToEnds(state, top.reference, (arr: [], obj: any): any => {
-            assert(_.isArray(arr));
-
-            const itemIndex = arr.findIndex((v: WithID) => v.uid === obj.uid);
-            const toMove = arr.splice(itemIndex, 1)[0];
-            arr.splice(top.index, 0, toMove);
-        });
-    } else if (op.type === OT.OPERATION_NAMES.UPDATE_OPERATION) {
-        const top = op as OT.UpdateOperation;
-        walkToEnds(state, top.after, (arr: any, obj: any): any => {
-            assert(_.isArray(arr) || !_.isObject(arr));
-
-            if (_.isArray(arr)) {
-
-                // we could be updating an entire array, OR we are updating an element in an uid array.
-                if (_.isArray(obj)) {
-                    arr.splice(0, arr.length, ...(cloneSimple(obj) as []));
-                } else {
-                    assert(_.has(obj, 'uid'));
-                    const itemIndex = arr.findIndex((v: WithID) => v.uid === obj.uid);
-                    Vue.set(arr, itemIndex, cloneSimple(obj));
-                }
-            } else {
-                // We are updating a single primitive field.
-                return obj;
-            }
-        });
-    } else if (op.type === OT.OPERATION_NAMES.DELETE_OPERATION) {
-        const top = op as OT.DeleteOperation;
-        walkToEnds(state, top.object, (arr: [], obj: any): any => {
-            assert(_.isArray(arr));
-
-            const itemIndex = arr.findIndex((v: WithID) => v.uid === obj.uid);
-            if (itemIndex !== top.index) {
-                console.log("item index to delete doesn't match. Expected :\n" + JSON.stringify(top) + " but was found on index " + itemIndex)
-                console.log("target array is " + JSON.stringify(arr));
-            }
-            assert(itemIndex === top.index);
-            arr.splice(itemIndex, 1);
-        });
-    }
-};
+export function applyOtOnState(state: any, ops: DiffOperation) {
+    applyDiffVue(state, ops.diff);
+}

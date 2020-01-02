@@ -1,12 +1,12 @@
-import BackedConnectable from '../../../../src/htmlcanvas/lib/BackedConnectable';
-import {ConnectableEntityConcrete} from '../../../../src/store/document/entities/concrete-entity';
-import Pipe from '../../../../src/htmlcanvas/objects/pipe';
-import CanvasContext from '../../../../src/htmlcanvas/lib/canvas-context';
-import {EntityType} from '../../../../src/store/document/entities/types';
-import assert from 'assert';
-import {replacePipeEndpointLocal} from '../../../../src/store/document/entities/pipe-entity';
-import {addValveAndSplitPipe} from '../../../../src/htmlcanvas/lib/black-magic/split-pipe';
-import {connect, disconnect} from '../../../../src/lib/utils';
+import BackedConnectable from "../../../../src/htmlcanvas/lib/BackedConnectable";
+import { ConnectableEntityConcrete } from "../../../../src/store/document/entities/concrete-entity";
+import Pipe from "../../../../src/htmlcanvas/objects/pipe";
+import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
+import { EntityType } from "../../../../src/store/document/entities/types";
+import assert from "assert";
+import { addValveAndSplitPipe } from "../../../../src/htmlcanvas/lib/black-magic/split-pipe";
+import { cloneSimple } from "../../../../src/lib/utils";
+import PipeEntity from "../../../store/document/entities/pipe-entity";
 
 /**
  * Moves object join source to object dest, regardless of compatability, and keeps
@@ -17,26 +17,24 @@ import {connect, disconnect} from '../../../../src/lib/utils';
 export function moveOnto(
     source: BackedConnectable<ConnectableEntityConcrete>,
     dest: BackedConnectable<ConnectableEntityConcrete> | Pipe,
-    context: CanvasContext,
+    context: CanvasContext
 ) {
     if (dest instanceof Pipe) {
-        const {focus} = addValveAndSplitPipe(
+        const { focus } = addValveAndSplitPipe(
             context,
             dest,
-            source.toWorldCoord({x: 0, y: 0}),
+            source.toWorldCoord({ x: 0, y: 0 }),
             dest.entity.systemUid,
             10,
-            source.entity,
+            source.entity
         );
         assert(focus!.uid === source.uid);
     } else {
+        dest.debase();
+        source.debase();
         const entity = dest.entity;
         const finalCenter = dest.entity.center;
         // delete incidental pipes
-        const incidental = source.entity.connections.filter((puid) => dest.entity.connections.includes(puid));
-        incidental.forEach((pipe) => {
-            context.deleteEntity(context.objectStore.get(pipe)!);
-        });
 
         let survivor = source;
         let loser = dest;
@@ -47,19 +45,34 @@ export function moveOnto(
             loser = tmp;
         }
 
+        const incidental = context.objectStore
+            .getConnections(source.uid)
+            .filter((puid) => context.objectStore.getConnections(dest.uid).includes(puid));
+        incidental.forEach((pipe) => {
+            // Non cascadingly delete
+            context.$store.dispatch("document/deleteEntity", context.objectStore.get(pipe)!.entity);
+        });
+
+        const pipeE = context.objectStore.getConnections(loser.uid).map((puid) => {
+            return cloneSimple(context.objectStore.get(puid)!.entity) as PipeEntity;
+        });
+
         survivor.entity.center.x = finalCenter.x;
         survivor.entity.center.y = finalCenter.y;
 
-        loser.entity.connections.forEach((puid) => {
-            const pipe = context.objectStore.get(puid) as Pipe;
-            assert (pipe.type === EntityType.PIPE);
+        cloneSimple(context.objectStore.getConnections(loser.uid)).forEach((puid) => {
+            const pipe = context.objectStore.get(puid)!.entity as PipeEntity;
+            assert(pipe.type === EntityType.PIPE);
 
-            replacePipeEndpointLocal(pipe.entity, loser.uid, survivor.uid);
-            survivor.connect(pipe.uid);
-        });
+            assert((pipe.endpointUid[0] === loser.uid) !== (pipe.endpointUid[1] === loser.uid));
 
-        loser.entity.connections.slice().forEach((c) => {
-            loser.disconnect(c);
+            context.$store.dispatch("document/updatePipeEndpoints", {
+                entity: pipe,
+                endpoints: [
+                    pipe.endpointUid[0] === loser.uid ? survivor.uid : pipe.endpointUid[0],
+                    pipe.endpointUid[1] === loser.uid ? survivor.uid : pipe.endpointUid[1]
+                ]
+            });
         });
 
         if (context.objectStore.has(loser.uid)) {

@@ -6,31 +6,30 @@
     </b-dropdown>
 </template>
 
-<script lang='ts'>
+<script lang="ts">
+import Component from "vue-class-component";
+import Vue from "vue";
+import { PAPER_SIZES, PaperSize } from "../../../common/src/paper-config";
 
-    import Component from 'vue-class-component';
-    import Vue from 'vue';
-    import {PAPER_SIZES, PaperSize} from "../../../common/src/paper-config";
+@Component({
+    props: {
+        initialSize: String,
+        onchange: Function,
+        disabled: Boolean
+    }
+})
+export default class PaperSizeSelector extends Vue {
+    size = (this as any).initialSize;
 
-    @Component({
-        props: {
-            initialSize: String,
-            onchange: Function,
-            disabled: Boolean,
-        },
-    })
-    export default class PaperSizeSelector extends Vue {
-        size = (this as any).initialSize;
+    get paperSizes() {
+        return PAPER_SIZES;
+    }
 
-        get paperSizes() {
-            return PAPER_SIZES;
-        }
-
-        changeSize(newSize: PaperSize) {
-            this.size = newSize.name;
-            if (this.$props.onchange) {
-                this.$props.onchange(newSize);
-            }
+    changeSize(newSize: PaperSize) {
+        this.size = newSize.name;
+        if (this.$props.onchange) {
+            this.$props.onchange(newSize);
         }
     }
+}
 </script>

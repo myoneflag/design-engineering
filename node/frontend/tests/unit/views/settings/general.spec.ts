@@ -10,7 +10,7 @@ describe('General.vue', () => {
     it('can edit all general properties', () => {
          const wrapper = shallowMount(General, { store });
          const fieldIds: string[] = (wrapper.vm as any).fields.map((v: [string, string]) => v[0]);
-         const expectedFields = _.keys(initialDocumentState.drawing.generalInfo);
+         const expectedFields = _.keys(initialDocumentState.drawing.metadata.generalInfo);
 
          expect(fieldIds.sort()).eql(expectedFields.sort());
     });

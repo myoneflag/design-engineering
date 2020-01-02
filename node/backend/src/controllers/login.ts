@@ -2,8 +2,6 @@ import {AuthRequired} from "../helpers/withAuth";
 import {Catalog} from "../entity/Catalog";
 import {NextFunction, Request, Response, Router} from "express";
 import {Session} from "../entity/Session";
-import * as initialCatalog from "../initial-catalog.json";
-import {Document} from '../entity/Document';
 import {AccessLevel, User} from "../entity/User";
 import * as bcrypt from 'bcrypt';
 import uuid from 'uuid';
@@ -48,16 +46,18 @@ export class LoginController {
             .where('session.user = :user', {user : login.username})
             .getOne();
 
+
         if (!existingSession) {
             existingSession = Session.create();
-            const dayAfter = new Date();
-            dayAfter.setDate(dayAfter.getDate() + 2);
-            existingSession.expiresOn = dayAfter;
-            existingSession.user = Promise.resolve(login);
             existingSession.id = uuid();
-            await existingSession.save();
         }
-        const catalogs = await Catalog.find();
+
+        const dayAfter = new Date();
+        dayAfter.setDate(dayAfter.getDate() + 2);
+        existingSession.expiresOn = dayAfter;
+        existingSession.user = Promise.resolve(login);
+        await existingSession.save();
+
         res.status(200).send({
             success: true,
             data: existingSession.id,

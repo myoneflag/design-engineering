@@ -1,20 +1,27 @@
-import {EntityType} from "../../../src/store/document/entities/types";
 <template>
     <b-container class="calculationSidePanel">
         <b-row>
             <b-col>
                 <b-button-group>
-                    <b-button variant="outline-dark"
-                              class="calculationBtn"
-                              @click="filterShown = !filterShown"
-                              :pressed="filterShown"
+                    <b-button
+                            variant="outline-dark"
+                            class="calculationBtn"
+                            @click="filterShown = !filterShown"
+                            :pressed="filterShown"
                     >
-                        Filters <v-icon  name="caret-down" scale="1"/>
+                        Filters
+                        <v-icon name="caret-down" scale="1"/>
                     </b-button>
 
                     <b-dropdown variant="outline-dark" size="sm" class="calculationBtn" text="Export">
-                        <b-dropdown-item variant="outline-dark" size="sm" :disabled="true">PDF (Coming soon)</b-dropdown-item>
-                        <b-dropdown-item variant="outline-dark" size="sm" :disabled="true">DWG (Coming soon)</b-dropdown-item>
+                        <b-dropdown-item variant="outline-dark" size="sm" :disabled="true"
+                        >PDF (Coming soon)
+                        </b-dropdown-item
+                        >
+                        <b-dropdown-item variant="outline-dark" size="sm" :disabled="true"
+                        >DWG (Coming soon)
+                        </b-dropdown-item
+                        >
                     </b-dropdown>
                 </b-button-group>
             </b-col>
@@ -22,22 +29,21 @@ import {EntityType} from "../../../src/store/document/entities/types";
         <b-row v-if="filterShown">
             <b-col>
                 <div class="filterPanel">
-                    <div v-for="(objectFilters, type) in filters">
+                    <div v-for="(objectFilters, type) in filters" :key="type">
                         <template v-if="Object.keys(objectFilters.filters).length">
-                            <b-check
-                                :checked="objectFilters.enabled"
-                                @input="onObjectCheck(type, $event)"
-                            >
+                            <b-check :checked="objectFilters.enabled" @input="onObjectCheck(type, $event)">
                                 <h4>{{ objectFilters.name }}</h4>
                             </b-check>
                             <b-check
                                     :disabled="!objectFilters.enabled"
                                     v-for="(filter, prop) in objectFilters.filters"
                                     :checked="filter.enabled"
-                                    @input="onCheck(type, prop, $event)">
+                                    @input="onCheck(type, prop, $event)"
+                                    :key="prop"
+                            >
                                 {{ filter.name }}
                             </b-check>
-                            <hr>
+                            <hr/>
                         </template>
                     </div>
                 </div>
@@ -47,40 +53,20 @@ import {EntityType} from "../../../src/store/document/entities/types";
 </template>
 
 <script lang="ts">
-    import Vue from 'vue';
-    import Component from 'vue-class-component';
-    import FloorPlanProperties from '../../../src/components/editor/property-window/FloorPlanProperties.vue';
-    import FlowSourceProperties from '../../../src/components/editor/property-window/FlowSourceProperties.vue';
-    import {
-        CalculationFilter,
-        CalculationFilters,
-        DocumentState,
-        DrawableEntity,
-    } from "../../../src/store/document/types";
-    import FittingProperties from '../../../src/components/editor/property-window/FittingProperties.vue';
-    import PipeProperties from '../../../src/components/editor/property-window/PipeProperties.vue';
-    import {EntityType, getEntityName} from "../../../src/store/document/entities/types";
-    import TMVProperties from '../../../src/components/editor/property-window/TMVProperties.vue';
-    import FixtureProperties from '../../../src/components/editor/property-window/FixtureProperties.vue';
-    import {MainEventBus} from '../../../src/store/main-event-bus';
-    import MultiFieldBuilder from '../../../src/components/editor/lib/MultiFieldBuilder.vue';
-    import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
-    import {AutoConnector} from '../../../src/htmlcanvas/lib/black-magic/auto-connect';
-    import DirectedValveProperties from '../../../src/components/editor/property-window/DirectedValveProperties.vue';
-    import {Catalog} from "../../../src/store/catalog/types";
-    import Fixture from "../../../src/htmlcanvas/objects/fixture";
-    import {countPsdUnits, getFields, PsdUnitsByFlowSystem} from "../../../src/calculations/utils";
-    import {isGermanStandard} from "../../../src/config";
-    import {StandardFlowSystemUids} from "../../../src/store/catalog";
-    import {makeDirectedValveCalculationFields} from "../../../src/store/document/calculations/directed-valve-calculation";
-    import {cloneSimple} from "../../../src/lib/utils";
+    import Vue from "vue";
+    import Component from "vue-class-component";
+    import { CalculationFilters, DocumentState } from "../../../src/store/document/types";
+    import { getEntityName } from "../../../src/store/document/entities/types";
+    import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
+    import { getFields } from "../../../src/calculations/utils";
+    import { cloneSimple } from "../../../src/lib/utils";
 
     @Component({
         components: {},
         props: {
             objects: Array,
-            onChange: Function,
-        },
+            onChange: Function
+        }
     })
     export default class CalculationsSidebar extends Vue {
         filterShown = true;
@@ -103,7 +89,7 @@ import {EntityType} from "../../../src/store/document/entities/types";
                     Vue.set(build, o.entity.type, {
                         name: getEntityName(o.entity.type),
                         filters: {},
-                        enabled: false,
+                        enabled: false
                     });
                     wasInserted = true;
                 }
@@ -113,7 +99,7 @@ import {EntityType} from "../../../src/store/document/entities/types";
                     if (!(f.property in build[o.entity.type])) {
                         Vue.set(build[o.entity.type].filters, f.property, {
                             name: f.title,
-                            value: false,
+                            value: false
                         });
                         if (f.defaultEnabled) {
                             build[o.entity.type].filters[f.property].enabled = true;
@@ -127,7 +113,6 @@ import {EntityType} from "../../../src/store/document/entities/types";
             });
 
             for (const eType in existing) {
-
                 if (eType in build && existing.hasOwnProperty(eType)) {
                     for (const prop in existing[eType].filters) {
                         if (prop in build[eType].filters) {
@@ -147,8 +132,9 @@ import {EntityType} from "../../../src/store/document/entities/types";
                 // noinspection JSUnfilteredForInLoop
                 if (filters.hasOwnProperty(eType)) {
                     for (const prop in filters[eType].filters) {
-                        // noinspection JSUnfilteredForInLoop
-                        this.onCheck(eType, prop, filters[eType].filters[prop].enabled, false);
+                        if (filters[eType].filters.hasOwnProperty(prop)) {
+                            this.onCheck(eType, prop, filters[eType].filters[prop].enabled, false);
+                        }
                     }
                     this.onObjectCheck(eType, filters[eType].enabled, false);
                 }
@@ -157,7 +143,7 @@ import {EntityType} from "../../../src/store/document/entities/types";
         }
 
         get document(): DocumentState {
-            return this.$store.getters['document/document'];
+            return this.$store.getters["document/document"];
         }
 
         onCheck(eType: string, prop: string, value: boolean, shouldChange: boolean = true) {
@@ -165,14 +151,14 @@ import {EntityType} from "../../../src/store/document/entities/types";
                 Vue.set(this.document.uiState.calculationFilters, eType, {
                     name: this.filters[eType].name,
                     enabled: false,
-                    filters: {},
+                    filters: {}
                 });
             }
 
             if (!(prop in this.document.uiState.calculationFilters[eType].filters)) {
                 Vue.set(this.document.uiState.calculationFilters[eType].filters, prop, {
                     name: this.filters[eType].filters[prop].name,
-                    enabled: value,
+                    enabled: value
                 });
             }
             this.document.uiState.calculationFilters[eType].filters[prop].enabled = value;
@@ -186,11 +172,12 @@ import {EntityType} from "../../../src/store/document/entities/types";
                 Vue.set(this.document.uiState.calculationFilters, eType, {
                     name: this.filters[eType].name,
                     enabled: false,
-                    filters: {},
+                    filters: {}
                 });
             }
 
             this.document.uiState.calculationFilters[eType].enabled = value;
+
             if (shouldChange) {
                 this.$props.onChange();
             }
@@ -200,7 +187,7 @@ import {EntityType} from "../../../src/store/document/entities/types";
 
 <style lang="less">
     .calculationBtn {
-        background-color:white;
+        background-color: white;
     }
 
     .calculationSidePanel {

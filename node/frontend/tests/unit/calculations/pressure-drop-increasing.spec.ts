@@ -61,7 +61,7 @@ describe('object\'s head losses', () => {
             switch (o.entity.type) {
                 case EntityType.DIRECTED_VALVE:
                 case EntityType.SYSTEM_NODE:
-                case EntityType.FLOW_SOURCE:
+                case EntityType.RISER:
                 case EntityType.FITTING:
                     const connections = _.clone(o.entity.connections);
                     if (o.entity.type === EntityType.SYSTEM_NODE) {
@@ -133,7 +133,7 @@ describe('object\'s head losses', () => {
                         pipeDone = true;
                     }
                     break;
-                case EntityType.TMV:
+                case EntityType.BIG_VALVE:
                     assertIncreasing(
                         context,
                         o,
@@ -197,10 +197,10 @@ describe('object\'s head losses', () => {
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.FITTING:
                 case EntityType.PIPE:
-                case EntityType.FLOW_SOURCE:
+                case EntityType.RISER:
                 case EntityType.RESULTS_MESSAGE:
                 case EntityType.SYSTEM_NODE:
-                case EntityType.TMV:
+                case EntityType.BIG_VALVE:
                 case EntityType.FIXTURE:
                     break;
                 default:

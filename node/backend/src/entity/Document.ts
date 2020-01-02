@@ -11,7 +11,7 @@ export class Document extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @OneToMany(() => Operation, (op: Operation) => op.document)
+    @OneToMany(() => Operation, (op: Operation) => op.document, {cascade: true})
     operations: Promise<Operation[]>;
 
     @ManyToOne(() => Organization)

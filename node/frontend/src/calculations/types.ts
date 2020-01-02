@@ -1,15 +1,16 @@
-import {DrawingState} from '../../src/store/document/types';
-import {Catalog} from '../../src/store/catalog/types';
-import {ObjectStore} from '../../src/htmlcanvas/lib/types';
+import { DocumentState, DrawingState } from "../../src/store/document/types";
+import { Catalog } from "../../src/store/catalog/types";
+import { GlobalStore } from "../htmlcanvas/lib/global-store";
 
 export enum DemandType {
     PSD,
     Typical,
-    Static,
+    Static
 }
 
 export interface CalculationContext {
     drawing: DrawingState;
     catalog: Catalog;
-    objectStore: ObjectStore;
+    globalStore: GlobalStore;
+    doc: DocumentState;
 }

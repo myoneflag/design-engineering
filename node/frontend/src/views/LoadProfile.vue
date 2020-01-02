@@ -7,12 +7,9 @@
 </template>
 
 <script lang="ts">
-    import Component from 'vue-class-component';
-    import Vue from 'vue';
+import Component from "vue-class-component";
+import Vue from "vue";
 
-    @Component
-    export default class LoadProfile extends Vue {
-    }
-
-
+@Component
+export default class LoadProfile extends Vue {}
 </script>

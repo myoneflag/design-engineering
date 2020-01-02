@@ -1,7 +1,6 @@
 // engine to resolve equations that depend on variables.
 
 export default class EquationEngine {
-
     resolved: Map<string, any>;
 
     unresolved: Map<string, Equation[]>;
@@ -20,7 +19,8 @@ export default class EquationEngine {
             equation = p1 as Equation;
         } else {
             equation = {
-                evaluate: p2 as Evaluator, inputs: p1 as string[],
+                evaluate: p2 as Evaluator,
+                inputs: p1 as string[]
             };
         }
         equation.inputs.forEach((i) => {
@@ -41,7 +41,7 @@ export default class EquationEngine {
 
     submitValue(id: string, value: any) {
         if (this.resolved.has(id)) {
-            throw new Error('Value already submitted');
+            throw new Error("Value already submitted");
         }
 
         this.resolved.set(id, value);
@@ -76,8 +76,11 @@ export default class EquationEngine {
     }
 
     toString() {
-        return JSON.stringify(Array.from(this.resolved.entries()), null, 2) + '\n' +
-            JSON.stringify(Array.from(this.unresolved.entries()), null, 2);
+        return (
+            JSON.stringify(Array.from(this.resolved.entries()), null, 2) +
+            "\n" +
+            JSON.stringify(Array.from(this.unresolved.entries()), null, 2)
+        );
     }
 }
 

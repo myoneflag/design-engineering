@@ -1,5 +1,6 @@
 // FlowAssignment[key] = [flow, beginEndpoint]
-import {serializeValue} from '../../src/calculations/graph';
+
+import stringify from "json-stable-stringify";
 
 export class FlowAssignment extends Map<string, [number, string]> {
     getFlow(edgeUid: string, fromUid?: string): number {
@@ -30,9 +31,9 @@ export class FlowAssignment extends Map<string, [number, string]> {
     }
 
     toString() {
-        let repr = '';
+        let repr = "";
         this.forEach((v, k) => {
-            repr += serializeValue(k) + ' ====> ' + serializeValue(v) + '\n\n';
+            repr += stringify(k) + " ====> " + stringify(v) + "\n\n";
         });
         return repr;
     }

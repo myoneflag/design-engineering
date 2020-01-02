@@ -13,7 +13,7 @@ describe('FlowSystems.vue', () => {
 
         fieldIds.push('uid');
 
-        const expectedFields = _.keys(initialDocumentState.drawing.flowSystems[0]);
+        const expectedFields = _.keys(initialDocumentState.drawing.metadata.flowSystems[0]);
 
         expect(fieldIds.sort()).eql(expectedFields.sort());
     });
