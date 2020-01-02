@@ -1,6 +1,6 @@
-import {MutationTree} from 'vuex';
-import CatalogState from '../../../src/store/catalog/types';
-import {MainEventBus} from '../../../src/store/main-event-bus';
+import { MutationTree } from "vuex";
+import CatalogState from "../../../src/store/catalog/types";
+import { MainEventBus } from "../../../src/store/main-event-bus";
 
 export const mutations: MutationTree<CatalogState> = {
     setDefault(state, payload) {
@@ -9,5 +9,5 @@ export const mutations: MutationTree<CatalogState> = {
 
     setLoaded(state, loaded) {
         state.loaded = loaded;
-    },
+    }
 };

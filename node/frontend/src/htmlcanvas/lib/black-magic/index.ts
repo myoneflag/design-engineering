@@ -1,5 +1,5 @@
-import {DrawableEntityConcrete} from '../../../../src/store/document/entities/concrete-entity';
-import * as _ from 'lodash';
+import { DrawableEntityConcrete } from "../../../../src/store/document/entities/concrete-entity";
+import * as _ from "lodash";
 
 export interface MagicResult {
     created: DrawableEntityConcrete[];

@@ -1,59 +1,59 @@
-import {LayerImplementation} from '../../../src/htmlcanvas/layers/layer';
-import {CalculationFilters, DocumentState} from '../../../src/store/document/types';
-import {DrawingContext} from '../../../src/htmlcanvas/lib/types';
-import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
-import {MouseMoveResult, UNHANDLED} from '../../../src/htmlcanvas/types';
-import CalculationEngine from '../../../src/calculations/calculation-engine';
-import {DemandType} from '../../../src/calculations/types';
-import {EntityType} from '../../../src/store/document/entities/types';
-import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
-import Pipe from '../../../src/htmlcanvas/objects/pipe';
-import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
-import Flatten from '@flatten-js/core';
+import { LayerImplementation } from "../../../src/htmlcanvas/layers/layer";
+import { CalculationFilters, DocumentState } from "../../../src/store/document/types";
+import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
+import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
+import { MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
+import CalculationEngine from "../../../src/calculations/calculation-engine";
+import { DemandType } from "../../../src/calculations/types";
+import { EntityType } from "../../../src/store/document/entities/types";
+import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
+import Pipe from "../../../src/htmlcanvas/objects/pipe";
+import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
+import Flatten from "@flatten-js/core";
 import {
     cooperativeYield,
     matrixScale,
     polygonOverlapsShapeApprox,
     polygonsOverlap
-} from '../../../src/htmlcanvas/utils';
-import {isConnectable} from '../../../src/store/document';
-import {isCalculated} from '../../../src/store/document/calculations';
-import * as TM from 'transformation-matrix';
-import {tm2flatten} from '../../../src/htmlcanvas/lib/utils';
-import {MIN_SCALE} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
-import {assertUnreachable} from "../../config";
+} from "../../../src/htmlcanvas/utils";
+import { isConnectable } from "../../../src/store/document";
+import { isCalculated } from "../../../src/store/document/calculations";
+import * as TM from "transformation-matrix";
+import { tm2flatten } from "../../../src/htmlcanvas/lib/utils";
+import { MIN_SCALE } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
+import { assertUnreachable } from "../../config";
 
 const MINIMUM_SIGNIFICANT_PIPE_LENGTH_MM = 500;
 export const SIGNIFICANT_FLOW_THRESHOLD = 1e-5;
 
 export default class CalculationLayer extends LayerImplementation {
-
     calculator: CalculationEngine = new CalculationEngine();
     async draw(
         context: DrawingContext,
         active: boolean,
         shouldContinue: () => boolean,
         reactive: Set<string>,
-        calculationFilters: CalculationFilters | null,
+        calculationFilters: CalculationFilters | null
     ) {
         // TODO: asyncify
-        const {ctx, vp} = context;
+        const { ctx, vp } = context;
         if (active && calculationFilters) {
             // 1. Load all calculation data and record them
             // 2. Load all message layout options for this data. Not explcitly needed as a separate step
             // 3. Order objects by importance
             // 4. Draw messages for objects, keeping track of what was drawn and avoid overlaps by drawing
-                    // in a new place.
+            // in a new place.
 
             const obj2props = new Map<string, CalculationData[]>();
 
             this.objectStore.forEach((o) => {
-                if (isCalculated(o.entity) && o.type in calculationFilters && calculationFilters[o.type].enabled &&
-                    context.globalStore.getCalculation(o.entity)) {
+                if (
+                    isCalculated(o.entity) &&
+                    o.type in calculationFilters &&
+                    calculationFilters[o.type].enabled &&
+                    context.globalStore.getCalculation(o.entity)
+                ) {
                     const fields = o.getCalculationFields(context, calculationFilters);
-                    if (o.type === EntityType.BIG_VALVE) {
-                        console.log('big valve got ' + JSON.stringify(fields));
-                    }
                     fields.forEach((f) => {
                         if (!obj2props.has(f.attachUid)) {
                             obj2props.set(f.attachUid, []);
@@ -63,9 +63,7 @@ export default class CalculationLayer extends LayerImplementation {
                 }
             });
 
-            const objList =
-                Array.from(this.objectStore.values())
-                    .filter((o) => o.calculated && obj2props.has(o.uid));
+            const objList = Array.from(this.objectStore.values()).filter((o) => o.calculated && obj2props.has(o.uid));
             objList.sort((a, b) => {
                 return -(this.messagePriority(context, a) - this.messagePriority(context, b));
             });
@@ -82,6 +80,7 @@ export default class CalculationLayer extends LayerImplementation {
 
             await cooperativeYield(shouldContinue);
 
+            // tslint:disable-next-line:prefer-for-of
             for (let i = 0; i < objList.length; i++) {
                 const o = objList[i];
 
@@ -94,9 +93,8 @@ export default class CalculationLayer extends LayerImplementation {
                 nb += boxes.length;
                 let drawn = false;
                 for (const [position, shape] of boxes) {
-
                     if (!vp.someOnScreen(shape)) {
-                        continue
+                        continue;
                     }
 
                     let invalid = false;
@@ -112,10 +110,12 @@ export default class CalculationLayer extends LayerImplementation {
                     if (!invalid) {
                         // don't cover connectables
                         for (const c of allOnScreen) {
-                            if (isConnectable(c.entity.type) || c.entity.type === EntityType.FIXTURE ||
-                                c.entity.type === EntityType.BIG_VALVE) {
+                            if (
+                                isConnectable(c.entity.type) ||
+                                c.entity.type === EntityType.FIXTURE ||
+                                c.entity.type === EntityType.BIG_VALVE
+                            ) {
                                 pos++;
-
 
                                 if (pos % 5000 === 4999) {
                                     await cooperativeYield(shouldContinue);
@@ -183,7 +183,7 @@ export default class CalculationLayer extends LayerImplementation {
             case EntityType.PIPE:
                 return 70 + 10 - 10 / ((object as Pipe).computedLengthM + 1);
             case EntityType.BACKGROUND_IMAGE:
-                throw new Error('shouldn\'t have calculations');
+                throw new Error("shouldn't have calculations");
         }
         assertUnreachable(object.entity);
     }
@@ -196,21 +196,13 @@ export default class CalculationLayer extends LayerImplementation {
         //
     }
 
-
     calculate(context: CanvasContext, demandType: DemandType, done: () => void) {
-
         context.document.uiState.isCalculating = true;
 
-        this.calculator.calculate(
-            context.globalStore,
-            context.document,
-            context.effectiveCatalog,
-            demandType,
-            () => {
-
+        this.calculator.calculate(context.globalStore, context.document, context.effectiveCatalog, demandType, () => {
             context.document.uiState.lastCalculationId = context.document.nextId;
             context.document.uiState.lastCalculationUiSettings = {
-                demandType,
+                demandType
             };
             context.document.uiState.isCalculating = false;
 
@@ -229,7 +221,6 @@ export default class CalculationLayer extends LayerImplementation {
     onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
         return UNHANDLED;
     }
-
 
     onMouseUp(event: MouseEvent, context: CanvasContext) {
         return false;

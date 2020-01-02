@@ -1,23 +1,25 @@
-import DrawableObject from '../../../src/htmlcanvas/lib/drawable-object';
-import {CalculationFilters, Coord, Coord3D, DrawableEntity} from '../../../src/store/document/types';
-import {DrawingContext, GlobalStore, ObjectStore} from '../../../src/htmlcanvas/lib/types';
-import {Interaction} from '../../../src/htmlcanvas/lib/interaction';
-import {EntityType} from '../../../src/store/document/entities/types';
+import DrawableObject from "../../../src/htmlcanvas/lib/drawable-object";
+import { CalculationFilters, Coord, Coord3D, DrawableEntity } from "../../../src/store/document/types";
+import { DrawingContext} from "../../../src/htmlcanvas/lib/types";
+import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
+import { EntityType } from "../../../src/store/document/entities/types";
 import {
     ConnectableEntityConcrete,
     DrawableEntityConcrete,
     EdgeLikeEntity
-} from '../../../src/store/document/entities/concrete-entity';
-import Layer from '../../../src/htmlcanvas/layers/layer';
-import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
-import {CalculationContext} from '../../../src/calculations/types';
-import {FlowNode} from '../../../src/calculations/calculation-engine';
-import Flatten from '@flatten-js/core';
-import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
+} from "../../../src/store/document/entities/concrete-entity";
+import Layer from "../../../src/htmlcanvas/layers/layer";
+import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
+import { CalculationContext } from "../../../src/calculations/types";
+import { FlowNode } from "../../../src/calculations/calculation-engine";
+import Flatten from "@flatten-js/core";
+import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
 import * as TM from "transformation-matrix";
 import FittingEntity from "../../store/document/entities/fitting-entity";
 import PipeEntity from "../../store/document/entities/pipe-entity";
-import * as _ from 'lodash';
+import * as _ from "lodash";
+import { GlobalStore } from "./global-store";
+import { ObjectStore } from "./object-store";
 
 export default abstract class BaseBackedObject extends DrawableObject {
     entityBacked: () => DrawableEntityConcrete;
@@ -36,7 +38,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
         obj: () => DrawableEntityConcrete,
         onSelect: (event: MouseEvent | KeyboardEvent) => void,
         onChange: () => void,
-        onCommit: (event: MouseEvent | KeyboardEvent) => void,
+        onCommit: (event: MouseEvent | KeyboardEvent) => void
     ) {
         super(null, layer);
         this.vm = vm;
@@ -56,8 +58,9 @@ export default abstract class BaseBackedObject extends DrawableObject {
             if (result) {
                 return result;
             }
-            throw new Error('Parent object not created. parent uid: '
-                + this.entity.parentUid + ' this uid ' + this.entity.uid);
+            throw new Error(
+                "Parent object not created. parent uid: " + this.entity.parentUid + " this uid " + this.entity.uid
+            );
         }
     }
 
@@ -69,33 +72,33 @@ export default abstract class BaseBackedObject extends DrawableObject {
         context: DrawingContext,
         data: CalculationData[],
         dryRun?: boolean,
-        warnSingOnly?: boolean,
+        warnSingOnly?: boolean
     ): Flatten.Box {
-        throw new Error('Not implemented. Please use @CalculatedObject to implement.');
+        throw new Error("Not implemented. Please use @CalculatedObject to implement.");
     }
 
     measureCalculationBox(context: DrawingContext, data: CalculationData[]): Array<[TM.Matrix, Flatten.Polygon]> {
-        throw new Error('Not implemented. Please use @CalculatedObject to implement.');
+        throw new Error("Not implemented. Please use @CalculatedObject to implement.");
     }
 
     getCalculationFields(context: DrawingContext, filters: CalculationFilters): CalculationData[] {
-        throw new Error('Not implemented. Please use @CalculatedObject to implement.');
+        throw new Error("Not implemented. Please use @CalculatedObject to implement.");
     }
 
     hasWarning(context: DrawingContext): boolean {
-        throw new Error('Not implemented. Please use @CalculatedObject to implement.');
+        throw new Error("Not implemented. Please use @CalculatedObject to implement.");
     }
 
     debase(): void {
-        throw new Error('Method not implemented. Please use @Connectable to implement.');
+        throw new Error("Method not implemented. Please use @Connectable to implement.");
     }
 
     rebase(context: CanvasContext): void {
-        throw new Error('Method not implemented. Please use @Connectable to implement.');
+        throw new Error("Method not implemented. Please use @Connectable to implement.");
     }
 
     getSortedAngles(): number[] {
-        throw new Error('Method not implemented. Please use @Connectable to implement.');
+        throw new Error("Method not implemented. Please use @Connectable to implement.");
     }
 
     abstract offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null;
@@ -110,7 +113,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
         flowLS: number,
         from: FlowNode,
         to: FlowNode,
-        signed: boolean,
+        signed: boolean
     ): number | null;
 
     get uid() {
@@ -124,19 +127,19 @@ export default abstract class BaseBackedObject extends DrawableObject {
     abstract getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[];
 
     getCalculationTower(context: CalculationContext): Array<[FittingEntity, PipeEntity] | [FittingEntity]> {
-        throw new Error('Method not implemented. Please use @Connectable to implement.');
+        throw new Error("Method not implemented. Please use @Connectable to implement.");
     }
 
     get3DOffset(connection: string): Coord3D {
-        throw new Error('Method not implemented. Please use @Connectable to implement.');
+        throw new Error("Method not implemented. Please use @Connectable to implement.");
     }
 
     getCalculationNode(context: CalculationContext, connectableUid: string): ConnectableEntityConcrete {
-        throw new Error('Method not implemented. Please use @Connectable to implement.');
+        throw new Error("Method not implemented. Please use @Connectable to implement.");
     }
 
     getCalculationConnectionGroups(context: CalculationContext): EdgeLikeEntity[][] {
-        throw new Error('Method not implemented. Please use @Connectable to implement.');
+        throw new Error("Method not implemented. Please use @Connectable to implement.");
     }
 
     getCalculationConnections(): string[] {
@@ -157,7 +160,5 @@ export default abstract class BaseBackedObject extends DrawableObject {
         }
     }
 
-    onUpdate() {
-
-    }
+    onUpdate() { /**/ }
 }

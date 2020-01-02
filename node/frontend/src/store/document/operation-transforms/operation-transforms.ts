@@ -3,12 +3,11 @@ export interface OperationTransform {
     type: OPERATION_NAMES;
 }
 
-export type OperationTransformConcrete =
-    DiffOperation | CommittedOperation;
+export type OperationTransformConcrete = DiffOperation | CommittedOperation;
 
 export enum OPERATION_NAMES {
-    DIFF_OPERATION = 'DIFF_OPERATION',
-    COMMITTED_OPERATION = 'COMMITTED_OPERATION',
+    DIFF_OPERATION = "DIFF_OPERATION",
+    COMMITTED_OPERATION = "COMMITTED_OPERATION"
 }
 
 // the before, after and object objects contain the object embedded in its address,

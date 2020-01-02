@@ -1,6 +1,6 @@
-import {ActionTree, GetterTree} from 'vuex';
-import {RootState} from '../../src/store/types';
-import * as _ from 'lodash';
+import { ActionTree, GetterTree } from "vuex";
+import { RootState } from "../../src/store/types";
+import * as _ from "lodash";
 
 export const getters: GetterTree<RootState, RootState> = {
     appVersion(state) {
@@ -10,5 +10,5 @@ export const getters: GetterTree<RootState, RootState> = {
     effectiveCatalog(state: any) {
         const defaultCatalog = state.catalog.defaultCatalog;
         return defaultCatalog;
-    },
+    }
 };

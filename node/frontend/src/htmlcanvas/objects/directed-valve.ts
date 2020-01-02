@@ -1,25 +1,25 @@
-import BackedConnectable from '../../../src/htmlcanvas/lib/BackedConnectable';
+import BackedConnectable from "../../../src/htmlcanvas/lib/BackedConnectable";
 // tslint:disable-next-line:max-line-length
 import DirectedValveEntity, {
     determineConnectableSystemUid,
     fillDirectedValveFields
-} from '../../../src/store/document/entities/directed-valves/directed-valve-entity';
-import {DrawingContext} from '../../../src/htmlcanvas/lib/types';
-import {Coord, DrawableEntity} from '../../../src/store/document/types';
-import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
-import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
-import DrawableObjectFactory from '../../../src/htmlcanvas/lib/drawable-object-factory';
-import {EntityType} from '../../../src/store/document/entities/types';
-import {getDragPriority} from '../../../src/store/document';
-import {CalculationContext} from '../../../src/calculations/types';
-import {FlowNode} from '../../../src/calculations/calculation-engine';
-import {ConnectableObject} from '../../../src/htmlcanvas/lib/object-traits/connectable';
-import * as TM from 'transformation-matrix';
-import {CenteredObject} from '../../../src/htmlcanvas/lib/object-traits/centered-object';
-import CenterDraggableObject from '../../../src/htmlcanvas/lib/object-traits/center-draggable-object';
-import {SelectableObject} from '../../../src/htmlcanvas/lib/object-traits/selectable';
-import {canonizeAngleRad, cloneSimple, lighten} from '../../../src/lib/utils';
-import {IsolationValve, ValveType} from '../../../src/store/document/entities/directed-valves/valve-types';
+} from "../../../src/store/document/entities/directed-valves/directed-valve-entity";
+import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
+import { Coord, DrawableEntity } from "../../../src/store/document/types";
+import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
+import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
+import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
+import { EntityType } from "../../../src/store/document/entities/types";
+import { getDragPriority } from "../../../src/store/document";
+import { CalculationContext } from "../../../src/calculations/types";
+import { FlowNode } from "../../../src/calculations/calculation-engine";
+import { ConnectableObject } from "../../../src/htmlcanvas/lib/object-traits/connectable";
+import * as TM from "transformation-matrix";
+import { CenteredObject } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
+import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
+import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
+import { canonizeAngleRad, cloneSimple, lighten } from "../../../src/lib/utils";
+import { IsolationValve, ValveType } from "../../../src/store/document/entities/directed-valves/valve-types";
 import {
     drawRpzdDouble,
     getRpzdHeadLoss,
@@ -28,18 +28,20 @@ import {
     VALVE_HEIGHT_MM,
     VALVE_LINE_WIDTH_MM,
     VALVE_SIZE_MM
-} from '../../../src/htmlcanvas/lib/utils';
-import Pipe from '../../../src/htmlcanvas/objects/pipe';
-import {matrixScale} from '../../../src/htmlcanvas/utils';
-import {Catalog} from '../../../src/store/catalog/types';
-import {DrawingArgs} from '../../../src/htmlcanvas/lib/drawable-object';
-import {Calculated, CalculatedObject} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
-import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
-import {assertUnreachable} from "../../../src/config";
-import PipeEntity, {MutablePipe} from "../../store/document/entities/pipe-entity";
-import DirectedValveCalculation, {emptyDirectedValveCalculation} from "../../store/document/calculations/directed-valve-calculation";
+} from "../../../src/htmlcanvas/lib/utils";
+import Pipe from "../../../src/htmlcanvas/objects/pipe";
+import { matrixScale } from "../../../src/htmlcanvas/utils";
+import { Catalog } from "../../../src/store/catalog/types";
+import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
+import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
+import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
+import { assertUnreachable } from "../../../src/config";
+import PipeEntity, { MutablePipe } from "../../store/document/entities/pipe-entity";
+import DirectedValveCalculation, {
+    emptyDirectedValveCalculation
+} from "../../store/document/calculations/directed-valve-calculation";
 import FittingEntity from "../../store/document/entities/fitting-entity";
-import uuid from 'uuid';
+import uuid from "uuid";
 
 @CalculatedObject
 @SelectableObject
@@ -47,7 +49,6 @@ import uuid from 'uuid';
 @ConnectableObject
 @CenteredObject
 export default class DirectedValve extends BackedConnectable<DirectedValveEntity> implements Calculated {
-
     static register() {
         DrawableObjectFactory.registerEntity(EntityType.DIRECTED_VALVE, this);
     }
@@ -78,18 +79,15 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             const sa = Math.atan2(soc.y, soc.x);
             const oa = Math.atan2(ooc.y, ooc.x);
             const diff = canonizeAngleRad(oa - (sa + Math.PI));
-            return canonizeAngleRad((sa + Math.PI + diff / 2));
+            return canonizeAngleRad(sa + Math.PI + diff / 2);
         } else {
-            throw new Error('invalid configuration for directed entity');
+            throw new Error("invalid configuration for directed entity");
         }
     }
 
     get position(): TM.Matrix {
         const scale = 1 / this.fromParentToWorldLength(1);
-        return TM.transform(
-            TM.translate(this.entity.center.x, this.entity.center.y),
-            TM.scale(scale, scale),
-        );
+        return TM.transform(TM.translate(this.entity.center.x, this.entity.center.y), TM.scale(scale, scale));
     }
 
     get otherUid(): string | undefined {
@@ -100,7 +98,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         return [];
     }
 
-    drawInternal(context: DrawingContext, {active, selected}: DrawingArgs): void {
+    drawInternal(context: DrawingContext, { active, selected }: DrawingArgs): void {
         const s = matrixScale(context.ctx.getTransform());
         context.ctx.rotate(this.rotationRad);
 
@@ -113,7 +111,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
         const baseWidth = Math.max(2.0 / s, VALVE_LINE_WIDTH_MM / this.toWorldLength(1));
 
-        context.ctx.fillStyle =  color.hex;
+        context.ctx.fillStyle = color.hex;
         context.ctx.strokeStyle = color.hex;
         context.ctx.lineWidth = baseWidth;
         switch (this.entity.valve.type) {
@@ -185,14 +183,13 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     drawRpzdSingle(context: DrawingContext) {
         const ctx = context.ctx;
         const oldfs = ctx.fillStyle;
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = "#ffffff";
 
         ctx.fillRect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * 1.3, VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * 2.6);
 
         ctx.beginPath();
         ctx.rect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * 1.3, VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * 2.6);
         ctx.stroke();
-
 
         ctx.fillStyle = oldfs;
         ctx.beginPath();
@@ -204,7 +201,6 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     }
 
     drawWaterMeter(context: DrawingContext) {
-
         const ctx = context.ctx;
         ctx.beginPath();
         ctx.moveTo(-VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
@@ -233,7 +229,6 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         ctx.moveTo(VALVE_SIZE_MM, -VALVE_HEIGHT_MM + offset);
         ctx.lineTo(VALVE_SIZE_MM, 0 + offset);
 
-
         ctx.moveTo(-VALVE_SIZE_MM / 2, -VALVE_HEIGHT_MM / 2 + offset);
         ctx.lineTo(VALVE_SIZE_MM / 2, VALVE_HEIGHT_MM / 2 + offset);
         ctx.moveTo(VALVE_SIZE_MM * 0.8, VALVE_HEIGHT_MM * 0.2 + offset);
@@ -258,7 +253,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 entity.sourceUid = connections[0];
             }
         } else {
-            throw new Error('Directed valve is connected to too many things');
+            throw new Error("Directed valve is connected to too many things");
         }
     }
 
@@ -266,7 +261,6 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         const dist = Math.sqrt(objectCoord.x ** 2 + objectCoord.y ** 2);
         return dist < VALVE_SIZE_MM + (objectRadius ? objectRadius : 0);
     }
-
 
     prepareDelete(context: CanvasContext): BaseBackedObject[] {
         return [];
@@ -280,7 +274,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         const sizes = this.objectStore.getConnections(this.entity.uid).map((uid) => {
             const p = this.objectStore.get(uid) as Pipe;
             if (!p || p.type !== EntityType.PIPE) {
-                throw new Error('A non pipe object is connected to a valve');
+                throw new Error("A non pipe object is connected to a valve");
             }
 
             const calculation = context.globalStore.getCalculation(p.entity);
@@ -303,7 +297,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         flowLS: number,
         from: FlowNode,
         to: FlowNode,
-        signed: boolean,
+        signed: boolean
     ): number | null {
         const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
 
@@ -319,7 +313,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         }
 
         if (this.objectStore.getConnections(this.entity.uid).length !== 2) {
-            throw new Error('need 2 connections to have a calculation here.');
+            throw new Error("need 2 connections to have a calculation here.");
         }
 
         let kValue: number | null = 0;
@@ -373,8 +367,9 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                     flowLS,
                     systemUid,
                     this.entity.valve.type,
-                    this.entity.valve.type === ValveType.RPZD_DOUBLE_ISOLATED ?
-                    this.entity.valve.isolateOneWhenCalculatingHeadLoss : false,
+                    this.entity.valve.type === ValveType.RPZD_DOUBLE_ISOLATED
+                        ? this.entity.valve.isolateOneWhenCalculatingHeadLoss
+                        : false
                 );
             }
             case ValveType.PRESSURE_RELIEF_VALVE:
@@ -382,10 +377,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 break;
         }
 
-        const volLM = this.largestPipeSizeNominalMM(context)! ** 2 * Math.PI / 4 / 1000;
+        const volLM = (this.largestPipeSizeNominalMM(context)! ** 2 * Math.PI) / 4 / 1000;
         const velocityMS = flowLS / volLM;
         if (kValue) {
-            return sign * (kValue * velocityMS ** 2) / (2 * ga);
+            return (sign * (kValue * velocityMS ** 2)) / (2 * ga);
         } else {
             return 0;
         }
@@ -399,27 +394,28 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             case ValveType.STRAINER:
                 return catalog.valves[this.entity.valve.catalogId].name;
             case ValveType.RPZD_DOUBLE_ISOLATED:
-                    return 'RPZD Double Isolated - 100% Load';
+                return "RPZD Double Isolated - 100% Load";
             case ValveType.RPZD_SINGLE:
-                return 'RPZD';
+                return "RPZD";
             case ValveType.RPZD_DOUBLE_SHARED:
-                return 'RPZD Double - 50/50 Load';
+                return "RPZD Double - 50/50 Load";
             case ValveType.PRESSURE_RELIEF_VALVE:
-                return 'PRV';
+                return "PRV";
         }
         assertUnreachable(this.entity.valve);
     }
 
     connect(uid: string) {
         if (this.objectStore.getConnections(this.entity.uid).length === 0) {
-            //this.entity.sourceUid = uid;
+            // this.entity.sourceUid = uid;
         } else if (this.objectStore.getConnections(this.entity.uid).length === 1) {
             if (this.entity.sourceUid !== this.objectStore.getConnections(this.entity.uid)[0]) {
                 this.entity.sourceUid = uid;
             }
         } else {
             // The following error is disabled to allow intermittent connecting / disconnecting.
-            //throw new Error('shouldn\'t be extending here. connections: ' + JSON.stringify(this.objectStore.getConnections(this.entity.uid)) + ' connecting ' + uid);
+            // throw new Error('shouldn\'t be extending here. connections: ' +
+            // JSON.stringify(this.objectStore.getConnections(this.entity.uid)) + ' connecting ' + uid);
         }
     }
 
@@ -428,7 +424,6 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         if (tower.length === 0) {
             return [];
         } else if (tower.length === 1) {
-            console.log('single lengths');
             // replace the connectable
             const e = cloneSimple(this.entity);
             e.uid = tower[0][0].uid;
@@ -436,17 +431,15 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             if (this.objectStore.has(e.sourceUid)) {
                 e.sourceUid = this.objectStore.get(e.sourceUid)!.getCalculationEntities(context)[0].uid;
             }
-            console.log('my source: ' + this.entity.sourceUid + ' produced source: ' + e.sourceUid);
             return [e];
         } else if (tower.length === 2) {
-            console.log('separate lengths ' + JSON.stringify(tower));
             // Plop us on the pipe in the middle.
             const pipe = tower[1][1]!;
             const p1 = cloneSimple(pipe);
             const p2 = cloneSimple(pipe);
             p2.uid = uuid();
-            (p1 as MutablePipe).endpointUid = [p1.endpointUid[0], this.uid + '.calculation'];
-            (p2 as MutablePipe).endpointUid = [this.uid + '.calculation', p2.endpointUid[1]];
+            (p1 as MutablePipe).endpointUid = [p1.endpointUid[0], this.uid + ".calculation"];
+            (p2 as MutablePipe).endpointUid = [this.uid + ".calculation", p2.endpointUid[1]];
             let lower: string;
             let higher: string;
             if (p1.endpointUid[0] === tower[0][0].uid) {
@@ -458,16 +451,18 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             }
 
             if (lower === undefined || higher === undefined) {
-                throw new Error('Invalid tower configuration');
+                throw new Error("Invalid tower configuration");
             }
 
             const e = cloneSimple(this.entity);
-            e.uid = e.uid + '.calculation';
+            e.uid = e.uid + ".calculation";
             e.calculationHeightM = (tower[0][0].calculationHeightM! + tower[1][0].calculationHeightM!) / 2;
 
             // we have to figure out whether source is the lower one or higher one.
-            if ((this.objectStore.get(this.entity.sourceUid) as Pipe).entity.heightAboveFloorM <
-                (this.objectStore.get(this.otherUid!) as Pipe).entity.heightAboveFloorM) {
+            if (
+                (this.objectStore.get(this.entity.sourceUid) as Pipe).entity.heightAboveFloorM <
+                (this.objectStore.get(this.otherUid!) as Pipe).entity.heightAboveFloorM
+            ) {
                 // source is #0
                 e.sourceUid = lower;
             } else {
@@ -476,20 +471,21 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
             return [e, tower[0][0], p1, p2, tower[1][0]];
         } else {
-            throw new Error('Invalid tower configuration on directed valve');
+            throw new Error("Invalid tower configuration on directed valve");
         }
     }
 
     collectCalculations(context: CalculationContext): DirectedValveCalculation {
         // find the only directed valve in there and take its calc.
-        const me = this.getCalculationEntities(context)
-            .find((e) => e.type === EntityType.DIRECTED_VALVE) as DirectedValveEntity;
+        const me = this.getCalculationEntities(context).find(
+            (e) => e.type === EntityType.DIRECTED_VALVE
+        ) as DirectedValveEntity;
 
         if (!me) {
             if (this.getCalculationEntities(context).length === 0) {
                 return emptyDirectedValveCalculation();
             } else {
-                throw new Error('Can\'t find self in calculations ' + this.uid + ' ' + this.entity.valve.type);
+                throw new Error("Can't find self in calculations " + this.uid + " " + this.entity.valve.type);
             }
         } else {
             return context.globalStore.getOrCreateCalculation(me);
@@ -500,5 +496,3 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         //
     }
 }
-
-

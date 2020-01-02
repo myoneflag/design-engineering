@@ -1,16 +1,14 @@
-import {DrawingState, WithID} from '../../../../src/store/document/types';
-import * as OT from './operation-transforms';
-import * as _ from 'lodash';
-import assert from 'assert';
-import Vue from 'vue';
-import {cloneSimple} from '../../../../src/lib/utils';
-import {DiffOperation, OperationTransformConcrete} from "./operation-transforms";
-
+import { DrawingState, WithID } from "../../../../src/store/document/types";
+import * as OT from "./operation-transforms";
+import * as _ from "lodash";
+import assert from "assert";
+import Vue from "vue";
+import { cloneSimple } from "../../../../src/lib/utils";
+import { DiffOperation, OperationTransformConcrete } from "./operation-transforms";
 
 export function applyDiffVue(target: any, diff: any): any {
-
     if (diff === undefined || target === undefined) {
-        throw new Error('Parent caller should have deleted the entry, not recurse');
+        throw new Error("Parent caller should have deleted the entry, not recurse");
     }
 
     if (_.isArray(diff)) {
@@ -23,7 +21,7 @@ export function applyDiffVue(target: any, diff: any): any {
 
         for (const key of Object.keys(diff)) {
             // we use {} to signal a deleted object (undefined is not valid JSON).
-            if (_.isEqual((diff as any)[key], {deleted: true})) {
+            if (_.isEqual((diff as any)[key], { deleted: true })) {
                 if (target.hasOwnProperty(key)) {
                     Vue.delete(target, key);
                 }

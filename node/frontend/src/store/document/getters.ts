@@ -1,6 +1,6 @@
-import { GetterTree } from 'vuex';
-import {DocumentState, initialDocumentState, Level} from './types';
-import { RootState } from '../types';
+import { GetterTree } from "vuex";
+import { DocumentState, initialDocumentState, Level } from "./types";
+import { RootState } from "../types";
 
 export const getters: GetterTree<DocumentState, RootState> = {
     title(state): string {
@@ -19,9 +19,11 @@ export const getters: GetterTree<DocumentState, RootState> = {
     },
 
     isBrandNew(state): boolean {
-        return state.history.length === 0
-            && state.optimisticHistory.length === 0
-            && state.nextId === initialDocumentState.nextId;
+        return (
+            state.history.length === 0 &&
+            state.optimisticHistory.length === 0 &&
+            state.nextId === initialDocumentState.nextId
+        );
     },
 
     sortedLevels(state): Level[] {
@@ -44,5 +46,4 @@ export const getters: GetterTree<DocumentState, RootState> = {
         }
         return res;
     }
-
 };

@@ -1,10 +1,10 @@
-import {CalculationField, FieldCategory, Units} from '../../../../src/store/document/calculations/calculation-field';
-import BigValveEntity, {BigValveType} from '../entities/big-valve/big-valve-entity';
-import {StandardFlowSystemUids} from '../../../../src/store/catalog';
-import {Calculation} from '../../../../src/store/document/calculations/types';
-import {PsdCountEntry} from "../../../calculations/utils";
-import {DocumentState} from "../types";
-import {assertUnreachable} from "../../../config";
+import { CalculationField, FieldCategory, Units } from "../../../../src/store/document/calculations/calculation-field";
+import BigValveEntity, { BigValveType } from "../entities/big-valve/big-valve-entity";
+import { StandardFlowSystemUids } from "../../../../src/store/catalog";
+import { Calculation } from "../../../../src/store/document/calculations/types";
+import { PsdCountEntry } from "../../../calculations/utils";
+import { DocumentState } from "../types";
+import { assertUnreachable } from "../../../config";
 
 export default interface BigValveCalculation extends Calculation {
     coldTemperatureC: number | null;
@@ -23,14 +23,13 @@ export default interface BigValveCalculation extends Calculation {
         [key: string]: {
             temperatureC: number | null;
             pressureDropKPA: number | null;
-        }
-    }
+        };
+    };
 
     rpzdSizeMM: {
         [key: string]: number | null;
     } | null;
 }
-
 
 export function makeBigValveCalculationFields(doc: DocumentState, entity: BigValveEntity): CalculationField[] {
     const result: CalculationField[] = [];
@@ -50,19 +49,17 @@ export function makeBigValveCalculationFields(doc: DocumentState, entity: BigVal
             suids.push(StandardFlowSystemUids.HotWater, StandardFlowSystemUids.ColdWater);
             attachments.push(entity.valve.hotOutputUid, entity.valve.coldOutputUid);
 
-
             for (let i = 0; i < 2; i++) {
                 const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === suids[i])!;
-                result.push(
-                    {property: 'rpzdSizeMM.' + suids[i],
-                        title:  system.name + ' RPZD Size',
-                        short: '',
-                        attachUid: attachments[i] as string,
-                        systemUid: suids[i],
-                        units: Units.Millimeters,
-                        category: FieldCategory.Size,
-                    },
-                );
+                result.push({
+                    property: "rpzdSizeMM." + suids[i],
+                    title: system.name + " RPZD Size",
+                    short: "",
+                    attachUid: attachments[i] as string,
+                    systemUid: suids[i],
+                    units: Units.Millimeters,
+                    category: FieldCategory.Size
+                });
             }
 
             break;
@@ -72,16 +69,15 @@ export function makeBigValveCalculationFields(doc: DocumentState, entity: BigVal
 
     for (let i = 0; i < suids.length; i++) {
         const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === suids[i])!;
-        result.push(
-            {property: 'outputs.' + suids[i] + '.pressureDropKPA',
-                title:  system.name + ' Pressure Drop',
-                short: 'drop',
-                attachUid: attachments[i] as string,
-                systemUid: suids[i],
-                units: Units.KiloPascals,
-                category: FieldCategory.Pressure,
-            },
-        );
+        result.push({
+            property: "outputs." + suids[i] + ".pressureDropKPA",
+            title: system.name + " Pressure Drop",
+            short: "drop",
+            attachUid: attachments[i] as string,
+            systemUid: suids[i],
+            units: Units.KiloPascals,
+            category: FieldCategory.Pressure
+        });
     }
 
     return result;
@@ -104,7 +100,7 @@ export function EmptyBigValveCalculations(entity: BigValveEntity): BigValveCalcu
         outputs: {},
         rpzdSizeMM: {},
 
-        warning: null,
+        warning: null
     };
 
     const suids: string[] = [];
@@ -118,7 +114,7 @@ export function EmptyBigValveCalculations(entity: BigValveEntity): BigValveCalcu
         case BigValveType.RPZD_HOT_COLD:
             suids.push(StandardFlowSystemUids.HotWater, StandardFlowSystemUids.ColdWater);
 
-            result.rpzdSizeMM  = {};
+            result.rpzdSizeMM = {};
             for (const suid of suids) {
                 result.rpzdSizeMM[suid] = null;
             }
@@ -130,7 +126,7 @@ export function EmptyBigValveCalculations(entity: BigValveEntity): BigValveCalcu
     for (const suid of suids) {
         result.outputs[suid] = {
             temperatureC: null,
-            pressureDropKPA: null,
+            pressureDropKPA: null
         };
     }
 

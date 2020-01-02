@@ -3,14 +3,15 @@ import {
     Color,
     Coord,
     DocumentState,
-    FlowSystemParameters, NetworkType,
-} from '../../../../src/store/document/types';
-import {FieldType, PropertyField} from '../../../../src/store/document/entities/property-field';
-import * as _ from 'lodash';
-import {EntityType} from '../../../../src/store/document/entities/types';
-import RiserCalculation from '../calculations/riser-calculation';
-import {Choice, LEVEL_HEIGHT_DIFF_M} from '../../../../src/lib/types';
-import {cloneSimple} from '../../../../src/lib/utils';
+    FlowSystemParameters,
+    NetworkType
+} from "../../../../src/store/document/types";
+import { FieldType, PropertyField } from "../../../../src/store/document/entities/property-field";
+import * as _ from "lodash";
+import { EntityType } from "../../../../src/store/document/entities/types";
+import RiserCalculation from "../calculations/riser-calculation";
+import { Choice, LEVEL_HEIGHT_DIFF_M } from "../../../../src/lib/types";
+import { cloneSimple } from "../../../../src/lib/utils";
 
 export default interface RiserEntity extends ConnectableEntity {
     type: EntityType.RISER;
@@ -31,36 +32,107 @@ export default interface RiserEntity extends ConnectableEntity {
 
 export function makeRiserFields(materials: Choice[], systems: FlowSystemParameters[]): PropertyField[] {
     return [
-        { property: 'systemUid', title: 'Flow System', hasDefault: false, isCalculated: false,
-            type: FieldType.FlowSystemChoice, params: { systems },  multiFieldId: 'systemUid' },
+        {
+            property: "systemUid",
+            title: "Flow System",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.FlowSystemChoice,
+            params: { systems },
+            multiFieldId: "systemUid"
+        },
 
-        { property: 'pressureKPA', title: 'Pressure (kPA)', hasDefault: false, isCalculated: false, requiresInput: true,
-            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'pressureKPA' },
+        {
+            property: "pressureKPA",
+            title: "Pressure (kPA)",
+            hasDefault: false,
+            isCalculated: false,
+            requiresInput: true,
+            type: FieldType.Number,
+            params: { min: 0, max: null },
+            multiFieldId: "pressureKPA"
+        },
 
-        { property: 'pressureSourceHeightM', title: 'Source Height (m)', hasDefault: false, isCalculated: false, requiresInput: true,
-            type: FieldType.Number, params: { min: null, max: null },  multiFieldId: 'pressureSourceHeightM' },
+        {
+            property: "pressureSourceHeightM",
+            title: "Source Height (m)",
+            hasDefault: false,
+            isCalculated: false,
+            requiresInput: true,
+            type: FieldType.Number,
+            params: { min: null, max: null },
+            multiFieldId: "pressureSourceHeightM"
+        },
 
-        { property: 'bottomHeightM', title: 'Bottom Height (M)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: null, max: null },  multiFieldId: 'bottomHeightM' },
+        {
+            property: "bottomHeightM",
+            title: "Bottom Height (M)",
+            hasDefault: true,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: null, max: null },
+            multiFieldId: "bottomHeightM"
+        },
 
-        { property: 'topHeightM', title: 'Top Height (M)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: null, max: null },  multiFieldId: 'topHeightM' },
+        {
+            property: "topHeightM",
+            title: "Top Height (M)",
+            hasDefault: true,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: null, max: null },
+            multiFieldId: "topHeightM"
+        },
 
-        { property: 'maximumVelocityMS', title: 'Maximum Velocity (m/s)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'maximumVelocityMS' },
+        {
+            property: "maximumVelocityMS",
+            title: "Maximum Velocity (m/s)",
+            hasDefault: true,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: 0, max: null },
+            multiFieldId: "maximumVelocityMS"
+        },
 
-        { property: 'diameterMM', title: 'Diameter (mm)', hasDefault: false, isCalculated: true,
-            type: FieldType.Number, params: { min: 0, max: null, initialValue: 100 },  multiFieldId: 'diameterMM' },
+        {
+            property: "diameterMM",
+            title: "Diameter (mm)",
+            hasDefault: false,
+            isCalculated: true,
+            type: FieldType.Number,
+            params: { min: 0, max: null, initialValue: 100 },
+            multiFieldId: "diameterMM"
+        },
 
-        { property: 'material', title: 'Material', hasDefault: true, isCalculated: false,
-            type: FieldType.Choice, params: { choices: materials},  multiFieldId: 'material' },
+        {
+            property: "material",
+            title: "Material",
+            hasDefault: true,
+            isCalculated: false,
+            type: FieldType.Choice,
+            params: { choices: materials },
+            multiFieldId: "material"
+        },
 
-        { property: 'color', title: 'Color:', hasDefault: true, isCalculated: false,
-            type: FieldType.Color, params: null,  multiFieldId: 'color' },
+        {
+            property: "color",
+            title: "Color:",
+            hasDefault: true,
+            isCalculated: false,
+            type: FieldType.Color,
+            params: null,
+            multiFieldId: "color"
+        },
 
-        { property: 'temperatureC', title: 'Temperature (C)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: 100 },  multiFieldId: 'temperatureC' },
-
+        {
+            property: "temperatureC",
+            title: "Temperature (C)",
+            hasDefault: true,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: 0, max: 100 },
+            multiFieldId: "temperatureC"
+        }
     ];
 }
 
@@ -96,7 +168,7 @@ export function fillRiserDefaults(doc: DocumentState, value: RiserEntity) {
             });
         }
     } else {
-        throw new Error('Existing system not found for object ' + JSON.stringify(value));
+        throw new Error("Existing system not found for object " + JSON.stringify(value));
     }
 
     return result;

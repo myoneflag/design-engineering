@@ -1,28 +1,28 @@
 import BaseBackedObject from "../lib/base-backed-object";
 import BackedConnectable from "../lib/BackedConnectable";
-import LoadNodeEntity, {fillDefaultLoadNodeFields, NodeType} from "../../store/document/entities/load-node-entity";
-import {Calculated, CalculatedObject} from "../lib/object-traits/calculated-object";
-import Connectable, {ConnectableObject} from "../lib/object-traits/connectable";
-import {CenteredObject} from "../lib/object-traits/centered-object";
-import {DrawingContext} from "../lib/types";
-import {DrawingArgs} from "../lib/drawable-object";
-import {CalculationContext} from "../../calculations/types";
-import {FlowNode} from "../../calculations/calculation-engine";
-import {Coord} from "../../store/document/types";
+import LoadNodeEntity, { fillDefaultLoadNodeFields, NodeType } from "../../store/document/entities/load-node-entity";
+import { Calculated, CalculatedObject } from "../lib/object-traits/calculated-object";
+import Connectable, { ConnectableObject } from "../lib/object-traits/connectable";
+import { CenteredObject } from "../lib/object-traits/centered-object";
+import { DrawingContext } from "../lib/types";
+import { DrawingArgs } from "../lib/drawable-object";
+import { CalculationContext } from "../../calculations/types";
+import { FlowNode } from "../../calculations/calculation-engine";
+import { Coord } from "../../store/document/types";
 import CanvasContext from "../lib/canvas-context";
 import LoadNodeCalculation from "../../store/document/calculations/load-node-calculation";
-import {CalculationData} from "../../store/document/calculations/calculation-field";
-import * as TM from 'transformation-matrix';
-import {getDragPriority} from "../../store/document";
-import {EntityType} from "../../store/document/entities/types";
-import {cloneSimple, lighten} from "../../lib/utils";
-import Flatten from '@flatten-js/core';
+import { CalculationData } from "../../store/document/calculations/calculation-field";
+import * as TM from "transformation-matrix";
+import { getDragPriority } from "../../store/document";
+import { EntityType } from "../../store/document/entities/types";
+import { cloneSimple, lighten } from "../../lib/utils";
+import Flatten from "@flatten-js/core";
 import DrawableObjectFactory from "../lib/drawable-object-factory";
-import {SelectableObject} from "../lib/object-traits/selectable";
+import { SelectableObject } from "../lib/object-traits/selectable";
 import CenterDraggableObject from "../lib/object-traits/center-draggable-object";
 import PipeEntity from "../../store/document/entities/pipe-entity";
 import FittingEntity from "../../store/document/entities/fitting-entity";
-import {Matrix} from "transformation-matrix";
+import { Matrix } from "transformation-matrix";
 
 @SelectableObject
 @CenterDraggableObject
@@ -30,7 +30,6 @@ import {Matrix} from "transformation-matrix";
 @ConnectableObject
 @CenteredObject
 export default class LoadNode extends BackedConnectable<LoadNodeEntity> implements Calculated, Connectable {
-    dragPriority = getDragPriority(EntityType.LOAD_NODE);
     get maximumConnections(): number | null {
         switch (this.entity.node.type) {
             case NodeType.LOAD_NODE:
@@ -38,51 +37,11 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
             case NodeType.DWELLING:
                 return null;
         }
-    };
-    minimumConnections = 0;
+    }
 
     get position(): TM.Matrix {
         const scale = 1 / this.fromParentToWorldLength(1);
-        return TM.transform(
-            TM.translate(this.entity.center.x, this.entity.center.y),
-            TM.scale(scale, scale),
-        );
-    }
-
-    drawInternal(context: DrawingContext, args: DrawingArgs): void {
-        const {ctx, vp} = context;
-        let baseRadius = this.baseRadius;
-        const radius = Math.max(baseRadius, vp.toWorldLength(baseRadius / 50));
-
-        const filled = fillDefaultLoadNodeFields(context.doc, this.objectStore, this.entity);
-
-
-        if (args.selected) {
-            const sr = Math.max(baseRadius + 20, vp.toWorldLength(baseRadius / 50 + 2));
-
-            ctx.fillStyle = lighten(filled.color!.hex, 50);
-            if (this.entity.node.type === NodeType.DWELLING &&
-                !context.doc.drawing.metadata.calculationParams.dwellingMethod
-            ) {
-                ctx.fillStyle = lighten(filled.color!.hex, 50, 0.5);
-                console.log('making transparent');
-            }
-            ctx.beginPath();
-            this.strokeShape(context, sr);
-            ctx.fill();
-        }
-
-        ctx.fillStyle = filled.color!.hex;
-        ctx.strokeStyle = lighten(filled.color!.hex, -10);
-        if (this.entity.node.type === NodeType.DWELLING &&
-            !context.doc.drawing.metadata.calculationParams.dwellingMethod
-        ) {
-            ctx.fillStyle = lighten(filled.color!.hex, -10, 0.5);
-            console.log('making transparent');
-        }
-        ctx.beginPath();
-        this.strokeShape(context, radius);
-        ctx.fill();
+        return TM.transform(TM.translate(this.entity.center.x, this.entity.center.y), TM.scale(scale, scale));
     }
 
     get baseRadius() {
@@ -93,28 +52,77 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         }
     }
 
+    static register(): void {
+        DrawableObjectFactory.registerEntity(EntityType.LOAD_NODE, LoadNode);
+    }
+    dragPriority = getDragPriority(EntityType.LOAD_NODE);
+    minimumConnections = 0;
+
+    drawInternal(context: DrawingContext, args: DrawingArgs): void {
+        const { ctx, vp } = context;
+        const baseRadius = this.baseRadius;
+        const radius = Math.max(baseRadius, vp.toWorldLength(baseRadius / 50));
+
+        const filled = fillDefaultLoadNodeFields(context.doc, this.objectStore, this.entity);
+
+        if (args.selected) {
+            const sr = Math.max(baseRadius + 20, vp.toWorldLength(baseRadius / 50 + 2));
+
+            ctx.fillStyle = lighten(filled.color!.hex, 50);
+            if (
+                this.entity.node.type === NodeType.DWELLING &&
+                !context.doc.drawing.metadata.calculationParams.dwellingMethod
+            ) {
+                ctx.fillStyle = lighten(filled.color!.hex, 50, 0.5);
+            }
+            ctx.beginPath();
+            this.strokeShape(context, sr);
+            ctx.fill();
+        }
+
+        ctx.fillStyle = filled.color!.hex;
+        ctx.strokeStyle = lighten(filled.color!.hex, -10);
+        if (
+            this.entity.node.type === NodeType.DWELLING &&
+            !context.doc.drawing.metadata.calculationParams.dwellingMethod
+        ) {
+            ctx.fillStyle = lighten(filled.color!.hex, -10, 0.5);
+        }
+        ctx.beginPath();
+        this.strokeShape(context, radius);
+        ctx.fill();
+    }
+
     strokeShape(context: DrawingContext, radius: number) {
-        const {ctx, vp} = context;
+        const { ctx, vp } = context;
         switch (this.entity.node.type) {
             case NodeType.LOAD_NODE:
                 ctx.moveTo(0, radius);
                 for (let i = 1; i < 6; i++) {
-                    ctx.lineTo(Math.sin(Math.PI * 2 * i / 6) * radius, Math.cos(Math.PI * 2 * i / 6) * radius);
+                    ctx.lineTo(Math.sin((Math.PI * 2 * i) / 6) * radius, Math.cos((Math.PI * 2 * i) / 6) * radius);
                 }
                 ctx.closePath();
                 break;
             case NodeType.DWELLING:
                 for (let i = 0.5; i < 3.5; i++) {
-                    ctx.lineTo(Math.sin(Math.PI * 2 * (i - 1) / 4) * radius, Math.cos(Math.PI * 2 * (i - 1) / 4) * radius);
-                    ctx.lineTo(Math.sin(Math.PI * 2 * i / 4) * radius, Math.cos(Math.PI * 2 * i / 4) * radius);
+                    ctx.lineTo(
+                        Math.sin((Math.PI * 2 * (i - 1)) / 4) * radius,
+                        Math.cos((Math.PI * 2 * (i - 1)) / 4) * radius
+                    );
+                    ctx.lineTo(Math.sin((Math.PI * 2 * i) / 4) * radius, Math.cos((Math.PI * 2 * i) / 4) * radius);
                 }
                 ctx.closePath();
                 break;
-
         }
     }
 
-    getFrictionHeadLoss(context: CalculationContext, flowLS: number, from: FlowNode, to: FlowNode, signed: boolean): number | null {
+    getFrictionHeadLoss(
+        context: CalculationContext,
+        flowLS: number,
+        from: FlowNode,
+        to: FlowNode,
+        signed: boolean
+    ): number | null {
         return 0;
     }
 
@@ -131,8 +139,7 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         return [];
     }
 
-    rememberToRegister(): void {
-    }
+    rememberToRegister(): void { /**/ }
 
     collectCalculations(context: CalculationContext): LoadNodeCalculation {
         const calcEnts = this.getCalculationEntities(context);
@@ -143,14 +150,14 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         }
     }
 
-    getCalculationEntities(context: CalculationContext): [LoadNodeEntity, ...(PipeEntity | FittingEntity)[]] | [] {
+    getCalculationEntities(context: CalculationContext): [LoadNodeEntity, ...Array<PipeEntity | FittingEntity>] | [] {
         const tower = this.getCalculationTower(context);
         if (tower.length === 0) {
-            return []
+            return [];
         }
         if (this.entity.node.type === NodeType.LOAD_NODE) {
             if (tower.length !== 1) {
-                throw new Error('Unexpected tower configuration. Expected exactly 1 layer');
+                throw new Error("Unexpected tower configuration. Expected exactly 1 layer");
             }
         }
         const proj = cloneSimple(this.entity);
@@ -165,9 +172,5 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
 
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
         return [];
-    }
-
-    static register(): void {
-        DrawableObjectFactory.registerEntity(EntityType.LOAD_NODE, LoadNode);
     }
 }

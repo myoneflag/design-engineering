@@ -20,23 +20,14 @@
             </b-col>
         </b-row>
         <b-row style="margin-top: 50px;">
-            <b-col>
-
-            </b-col>
+            <b-col> </b-col>
             <b-col cols="6">
-
                 <b-form>
-                    <b-form-group
-                            :label-cols="2"
-                            label="Username"
-                    >
+                    <b-form-group :label-cols="2" label="Username">
                         <b-form-input v-model="username" @keyup.enter="login"></b-form-input>
                     </b-form-group>
 
-                    <b-form-group
-                            :label-cols="2"
-                            label="Password"
-                    >
+                    <b-form-group :label-cols="2" label="Password">
                         <b-form-input type="password" @keyup.enter="login" v-model="password"></b-form-input>
                     </b-form-group>
 
@@ -45,42 +36,40 @@
                     </b-form-group>
                 </b-form>
             </b-col>
-            <b-col>
-
-            </b-col>
+            <b-col> </b-col>
         </b-row>
     </b-container>
 </template>
 
-<script lang='ts'>
-    import Component from 'vue-class-component';
-    import Vue from 'vue';
-    import axios from 'axios';
-    import router from '../../src/router';
-    import {login} from "../../src/api/logins";
+<script lang="ts">
+import Component from "vue-class-component";
+import Vue from "vue";
+import axios from "axios";
+import router from "../../src/router";
+import { login } from "../../src/api/logins";
 
-    @Component
-    export default class Login extends Vue {
-        username: string = '';
-        password: string = '';
+@Component
+export default class Login extends Vue {
+    username: string = "";
+    password: string = "";
 
-        login() {
-            login(this.username, this.password).then((res) => {
-                if (res.success === true) {
-                    this.$store.dispatch('profile/setProfile', null);
-                    (this as any).$cookies.set('session-id', res.data);
-                    if (this.$route.query.next) {
-                        router.push(this.$route.query.next as string);
-                    } else {
-                        router.push('/');
-                    }
+    login() {
+        login(this.username, this.password).then((res) => {
+            if (res.success === true) {
+                this.$store.dispatch("profile/setProfile", null);
+                (this as any).$cookies.set("session-id", res.data);
+                if (this.$route.query.next) {
+                    router.push(this.$route.query.next as string);
                 } else {
-                    this.$bvToast.toast(res.message, {
-                        title: 'Login Error',
-                        variant: 'danger',
-                    });
+                    router.push("/");
                 }
-            });
-        }
+            } else {
+                this.$bvToast.toast(res.message, {
+                    title: "Login Error",
+                    variant: "danger"
+                });
+            }
+        });
     }
+}
 </script>

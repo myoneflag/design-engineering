@@ -1,20 +1,16 @@
 <template>
     <b-container>
-
         <div style="overflow-y: auto; overflow-x: hidden; height: calc(100vh - 270px); margin-bottom: 20px">
-            <slot>
-
-            </slot>
+            <slot> </slot>
             <b-row>
                 <b-col>
-
                     <b-form-group
-                            v-for="field in fields"
-                            :key="field[0]"
-                            :id="'input-group-' + field[0]"
-                            :label="field[2].startsWith('title') ? '' : field[1]"
-                            :label-for="'input-' + field[0]"
-                            label-cols="4"
+                        v-for="field in fields"
+                        :key="field[0]"
+                        :id="'input-group-' + field[0]"
+                        :label="field[2].startsWith('title') ? '' : field[1]"
+                        :label-for="'input-' + field[0]"
+                        label-cols="4"
                     >
                         <b-form-textarea
                             v-if="field[2] === 'textarea'"
@@ -26,42 +22,47 @@
 
                         <b-row v-else-if="field[2] === 'range'">
                             <b-col cols="8">
-
                                 <b-form-input
-                                        v-model="reactiveDataProxy[field[0]]"
-                                        :id="'input-' + field[0]"
-                                        :min="field[3]"
-                                        :max="field[4]"
-                                        :type="field[2]"
-                                        :step="field[5] ? field[5] : 1"
-                                        :placeholder="'Enter ' + field[1]"
+                                    v-model="reactiveDataProxy[field[0]]"
+                                    :id="'input-' + field[0]"
+                                    :min="field[3]"
+                                    :max="field[4]"
+                                    :type="field[2]"
+                                    :step="field[5] ? field[5] : 1"
+                                    :placeholder="'Enter ' + field[1]"
                                 />
                             </b-col>
                             <b-col cols="4">
-                            <b-form-input
+                                <b-form-input
                                     v-model="reactiveDataProxy[field[0]]"
                                     :id="'input-' + field[0]"
                                     type="number"
                                     :step="field[5] ? field[5] : 1"
                                     :placeholder="'Enter ' + field[1]"
-                            />
+                                />
                             </b-col>
                         </b-row>
 
                         <b-dropdown
-                                v-else-if="field[2] === 'choice'" class="float-left"
-                                size="md" id="dropdown-1" :text="choiceName(reactiveDataProxy[field[0]], field[3])" variant="outline-secondary" style="padding-bottom: 20px">
+                            v-else-if="field[2] === 'choice'"
+                            class="float-left"
+                            size="md"
+                            id="dropdown-1"
+                            :text="choiceName(reactiveDataProxy[field[0]], field[3])"
+                            variant="outline-secondary"
+                            style="padding-bottom: 20px"
+                        >
                             <b-dropdown-item
-                                    v-for="(choice, index) in field[3]"
-                                    @click="reactiveDataProxy[field[0]] = choice.key"
-                                    :key="index"
-                                    :disabled="choice.disabled === undefined ? false : choice.disabled"
+                                v-for="(choice, index) in field[3]"
+                                @click="reactiveDataProxy[field[0]] = choice.key"
+                                :key="index"
+                                :disabled="choice.disabled === undefined ? false : choice.disabled"
                             >
-                                {{choice.name}}
+                                {{ choice.name }}
                             </b-dropdown-item>
                         </b-dropdown>
 
-                        <compact-picker v-else-if="field[2] === 'color'" v-model="reactiveDataProxy[field[0]]"/>
+                        <compact-picker v-else-if="field[2] === 'color'" v-model="reactiveDataProxy[field[0]]" />
 
                         <h2 v-else-if="field[2] === 'title2'">
                             {{ field[1] }}
@@ -89,9 +90,7 @@
             </b-row>
         </div>
         <b-row>
-            <b-col cols="8">
-
-            </b-col>
+            <b-col cols="8"> </b-col>
             <b-col>
                 <b-button variant="success" style="margin-right: 20px" @click="save" v-if="!isUnchanged">
                     Save
@@ -105,93 +104,89 @@
 </template>
 
 <script lang="ts">
+import Vue from "vue";
+import Component from "vue-class-component";
+import { DocumentState } from "../../../../src/store/document/types";
+import { Compact } from "vue-color";
+import * as _ from "lodash";
+import { isString } from "lodash";
+import { Choice } from "../../../../src/lib/types";
+import { getPropertyByString, setPropertyByString } from "../../../lib/utils";
 
-    import Vue from 'vue';
-    import Component from 'vue-class-component';
-    import {DocumentState} from '../../../../src/store/document/types';
-    import {Compact} from 'vue-color';
-    import * as _ from 'lodash';
-    import { isString } from 'lodash';
-    import {Choice} from '../../../../src/lib/types';
-    import {getPropertyByString, setPropertyByString} from "../../../lib/utils";
+@Component({
+    props: {
+        fields: Array,
+        reactiveData: Object,
+        originalData: Object,
+        onSave: Function,
+        onBack: Function,
+        onRevert: Function
+    },
+    components: {
+        compactPicker: Compact
+    }
+})
+export default class SettingsFieldBuilder extends Vue {
+    get document(): DocumentState {
+        return this.$store.getters["document/document"];
+    }
 
-    @Component({
-        props: {
-            fields: Array,
-            reactiveData: Object,
-            originalData: Object,
-            onSave: Function,
-            onBack: Function,
-            onRevert: Function,
-        },
-        components: {
-            compactPicker: Compact,
-        },
-    })
-    export default class SettingsFieldBuilder extends Vue {
-        get document(): DocumentState {
-            return this.$store.getters['document/document'];
-        }
+    get isUnchanged() {
+        return _.isEqual(this.$props.reactiveData, this.$props.originalData);
+    }
 
-        get isUnchanged() {
-            return _.isEqual(this.$props.reactiveData, this.$props.originalData);
-        }
+    get reactiveDataProxy() {
+        const proxy = new Proxy(this.$props.reactiveData, {
+            get(target: any, key: string) {
+                return getPropertyByString(target, key);
+            },
+            set(target: any, key: string, value: any) {
+                setPropertyByString(target, key, value);
+                return true;
+            }
+        });
 
-        get reactiveDataProxy() {
-            const proxy = new Proxy(this.$props.reactiveData, {
-                get(target: any, key: string) {
-                    return getPropertyByString(target, key);
-                },
-                set(target: any, key: string, value: any) {
-                    setPropertyByString(target, key, value);
-                    return true;
-                },
-            });
+        return proxy;
+    }
 
-            return proxy;
-        }
+    save() {
+        this.$props.onSave();
+    }
 
-        save() {
-            this.$props.onSave();
-        }
-
-        leave(): boolean {
-            if (this.isUnchanged) {
+    leave(): boolean {
+        if (this.isUnchanged) {
+            return true;
+        } else {
+            if (window.confirm("Leaving now will discard your changes. Are you sure?")) {
+                this.cancel();
                 return true;
             } else {
-                if (window.confirm('Leaving now will discard your changes. Are you sure?')) {
-                    this.cancel();
-                    return true;
-                } else {
-                    return false;
-                }
+                return false;
             }
-        }
-
-        cancel() {
-            if (this.isUnchanged) {
-                // go back to drawing
-                this.$props.onBack();
-            } else {
-                // revert
-                Object.assign(this.$props.reactiveData, this.$props.originalData);
-                if (this.$props.onRevert) {
-                    this.$props.onRevert();
-                }
-            }
-        }
-
-        choiceName(key: string, choices: Choice[]): string {
-            const result = choices.find((c) => c.key === key);
-            if (result) {
-                return result.name;
-            }
-            return key + ' (not found...)';
         }
     }
 
+    cancel() {
+        if (this.isUnchanged) {
+            // go back to drawing
+            this.$props.onBack();
+        } else {
+            // revert
+            Object.assign(this.$props.reactiveData, this.$props.originalData);
+            if (this.$props.onRevert) {
+                this.$props.onRevert();
+            }
+        }
+    }
+
+    choiceName(key: string, choices: Choice[]): string {
+        const result = choices.find((c) => c.key === key);
+        if (result) {
+            return result.name;
+        }
+        return key + " (not found...)";
+    }
+}
 </script>
 
-<style lang="less">
-
-</style>
+<style lang="less"></style>

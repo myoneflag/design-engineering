@@ -1,45 +1,46 @@
-import BackedDrawableObject from '../../../../src/htmlcanvas/lib/backed-drawable-object';
-import BaseBackedObject from '../../../../src/htmlcanvas/lib/base-backed-object';
-import * as TM from 'transformation-matrix';
-import {Matrix} from 'transformation-matrix';
-import {Coord, coordDist2} from '../../../../src/store/document/types';
-import {matrixScale} from '../../../../src/htmlcanvas/utils';
-import CenterDraggableObject from '../../../../src/htmlcanvas/lib/object-traits/center-draggable-object';
-import {Interaction, InteractionType} from '../../../../src/htmlcanvas/lib/interaction';
-import {DrawingContext} from '../../../../src/htmlcanvas/lib/types';
+import BackedDrawableObject from "../../../../src/htmlcanvas/lib/backed-drawable-object";
+import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
+import * as TM from "transformation-matrix";
+import { Matrix } from "transformation-matrix";
+import { Coord, coordDist2 } from "../../../../src/store/document/types";
+import { matrixScale } from "../../../../src/htmlcanvas/utils";
+import CenterDraggableObject from "../../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
+import { Interaction, InteractionType } from "../../../../src/htmlcanvas/lib/interaction";
+import { DrawingContext } from "../../../../src/htmlcanvas/lib/types";
 import BigValveEntity, {
     BigValveType,
     SystemNodeEntity
-} from '../../../store/document/entities/big-valve/big-valve-entity';
-import DrawableObjectFactory from '../../../../src/htmlcanvas/lib/drawable-object-factory';
-import {EntityType} from '../../../../src/store/document/entities/types';
-import {DrawableEntityConcrete} from '../../../../src/store/document/entities/concrete-entity';
-import CanvasContext from '../../../../src/htmlcanvas/lib/canvas-context';
-import {SelectableObject} from '../../../../src/htmlcanvas/lib/object-traits/selectable';
-import {CenteredObject} from '../../../../src/htmlcanvas/lib/object-traits/centered-object';
+} from "../../../store/document/entities/big-valve/big-valve-entity";
+import DrawableObjectFactory from "../../../../src/htmlcanvas/lib/drawable-object-factory";
+import { EntityType } from "../../../../src/store/document/entities/types";
+import { DrawableEntityConcrete } from "../../../../src/store/document/entities/concrete-entity";
+import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
+import { SelectableObject } from "../../../../src/htmlcanvas/lib/object-traits/selectable";
+import { CenteredObject } from "../../../../src/htmlcanvas/lib/object-traits/centered-object";
 import {
     drawRpzdDouble,
     getRpzdHeadLoss,
     interpolateTable,
-    parseCatalogNumberExact, VALVE_HEIGHT_MM
-} from '../../../../src/htmlcanvas/lib/utils';
-import {CalculationContext} from '../../../../src/calculations/types';
-import {FlowNode} from '../../../../src/calculations/calculation-engine';
-import {DrawingArgs} from '../../../../src/htmlcanvas/lib/drawable-object';
+    parseCatalogNumberExact,
+    VALVE_HEIGHT_MM
+} from "../../../../src/htmlcanvas/lib/utils";
+import { CalculationContext } from "../../../../src/calculations/types";
+import { FlowNode } from "../../../../src/calculations/calculation-engine";
+import { DrawingArgs } from "../../../../src/htmlcanvas/lib/drawable-object";
 import {
     Calculated,
     CalculatedObject,
     FIELD_HEIGHT
-} from '../../../../src/htmlcanvas/lib/object-traits/calculated-object';
-import {CalculationData} from '../../../../src/store/document/calculations/calculation-field';
-import {assertUnreachable} from "../../../../src/config";
-import {cloneSimple, getValveK} from "../../../lib/utils";
+} from "../../../../src/htmlcanvas/lib/object-traits/calculated-object";
+import { CalculationData } from "../../../../src/store/document/calculations/calculation-field";
+import { assertUnreachable } from "../../../../src/config";
+import { cloneSimple, getValveK } from "../../../lib/utils";
 import SystemNode from "./system-node";
 import BigValveCalculation from "../../../store/document/calculations/big-valve-calculation";
-import Flatten from '@flatten-js/core';
+import Flatten from "@flatten-js/core";
 import Cached from "../../lib/cached";
-import {ValveType} from "../../../store/document/entities/directed-valves/valve-types";
-import {StandardFlowSystemUids} from "../../../store/catalog";
+import { ValveType } from "../../../store/document/entities/directed-valves/valve-types";
+import { StandardFlowSystemUids } from "../../../store/catalog";
 
 export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 
@@ -55,8 +56,6 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
     lastDrawnWorldRadius: number = 0; // for bounds detection
 
     drawInternal(context: DrawingContext, args: DrawingArgs): void {
-
-
         switch (this.entity.valve.type) {
             case BigValveType.TMV:
                 this.drawTmv(context, args);
@@ -67,12 +66,11 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
             case BigValveType.RPZD_HOT_COLD:
                 this.drawHotColdRPZD(context, args);
                 break;
-
         }
     }
 
-    drawTmv(context: DrawingContext, {active, selected}: DrawingArgs) {
-        const {ctx, vp} = context;
+    drawTmv(context: DrawingContext, { active, selected }: DrawingArgs) {
+        const { ctx, vp } = context;
 
         const l = -this.entity.pipeDistanceMM;
         const r = this.entity.pipeDistanceMM;
@@ -92,18 +90,17 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
 
         const scale = matrixScale(ctx.getTransform());
         ctx.lineWidth = Math.max(1 / scale, 10 * this.toWorldLength(1));
-        ctx.strokeStyle = '#000';
-        ctx.lineCap = 'round';
+        ctx.strokeStyle = "#000";
+        ctx.lineCap = "round";
 
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
         ctx.fillRect(l, t, r - l, bm);
-        ctx.strokeStyle = '#000';
+        ctx.strokeStyle = "#000";
 
         if (selected) {
-            ctx.fillStyle = 'rgba(100, 100, 255, 0.2)';
+            ctx.fillStyle = "rgba(100, 100, 255, 0.2)";
             ctx.fillRect(boxl, boxt, boxw, boxh);
         }
-
 
         // Box and open
         ctx.beginPath();
@@ -114,13 +111,13 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         ctx.lineTo(l, bm);
 
         ctx.moveTo(l, bm);
-        ctx.lineTo(r * 0.80, b * 0.80);
+        ctx.lineTo(r * 0.8, b * 0.8);
 
         ctx.stroke();
     }
 
-    drawTemperingValve(context: DrawingContext, {active, selected}: DrawingArgs) {
-        const {ctx, vp} = context;
+    drawTemperingValve(context: DrawingContext, { active, selected }: DrawingArgs) {
+        const { ctx, vp } = context;
 
         const l = -this.entity.pipeDistanceMM;
         const r = this.entity.pipeDistanceMM;
@@ -128,12 +125,12 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         const t = 0;
 
         ctx.lineWidth = this.entity.valveLengthMM * 0.1;
-        ctx.strokeStyle = '#222222';
-        ctx.lineCap = 'square';
+        ctx.strokeStyle = "#222222";
+        ctx.lineCap = "square";
 
         if (selected) {
-            ctx.fillStyle = 'rgba(100, 100, 255, 0.2)';
-            ctx.fillRect( l * 1.2, 0 - b * 0.1, (r - l) * 1.2, b * 1.2);
+            ctx.fillStyle = "rgba(100, 100, 255, 0.2)";
+            ctx.fillRect(l * 1.2, 0 - b * 0.1, (r - l) * 1.2, b * 1.2);
         }
 
         ctx.beginPath();
@@ -144,21 +141,22 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         ctx.stroke();
     }
 
-    drawHotColdRPZD(context: DrawingContext, {active, selected}: DrawingArgs) {
-        const {ctx, vp} = context;
-        const hotSystem = context.doc.drawing.metadata.flowSystems.find((s) =>
-            s.uid === StandardFlowSystemUids.HotWater)!;
-        const coldSystem = context.doc.drawing.metadata.flowSystems.find((s) =>
-            s.uid === StandardFlowSystemUids.ColdWater)!;
-
+    drawHotColdRPZD(context: DrawingContext, { active, selected }: DrawingArgs) {
+        const { ctx, vp } = context;
+        const hotSystem = context.doc.drawing.metadata.flowSystems.find(
+            (s) => s.uid === StandardFlowSystemUids.HotWater
+        )!;
+        const coldSystem = context.doc.drawing.metadata.flowSystems.find(
+            (s) => s.uid === StandardFlowSystemUids.ColdWater
+        )!;
 
         const l = -this.entity.pipeDistanceMM;
         const r = this.entity.pipeDistanceMM;
         const b = this.entity.valveLengthMM;
         const t = 0;
         if (selected) {
-            ctx.fillStyle = 'rgba(100, 100, 255, 0.2)';
-            ctx.fillRect( l * 1.2, 0 - b * 0.1, (r - l) * 1.2, b * 1.2);
+            ctx.fillStyle = "rgba(100, 100, 255, 0.2)";
+            ctx.fillRect(l * 1.2, 0 - b * 0.1, (r - l) * 1.2, b * 1.2);
         }
 
         ctx.rotate(Math.PI / 2);
@@ -170,36 +168,44 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
 
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to
     // complete the type.
-    getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]> { /* */ }
+    getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]> {
+        /* */
+    }
 
     get position(): Matrix {
         const scale = 1 / this.fromParentToWorldLength(1);
         return TM.transform(
             TM.translate(this.entity.center.x, this.entity.center.y),
             TM.rotateDEG(this.entity.rotation),
-            TM.scale(scale, scale),
+            TM.scale(scale, scale)
         );
     }
 
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
-        const angle = this.toWorldAngleDeg(0) / 180 * Math.PI;
+        const angle = (this.toWorldAngleDeg(0) / 180) * Math.PI;
         const height = data.length * FIELD_HEIGHT;
         const wc = this.toWorldCoord();
 
-        console.log('locating for big valve');
-        const res = [0, Math.PI / 4, - Math.PI / 4, Math.PI / 2, - Math.PI / 2,
-            Math.PI * 3 / 4, - Math.PI * 3 / 4, Math.PI].map((delta) => {
+        const res = [
+            0,
+            Math.PI / 4,
+            -Math.PI / 4,
+            Math.PI / 2,
+            -Math.PI / 2,
+            (Math.PI * 3) / 4,
+            (-Math.PI * 3) / 4,
+            Math.PI
+        ].map((delta) => {
             return TM.transform(
                 TM.identity(),
                 TM.translate(wc.x, wc.y),
                 TM.rotate(angle + Math.PI + delta),
-                TM.translate(0, - this.entity.pipeDistanceMM * 2),
+                TM.translate(0, -this.entity.pipeDistanceMM * 2),
                 TM.scale(scale),
-                TM.translate(0, - height / 2),
-                TM.rotate(-angle - Math.PI - delta),
+                TM.translate(0, -height / 2),
+                TM.rotate(-angle - Math.PI - delta)
             );
         });
-        console.log(JSON.stringify(res));
         return res;
     }
 
@@ -238,11 +244,10 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         list.push(
             ...this.objectStore.get(this.entity.coldRoughInUid)!.prepareDelete(context),
             ...this.objectStore.get(this.entity.hotRoughInUid)!.prepareDelete(context),
-            this,
+            this
         );
         return list;
     }
-
 
     getInletsOutlets(): SystemNode[] {
         const result: string[] = [this.entity.coldRoughInUid, this.entity.hotRoughInUid];
@@ -299,29 +304,43 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
 
     getCalculationEntities(context: CalculationContext): [BigValveEntity] {
         const e: BigValveEntity = cloneSimple(this.entity);
-        e.uid += '.calculation';
+        e.uid += ".calculation";
 
-        e.hotRoughInUid = (this.objectStore.get(e.hotRoughInUid) as SystemNode)
-            .getCalculationNode(context, this.uid).uid;
-        e.coldRoughInUid = (this.objectStore.get(e.coldRoughInUid) as SystemNode)
-            .getCalculationNode(context, this.uid).uid;
+        e.hotRoughInUid = (this.objectStore.get(e.hotRoughInUid) as SystemNode).getCalculationNode(
+            context,
+            this.uid
+        ).uid;
+        e.coldRoughInUid = (this.objectStore.get(e.coldRoughInUid) as SystemNode).getCalculationNode(
+            context,
+            this.uid
+        ).uid;
 
         switch (e.valve.type) {
             case BigValveType.TMV:
-                e.valve.warmOutputUid = (this.objectStore.get(e.valve.warmOutputUid) as SystemNode)
-                    .getCalculationNode(context, this.uid).uid;
-                e.valve.coldOutputUid = (this.objectStore.get(e.valve.coldOutputUid) as SystemNode)
-                    .getCalculationNode(context, this.uid).uid;
+                e.valve.warmOutputUid = (this.objectStore.get(e.valve.warmOutputUid) as SystemNode).getCalculationNode(
+                    context,
+                    this.uid
+                ).uid;
+                e.valve.coldOutputUid = (this.objectStore.get(e.valve.coldOutputUid) as SystemNode).getCalculationNode(
+                    context,
+                    this.uid
+                ).uid;
                 break;
             case BigValveType.TEMPERING:
-                e.valve.warmOutputUid = (this.objectStore.get(e.valve.warmOutputUid) as SystemNode)
-                    .getCalculationNode(context, this.uid).uid;
+                e.valve.warmOutputUid = (this.objectStore.get(e.valve.warmOutputUid) as SystemNode).getCalculationNode(
+                    context,
+                    this.uid
+                ).uid;
                 break;
             case BigValveType.RPZD_HOT_COLD:
-                e.valve.hotOutputUid = (this.objectStore.get(e.valve.hotOutputUid) as SystemNode)
-                    .getCalculationNode(context, this.uid).uid;
-                e.valve.coldOutputUid = (this.objectStore.get(e.valve.coldOutputUid) as SystemNode)
-                    .getCalculationNode(context, this.uid).uid;
+                e.valve.hotOutputUid = (this.objectStore.get(e.valve.hotOutputUid) as SystemNode).getCalculationNode(
+                    context,
+                    this.uid
+                ).uid;
+                e.valve.coldOutputUid = (this.objectStore.get(e.valve.coldOutputUid) as SystemNode).getCalculationNode(
+                    context,
+                    this.uid
+                ).uid;
                 break;
             default:
                 assertUnreachable(e.valve);
@@ -330,18 +349,17 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         return [e];
     }
 
-
     collectCalculations(context: CalculationContext): BigValveCalculation {
-        return context.globalStore.getOrCreateCalculation(this.getCalculationEntities(context)[0])
+        return context.globalStore.getOrCreateCalculation(this.getCalculationEntities(context)[0]);
     }
 
-    getFrictionHeadLoss(context: CalculationContext,
-                        flowLS: number,
-                        from: FlowNode,
-                        to: FlowNode,
-                        signed: boolean,
+    getFrictionHeadLoss(
+        context: CalculationContext,
+        flowLS: number,
+        from: FlowNode,
+        to: FlowNode,
+        signed: boolean
     ): number | null {
-
         const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
         let sign = 1;
         if (flowLS < 0) {
@@ -354,9 +372,8 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
             }
         }
 
-        const {drawing, catalog, globalStore} = context;
+        const { drawing, catalog, globalStore } = context;
         const entity = this.entity;
-
 
         // it is directional so we must guard every one.
         let valid = false;
@@ -394,34 +411,31 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
             const systemUid = (globalStore.get(from.connectable)!.entity as SystemNodeEntity).systemUid;
             const calcs = context.globalStore.getOrCreateCalculation(this.entity);
             const size = calcs.rpzdSizeMM![systemUid]!;
-            console.log('calling rpzd hl ' + systemUid + ' ' + size + ' flow: ' + flowLS);
             const res = getRpzdHeadLoss(
                 context,
                 this.entity.valve.catalogId,
                 size,
                 flowLS,
                 systemUid,
-                ValveType.RPZD_SINGLE,
+                ValveType.RPZD_SINGLE
             );
-            console.log(res);
             return res;
         } else if (from.connectable === entity.coldRoughInUid) {
             if (entity.valve.type === BigValveType.TEMPERING || to.connectable !== entity.valve.coldOutputUid) {
-                throw new Error('Invalid configuration - cold input must connect to cold out only');
+                throw new Error("Invalid configuration - cold input must connect to cold out only");
             }
 
             // pressure drop is an elbow and a tee for the cold part.
-            const k1 = getValveK('tThruBranch', context.catalog, BIG_VALVE_DEFAULT_PIPE_WIDTH_MM);
-            const k2 = getValveK('90Elbow', context.catalog, BIG_VALVE_DEFAULT_PIPE_WIDTH_MM);
-
+            const k1 = getValveK("tThruBranch", context.catalog, BIG_VALVE_DEFAULT_PIPE_WIDTH_MM);
+            const k2 = getValveK("90Elbow", context.catalog, BIG_VALVE_DEFAULT_PIPE_WIDTH_MM);
 
             if (k1 === null || k2 === null) {
                 return null;
             }
 
-            const volLM = BIG_VALVE_DEFAULT_PIPE_WIDTH_MM ** 2 * Math.PI / 4 / 1000;
+            const volLM = (BIG_VALVE_DEFAULT_PIPE_WIDTH_MM ** 2 * Math.PI) / 4 / 1000;
             const velocityMS = flowLS / volLM;
-            return sign * ((k1 + k2) * velocityMS ** 2) / (2 * ga);
+            return (sign * ((k1 + k2) * velocityMS ** 2)) / (2 * ga);
         } else {
             switch (entity.valve.type) {
                 case BigValveType.TMV: {
@@ -430,7 +444,10 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
                     break;
                 }
                 case BigValveType.TEMPERING: {
-                    const pdKPAfield = interpolateTable(catalog.mixingValves.temperingValve.pressureLossKPAbyFlowRateLS, flowLS);
+                    const pdKPAfield = interpolateTable(
+                        catalog.mixingValves.temperingValve.pressureLossKPAbyFlowRateLS,
+                        flowLS
+                    );
                     pdKPA = parseCatalogNumberExact(pdKPAfield);
                     break;
                 }
@@ -438,16 +455,16 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
                     assertUnreachable(entity.valve);
             }
             if (pdKPA === null) {
-                throw new Error('pressure drop for TMV not available');
+                throw new Error("pressure drop for TMV not available");
             }
         }
 
-        const systemUid = (globalStore.get(from.connectable)!.entity as SystemNodeEntity).systemUid;
-        const fluid = drawing.metadata.flowSystems.find((s) => s.uid === systemUid)!.fluid;
+        const systemUid1 = (globalStore.get(from.connectable)!.entity as SystemNodeEntity).systemUid;
+        const fluid = drawing.metadata.flowSystems.find((s) => s.uid === systemUid1)!.fluid;
         const density = parseCatalogNumberExact(catalog.fluids[fluid].densityKGM3)!;
 
         // https://neutrium.net/equipment/conversion-between-head-and-pressure/
-        return sign * (pdKPA * 1000 / (density * ga));
+        return sign * ((pdKPA * 1000) / (density * ga));
     }
 
     rememberToRegister(): void {
@@ -462,9 +479,7 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         return res;
     }
 
-    @Cached(
-        (kek) => new Set(kek.getParentChain().map((o) => o.uid)),
-    )
+    @Cached((kek) => new Set(kek.getParentChain().map((o) => o.uid)))
     shape(): Flatten.Segment | Flatten.Point | Flatten.Polygon | Flatten.Circle | null {
         return super.shape();
     }

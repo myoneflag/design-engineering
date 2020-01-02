@@ -1,22 +1,22 @@
 // http://www.metrication.com/drafting/paper.html
-import {Choice} from '../src/lib/types';
-import {Catalog} from '../src/store/catalog/types';
-import {cloneSimple} from '../src/lib/utils';
-import {DwellingStandardType} from "./store/catalog/psd-standard/types";
+import { Choice } from "../src/lib/types";
+import { Catalog } from "../src/store/catalog/types";
+import { cloneSimple } from "../src/lib/utils";
+import { DwellingStandardType } from "./store/catalog/psd-standard/types";
 
-export const DEFAULT_FONT_NAME: string = 'Helvetica';
+export const DEFAULT_FONT_NAME: string = "Helvetica";
 
 export enum SupportedPsdStandards {
-    as35002018LoadingUnits = 'as35002018LoadingUnits',
-    barriesBookLoadingUnits = 'barriesBookLoadingUnits',
+    as35002018LoadingUnits = "as35002018LoadingUnits",
+    barriesBookLoadingUnits = "barriesBookLoadingUnits",
 
-    din1988300Residential = 'din1988300Residential',
-    din1988300Hospital = 'din1988300Hospital',
-    din1988300Hotel = 'din1988300Hotel',
-    din1988300School = 'din1988300School',
-    din1988300Office = 'din1988300Office',
-    din1988300AssistedLiving = 'din1988300AssistedLiving',
-    din1988300NursingHome = 'din1988300NursingHome',
+    din1988300Residential = "din1988300Residential",
+    din1988300Hospital = "din1988300Hospital",
+    din1988300Hotel = "din1988300Hotel",
+    din1988300School = "din1988300School",
+    din1988300Office = "din1988300Office",
+    din1988300AssistedLiving = "din1988300AssistedLiving",
+    din1988300NursingHome = "din1988300NursingHome"
 }
 
 export function isSupportedPsdStandard(arg: any): arg is SupportedPsdStandards {
@@ -24,18 +24,17 @@ export function isSupportedPsdStandard(arg: any): arg is SupportedPsdStandards {
 }
 
 export enum SupportedDwellingStandards {
-    as35002018Dwellings = 'as35002018Dwellings',
-    barriesBookDwellings = 'barriesBookDwellings',
+    as35002018Dwellings = "as35002018Dwellings",
+    barriesBookDwellings = "barriesBookDwellings"
 }
 
 export function isSupportedDwellingStandard(arg: any): arg is SupportedDwellingStandards {
     return Object.values(SupportedDwellingStandards).includes(arg);
 }
 
-
 export function assertUnreachable(x: never, shouldThrow: boolean = true) {
     if (shouldThrow) {
-        throw new Error('Didn\'t expect to get here. Object is: ' + JSON.stringify(x));
+        throw new Error("Didn't expect to get here. Object is: " + JSON.stringify(x));
     }
 }
 
@@ -60,19 +59,19 @@ export function isGermanStandard(psd: SupportedPsdStandards) {
 // These are some temporary configs while we don't have a database yet.
 //
 export const DISPLAY_PSD_METHODS: Choice[] = [
-    {name: 'AS3500 2018 Loading Units', key: SupportedPsdStandards.as35002018LoadingUnits},
-    {name: 'Barrie\'s Book Loading Units', key: SupportedPsdStandards.barriesBookLoadingUnits},
-    {name: 'DIN 1988-300 - Residential', key: SupportedPsdStandards.din1988300Residential},
-    {name: 'DIN 1988-300 - Hospital',  key: SupportedPsdStandards.din1988300Hospital},
-    {name: 'DIN 1988-300 - Hotel', key: SupportedPsdStandards.din1988300Hotel},
-    {name: 'DIN 1988-300 - School', key: SupportedPsdStandards.din1988300School},
-    {name: 'DIN 1988-300 - Office', key: SupportedPsdStandards.din1988300Office},
-    {name: 'DIN 1988-300 - Assisted Living', key: SupportedPsdStandards.din1988300AssistedLiving},
-    {name: 'DIN 1988-300 - Nursing Home', key: SupportedPsdStandards.din1988300NursingHome},
-    {name: 'BS 806', disabled: true, key: 'BS806'},
-    {name: 'CIBSE Guide G', disabled: true, key: 'CIBSEGuideG'},
-    {name: 'Uniform Plumbing Code 2018', disabled: true, key: 'UnifromPlumbingCode2018'},
-    {name: 'International Plumbing Code 2018', disabled: true, key: 'InternationalPlumbingCode2018'},
+    { name: "AS3500 2018 Loading Units", key: SupportedPsdStandards.as35002018LoadingUnits },
+    { name: "Barrie's Book Loading Units", key: SupportedPsdStandards.barriesBookLoadingUnits },
+    { name: "DIN 1988-300 - Residential", key: SupportedPsdStandards.din1988300Residential },
+    { name: "DIN 1988-300 - Hospital", key: SupportedPsdStandards.din1988300Hospital },
+    { name: "DIN 1988-300 - Hotel", key: SupportedPsdStandards.din1988300Hotel },
+    { name: "DIN 1988-300 - School", key: SupportedPsdStandards.din1988300School },
+    { name: "DIN 1988-300 - Office", key: SupportedPsdStandards.din1988300Office },
+    { name: "DIN 1988-300 - Assisted Living", key: SupportedPsdStandards.din1988300AssistedLiving },
+    { name: "DIN 1988-300 - Nursing Home", key: SupportedPsdStandards.din1988300NursingHome },
+    { name: "BS 806", disabled: true, key: "BS806" },
+    { name: "CIBSE Guide G", disabled: true, key: "CIBSEGuideG" },
+    { name: "Uniform Plumbing Code 2018", disabled: true, key: "UnifromPlumbingCode2018" },
+    { name: "International Plumbing Code 2018", disabled: true, key: "InternationalPlumbingCode2018" }
 ];
 
 export function getPsdMethods(catalog: Catalog): Choice[] {
@@ -83,7 +82,9 @@ export function getPsdMethods(catalog: Catalog): Choice[] {
         const index = methods.findIndex((p) => p.key === key);
         if (index === -1) {
             methods.push({
-                disabled: false, key, name: standard.name,
+                disabled: false,
+                key,
+                name: standard.name
             });
         } else {
             methods[index].disabled = false;
@@ -94,9 +95,9 @@ export function getPsdMethods(catalog: Catalog): Choice[] {
 }
 
 export const DISPLAY_DWELLING_METHODS: Choice[] = [
-    {name: "AS3500 2018 Dwellings", key: SupportedDwellingStandards.as35002018Dwellings},
-    {name: "Barrie\'s Book Dwellings", key: SupportedDwellingStandards.barriesBookDwellings},
-    {name: "None", key: null},
+    { name: "AS3500 2018 Dwellings", key: SupportedDwellingStandards.as35002018Dwellings },
+    { name: "Barrie's Book Dwellings", key: SupportedDwellingStandards.barriesBookDwellings },
+    { name: "None", key: null }
 ];
 
 export function getDwellingMethods(catalog: Catalog): Choice[] {
@@ -107,7 +108,9 @@ export function getDwellingMethods(catalog: Catalog): Choice[] {
         const index = methods.findIndex((p) => p.key === key);
         if (index === -1) {
             methods.push({
-                disabled: false, key, name: standard.name,
+                disabled: false,
+                key,
+                name: standard.name
             });
         } else {
             methods[index].disabled = false;
@@ -118,15 +121,15 @@ export function getDwellingMethods(catalog: Catalog): Choice[] {
 }
 
 export const RING_MAIN_CALCULATION_METHODS: Choice[] = [
-    {name: 'Flow rate assigned to each fixture as %', disabled: true, key: 'fixturePCT'},
-    {name: 'Flow rate assigned to fixtures evenly', disabled: true, key: 'fixtureEven'},
-    {name: 'Flow rate assigned to most disadvantaged fixtures', disabled: true, key: 'fixtureDisadvantaged'},
-    {name: '99th percentile computer simulated PSD', disabled: true, key: 'monteCarlo'},
+    { name: "Flow rate assigned to each fixture as %", disabled: true, key: "fixturePCT" },
+    { name: "Flow rate assigned to fixtures evenly", disabled: true, key: "fixtureEven" },
+    { name: "Flow rate assigned to most disadvantaged fixtures", disabled: true, key: "fixtureDisadvantaged" },
+    { name: "99th percentile computer simulated PSD", disabled: true, key: "monteCarlo" }
 ];
 
 export const PIPE_SIZING_METHODS: Choice[] = [
-    {name: 'Keep maximum velocity within bounds', key: 'velocity'},
-    {name: 'Keep maximum pressure drop within bounds', key: 'pressure', disabled: true},
+    { name: "Keep maximum velocity within bounds", key: "velocity" },
+    { name: "Keep maximum pressure drop within bounds", key: "pressure", disabled: true }
 ];
 
 export const PIPE_HEIGHT_GRAPHIC_EPS_MM = 50;

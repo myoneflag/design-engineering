@@ -1,7 +1,7 @@
-import {CalculationField, FieldCategory, Units} from '../../../../src/store/document/calculations/calculation-field';
-import DirectedValveEntity from '../../../../src/store/document/entities/directed-valves/directed-valve-entity';
-import {Calculation} from '../../../../src/store/document/calculations/types';
-import {ValveType} from "../entities/directed-valves/valve-types";
+import { CalculationField, FieldCategory, Units } from "../../../../src/store/document/calculations/calculation-field";
+import DirectedValveEntity from "../../../../src/store/document/entities/directed-valves/directed-valve-entity";
+import { Calculation } from "../../../../src/store/document/calculations/types";
+import { ValveType } from "../entities/directed-valves/valve-types";
 
 export default interface DirectedValveCalculation extends Calculation {
     flowRateLS: number | null;
@@ -12,24 +12,27 @@ export default interface DirectedValveCalculation extends Calculation {
 
 export function makeDirectedValveCalculationFields(entity: DirectedValveEntity): CalculationField[] {
     let fields: CalculationField[] = [
-        {property: 'flowRateLS',
-            title: 'Flow Rate',
-            short: 'Flow',
+        {
+            property: "flowRateLS",
+            title: "Flow Rate",
+            short: "Flow",
             units: Units.LitersPerSecond,
-            category: FieldCategory.FlowRate,
+            category: FieldCategory.FlowRate
         },
-        {property: 'pressureDropKPA',
-            title: 'Pressure Drop',
-            short: 'Drop',
+        {
+            property: "pressureDropKPA",
+            title: "Pressure Drop",
+            short: "Drop",
             units: Units.KiloPascals,
-            category: FieldCategory.Pressure,
+            category: FieldCategory.Pressure
         },
-        {property: 'pressureKPA',
-            title: 'Pressure',
-            short: 'In',
+        {
+            property: "pressureKPA",
+            title: "Pressure",
+            short: "In",
             units: Units.KiloPascals,
-            category: FieldCategory.Pressure,
-        },
+            category: FieldCategory.Pressure
+        }
     ];
     if (entity.systemUidOption) {
         fields = fields.map((f) => {
@@ -38,16 +41,17 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity):
         });
     }
 
-    if (entity.valve.type === ValveType.RPZD_DOUBLE_SHARED ||
+    if (
+        entity.valve.type === ValveType.RPZD_DOUBLE_SHARED ||
         entity.valve.type === ValveType.RPZD_DOUBLE_ISOLATED ||
         entity.valve.type === ValveType.RPZD_SINGLE
     ) {
         fields.push({
-            property: 'sizeMM',
-            title: 'Size (mm)',
-            short: '',
+            property: "sizeMM",
+            title: "Size (mm)",
+            short: "",
             units: Units.Millimeters,
-            category: FieldCategory.Size,
+            category: FieldCategory.Size
         });
     }
 
@@ -60,6 +64,6 @@ export function emptyDirectedValveCalculation(): DirectedValveCalculation {
         pressureDropKPA: null,
         pressureKPA: null,
         warning: null,
-        sizeMM: null,
+        sizeMM: null
     };
 }

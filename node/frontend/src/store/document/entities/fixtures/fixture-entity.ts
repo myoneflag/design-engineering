@@ -1,13 +1,13 @@
-import {Coord, DocumentState, DrawableEntity, DrawingState,} from '../../../../../src/store/document/types';
-import {EntityType} from '../../../../../src/store/document/entities/types';
-import {FieldType, PropertyField} from '../../../../../src/store/document/entities/property-field';
-import {Catalog} from '../../../../../src/store/catalog/types';
-import {SupportedPsdStandards} from '../../../../config';
-import {parseCatalogNumberExact, parseCatalogNumberOrMin} from '../../../../../src/htmlcanvas/lib/utils';
-import {cloneSimple} from '../../../../../src/lib/utils';
+import { Coord, DocumentState, DrawableEntity, DrawingState } from "../../../../../src/store/document/types";
+import { EntityType } from "../../../../../src/store/document/entities/types";
+import { FieldType, PropertyField } from "../../../../../src/store/document/entities/property-field";
+import { Catalog } from "../../../../../src/store/catalog/types";
+import { SupportedPsdStandards } from "../../../../config";
+import { parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../../../src/htmlcanvas/lib/utils";
+import { cloneSimple } from "../../../../../src/lib/utils";
 
 export interface RoughInRecord {
-    uid: string,
+    uid: string;
     minPressureKPA: number | null;
     maxPressureKPA: number | null;
     loadingUnits: number | null;
@@ -23,8 +23,8 @@ export default interface FixtureEntity extends DrawableEntity {
     rotation: number;
 
     roughIns: {
-        [key: string]: RoughInRecord,
-    }
+        [key: string]: RoughInRecord;
+    };
     roughInsInOrder: string[];
 
     pipeDistanceMM: number;
@@ -36,42 +36,117 @@ export default interface FixtureEntity extends DrawableEntity {
 
 export function makeFixtureFields(doc: DocumentState, entity: FixtureEntity): PropertyField[] {
     const res: PropertyField[] = [
-        { property: 'rotation', title: 'Rotation: (Degrees)', hasDefault: false, isCalculated: false,
-            type: FieldType.Rotation, params: null, multiFieldId: null },
+        {
+            property: "rotation",
+            title: "Rotation: (Degrees)",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.Rotation,
+            params: null,
+            multiFieldId: null
+        },
 
-        { property: 'outletAboveFloorM', title: 'Height Above Floor (m)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: null, max: null }, multiFieldId: 'outletAboveFloorM' },
+        {
+            property: "outletAboveFloorM",
+            title: "Height Above Floor (m)",
+            hasDefault: true,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: null, max: null },
+            multiFieldId: "outletAboveFloorM"
+        },
 
-        { property: 'warmTempC', title: 'Warm Water Temperature (C)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: 100 },  multiFieldId: 'warmTempC' },
+        {
+            property: "warmTempC",
+            title: "Warm Water Temperature (C)",
+            hasDefault: true,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: 0, max: 100 },
+            multiFieldId: "warmTempC"
+        },
 
-        { property: 'fixtureUnits', title: 'Fixture Units', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'fixtureUnits' },
+        {
+            property: "fixtureUnits",
+            title: "Fixture Units",
+            hasDefault: true,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: 0, max: null },
+            multiFieldId: "fixtureUnits"
+        },
 
-        { property: 'probabilityOfUsagePCT', title: 'Prob. of Usage (%)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'probabilityOfUsagePCT' },
+        {
+            property: "probabilityOfUsagePCT",
+            title: "Prob. of Usage (%)",
+            hasDefault: true,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: 0, max: null },
+            multiFieldId: "probabilityOfUsagePCT"
+        }
     ];
 
     for (const suid of Object.keys(entity.roughIns)) {
         const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === suid)!;
         res.push(
-            { property: suid + '.title', title: system.name, hasDefault: false, isCalculated: false,
-                type: FieldType.Title, params: null, multiFieldId: suid + '.title' },
+            {
+                property: suid + ".title",
+                title: system.name,
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Title,
+                params: null,
+                multiFieldId: suid + ".title"
+            },
 
-            { property: 'roughIns.' + suid + '.designFlowRateLS', title: 'Design Flow Rate (L/s)', hasDefault: true, isCalculated: false,
-                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '-designFlowRateLS' },
-            { property: 'roughIns.' + suid + '.continuousFlowLS', title: 'Continuous Flow (L/s)', hasDefault: true, isCalculated: false,
-                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '-continuousFlowLS' },
-            { property: 'roughIns.' + suid + '.loadingUnits', title: 'Loading Units', hasDefault: true, isCalculated: false,
-                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '-loadingUnits' },
-            { property: 'roughIns.' + suid + '.minPressureKPA', title: 'Min. Inlet Pressure (KPA)', hasDefault: true, isCalculated: false,
-                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '-minPressureKPA' },
-            { property: 'roughIns.' + suid +  '.maxPressureKPA', title: 'Max. Inlet Pressure (KPA)', hasDefault: true, isCalculated: false,
-                type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: suid + '-maxPressureKPA' },
-
+            {
+                property: "roughIns." + suid + ".designFlowRateLS",
+                title: "Design Flow Rate (L/s)",
+                hasDefault: true,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: suid + "-designFlowRateLS"
+            },
+            {
+                property: "roughIns." + suid + ".continuousFlowLS",
+                title: "Continuous Flow (L/s)",
+                hasDefault: true,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: suid + "-continuousFlowLS"
+            },
+            {
+                property: "roughIns." + suid + ".loadingUnits",
+                title: "Loading Units",
+                hasDefault: true,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: suid + "-loadingUnits"
+            },
+            {
+                property: "roughIns." + suid + ".minPressureKPA",
+                title: "Min. Inlet Pressure (KPA)",
+                hasDefault: true,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: suid + "-minPressureKPA"
+            },
+            {
+                property: "roughIns." + suid + ".maxPressureKPA",
+                title: "Max. Inlet Pressure (KPA)",
+                hasDefault: true,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: suid + "-maxPressureKPA"
+            }
         );
     }
-
 
     return res;
 }
@@ -79,20 +154,15 @@ export function makeFixtureFields(doc: DocumentState, entity: FixtureEntity): Pr
 export function fillFixtureFields(
     drawing: DrawingState | undefined,
     defaultCatalog: Catalog,
-    value: FixtureEntity,
+    value: FixtureEntity
 ): FixtureEntity {
     const result = cloneSimple(value);
 
-    const arr: Array<
-        'warmTempC' |
-        'outletAboveFloorM' |
-        'fixtureUnits' |
-        'probabilityOfUsagePCT'
-        > = [
-        'warmTempC',
-        'outletAboveFloorM',
-        'fixtureUnits',
-        'probabilityOfUsagePCT',
+    const arr: Array<"warmTempC" | "outletAboveFloorM" | "fixtureUnits" | "probabilityOfUsagePCT"> = [
+        "warmTempC",
+        "outletAboveFloorM",
+        "fixtureUnits",
+        "probabilityOfUsagePCT"
     ];
 
     arr.forEach((field) => {
@@ -101,10 +171,11 @@ export function fillFixtureFields(
         }
     });
 
-    const psdStrategy = drawing ? drawing.metadata.calculationParams.psdMethod :
-        SupportedPsdStandards.as35002018LoadingUnits;
+    const psdStrategy = drawing
+        ? drawing.metadata.calculationParams.psdMethod
+        : SupportedPsdStandards.as35002018LoadingUnits;
 
-    let continuousFlowLS = defaultCatalog.fixtures[result.name].continuousFlowLS;
+    const continuousFlowLS = defaultCatalog.fixtures[result.name].continuousFlowLS;
 
     for (const systemUid of Object.keys(result.roughIns)) {
         const target = result.roughIns[systemUid];
@@ -117,8 +188,9 @@ export function fillFixtureFields(
 
         if (psdStrategy in defaultCatalog.fixtures[result.name].loadingUnits) {
             if (target.loadingUnits === null) {
-                target.loadingUnits =
-                    parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy][systemUid]);
+                target.loadingUnits = parseCatalogNumberOrMin(
+                    defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy][systemUid]
+                );
             }
         }
 

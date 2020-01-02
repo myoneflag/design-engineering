@@ -1,25 +1,28 @@
-import {CalculatableEntityConcrete, CalculationConcrete} from '../../../../src/store/document/entities/concrete-entity';
-import {DrawingContext} from '../../../../src/htmlcanvas/lib/types';
-import {CalculationFilters} from '../../../../src/store/document/types';
-import {CalculationData, CalculationDataType} from '../../../../src/store/document/calculations/calculation-field';
-import Flatten from '@flatten-js/core';
-import BackedDrawableObject from '../../../../src/htmlcanvas/lib/backed-drawable-object';
-import {DEFAULT_FONT_NAME} from '../../../../src/config';
-import {getPropertyByString, lighten} from '../../../../src/lib/utils';
-import {getFields} from '../../../../src/calculations/utils';
-import * as TM from 'transformation-matrix';
-import {tm2flatten} from '../../../../src/htmlcanvas/lib/utils';
-import {TEXT_MAX_SCALE} from '../../../../src/htmlcanvas/objects/pipe';
-import {getWarningSignImg, matrixScale, warningSignImg, wrapText} from '../../../../src/htmlcanvas/utils';
-import {CalculationContext} from "../../../calculations/types";
-import {EntityType} from "../../../store/document/entities/types";
+import {
+    CalculatableEntityConcrete,
+    CalculationConcrete
+} from "../../../../src/store/document/entities/concrete-entity";
+import { DrawingContext } from "../../../../src/htmlcanvas/lib/types";
+import { CalculationFilters } from "../../../../src/store/document/types";
+import { CalculationData, CalculationDataType } from "../../../../src/store/document/calculations/calculation-field";
+import Flatten from "@flatten-js/core";
+import BackedDrawableObject from "../../../../src/htmlcanvas/lib/backed-drawable-object";
+import { DEFAULT_FONT_NAME } from "../../../../src/config";
+import { getPropertyByString, lighten } from "../../../../src/lib/utils";
+import { getFields } from "../../../../src/calculations/utils";
+import * as TM from "transformation-matrix";
+import { tm2flatten } from "../../../../src/htmlcanvas/lib/utils";
+import { TEXT_MAX_SCALE } from "../../../../src/htmlcanvas/objects/pipe";
+import { getWarningSignImg, matrixScale, warningSignImg, wrapText } from "../../../../src/htmlcanvas/utils";
+import { CalculationContext } from "../../../calculations/types";
+import { EntityType } from "../../../store/document/entities/types";
 
 export interface Calculated {
     drawCalculationBox(
         context: DrawingContext,
         data: CalculationData[],
         dryRun: boolean,
-        warnSingOnly: boolean,
+        warnSingOnly: boolean
     ): Flatten.Box;
     measureCalculationBox(context: DrawingContext, data: CalculationData[]): Array<[TM.Matrix, Flatten.Polygon]>;
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[];
@@ -27,7 +30,6 @@ export interface Calculated {
     hasWarning(context: DrawingContext): boolean;
     collectCalculations(context: CalculationContext): CalculationConcrete;
 }
-
 
 export const FIELD_HEIGHT = 15;
 export const WARNING_HINT_WIDTH = 200;
@@ -38,44 +40,46 @@ export const WARNING_WIDTH = 60;
 export const WARNING_HEIGHT = 50;
 export const MIN_SCALE = 0.7;
 
-export function CalculatedObject<T extends new (...args: any[])
-    => Calculated & BackedDrawableObject<CalculatableEntityConcrete>>(constructor: T) {
-
+export function CalculatedObject<
+    T extends new (...args: any[]) => Calculated & BackedDrawableObject<CalculatableEntityConcrete>
+>(constructor: T) {
     // @ts-ignore abstract class expression limitation in the language. In practice this is fine.
-    return (class extends constructor implements CalculatedObject {
+    return class extends constructor implements CalculatedObject {
         calculated: true = true;
 
         makeDatumText(datum: CalculationData): string {
             if (datum.type === CalculationDataType.VALUE) {
                 const value = datum.value;
                 if (value === undefined) {
-                    throw new Error('undefined value: ' + JSON.stringify(datum) + ' '
-                        + JSON.stringify(this.objectStore.get(datum.attachUid)!.entity));
+                    throw new Error(
+                        "undefined value: " +
+                            JSON.stringify(datum) +
+                            " " +
+                            JSON.stringify(this.objectStore.get(datum.attachUid)!.entity)
+                    );
                 }
 
                 const fractionDigits = datum.significantDigits === undefined ? 2 : datum.significantDigits;
 
-                let numberText = (value === null ? '??' : value.toFixed(fractionDigits));
+                let numberText = value === null ? "??" : value.toFixed(fractionDigits);
                 if (datum.format) {
                     numberText = datum.format(value);
                 }
-                return numberText +
-                    ' ' + (datum.hideUnits ? '' : datum.units + ' ') +
-                    datum.short;
+                return numberText + " " + (datum.hideUnits ? "" : datum.units + " ") + datum.short;
             } else {
                 return datum.message;
             }
         }
 
         drawWarningSignOnly(context: DrawingContext, dryRun: boolean): Flatten.Box {
-            this.withWorldAngle(context, {x: 0, y: 0}, () => {
+            this.withWorldAngle(context, { x: 0, y: 0 }, () => {
                 if (!dryRun) {
                     context.ctx.drawImage(
                         getWarningSignImg(),
-                        - WARNING_WIDTH / 2,
-                        - WARNING_HEIGHT / 2,
+                        -WARNING_WIDTH / 2,
+                        -WARNING_HEIGHT / 2,
                         WARNING_WIDTH,
-                        WARNING_HEIGHT,
+                        WARNING_HEIGHT
                     );
                 }
             });
@@ -87,33 +91,31 @@ export function CalculatedObject<T extends new (...args: any[])
             context: DrawingContext,
             data: CalculationData[],
             dryRun: boolean = false,
-            warnSignOnly: boolean = false,
+            warnSignOnly: boolean = false
         ): Flatten.Box {
             if (warnSignOnly) {
                 return this.drawWarningSignOnly(context, dryRun);
             }
 
-            const {ctx, vp} = context;
+            const { ctx, vp } = context;
 
             // ctx.fillText(this.entity.calculation!.realNominalPipeDiameterMM!.toPrecision(2), 0, 0);
-
 
             let maxWidth = 0;
             for (let i = data.length - 1; i >= 0; i--) {
                 const datum = data[i];
                 if (datum.type === CalculationDataType.VALUE) {
-                    ctx.font = (datum.bold ? 'bold ' : '') + FIELD_FONT_SIZE + 'px ' + DEFAULT_FONT_NAME;
+                    ctx.font = (datum.bold ? "bold " : "") + FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
                 } else {
-                    ctx.font = FIELD_FONT_SIZE + 'px ' + DEFAULT_FONT_NAME;
+                    ctx.font = FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
                 }
 
-                const metrics = ctx.measureText( this.makeDatumText(datum));
+                const metrics = ctx.measureText(this.makeDatumText(datum));
                 maxWidth = Math.max(maxWidth, metrics.width);
             }
             if (this.hasWarning(context)) {
                 maxWidth = Math.max(maxWidth, WARNING_HINT_WIDTH);
             }
-
 
             const calculation = context.globalStore.getCalculation(this.entity);
 
@@ -128,32 +130,32 @@ export function CalculatedObject<T extends new (...args: any[])
 
             let warnHeight = 0;
             if (this.hasWarning(context)) {
-                ctx.font = 'bold ' + FIELD_FONT_SIZE + 'px ' + DEFAULT_FONT_NAME;
+                ctx.font = "bold " + FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
                 warnHeight = wrapText(ctx, calculation!.warning!, 0, 0, maxWidth, FIELD_HEIGHT, true);
                 height += warnHeight;
             }
             let y = height / 2;
 
-            const box = new Flatten.Box(-maxWidth / 2, - height / 2, maxWidth / 2, height / 2);
+            const box = new Flatten.Box(-maxWidth / 2, -height / 2, maxWidth / 2, height / 2);
 
             if (this.hasWarning(context)) {
                 box.xmin -= WARNING_WIDTH;
             }
 
             if (!dryRun) {
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                ctx.strokeStyle = '#000';
+                ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+                ctx.strokeStyle = "#000";
                 if (this.hasWarning(context)) {
-                    ctx.fillStyle = 'rgba(255, 220, 150, 1)';
+                    ctx.fillStyle = "rgba(255, 220, 150, 1)";
                 }
                 ctx.fillRect(-maxWidth / 2, -height / 2, maxWidth, height);
 
-                ctx.font = FIELD_FONT_SIZE + 'px ' + DEFAULT_FONT_NAME;
-                ctx.fillStyle = '#000';
+                ctx.font = FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
+                ctx.fillStyle = "#000";
 
                 if (this.hasWarning(context)) {
-                    ctx.fillStyle = '#000';
-                    ctx.font = 'bold ' + FIELD_FONT_SIZE + 'px ' + DEFAULT_FONT_NAME;
+                    ctx.fillStyle = "#000";
+                    ctx.font = "bold " + FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
 
                     y -= wrapText(
                         ctx,
@@ -161,15 +163,15 @@ export function CalculatedObject<T extends new (...args: any[])
                         -maxWidth / 2,
                         y - warnHeight + FIELD_HEIGHT,
                         maxWidth,
-                        FIELD_HEIGHT,
+                        FIELD_HEIGHT
                     );
 
                     ctx.drawImage(
                         getWarningSignImg(),
                         -maxWidth / 2 - WARNING_WIDTH,
-                        - WARNING_HEIGHT / 2,
+                        -WARNING_HEIGHT / 2,
                         WARNING_WIDTH,
-                        WARNING_HEIGHT,
+                        WARNING_HEIGHT
                     );
                 }
 
@@ -179,16 +181,20 @@ export function CalculatedObject<T extends new (...args: any[])
                     let multiplier = 1;
                     if (datum.type === CalculationDataType.VALUE) {
                         multiplier = datum.fontMultiplier === undefined ? 1 : datum.fontMultiplier!;
-                        ctx.font = (datum.bold ? 'bold ' : '') +
-                            (multiplier * FIELD_FONT_SIZE).toFixed(0) + 'px ' + DEFAULT_FONT_NAME;
+                        ctx.font =
+                            (datum.bold ? "bold " : "") +
+                            (multiplier * FIELD_FONT_SIZE).toFixed(0) +
+                            "px " +
+                            DEFAULT_FONT_NAME;
                     } else {
-                        ctx.font = (multiplier * FIELD_FONT_SIZE).toFixed(0) + 'px ' + DEFAULT_FONT_NAME;
+                        ctx.font = (multiplier * FIELD_FONT_SIZE).toFixed(0) + "px " + DEFAULT_FONT_NAME;
                     }
 
-                    ctx.fillStyle = '#000';
+                    ctx.fillStyle = "#000";
 
                     if (datum.systemUid) {
-                        const col = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === data[i].systemUid)!.color;
+                        const col = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === data[i].systemUid)!
+                            .color;
                         ctx.fillStyle = lighten(col.hex, -20);
                     }
 
@@ -199,10 +205,10 @@ export function CalculatedObject<T extends new (...args: any[])
                 // line to
                 const boxShape = new Flatten.Polygon();
                 const worldMin = vp.toWorldCoord(
-                    TM.applyToPoint(context.ctx.getTransform(), {x: box.xmin, y: box.ymin}),
+                    TM.applyToPoint(context.ctx.getTransform(), { x: box.xmin, y: box.ymin })
                 );
                 const worldMax = vp.toWorldCoord(
-                    TM.applyToPoint(context.ctx.getTransform(), {x: box.xmax, y: box.ymax}),
+                    TM.applyToPoint(context.ctx.getTransform(), { x: box.xmax, y: box.ymax })
                 );
                 if (this.hasWarning(context)) {
                     worldMin.x -= WARNING_WIDTH;
@@ -211,23 +217,18 @@ export function CalculatedObject<T extends new (...args: any[])
                     Math.min(worldMin.x, worldMax.x),
                     Math.min(worldMin.y, worldMax.y),
                     Math.max(worldMin.x, worldMax.x),
-                    Math.max(worldMin.y, worldMax.y),
+                    Math.max(worldMin.y, worldMax.y)
                 );
-
-
 
                 boxShape.addFace(worldBox);
                 const line = this.shape()!.distanceTo(boxShape);
                 if (!boxShape.contains(line[1].start) || true) {
                     // line is now in world position. Transform line back to current position.
-                    const world2curr = TM.transform(
-                        TM.inverse(ctx.getTransform()),
-                        vp.world2ScreenMatrix,
-                    );
+                    const world2curr = TM.transform(TM.inverse(ctx.getTransform()), vp.world2ScreenMatrix);
 
                     const currLine = line[1].transform(tm2flatten(world2curr));
 
-                    ctx.strokeStyle = '#AAA';
+                    ctx.strokeStyle = "#AAA";
                     ctx.setLineDash([5, 5]);
                     ctx.lineWidth = 3;
                     ctx.beginPath();
@@ -242,7 +243,6 @@ export function CalculatedObject<T extends new (...args: any[])
         }
 
         measureCalculationBox(context: DrawingContext, data: CalculationData[]): Array<[TM.Matrix, Flatten.Polygon]> {
-
             const s = matrixScale(context.ctx.getTransform());
             let newScale: number;
 
@@ -258,8 +258,6 @@ export function CalculatedObject<T extends new (...args: any[])
             }
 
             const locs: TM.Matrix[] = this.locateCalculationBoxWorld(context, data, newScale);
-            console.log(this.entity.type + ' locs: ' + JSON.stringify(locs));
-
             const box = this.drawCalculationBox(context, data, true);
 
             return locs.map((loc) => {
@@ -271,20 +269,20 @@ export function CalculatedObject<T extends new (...args: any[])
         }
 
         getCalculationFields(context: DrawingContext, filters: CalculationFilters): CalculationData[] {
-
             const filter = filters[this.entity.type].filters;
             const calculation = context.globalStore.getCalculation(this.entity);
 
             if (this.entity.type === EntityType.PIPE) {
-
                 const pCalc = context.globalStore.getCalculation(this.entity);
                 if (pCalc && pCalc.peakFlowRate === null) {
-                    return [{
-                        message: 'AMBIGUOUS',
-                        attachUid: this.uid,
-                        type: CalculationDataType.MESSAGE,
-                        systemUid: this.entity.systemUid,
-                    }];
+                    return [
+                        {
+                            message: "AMBIGUOUS",
+                            attachUid: this.uid,
+                            type: CalculationDataType.MESSAGE,
+                            systemUid: this.entity.systemUid
+                        }
+                    ];
                 }
             }
 
@@ -295,7 +293,7 @@ export function CalculatedObject<T extends new (...args: any[])
                         ...f,
                         type: CalculationDataType.VALUE,
                         value: getPropertyByString(calculation, f.property),
-                        attachUid: f.attachUid || this.entity.uid,
+                        attachUid: f.attachUid || this.entity.uid
                     };
                     return ret;
                 });
@@ -304,9 +302,9 @@ export function CalculatedObject<T extends new (...args: any[])
         hasWarning(context: DrawingContext): boolean {
             const calculation = context.globalStore.getCalculation(this.entity);
             if (calculation && calculation.warning === undefined) {
-                throw new Error('undefined calculation: ' + JSON.stringify(this.entity));
+                throw new Error("undefined calculation: " + JSON.stringify(this.entity));
             }
             return calculation !== undefined && calculation.warning !== null;
         }
-    });
+    };
 }

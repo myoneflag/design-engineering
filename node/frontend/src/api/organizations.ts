@@ -1,11 +1,11 @@
-import {APIResult} from "../../../common/src/api/types";
-import {Document} from "../../../backend/src/entity/Document";
+import { APIResult } from "../../../common/src/api/types";
+import { Document } from "../../../backend/src/entity/Document";
 import axios from "axios";
-import {Organization} from "../../../backend/src/entity/Organization";
+import { Organization } from "../../../backend/src/entity/Organization";
 
 export async function getOrganizations(): Promise<APIResult<Organization[]>> {
     try {
-        return (await axios.get('/api/organizations/')).data;
+        return (await axios.get("/api/organizations/")).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
@@ -17,7 +17,7 @@ export async function getOrganizations(): Promise<APIResult<Organization[]>> {
 
 export async function getOrganization(id: string): Promise<APIResult<Organization>> {
     try {
-        return (await axios.get('/api/organizations/' + id)).data;
+        return (await axios.get("/api/organizations/" + id)).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
@@ -29,9 +29,12 @@ export async function getOrganization(id: string): Promise<APIResult<Organizatio
 
 export async function createOrganization(id: string, name: string): Promise<APIResult<Organization>> {
     try {
-        return (await axios.post('/api/organizations/', {
-            id, name,
-        })).data;
+        return (
+            await axios.post("/api/organizations/", {
+                id,
+                name
+            })
+        ).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
@@ -43,9 +46,11 @@ export async function createOrganization(id: string, name: string): Promise<APIR
 
 export async function updateOrganization(id: string, name: string): Promise<APIResult<Organization>> {
     try {
-        return (await axios.put('/api/organizations/' + id, {
-            name,
-        })).data;
+        return (
+            await axios.put("/api/organizations/" + id, {
+                name
+            })
+        ).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };

@@ -1,11 +1,11 @@
-import uuid from 'uuid';
-import _ from 'lodash';
-import assert from 'assert';
-import TinyQueue from 'tinyqueue';
-import {cloneSimple} from '../../src/lib/utils';
-import stringify from 'json-stable-stringify';
+import uuid from "uuid";
+import _ from "lodash";
+import assert from "assert";
+import TinyQueue from "tinyqueue";
+import { cloneSimple } from "../../src/lib/utils";
+import stringify from "json-stable-stringify";
 
-export default class Graph<N , E> {
+export default class Graph<N, E> {
     adjacencyList: Map<string, Array<Edge<N, E>>> = new Map<string, Array<Edge<N, E>>>();
     edgeList: Map<string, Edge<N, E>> = new Map<string, Edge<N, E>>();
     reverseAdjacencyList: Map<string, Array<Edge<N, E>>> = new Map<string, Array<Edge<N, E>>>();
@@ -13,7 +13,9 @@ export default class Graph<N , E> {
 
     sn: (node: N) => string;
 
-    constructor (sn: (node: N) => string) {
+    visited = 0;
+
+    constructor(sn: (node: N) => string) {
         this.sn = sn;
     }
 
@@ -26,7 +28,6 @@ export default class Graph<N , E> {
     }
 
     addDirectedEdge(from: N, to: N, edgeValue: E, uid?: string, isDirected: boolean = true) {
-        console.log('from: ' + JSON.stringify(from) + ' to: ' + JSON.stringify(to));
         if (uid === undefined) {
             uid = uuid();
         }
@@ -35,10 +36,20 @@ export default class Graph<N , E> {
         const val = this.adjacencyList.get(this.sn(from))!;
         const reverseVal = this.reverseAdjacencyList.get(this.sn(to))!;
         const forward = {
-                from, to, value: edgeValue, isDirected, uid, isReversed: false,
+            from,
+            to,
+            value: edgeValue,
+            isDirected,
+            uid,
+            isReversed: false
         };
         const backward = {
-            from: to, to: from, value: edgeValue, isDirected, uid, isReversed: isDirected,
+            from: to,
+            to: from,
+            value: edgeValue,
+            isDirected,
+            uid,
+            isReversed: isDirected
         };
         val.push(forward);
         reverseVal.push(backward);
@@ -53,7 +64,6 @@ export default class Graph<N , E> {
         this.addDirectedEdge(b, a, edgeValue, uid, false);
     }
 
-
     /**
      * For a tree, forest or dag, (and <= 1 root per tree), gets a full traversal order in DFS,
      * to get a nice node order for dynamic programming, without having to rewrite
@@ -65,7 +75,7 @@ export default class Graph<N , E> {
      */
     dagTraversal(roots: N[]): Array<Traversal<N, E>> {
         const traversals: Array<Traversal<N, E>> = new Array<Traversal<N, E>>();
-        const seen: Set<string>  = new Set<string>();
+        const seen: Set<string> = new Set<string>();
         roots.forEach((root) => {
             this.dagTraversalRecursive(root, null, seen, traversals);
         });
@@ -74,15 +84,18 @@ export default class Graph<N , E> {
 
     dagTraversalRecursive(
         curr: N,
-        parentPath: Edge<N, E> | null, seen: Set<string>,
-        traversals: Array<Traversal<N, E>>,
+        parentPath: Edge<N, E> | null,
+        seen: Set<string>,
+        traversals: Array<Traversal<N, E>>
     ) {
         if (seen.has(this.sn(curr))) {
             return;
         }
         seen.add(this.sn(curr));
         const traversal: Traversal<N, E> = {
-            node: curr, parent: parentPath, children: [],
+            node: curr,
+            parent: parentPath,
+            children: []
         };
 
         const nei = this.adjacencyList.get(this.sn(curr));
@@ -96,32 +109,27 @@ export default class Graph<N , E> {
                 }
             });
         } else {
-            throw new Error('Node missing from adjacency list ' + curr);
+            throw new Error("Node missing from adjacency list " + curr);
         }
 
         traversals.push(traversal);
     }
-
-    visited = 0;
     /**
      * Guaranteed that visitEdge is called exactly once for all reachable edges, and visitNode
      * is called once for each visitable node.
      */
     dfs(
         start: N,
-        visitNode?: (node: N) => (boolean | void),
+        visitNode?: (node: N) => boolean | void,
         leaveNode?: (node: N) => void,
-        visitEdge?: (edge: Edge<N, E>) => (boolean | void),
+        visitEdge?: (edge: Edge<N, E>) => boolean | void,
         leaveEdge?: (edge: Edge<N, E>) => void,
         seen?: Set<string>,
         seenEdges?: Set<string>,
         directed: boolean = true,
-        reversed: boolean = false,
+        reversed: boolean = false
     ) {
-        this.visited ++;
-        if (this.visited % 10000 === 0) {
-            console.log(this.visited);
-        }
+        this.visited++;
         if (seenEdges === undefined) {
             seenEdges = new Set<string>();
         }
@@ -155,7 +163,7 @@ export default class Graph<N , E> {
             const forward = this.adjacencyList.get(currS);
             const backward = this.reverseAdjacencyList.get(currS);
             if (!forward || !backward) {
-                throw new Error('cannot find node ' + currS);
+                throw new Error("cannot find node " + currS);
             }
             if (!reversed) {
                 nei = forward;
@@ -175,7 +183,6 @@ export default class Graph<N , E> {
                 if (visitEdge) {
                     const should = visitEdge(next);
                     if (should !== undefined && should) {
-
                         if (leaveEdge) {
                             leaveEdge(next);
                         }
@@ -197,14 +204,15 @@ export default class Graph<N , E> {
         }
     }
 
-    dijkstra(curr: N,
-             getDistance: (edge: Edge<N, E>) => number,
-             visitNode?: (dijk: DijkstraNode<N, E>) => (boolean | void),
-             visitEdge?: (edge: Edge<N, E>) => (boolean | void),
-             excludedNodes?: Set<N>,
-             excludedEdges?: Set<string>,
-             directed: boolean = true,
-             reversed: boolean = false,
+    dijkstra(
+        curr: N,
+        getDistance: (edge: Edge<N, E>) => number,
+        visitNode?: (dijk: DijkstraNode<N, E>) => boolean | void,
+        visitEdge?: (edge: Edge<N, E>) => boolean | void,
+        excludedNodes?: Set<N>,
+        excludedEdges?: Set<string>,
+        directed: boolean = true,
+        reversed: boolean = false
     ) {
         if (excludedEdges === undefined) {
             excludedEdges = new Set<string>();
@@ -214,10 +222,12 @@ export default class Graph<N , E> {
             excludedNodes.forEach((n) => exNodes.add(this.sn(n)));
         }
 
-        const start: Array<DijkstraNode<N, E>> = [{
-            weight: 0,
-            node: curr,
-        }];
+        const start: Array<DijkstraNode<N, E>> = [
+            {
+                weight: 0,
+                node: curr
+            }
+        ];
         const q = new TinyQueue(start, (a, b) => {
             return a.weight - b.weight;
         });
@@ -242,7 +252,7 @@ export default class Graph<N , E> {
             const forward = cloneSimple(this.adjacencyList.get(this.sn(top.node)));
             const backward = cloneSimple(this.reverseAdjacencyList.get(this.sn(top.node)));
             if (!forward || !backward) {
-                throw new Error('cannot find node ' + this.sn(top.node));
+                throw new Error("cannot find node " + this.sn(top.node));
             }
 
             let nei = reversed ? backward : forward;
@@ -251,16 +261,16 @@ export default class Graph<N , E> {
             }
 
             nei.forEach((edge) => {
-               if (excludedEdges!.has(edge.uid)) {
-                   return;
-               }
-               excludedEdges!.add(edge.uid);
+                if (excludedEdges!.has(edge.uid)) {
+                    return;
+                }
+                excludedEdges!.add(edge.uid);
 
-               q.push({
-                   weight: top.weight + getDistance(edge),
-                   node: edge.to,
-                   parent: edge,
-               });
+                q.push({
+                    weight: top.weight + getDistance(edge),
+                    node: edge.to,
+                    parent: edge
+                });
             });
         }
     }
@@ -285,7 +295,7 @@ export default class Graph<N , E> {
                         subGraph[1].push(e);
                     },
                     undefined,
-                    seen,
+                    seen
                 );
                 components.push(subGraph);
             }
@@ -300,7 +310,7 @@ export default class Graph<N , E> {
         seenNodes?: Set<N>,
         seenEdges?: Set<string>,
         directed: boolean = true,
-        reversed: boolean = false,
+        reversed: boolean = false
     ): Array<Edge<N, E>> | null {
         const cache: Array<Edge<N, E>> = [];
         let result: Array<Edge<N, E>> | null = null;
@@ -342,7 +352,7 @@ export default class Graph<N , E> {
             seenNodesS,
             seenEdges,
             directed,
-            reversed,
+            reversed
         );
 
         return result;
@@ -355,7 +365,7 @@ export default class Graph<N , E> {
         seenNodes?: Set<N>,
         seenEdges?: Set<string>,
         directed: boolean = true,
-        reversed: boolean = false,
+        reversed: boolean = false
     ): [Array<Edge<N, E>>, number] | null {
         const parentOf: Map<string, Edge<N, E>> = new Map<string, Edge<N, E>>();
         let found = false;
@@ -393,7 +403,7 @@ export default class Graph<N , E> {
             seenNodes,
             seenEdges,
             directed,
-            reversed,
+            reversed
         );
 
         if (destination === null) {
@@ -412,7 +422,6 @@ export default class Graph<N , E> {
         return [path, dist];
     }
 
-
     reachable(root: N): SubGraph<N, E> {
         const subGraph: SubGraph<N, E> = [[], []];
         this.dfs(
@@ -423,7 +432,7 @@ export default class Graph<N , E> {
             undefined,
             (e) => {
                 subGraph[1].push(e);
-            },
+            }
         );
         return subGraph;
     }
@@ -452,7 +461,6 @@ export default class Graph<N , E> {
         return result;
     }
 
-
     sourceArcCover(sources: N[], accountedFor?: Set<string>): Array<Array<Edge<N, E>>> {
         const result: Array<Array<Edge<N, E>>> = [];
         const notAccountedFor = new Set<string>();
@@ -470,13 +478,7 @@ export default class Graph<N , E> {
             // Find two sources that can reach both ends.
             const srcPath1 = this.anyPath(v.from, sources, undefined, new Set([k]), false);
             if (srcPath1) {
-                const srcPath2 = this.anyPath(
-                    v.to,
-                    sources,
-                    undefined,
-                    new Set([k]),
-                    false,
-                );
+                const srcPath2 = this.anyPath(v.to, sources, undefined, new Set([k]), false);
                 if (srcPath2) {
                     // Two sources should not be the same, because if so, they would be a loop instead.
                     assert(srcPath1.length > 0 || srcPath2.length > 0);
@@ -500,16 +502,18 @@ export default class Graph<N , E> {
     }
 
     reversePath(path: Array<Edge<N, E>>) {
-        return path.reverse().map((e): Edge<N, E> => {
-            return {
-                from: e.to,
-                isDirected: e.isDirected,
-                isReversed: e.isDirected ? !e.isReversed : false,
-                to: e.from,
-                uid: e.uid,
-                value: e.value,
-            };
-        });
+        return path.reverse().map(
+            (e): Edge<N, E> => {
+                return {
+                    from: e.to,
+                    isDirected: e.isDirected,
+                    isReversed: e.isDirected ? !e.isReversed : false,
+                    to: e.from,
+                    uid: e.uid,
+                    value: e.value
+                };
+            }
+        );
     }
 }
 

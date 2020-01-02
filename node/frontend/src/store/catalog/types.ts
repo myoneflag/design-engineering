@@ -1,7 +1,7 @@
-import LoadingUnitTable from '../../../src/store/catalog/psd-standard/loading-unit-table';
-import LoadingUnitHotColdTable from '../../../src/store/catalog/psd-standard/loading-unit-hot-cold-table';
-import PsdEquation from './psd-standard/psdEquation';
-import {DwellingStandardType, PsdStandard, PSDStandardType} from "./psd-standard/types";
+import LoadingUnitTable from "../../../src/store/catalog/psd-standard/loading-unit-table";
+import LoadingUnitHotColdTable from "../../../src/store/catalog/psd-standard/loading-unit-hot-cold-table";
+import PsdEquation from "./psd-standard/psdEquation";
+import { DwellingStandardType, PsdStandard, PSDStandardType } from "./psd-standard/types";
 
 export default interface CatalogState {
     defaultCatalog: Catalog;
@@ -11,14 +11,14 @@ export default interface CatalogState {
 export interface DwellingUnitHotColdTable {
     type: DwellingStandardType.DWELLING_HOT_COLD_LOOKUP_TABLE;
     name: string;
-    hotColdTable: {[key: string]: {cold: string, hot: string}};
+    hotColdTable: { [key: string]: { cold: string; hot: string } };
 }
 
 export interface DwellingEquation {
     type: DwellingStandardType.EQUATION;
     name: string;
     equation: string;
-    variables: {[key: string]: string};
+    variables: { [key: string]: string };
 }
 
 export type Diameter = number | string;
@@ -31,23 +31,23 @@ export interface BackflowValveSize {
     maxInletPressureKPA: string | null;
     minFlowRateLS: string | null;
     maxFlowRateLS: string | null;
-    pressureLossKPAByFlowRateLS: {[key: string]: string};
+    pressureLossKPAByFlowRateLS: { [key: string]: string };
 }
 
 export interface BackflowValveSpec {
-    name: string,
-    valvesBySize: {[key: string]: BackflowValveSize};
+    name: string;
+    valvesBySize: { [key: string]: BackflowValveSize };
 }
 
 export interface Catalog {
-    fixtures: {[key: string]: FixtureSpec};
-    pipes: {[key: string]: PipeMaterial};
-    valves: {[key: string]: ValveSpec};
-    mixingValves: {[key: string]: MixingValveSpec};
-    backflowValves: {[key: string]: BackflowValveSpec}
-    psdStandards: {[key: string]: PSDSpec};
-    dwellingStandards: {[key: string]: DwellingSpec};
-    fluids: {[key: string]: FluidsSpec};
+    fixtures: { [key: string]: FixtureSpec };
+    pipes: { [key: string]: PipeMaterial };
+    valves: { [key: string]: ValveSpec };
+    mixingValves: { [key: string]: MixingValveSpec };
+    backflowValves: { [key: string]: BackflowValveSpec };
+    psdStandards: { [key: string]: PSDSpec };
+    dwellingStandards: { [key: string]: DwellingSpec };
+    fluids: { [key: string]: FluidsSpec };
 }
 
 export interface FixtureSpec {
@@ -56,7 +56,7 @@ export interface FixtureSpec {
     uid: string;
 
     fixtureUnits: string | null;
-    loadingUnits: {[key: string]: LoadingUnit};
+    loadingUnits: { [key: string]: LoadingUnit };
     qLS: FlowRateSpec;
     continuousFlowLS?: FlowRateSpec;
     roughIns: string[];
@@ -70,15 +70,19 @@ export interface FixtureSpec {
     warmTempC: string | null;
 }
 
-export interface LoadingUnit {[key: string]: string | null}
+export interface LoadingUnit {
+    [key: string]: string | null;
+}
 
-export interface FlowRateSpec {[key: string]: (string | null)}
+export interface FlowRateSpec {
+    [key: string]: string | null;
+}
 
-export interface  ValveSpec {
+export interface ValveSpec {
     name: string;
     uid: string;
     abbreviation: string | null;
-    valvesBySize: {[key: string]: ValveSize};
+    valvesBySize: { [key: string]: ValveSize };
 }
 
 export interface ValveSize {
@@ -92,7 +96,7 @@ export interface PipeMaterial {
     name: string;
     uid: string;
     abbreviation: string;
-    pipesBySize: {[key: string]: PipeSpec};
+    pipesBySize: { [key: string]: PipeSpec };
 }
 
 export interface PipeSpec {
@@ -110,11 +114,11 @@ export interface MixingValveSpec {
     maxInletPressureKPA: string;
     minFlowRateLS: string;
     maxFlowRateLS: string;
-    pressureLossKPAbyFlowRateLS: {[key: string]: string};
+    pressureLossKPAbyFlowRateLS: { [key: string]: string };
 }
 
 export interface FluidsSpec {
     name: string;
     densityKGM3: string;
-    dynamicViscosityByTemperature: {[key: string]: string};
+    dynamicViscosityByTemperature: { [key: string]: string };
 }

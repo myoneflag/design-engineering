@@ -1,12 +1,12 @@
-import {ObjectStore} from '../types';
-import {EntityType} from '../../../store/document/entities/types';
-import BaseBackedObject from '../../../../src/htmlcanvas/lib/base-backed-object';
-import {assertUnreachable} from "../../../config";
+import { EntityType } from "../../../store/document/entities/types";
+import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
+import { assertUnreachable } from "../../../config";
+import { ObjectStore } from "../object-store";
 
 export function getConnectedFlowComponent(
     targetUid: string,
     objectStore: ObjectStore,
-    allowed?: Set<string>,
+    allowed?: Set<string>
 ): BaseBackedObject[] {
     const q = [targetUid];
 
@@ -42,7 +42,7 @@ export function getConnectedFlowComponent(
             case EntityType.BIG_VALVE:
             case EntityType.BACKGROUND_IMAGE:
             case EntityType.FIXTURE:
-                throw new Error('invalid object here');
+                throw new Error("invalid object here");
             default:
                 assertUnreachable(o.entity);
         }

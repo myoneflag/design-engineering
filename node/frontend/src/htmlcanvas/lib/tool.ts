@@ -1,8 +1,8 @@
-import {ToolConfig} from '../../../src/store/tools/types';
-import {MouseMoveResult} from '../../../src/htmlcanvas/types';
-import {ViewPort} from '../../../src/htmlcanvas/viewport';
-import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
-import {DrawingContext} from '../../../src/htmlcanvas/lib/types';
+import { ToolConfig } from "../../../src/store/tools/types";
+import { MouseMoveResult } from "../../../src/htmlcanvas/types";
+import { ViewPort } from "../../../src/htmlcanvas/viewport";
+import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
+import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 
 export interface ToolHandler {
     config: ToolConfig;
@@ -17,31 +17,31 @@ export interface ToolHandler {
 }
 
 export const DEFAULT_TOOL: ToolConfig = {
-    name: 'default',
-    defaultCursor: 'Default',
+    name: "default",
+    defaultCursor: "Default",
     focusSelectedObject: false,
-    icon: 'mouse-pointer',
+    icon: "mouse-pointer",
     modesEnabled: true,
     modesVisible: true,
-    text: 'Default Mode',
-    tooltip: 'Default',
+    text: "Default Mode",
+    tooltip: "Default",
     propertiesEnabled: true,
     propertiesVisible: true,
     toolbarEnabled: true,
-    toolbarVisible: true,
+    toolbarVisible: true
 };
 
 export const POINT_TOOL: ToolConfig = {
-    name: 'point',
-    defaultCursor: 'Crosshair',
+    name: "point",
+    defaultCursor: "Crosshair",
     focusSelectedObject: true,
-    icon: 'dot-circle',
+    icon: "dot-circle",
     modesEnabled: false,
     modesVisible: false,
-    text: 'Select a Point',
-    tooltip: 'point',
+    text: "Select a Point",
+    tooltip: "point",
     propertiesEnabled: false,
     propertiesVisible: false,
     toolbarEnabled: true,
-    toolbarVisible: true,
+    toolbarVisible: true
 };

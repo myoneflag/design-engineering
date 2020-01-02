@@ -1,11 +1,11 @@
-import BackedConnectable from '../../../../src/htmlcanvas/lib/BackedConnectable';
-import {ConnectableEntityConcrete} from '../../../../src/store/document/entities/concrete-entity';
-import Pipe from '../../../../src/htmlcanvas/objects/pipe';
-import CanvasContext from '../../../../src/htmlcanvas/lib/canvas-context';
-import {EntityType} from '../../../../src/store/document/entities/types';
-import assert from 'assert';
-import {addValveAndSplitPipe} from '../../../../src/htmlcanvas/lib/black-magic/split-pipe';
-import {cloneSimple} from '../../../../src/lib/utils';
+import BackedConnectable from "../../../../src/htmlcanvas/lib/BackedConnectable";
+import { ConnectableEntityConcrete } from "../../../../src/store/document/entities/concrete-entity";
+import Pipe from "../../../../src/htmlcanvas/objects/pipe";
+import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
+import { EntityType } from "../../../../src/store/document/entities/types";
+import assert from "assert";
+import { addValveAndSplitPipe } from "../../../../src/htmlcanvas/lib/black-magic/split-pipe";
+import { cloneSimple } from "../../../../src/lib/utils";
 import PipeEntity from "../../../store/document/entities/pipe-entity";
 
 /**
@@ -17,16 +17,16 @@ import PipeEntity from "../../../store/document/entities/pipe-entity";
 export function moveOnto(
     source: BackedConnectable<ConnectableEntityConcrete>,
     dest: BackedConnectable<ConnectableEntityConcrete> | Pipe,
-    context: CanvasContext,
+    context: CanvasContext
 ) {
     if (dest instanceof Pipe) {
-        const {focus} = addValveAndSplitPipe(
+        const { focus } = addValveAndSplitPipe(
             context,
             dest,
-            source.toWorldCoord({x: 0, y: 0}),
+            source.toWorldCoord({ x: 0, y: 0 }),
             dest.entity.systemUid,
             10,
-            source.entity,
+            source.entity
         );
         assert(focus!.uid === source.uid);
     } else {
@@ -45,15 +45,13 @@ export function moveOnto(
             loser = tmp;
         }
 
-        const incidental =
-            context.objectStore.getConnections(source.uid)
-                .filter((puid) => context.objectStore.getConnections(dest.uid)
-                .includes(puid));
+        const incidental = context.objectStore
+            .getConnections(source.uid)
+            .filter((puid) => context.objectStore.getConnections(dest.uid).includes(puid));
         incidental.forEach((pipe) => {
             // Non cascadingly delete
-            context.$store.dispatch('document/deleteEntity', context.objectStore.get(pipe)!.entity);
+            context.$store.dispatch("document/deleteEntity", context.objectStore.get(pipe)!.entity);
         });
-
 
         const pipeE = context.objectStore.getConnections(loser.uid).map((puid) => {
             return cloneSimple(context.objectStore.get(puid)!.entity) as PipeEntity;
@@ -64,15 +62,15 @@ export function moveOnto(
 
         cloneSimple(context.objectStore.getConnections(loser.uid)).forEach((puid) => {
             const pipe = context.objectStore.get(puid)!.entity as PipeEntity;
-            assert (pipe.type === EntityType.PIPE);
+            assert(pipe.type === EntityType.PIPE);
 
             assert((pipe.endpointUid[0] === loser.uid) !== (pipe.endpointUid[1] === loser.uid));
 
-            context.$store.dispatch('document/updatePipeEndpoints', {
+            context.$store.dispatch("document/updatePipeEndpoints", {
                 entity: pipe,
                 endpoints: [
                     pipe.endpointUid[0] === loser.uid ? survivor.uid : pipe.endpointUid[0],
-                    pipe.endpointUid[1] === loser.uid ? survivor.uid : pipe.endpointUid[1],
+                    pipe.endpointUid[1] === loser.uid ? survivor.uid : pipe.endpointUid[1]
                 ]
             });
         });

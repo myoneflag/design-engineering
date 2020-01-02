@@ -1,8 +1,8 @@
-import {Coord} from '../../../../src/store/document/types';
-import DrawableObject from '../../../../src/htmlcanvas/lib/drawable-object';
-import {MouseMoveResult, UNHANDLED} from '../../../../src/htmlcanvas/types';
-import CanvasContext from '../../../../src/htmlcanvas/lib/canvas-context';
-import BaseBackedObject from '../../../../src/htmlcanvas/lib/base-backed-object';
+import { Coord } from "../../../../src/store/document/types";
+import DrawableObject from "../../../../src/htmlcanvas/lib/drawable-object";
+import { MouseMoveResult, UNHANDLED } from "../../../../src/htmlcanvas/types";
+import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
+import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
 
 export interface Draggable {
     inBounds(objectCoord: Coord, objectRadius?: number): boolean;
@@ -13,13 +13,12 @@ export interface Draggable {
         eventObjectCoord: Coord,
         grabState: any,
         context: CanvasContext,
-        isMultiDrag: boolean,
+        isMultiDrag: boolean
     ): void;
     onDragFinish(event: MouseEvent, context: CanvasContext, isMultiDrag: boolean): void;
 }
 
 export function DraggableObject<T extends new (...args: any[]) => Draggable & DrawableObject>(constructor: T) {
-
     // @ts-ignore abstract class expression limitation in the language. In practice this is fine.
     return class extends constructor {
         grabbedObjectCoord: Coord | null = null;
@@ -30,7 +29,7 @@ export function DraggableObject<T extends new (...args: any[]) => Draggable & Dr
 
         onMouseDown(event: MouseEvent, context: CanvasContext) {
             let result = false;
-            const world = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
+            const world = context.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
             const objectCoord = this.toObjectCoord(world);
             if (this.inBounds(objectCoord)) {
                 this.grabbedState = this.onDragStartPre(event, world, objectCoord, context);
@@ -44,7 +43,7 @@ export function DraggableObject<T extends new (...args: any[]) => Draggable & Dr
 
         onMouseMove(event: MouseEvent, context: CanvasContext) {
             let result = UNHANDLED;
-            const world = context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY});
+            const world = context.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
             const objectCoord = this.toObjectCoord(world);
             if (this.grabbedObjectCoord) {
                 if (event.movementX !== 0 || event.movementY !== 0 || this.hasMoved) {
@@ -57,7 +56,7 @@ export function DraggableObject<T extends new (...args: any[]) => Draggable & Dr
                         this.grabbedObjectCoord = null;
                         this.onDragFinishPre(event, world, context);
                     }
-                    result = {handled: true, cursor: 'move'};
+                    result = { handled: true, cursor: "move" };
                 }
             }
 
@@ -102,7 +101,7 @@ export function DraggableObject<T extends new (...args: any[]) => Draggable & Dr
             grabbedObjectCoord: Coord,
             eventObjectCoord: Coord,
             grabState: any,
-            context: CanvasContext,
+            context: CanvasContext
         ): void {
             if (this.isMultiSelected()) {
                 return this.layer.onMultiSelectDrag(event, world, grabState, context);

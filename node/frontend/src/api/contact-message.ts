@@ -1,6 +1,6 @@
-import axios from 'axios';
-import {APIResult} from "../../../common/src/api/types";
-import {ContactMessage} from "../../../backend/src/entity/ContactMessage";
+import axios from "axios";
+import { APIResult } from "../../../common/src/api/types";
+import { ContactMessage } from "../../../backend/src/entity/ContactMessage";
 
 export async function sendContactMessage(
     name: string,
@@ -8,11 +8,13 @@ export async function sendContactMessage(
     message: string
 ): Promise<APIResult<ContactMessage>> {
     try {
-        return (await axios.post('/api/contacts', {
-            name,
-            email,
-            message,
-        })).data;
+        return (
+            await axios.post("/api/contacts", {
+                name,
+                email,
+                message
+            })
+        ).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
@@ -24,7 +26,7 @@ export async function sendContactMessage(
 
 export async function getContactMessages(): Promise<APIResult<ContactMessage[]>> {
     try {
-        return (await axios.get('/api/contacts')).data;
+        return (await axios.get("/api/contacts")).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };

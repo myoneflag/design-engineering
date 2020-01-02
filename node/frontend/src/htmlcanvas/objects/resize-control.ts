@@ -1,25 +1,24 @@
-import {ViewPort} from '../../../src/htmlcanvas/viewport';
-import DrawableObject from '../../../src/htmlcanvas/lib/drawable-object';
-import {SizeableObject} from '../../../src/htmlcanvas/lib/object-traits/sizeable-object';
-import * as TM from 'transformation-matrix';
-import {matrixScale} from '../../../src/htmlcanvas/utils';
-import {MouseMoveResult, UNHANDLED} from '../../../src/htmlcanvas/types';
-import {Coord} from '../../../src/store/document/types';
-import {DrawingContext} from '../../../src/htmlcanvas/lib/types';
-import Layer from '../../../src/htmlcanvas/layers/layer';
-import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
+import { ViewPort } from "../../../src/htmlcanvas/viewport";
+import DrawableObject from "../../../src/htmlcanvas/lib/drawable-object";
+import { SizeableObject } from "../../../src/htmlcanvas/lib/object-traits/sizeable-object";
+import * as TM from "transformation-matrix";
+import { matrixScale } from "../../../src/htmlcanvas/utils";
+import { MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
+import { Coord } from "../../../src/store/document/types";
+import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
+import Layer from "../../../src/htmlcanvas/layers/layer";
+import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 
 enum Sides {
     Left,
     Top,
     Right,
-    Bottom,
+    Bottom
 }
 
 type Handle = [number, number, Sides[], string];
 
 export class ResizeControl extends DrawableObject {
-
     onChange: ((_: ResizeControl) => any) | null;
     onCommit: ((_: ResizeControl) => any) | null;
     handles: Handle[];
@@ -29,8 +28,8 @@ export class ResizeControl extends DrawableObject {
     constructor(
         parent: SizeableObject,
         layer: Layer,
-        onChange: ((_: ResizeControl) => any),
-        onCommit: ((_: ResizeControl) => any),
+        onChange: (_: ResizeControl) => any,
+        onCommit: (_: ResizeControl) => any
     ) {
         super(parent, layer);
         this.handles = this.getHandles();
@@ -76,27 +75,26 @@ export class ResizeControl extends DrawableObject {
 
     getHandles(): Handle[] {
         return [
-            [this.x, this.y, [Sides.Bottom, Sides.Left], 'sw-resize'],
-            [this.x, this.y + this.h / 2, [Sides.Left], 'w-resize'],
-            [this.x, this.y + this.h, [Sides.Top, Sides.Left], 'nw-resize'],
-            [this.x + this.w / 2, this.y, [Sides.Bottom], 's-resize'],
-            [this.x + this.w, this.y, [Sides.Bottom, Sides.Right], 'se-resize'],
-            [this.x + this.w, this.y + this.h / 2, [Sides.Right], 'e-resize'],
-            [this.x + this.w, this.y + this.h, [Sides.Top, Sides.Right], 'ne-resize'],
-            [this.x + this.w / 2, this.y + this.h, [Sides.Top], 'n-resize'],
+            [this.x, this.y, [Sides.Bottom, Sides.Left], "sw-resize"],
+            [this.x, this.y + this.h / 2, [Sides.Left], "w-resize"],
+            [this.x, this.y + this.h, [Sides.Top, Sides.Left], "nw-resize"],
+            [this.x + this.w / 2, this.y, [Sides.Bottom], "s-resize"],
+            [this.x + this.w, this.y, [Sides.Bottom, Sides.Right], "se-resize"],
+            [this.x + this.w, this.y + this.h / 2, [Sides.Right], "e-resize"],
+            [this.x + this.w, this.y + this.h, [Sides.Top, Sides.Right], "ne-resize"],
+            [this.x + this.w / 2, this.y + this.h, [Sides.Top], "n-resize"]
         ];
     }
 
     getHandleAtScreenCoord(sx: number, sy: number, vp: ViewPort): Handle | null {
         for (const [x, y, sides, cursor] of this.handles) {
-            const c = vp.toScreenCoord(this.toWorldCoord({x, y}));
+            const c = vp.toScreenCoord(this.toWorldCoord({ x, y }));
             if (Math.abs(c.x - sx) < 10 && Math.abs(c.y - sy) < 10) {
                 return [x, y, sides, cursor];
             }
         }
         return null;
     }
-
 
     onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
         this.selectedHandle = this.getHandleAtScreenCoord(event.offsetX, event.offsetY, context.viewPort);
@@ -108,7 +106,7 @@ export class ResizeControl extends DrawableObject {
         // tslint:disable-next-line:no-bitwise
         if (event.buttons & 1) {
             if (this.selectedHandle != null) {
-                const w = this.toObjectCoord(context.viewPort.toWorldCoord({x: event.offsetX, y: event.offsetY}));
+                const w = this.toObjectCoord(context.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY }));
                 // start resizing shit
                 if (this.selectedHandle[2].indexOf(Sides.Left) !== -1) {
                     this.w += this.x - w.x;
@@ -128,7 +126,7 @@ export class ResizeControl extends DrawableObject {
                 if (this.onChange != null) {
                     this.onChange(this);
                 }
-                return {handled: true, cursor: 'move'};
+                return { handled: true, cursor: "move" };
             }
             return UNHANDLED;
         } else {
@@ -144,7 +142,7 @@ export class ResizeControl extends DrawableObject {
             if (at == null) {
                 return UNHANDLED;
             } else {
-                return {handled: true, cursor: at[3]};
+                return { handled: true, cursor: at[3] };
             }
         }
     }
@@ -161,26 +159,25 @@ export class ResizeControl extends DrawableObject {
     }
 
     drawInternal(context: DrawingContext) {
-        const {ctx} = context;
+        const { ctx } = context;
         const prevDash = ctx.getLineDash();
 
         const scale = matrixScale(ctx.getTransform());
 
-
         ctx.lineWidth = 1 / scale;
         ctx.beginPath();
-        ctx.strokeStyle = '#666666';
+        ctx.strokeStyle = "#666666";
 
         ctx.setLineDash([5 / scale, 5 / scale]);
         ctx.rect(this.x, this.y, this.w, this.h);
         ctx.stroke();
 
         ctx.setLineDash([]);
-        ctx.strokeStyle = '#333333';
+        ctx.strokeStyle = "#333333";
         ctx.beginPath();
         for (const [x, y] of this.handles) {
-            this.withScreen(context, {x, y}, () => {
-                ctx.rect(- 5, -5, 10 , 10);
+            this.withScreen(context, { x, y }, () => {
+                ctx.rect(-5, -5, 10, 10);
             });
         }
         ctx.stroke();

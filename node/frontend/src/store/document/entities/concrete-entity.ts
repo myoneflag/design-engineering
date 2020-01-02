@@ -1,73 +1,68 @@
-import {BackgroundEntity} from '../../../../src/store/document/entities/background-entity';
-import FittingEntity from '../../../../src/store/document/entities/fitting-entity';
-import PipeEntity from '../../../../src/store/document/entities/pipe-entity';
-import RiserEntity from './riser-entity';
-import FixtureEntity from '../../../../src/store/document/entities/fixtures/fixture-entity';
-import BigValveEntity, {SystemNodeEntity} from './big-valve/big-valve-entity';
-import {CenteredEntity, ConnectableEntity, FlowSystemParameters} from '../../../../src/store/document/types';
-import RiserCalculation from '../calculations/riser-calculation';
-import PipeCalculation from '../../../../src/store/document/calculations/pipe-calculation';
-import BigValveCalculation from '../calculations/big-valve-calculation';
-import FittingCalculation from '../../../../src/store/document/calculations/fitting-calculation';
-import FixtureCalculation from '../../../../src/store/document/calculations/fixture-calculation';
-import DirectedValveEntity from '../../../../src/store/document/entities/directed-valves/directed-valve-entity';
-import SystemNodeCalculation from '../../../../src/store/document/calculations/system-node-calculation';
+import { BackgroundEntity } from "../../../../src/store/document/entities/background-entity";
+import FittingEntity from "../../../../src/store/document/entities/fitting-entity";
+import PipeEntity from "../../../../src/store/document/entities/pipe-entity";
+import RiserEntity from "./riser-entity";
+import FixtureEntity from "../../../../src/store/document/entities/fixtures/fixture-entity";
+import BigValveEntity, { SystemNodeEntity } from "./big-valve/big-valve-entity";
+import { CenteredEntity, ConnectableEntity, FlowSystemParameters } from "../../../../src/store/document/types";
+import RiserCalculation from "../calculations/riser-calculation";
+import PipeCalculation from "../../../../src/store/document/calculations/pipe-calculation";
+import BigValveCalculation from "../calculations/big-valve-calculation";
+import FittingCalculation from "../../../../src/store/document/calculations/fitting-calculation";
+import FixtureCalculation from "../../../../src/store/document/calculations/fixture-calculation";
+import DirectedValveEntity from "../../../../src/store/document/entities/directed-valves/directed-valve-entity";
+import SystemNodeCalculation from "../../../../src/store/document/calculations/system-node-calculation";
 import LoadNodeEntity from "./load-node-entity";
 import LoadNodeCalculation from "../calculations/load-node-calculation";
 
 export type DrawableEntityConcrete =
-    BackgroundEntity |
-    FittingEntity |
-    PipeEntity |
-    RiserEntity |
-    SystemNodeEntity |
-    BigValveEntity |
-    FixtureEntity |
-    DirectedValveEntity |
-    LoadNodeEntity;
-
+    | BackgroundEntity
+    | FittingEntity
+    | PipeEntity
+    | RiserEntity
+    | SystemNodeEntity
+    | BigValveEntity
+    | FixtureEntity
+    | DirectedValveEntity
+    | LoadNodeEntity;
 
 export type ConnectableEntityConcrete =
-    FittingEntity |
-    RiserEntity |
-    SystemNodeEntity |
-    DirectedValveEntity |
-    LoadNodeEntity;
+    | FittingEntity
+    | RiserEntity
+    | SystemNodeEntity
+    | DirectedValveEntity
+    | LoadNodeEntity;
 
 export type CenteredEntityConcrete =
-    BackgroundEntity |
-    FittingEntity |
-    RiserEntity |
-    SystemNodeEntity |
-    BigValveEntity |
-    FixtureEntity |
-    DirectedValveEntity |
-    LoadNodeEntity;
+    | BackgroundEntity
+    | FittingEntity
+    | RiserEntity
+    | SystemNodeEntity
+    | BigValveEntity
+    | FixtureEntity
+    | DirectedValveEntity
+    | LoadNodeEntity;
 
-export type InvisibleNodeEntityConcrete =
-    SystemNodeEntity;
+export type InvisibleNodeEntityConcrete = SystemNodeEntity;
 
 export type CalculatableEntityConcrete =
-    RiserEntity |
-    PipeEntity |
-    BigValveEntity |
-    FittingEntity |
-    FixtureEntity |
-    DirectedValveEntity |
-    SystemNodeEntity |
-    LoadNodeEntity;
+    | RiserEntity
+    | PipeEntity
+    | BigValveEntity
+    | FittingEntity
+    | FixtureEntity
+    | DirectedValveEntity
+    | SystemNodeEntity
+    | LoadNodeEntity;
 
 export type CalculationConcrete =
-    RiserCalculation |
-    PipeCalculation |
-    PipeCalculation |
-    BigValveCalculation |
-    FittingCalculation |
-    FixtureCalculation |
-    SystemNodeCalculation |
-    LoadNodeCalculation;
+    | RiserCalculation
+    | PipeCalculation
+    | PipeCalculation
+    | BigValveCalculation
+    | FittingCalculation
+    | FixtureCalculation
+    | SystemNodeCalculation
+    | LoadNodeCalculation;
 
-export type EdgeLikeEntity =
-    PipeEntity |
-    FixtureEntity |
-    BigValveEntity;
+export type EdgeLikeEntity = PipeEntity | FixtureEntity | BigValveEntity;

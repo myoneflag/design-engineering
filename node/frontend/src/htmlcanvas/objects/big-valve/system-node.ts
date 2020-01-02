@@ -1,38 +1,30 @@
-import {Interaction, InteractionType} from '../../../../src/htmlcanvas/lib/interaction';
-import DrawableObjectFactory from '../../../../src/htmlcanvas/lib/drawable-object-factory';
-import {EntityType} from '../../../../src/store/document/entities/types';
-import {ConnectableObject} from '../../../../src/htmlcanvas/lib/object-traits/connectable';
-import {Coord, DocumentState} from '../../../../src/store/document/types';
-import BaseBackedObject from '../../../../src/htmlcanvas/lib/base-backed-object';
-import {InvisibleNode} from '../../../../src/htmlcanvas/objects/invisible-node';
-import Flatten from '@flatten-js/core';
-import {DrawingContext} from '../../../../src/htmlcanvas/lib/types';
-import {cloneSimple, lighten} from '../../../../src/lib/utils';
-import {FlowConfiguration, SystemNodeEntity} from '../../../store/document/entities/big-valve/big-valve-entity';
-import {getDragPriority} from '../../../../src/store/document';
+import { Interaction, InteractionType } from "../../../../src/htmlcanvas/lib/interaction";
+import DrawableObjectFactory from "../../../../src/htmlcanvas/lib/drawable-object-factory";
+import { EntityType } from "../../../../src/store/document/entities/types";
+import { ConnectableObject } from "../../../../src/htmlcanvas/lib/object-traits/connectable";
+import { Coord, DocumentState } from "../../../../src/store/document/types";
+import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
+import { InvisibleNode } from "../../../../src/htmlcanvas/objects/invisible-node";
+import Flatten from "@flatten-js/core";
+import { DrawingContext } from "../../../../src/htmlcanvas/lib/types";
+import { cloneSimple, lighten } from "../../../../src/lib/utils";
+import { FlowConfiguration, SystemNodeEntity } from "../../../store/document/entities/big-valve/big-valve-entity";
+import { getDragPriority } from "../../../../src/store/document";
 import {
     ConnectableEntityConcrete,
-    DrawableEntityConcrete,
-    EdgeLikeEntity
-} from '../../../../src/store/document/entities/concrete-entity';
-import Centered, {
-    CenteredObject,
-    CenteredObjectNoParent
-} from '../../../../src/htmlcanvas/lib/object-traits/centered-object';
-import CanvasContext from '../../../../src/htmlcanvas/lib/canvas-context';
-import {CalculationContext} from '../../../../src/calculations/types';
-import {FlowNode, SELF_CONNECTION} from '../../../../src/calculations/calculation-engine';
-import {DrawingArgs} from '../../../../src/htmlcanvas/lib/drawable-object';
-import {Calculated, CalculatedObject} from '../../../../src/htmlcanvas/lib/object-traits/calculated-object';
-import {CalculationData} from '../../../../src/store/document/calculations/calculation-field';
+    DrawableEntityConcrete
+} from "../../../../src/store/document/entities/concrete-entity";
+import Centered, { CenteredObjectNoParent } from "../../../../src/htmlcanvas/lib/object-traits/centered-object";
+import { CalculationContext } from "../../../../src/calculations/types";
+import { FlowNode } from "../../../../src/calculations/calculation-engine";
+import { DrawingArgs } from "../../../../src/htmlcanvas/lib/drawable-object";
+import { Calculated, CalculatedObject } from "../../../../src/htmlcanvas/lib/object-traits/calculated-object";
+import { CalculationData } from "../../../../src/store/document/calculations/calculation-field";
 import * as TM from "transformation-matrix";
-import {assertUnreachable} from "../../../../src/config";
+import { Matrix } from "transformation-matrix";
+import { assertUnreachable } from "../../../../src/config";
 import PipeEntity from "../../../store/document/entities/pipe-entity";
-import FixtureEntity from "../../../store/document/entities/fixtures/fixture-entity";
-import FittingEntity from "../../../store/document/entities/fitting-entity";
-import RiserCalculation from "../../../store/document/calculations/riser-calculation";
 import SystemNodeCalculation from "../../../store/document/calculations/system-node-calculation";
-import {Matrix} from "transformation-matrix";
 
 @CalculatedObject
 @ConnectableObject
@@ -47,11 +39,8 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
     dragPriority = getDragPriority(EntityType.SYSTEM_NODE);
 
     get position(): Matrix {
-        return TM.transform(
-            TM.translate(this.entity.center.x, this.entity.center.y),
-        );
+        return TM.transform(TM.translate(this.entity.center.x, this.entity.center.y));
     }
-
 
     offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
         switch (interaction.type) {
@@ -72,8 +61,10 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
             case InteractionType.MOVE_ONTO_SEND:
                 return null;
             case InteractionType.EXTEND_NETWORK:
-                if (this.entity.configuration === FlowConfiguration.BOTH ||
-                    interaction.configuration === FlowConfiguration.BOTH) {
+                if (
+                    this.entity.configuration === FlowConfiguration.BOTH ||
+                    interaction.configuration === FlowConfiguration.BOTH
+                ) {
                     break;
                 } else if (this.entity.configuration !== interaction.configuration) {
                     return null;
@@ -101,23 +92,30 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
                 if (v.length > 0) {
                     angle = vo.angleTo(v);
                 } else {
-                    angle = po.toWorldAngleDeg(0) / 180 * Math.PI;
+                    angle = (po.toWorldAngleDeg(0) / 180) * Math.PI;
                 }
 
-                return [angle, angle - Math.PI / 4, angle + Math.PI / 4, angle - Math.PI / 2, angle + Math.PI / 2,
-                    angle - Math.PI * 3 / 4, angle + Math.PI * 3 / 4].map((dir) => {
+                return [
+                    angle,
+                    angle - Math.PI / 4,
+                    angle + Math.PI / 4,
+                    angle - Math.PI / 2,
+                    angle + Math.PI / 2,
+                    angle - (Math.PI * 3) / 4,
+                    angle + (Math.PI * 3) / 4
+                ].map((dir) => {
                     return TM.transform(
                         TM.identity(),
                         TM.translate(wc.x, wc.y),
                         TM.rotate(dir),
                         TM.scale(scale),
-                        TM.translate(0, - 80),
-                        TM.rotate(- dir),
+                        TM.translate(0, -80),
+                        TM.rotate(-dir)
                     );
                 });
             case EntityType.PIPE:
             case EntityType.BACKGROUND_IMAGE:
-                throw new Error('invalid parent');
+                throw new Error("invalid parent");
         }
         assertUnreachable(po.entity);
     }
@@ -127,17 +125,17 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
         if (system) {
             return system;
         } else {
-            throw new Error('System does\'t exist');
+            throw new Error("System does't exist");
         }
     }
 
-
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to
     // complete the type.
-    getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]> { /* */
+    getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]> {
+        /* */
     }
 
-    drawInternal(context: DrawingContext, {active, selected}: DrawingArgs): void {
+    drawInternal(context: DrawingContext, { active, selected }: DrawingArgs): void {
         if (selected) {
             context.ctx.fillStyle = lighten(this.system(context.doc).color.hex, 50, 0.7);
             context.ctx.beginPath();
@@ -154,54 +152,62 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
         }
         return false;
     }
+
     rememberToRegister(): void {
         //
     }
 
     getCalculationConnections(): string[] {
         if (!this.entity.parentUid) {
-            throw new Error('Parent of the system node is missing');
+            throw new Error("Parent of the system node is missing");
         }
-        return [
-            this.entity.parentUid,
-        ];
+        return [this.entity.parentUid];
     }
 
     getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[] {
         if (!this.entity.parentUid) {
-            throw new Error('Parent of the system node is missing');
+            throw new Error("Parent of the system node is missing");
         }
         const tower: Array<[ConnectableEntityConcrete, PipeEntity] | [ConnectableEntityConcrete]> =
             this.getCalculationTower(context);
 
         // find the fixture that our parent is connected to, and turn it back into a system node.
         const connected = this.getCalculationNode(context, this.entity.parentUid);
-        for (let i = 0; i < tower.length; i++) {
-            if (tower[i][0].uid === connected.uid) {
+        for (const level of tower) {
+            if (level[0].uid === connected.uid) {
                 // replace it with a system node (me).
                 const se: SystemNodeEntity = cloneSimple(this.entity);
-                se.uid = tower[i][0].uid;
-                se.calculationHeightM = tower[i][0].calculationHeightM;
-                se.parentUid = (this.objectStore.get(se.parentUid!) as BaseBackedObject)
-                    .getCalculationEntities(context)[0].uid;
-                tower[i][0] = se;
+                se.uid = level[0].uid;
+                se.calculationHeightM = level[0].calculationHeightM;
+                se.parentUid = (this.objectStore.get(se.parentUid!) as BaseBackedObject).getCalculationEntities(
+                    context
+                )[0].uid;
+                level[0] = se;
             }
         }
 
         return tower.flat();
     }
 
-    getFrictionHeadLoss(context: CalculationContext,
-                        flowLS: number,
-                        from: FlowNode,
-                        to: FlowNode,
-                        signed: boolean,
+    getFrictionHeadLoss(
+        context: CalculationContext,
+        flowLS: number,
+        from: FlowNode,
+        to: FlowNode,
+        signed: boolean
     ): number {
         if (from.connection === this.entity.parentUid || to.connection === this.entity.parentUid) {
             return 0;
         } else {
-            throw new Error('system node shouldn\'t have any extra joints. ' +
-                'from: ' + JSON.stringify(from) + ' to ' + JSON.stringify(to) + ' parent: ' + this.entity.parentUid);
+            throw new Error(
+                "system node shouldn't have any extra joints. " +
+                "from: " +
+                JSON.stringify(from) +
+                " to " +
+                JSON.stringify(to) +
+                " parent: " +
+                this.entity.parentUid
+            );
         }
     }
 
@@ -221,7 +227,9 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
         if (this.getCalculationConnectionGroups(context).flat().length <= 2) {
             // that's fine
         } else {
-            throw new Error('Too many connections coming out of the system node ' + JSON.stringify(this.getCalculationConnections()));
+            throw new Error(
+                "Too many connections coming out of the system node " + JSON.stringify(this.getCalculationConnections())
+            );
         }
 
         tower.forEach(([v, p]) => {

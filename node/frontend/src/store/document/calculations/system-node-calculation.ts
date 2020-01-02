@@ -1,9 +1,9 @@
-import {FieldCategory, CalculationField, Units} from '../../../../src/store/document/calculations/calculation-field';
-import {Calculation, PsdCalculation} from '../../../../src/store/document/calculations/types';
-import {isGermanStandard} from '../../../../src/config';
-import {DrawingState} from '../../../../src/store/document/types';
-import {SystemNodeEntity} from '../entities/big-valve/big-valve-entity';
-import {getPsdUnitName} from "../../../calculations/utils";
+import { FieldCategory, CalculationField, Units } from "../../../../src/store/document/calculations/calculation-field";
+import { Calculation, PsdCalculation } from "../../../../src/store/document/calculations/types";
+import { isGermanStandard } from "../../../../src/config";
+import { DrawingState } from "../../../../src/store/document/types";
+import { SystemNodeEntity } from "../entities/big-valve/big-valve-entity";
+import { getPsdUnitName } from "../../../calculations/utils";
 import set = Reflect.set;
 
 export default interface SystemNodeCalculation extends PsdCalculation, Calculation {
@@ -14,32 +14,38 @@ export default interface SystemNodeCalculation extends PsdCalculation, Calculati
 export function makeSystemNodeCalculationFields(entity: SystemNodeEntity, settings: DrawingState): CalculationField[] {
     const psdUnit = getPsdUnitName(settings.metadata.calculationParams.psdMethod);
     return [
-        {property: 'pressureKPA',
-            title: 'Pressure',
-            short: '',
+        {
+            property: "pressureKPA",
+            title: "Pressure",
+            short: "",
             units: Units.KiloPascals,
             systemUid: entity.systemUid,
-            category: FieldCategory.Pressure,
+            category: FieldCategory.Pressure
         },
-        {property: 'flowRateLS',
-            title: 'Peak Flow rate',
-            short: 'Peak',
+        {
+            property: "flowRateLS",
+            title: "Peak Flow rate",
+            short: "Peak",
             units: Units.KiloPascals,
             systemUid: entity.systemUid,
-            category: FieldCategory.FlowRate,
+            category: FieldCategory.FlowRate
         },
-        {property: 'psdUnits',
+        {
+            property: "psdUnits",
             title: psdUnit.name,
             short: psdUnit.abbreviation,
             units: Units.None,
             systemUid: entity.systemUid,
-            category: FieldCategory.LoadingUnits,
-        },
+            category: FieldCategory.LoadingUnits
+        }
     ];
 }
 
 export function emptySystemNodeCalculation(): SystemNodeCalculation {
     return {
-        flowRateLS: null, psdUnits: null, pressureKPA: null, warning: null,
+        flowRateLS: null,
+        psdUnits: null,
+        pressureKPA: null,
+        warning: null
     };
 }

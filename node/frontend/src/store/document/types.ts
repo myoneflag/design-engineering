@@ -1,17 +1,17 @@
-import * as Operations from './operation-transforms/operation-transforms';
+import * as Operations from "./operation-transforms/operation-transforms";
 import {
     PIPE_SIZING_METHODS,
     RING_MAIN_CALCULATION_METHODS,
     SupportedDwellingStandards,
     SupportedPsdStandards
-} from '../../../src/config';
-import {EntityType} from '../../../src/store/document/entities/types';
-import {ViewPort} from '../../../src/htmlcanvas/viewport';
-import {DrawingMode} from '../../../src/htmlcanvas/types';
-import {DemandType} from '../../../src/calculations/types';
-import {DrawableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
-import {cloneSimple} from '../../../src/lib/utils';
-import {ValveId} from '../../../src/htmlcanvas/lib/types';
+} from "../../../src/config";
+import { EntityType } from "../../../src/store/document/entities/types";
+import { ViewPort } from "../../../src/htmlcanvas/viewport";
+import { DrawingMode } from "../../../src/htmlcanvas/types";
+import { DemandType } from "../../../src/calculations/types";
+import { DrawableEntityConcrete } from "../../../src/store/document/entities/concrete-entity";
+import { cloneSimple } from "../../../src/lib/utils";
+import { ValveId } from "../../../src/htmlcanvas/lib/types";
 import RiserEntity from "./entities/riser-entity";
 
 // Because of how the diffing engine works, there are restrictions on the data structure for the document state.
@@ -65,7 +65,7 @@ export interface ConnectableEntity extends CenteredEntity {
 }
 
 export interface Level {
-    entities: {[key: string]: DrawableEntityConcrete};
+    entities: { [key: string]: DrawableEntityConcrete };
     floorHeightM: number;
     name: string;
     abbreviation: string;
@@ -81,10 +81,10 @@ export interface DrawingState {
         flowSystems: FlowSystemParameters[];
         calculationParams: CalculationParameters;
         availableFixtures: string[];
-    }
+    };
 
-    levels: {[key: string]: Level};
-    shared: {[key: string]: RiserEntity};
+    levels: { [key: string]: Level };
+    shared: { [key: string]: RiserEntity };
 }
 
 export interface CalculationUiSettings {
@@ -108,11 +108,13 @@ export interface UIState {
     levelUid: string | null;
 }
 
-export interface CalculationFilters {[key: string]: CalculationFilter; }
+export interface CalculationFilters {
+    [key: string]: CalculationFilter;
+}
 export interface CalculationFilter {
     name: string;
     enabled: boolean;
-    filters: {[key: string]: FilterKey; };
+    filters: { [key: string]: FilterKey };
 }
 export interface FilterKey {
     name: string;
@@ -145,9 +147,9 @@ export interface DocumentState {
 }
 
 export interface DiffFilter {
-    metadata: {},
-    levels: any,
-    shared: any,
+    metadata: {};
+    levels: any;
+    shared: any;
 }
 
 export interface GeneralInfo {
@@ -169,7 +171,7 @@ export interface Color {
 export enum NetworkType {
     RISERS = "RISERS",
     RETICULATIONS = "RETICULATIONS",
-    CONNECTIONS = "CONNECTIONS",
+    CONNECTIONS = "CONNECTIONS"
 }
 
 export interface NetworkParams {
@@ -184,7 +186,7 @@ export interface FlowSystemParameters extends WithID {
     color: Color;
     fluid: string;
 
-    networks: { [key in keyof typeof NetworkType]: NetworkParams }
+    networks: { [key in keyof typeof NetworkType]: NetworkParams };
 }
 
 export interface CalculationParameters {
@@ -200,92 +202,91 @@ export interface CalculationParameters {
 
 export const initialDrawing: DrawingState = {
     metadata: {
-
         generalInfo: {
-            title: 'Untitled',
-            projectNumber: '',
-            projectStage: '',
-            designer: '',
-            reviewed: '',
-            approved: '',
+            title: "Untitled",
+            projectNumber: "",
+            projectStage: "",
+            designer: "",
+            reviewed: "",
+            approved: "",
             revision: 1,
-            client: '',
-            description: '',
+            client: "",
+            description: ""
         },
         flowSystems: [
             // TODO: these values should get got from the database.
             {
-                name: 'Cold Water',
+                name: "Cold Water",
                 temperature: 20,
-                color: {hex: '#009CE0'},
-                uid: 'cold-water',
-                fluid: 'water',
+                color: { hex: "#009CE0" },
+                uid: "cold-water",
+                fluid: "water",
                 networks: {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 1.5,
-                        material: 'copperTypeB',
+                        material: "copperTypeB"
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 1.5,
-                        material: 'copperTypeB',
+                        material: "copperTypeB"
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: 'pexSdr74',
-                    },
+                        material: "pexSdr74"
+                    }
                 }
             },
             {
-                name: 'Hot Water',
+                name: "Hot Water",
                 temperature: 60,
-                color: {hex: '#F44E3B'},
-                uid: 'hot-water',
-                fluid: 'water',
+                color: { hex: "#F44E3B" },
+                uid: "hot-water",
+                fluid: "water",
                 networks: {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 1.2,
-                        material: 'copperTypeB',
+                        material: "copperTypeB"
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 1.2,
-                        material: 'copperTypeB',
+                        material: "copperTypeB"
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: 'pexSdr74',
-                    },
+                        material: "pexSdr74"
+                    }
                 }
             },
             {
-                name: 'Warm Water',
+                name: "Warm Water",
                 temperature: 50,
-                color: {hex: '#F49000'},
-                uid: 'warm-water',
-                fluid: 'water',
+                color: { hex: "#F49000" },
+                uid: "warm-water",
+                fluid: "water",
                 networks: {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 1.2,
-                        material: 'copperTypeB',
+                        material: "copperTypeB"
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 1.2,
-                        material: 'copperTypeB',
+                        material: "copperTypeB"
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: 'pexSdr74',
-                    },
+                        material: "pexSdr74"
+                    }
                 }
-            },
+            }
         ],
         calculationParams: {
             psdMethod: SupportedPsdStandards.as35002018LoadingUnits,
@@ -293,12 +294,11 @@ export const initialDrawing: DrawingState = {
             ringMainCalculationMethod: RING_MAIN_CALCULATION_METHODS[0].key!,
             pipeSizingMethod: PIPE_SIZING_METHODS[0].key!,
 
-
             ceilingPipeHeightM: 3.0,
             roomTemperatureC: 20,
-            gravitationalAcceleration: 9.80665,
+            gravitationalAcceleration: 9.80665
         },
-        availableFixtures: ['basin', 'bath', 'shower', 'kitchenSink', 'wc', 'washingMachine', 'laundryTrough'],
+        availableFixtures: ["basin", "bath", "shower", "kitchenSink", "wc", "washingMachine", "laundryTrough"]
     },
     levels: {
         ground: {
@@ -306,10 +306,10 @@ export const initialDrawing: DrawingState = {
             floorHeightM: 0,
             name: "Ground Floor",
             abbreviation: "G",
-            uid: "ground",
+            uid: "ground"
         }
     },
-    shared: {},
+    shared: {}
 };
 
 export const initialUIState: UIState = {
@@ -323,19 +323,19 @@ export const initialUIState: UIState = {
 
     lastCalculationId: 0,
     lastCalculationUiSettings: {
-        demandType: null,
+        demandType: null
     },
     isCalculating: false,
     calculationFilters: {},
-    levelUid: null,
+    levelUid: null
 };
 
 export function blankDiffFilter() {
     return {
         shared: {},
         levels: {},
-        metadata: false,
-    }
+        metadata: false
+    };
 }
 
 export const initialDocumentState: DocumentState = {
@@ -347,7 +347,7 @@ export const initialDocumentState: DocumentState = {
     history: [],
     nextId: 1,
     uiState: cloneSimple(initialUIState),
-    documentId: -1,
+    documentId: -1
 };
 
 export interface EntityParam {

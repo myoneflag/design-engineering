@@ -1,8 +1,8 @@
-import {GetterTree} from 'vuex';
-import {RootState} from '../../../src/store/types';
-import CatalogState from '../../../src/store/catalog/types';
-import _ from 'lodash';
-import {Choice} from '../../../src/lib/types';
+import { GetterTree } from "vuex";
+import { RootState } from "../../../src/store/types";
+import CatalogState from "../../../src/store/catalog/types";
+import _ from "lodash";
+import { Choice } from "../../../src/lib/types";
 
 export const getters: GetterTree<CatalogState, RootState> = {
     loaded(state) {
@@ -16,7 +16,7 @@ export const getters: GetterTree<CatalogState, RootState> = {
     defaultPipeMaterialChoices(state) {
         const result: Choice[] = [];
         _.forOwn(state.defaultCatalog.pipes, (val, key) => {
-            result.push({key, name: val.name});
+            result.push({ key, name: val.name });
         });
         return result;
     },
@@ -24,7 +24,7 @@ export const getters: GetterTree<CatalogState, RootState> = {
     defaultValveChoices(state) {
         const result: Choice[] = [];
         _.forOwn(state.defaultCatalog.valves, (val, key) => {
-            result.push({key, name: val.name});
+            result.push({ key, name: val.name });
         });
         return result;
     },
@@ -32,8 +32,8 @@ export const getters: GetterTree<CatalogState, RootState> = {
     defaultFluidChoices(state) {
         const result: Choice[] = [];
         _.forOwn(state.defaultCatalog.fluids, (val, key) => {
-            result.push({key, name: val.name});
+            result.push({ key, name: val.name });
         });
         return result;
-    },
+    }
 };

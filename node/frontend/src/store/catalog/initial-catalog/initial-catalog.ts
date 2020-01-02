@@ -1,5 +1,5 @@
-import {Catalog} from "../types";
-import {DwellingStandardType, PSDStandardType} from "../psd-standard/types";
+import { Catalog } from "../types";
+import { DwellingStandardType, PSDStandardType } from "../psd-standard/types";
 
 export const initialCatalog: Catalog = {
     fixtures: {
@@ -20,7 +20,7 @@ export const initialCatalog: Catalog = {
                     "warm-water": "3"
                 }
             },
-            roughIns: ['cold-water', 'warm-water'],
+            roughIns: ["cold-water", "warm-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Ablution Trough",
@@ -50,7 +50,7 @@ export const initialCatalog: Catalog = {
                     "warm-water": "1"
                 }
             },
-            roughIns: ['cold-water', 'warm-water'],
+            roughIns: ["cold-water", "warm-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Basin",
@@ -80,7 +80,7 @@ export const initialCatalog: Catalog = {
                     "warm-water": "8"
                 }
             },
-            roughIns: ['cold-water', 'warm-water'],
+            roughIns: ["cold-water", "warm-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Bath",
@@ -98,24 +98,23 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "6",
             loadingUnits: {
                 as35002018LoadingUnits: {
-                    "cold-water": "2",
+                    "cold-water": "2"
                 },
                 barriesBookLoadingUnits: {
-                    "cold-water": "2",
+                    "cold-water": "2"
                 },
                 barriesBookDwellings: {
-                    "cold-water": "2",
+                    "cold-water": "2"
                 }
             },
-            roughIns: ['cold-water'],
+            roughIns: ["cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Bedpan Sanitiser",
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                "cold-water": "0.15",
-
+                "cold-water": "0.15"
             },
             uid: "bedpanSanitiser",
             warmTempC: null
@@ -137,7 +136,7 @@ export const initialCatalog: Catalog = {
                     "warm-water": "2"
                 }
             },
-            roughIns: ['cold-water', 'warm-water'],
+            roughIns: ["cold-water", "warm-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Beverage Bay",
@@ -167,7 +166,7 @@ export const initialCatalog: Catalog = {
                     "warm-water": "8"
                 }
             },
-            roughIns: ['cold-water', 'warm-water'],
+            roughIns: ["cold-water", "warm-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Birthing Pool",
@@ -197,7 +196,7 @@ export const initialCatalog: Catalog = {
                     "hot-water": "3"
                 }
             },
-            roughIns: ['cold-water', 'hot-water'],
+            roughIns: ["cold-water", "hot-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Cleaners sink",
@@ -227,7 +226,7 @@ export const initialCatalog: Catalog = {
                     "hot-water": "3"
                 }
             },
-            roughIns: ['cold-water', 'hot-water'],
+            roughIns: ["cold-water", "hot-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Dishwasher",
@@ -245,27 +244,23 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "6",
             loadingUnits: {
                 as35002018LoadingUnits: {
-                    "cold-water": "2",
-
+                    "cold-water": "2"
                 },
                 barriesBookLoadingUnits: {
-                    "cold-water": "2",
-
+                    "cold-water": "2"
                 },
                 barriesBookDwellings: {
-                    "cold-water": "2",
-
+                    "cold-water": "2"
                 }
             },
-            roughIns: ['cold-water'],
+            roughIns: ["cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Flishing Rim Sink",
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                "cold-water": "0.1",
-
+                "cold-water": "0.1"
             },
             uid: "flishingRimSink",
             warmTempC: null
@@ -275,27 +270,23 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "0",
             loadingUnits: {
                 as35002018LoadingUnits: {
-                    "cold-water": "8",
-
+                    "cold-water": "8"
                 },
                 barriesBookLoadingUnits: {
-                    "cold-water": "8",
-
+                    "cold-water": "8"
                 },
                 barriesBookDwellings: {
-                    "cold-water": "8",
-
+                    "cold-water": "8"
                 }
             },
-            roughIns: ['cold-water'],
+            roughIns: ["cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Hose tap",
             outletAboveFloorM: "0.5",
             probabilityOfUsagePCT: "0",
             qLS: {
-                "cold-water": "0.3",
-
+                "cold-water": "0.3"
             },
             uid: "hoseTap",
             warmTempC: null
@@ -317,7 +308,7 @@ export const initialCatalog: Catalog = {
                     "hot-water": "3"
                 }
             },
-            roughIns: ['cold-water', 'hot-water'],
+            roughIns: ["cold-water", "hot-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Kitchen sink",
@@ -347,7 +338,7 @@ export const initialCatalog: Catalog = {
                     "warm-water": "3"
                 }
             },
-            roughIns: ['cold-water', 'warm-water'],
+            roughIns: ["cold-water", "warm-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Laundry Trough",
@@ -377,7 +368,7 @@ export const initialCatalog: Catalog = {
                     "warm-water": "2"
                 }
             },
-            roughIns: ['cold-water', 'warm-water'],
+            roughIns: ["cold-water", "warm-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Shower",
@@ -395,27 +386,23 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "1",
             loadingUnits: {
                 as35002018LoadingUnits: {
-                    "cold-water": "2",
-
+                    "cold-water": "2"
                 },
                 barriesBookLoadingUnits: {
-                    "cold-water": "2",
-
+                    "cold-water": "2"
                 },
                 barriesBookDwellings: {
-                    "cold-water": "2",
-
+                    "cold-water": "2"
                 }
             },
-            roughIns: ['cold-water'],
+            roughIns: ["cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Urinal",
             outletAboveFloorM: null,
             probabilityOfUsagePCT: "4.5",
             qLS: {
-                "cold-water": "0.1",
-
+                "cold-water": "0.1"
             },
             uid: "urinal",
             warmTempC: null
@@ -437,7 +424,7 @@ export const initialCatalog: Catalog = {
                     "hot-water": "3"
                 }
             },
-            roughIns: ['cold-water', 'hot-water'],
+            roughIns: ["cold-water", "hot-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Washing Machine",
@@ -455,26 +442,23 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "4",
             loadingUnits: {
                 as35002018LoadingUnits: {
-                    "cold-water": "2",
-
+                    "cold-water": "2"
                 },
                 barriesBookLoadingUnits: {
-                    "cold-water": "2",
-
+                    "cold-water": "2"
                 },
                 barriesBookDwellings: {
-                    "cold-water": "2",
+                    "cold-water": "2"
                 }
             },
-            roughIns: ['cold-water'],
+            roughIns: ["cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "WC",
             outletAboveFloorM: "0.75",
             probabilityOfUsagePCT: "1",
             qLS: {
-                "cold-water": "0.1",
-
+                "cold-water": "0.1"
             },
             uid: "wc",
             warmTempC: null
@@ -488,7 +472,7 @@ export const initialCatalog: Catalog = {
             minInletPressureKPA: "20",
             name: "Tempering Valve",
             uid: "temperingValve",
-            "pressureLossKPAbyFlowRateLS" : {
+            pressureLossKPAbyFlowRateLS: {
                 0: "0",
                 0.08: "3",
                 0.16: "12",
@@ -503,7 +487,7 @@ export const initialCatalog: Catalog = {
             minInletPressureKPA: "20",
             name: "TMV",
             uid: "tmv",
-            "pressureLossKPAbyFlowRateLS" : {
+            pressureLossKPAbyFlowRateLS: {
                 0: "0",
                 0.16: "30",
                 0.32: "80",
@@ -933,25 +917,25 @@ export const initialCatalog: Catalog = {
             name: "45 Elbow",
             uid: "45Elbow",
             valvesBySize: {
-                100: {
+                "100": {
                     diameterNominalMM: "100",
                     kValue: "0.27",
                     symbol: null,
                     valveUid: "45Elbow"
                 },
-                15: {
+                "15": {
                     diameterNominalMM: "15",
                     kValue: "0.43",
                     symbol: null,
                     valveUid: "45Elbow"
                 },
-                150: {
+                "150": {
                     diameterNominalMM: "150",
                     kValue: "0.24",
                     symbol: null,
                     valveUid: "45Elbow"
                 },
-                20: {
+                "20": {
                     diameterNominalMM: "20",
                     kValue: "0.4",
                     symbol: null,
@@ -963,31 +947,31 @@ export const initialCatalog: Catalog = {
                     symbol: null,
                     valveUid: "45Elbow"
                 },
-                25: {
+                "25": {
                     diameterNominalMM: "25",
                     kValue: "0.37",
                     symbol: null,
                     valveUid: "45Elbow"
                 },
-                315: {
+                "315": {
                     diameterNominalMM: "315",
                     kValue: "0.21",
                     symbol: null,
                     valveUid: "45Elbow"
                 },
-                32: {
+                "32": {
                     diameterNominalMM: "32",
                     kValue: "0.35",
                     symbol: null,
                     valveUid: "45Elbow"
                 },
-                40: {
+                "40": {
                     diameterNominalMM: "40",
                     kValue: "0.34",
                     symbol: null,
                     valveUid: "45Elbow"
                 },
-                50: {
+                "50": {
                     diameterNominalMM: "50",
                     kValue: "0.3",
                     symbol: null,
@@ -1006,25 +990,25 @@ export const initialCatalog: Catalog = {
             name: "90 Elbow",
             uid: "90Elbow",
             valvesBySize: {
-                100: {
+                "100": {
                     diameterNominalMM: "100",
                     kValue: "0.51",
                     symbol: null,
                     valveUid: "90Elbow"
                 },
-                15: {
+                "15": {
                     diameterNominalMM: "15",
                     kValue: "0.81",
                     symbol: null,
                     valveUid: "90Elbow"
                 },
-                150: {
+                "150": {
                     diameterNominalMM: "150",
                     kValue: "0.45",
                     symbol: null,
                     valveUid: "90Elbow"
                 },
-                20: {
+                "20": {
                     diameterNominalMM: "20",
                     kValue: "0.75",
                     symbol: null,
@@ -1036,31 +1020,31 @@ export const initialCatalog: Catalog = {
                     symbol: null,
                     valveUid: "90Elbow"
                 },
-                25: {
+                "25": {
                     diameterNominalMM: "25",
                     kValue: "0.69",
                     symbol: null,
                     valveUid: "90Elbow"
                 },
-                315: {
+                "315": {
                     diameterNominalMM: "315",
                     kValue: "0.39",
                     symbol: null,
                     valveUid: "90Elbow"
                 },
-                32: {
+                "32": {
                     diameterNominalMM: "32",
                     kValue: "0.66",
                     symbol: null,
                     valveUid: "90Elbow"
                 },
-                40: {
+                "40": {
                     diameterNominalMM: "40",
                     kValue: "0.63",
                     symbol: null,
                     valveUid: "90Elbow"
                 },
-                50: {
+                "50": {
                     diameterNominalMM: "50",
                     kValue: "0.57",
                     symbol: null,
@@ -1079,25 +1063,25 @@ export const initialCatalog: Catalog = {
             name: "Ball Valve",
             uid: "ballValve",
             valvesBySize: {
-                100: {
+                "100": {
                     diameterNominalMM: "100",
                     kValue: "0.05",
                     symbol: null,
                     valveUid: "ballValve"
                 },
-                15: {
+                "15": {
                     diameterNominalMM: "15",
                     kValue: "0.08",
                     symbol: null,
                     valveUid: "ballValve"
                 },
-                150: {
+                "150": {
                     diameterNominalMM: "150",
                     kValue: "0.05",
                     symbol: null,
                     valveUid: "ballValve"
                 },
-                20: {
+                "20": {
                     diameterNominalMM: "20",
                     kValue: "0.08",
                     symbol: null,
@@ -1109,31 +1093,31 @@ export const initialCatalog: Catalog = {
                     symbol: null,
                     valveUid: "ballValve"
                 },
-                25: {
+                "25": {
                     diameterNominalMM: "25",
                     kValue: "0.07",
                     symbol: null,
                     valveUid: "ballValve"
                 },
-                315: {
+                "315": {
                     diameterNominalMM: "315",
                     kValue: "0.04",
                     symbol: null,
                     valveUid: "ballValve"
                 },
-                32: {
+                "32": {
                     diameterNominalMM: "32",
                     kValue: "0.07",
                     symbol: null,
                     valveUid: "ballValve"
                 },
-                40: {
+                "40": {
                     diameterNominalMM: "40",
                     kValue: "0.06",
                     symbol: null,
                     valveUid: "ballValve"
                 },
-                50: {
+                "50": {
                     diameterNominalMM: "50",
                     kValue: "0.06",
                     symbol: null,
@@ -1152,13 +1136,13 @@ export const initialCatalog: Catalog = {
             name: "Butterfly Valve",
             uid: "butterflyValve",
             valvesBySize: {
-                100: {
+                "100": {
                     diameterNominalMM: "100",
                     kValue: "0.77",
                     symbol: null,
                     valveUid: "butterflyValve"
                 },
-                150: {
+                "150": {
                     diameterNominalMM: "150",
                     kValue: "0.68",
                     symbol: null,
@@ -1170,13 +1154,13 @@ export const initialCatalog: Catalog = {
                     symbol: null,
                     valveUid: "butterflyValve"
                 },
-                315: {
+                "315": {
                     diameterNominalMM: "315",
                     kValue: "0.39",
                     symbol: null,
                     valveUid: "butterflyValve"
                 },
-                50: {
+                "50": {
                     diameterNominalMM: "50",
                     kValue: "0.86",
                     symbol: null,
@@ -1195,25 +1179,25 @@ export const initialCatalog: Catalog = {
             name: "Check Valve",
             uid: "checkValve",
             valvesBySize: {
-                100: {
+                "100": {
                     diameterNominalMM: "100",
                     kValue: "1.7",
                     symbol: null,
                     valveUid: "checkValve"
                 },
-                15: {
+                "15": {
                     diameterNominalMM: "15",
                     kValue: "2.7",
                     symbol: null,
                     valveUid: "checkValve"
                 },
-                150: {
+                "150": {
                     diameterNominalMM: "150",
                     kValue: "1.5",
                     symbol: null,
                     valveUid: "checkValve"
                 },
-                20: {
+                "20": {
                     diameterNominalMM: "20",
                     kValue: "2.5",
                     symbol: null,
@@ -1225,31 +1209,31 @@ export const initialCatalog: Catalog = {
                     symbol: null,
                     valveUid: "checkValve"
                 },
-                25: {
+                "25": {
                     diameterNominalMM: "25",
                     kValue: "2.3",
                     symbol: null,
                     valveUid: "checkValve"
                 },
-                315: {
+                "315": {
                     diameterNominalMM: "315",
                     kValue: "1.3",
                     symbol: null,
                     valveUid: "checkValve"
                 },
-                32: {
+                "32": {
                     diameterNominalMM: "32",
                     kValue: "2.2",
                     symbol: null,
                     valveUid: "checkValve"
                 },
-                40: {
+                "40": {
                     diameterNominalMM: "40",
                     kValue: "2.1",
                     symbol: null,
                     valveUid: "checkValve"
                 },
-                50: {
+                "50": {
                     diameterNominalMM: "50",
                     kValue: "1.9",
                     symbol: null,
@@ -1268,25 +1252,25 @@ export const initialCatalog: Catalog = {
             name: "Gate Valve",
             uid: "gateValve",
             valvesBySize: {
-                100: {
+                "100": {
                     diameterNominalMM: "100",
                     kValue: "0.14",
                     symbol: null,
                     valveUid: "gateValve"
                 },
-                15: {
+                "15": {
                     diameterNominalMM: "15",
                     kValue: "0.22",
                     symbol: null,
                     valveUid: "gateValve"
                 },
-                150: {
+                "150": {
                     diameterNominalMM: "150",
                     kValue: "0.12",
                     symbol: null,
                     valveUid: "gateValve"
                 },
-                20: {
+                "20": {
                     diameterNominalMM: "20",
                     kValue: "0.2",
                     symbol: null,
@@ -1298,31 +1282,31 @@ export const initialCatalog: Catalog = {
                     symbol: null,
                     valveUid: "gateValve"
                 },
-                25: {
+                "25": {
                     diameterNominalMM: "25",
                     kValue: "0.18",
                     symbol: null,
                     valveUid: "gateValve"
                 },
-                315: {
+                "315": {
                     diameterNominalMM: "315",
                     kValue: "0.1",
                     symbol: null,
                     valveUid: "gateValve"
                 },
-                32: {
+                "32": {
                     diameterNominalMM: "32",
                     kValue: "0.18",
                     symbol: null,
                     valveUid: "gateValve"
                 },
-                40: {
+                "40": {
                     diameterNominalMM: "40",
                     kValue: "0.17",
                     symbol: null,
                     valveUid: "gateValve"
                 },
-                50: {
+                "50": {
                     diameterNominalMM: "50",
                     kValue: "0.15",
                     symbol: null,
@@ -1354,25 +1338,25 @@ export const initialCatalog: Catalog = {
             name: "T - Thru Branch",
             uid: "tThruBranch",
             valvesBySize: {
-                100: {
+                "100": {
                     diameterNominalMM: "100",
                     kValue: "1.02",
                     symbol: null,
                     valveUid: "tThruBranch"
                 },
-                15: {
+                "15": {
                     diameterNominalMM: "15",
                     kValue: "1.62",
                     symbol: null,
                     valveUid: "tThruBranch"
                 },
-                150: {
+                "150": {
                     diameterNominalMM: "150",
                     kValue: "0.9",
                     symbol: null,
                     valveUid: "tThruBranch"
                 },
-                20: {
+                "20": {
                     diameterNominalMM: "20",
                     kValue: "1.5",
                     symbol: null,
@@ -1384,31 +1368,31 @@ export const initialCatalog: Catalog = {
                     symbol: null,
                     valveUid: "tThruBranch"
                 },
-                25: {
+                "25": {
                     diameterNominalMM: "25",
                     kValue: "1.38",
                     symbol: null,
                     valveUid: "tThruBranch"
                 },
-                315: {
+                "315": {
                     diameterNominalMM: "315",
                     kValue: "0.78",
                     symbol: null,
                     valveUid: "tThruBranch"
                 },
-                32: {
+                "32": {
                     diameterNominalMM: "32",
                     kValue: "1.32",
                     symbol: null,
                     valveUid: "tThruBranch"
                 },
-                40: {
+                "40": {
                     diameterNominalMM: "40",
                     kValue: "1.26",
                     symbol: null,
                     valveUid: "tThruBranch"
                 },
-                50: {
+                "50": {
                     diameterNominalMM: "50",
                     kValue: "1.14",
                     symbol: null,
@@ -1427,25 +1411,25 @@ export const initialCatalog: Catalog = {
             name: "T - Thru Flow",
             uid: "tThruFlow",
             valvesBySize: {
-                100: {
+                "100": {
                     diameterNominalMM: "100",
                     kValue: "0.34",
                     symbol: null,
                     valveUid: "tThruFlow"
                 },
-                15: {
+                "15": {
                     diameterNominalMM: "15",
                     kValue: "0.54",
                     symbol: null,
                     valveUid: "tThruFlow"
                 },
-                150: {
+                "150": {
                     diameterNominalMM: "150",
                     kValue: "0.3",
                     symbol: null,
                     valveUid: "tThruFlow"
                 },
-                20: {
+                "20": {
                     diameterNominalMM: "20",
                     kValue: "0.5",
                     symbol: null,
@@ -1457,31 +1441,31 @@ export const initialCatalog: Catalog = {
                     symbol: null,
                     valveUid: "tThruFlow"
                 },
-                25: {
+                "25": {
                     diameterNominalMM: "25",
                     kValue: "0.46",
                     symbol: null,
                     valveUid: "tThruFlow"
                 },
-                315: {
+                "315": {
                     diameterNominalMM: "315",
                     kValue: "0.26",
                     symbol: null,
                     valveUid: "tThruFlow"
                 },
-                32: {
+                "32": {
                     diameterNominalMM: "32",
                     kValue: "0.44",
                     symbol: null,
                     valveUid: "tThruFlow"
                 },
-                40: {
+                "40": {
                     diameterNominalMM: "40",
                     kValue: "0.42",
                     symbol: null,
                     valveUid: "tThruFlow"
                 },
-                50: {
+                "50": {
                     diameterNominalMM: "50",
                     kValue: "0.38",
                     symbol: null,
@@ -1523,106 +1507,106 @@ export const initialCatalog: Catalog = {
             type: DwellingStandardType.DWELLING_HOT_COLD_LOOKUP_TABLE,
             name: "Barrie's Book Dwellings",
             hotColdTable: {
-                1: {cold:  "0.48", hot: " 0.4"},
-                2: {cold:  "0.62", hot: " 0.56"},
-                3: {cold:  "0.78", hot: " 0.67"},
-                4: {cold:  "0.92", hot: " 0.75"},
-                5: {cold:  "1.04", hot: " 0.78"},
-                6: {cold:  "1.16", hot: " 0.8"},
-                7: {cold:  "1.26", hot: " 0.82"},
-                8: {cold:  "1.36", hot: " 0.83"},
-                9: {cold:  "1.46", hot: " 0.85"},
-                10: {cold:  "1.56", hot: " 0.87"},
-                11: {cold:  "1.64", hot: " 0.89"},
-                12: {cold:  "1.73", hot: " 0.9"},
-                13: {cold:  "1.82", hot: " 0.97"},
-                14: {cold:  "1.9", hot: " 1.05"},
-                15: {cold:  "1.98", hot: " 1.13"},
-                16: {cold:  "2.06", hot: " 1.2"},
-                17: {cold:  "2.14", hot: " 1.28"},
-                18: {cold:  "2.21", hot: " 1.35"},
-                19: {cold:  "2.29", hot: " 1.43"},
-                20: {cold:  "2.36", hot: " 1.5"},
-                21: {cold:  "2.44", hot: " 1.58"},
-                22: {cold:  "2.51", hot: " 1.65"},
-                23: {cold:  "2.58", hot: " 1.73"},
-                24: {cold:  "2.66", hot: " 1.8"},
-                25: {cold:  "2.72", hot: " 1.88"},
-                26: {cold:  "2.79", hot: " 1.95"},
-                27: {cold:  "2.86", hot: " 2.03"},
-                28: {cold:  "2.93", hot: " 2.1"},
-                29: {cold:  "3.00", hot: " 2.18"},
-                30: {cold:  "3.05", hot: " 2.25"},
-                31: {cold:  "3.11", hot: " 2.33"},
-                32: {cold:  "3.17", hot: " 2.4"},
-                33: {cold:  "3.23", hot: " 2.48"},
-                34: {cold:  "3.29", hot: " 2.55"},
-                35: {cold:  "3.35", hot: " 2.63"},
-                36: {cold:  "3.41", hot: " 2.7"},
-                37: {cold:  "3.47", hot: " 2.78"},
-                38: {cold:  "3.53", hot: " 2.85"},
-                39: {cold:  "3.59", hot: " 2.93"},
-                40: {cold:  "3.67", hot: " 3"},
-                41: {cold:  "3.73", hot: " 3.08"},
-                42: {cold:  "3.79", hot: " 3.15"},
-                43: {cold:  "3.95", hot: " 3.23"},
-                44: {cold:  "4", hot: " 3.3"},
-                45: {cold:  "4.04", hot: " 3.38"},
-                46: {cold:  "4.08", hot: " 3.45"},
-                47: {cold:  "4.12", hot: " 3.53"},
-                48: {cold:  "4.16", hot: " 3.6"},
-                49: {cold:  "4.2", hot: " 3.68"},
-                50: {cold:  "4.24", hot: " 3.75"},
-                51: {cold:  "4.3", hot: " 3.83"},
-                52: {cold:  "4.36", hot: " 3.9"},
-                53: {cold:  "4.42", hot: " 3.98"},
-                54: {cold:  "4.48", hot: " 4.05"},
-                55: {cold:  "4.53", hot: " 4.13"},
-                56: {cold:  "4.58", hot: " 4.2"},
-                57: {cold:  "4.64", hot: " 4.28"},
-                58: {cold:  "4.69", hot: " 4.35"},
-                59: {cold:  "4.75", hot: " 4.43"},
-                60: {cold:  "4.8", hot: " 4.5"},
-                61: {cold:  "4.86", hot: " 4.58"},
-                62: {cold:  "4.92", hot: " 4.65"},
-                63: {cold:  "4.97", hot: " 4.73"},
-                64: {cold:  "5.03", hot: " 4.8"},
-                65: {cold:  "5.08", hot: " 4.88"},
-                66: {cold:  "5.13", hot: " 4.95"},
-                67: {cold:  "5.18", hot: " 5.03"},
-                68: {cold:  "5.25", hot: " 5.1"},
-                69: {cold:  "5.3", hot: " 5.18"},
-                70: {cold:  "5.35", hot: " 5.25"},
-                71: {cold:  "5.4", hot: " 5.33"},
-                72: {cold:  "5.45", hot: " 5.4"},
-                73: {cold:  "5.5", hot: " 5.48"},
-                74: {cold:  "5.55", hot: " 5.55"},
-                75: {cold:  "5.6", hot: " 5.63"},
-                76: {cold:  "5.65", hot: " 5.7"},
-                77: {cold:  "5.7", hot: " 5.78"},
-                78: {cold:  "5.75", hot: " 5.85"},
-                79: {cold:  "5.8", hot: " 5.93"},
-                80: {cold:  "5.85", hot: " 6"},
-                81: {cold:  "5.91", hot: " 6.08"},
-                82: {cold:  "5.95", hot: " 6.15"},
-                83: {cold:  "6", hot: " 6.25"},
-                84: {cold:  "6.05", hot: " 6.3"},
-                85: {cold:  "6.1", hot: " 6.38"},
-                86: {cold:  "6.15", hot: " 6.45"},
-                87: {cold:  "6.2", hot: " 6.53"},
-                88: {cold:  "6.25", hot: " 6.6"},
-                89: {cold:  "6.3", hot: " 6.68"},
-                90: {cold:  "6.35", hot: " 6.75"},
-                91: {cold:  "6.4", hot: " 6.83"},
-                92: {cold:  "6.45", hot: " 6.9"},
-                93: {cold:  "6.5", hot: " 6.98"},
-                94: {cold:  "6.55", hot: " 7.05"},
-                95: {cold:  "6.6", hot: " 7.13"},
-                96: {cold:  "6.65", hot: " 7.2"},
-                97: {cold:  "6.7", hot: " 7.28"},
-                98: {cold:  "6.75", hot: " 7.35"},
-                99: {cold:  "6.8", hot: " 7.43"},
-                100: {cold:  "6.85", hot: " 7.5"}
+                1: { cold: "0.48", hot: " 0.4" },
+                2: { cold: "0.62", hot: " 0.56" },
+                3: { cold: "0.78", hot: " 0.67" },
+                4: { cold: "0.92", hot: " 0.75" },
+                5: { cold: "1.04", hot: " 0.78" },
+                6: { cold: "1.16", hot: " 0.8" },
+                7: { cold: "1.26", hot: " 0.82" },
+                8: { cold: "1.36", hot: " 0.83" },
+                9: { cold: "1.46", hot: " 0.85" },
+                10: { cold: "1.56", hot: " 0.87" },
+                11: { cold: "1.64", hot: " 0.89" },
+                12: { cold: "1.73", hot: " 0.9" },
+                13: { cold: "1.82", hot: " 0.97" },
+                14: { cold: "1.9", hot: " 1.05" },
+                15: { cold: "1.98", hot: " 1.13" },
+                16: { cold: "2.06", hot: " 1.2" },
+                17: { cold: "2.14", hot: " 1.28" },
+                18: { cold: "2.21", hot: " 1.35" },
+                19: { cold: "2.29", hot: " 1.43" },
+                20: { cold: "2.36", hot: " 1.5" },
+                21: { cold: "2.44", hot: " 1.58" },
+                22: { cold: "2.51", hot: " 1.65" },
+                23: { cold: "2.58", hot: " 1.73" },
+                24: { cold: "2.66", hot: " 1.8" },
+                25: { cold: "2.72", hot: " 1.88" },
+                26: { cold: "2.79", hot: " 1.95" },
+                27: { cold: "2.86", hot: " 2.03" },
+                28: { cold: "2.93", hot: " 2.1" },
+                29: { cold: "3.00", hot: " 2.18" },
+                30: { cold: "3.05", hot: " 2.25" },
+                31: { cold: "3.11", hot: " 2.33" },
+                32: { cold: "3.17", hot: " 2.4" },
+                33: { cold: "3.23", hot: " 2.48" },
+                34: { cold: "3.29", hot: " 2.55" },
+                35: { cold: "3.35", hot: " 2.63" },
+                36: { cold: "3.41", hot: " 2.7" },
+                37: { cold: "3.47", hot: " 2.78" },
+                38: { cold: "3.53", hot: " 2.85" },
+                39: { cold: "3.59", hot: " 2.93" },
+                40: { cold: "3.67", hot: " 3" },
+                41: { cold: "3.73", hot: " 3.08" },
+                42: { cold: "3.79", hot: " 3.15" },
+                43: { cold: "3.95", hot: " 3.23" },
+                44: { cold: "4", hot: " 3.3" },
+                45: { cold: "4.04", hot: " 3.38" },
+                46: { cold: "4.08", hot: " 3.45" },
+                47: { cold: "4.12", hot: " 3.53" },
+                48: { cold: "4.16", hot: " 3.6" },
+                49: { cold: "4.2", hot: " 3.68" },
+                50: { cold: "4.24", hot: " 3.75" },
+                51: { cold: "4.3", hot: " 3.83" },
+                52: { cold: "4.36", hot: " 3.9" },
+                53: { cold: "4.42", hot: " 3.98" },
+                54: { cold: "4.48", hot: " 4.05" },
+                55: { cold: "4.53", hot: " 4.13" },
+                56: { cold: "4.58", hot: " 4.2" },
+                57: { cold: "4.64", hot: " 4.28" },
+                58: { cold: "4.69", hot: " 4.35" },
+                59: { cold: "4.75", hot: " 4.43" },
+                60: { cold: "4.8", hot: " 4.5" },
+                61: { cold: "4.86", hot: " 4.58" },
+                62: { cold: "4.92", hot: " 4.65" },
+                63: { cold: "4.97", hot: " 4.73" },
+                64: { cold: "5.03", hot: " 4.8" },
+                65: { cold: "5.08", hot: " 4.88" },
+                66: { cold: "5.13", hot: " 4.95" },
+                67: { cold: "5.18", hot: " 5.03" },
+                68: { cold: "5.25", hot: " 5.1" },
+                69: { cold: "5.3", hot: " 5.18" },
+                70: { cold: "5.35", hot: " 5.25" },
+                71: { cold: "5.4", hot: " 5.33" },
+                72: { cold: "5.45", hot: " 5.4" },
+                73: { cold: "5.5", hot: " 5.48" },
+                74: { cold: "5.55", hot: " 5.55" },
+                75: { cold: "5.6", hot: " 5.63" },
+                76: { cold: "5.65", hot: " 5.7" },
+                77: { cold: "5.7", hot: " 5.78" },
+                78: { cold: "5.75", hot: " 5.85" },
+                79: { cold: "5.8", hot: " 5.93" },
+                80: { cold: "5.85", hot: " 6" },
+                81: { cold: "5.91", hot: " 6.08" },
+                82: { cold: "5.95", hot: " 6.15" },
+                83: { cold: "6", hot: " 6.25" },
+                84: { cold: "6.05", hot: " 6.3" },
+                85: { cold: "6.1", hot: " 6.38" },
+                86: { cold: "6.15", hot: " 6.45" },
+                87: { cold: "6.2", hot: " 6.53" },
+                88: { cold: "6.25", hot: " 6.6" },
+                89: { cold: "6.3", hot: " 6.68" },
+                90: { cold: "6.35", hot: " 6.75" },
+                91: { cold: "6.4", hot: " 6.83" },
+                92: { cold: "6.45", hot: " 6.9" },
+                93: { cold: "6.5", hot: " 6.98" },
+                94: { cold: "6.55", hot: " 7.05" },
+                95: { cold: "6.6", hot: " 7.13" },
+                96: { cold: "6.65", hot: " 7.2" },
+                97: { cold: "6.7", hot: " 7.28" },
+                98: { cold: "6.75", hot: " 7.35" },
+                99: { cold: "6.8", hot: " 7.43" },
+                100: { cold: "6.85", hot: " 7.5" }
             }
         }
     },
@@ -1836,43 +1820,43 @@ export const initialCatalog: Catalog = {
             type: PSDStandardType.EQUATION,
             equation: "a*(sum(Q,q))^b-c",
             name: "DIN 1988-300 - Residential",
-            variables: {a:  "1.48", b:  "0.19", c:  "0.94"}
+            variables: { a: "1.48", b: "0.19", c: "0.94" }
         },
         din1988300Hospital: {
             type: PSDStandardType.EQUATION,
             equation: "a*(sum(Q,q))^b-c",
             name: "DIN 1988-300 - Hospital",
-            variables: {a:  "0.75", b:  "0.44", c:  "0.18"}
+            variables: { a: "0.75", b: "0.44", c: "0.18" }
         },
         din1988300Hotel: {
             type: PSDStandardType.EQUATION,
             equation: "a*(sum(Q,q))^b-c",
             name: "DIN 1988-300 - Hotel",
-            variables: {a:  "0.70", b:  "0.48", c:  "0.13"}
+            variables: { a: "0.70", b: "0.48", c: "0.13" }
         },
         din1988300School: {
             type: PSDStandardType.EQUATION,
             equation: "a*(sum(Q,q))^b-c",
             name: "DIN 1988-300 - School",
-            variables: {a:  "0.91", b:  "0.31", c:  "0.38"}
+            variables: { a: "0.91", b: "0.31", c: "0.38" }
         },
         din1988300Office: {
             type: PSDStandardType.EQUATION,
             equation: "a*(sum(Q,q))^b-c",
             name: "DIN 1988-300 - Office",
-            variables: {a:  "0.91", b:  "0.31", c:  "0.38"}
+            variables: { a: "0.91", b: "0.31", c: "0.38" }
         },
         din1988300AssistedLiving: {
             type: PSDStandardType.EQUATION,
             equation: "a*(sum(Q,q))^b-c",
             name: "DIN 1988-300 - Assisted Living",
-            variables: {a:  "1.48", b:  "0.19", c:  "0.94"}
+            variables: { a: "1.48", b: "0.19", c: "0.94" }
         },
         din1988300NursingHome: {
             type: PSDStandardType.EQUATION,
             equation: "a*(sum(Q,q))^b-c",
             name: "DIN 1988-300 - Nursing Home",
-            variables: {a:  "1.40", b:  "0.14", c:  "0.92"}
+            variables: { a: "1.40", b: "0.14", c: "0.92" }
         }
     },
     fluids: {
@@ -1898,10 +1882,10 @@ export const initialCatalog: Catalog = {
     },
     backflowValves: {
         RPZD: {
-            name: 'RPZD',
+            name: "RPZD",
             valvesBySize: {
                 15: {
-                    sizeMM: '15',
+                    sizeMM: "15",
                     minInletPressureKPA: "200",
                     maxInletPressureKPA: "2000",
                     minFlowRateLS: "0",
@@ -1910,12 +1894,12 @@ export const initialCatalog: Catalog = {
                         0.05: "60",
                         0.17: "90",
                         0.37: "85",
-                        0.48: "80",
+                        0.48: "80"
                     }
                 },
 
                 20: {
-                    sizeMM: '20',
+                    sizeMM: "20",
                     minInletPressureKPA: "200",
                     maxInletPressureKPA: "2000",
                     minFlowRateLS: "0.48",
@@ -1924,12 +1908,12 @@ export const initialCatalog: Catalog = {
                         0.49: "75",
                         0.6: "70",
                         0.7: "73",
-                        0.83: "74",
+                        0.83: "74"
                     }
                 },
 
                 25: {
-                    sizeMM: '25',
+                    sizeMM: "25",
                     minInletPressureKPA: "200",
                     maxInletPressureKPA: "2000",
                     minFlowRateLS: "0.83",
@@ -1938,101 +1922,101 @@ export const initialCatalog: Catalog = {
                         0.84: "67",
                         1: "65",
                         1.2: "64",
-                        1.36: "65",
+                        1.36: "65"
                     }
                 },
 
                 32: {
-                    sizeMM: '32',
-                    minInletPressureKPA: '200',
-                    maxInletPressureKPA: '2000',
-                    minFlowRateLS: '1.36',
-                    maxFlowRateLS: '2.3',
+                    sizeMM: "32",
+                    minInletPressureKPA: "200",
+                    maxInletPressureKPA: "2000",
+                    minFlowRateLS: "1.36",
+                    maxFlowRateLS: "2.3",
                     pressureLossKPAByFlowRateLS: {
-                        1.37: '82',
-                        1.7: '75',
-                        2: '70',
-                        2.3: '68',
+                        1.37: "82",
+                        1.7: "75",
+                        2: "70",
+                        2.3: "68"
                     }
                 },
                 40: {
-                    sizeMM: '40',
-                    minInletPressureKPA: '200',
-                    maxInletPressureKPA: '2000',
-                    minFlowRateLS: '2.3',
-                    maxFlowRateLS: '3.25',
+                    sizeMM: "40",
+                    minInletPressureKPA: "200",
+                    maxInletPressureKPA: "2000",
+                    minFlowRateLS: "2.3",
+                    maxFlowRateLS: "3.25",
                     pressureLossKPAByFlowRateLS: {
-                        2.31: '87',
-                        2.6: '85',
-                        2.9: '85',
-                        3.25: '85',
+                        2.31: "87",
+                        2.6: "85",
+                        2.9: "85",
+                        3.25: "85"
                     }
                 },
                 50: {
-                    sizeMM: '50',
-                    minInletPressureKPA: '200',
-                    maxInletPressureKPA: '2000',
-                    minFlowRateLS: '3.25',
-                    maxFlowRateLS: '5.15',
+                    sizeMM: "50",
+                    minInletPressureKPA: "200",
+                    maxInletPressureKPA: "2000",
+                    minFlowRateLS: "3.25",
+                    maxFlowRateLS: "5.15",
                     pressureLossKPAByFlowRateLS: {
-                        3.26: '87',
-                        4: '85',
-                        4.5: '85',
-                        5.15: '85',
+                        3.26: "87",
+                        4: "85",
+                        4.5: "85",
+                        5.15: "85"
                     }
                 },
                 65: {
-                    sizeMM: '65',
-                    minInletPressureKPA: '200',
-                    maxInletPressureKPA: '2000',
-                    minFlowRateLS: '5.15',
-                    maxFlowRateLS: '7.5',
+                    sizeMM: "65",
+                    minInletPressureKPA: "200",
+                    maxInletPressureKPA: "2000",
+                    minFlowRateLS: "5.15",
+                    maxFlowRateLS: "7.5",
                     pressureLossKPAByFlowRateLS: {
-                        5.16: '97',
-                        6: '97',
-                        7: '98',
-                        7.5: '97',
+                        5.16: "97",
+                        6: "97",
+                        7: "98",
+                        7.5: "97"
                     }
                 },
                 80: {
-                    sizeMM: '80',
-                    minInletPressureKPA: '200',
-                    maxInletPressureKPA: '2000',
-                    minFlowRateLS: '7.5',
-                    maxFlowRateLS: '12',
+                    sizeMM: "80",
+                    minInletPressureKPA: "200",
+                    maxInletPressureKPA: "2000",
+                    minFlowRateLS: "7.5",
+                    maxFlowRateLS: "12",
                     pressureLossKPAByFlowRateLS: {
-                        7.51: '85',
-                        9: '85',
-                        11: '87',
-                        12: '88',
+                        7.51: "85",
+                        9: "85",
+                        11: "87",
+                        12: "88"
                     }
                 },
                 100: {
-                    sizeMM: '100',
-                    minInletPressureKPA: '200',
-                    maxInletPressureKPA: '2000',
-                    minFlowRateLS: '12',
-                    maxFlowRateLS: '20',
+                    sizeMM: "100",
+                    minInletPressureKPA: "200",
+                    maxInletPressureKPA: "2000",
+                    minFlowRateLS: "12",
+                    maxFlowRateLS: "20",
                     pressureLossKPAByFlowRateLS: {
-                        12.01: '67',
-                        15: '65',
-                        18: '65',
-                        20: '65',
+                        12.01: "67",
+                        15: "65",
+                        18: "65",
+                        20: "65"
                     }
                 },
                 150: {
-                    sizeMM: '150',
-                    minInletPressureKPA: '200',
-                    maxInletPressureKPA: '2000',
-                    minFlowRateLS: '20',
-                    maxFlowRateLS: '45',
+                    sizeMM: "150",
+                    minInletPressureKPA: "200",
+                    maxInletPressureKPA: "2000",
+                    minFlowRateLS: "20",
+                    maxFlowRateLS: "45",
                     pressureLossKPAByFlowRateLS: {
-                        20.01: '74',
-                        28: '74',
-                        36: '74',
-                        45: '75',
+                        20.01: "74",
+                        28: "74",
+                        36: "74",
+                        45: "75"
                     }
-                },
+                }
             }
         }
     }

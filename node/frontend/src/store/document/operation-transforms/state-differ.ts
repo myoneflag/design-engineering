@@ -1,16 +1,15 @@
-import * as _ from 'lodash';
-import {cloneSimple} from "../../../lib/utils";
-import {OPERATION_NAMES, OperationTransformConcrete} from "./operation-transforms";
+import * as _ from "lodash";
+import { cloneSimple } from "../../../lib/utils";
+import { OPERATION_NAMES, OperationTransformConcrete } from "./operation-transforms";
 
 // Returns the diff object. If no diff, returns undefined.
 export function diffObject(before: any, after: any, filter: any): any {
     if (before === undefined || after === undefined) {
-        throw new Error('Parent caller shouldn\'t have recursed');
+        throw new Error("Parent caller shouldn't have recursed");
     }
 
     if (_.isArray(before)) {
         if (_.isArray(after)) {
-
             if (_.isEqual(before, after)) {
                 return undefined;
             }
@@ -21,7 +20,6 @@ export function diffObject(before: any, after: any, filter: any): any {
         if (_.isArray(after)) {
             return cloneSimple(after);
         } else if (_.isObject(after)) {
-
             const result: any = {};
             let toIter: string[] = [];
             if (filter) {
@@ -39,7 +37,7 @@ export function diffObject(before: any, after: any, filter: any): any {
                     }
                 } else if (before.hasOwnProperty(key)) {
                     // we use {} to signal a deleted object (undefined is not valid JSON).
-                    result[key] = {deleted: true};
+                    result[key] = { deleted: true };
                 } else if (after.hasOwnProperty(key)) {
                     // new item
                     result[key] = cloneSimple((after as any)[key]);
@@ -52,7 +50,6 @@ export function diffObject(before: any, after: any, filter: any): any {
         } else {
             return cloneSimple(after);
         }
-
     } else {
         // primitive
         if (before === after) {
@@ -72,7 +69,7 @@ export function diffState(before: any, after: any, filter: any): OperationTransf
             type: OPERATION_NAMES.DIFF_OPERATION,
             diff,
             inverse: diffObject(after, before, filter),
-            id: -1,
+            id: -1
         }
     ];
 }

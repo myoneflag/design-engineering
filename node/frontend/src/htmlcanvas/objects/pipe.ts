@@ -1,39 +1,47 @@
-import BackedDrawableObject from '../../../src/htmlcanvas/lib/backed-drawable-object';
-import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
-import PipeEntity, {fillPipeDefaultFields, MutablePipe} from '../../../src/store/document/entities/pipe-entity';
-import * as TM from 'transformation-matrix';
-import {Matrix} from 'transformation-matrix';
-import {CalculationFilters, Coord, Coord3D, DocumentState} from '../../../src/store/document/types';
-import {matrixScale} from '../../../src/htmlcanvas/utils';
-import Flatten from '@flatten-js/core';
-import {Draggable, DraggableObject} from '../../../src/htmlcanvas/lib/object-traits/draggable-object';
-import * as _ from 'lodash';
-import {canonizeAngleRad, cloneSimple, lighten} from '../../../src/lib/utils';
-import {Interaction, InteractionType} from '../../../src/htmlcanvas/lib/interaction';
-import {DrawingContext, GlobalStore} from '../../../src/htmlcanvas/lib/types';
-import DrawableObjectFactory from '../../../src/htmlcanvas/lib/drawable-object-factory';
-import {EntityType} from '../../../src/store/document/entities/types';
-import BackedConnectable, {BaseBackedConnectable} from '../../../src/htmlcanvas/lib/BackedConnectable';
-import {PipeMaterial, PipeSpec} from '../../../src/store/catalog/types';
-import {interpolateTable, lowerBoundTable, parseCatalogNumberExact} from '../../../src/htmlcanvas/lib/utils';
-import {CalculationContext} from '../../../src/calculations/types';
-import {ConnectableEntityConcrete, DrawableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
-import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
-import {SelectableObject} from '../../../src/htmlcanvas/lib/object-traits/selectable';
-import uuid from 'uuid';
-import FittingEntity from '../../../src/store/document/entities/fitting-entity';
-import assert from 'assert';
-import {PIPE_STUB_MAX_LENGTH_MM} from '../../../src/htmlcanvas/lib/black-magic/auto-connect';
-import {getDarcyWeisbachFlatMH} from '../../../src/calculations/pressure-drops';
-import {SIGNIFICANT_FLOW_THRESHOLD} from '../../../src/htmlcanvas/layers/calculation-layer';
-import {FlowNode} from '../../../src/calculations/calculation-engine';
-import {DrawingArgs} from '../../../src/htmlcanvas/lib/drawable-object';
-import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
-import PipeCalculation from '../../../src/store/document/calculations/pipe-calculation';
-import {Calculated, CalculatedObject, FIELD_HEIGHT} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
-import {isConnectable} from "../../store/document";
-import Cached from '../lib/cached';
-import {determineConnectableNetwork} from "../../store/document/entities/directed-valves/directed-valve-entity";
+import BackedDrawableObject from "../../../src/htmlcanvas/lib/backed-drawable-object";
+import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
+import PipeEntity, { fillPipeDefaultFields, MutablePipe } from "../../../src/store/document/entities/pipe-entity";
+import * as TM from "transformation-matrix";
+import { Matrix } from "transformation-matrix";
+import { CalculationFilters, Coord, Coord3D, DocumentState } from "../../../src/store/document/types";
+import { matrixScale } from "../../../src/htmlcanvas/utils";
+import Flatten from "@flatten-js/core";
+import { Draggable, DraggableObject } from "../../../src/htmlcanvas/lib/object-traits/draggable-object";
+import * as _ from "lodash";
+import { canonizeAngleRad, cloneSimple, lighten } from "../../../src/lib/utils";
+import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
+import { DrawingContext} from "../../../src/htmlcanvas/lib/types";
+import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
+import { EntityType } from "../../../src/store/document/entities/types";
+import BackedConnectable, { BaseBackedConnectable } from "../../../src/htmlcanvas/lib/BackedConnectable";
+import { PipeMaterial, PipeSpec } from "../../../src/store/catalog/types";
+import { interpolateTable, lowerBoundTable, parseCatalogNumberExact } from "../../../src/htmlcanvas/lib/utils";
+import { CalculationContext } from "../../../src/calculations/types";
+import {
+    ConnectableEntityConcrete,
+    DrawableEntityConcrete
+} from "../../../src/store/document/entities/concrete-entity";
+import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
+import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
+import uuid from "uuid";
+import FittingEntity from "../../../src/store/document/entities/fitting-entity";
+import assert from "assert";
+import { PIPE_STUB_MAX_LENGTH_MM } from "../../../src/htmlcanvas/lib/black-magic/auto-connect";
+import { getDarcyWeisbachFlatMH } from "../../../src/calculations/pressure-drops";
+import { SIGNIFICANT_FLOW_THRESHOLD } from "../../../src/htmlcanvas/layers/calculation-layer";
+import { FlowNode } from "../../../src/calculations/calculation-engine";
+import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
+import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
+import PipeCalculation from "../../../src/store/document/calculations/pipe-calculation";
+import {
+    Calculated,
+    CalculatedObject,
+    FIELD_HEIGHT
+} from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
+import { isConnectable } from "../../store/document";
+import Cached from "../lib/cached";
+import { determineConnectableNetwork } from "../../store/document/entities/directed-valves/directed-valve-entity";
+import { GlobalStore } from "../lib/global-store";
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 3.5;
@@ -42,6 +50,27 @@ export const MIN_PIPE_PIXEL_WIDTH = 3.5;
 @SelectableObject
 @DraggableObject
 export default class Pipe extends BackedDrawableObject<PipeEntity> implements Draggable, Calculated {
+    get position(): Matrix {
+        // We don't draw by object location because the object doesn't really have an own location. Instead, its
+        // location is determined by other objects.
+        return TM.identity();
+    }
+
+    get lastDrawnWidth() {
+        if (this.lastDrawnWidthInternal !== undefined) {
+            return this.lastDrawnWidthInternal;
+        }
+        return 10;
+    }
+
+    set lastDrawnWidth(value: number) {
+        this.lastDrawnWidthInternal = value;
+    }
+
+    get computedLengthM(): number {
+        const [wa, wb] = this.worldEndpoints();
+        return Math.sqrt((wa.x - wb.x) ** 2 + (wa.y - wb.y) ** 2 + (wa.z - wb.z) ** 2) / 1000;
+    }
 
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.PIPE, Pipe);
@@ -50,14 +79,8 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
     lastDrawnLine!: Flatten.Segment | Flatten.Point;
     lastDrawnWidthInternal!: number;
 
-    get position(): Matrix {
-        // We don't draw by object location because the object doesn't really have an own location. Instead, its
-        // location is determined by other objects.
-        return TM.identity();
-    }
-
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
-        const {ctx, vp} = context;
+        const { ctx, vp } = context;
         // Manage to draw on screen first
 
         if (!context.globalStore.getCalculation(this.entity)) {
@@ -71,9 +94,9 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
         const results: TM.Matrix[] = [];
 
-        [0.5, 0.60, 0.40, 0.70, 0.30, 0.80, 0.20, 0.90, 0.10].forEach((ratio) => {
-            const avgx = (shape.start.x * ratio + shape.end.x * (1 - ratio));
-            const avgy = (shape.start.y * ratio + shape.end.y * (1 - ratio));
+        [0.5, 0.6, 0.4, 0.7, 0.3, 0.8, 0.2, 0.9, 0.1].forEach((ratio) => {
+            const avgx = shape.start.x * ratio + shape.end.x * (1 - ratio);
+            const avgy = shape.start.y * ratio + shape.end.y * (1 - ratio);
 
             const length = vp.toScreenLength(shape.length);
 
@@ -93,7 +116,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                     TM.translate(avgx, avgy),
                     TM.rotate(-angle),
                     TM.scale(scale, scale),
-                    TM.translate(0, 0),
+                    TM.translate(0, 0)
                 ),
 
                 TM.transform(
@@ -101,7 +124,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                     TM.translate(avgx, avgy),
                     TM.rotate(-angle),
                     TM.scale(scale, scale),
-                    TM.translate(0, (+ data.length * FIELD_HEIGHT) / 3),
+                    TM.translate(0, (+data.length * FIELD_HEIGHT) / 3)
                 ),
 
                 TM.transform(
@@ -109,15 +132,15 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                     TM.translate(avgx, avgy),
                     TM.rotate(-angle),
                     TM.scale(scale, scale),
-                    TM.translate(0, (- data.length * FIELD_HEIGHT) / 3),
-                ),
+                    TM.translate(0, (-data.length * FIELD_HEIGHT) / 3)
+                )
             );
         });
         return results;
     }
 
     drawCalculations(context: DrawingContext, filters: CalculationFilters) {
-        const {ctx, vp} = context;
+        const { ctx, vp } = context;
         // Manage to draw on screen first
 
         if (!context.globalStore.getCalculation(this.entity)) {
@@ -149,7 +172,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
 
         ctx.rotate(-angle);
-        ctx.translate(0, - this.lastDrawnWidthInternal / 2);
+        ctx.translate(0, -this.lastDrawnWidthInternal / 2);
 
         const s = matrixScale(ctx.getTransform());
         if (s > TEXT_MAX_SCALE) {
@@ -160,8 +183,8 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         ctx.setTransform(oTM);
     }
 
-    drawInternal(context: DrawingContext, {active, selected, calculationFilters}: DrawingArgs): void {
-        const {ctx, doc} = context;
+    drawInternal(context: DrawingContext, { active, selected, calculationFilters }: DrawingArgs): void {
+        const { ctx, doc } = context;
         const s = matrixScale(ctx.getTransform());
 
         // lol what are our coordinates
@@ -182,16 +205,19 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                     targetWWidth = calculation.realNominalPipeDiameterMM;
                 }
             }
-            if (calculation && calculation.peakFlowRate !== null &&
-                calculation.peakFlowRate < SIGNIFICANT_FLOW_THRESHOLD) {
-                baseColor = '#aaaaaa';
+            if (
+                calculation &&
+                calculation.peakFlowRate !== null &&
+                calculation.peakFlowRate < SIGNIFICANT_FLOW_THRESHOLD
+            ) {
+                baseColor = "#aaaaaa";
             }
             if (!calculation || calculation.peakFlowRate === null) {
                 ctx.setLineDash([baseWidth * 3, baseWidth * 3]);
             }
         }
 
-        ctx.lineCap = 'round';
+        ctx.lineCap = "round";
         if (active && selected) {
             ctx.beginPath();
             ctx.lineWidth = baseWidth + 6.0 / s;
@@ -220,56 +246,55 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
     }
 
-    get lastDrawnWidth() {
-        if (this.lastDrawnWidthInternal !== undefined) {
-            return this.lastDrawnWidthInternal;
-        }
-        return 10;
-    }
-
-    set lastDrawnWidth(value: number) {
-        this.lastDrawnWidthInternal = value;
-    }
-
     // Returns the world coordinates of the two endpoints
     @Cached(
         (kek) => {
-            return new Set([kek, ...kek.getNeighbours().map((o) => o.getParentChain()).flat()].map((o) => o.uid));
+            return new Set(
+                [
+                    kek,
+                    ...kek
+                        .getNeighbours()
+                        .map((o) => o.getParentChain())
+                        .flat()
+                ].map((o) => o.uid)
+            );
         },
-                (excludeUid) => excludeUid,
+        (excludeUid) => excludeUid
     )
     worldEndpoints(excludeUid: string | null = null): Coord3D[] {
         const ao = this.objectStore.get(this.entity.endpointUid[0]) as BaseBackedConnectable;
         const bo = this.objectStore.get(this.entity.endpointUid[1]) as BaseBackedConnectable;
         if (!ao || !bo) {
-            throw new Error('One of pipe\'s endpoints are missing. Pipe is: ' + JSON.stringify(this.entity));
+            throw new Error("One of pipe's endpoints are missing. Pipe is: " + JSON.stringify(this.entity));
         }
         if (ao && bo) {
             const res: Coord3D[] = [];
             if ((ao.entity.calculationHeightM === null) !== (bo.entity.calculationHeightM === null)) {
-                throw new Error('We are working with a 3d object and a 2d object - not allowed \n' +
-                    JSON.stringify(ao.entity) + '\n' +
-                    JSON.stringify(bo.entity),
+                throw new Error(
+                    "We are working with a 3d object and a 2d object - not allowed \n" +
+                        JSON.stringify(ao.entity) +
+                        "\n" +
+                        JSON.stringify(bo.entity)
                 );
             }
             if (ao.uid !== excludeUid) {
-                const a = ao.toWorldCoord({x: 0, y: 0});
-                res.push({x: a.x, y: a.y, z: (ao.entity.calculationHeightM || 0) * 1000});
+                const a = ao.toWorldCoord({ x: 0, y: 0 });
+                res.push({ x: a.x, y: a.y, z: (ao.entity.calculationHeightM || 0) * 1000 });
             }
             if (bo.uid !== excludeUid) {
-                const b = bo.toWorldCoord({x: 0, y: 0});
-                res.push({x: b.x, y: b.y, z: (bo.entity.calculationHeightM || 0) * 1000});
+                const b = bo.toWorldCoord({ x: 0, y: 0 });
+                res.push({ x: b.x, y: b.y, z: (bo.entity.calculationHeightM || 0) * 1000 });
             }
             return res;
         } else {
-            throw new Error('One of pipe\'s endpoints are missing. Pipe is: ' + JSON.stringify(this.entity));
+            throw new Error("One of pipe's endpoints are missing. Pipe is: " + JSON.stringify(this.entity));
         }
     }
 
     project(wc: Coord, minWorldEndpointDist: number = 0): Coord {
         const snipped = this.snipEnds(minWorldEndpointDist);
         const p = Flatten.point(wc.x, wc.y).distanceTo(snipped)[1];
-        return {x: p.end.x, y: p.end.y};
+        return { x: p.end.x, y: p.end.y };
     }
 
     inBounds(oc: Coord, radius: number = 0): boolean {
@@ -281,15 +306,9 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         return shape.distanceTo(new Flatten.Point(oc.x, oc.y))[0] < width + radius;
     }
 
-    get computedLengthM(): number {
-        const [wa, wb] = this.worldEndpoints();
-        return Math.sqrt((wa.x - wb.x) ** 2 + (wa.y - wb.y) ** 2 + (wa.z - wb.z) ** 2) / 1000;
-    }
-
     displayObject(doc: DocumentState): PipeEntity {
         return fillPipeDefaultFields(doc.drawing, this.computedLengthM, this.entity);
     }
-
 
     onDragStart(event: MouseEvent, objectCoord: Coord, context: CanvasContext, isMultiDrag: boolean): PipeDragState {
         const eps = this.worldEndpoints();
@@ -298,7 +317,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         return {
             a2b: Flatten.vector(a, b),
             normal: Flatten.vector(a, b).rotate90CCW(),
-            pointOnPipe: _.cloneDeep(this.worldEndpoints()[0]),
+            pointOnPipe: _.cloneDeep(this.worldEndpoints()[0])
         };
     }
 
@@ -307,7 +326,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         epUid: string,
         direction: Flatten.Vector,
         isStraight: boolean, // we need a precomputed variable because the object changes during a move.
-        context: CanvasContext,
+        context: CanvasContext
     ): FittingEntity | boolean {
         const o = this.objectStore.get(epUid) as BackedConnectable<ConnectableEntityConcrete>;
         const e = o.entity as ConnectableEntityConcrete;
@@ -334,43 +353,41 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 network: determineConnectableNetwork(this.objectStore, e)!,
                 systemUid: this.entity.systemUid,
                 type: EntityType.PIPE,
-                uid: uuid(),
+                uid: uuid()
             };
 
-
             const perp = direction.rotate90CCW();
-            const fromWc = o.toWorldCoord({x: 0, y: 0});
+            const fromWc = o.toWorldCoord({ x: 0, y: 0 });
             const perpLine = Flatten.line(Flatten.point(fromWc.x, fromWc.y), perp.rotate90CCW());
             const projLine = Flatten.line(Flatten.point(pointWc.x, pointWc.y), direction.rotate90CCW());
             const newLoc = perpLine.intersect(projLine);
             assert(newLoc.length === 1);
 
             const valve: FittingEntity = {
-                center: {x: newLoc[0].x, y: newLoc[0].y},
+                center: { x: newLoc[0].x, y: newLoc[0].y },
                 color: this.entity.color,
                 parentUid: null,
                 calculationHeightM: null,
                 systemUid: this.entity.systemUid,
                 type: EntityType.FITTING,
-                uid: newValveUid,
+                uid: newValveUid
             };
 
             if (this.entity.endpointUid[0] === epUid) {
-
-                context.$store.dispatch('document/updatePipeEndpoints', {
+                context.$store.dispatch("document/updatePipeEndpoints", {
                     entity: this.entity,
-                    endpoints: [newValveUid, this.entity.endpointUid[1]],
+                    endpoints: [newValveUid, this.entity.endpointUid[1]]
                 });
             } else {
                 assert(this.entity.endpointUid[1] === epUid);
-                context.$store.dispatch('document/updatePipeEndpoints', {
+                context.$store.dispatch("document/updatePipeEndpoints", {
                     entity: this.entity,
-                    endpoints: [this.entity.endpointUid[0], newValveUid],
+                    endpoints: [this.entity.endpointUid[0], newValveUid]
                 });
             }
 
-            context.$store.dispatch('document/addEntity', pipe);
-            context.$store.dispatch('document/addEntity', valve);
+            context.$store.dispatch("document/addEntity", pipe);
+            context.$store.dispatch("document/addEntity", valve);
 
             return valve;
         } else {
@@ -386,7 +403,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             const nwp = projLine.intersect(incident);
             assert(nwp.length === 1);
             o.debase();
-            o.entity.center = {x: nwp[0].x, y: nwp[0].y};
+            o.entity.center = { x: nwp[0].x, y: nwp[0].y };
             o.rebase(context);
 
             return true;
@@ -399,10 +416,10 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         eventObjectCoord: Coord,
         grabState: PipeDragState,
         context: CanvasContext,
-        isMultiDrag: boolean,
+        isMultiDrag: boolean
     ) {
         if (!isMultiDrag) {
-            context.$store.dispatch('document/revert', false);
+            context.$store.dispatch("document/revert", false);
         }
         const needToReposition: string[] = [];
         const spawnedEntities: FittingEntity[] = [];
@@ -419,7 +436,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             if (!o.layer.isSelected(o.uid)) {
                 const newProjection = {
                     x: grabState.pointOnPipe.x + eventObjectCoord.x - grabbedObjectCoord.x,
-                    y: grabState.pointOnPipe.y + eventObjectCoord.y - grabbedObjectCoord.y,
+                    y: grabState.pointOnPipe.y + eventObjectCoord.y - grabbedObjectCoord.y
                 };
                 const res = this.projectEndpoint(newProjection, o.uid, grabState.a2b, straights[i], context);
                 if (!res) {
@@ -430,7 +447,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                     spawnedEntities.push(res);
                 }
             }
-            i ++;
+            i++;
         });
 
         if (needToReposition.length === 1) {
@@ -444,7 +461,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
                 let center: Coord;
                 if (oo) {
-                    center = oo.toWorldCoord({x: 0, y: 0});
+                    center = oo.toWorldCoord({ x: 0, y: 0 });
                 } else {
                     center = spawnedEntities[0].center;
                 }
@@ -483,20 +500,29 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         const result: BaseBackedObject[] = [this];
         const origEndpoints = cloneSimple(this.entity.endpointUid);
         if (this.objectStore instanceof GlobalStore) {
-            context.$store.dispatch('document/updatePipeEndpoints', {
+            context.$store.dispatch("document/updatePipeEndpoints", {
                 entity: this.entity,
-                endpoints: [undefined, undefined],
+                endpoints: [undefined, undefined]
             });
             for (let i = 0; i < 2; i++) {
                 const a = this.objectStore.get(origEndpoints[i]);
                 if (a instanceof BackedConnectable) {
                     result.push(...a.prepareDeleteConnection(this.entity.uid, context));
                 } else {
-                    throw new Error('endpoint non existent on pipe. non existing is ' + JSON.stringify(a) + ' ' + JSON.stringify(origEndpoints) + ' entity is ' + JSON.stringify(this.entity) + ' ' + JSON.stringify(a ? a.entity : undefined));
+                    throw new Error(
+                        "endpoint non existent on pipe. non existing is " +
+                            JSON.stringify(a) +
+                            " " +
+                            JSON.stringify(origEndpoints) +
+                            " entity is " +
+                            JSON.stringify(this.entity) +
+                            " " +
+                            JSON.stringify(a ? a.entity : undefined)
+                    );
                 }
             }
         } else {
-            throw new Error('Can only delete with global store');
+            throw new Error("Can only delete with global store");
         }
         return result;
     }
@@ -522,7 +548,8 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             case InteractionType.MOVE_ONTO_SEND:
                 return null;
             case InteractionType.EXTEND_NETWORK:
-                if (this.objectStore.get(this.entity.endpointUid[0])!.type === EntityType.SYSTEM_NODE ||
+                if (
+                    this.objectStore.get(this.entity.endpointUid[0])!.type === EntityType.SYSTEM_NODE ||
                     this.objectStore.get(this.entity.endpointUid[1])!.type === EntityType.SYSTEM_NODE
                 ) {
                     if (this.computedLengthM < PIPE_STUB_MAX_LENGTH_MM) {
@@ -551,7 +578,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
     }
 
-    getCatalogPage({drawing, catalog, globalStore}: CalculationContext): PipeMaterial | null {
+    getCatalogPage({ drawing, catalog, globalStore }: CalculationContext): PipeMaterial | null {
         const computed = fillPipeDefaultFields(drawing, this.computedLengthM, this.entity);
         if (!computed.material) {
             return null;
@@ -564,7 +591,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
     }
 
     getCatalogBySizePage(context: CalculationContext): PipeSpec | null {
-        const {drawing} = context;
+        const { drawing } = context;
 
         const calculation = context.globalStore.getCalculation(this.entity);
         const computed = fillPipeDefaultFields(drawing, this.computedLengthM, this.entity);
@@ -575,10 +602,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         if (!material) {
             return null;
         }
-        const tableVal = lowerBoundTable(
-            material.pipesBySize,
-            calculation.realNominalPipeDiameterMM,
-        );
+        const tableVal = lowerBoundTable(material.pipesBySize, calculation.realNominalPipeDiameterMM);
         return tableVal;
     }
 
@@ -595,31 +619,33 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             const ps2m = Flatten.vector(l.ps, middle);
             ts = Flatten.segment(
                 l.pe.translate(pe2m.normalize().multiply(worldLength)),
-                l.ps.translate(ps2m.normalize().multiply(worldLength)),
+                l.ps.translate(ps2m.normalize().multiply(worldLength))
             );
         }
         return ts;
     }
 
     @Cached(
-        (kek) => new Set(
-            [kek]
-                .map((o) => [o, o.getNeighbours(), o.getParentChain()])
-                .flat(2)
-                .map((o) => o.getParentChain())
-                .flat()
-                .map((o) => o.uid)
-        ),
-        (context, flowLS, from, to, signed) => flowLS + from.connectable + to.connectable + signed,
+        (kek) =>
+            new Set(
+                [kek]
+                    .map((o) => [o, o.getNeighbours(), o.getParentChain()])
+                    .flat(2)
+                    .map((o) => o.getParentChain())
+                    .flat()
+                    .map((o) => o.uid)
+            ),
+        (context, flowLS, from, to, signed) => flowLS + from.connectable + to.connectable + signed
     )
-    getFrictionHeadLoss(context: CalculationContext,
-                        flowLS: number,
-                        from: FlowNode,
-                        to: FlowNode,
-                        signed: boolean,
+    getFrictionHeadLoss(
+        context: CalculationContext,
+        flowLS: number,
+        from: FlowNode,
+        to: FlowNode,
+        signed: boolean
     ): number | null {
         const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
-        const {drawing, catalog, globalStore} = context;
+        const { drawing, catalog, globalStore } = context;
         const entity = this.entity;
         let sign = 1;
         if (flowLS < 0) {
@@ -635,9 +661,11 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         const system = drawing.metadata.flowSystems.find((s) => s.uid === entity.systemUid)!;
         const fluid = catalog.fluids[system.fluid];
 
-        const volLM = parseCatalogNumberExact(
-            context.globalStore.getCalculation(this.entity)!.realInternalDiameterMM
-        )! ** 2 * Math.PI / 4 / 1000;
+        const volLM =
+            (parseCatalogNumberExact(context.globalStore.getCalculation(this.entity)!.realInternalDiameterMM)! ** 2 *
+                Math.PI) /
+            4 /
+            1000;
         const velocityMS = flowLS / volLM;
 
         const page = this.getCatalogBySizePage(context);
@@ -647,36 +675,38 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
         const dynamicViscosity = parseCatalogNumberExact(
             // TODO: get temperature of the pipe.
-            interpolateTable(fluid.dynamicViscosityByTemperature, system.temperature),
+            interpolateTable(fluid.dynamicViscosityByTemperature, system.temperature)
         );
 
-        const retval = sign * getDarcyWeisbachFlatMH(
-            parseCatalogNumberExact(page.diameterInternalMM)!,
-            parseCatalogNumberExact(page.colebrookWhiteCoefficient)!,
-            parseCatalogNumberExact(fluid.densityKGM3)!,
-            dynamicViscosity!,
-            this.entity.lengthM == null ? this.computedLengthM : this.entity.lengthM,
-            velocityMS,
-            ga,
-        );
+        const retval =
+            sign *
+            getDarcyWeisbachFlatMH(
+                parseCatalogNumberExact(page.diameterInternalMM)!,
+                parseCatalogNumberExact(page.colebrookWhiteCoefficient)!,
+                parseCatalogNumberExact(fluid.densityKGM3)!,
+                dynamicViscosity!,
+                this.entity.lengthM == null ? this.computedLengthM : this.entity.lengthM,
+                velocityMS,
+                ga
+            );
 
         let heightHeadLoss = 0;
         const fromo = context.globalStore.get(from.connectable) as BaseBackedConnectable;
         const too = context.globalStore.get(to.connectable) as BaseBackedConnectable;
 
         if (!this.entity.endpointUid.includes(from.connectable) || !this.entity.endpointUid.includes(to.connectable)) {
-            throw new Error('asking for flow from endpoints that don\'t exist');
+            throw new Error("asking for flow from endpoints that don't exist");
         }
 
         if (fromo.entity.calculationHeightM !== null) {
             if (too.entity.calculationHeightM === null) {
-                throw new Error('inconsistent 2d/3d paradigm');
+                throw new Error("inconsistent 2d/3d paradigm");
             }
-            heightHeadLoss = (too.entity.calculationHeightM - fromo.entity.calculationHeightM);
+            heightHeadLoss = too.entity.calculationHeightM - fromo.entity.calculationHeightM;
         } else if (too.entity.calculationHeightM !== null) {
-            throw new Error('inconsistent 2d/3d paradigm');
+            throw new Error("inconsistent 2d/3d paradigm");
         } else {
-            throw new Error('pipe ' + this.uid + ' with no 3d');
+            throw new Error("pipe " + this.uid + " with no 3d");
         }
 
         return retval + heightHeadLoss;
@@ -684,27 +714,26 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
     getCalculationEntities(context: CalculationContext): [PipeEntity] {
         const pe = cloneSimple(this.entity);
-        pe.uid += '.calculation';
+        pe.uid += ".calculation";
         (pe as MutablePipe).endpointUid = [
-            (this.objectStore.get(pe.endpointUid[0]) as BaseBackedConnectable)
-                .getCalculationNode(context, this.uid).uid,
+            (this.objectStore.get(pe.endpointUid[0]) as BaseBackedConnectable).getCalculationNode(context, this.uid)
+                .uid,
 
-            (this.objectStore.get(pe.endpointUid[1]) as BaseBackedConnectable)
-                .getCalculationNode(context, this.uid).uid,
+            (this.objectStore.get(pe.endpointUid[1]) as BaseBackedConnectable).getCalculationNode(context, this.uid).uid
         ];
         return [pe];
     }
 
     collectCalculations(context: CalculationContext): PipeCalculation {
-        return context.globalStore.getOrCreateCalculation(this.getCalculationEntities(context)[0])
-    }
-
-    protected refreshObjectInternal(obj: PipeEntity): void {
-        //
+        return context.globalStore.getOrCreateCalculation(this.getCalculationEntities(context)[0]);
     }
 
     getNeighbours(): BaseBackedObject[] {
         return this.entity.endpointUid.map((uid) => this.objectStore.get(uid)!);
+    }
+
+    protected refreshObjectInternal(obj: PipeEntity): void {
+        //
     }
 }
 

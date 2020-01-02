@@ -31,9 +31,9 @@ export class FlowAssignment extends Map<string, [number, string]> {
     }
 
     toString() {
-        let repr = '';
+        let repr = "";
         this.forEach((v, k) => {
-            repr += stringify(k) + ' ====> ' + stringify(v) + '\n\n';
+            repr += stringify(k) + " ====> " + stringify(v) + "\n\n";
         });
         return repr;
     }

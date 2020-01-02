@@ -1,16 +1,19 @@
-import Pipe from '../../../../src/htmlcanvas/objects/pipe';
-import {Coord} from '../../../../src/store/document/types';
-import CanvasContext from '../../../../src/htmlcanvas/lib/canvas-context';
-import PipeEntity from '../../../../src/store/document/entities/pipe-entity';
-import {EntityType} from '../../../../src/store/document/entities/types';
-import uuid from 'uuid';
-import BackedConnectable from '../../../../src/htmlcanvas/lib/BackedConnectable';
-import {ConnectableEntityConcrete, DrawableEntityConcrete} from '../../../../src/store/document/entities/concrete-entity';
-import {getInsertCoordsAt} from '../../../../src/htmlcanvas/lib/utils';
-import {MagicResult} from '../../../../src/htmlcanvas/lib/black-magic/index';
-import FittingEntity from '../../../../src/store/document/entities/fitting-entity';
-import Fitting from '../../../../src/htmlcanvas/objects/fitting';
-import {rebaseAll} from '../../../../src/htmlcanvas/lib/black-magic/rebase-all';
+import Pipe from "../../../../src/htmlcanvas/objects/pipe";
+import { Coord } from "../../../../src/store/document/types";
+import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
+import PipeEntity from "../../../../src/store/document/entities/pipe-entity";
+import { EntityType } from "../../../../src/store/document/entities/types";
+import uuid from "uuid";
+import BackedConnectable from "../../../../src/htmlcanvas/lib/BackedConnectable";
+import {
+    ConnectableEntityConcrete,
+    DrawableEntityConcrete
+} from "../../../../src/store/document/entities/concrete-entity";
+import { getInsertCoordsAt } from "../../../../src/htmlcanvas/lib/utils";
+import { MagicResult } from "../../../../src/htmlcanvas/lib/black-magic/index";
+import FittingEntity from "../../../../src/store/document/entities/fitting-entity";
+import Fitting from "../../../../src/htmlcanvas/objects/fitting";
+import { rebaseAll } from "../../../../src/htmlcanvas/lib/black-magic/rebase-all";
 
 export function addValveAndSplitPipe(
     context: CanvasContext,
@@ -18,7 +21,7 @@ export function addValveAndSplitPipe(
     hoverWc: Coord,
     system?: string,
     minDistToEndpoint: number = 0,
-    newValve?: ConnectableEntityConcrete,
+    newValve?: ConnectableEntityConcrete
 ): MagicResult {
     hoverWc = pipe.project(hoverWc, minDistToEndpoint);
 
@@ -44,11 +47,11 @@ export function addValveAndSplitPipe(
             systemUid: system,
             calculationHeightM: null,
             type: EntityType.FITTING,
-            uid: uuid(),
+            uid: uuid()
         };
         created.push(newValve);
 
-        context.$store.dispatch('document/addEntity', newValve);
+        context.$store.dispatch("document/addEntity", newValve);
     } else {
         const nvo = context.objectStore.get(newValve.uid) as BackedConnectable<ConnectableEntityConcrete>;
 
@@ -68,7 +71,7 @@ export function addValveAndSplitPipe(
         systemUid: pipe.entity.systemUid,
         network: pipe.entity.network,
         type: EntityType.PIPE,
-        uid: pipe1uid,
+        uid: pipe1uid
     };
 
     const newPipe2: PipeEntity = {
@@ -83,12 +86,12 @@ export function addValveAndSplitPipe(
         systemUid: pipe.entity.systemUid,
         network: pipe.entity.network,
         type: EntityType.PIPE,
-        uid: pipe2uid,
+        uid: pipe2uid
     };
     const puid = pipe.uid;
-    context.$store.dispatch('document/deleteEntity', pipe.entity);
-    context.$store.dispatch('document/addEntity', newPipe1);
-    context.$store.dispatch('document/addEntity', newPipe2);
+    context.$store.dispatch("document/deleteEntity", pipe.entity);
+    context.$store.dispatch("document/addEntity", newPipe1);
+    context.$store.dispatch("document/addEntity", newPipe2);
 
     created.push(newPipe1, newPipe2);
 
@@ -99,6 +102,6 @@ export function addValveAndSplitPipe(
     return {
         deleted: [puid],
         created,
-        focus: newValve,
+        focus: newValve
     };
 }

@@ -1,17 +1,19 @@
 import {
     Color,
     DocumentState,
-    DrawableEntity, DrawingState,
-    FlowSystemParameters, NetworkType,
-    WithID,
-} from '../../../../src/store/document/types';
-import {FieldType, PropertyField} from '../../../../src/store/document/entities/property-field';
-import * as _ from 'lodash';
-import BackedDrawableObject from '../../../../src/htmlcanvas/lib/backed-drawable-object';
-import {EntityType} from '../../../../src/store/document/entities/types';
-import PipeCalculation from '../../../../src/store/document/calculations/pipe-calculation';
-import {Choice} from '../../../../src/lib/types';
-import {cloneSimple} from '../../../../src/lib/utils';
+    DrawableEntity,
+    DrawingState,
+    FlowSystemParameters,
+    NetworkType,
+    WithID
+} from "../../../../src/store/document/types";
+import { FieldType, PropertyField } from "../../../../src/store/document/entities/property-field";
+import * as _ from "lodash";
+import BackedDrawableObject from "../../../../src/htmlcanvas/lib/backed-drawable-object";
+import { EntityType } from "../../../../src/store/document/entities/types";
+import PipeCalculation from "../../../../src/store/document/calculations/pipe-calculation";
+import { Choice } from "../../../../src/lib/types";
+import { cloneSimple } from "../../../../src/lib/utils";
 
 export default interface PipeEntity extends DrawableEntity {
     type: EntityType.PIPE;
@@ -39,40 +41,94 @@ export interface MutablePipe {
 
 export function makePipeFields(materials: Choice[], systems: FlowSystemParameters[]): PropertyField[] {
     return [
-        { property: 'systemUid', title: 'Flow System', hasDefault: false, isCalculated: false,
-            type: FieldType.FlowSystemChoice, params: { systems },  multiFieldId: 'systemUid' },
-        { property: 'network', title: 'Network Type', hasDefault: false, isCalculated: false,
-            type: FieldType.Choice,  multiFieldId: 'network', params: { choices: [
-                    { name: 'Riser', key: NetworkType.RISERS, disabled: true },
-                    { name: 'Reticulation', key: NetworkType.RETICULATIONS, disabled: false },
-                    { name: 'Connection', key: NetworkType.CONNECTIONS, disabled: false },
-                ]} },
+        {
+            property: "systemUid",
+            title: "Flow System",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.FlowSystemChoice,
+            params: { systems },
+            multiFieldId: "systemUid"
+        },
+        {
+            property: "network",
+            title: "Network Type",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.Choice,
+            multiFieldId: "network",
+            params: {
+                choices: [
+                    { name: "Riser", key: NetworkType.RISERS, disabled: true },
+                    { name: "Reticulation", key: NetworkType.RETICULATIONS, disabled: false },
+                    { name: "Connection", key: NetworkType.CONNECTIONS, disabled: false }
+                ]
+            }
+        },
 
-        { property: 'material', title: 'Material', hasDefault: true, isCalculated: false,
-            type: FieldType.Choice, params: { choices: materials },  multiFieldId: 'material' },
+        {
+            property: "material",
+            title: "Material",
+            hasDefault: true,
+            isCalculated: false,
+            type: FieldType.Choice,
+            params: { choices: materials },
+            multiFieldId: "material"
+        },
 
-        { property: 'lengthM', title: 'Length (m)', hasDefault: false, isCalculated: true,
-            type: FieldType.Number, params: { min: 0, max: null, initialValue: 0 },  multiFieldId: null },
+        {
+            property: "lengthM",
+            title: "Length (m)",
+            hasDefault: false,
+            isCalculated: true,
+            type: FieldType.Number,
+            params: { min: 0, max: null, initialValue: 0 },
+            multiFieldId: null
+        },
 
-        { property: 'color', title: 'Color:', hasDefault: true, isCalculated: false,
-            type: FieldType.Color, params: null,  multiFieldId: 'color' },
+        {
+            property: "color",
+            title: "Color:",
+            hasDefault: true,
+            isCalculated: false,
+            type: FieldType.Color,
+            params: null,
+            multiFieldId: "color"
+        },
 
-        { property: 'maximumVelocityMS', title: 'Maximum Velocity (m/s)', hasDefault: true, isCalculated: false,
-            type: FieldType.Number, params: { min: 0, max: null },  multiFieldId: 'maximumVelocityMS' },
+        {
+            property: "maximumVelocityMS",
+            title: "Maximum Velocity (m/s)",
+            hasDefault: true,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: 0, max: null },
+            multiFieldId: "maximumVelocityMS"
+        },
 
-        { property: 'diameterMM', title: 'Diameter', hasDefault: false, isCalculated: true,
-            type: FieldType.Number, params: { min: 0, max: null, initialValue: 50 },  multiFieldId: 'diameterMM' },
+        {
+            property: "diameterMM",
+            title: "Diameter",
+            hasDefault: false,
+            isCalculated: true,
+            type: FieldType.Number,
+            params: { min: 0, max: null, initialValue: 50 },
+            multiFieldId: "diameterMM"
+        },
 
-        { property: 'heightAboveFloorM', title: 'Height Above Floor (m)', hasDefault: false, isCalculated: false,
-            type: FieldType.Number, params: { min: null, max: null },  multiFieldId: 'heightAboveFloorM' },
+        {
+            property: "heightAboveFloorM",
+            title: "Height Above Floor (m)",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: null, max: null },
+            multiFieldId: "heightAboveFloorM"
+        }
     ];
 }
 
-export function fillPipeDefaultFields(
-    drawing: DrawingState,
-    computedLengthM: number,
-    value: PipeEntity,
-) {
+export function fillPipeDefaultFields(drawing: DrawingState, computedLengthM: number, value: PipeEntity) {
     const result = cloneSimple(value);
 
     // get system
@@ -94,7 +150,7 @@ export function fillPipeDefaultFields(
             result.color = system.color;
         }
     } else {
-        throw new Error('Existing system not found for object ' + JSON.stringify(value));
+        throw new Error("Existing system not found for object " + JSON.stringify(value));
     }
 
     return result;

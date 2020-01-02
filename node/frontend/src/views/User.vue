@@ -1,5 +1,5 @@
-import {AccessLevel} from "../../../backend/src/entity/User";
-import {AccessLevel} from "../../../backend/src/entity/User";
+import {AccessLevel} from "../../../backend/src/entity/User"; import {AccessLevel} from
+"../../../backend/src/entity/User";
 <template>
     <div>
         <MainNavBar></MainNavBar>
@@ -18,55 +18,39 @@ import {AccessLevel} from "../../../backend/src/entity/User";
                 <b-col>
                     <template v-if="user">
                         <b-form>
-
-                            <b-form-group
-                                    :label-cols="2"
-                                    label="Username"
-                                    :disabled="true"
-                            >
+                            <b-form-group :label-cols="2" label="Username" :disabled="true">
                                 <b-form-input v-model="user.username"></b-form-input>
                             </b-form-group>
 
-                            <b-form-group
-                                    :label-cols="2"
-                                    label="Full Name"
-                            >
+                            <b-form-group :label-cols="2" label="Full Name">
                                 <b-form-input v-model="user.name"></b-form-input>
                             </b-form-group>
 
-                            <b-form-group
-                                    :label-cols="2"
-                                    label="Email"
-                            >
+                            <b-form-group :label-cols="2" label="Email">
                                 <b-form-input :required="false" type="email" v-model="user.email"></b-form-input>
                             </b-form-group>
 
-                            <b-form-group
-                                    :label-cols="3"
-                                    label="Subscribe"
-                            >
+                            <b-form-group :label-cols="3" label="Subscribe">
                                 <b-form-checkbox v-model="user.subscribed">
                                     Subscribe to "Contact Us" messages?
                                 </b-form-checkbox>
                             </b-form-group>
 
-                            <b-form-group
-                                    :label-cols="2"
-                                    label="Organization ID"
-                            >
+                            <b-form-group :label-cols="2" label="Organization ID">
                                 <b-form-input
-                                        v-model="organization"
-                                        :disabled="!profile || profile.accessLevel >= AccessLevel.MANAGER"
+                                    v-model="organization"
+                                    :disabled="!profile || profile.accessLevel >= AccessLevel.MANAGER"
                                 ></b-form-input>
                             </b-form-group>
                             <b-button-group>
                                 <b-button
-                                        v-for="a in levels"
-                                        @click="user.accessLevel = a.level"
-                                        :disabled="a.disabled"
-                                        :pressed="a.level === user.accessLevel"
-                                        :variant="a.level === user.accessLevel ? 'primary' : 'info'"
-                                >{{ a.name }}</b-button>
+                                    v-for="a in levels"
+                                    @click="user.accessLevel = a.level"
+                                    :disabled="a.disabled"
+                                    :pressed="a.level === user.accessLevel"
+                                    :variant="a.level === user.accessLevel ? 'primary' : 'info'"
+                                    >{{ a.name }}</b-button
+                                >
                             </b-button-group>
                         </b-form>
                         <b-button variant="success" @click="save">Save</b-button>
@@ -79,19 +63,19 @@ import {AccessLevel} from "../../../backend/src/entity/User";
 </template>
 
 <script lang="ts">
-    import Vue from 'vue';
-    import Component from "vue-class-component";
-    import MainNavBar from "../components/MainNavBar.vue";
-    import {AccessLevel, User as IUser} from '../../../backend/src/entity/User';
-    import {getUser, updateUser} from "../api/users";
+import Vue from "vue";
+import Component from "vue-class-component";
+import MainNavBar from "../components/MainNavBar.vue";
+import { AccessLevel, User as IUser } from "../../../backend/src/entity/User";
+import { getUser, updateUser } from "../api/users";
 
-    @Component({
-    components: {MainNavBar},
+@Component({
+    components: { MainNavBar },
     watch: {
         $route(to, from) {
             (this as User).updateUsername(to.params.username);
-        },
-    },
+        }
+    }
 })
 export default class User extends Vue {
     user: IUser | null = null;
@@ -109,7 +93,7 @@ export default class User extends Vue {
             } else {
                 this.$bvToast.toast(res.message, {
                     title: "Error retrieving user data",
-                    variant: "danger",
+                    variant: "danger"
                 });
             }
         });
@@ -132,31 +116,25 @@ export default class User extends Vue {
                 if (res.success) {
                     this.$router.push(this.backlink);
 
-
                     if (this.user!.username === this.profile.username) {
                         this.$store.dispatch("profile/setProfile", res.data);
                     }
-
                 } else {
                     this.$bvToast.toast(res.message, {
                         title: "Error saving organization",
-                        variant: "danger",
+                        variant: "danger"
                     });
                 }
             });
-
         }
     }
 
-
     get profile(): IUser {
-        return this.$store.getters['profile/profile'];
+        return this.$store.getters["profile/profile"];
     }
 
     get editingMyself(): boolean {
-        return this.profile != null &&
-            this.user != null &&
-            (this.profile.username === this.user.username);
+        return this.profile != null && this.user != null && this.profile.username === this.user.username;
     }
 
     get levels() {
@@ -182,18 +160,18 @@ export default class User extends Vue {
                         name: "USER",
                         level: AccessLevel.USER,
                         disabled: this.profile.accessLevel > AccessLevel.ADMIN || this.editingMyself
-                    },
+                    }
                 ];
             } else {
                 return [
                     {
                         name: "MANAGER",
-                            level: AccessLevel.MANAGER,
+                        level: AccessLevel.MANAGER,
                         disabled: this.profile.accessLevel > AccessLevel.ADMIN || this.editingMyself
                     },
                     {
                         name: "USER",
-                            level: AccessLevel.USER,
+                        level: AccessLevel.USER,
                         disabled: this.profile.accessLevel > AccessLevel.ADMIN || this.editingMyself
                     }
                 ];
@@ -209,9 +187,9 @@ export default class User extends Vue {
 
     get backlink() {
         if (!this.profile || this.profile.accessLevel >= AccessLevel.USER) {
-            return '/';
+            return "/";
         } else {
-            return '/users';
+            return "/users";
         }
     }
 }

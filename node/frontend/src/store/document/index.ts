@@ -1,13 +1,13 @@
-import {Module} from 'vuex';
-import {getters} from './getters';
-import {actions} from './actions';
-import {mutations} from './mutations';
-import {DocumentState, initialDocumentState} from './types';
-import {RootState} from '../types';
-import {EntityType} from '../../../src/store/document/entities/types';
-import {cloneSimple} from '../../../src/lib/utils';
-import {assertUnreachable} from "../../config";
-import {ConnectableEntityConcrete, DrawableEntityConcrete} from "./entities/concrete-entity";
+import { Module } from "vuex";
+import { getters } from "./getters";
+import { actions } from "./actions";
+import { mutations } from "./mutations";
+import { DocumentState, initialDocumentState } from "./types";
+import { RootState } from "../types";
+import { EntityType } from "../../../src/store/document/entities/types";
+import { cloneSimple } from "../../../src/lib/utils";
+import { assertUnreachable } from "../../config";
+import { ConnectableEntityConcrete, DrawableEntityConcrete } from "./entities/concrete-entity";
 
 export const state: DocumentState = cloneSimple(initialDocumentState);
 
@@ -18,7 +18,7 @@ export const document: Module<DocumentState, RootState> = {
     state,
     getters,
     actions,
-    mutations,
+    mutations
 };
 
 export function isConnectable(type: EntityType): boolean {
@@ -78,7 +78,7 @@ export function getDragPriority(type: EntityType): number {
         case EntityType.FIXTURE:
         case EntityType.BACKGROUND_IMAGE:
         case EntityType.PIPE:
-            throw new Error('not a connectable');
+            throw new Error("not a connectable");
     }
     assertUnreachable(type);
 }

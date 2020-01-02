@@ -5,15 +5,18 @@ import {
     DocumentState,
     FlowSystemParameters,
     NetworkType
-} from '../../../../../src/store/document/types';
-import {EntityType} from '../../../../../src/store/document/entities/types';
-import {FieldType, PropertyField} from '../../../../../src/store/document/entities/property-field';
-import {cloneSimple} from '../../../../../src/lib/utils';
-import {DirectedValveConcrete, ValveType} from '../../../../../src/store/document/entities/directed-valves/valve-types';
-import {ObjectStore} from '../../../../../src/htmlcanvas/lib/types';
-import Pipe from '../../../../../src/htmlcanvas/objects/pipe';
-import {ConnectableEntityConcrete} from '../../../../../src/store/document/entities/concrete-entity';
-import {assertUnreachable} from "../../../../../src/config";
+} from "../../../../../src/store/document/types";
+import { EntityType } from "../../../../../src/store/document/entities/types";
+import { FieldType, PropertyField } from "../../../../../src/store/document/entities/property-field";
+import { cloneSimple } from "../../../../../src/lib/utils";
+import {
+    DirectedValveConcrete,
+    ValveType
+} from "../../../../../src/store/document/entities/directed-valves/valve-types";
+import Pipe from "../../../../../src/htmlcanvas/objects/pipe";
+import { ConnectableEntityConcrete } from "../../../../../src/store/document/entities/concrete-entity";
+import { assertUnreachable } from "../../../../../src/config";
+import { ObjectStore } from "../../../../htmlcanvas/lib/object-store";
 
 export default interface DirectedValveEntity extends ConnectableEntity {
     type: EntityType.DIRECTED_VALVE;
@@ -28,14 +31,28 @@ export default interface DirectedValveEntity extends ConnectableEntity {
 
 export function makeDirectedValveFields(
     systems: FlowSystemParameters[],
-    valve: DirectedValveConcrete,
+    valve: DirectedValveConcrete
 ): PropertyField[] {
     const fields: PropertyField[] = [
-        { property: 'systemUidOption', title: 'Flow System', hasDefault: false, isCalculated: false,
-            type: FieldType.FlowSystemChoice, params: { systems },  multiFieldId: 'systemUid' },
+        {
+            property: "systemUidOption",
+            title: "Flow System",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.FlowSystemChoice,
+            params: { systems },
+            multiFieldId: "systemUid"
+        },
 
-        { property: 'color', title: 'Color:', hasDefault: true, isCalculated: false,
-            type: FieldType.Color, params: null,  multiFieldId: 'color' },
+        {
+            property: "color",
+            title: "Color:",
+            hasDefault: true,
+            isCalculated: false,
+            type: FieldType.Color,
+            params: null,
+            multiFieldId: "color"
+        }
     ];
 
     switch (valve.type) {
@@ -49,25 +66,39 @@ export function makeDirectedValveFields(
             );*/
             break;
         case ValveType.PRESSURE_RELIEF_VALVE:
-            fields.push(
-                { property: 'valve.targetPressureKPA', title: 'Target Pressure (KPA):', hasDefault: false,
-                    isCalculated: false, type: FieldType.Number, params: {min: 0, max: null},
-                    multiFieldId: 'targetPressure', requiresInput: true },
-            );
+            fields.push({
+                property: "valve.targetPressureKPA",
+                title: "Target Pressure (KPA):",
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: "targetPressure",
+                requiresInput: true
+            });
             break;
         case ValveType.RPZD_DOUBLE_ISOLATED:
         case ValveType.RPZD_DOUBLE_SHARED:
         case ValveType.RPZD_SINGLE:
-            fields.push(
-                { property: 'valve.sizeMM', title: 'Size (mm):', hasDefault: false,
-                    isCalculated: false, type: FieldType.Number, params: {min: 0, max: null},
-                    multiFieldId: 'diameterMM', requiresInput: false },
-            );
+            fields.push({
+                property: "valve.sizeMM",
+                title: "Size (mm):",
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: "diameterMM",
+                requiresInput: false
+            });
             if (valve.type === ValveType.RPZD_DOUBLE_ISOLATED) {
                 fields.push({
-                    property: 'valve.isolateOneWhenCalculatingHeadLoss',
-                    title: 'Isolate one when calculation head loss?', hasDefault: false, isCalculated: false,
-                    params: null, type: FieldType.Boolean, multiFieldId: 'isolateOneWhenCalculatingHeadLoss',
+                    property: "valve.isolateOneWhenCalculatingHeadLoss",
+                    title: "Isolate one when calculation head loss?",
+                    hasDefault: false,
+                    isCalculated: false,
+                    params: null,
+                    type: FieldType.Boolean,
+                    multiFieldId: "isolateOneWhenCalculatingHeadLoss"
                 });
             }
             break;
@@ -84,7 +115,7 @@ export function makeDirectedValveFields(
 
 export function determineConnectableSystemUid(
     objectStore: ObjectStore,
-    value: ConnectableEntityConcrete,
+    value: ConnectableEntityConcrete
 ): string | undefined {
     switch (value.type) {
         case EntityType.FITTING:
@@ -110,7 +141,7 @@ export function determineConnectableSystemUid(
 
 export function determineConnectableNetwork(
     objectStore: ObjectStore,
-    value: ConnectableEntityConcrete,
+    value: ConnectableEntityConcrete
 ): NetworkType | undefined {
     let retVal = NetworkType.RETICULATIONS;
     if (value.type === EntityType.RISER) {
@@ -126,11 +157,7 @@ export function determineConnectableNetwork(
     return retVal;
 }
 
-export function fillDirectedValveFields(
-    doc: DocumentState,
-    objectStore: ObjectStore,
-    value: DirectedValveEntity,
-) {
+export function fillDirectedValveFields(doc: DocumentState, objectStore: ObjectStore, value: DirectedValveEntity) {
     const result = cloneSimple(value);
 
     const systemUid = determineConnectableSystemUid(objectStore, value);
@@ -144,7 +171,7 @@ export function fillDirectedValveFields(
         }
     } else {
         if (result.color == null) {
-            result.color = {hex: '#888888'};
+            result.color = { hex: "#888888" };
         }
     }
 

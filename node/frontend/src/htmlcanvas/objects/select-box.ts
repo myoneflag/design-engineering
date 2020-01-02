@@ -1,10 +1,9 @@
-import DrawableObject from '../../../src/htmlcanvas/lib/drawable-object';
-import * as TM from 'transformation-matrix';
-import {DrawingContext} from '../../../src/htmlcanvas/lib/types';
-import {Coord} from '../../../src/store/document/types';
-import Layer from '../../../src/htmlcanvas/layers/layer';
-import Flatten from '@flatten-js/core';
-
+import DrawableObject from "../../../src/htmlcanvas/lib/drawable-object";
+import * as TM from "transformation-matrix";
+import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
+import { Coord } from "../../../src/store/document/types";
+import Layer from "../../../src/htmlcanvas/layers/layer";
+import Flatten from "@flatten-js/core";
 
 export default class SelectBox extends DrawableObject {
     pointA: Coord;
@@ -21,22 +20,22 @@ export default class SelectBox extends DrawableObject {
     }
 
     drawInternal(context: DrawingContext): void {
-        const {ctx, vp} = context;
-        ctx.fillStyle = 'rgba(50, 50, 100, 0.3)';
+        const { ctx, vp } = context;
+        ctx.fillStyle = "rgba(50, 50, 100, 0.3)";
         ctx.lineWidth = vp.toWorldLength(1);
         ctx.fillRect(this.tl.x, this.tl.y, this.br.x - this.tl.x, this.br.y - this.tl.y);
-        ctx.strokeStyle = 'rgba(50, 50, 100, 1)';
+        ctx.strokeStyle = "rgba(50, 50, 100, 1)";
         ctx.beginPath();
         ctx.rect(this.tl.x, this.tl.y, this.br.x - this.tl.x, this.br.y - this.tl.y);
         ctx.stroke();
     }
 
     get tl() {
-        return {x: Math.min(this.pointA.x, this.pointB.x), y: Math.min(this.pointA.y, this.pointB.y)};
+        return { x: Math.min(this.pointA.x, this.pointB.x), y: Math.min(this.pointA.y, this.pointB.y) };
     }
 
     get br() {
-        return {x: Math.max(this.pointA.x, this.pointB.x), y: Math.max(this.pointA.y, this.pointB.y)};
+        return { x: Math.max(this.pointA.x, this.pointB.x), y: Math.max(this.pointA.y, this.pointB.y) };
     }
 
     inBounds(objectCoord: Coord, objectRadius?: number): boolean {
@@ -58,7 +57,7 @@ export default class SelectBox extends DrawableObject {
             Flatten.segment(tlp, trp),
             Flatten.segment(trp, brp),
             Flatten.segment(brp, blp),
-            Flatten.segment(blp, tlp),
+            Flatten.segment(blp, tlp)
         ]);
         return polygon;
     }
@@ -71,7 +70,7 @@ export default class SelectBox extends DrawableObject {
             Flatten.segment(Flatten.point(this.tl.x, this.tl.y), tr),
             Flatten.segment(tr, Flatten.point(this.br.x, this.br.y)),
             Flatten.segment(Flatten.point(this.br.x, this.br.y), bl),
-            Flatten.segment(bl, Flatten.point(this.tl.x, this.tl.y)),
+            Flatten.segment(bl, Flatten.point(this.tl.x, this.tl.y))
         ];
     }
 
@@ -101,7 +100,7 @@ export default class SelectBox extends DrawableObject {
         } else if (shape instanceof Flatten.Point) {
             return this.pointInside(shape);
         } else {
-            throw new Error('Unknown shape type');
+            throw new Error("Unknown shape type");
         }
     }
 
@@ -117,7 +116,6 @@ export default class SelectBox extends DrawableObject {
                 if (os) {
                     return this.contains(os);
                 }
-
             } else {
                 // inclusive or touching
 
@@ -127,9 +125,11 @@ export default class SelectBox extends DrawableObject {
                         return true;
                     }
 
-                    return this.perimeter().filter((p) => {
-                        return p.intersect(os).length > 0;
-                    }).length !== 0;
+                    return (
+                        this.perimeter().filter((p) => {
+                            return p.intersect(os).length > 0;
+                        }).length !== 0
+                    );
                 }
             }
             return false;

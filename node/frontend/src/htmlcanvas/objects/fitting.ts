@@ -1,30 +1,37 @@
-import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
-import FittingEntity, {fillValveDefaultFields} from '../../../src/store/document/entities/fitting-entity';
-import * as TM from 'transformation-matrix';
-import {Matrix} from 'transformation-matrix';
-import {Coord, DocumentState} from '../../../src/store/document/types';
-import {matrixScale} from '../../../src/htmlcanvas/utils';
-import Flatten from '@flatten-js/core';
-import Connectable, {ConnectableObject} from '../../../src/htmlcanvas/lib/object-traits/connectable';
-import {canonizeAngleRad, getValveK, isAcuteRad, isRightAngleRad, isStraightRad, lighten} from '../../../src/lib/utils';
-import CenterDraggableObject from '../../../src/htmlcanvas/lib/object-traits/center-draggable-object';
-import {DrawingContext} from '../../../src/htmlcanvas/lib/types';
-import DrawableObjectFactory from '../../../src/htmlcanvas/lib/drawable-object-factory';
-import {EntityType} from '../../../src/store/document/entities/types';
-import BackedConnectable from '../../../src/htmlcanvas/lib/BackedConnectable';
-import {getDragPriority} from '../../../src/store/document';
-import {parseCatalogNumberExact} from '../../../src/htmlcanvas/lib/utils';
-import Pipe from '../../../src/htmlcanvas/objects/pipe';
-import {SelectableObject} from '../../../src/htmlcanvas/lib/object-traits/selectable';
-import {CenteredObject} from '../../../src/htmlcanvas/lib/object-traits/centered-object';
-import {CalculationContext} from '../../../src/calculations/types';
-import {FlowNode, SELF_CONNECTION} from '../../../src/calculations/calculation-engine';
-import {DrawingArgs} from '../../../src/htmlcanvas/lib/drawable-object';
-import {CalculationData} from '../../../src/store/document/calculations/calculation-field';
-import {Calculated, CalculatedObject} from '../../../src/htmlcanvas/lib/object-traits/calculated-object';
-import {EPS} from "../../calculations/pressure-drops";
-import FittingCalculation, {emptyFittingCalculation} from "../../store/document/calculations/fitting-calculation";
-import math3d from 'math3d';
+import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
+import FittingEntity, { fillValveDefaultFields } from "../../../src/store/document/entities/fitting-entity";
+import * as TM from "transformation-matrix";
+import { Matrix } from "transformation-matrix";
+import { Coord, DocumentState } from "../../../src/store/document/types";
+import { matrixScale } from "../../../src/htmlcanvas/utils";
+import Flatten from "@flatten-js/core";
+import Connectable, { ConnectableObject } from "../../../src/htmlcanvas/lib/object-traits/connectable";
+import {
+    canonizeAngleRad,
+    getValveK,
+    isAcuteRad,
+    isRightAngleRad,
+    isStraightRad,
+    lighten
+} from "../../../src/lib/utils";
+import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
+import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
+import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
+import { EntityType } from "../../../src/store/document/entities/types";
+import BackedConnectable from "../../../src/htmlcanvas/lib/BackedConnectable";
+import { getDragPriority } from "../../../src/store/document";
+import { parseCatalogNumberExact } from "../../../src/htmlcanvas/lib/utils";
+import Pipe from "../../../src/htmlcanvas/objects/pipe";
+import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
+import { CenteredObject } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
+import { CalculationContext } from "../../../src/calculations/types";
+import { FlowNode, SELF_CONNECTION } from "../../../src/calculations/calculation-engine";
+import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
+import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
+import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
+import { EPS } from "../../calculations/pressure-drops";
+import FittingCalculation, { emptyFittingCalculation } from "../../store/document/calculations/fitting-calculation";
+import math3d from "math3d";
 import PipeEntity from "../../store/document/entities/pipe-entity";
 
 @CalculatedObject
@@ -56,8 +63,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to
     // complete the type.
 
-    drawInternal({ctx, doc}: DrawingContext, {active, selected}: DrawingArgs): void {
-
+    drawInternal({ ctx, doc }: DrawingContext, { active, selected }: DrawingArgs): void {
         // asdf
         const scale = matrixScale(ctx.getTransform());
 
@@ -65,7 +71,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             // TODO: draw an angled arc.
         } // else {
 
-        ctx.lineCap = 'round';
+        ctx.lineCap = "round";
 
         const minJointLength = this.FITTING_DIAMETER_PIXELS / scale;
 
@@ -77,10 +83,11 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         this.lastRadials.forEach(([wc, pipe]) => {
             let targetWidth = defaultWidth;
             if (pipe.entity.type === EntityType.PIPE) {
-
                 if ((pipe as Pipe).lastDrawnWidth) {
-                    targetWidth =
-                        Math.max(defaultWidth, (pipe as Pipe).lastDrawnWidth + this.FITTING_DIAMETER_PIXELS / scale);
+                    targetWidth = Math.max(
+                        defaultWidth,
+                        (pipe as Pipe).lastDrawnWidth + this.FITTING_DIAMETER_PIXELS / scale
+                    );
                 }
             }
             const oc = this.toObjectCoord(wc);
@@ -88,9 +95,9 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             const small = vec.normalize().multiply(Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM)));
             if (active && selected) {
                 ctx.beginPath();
-                ctx.lineWidth = targetWidth + this.FITTING_DIAMETER_PIXELS * 2 / scale;
+                ctx.lineWidth = targetWidth + (this.FITTING_DIAMETER_PIXELS * 2) / scale;
 
-                this.lastDrawnWidth = defaultWidth + this.FITTING_DIAMETER_PIXELS * 2 / scale;
+                this.lastDrawnWidth = defaultWidth + (this.FITTING_DIAMETER_PIXELS * 2) / scale;
                 ctx.strokeStyle = lighten(this.displayEntity(doc).color!.hex, 50, 0.5);
                 ctx.moveTo(0, 0);
                 ctx.lineTo(small.x, small.y);
@@ -122,8 +129,12 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
                 const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
                 const small = vec.normalize().multiply(this.lastDrawnLength);
 
-                if (Flatten.segment(Flatten.point(0, 0), Flatten.point(small.x, small.y))
-                    .distanceTo(Flatten.point(moc.x, moc.y))[0] <= this.lastDrawnWidth + radius) {
+                if (
+                    Flatten.segment(Flatten.point(0, 0), Flatten.point(small.x, small.y)).distanceTo(
+                        Flatten.point(moc.x, moc.y)
+                    )[0] <=
+                    this.lastDrawnWidth + radius
+                ) {
                     selected = true;
                 }
             });
@@ -137,15 +148,15 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
     get friendlyTypeName(): string {
         const connections = this.objectStore.getConnections(this.entity.uid);
         if (connections.length === 4) {
-            return 'Cross fitting';
+            return "Cross fitting";
         } else if (connections.length === 3) {
-            return 'Tee fitting';
+            return "Tee fitting";
         } else if (connections.length === 2) {
-            return 'Elbow/Coupling fitting';
+            return "Elbow/Coupling fitting";
         } else if (connections.length === 1) {
-            return 'Deadleg';
+            return "Deadleg";
         } else {
-            return connections.length + '-way fitting';
+            return connections.length + "-way fitting";
         }
     }
 
@@ -153,14 +164,15 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         return []; // this was handled by @Connectable
     }
 
-    getFrictionHeadLoss(context: CalculationContext,
-                        flowLS: number,
-                        from: FlowNode,
-                        to: FlowNode,
-                        signed: boolean,
+    getFrictionHeadLoss(
+        context: CalculationContext,
+        flowLS: number,
+        from: FlowNode,
+        to: FlowNode,
+        signed: boolean
     ): number {
         if (from.connection === SELF_CONNECTION || to.connection === SELF_CONNECTION) {
-            throw new Error('I don\'t like it');
+            throw new Error("I don't like it");
         }
 
         if (Math.abs(flowLS) < EPS) {
@@ -180,15 +192,16 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             }
         }
 
-        let smallestDiameterMM: number | undefined = undefined;
-        let largestDiameterMM: number | undefined = undefined;
+        let smallestDiameterMM: number | undefined;
+        let largestDiameterMM: number | undefined;
         const connections = this.objectStore.getConnections(this.entity.uid);
         const internals: string[] = [];
         connections.forEach((p) => {
             const pipe = this.objectStore.get(p) as Pipe;
-            const thisDiameter =
-                parseCatalogNumberExact(context.globalStore.getCalculation(pipe.entity)!.realInternalDiameterMM)!;
-            internals.push('' + thisDiameter);
+            const thisDiameter = parseCatalogNumberExact(
+                context.globalStore.getCalculation(pipe.entity)!.realInternalDiameterMM
+            )!;
+            internals.push("" + thisDiameter);
             if (smallestDiameterMM == null || (thisDiameter != null && thisDiameter < smallestDiameterMM)) {
                 smallestDiameterMM = thisDiameter;
             }
@@ -198,7 +211,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         });
 
         if (smallestDiameterMM == null || largestDiameterMM == null) {
-            throw new Error('can\'t find pipe sizes ' + JSON.stringify(internals) + ' ' + flowLS);
+            throw new Error("can't find pipe sizes " + JSON.stringify(internals) + " " + flowLS);
         }
 
         let k: number | null = null;
@@ -212,34 +225,34 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         if (connections.length === 2) {
             // through valve
             if (isRightAngleRad(angle, Math.PI / 8)) {
-                k = getValveK('90Elbow', context.catalog, smallestDiameterMM);
+                k = getValveK("90Elbow", context.catalog, smallestDiameterMM);
             } else if (isAcuteRad(angle)) {
-                k = getValveK('90Elbow', context.catalog, smallestDiameterMM);
+                k = getValveK("90Elbow", context.catalog, smallestDiameterMM);
                 if (k) {
                     k *= 2;
                 }
             } else if (isStraightRad(angle, Math.PI / 8)) {
                 k = 0;
             } else {
-                k = getValveK('45Elbow', context.catalog, smallestDiameterMM);
+                k = getValveK("45Elbow", context.catalog, smallestDiameterMM);
             }
         } else if (connections.length >= 3) {
             if (isStraightRad(angle, Math.PI / 4)) {
-                k = getValveK('tThruFlow', context.catalog, smallestDiameterMM);
+                k = getValveK("tThruFlow", context.catalog, smallestDiameterMM);
             } else {
-                k = getValveK('tThruBranch', context.catalog, smallestDiameterMM);
+                k = getValveK("tThruBranch", context.catalog, smallestDiameterMM);
             }
         } else {
-            throw new Error('edge shouldn\'t exist');
+            throw new Error("edge shouldn't exist");
         }
 
         if (k === null) {
-            throw new Error('could not find k value of fitting');
+            throw new Error("could not find k value of fitting");
         }
 
-        const volLM = smallestDiameterMM ** 2 * Math.PI / 4 / 1000;
+        const volLM = (smallestDiameterMM ** 2 * Math.PI) / 4 / 1000;
         const velocityMS = flowLS / volLM;
-        return sign * (k * velocityMS ** 2) / (2 * ga);
+        return (sign * (k * velocityMS ** 2)) / (2 * ga);
     }
 
     rememberToRegister(): void {
@@ -262,7 +275,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             flowRateLS: calc.flowRateLS,
             pressureDropKPA: calc.pressureDropKPA,
             pressureKPA: calc.pressureKPA,
-            warning: calc.warning,
+            warning: calc.warning
         };
 
         const tower = this.getCalculationTower(context);
@@ -271,14 +284,15 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             // that's fine
             if (this.getCalculationTower(context).length === 2) {
                 res.pressureDropKPA =
-                    context.globalStore.getOrCreateCalculation(this.getCalculationTower(context)[0][0]).pressureDropKPA! +
-                    context.globalStore.getOrCreateCalculation(this.getCalculationTower(context)[1][0]).pressureDropKPA!;
+                    context.globalStore.getOrCreateCalculation(this.getCalculationTower(context)[0][0])
+                        .pressureDropKPA! +
+                    context.globalStore.getOrCreateCalculation(this.getCalculationTower(context)[1][0])
+                        .pressureDropKPA!;
             }
         } else {
             res.flowRateLS = null;
             res.pressureDropKPA = null;
         }
-
 
         tower.forEach(([v, p]) => {
             res.warning = res.warning || context.globalStore.getOrCreateCalculation(v).warning;

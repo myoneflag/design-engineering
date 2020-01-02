@@ -1,35 +1,35 @@
-import BaseBackedObject from '../../../../src/htmlcanvas/lib/base-backed-object';
-import CanvasContext from '../../../../src/htmlcanvas/lib/canvas-context';
-import {EntityType} from '../../../../src/store/document/entities/types';
-import {getConnectedFlowComponent} from '../../../../src/htmlcanvas/lib/black-magic/utils';
-import UnionFind from '../../../../src/calculations/union-find';
+import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
+import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
+import { EntityType } from "../../../../src/store/document/entities/types";
+import { getConnectedFlowComponent } from "../../../../src/htmlcanvas/lib/black-magic/utils";
+import UnionFind from "../../../../src/calculations/union-find";
 import {
     ConnectableEntityConcrete,
     DrawableEntityConcrete
-} from '../../../../src/store/document/entities/concrete-entity';
-import {fillFixtureFields} from '../../../../src/store/document/entities/fixtures/fixture-entity';
-import {getFloorHeight, maxHeightOfConnection, minHeightOfConnection} from '../../../../src/htmlcanvas/lib/utils';
-import Flatten from '@flatten-js/core';
-import {InteractionType} from '../../../../src/htmlcanvas/lib/interaction';
-import {addValveAndSplitPipe} from '../../../../src/htmlcanvas/lib/black-magic/split-pipe';
-import Pipe from '../../../../src/htmlcanvas/objects/pipe';
-import PipeEntity from '../../../../src/store/document/entities/pipe-entity';
-import uuid from 'uuid';
-import FittingEntity from '../../../../src/store/document/entities/fitting-entity';
-import {BigValveType, FlowConfiguration} from '../../../store/document/entities/big-valve/big-valve-entity';
-import {isConnectable} from '../../../../src/store/document';
-import assert from 'assert';
-import {StandardFlowSystemUids, StandardMaterialUids} from '../../../../src/store/catalog';
-import {MainEventBus} from '../../../../src/store/main-event-bus';
-import {Coord, EntityParam, NetworkType} from '../../../../src/store/document/types';
-import {rebaseAll} from '../../../../src/htmlcanvas/lib/black-magic/rebase-all';
-import {fillDirectedValveFields} from '../../../../src/store/document/entities/directed-valves/directed-valve-entity';
-import connectBigValveToSource from './connect-big-valve-to-source';
-import BigValve from '../../objects/big-valve/bigValve';
-import {assertUnreachable} from "../../../../src/config";
-import * as _ from 'lodash';
-import RiserEntity, {fillRiserDefaults} from "../../../store/document/entities/riser-entity";
-import {fillDefaultLoadNodeFields} from "../../../store/document/entities/load-node-entity";
+} from "../../../../src/store/document/entities/concrete-entity";
+import { fillFixtureFields } from "../../../../src/store/document/entities/fixtures/fixture-entity";
+import { getFloorHeight, maxHeightOfConnection, minHeightOfConnection } from "../../../../src/htmlcanvas/lib/utils";
+import Flatten from "@flatten-js/core";
+import { InteractionType } from "../../../../src/htmlcanvas/lib/interaction";
+import { addValveAndSplitPipe } from "../../../../src/htmlcanvas/lib/black-magic/split-pipe";
+import Pipe from "../../../../src/htmlcanvas/objects/pipe";
+import PipeEntity from "../../../../src/store/document/entities/pipe-entity";
+import uuid from "uuid";
+import FittingEntity from "../../../../src/store/document/entities/fitting-entity";
+import { BigValveType, FlowConfiguration } from "../../../store/document/entities/big-valve/big-valve-entity";
+import { isConnectable } from "../../../../src/store/document";
+import assert from "assert";
+import { StandardFlowSystemUids, StandardMaterialUids } from "../../../../src/store/catalog";
+import { MainEventBus } from "../../../../src/store/main-event-bus";
+import { Coord, EntityParam, NetworkType } from "../../../../src/store/document/types";
+import { rebaseAll } from "../../../../src/htmlcanvas/lib/black-magic/rebase-all";
+import { fillDirectedValveFields } from "../../../../src/store/document/entities/directed-valves/directed-valve-entity";
+import connectBigValveToSource from "./connect-big-valve-to-source";
+import BigValve from "../../objects/big-valve/bigValve";
+import { assertUnreachable } from "../../../../src/config";
+import RiserEntity, { fillRiserDefaults } from "../../../store/document/entities/riser-entity";
+import { fillDefaultLoadNodeFields } from "../../../store/document/entities/load-node-entity";
+import { GroupDistCache } from "./group-dist-cache";
 
 const CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM = 500;
 const FIXTURE_WALL_DIST_MM = 200;
@@ -64,9 +64,21 @@ export class AutoConnector {
 
     shapeCache = new Map<string, Flatten.Shape>();
 
+    entityHeightCache = new Map<string, [number, number]>();
+
+    joinEntitiesCache = new Map<string, number | null>();
+
+    calls = 0;
+
+    deleted = new Set<string>();
+
+    entitiesToConsider: DrawableEntityConcrete[] = [];
+
+    groupDistCache = new GroupDistCache();
+
     constructor(selected: BaseBackedObject[], context: CanvasContext) {
         if (selected === undefined || selected === null) {
-            throw new Error('invalid argument for selected');
+            throw new Error("invalid argument for selected");
         }
         this.selected = selected;
         this.context = context;
@@ -124,7 +136,6 @@ export class AutoConnector {
                                         this.unionFind.join(o.entity.valve.hotOutputUid, o.entity.hotRoughInUid);
                                     }
                                     break;
-
                             }
                             break;
                         case EntityType.FIXTURE:
@@ -152,7 +163,7 @@ export class AutoConnector {
                 case EntityType.BACKGROUND_IMAGE:
                     break;
                 case EntityType.SYSTEM_NODE:
-                    throw new Error('invalid object selected');
+                    throw new Error("invalid object selected");
                 default:
                     assertUnreachable(o.entity);
             }
@@ -162,29 +173,22 @@ export class AutoConnector {
     processWalls() {
         this.selected.forEach((o) => {
             if (o.entity.type === EntityType.FIXTURE || o.entity.type === EntityType.BIG_VALVE) {
-                const c = o.toWorldCoord({x: 0, y: 0});
+                const c = o.toWorldCoord({ x: 0, y: 0 });
                 const p = Flatten.point(c.x, c.y);
 
-                const norm = Flatten
-                    .vector([0, 1])
-                    .rotate(o.toWorldAngleDeg(0) / 180 * Math.PI);
+                const norm = Flatten.vector([0, 1]).rotate((o.toWorldAngleDeg(0) / 180) * Math.PI);
                 this.walls.push({
-                    line: Flatten.line(
-                        p.translate(norm.normalize().multiply(FIXTURE_WALL_DIST_MM)),
-                        norm,
-                    ),
-                    source: p,
+                    line: Flatten.line(p.translate(norm.normalize().multiply(FIXTURE_WALL_DIST_MM)), norm),
+                    source: p
                 });
 
                 this.gridLines.push({
                     source: Flatten.point(c.x, c.y).translate(norm.normalize().multiply(BIG_VALVE_WALL_DIST_MM)),
-                    lines: [norm, norm.rotate90CW()],
+                    lines: [norm, norm.rotate90CW()]
                 });
             }
         });
     }
-
-    entityHeightCache = new Map<string, [number, number]>();
     getEntityHeight(entity: DrawableEntityConcrete): [number, number] {
         if (this.entityHeightCache.has(entity.uid)) {
             return this.entityHeightCache.get(entity.uid)!;
@@ -199,7 +203,7 @@ export class AutoConnector {
                     const fre = fillRiserDefaults(this.context.document, re);
                     return [
                         fre.bottomHeightM! - getFloorHeight(this.context.globalStore, this.context.document, re),
-                        fre.topHeightM! - getFloorHeight(this.context.globalStore, this.context.document, re),
+                        fre.topHeightM! - getFloorHeight(this.context.globalStore, this.context.document, re)
                     ];
                 case EntityType.LOAD_NODE:
                     return [-Infinity, Infinity];
@@ -215,10 +219,14 @@ export class AutoConnector {
                 case EntityType.BIG_VALVE:
                     return [entity.heightAboveFloorM, entity.heightAboveFloorM];
                 case EntityType.FIXTURE:
-                    const fixture = fillFixtureFields(this.context.document.drawing, this.context.effectiveCatalog, entity);
+                    const fixture = fillFixtureFields(
+                        this.context.document.drawing,
+                        this.context.effectiveCatalog,
+                        entity
+                    );
                     return [fixture.outletAboveFloorM!, fixture.outletAboveFloorM!];
                 case EntityType.BACKGROUND_IMAGE:
-                    throw new Error('entity has no height');
+                    throw new Error("entity has no height");
             }
             assertUnreachable(entity);
         };
@@ -228,22 +236,24 @@ export class AutoConnector {
     }
 
     isRoofHeight(entity: DrawableEntityConcrete): boolean {
-        return this.getEntityHeight(entity)[1] > this.context.document.drawing.metadata.calculationParams.ceilingPipeHeightM -
-            CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM / 1000;
+        return (
+            this.getEntityHeight(entity)[1] >
+            this.context.document.drawing.metadata.calculationParams.ceilingPipeHeightM -
+                CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM / 1000
+        );
     }
 
     isWallHeight(entity: DrawableEntityConcrete): boolean {
         const [min, max] = this.getEntityHeight(entity);
-        return min <= this.context.document.drawing.metadata.calculationParams.ceilingPipeHeightM +
-            CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM / 1000; // && max >= 0; // leave that out 4 now
+        return (
+            min <=
+            this.context.document.drawing.metadata.calculationParams.ceilingPipeHeightM +
+                CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM / 1000
+        ); // && max >= 0; // leave that out 4 now
     }
-
-    joinEntitiesCache = new Map<string, number | null>();
-
-    calls = 0;
     joinEntities(a: string, b: string, doit: boolean = true, cutoff?: number): number | null {
         const key = a < b ? a + b : b + a;
-        this.calls ++;
+        this.calls++;
         if (!doit && this.joinEntitiesCache.has(key)) {
             return this.joinEntitiesCache.get(key)!;
         }
@@ -259,7 +269,6 @@ export class AutoConnector {
         }
 
         const run = () => {
-
             // types of things to join:
             // system nodes from fixtures
             // system nodes from big valves
@@ -275,10 +284,10 @@ export class AutoConnector {
             let ao = this.context.objectStore.get(a)!;
             let bo = this.context.objectStore.get(b)!;
             if (!ao) {
-                throw new Error('Object is missing: ' + a);
+                throw new Error("Object is missing: " + a);
             }
             if (!bo) {
-                throw new Error('Object is missing: ' + b);
+                throw new Error("Object is missing: " + b);
             }
             let ae = ao.entity;
             let be = bo.entity;
@@ -290,46 +299,51 @@ export class AutoConnector {
                 return null;
             }
             if (sa === null && sb === null) {
-                throw new Error('connecting objects with unspecified system uid');
+                throw new Error("connecting objects with unspecified system uid");
             }
             const systemUid = (sa || sb) as string;
-            if ([ao, bo].filter((o) => o.offerInteraction({
-                type: InteractionType.EXTEND_NETWORK,
-                systemUid,
-                worldRadius: 0,
-                worldCoord: {x: 0, y: 0},
-                configuration: FlowConfiguration.BOTH,
-            })).length !== 2) {
+            if (
+                [ao, bo].filter((o) =>
+                    o.offerInteraction({
+                        type: InteractionType.EXTEND_NETWORK,
+                        systemUid,
+                        worldRadius: 0,
+                        worldCoord: { x: 0, y: 0 },
+                        configuration: FlowConfiguration.BOTH
+                    })
+                ).length !== 2
+            ) {
                 return null; // one of them can't handle it.
             }
-
 
             let totLen = 0;
             let solved = false;
 
             // Preparation. System nodes need to extend into the wall.
-            [[ao, bo], [bo, ao]].forEach(([me, them]) => {
+            [
+                [ao, bo],
+                [bo, ao]
+            ].forEach(([me, them]) => {
                 if (solved) {
                     return;
                 }
                 if (me.entity.type === EntityType.SYSTEM_NODE) {
                     let vec: Flatten.Vector;
                     if (me.entity.parentUid === null) {
-                        throw new Error('System node has no parent');
+                        throw new Error("System node has no parent");
                     }
                     const po = this.context.objectStore.get(me.entity.parentUid)!;
                     let heightM: number;
                     switch (po.entity.type) {
                         case EntityType.BIG_VALVE:
                         case EntityType.FIXTURE:
-                            vec = Flatten.vector([0, -1]).rotate(po.toWorldAngleDeg(0) / 180 * Math.PI);
+                            vec = Flatten.vector([0, -1]).rotate((po.toWorldAngleDeg(0) / 180) * Math.PI);
                             if (po.entity.type === EntityType.FIXTURE) {
-                                const fe =
-                                    fillFixtureFields(
-                                        this.context.document.drawing,
-                                        this.context.effectiveCatalog,
-                                        po.entity,
-                                    );
+                                const fe = fillFixtureFields(
+                                    this.context.document.drawing,
+                                    this.context.effectiveCatalog,
+                                    po.entity
+                                );
                                 if (me.entity.systemUid === StandardFlowSystemUids.ColdWater) {
                                     vec = vec.multiply(FIXTURE_WALL_DIST_COLD_MM);
                                 } else {
@@ -348,12 +362,12 @@ export class AutoConnector {
                         case EntityType.RISER:
                         case EntityType.LOAD_NODE:
                         case EntityType.SYSTEM_NODE:
-                            throw new Error('Can\'t do it');
+                            throw new Error("Can't do it");
                         default:
                             assertUnreachable(po.entity);
-                            throw new Error('Can\'t do it');
+                            throw new Error("Can't do it");
                     }
-                    const center = me.toWorldCoord({x: 0, y: 0});
+                    const center = me.toWorldCoord({ x: 0, y: 0 });
                     const mntPt = Flatten.point(center.x, center.y).translate(vec);
 
                     // if the mount point is very close to the other bloke, then just connect it straight away.
@@ -362,15 +376,14 @@ export class AutoConnector {
                         if (d[0] < WALL_INSERT_JOIN_THRESHOLD_MM) {
                             totLen += d[1].distanceTo(this.getOrSetShape(me))[0];
                             if (doit) {
-
                                 let v = them.entity as ConnectableEntityConcrete;
                                 if (them.entity.type === EntityType.PIPE) {
-                                    const {created, deleted, focus} = addValveAndSplitPipe(
+                                    const { created, deleted, focus } = addValveAndSplitPipe(
                                         this.context,
                                         them as Pipe,
                                         center,
                                         systemUid,
-                                        10,
+                                        10
                                     );
                                     v = focus as ConnectableEntityConcrete;
                                     this.selected = this.selected.filter((s) => !deleted.includes(s.uid));
@@ -381,7 +394,7 @@ export class AutoConnector {
                                     v as ConnectableEntityConcrete,
                                     me.entity,
                                     heightM,
-                                    systemUid,
+                                    systemUid
                                 );
                             }
                             solved = true;
@@ -391,17 +404,17 @@ export class AutoConnector {
                     if (!solved) {
                         // extend
                         const v: FittingEntity = {
-                            center: {x: mntPt.x, y: mntPt.y},
+                            center: { x: mntPt.x, y: mntPt.y },
                             color: null,
                             parentUid: null,
                             systemUid,
                             calculationHeightM: null,
                             type: EntityType.FITTING,
-                            uid: uuid(),
+                            uid: uuid()
                         };
 
                         if (doit) {
-                            this.context.$store.dispatch('document/addEntity', v);
+                            this.context.$store.dispatch("document/addEntity", v);
                             this.connectConnectablesWithPipe(v, me.entity, heightM, systemUid);
                         }
 
@@ -421,7 +434,6 @@ export class AutoConnector {
                     }
                 }
             });
-
 
             let bias = 0;
             if (isConnectable(ao.type)) {
@@ -453,20 +465,17 @@ export class AutoConnector {
             } else if (wallDist === null || roofDist! < wallDist) {
                 return totLen + this.connectThroughRoof(ao, bo, systemUid, doit)!;
             } else {
-
                 return totLen + this.connectThroughWalls(ao, bo, systemUid, doit)!;
             }
         };
 
         const res = run.bind(this)();
         if (res !== null && isNaN(res)) {
-            throw new Error('Distance result is NaN ' + a + ' ' + b + ' ' + doit);
+            throw new Error("Distance result is NaN " + a + " " + b + " " + doit);
         }
         this.joinEntitiesCache.set(key, res);
         return res;
     }
-
-
 
     connectThroughRoof(ao: BaseBackedObject, bo: BaseBackedObject, systemUid: string, doit: boolean): number | null {
         // OK now try the option of connecting it through the roof
@@ -477,28 +486,21 @@ export class AutoConnector {
 
         if (doit) {
             if (ao.type === EntityType.PIPE) {
-                ao = this.context.objectStore.get(addValveAndSplitPipe(
-                    this.context,
-                    ao as Pipe,
-                    straight[1].end,
-                    (ao as Pipe).entity.systemUid,
-                    10,
-                ).focus!.uid)!;
+                ao = this.context.objectStore.get(
+                    addValveAndSplitPipe(this.context, ao as Pipe, straight[1].end, (ao as Pipe).entity.systemUid, 10)
+                        .focus!.uid
+                )!;
             }
 
             if (bo.type === EntityType.PIPE) {
-                bo = this.context.objectStore.get(addValveAndSplitPipe(
-                    this.context,
-                    bo as Pipe,
-                    straight[1].start,
-                    (bo as Pipe).entity.systemUid,
-                    10,
-                ).focus!.uid)!;
+                bo = this.context.objectStore.get(
+                    addValveAndSplitPipe(this.context, bo as Pipe, straight[1].start, (bo as Pipe).entity.systemUid, 10)
+                        .focus!.uid
+                )!;
             }
         }
         const auxLength =
-            (maxHeight - this.getEntityHeight(ao.entity)[1] +
-            maxHeight - this.getEntityHeight(bo.entity)[1]) * 1000;
+            (maxHeight - this.getEntityHeight(ao.entity)[1] + maxHeight - this.getEntityHeight(bo.entity)[1]) * 1000;
         // Find grid
         const ga = this.findClosestGrid(straight[1].start);
         const gb = this.findClosestGrid(straight[1].end);
@@ -528,31 +530,28 @@ export class AutoConnector {
         if (bestCorner) {
             if (doit) {
                 if (Math.min(bestCorner.distanceTo(ap)[0], bestCorner.distanceTo(bp)[0]) < MIN_PIPE_LEN_MM) {
-
                     // connect directly
                     this.connectConnectablesWithPipe(
                         ao.entity as ConnectableEntityConcrete,
                         bo.entity as ConnectableEntityConcrete,
                         maxHeight,
-                        systemUid,
+                        systemUid
                     );
                 } else {
                     const v: FittingEntity = {
-                        center: {x: bestCorner.x, y: bestCorner.y},
+                        center: { x: bestCorner.x, y: bestCorner.y },
                         color: null,
                         parentUid: null,
                         systemUid,
                         calculationHeightM: null,
                         type: EntityType.FITTING,
-                        uid: uuid(),
+                        uid: uuid()
                     };
 
-                    this.context.$store.dispatch('document/addEntity', v);
+                    this.context.$store.dispatch("document/addEntity", v);
                     this.connectConnectablesWithPipe(v, ao.entity as ConnectableEntityConcrete, maxHeight, systemUid);
                     this.connectConnectablesWithPipe(v, bo.entity as ConnectableEntityConcrete, maxHeight, systemUid);
-
                 }
-
             }
             return bestDist + auxLength;
         } else {
@@ -564,7 +563,7 @@ export class AutoConnector {
         let closeDist = Infinity;
         let closeGrid: GridLine = {
             source: Flatten.point(0, 0),
-            lines: [Flatten.vector(0, 1), Flatten.vector(1, 0)],
+            lines: [Flatten.vector(0, 1), Flatten.vector(1, 0)]
         };
         this.gridLines.forEach((g) => {
             const dist = g.source.distanceTo(Flatten.point(coord.x, coord.y));
@@ -585,7 +584,7 @@ export class AutoConnector {
 
         this.walls.forEach((w) => {
             const wallD = w.line.distanceTo(oshape!);
-            if (wallD[0] <= WALL_SNAP_DIST_THRESHOLD_MM ) {
+            if (wallD[0] <= WALL_SNAP_DIST_THRESHOLD_MM) {
                 const sourceD = w.source.distanceTo(oshape!);
                 if (sourceD[0] < bestWallDist) {
                     bestWallDist = sourceD[0];
@@ -598,7 +597,7 @@ export class AutoConnector {
     }
 
     diffA(a: number, b: number) {
-        return Math.min((a - b + 360) % 360, (- a + b + 360 * 2) % 360);
+        return Math.min((a - b + 360) % 360, (-a + b + 360 * 2) % 360);
     }
 
     connectThroughWalls(ao: BaseBackedObject, bo: BaseBackedObject, systemUid: string, doit: boolean): number | null {
@@ -611,17 +610,16 @@ export class AutoConnector {
         }
 
         // We want the highest pipe height that doesn't compromize
-        const maxLow =
-            Math.max(this.getEntityHeight(ao.entity)[0], this.getEntityHeight(bo.entity)[0]);
-        const minHigh =
-            Math.min(this.getEntityHeight(ao.entity)[1], this.getEntityHeight(bo.entity)[1]);
+        const maxLow = Math.max(this.getEntityHeight(ao.entity)[0], this.getEntityHeight(bo.entity)[0]);
+        const minHigh = Math.min(this.getEntityHeight(ao.entity)[1], this.getEntityHeight(bo.entity)[1]);
         const newHeight = Math.max(maxLow, minHigh);
-        const auxLength = (Math.max(0, newHeight - minHigh) +
-            Math.abs(newHeight - this.context.document.drawing.metadata.calculationParams.ceilingPipeHeightM)) * 1000;
+        const auxLength =
+            (Math.max(0, newHeight - minHigh) +
+                Math.abs(newHeight - this.context.document.drawing.metadata.calculationParams.ceilingPipeHeightM)) *
+            1000;
 
-        const adeg = wa.line.norm.angleTo(wb.line.norm) / Math.PI * 180 ;
+        const adeg = (wa.line.norm.angleTo(wb.line.norm) / Math.PI) * 180;
         const adiff = Math.min(this.diffA(adeg, 180), this.diffA(adeg, 0));
-
 
         if (adiff < WALL_SAME_ANGLE_THRESHOLD_DEG) {
             // within 5 degrees? consider that the same angle.
@@ -630,23 +628,27 @@ export class AutoConnector {
                 const path = this.getOrSetShape(ao).distanceTo(this.getOrSetShape(bo));
                 if (doit) {
                     if (ao.type === EntityType.PIPE) {
-                        ao = this.context.objectStore.get(addValveAndSplitPipe(
-                            this.context,
-                            ao as Pipe,
-                            path[1].end,
-                            (ao as Pipe).entity.systemUid,
-                            10,
-                        ).focus!.uid)!;
+                        ao = this.context.objectStore.get(
+                            addValveAndSplitPipe(
+                                this.context,
+                                ao as Pipe,
+                                path[1].end,
+                                (ao as Pipe).entity.systemUid,
+                                10
+                            ).focus!.uid
+                        )!;
                     }
 
                     if (bo.type === EntityType.PIPE) {
-                        bo = this.context.objectStore.get(addValveAndSplitPipe(
-                            this.context,
-                            bo as Pipe,
-                            path[1].start,
-                            (bo as Pipe).entity.systemUid,
-                            10,
-                        ).focus!.uid)!;
+                        bo = this.context.objectStore.get(
+                            addValveAndSplitPipe(
+                                this.context,
+                                bo as Pipe,
+                                path[1].start,
+                                (bo as Pipe).entity.systemUid,
+                                10
+                            ).focus!.uid
+                        )!;
                     }
 
                     assert(isConnectable(ao.type));
@@ -656,7 +658,7 @@ export class AutoConnector {
                         ao.entity as ConnectableEntityConcrete,
                         bo.entity as ConnectableEntityConcrete,
                         newHeight,
-                        systemUid,
+                        systemUid
                     );
                 }
 
@@ -671,80 +673,78 @@ export class AutoConnector {
             // Reachable.
             const corner = wa.line.intersect(wb.line)[0];
             if (corner === undefined) {
-                throw new Error('Walls should have intersected, but they didnt. adiff: ' + adiff);
+                throw new Error("Walls should have intersected, but they didnt. adiff: " + adiff);
             }
             const pd = corner.distanceTo(this.getOrSetShape(ao))[0] + corner.distanceTo(this.getOrSetShape(bo))[0];
             if (doit) {
                 if (ao.type === EntityType.PIPE) {
-                    ao = this.context.objectStore.get(addValveAndSplitPipe(
-                        this.context,
-                        ao as Pipe,
-                        corner,
-                        (ao as Pipe).entity.systemUid,
-                        10,
-                    ).focus!.uid)!;
+                    ao = this.context.objectStore.get(
+                        addValveAndSplitPipe(this.context, ao as Pipe, corner, (ao as Pipe).entity.systemUid, 10).focus!
+                            .uid
+                    )!;
                 }
 
                 if (bo.type === EntityType.PIPE) {
-                    bo = this.context.objectStore.get(addValveAndSplitPipe(
-                        this.context,
-                        bo as Pipe,
-                        corner,
-                        (bo as Pipe).entity.systemUid,
-                        10,
-                    ).focus!.uid)!;
+                    bo = this.context.objectStore.get(
+                        addValveAndSplitPipe(this.context, bo as Pipe, corner, (bo as Pipe).entity.systemUid, 10).focus!
+                            .uid
+                    )!;
                 }
 
                 assert(isConnectable(ao.entity.type));
                 assert(isConnectable(ao.entity.type));
 
-                const ac = ao.toWorldCoord({x: 0, y: 0});
+                const ac = ao.toWorldCoord({ x: 0, y: 0 });
                 const ap = Flatten.point(ac.x, ac.y);
                 const aline = Flatten.line(ap, wa.line.norm);
-                const bc = bo.toWorldCoord({x: 0, y: 0});
+                const bc = bo.toWorldCoord({ x: 0, y: 0 });
                 const bp = Flatten.point(bc.x, bc.y);
                 const bline = Flatten.line(bp, wb.line.norm);
 
                 const realCorner = aline.intersect(bline)[0];
 
                 const v: FittingEntity = {
-                    center: {x: realCorner.x, y: realCorner.y},
+                    center: { x: realCorner.x, y: realCorner.y },
                     color: null,
                     parentUid: null,
                     systemUid,
                     calculationHeightM: null,
                     type: EntityType.FITTING,
-                    uid: uuid(),
+                    uid: uuid()
                 };
 
-                this.context.$store.dispatch('document/addEntity', v);
+                this.context.$store.dispatch("document/addEntity", v);
 
                 this.connectConnectablesWithPipe(v, ao.entity as ConnectableEntityConcrete, newHeight, systemUid);
                 this.connectConnectablesWithPipe(v, bo.entity as ConnectableEntityConcrete, newHeight, systemUid);
             }
 
-            return (pd + auxLength);
+            return pd + auxLength;
         }
     }
 
     joinGroups(a: string[], b: string[], doit: boolean = true, cutoff?: number): number | null {
         // skip this if the systems are not compatible.
-        const systems1 = new Set(a.map((uid) => {
-            const s = this.getEntitySystem(this.context.objectStore.get(uid)!.entity);
-            if (s === null) {
-                throw new Error('auto connecteded groups must belong to systems');
-            }
-            return s;
-        }));
-        const systems2 = new Set(b.map((uid) => {
-            const s = this.getEntitySystem(this.context.objectStore.get(uid)!.entity);
-            if (s === null) {
-                throw new Error('auto connecteded groups must belong to systems');
-            }
-            return s;
-        }));
+        const systems1 = new Set(
+            a.map((uid) => {
+                const s = this.getEntitySystem(this.context.objectStore.get(uid)!.entity);
+                if (s === null) {
+                    throw new Error("auto connecteded groups must belong to systems");
+                }
+                return s;
+            })
+        );
+        const systems2 = new Set(
+            b.map((uid) => {
+                const s = this.getEntitySystem(this.context.objectStore.get(uid)!.entity);
+                if (s === null) {
+                    throw new Error("auto connecteded groups must belong to systems");
+                }
+                return s;
+            })
+        );
         if (systems1.size !== 1 || systems2.size !== 1) {
-            throw new Error('only one system in ecah connected componet allowed');
+            throw new Error("only one system in ecah connected componet allowed");
         }
         if (Array.from(systems1.keys())[0] !== Array.from(systems2.keys())[0]) {
             return null;
@@ -769,9 +769,9 @@ export class AutoConnector {
             const res = this.joinEntities(bestPair![0], bestPair![1], true);
             if (res === null) {
                 // Cache needs to be invalidated because these two entities are no longer a valid pair.
-                const a = bestPair![0];
-                const b = bestPair![1];
-                const key = a < b ? a + b : b + a;
+                const aa = bestPair![0];
+                const bb = bestPair![1];
+                const key = aa < bb ? aa + bb : bb + aa;
                 this.joinEntitiesCache.delete(key);
             }
             return res;
@@ -814,7 +814,7 @@ export class AutoConnector {
             for (let b = a + 1; b < groups.length; b++) {
                 const dist = this.groupDistCache.get(
                     this.unionFind.find(groups[a][0]),
-                    this.unionFind.find(groups[b][0]),
+                    this.unionFind.find(groups[b][0])
                 );
                 if (dist !== null) {
                     if (currDist === null || dist < currDist) {
@@ -830,9 +830,7 @@ export class AutoConnector {
         }
         return bestAns;
     }
-
-    deleted = new Set<string>();
-    onDeleteEntity = ({entity, levelUid}: EntityParam) => {
+    onDeleteEntity = ({ entity, levelUid }: EntityParam) => {
         this.deleted.add(entity.uid);
         if (entity.type === EntityType.PIPE) {
             this.entityHeightCache.delete(entity.endpointUid[0]);
@@ -841,9 +839,7 @@ export class AutoConnector {
         this.selected.splice(0, this.selected.length, ...this.selected.filter((o) => o.entity !== undefined));
         // tslint:disable-next-line:semicolon
     };
-
-    entitiesToConsider: DrawableEntityConcrete[] = [];
-    onAddEntity = ({entity, levelUid}: EntityParam) => {
+    onAddEntity = ({ entity, levelUid }: EntityParam) => {
         if (this.context.document.uiState.levelUid === levelUid) {
             this.selected.push(this.context.objectStore.get(entity.uid)!);
             this.entitiesToConsider.push(entity);
@@ -856,13 +852,13 @@ export class AutoConnector {
     };
 
     rig() {
-        MainEventBus.$on('delete-entity', this.onDeleteEntity);
-        MainEventBus.$on('add-entity', this.onAddEntity);
+        MainEventBus.$on("delete-entity", this.onDeleteEntity);
+        MainEventBus.$on("add-entity", this.onAddEntity);
     }
 
     teardown() {
-        MainEventBus.$off('delete-entity', this.onDeleteEntity);
-        MainEventBus.$off('add-entity', this.onAddEntity);
+        MainEventBus.$off("delete-entity", this.onDeleteEntity);
+        MainEventBus.$off("add-entity", this.onAddEntity);
     }
 
     connectAllBigValves() {
@@ -872,8 +868,6 @@ export class AutoConnector {
             }
         });
     }
-
-    groupDistCache = new GroupDistCache();
     async autoConnect() {
         this.rig();
         this.calls = 0;
@@ -885,13 +879,13 @@ export class AutoConnector {
             this.processInitialConnections();
 
             // Intiialise group dist cache.
-            const groups = this.unionFind.groups();
-            for (let i = 0; i < groups.length; i++ ){
-                const id = this.unionFind.find(groups[i][0]);
+            const groupsInitial = this.unionFind.groups();
+            for (let i = 0; i < groupsInitial.length; i++) {
+                const id = this.unionFind.find(groupsInitial[i][0]);
                 const res = new Map<string, number | null>();
-                for (let j = i + 1; j < groups.length; j++) {
-                    const jd = this.unionFind.find(groups[j][0]);
-                    const dist = this.groupDist(groups[i], groups[j], undefined);
+                for (let j = i + 1; j < groupsInitial.length; j++) {
+                    const jd = this.unionFind.find(groupsInitial[j][0]);
+                    const dist = this.groupDist(groupsInitial[i], groupsInitial[j], undefined);
                     res.set(jd, dist);
                 }
                 this.groupDistCache.addGroup(id, res);
@@ -934,30 +928,24 @@ export class AutoConnector {
                     });
                     this.entitiesToConsider.splice(0);
                 } else {
-                    console.log("warning: autoconnect failed to connect. Busting cache and trying again");
                     if (this.entitiesToConsider.length) {
-                        throw new Error('new entities after autoconnect failure - don\'t know what to do');
+                        throw new Error("new entities after autoconnect failure - don't know what to do");
                     }
                 }
-
-
-
             }
 
             rebaseAll(this.context);
-            this.context.$store.dispatch('document/commit');
+            this.context.$store.dispatch("document/commit");
         } finally {
             this.teardown();
         }
-
-        console.log(this.calls);
     }
 
     connectConnectablesWithPipe(
         a: ConnectableEntityConcrete,
         b: ConnectableEntityConcrete,
         height: number,
-        systemUid: string,
+        systemUid: string
     ) {
         const p: PipeEntity = {
             color: null,
@@ -971,10 +959,10 @@ export class AutoConnector {
             parentUid: null,
             systemUid,
             type: EntityType.PIPE,
-            uid: uuid(),
+            uid: uuid()
         };
 
-        this.context.$store.dispatch('document/addEntity', p);
+        this.context.$store.dispatch("document/addEntity", p);
     }
 }
 
@@ -988,70 +976,3 @@ export interface Wall {
     line: Flatten.Line;
 }
 
-class GroupDistCache {
-    // Parallel array, 2-way mapping. Remember to maintain that.
-    cache = new Map<string, Map<string, number | null>>();
-
-    addGroup(gid: string, dists: Map<string, number | null>) {
-        dists.forEach((v, k) => {
-            if (v !== null && isNaN(v)) {
-                throw new Error('NaN found while adding group, key: ' + k + ' group: ' + gid);
-            }
-            this.getOrSet(gid).set(k, v);
-            this.getOrSet(k).set(gid, v);
-        });
-    }
-
-    join(auid: string, buid: string, nuid: string) {
-        if (nuid !== auid && nuid !== buid) {
-            throw new Error('new uid must be one of the old ones when simulating a union join');
-        }
-        const newMap = _.clone(this.getOrSet(auid));
-        this.getOrSet(buid).forEach((v, k) => {
-            if (newMap.has(k)) {
-                const curr = newMap.get(k);
-                if (curr === undefined) {
-                    throw new Error('just for type checking');
-                }
-
-                if (curr === null) {
-                    newMap.set(k, v);
-                } else if (v === null) {
-                    newMap.set(k, curr);
-                } else {
-                    newMap.set(k, Math.min(curr, v));
-                }
-            } else {
-                newMap.set(k, v);
-            }
-        });
-        newMap.delete(auid);
-        newMap.delete(buid);
-        this.delete(auid);
-        this.delete(buid);
-        this.addGroup(nuid, newMap);
-    }
-
-    get(auid: string, buid: string) {
-        const v1 = this.cache.get(auid)!.get(buid);
-        const v2 = this.cache.get(buid)!.get(auid);
-        if (v1 !== v2) {
-            throw new Error('cache is inconsistent ' + auid + ' ' + buid + ' ' + v1 + ' ' + v2);
-        }
-        return v1!;
-    }
-
-    private getOrSet(key: string) {
-        if (!this.cache.has(key)) {
-            this.cache.set(key, new Map<string, number | null>());
-        }
-        return this.cache.get(key)!;
-    }
-
-    private delete(key: string) {
-        this.getOrSet(key).forEach((v, k) => {
-            this.cache.get(k)!.delete(key);
-        });
-        this.cache.delete(key);
-    }
-}

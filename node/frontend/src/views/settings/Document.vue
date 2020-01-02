@@ -1,11 +1,11 @@
-import {AccessLevel} from "../../../../backend/src/entity/User";
-import {AccessLevel} from "../../../../backend/src/entity/User";
+import {AccessLevel} from "../../../../backend/src/entity/User"; import {AccessLevel} from
+"../../../../backend/src/entity/User";
 <template>
     <div>
         <b-row>
             <b-col>
                 <b-button size="lg" variant="primary" @click="resetDocument">
-                    <v-icon name="undo" scale="2"/>&nbsp;Reset Document
+                    <v-icon name="undo" scale="2" />&nbsp;Reset Document
                 </b-button>
             </b-col>
         </b-row>
@@ -13,13 +13,13 @@ import {AccessLevel} from "../../../../backend/src/entity/User";
         <b-row v-if="document" style="margin-top: 30px">
             <b-col>
                 <b-button
-                        size="md"
-                        variant="danger"
-                        @click="deleteDocument"
-                        :disabled="!canDelete"
-                        :v-b-tooltip.hover.title="canDelete ? '' : 'You don\'t have permission to delete'"
+                    size="md"
+                    variant="danger"
+                    @click="deleteDocument"
+                    :disabled="!canDelete"
+                    :v-b-tooltip.hover.title="canDelete ? '' : 'You don\'t have permission to delete'"
                 >
-                    <v-icon name="trash" scale="1"/>&nbsp;Delete Document
+                    <v-icon name="trash" scale="1" />&nbsp;Delete Document
                 </b-button>
             </b-col>
         </b-row>
@@ -27,97 +27,97 @@ import {AccessLevel} from "../../../../backend/src/entity/User";
 </template>
 
 <script lang="ts">
+import Vue from "vue";
+import Component from "vue-class-component";
+import { deleteDocument, getDocument, getDocuments, resetDocument } from "../../api/document";
+import { Document as IDocument } from "../../../../backend/src/entity/Document";
+import { AccessLevel, User } from "../../../../backend/src/entity/User";
 
-    import Vue from 'vue';
-    import Component from 'vue-class-component';
-    import {deleteDocument, getDocument, getDocuments, resetDocument} from "../../api/document";
-    import {Document as IDocument} from '../../../../backend/src/entity/Document';
-    import {AccessLevel, User} from "../../../../backend/src/entity/User";
-
-    @Component({
-        watch: {
-            $route(to, from) {
-                (this as Document).updateId(to.params.id);
-            },
+@Component({
+    watch: {
+        $route(to, from) {
+            (this as Document).updateId(to.params.id);
         }
-    })
-    export default class Document extends Vue {
-        document: IDocument | null = null;
+    }
+})
+export default class Document extends Vue {
+    document: IDocument | null = null;
 
-        mounted() {
-            this.updateId(this.$route.params.id);
-        }
+    mounted() {
+        this.updateId(this.$route.params.id);
+    }
 
-        updateId(id: string) {
-            getDocument(Number(id)).then((res) => {
+    updateId(id: string) {
+        getDocument(Number(id)).then((res) => {
+            if (res.success) {
+                this.document = res.data;
+            } else {
+                this.$bvToast.toast(res.message, {
+                    title: "Document failed to load",
+                    variant: "danger"
+                });
+            }
+        });
+    }
+
+    resetDocument() {
+        if (
+            window.confirm(
+                "Are you sure you want to reset this document? It will erase all data and turn it into a brand new document. This operation cannot be undone."
+            )
+        ) {
+            resetDocument(Number(this.$route.params.id)).then((res) => {
                 if (res.success) {
-                    this.document = res.data;
+                    this.$bvModal.msgBoxConfirm("The document has been reset.").then(() => {
+                        this.$router.push("/document/" + this.$route.params.id);
+                    });
                 } else {
                     this.$bvToast.toast(res.message, {
-                        title: 'Document failed to load',
-                        variant: 'danger',
-                    })
+                        title: "Failed to reset document",
+                        variant: "danger"
+                    });
                 }
             });
         }
+    }
 
-        resetDocument() {
-            if (window.confirm('Are you sure you want to reset this document? It will erase all data and turn it into a brand new document. This operation cannot be undone.')) {
-                resetDocument(Number(this.$route.params.id)).then((res) => {
-                    if (res.success) {
-                        this.$bvModal.msgBoxConfirm('The document has been reset.').then(() => {
-                            this.$router.push('/document/' + this.$route.params.id);
-                        })
-                    } else {
-                        this.$bvToast.toast(res.message, {
-                            title: 'Failed to reset document',
-                            variant: 'danger',
-                        });
-                    }
-                });
-            }
-        }
-
-        deleteDocument() {
-            if (window.confirm('Are you sure you want to delete this document forever? This operation cannot be undone.')) {
-                deleteDocument(Number(this.$route.params.id)).then((res) => {
-                    if (res.success) {
-                        this.$bvModal.msgBoxConfirm('The document has been deleted.').then(() => {
-                            this.$router.push('/');
-                        })
-                    } else {
-                        this.$bvToast.toast(res.message, {
-                            title: 'Failed to delete document',
-                            variant: 'danger',
-                        });
-                    }
-                });
-            }
-        }
-
-        get profile(): User {
-            return this.$store.getters["profile/profile"];
-        }
-
-        get canDelete(): boolean {
-            if (!this.document) {
-                return false;
-            }
-
-            if (this.document.createdBy.username === this.profile.username) {
-                return true;
-            }
-
-            if (this.profile.accessLevel <= AccessLevel.MANAGER) {
-                return true;
-            }
-
-            return false;
+    deleteDocument() {
+        if (window.confirm("Are you sure you want to delete this document forever? This operation cannot be undone.")) {
+            deleteDocument(Number(this.$route.params.id)).then((res) => {
+                if (res.success) {
+                    this.$bvModal.msgBoxConfirm("The document has been deleted.").then(() => {
+                        this.$router.push("/");
+                    });
+                } else {
+                    this.$bvToast.toast(res.message, {
+                        title: "Failed to delete document",
+                        variant: "danger"
+                    });
+                }
+            });
         }
     }
 
+    get profile(): User {
+        return this.$store.getters["profile/profile"];
+    }
+
+    get canDelete(): boolean {
+        if (!this.document) {
+            return false;
+        }
+
+        if (this.document.createdBy.username === this.profile.username) {
+            return true;
+        }
+
+        if (this.profile.accessLevel <= AccessLevel.MANAGER) {
+            return true;
+        }
+
+        return false;
+    }
+}
 </script>
 
-<style lang="less">
-
-</style>
+<style lang="less"></style>

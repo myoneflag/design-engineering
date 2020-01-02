@@ -6,7 +6,8 @@
   "linterOptions": {
     "exclude": [
       "node_modules/**",
-      "../backend/**"
+      "../backend/**",
+      "tests/**"
     ]
   },
   "rules": {
@@ -18,6 +19,7 @@
     "quotemark": false,
     "member-access": [true, "no-public"],
     "trailing-comma": false,
-    "no-var-requires": false
+    "no-var-requires": false,
+    "object-literal-key-quotes": false
   }
 }

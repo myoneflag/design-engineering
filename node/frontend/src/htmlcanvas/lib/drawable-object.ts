@@ -1,13 +1,13 @@
-import {CalculationFilters, Coord, Rectangle} from '../../../src/store/document/types';
-import {ViewPort} from '../../../src/htmlcanvas/viewport';
-import {Matrix} from 'transformation-matrix';
-import * as TM from 'transformation-matrix';
-import {DrawingMode, MouseMoveResult, UNHANDLED} from '../../../src/htmlcanvas/types';
-import {decomposeMatrix, matrixScale} from '../../../src/htmlcanvas/utils';
-import {DrawingContext} from '../../../src/htmlcanvas/lib/types';
-import Flatten from '@flatten-js/core';
-import Layer from '../../../src/htmlcanvas/layers/layer';
-import CanvasContext from '../../../src/htmlcanvas/lib/canvas-context';
+import { CalculationFilters, Coord, Rectangle } from "../../../src/store/document/types";
+import { ViewPort } from "../../../src/htmlcanvas/viewport";
+import { Matrix } from "transformation-matrix";
+import * as TM from "transformation-matrix";
+import { DrawingMode, MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
+import { decomposeMatrix, matrixScale } from "../../../src/htmlcanvas/utils";
+import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
+import Flatten from "@flatten-js/core";
+import Layer from "../../../src/htmlcanvas/layers/layer";
+import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 
 export default abstract class DrawableObject {
     abstract position: Matrix;
@@ -54,7 +54,7 @@ export default abstract class DrawableObject {
         return TM.applyToPoint(this.position, object);
     }
 
-    toWorldCoord(object: Coord = {x: 0, y: 0}): Coord {
+    toWorldCoord(object: Coord = { x: 0, y: 0 }): Coord {
         if (this.parent == null) {
             return TM.applyToPoint(this.position, object);
         }
@@ -87,7 +87,7 @@ export default abstract class DrawableObject {
     }
 
     toParentAngleDeg(object: number) {
-        return object + decomposeMatrix(this.position).a / Math.PI * 180;
+        return object + (decomposeMatrix(this.position).a / Math.PI) * 180;
     }
 
     toWorldAngleDeg(object: number): number {
@@ -100,7 +100,7 @@ export default abstract class DrawableObject {
     abstract drawInternal(context: DrawingContext, args: DrawingArgs): void;
 
     draw(context: DrawingContext, args: DrawingArgs) {
-        const {ctx, vp} = context;
+        const { ctx, vp } = context;
         // get parent positions
         vp.prepareContext(ctx, ...this.world2object);
 
@@ -123,24 +123,24 @@ export default abstract class DrawableObject {
     }
 
     drawOwnShape(context: DrawingContext) {
-        const {ctx} = context;
-        const currentWC00 = this.toObjectCoord({x: 0, y: 0});
+        const { ctx } = context;
+        const currentWC00 = this.toObjectCoord({ x: 0, y: 0 });
         this.withWorld(context, currentWC00, () => {
-           const s = this.shape();
-           if (s instanceof Flatten.Polygon) {
-               ctx.beginPath();
-               ctx.strokeStyle = '#000000';
-               ctx.lineWidth = 5;
-               s.edges.forEach((f: Flatten.Segment) => {
-                   ctx.moveTo(f.start.x, f.start.y);
-                   ctx.lineTo(f.end.x, f.end.y);
-               });
-               ctx.stroke();
-           }
+            const s = this.shape();
+            if (s instanceof Flatten.Polygon) {
+                ctx.beginPath();
+                ctx.strokeStyle = "#000000";
+                ctx.lineWidth = 5;
+                s.edges.forEach((f: Flatten.Segment) => {
+                    ctx.moveTo(f.start.x, f.start.y);
+                    ctx.lineTo(f.end.x, f.end.y);
+                });
+                ctx.stroke();
+            }
         });
     }
 
-    withScreen({ctx}: DrawingContext, current: Coord, fun: () => void) {
+    withScreen({ ctx }: DrawingContext, current: Coord, fun: () => void) {
         const oldTransform = ctx.getTransform();
         const sc = TM.applyToPoint(ctx.getTransform(), current);
         ctx.resetTransform();
@@ -151,7 +151,7 @@ export default abstract class DrawableObject {
         ctx.setTransform(oldTransform);
     }
 
-    withScreenScale({ctx}: DrawingContext, current: Coord, fun: () => void) {
+    withScreenScale({ ctx }: DrawingContext, current: Coord, fun: () => void) {
         const oldTransform = ctx.getTransform();
         const t = decomposeMatrix(ctx.getTransform());
         const sc = TM.applyToPoint(ctx.getTransform(), current);
@@ -164,7 +164,7 @@ export default abstract class DrawableObject {
         ctx.setTransform(oldTransform);
     }
 
-    withWorld({ctx, vp}: DrawingContext, current: Coord, fun: () => void) {
+    withWorld({ ctx, vp }: DrawingContext, current: Coord, fun: () => void) {
         const oldTransform = ctx.getTransform();
         const sc = TM.applyToPoint(ctx.getTransform(), current);
 
@@ -178,8 +178,7 @@ export default abstract class DrawableObject {
     }
 
     // Assumes uniform x/y scale
-    withWorldScale({ctx, vp}: DrawingContext, current: Coord, fun: () => void) {
-
+    withWorldScale({ ctx, vp }: DrawingContext, current: Coord, fun: () => void) {
         const oldTransform = ctx.getTransform();
         const sc = TM.applyToPoint(ctx.getTransform(), current);
 
@@ -195,8 +194,7 @@ export default abstract class DrawableObject {
     }
 
     // Assumes uniform x/y scale
-    withWorldAngle({ctx, vp}: DrawingContext, current: Coord, fun: () => void) {
-
+    withWorldAngle({ ctx, vp }: DrawingContext, current: Coord, fun: () => void) {
         const oldTransform = ctx.getTransform();
         const sc = TM.applyToPoint(ctx.getTransform(), current);
 
@@ -225,7 +223,7 @@ export default abstract class DrawableObject {
 
     // For figuring out how to fit the view.
     shape(): Flatten.Segment | Flatten.Point | Flatten.Polygon | Flatten.Circle | null {
-        const point = this.toWorldCoord({x: 0, y: 0});
+        const point = this.toWorldCoord({ x: 0, y: 0 });
         return Flatten.point(point.x, point.y);
     }
 }

@@ -11,24 +11,25 @@
             </b-row>
             <b-row>
                 <b-col>
-                    <b-alert variant="success"  v-if="users.length === 0 && isLoaded" show>
+                    <b-alert variant="success" v-if="users.length === 0 && isLoaded" show>
                         There are no organizations right now. Wait what? Then WHO ARE YOU.
                     </b-alert>
                 </b-col>
             </b-row>
             <b-row>
                 <b-col>
-
                     <b-list-group>
                         <b-list-group-item
-                                v-for="user in users"
-                                :to="'/users/username/' + user.username"
-                                :key="user.username"
+                            v-for="user in users"
+                            :to="'/users/username/' + user.username"
+                            :key="user.username"
                         >
                             <b-row>
                                 <b-col cols="3">{{ user.username }}</b-col>
                                 <b-col cols="3">{{ user.name }}</b-col>
-                                <b-col cols="3">{{['SUPERUSER', 'ADMIN', 'MANAGER', 'USER'][user.accessLevel]}}</b-col>
+                                <b-col cols="3">{{
+                                    ["SUPERUSER", "ADMIN", "MANAGER", "USER"][user.accessLevel]
+                                }}</b-col>
                                 <b-col cols="3">{{ user.organization ? user.organization.id : "[no org]" }}</b-col>
                             </b-row>
                         </b-list-group-item>
@@ -36,9 +37,9 @@
                 </b-col>
             </b-row>
             <b-row style="margin-top: 30px" v-if="profile && profile.accessLevel <= AccessLevel.ADMIN">
-
                 <b-col>
-                    <b-button size="lg" variant="success" to="/users/create"><v-icon name="plus"></v-icon>
+                    <b-button size="lg" variant="success" to="/users/create"
+                        ><v-icon name="plus"></v-icon>
                         Create User
                     </b-button>
                 </b-col>
@@ -48,18 +49,18 @@
 </template>
 
 <script lang="ts">
-import {Component} from "vue-property-decorator";
-import Vue from 'vue';
-import {AccessLevel, User} from "../../../backend/src/entity/User";
-import {getUsers} from "../api/users";
+import { Component } from "vue-property-decorator";
+import Vue from "vue";
+import { AccessLevel, User } from "../../../backend/src/entity/User";
+import { getUsers } from "../api/users";
 import MainNavBar from "../../src/components/MainNavBar.vue";
 import DrawingNavBar from "../components/DrawingNavBar.vue";
 import ProfileState from "../store/profile/types";
 
 @Component({
     components: {
-        MainNavBar,
-    },
+        MainNavBar
+    }
 })
 export default class Users extends Vue {
     users: User[] = [];
@@ -73,15 +74,15 @@ export default class Users extends Vue {
                 this.isLoaded = true;
             } else {
                 this.$bvToast.toast(res.message, {
-                    variant: 'danger',
-                    title: 'Error retrieving user list',
+                    variant: "danger",
+                    title: "Error retrieving user list"
                 });
             }
         });
     }
 
     get profile(): ProfileState | null {
-        return this.$store.getters['profile/profile'];
+        return this.$store.getters["profile/profile"];
     }
 
     get AccessLevel() {
@@ -91,7 +92,7 @@ export default class Users extends Vue {
 </script>
 
 <style lang="less">
-    h1 {
-        padding-top: 50px;
-    }
+h1 {
+    padding-top: 50px;
+}
 </style>

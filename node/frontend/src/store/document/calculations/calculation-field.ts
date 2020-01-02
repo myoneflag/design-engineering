@@ -1,4 +1,4 @@
-import {FlowSystemParameters} from '../../../../src/store/document/types';
+import { FlowSystemParameters } from "../../../../src/store/document/types";
 
 export enum FieldCategory {
     Pressure,
@@ -7,17 +7,17 @@ export enum FieldCategory {
     Size,
     Temperature,
     LoadingUnits,
-    FixtureUnits,
+    FixtureUnits
 }
 
 export enum Units {
-    None = '',
-    LitersPerSecond = 'L/s',
-    Millimeters = 'mm',
-    Meters = 'm',
-    KiloPascals = 'kPa',
-    MetersPerSecond = 'm/s',
-    Celsius = '\u00B0C',
+    None = "",
+    LitersPerSecond = "L/s",
+    Millimeters = "mm",
+    Meters = "m",
+    KiloPascals = "kPa",
+    MetersPerSecond = "m/s",
+    Celsius = "\u00B0C"
 }
 
 export interface CalculationField {
@@ -38,7 +38,7 @@ export interface CalculationField {
 
 export enum CalculationDataType {
     VALUE,
-    MESSAGE,
+    MESSAGE
 }
 
 export interface CalculationFieldWithValue extends CalculationField {

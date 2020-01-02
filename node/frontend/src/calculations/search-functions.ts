@@ -1,5 +1,5 @@
-import assert from 'assert';
-import {EPS} from '../../src/calculations/pressure-drops';
+import assert from "assert";
+import { EPS } from "../../src/calculations/pressure-drops";
 
 // Works on concave functions
 export function ternarySearchForGlobalMin(fn: (num: number) => number): number {
@@ -14,7 +14,6 @@ export function ternarySearchForGlobalMin(fn: (num: number) => number): number {
     while (true) {
         const mid1 = (low * 2 + high) / 3;
         const mid2 = (low + high * 2) / 3;
-
 
         const mv1 = fn(mid1);
         const mv2 = fn(mid2);
@@ -38,7 +37,6 @@ export function ternarySearchForGlobalMin(fn: (num: number) => number): number {
     while (true) {
         const mid1 = (low * 2 + high) / 3;
         const mid2 = (low + high * 2) / 3;
-
 
         const mv1 = fn(mid1);
         const mv2 = fn(mid2);
@@ -74,10 +72,10 @@ export function ternarySearchForGlobalMin(fn: (num: number) => number): number {
         const mv3 = fn(high);
 
         if (mv1 > mv0) {
-            throw new Error('mv0 ' + mv0 + ' is less than mv1 ' + mv1 + ' low: ' + low + ' mid1: ' + mid1);
+            throw new Error("mv0 " + mv0 + " is less than mv1 " + mv1 + " low: " + low + " mid1: " + mid1);
         }
         if (mv2 > mv3) {
-            throw new Error('mv2 ' + mv2 + ' is less than mv3 ' + mv3 + ' mid2: ' + mid2 + ' high: ' + high);
+            throw new Error("mv2 " + mv2 + " is less than mv3 " + mv3 + " mid2: " + mid2 + " high: " + high);
         }
 
         if (mv1 < mv2) {

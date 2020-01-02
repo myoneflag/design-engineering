@@ -1,9 +1,9 @@
-import {APIResult, DocumentWSMessage, DocumentWSMessageType} from "../../../common/src/api/types";
+import { APIResult, DocumentWSMessage, DocumentWSMessageType } from "../../../common/src/api/types";
 import * as OT from "../../src/store/document/operation-transforms/operation-transforms";
 import axios from "axios";
-import {Document} from "../../../backend/src/entity/Document";
-import {Organization} from "../../../backend/src/entity/Organization";
-import {GeneralInfo} from "../store/document/types";
+import { Document } from "../../../backend/src/entity/Document";
+import { Organization } from "../../../backend/src/entity/Organization";
+import { GeneralInfo } from "../store/document/types";
 
 const wss = new Map<number, WebSocket>();
 
@@ -17,12 +17,12 @@ export function openDocument(
     if (wss.has(id)) {
         throw new Error("warning: Document is already open");
     }
-    const HOST = location.origin.replace(/^https?/, 'wss');
-    const ws = new WebSocket(HOST + '/api/documents/' + id + '/websocket');
+    const HOST = location.origin.replace(/^https?/, "wss");
+    const ws = new WebSocket(HOST + "/api/documents/" + id + "/websocket");
     wss.set(id, ws);
 
-    ws.onmessage = ((wsmsg: MessageEvent) => {
-        if (wsmsg.type === 'message') {
+    ws.onmessage = (wsmsg: MessageEvent) => {
+        if (wsmsg.type === "message") {
             const data: DocumentWSMessage = JSON.parse(wsmsg.data as string);
             data.forEach((msg) => {
                 switch (msg.type) {
@@ -38,16 +38,17 @@ export function openDocument(
                 }
             });
         } else {
-            throw new Error("unknown websocket message type " +
-                JSON.stringify(wsmsg.type) + ' ' + JSON.stringify(wsmsg));
+            throw new Error(
+                "unknown websocket message type " + JSON.stringify(wsmsg.type) + " " + JSON.stringify(wsmsg)
+            );
         }
-    });
+    };
 
     queues.set(id, []);
 
     ws.onclose = (ev: CloseEvent) => {
         if (ev.code !== 1000) {
-            onError(ev.code + ' ' + ev.reason);
+            onError(ev.code + " " + ev.reason);
         }
     };
 }
@@ -58,9 +59,12 @@ export async function updateDocument(
     metadata: GeneralInfo | undefined
 ): Promise<APIResult<Document>> {
     try {
-        return (await axios.put('/api/documents/' + id, {
-            organization, metadata,
-        })).data;
+        return (
+            await axios.put("/api/documents/" + id, {
+                organization,
+                metadata
+            })
+        ).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
@@ -69,7 +73,6 @@ export async function updateDocument(
         }
     }
 }
-
 
 export async function closeDocument(id: number) {
     if (wss.has(id)) {
@@ -119,7 +122,7 @@ export async function submitOperation(id: number, commit: any, ops: OT.Operation
 
 export async function getDocuments(): Promise<APIResult<Document[]>> {
     try {
-        return (await axios.get('/api/documents/')).data;
+        return (await axios.get("/api/documents/")).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
@@ -131,7 +134,7 @@ export async function getDocuments(): Promise<APIResult<Document[]>> {
 
 export async function getDocument(id: number): Promise<APIResult<Document>> {
     try {
-        return (await axios.get('/api/documents/' + id)).data;
+        return (await axios.get("/api/documents/" + id)).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
@@ -143,9 +146,11 @@ export async function getDocument(id: number): Promise<APIResult<Document>> {
 
 export async function createDocument(orgId: string): Promise<APIResult<Document>> {
     try {
-        return (await axios.post('/api/documents/', {
-            organization: orgId,
-        })).data;
+        return (
+            await axios.post("/api/documents/", {
+                organization: orgId
+            })
+        ).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
@@ -157,24 +162,24 @@ export async function createDocument(orgId: string): Promise<APIResult<Document>
 
 export async function resetDocument(id: number): Promise<APIResult<void>> {
     try {
-        return (await axios.post('/api/documents/' + id + '/reset')).data;
+        return (await axios.post("/api/documents/" + id + "/reset")).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
-            return {success: false, message: e.response.data.message};
+            return { success: false, message: e.response.data.message };
         } else {
-            return {success: false, message: e.message};
+            return { success: false, message: e.message };
         }
     }
 }
 
 export async function deleteDocument(id: number): Promise<APIResult<void>> {
     try {
-        return (await axios.delete('/api/documents/' + id)).data;
+        return (await axios.delete("/api/documents/" + id)).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
-            return {success: false, message: e.response.data.message};
+            return { success: false, message: e.response.data.message };
         } else {
-            return {success: false, message: e.message};
+            return { success: false, message: e.message };
         }
     }
 }

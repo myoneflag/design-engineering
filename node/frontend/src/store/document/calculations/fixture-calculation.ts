@@ -1,8 +1,8 @@
-import {FieldCategory, CalculationField, Units} from '../../../../src/store/document/calculations/calculation-field';
-import {StandardFlowSystemUids} from '../../../../src/store/catalog';
-import {Calculation} from '../../../../src/store/document/calculations/types';
+import { FieldCategory, CalculationField, Units } from "../../../../src/store/document/calculations/calculation-field";
+import { StandardFlowSystemUids } from "../../../../src/store/catalog";
+import { Calculation } from "../../../../src/store/document/calculations/types";
 import FixtureEntity from "../entities/fixtures/fixture-entity";
-import {DocumentState} from "../types";
+import { DocumentState } from "../types";
 
 export default interface FixtureCalculation extends Calculation {
     pressures: {
@@ -11,24 +11,22 @@ export default interface FixtureCalculation extends Calculation {
 }
 
 export function makeFixtureCalculationFields(doc: DocumentState, entity: FixtureEntity): CalculationField[] {
-    return entity.roughInsInOrder.map((suid) =>
-        {
-            const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === suid);
-            if (!system) {
-                throw new Error('System not found');
-            }
-
-            return {
-                property: 'pressures.' + suid,
-                title: system.name + ' Pressure',
-                short: system.name.split(' ')[0].toLowerCase(),
-                systemUid: suid,
-                units: Units.KiloPascals,
-                category: FieldCategory.Pressure,
-                defaultEnabled: true,
-            }
+    return entity.roughInsInOrder.map((suid) => {
+        const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === suid);
+        if (!system) {
+            throw new Error("System not found");
         }
-    );
+
+        return {
+            property: "pressures." + suid,
+            title: system.name + " Pressure",
+            short: system.name.split(" ")[0].toLowerCase(),
+            systemUid: suid,
+            units: Units.KiloPascals,
+            category: FieldCategory.Pressure,
+            defaultEnabled: true
+        };
+    });
 }
 
 export function emptyFixtureCalculation(entity: FixtureEntity): FixtureCalculation {
@@ -42,6 +40,6 @@ export function emptyFixtureCalculation(entity: FixtureEntity): FixtureCalculati
 
     return {
         pressures,
-        warning: null,
+        warning: null
     };
 }

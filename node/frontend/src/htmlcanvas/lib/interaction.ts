@@ -1,7 +1,7 @@
-import {Coord, FlowSystemParameters} from '../../../src/store/document/types';
-import {EntityType} from '../../../src/store/document/entities/types';
-import {DrawableEntityConcrete} from '../../../src/store/document/entities/concrete-entity';
-import {FlowConfiguration} from '../../store/document/entities/big-valve/big-valve-entity';
+import { Coord, FlowSystemParameters } from "../../../src/store/document/types";
+import { EntityType } from "../../../src/store/document/entities/types";
+import { DrawableEntityConcrete } from "../../../src/store/document/entities/concrete-entity";
+import { FlowConfiguration } from "../../store/document/entities/big-valve/big-valve-entity";
 
 export interface PipeInteraction extends BaseInteraction {
     type: InteractionType.CONTINUING_PIPE | InteractionType.STARTING_PIPE;
@@ -36,11 +36,11 @@ export interface ExtendNetworkInteraction extends BaseInteraction {
 }
 
 export type Interaction =
-    PipeInteraction |
-    InsertInteraction |
-    MovePointToDest |
-    MovePointToSrc |
-    ExtendNetworkInteraction;
+    | PipeInteraction
+    | InsertInteraction
+    | MovePointToDest
+    | MovePointToSrc
+    | ExtendNetworkInteraction;
 
 export enum InteractionType {
     STARTING_PIPE,
@@ -48,5 +48,5 @@ export enum InteractionType {
     INSERT,
     EXTEND_NETWORK,
     MOVE_ONTO_RECEIVE,
-    MOVE_ONTO_SEND,
+    MOVE_ONTO_SEND
 }
