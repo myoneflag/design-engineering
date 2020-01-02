@@ -42,7 +42,6 @@
     "math3d": "^0.2.2",
     "register-service-worker": "^1.6.2",
     "sourcemapped-stacktrace": "^1.1.11",
-    "stacktrace": "^1.2.0",
     "stacktrace-js": "^2.0.1",
     "stompjs": "^2.3.3",
     "style-loader": "^1.0.0",
