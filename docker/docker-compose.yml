@@ -1,0 +1,33 @@
+version: '3.1'
+
+services:
+    db:
+        image: postgres
+        restart: always
+        environment:
+           POSTGRES_PASSWORD: postgres
+           POSTGRES_DB: h2x
+           POSTGRES_USER: postgres
+        volumes:
+            - ~/.h2xdb:/var/lib/postgresql/data
+
+
+    backend:
+        build: 
+            context: ../node/
+            dockerfile: backend.Dockerfile
+        ports:
+            - 8008:8008
+
+            
+        image: 'h2x-backend:latest'
+        restart: always
+
+    frontend:
+        build:
+            context: ../node/
+            dockerfile: frontend.Dockerfile
+        ports:
+            - 8080:8080
+        image: 'h2x-frontend:latest'
+        restart: always

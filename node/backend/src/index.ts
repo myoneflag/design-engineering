@@ -25,7 +25,7 @@ createConnection().then(async connection => {
 
     app.enable('trust proxy');
 
-    app.listen(PORT, err => {
+    app.listen(Number(PORT), '0.0.0.0', err => {
         if (err) {
             return console.log(err);
         }
