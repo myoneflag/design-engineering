@@ -17,7 +17,7 @@ export function openDocument(
     if (wss.has(id)) {
         throw new Error("warning: Document is already open");
     }
-    const HOST = location.origin.replace(/^https?/, "wss");
+    const HOST = location.origin.replace(/^http(s?)/, "ws$1");
     const ws = new WebSocket(HOST + "/api/documents/" + id + "/websocket");
     wss.set(id, ws);
 

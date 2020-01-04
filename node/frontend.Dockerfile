@@ -1,5 +1,7 @@
 from node:12
 
+run npm install -g serve
+
 workdir /usr/src/app/backend
 copy ./backend/package*.json ./
 run npm install
@@ -15,8 +17,7 @@ run npm install
 workdir /usr/src/app/frontend
 
 copy ./ ../
-expose 8080
 run npm run build
-run npm install -g serve
-env PORT 8080
+expose 80
+env PORT 80
 cmd [ "serve", "--single", "./dist" ]

@@ -1,13 +1,13 @@
-version: '3.1'
+version: '3.2'
 
 services:
     db:
         image: postgres
         restart: always
         environment:
-           POSTGRES_PASSWORD: postgres
-           POSTGRES_DB: h2x
-           POSTGRES_USER: postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=h2x
+            - POSTGRES_USER=postgres
         volumes:
             - ~/.h2xdb:/var/lib/postgresql/data
 
@@ -16,10 +16,9 @@ services:
         build: 
             context: ../node/
             dockerfile: backend.Dockerfile
-        ports:
-            - 8008:8008
-
-            
+            args:
+                - AWS_KEY=${AWS_KEY}
+                - AWS_SECRET=${AWS_SECRET}
         image: 'h2x-backend:latest'
         restart: always
 
@@ -27,7 +26,28 @@ services:
         build:
             context: ../node/
             dockerfile: frontend.Dockerfile
-        ports:
-            - 8080:8080
         image: 'h2x-frontend:latest'
         restart: always
+
+    backup:
+        build:
+            context: ../backup/
+            dockerfile: Dockerfile
+        image: 'h2x-backup:latest'
+        environment:
+            - PG_S3_BACKUP_BUCKET=h2x-db-backups
+            - PG_S3_BACKUP_ACCESS_KEY=${AWS_KEY}
+            - PG_S3_BACKUP_SECRET_KEY=${AWS_SECRET}
+            - PG_S3_BACKUP_HOST=h2x_db
+            - PG_S3_BACKUP_USER=postgres
+            - PG_S3_BACKUP_DB=h2x
+            - PG_S3_BACKUP_PASSWORD=postgres
+        restart: always
+
+    nginx:
+        image: 'nginx:latest'
+        volumes:
+            - ./nginx.conf:/etc/nginx/nginx.conf
+        ports:
+            - 8010:80
+        
