@@ -1283,7 +1283,7 @@ export default class DrawingCanvas extends Vue {
     insertFloorPlan(file: File, wc: Coord) {
         renderPdf(file).then((res) => {
             if (res.success) {
-                const { paperSize, scale, scaleName, uri, totalPages } = res.data;
+                const { paperSize, scale, scaleName, key, totalPages } = res.data;
                 const width = paperSize.widthMM / scale;
                 const height = paperSize.heightMM / scale;
                 // We create the operation here, not the server.
@@ -1303,7 +1303,7 @@ export default class DrawingCanvas extends Vue {
                     scaleName,
                     uid: uuid(),
                     totalPages,
-                    uri
+                    key,
                 };
 
                 this.$store.dispatch("document/addEntity", background);

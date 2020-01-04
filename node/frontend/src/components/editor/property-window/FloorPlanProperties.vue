@@ -194,7 +194,7 @@ export default class FloorPlanProperties extends Vue {
         if (this.file) {
             renderPdf(this.file).then((res) => {
                 if (res.success) {
-                    background.uri = res.data.uri;
+                    background.key = res.data.key;
                     background.filename = this.file!.name;
                     this.$props.onChange();
                     this.$store.dispatch("document/commit");

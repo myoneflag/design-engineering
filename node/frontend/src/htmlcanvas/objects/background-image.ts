@@ -24,6 +24,7 @@ import { CalculationContext } from "../../../src/calculations/types";
 import { FlowNode } from "../../../src/calculations/calculation-engine";
 import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { GlobalStore } from "../lib/global-store";
+import ImageLoader from "../lib/image-loader";
 
 export const imageStore = new Map<string, HTMLImageElement>();
 
@@ -72,7 +73,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
     hasDragged: boolean = false;
     shiftKey: boolean = false;
 
-    oldUri: string = "";
+    oldKey: string = "";
 
     drawPoint(context: DrawingContext, objectCoord: Coord, label: string) {
         const { ctx } = context;
@@ -107,66 +108,28 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
 
         this.image = null;
 
-        // Try to load the image. If we can't, then show a loading screen.
-        const retry = (expectedUri: string) => {
-            if (expectedUri !== this.entity.uri) {
-                // Sometimes, there are a lot of URI switches. We just want to keep the latest one.
+        const target = this.entity.key;
+        ImageLoader.get(this.entity.key).then((image) => {
+            if (this.entity.key !== target) {
+                // the image changed before we finished loading
                 return;
             }
 
-            if (imageStore.has(this.entity.uri)) {
-                this.image = imageStore.get(this.entity.uri)!;
-                if (this.image.complete && this.image.naturalWidth) {
-                    this.imgScale = {
-                        x: this.width / this.image.naturalWidth,
-                        y: this.height / this.image.naturalHeight
-                    };
+            this.imgScale = {
+                x: this.width / image.naturalWidth,
+                y: this.height / image.naturalHeight
+            };
 
-                    // Now now, we all know the scales better be the same
-                    if (Math.abs(this.imgScale.x / this.imgScale.y - 1) > 0.05) {
-                        throw new Error("Image aspect ratio differs from paper aspect ratio by more than 5%");
-                    }
-
-                    this.imgScale.y = this.imgScale.x;
-                    onLoad(this);
-                    return;
-                } else {
-                    throw new Error("Not loaded image in cache :/ don't do that");
-                }
+            // Now now, we all know the scales better be the same
+            if (Math.abs(this.imgScale.x / this.imgScale.y - 1) > 0.05) {
+                throw new Error("Image aspect ratio differs from paper aspect ratio by more than 5%");
             }
 
-            axios
-                .head(this.entity.uri)
-                .then(() => {
-                    const image = new Image();
+            this.imgScale.y = this.imgScale.x;
 
-                    image.onload = () => {
-                        imageStore.set(this.entity.uri, image);
-                        this.imgScale = {
-                            x: this.width / image.naturalWidth,
-                            y: this.height / image.naturalHeight
-                        };
-
-                        // Now now, we all know the scales better be the same
-                        if (Math.abs(this.imgScale.x / this.imgScale.y - 1) > 0.05) {
-                            throw new Error("Image aspect ratio differs from paper aspect ratio by more than 5%");
-                        }
-
-                        this.imgScale.y = this.imgScale.x;
-
-                        this.image = image;
-                        onLoad(this);
-                    };
-                    image.src = this.entity.uri;
-                })
-                .catch((e) => {
-                    setTimeout(() => {
-                        retry(expectedUri);
-                    }, 1000);
-                });
-        };
-
-        retry.bind(this)(this.entity.uri);
+            this.image = image;
+            onLoad(this);
+        });
     }
 
     /**
@@ -433,11 +396,11 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         return [];
     }
     onUpdate() {
-        if (this.entity && this.entity.uri !== this.oldUri) {
+        if (this.entity && this.entity.key !== this.oldKey) {
             this.initializeImage(() => {
                 this.onChange();
             });
-            this.oldUri = this.entity.uri;
+            this.oldKey = this.entity.key;
         }
     }
 }

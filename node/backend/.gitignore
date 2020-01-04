@@ -109,5 +109,5 @@ upload_*
 # Random node folder wtf
 ts-node-*
 
-# local ormconfig can be different
-ormconfig.json
+# AWS Credential should be re-entered in deployment, not committed
+aws_creds.ts

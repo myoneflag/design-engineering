@@ -17,7 +17,7 @@ export interface BackgroundEntity extends DrawableEntity {
     center: Coord;
     scaleName: string;
     scaleFactor: number;
-    uri: string;
+    key: string;
     filename: string;
     crop: Rectangle;
     paperSize: PaperSize;

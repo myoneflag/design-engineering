@@ -20,12 +20,14 @@
     "@babel/node": "^7.0.0",
     "@babel/polyfill": "^7.0.0",
     "@babel/preset-env": "^7.1.0",
+    "@types/aws-sdk": "^2.7.0",
     "@types/bcrypt": "^3.0.0",
     "@types/express-ws": "^3.0.0",
     "@types/formidable": "^1.0.31",
     "@types/image-size": "^0.8.0",
     "@types/nodemailer": "^6.2.2",
     "@types/uuid": "^3.4.6",
+    "aws-sdk": "^2.597.0",
     "bcrypt": "^3.0.7",
     "body-parser": "^1.18.3",
     "child_process": "^1.0.2",
@@ -53,7 +55,8 @@
     "tslib": "^1.10.0",
     "typeorm": "0.2.22",
     "uuid": "^3.3.3",
-    "webpack": "^4.41.2"
+    "webpack": "^4.41.2",
+    "https-proxy-agent": "latest"
   },
   "devDependencies": {
     "@types/dotenv": "^4.0.3",

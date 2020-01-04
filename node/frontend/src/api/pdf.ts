@@ -6,8 +6,13 @@ export interface PDFRenderResult {
     scaleName: string;
     scale: number;
     paperSize: PaperSize;
-    uri: string;
+    key: string;
     totalPages: number;
+}
+
+export interface GetImageLinkResult {
+    get: string;
+    head: string;
 }
 
 export const renderPdf = async (file: File): Promise<APIResult<PDFRenderResult>> => {
@@ -30,3 +35,17 @@ export const renderPdf = async (file: File): Promise<APIResult<PDFRenderResult>>
         }
     }
 };
+
+export async function getImageLink(key: string): Promise<APIResult<GetImageLinkResult>> {
+    try {
+        return (
+            await axios.get("/api/uploadPdf/" + key)
+        ).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return { success: false, message: e.response.data.message };
+        } else {
+            return { success: false, message: e.message };
+        }
+    }
+}
