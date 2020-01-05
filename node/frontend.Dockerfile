@@ -4,14 +4,17 @@ run npm install -g serve
 
 workdir /usr/src/app/backend
 copy ./backend/package*.json ./
+copy ./backend/npm-shrinkwrap.json ./
 run npm install
 
 workdir /usr/src/app/frontend
 copy ./frontend/package*.json ./
+copy ./frontend/npm-shrinkwrap.json ./
 run npm install
 
 workdir /usr/src/app/common
 copy ./common/package*.json ./
+copy ./common/npm-shrinkwrap.json ./
 run npm install
 
 workdir /usr/src/app/frontend
