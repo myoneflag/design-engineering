@@ -47,7 +47,7 @@
             <FloorPlanInsertPanel @insert-floor-plan="onFloorPlanSelected" v-if="document.uiState.drawingMode === 0" />
 
             <HydraulicsInsertPanel
-                v-if="document.uiState.drawingMode === 1 && initialized"
+                v-if="document.uiState.drawingMode === 1 && initialized && !document.uiState.viewOnly"
                 :flow-systems="document.drawing.metadata.flowSystems"
                 @insert="hydraulicsInsert"
                 :fixtures="effectiveCatalog.fixtures"

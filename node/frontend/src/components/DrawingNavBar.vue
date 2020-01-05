@@ -37,7 +37,32 @@
             </b-nav-item>
         </b-navbar-nav>
 
-        <ProfileMenuItem />
+
+        <b-navbar-nav class="ml-auto">
+            <b-nav-text  v-if="document.uiState.viewOnly" variant="outline-primary" id="view-only-label">
+                <v-icon name="eye"/>
+                View Only
+                <b-tooltip v-if="document.uiState.viewOnlyReason" target="view-only-label">
+                    {{ document.uiState.viewOnlyReason }}
+                </b-tooltip>
+            </b-nav-text>
+            <b-nav-text v-else-if="isSyncing">
+                <b-spinner style="width: 1.0rem; height: 1.0rem;"></b-spinner>
+                Saving...
+            </b-nav-text>
+            <b-nav-text v-else>
+                <v-icon name="check"/>
+                Saved
+            </b-nav-text>
+
+            <b-nav-text>
+                &nbsp;
+                &nbsp;
+                &nbsp;
+            </b-nav-text>
+
+            <ProfileMenuItem />
+        </b-navbar-nav>
     </b-navbar>
 </template>
 
@@ -79,6 +104,10 @@ export default class DrawingNavBar extends Vue {
             return null;
         }
         return this.document.drawing.levels[this.document.uiState.levelUid];
+    }
+
+    get isSyncing(): boolean {
+        return this.$store.getters['document/isSyncing'];
     }
 
     commit() {

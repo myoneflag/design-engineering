@@ -53,6 +53,7 @@
                                         @click="$event.stopPropagation()"
                                         v-model="level.abbreviation"
                                         size="sm"
+                                        @blur="commit"
                                         col
                                     ></b-form-input>
                                 </b-col>
@@ -62,6 +63,7 @@
                                         @click="$event.stopPropagation()"
                                         v-model="level.name"
                                         size="sm"
+                                        @blur="commit"
                                     ></b-form-input>
                                 </b-col>
                                 <b-col cols="2">
@@ -73,6 +75,7 @@
                                             type="number"
                                             v-model="level.floorHeightM"
                                             size="sm"
+                                            @blur="commit"
                                         >
                                         </b-form-input>
                                         <b-input-group-append>
@@ -234,6 +237,10 @@ export default class LevelSelector extends Vue {
                     this.$store.dispatch("document/commit");
                 }
             });
+    }
+
+    commit() {
+        this.$store.dispatch('document/commit');
     }
 }
 </script>

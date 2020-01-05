@@ -31,6 +31,7 @@ createConnection().then(async connection => {
             return console.log(err);
         }
 
+        console.log('AWS key: ' + process.env.AWS_KEY)
         initializeDatabase();
 
         console.log(`Server is listening on ${PORT}`);

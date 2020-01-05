@@ -45,12 +45,13 @@ function logLevelMutation(state: DocumentState, levelUid: string) {
         Vue.set(state.diffFilter.levels, levelUid, {
             /**/
         });
+    } else {
+        Object.keys(state.drawing.levels[levelUid]).forEach((key) => {
+            if (key !== "entities") {
+                Vue.set(state.diffFilter.levels[levelUid], key, false);
+            }
+        });
     }
-    Object.keys(state.drawing.levels[levelUid]).forEach((key) => {
-        if (key !== "entities") {
-            Vue.set(state.diffFilter.levels[levelUid], key, false);
-        }
-    });
 }
 
 export const mutations: MutationTree<DocumentState> = {
@@ -78,6 +79,10 @@ export const mutations: MutationTree<DocumentState> = {
                     return;
                 }
             } else {
+                state.uiState.viewOnly = true;
+                state.uiState.viewOnlyReason = "Conflict while editing simultaneously - please refresh";
+                this.revert(state, true);
+
                 throw new Error(
                     "Optimistic operation conflict. TODO: rewind with undo's here. New object is: \n" +
                         JSON.stringify(operation) +
@@ -347,14 +352,16 @@ function proxyUpFromStateDiff(state: DocumentState, diff: any) {
     if (diff.levels && state.drawing.levels) {
         Object.keys(diff.levels).forEach((lvlUid) => {
             if (state.drawing.levels[lvlUid] && state.drawing.levels[lvlUid].entities) {
-                Object.keys(diff.levels[lvlUid].entities).forEach((uid) => {
-                    if (state.drawing.levels[lvlUid].entities.hasOwnProperty(uid)) {
-                        state.drawing.levels[lvlUid].entities[uid] = proxyEntity(
-                            state.drawing.levels[lvlUid].entities[uid],
-                            entityHandler(state, lvlUid, uid)
-                        );
-                    }
-                });
+                if (diff.levels[lvlUid] && diff.levels[lvlUid].entities) {
+                    Object.keys(diff.levels[lvlUid].entities).forEach((uid) => {
+                        if (state.drawing.levels[lvlUid].entities.hasOwnProperty(uid)) {
+                            state.drawing.levels[lvlUid].entities[uid] = proxyEntity(
+                                state.drawing.levels[lvlUid].entities[uid],
+                                entityHandler(state, lvlUid, uid)
+                            );
+                        }
+                    });
+                }
                 state.drawing.levels[lvlUid] = proxyLevel(state.drawing.levels[lvlUid], state, lvlUid);
             }
         });
@@ -382,20 +389,22 @@ function marshalChanges(from: DrawingState, to: DrawingState, diff: any): Array<
         Object.keys(diff.levels).forEach((lvlUid) => {
             if (from.levels.hasOwnProperty(lvlUid) && to.levels.hasOwnProperty(lvlUid)) {
                 // Diff elements here
-                Object.keys(diff.levels[lvlUid].entities).forEach((uid) => {
-                    if (
-                        to.levels[lvlUid].entities.hasOwnProperty(uid) &&
-                        from.levels[lvlUid].entities.hasOwnProperty(uid)
-                    ) {
-                        res.push(["update-entity", uid]);
-                    } else if (from.levels[lvlUid].entities.hasOwnProperty(uid)) {
-                        res.push(["delete-entity", { entity: from.levels[lvlUid].entities[uid], levelUid: lvlUid }]);
-                    } else if (to.levels[lvlUid].entities.hasOwnProperty(uid)) {
-                        res.push(["add-entity", { entity: to.levels[lvlUid].entities[uid], levelUid: lvlUid }]);
-                    } else {
-                        throw new Error("invalid diff state - diffing something that no sides have");
-                    }
-                });
+                if (diff.levels[lvlUid].entities) {
+                    Object.keys(diff.levels[lvlUid].entities).forEach((uid) => {
+                        if (
+                            to.levels[lvlUid].entities.hasOwnProperty(uid) &&
+                            from.levels[lvlUid].entities.hasOwnProperty(uid)
+                        ) {
+                            res.push(["update-entity", uid]);
+                        } else if (from.levels[lvlUid].entities.hasOwnProperty(uid)) {
+                            res.push(["delete-entity", { entity: from.levels[lvlUid].entities[uid], levelUid: lvlUid }]);
+                        } else if (to.levels[lvlUid].entities.hasOwnProperty(uid)) {
+                            res.push(["add-entity", { entity: to.levels[lvlUid].entities[uid], levelUid: lvlUid }]);
+                        } else {
+                            throw new Error("invalid diff state - diffing something that no sides have");
+                        }
+                    });
+                }
             } else if (from.levels.hasOwnProperty(lvlUid)) {
                 res.push(["delete-level", from.levels[lvlUid]]);
             } else if (to.levels.hasOwnProperty(lvlUid)) {

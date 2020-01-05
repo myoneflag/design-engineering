@@ -42,6 +42,7 @@ export default class Document extends Vue {
             },
             () => {
                 this.$store.dispatch("document/loaded", true);
+                this.document.uiState.viewOnly = false;
             },
             (msg) => {
                 if (!this.closeExpected) {
@@ -55,6 +56,10 @@ export default class Document extends Vue {
                             title: "Connection Error"
                         }
                     );
+
+                    this.document.uiState.viewOnly = true;
+                    this.document.uiState.viewOnlyReason = "Lost connection to the server - Please Refresh";
+                    this.$store.dispatch('document/revert');
                 }
             }
         );

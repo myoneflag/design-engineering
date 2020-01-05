@@ -6,7 +6,7 @@ module.exports = {
    "password": "postgres",
    "database": "h2x",
    "synchronize": true,
-   "logging": true,
+   "logging": false,
    "entities": [
       "./src/entity/**/*.ts"
    ],

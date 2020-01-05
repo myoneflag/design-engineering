@@ -71,20 +71,20 @@
                                 <b-col cols="7">
                                     <b-form-input
                                         :value="renderedData(field.property)"
-                                        @input="setRenderedData(field, Number($event))"
+                                        @input=""
                                         :id="'input-' + field.property"
                                         :min="field.params.min"
                                         :max="field.params.max"
                                         size="sm"
                                         type="range"
                                         :disabled="isDisabled(field)"
-                                        @blur="onCommit"
+                                        @blur="(e) => { setRenderedData(field, Number(e.target.value)); onCommit }"
                                     />
                                 </b-col>
                                 <b-col cols="5">
                                     <b-form-input
                                         :value="renderedData(field.property)"
-                                        @input="setRenderedData(field, Number($event))"
+                                        @input=""
                                         :id="'input-' + field.property"
                                         :min="field.params.min"
                                         :max="field.params.max"
@@ -92,7 +92,7 @@
                                         type="number"
                                         :placeholder="'Enter ' + field.title"
                                         :disabled="isDisabled(field)"
-                                        @blur="onCommit"
+                                        @blur="(e) => { setRenderedData(field, Number(e.target.value)); onCommit }"
                                     />
                                 </b-col>
                             </b-row>
@@ -101,7 +101,7 @@
                                 <b-col cols="12">
                                     <b-form-input
                                         :value="renderedData(field.property)"
-                                        @input="setRenderedData(field, Number($event))"
+                                        @input=""
                                         :id="'input-' + field.property"
                                         size="sm"
                                         :min="field.params.min == null ? undefined : field.params.min"
@@ -109,7 +109,7 @@
                                         type="number"
                                         :placeholder="'Enter ' + field.title"
                                         :disabled="isDisabled(field)"
-                                        @blur="onCommit"
+                                        @blur="(e) => { setRenderedData(field, Number(e.target.value)); onCommit }"
                                     />
                                 </b-col>
                             </b-row>
@@ -248,6 +248,15 @@ export default class PropertiesFieldBuilder extends Vue {
 
         if (commit && this.$props.onCommit) {
             this.$props.onCommit();
+        }
+    }
+
+    setRenderedDataNumeric(field: PropertyField, value: any) {
+        console.log("Setting numeric: " + JSON.stringify(value));
+        if (!isNaN(value) && value !== "") {
+            //this.setRenderedData(field, Number(value));
+        } else {
+            //this.setRenderedData(field, value);
         }
     }
 

@@ -1,7 +1,10 @@
-import {AccessLevel} from "../../../backend/src/entity/User";
 <template>
-    <b-navbar-nav class="ml-auto">
-        <b-nav-item-dropdown :text="profile.name + ' '" right>
+        <b-nav-item-dropdown right>
+
+            <template slot="button-content">
+                <v-icon name="user" style="margin-top: -3px"></v-icon>
+                {{ profile.name + ' '}}
+            </template>
             <b-dropdown-item :to="'/users/username/' + profile.username">Profile</b-dropdown-item>
             <b-dropdown-item @click="changePassword">Change Password</b-dropdown-item>
             <template v-if="profile.accessLevel <= AccessLevel.MANAGER">
@@ -22,7 +25,6 @@ import {AccessLevel} from "../../../backend/src/entity/User";
             <b-dropdown-divider></b-dropdown-divider>
             <b-dropdown-item @click="logout">Logout</b-dropdown-item>
         </b-nav-item-dropdown>
-    </b-navbar-nav>
 </template>
 
 <script lang="ts">

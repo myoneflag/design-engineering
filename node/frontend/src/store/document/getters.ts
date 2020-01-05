@@ -45,5 +45,9 @@ export const getters: GetterTree<DocumentState, RootState> = {
             });
         }
         return res;
-    }
+    },
+
+    isSyncing(state): boolean {
+        return state.optimisticHistory.length > 0;
+    },
 };

@@ -106,6 +106,8 @@ export interface UIState {
 
     calculationFilters: CalculationFilters;
     levelUid: string | null;
+    viewOnly: boolean;
+    viewOnlyReason: string | null;
 }
 
 export interface CalculationFilters {
@@ -327,7 +329,9 @@ export const initialUIState: UIState = {
     },
     isCalculating: false,
     calculationFilters: {},
-    levelUid: null
+    levelUid: null,
+    viewOnly: true,
+    viewOnlyReason: null,
 };
 
 export function blankDiffFilter() {

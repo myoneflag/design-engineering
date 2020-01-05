@@ -46,6 +46,11 @@ export const actions: ActionTree<DocumentState, RootState> = {
 
     // Call this action to commit the current operation transforms. TODO: make that atomic.
     commit({ commit, state }) {
+        if (state.uiState.viewOnly) {
+            commit('revert');
+            return;
+        }
+
         // We need to wait for entity mutation watchers to fire and update the filter.
 
         if (!_.isEqual(state.drawing.metadata.generalInfo, state.committedDrawing.metadata.generalInfo)) {
@@ -77,10 +82,14 @@ export const actions: ActionTree<DocumentState, RootState> = {
             state.documentId,
             commit,
             diff
-        ); /*.catch((e) => {
-            window.alert('There is a connection issue with the server. Please refresh. \n' +
+        ).catch((e) => {
+
+            state.uiState.viewOnly = true;
+            state.uiState.viewOnlyReason = "Lost connection to the server - please refresh";
+            this.dispatch('document/revert');
+            window.alert('Unable to Save: There is a connection issue with the server. Please refresh. \n' +
              e.message + "\n" + e.trace);
-        });*/
+        });
 
         MainEventBus.$emit("committed", true);
     },
