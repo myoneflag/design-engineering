@@ -3,18 +3,15 @@ from node:12
 run npm install -g serve
 
 workdir /usr/src/app/backend
-copy ./backend/package*.json ./
-copy ./backend/npm-shrinkwrap.json ./
+copy ./backend/package*.json ./backend/npm*.json ./
 run npm install
 
 workdir /usr/src/app/frontend
-copy ./frontend/package*.json ./
-copy ./frontend/npm-shrinkwrap.json ./
+copy ./frontend/package*.json ./frontend/npm*.json ./
 run npm install
 
 workdir /usr/src/app/common
-copy ./common/package*.json ./
-copy ./common/npm-shrinkwrap.json ./
+copy ./common/package*.json ./common/npm*.json ./
 run npm install
 
 workdir /usr/src/app/frontend
