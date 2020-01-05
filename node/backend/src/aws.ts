@@ -1,5 +1,4 @@
 import AWS, { Credentials } from "aws-sdk";
-import { ACCESS_KEY, SECRET_ACCESS_KEY } from "./aws_creds";
 
 AWS.config.update({
     region: 'ap-southeast-2',

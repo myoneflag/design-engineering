@@ -9,7 +9,7 @@ services:
             - POSTGRES_DB=h2x
             - POSTGRES_USER=postgres
         volumes:
-            - ~/.h2xdb:/var/lib/postgresql/data
+            - /opt/h2x/.h2xdb/:/var/lib/postgresql/data
 
 
     backend:
