@@ -75,7 +75,7 @@
                                             type="number"
                                             v-model="level.floorHeightM"
                                             size="sm"
-                                            @blur="commit"
+                                            @blur="() => { level.floorHeightM = Number(level.floorHeightM); commit }"
                                         >
                                         </b-form-input>
                                         <b-input-group-append>

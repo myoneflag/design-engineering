@@ -218,6 +218,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
             return [se];
         }
 
+
         // Insert a flow source into the group somewhere to simulate the riser.
 
         if (se.heightAboveGroundM! < tower[0][0].calculationHeightM!) {
