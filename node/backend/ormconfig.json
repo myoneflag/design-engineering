@@ -1,10 +1,10 @@
-module.exports = {
+{
    "type": "postgres",
-   "host":  process.env.H2X_MODE === "production" ? "db" : "localhost",
+   "host": "localhost",
    "port": 5432,
    "username": "postgres",
    "password": "postgres",
-   "database": "h2x",
+   "database": "h2x2",
    "synchronize": true,
    "logging": false,
    "entities": [
@@ -22,4 +22,4 @@ module.exports = {
       "migrationsDir": "src/migration",
       "subscribersDir": "src/subscriber"
    }
-};
+}
