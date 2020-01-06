@@ -11,7 +11,6 @@ services:
         volumes:
             - /opt/h2x/.h2xdb/:/var/lib/postgresql/data
 
-
     backend:
         build: 
             context: ../node/
@@ -21,6 +20,8 @@ services:
                 - AWS_SECRET=${AWS_SECRET}
         image: 'h2x-backend:latest'
         restart: always
+        depends_on:
+            - db
 
     frontend:
         build:
@@ -43,6 +44,8 @@ services:
             - PG_S3_BACKUP_DB=h2x
             - PG_S3_BACKUP_PASSWORD=postgres
         restart: always
+        depends_on:
+            - db
 
     nginx:
         image: 'nginx:latest'

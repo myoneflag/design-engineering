@@ -5,7 +5,7 @@ export default function Cached<T extends BaseBackedObject>(
     getDependencies: (kek: T) => Set<string>,
     serializeArgs?: (...args: any[]) => string
 ) {
-    return (target: T, propertyKey: string, descriptor: PropertyDescriptor) => {
+    return (target: T, propertyKey: string, descriptor: PropertyDescriptor) => {/*
         const originalMethod = descriptor.value;
         descriptor.value = function(this: T) {
             const cacheKey =
@@ -15,7 +15,7 @@ export default function Cached<T extends BaseBackedObject>(
                 this.cache.set(cacheKey, originalMethod.apply(this, arguments));
             }
             return this.cache.get(cacheKey);
-        };
+        };*/
         return descriptor;
     };
 }
