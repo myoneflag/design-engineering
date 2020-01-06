@@ -4,7 +4,10 @@
             <b-nav-item :to="{ name: 'home' }" active-class="active" exact>Home</b-nav-item>
         </b-navbar-nav>
 
-        <ProfileMenuItem />
+        <b-navbar-nav class="ml-auto">
+
+            <ProfileMenuItem />
+        </b-navbar-nav>
     </b-navbar>
 </template>
 

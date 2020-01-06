@@ -1,12 +1,13 @@
-import {Session} from "../entity/Session";
-import {NextFunction, Request, Response} from "express";
-import {AccessLevel} from "../entity/User";
+import { NextFunction, Request, Response } from "express";
+import { AccessEvents, LoginEventType } from "../entity/AccessEvents";
+import { Session } from "../entity/Session";
+import { AccessLevel } from "../entity/User";
 
 export function AuthRequired(minAccessLevel?: AccessLevel) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        let original = descriptor.value;
-        descriptor.value = async function (req: Request, res: Response, next: NextFunction) {
-            return await withAuth(
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+        const original = descriptor.value;
+        descriptor.value = async (req: Request, res: Response, next: NextFunction) => {
+            return withAuth(
                 req,
                 (session) => {
                     return original(req, res, next, session);
@@ -29,6 +30,15 @@ export async function withAuth<T>(
     onFail: (msg: string) => any,
     minAccessLevel?: AccessLevel,
     ): Promise<T> {
+
+
+    const event = AccessEvents.create();
+    event.dateTime = new Date();
+    event.ip = req.ip;
+    event.userAgent = req.get('user-agent') || '';
+    event.success = true;
+    event.url = req.originalUrl;
+
     if (!req.cookies) {
         onFail("Authorization required, but session-id cookie is missing");
         return;
@@ -36,8 +46,13 @@ export async function withAuth<T>(
     const sessionId = req.cookies['session-id'];
     const s =  await Session.findOne({id: sessionId});
     if (s) {
+        event.username = (await s.user).username;
+        event.user = (await s.user);
+
         if (s.expiresOn < new Date()) {
             onFail("Session Expired");
+            event.type = LoginEventType.SESSION_EXPIRED;
+            await event.save();
             return;
         }
 
@@ -45,6 +60,8 @@ export async function withAuth<T>(
             const thisLogin = await s.user;
             if (thisLogin.accessLevel > minAccessLevel) {
                 onFail('Unauthorized Access');
+                event.type = LoginEventType.UNAUTHORISED_ACCESS;
+                await event.save();
                 return;
             }
         }
@@ -54,9 +71,20 @@ export async function withAuth<T>(
         if (s.expiresOn < tomorrow) {
             s.expiresOn = tomorrow;
             await s.save();
+
+            event.type = LoginEventType.SESSION_REFRESH;
+            await event.save();
         }
-        return await fn(s);
+
+
+        event.type = LoginEventType.AUTHORISED_ACCESS;
+        await event.save();
+        return fn(s);
     } else {
+
+        event.type = LoginEventType.UNAUTHORISED_ACCESS;
+        await event.save();
+
         return onFail("Unauthorized Access");
     }
 }

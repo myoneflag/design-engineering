@@ -1,12 +1,11 @@
-import {NextFunction, Request, Response, Router} from "express";
-import {Session} from "../entity/Session";
-import {ApiHandleError} from "../helpers/apiWrapper";
-import {AuthRequired} from "../helpers/withAuth";
-import {AccessLevel, User} from "../entity/User";
-import {AccessType, withOrganization, withUser} from "../helpers/withResources";
-import {registerUser} from "./login";
-import {LessThanOrEqual} from "typeorm";
-import {Organization} from "../entity/Organization";
+import { NextFunction, Request, Response, Router } from "express";
+import { Session } from "../entity/Session";
+import { ApiHandleError } from "../helpers/apiWrapper";
+import { AuthRequired } from "../helpers/withAuth";
+import { AccessLevel, User } from "../entity/User";
+import { AccessType, withOrganization, withUser } from "../helpers/withResources";
+import { registerUser } from "./login";
+import { Organization } from "../entity/Organization";
 
 export class UserController {
 
@@ -121,7 +120,7 @@ export class UserController {
                 return;
             }
 
-            let newOrg: Organization | undefined = undefined;
+            let newOrg: Organization | undefined;
             if (organization) {
                 let success = false;
                 let accessType = AccessType.UPDATE;

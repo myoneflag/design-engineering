@@ -3,6 +3,7 @@ import {AccessLevel} from "../../../backend/src/entity/User"; import {AccessLeve
 <template>
     <div>
         <MainNavBar></MainNavBar>
+        <div style="overflow-y: auto; overflow-x: hidden; height: calc(100vh - 70px)">
         <b-container>
             <b-row>
                 <b-col>
@@ -59,7 +60,54 @@ import {AccessLevel} from "../../../backend/src/entity/User"; import {AccessLeve
                     <b-alert v-else variant="success" show>Loading...</b-alert>
                 </b-col>
             </b-row>
+
+            <template  v-if="profile && profile.accessLevel <= AccessLevel.ADMIN">
+
+            <b-row style="margin-top: 50px">
+                <b-button-group>
+                    <b-button @click="changePage(page - 1)" :disabled="page <= 0">
+                        <<
+                    </b-button>
+                    <b-input type="number" v-model="page" @input="changePage($event)">
+
+                    </b-input>
+                    <b-button @click="changePage(page + 1)">
+                        >>
+                    </b-button>
+                </b-button-group>
+            </b-row>
+            <b-row>
+                <b-col>
+
+                    <b-list-group size="sm">
+                        <b-list-group-item
+                                v-for="item in accessItems"
+                                :key="item.id"
+                                size="sm"
+                                style="padding: 0"
+                                v-b-tooltip.hover="{title: JSON.stringify(item)}"
+                        >
+                            <b-row>
+                                <b-col cols="3">
+                                    {{ new Date(item.dateTime).toLocaleString() }}
+                                </b-col>
+                                <b-col cols="2">
+                                    {{ item.type }}
+                                </b-col>
+                                <b-col cols="5">
+                                    {{ item.url }}
+                                </b-col>
+                                <b-col cols="2">
+                                    {{ item.success }}
+                                </b-col>
+                            </b-row>
+                        </b-list-group-item>
+                    </b-list-group>
+                </b-col>
+            </b-row>
+            </template>
         </b-container>
+        </div>
     </div>
 </template>
 
@@ -69,6 +117,8 @@ import Component from "vue-class-component";
 import MainNavBar from "../components/MainNavBar.vue";
 import { AccessLevel, User as IUser } from "../../../backend/src/entity/User";
 import { getUser, updateUser } from "../api/users";
+import { AccessEvents } from "../../../backend/src/entity/AccessEvents";
+import { getAccessEvents } from "../api/access-events";
 
 @Component({
     components: { MainNavBar },
@@ -80,6 +130,8 @@ import { getUser, updateUser } from "../api/users";
 })
 export default class User extends Vue {
     user: IUser | null = null;
+    page = 0;
+    accessItems: AccessEvents[] = [];
 
     organization: string | null = null;
 
@@ -98,10 +150,26 @@ export default class User extends Vue {
                 });
             }
         });
+        this.changePage(0);
     }
 
     mounted() {
         this.updateUsername(this.$route.params.id);
+    }
+
+    async changePage(page: number) {
+        this.page = page;
+        if (this.user) {
+            const result = await getAccessEvents(this.user.username, this.page * 50, 50);
+            if (result.success) {
+                this.accessItems = result.data;
+            } else {
+                this.$bvToast.toast(result.message, {
+                    variant: 'danger',
+                    title: 'Error Retrieving Access Events',
+                });
+            }
+        }
     }
 
     save() {
