@@ -13,7 +13,7 @@ export function makeFittingCalculationFields(entity: FittingEntity): Calculation
         {
             property: "flowRateLS",
             title: "Flow Rate",
-            short: "Flow",
+            short: "",
             units: Units.LitersPerSecond,
             systemUid: entity.systemUid,
             category: FieldCategory.FlowRate

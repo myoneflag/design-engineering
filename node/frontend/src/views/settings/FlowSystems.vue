@@ -62,7 +62,7 @@ export default class FlowSystems extends Vue {
         const fields = [
             ["name", "System Name:", "text"],
             ["fluid", "Fluid:", "choice", this.$store.getters["catalog/defaultFluidChoices"]],
-            ["temperature", "Entry temperature: (c)", "range", 10, 100],
+            ["temperature", "Entry temperature: (°C)", "range", 10, 100],
             ["color", "Colour:", "color"],
             ["", "Network Properties", "title3"]
         ];

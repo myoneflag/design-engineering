@@ -21,9 +21,8 @@
         </CalculationsSidebar>
 
         <LevelSelector
-            :levels="document.drawing.levels"
-            :current-level-uid="document.uiState.levelUid"
             v-if="levelSelectorVisible && initialized"
+            :object-store="globalStore"
         >
         </LevelSelector>
 
@@ -1131,7 +1130,7 @@ export default class DrawingCanvas extends Vue {
                 drawLoadingUnits(
                     context,
                     this.effectiveCatalog,
-                    countPsdUnits(this.selectedEntities, this.document, this.effectiveCatalog),
+                    countPsdUnits(this.selectedEntities, this.document, this.effectiveCatalog, this.globalStore),
                     true
                 );
             } else {
@@ -1141,7 +1140,8 @@ export default class DrawingCanvas extends Vue {
                     countPsdUnits(
                         Array.from(this.objectStore.values()).map((o) => o.entity),
                         this.document,
-                        this.effectiveCatalog
+                        this.effectiveCatalog,
+                        this.globalStore,
                     )
                 );
             }

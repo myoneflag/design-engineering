@@ -65,7 +65,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                     },
                     qLS: {
                         order: 5,
-                        name: "Design Flow Rate (L/s)",
+                        name: "Full Flow Rate (L/s)",
                         table: {
                             primaryName: " ",
                             columns: [[null, "Flow Rate (L/s)"]]
@@ -85,7 +85,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                     minInletPressureKPA: { order: 8, name: "Min. Inlet Pressure (kPa)" },
                     probabilityOfUsagePCT: { order: 9, name: "Probability of Usage (%)" },
                     outletAboveFloorM: { order: 10, name: "Outlet Above Floor (M)" },
-                    warmTempC: { order: 11, name: "Warm Temperature (C)" }
+                    warmTempC: { order: 11, name: "Warm Temperature (°C)" }
                 }
             }
         },
@@ -183,7 +183,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                         order: 3,
                         name: "Dynamic Viscosity By Temperature",
                         table: {
-                            primaryName: "Temperature (C)",
+                            primaryName: "Temperature (°C)",
                             columns: [[null, "Dynamic Viscosity"]]
                         }
                     }

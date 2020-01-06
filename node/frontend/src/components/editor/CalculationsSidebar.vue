@@ -36,7 +36,7 @@
                                 :disabled="!objectFilters.enabled"
                                 v-for="(filter, prop) in objectFilters.filters"
                                 :checked="filter.enabled"
-                                @input="onCheck(type, prop, $event)"
+                                @input="onCheck(type, filter.name, $event)"
                                 :key="prop"
                             >
                                 {{ filter.name }}
@@ -94,13 +94,13 @@ export default class CalculationsSidebar extends Vue {
 
             let hasEnabled = false;
             fields.forEach((f) => {
-                if (!(f.property in build[o.entity.type])) {
-                    Vue.set(build[o.entity.type].filters, f.property, {
+                if (!(f.title in build[o.entity.type].filters)) {
+                    Vue.set(build[o.entity.type].filters, f.title, {
                         name: f.title,
                         value: false
                     });
                     if (f.defaultEnabled) {
-                        build[o.entity.type].filters[f.property].enabled = true;
+                        build[o.entity.type].filters[f.title].enabled = true;
                         hasEnabled = true;
                     }
                 }
@@ -120,7 +120,6 @@ export default class CalculationsSidebar extends Vue {
                 build[eType].enabled = existing[eType].enabled;
             }
         }
-
         return build;
     }
 

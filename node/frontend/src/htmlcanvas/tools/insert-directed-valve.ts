@@ -116,7 +116,7 @@ function createBareValve(type: ValveType, catalogId: string): DirectedValveConcr
         case ValveType.STRAINER:
         case ValveType.ISOLATION_VALVE:
             return {
-                isClosed: true,
+                isClosed: false,
                 catalogId: catalogId as any,
                 type
             };
@@ -133,7 +133,7 @@ function createBareValve(type: ValveType, catalogId: string): DirectedValveConcr
                 type,
                 catalogId: catalogId as any,
                 sizeMM: null,
-                isolateOneWhenCalculatingHeadLoss: false
+                isolateOneWhenCalculatingHeadLoss: true
             };
     }
 }

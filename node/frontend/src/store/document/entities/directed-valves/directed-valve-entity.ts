@@ -93,7 +93,7 @@ export function makeDirectedValveFields(
             if (valve.type === ValveType.RPZD_DOUBLE_ISOLATED) {
                 fields.push({
                     property: "valve.isolateOneWhenCalculatingHeadLoss",
-                    title: "Isolate one when calculation head loss?",
+                    title: "Isolate When Calculation Head Loss?",
                     hasDefault: false,
                     isCalculated: false,
                     params: null,

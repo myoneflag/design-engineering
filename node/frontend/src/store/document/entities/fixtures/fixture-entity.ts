@@ -58,7 +58,7 @@ export function makeFixtureFields(doc: DocumentState, entity: FixtureEntity): Pr
 
         {
             property: "warmTempC",
-            title: "Warm Water Temperature (C)",
+            title: "Warm Water Temperature (°C)",
             hasDefault: true,
             isCalculated: false,
             type: FieldType.Number,
@@ -102,7 +102,7 @@ export function makeFixtureFields(doc: DocumentState, entity: FixtureEntity): Pr
 
             {
                 property: "roughIns." + suid + ".designFlowRateLS",
-                title: "Design Flow Rate (L/s)",
+                title: "Full Flow Rate (L/s)",
                 hasDefault: true,
                 isCalculated: false,
                 type: FieldType.Number,

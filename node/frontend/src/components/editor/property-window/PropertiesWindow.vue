@@ -193,7 +193,7 @@ export default class PropertiesWindow extends Vue {
 
     get psdUnits(): PsdUnitsByFlowSystem | null {
         const selectedEntities: DrawableEntityConcrete[] = this.$props.selectedEntities;
-        return countPsdUnits(selectedEntities, this.document, this.effectiveCatalog);
+        return countPsdUnits(selectedEntities, this.document, this.effectiveCatalog, this.$props.objectStore);
     }
 
     systemPsdUnitName(suid: string) {

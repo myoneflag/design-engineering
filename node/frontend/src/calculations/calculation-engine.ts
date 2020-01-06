@@ -173,10 +173,8 @@ export default class CalculationEngine {
         }
 
         this.equationEngine = new EquationEngine();
-        setTimeout(() => {
-            this.doRealCalculation();
-            done();
-        }, 0);
+        this.doRealCalculation();
+        done();
     }
 
     clearCalculations() {
@@ -1229,6 +1227,10 @@ export default class CalculationEngine {
         calculation.realNominalPipeDiameterMM = parseCatalogNumberExact(page!.diameterNominalMM);
         calculation.realInternalDiameterMM = parseCatalogNumberExact(page!.diameterInternalMM);
 
+        if (!calculation.optimalInnerPipeDiameterMM) {
+            console.log(calculation.optimalInnerPipeDiameterMM);
+            console.log(flowRateLS);
+        }
         if (calculation.realNominalPipeDiameterMM) {
             calculation.velocityRealMS = this.getVelocityRealMs(pipe);
 
@@ -1261,8 +1263,9 @@ export default class CalculationEngine {
         const calculation = this.globalStore.getOrCreateCalculation(pipe);
         const realPipe = lowerBoundTable(
             this.catalog.pipes[filled.material!].pipesBySize,
-            calculation.optimalInnerPipeDiameterMM!
+            calculation.realInternalDiameterMM!
         )!;
+
         const roughness = parseCatalogNumberExact(realPipe.colebrookWhiteCoefficient);
         const realInternalDiameter = parseCatalogNumberExact(realPipe.diameterInternalMM);
 
@@ -1276,6 +1279,7 @@ export default class CalculationEngine {
             )
         );
 
+        console.log(calculation.velocityRealMS);
         return getDarcyWeisbachMH(
             getFrictionFactor(
                 realInternalDiameter!,

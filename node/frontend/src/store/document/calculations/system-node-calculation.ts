@@ -24,8 +24,8 @@ export function makeSystemNodeCalculationFields(entity: SystemNodeEntity, settin
         },
         {
             property: "flowRateLS",
-            title: "Peak Flow rate",
-            short: "Peak",
+            title: "Flow Rate",
+            short: "",
             units: Units.KiloPascals,
             systemUid: entity.systemUid,
             category: FieldCategory.FlowRate

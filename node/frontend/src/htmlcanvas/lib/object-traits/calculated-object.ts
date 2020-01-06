@@ -286,8 +286,12 @@ export function CalculatedObject<
                 }
             }
 
+
             return getFields(this.entity, context.doc, context.catalog)
-                .filter((f) => f.property in filter && filter[f.property].enabled)
+                .filter((f) => f.title in filter &&
+                    filter[f.title].enabled &&
+                    getPropertyByString(calculation, f.property, true) !== undefined
+                )
                 .map((f) => {
                     const ret: CalculationData = {
                         ...f,

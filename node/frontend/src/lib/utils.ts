@@ -86,7 +86,8 @@ export function angleDiffDeg(a: number, b: number) {
 }
 
 export function isRightAngleRad(a: number, tolerance: number = EPS) {
-    return angleDiffRad(canonizeAngleRad(a), Math.PI / 2) <= tolerance;
+    return Math.abs(angleDiffRad(canonizeAngleRad(a), Math.PI / 2))  <= tolerance ||
+        Math.abs(angleDiffRad(canonizeAngleRad(a), -Math.PI / 2))  <= tolerance;
 }
 
 export function isStraightRad(a: number, tolerance: number = EPS) {

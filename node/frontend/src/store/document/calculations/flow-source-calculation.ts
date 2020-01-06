@@ -22,8 +22,8 @@ export function makeFlowSourceCalculationFields(entity: FlowSourceEntity, settin
         },
         {
             property: "flowRateLS",
-            title: "Peak Flow rate",
-            short: "Peak",
+            title: "Flow Rate",
+            short: "",
             units: Units.LitersPerSecond,
             systemUid: entity.systemUid,
             category: FieldCategory.FlowRate

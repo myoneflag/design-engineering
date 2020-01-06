@@ -24,7 +24,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, drawing: Drawing
         result.push(
             {
                 property: "heights." + lvlUid + ".pressureKPA",
-                title: "Pressure (kPa)",
+                title: "Pressure",
                 short: "",
                 units: Units.KiloPascals,
                 systemUid: entity.systemUid,
@@ -40,7 +40,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, drawing: Drawing
             },
             {
                 property: "heights." + lvlUid + ".flowRateLS",
-                title: "Flow Rate (L/s)",
+                title: "Flow Rate",
                 short: "",
                 units: Units.KiloPascals,
                 systemUid: entity.systemUid,
@@ -48,7 +48,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, drawing: Drawing
             },
             {
                 property: "heights." + lvlUid + ".heightAboveGround",
-                title: "Height Above Ground (m)",
+                title: "Height Above Ground",
                 short: "",
                 units: Units.Meters,
                 systemUid: entity.systemUid,

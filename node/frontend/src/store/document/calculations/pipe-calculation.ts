@@ -37,23 +37,23 @@ export function makePipeCalculationFields(
     return [
         {
             property: "peakFlowRate",
-            title: "Peak Flow Rate + Spare",
-            short: "Peak",
+            title: "Flow Rate + Spare",
+            short: "",
             units: Units.LitersPerSecond,
             category: FieldCategory.FlowRate,
             systemUid: entity.systemUid,
             defaultEnabled: true
-        },
+        },/*
         {
             property: "rawPeakFlowRate",
-            title: "Peak Flow Rate (raw)",
-            short: "Peak",
+            title: "Flow Rate (Raw)",
+            short: "(Raw)",
             units: Units.LitersPerSecond,
             category: FieldCategory.FlowRate,
             systemUid: entity.systemUid,
             defaultEnabled: false,
-            format: (v: number | null) => "(" + (v === null ? "??" : v.toFixed(2)) + ")"
-        },
+            // format: (v: number | null) => "(" + (v === null ? "??" : v.toFixed(2)) + ")"
+        },*/
         {
             property: "realNominalPipeDiameterMM",
             title: "Pipe Diameter",
@@ -76,7 +76,7 @@ export function makePipeCalculationFields(
         },
         {
             property: "pressureDropKpa",
-            title: "Peak pressure drop",
+            title: "Pressure Drop",
             short: "Drop",
             units: Units.KiloPascals,
             category: FieldCategory.Pressure,
@@ -93,7 +93,7 @@ export function makePipeCalculationFields(
         },
         {
             property: "velocityRealMS",
-            title: "Peak Velocity",
+            title: "Velocity",
             short: "",
             units: Units.MetersPerSecond,
             category: FieldCategory.Velocity,
@@ -101,7 +101,7 @@ export function makePipeCalculationFields(
         },
         {
             property: "temperatureRange",
-            title: "Temperature range",
+            title: "Temperature Range",
             short: "",
             units: Units.Celsius,
             category: FieldCategory.Temperature,
@@ -114,7 +114,7 @@ export function makePipeCalculationFields(
             units: Units.None,
             category: FieldCategory.LoadingUnits,
             systemUid: entity.systemUid
-        },
+        },/*
         {
             property: "psdUnits.continuousFlowLS",
             title: "Continuous Flow",
@@ -122,7 +122,7 @@ export function makePipeCalculationFields(
             units: Units.LitersPerSecond,
             category: FieldCategory.LoadingUnits,
             systemUid: entity.systemUid
-        }
+        }*/
     ];
 }
 

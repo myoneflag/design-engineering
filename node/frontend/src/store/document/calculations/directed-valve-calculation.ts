@@ -15,7 +15,7 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity):
         {
             property: "flowRateLS",
             title: "Flow Rate",
-            short: "Flow",
+            short: "",
             units: Units.LitersPerSecond,
             category: FieldCategory.FlowRate
         },

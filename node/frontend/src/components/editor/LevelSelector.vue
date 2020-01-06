@@ -137,7 +137,11 @@ import { Catalog } from "../../store/catalog/types";
 import { lighten } from "../../lib/utils";
 import { GROUND_FLOOR_MIN_HEIGHT_M, LEVEL_HEIGHT_DIFF_M } from "../../lib/types";
 
-@Component({})
+@Component({
+    props: {
+        objectStore: Map, // not Object, but Map
+    }
+})
 export default class LevelSelector extends Vue {
     expanded = false;
 
@@ -213,7 +217,7 @@ export default class LevelSelector extends Vue {
 
     getLevelPsdFormatted(level: Level): Array<{ hex: string; text: string }> {
         const entities = Object.values(level.entities);
-        const result = countPsdUnits(entities, this.document, this.catalog);
+        const result = countPsdUnits(entities, this.document, this.catalog, this.$props.objectStore);
         if (result) {
             return Object.keys(result).map((k) => {
                 const system = this.document.drawing.metadata.flowSystems.find((fs) => fs.uid === k);

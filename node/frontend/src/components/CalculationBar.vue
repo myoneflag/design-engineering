@@ -22,6 +22,7 @@
                 <b-button
                     variant="outline-dark"
                     class="calculationBtn source btn-sm"
+                    :disabled="true"
                     :pressed="demandType === DemandType.Static"
                     @click="$emit('update:demandType', DemandType.Static)"
                     v-b-tooltip.hover="{ title: 'Demand Type' }"

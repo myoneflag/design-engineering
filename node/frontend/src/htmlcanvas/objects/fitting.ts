@@ -223,6 +223,8 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         const angle = Math.abs(canonizeAngleRad(Math.acos(fromv.normalize().dot(tov.normalize()))));
 
         if (connections.length === 2) {
+            console.log(this.uid, angle, isRightAngleRad(angle), isAcuteRad(angle), isStraightRad(angle));
+            console.log(JSON.stringify(fromv), JSON.stringify(tov));
             // through valve
             if (isRightAngleRad(angle, Math.PI / 8)) {
                 k = getValveK("90Elbow", context.catalog, smallestDiameterMM);

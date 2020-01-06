@@ -1,8 +1,8 @@
-import { DEFAULT_FONT_NAME, isGermanStandard } from "../../src/config";
+import { DEFAULT_FONT_NAME } from "../../src/config";
 import * as TM from "transformation-matrix";
 import { DrawingContext } from "../../src/htmlcanvas/lib/types";
 import { Catalog } from "../../src/store/catalog/types";
-import { lookupFlowRate, PsdUnitsByFlowSystem, zeroPsdCounts } from "../../src/calculations/utils";
+import { addPsdCounts, lookupFlowRate, PsdUnitsByFlowSystem, zeroPsdCounts } from "../../src/calculations/utils";
 import { StandardFlowSystemUids } from "../../src/store/catalog";
 import { NetworkType } from "../store/document/types";
 
@@ -147,8 +147,15 @@ export function drawLoadingUnits(
         units = {
             /**/
         };
-        units[StandardFlowSystemUids.ColdWater] = zeroPsdCounts();
-        units[StandardFlowSystemUids.HotWater] = zeroPsdCounts();
+    }
+    for (const sys of [
+        StandardFlowSystemUids.ColdWater,
+        StandardFlowSystemUids.WarmWater,
+        StandardFlowSystemUids.HotWater,
+    ]) {
+        if (!units.hasOwnProperty(sys)) {
+            units[sys] = zeroPsdCounts();
+        }
     }
     const ctx = context.ctx;
 
@@ -181,7 +188,7 @@ export function drawLoadingUnits(
     }
     try {
         hotFR = lookupFlowRate(
-            units[StandardFlowSystemUids.HotWater],
+            addPsdCounts(units[StandardFlowSystemUids.HotWater], units[StandardFlowSystemUids.WarmWater]),
             context.doc,
             catalog,
             StandardFlowSystemUids.HotWater

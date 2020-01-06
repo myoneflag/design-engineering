@@ -71,7 +71,7 @@ export function makeLoadNodesFields(systems: FlowSystemParameters[], value: Load
 
                 {
                     property: "node.designFlowRateLS",
-                    title: "Design Flow Rate (L/s)",
+                    title: "Full Flow Rate (L/s)",
                     hasDefault: false,
                     isCalculated: false,
                     type: FieldType.Number,

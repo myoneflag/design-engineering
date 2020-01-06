@@ -22,8 +22,8 @@ export function makeLoadNodeCalculationFields(entity: LoadNodeEntity): Calculati
             },
             {
                 property: "flowRateLS",
-                title: "Peak Flow rate",
-                short: "Peak",
+                title: "Flow Rate",
+                short: "",
                 units: Units.LitersPerSecond,
                 systemUid: entity.systemUidOption,
                 category: FieldCategory.FlowRate
@@ -41,8 +41,8 @@ export function makeLoadNodeCalculationFields(entity: LoadNodeEntity): Calculati
             },
             {
                 property: "flowRateLS",
-                title: "Peak Flow rate",
-                short: "Peak",
+                title: "Flow Rate",
+                short: "",
                 units: Units.LitersPerSecond,
                 category: FieldCategory.FlowRate
             }

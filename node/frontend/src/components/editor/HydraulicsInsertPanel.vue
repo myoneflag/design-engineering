@@ -25,15 +25,6 @@
                 /></b-button>
                 <b-button
                     variant="outline-dark"
-                    class="insertBtn return btn-sm"
-                    :disabled="true"
-                    @click="$emit('insert', { entityName: entityNames.RETURN, system: selectedSystem })"
-                    v-b-tooltip.hover
-                    title="Return"
-                    ><v-icon name="arrow-down" scale="1.2"
-                /></b-button>
-                <b-button
-                    variant="outline-dark"
                     class="insertBtn pipes btn-sm"
                     @click="
                         $emit('insert', {

@@ -85,7 +85,7 @@ export function makeBigValveFields(entity: BigValveEntity): PropertyField[] {
 
         {
             property: "outputTemperatureC",
-            title: "Output Temperature (c)",
+            title: "Output Temperature (°C)",
             hasDefault: false,
             isCalculated: false,
             type: FieldType.Number,

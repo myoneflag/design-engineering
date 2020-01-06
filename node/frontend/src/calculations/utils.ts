@@ -20,6 +20,11 @@ import { makeLoadNodeCalculationFields } from "../store/document/calculations/lo
 import { NodeType } from "../store/document/entities/load-node-entity";
 import { makeFlowSourceFields } from "../store/document/entities/flow-source-entity";
 import { makeFlowSourceCalculationFields } from "../store/document/calculations/flow-source-calculation";
+import {
+    determineConnectableNetwork,
+    determineConnectableSystemUid
+} from "../store/document/entities/directed-valves/directed-valve-entity";
+import { ObjectStore } from "../htmlcanvas/lib/object-store";
 
 export interface PsdCountEntry {
     units: number;
@@ -34,7 +39,8 @@ export interface PsdUnitsByFlowSystem {
 export function countPsdUnits(
     entities: DrawableEntityConcrete[],
     doc: DocumentState,
-    catalog: Catalog
+    catalog: Catalog,
+    objectStore: ObjectStore,
 ): PsdUnitsByFlowSystem | null {
     let result: PsdUnitsByFlowSystem | null = null;
     entities.forEach((e) => {
@@ -62,25 +68,26 @@ export function countPsdUnits(
 
                 break;
             case EntityType.LOAD_NODE:
-                if (e.systemUidOption) {
+                const suid = determineConnectableSystemUid(objectStore, e);
+                if (suid) {
                     if (result === null) {
                         result = {};
                     }
-                    if (!result.hasOwnProperty(e.systemUidOption)) {
-                        result[e.systemUidOption] = zeroPsdCounts();
+                    if (!result.hasOwnProperty(suid)) {
+                        result[suid] = zeroPsdCounts();
                     }
 
                     switch (e.node.type) {
                         case NodeType.LOAD_NODE:
                             if (isGermanStandard(doc.drawing.metadata.calculationParams.psdMethod)) {
-                                result[e.systemUidOption].units += e.node.designFlowRateLS;
+                                result[suid].units += e.node.designFlowRateLS;
                             } else {
-                                result[e.systemUidOption].units += e.node.loadingUnits;
+                                result[suid].units += e.node.loadingUnits;
                             }
-                            result[e.systemUidOption].continuousFlowLS += e.node.continuousFlowLS;
+                            result[suid].continuousFlowLS += e.node.continuousFlowLS;
                             break;
                         case NodeType.DWELLING:
-                            result[e.systemUidOption].dwellings += e.node.dwellings;
+                            result[suid].dwellings += e.node.dwellings;
                             break;
                     }
                 }
@@ -203,21 +210,18 @@ export function lookupFlowRate(
 
         if (psdU.units < 0) {
             throw new Error("PSD units must be positive");
-        }
-
-        if (psdU.units <= 0.2) {
+        } else if (psdU.units <= 0.2) {
             fromLoading = psdU.units;
-        }
-
-        if (psdU.units > 500) {
+        } else if (psdU.units > 500) {
             throw new Error("Too much flow - PSD cannot be determined from this standard");
+        } else {
+            const a = parseCatalogNumberExact(standard.variables.a)!;
+            const b = parseCatalogNumberExact(standard.variables.b)!;
+            const c = parseCatalogNumberExact(standard.variables.c)!;
+
+            fromLoading = a * psdU.units ** b - c;
         }
 
-        const a = parseCatalogNumberExact(standard.variables.a)!;
-        const b = parseCatalogNumberExact(standard.variables.b)!;
-        const c = parseCatalogNumberExact(standard.variables.c)!;
-
-        fromLoading = a * psdU.units ** b - c;
     } else if (standard.type === PSDStandardType.LU_HOT_COLD_LOOKUP_TABLE) {
         const table = standard.hotColdTable;
         if (systemUid === StandardFlowSystemUids.ColdWater) {
@@ -276,7 +280,11 @@ export function lookupFlowRate(
         return null;
     }
 
-    return fromLoading + fromDwellings + psdU.continuousFlowLS;
+    if (fromDwellings === 0) {
+        return fromLoading + psdU.continuousFlowLS;
+    } else {
+        return fromDwellings;
+    }
 }
 
 export function getFields(entity: DrawableEntityConcrete, doc: DocumentState, catalog?: Catalog): CalculationField[] {

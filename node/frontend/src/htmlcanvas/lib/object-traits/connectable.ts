@@ -441,7 +441,7 @@ export function ConnectableObject<
             if (this.entity.calculationHeightM === null) {
                 return { ...this.toObjectCoord(c[0]), z: 0 };
             } else {
-                return { ...this.toObjectCoord(c[0]), z: this.entity.calculationHeightM - c[0].z };
+                return { ...this.toObjectCoord(c[0]), z: this.entity.calculationHeightM * 1000 - c[0].z };
             }
         }
 

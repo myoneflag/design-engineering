@@ -102,7 +102,7 @@ export function makeRiserFields(materials: Choice[], systems: FlowSystemParamete
 
         {
             property: "temperatureC",
-            title: "Temperature (C)",
+            title: "Temperature (°C)",
             hasDefault: true,
             isCalculated: false,
             type: FieldType.Number,
