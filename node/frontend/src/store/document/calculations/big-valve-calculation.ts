@@ -76,7 +76,8 @@ export function makeBigValveCalculationFields(doc: DocumentState, entity: BigVal
             attachUid: attachments[i] as string,
             systemUid: suids[i],
             units: Units.KiloPascals,
-            category: FieldCategory.Pressure
+            category: FieldCategory.Pressure,
+            defaultEnabled: true,
         });
     }
 

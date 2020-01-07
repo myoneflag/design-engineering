@@ -31,10 +31,17 @@ export default class CalculationLayer extends LayerImplementation {
     async draw(
         context: DrawingContext,
         active: boolean,
-        shouldContinue: () => boolean,
+        shouldContinueInternal: () => boolean,
         reactive: Set<string>,
         calculationFilters: CalculationFilters | null
     ) {
+        const lvlUid = context.doc.uiState.levelUid;
+        const shouldContinue = () => {
+            if (lvlUid !== context.doc.uiState.levelUid) {
+                return false;
+            }
+            return shouldContinueInternal();
+        };
         // TODO: asyncify
         const { ctx, vp } = context;
         if (active && calculationFilters) {
@@ -74,11 +81,17 @@ export default class CalculationLayer extends LayerImplementation {
             let nb = 0;
 
             await cooperativeYield(shouldContinue);
+            if (lvlUid !== context.doc.uiState.levelUid) {
+                return;
+            }
 
             const onScreenList: BaseBackedObject[] = objList.filter((o) => vp.someOnScreen(o.shape()!));
             const allOnScreen = Array.from(this.objectStore.values()).filter((o) => vp.someOnScreen(o.shape()!));
 
             await cooperativeYield(shouldContinue);
+            if (lvlUid !== context.doc.uiState.levelUid) {
+                return;
+            }
 
             // tslint:disable-next-line:prefer-for-of
             for (let i = 0; i < objList.length; i++) {
@@ -111,19 +124,22 @@ export default class CalculationLayer extends LayerImplementation {
                         // don't cover connectables
                         for (const c of allOnScreen) {
                             if (
-                                isConnectable(c.entity.type) ||
+                                (isConnectable(c.entity.type) ||
                                 c.entity.type === EntityType.FIXTURE ||
-                                c.entity.type === EntityType.BIG_VALVE
+                                c.entity.type === EntityType.BIG_VALVE)
                             ) {
                                 pos++;
-
-                                if (pos % 5000 === 4999) {
-                                    await cooperativeYield(shouldContinue);
-                                }
 
                                 if (polygonOverlapsShapeApprox(shape, c.shape()!)) {
                                     invalid = true;
                                     break;
+                                }
+
+                                if (pos % 5000 === 4999) {
+                                    await cooperativeYield(shouldContinue);
+                                    if (lvlUid !== context.doc.uiState.levelUid) {
+                                        return;
+                                    }
                                 }
                             }
                         }
