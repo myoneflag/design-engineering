@@ -115,7 +115,7 @@ export function getPropertyByString(obj: any, s: string, existential: boolean = 
     return obj;
 }
 
-export function setPropertyByString(obj: any, s: string, val: any) {
+export function setPropertyByString(obj: any, s: string, val: any, existential: boolean = false) {
     s = s.replace(/\[(\w+)\]/g, ".$1"); // convert indexes to properties
     s = s.replace(/^\./, ""); // strip a leading dot
     const a = s.split(".");
@@ -125,6 +125,11 @@ export function setPropertyByString(obj: any, s: string, val: any) {
             obj[k] = val;
         } else {
             obj = obj[k];
+            if (existential) {
+                if (obj == null) {
+                    obj = {};
+                }
+            }
         }
     }
 }

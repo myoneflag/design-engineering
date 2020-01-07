@@ -1,17 +1,17 @@
-import {AuthRequired, withAuth} from "../helpers/withAuth";
 import {NextFunction, Request, Response, Router} from "express";
-import {OperationTransformConcrete} from "../../../frontend/src/store/document/operation-transforms/operation-transforms";
-import {Operation} from "../entity/Operation";
+import * as _ from 'lodash';
 import {DocumentWSMessage, DocumentWSMessageType} from "../../../common/src/api/types";
-import {Document} from "../entity/Document";
-import {Session} from "../entity/Session";
-import {ApiHandleError} from "../helpers/apiWrapper";
-import {AccessLevel, User} from "../entity/User";
-import {AccessType, withDocument, withOrganization} from "../helpers/withResources";
+import {initialCatalog} from "../../../frontend/src/store/catalog/initial-catalog/initial-catalog";
+import {OperationTransformConcrete} from "../../../frontend/src/store/document/operation-transforms/operation-transforms";
 import {initialDocumentState} from "../../../frontend/src/store/document/types";
 import {Catalog} from "../entity/Catalog";
-import {initialCatalog} from "../../../frontend/src/store/catalog/initial-catalog/initial-catalog";
-import * as _ from 'lodash';
+import {Document} from "../entity/Document";
+import {Operation} from "../entity/Operation";
+import {Session} from "../entity/Session";
+import {AccessLevel, User} from "../entity/User";
+import {ApiHandleError} from "../helpers/apiWrapper";
+import {AuthRequired, withAuth} from "../helpers/withAuth";
+import {AccessType, withDocument, withOrganization} from "../helpers/withResources";
 
 export class DocumentController {
     @ApiHandleError()
@@ -69,9 +69,9 @@ export class DocumentController {
 
         console.log('query org id: ' + qorg);
 
-        await withOrganization(qorg, res, session, AccessType.READ, async (org) => {
+        await withOrganization(qorg, res, session, AccessType.READ, async (org1) => {
             const doc = Document.create();
-            doc.organization = Promise.resolve(org);
+            doc.organization = Promise.resolve(org1);
             doc.createdBy = user;
             doc.createdOn = new Date();
             doc.metadata = initialDocumentState.drawing.metadata.generalInfo;
@@ -205,16 +205,17 @@ export class DocumentController {
     }
 }
 
-let operationQueues = new  Map<number, OperationTransformConcrete[][]>();
-let isLoading = new Set<number>();
+const operationQueues = new  Map<number, OperationTransformConcrete[][]>();
+const isLoading = new Set<number>();
 
 export type OperationUpdateHandler = (deleted: boolean) => Promise<any>;
-let updateHandlers = new Map<number, OperationUpdateHandler[]>();
+const updateHandlers = new Map<number, OperationUpdateHandler[]>();
 
 async function ensureDocumentLoaded(id: number) {
 
     // If another thread is already loading this document, wait in line and return when they finished.
     if (isLoading.has(id)) {
+        // TODO: this logic is incorrect
         return;
     }
 
@@ -295,10 +296,10 @@ router.ws('/:id/websocket', (ws, req) => {
 
                 const onUpdate = async (deleted: boolean) => {
                     if (deleted) {
-                        const msg: DocumentWSMessage = [{
+                        const msg1: DocumentWSMessage = [{
                             type: DocumentWSMessageType.DOCUMENT_DELETED,
                         }];
-                        await ws.send(JSON.stringify(msg));
+                        await ws.send(JSON.stringify(msg1));
                         await ws.close();
                         return;
                     }

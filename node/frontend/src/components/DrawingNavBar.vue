@@ -38,14 +38,14 @@
         </b-navbar-nav>
 
 
-        <b-navbar-nav class="ml-auto">
-            <b-nav-text  v-if="document.uiState.viewOnly" variant="outline-primary" id="view-only-label">
+        <b-navbar-nav class="ml-auto" id="view-only-label">
+            <b-button  v-if="document.uiState.viewOnly" variant="danger" :disabled="true">
                 <v-icon name="eye"/>
                 View Only
                 <b-tooltip v-if="document.uiState.viewOnlyReason" target="view-only-label">
                     {{ document.uiState.viewOnlyReason }}
                 </b-tooltip>
-            </b-nav-text>
+            </b-button>
             <b-nav-text v-else-if="isSyncing">
                 <b-spinner style="width: 1.0rem; height: 1.0rem;"></b-spinner>
                 Saving...

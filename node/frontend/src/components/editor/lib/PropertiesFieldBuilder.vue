@@ -266,11 +266,7 @@ export default class PropertiesFieldBuilder extends Vue {
         if (!isNaN(value) && value !== "") {
             this.setRenderedData(field, Number(value));
         }
-        setPropertyByString(this.numberProxy, field.property, value);
-    }
-
-    clearNumberProxy() {
-        this.numberProxy = {};
+        setPropertyByString(this.numberProxy, field.property, value, true);
     }
 
     setIsDefault(property: string, val: boolean, commit: boolean = false) {
