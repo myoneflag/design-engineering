@@ -34,7 +34,7 @@ export function makePipeCalculationFields(
         materialName = " (" + catalog.pipes[pipe.material!].abbreviation + ")";
     }
 
-    return [
+    const result = [
         {
             property: "peakFlowRate",
             title: "Flow Rate + Spare",
@@ -107,14 +107,8 @@ export function makePipeCalculationFields(
             category: FieldCategory.Temperature,
             systemUid: entity.systemUid
         },
-        {
-            property: "psdUnits.units",
-            title: psdUnit.name,
-            short: psdUnit.abbreviation,
-            units: Units.None,
-            category: FieldCategory.LoadingUnits,
-            systemUid: entity.systemUid
-        },/*
+
+        /*
         {
             property: "psdUnits.continuousFlowLS",
             title: "Continuous Flow",
@@ -124,6 +118,34 @@ export function makePipeCalculationFields(
             systemUid: entity.systemUid
         }*/
     ];
+
+    if (settings.metadata.calculationParams.psdMethod !== null) {
+        result.push(
+            {
+                property: "psdUnits.units",
+                title: psdUnit.name,
+                short: psdUnit.abbreviation,
+                units: Units.None,
+                category: FieldCategory.LoadingUnits,
+                systemUid: entity.systemUid
+            }
+        );
+    }
+
+    if (settings.metadata.calculationParams.dwellingMethod !== null) {
+        result.push(
+            {
+                property: "psdUnits.dwellings",
+                title: 'Dwellings',
+                short: 'dwlg',
+                units: Units.None,
+                category: FieldCategory.LoadingUnits,
+                systemUid: entity.systemUid
+            },
+        );
+    }
+
+    return result;
 }
 
 export function emptyPipeCalculation(): PipeCalculation {

@@ -296,7 +296,7 @@ export function CalculatedObject<
                     const ret: CalculationData = {
                         ...f,
                         type: CalculationDataType.VALUE,
-                        value: getPropertyByString(calculation, f.property),
+                        value: getPropertyByString(calculation, f.property, true),
                         attachUid: f.attachUid || this.entity.uid
                     };
                     return ret;

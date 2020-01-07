@@ -75,7 +75,7 @@
                                             type="number"
                                             v-model="level.floorHeightM"
                                             size="sm"
-                                            @blur="() => { level.floorHeightM = Number(level.floorHeightM); commit }"
+                                            @blur="commitFloorHeight(level)"
                                         >
                                         </b-form-input>
                                         <b-input-group-append>
@@ -213,6 +213,11 @@ export default class LevelSelector extends Vue {
 
     get catalog(): Catalog {
         return this.$store.getters["catalog/default"];
+    }
+
+    commitFloorHeight(level: Level) {
+        level.floorHeightM = Number(level.floorHeightM);
+        this.commit();
     }
 
     getLevelPsdFormatted(level: Level): Array<{ hex: string; text: string }> {

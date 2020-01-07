@@ -9,7 +9,7 @@
                     :id="'input-group-' + field.property"
                     :label-for="'input-' + field.property"
                     label-cols="12"
-                    @blur="onCommit"
+                    @blur="onCommitInternal"
                     :disabled="isDisabled(field)"
                 >
                     <div :class="missingRequired(field) ? 'pulse-orange' : ''" :ref="'field-' + field.property">
@@ -59,7 +59,7 @@
                                 size="sm"
                                 :placeholder="'Enter ' + field.title"
                                 :disabled="isDisabled(field)"
-                                @blur="onCommit"
+                                @blur="onCommitInternal"
                             ></b-form-textarea>
 
                             <b-row
@@ -71,20 +71,20 @@
                                 <b-col cols="7">
                                     <b-form-input
                                         :value="renderedData(field.property)"
-                                        @input=""
+                                        @input="setRenderedDataNumeric(field, $event)"
                                         :id="'input-' + field.property"
                                         :min="field.params.min"
                                         :max="field.params.max"
                                         size="sm"
                                         type="range"
                                         :disabled="isDisabled(field)"
-                                        @blur="(e) => { setRenderedData(field, Number(e.target.value)); onCommit }"
+                                        @blur="onCommitInternal"
                                     />
                                 </b-col>
                                 <b-col cols="5">
                                     <b-form-input
                                         :value="renderedData(field.property)"
-                                        @input=""
+                                        @input="setRenderedDataNumeric(field, $event)"
                                         :id="'input-' + field.property"
                                         :min="field.params.min"
                                         :max="field.params.max"
@@ -92,7 +92,7 @@
                                         type="number"
                                         :placeholder="'Enter ' + field.title"
                                         :disabled="isDisabled(field)"
-                                        @blur="(e) => { setRenderedData(field, Number(e.target.value)); onCommit }"
+                                        @blur="onCommitInternal"
                                     />
                                 </b-col>
                             </b-row>
@@ -101,7 +101,7 @@
                                 <b-col cols="12">
                                     <b-form-input
                                         :value="renderedData(field.property)"
-                                        @input=""
+                                        @input="setRenderedDataNumeric(field, $event)"
                                         :id="'input-' + field.property"
                                         size="sm"
                                         :min="field.params.min == null ? undefined : field.params.min"
@@ -109,7 +109,7 @@
                                         type="number"
                                         :placeholder="'Enter ' + field.title"
                                         :disabled="isDisabled(field)"
-                                        @blur="(e) => { setRenderedData(field, Number(e.target.value)); onCommit }"
+                                        @blur="onCommitInternal"
                                     />
                                 </b-col>
                             </b-row>
@@ -175,7 +175,7 @@
                                 :placeholder="'Enter ' + field[1]"
                                 size="sm"
                                 :disabled="isDisabled(field)"
-                                @blur="onCommit"
+                                @blur="onCommitInternal"
                             />
                         </template>
                     </div>
@@ -216,6 +216,9 @@ import { getPropertyByString, setPropertyByString } from "../../../../src/lib/ut
     }
 })
 export default class PropertiesFieldBuilder extends Vue {
+    // Typing into number text boxes is a bit sad unfortunately :(
+    numberProxy = {} as any;
+
     mounted() {
         if (this.$props.target) {
             // scroll to it
@@ -228,7 +231,15 @@ export default class PropertiesFieldBuilder extends Vue {
         return this.$store.getters["document/document"];
     }
 
+    onCommitInternal() {
+        this.numberProxy = {} as any;
+        this.$props.onCommit();
+    }
+
     renderedData(property: string): any {
+        if (getPropertyByString(this.numberProxy, property, true) != null) {
+            return getPropertyByString(this.numberProxy, property);
+        }
         if (getPropertyByString(this.$props.reactiveData, property) == null) {
             return getPropertyByString(this.$props.defaultData, property);
         } else {
@@ -252,12 +263,14 @@ export default class PropertiesFieldBuilder extends Vue {
     }
 
     setRenderedDataNumeric(field: PropertyField, value: any) {
-        console.log("Setting numeric: " + JSON.stringify(value));
         if (!isNaN(value) && value !== "") {
-            //this.setRenderedData(field, Number(value));
-        } else {
-            //this.setRenderedData(field, value);
+            this.setRenderedData(field, Number(value));
         }
+        setPropertyByString(this.numberProxy, field.property, value);
+    }
+
+    clearNumberProxy() {
+        this.numberProxy = {};
     }
 
     setIsDefault(property: string, val: boolean, commit: boolean = false) {

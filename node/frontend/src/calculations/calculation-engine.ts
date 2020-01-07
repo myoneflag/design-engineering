@@ -127,7 +127,7 @@ export default class CalculationEngine {
         doc: DocumentState,
         catalog: Catalog,
         demandType: DemandType,
-        done: () => void
+        done: (success: boolean) => void
     ) {
         this.networkObjectUids = [];
         this.drawableObjectUids = [];
@@ -169,12 +169,13 @@ export default class CalculationEngine {
         const success = this.preValidate();
 
         if (!success) {
+            done(false);
             return;
         }
 
         this.equationEngine = new EquationEngine();
         this.doRealCalculation();
-        done();
+        done(true);
     }
 
     clearCalculations() {
@@ -1227,10 +1228,6 @@ export default class CalculationEngine {
         calculation.realNominalPipeDiameterMM = parseCatalogNumberExact(page!.diameterNominalMM);
         calculation.realInternalDiameterMM = parseCatalogNumberExact(page!.diameterInternalMM);
 
-        if (!calculation.optimalInnerPipeDiameterMM) {
-            console.log(calculation.optimalInnerPipeDiameterMM);
-            console.log(flowRateLS);
-        }
         if (calculation.realNominalPipeDiameterMM) {
             calculation.velocityRealMS = this.getVelocityRealMs(pipe);
 

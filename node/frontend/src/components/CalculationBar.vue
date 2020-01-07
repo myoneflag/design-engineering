@@ -8,8 +8,9 @@
                     :pressed="demandType === DemandType.PSD"
                     @click="$emit('update:demandType', DemandType.PSD)"
                     v-b-tooltip.hover="{ title: 'Demand Type' }"
-                    >PSD</b-button
                 >
+                    Peak
+                </b-button>
                 <b-button
                     variant="outline-dark"
                     class="calculationBtn source btn-sm"

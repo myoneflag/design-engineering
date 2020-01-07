@@ -30,7 +30,7 @@ export function getEntityName(type: EntityType): string {
         case EntityType.FITTING:
             return "Fitting";
         case EntityType.BIG_VALVE:
-            return "Big Valve";
+            return "TMV, H/C RPZD && Tempering Valves";
         case EntityType.SYSTEM_NODE:
             return "Inlet/Outlet";
         case EntityType.FIXTURE:

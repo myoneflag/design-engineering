@@ -811,12 +811,24 @@ export default class DrawingCanvas extends Vue {
         return deleted;
     }
 
-    onSelectRequest(selectionTarget: SelectionTarget) {
+    async onSelectRequest(selectionTarget: SelectionTarget) {
         if (selectionTarget.uid === null) {
             if (this.activeLayer) {
                 this.activeLayer.select([], SelectMode.Replace);
             }
         } else {
+            const objectLevel = this.globalStore.levelOfEntity.get(selectionTarget.uid);
+
+            if (objectLevel && (this.currentLevel === null || objectLevel !== this.currentLevel.uid)) {
+                await this.$store.dispatch('document/setCurrentLevelUid', objectLevel);
+                await cooperativeYield();
+            }
+
+
+            if (this.currentLevel!.uid !== objectLevel) {
+                throw new Error('Level didn\'t change properly');
+            }
+
             const obj = this.objectStore.get(selectionTarget.uid);
             if (!obj) {
                 throw new Error("Selecting an object that doesn't exist");
@@ -1169,7 +1181,6 @@ export default class DrawingCanvas extends Vue {
                 if (res === false) {
                     this.numSkipped++;
                 }
-                // console.log(' checking ' + res);
                 // return res;
                 return true;
             }).bind(this);
@@ -1253,9 +1264,11 @@ export default class DrawingCanvas extends Vue {
                 this.document.uiState.lastCalculationId < this.document.nextId ||
                 this.document.uiState.lastCalculationUiSettings.demandType !== this.demandType
             ) {
-                this.calculationLayer.calculate(this, this.demandType, () => {
-                    this.scheduleDraw();
-                });
+                if (!this.document.uiState.isCalculating) {
+                    this.calculationLayer.calculate(this, this.demandType, () => {
+                        this.scheduleDraw();
+                    });
+                }
             }
         }
     }

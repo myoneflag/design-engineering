@@ -290,7 +290,7 @@ export function lookupFlowRate(
 export function getFields(entity: DrawableEntityConcrete, doc: DocumentState, catalog?: Catalog): CalculationField[] {
     switch (entity.type) {
         case EntityType.RISER:
-            return makeRiserCalculationFields(entity, doc.drawing);
+            return makeRiserCalculationFields(entity, doc);
         case EntityType.PIPE:
             return makePipeCalculationFields(entity, doc.drawing, catalog);
         case EntityType.FITTING:

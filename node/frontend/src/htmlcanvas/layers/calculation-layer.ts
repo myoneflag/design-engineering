@@ -199,15 +199,17 @@ export default class CalculationLayer extends LayerImplementation {
     }
 
     calculate(context: CanvasContext, demandType: DemandType, done: () => void) {
+
         context.document.uiState.isCalculating = true;
+        this.calculator.calculate(context.globalStore, context.document, context.effectiveCatalog, demandType, (success) => {
+            if (success) {
+                context.document.uiState.lastCalculationId = context.document.nextId;
+                context.document.uiState.lastCalculationUiSettings = {
+                    demandType
+                };
 
-        this.calculator.calculate(context.globalStore, context.document, context.effectiveCatalog, demandType, () => {
-            context.document.uiState.lastCalculationId = context.document.nextId;
-            context.document.uiState.lastCalculationUiSettings = {
-                demandType
-            };
+            }
             context.document.uiState.isCalculating = false;
-
             // this.resetDocument(context.document);
 
             // Create new messages

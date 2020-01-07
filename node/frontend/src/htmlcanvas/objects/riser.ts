@@ -22,6 +22,8 @@ import CanvasContext from "../lib/canvas-context";
 import { DrawableEntityConcrete } from "../../store/document/entities/concrete-entity";
 import PipeEntity from "../../store/document/entities/pipe-entity";
 import RiserCalculation from "../../store/document/calculations/riser-calculation";
+import Pipe from "./pipe";
+import { getFluidDensityOfSystem, head2kpa } from "../../calculations/pressure-drops";
 
 @CalculatedObject
 @SelectableObject
@@ -180,13 +182,74 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
     }
 
     collectCalculations(context: CalculationContext): RiserCalculation {
-        const calc = context.globalStore.getOrCreateCalculation(this.entity);
-
         // explicitly create this to help with refactors
         const res: RiserCalculation = {
             heights: {},
-            warning: calc.warning
+            warning: null,
         };
+
+        const tower = this.getCalculationTower(context);
+
+        const levels = context.doc.drawing.levels;
+        const levelUidsByHeight = Object.keys(context.doc.drawing.levels).sort((a, b) => {
+            return context.doc.drawing.levels[a].floorHeightM - context.doc.drawing.levels[b].floorHeightM;
+        });
+
+
+        let topOfPipe = 0;
+        for (const lvlUid of levelUidsByHeight) {
+            res.heights[lvlUid] = {
+                flowRateLS: null,
+                heightAboveGround: null,
+                psdUnits: null,
+                pressureKPA: null,
+            };
+
+            // iterate pipe if need be. Note, we don't want to go over.
+            while (
+                topOfPipe + 1 < tower.length
+                && tower[topOfPipe][0].calculationHeightM! <= levels[lvlUid].floorHeightM
+            ) {
+                topOfPipe ++;
+            }
+
+
+            if (topOfPipe > 0 && tower[topOfPipe][0].calculationHeightM! >= levels[lvlUid].floorHeightM) {
+                const calc = context.globalStore.getOrCreateCalculation(tower[topOfPipe][1]!);
+
+                const pipe = context.globalStore.get(tower[topOfPipe][1]!.uid) as Pipe;
+
+                const totalHL = pipe.getFrictionHeadLoss(
+                    context,
+                    calc.peakFlowRate!,
+                    { connectable: tower[topOfPipe - 1][0].uid, connection: pipe.uid },
+                    { connectable: tower[topOfPipe][0].uid, connection: pipe.uid },
+                    true,
+                );
+
+                if (totalHL != null) {
+                    const totalLength = tower[topOfPipe][0].calculationHeightM! - tower[topOfPipe - 1][0].calculationHeightM!;
+                    const partialLength = levels[lvlUid].floorHeightM - tower[topOfPipe - 1][0].calculationHeightM!;
+                    const partialHL = totalHL * (partialLength / totalLength);
+
+                    const bottomPressure =
+                        context.globalStore.getOrCreateCalculation(tower[topOfPipe - 1][0]).pressureKPA;
+
+                    if (bottomPressure) {
+                        res.heights[lvlUid] = {
+                            flowRateLS: calc.peakFlowRate,
+                            heightAboveGround: levels[lvlUid].floorHeightM,
+                            psdUnits: calc.psdUnits,
+                            pressureKPA: bottomPressure - head2kpa(
+                                partialHL,
+                                getFluidDensityOfSystem(pipe.entity.systemUid, context.doc, context.catalog)!,
+                                context.doc.drawing.metadata.calculationParams.gravitationalAcceleration,
+                            ),
+                        };
+                    }
+                }
+            }
+        }
 
         // TODO:
         return res;
