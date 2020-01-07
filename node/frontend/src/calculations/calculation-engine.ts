@@ -1276,7 +1276,6 @@ export default class CalculationEngine {
             )
         );
 
-        console.log(calculation.velocityRealMS);
         return getDarcyWeisbachMH(
             getFrictionFactor(
                 realInternalDiameter!,
