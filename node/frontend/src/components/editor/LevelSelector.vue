@@ -49,8 +49,9 @@
                             <template v-if="expanded">
                                 <b-col cols="1" style="padding: 0px">
                                     <b-form-input
-                                        v-b-tooltip.hover.title="'Abbreviation'"
-                                        @click="$event.stopPropagation()"
+                                            v-b-tooltip.hover.top="{title: 'Abbreviation', boundary: 'viewport'}"
+
+                                            @click="$event.stopPropagation()"
                                         v-model="level.abbreviation"
                                         size="sm"
                                         @blur="commit"
@@ -59,11 +60,11 @@
                                 </b-col>
                                 <b-col cols="3">
                                     <b-form-input
-                                        v-b-tooltip.hover.title="'Description'"
-                                        @click="$event.stopPropagation()"
-                                        v-model="level.name"
-                                        size="sm"
-                                        @blur="commit"
+                                            v-b-tooltip.hover.top="{title: 'Description', boundary: 'viewport'}"
+                                            @click="$event.stopPropagation()"
+                                            v-model="level.name"
+                                            size="sm"
+                                            @blur="commit"
                                     ></b-form-input>
                                 </b-col>
                                 <b-col cols="2">
@@ -71,7 +72,8 @@
                                         <b-form-input
                                             class="border-right-0"
                                             @click="$event.stopPropagation()"
-                                            v-b-tooltip.hover.title="'Floor Height (m)'"
+                                            v-b-tooltip.hover.top="{title: 'Floor Height Above Sea (m)', boundary: 'viewport'}"
+
                                             type="number"
                                             v-model="level.floorHeightM"
                                             size="sm"
@@ -86,7 +88,10 @@
                                     </b-input-group>
                                 </b-col>
                                 <b-col cols="1" style="padding: 0">
-                                    <label v-b-tooltip.hover.title="'Storey Height (m)'" type="number" size="sm"
+                                    <label
+                                            v-b-tooltip.hover.top="{title: 'Storey Height (m)', boundary: 'viewport'}"
+                                            type="number"
+                                            size="sm"
                                         >{{
                                             sortedLevels[idx - 1]
                                                 ? (sortedLevels[idx - 1].floorHeightM - level.floorHeightM).toFixed(2)
@@ -97,7 +102,12 @@
                                 </b-col>
 
                                 <b-col cols="3">
-                                    <label v-b-tooltip.hover.title="'Fixture Count'" type="number" size="sm">
+                                    <label
+                                            v-b-tooltip.hover.title="'Fixture Count'"
+                                            v-b-tooltip.hover.boundary="'viewport'"
+                                            type="number"
+                                            size="sm"
+                                    >
                                         <span v-for="psd in getLevelPsdFormatted(level)" :style="{ color: psd.hex }"
                                             >{{ psd.text }}&nbsp;</span
                                         >

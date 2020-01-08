@@ -284,7 +284,13 @@ function insertPipeChain(
                 context.interactive = null;
                 // committed to the point. And also create new pipe, continue the chain.
                 context.$store.dispatch("document/commit").then(() => {
-                    insertPipeChain(context, nextEntity, system, network, heightM);
+                    const currConns = context.globalStore.getConnections(nextEntity.uid).length;
+                    const maxConns =
+                        (context.objectStore.get(nextEntity.uid) as BaseBackedConnectable).maximumConnections;
+                    if (maxConns === null || currConns < maxConns) {
+                        insertPipeChain(context, nextEntity, system, network, heightM);
+                    }
+
                 });
             },
 
@@ -323,7 +329,7 @@ function insertPipeChain(
                         "Height: " + heightM.toPrecision(3) + "m",
                         "Length: " +
                             (context.objectStore.get(newPipe.uid) as Pipe).computedLengthM.toPrecision(4) +
-                            "mm"
+                            "m"
                     ];
                 } else {
                     return [];

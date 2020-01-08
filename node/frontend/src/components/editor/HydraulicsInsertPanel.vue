@@ -173,7 +173,7 @@
                             system: selectedSystem,
                             catalogId: lastUsedValveVid.catalogId,
                             valveType: lastUsedValveVid.type,
-                            valveName: valve.name
+                            valveName: lastUsedValveVid.name
                         })
                     "
                 >

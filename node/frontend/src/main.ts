@@ -68,7 +68,14 @@ async function reportError(message: string, error: Error) {
                 "please contact our team and we will assist immediately. Thank you for your patience.";
 
             if (vue) {
-                vue.$bvModal.msgBoxOk(msgstr);
+                vue.$bvToast.toast('Our developers have been notified and will find a fix as soon as they can. \n' +
+                    'If you experience problems with the page from now on, please refresh.\n' +
+                    'Thank you for your patience!',
+                    {
+                        title: 'An exception occurred: ' + message.toString(),
+                        variant: 'warning',
+                    }
+                );
             } else {
                 window.alert(msgstr);
             }
