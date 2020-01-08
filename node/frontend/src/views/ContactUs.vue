@@ -21,16 +21,22 @@
         <b-row style="margin-top: 50px;">
             <b-col cols="6">
                 <h3>Contact Us</h3>
-                <b-form v-if="!sent">
+                <b-form>
                     <b-form-input v-model="name" placeholder="Name*"></b-form-input>
                     <b-form-input type="email" v-model="email" placeholder="Email*"></b-form-input>
-                    <b-form-textarea v-model="message" rows="10" placeholder="Message"></b-form-textarea>
-
+                    <b-form-textarea v-model="message" rows="10" :placeholder="'Hey, \n\nI\'m ' + (name ? name : '[You Name]') + ' from [You Company] and I\'m interested in using this software for our office of [10] Hydraulic Engineers.'"></b-form-textarea>
                     <b-form-group>
-                        <b-button variant="success" @click="submit" align="right">Submit</b-button>
+                        <b-button variant="success" :disabled="sent" @click="submit" align="right" v-if="!sending">
+                            {{ sent ? 'Submitted!' : 'Submit'}}
+                        </b-button>
+                        <b-button v-else variant="success" :disabled="true">
+                            <b-spinner style="width: 0.5rem; height: 0.5rem;">
+                            </b-spinner>
+                            Submit
+                        </b-button>
                     </b-form-group>
                 </b-form>
-                <b-alert show variant="success" v-else>
+                <b-alert show variant="success" v-if="sent">
                     Thank you for your interest! We will get in touch shortly.
                 </b-alert>
             </b-col>
@@ -76,9 +82,12 @@ export default class ContactUs extends Vue {
     message: string = "";
 
     sent = false;
+    sending = false;
 
     submit() {
+        this.sending = true;
         sendContactMessage(this.name, this.email, this.message).then((res) => {
+            this.sending = false;
             if (res.success) {
                 this.sent = true;
                 (this as any).$bvToast.toast("Thank you for your interest! We will get in contact with you shortly", {

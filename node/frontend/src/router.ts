@@ -35,14 +35,14 @@ const router = new Router({
         {
             path: "/document/:id",
 
-            component: () => import(/* webpackChunkName: "about" */ "./views/Document.vue"),
+            component: () => import(/* webpackChunkName: "document" */ "./views/Document.vue"),
 
             children: [
                 {
                     path: "",
                     name: "drawing",
 
-                    component: () => import(/* webpackChunkName: "about" */ "./views/Canvas.vue")
+                    component: () => import(/* webpackChunkName: "drawing" */ "./views/Canvas.vue")
                 },
 
                 {
@@ -66,24 +66,24 @@ const router = new Router({
                         {
                             path: "fixtures",
                             name: "settings/fixtures",
-                            component: () => import(/* webpackChunkName: "general" */ "./views/settings/Fixtures.vue")
+                            component: () => import(/* webpackChunkName: "fixtures" */ "./views/settings/Fixtures.vue")
                         },
                         {
                             path: "flow-systems",
                             name: "settings/flow-systems",
                             component: () =>
-                                import(/* webpackChunkName: "general" */ "./views/settings/FlowSystems.vue")
+                                import(/* webpackChunkName: "flow-systems" */ "./views/settings/FlowSystems.vue")
                         },
                         {
                             path: "calculations",
                             name: "settings/calculations",
                             component: () =>
-                                import(/* webpackChunkName: "general" */ "./views/settings/Calculations.vue")
+                                import(/* webpackChunkName: "calculations" */ "./views/settings/Calculations.vue")
                         },
                         {
                             path: "document",
                             name: "settings/document",
-                            component: () => import(/* webpackChunkName: "general" */ "./views/settings/Document.vue")
+                            component: () => import(/* webpackChunkName: "document" */ "./views/settings/Document.vue")
                         }
                     ],
 
