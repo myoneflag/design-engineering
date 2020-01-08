@@ -98,23 +98,27 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "6",
             loadingUnits: {
                 as35002018LoadingUnits: {
-                    "cold-water": "2"
+                    "cold-water": "2",
+                    "hot-water": "2",
                 },
                 barriesBookLoadingUnits: {
-                    "cold-water": "2"
+                    "cold-water": "2",
+                    "hot-water": "2",
                 },
                 barriesBookDwellings: {
-                    "cold-water": "2"
+                    "cold-water": "2",
+                    "hot-water": "2",
                 }
             },
-            roughIns: ["cold-water"],
+            roughIns: ["cold-water", "hot-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Bedpan Sanitiser",
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                "cold-water": "0.15"
+                "cold-water": "0.15",
+                "hot-water": "0.15",
             },
             uid: "bedpanSanitiser",
             warmTempC: null
@@ -239,30 +243,34 @@ export const initialCatalog: Catalog = {
             uid: "dishwasher",
             warmTempC: null
         },
-        flishingRimSink: {
+        flushingRimSink: {
             abbreviation: "FRS",
             fixtureUnits: "6",
             loadingUnits: {
                 as35002018LoadingUnits: {
-                    "cold-water": "2"
+                    "cold-water": "2",
+                    "hot-water": "2",
                 },
                 barriesBookLoadingUnits: {
-                    "cold-water": "2"
+                    "cold-water": "2",
+                    "hot-water": "2",
                 },
                 barriesBookDwellings: {
-                    "cold-water": "2"
+                    "cold-water": "2",
+                    "hot-water": "2",
                 }
             },
-            roughIns: ["cold-water"],
+            roughIns: ["cold-water", "hot-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
-            name: "Flishing Rim Sink",
+            name: "Flushing Rim Sink",
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                "cold-water": "0.1"
+                "cold-water": "0.1",
+                "hot-water": "0.1",
             },
-            uid: "flishingRimSink",
+            uid: "flushingRimSink",
             warmTempC: null
         },
         hoseTap: {
