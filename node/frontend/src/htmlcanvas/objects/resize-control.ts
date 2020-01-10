@@ -75,14 +75,14 @@ export class ResizeControl extends DrawableObject {
 
     getHandles(): Handle[] {
         return [
-            [this.x, this.y, [Sides.Bottom, Sides.Left], "sw-resize"],
+            [this.x, this.y, [Sides.Bottom, Sides.Left], "nw-resize"],
             [this.x, this.y + this.h / 2, [Sides.Left], "w-resize"],
-            [this.x, this.y + this.h, [Sides.Top, Sides.Left], "nw-resize"],
-            [this.x + this.w / 2, this.y, [Sides.Bottom], "s-resize"],
-            [this.x + this.w, this.y, [Sides.Bottom, Sides.Right], "se-resize"],
+            [this.x, this.y + this.h, [Sides.Top, Sides.Left], "sw-resize"],
+            [this.x + this.w / 2, this.y, [Sides.Bottom], "n-resize"],
+            [this.x + this.w, this.y, [Sides.Bottom, Sides.Right], "ne-resize"],
             [this.x + this.w, this.y + this.h / 2, [Sides.Right], "e-resize"],
-            [this.x + this.w, this.y + this.h, [Sides.Top, Sides.Right], "ne-resize"],
-            [this.x + this.w / 2, this.y + this.h, [Sides.Top], "n-resize"]
+            [this.x + this.w, this.y + this.h, [Sides.Top, Sides.Right], "se-resize"],
+            [this.x + this.w / 2, this.y + this.h, [Sides.Top], "s-resize"]
         ];
     }
 

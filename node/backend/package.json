@@ -42,11 +42,13 @@
     "formidable": "^1.2.1",
     "helmet": "^3.13.0",
     "http-status": "^1.2.0",
+    "https-proxy-agent": "latest",
     "image-size": "^0.8.3",
     "jwt-then": "^1.0.1",
     "lodash": "^4.17.15",
     "nodemailer": "^6.4.0",
     "nodemon": "^1.18.4",
+    "p-queue": "^6.2.1",
     "pdf2json": "^1.1.8",
     "pdfjs-dist": "^2.2.228",
     "pdfreader": "^1.0.6",
@@ -55,8 +57,7 @@
     "tslib": "^1.10.0",
     "typeorm": "0.2.22",
     "uuid": "^3.3.3",
-    "webpack": "^4.41.2",
-    "https-proxy-agent": "latest"
+    "webpack": "^4.41.2"
   },
   "devDependencies": {
     "@types/dotenv": "^4.0.3",

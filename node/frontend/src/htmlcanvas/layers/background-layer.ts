@@ -129,7 +129,6 @@ export default class BackgroundLayer extends LayerImplementation {
         const toDelete: string[] = [];
         this.uidsInOrder.forEach((selectId) => {
             if (existingSids.indexOf(selectId) === -1) {
-                this.uidsInOrder.splice(this.uidsInOrder.indexOf(selectId), 1);
                 if (this.isSelected(selectId)) {
                     this.select([selectId], SelectMode.Exclude);
                     this.onSelect();
@@ -137,7 +136,11 @@ export default class BackgroundLayer extends LayerImplementation {
                 toDelete.push(selectId);
             }
         });
-        toDelete.forEach((s) => this.objectStore.delete(s));
+
+        toDelete.forEach((s) => {
+            this.uidsInOrder.splice(this.uidsInOrder.indexOf(s), 1);
+            this.objectStore.delete(s);
+        });
 
         this.updateSelectionBox();
     }

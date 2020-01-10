@@ -1276,15 +1276,21 @@ export default class DrawingCanvas extends Vue {
     onDrop(value: any, event: DragEvent) {
         if (event.dataTransfer) {
             event.preventDefault();
-            for (let i = 0; i < event.dataTransfer.files.length; i++) {
-                if (!(event.dataTransfer.files.item(i) as File).name.endsWith("pdf")) {
-                    continue;
+            if (event.dataTransfer.files.length > 1) {
+                this.$bvModal.msgBoxOk("Please drag and drop only the .PDF for the " + (this.currentLevel ? this.currentLevel.name : "current") + " level.");
+            } else {
+
+                for (let i = 0; i < event.dataTransfer.files.length; i++) {
+                    if (!(event.dataTransfer.files.item(i) as File).name.endsWith("pdf")) {
+                        continue;
+                    }
+
+                    const w = this.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
+
+                    this.insertFloorPlan(event.dataTransfer.files.item(i) as File, w);
                 }
-
-                const w = this.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
-
-                this.insertFloorPlan(event.dataTransfer.files.item(i) as File, w);
             }
+
         }
     }
 
@@ -1294,6 +1300,12 @@ export default class DrawingCanvas extends Vue {
     }
 
     insertFloorPlan(file: File, wc: Coord) {
+        if (!this.currentLevel) {
+            this.$bvModal.msgBoxOk("Please select a level before uploading a PDF");
+            return;
+        }
+
+        const lvlUid = this.currentLevel.uid;
         renderPdf(file).then((res) => {
             if (res.success) {
                 const { paperSize, scale, scaleName, key, totalPages } = res.data;
@@ -1319,7 +1331,12 @@ export default class DrawingCanvas extends Vue {
                     key,
                 };
 
-                this.$store.dispatch("document/addEntity", background);
+                const ep: EntityParam = {
+                    entity: background,
+                    levelUid: lvlUid,
+                };
+
+                this.$store.dispatch("document/addEntityOn", ep);
                 this.$store.dispatch("document/commit");
             } else {
                 this.$bvToast.toast(res.message, {

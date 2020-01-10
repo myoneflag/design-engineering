@@ -13,6 +13,7 @@ import { s3 } from "../aws";
 import { Session } from "../entity/Session";
 import { ApiHandleError } from "../helpers/apiWrapper";
 import { AuthRequired } from "../helpers/withAuth";
+import PQueue from "p-queue";
 
 async function convertToPng(pdfPath: string, pngHash: string): Promise<string> {
     const pngPath = "/tmp/" + pngHash + ".png";
@@ -129,7 +130,11 @@ function formidablePromise(req: Request): Promise<{ fields: Fields, files: Files
     });
 }
 
+
+const renderQueue = new PQueue({concurrency: 1});
+
 export class PDFController {
+
 
     @ApiHandleError()
     @AuthRequired()
@@ -141,7 +146,8 @@ export class PDFController {
         const pngHash = uuid();
         const pngDest = "/static/" + pngHash + ".png";
 
-        convertToPng(pdfPath, pngHash).then((pngPath) => {
+        renderQueue.add(() => convertToPng(pdfPath, pngHash)).then((pngPath) => {
+
             console.log("png done rendering: " + pngDest + " to path " + pngPath);
 
             const params: AWS.S3.Types.PutObjectRequest = {
@@ -179,7 +185,6 @@ export class PDFController {
         });
 
         const dims = await getPdfDims(pdfPath);
-
 
         res.status(200).send({
             success: true,

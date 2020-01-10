@@ -20,13 +20,16 @@
                     variant="outline-dark"
                     @click="expanded = false"
                     v-else
-                    :active="true"
                 >
                     <v-icon name="chevron-left"></v-icon><v-icon name="chevron-left"></v-icon>
                 </b-list-group-item>
 
-                <b-list-group-item button size="sm" class="levelBtn" variant="outline-dark" @click="addAbove"
-                    ><v-icon name="plus"></v-icon> LVL</b-list-group-item
+                <b-list-group-item button size="sm"
+                                   class="levelBtn"
+                                   variant="outline-dark"
+                                   @click="addAbove"
+                                   v-b-tooltip.hover.right="{title: 'Add Level Above'}"
+                    ><v-icon name="plus" ></v-icon> LVL</b-list-group-item
                 >
 
                 <div class="level-selector-scroll">
@@ -103,8 +106,7 @@
 
                                 <b-col cols="3">
                                     <label
-                                            v-b-tooltip.hover.title="'Fixture Count'"
-                                            v-b-tooltip.hover.boundary="'viewport'"
+                                            v-b-tooltip.hover.title="{title: 'Fixture Count', boundary: 'viewport'}"
                                             type="number"
                                             size="sm"
                                     >
@@ -129,7 +131,11 @@
                         </b-row>
                     </b-list-group-item>
                 </div>
-                <b-list-group-item button class="levelBtn" variant="outline-dark" @click="addBelow"
+                <b-list-group-item
+                        button class="levelBtn"
+                        variant="outline-dark"
+                        @click="addBelow"
+                        v-b-tooltip.hover.right="{title: 'Add Level Below'}"
                     ><v-icon name="plus"></v-icon> B</b-list-group-item
                 >
             </b-list-group>

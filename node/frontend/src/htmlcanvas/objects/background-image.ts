@@ -219,9 +219,11 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
             ctx.globalAlpha = 0.5;
             ctx.fillStyle = "#AAAAAA";
             ctx.fillRect(x, y, w, h);
-            ctx.font = "20pt " + DEFAULT_FONT_NAME;
+            const fontSize = Math.round(w / 20);
+            ctx.font = fontSize + "pt " + DEFAULT_FONT_NAME;
             ctx.fillStyle = "#FFFFFF";
-            ctx.fillText("Loading...", x + w / 2, y + h / 2 - 20);
+            const textW = ctx.measureText('Please Wait...');
+            ctx.fillText("Please Wait...", x + w / 2 - textW.width / 2, y + h / 2 + fontSize / 2);
             ctx.globalAlpha = oldAlpha;
         }
     }
