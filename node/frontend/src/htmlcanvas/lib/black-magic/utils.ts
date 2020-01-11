@@ -43,6 +43,7 @@ export function getConnectedFlowComponent(
             case EntityType.BIG_VALVE:
             case EntityType.BACKGROUND_IMAGE:
             case EntityType.FIXTURE:
+            case EntityType.PLANT:
                 throw new Error("invalid object here");
             default:
                 assertUnreachable(o.entity);

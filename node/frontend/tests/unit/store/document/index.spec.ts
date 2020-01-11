@@ -1,6 +1,6 @@
 import {EntityType} from '../../../../src/store/document/entities/types';
-import {isConnectable} from '../../../../src/store/document';
 import { expect } from 'chai';
+import { isConnectableEntity } from "../../../../src/store/document/entities/concrete-entity";
 
 describe('calculation-engine.ts', () => {
     it('can determine connectivity for every type', () => {

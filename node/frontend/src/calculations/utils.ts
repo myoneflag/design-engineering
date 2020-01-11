@@ -25,12 +25,21 @@ import {
     determineConnectableSystemUid
 } from "../store/document/entities/directed-valves/directed-valve-entity";
 import { ObjectStore } from "../htmlcanvas/lib/object-store";
+import { makePlantCalculationFields } from "../store/document/calculations/plant-calculation";
+import { equal } from "assert";
 
 export interface PsdCountEntry {
     units: number;
     continuousFlowLS: number;
     dwellings: number;
 }
+
+export interface ContextualPCE extends PsdCountEntry {
+    entity: string;
+    correlationGroup: string;
+}
+
+export class PsdProfile extends Map<string, ContextualPCE> {};
 
 export interface PsdUnitsByFlowSystem {
     [key: string]: PsdCountEntry;
@@ -98,6 +107,7 @@ export function countPsdUnits(
             case EntityType.RISER:
             case EntityType.FLOW_SOURCE:
             case EntityType.SYSTEM_NODE:
+            case EntityType.PLANT:
             case EntityType.BIG_VALVE:
             case EntityType.DIRECTED_VALVE:
                 break;
@@ -165,11 +175,77 @@ export function comparePsdCounts(a: PsdCountEntry, b: PsdCountEntry): number | n
     }
 }
 
+export function insertPsdProfile(profile: PsdProfile, count: ContextualPCE) {
+    if (!profile.has(count.entity)) {
+        profile.set(count.entity, count);
+    } else {
+        if (!equalPsdCounts(count, profile.get(count.entity)!)) {
+            throw new Error('Psd Profile given inconsistent values, before ' + JSON.stringify(profile.get(count.entity)) + ' after ' + JSON.stringify(count));
+        }
+    }
+}
+
+export function countPsdProfile(profile: PsdProfile): PsdCountEntry {
+    const byCorrelated = new Map<string, PsdCountEntry>();
+
+    profile.forEach((contextual) => {
+        if (byCorrelated.has(contextual.correlationGroup)) {
+            const cmp = comparePsdCounts(contextual, byCorrelated.get(contextual.correlationGroup)!);
+            if (cmp === null) {
+                throw new Error('could not determine max PSD');
+            }
+            if (cmp > 0) {
+                byCorrelated.set(contextual.correlationGroup, contextual);
+            }
+        } else {
+            byCorrelated.set(contextual.correlationGroup, contextual);
+        }
+    });
+
+    let total = zeroPsdCounts();
+    byCorrelated.forEach((contextual) => {
+        total = addPsdCounts(total, contextual);
+    });
+
+    return total;
+}
+
+export function subtractPsdProfiles(profile: PsdProfile, operand: PsdProfile): void {
+    operand.forEach((contextual) => {
+        if (isZeroPsdCounts(contextual)) {
+            return;
+        }
+
+        if (!profile.has(contextual.entity)) {
+            throw new Error('Subtracting from a value that doesn\'t exist');
+        }
+
+        const prev = profile.get(contextual.entity)!;
+        profile.set(contextual.entity, {
+            correlationGroup: contextual.correlationGroup,
+            entity: contextual.entity,
+            units: prev.units - contextual.units,
+            continuousFlowLS: prev.continuousFlowLS - contextual.continuousFlowLS,
+            dwellings: prev.dwellings - contextual.dwellings,
+        });
+    });
+}
+
 export function zeroPsdCounts(): PsdCountEntry {
     return {
         units: 0,
         continuousFlowLS: 0,
         dwellings: 0
+    };
+}
+
+export function zeroContextualPCE(entity: string, correlationGroup: string): ContextualPCE {
+    return {
+        entity,
+        correlationGroup,
+        continuousFlowLS: 0,
+        units: 0,
+        dwellings: 0,
     };
 }
 
@@ -307,6 +383,8 @@ export function getFields(entity: DrawableEntityConcrete, doc: DocumentState, ca
             return makeLoadNodeCalculationFields(entity);
         case EntityType.FLOW_SOURCE:
             return makeFlowSourceCalculationFields(entity, doc.drawing);
+        case EntityType.PLANT:
+            return makePlantCalculationFields();
         case EntityType.BACKGROUND_IMAGE:
             return [];
     }

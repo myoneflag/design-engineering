@@ -2,10 +2,10 @@ import BackedDrawableObject from "../../../src/htmlcanvas/lib/backed-drawable-ob
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import {
     ConnectableEntityConcrete,
-    DrawableEntityConcrete
+    DrawableEntityConcrete, isConnectableEntity, isConnectableEntityType
 } from "../../../src/store/document/entities/concrete-entity";
 import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
-import { getDragPriority, isConnectable } from "../../../src/store/document";
+import { getDragPriority} from "../../../src/store/document";
 import { EntityType } from "../../../src/store/document/entities/types";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { Coord } from "../../../src/store/document/types";
@@ -36,7 +36,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
         switch (interaction.type) {
             case InteractionType.INSERT:
                 if (
-                    isConnectable(interaction.entityType) &&
+                    isConnectableEntityType(interaction.entityType) &&
                     getDragPriority(interaction.entityType) >= this.dragPriority
                 ) {
                     return [this.entity];
@@ -55,7 +55,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                 if (interaction.src.uid === this.uid) {
                     return null;
                 }
-                if (isConnectable(interaction.src.type)) {
+                if (isConnectableEntity(interaction.src)) {
                     if (getDragPriority(interaction.src.type) >= this.dragPriority) {
                         return [this.entity];
                     }
@@ -75,7 +75,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                 if (interaction.dest.uid === this.uid) {
                     return null;
                 }
-                if (isConnectable(interaction.dest.type)) {
+                if (isConnectableEntity(interaction.dest)) {
                     if (getDragPriority(interaction.dest.type) > this.dragPriority) {
                         return [this.entity];
                     }

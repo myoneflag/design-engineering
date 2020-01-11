@@ -19,7 +19,7 @@ import { interpolateTable, lowerBoundTable, parseCatalogNumberExact } from "../.
 import { CalculationContext } from "../../../src/calculations/types";
 import {
     ConnectableEntityConcrete,
-    DrawableEntityConcrete
+    DrawableEntityConcrete, isConnectableEntity
 } from "../../../src/store/document/entities/concrete-entity";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
@@ -38,7 +38,6 @@ import {
     CalculatedObject,
     FIELD_HEIGHT
 } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
-import { isConnectable } from "../../store/document";
 import Cached from "../lib/cached";
 import { determineConnectableNetwork } from "../../store/document/entities/directed-valves/directed-valve-entity";
 import { GlobalStore } from "../lib/global-store";
@@ -536,7 +535,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                     return null;
                 }
                 // We can receive valves.
-                if (isConnectable(interaction.src.type)) {
+                if (isConnectableEntity(interaction.src)) {
                     return [this.entity];
                 } else {
                     return null;

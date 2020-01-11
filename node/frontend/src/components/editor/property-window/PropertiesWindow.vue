@@ -79,6 +79,15 @@ import {EntityType} from "../../../../src/store/document/entities/types";
                 :target-property="targetProperty"
                 :on-delete="onDelete"
             />
+            <PlantProperties
+                    v-else-if="entity.type === ENTITY_NAMES.PLANT"
+                    :selected-entity="entity"
+                    :selected-object="selectedObjects[0]"
+                    :on-change="onChange"
+                    :target-property="targetProperty"
+                    :on-delete="onDelete"
+            />
+
 
         </template>
         <template v-else>
@@ -154,9 +163,11 @@ import LoadNodeProperties from "./LoadNodeProperties.vue";
 import { isCalculated } from "../../../store/document/calculations";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import FlowSourceProperties from "./FlowSourceProperties.vue";
+import PlantProperties from "./PlantProperties.vue";
 
 @Component({
     components: {
+        PlantProperties,
         LoadNodeProperties,
         DirectedValveProperties,
         MultiFieldBuilder,

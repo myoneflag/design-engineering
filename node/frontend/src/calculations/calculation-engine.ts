@@ -40,7 +40,7 @@ import FlowSolver from "../../src/calculations/flow-solver";
 import { PropertyField } from "../../src/store/document/entities/property-field";
 import { MainEventBus } from "../../src/store/main-event-bus";
 import { getObjectFrictionHeadLoss } from "../../src/calculations/entity-pressure-drops";
-import { DrawableEntityConcrete } from "../../src/store/document/entities/concrete-entity";
+import { DrawableEntityConcrete, isConnectableEntity } from "../../src/store/document/entities/concrete-entity";
 import { assertUnreachable, isGermanStandard } from "../../src/config";
 import BigValve from "../htmlcanvas/objects/big-valve/bigValve";
 // tslint:disable-next-line:max-line-length
@@ -51,11 +51,11 @@ import DirectedValveEntity, {
 import { ValveType } from "../../src/store/document/entities/directed-valves/valve-types";
 import {
     addPsdCounts,
-    comparePsdCounts,
+    comparePsdCounts, ContextualPCE, countPsdProfile, countPsdUnits, insertPsdProfile,
     isZeroPsdCounts,
     lookupFlowRate,
-    PsdCountEntry,
-    subPsdCounts,
+    PsdCountEntry, PsdProfile,
+    subPsdCounts, subtractPsdProfiles, zeroContextualPCE,
     zeroPsdCounts
 } from "../../src/calculations/utils";
 import FittingCalculation from "../../src/store/document/calculations/fitting-calculation";
@@ -65,7 +65,6 @@ import { StandardFlowSystemUids } from "../../src/store/catalog";
 import { isCalculated } from "../store/document/calculations";
 import DrawableObjectFactory from "../htmlcanvas/lib/drawable-object-factory";
 import { Calculated } from "../htmlcanvas/lib/object-traits/calculated-object";
-import { isConnectableEntity } from "../store/document";
 import stringify from "json-stable-stringify";
 import { makeLoadNodesFields, NodeType } from "../store/document/entities/load-node-entity";
 import { GlobalStore } from "../htmlcanvas/lib/global-store";
@@ -73,6 +72,8 @@ import { ObjectStore } from "../htmlcanvas/lib/object-store";
 import { makeFlowSourceFields } from "../store/document/entities/flow-source-entity";
 import FlowSourceCalculation from "../store/document/calculations/flow-source-calculation";
 import FlowSource from "../htmlcanvas/objects/flow-source";
+import { fillPlantDefaults, makePlantEntityFields } from "../store/document/entities/plant-entity";
+import Plant from "../htmlcanvas/objects/plant";
 
 export const SELF_CONNECTION = "SELF_CONNECTION";
 
@@ -86,7 +87,9 @@ export enum EdgeType {
 
     // reserve some for check valve, pump and isolation types.
     CHECK_THROUGH,
-    ISOLATION_THROUGH
+    ISOLATION_THROUGH,
+
+    PLANT_THROUGH,
 }
 
 export interface FlowEdge {
@@ -218,6 +221,9 @@ export default class CalculationEngine {
                     break;
                 case EntityType.LOAD_NODE:
                     fields = makeLoadNodesFields([], obj.entity);
+                    break;
+                case EntityType.PLANT:
+                    fields = makePlantEntityFields([]);
                     break;
                 case EntityType.SYSTEM_NODE:
                 case EntityType.BACKGROUND_IMAGE:
@@ -407,6 +413,7 @@ export default class CalculationEngine {
                 }
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.PIPE:
+                case EntityType.PLANT:
                 case EntityType.RISER:
                     break;
                 default:
@@ -437,6 +444,9 @@ export default class CalculationEngine {
                                 const filled = fillFixtureFields(this.doc.drawing, this.catalog, par.entity);
                                 height = filled.outletAboveFloorM!;
                                 break;
+                            case EntityType.PLANT:
+                                height = par.entity.heightAboveFloorM;
+                                break;
                             case EntityType.DIRECTED_VALVE:
                             case EntityType.FITTING:
                             case EntityType.BACKGROUND_IMAGE:
@@ -458,6 +468,7 @@ export default class CalculationEngine {
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.RISER:
                 case EntityType.PIPE:
+                case EntityType.PLANT:
                 case EntityType.FITTING:
                 case EntityType.DIRECTED_VALVE:
                 case EntityType.BIG_VALVE:
@@ -638,12 +649,30 @@ export default class CalculationEngine {
                                     return 1000000;
                                 }
                             }
+                            case EdgeType.PLANT_THROUGH: {
+                                const obj = this.globalStore.get(edge.value.uid) as Plant;
+                                if (obj.entity.pumpPressureKPA !== null) {
+                                    if (flowFrom.connectable === obj.entity.inletUid) {
+                                        if (flowTo.connectable !== obj.entity.outletUid) {
+                                            throw new Error('misconfigured flow graph');
+                                        }
+                                        return - obj.entity.pumpPressureKPA;
+                                    } else {
+                                        if (flowTo.connectable !== obj.entity.inletUid ||
+                                            flowFrom.connectable !== obj.entity.outletUid) {
+                                            throw new Error('misconfigured flow graph');
+                                        }
+                                        return + obj.entity.pumpPressureKPA;
+                                    }
+                                }
+                                return 0;
+                            }
                         }
                     },
                     (dijk) => {
                         // xTODO: Bellman Ford
                         let finalPressureKPA: number | null;
-                        if (dijk.weight >= 0) {
+                        if (dijk.weight > -Infinity) {
                             finalPressureKPA = e.pressureKPA! - dijk.weight;
                         } else {
                             finalPressureKPA = null;
@@ -777,6 +806,22 @@ export default class CalculationEngine {
                     break;
                 case EntityType.DIRECTED_VALVE:
                     this.configureDirectedValveLUGraph(obj.entity);
+                    break;
+                case EntityType.PLANT:
+                    this.flowGraph.addDirectedEdge(
+                        {
+                            connectable: obj.entity.inletUid,
+                            connection: obj.entity.uid,
+                        },
+                        {
+                            connectable: obj.entity.outletUid,
+                            connection: obj.entity.uid,
+                        },
+                        {
+                            type: EdgeType.PLANT_THROUGH,
+                            uid: obj.entity.uid,
+                        }
+                    );
                     break;
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.FIXTURE:
@@ -1046,7 +1091,8 @@ export default class CalculationEngine {
         return true;
     }
 
-    getTerminalPsdU(flowNode: FlowNode): PsdCountEntry {
+    // Returns PSD of node and correlation group ID
+    getTerminalPsdU(flowNode: FlowNode): ContextualPCE {
         const node = this.globalStore.get(flowNode.connectable)!;
 
         if (node.type === EntityType.SYSTEM_NODE) {
@@ -1063,16 +1109,21 @@ export default class CalculationEngine {
                         if (node.uid === fixture.roughIns[suid].uid) {
                             if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
                                 return {
-                                    units: Number(mainFixture.roughIns[suid].designFlowRateLS),
-                                    continuousFlowLS: mainFixture.roughIns[suid].continuousFlowLS!,
-                                    dwellings: 0
-                                };
+                                        units: Number(mainFixture.roughIns[suid].designFlowRateLS),
+                                        continuousFlowLS: mainFixture.roughIns[suid].continuousFlowLS!,
+                                        dwellings: 0,
+                                        entity: node.entity.uid,
+                                        correlationGroup: fixture.uid,
+                                    };
+
                             } else {
                                 return {
-                                    units: Number(mainFixture.roughIns[suid].loadingUnits),
-                                    continuousFlowLS: mainFixture.roughIns[suid].continuousFlowLS!,
-                                    dwellings: 0
-                                };
+                                        units: Number(mainFixture.roughIns[suid].loadingUnits),
+                                        continuousFlowLS: mainFixture.roughIns[suid].continuousFlowLS!,
+                                        dwellings: 0,
+                                        entity: node.entity.uid,
+                                        correlationGroup: fixture.uid,
+                                    };
                             }
                         }
                     }
@@ -1084,10 +1135,11 @@ export default class CalculationEngine {
                 case EntityType.RETURN:
                 case EntityType.PIPE:
                 case EntityType.FITTING:
+                case EntityType.PLANT:
                 case EntityType.BIG_VALVE:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.DIRECTED_VALVE:
-                    return zeroPsdCounts();
+                    return zeroContextualPCE(node.entity.uid, node.entity.uid);
                 default:
             }
             assertUnreachable(parent.type);
@@ -1098,29 +1150,35 @@ export default class CalculationEngine {
                 case NodeType.LOAD_NODE:
                     if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
                         return {
-                            units: node.entity.node.designFlowRateLS,
-                            continuousFlowLS: node.entity.node.continuousFlowLS,
-                            dwellings: 0
-                        };
+                                units: node.entity.node.designFlowRateLS,
+                                continuousFlowLS: node.entity.node.continuousFlowLS,
+                                dwellings: 0,
+                                entity: node.entity.uid,
+                                correlationGroup: node.entity.uid,
+                            };
                     } else {
                         return {
-                            units: node.entity.node.loadingUnits,
-                            continuousFlowLS: node.entity.node.continuousFlowLS,
-                            dwellings: 0
-                        };
+                                units: node.entity.node.loadingUnits,
+                                continuousFlowLS: node.entity.node.continuousFlowLS,
+                                dwellings: 0,
+                                entity: node.entity.uid,
+                                correlationGroup: node.entity.uid,
+                            };
                     }
                 case NodeType.DWELLING:
                     return {
-                        units: 0,
-                        continuousFlowLS: 0,
-                        dwellings: node.entity.node.dwellings
-                    };
+                            units: 0,
+                            continuousFlowLS: 0,
+                            dwellings: node.entity.node.dwellings,
+                            entity: node.entity.uid,
+                            correlationGroup: node.entity.uid,
+                        };
                 default:
             }
             assertUnreachable(node.entity.node);
             throw new Error("invalid node type");
         } else {
-            return zeroPsdCounts();
+            return zeroContextualPCE(node.entity.uid, node.entity.uid);
         }
     }
 
@@ -1190,6 +1248,7 @@ export default class CalculationEngine {
             case EntityType.RISER:
             case EntityType.FLOW_SOURCE:
             case EntityType.FITTING:
+            case EntityType.PLANT:
             case EntityType.DIRECTED_VALVE:
             case EntityType.SYSTEM_NODE:
             case EntityType.FIXTURE:
@@ -1438,6 +1497,7 @@ export default class CalculationEngine {
                 case EntityType.FLOW_SOURCE:
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.FITTING:
+                case EntityType.PLANT:
                 case EntityType.RISER:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.FIXTURE:
@@ -1519,7 +1579,7 @@ export default class CalculationEngine {
     sizeDefiniteTransport(
         object: BaseBackedObject,
         roots: FlowNode[],
-        totalReachedPsdU: PsdCountEntry,
+        totalReachedPsdU: PsdProfile,
         flowEdge: FlowEdge,
         endpointUids: string[]
     ) {
@@ -1528,16 +1588,19 @@ export default class CalculationEngine {
         }
 
         const reachedPsdU = this.getTotalReachedPsdU(roots, [], [stringify(flowEdge)]);
-        const exclusivePsdU = subPsdCounts(totalReachedPsdU, reachedPsdU);
+        const exclusivePsdProfile = new Map(totalReachedPsdU);
+        subtractPsdProfiles(exclusivePsdProfile, reachedPsdU);
+        const exclusivePsdU = countPsdProfile(exclusivePsdProfile);
 
         if (!isZeroPsdCounts(exclusivePsdU)) {
             const [point] = this.getDryEndpoints(endpointUids, flowEdge, roots);
             const [wet] = this.getWetEndpoints(endpointUids, flowEdge, roots);
-            const residualPsdU = this.getTotalReachedPsdU(
+            const residualPsdProfile = this.getTotalReachedPsdU(
                 [{ connectable: point, connection: object.uid }],
                 [wet],
                 [stringify(flowEdge)]
             );
+            const residualPsdU = countPsdProfile(residualPsdProfile);
 
             const cmp = comparePsdCounts(residualPsdU, exclusivePsdU);
             if (cmp === null) {
@@ -1553,8 +1616,7 @@ export default class CalculationEngine {
                 const actualPsdU = this.getTotalReachedPsdU(
                     [{ connectable: point, connection: object.uid }],
                     [wet],
-                    [stringify(flowEdge)],
-                    true
+                    [stringify(flowEdge)]
                 );
                 this.configureEntityForPSD(object.entity, exclusivePsdU, flowEdge);
             }
@@ -1565,13 +1627,15 @@ export default class CalculationEngine {
             let residualPsdU = zeroPsdCounts();
             if (wets.length === 1) {
                 const [point] = this.getDryEndpoints(endpointUids, flowEdge, roots);
-                residualPsdU = this.getTotalReachedPsdU(
+                const residualPsdProfile = this.getTotalReachedPsdU(
                     [{ connectable: point, connection: object.uid }],
                     [wets[0]],
                     [stringify(flowEdge)]
                 );
+                residualPsdU = countPsdProfile(residualPsdProfile);
             } else if (wets.length === 2) {
-                residualPsdU = this.getTotalReachedPsdU([{ connectable: wets[0], connection: object.uid }], [], []);
+                const residualPsdProfile = this.getTotalReachedPsdU([{ connectable: wets[0], connection: object.uid }], [], []);
+                residualPsdU = countPsdProfile(residualPsdProfile);
             } // else, with 0 sources, residual is always 0.
 
             if (isZeroPsdCounts(residualPsdU)) {
@@ -1791,6 +1855,15 @@ export default class CalculationEngine {
                     }
                     break;
                 }
+                case EntityType.PLANT: {
+                    const calc = this.globalStore.getOrCreateCalculation(o.entity);
+                    if (o.entity.pumpPressureKPA === null) {
+                        calc.pressureDropKPA = 0;
+                    } else {
+                        calc.pressureDropKPA = - o.entity.pumpPressureKPA;
+                    }
+                    break;
+                }
                 case EntityType.FIXTURE:
                 case EntityType.RISER:
                 case EntityType.BACKGROUND_IMAGE:
@@ -1841,6 +1914,7 @@ export default class CalculationEngine {
                     break;
                 case EntityType.DIRECTED_VALVE:
                 case EntityType.RISER:
+                case EntityType.PLANT:
                 case EntityType.LOAD_NODE:
                     break;
                 default:
@@ -1852,32 +1926,20 @@ export default class CalculationEngine {
     getTotalReachedPsdU(
         roots: FlowNode[],
         excludedNodes: string[] = [],
-        excludedEdges: string[] = [],
-        stopAtDwellings: boolean = false
-    ): PsdCountEntry {
+        excludedEdges: string[] = []
+    ): PsdProfile {
         const seen = new Set<string>(excludedNodes);
         const seenEdges = new Set<string>(excludedEdges);
 
-        let psdUs = zeroPsdCounts();
-
-        const seenEntities = new Set<string>();
+        const psdUs = new PsdProfile();
 
         roots.forEach((r) => {
             this.flowGraph.dfs(
                 r,
                 (n) => {
-                    if (!seenEntities.has(n.connectable)) {
-                        seenEntities.add(n.connectable);
-                        const thisTerminal = this.getTerminalPsdU(n);
-                        psdUs = addPsdCounts(psdUs, thisTerminal);
-                        if (this.doc.drawing.metadata.calculationParams.dwellingMethod) {
-                            if (thisTerminal.dwellings > 0) {
-                                // Don't search for more load after encountering a dwelling node.
-                                return stopAtDwellings;
-                            }
-                        }
-                    }
-                    return false;
+                    const thisTerminal = this.getTerminalPsdU(n);
+
+                    insertPsdProfile(psdUs, thisTerminal);
                 },
                 undefined,
                 undefined,

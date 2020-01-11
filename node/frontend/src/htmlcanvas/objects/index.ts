@@ -8,6 +8,7 @@ import Fixture from "../../../src/htmlcanvas/objects/fixture";
 import DirectedValve from "../../../src/htmlcanvas/objects/directed-valve";
 import LoadNode from "./load-node";
 import FlowSource from "./flow-source";
+import Plant from "./plant";
 
 export function registerObjectBuilders() {
     SystemNode.register();
@@ -20,4 +21,5 @@ export function registerObjectBuilders() {
     DirectedValve.register();
     LoadNode.register();
     FlowSource.register();
+    Plant.register();
 }

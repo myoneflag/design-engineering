@@ -5,7 +5,8 @@ import { getConnectedFlowComponent } from "../../../../src/htmlcanvas/lib/black-
 import UnionFind from "../../../../src/calculations/union-find";
 import {
     ConnectableEntityConcrete,
-    DrawableEntityConcrete
+    DrawableEntityConcrete,
+    isConnectableEntity
 } from "../../../../src/store/document/entities/concrete-entity";
 import { fillFixtureFields } from "../../../../src/store/document/entities/fixtures/fixture-entity";
 import { getFloorHeight, maxHeightOfConnection, minHeightOfConnection } from "../../../../src/htmlcanvas/lib/utils";
@@ -17,7 +18,6 @@ import PipeEntity from "../../../../src/store/document/entities/pipe-entity";
 import uuid from "uuid";
 import FittingEntity from "../../../../src/store/document/entities/fitting-entity";
 import { BigValveType, FlowConfiguration } from "../../../store/document/entities/big-valve/big-valve-entity";
-import { isConnectable } from "../../../../src/store/document";
 import assert from "assert";
 import { StandardFlowSystemUids, StandardMaterialUids } from "../../../../src/store/catalog";
 import { MainEventBus } from "../../../../src/store/main-event-bus";
@@ -35,6 +35,7 @@ const CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM = 500;
 const FIXTURE_WALL_DIST_MM = 200;
 const FIXTURE_WALL_DIST_COLD_MM = 100;
 const BIG_VALVE_WALL_DIST_MM = 50;
+const PLANT_EXTEND_DIST_MM = 150;
 const WALL_INSERT_JOIN_THRESHOLD_MM = 150;
 
 const WALL_SAME_ANGLE_THRESHOLD_DEG = 5;
@@ -154,6 +155,14 @@ export class AutoConnector {
                     });
                     break;
                 }
+                case EntityType.PLANT: {
+                    this.unionFind.join(o.entity.inletUid, o.entity.inletUid);
+                    this.unionFind.join(o.entity.outletUid, o.entity.outletUid);
+                    if (o.entity.inletSystemUid === o.entity.outletSystemUid) {
+                        this.unionFind.join(o.entity.inletUid, o.entity.outletUid);
+                    }
+                    break;
+                }
                 case EntityType.RISER:
                 case EntityType.FITTING:
                 case EntityType.LOAD_NODE:
@@ -228,6 +237,8 @@ export class AutoConnector {
                         entity
                     );
                     return [fixture.outletAboveFloorM!, fixture.outletAboveFloorM!];
+                case EntityType.PLANT:
+                    return [entity.heightAboveFloorM, entity.heightAboveFloorM];
                 case EntityType.BACKGROUND_IMAGE:
                     throw new Error("entity has no height");
             }
@@ -359,6 +370,14 @@ export class AutoConnector {
                                 heightM = po.entity.heightAboveFloorM;
                             }
                             break;
+                        case EntityType.PLANT:
+                            if (me.entity.uid === po.entity.inletUid) {
+                                vec = Flatten.vector([-1, 0]).rotate((po.toWorldAngleDeg(0) / 180) * Math.PI).multiply(PLANT_EXTEND_DIST_MM);
+                            } else {
+                                vec = Flatten.vector([1, 0]).rotate((po.toWorldAngleDeg(0) / 180) * Math.PI).multiply(PLANT_EXTEND_DIST_MM);
+                            }
+                            heightM = po.entity.heightAboveFloorM;
+                            break;
                         case EntityType.BACKGROUND_IMAGE:
                         case EntityType.FITTING:
                         case EntityType.DIRECTED_VALVE:
@@ -441,10 +460,10 @@ export class AutoConnector {
             });
 
             let bias = 0;
-            if (isConnectable(ao.type)) {
+            if (isConnectableEntity(ao.entity)) {
                 bias -= VALVE_CONNECT_HANDICAP_MM;
             }
-            if (isConnectable(bo.type)) {
+            if (isConnectableEntity(bo.entity)) {
                 bias -= VALVE_CONNECT_HANDICAP_MM;
             }
             totLen += bias;
@@ -656,8 +675,8 @@ export class AutoConnector {
                         )!;
                     }
 
-                    assert(isConnectable(ao.type));
-                    assert(isConnectable(bo.type));
+                    assert(isConnectableEntity(ao.entity));
+                    assert(isConnectableEntity(bo.entity));
 
                     this.connectConnectablesWithPipe(
                         ao.entity as ConnectableEntityConcrete,
@@ -696,8 +715,8 @@ export class AutoConnector {
                     )!;
                 }
 
-                assert(isConnectable(ao.entity.type));
-                assert(isConnectable(ao.entity.type));
+                assert(isConnectableEntity(ao.entity));
+                assert(isConnectableEntity(ao.entity));
 
                 const ac = ao.toWorldCoord({ x: 0, y: 0 });
                 const ap = Flatten.point(ac.x, ac.y);
@@ -734,7 +753,7 @@ export class AutoConnector {
             a.map((uid) => {
                 const s = this.getEntitySystem(this.context.objectStore.get(uid)!.entity);
                 if (s === null) {
-                    throw new Error("auto connecteded groups must belong to systems");
+                    throw new Error("auto connected groups must belong to systems " + uid);
                 }
                 return s;
             })
@@ -803,6 +822,7 @@ export class AutoConnector {
             }
             case EntityType.BACKGROUND_IMAGE:
             case EntityType.BIG_VALVE:
+            case EntityType.PLANT:
             case EntityType.FIXTURE:
                 return null;
         }

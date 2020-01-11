@@ -101,6 +101,20 @@
                     v-b-tooltip.hover
                     title="Tempering Valve (Warm)"
                 ></b-button>
+
+                <b-button
+                        variant="outline-dark"
+                        class="insertBtn hot-water-plant btn-sm"
+                        @click="
+                        $emit('insert', {
+                            entityName: entityNames.PLANT,
+                        })
+                    "
+                        v-b-tooltip.hover
+                        title="Hot Water Plant"
+                >
+                    Plant
+                </b-button>
             </b-button-group>
         </b-col>
 

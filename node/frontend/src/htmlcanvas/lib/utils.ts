@@ -265,11 +265,11 @@ export function upperBoundTable<T>(
 
 export function getEdgeLikeHeightAboveFloorM(entity: EdgeLikeEntity, context: CalculationContext): number {
     switch (entity.type) {
-        case EntityType.BIG_VALVE:
-            return entity.heightAboveFloorM;
         case EntityType.FIXTURE:
             const fe = fillFixtureFields(context.drawing, context.catalog, entity);
             return fe.outletAboveFloorM!;
+        case EntityType.PLANT:
+        case EntityType.BIG_VALVE:
         case EntityType.PIPE:
             return entity.heightAboveFloorM;
     }

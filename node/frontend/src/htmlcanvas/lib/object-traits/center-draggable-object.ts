@@ -3,14 +3,13 @@ import BackedDrawableObject from "../../../../src/htmlcanvas/lib/backed-drawable
 import { CenteredEntity, ConnectableEntity, Coord, DrawableEntity } from "../../../../src/store/document/types";
 import Connectable from "../../../../src/htmlcanvas/lib/object-traits/connectable";
 import * as TM from "transformation-matrix";
-import { CenteredEntityConcrete } from "../../../../src/store/document/entities/concrete-entity";
+import { CenteredEntityConcrete, isConnectableEntity } from "../../../../src/store/document/entities/concrete-entity";
 import { InteractionType } from "../../../../src/htmlcanvas/lib/interaction";
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
 import { moveOnto } from "../../../../src/htmlcanvas/lib/black-magic/move-onto";
 import BackedConnectable from "../../../../src/htmlcanvas/lib/BackedConnectable";
 import assert from "assert";
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
-import { isConnectable } from "../../../../src/store/document";
 import Pipe from "../../../../src/htmlcanvas/objects/pipe";
 
 export default function CenterDraggableObject<
@@ -59,7 +58,7 @@ export default function CenterDraggableObject<
                             return result !== null && result[0].uid !== obj[0].uid;
                         },
                         (objs) => {
-                            if (isConnectable(objs[0].type)) {
+                            if (isConnectableEntity(objs[0])) {
                                 return 10;
                             } else {
                                 return 0;

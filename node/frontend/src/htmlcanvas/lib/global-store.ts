@@ -39,6 +39,8 @@ import { ObjectStore } from "./object-store";
 import FlowSourceEntity from "../../store/document/entities/flow-source-entity";
 import FlowSourceCalculation, { emptyFlowSourceCalculation } from "../../store/document/calculations/flow-source-calculation";
 import { assertUnreachable } from "../../config";
+import PlantEntity from "../../store/document/entities/plant-entity";
+import PlantCalculation, { emptyPlantCalculation } from "../../store/document/calculations/plant-calculation";
 
 export class GlobalStore extends ObjectStore {
     entitiesInLevel = new Map<string | null, Set<string>>();
@@ -131,6 +133,7 @@ export class GlobalStore extends ObjectStore {
     getOrCreateCalculation(entity: SystemNodeEntity): SystemNodeCalculation;
     getOrCreateCalculation(entity: LoadNodeEntity): LoadNodeCalculation;
     getOrCreateCalculation(entity: FlowSourceEntity): FlowSourceCalculation;
+    getOrCreateCalculation(entity: PlantEntity): PlantCalculation;
     getOrCreateCalculation(entity: CalculatableEntityConcrete): CalculationConcrete;
 
     getOrCreateCalculation(entity: CalculatableEntityConcrete): CalculationConcrete {
@@ -162,6 +165,8 @@ export class GlobalStore extends ObjectStore {
                     break;
                 case EntityType.FLOW_SOURCE:
                     this.calculationStore.set(entity.uid, cloneSimple(emptyFlowSourceCalculation()));
+                case EntityType.PLANT:
+                    this.calculationStore.set(entity.uid, cloneSimple(emptyPlantCalculation()));
                     break;
                 default:
                     assertUnreachable(entity);
@@ -180,6 +185,7 @@ export class GlobalStore extends ObjectStore {
     getCalculation(entity: SystemNodeEntity): SystemNodeCalculation | undefined;
     getCalculation(entity: LoadNodeEntity): LoadNodeCalculation | undefined;
     getCalculation(entity: FlowSourceEntity): FlowSourceCalculation | undefined;
+    getCalculation(entity: PlantEntity): PlantCalculation | undefined;
     getCalculation(entity: CalculatableEntityConcrete): CalculationConcrete | undefined;
 
     getCalculation(entity: CalculatableEntityConcrete): CalculationConcrete | undefined {
