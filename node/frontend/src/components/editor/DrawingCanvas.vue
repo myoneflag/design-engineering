@@ -149,6 +149,7 @@ import { Buffer } from "./RenderBuffer";
 import { GlobalStore } from "../../htmlcanvas/lib/global-store";
 import { ObjectStore } from "../../htmlcanvas/lib/object-store";
 import insertFlowSource from '../../htmlcanvas/tools/insert-flow-source';
+import insertPlant from "../../htmlcanvas/tools/insert-plant";
 
 @Component({
     components: {
@@ -686,6 +687,7 @@ export default class DrawingCanvas extends Vue {
                 case EntityType.PIPE:
                 case EntityType.RISER:
                 case EntityType.SYSTEM_NODE:
+                case EntityType.PLANT:
                 case EntityType.BIG_VALVE:
                 case EntityType.FIXTURE:
                 case EntityType.FLOW_SOURCE:
@@ -730,6 +732,7 @@ export default class DrawingCanvas extends Vue {
                 case EntityType.RISER:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.BIG_VALVE:
+                case EntityType.PLANT:
                 case EntityType.FIXTURE:
                 case EntityType.FLOW_SOURCE:
                 case EntityType.LOAD_NODE:
@@ -1073,6 +1076,8 @@ export default class DrawingCanvas extends Vue {
             insertLoadNode(this, nodeType);
         } else if (entityName === EntityType.FLOW_SOURCE) {
             insertFlowSource(this, system);
+        } else if (entityName === EntityType.PLANT) {
+            insertPlant(this, 0);
         }
     }
 

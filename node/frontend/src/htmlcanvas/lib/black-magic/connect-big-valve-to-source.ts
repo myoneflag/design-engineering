@@ -6,11 +6,10 @@ import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
 import { ConnectableEntity, Coord, DrawableEntity, NetworkType } from "../../../../src/store/document/types";
 import PipeEntity from "../../../../src/store/document/entities/pipe-entity";
 import Pipe from "../../../../src/htmlcanvas/objects/pipe";
-import { ConnectableEntityConcrete } from "../../../../src/store/document/entities/concrete-entity";
+import { ConnectableEntityConcrete, isConnectableEntity } from "../../../../src/store/document/entities/concrete-entity";
 import { EntityType } from "../../../../src/store/document/entities/types";
 import { addValveAndSplitPipe } from "../../../../src/htmlcanvas/lib/black-magic/split-pipe";
 import FittingEntity from "../../../../src/store/document/entities/fitting-entity";
-import { isConnectable } from "../../../../src/store/document";
 import uuid from "uuid";
 import { InteractionType } from "../../../../src/htmlcanvas/lib/interaction";
 import { FlowConfiguration } from "../../../store/document/entities/big-valve/big-valve-entity";
@@ -78,7 +77,7 @@ function leadPipe(
         const obj = context.objectStore.get(pipeSpec)!;
         if (obj.entity.type === EntityType.PIPE) {
             valve = addValveAndSplitPipe(context, obj as Pipe, wc, systemUid, 30).focus as FittingEntity;
-        } else if (isConnectable(obj.type)) {
+        } else if (isConnectableEntity(obj.entity)) {
             valve = obj.entity as ConnectableEntityConcrete;
         } else {
             throw new Error("not supported to lead from");
@@ -90,7 +89,7 @@ function leadPipe(
                 const pipeE = interactive[0];
                 pipe = context.objectStore.get(pipeE.uid) as Pipe;
                 valve = addValveAndSplitPipe(context, pipe, wc, systemUid, 30).focus as FittingEntity;
-            } else if (isConnectable(interactive[0].type)) {
+            } else if (isConnectableEntity(interactive[0])) {
                 valve = interactive[0] as ConnectableEntityConcrete;
             } else {
                 throw new Error("not supported");

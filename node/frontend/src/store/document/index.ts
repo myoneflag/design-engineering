@@ -7,7 +7,6 @@ import { RootState } from "../types";
 import { EntityType } from "../../../src/store/document/entities/types";
 import { cloneSimple } from "../../../src/lib/utils";
 import { assertUnreachable } from "../../config";
-import { ConnectableEntityConcrete, DrawableEntityConcrete } from "./entities/concrete-entity";
 
 export const state: DocumentState = cloneSimple(initialDocumentState);
 
@@ -20,48 +19,6 @@ export const document: Module<DocumentState, RootState> = {
     actions,
     mutations
 };
-
-export function isConnectable(type: EntityType): boolean {
-    switch (type) {
-        case EntityType.FITTING:
-        case EntityType.SYSTEM_NODE:
-        case EntityType.RISER:
-        case EntityType.RETURN:
-        case EntityType.DIRECTED_VALVE:
-        case EntityType.FLOW_SOURCE:
-        case EntityType.LOAD_NODE:
-            return true;
-        case EntityType.BIG_VALVE:
-        case EntityType.FIXTURE:
-        case EntityType.BACKGROUND_IMAGE:
-        case EntityType.PIPE:
-            return false;
-    }
-    assertUnreachable(type);
-}
-
-export function isConnectableEntity(e: DrawableEntityConcrete): e is ConnectableEntityConcrete {
-    return isConnectable(e.type);
-}
-
-export function isCentered(type: EntityType): boolean {
-    switch (type) {
-        case EntityType.FITTING:
-        case EntityType.SYSTEM_NODE:
-        case EntityType.RISER:
-        case EntityType.RETURN:
-        case EntityType.BIG_VALVE:
-        case EntityType.FIXTURE:
-        case EntityType.FLOW_SOURCE:
-        case EntityType.LOAD_NODE:
-        case EntityType.DIRECTED_VALVE:
-            return true;
-        case EntityType.BACKGROUND_IMAGE:
-        case EntityType.PIPE:
-            return false;
-    }
-    assertUnreachable(type);
-}
 
 // Higher priority gets replaced less
 export function getDragPriority(type: EntityType): number {
@@ -80,6 +37,7 @@ export function getDragPriority(type: EntityType): number {
             return 5;
         case EntityType.BIG_VALVE:
         case EntityType.FIXTURE:
+        case EntityType.PLANT:
         case EntityType.BACKGROUND_IMAGE:
         case EntityType.PIPE:
             throw new Error("not a connectable");

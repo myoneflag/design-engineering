@@ -312,6 +312,7 @@ export abstract class LayerImplementation implements Layer {
                 return 0;
             case EntityType.FIXTURE:
             case EntityType.LOAD_NODE:
+            case EntityType.PLANT:
             case EntityType.FITTING:
             case EntityType.RISER:
             case EntityType.FLOW_SOURCE:
@@ -350,6 +351,7 @@ export abstract class LayerImplementation implements Layer {
                 case EntityType.FIXTURE:
                 case EntityType.LOAD_NODE:
                 case EntityType.FLOW_SOURCE:
+                case EntityType.PLANT:
                 case EntityType.BIG_VALVE:
                 case EntityType.DIRECTED_VALVE:
                     return true;

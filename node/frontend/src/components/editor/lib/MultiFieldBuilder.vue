@@ -50,6 +50,7 @@ import {EntityType} from "../../../store/document/entities/types";
     import { fillDefaultLoadNodeFields, makeLoadNodesFields } from "../../../store/document/entities/load-node-entity";
     import { cloneSimple, getPropertyByString, setPropertyByString } from "../../../lib/utils";
     import { fillFlowSourceDefaults, makeFlowSourceFields } from "../../../store/document/entities/flow-source-entity";
+    import { fillPlantDefaults, makePlantEntityFields } from "../../../store/document/entities/plant-entity";
 
     @Component({
         components: { PropertiesFieldBuilder },
@@ -133,6 +134,8 @@ import {EntityType} from "../../../store/document/entities/types";
                         this.$store.getters["catalog/defaultPipeMaterialChoices"],
                         this.document.drawing.metadata.flowSystems,
                     ).filter((p) => p.multiFieldId);
+                case EntityType.PLANT:
+                    return makePlantEntityFields(this.document.drawing.metadata.flowSystems);
             }
             assertUnreachable(entity);
         }
@@ -157,6 +160,8 @@ import {EntityType} from "../../../store/document/entities/types";
                     return fillDirectedValveFields(this.document, this.$props.objectStore, obj.entity);
                 case EntityType.LOAD_NODE:
                     return fillDefaultLoadNodeFields(this.document, obj.objectStore, obj.entity);
+                case EntityType.PLANT:
+                    return fillPlantDefaults(this.document, obj.entity);
                 case EntityType.FLOW_SOURCE:
                     return fillFlowSourceDefaults(this.document, obj.entity);
             }

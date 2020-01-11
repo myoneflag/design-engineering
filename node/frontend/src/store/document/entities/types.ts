@@ -8,13 +8,13 @@ export enum EntityType {
     BIG_VALVE = "BIG_VALVE",
     SYSTEM_NODE = "SYSTEM_NODE",
 
-    // Fixtures
     FIXTURE = "FIXTURE",
 
     DIRECTED_VALVE = "DIRECTED_VALVE",
     LOAD_NODE = "LOAD_NODE",
+    PLANT = "PLANT",
 
-    FLOW_SOURCE = "FLOW_SOURCE"
+    FLOW_SOURCE = "FLOW_SOURCE",
 }
 
 export function getEntityName(type: EntityType): string {
@@ -33,6 +33,8 @@ export function getEntityName(type: EntityType): string {
             return "TMV, H/C RPZD && Tempering Valves";
         case EntityType.SYSTEM_NODE:
             return "Inlet/Outlet";
+        case EntityType.PLANT:
+            return "PLANT";
         case EntityType.FIXTURE:
             return "Fixture";
         case EntityType.DIRECTED_VALVE:

@@ -16,12 +16,12 @@ import {
     polygonOverlapsShapeApprox,
     polygonsOverlap
 } from "../../../src/htmlcanvas/utils";
-import { isConnectable } from "../../../src/store/document";
 import { isCalculated } from "../../../src/store/document/calculations";
 import * as TM from "transformation-matrix";
 import { tm2flatten } from "../../../src/htmlcanvas/lib/utils";
 import { MIN_SCALE } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import { assertUnreachable } from "../../config";
+import { isConnectableEntity } from "../../store/document/entities/concrete-entity";
 
 const MINIMUM_SIGNIFICANT_PIPE_LENGTH_MM = 500;
 export const SIGNIFICANT_FLOW_THRESHOLD = 1e-5;
@@ -124,7 +124,7 @@ export default class CalculationLayer extends LayerImplementation {
                         // don't cover connectables
                         for (const c of allOnScreen) {
                             if (
-                                (isConnectable(c.entity.type) ||
+                                (isConnectableEntity(c.entity) ||
                                 c.entity.type === EntityType.FIXTURE ||
                                 c.entity.type === EntityType.BIG_VALVE)
                             ) {
@@ -192,6 +192,7 @@ export default class CalculationLayer extends LayerImplementation {
             case EntityType.FIXTURE:
                 return 110;
             case EntityType.BIG_VALVE:
+            case EntityType.PLANT:
             case EntityType.DIRECTED_VALVE:
                 return 100;
             case EntityType.FITTING:

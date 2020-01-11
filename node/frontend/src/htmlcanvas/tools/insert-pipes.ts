@@ -17,10 +17,9 @@ import { getInsertCoordsAt, maxHeightOfConnection } from "../../../src/htmlcanva
 import BackedDrawableObject from "../../../src/htmlcanvas/lib/backed-drawable-object";
 import Connectable from "../../../src/htmlcanvas/lib/object-traits/connectable";
 import Flatten from "@flatten-js/core";
-import { ConnectableEntityConcrete } from "../../../src/store/document/entities/concrete-entity";
+import { ConnectableEntityConcrete, isConnectableEntity } from "../../../src/store/document/entities/concrete-entity";
 import { addValveAndSplitPipe } from "../../../src/htmlcanvas/lib/black-magic/split-pipe";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
-import { isConnectable } from "../../../src/store/document";
 import { SelectMode } from "../../../src/htmlcanvas/layers/layer";
 import { KeyCode } from "../../../src/htmlcanvas/utils";
 import BackedConnectable, { BaseBackedConnectable } from "../../../src/htmlcanvas/lib/BackedConnectable";
@@ -198,7 +197,7 @@ function insertPipeChain(
                             system.uid,
                             30
                         ).focus as ConnectableEntityConcrete;
-                    } else if (isConnectable(interactive[0].type)) {
+                    } else if (isConnectableEntity(interactive[0])) {
                         nextEntity = interactive[0] as ConnectableEntityConcrete;
                         context.hydraulicsLayer.select(
                             [context.objectStore.get(interactive[0].uid)!],

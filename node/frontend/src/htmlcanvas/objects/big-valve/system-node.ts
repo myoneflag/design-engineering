@@ -85,6 +85,7 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
             case EntityType.LOAD_NODE:
             case EntityType.FIXTURE:
             case EntityType.DIRECTED_VALVE:
+            case EntityType.PLANT:
                 const center = po.toWorldCoord();
                 const wc = this.toWorldCoord();
                 const v = Flatten.vector([wc.x - center.x, wc.y - center.y]);

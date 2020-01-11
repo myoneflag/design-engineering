@@ -15,6 +15,10 @@ import LoadNodeEntity from "./load-node-entity";
 import LoadNodeCalculation from "../calculations/load-node-calculation";
 import FlowSourceCalculation from "../calculations/flow-source-calculation";
 import FlowSourceEntity from "./flow-source-entity";
+import PlantEntity from "./plant-entity";
+import { EntityType } from "./types";
+import { assertUnreachable } from "../../../config";
+import PlantCalculation from "../calculations/plant-calculation";
 
 export type DrawableEntityConcrete =
     | BackgroundEntity
@@ -26,7 +30,8 @@ export type DrawableEntityConcrete =
     | FixtureEntity
     | DirectedValveEntity
     | LoadNodeEntity
-    | FlowSourceEntity;
+    | FlowSourceEntity
+    | PlantEntity;
 
 export type ConnectableEntityConcrete =
     | FittingEntity
@@ -45,7 +50,8 @@ export type CenteredEntityConcrete =
     | FixtureEntity
     | DirectedValveEntity
     | LoadNodeEntity
-    | FlowSourceEntity;
+    | FlowSourceEntity
+    | PlantEntity;
 
 export type InvisibleNodeEntityConcrete = SystemNodeEntity;
 
@@ -58,7 +64,8 @@ export type CalculatableEntityConcrete =
     | DirectedValveEntity
     | SystemNodeEntity
     | LoadNodeEntity
-    | FlowSourceEntity;
+    | FlowSourceEntity
+    | PlantEntity;
 
 export type CalculationConcrete =
     | RiserCalculation
@@ -69,6 +76,66 @@ export type CalculationConcrete =
     | FixtureCalculation
     | SystemNodeCalculation
     | LoadNodeCalculation
-    | FlowSourceCalculation;
+    | FlowSourceCalculation
+    | PlantCalculation;
 
-export type EdgeLikeEntity = PipeEntity | FixtureEntity | BigValveEntity;
+export type EdgeLikeEntity = PipeEntity | FixtureEntity | BigValveEntity | PlantEntity;
+
+export function isConnectableEntityType(eType: EntityType) {
+    switch (eType) {
+        case EntityType.FITTING:
+        case EntityType.SYSTEM_NODE:
+        case EntityType.RISER:
+        case EntityType.DIRECTED_VALVE:
+        case EntityType.FLOW_SOURCE:
+        case EntityType.RETURN:
+        case EntityType.LOAD_NODE:
+            return true;
+        case EntityType.BIG_VALVE:
+        case EntityType.FIXTURE:
+        case EntityType.PLANT:
+        case EntityType.BACKGROUND_IMAGE:
+        case EntityType.PIPE:
+            return false;
+    }
+    assertUnreachable(eType);
+}
+
+export function isConnectableEntity(e: DrawableEntityConcrete): e is ConnectableEntityConcrete {
+    switch (e.type) {
+        case EntityType.FITTING:
+        case EntityType.SYSTEM_NODE:
+        case EntityType.RISER:
+        case EntityType.DIRECTED_VALVE:
+        case EntityType.FLOW_SOURCE:
+        case EntityType.LOAD_NODE:
+            return true;
+        case EntityType.BIG_VALVE:
+        case EntityType.FIXTURE:
+        case EntityType.PLANT:
+        case EntityType.BACKGROUND_IMAGE:
+        case EntityType.PIPE:
+            return false;
+    }
+    assertUnreachable(e);
+}
+
+export function isCentered(type: EntityType): boolean {
+    switch (type) {
+        case EntityType.FITTING:
+        case EntityType.SYSTEM_NODE:
+        case EntityType.RISER:
+        case EntityType.RETURN:
+        case EntityType.BIG_VALVE:
+        case EntityType.FIXTURE:
+        case EntityType.FLOW_SOURCE:
+        case EntityType.PLANT:
+        case EntityType.LOAD_NODE:
+        case EntityType.DIRECTED_VALVE:
+            return true;
+        case EntityType.BACKGROUND_IMAGE:
+        case EntityType.PIPE:
+            return false;
+    }
+    assertUnreachable(type);
+}
