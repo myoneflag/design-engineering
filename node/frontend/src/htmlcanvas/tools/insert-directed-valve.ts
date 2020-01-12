@@ -41,6 +41,7 @@ export default function insertDirectedValve(
                     {
                         type: InteractionType.INSERT,
                         entityType: EntityType.DIRECTED_VALVE,
+                        systemUid: null,
                         worldCoord: wc,
                         worldRadius: 30
                     },

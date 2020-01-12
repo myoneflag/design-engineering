@@ -19,7 +19,8 @@ import { interpolateTable, lowerBoundTable, parseCatalogNumberExact } from "../.
 import { CalculationContext } from "../../../src/calculations/types";
 import {
     ConnectableEntityConcrete,
-    DrawableEntityConcrete, isConnectableEntity
+    DrawableEntityConcrete,
+    isConnectableEntity
 } from "../../../src/store/document/entities/concrete-entity";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
@@ -529,13 +530,22 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
     offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
         switch (interaction.type) {
             case InteractionType.INSERT:
+                if (interaction.systemUid && interaction.systemUid !== this.entity.systemUid) {
+                    return null;
+                }
                 return [this.entity];
             case InteractionType.MOVE_ONTO_RECEIVE: {
+
                 if (this.entity.endpointUid.indexOf(interaction.src.uid) !== -1) {
                     return null;
                 }
                 // We can receive valves.
                 if (isConnectableEntity(interaction.src)) {
+                    if (interaction.src.type !== EntityType.DIRECTED_VALVE && interaction.src.type !== EntityType.LOAD_NODE) {
+                        if (interaction.src.systemUid !== this.entity.systemUid) {
+                            return null;
+                        }
+                    }
                     return [this.entity];
                 } else {
                     return null;
@@ -543,6 +553,9 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             }
             case InteractionType.CONTINUING_PIPE:
             case InteractionType.STARTING_PIPE:
+                if (interaction.system.uid !== this.entity.systemUid) {
+                    return null;
+                }
                 return [this.entity];
             case InteractionType.MOVE_ONTO_SEND:
                 return null;

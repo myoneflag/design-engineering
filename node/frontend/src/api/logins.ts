@@ -54,3 +54,27 @@ export async function getSession(): Promise<APIResult<User>> {
         }
     }
 }
+
+export async function acceptEula(): Promise<APIResult<null>> {
+    try {
+        return (await axios.post("/api/acceptEula")).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return { success: false, message: e.response.data.message };
+        } else {
+            return { success: false, message: e.message };
+        }
+    }
+}
+
+export async function declineEula(): Promise<APIResult<null>> {
+    try {
+        return (await axios.post("/api/declineEula")).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return { success: false, message: e.response.data.message };
+        } else {
+            return { success: false, message: e.message };
+        }
+    }
+}

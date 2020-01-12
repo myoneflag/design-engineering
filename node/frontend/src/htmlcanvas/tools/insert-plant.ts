@@ -45,8 +45,7 @@ export default function insertPlant(context: CanvasContext, angle: number) {
                     widthMM: 500,
                     inletSystemUid: StandardFlowSystemUids.ColdWater,
                     inletUid,
-                    maxOutletPressureKPA: null,
-                    minOutletPressureKPA: null,
+                    pressureLossKPA: null,
                     outletSystemUid: StandardFlowSystemUids.HotWater,
                     outletUid,
                     pumpPressureKPA: null,
@@ -57,7 +56,8 @@ export default function insertPlant(context: CanvasContext, angle: number) {
                     uid: plantUid,
 
                     name: "Plant",
-                    rotation: angle
+                    rotation: angle,
+                    makeStaticPressure: false,
                 };
 
                 context.$store.dispatch("document/addEntity", newEntity);

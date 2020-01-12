@@ -51,11 +51,16 @@ import DirectedValveEntity, {
 import { ValveType } from "../../src/store/document/entities/directed-valves/valve-types";
 import {
     addPsdCounts,
-    comparePsdCounts, ContextualPCE, countPsdProfile, countPsdUnits, insertPsdProfile,
+    comparePsdCounts,
+    ContextualPCE,
+    countPsdProfile,
+    insertPsdProfile,
     isZeroPsdCounts,
     lookupFlowRate,
-    PsdCountEntry, PsdProfile,
-    subPsdCounts, subtractPsdProfiles, zeroContextualPCE,
+    PsdCountEntry,
+    PsdProfile,
+    subtractPsdProfiles,
+    zeroContextualPCE,
     zeroPsdCounts
 } from "../../src/calculations/utils";
 import FittingCalculation from "../../src/store/document/calculations/fitting-calculation";
@@ -72,7 +77,7 @@ import { ObjectStore } from "../htmlcanvas/lib/object-store";
 import { makeFlowSourceFields } from "../store/document/entities/flow-source-entity";
 import FlowSourceCalculation from "../store/document/calculations/flow-source-calculation";
 import FlowSource from "../htmlcanvas/objects/flow-source";
-import { fillPlantDefaults, makePlantEntityFields } from "../store/document/entities/plant-entity";
+import { makePlantEntityFields } from "../store/document/entities/plant-entity";
 import Plant from "../htmlcanvas/objects/plant";
 
 export const SELF_CONNECTION = "SELF_CONNECTION";
@@ -249,6 +254,21 @@ export default class CalculationEngine {
                     }
                 }
             });
+        });
+
+        this.globalStore.forEach((o) => {
+            if (o.entity.type === EntityType.PLANT) {
+                if (o.entity.pumpPressureKPA && o.entity.pressureLossKPA) {
+                    selectObject = {
+                        uid: o.uid,
+                        property: 'pumpPressureKPA',
+                        message: "Only Pump Pressure or Pressure Loss may be set, but not both",
+                        variant: "danger",
+                        title: "Please Choose Only One",
+                        recenter: true
+                    };
+                }
+            }
         });
 
         if (selectObject) {
@@ -1858,7 +1878,7 @@ export default class CalculationEngine {
                 case EntityType.PLANT: {
                     const calc = this.globalStore.getOrCreateCalculation(o.entity);
                     if (o.entity.pumpPressureKPA === null) {
-                        calc.pressureDropKPA = 0;
+                        calc.pressureDropKPA = o.entity.pressureLossKPA || 0;
                     } else {
                         calc.pressureDropKPA = - o.entity.pumpPressureKPA;
                     }

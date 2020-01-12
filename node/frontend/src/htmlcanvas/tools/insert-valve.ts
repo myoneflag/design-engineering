@@ -31,6 +31,7 @@ export default function insertValve(context: CanvasContext, system: FlowSystemPa
                         type: InteractionType.INSERT,
                         entityType: EntityType.FITTING,
                         worldCoord: wc,
+                        systemUid: system.uid,
                         worldRadius: 30
                     },
                     (drawable) => {

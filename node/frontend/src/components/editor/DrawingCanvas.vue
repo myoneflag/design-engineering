@@ -1282,7 +1282,7 @@ export default class DrawingCanvas extends Vue {
         if (event.dataTransfer) {
             event.preventDefault();
             if (event.dataTransfer.files.length > 1) {
-                this.$bvModal.msgBoxOk("Please drag and drop only the .PDF for the " + (this.currentLevel ? this.currentLevel.name : "current") + " level.");
+                this.$bvModal.msgBoxOk("Please drag and drop the .PDF for the " + (this.currentLevel ? this.currentLevel.name : "current") + " level one at a time.");
             } else {
 
                 for (let i = 0; i < event.dataTransfer.files.length; i++) {

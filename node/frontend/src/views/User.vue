@@ -31,7 +31,7 @@ import {AccessLevel} from "../../../backend/src/entity/User"; import {AccessLeve
                                 <b-form-input :required="false" type="email" v-model="user.email"></b-form-input>
                             </b-form-group>
 
-                            <b-form-group :label-cols="3" label="Subscribe">
+                            <b-form-group :label-cols="3" label="Subscribe" v-if="profile && profile.accessLevel <= AccessLevel.ADMIN">
                                 <b-form-checkbox v-model="user.subscribed">
                                     Subscribe to "Contact Us" messages?
                                 </b-form-checkbox>
@@ -149,8 +149,8 @@ export default class User extends Vue {
                     variant: "danger"
                 });
             }
+            this.changePage(0);
         });
-        this.changePage(0);
     }
 
     mounted() {

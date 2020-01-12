@@ -27,7 +27,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import PaperSizeSelector from "../../src/components/PaperSizePicker.vue";
+import PaperSizeSelector from "../views/CalculationOverview.vue";
 import { PaperSize, SENSIBLE_SCALES } from "../../../common/src/paper-config";
 
 @Component({

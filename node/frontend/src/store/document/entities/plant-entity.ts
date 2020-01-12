@@ -19,12 +19,15 @@ export default interface PlantEntity extends CenteredEntity {
     widthMM: number;
     heightMM: number;
 
+    pumpPressureKPA: number | null;
+
+    pressureLossKPA: number | null;
+
+    makeStaticPressure: boolean;
+
     inletUid: string;
     outletUid: string;
 
-    pumpPressureKPA: number | null;
-    minOutletPressureKPA: number | null;
-    maxOutletPressureKPA: number | null;
 }
 
 export function makePlantEntityFields(systems: FlowSystemParameters[]): PropertyField[] {
@@ -83,7 +86,17 @@ export function makePlantEntityFields(systems: FlowSystemParameters[]): Property
         {
             property: "pumpPressureKPA",
             title: "Pump Pressure (kPa)",
-            hasDefault: false,
+            hasDefault: true,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: {min: 0, max: null},
+            multiFieldId: 'pumpPressureKPA',
+        },
+
+        {
+            property: "pressureLossKPA",
+            title: "Pressure Loss (kPa)",
+            hasDefault: true,
             isCalculated: false,
             type: FieldType.Number,
             params: {min: 0, max: null},
@@ -110,37 +123,18 @@ export function makePlantEntityFields(systems: FlowSystemParameters[]): Property
             multiFieldId: "heightMM",
         },
 
-        {
-            property: "minOutletPressureKPA",
-            title: "Min. Outlet Pressure",
-            hasDefault: true,
-            isCalculated: false,
-            type: FieldType.Number,
-            params: { min: 0, max: null },
-            multiFieldId: "minOutletPressureKPA"
-        },
-
-        {
-            property: "maxOutletPressureKPA",
-            title: "Max. Outlet Pressure",
-            hasDefault: true,
-            isCalculated: false,
-            type: FieldType.Number,
-            params: { min: 0, max: null },
-            multiFieldId: "maxOutletPressureKPA"
-        }
     ];
 }
 
 export function fillPlantDefaults(doc: DocumentState, value: PlantEntity) {
     const result = cloneSimple(value);
 
-    if (result.minOutletPressureKPA === null) {
-        result.minOutletPressureKPA = 0;
+    if (result.pumpPressureKPA === null) {
+        result.pumpPressureKPA = 0;
     }
 
-    if (result.maxOutletPressureKPA === null) {
-        result.maxOutletPressureKPA = Infinity;
+    if (result.pressureLossKPA === null) {
+        result.pressureLossKPA = 0;
     }
 
     return result;

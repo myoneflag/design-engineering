@@ -46,9 +46,15 @@ export class User extends BaseEntity {
 
     @ManyToOne( () => Organization, {nullable: true, eager: true})
     organization: Organization | null;
+
+    @Column({default: false})
+    eulaAccepted: boolean;
+
+    @Column({nullable: true})
+    eulaAcceptedOn: Date | null;
 }
 
-export function allUserFields(except?: (keyof User)[]) {
+export function allUserFields(except?: Array<keyof User>) {
     const val: (keyof User)[] = ['username', 'name', 'passwordHash', 'accessLevel', 'email', 'subscribed', 'organization'];
     if (except) {
         return val.filter((v) => !except.includes(v));

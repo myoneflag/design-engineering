@@ -34,7 +34,7 @@ export function getEntityName(type: EntityType): string {
         case EntityType.SYSTEM_NODE:
             return "Inlet/Outlet";
         case EntityType.PLANT:
-            return "PLANT";
+            return "Plant";
         case EntityType.FIXTURE:
             return "Fixture";
         case EntityType.DIRECTED_VALVE:
