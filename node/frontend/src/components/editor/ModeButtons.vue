@@ -15,7 +15,7 @@
                         class="modebtn pipes btn-sm"
                         :pressed="mode === 1"
                         @click="$emit('update:mode', 1)"
-                        ><v-icon name="wave-square" scale="2.5" /><br />Hydraulics</b-button
+                        ><v-icon name="wave-square" scale="2.5" /><br />Plumbing</b-button
                     >
                     <b-button
                         variant="outline-dark"

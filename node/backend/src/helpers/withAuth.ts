@@ -3,7 +3,7 @@ import { AccessEvents, LoginEventType } from "../entity/AccessEvents";
 import { Session } from "../entity/Session";
 import { AccessLevel } from "../entity/User";
 
-export function AuthRequired(minAccessLevel?: AccessLevel) {
+export function AuthRequired(minAccessLevel?: AccessLevel, eulaNeeded: boolean = true) {
     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const original = descriptor.value;
         descriptor.value = async (req: Request, res: Response, next: NextFunction) => {
@@ -19,6 +19,7 @@ export function AuthRequired(minAccessLevel?: AccessLevel) {
                     })
                 },
                 minAccessLevel,
+                eulaNeeded,
             );
         }
     };
@@ -29,6 +30,7 @@ export async function withAuth<T>(
     fn: (session: Session) => Promise<T>,
     onFail: (msg: string) => any,
     minAccessLevel?: AccessLevel,
+    eulaNeeded: boolean = true,
     ): Promise<T> {
 
 
@@ -79,6 +81,11 @@ export async function withAuth<T>(
 
         event.type = LoginEventType.AUTHORISED_ACCESS;
         await event.save();
+
+        if (eulaNeeded && !(await s.user).eulaAccepted ) {
+            onFail("EULA not yet accepted");
+        }
+
         return fn(s);
     } else {
 

@@ -36,6 +36,7 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType) {
                         {
                             entityType: EntityType.LOAD_NODE,
                             worldCoord: wc,
+                            systemUid: null,
                             worldRadius: 10,
                             type: InteractionType.INSERT
                         },

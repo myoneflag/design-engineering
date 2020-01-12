@@ -17,6 +17,7 @@ import User from "./views/User.vue";
 import Contacts from "./views/Contacts.vue";
 import Errors from "./views/Errors.vue";
 import ViewError from "./views/Error.vue";
+import ProfileState from "./store/profile/types";
 Vue.use(Router);
 
 const router = new Router({
@@ -90,6 +91,12 @@ const router = new Router({
                     meta: {
                         auth: true
                     }
+                },
+
+                {
+                    path: "calculation-overview",
+                    name: "calculation-overview",
+                    component: () => import(/* webpackChunkName: "calc-overview" */ "./views/CalculationOverview.vue"),
                 }
             ],
 
@@ -190,7 +197,7 @@ const router = new Router({
 
             meta: {
                 auth: true,
-                minAccessLevel: AccessLevel.SUPERUSER
+                minAccessLevel: AccessLevel.SUPERUSER,
             }
         },
 
@@ -209,13 +216,26 @@ const router = new Router({
         {
             path: "/changePassword",
             name: "changePassword",
-            component: ChangePassword
+            component: ChangePassword,
+            meta: {
+                auth: true,
+                needsEula: false,
+            }
         },
 
         {
             path: "/contact",
             name: "contact",
             component: ContactUs
+        },
+        {
+            path: '/eula',
+            name: 'eula',
+            component: () => import(/* webpackChunkName: "eula" */ "./views/Eula.vue"),
+            meta: {
+                auth: true,
+                needsEula: false,
+            }
         }
     ]
 });
@@ -228,13 +248,7 @@ router.beforeEach((to, from, next) => {
             const levels = to.matched.filter((r) => "minAccessLevel" in r.meta).map((r) => r.meta.minAccessLevel);
             const requiredAccess = Math.min(...levels);
 
-            if (store.getters["profile/profile"] !== null) {
-                if (requiredAccess !== undefined && store.getters["profile/profile"].accessLevel > requiredAccess) {
-                    router.push("/login");
-                } else {
-                    next();
-                }
-            } else {
+            if (store.getters["profile/profile"] === null) {
                 getSession().then((res) => {
                     if (res.success === true) {
                         const result = res.data as IUser;
@@ -254,7 +268,18 @@ router.beforeEach((to, from, next) => {
                     }
                 });
 
-                // next('/loginComplete');
+            } else {
+                const needsEula = to.matched
+                    .filter((r) => r.meta && r.meta.auth && (r.meta.needsEula === undefined || r.meta.needsEula))
+                    .length > 0;
+
+                if (needsEula && !(store.getters["profile/profile"] as IUser).eulaAccepted) {
+                    router.push({name: 'eula'});
+                } else if (requiredAccess !== undefined && store.getters["profile/profile"].accessLevel > requiredAccess) {
+                    router.push("/login");
+                } else {
+                    next();
+                }
             }
         }
     } else {

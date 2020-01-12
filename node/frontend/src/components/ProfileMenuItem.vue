@@ -23,6 +23,7 @@
             </template>
 
             <b-dropdown-divider></b-dropdown-divider>
+            <b-dropdown-item :to="{name: 'eula'}">License Agreement</b-dropdown-item>
             <b-dropdown-item @click="logout">Logout</b-dropdown-item>
         </b-nav-item-dropdown>
 </template>
@@ -49,7 +50,9 @@ export default class ProfileMenuItem extends Vue {
                 email: "",
                 subscribed: false,
                 name: "",
-                passwordHash: ""
+                passwordHash: "",
+                eulaAccepted: false,
+                eulaAcceptedOn: null,
             };
         } else {
             return profile;

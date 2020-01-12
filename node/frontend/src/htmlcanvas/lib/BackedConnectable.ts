@@ -2,7 +2,7 @@ import BackedDrawableObject from "../../../src/htmlcanvas/lib/backed-drawable-ob
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import {
     ConnectableEntityConcrete,
-    DrawableEntityConcrete, isConnectableEntity, isConnectableEntityType
+    DrawableEntityConcrete, hasExplicitSystemUid, isConnectableEntity, isConnectableEntityType
 } from "../../../src/store/document/entities/concrete-entity";
 import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
 import { getDragPriority} from "../../../src/store/document";
@@ -39,6 +39,11 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                     isConnectableEntityType(interaction.entityType) &&
                     getDragPriority(interaction.entityType) >= this.dragPriority
                 ) {
+                    if (hasExplicitSystemUid(this.entity) && interaction.systemUid) {
+                        if (interaction.systemUid !== this.entity.systemUid) {
+                            return null;
+                        }
+                    }
                     return [this.entity];
                 }
                 return null;
@@ -46,6 +51,11 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
             case InteractionType.STARTING_PIPE: {
                 const resultingConnections = this.objectStore.getConnections(this.entity.uid).length + 1;
                 if (this.numConnectionsInBound(resultingConnections)) {
+                    if (hasExplicitSystemUid(this.entity)) {
+                        if (interaction.system.uid !== this.entity.systemUid) {
+                            return null;
+                        }
+                    }
                     return [this.entity];
                 } else {
                     return null;
@@ -64,6 +74,11 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                             this.numConnectionsAfterMerging(interaction.src as ConnectableEntityConcrete)
                         )
                     ) {
+                        if (hasExplicitSystemUid(this.entity) && hasExplicitSystemUid(interaction.src)) {
+                            if (this.entity.systemUid !== interaction.src.systemUid) {
+                                return null;
+                            }
+                        }
                         return [this.entity];
                     }
                     return null;
@@ -84,6 +99,11 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                             this.numConnectionsAfterMerging(interaction.dest as ConnectableEntityConcrete)
                         )
                     ) {
+                        if (hasExplicitSystemUid(this.entity) && hasExplicitSystemUid(interaction.dest)) {
+                            if (this.entity.systemUid !== interaction.dest.systemUid) {
+                                return null;
+                            }
+                        }
                         return [this.entity];
                     }
                     return null;

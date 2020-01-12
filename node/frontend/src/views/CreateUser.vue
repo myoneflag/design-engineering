@@ -82,7 +82,9 @@ export default class CreateUser extends Vue {
         passwordHash: "",
         username: "",
         email: "",
-        subscribed: false
+        subscribed: false,
+        eulaAccepted: false,
+        eulaAcceptedOn: null,
     };
 
     organization: string = "";

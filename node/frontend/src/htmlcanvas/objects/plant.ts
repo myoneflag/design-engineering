@@ -43,6 +43,7 @@ import { ValveType } from "../../store/document/entities/directed-valves/valve-t
 import { StandardFlowSystemUids } from "../../store/catalog";
 import PlantEntity from "../../store/document/entities/plant-entity";
 import PlantCalculation from "../../store/document/calculations/plant-calculation";
+import { EPS } from "../../calculations/pressure-drops";
 
 export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 
@@ -152,8 +153,8 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         const list: BaseBackedObject[] = [];
 
         list.push(
-            ...this.objectStore.get(this.entity.inletSystemUid)!.prepareDelete(context),
-            ...this.objectStore.get(this.entity.outletSystemUid)!.prepareDelete(context),
+            ...this.objectStore.get(this.entity.inletUid)!.prepareDelete(context),
+            ...this.objectStore.get(this.entity.outletUid)!.prepareDelete(context),
             this
         );
         return list;
@@ -259,6 +260,10 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             return sign * - this.entity.pumpPressureKPA;
         }
 
+        if (this.entity.pressureLossKPA) {
+            return sign * this.entity.pressureLossKPA;
+        }
+
         // TODO: allow user inputted K value or even fixed pressure losses.
         return 0;
     }
@@ -278,5 +283,32 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
     @Cached((kek) => new Set(kek.getParentChain().map((o) => o.uid)))
     shape(): Flatten.Segment | Flatten.Point | Flatten.Polygon | Flatten.Circle | null {
         return super.shape();
+    }
+
+    onUpdate() {
+        super.onUpdate();
+
+        const outlet = this.objectStore.get(this.entity.outletUid);
+        const inlet = this.objectStore.get(this.entity.inletUid);
+
+        if (outlet instanceof SystemNode) {
+            if (outlet.entity.systemUid !== this.entity.outletSystemUid) {
+                outlet.entity.systemUid = this.entity.outletSystemUid;
+            }
+
+            if (Math.abs(outlet.entity.center.x - this.entity.widthMM / 2) > EPS) {
+                outlet.entity.center.x = this.entity.widthMM / 2;
+            }
+        }
+
+        if (inlet instanceof SystemNode) {
+            if (inlet.entity.systemUid !== this.entity.inletSystemUid) {
+                inlet.entity.systemUid = this.entity.inletSystemUid;
+            }
+
+            if (Math.abs(inlet.entity.center.x + this.entity.widthMM / 2) > EPS) {
+                inlet.entity.center.x = - this.entity.widthMM / 2;
+            }
+        }
     }
 }

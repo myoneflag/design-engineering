@@ -6,14 +6,14 @@
                 <b-row>
                     <b-col>
                         <h1 class="title">
-                            Your Documents
+                            Your Drawings
                         </h1>
                     </b-col>
                 </b-row>
                 <b-row style="margin-bottom: 30px">
                     <b-col>
                         <b-button size="lg" variant="success" @click="createDocument"
-                            ><v-icon name="plus"></v-icon> Create Document</b-button
+                            ><v-icon name="plus"></v-icon> New Drawing</b-button
                         >
                     </b-col>
                 </b-row>

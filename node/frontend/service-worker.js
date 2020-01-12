@@ -1,7 +1,7 @@
 // https://medium.com/js-dojo/vuejs-pwa-cache-busting-8d09edd22a31
 workbox.core.setCacheNameDetails({ prefix: 'd4' })
 //Change this value every time before you build
-const LATEST_VERSION = "v1.2.7";
+const LATEST_VERSION = "v1.3.1";
 
 self.addEventListener('activate', (event) => {
     console.log(`%c ${LATEST_VERSION} `, 'background: #ddd; color: #0000ff')

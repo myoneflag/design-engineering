@@ -36,6 +36,7 @@ export default function insertRiser(context: CanvasContext, system: FlowSystemPa
                         {
                             entityType: EntityType.RISER,
                             worldCoord: wc,
+                            systemUid: system.uid,
                             worldRadius: 10,
                             type: InteractionType.INSERT
                         },

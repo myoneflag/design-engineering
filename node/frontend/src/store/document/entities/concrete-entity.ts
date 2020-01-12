@@ -41,6 +41,13 @@ export type ConnectableEntityConcrete =
     | LoadNodeEntity
     | FlowSourceEntity;
 
+export type HasExplicitSystemUid =
+    | FittingEntity
+    | RiserEntity
+    | SystemNodeEntity
+    | PipeEntity
+    | FlowSourceEntity;
+
 export type CenteredEntityConcrete =
     | BackgroundEntity
     | FittingEntity
@@ -118,6 +125,24 @@ export function isConnectableEntity(e: DrawableEntityConcrete): e is Connectable
             return false;
     }
     assertUnreachable(e);
+}
+
+export function hasExplicitSystemUid(e: DrawableEntityConcrete): e is HasExplicitSystemUid {
+    switch (e.type) {
+        case EntityType.FITTING:
+        case EntityType.SYSTEM_NODE:
+        case EntityType.RISER:
+        case EntityType.FLOW_SOURCE:
+        case EntityType.PIPE:
+            return true;
+        case EntityType.DIRECTED_VALVE:
+        case EntityType.LOAD_NODE:
+        case EntityType.BIG_VALVE:
+        case EntityType.FIXTURE:
+        case EntityType.PLANT:
+        case EntityType.BACKGROUND_IMAGE:
+            return false;
+    }
 }
 
 export function isCentered(type: EntityType): boolean {

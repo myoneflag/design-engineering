@@ -35,6 +35,13 @@
                 </span>
                 Settings
             </b-nav-item>
+
+            <b-nav-item :to="{ name: 'calculation-overview' }" active-class="active" exact :disabled="loading">
+                <span>
+                    <v-icon name="info"></v-icon>
+                </span>
+                Calculation Info
+            </b-nav-item>
         </b-navbar-nav>
 
 

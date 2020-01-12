@@ -11,6 +11,7 @@ export interface PipeInteraction extends BaseInteraction {
 export interface InsertInteraction extends BaseInteraction {
     type: InteractionType.INSERT;
     entityType: EntityType;
+    systemUid: string | null;
 }
 
 export interface MovePointToDest extends BaseInteraction {
