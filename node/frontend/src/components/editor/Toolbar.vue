@@ -1,3 +1,4 @@
+import { GridLineMode } from "../../store/document/types";
 <template>
     <div class="toolbar">
         <div class="container">
@@ -32,6 +33,15 @@
                         >
                             <v-icon name="expand" scale="1.5" />
                         </b-button>
+                        <b-button
+                                variant="outline-dark"
+                                v-b-tooltip.hover="{ title: 'Switch Grid Lines' }"
+                                class="toolBtn"
+                                :pressed="document.uiState.gridLines !== GridLineMode.NONE"
+                                @click="switchGridLines"
+                        >
+                            <v-icon name="border-all" scale="1.5" />
+                        </b-button>
                     </b-button-group>
                 </b-col>
             </b-row>
@@ -40,26 +50,56 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
-import { DEFAULT_TOOL, POINT_TOOL } from "../../htmlcanvas/lib/tool";
-import { ToolConfig } from "../../../src/store/tools/types";
+    import Vue from "vue";
+    import Component from "vue-class-component";
+    import { DEFAULT_TOOL } from "../../htmlcanvas/lib/tool";
+    import { ToolConfig } from "../../../src/store/tools/types";
+    import { DocumentState, GridLineMode } from "../../store/document/types";
+    import { assertUnreachable } from "../../config";
 
-@Component({
+    @Component({
     props: {
         currentToolConfig: Object,
         onToolClick: Function,
-        onFitToViewClick: Function
+        onFitToViewClick: Function,
+        onChange: Function,
     }
 })
 export default class Toolbar extends Vue {
     TOOLBAR_BUTTONS: ToolConfig[] = [DEFAULT_TOOL];
+
+    get GridLineMode() {
+        return GridLineMode;
+    }
 
     toolBtnClick(tool: ToolConfig) {
         if (this.$props.onToolClick) {
             this.$props.onToolClick(tool);
         }
     }
+
+    switchGridLines() {
+        switch (this.document.uiState.gridLines) {
+            case GridLineMode.NONE:
+                this.document.uiState.gridLines = GridLineMode.ORIGIN;
+                break;
+            case GridLineMode.ORIGIN:
+                this.document.uiState.gridLines = GridLineMode.FULL;
+                break;
+            case GridLineMode.FULL:
+                this.document.uiState.gridLines = GridLineMode.NONE;
+                break;
+            default:
+                assertUnreachable(this.document.uiState.gridLines);
+        }
+        this.$props.onChange();
+    }
+
+    get document(): DocumentState {
+        return this.$store.getters['document/document'];
+    }
+
+
 }
 </script>
 

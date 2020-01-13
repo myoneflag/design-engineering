@@ -68,6 +68,7 @@
                 :current-tool-config="currentTool"
                 :on-tool-click="changeTool"
                 :on-fit-to-view-click="fitToView"
+                :on-change="scheduleDraw"
                 v-if="initialized"
             ></Toolbar>
 
@@ -93,7 +94,7 @@ import {
     Level,
     NetworkType
 } from "../../../src/store/document/types";
-import { drawLoadingUnits, drawPaperScale } from "../../../src/htmlcanvas/on-screen-items";
+import { drawGridLines, drawLoadingUnits, drawPaperScale } from "../../../src/htmlcanvas/on-screen-items";
 import ModeButtons from "../../../src/components/editor/ModeButtons.vue";
 import PropertiesWindow from "../../../src/components/editor/property-window/PropertiesWindow.vue";
 import { DrawingMode, MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
@@ -1135,6 +1136,7 @@ export default class DrawingCanvas extends Vue {
         }
 
         // Draw on screen HUD
+        drawGridLines(context);
         this.ctx!.setTransform(TM.identity());
         drawPaperScale(this.ctx!, 1 / matrixScale(this.viewPort.position));
 
@@ -1163,6 +1165,9 @@ export default class DrawingCanvas extends Vue {
                 );
             }
         }
+
+        // draw gridlines
+
 
         // draw selection box
         if (this.selectBox) {

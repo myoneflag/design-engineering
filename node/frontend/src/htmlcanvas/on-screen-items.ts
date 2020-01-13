@@ -4,7 +4,7 @@ import { DrawingContext } from "../../src/htmlcanvas/lib/types";
 import { Catalog } from "../../src/store/catalog/types";
 import { addPsdCounts, lookupFlowRate, PsdUnitsByFlowSystem, zeroPsdCounts } from "../../src/calculations/utils";
 import { StandardFlowSystemUids } from "../../src/store/catalog";
-import { NetworkType } from "../store/document/types";
+import { GridLineMode, NetworkType } from "../store/document/types";
 
 const SENSIBLE_UNITS_MM: number[] = [
     1,
@@ -44,15 +44,13 @@ const SENSIBLE_UNITS_MM: number[] = [
     8000000 // 1km to 8km
 ];
 
+const MINOR_GRID_MIN_PX = 20;
+
 export const getFriendlyDistanceUnit = (mm: number): [string, number] => {
-    if (mm < 10) {
+    if (mm < 1000) {
         return ["mm", 1];
     }
-    mm /= 10;
-    if (mm < 100) {
-        return ["cm", 10];
-    }
-    mm /= 100;
+    mm /= 1000;
     if (mm < 1000) {
         return ["m", 10 * 100];
     }
@@ -136,6 +134,111 @@ export const drawPaperScale = (ctx: CanvasRenderingContext2D, pxPerMm: number) =
     ctx.rect(scaleLeftEdge, height - scaleBottomOffset, smallW * 50, scaleHeight);
     ctx.stroke();
 };
+
+export function drawGridLines(context: DrawingContext) {
+
+    const scalesMM = [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000];
+    const {ctx, vp} = context;
+
+    if (context.doc.uiState.gridLines === GridLineMode.FULL) {
+        // Minor grid lines
+        let minorI = 0;
+        for (let i = 0; i < scalesMM.length; i++) {
+            if (vp.toScreenLength(scalesMM[i]) > MINOR_GRID_MIN_PX) {
+                minorI = i;
+                break;
+            }
+        }
+        if (minorI === scalesMM.length - 1) {
+            return;
+        }
+        const majorI = minorI + 1;
+
+
+        const tl = vp.toWorldCoord({x: 0, y: 0});
+        const br = vp.toWorldCoord({x: context.vp.width, y: context.vp.height});
+        const minorGap = vp.toScreenLength(scalesMM[minorI]);
+        const majorGap = vp.toScreenLength(scalesMM[majorI]);
+        const left = tl.x - tl.x % scalesMM[minorI];
+        const top = tl.y - tl.y % scalesMM[minorI];
+
+        const leftMajor = tl.x - tl.x % scalesMM[majorI];
+        const topMajor = tl.y - tl.y % scalesMM[majorI];
+
+        const tlS = vp.toScreenCoord({x: left, y: top});
+        const tlMS = vp.toScreenCoord({x: leftMajor, y: topMajor});
+
+        ctx.setTransform(TM.identity());
+
+        ctx.strokeStyle = 'rgba(100, 100, 100, 0.5)';
+        ctx.lineWidth = 1;
+
+        let grids = 0;
+
+        if (minorGap > 50) {
+
+            for (let x = tlS.x; x <= vp.width; x += minorGap) {
+                grids ++;
+                ctx.beginPath();
+                ctx.moveTo(Math.round(x), 0);
+                ctx.lineTo(Math.round(x), vp.height);
+                ctx.stroke();
+            }
+
+            for (let y = tlS.y; y <= vp.height; y += minorGap) {
+                grids ++;
+                ctx.beginPath();
+                ctx.moveTo(0, Math.round(y));
+                ctx.lineTo(vp.width, Math.round(y));
+                ctx.stroke();
+            }
+
+        }
+
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.setLineDash([]);
+        ctx.lineWidth = 1;
+
+        for (let x = tlMS.x; x <= vp.width; x += majorGap) {
+            grids ++;
+            ctx.beginPath();
+            ctx.moveTo(Math.round(x), 0);
+            ctx.lineTo(Math.round(x), vp.height);
+            ctx.stroke();
+        }
+
+        for (let y = tlMS.y; y <= vp.height; y += majorGap) {
+            grids ++;
+            ctx.beginPath();
+            ctx.moveTo(0, Math.round(y));
+            ctx.lineTo(vp.width, Math.round(y));
+            ctx.stroke();
+        }
+
+        ctx.setLineDash([]);
+        console.log(grids);
+    } else if (context.doc.uiState.gridLines === GridLineMode.ORIGIN) {
+        const origin = vp.toScreenCoord({x: 0, y: 0});
+
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.setLineDash([]);
+        ctx.lineWidth = 1;
+        ctx.setTransform(TM.identity());
+        if (origin.x > 0 && origin.x <= vp.width) {
+            ctx.beginPath();
+            ctx.moveTo(origin.x, 0);
+            ctx.lineTo(origin.x, vp.height);
+            ctx.stroke();
+        }
+
+        if (origin.y > 0 && origin.y <= vp.height) {
+            ctx.beginPath();
+            ctx.moveTo(0, origin.y);
+            ctx.lineTo(vp.width, origin.y);
+            ctx.stroke();
+        }
+    }
+}
 
 export function drawLoadingUnits(
     context: DrawingContext,

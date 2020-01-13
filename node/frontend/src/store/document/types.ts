@@ -97,6 +97,8 @@ export interface UIState {
     drawingMode: DrawingMode;
     demandType: DemandType;
 
+    gridLines: GridLineMode;
+
     lastCalculationId: number;
     lastCalculationUiSettings: CalculationUiSettings;
     isCalculating: boolean;
@@ -109,6 +111,12 @@ export interface UIState {
     viewOnly: boolean;
     viewOnlyReason: string | null;
 }
+
+export enum GridLineMode {
+    NONE = 'NONE',
+    ORIGIN = 'ORIGIN',
+    FULL = 'FULL',
+};
 
 export interface CalculationFilters {
     [key: string]: CalculationFilter;
@@ -319,6 +327,8 @@ export const initialUIState: UIState = {
     drawingMode: DrawingMode.FloorPlan,
     loaded: false,
     viewPort: null,
+
+    gridLines: GridLineMode.ORIGIN,
 
     lastUsedFixtureUid: null,
     lastUsedValveVid: null,
