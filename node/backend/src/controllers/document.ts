@@ -4,7 +4,6 @@ import {DocumentWSMessage, DocumentWSMessageType} from "../../../common/src/api/
 import {initialCatalog} from "../../../frontend/src/store/catalog/initial-catalog/initial-catalog";
 import {OperationTransformConcrete} from "../../../frontend/src/store/document/operation-transforms/operation-transforms";
 import {initialDocumentState} from "../../../frontend/src/store/document/types";
-import {Catalog} from "../entity/Catalog";
 import {Document} from "../entity/Document";
 import {Operation} from "../entity/Operation";
 import {Session} from "../entity/Session";
@@ -76,13 +75,7 @@ export class DocumentController {
             doc.createdOn = new Date();
             doc.metadata = initialDocumentState.drawing.metadata.generalInfo;
 
-
-            const catalog = Catalog.create();
-            catalog.content = _.cloneDeep(initialCatalog);
-            catalog.savedOn = new Date();
-            catalog.document = Promise.resolve(doc);
             await doc.save();
-            await catalog.save();
 
             res.status(200).send({
                 success: true,
@@ -108,15 +101,6 @@ export class DocumentController {
 
                 updateHandlers.delete(doc.id);
                 operationQueues.delete(doc.id);
-            }
-
-            const catalog = await Catalog
-                .createQueryBuilder('catalog')
-                .where('catalog.document = :document', {document: doc.id})
-                .getOne();
-
-            if (catalog) {
-                await catalog.remove();
             }
 
             await Promise.all((await doc.operations).map((o) => {

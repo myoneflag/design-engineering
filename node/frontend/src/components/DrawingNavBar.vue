@@ -1,3 +1,5 @@
+import { AccessLevel } from "../../../backend/src/entity/User";
+import { AccessLevel } from "../../../backend/src/entity/User";
 <template>
     <b-navbar type="light">
         <b-navbar-nav>
@@ -46,7 +48,7 @@
 
 
         <b-navbar-nav class="ml-auto" id="view-only-label">
-            <b-button  v-if="document.uiState.viewOnly" variant="danger" :disabled="true">
+            <b-button  v-if="document.uiState.viewOnly" variant="danger" :disabled="viewOnlyDisabled" @click="viewOnlyClick">
                 <v-icon name="eye"/>
                 View Only
                 <b-tooltip v-if="document.uiState.viewOnlyReason" target="view-only-label">
@@ -74,12 +76,14 @@
 </template>
 
 <script lang="ts">
-import { Vue } from "vue-property-decorator";
-import { DocumentState, Level } from "../store/document/types";
-import { State } from "vuex-class";
-import Component from "vue-class-component";
-import ProfileMenuItem from "../../src/components/ProfileMenuItem.vue";
-@Component({
+    import { Vue } from "vue-property-decorator";
+    import { DocumentState, Level } from "../store/document/types";
+    import { State } from "vuex-class";
+    import Component from "vue-class-component";
+    import ProfileMenuItem from "../../src/components/ProfileMenuItem.vue";
+    import { AccessLevel, User } from "../../../backend/src/entity/User";
+
+    @Component({
     components: { ProfileMenuItem },
     props: {
         loading: Boolean
@@ -90,7 +94,7 @@ export default class DrawingNavBar extends Vue {
 
     titleEditing = false;
 
-    get profile() {
+    get profile(): User {
         return this.$store.getters["profile/profile"];
     }
 
@@ -115,6 +119,24 @@ export default class DrawingNavBar extends Vue {
 
     get isSyncing(): boolean {
         return this.$store.getters['document/isSyncing'];
+    }
+
+    viewOnlyClick() {
+        if (this.profile.accessLevel <= AccessLevel.ADMIN) {
+            if (this.document.uiState.viewOnlyReason === "Superusers view documents in View Only mode by default (click to edit)") {
+                this.document.uiState.viewOnly = false;
+                this.document.uiState.viewOnlyReason = null;
+            }
+        }
+    }
+
+    get viewOnlyDisabled() {
+        if (this.profile.accessLevel <= AccessLevel.ADMIN) {
+            if (this.document.uiState.viewOnlyReason === "Superusers view documents in View Only mode by default (click to edit)") {
+                return false;
+            }
+        }
+        return true;
     }
 
     commit() {

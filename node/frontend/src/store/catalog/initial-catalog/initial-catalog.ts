@@ -345,7 +345,7 @@ export const initialCatalog: Catalog = {
             roughIns: ["cold-water", "warm-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
-            name: "Kitchen Sink (Hot)",
+            name: "Kitchen Sink (Warm)",
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {

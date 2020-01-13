@@ -256,11 +256,10 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import FlowSystemPicker from "../../../src/components/editor/FlowSystemPicker.vue";
 import { EntityType } from "../../../src/store/document/entities/types";
-import { FixtureSpec } from "../../../src/store/catalog/types";
+import { Catalog, FixtureSpec } from "../../../src/store/catalog/types";
 import { DocumentState, NetworkType } from "../../store/document/types";
 import { SupportedPsdStandards } from "../../../src/config";
 import { NodeType } from "../../store/document/entities/load-node-entity";
-import { Catalog } from "../../../../backend/src/entity/Catalog";
 import { BigValveType } from "../../store/document/entities/big-valve/big-valve-entity";
 
 @Component({
