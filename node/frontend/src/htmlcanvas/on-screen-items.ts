@@ -170,7 +170,7 @@ export function drawGridLines(context: DrawingContext) {
 
         ctx.setTransform(TM.identity());
 
-        ctx.strokeStyle = 'rgba(100, 100, 100, 0.5)';
+        ctx.strokeStyle = 'rgba(100, 100, 200, 0.5)';
         ctx.lineWidth = 1;
 
         let grids = 0;
@@ -195,7 +195,7 @@ export function drawGridLines(context: DrawingContext) {
 
         }
 
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.strokeStyle = 'rgba(0, 0, 150, 0.5)';
         ctx.setLineDash([]);
         ctx.lineWidth = 1;
 
@@ -220,7 +220,7 @@ export function drawGridLines(context: DrawingContext) {
     } else if (context.doc.uiState.gridLines === GridLineMode.ORIGIN) {
         const origin = vp.toScreenCoord({x: 0, y: 0});
 
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.strokeStyle = 'rgba(0, 0, 150, 0.5)';
         ctx.setLineDash([]);
         ctx.lineWidth = 1;
         ctx.setTransform(TM.identity());
