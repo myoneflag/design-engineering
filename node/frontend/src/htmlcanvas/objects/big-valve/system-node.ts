@@ -215,7 +215,9 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
     }
 
     collectCalculations(context: CalculationContext): SystemNodeCalculation {
-        const calc = context.globalStore.getOrCreateCalculation(this.entity);
+        const ce = this.getCalculationEntities(context);
+        const ghost = ce.filter((e) => e.type === this.type)[0] as SystemNodeEntity;
+        const calc = context.globalStore.getOrCreateCalculation(ghost);
 
         // explicitly create this to help with refactors
         const res: SystemNodeCalculation = {

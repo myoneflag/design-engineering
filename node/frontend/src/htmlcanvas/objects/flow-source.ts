@@ -332,12 +332,6 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
 
         const tower = this.getCalculationTower(context);
 
-        if (context.globalStore.getConnections(calcEntity!.uid).length === 2) {
-            // that's fine
-        } else {
-            res.flowRateLS = null;
-        }
-
         tower.forEach(([v, p]) => {
             res.warning = res.warning || context.globalStore.getOrCreateCalculation(v).warning;
         });

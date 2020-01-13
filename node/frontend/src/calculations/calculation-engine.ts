@@ -1803,13 +1803,10 @@ export default class CalculationEngine {
                     break;
                 }
                 case EntityType.FITTING:
-                case EntityType.FLOW_SOURCE:
                 case EntityType.LOAD_NODE:
-                case EntityType.DIRECTED_VALVE:
-                case EntityType.SYSTEM_NODE: {
+                case EntityType.DIRECTED_VALVE: {
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity) as
                         | FittingCalculation
-                        | FlowSourceCalculation
                         | SystemNodeCalculation
                         | DirectedValveCalculation;
                     const connections = this.globalStore.getConnections(o.entity.uid);
@@ -1823,9 +1820,6 @@ export default class CalculationEngine {
                             if (pipeCalc1!.peakFlowRate !== null && pipeCalc2!.peakFlowRate !== null) {
                                 calculation.flowRateLS = Math.min(pipeCalc1!.peakFlowRate, pipeCalc2!.peakFlowRate);
 
-                                if (o.entity.type !== EntityType.FLOW_SOURCE &&
-                                    o.entity.type !== EntityType.SYSTEM_NODE
-                                ) {
                                     const hl1 = o.getFrictionHeadLoss(
                                         this,
                                         calculation.flowRateLS,
@@ -1872,6 +1866,30 @@ export default class CalculationEngine {
                                 }
                             }
                         }
+                    break;
+                }
+                case EntityType.SYSTEM_NODE:
+                case EntityType.FLOW_SOURCE: {
+                    const calculation = this.globalStore.getOrCreateCalculation(o.entity) as
+                        FlowSourceCalculation | SystemNodeCalculation;
+
+                    const conns = this.globalStore.getConnections(o.entity.uid);
+
+                    calculation.flowRateLS = 0;
+                    for (const conn of conns) {
+                        const p = this.globalStore.get(conn) as Pipe
+                        const pCalc = this.globalStore.getOrCreateCalculation(p.entity);
+                        if (pCalc.peakFlowRate) {
+                            calculation.flowRateLS += pCalc.peakFlowRate;
+                        }
+                    }
+
+                    if (o.entity.type === EntityType.SYSTEM_NODE) {
+                        const sc = calculation as SystemNodeCalculation;
+
+                        sc.psdUnits = this.getTerminalPsdU(
+                            {connectable: o.entity.uid, connection: o.entity.parentUid!}
+                        );
                     }
                     break;
                 }

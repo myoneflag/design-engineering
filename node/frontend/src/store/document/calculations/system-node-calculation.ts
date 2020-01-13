@@ -13,7 +13,7 @@ export default interface SystemNodeCalculation extends PsdCalculation, Calculati
 
 export function makeSystemNodeCalculationFields(entity: SystemNodeEntity, settings: DrawingState): CalculationField[] {
     const psdUnit = getPsdUnitName(settings.metadata.calculationParams.psdMethod);
-    return [
+    const result = [
         {
             property: "pressureKPA",
             title: "Pressure",
@@ -26,19 +26,40 @@ export function makeSystemNodeCalculationFields(entity: SystemNodeEntity, settin
             property: "flowRateLS",
             title: "Flow Rate",
             short: "",
-            units: Units.KiloPascals,
+            units: Units.LitersPerSecond,
             systemUid: entity.systemUid,
             category: FieldCategory.FlowRate
         },
-        {
-            property: "psdUnits",
-            title: psdUnit.name,
-            short: psdUnit.abbreviation,
-            units: Units.None,
-            systemUid: entity.systemUid,
-            category: FieldCategory.LoadingUnits
-        }
     ];
+
+
+    if (settings.metadata.calculationParams.psdMethod !== null) {
+        result.push(
+            {
+                property: "psdUnits.units",
+                title: psdUnit.name,
+                short: psdUnit.abbreviation,
+                units: Units.None,
+                category: FieldCategory.LoadingUnits,
+                systemUid: entity.systemUid
+            }
+        );
+    }
+
+    if (settings.metadata.calculationParams.dwellingMethod !== null) {
+        result.push(
+            {
+                property: "psdUnits.dwellings",
+                title: 'Dwellings',
+                short: 'dwlg',
+                units: Units.None,
+                category: FieldCategory.LoadingUnits,
+                systemUid: entity.systemUid
+            },
+        );
+    }
+
+    return result;
 }
 
 export function emptySystemNodeCalculation(): SystemNodeCalculation {

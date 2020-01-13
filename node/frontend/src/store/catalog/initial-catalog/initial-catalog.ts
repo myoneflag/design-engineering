@@ -243,6 +243,32 @@ export const initialCatalog: Catalog = {
             uid: "dishwasher",
             warmTempC: null
         },
+        drinkingFountain: {
+            abbreviation: "DF",
+            fixtureUnits: "1",
+            loadingUnits: {
+                as35002018LoadingUnits: {
+                    "cold-water": "1",
+                },
+                barriesBookLoadingUnits: {
+                    "cold-water": "1",
+                },
+                barriesBookDwellings: {
+                    "cold-water": "1",
+                }
+            },
+            roughIns: ["cold-water"],
+            maxInletPressureKPA: "500",
+            minInletPressureKPA: "200",
+            name: "Drinking Fountain",
+            outletAboveFloorM: "0.8",
+            probabilityOfUsagePCT: "0.5",
+            qLS: {
+                "cold-water": "0.1",
+            },
+            uid: "drinkingFountain",
+            warmTempC: null
+        },
         flushingRimSink: {
             abbreviation: "FRS",
             fixtureUnits: "6",
@@ -305,6 +331,36 @@ export const initialCatalog: Catalog = {
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "2",
+                    "warm-water": "2"
+                },
+                barriesBookLoadingUnits: {
+                    "cold-water": "3",
+                    "warm-water": "3"
+                },
+                barriesBookDwellings: {
+                    "cold-water": "3",
+                    "warm-water": "3"
+                }
+            },
+            roughIns: ["cold-water", "warm-water"],
+            maxInletPressureKPA: "500",
+            minInletPressureKPA: "200",
+            name: "Kitchen Sink (Hot)",
+            outletAboveFloorM: "1",
+            probabilityOfUsagePCT: "2",
+            qLS: {
+                "cold-water": "0.1",
+                "warm-water": "0.1"
+            },
+            uid: "kitchenSink",
+            warmTempC: null
+        },
+        kitchenSinkHot: {
+            abbreviation: "KS",
+            fixtureUnits: "3",
+            loadingUnits: {
+                as35002018LoadingUnits: {
+                    "cold-water": "2",
                     "hot-water": "2"
                 },
                 barriesBookLoadingUnits: {
@@ -319,14 +375,14 @@ export const initialCatalog: Catalog = {
             roughIns: ["cold-water", "hot-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
-            name: "Kitchen sink",
+            name: "Kitchen Sink (Hot)",
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
                 "cold-water": "0.1",
                 "hot-water": "0.1"
             },
-            uid: "kitchenSink",
+            uid: "kitchenSinkHot",
             warmTempC: null
         },
         laundryTrough: {
@@ -349,7 +405,7 @@ export const initialCatalog: Catalog = {
             roughIns: ["cold-water", "warm-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
-            name: "Laundry Trough",
+            name: "Laundry Trough (Warm)",
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
@@ -357,6 +413,36 @@ export const initialCatalog: Catalog = {
                 "warm-water": "0.12"
             },
             uid: "laundryTrough",
+            warmTempC: null
+        },
+        laundryTroughHot: {
+            abbreviation: "T",
+            fixtureUnits: "5",
+            loadingUnits: {
+                as35002018LoadingUnits: {
+                    "cold-water": "3",
+                    "hot-water": "3"
+                },
+                barriesBookLoadingUnits: {
+                    "cold-water": "3",
+                    "hot-water": "3"
+                },
+                barriesBookDwellings: {
+                    "cold-water": "3",
+                    "hot-water": "3"
+                }
+            },
+            roughIns: ["cold-water", "hot-water"],
+            maxInletPressureKPA: "500",
+            minInletPressureKPA: "200",
+            name: "Laundry Trough (Hot)",
+            outletAboveFloorM: "1",
+            probabilityOfUsagePCT: "2",
+            qLS: {
+                "cold-water": "0.12",
+                "hot-water": "0.12"
+            },
+            uid: "laundryTroughHot",
             warmTempC: null
         },
         shower: {
@@ -566,70 +652,70 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "1200"
                 },
                 15: {
-                    colebrookWhiteCoefficient: "0.00015",
+                    colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "10.81",
                     diameterNominalMM: "15",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "5290"
                 },
                 150: {
-                    colebrookWhiteCoefficient: "0.00015",
+                    colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "148.2",
                     diameterNominalMM: "150",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "1000"
                 },
                 20: {
-                    colebrookWhiteCoefficient: "0.00015",
+                    colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "16.9",
                     diameterNominalMM: "20",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "3970"
                 },
                 200: {
-                    colebrookWhiteCoefficient: "0.00015",
+                    colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "198.9",
                     diameterNominalMM: "200",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "720"
                 },
                 25: {
-                    colebrookWhiteCoefficient: "0.00015",
+                    colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "22.8",
                     diameterNominalMM: "25",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "3500"
                 },
                 32: {
-                    colebrookWhiteCoefficient: "0.00015",
+                    colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "29.1",
                     diameterNominalMM: "32",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "2780"
                 },
                 40: {
-                    colebrookWhiteCoefficient: "0.00015",
+                    colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "35.4",
                     diameterNominalMM: "40",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "2300"
                 },
                 50: {
-                    colebrookWhiteCoefficient: "0.00015",
+                    colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "48.3",
                     diameterNominalMM: "50",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "1710"
                 },
                 65: {
-                    colebrookWhiteCoefficient: "0.00015",
+                    colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "61",
                     diameterNominalMM: "65",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "1370"
                 },
                 80: {
-                    colebrookWhiteCoefficient: "0.00015",
+                    colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "72.9",
                     diameterNominalMM: "80",
                     pipeUid: "copperTypeB",

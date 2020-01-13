@@ -158,6 +158,9 @@ export default class User extends Vue {
     }
 
     async changePage(page: number) {
+        if (!this.profile || this.profile.accessLevel >= AccessLevel.MANAGER) {
+            return;
+        }
         this.page = page;
         if (this.user) {
             const result = await getAccessEvents(this.user.username, this.page * 50, 50);
