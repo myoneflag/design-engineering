@@ -10,8 +10,8 @@ workdir /usr/src/app/frontend
 copy ./frontend/package*.json ./frontend/npm*.json ./
 run npm install
 
-workdir /usr/src/app/common
-copy ./common/package*.json ./common/npm*.json ./
+workdir /usr/src/app/
+copy ./package*.json ./npm*.json ./
 run npm install
 
 workdir /usr/src/app/frontend

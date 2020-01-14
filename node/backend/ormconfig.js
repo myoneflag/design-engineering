@@ -11,7 +11,7 @@ module.exports = {
        process.env.H2X_MODE === "production" ? "./dist/common/src/models/**/*{.ts,.js}" : "../common/src/models/**/*.ts"
    ],
    "migrations": [
-       process.env.H2X_MODE === "production" ? "./dist/backend/src/migration/**/{*.ts,.js}" : "./src/migration/**/*.ts"
+       process.env.H2X_MODE === "production" ? "./dist/backend/src/migration/**/*{.ts,.js}" : "./src/migration/**/*.ts"
    ],
     "migrationsRun": true,
    "migrationsTableName": "migrations",

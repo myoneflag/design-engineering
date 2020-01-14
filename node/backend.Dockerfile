@@ -9,18 +9,18 @@ run apt-get install imagemagick -y
 run apt-get update
 run apt-get install ghostscript -y
 
+
 workdir /usr/src/app/backend
-copy ./backend/package*.json ../backend/npm*.json ./
+copy ./backend/package*.json ./backend/npm*.json ./
 run npm install
 
 workdir /usr/src/app/frontend
-copy ./frontend/package*.json ../frontend/npm*.json ./
+copy ./frontend/package*.json ./frontend/npm*.json ./
 run npm install
 
-workdir /usr/src/app/common
-copy ./common/package*.json ../common/npm*.json ./
+workdir /usr/src/app/
+copy ./package*.json ./npm*.json ./
 run npm install
-
 workdir /usr/src/app/backend
 
 copy ./ ../
