@@ -51,11 +51,11 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
-import { User } from "../../../backend/src/entity/User";
+import { User } from "../../../common/src/models/User";
 import { getUsers, updateUser } from "../api/users";
 import MainNavBar from "../../src/components/MainNavBar.vue";
 import DrawingNavBar from "../components/DrawingNavBar.vue";
-import { ContactMessage } from "../../../backend/src/entity/ContactMessage";
+import { ContactMessage } from "../../../common/src/models/ContactMessage";
 import { getContactMessages } from "../api/contact-message";
 
 @Component({

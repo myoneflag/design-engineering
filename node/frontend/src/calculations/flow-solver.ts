@@ -1,15 +1,15 @@
 import Graph, { Edge } from "../../src/calculations/graph";
-import { Catalog } from "../../src/store/catalog/types";
 import { DocumentState } from "../../src/store/document/types";
 import { getFluidDensityOfSystem, kpa2head } from "../../src/calculations/pressure-drops";
 import { ternarySearchForGlobalMin } from "../../src/calculations/search-functions";
-import RiserEntity from "../store/document/entities/riser-entity";
+import RiserEntity from "../../../common/src/api/document/entities/riser-entity";
 import { FlowAssignment } from "../../src/calculations/flow-assignment";
 import { getObjectFrictionHeadLoss } from "./entity-pressure-drops";
 import { FlowEdge, FlowNode, SELF_CONNECTION } from "../../src/calculations/calculation-engine";
 import Fitting from "../../src/htmlcanvas/objects/fitting";
 import { GlobalStore } from "../htmlcanvas/lib/global-store";
 import { ObjectStore } from "../htmlcanvas/lib/object-store";
+import { Catalog } from "../../../common/src/api/catalog/types";
 
 export const MINIMUM_FLOW_RATE_CHANGE = 0.0001;
 

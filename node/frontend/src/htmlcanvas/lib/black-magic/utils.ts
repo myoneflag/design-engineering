@@ -1,7 +1,7 @@
-import { EntityType } from "../../../store/document/entities/types";
+import { EntityType } from "../../../../../common/src/api/document/entities/types";
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
-import { assertUnreachable } from "../../../config";
 import { ObjectStore } from "../object-store";
+import { assertUnreachable } from "../../../../../common/src/api/config";
 
 export function getConnectedFlowComponent(
     targetUid: string,

@@ -22,35 +22,37 @@ import {EntityType} from "../../../store/document/entities/types";
 <script lang="ts">
     import Vue from "vue";
     import BaseBackedObject from "../../../htmlcanvas/lib/base-backed-object";
-    import { FieldType, PropertyField } from "../../../../src/store/document/entities/property-field";
-    import { DrawableEntityConcrete } from "../../../../src/store/document/entities/concrete-entity";
-    import { makeBackgroundFields } from "../../../../src/store/document/entities/background-entity";
-    import { fillPipeDefaultFields, makePipeFields } from "../../../../src/store/document/entities/pipe-entity";
-    import { fillValveDefaultFields, makeValveFields } from "../../../../src/store/document/entities/fitting-entity";
+    import { FieldType, PropertyField } from "../../../../../common/src/api/document/entities/property-field";
+    import { DrawableEntityConcrete } from "../../../../../common/src/api/document/entities/concrete-entity";
+    import { makeBackgroundFields } from "../../../../../common/src/api/document/entities/background-entity";
+    import { fillPipeDefaultFields, makePipeFields } from "../../../../../common/src/api/document/entities/pipe-entity";
+    import { fillValveDefaultFields, makeValveFields } from "../../../../../common/src/api/document/entities/fitting-entity";
     import Component from "vue-class-component";
-    import { EntityType } from "../../../../src/store/document/entities/types";
+    import { EntityType } from "../../../../../common/src/api/document/entities/types";
     import { DocumentState } from "../../../../src/store/document/types";
-    import { Catalog } from "../../../../src/store/catalog/types";
-    import { fillRiserDefaults, makeRiserFields } from "../../../store/document/entities/riser-entity";
+    import { fillRiserDefaults, makeRiserFields } from "../../../../../common/src/api/document/entities/riser-entity";
     import {
         fillDefaultBigValveFields,
         makeBigValveFields
-    } from "../../../store/document/entities/big-valve/big-valve-entity";
+    } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
     import {
         fillFixtureFields,
         makeFixtureFields
-    } from "../../../../src/store/document/entities/fixtures/fixture-entity";
+    } from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
     import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
     import Pipe from "../../../../src/htmlcanvas/objects/pipe";
     import {
-        fillDirectedValveFields,
         makeDirectedValveFields
-    } from "../../../../src/store/document/entities/directed-valves/directed-valve-entity";
-    import { assertUnreachable } from "../../../config";
-    import { fillDefaultLoadNodeFields, makeLoadNodesFields } from "../../../store/document/entities/load-node-entity";
-    import { cloneSimple, getPropertyByString, setPropertyByString } from "../../../lib/utils";
-    import { fillFlowSourceDefaults, makeFlowSourceFields } from "../../../store/document/entities/flow-source-entity";
-    import { fillPlantDefaults, makePlantEntityFields } from "../../../store/document/entities/plant-entity";
+    } from "../../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
+    import { makeLoadNodesFields } from "../../../../../common/src/api/document/entities/load-node-entity";
+    import { getPropertyByString, setPropertyByString } from "../../../lib/utils";
+    import { fillFlowSourceDefaults, makeFlowSourceFields } from "../../../../../common/src/api/document/entities/flow-source-entity";
+    import { fillPlantDefaults, makePlantEntityFields } from "../../../../../common/src/api/document/entities/plant-entity";
+    import { assertUnreachable } from "../../../../../common/src/api/config";
+    import { Catalog } from "../../../../../common/src/api/catalog/types";
+    import { cloneSimple } from "../../../../../common/src/lib/utils";
+    import { fillDirectedValveFields } from "../../../store/document/entities/fillDirectedValveFields";
+    import { fillDefaultLoadNodeFields } from "../../../store/document/entities/fillDefaultLoadNodeFields";
 
     @Component({
         components: { PropertiesFieldBuilder },
@@ -118,7 +120,7 @@ import {EntityType} from "../../../store/document/entities/types";
                     return makeBigValveFields(entity).filter((p) => p.multiFieldId)
                         .filter((p) => p.multiFieldId);
                 case EntityType.FIXTURE:
-                    return makeFixtureFields(this.document, entity).filter((p) => p.multiFieldId)
+                    return makeFixtureFields(this.document.drawing, entity).filter((p) => p.multiFieldId)
                         .filter((p) => p.multiFieldId);
                 case EntityType.DIRECTED_VALVE:
                     return makeDirectedValveFields(this.document.drawing.metadata.flowSystems, entity.valve).filter(
@@ -145,25 +147,25 @@ import {EntityType} from "../../../store/document/entities/types";
                 case EntityType.BACKGROUND_IMAGE:
                     return obj.entity;
                 case EntityType.FITTING:
-                    return fillValveDefaultFields(this.document, obj.entity);
+                    return fillValveDefaultFields(this.document.drawing, obj.entity);
                 case EntityType.PIPE:
                     return fillPipeDefaultFields(this.document.drawing, (obj as Pipe).computedLengthM, obj.entity);
                 case EntityType.RISER:
-                    return fillRiserDefaults(this.document, obj.entity);
+                    return fillRiserDefaults(this.document.drawing, obj.entity);
                 case EntityType.SYSTEM_NODE:
                     return obj.entity;
                 case EntityType.BIG_VALVE:
-                    return fillDefaultBigValveFields(this.document, this.defaultCatalog, obj.entity);
+                    return fillDefaultBigValveFields(this.defaultCatalog, obj.entity);
                 case EntityType.FIXTURE:
                     return fillFixtureFields(this.document.drawing, this.defaultCatalog, obj.entity);
                 case EntityType.DIRECTED_VALVE:
-                    return fillDirectedValveFields(this.document, this.$props.objectStore, obj.entity);
+                    return fillDirectedValveFields(this.document.drawing, this.$props.objectStore, obj.entity);
                 case EntityType.LOAD_NODE:
                     return fillDefaultLoadNodeFields(this.document, obj.objectStore, obj.entity);
                 case EntityType.PLANT:
-                    return fillPlantDefaults(this.document, obj.entity);
+                    return fillPlantDefaults(obj.entity);
                 case EntityType.FLOW_SOURCE:
-                    return fillFlowSourceDefaults(this.document, obj.entity);
+                    return fillFlowSourceDefaults(this.document.drawing, obj.entity);
             }
             assertUnreachable(obj.entity);
         }

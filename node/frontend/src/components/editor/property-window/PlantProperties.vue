@@ -28,11 +28,11 @@
     import Vue from "vue";
     import Component from "vue-class-component";
     import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
-    import { fillRiserDefaults, makeRiserFields } from "../../../store/document/entities/riser-entity";
+    import { fillRiserDefaults, makeRiserFields } from "../../../../../common/src/api/document/entities/riser-entity";
     import { DocumentState } from "../../../../src/store/document/types";
-    import { Catalog } from "../../../../src/store/catalog/types";
-    import { fillFixtureFields, makeFixtureFields } from "../../../../src/store/document/entities/fixtures/fixture-entity";
-    import { fillPlantDefaults, makePlantEntityFields } from "../../../store/document/entities/plant-entity";
+    import { fillFixtureFields, makeFixtureFields } from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
+    import { fillPlantDefaults, makePlantEntityFields } from "../../../../../common/src/api/document/entities/plant-entity";
+    import { Catalog } from "../../../../../common/src/api/catalog/types";
 
     @Component({
         components: { PropertiesFieldBuilder },
@@ -62,7 +62,7 @@
         }
 
         get defaultData() {
-            return fillPlantDefaults(this.document, this.$props.selectedEntity);
+            return fillPlantDefaults(this.$props.selectedEntity);
         }
 
         async onCommit() {

@@ -1,17 +1,17 @@
-import { Coord } from "../../../src/store/document/types";
 import { MainEventBus } from "../../../src/store/main-event-bus";
 import PointTool from "../../../src/htmlcanvas/tools/point-tool";
-import { EntityType } from "../../../src/store/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import uuid from "uuid";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { InteractionType } from "../../../src/htmlcanvas/lib/interaction";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
 import BackedDrawableObject from "../../../src/htmlcanvas/lib/backed-drawable-object";
-import { ConnectableEntityConcrete } from "../../../src/store/document/entities/concrete-entity";
-import { cloneSimple } from "../../../src/lib/utils";
-import LoadNodeEntity, { NodeType } from "../../store/document/entities/load-node-entity";
-import FittingEntity from "../../store/document/entities/fitting-entity";
+import { ConnectableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
+import LoadNodeEntity, { NodeType } from "../../../../common/src/api/document/entities/load-node-entity";
+import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import Fitting from "../objects/fitting";
+import { Coord } from "../../../../common/src/api/document/drawing";
+import { cloneSimple } from "../../../../common/src/lib/utils";
 
 export default function insertLoadNode(context: CanvasContext, type: NodeType) {
     const newUid = uuid();

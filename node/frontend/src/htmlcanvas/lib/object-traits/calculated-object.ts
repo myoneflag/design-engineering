@@ -1,7 +1,6 @@
 import {
-    CalculatableEntityConcrete,
-    CalculationConcrete
-} from "../../../../src/store/document/entities/concrete-entity";
+    CalculatableEntityConcrete
+} from "../../../../../common/src/api/document/entities/concrete-entity";
 import { DrawingContext } from "../../../../src/htmlcanvas/lib/types";
 import { CalculationFilters } from "../../../../src/store/document/types";
 import { CalculationData, CalculationDataType } from "../../../../src/store/document/calculations/calculation-field";
@@ -15,7 +14,8 @@ import { tm2flatten } from "../../../../src/htmlcanvas/lib/utils";
 import { TEXT_MAX_SCALE } from "../../../../src/htmlcanvas/objects/pipe";
 import { getWarningSignImg, matrixScale, warningSignImg, wrapText } from "../../../../src/htmlcanvas/utils";
 import { CalculationContext } from "../../../calculations/types";
-import { EntityType } from "../../../store/document/entities/types";
+import { EntityType } from "../../../../../common/src/api/document/entities/types";
+import { CalculationConcrete } from "../../../store/document/calculations/calculation-concrete";
 
 export interface Calculated {
     drawCalculationBox(

@@ -27,7 +27,7 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
-import { fillRiserDefaults, makeRiserFields } from "../../../store/document/entities/riser-entity";
+import { fillRiserDefaults, makeRiserFields } from "../../../../../common/src/api/document/entities/riser-entity";
 import { DocumentState } from "../../../../src/store/document/types";
 
 @Component({
@@ -57,7 +57,7 @@ export default class RiserProperties extends Vue {
     }
 
     get defaultData() {
-        return fillRiserDefaults(this.document, this.reactiveData);
+        return fillRiserDefaults(this.document.drawing, this.reactiveData);
     }
 
     onCommit() {

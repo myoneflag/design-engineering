@@ -1,8 +1,8 @@
 import { ViewPort } from "../../../src/htmlcanvas/viewport";
 import { DocumentState } from "../../../src/store/document/types";
-import { ValveType } from "../../../src/store/document/entities/directed-valves/valve-types";
-import { Catalog } from "../../../src/store/catalog/types";
+import { ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
 import { GlobalStore } from "./global-store";
+import { Catalog } from "../../../../common/src/api/catalog/types";
 
 export interface DrawingContext {
     ctx: CanvasRenderingContext2D;

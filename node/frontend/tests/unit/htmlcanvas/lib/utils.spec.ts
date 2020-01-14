@@ -1,5 +1,5 @@
-import {interpolateTable} from '../../../../src/htmlcanvas/lib/utils';
 import { expect } from 'chai';
+import { interpolateTable } from "../../../../../common/src/lib/utils";
 
 describe('utils.ts', () => {
     it('should interpolate table correctly', () => {

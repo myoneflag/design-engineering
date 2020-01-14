@@ -1,11 +1,11 @@
 import { FieldCategory, CalculationField, Units } from "../../../../src/store/document/calculations/calculation-field";
 import { Calculation, PsdCalculation } from "../../../../src/store/document/calculations/types";
-import { DrawingState } from "../../../../src/store/document/types";
-import { isGermanStandard } from "../../../../src/config";
-import PipeEntity, { fillPipeDefaultFields } from "../../../../src/store/document/entities/pipe-entity";
-import { Catalog } from "../../../../src/store/catalog/types";
+import PipeEntity, { fillPipeDefaultFields } from "../../../../../common/src/api/document/entities/pipe-entity";
 import { getPsdUnitName } from "../../../calculations/utils";
 import set = Reflect.set;
+import { isGermanStandard } from "../../../../../common/src/api/config";
+import { Catalog } from "../../../../../common/src/api/catalog/types";
+import { DrawingState } from "../../../../../common/src/api/document/drawing";
 
 export default interface PipeCalculation extends PsdCalculation, Calculation {
     peakFlowRate: number | null;

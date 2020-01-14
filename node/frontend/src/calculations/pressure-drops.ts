@@ -1,7 +1,7 @@
 import pipe from "../../src/htmlcanvas/objects/pipe";
 import { DocumentState } from "../../src/store/document/types";
-import { Catalog } from "../../src/store/catalog/types";
-import { parseCatalogNumberExact } from "../../src/htmlcanvas/lib/utils";
+import { Catalog } from "../../../common/src/api/catalog/types";
+import { parseCatalogNumberExact } from "../../../common/src/lib/utils";
 
 export const EPS = 1e-10;
 export const EPS_ABS = 1e-8;

@@ -33,7 +33,7 @@ import Component from "vue-class-component";
 import Vue from "vue";
 import router from "../../src/router";
 import { logout } from "../../src/api/logins";
-import { AccessLevel, User } from "../../../backend/src/entity/User";
+import { AccessLevel, User } from "../../../common/src/models/User";
 
 @Component
 export default class ProfileMenuItem extends Vue {

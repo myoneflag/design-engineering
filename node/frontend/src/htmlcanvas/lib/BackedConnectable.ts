@@ -3,15 +3,15 @@ import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import {
     ConnectableEntityConcrete,
     DrawableEntityConcrete, hasExplicitSystemUid, isConnectableEntity, isConnectableEntityType
-} from "../../../src/store/document/entities/concrete-entity";
+} from "../../../../common/src/api/document/entities/concrete-entity";
 import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
 import { getDragPriority} from "../../../src/store/document";
-import { EntityType } from "../../../src/store/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
-import { Coord } from "../../../src/store/document/types";
-import { determineConnectableSystemUid } from "../../../src/store/document/entities/directed-valves/directed-valve-entity";
 import { Matrix } from "transformation-matrix";
 import * as TM from "transformation-matrix";
+import { Coord } from "../../../../common/src/api/document/drawing";
+import { determineConnectableSystemUid } from "../../store/document/entities/lib";
 
 // TODO: this entire abstract class is obsolete and should be encapsulated in the ConnectableObject
 // decorator.

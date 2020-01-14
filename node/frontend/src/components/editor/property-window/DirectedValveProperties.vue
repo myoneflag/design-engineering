@@ -47,13 +47,13 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
 import { DocumentState } from "../../../../src/store/document/types";
-import { Catalog } from "../../../../src/store/catalog/types";
 import DirectedValveEntity, {
-    fillDirectedValveFields,
     makeDirectedValveFields
-} from "../../../store/document/entities/directed-valves/directed-valve-entity";
+} from "../../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
 import DirectedValve from "../../../../src/htmlcanvas/objects/directed-valve";
-import { ValveType } from "../../../../src/store/document/entities/directed-valves/valve-types";
+import { ValveType } from "../../../../../common/src/api/document/entities/directed-valves/valve-types";
+import { Catalog } from "../../../../../common/src/api/catalog/types";
+import { fillDirectedValveFields } from "../../../store/document/entities/fillDirectedValveFields";
 
 @Component({
     components: { PropertiesFieldBuilder },
@@ -87,7 +87,7 @@ export default class DirectedValveProperties extends Vue {
     }
 
     get defaultData(): DirectedValveEntity {
-        return fillDirectedValveFields(this.document, this.$props.objectStore, this.reactiveData);
+        return fillDirectedValveFields(this.document.drawing, this.$props.objectStore, this.reactiveData);
     }
 
     get ValveType() {

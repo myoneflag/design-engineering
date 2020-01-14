@@ -1,12 +1,12 @@
 import BackedConnectable from "../../../../src/htmlcanvas/lib/BackedConnectable";
-import { ConnectableEntityConcrete } from "../../../../src/store/document/entities/concrete-entity";
+import { ConnectableEntityConcrete } from "../../../../../common/src/api/document/entities/concrete-entity";
 import Pipe from "../../../../src/htmlcanvas/objects/pipe";
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
-import { EntityType } from "../../../../src/store/document/entities/types";
+import { EntityType } from "../../../../../common/src/api/document/entities/types";
 import assert from "assert";
 import { addValveAndSplitPipe } from "../../../../src/htmlcanvas/lib/black-magic/split-pipe";
-import { cloneSimple } from "../../../../src/lib/utils";
-import PipeEntity from "../../../store/document/entities/pipe-entity";
+import PipeEntity from "../../../../../common/src/api/document/entities/pipe-entity";
+import { cloneSimple } from "../../../../../common/src/lib/utils";
 
 /**
  * Moves object join source to object dest, regardless of compatability, and keeps

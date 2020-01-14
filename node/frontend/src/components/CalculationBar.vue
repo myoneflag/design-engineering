@@ -55,7 +55,7 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import FlowSystemPicker from "../../src/components/editor/FlowSystemPicker.vue";
-import { EntityType } from "../../src/store/document/entities/types";
+import { EntityType } from "../../../common/src/api/document/entities/types";
 import { DemandType } from "../../src/calculations/types";
 
 @Component({

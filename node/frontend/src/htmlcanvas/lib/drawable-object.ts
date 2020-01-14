@@ -1,4 +1,4 @@
-import { CalculationFilters, Coord, Rectangle } from "../../../src/store/document/types";
+import { CalculationFilters} from "../../../src/store/document/types";
 import { ViewPort } from "../../../src/htmlcanvas/viewport";
 import { Matrix } from "transformation-matrix";
 import * as TM from "transformation-matrix";
@@ -8,6 +8,7 @@ import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import Flatten from "@flatten-js/core";
 import Layer from "../../../src/htmlcanvas/layers/layer";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
+import { Coord, Rectangle } from "../../../../common/src/api/document/drawing";
 
 export default abstract class DrawableObject {
     abstract position: Matrix;

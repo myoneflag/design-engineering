@@ -28,7 +28,7 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import PaperSizeSelector from "../views/CalculationOverview.vue";
-import { PaperSize, SENSIBLE_SCALES } from "../../../common/src/paper-config";
+import { PaperSize, SENSIBLE_SCALES } from "../../../common/src/api/paper-config";
 
 @Component({
     props: {

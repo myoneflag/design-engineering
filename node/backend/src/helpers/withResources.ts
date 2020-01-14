@@ -1,8 +1,8 @@
-import {Organization} from "../entity/Organization";
+import {Organization} from "../../../common/src/models/Organization";
 import {Request, Response} from "express";
-import {Document} from "../entity/Document";
-import {AccessLevel, User} from "../entity/User";
-import {Session} from "../entity/Session";
+import {Document} from "../../../common/src/models/Document";
+import {AccessLevel, User} from "../../../common/src/models/User";
+import {Session} from "../../../common/src/models/Session";
 
 // Helper functions for resource gathering + permission checking.
 

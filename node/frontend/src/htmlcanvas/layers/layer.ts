@@ -1,18 +1,19 @@
-import { Coord, DocumentState, DrawableEntity, WithID } from "../../../src/store/document/types";
+import { DocumentState} from "../../../src/store/document/types";
 import { MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
 import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
-import { DrawableEntityConcrete } from "../../../src/store/document/entities/concrete-entity";
+import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
-import { EntityType } from "../../../src/store/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import { Draggable } from "../../../src/htmlcanvas/lib/object-traits/draggable-object";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
 import { MainEventBus } from "../../../src/store/main-event-bus";
 import { rebaseAll } from "../../../src/htmlcanvas/lib/black-magic/rebase-all";
-import { assertUnreachable } from "../../../src/config";
 import { GlobalStore } from "../lib/global-store";
 import { ObjectStore } from "../lib/object-store";
+import { assertUnreachable } from "../../../../common/src/api/config";
+import { Coord, DrawableEntity, WithID } from "../../../../common/src/api/document/drawing";
 
 export default interface Layer {
     uidsInOrder: string[];

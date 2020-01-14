@@ -1,6 +1,6 @@
 import axios from "axios";
-import { Catalog } from "../store/catalog/types";
-import { APIResult } from "../../../common/src/api/types";
+import { APIResult } from "../../../common/src/api/document/types";
+import { Catalog } from "../../../common/src/api/catalog/types";
 
 export async function loadCatalog(docId: number): Promise<APIResult<Catalog>> {
     try {

@@ -255,12 +255,13 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import FlowSystemPicker from "../../../src/components/editor/FlowSystemPicker.vue";
-import { EntityType } from "../../../src/store/document/entities/types";
-import { Catalog, FixtureSpec } from "../../../src/store/catalog/types";
-import { DocumentState, NetworkType } from "../../store/document/types";
-import { SupportedPsdStandards } from "../../../src/config";
-import { NodeType } from "../../store/document/entities/load-node-entity";
-import { BigValveType } from "../../store/document/entities/big-valve/big-valve-entity";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
+import { DocumentState} from "../../store/document/types";
+import { NodeType } from "../../../../common/src/api/document/entities/load-node-entity";
+import { BigValveType } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
+import { SupportedPsdStandards } from "../../../../common/src/api/config";
+import { Catalog, FixtureSpec } from "../../../../common/src/api/catalog/types";
+import { NetworkType } from "../../../../common/src/api/document/drawing";
 
 @Component({
     components: { FlowSystemPicker },

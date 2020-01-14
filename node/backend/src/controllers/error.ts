@@ -1,9 +1,9 @@
 import {AuthRequired, withAuth} from "../helpers/withAuth";
 import {NextFunction, Request, Response, Router} from "express";
 import {ApiHandleError} from "../helpers/apiWrapper";
-import {AccessLevel} from "../entity/User";
-import {Session} from "../entity/Session";
-import {ErrorReport, ErrorStatus} from "../entity/Error";
+import {AccessLevel} from "../../../common/src/models/User";
+import {Session} from "../../../common/src/models/Session";
+import {ErrorReport, ErrorStatus} from "../../../common/src/models/Error";
 import {CreateErrorRequest} from "../models/Error";
 
 export class ErrorController {

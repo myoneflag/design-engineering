@@ -1,16 +1,16 @@
 import {createDummyCanvas} from '../../utils/example-canvas';
 import {createExampleCompleteDocument} from '../../utils/example-document-with-all-components';
-import {EntityType} from '../../../src/store/document/entities/types';
+import {EntityType} from '../../../../common/src/api/document/entities/types';
 import {expect} from 'chai';
-import {ValveType} from '../../../src/store/document/entities/directed-valves/valve-types';
+import {ValveType} from '../../../../common/src/api/document/entities/directed-valves/valve-types';
 import * as _ from 'lodash';
 import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
 import {FlowNode, SELF_CONNECTION} from '../../../src/calculations/calculation-engine';
 import {CalculationContext} from '../../../src/calculations/types';
-import {parseCatalogNumberExact} from '../../../src/htmlcanvas/lib/utils';
 import Pipe from '../../../src/htmlcanvas/objects/pipe';
 import {emptyPipeCalculation} from '../../../src/store/document/calculations/pipe-calculation';
-import {assertUnreachable} from "../../../src/config";
+import { assertUnreachable } from "../../../../common/src/api/config";
+import { parseCatalogNumberExact } from "../../../../common/src/lib/utils";
 
 function assertIncreasing(
     context: CalculationContext,

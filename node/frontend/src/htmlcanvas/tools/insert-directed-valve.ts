@@ -1,16 +1,16 @@
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
-import { Coord, FlowSystemParameters } from "../../../src/store/document/types";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
 import { MainEventBus } from "../../../src/store/main-event-bus";
 import PointTool from "../../../src/htmlcanvas/tools/point-tool";
 import { InteractionType } from "../../../src/htmlcanvas/lib/interaction";
-import { EntityType } from "../../../src/store/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import { addValveAndSplitPipe } from "../../../src/htmlcanvas/lib/black-magic/split-pipe";
-import DirectedValveEntity from "../../../src/store/document/entities/directed-valves/directed-valve-entity";
-import { DirectedValveConcrete, ValveType } from "../../../src/store/document/entities/directed-valves/valve-types";
+import DirectedValveEntity from "../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
+import { DirectedValveConcrete, ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
 import uuid from "uuid";
 import { KeyCode } from "../../../src/htmlcanvas/utils";
 import DirectedValve from "../../../src/htmlcanvas/objects/directed-valve";
+import { Coord, FlowSystemParameters } from "../../../../common/src/api/document/drawing";
 
 export default function insertDirectedValve(
     context: CanvasContext,

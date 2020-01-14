@@ -1,14 +1,14 @@
-import { DrawableEntity } from "../../../src/store/document/types";
-import { EntityType } from "../../../src/store/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import BackedDrawableObject, {
     BackedObjectConstructor,
     BaseBackedConstructor
 } from "../../../src/htmlcanvas/lib/backed-drawable-object";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
-import { DrawableEntityConcrete } from "../../../src/store/document/entities/concrete-entity";
+import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 import Layer from "../../../src/htmlcanvas/layers/layer";
 import { GlobalStore } from "./global-store";
 import { ObjectStore } from "./object-store";
+import { DrawableEntity } from "../../../../common/src/api/document/drawing";
 
 export default class DrawableObjectFactory {
     static constructors: Map<EntityType, BaseBackedConstructor> = new Map<EntityType, BaseBackedConstructor>();

@@ -1,8 +1,8 @@
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
-import FittingEntity, { fillValveDefaultFields } from "../../../src/store/document/entities/fitting-entity";
+import FittingEntity, { fillValveDefaultFields } from "../../../../common/src/api/document/entities/fitting-entity";
 import * as TM from "transformation-matrix";
 import { Matrix } from "transformation-matrix";
-import { Coord, DocumentState } from "../../../src/store/document/types";
+import { DocumentState } from "../../../src/store/document/types";
 import { matrixScale } from "../../../src/htmlcanvas/utils";
 import Flatten from "@flatten-js/core";
 import Connectable, { ConnectableObject } from "../../../src/htmlcanvas/lib/object-traits/connectable";
@@ -17,10 +17,9 @@ import {
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
-import { EntityType } from "../../../src/store/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import BackedConnectable from "../../../src/htmlcanvas/lib/BackedConnectable";
 import { getDragPriority } from "../../../src/store/document";
-import { parseCatalogNumberExact } from "../../../src/htmlcanvas/lib/utils";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
 import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
 import { CenteredObject } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
@@ -32,7 +31,9 @@ import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object
 import { EPS } from "../../calculations/pressure-drops";
 import FittingCalculation, { emptyFittingCalculation } from "../../store/document/calculations/fitting-calculation";
 import math3d from "math3d";
-import PipeEntity from "../../store/document/entities/pipe-entity";
+import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
+import { Coord } from "../../../../common/src/api/document/drawing";
+import { parseCatalogNumberExact } from "../../../../common/src/lib/utils";
 
 @CalculatedObject
 @SelectableObject
@@ -118,7 +119,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
     }
 
     displayEntity(context: DocumentState) {
-        return fillValveDefaultFields(context, this.entity);
+        return fillValveDefaultFields(context.drawing, this.entity);
     }
 
     inBounds(moc: Coord, radius: number = 0): boolean {

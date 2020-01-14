@@ -77,7 +77,7 @@ import { GridLineMode } from "../../store/document/types";
     import { DEFAULT_TOOL } from "../../htmlcanvas/lib/tool";
     import { ToolConfig } from "../../../src/store/tools/types";
     import { DocumentState, GridLineMode } from "../../store/document/types";
-    import { assertUnreachable } from "../../config";
+    import { assertUnreachable } from "../../../../common/src/api/config";
 
     @Component({
     props: {

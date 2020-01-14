@@ -1,14 +1,14 @@
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
-import RiserEntity from "../../store/document/entities/riser-entity";
+import RiserEntity from "../../../../common/src/api/document/entities/riser-entity";
 import * as TM from "transformation-matrix";
-import { Coord, DocumentState, FlowSystemParameters, NetworkType } from "../../../src/store/document/types";
+import { DocumentState} from "../../../src/store/document/types";
 import { matrixScale } from "../../../src/htmlcanvas/utils";
-import { cloneSimple, lighten } from "../../../src/lib/utils";
+import { lighten } from "../../../src/lib/utils";
 import Connectable, { ConnectableObject } from "../../../src/htmlcanvas/lib/object-traits/connectable";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
-import { EntityType } from "../../../src/store/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import BackedConnectable from "../../../src/htmlcanvas/lib/BackedConnectable";
 import { getDragPriority } from "../../../src/store/document";
 import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
@@ -19,11 +19,13 @@ import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
 import CanvasContext from "../lib/canvas-context";
-import { DrawableEntityConcrete } from "../../store/document/entities/concrete-entity";
-import PipeEntity from "../../store/document/entities/pipe-entity";
+import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
+import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
 import RiserCalculation from "../../store/document/calculations/riser-calculation";
 import Pipe from "./pipe";
 import { getFluidDensityOfSystem, head2kpa } from "../../calculations/pressure-drops";
+import { Coord, FlowSystemParameters, NetworkType } from "../../../../common/src/api/document/drawing";
+import { cloneSimple } from "../../../../common/src/lib/utils";
 
 @CalculatedObject
 @SelectableObject

@@ -1,13 +1,13 @@
 import DrawableObject from "../../../src/htmlcanvas/lib/drawable-object";
-import { CalculationFilters, Coord, Coord3D, DrawableEntity } from "../../../src/store/document/types";
+import { CalculationFilters} from "../../../src/store/document/types";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
-import { EntityType } from "../../../src/store/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import {
     ConnectableEntityConcrete,
     DrawableEntityConcrete,
     EdgeLikeEntity
-} from "../../../src/store/document/entities/concrete-entity";
+} from "../../../../common/src/api/document/entities/concrete-entity";
 import Layer from "../../../src/htmlcanvas/layers/layer";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { CalculationContext } from "../../../src/calculations/types";
@@ -15,11 +15,12 @@ import { FlowNode } from "../../../src/calculations/calculation-engine";
 import Flatten from "@flatten-js/core";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
 import * as TM from "transformation-matrix";
-import FittingEntity from "../../store/document/entities/fitting-entity";
-import PipeEntity from "../../store/document/entities/pipe-entity";
+import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
+import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
 import * as _ from "lodash";
 import { GlobalStore } from "./global-store";
 import { ObjectStore } from "./object-store";
+import { Coord, Coord3D, DrawableEntity } from "../../../../common/src/api/document/drawing";
 
 export default abstract class BaseBackedObject extends DrawableObject {
     entityBacked: () => DrawableEntityConcrete;

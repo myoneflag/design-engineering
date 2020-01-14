@@ -102,7 +102,7 @@ import Component from "vue-class-component";
 import { Route } from "vue-router";
 import MainNavBar from "../components/MainNavBar.vue";
 import { getErrorReport, updateErrorReport } from "../api/error-report";
-import { ErrorReport, ErrorStatus } from "../../../backend/src/entity/Error";
+import { ErrorReport, ErrorStatus } from "../../../common/src/models/Error";
 
 @Component({
     components: { MainNavBar },

@@ -89,12 +89,8 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { ViewPort } from "../../../src/htmlcanvas/viewport";
 import {
-    Coord,
     DocumentState,
-    EntityParam,
-    FlowSystemParameters,
-    Level,
-    NetworkType
+    EntityParam
 } from "../../../src/store/document/types";
 import { drawGridLines, drawLoadingUnits, drawPaperScale } from "../../../src/htmlcanvas/on-screen-items";
 import ModeButtons from "../../../src/components/editor/ModeButtons.vue";
@@ -120,13 +116,13 @@ import HydraulicsLayer from "../../../src/htmlcanvas/layers/hydraulics-layer";
 import Layer, { SelectMode } from "../../../src/htmlcanvas/layers/layer";
 import HydraulicsInsertPanel from "../../../src/components/editor/HydraulicsInsertPanel.vue";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
-import { EntityType } from "../../../src/store/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
 import insertRiser from "../../htmlcanvas/tools/insert-riser";
 import insertPipes from "../../../src/htmlcanvas/tools/insert-pipes";
 import insertValve from "../../../src/htmlcanvas/tools/insert-valve";
 import { DrawingContext, SelectionTarget, ValveId } from "../../../src/htmlcanvas/lib/types";
-import { BackgroundEntity } from "../../../src/store/document/entities/background-entity";
+import { BackgroundEntity } from "../../../../common/src/api/document/entities/background-entity";
 import insertBigValve from "../../htmlcanvas/tools/insert-big-valve";
 import insertFixture from "../../../src/htmlcanvas/tools/insert-fixture";
 import FloorPlanInsertPanel from "../../../src/components/editor/FloorPlanInsertPanel.vue";
@@ -136,29 +132,30 @@ import { DemandType } from "../../../src/calculations/types";
 import CalculationEngine from "../../../src/calculations/calculation-engine";
 import CalculationLayer from "../../../src/htmlcanvas/layers/calculation-layer";
 import { getBoundingBox, levelIncludesRiser } from "../../../src/htmlcanvas/lib/utils";
-import { Catalog } from "../../../src/store/catalog/types";
-import { DrawableEntityConcrete } from "../../../src/store/document/entities/concrete-entity";
+import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 import SelectBox from "../../../src/htmlcanvas/objects/select-box";
 import * as _ from "lodash";
 import { AutoConnector } from "../../../src/htmlcanvas/lib/black-magic/auto-connect";
 import insertDirectedValve from "../../../src/htmlcanvas/tools/insert-directed-valve";
-import { ValveType } from "../../../src/store/document/entities/directed-valves/valve-types";
+import { ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
 import { countPsdUnits } from "../../../src/calculations/utils";
 import CalculationsSidebar from "../../../src/components/editor/CalculationsSidebar.vue";
-import { assertUnreachable } from "../../../src/config";
 import DrawingNavBar from "../DrawingNavBar.vue";
 import LevelSelector from "./LevelSelector.vue";
 import DrawableObjectFactory from "../../htmlcanvas/lib/drawable-object-factory";
-import PipeEntity from "../../store/document/entities/pipe-entity";
+import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
 import util from "util";
 import insertLoadNode from "../../htmlcanvas/tools/insert-load-node";
-import { NodeType } from "../../store/document/entities/load-node-entity";
-import { BigValveType } from "../../store/document/entities/big-valve/big-valve-entity";
+import { NodeType } from "../../../../common/src/api/document/entities/load-node-entity";
+import { BigValveType } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import { Buffer } from "./RenderBuffer";
 import { GlobalStore } from "../../htmlcanvas/lib/global-store";
 import { ObjectStore } from "../../htmlcanvas/lib/object-store";
 import insertFlowSource from '../../htmlcanvas/tools/insert-flow-source';
 import insertPlant from "../../htmlcanvas/tools/insert-plant";
+import { assertUnreachable } from "../../../../common/src/api/config";
+import { Catalog } from "../../../../common/src/api/catalog/types";
+import { Coord, FlowSystemParameters, Level, NetworkType } from "../../../../common/src/api/document/drawing";
 
 @Component({
     components: {

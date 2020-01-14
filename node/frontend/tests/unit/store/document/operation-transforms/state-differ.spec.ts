@@ -1,14 +1,18 @@
 import {expect} from 'chai';
-import {diffState} from '../../../../../src/store/document/operation-transforms/state-differ';
+import {diffState} from '../../../../../../common/src/api/document/state-differ';
 import {applyOtOnState} from '../../../../../src/store/document/operation-transforms/state-ot-apply';
 
-import {CalculationParameters, DrawingState, FlowSystemParameters, GeneralInfo} from '../../../../../src/store/document/types';
-import {EntityType} from '../../../../../src/store/document/entities/types';
-import {BackgroundEntity} from '../../../../../src/store/document/entities/background-entity';
-import {SupportedPsdStandards} from '../../../../../src/config';
-import {cloneSimple} from '../../../../../src/lib/utils';
+import {EntityType} from '../../../../../../common/src/api/document/entities/types';
+import {BackgroundEntity} from '../../../../../../common/src/api/document/entities/background-entity';
 import {bg1, bg2, bg2B, bg3, bg4, bg4B, bg4C} from '../../../../utils/example-backgrounds';
 import {cp1, gi1, gi2, gi3, ws1, ws2} from '../../../../utils/example-project-settings';
+import { SupportedPsdStandards } from "../../../../../../common/src/api/config";
+import {
+    CalculationParameters, DrawingState,
+    FlowSystemParameters,
+    GeneralInfo
+} from "../../../../../../common/src/api/document/drawing";
+import { cloneSimple } from "../../../../../../common/src/lib/utils";
 
 function roundTripTest(prev: DrawingState, next: DrawingState, expectedOps: number = -1) {
     const prevCopy = cloneSimple(prev);

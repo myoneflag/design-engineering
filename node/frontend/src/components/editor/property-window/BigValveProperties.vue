@@ -28,14 +28,14 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
-import { fillRiserDefaults, makeRiserFields } from "../../../store/document/entities/riser-entity";
+import { fillRiserDefaults, makeRiserFields } from "../../../../../common/src/api/document/entities/riser-entity";
 import { DocumentState } from "../../../../src/store/document/types";
 import BigValveEntity, {
     BigValveType,
     fillDefaultBigValveFields,
     makeBigValveFields
-} from "../../../store/document/entities/big-valve/big-valve-entity";
-import { Catalog } from "../../../store/catalog/types";
+} from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
+import { Catalog } from "../../../../../common/src/api/catalog/types";
 
 @Component({
     components: { PropertiesFieldBuilder },
@@ -76,7 +76,7 @@ export default class BigValveProperties extends Vue {
     }
 
     get defaultData() {
-        return fillDefaultBigValveFields(this.document, this.defaultCatalog, this.reactiveData);
+        return fillDefaultBigValveFields(this.defaultCatalog, this.reactiveData);
     }
 
     onCommit() {

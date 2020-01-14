@@ -1,4 +1,4 @@
-import {Catalog} from '../../src/store/catalog/types';
+import { Catalog } from "../../../common/src/api/catalog/types";
 
 export function createTestCatalog(): Catalog {
     return JSON.parse(`{

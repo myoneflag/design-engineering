@@ -30,8 +30,8 @@ import {AccessLevel} from "../../../../backend/src/entity/User"; import {AccessL
 import Vue from "vue";
 import Component from "vue-class-component";
 import { deleteDocument, getDocument, getDocuments, resetDocument } from "../../api/document";
-import { Document as IDocument } from "../../../../backend/src/entity/Document";
-import { AccessLevel, User } from "../../../../backend/src/entity/User";
+import { Document as IDocument } from "../../../../common/src/models/Document";
+import { AccessLevel, User } from "../../../../common/src/models/User";
 
 @Component({
     watch: {

@@ -1,4 +1,4 @@
-import { FlowSystemParameters } from "../../../../src/store/document/types";
+import { FlowSystemParameters } from "../../../../../common/src/api/document/drawing";
 
 export enum FieldCategory {
     Pressure,

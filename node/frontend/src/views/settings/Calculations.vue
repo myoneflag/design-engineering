@@ -16,15 +16,15 @@ import Component from "vue-class-component";
 import { DocumentState } from "../../../src/store/document/types";
 import SettingsFieldBuilder from "../../../src/components/editor/lib/SettingsFieldBuilder.vue";
 import {
-    assertUnreachable,
     getDwellingMethods,
-    getPsdMethods,
-    isSupportedDwellingStandard,
-    isSupportedPsdStandard,
-    PIPE_SIZING_METHODS,
-    SupportedDwellingStandards,
-    SupportedPsdStandards
+    isSupportedDwellingStandard
 } from "../../../src/config";
+import {
+    assertUnreachable,
+    getPsdMethods,
+    isSupportedPsdStandard, PIPE_SIZING_METHODS, SupportedDwellingStandards,
+    SupportedPsdStandards
+} from "../../../../common/src/api/config";
 
 @Component({
     components: { SettingsFieldBuilder },

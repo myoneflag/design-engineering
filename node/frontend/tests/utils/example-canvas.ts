@@ -1,6 +1,6 @@
 import CanvasContext from '../../src/htmlcanvas/lib/canvas-context';
 import {Interaction} from '../../src/htmlcanvas/lib/interaction';
-import {DrawableEntityConcrete} from '../../src/store/document/entities/concrete-entity';
+import {DrawableEntityConcrete} from '../../../common/src/api/document/entities/concrete-entity';
 import BaseBackedObject from '../../src/htmlcanvas/lib/base-backed-object';
 import BackgroundLayer from '../../src/htmlcanvas/layers/background-layer';
 import {ViewPort} from '../../src/htmlcanvas/viewport';
@@ -8,7 +8,6 @@ import * as TM from 'transformation-matrix';
 import {Store} from 'vuex';
 import {DocumentState, initialDocumentState} from '../../src/store/document/types';
 import {RootState} from '../../src/store/types';
-import {Catalog} from '../../src/store/catalog/types';
 import HydraulicsLayer from '../../src/htmlcanvas/layers/hydraulics-layer';
 import {createExampleDocument} from './example-document';
 import CalculationLayer from '../../src/htmlcanvas/layers/calculation-layer';
@@ -16,6 +15,7 @@ import {registerObjectBuilders} from '../../src/htmlcanvas/objects';
 import { expect } from 'chai';
 import {createTestCatalog} from './default-test-catalog';
 import { ObjectStore } from "../../src/htmlcanvas/lib/object-store";
+import { Catalog } from "../../../common/src/api/catalog/types";
 
 export function createDummyCanvas(document: DocumentState = initialDocumentState): CanvasContext {
     const objectStore = new ObjectStore();

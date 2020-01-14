@@ -1,16 +1,16 @@
 import { ActionTree } from "vuex";
-import * as OT from "./operation-transforms/operation-transforms";
-import { OPERATION_NAMES } from "./operation-transforms/operation-transforms";
+import * as OT from "../../../../common/src/api/document/operation-transforms";
+import { OPERATION_NAMES } from "../../../../common/src/api/document/operation-transforms";
 import { RootState } from "../types";
 import { blankDiffFilter, DocumentState, EntityParam } from "../../../src/store/document/types";
-import { diffState } from "../../../src/store/document/operation-transforms/state-differ";
+import { diffState } from "../../../../common/src/api/document/state-differ";
 import { applyOtOnState } from "../../../src/store/document/operation-transforms/state-ot-apply";
 import * as _ from "lodash";
-import { cloneSimple } from "../../../src/lib/utils";
 import { submitOperation, updateDocument } from "../../../src/api/document";
 import Vue from "vue";
 import { MainEventBus } from "../main-event-bus";
-import { assertUnreachable } from "../../config";
+import { assertUnreachable } from "../../../../common/src/api/config";
+import { cloneSimple } from "../../../../common/src/lib/utils";
 
 export const actions: ActionTree<DocumentState, RootState> = {
     applyRemoteOperation({ commit, state }, op) {

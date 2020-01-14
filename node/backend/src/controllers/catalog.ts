@@ -1,6 +1,6 @@
-import { initialCatalog } from "../../../frontend/src/store/catalog/initial-catalog/initial-catalog";
+import { initialCatalog } from "../../../common/src/api/catalog/initial-catalog/initial-catalog";
 import {NextFunction, Request, Response, Router} from "express";
-import {Session} from "../entity/Session";
+import {Session} from "../../../common/src/models/Session";
 import {AuthRequired} from "../helpers/withAuth";
 import {AccessType, withDocument} from "../helpers/withResources";
 

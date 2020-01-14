@@ -1,6 +1,7 @@
 import { GetterTree } from "vuex";
-import { DocumentState, initialDocumentState, Level } from "./types";
+import { DocumentState, initialDocumentState} from "./types";
 import { RootState } from "../types";
+import { Level } from "../../../../common/src/api/document/drawing";
 
 export const getters: GetterTree<DocumentState, RootState> = {
     title(state): string {

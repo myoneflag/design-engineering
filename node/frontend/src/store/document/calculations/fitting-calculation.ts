@@ -1,6 +1,6 @@
 import { FieldCategory, CalculationField, Units } from "../../../../src/store/document/calculations/calculation-field";
 import { Calculation, PsdCalculation } from "../../../../src/store/document/calculations/types";
-import FittingEntity from "../../../../src/store/document/entities/fitting-entity";
+import FittingEntity from "../../../../../common/src/api/document/entities/fitting-entity";
 
 export default interface FittingCalculation extends Calculation {
     flowRateLS: number | null;

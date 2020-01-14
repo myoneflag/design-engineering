@@ -29,7 +29,7 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { lighten } from "../../../src/lib/utils";
-import { FlowSystemParameters } from "../../../src/store/document/types";
+import { FlowSystemParameters } from "../../../../common/src/api/document/drawing";
 
 @Component({
     props: {

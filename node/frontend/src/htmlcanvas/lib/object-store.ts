@@ -2,10 +2,10 @@
 import BaseBackedObject from "./base-backed-object";
 import Vue from "vue";
 import { DocumentState } from "../../store/document/types";
-import { EntityType } from "../../store/document/entities/types";
-import PipeEntity from "../../store/document/entities/pipe-entity";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
+import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
 import BackedConnectable from "./BackedConnectable";
-import { ConnectableEntityConcrete } from "../../store/document/entities/concrete-entity";
+import { ConnectableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 
 export class ObjectStore extends Map<string, BaseBackedObject> {
     vm: Vue;

@@ -80,9 +80,9 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
-import { User } from "../../../backend/src/entity/User";
+import { User } from "../../../common/src/models/User";
 import MainNavBar from "../../src/components/MainNavBar.vue";
-import { ErrorReport, ErrorStatus } from "../../../backend/src/entity/Error";
+import { ErrorReport, ErrorStatus } from "../../../common/src/models/Error";
 import { getErrorReports } from "../api/error-report";
 
 @Component({

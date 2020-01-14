@@ -1,10 +1,10 @@
 import { CalculationField, FieldCategory, Units } from "../../../../src/store/document/calculations/calculation-field";
-import BigValveEntity, { BigValveType } from "../entities/big-valve/big-valve-entity";
+import BigValveEntity, { BigValveType } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import { StandardFlowSystemUids } from "../../../../src/store/catalog";
 import { Calculation } from "../../../../src/store/document/calculations/types";
 import { PsdCountEntry } from "../../../calculations/utils";
 import { DocumentState } from "../types";
-import { assertUnreachable } from "../../../config";
+import { assertUnreachable } from "../../../../../common/src/api/config";
 
 export default interface BigValveCalculation extends Calculation {
     coldTemperatureC: number | null;

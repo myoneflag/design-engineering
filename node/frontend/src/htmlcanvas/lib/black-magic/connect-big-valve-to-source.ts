@@ -3,16 +3,16 @@ import BigValve from "../../objects/big-valve/bigValve";
 import SystemNode from "../../objects/big-valve/system-node";
 import Flatten from "@flatten-js/core";
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
-import { ConnectableEntity, Coord, DrawableEntity, NetworkType } from "../../../../src/store/document/types";
-import PipeEntity from "../../../../src/store/document/entities/pipe-entity";
+import PipeEntity from "../../../../../common/src/api/document/entities/pipe-entity";
 import Pipe from "../../../../src/htmlcanvas/objects/pipe";
-import { ConnectableEntityConcrete, isConnectableEntity } from "../../../../src/store/document/entities/concrete-entity";
-import { EntityType } from "../../../../src/store/document/entities/types";
+import { ConnectableEntityConcrete, isConnectableEntity } from "../../../../../common/src/api/document/entities/concrete-entity";
+import { EntityType } from "../../../../../common/src/api/document/entities/types";
 import { addValveAndSplitPipe } from "../../../../src/htmlcanvas/lib/black-magic/split-pipe";
-import FittingEntity from "../../../../src/store/document/entities/fitting-entity";
+import FittingEntity from "../../../../../common/src/api/document/entities/fitting-entity";
 import uuid from "uuid";
 import { InteractionType } from "../../../../src/htmlcanvas/lib/interaction";
-import { FlowConfiguration } from "../../../store/document/entities/big-valve/big-valve-entity";
+import { FlowConfiguration } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
+import { ConnectableEntity, Coord, DrawableEntity, NetworkType } from "../../../../../common/src/api/document/drawing";
 
 export default function connectBigValveToSource(
     context: CanvasContext,

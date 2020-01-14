@@ -28,13 +28,13 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
 import { DocumentState } from "../../../../src/store/document/types";
-import PipeEntity, { fillPipeDefaultFields, makePipeFields } from "../../../store/document/entities/pipe-entity";
+import PipeEntity, { fillPipeDefaultFields, makePipeFields } from "../../../../../common/src/api/document/entities/pipe-entity";
 import LoadNodeEntity, {
-    fillDefaultLoadNodeFields,
     makeLoadNodesFields,
     NodeType
-} from "../../../store/document/entities/load-node-entity";
+} from "../../../../../common/src/api/document/entities/load-node-entity";
 import LoadNode from "../../../htmlcanvas/objects/load-node";
+import { fillDefaultLoadNodeFields } from "../../../store/document/entities/fillDefaultLoadNodeFields";
 
 @Component({
     components: { PropertiesFieldBuilder },

@@ -31,9 +31,9 @@ import { DocumentState } from "../../../../src/store/document/types";
 import FittingEntity, {
     fillValveDefaultFields,
     makeValveFields
-} from "../../../store/document/entities/fitting-entity";
-import { Catalog, ValveSpec } from "../../../../src/store/catalog/types";
+} from "../../../../../common/src/api/document/entities/fitting-entity";
 import * as _ from "lodash";
+import { Catalog, ValveSpec } from "../../../../../common/src/api/catalog/types";
 
 @Component({
     components: { PropertiesFieldBuilder },
@@ -66,7 +66,7 @@ export default class FittingProperties extends Vue {
     }
 
     get defaultData(): FittingEntity {
-        return fillValveDefaultFields(this.document, this.reactiveData);
+        return fillValveDefaultFields(this.document.drawing, this.reactiveData);
     }
 
     async onCommit() {

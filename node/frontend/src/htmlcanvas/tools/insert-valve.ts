@@ -1,11 +1,11 @@
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
-import { FlowSystemParameters } from "../../../src/store/document/types";
 import { MainEventBus } from "../../../src/store/main-event-bus";
 import PointTool from "../../../src/htmlcanvas/tools/point-tool";
 import { InteractionType } from "../../../src/htmlcanvas/lib/interaction";
-import { EntityType } from "../../../src/store/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
 import { addValveAndSplitPipe } from "../../../src/htmlcanvas/lib/black-magic/split-pipe";
+import { FlowSystemParameters } from "../../../../common/src/api/document/drawing";
 
 export default function insertValve(context: CanvasContext, system: FlowSystemParameters) {
     let pipe: Pipe | null = null;

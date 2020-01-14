@@ -1,13 +1,13 @@
 import {NextFunction, Request, Response, Router} from "express";
 import * as _ from 'lodash';
-import {DocumentWSMessage, DocumentWSMessageType} from "../../../common/src/api/types";
-import {initialCatalog} from "../../../frontend/src/store/catalog/initial-catalog/initial-catalog";
-import {OperationTransformConcrete} from "../../../frontend/src/store/document/operation-transforms/operation-transforms";
+import {DocumentWSMessage, DocumentWSMessageType} from "../../../common/src/api/document/types";
+import {initialCatalog} from "../../../common/src/api/catalog/initial-catalog/initial-catalog";
+import {OperationTransformConcrete} from "../../../common/src/api/document/operation-transforms";
 import {initialDocumentState} from "../../../frontend/src/store/document/types";
-import {Document} from "../entity/Document";
-import {Operation} from "../entity/Operation";
-import {Session} from "../entity/Session";
-import {AccessLevel, User} from "../entity/User";
+import {Document} from "../../../common/src/models/Document";
+import {Operation} from "../../../common/src/models/Operation";
+import {Session} from "../../../common/src/models/Session";
+import {AccessLevel, User} from "../../../common/src/models/User";
 import {ApiHandleError} from "../helpers/apiWrapper";
 import {AuthRequired, withAuth} from "../helpers/withAuth";
 import {AccessType, withDocument, withOrganization} from "../helpers/withResources";
@@ -217,7 +217,7 @@ async function ensureDocumentLoaded(id: number) {
 
 
         operations.forEach((o) => {
-            operationQueue.push(JSON.parse(o.operation));
+            operationQueue.push(o.operation);
         });
         operationQueues.set(id, [operationQueue]);
         isLoading.delete(id);
@@ -251,7 +251,7 @@ async function receiveOperations(id: number, ops: OperationTransformConcrete[]) 
         const toStore = Operation.create();
         toStore.document = Promise.resolve(doc);
 
-        toStore.operation = JSON.stringify(op);
+        toStore.operation = op;
         toStore.orderIndex = op.id;
         return toStore.save();
     }));

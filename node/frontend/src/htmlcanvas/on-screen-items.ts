@@ -1,10 +1,11 @@
 import { DEFAULT_FONT_NAME } from "../../src/config";
 import * as TM from "transformation-matrix";
 import { DrawingContext } from "../../src/htmlcanvas/lib/types";
-import { Catalog } from "../../src/store/catalog/types";
 import { addPsdCounts, lookupFlowRate, PsdUnitsByFlowSystem, zeroPsdCounts } from "../../src/calculations/utils";
 import { StandardFlowSystemUids } from "../../src/store/catalog";
-import { GridLineMode, NetworkType } from "../store/document/types";
+import { GridLineMode} from "../store/document/types";
+import { Catalog } from "../../../common/src/api/catalog/types";
+import { NetworkType } from "../../../common/src/api/document/drawing";
 
 const SENSIBLE_UNITS_MM: number[] = [
     1,

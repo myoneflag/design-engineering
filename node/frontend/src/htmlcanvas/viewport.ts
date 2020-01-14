@@ -1,11 +1,11 @@
 import { Matrix } from "transformation-matrix";
 import * as TM from "transformation-matrix";
-import { Coord } from "../../src/store/document/types";
 import { scale } from "transformation-matrix/scale";
 import { matrixScale, polygonsOverlap } from "../../src/htmlcanvas/utils";
 import Flatten from "@flatten-js/core";
 import { tm2flatten } from "../../src/htmlcanvas/lib/utils";
-import { assertUnreachable } from "../config";
+import { assertUnreachable } from "../../../common/src/api/config";
+import { Coord } from "../../../common/src/api/document/drawing";
 
 /*
  * A transformation specifically for the screen, with a center co-ordinate, rotation, and scale.

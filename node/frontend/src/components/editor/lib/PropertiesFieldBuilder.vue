@@ -192,11 +192,11 @@ import { DocumentState } from "../../../../src/store/document/types";
 import { Compact } from "vue-color";
 import FlowSystemPicker from "../../../../src/components/editor/FlowSystemPicker.vue";
 import PopoutColourPicker from "../../../../src/components/editor/lib/PopoutColourPicker.vue";
-import { FieldParams, PropertyField } from "../../../../src/store/document/entities/property-field";
+import { FieldParams, PropertyField } from "../../../../../common/src/api/document/entities/property-field";
 import RotationPicker from "../../../../src/components/editor/lib/RotationPicker.vue";
-import { Choice } from "../../../../src/lib/types";
 import BooleanPicker from "../../../../src/components/editor/lib/BooleanPicker.vue";
 import { getPropertyByString, setPropertyByString } from "../../../../src/lib/utils";
+import { Choice } from "../../../../../common/src/lib/utils";
 
 @Component({
     props: {

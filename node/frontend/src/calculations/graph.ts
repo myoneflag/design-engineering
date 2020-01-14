@@ -2,8 +2,8 @@ import uuid from "uuid";
 import _ from "lodash";
 import assert from "assert";
 import TinyQueue from "tinyqueue";
-import { cloneSimple } from "../../src/lib/utils";
 import stringify from "json-stable-stringify";
+import { cloneSimple } from "../../../common/src/lib/utils";
 
 export default class Graph<N, E> {
     adjacencyList: Map<string, Array<Edge<N, E>>> = new Map<string, Array<Edge<N, E>>>();

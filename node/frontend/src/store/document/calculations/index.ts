@@ -1,7 +1,7 @@
-import { DrawableEntity } from "../../../../src/store/document/types";
-import { CalculatableEntityConcrete, DrawableEntityConcrete } from "../entities/concrete-entity";
-import { EntityType } from "../entities/types";
-import { assertUnreachable } from "../../../config";
+import { CalculatableEntityConcrete, DrawableEntityConcrete } from "../../../../../common/src/api/document/entities/concrete-entity";
+import { EntityType } from "../../../../../common/src/api/document/entities/types";
+import { assertUnreachable } from "../../../../../common/src/api/config";
+import { DrawableEntity } from "../../../../../common/src/api/document/drawing";
 
 export function isCalculated(e: DrawableEntityConcrete): e is CalculatableEntityConcrete {
     switch (e.type) {

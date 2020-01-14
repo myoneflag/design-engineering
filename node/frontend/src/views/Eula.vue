@@ -107,9 +107,9 @@
     import MainNavBar from "../../src/components/MainNavBar.vue";
     import { State, Action, Getter } from "vuex-class";
     import { DocumentState } from "../../src/store/document/types";
-    import { Document } from "../../../backend/src/entity/Document";
+    import { Document } from "../../../common/src/models/Document";
     import { createDocument, getDocuments } from "../api/document";
-    import { User } from "../../../backend/src/entity/User";
+    import { User } from "../../../common/src/models/User";
     import { acceptEula, declineEula, logout } from "../api/logins";
 
     @Component({

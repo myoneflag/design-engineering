@@ -27,9 +27,9 @@
     import Vue from "vue";
     import Component from "vue-class-component";
     import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
-    import { fillRiserDefaults, makeRiserFields } from "../../../store/document/entities/riser-entity";
+    import { fillRiserDefaults, makeRiserFields } from "../../../../../common/src/api/document/entities/riser-entity";
     import { DocumentState } from "../../../../src/store/document/types";
-    import { fillFlowSourceDefaults, makeFlowSourceFields } from "../../../store/document/entities/flow-source-entity";
+    import { fillFlowSourceDefaults, makeFlowSourceFields } from "../../../../../common/src/api/document/entities/flow-source-entity";
 
     @Component({
         components: { PropertiesFieldBuilder },
@@ -58,7 +58,7 @@
         }
 
         get defaultData() {
-            return fillFlowSourceDefaults(this.document, this.reactiveData);
+            return fillFlowSourceDefaults(this.document.drawing, this.reactiveData);
         }
 
         onCommit() {

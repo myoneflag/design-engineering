@@ -32,4 +32,4 @@ env PORT 80
 # to compile in prod :'(
 env H2X_MODE production
 
-cmd [ "npm", "run", "dev" ]
+cmd [ "npm", "run", "prod" ]

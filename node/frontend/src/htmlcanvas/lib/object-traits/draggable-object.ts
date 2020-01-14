@@ -1,8 +1,8 @@
-import { Coord } from "../../../../src/store/document/types";
 import DrawableObject from "../../../../src/htmlcanvas/lib/drawable-object";
 import { MouseMoveResult, UNHANDLED } from "../../../../src/htmlcanvas/types";
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
+import { Coord } from "../../../../../common/src/api/document/drawing";
 
 export interface Draggable {
     inBounds(objectCoord: Coord, objectRadius?: number): boolean;

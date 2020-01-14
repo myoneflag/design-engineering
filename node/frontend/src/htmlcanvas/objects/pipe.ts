@@ -1,31 +1,29 @@
 import BackedDrawableObject from "../../../src/htmlcanvas/lib/backed-drawable-object";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
-import PipeEntity, { fillPipeDefaultFields, MutablePipe } from "../../../src/store/document/entities/pipe-entity";
+import PipeEntity, { fillPipeDefaultFields, MutablePipe } from "../../../../common/src/api/document/entities/pipe-entity";
 import * as TM from "transformation-matrix";
 import { Matrix } from "transformation-matrix";
-import { CalculationFilters, Coord, Coord3D, DocumentState } from "../../../src/store/document/types";
+import { CalculationFilters, DocumentState } from "../../../src/store/document/types";
 import { matrixScale } from "../../../src/htmlcanvas/utils";
 import Flatten from "@flatten-js/core";
 import { Draggable, DraggableObject } from "../../../src/htmlcanvas/lib/object-traits/draggable-object";
 import * as _ from "lodash";
-import { canonizeAngleRad, cloneSimple, lighten } from "../../../src/lib/utils";
+import { canonizeAngleRad, lighten } from "../../../src/lib/utils";
 import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
-import { EntityType } from "../../../src/store/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import BackedConnectable, { BaseBackedConnectable } from "../../../src/htmlcanvas/lib/BackedConnectable";
-import { PipeMaterial, PipeSpec } from "../../../src/store/catalog/types";
-import { interpolateTable, lowerBoundTable, parseCatalogNumberExact } from "../../../src/htmlcanvas/lib/utils";
 import { CalculationContext } from "../../../src/calculations/types";
 import {
     ConnectableEntityConcrete,
     DrawableEntityConcrete,
     isConnectableEntity
-} from "../../../src/store/document/entities/concrete-entity";
+} from "../../../../common/src/api/document/entities/concrete-entity";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
 import uuid from "uuid";
-import FittingEntity from "../../../src/store/document/entities/fitting-entity";
+import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import assert from "assert";
 import { PIPE_STUB_MAX_LENGTH_MM } from "../../../src/htmlcanvas/lib/black-magic/auto-connect";
 import { getDarcyWeisbachFlatMH } from "../../../src/calculations/pressure-drops";
@@ -40,8 +38,16 @@ import {
     FIELD_HEIGHT
 } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import Cached from "../lib/cached";
-import { determineConnectableNetwork } from "../../store/document/entities/directed-valves/directed-valve-entity";
 import { GlobalStore } from "../lib/global-store";
+import { PipeMaterial, PipeSpec } from "../../../../common/src/api/catalog/types";
+import { Coord, Coord3D } from "../../../../common/src/api/document/drawing";
+import {
+    cloneSimple,
+    interpolateTable,
+    lowerBoundTable,
+    parseCatalogNumberExact
+} from "../../../../common/src/lib/utils";
+import { determineConnectableNetwork } from "../../store/document/entities/lib";
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 3.5;

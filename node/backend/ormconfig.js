@@ -5,21 +5,22 @@ module.exports = {
    "username": "postgres",
    "password": "postgres",
    "database": "h2x",
-   "synchronize": true,
-   "logging": false,
+   "synchronize": false,
+   "logging": process.env.H2X_MODE === "production" ? false : true,
    "entities": [
-      "./src/entity/**/*.ts"
+       process.env.H2X_MODE === "production" ? "./dist/common/src/models/**/*{.ts,.js}" : "../common/src/models/**/*.ts"
    ],
    "migrations": [
-      "src/migration/**/*.ts"
+       process.env.H2X_MODE === "production" ? "./dist/backend/src/migration/**/{*.ts,.js}" : "./src/migration/**/*.ts"
    ],
+    "migrationsRun": true,
    "migrationsTableName": "migrations",
    "subscribers": [
-      "src/subscriber/**/*.ts"
+      "./src/subscriber/**/*.ts"
    ],
    "cli": {
-      "entitiesDir": "src/entity",
-      "migrationsDir": "src/migration",
-      "subscribersDir": "src/subscriber"
+      "entitiesDir": "../common/src/models",
+      "migrationsDir": "./src/migration",
+      "subscribersDir": "./src/subscriber"
    }
 };

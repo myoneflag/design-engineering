@@ -54,10 +54,10 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { CalculationFilters, DocumentState } from "../../../src/store/document/types";
-import { getEntityName } from "../../../src/store/document/entities/types";
+import { getEntityName } from "../../../../common/src/api/document/entities/types";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import { getFields } from "../../../src/calculations/utils";
-import { cloneSimple } from "../../../src/lib/utils";
+import { cloneSimple } from "../../../../common/src/lib/utils";
 
 @Component({
     components: {},

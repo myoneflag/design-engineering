@@ -115,9 +115,9 @@ import {AccessLevel} from "../../../backend/src/entity/User"; import {AccessLeve
 import Vue from "vue";
 import Component from "vue-class-component";
 import MainNavBar from "../components/MainNavBar.vue";
-import { AccessLevel, User as IUser } from "../../../backend/src/entity/User";
+import { AccessLevel, User as IUser } from "../../../common/src/models/User";
 import { getUser, updateUser } from "../api/users";
-import { AccessEvents } from "../../../backend/src/entity/AccessEvents";
+import { AccessEvents } from "../../../common/src/models/AccessEvents";
 import { getAccessEvents } from "../api/access-events";
 
 @Component({

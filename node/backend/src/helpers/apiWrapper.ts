@@ -1,5 +1,5 @@
 import {NextFunction, Request, Response} from "express";
-import {Session} from "../entity/Session";
+import {Session} from "../../../common/src/models/Session";
 
 export function ApiHandleError() {
     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {

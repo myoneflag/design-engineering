@@ -1,14 +1,13 @@
-import CatalogState, {
-    Catalog,
-    DwellingSpec,
+import CatalogState from "../../store/catalog/types";
+import {
+    Catalog, DwellingSpec,
     FixtureSpec,
     FluidsSpec,
     LoadingUnit,
     MixingValveSpec,
-    PipeMaterial,
-    PSDSpec,
+    PipeMaterial, PSDSpec,
     ValveSpec
-} from "../../store/catalog/types";
+} from "../../../../common/src/api/catalog/types";
 
 type AllKeysOf<T> = {
     [P in keyof T]: any;

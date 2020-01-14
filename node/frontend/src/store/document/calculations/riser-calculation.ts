@@ -1,9 +1,10 @@
 import { CalculationField, FieldCategory, Units } from "../../../../src/store/document/calculations/calculation-field";
 import { Calculation } from "../../../../src/store/document/calculations/types";
-import { DocumentState, DrawingState } from "../../../../src/store/document/types";
-import RiserEntity from "../entities/riser-entity";
+import { DocumentState} from "../../../../src/store/document/types";
+import RiserEntity from "../../../../../common/src/api/document/entities/riser-entity";
 import { getPsdUnitName, PsdCountEntry } from "../../../calculations/utils";
 import { isSupportedDwellingStandard } from "../../../config";
+import { DrawingState } from "../../../../../common/src/api/document/drawing";
 
 export default interface RiserCalculation extends Calculation {
     heights: {

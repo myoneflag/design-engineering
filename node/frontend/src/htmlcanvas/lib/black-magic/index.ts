@@ -1,4 +1,4 @@
-import { DrawableEntityConcrete } from "../../../../src/store/document/entities/concrete-entity";
+import { DrawableEntityConcrete } from "../../../../../common/src/api/document/entities/concrete-entity";
 import * as _ from "lodash";
 
 export interface MagicResult {

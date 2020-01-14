@@ -1,12 +1,15 @@
 {
   "extends": [
-    "tslint:latest",
-    "tslint-config-prettier"
+    "tslint:recommended"
   ],
   "rules": {
     "no-implicit-dependencies": [true, "dev"],
     "no-console": [true, "dev"],
     "object-literal-sort-keys": [false, "dev"],
-    "member-access": false
+    "member-access": false,
+    "ordered-imports": false,
+    "interface-name": false,
+    "class-name": false,
+    "quotemark": false
   }
 }

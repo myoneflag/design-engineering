@@ -1,11 +1,8 @@
-import { EntityType } from "../../src/store/document/entities/types";
-import { assertUnreachable, isGermanStandard, SupportedPsdStandards } from "../../src/config";
+import { EntityType } from "../../../common/src/api/document/entities/types";
 import { DocumentState } from "../../src/store/document/types";
 import { StandardFlowSystemUids } from "../../src/store/catalog";
-import { Catalog } from "../../src/store/catalog/types";
-import { fillFixtureFields } from "../../src/store/document/entities/fixtures/fixture-entity";
-import { DwellingStandardType, PSDStandardType } from "../../src/store/catalog/psd-standard/types";
-import { interpolateTable, parseCatalogNumberExact } from "../../src/htmlcanvas/lib/utils";
+import { fillFixtureFields } from "../../../common/src/api/document/entities/fixtures/fixture-entity";
+import { DwellingStandardType, PSDStandardType } from "../../../common/src/api/catalog/psd-standard/types";
 import { CalculationField } from "../../src/store/document/calculations/calculation-field";
 import { makeRiserCalculationFields } from "../store/document/calculations/riser-calculation";
 import { makePipeCalculationFields } from "../../src/store/document/calculations/pipe-calculation";
@@ -13,20 +10,20 @@ import { makeFittingCalculationFields } from "../../src/store/document/calculati
 import { makeBigValveCalculationFields } from "../store/document/calculations/big-valve-calculation";
 import { makeFixtureCalculationFields } from "../../src/store/document/calculations/fixture-calculation";
 import { makeDirectedValveCalculationFields } from "../../src/store/document/calculations/directed-valve-calculation";
-import { DrawableEntityConcrete } from "../../src/store/document/entities/concrete-entity";
+import { DrawableEntityConcrete } from "../../../common/src/api/document/entities/concrete-entity";
 import { makeSystemNodeCalculationFields } from "../../src/store/document/calculations/system-node-calculation";
 import { EPS } from "./pressure-drops";
 import { makeLoadNodeCalculationFields } from "../store/document/calculations/load-node-calculation";
-import { NodeType } from "../store/document/entities/load-node-entity";
-import { makeFlowSourceFields } from "../store/document/entities/flow-source-entity";
+import { NodeType } from "../../../common/src/api/document/entities/load-node-entity";
+import { makeFlowSourceFields } from "../../../common/src/api/document/entities/flow-source-entity";
 import { makeFlowSourceCalculationFields } from "../store/document/calculations/flow-source-calculation";
-import {
-    determineConnectableNetwork,
-    determineConnectableSystemUid
-} from "../store/document/entities/directed-valves/directed-valve-entity";
 import { ObjectStore } from "../htmlcanvas/lib/object-store";
 import { makePlantCalculationFields } from "../store/document/calculations/plant-calculation";
 import { equal } from "assert";
+import { assertUnreachable, isGermanStandard, SupportedPsdStandards } from "../../../common/src/api/config";
+import { Catalog } from "../../../common/src/api/catalog/types";
+import { determineConnectableNetwork, determineConnectableSystemUid } from "../store/document/entities/lib";
+import { interpolateTable, parseCatalogNumberExact } from "../../../common/src/lib/utils";
 
 export interface PsdCountEntry {
     units: number;

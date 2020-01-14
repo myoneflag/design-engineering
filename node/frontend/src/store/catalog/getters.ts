@@ -2,7 +2,7 @@ import { GetterTree } from "vuex";
 import { RootState } from "../../../src/store/types";
 import CatalogState from "../../../src/store/catalog/types";
 import _ from "lodash";
-import { Choice } from "../../../src/lib/types";
+import { Choice } from "../../../../common/src/lib/utils";
 
 export const getters: GetterTree<CatalogState, RootState> = {
     loaded(state) {

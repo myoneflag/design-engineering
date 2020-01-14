@@ -1,7 +1,7 @@
-import { APIResult } from "../../../common/src/api/types";
-import { Document } from "../../../backend/src/entity/Document";
+import { APIResult } from "../../../common/src/api/document/types";
+import { Document } from "../../../common/src/models/Document";
 import axios from "axios";
-import { Organization } from "../../../backend/src/entity/Organization";
+import { Organization } from "../../../common/src/models/Organization";
 
 export async function getOrganizations(): Promise<APIResult<Organization[]>> {
     try {

@@ -1,5 +1,4 @@
 import { ViewPort } from "../../../src/htmlcanvas/viewport";
-import { Coord, Rectangle } from "../../../src/store/document/types";
 import axios from "axios";
 import * as TM from "transformation-matrix";
 import { matrixScale, parseScale } from "../../../src/htmlcanvas/utils";
@@ -10,13 +9,12 @@ import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
-import { BackgroundEntity } from "../../../src/store/document/entities/background-entity";
+import { BackgroundEntity } from "../../../../common/src/api/document/entities/background-entity";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
-import { EntityType } from "../../../src/store/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import Flatten from "@flatten-js/core";
 import { DEFAULT_FONT_NAME } from "../../../src/config";
-import { DrawableEntityConcrete } from "../../../src/store/document/entities/concrete-entity";
-import { cloneSimple } from "../../../src/lib/utils";
+import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 import { DraggableObject } from "../../../src/htmlcanvas/lib/object-traits/draggable-object";
 import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
@@ -25,6 +23,8 @@ import { FlowNode } from "../../../src/calculations/calculation-engine";
 import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { GlobalStore } from "../lib/global-store";
 import ImageLoader from "../lib/image-loader";
+import { Coord, Rectangle } from "../../../../common/src/api/document/drawing";
+import { cloneSimple } from "../../../../common/src/lib/utils";
 
 export const imageStore = new Map<string, HTMLImageElement>();
 

@@ -4,10 +4,10 @@ import { SizeableObject } from "../../../src/htmlcanvas/lib/object-traits/sizeab
 import * as TM from "transformation-matrix";
 import { matrixScale } from "../../../src/htmlcanvas/utils";
 import { MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
-import { Coord } from "../../../src/store/document/types";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import Layer from "../../../src/htmlcanvas/layers/layer";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
+import { Coord } from "../../../../common/src/api/document/drawing";
 
 enum Sides {
     Left,

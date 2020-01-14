@@ -1,35 +1,36 @@
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
-import { EntityType } from "../../../../src/store/document/entities/types";
+import { EntityType } from "../../../../../common/src/api/document/entities/types";
 import { getConnectedFlowComponent } from "../../../../src/htmlcanvas/lib/black-magic/utils";
 import UnionFind from "../../../../src/calculations/union-find";
 import {
     ConnectableEntityConcrete,
     DrawableEntityConcrete,
     isConnectableEntity
-} from "../../../../src/store/document/entities/concrete-entity";
-import { fillFixtureFields } from "../../../../src/store/document/entities/fixtures/fixture-entity";
+} from "../../../../../common/src/api/document/entities/concrete-entity";
+import { fillFixtureFields } from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
 import { getFloorHeight, maxHeightOfConnection, minHeightOfConnection } from "../../../../src/htmlcanvas/lib/utils";
 import Flatten from "@flatten-js/core";
 import { InteractionType } from "../../../../src/htmlcanvas/lib/interaction";
 import { addValveAndSplitPipe } from "../../../../src/htmlcanvas/lib/black-magic/split-pipe";
 import Pipe from "../../../../src/htmlcanvas/objects/pipe";
-import PipeEntity from "../../../../src/store/document/entities/pipe-entity";
+import PipeEntity from "../../../../../common/src/api/document/entities/pipe-entity";
 import uuid from "uuid";
-import FittingEntity from "../../../../src/store/document/entities/fitting-entity";
-import { BigValveType, FlowConfiguration } from "../../../store/document/entities/big-valve/big-valve-entity";
+import FittingEntity from "../../../../../common/src/api/document/entities/fitting-entity";
+import { BigValveType, FlowConfiguration } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import assert from "assert";
 import { StandardFlowSystemUids, StandardMaterialUids } from "../../../../src/store/catalog";
 import { MainEventBus } from "../../../../src/store/main-event-bus";
-import { Coord, EntityParam, NetworkType } from "../../../../src/store/document/types";
+import { EntityParam} from "../../../../src/store/document/types";
 import { rebaseAll } from "../../../../src/htmlcanvas/lib/black-magic/rebase-all";
-import { fillDirectedValveFields } from "../../../../src/store/document/entities/directed-valves/directed-valve-entity";
 import connectBigValveToSource from "./connect-big-valve-to-source";
 import BigValve from "../../objects/big-valve/bigValve";
-import { assertUnreachable } from "../../../../src/config";
-import RiserEntity, { fillRiserDefaults } from "../../../store/document/entities/riser-entity";
-import { fillDefaultLoadNodeFields } from "../../../store/document/entities/load-node-entity";
+import RiserEntity, { fillRiserDefaults } from "../../../../../common/src/api/document/entities/riser-entity";
 import { GroupDistCache } from "./group-dist-cache";
+import { assertUnreachable } from "../../../../../common/src/api/config";
+import { Coord, NetworkType } from "../../../../../common/src/api/document/drawing";
+import { fillDirectedValveFields } from "../../../store/document/entities/fillDirectedValveFields";
+import { fillDefaultLoadNodeFields } from "../../../store/document/entities/fillDefaultLoadNodeFields";
 
 const CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM = 500;
 const FIXTURE_WALL_DIST_MM = 200;
@@ -211,7 +212,7 @@ export class AutoConnector {
                     return [entity.heightAboveFloorM, entity.heightAboveFloorM];
                 case EntityType.RISER:
                     const re = this.context.globalStore.get(entity.uid)!.entity as RiserEntity;
-                    const fre = fillRiserDefaults(this.context.document, re);
+                    const fre = fillRiserDefaults(this.context.document.drawing, re);
                     return [
                         fre.bottomHeightM! - getFloorHeight(this.context.globalStore, this.context.document, re),
                         fre.topHeightM! - getFloorHeight(this.context.globalStore, this.context.document, re)
@@ -813,7 +814,7 @@ export class AutoConnector {
             case EntityType.SYSTEM_NODE:
                 return entity.systemUid;
             case EntityType.DIRECTED_VALVE: {
-                const res = fillDirectedValveFields(this.context.document, this.context.objectStore, entity);
+                const res = fillDirectedValveFields(this.context.document.drawing, this.context.objectStore, entity);
                 return res.systemUidOption;
             }
             case EntityType.LOAD_NODE: {

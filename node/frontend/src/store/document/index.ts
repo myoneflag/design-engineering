@@ -4,9 +4,9 @@ import { actions } from "./actions";
 import { mutations } from "./mutations";
 import { DocumentState, initialDocumentState } from "./types";
 import { RootState } from "../types";
-import { EntityType } from "../../../src/store/document/entities/types";
-import { cloneSimple } from "../../../src/lib/utils";
-import { assertUnreachable } from "../../config";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
+import { assertUnreachable } from "../../../../common/src/api/config";
+import { cloneSimple } from "../../../../common/src/lib/utils";
 
 export const state: DocumentState = cloneSimple(initialDocumentState);
 

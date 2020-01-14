@@ -77,11 +77,12 @@ import { AccessLevel } from "../../../backend/src/entity/User";
 
 <script lang="ts">
     import { Vue } from "vue-property-decorator";
-    import { DocumentState, Level } from "../store/document/types";
+    import { DocumentState} from "../store/document/types";
     import { State } from "vuex-class";
     import Component from "vue-class-component";
     import ProfileMenuItem from "../../src/components/ProfileMenuItem.vue";
-    import { AccessLevel, User } from "../../../backend/src/entity/User";
+    import { AccessLevel, User } from "../../../common/src/models/User";
+    import { Level } from "../../../common/src/api/document/drawing";
 
     @Component({
     components: { ProfileMenuItem },

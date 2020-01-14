@@ -1,2 +1,2 @@
-import * as OT from "../../src/store/document/operation-transforms/operation-transforms";
+import * as OT from "../../../common/src/api/document/operation-transforms";
 import axios from "axios";

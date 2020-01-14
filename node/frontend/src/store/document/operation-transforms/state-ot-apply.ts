@@ -1,40 +1,9 @@
-import { DrawingState, WithID } from "../../../../src/store/document/types";
-import * as OT from "./operation-transforms";
-import * as _ from "lodash";
-import assert from "assert";
+import { DiffOperation } from "../../../../../common/src/api/document/operation-transforms";
 import Vue from "vue";
-import { cloneSimple } from "../../../../src/lib/utils";
-import { DiffOperation, OperationTransformConcrete } from "./operation-transforms";
+import { applyDiff } from "../../../../../common/src/api/document/state-ot-apply";
 
 export function applyDiffVue(target: any, diff: any): any {
-    if (diff === undefined || target === undefined) {
-        throw new Error("Parent caller should have deleted the entry, not recurse");
-    }
-
-    if (_.isArray(diff)) {
-        return diff;
-    } else if (_.isObject(diff)) {
-        if (_.isArray(target) || !_.isObject(target)) {
-            // convert those primitives and arrays into the object that it ought to be.
-            target = {};
-        }
-
-        for (const key of Object.keys(diff)) {
-            // we use {} to signal a deleted object (undefined is not valid JSON).
-            if (_.isEqual((diff as any)[key], { deleted: true })) {
-                if (target.hasOwnProperty(key)) {
-                    Vue.delete(target, key);
-                }
-            } else if (target.hasOwnProperty(key)) {
-                (target as any)[key] = applyDiffVue((target as any)[key], (diff as any)[key]);
-            } else {
-                Vue.set(target, key, (diff as any)[key]);
-            }
-        }
-        return target;
-    } else {
-        return diff;
-    }
+    return applyDiff(target, diff, Vue.set, Vue.delete);
 }
 
 export function applyOtOnState(state: any, ops: DiffOperation) {

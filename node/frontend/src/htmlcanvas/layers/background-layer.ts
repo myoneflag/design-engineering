@@ -1,5 +1,5 @@
 import { LayerImplementation, SelectMode } from "../../../src/htmlcanvas/layers/layer";
-import { CalculationFilters, Coord, DocumentState, DrawableEntity } from "../../../src/store/document/types";
+import { CalculationFilters, DocumentState} from "../../../src/store/document/types";
 import { BackgroundImage } from "../../../src/htmlcanvas/objects/background-image";
 import { ResizeControl } from "../../../src/htmlcanvas/objects/resize-control";
 import { MouseMoveResult } from "../../../src/htmlcanvas/types";
@@ -7,11 +7,12 @@ import { ToolConfig } from "../../../src/store/tools/types";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
-import { DrawableEntityConcrete } from "../../../src/store/document/entities/concrete-entity";
-import { EntityType } from "../../store/document/entities/types";
-import { BackgroundEntity } from "../../store/document/entities/background-entity";
+import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
+import { BackgroundEntity } from "../../../../common/src/api/document/entities/background-entity";
 import { cooperativeYield } from "../utils";
 import { ObjectStore } from "../lib/object-store";
+import { Coord, DrawableEntity } from "../../../../common/src/api/document/drawing";
 
 export default class BackgroundLayer extends LayerImplementation {
     resizeBox: ResizeControl | null = null;

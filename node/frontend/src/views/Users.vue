@@ -51,7 +51,7 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
-import { AccessLevel, User } from "../../../backend/src/entity/User";
+import { AccessLevel, User } from "../../../common/src/models/User";
 import { getUsers } from "../api/users";
 import MainNavBar from "../../src/components/MainNavBar.vue";
 import DrawingNavBar from "../components/DrawingNavBar.vue";
