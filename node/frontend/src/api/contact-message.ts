@@ -1,6 +1,6 @@
 import axios from "axios";
-import { APIResult } from "../../../common/src/api/types";
-import { ContactMessage } from "../../../backend/src/entity/ContactMessage";
+import { APIResult } from "../../../common/src/api/document/types";
+import { ContactMessage } from "../../../common/src/models/ContactMessage";
 
 export async function sendContactMessage(
     name: string,

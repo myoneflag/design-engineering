@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
-import { AccessEvents, LoginEventType } from "../entity/AccessEvents";
-import { Session } from "../entity/Session";
-import { AccessLevel } from "../entity/User";
+import { AccessEvents, LoginEventType } from "../../../common/src/models/AccessEvents";
+import { Session } from "../../../common/src/models/Session";
+import { AccessLevel } from "../../../common/src/models/User";
 
 export function AuthRequired(minAccessLevel?: AccessLevel, eulaNeeded: boolean = true) {
     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {

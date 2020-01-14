@@ -1,8 +1,8 @@
-import { APIResult } from "../../../common/src/api/types";
-import { Document } from "../../../backend/src/entity/Document";
+import { APIResult } from "../../../common/src/api/document/types";
+import { Document } from "../../../common/src/models/Document";
 import axios from "axios";
-import { Organization } from "../../../backend/src/entity/Organization";
-import { AccessLevel, User } from "../../../backend/src/entity/User";
+import { Organization } from "../../../common/src/models/Organization";
+import { AccessLevel, User } from "../../../common/src/models/User";
 
 export async function getUsers(): Promise<APIResult<User[]>> {
     try {

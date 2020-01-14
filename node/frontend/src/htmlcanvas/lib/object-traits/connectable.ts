@@ -1,10 +1,9 @@
-import { Coord, Coord3D, NetworkType } from "../../../../src/store/document/types";
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
 import Pipe from "../../../../src/htmlcanvas/objects/pipe";
 import assert from "assert";
-import { EntityType } from "../../../../src/store/document/entities/types";
+import { EntityType } from "../../../../../common/src/api/document/entities/types";
 import BackedConnectable from "../../../../src/htmlcanvas/lib/BackedConnectable";
-import { ConnectableEntityConcrete, EdgeLikeEntity } from "../../../../src/store/document/entities/concrete-entity";
+import { ConnectableEntityConcrete, EdgeLikeEntity } from "../../../../../common/src/api/document/entities/concrete-entity";
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
 import { DrawingContext } from "../../../../src/htmlcanvas/lib/types";
 import Flatten from "@flatten-js/core";
@@ -15,17 +14,15 @@ import { angleDiffRad } from "../../../../src/lib/utils";
 import { DrawingArgs } from "../../../../src/htmlcanvas/lib/drawable-object";
 import { CalculationData } from "../../../../src/store/document/calculations/calculation-field";
 import * as TM from "transformation-matrix";
-import PipeEntity from "../../../store/document/entities/pipe-entity";
-import {
-    determineConnectableNetwork,
-    determineConnectableSystemUid
-} from "../../../store/document/entities/directed-valves/directed-valve-entity";
-import FittingEntity from "../../../store/document/entities/fitting-entity";
+import PipeEntity from "../../../../../common/src/api/document/entities/pipe-entity";
+import FittingEntity from "../../../../../common/src/api/document/entities/fitting-entity";
 import { getEdgeLikeHeightAboveGroundM } from "../utils";
 import Cached from "../cached";
 import stringify from "json-stable-stringify";
 import uuid from "uuid";
 import Fitting from "../../objects/fitting";
+import { Coord, Coord3D, NetworkType } from "../../../../../common/src/api/document/drawing";
+import { determineConnectableNetwork, determineConnectableSystemUid } from "../../../store/document/entities/lib";
 
 export default interface Connectable {
     getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]>;

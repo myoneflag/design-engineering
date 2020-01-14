@@ -6,7 +6,7 @@ import {expect} from 'chai';
 import * as _ from 'lodash';
 import {examplePipeEntity} from '../../../utils/example-drawable-entitites';
 import {bg1} from '../../../utils/example-backgrounds';
-import {EntityType} from '../../../../src/store/document/entities/types';
+import {EntityType} from '../../../../../common/src/api/document/entities/types';
 import CanvasContext from '../../../../src/htmlcanvas/lib/canvas-context';
 import {createExampleDocument} from '../../../utils/example-document';
 

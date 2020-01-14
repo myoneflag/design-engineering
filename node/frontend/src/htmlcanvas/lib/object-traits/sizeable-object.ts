@@ -1,5 +1,5 @@
-import { Rectangle } from "../../../../src/store/document/types";
 import DrawableObject from "../../../../src/htmlcanvas/lib/drawable-object";
+import { Rectangle } from "../../../../../common/src/api/document/drawing";
 
 export interface Sizeable {
     boundary: Rectangle;

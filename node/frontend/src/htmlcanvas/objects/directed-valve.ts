@@ -1,15 +1,11 @@
 import BackedConnectable from "../../../src/htmlcanvas/lib/BackedConnectable";
 // tslint:disable-next-line:max-line-length
-import DirectedValveEntity, {
-    determineConnectableSystemUid,
-    fillDirectedValveFields
-} from "../../../src/store/document/entities/directed-valves/directed-valve-entity";
+import DirectedValveEntity from "../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
-import { Coord, DrawableEntity } from "../../../src/store/document/types";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
-import { EntityType } from "../../../src/store/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import { getDragPriority } from "../../../src/store/document";
 import { CalculationContext } from "../../../src/calculations/types";
 import { FlowNode } from "../../../src/calculations/calculation-engine";
@@ -18,30 +14,32 @@ import * as TM from "transformation-matrix";
 import { CenteredObject } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
 import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
-import { canonizeAngleRad, cloneSimple, lighten } from "../../../src/lib/utils";
-import { IsolationValve, ValveType } from "../../../src/store/document/entities/directed-valves/valve-types";
+import { canonizeAngleRad, lighten } from "../../../src/lib/utils";
+import { IsolationValve, ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
 import {
     drawRpzdDouble,
     getRpzdHeadLoss,
-    lowerBoundTable,
-    parseCatalogNumberExact,
     VALVE_HEIGHT_MM,
     VALVE_LINE_WIDTH_MM,
     VALVE_SIZE_MM
 } from "../../../src/htmlcanvas/lib/utils";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
 import { matrixScale } from "../../../src/htmlcanvas/utils";
-import { Catalog } from "../../../src/store/catalog/types";
 import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
-import { assertUnreachable } from "../../../src/config";
-import PipeEntity, { MutablePipe } from "../../store/document/entities/pipe-entity";
+import PipeEntity, { MutablePipe } from "../../../../common/src/api/document/entities/pipe-entity";
 import DirectedValveCalculation, {
     emptyDirectedValveCalculation
 } from "../../store/document/calculations/directed-valve-calculation";
-import FittingEntity from "../../store/document/entities/fitting-entity";
+import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import uuid from "uuid";
+import { assertUnreachable } from "../../../../common/src/api/config";
+import { Catalog } from "../../../../common/src/api/catalog/types";
+import { Coord, DrawableEntity } from "../../../../common/src/api/document/drawing";
+import { cloneSimple, lowerBoundTable, parseCatalogNumberExact } from "../../../../common/src/lib/utils";
+import { fillDirectedValveFields } from "../../store/document/entities/fillDirectedValveFields";
+import { determineConnectableSystemUid } from "../../store/document/entities/lib";
 
 @CalculatedObject
 @SelectableObject
@@ -102,7 +100,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         const s = matrixScale(context.ctx.getTransform());
         context.ctx.rotate(this.rotationRad);
 
-        const e = fillDirectedValveFields(context.doc, this.objectStore, this.entity);
+        const e = fillDirectedValveFields(context.doc.drawing, this.objectStore, this.entity);
         if (selected && active) {
             context.ctx.fillStyle = lighten(e.color!.hex, 50, 0.8);
             context.ctx.fillRect(-VALVE_SIZE_MM * 1.2, -VALVE_SIZE_MM * 1.2, VALVE_SIZE_MM * 2.4, VALVE_SIZE_MM * 2.4);

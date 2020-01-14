@@ -7,7 +7,7 @@ import LoadProfile from "../src/views/LoadProfile.vue";
 import ChangePassword from "../src/views/ChangePassword.vue";
 import ContactUs from "./views/ContactUs.vue";
 import { getSession } from "../src/api/logins";
-import { AccessLevel, User as IUser } from "../../backend/src/entity/User";
+import { AccessLevel, User as IUser } from "../../common/src/models/User";
 import Organizations from "./views/Organizations.vue";
 import Users from "./views/Users.vue";
 import Organization from "./views/Organization.vue";

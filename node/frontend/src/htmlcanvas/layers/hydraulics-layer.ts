@@ -1,14 +1,15 @@
 import { LayerImplementation, SelectMode } from "../../../src/htmlcanvas/layers/layer";
 import { DrawingMode } from "../../../src/htmlcanvas/types";
-import { CalculationFilters, Coord, DocumentState } from "../../../src/store/document/types";
+import { CalculationFilters, DocumentState } from "../../../src/store/document/types";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import DrawableObject from "../../../src/htmlcanvas/lib/drawable-object";
-import { EntityType } from "../../../src/store/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../lib/drawable-object-factory";
-import { DrawableEntityConcrete } from "../../../src/store/document/entities/concrete-entity";
+import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 import { levelIncludesRiser } from "../lib/utils";
 import { cooperativeYield } from "../utils";
+import { Coord } from "../../../../common/src/api/document/drawing";
 
 export default class HydraulicsLayer extends LayerImplementation {
     draggedObjects: BaseBackedObject[] | null = null;

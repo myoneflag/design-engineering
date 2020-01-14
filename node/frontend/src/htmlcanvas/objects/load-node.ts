@@ -1,6 +1,6 @@
 import BaseBackedObject from "../lib/base-backed-object";
 import BackedConnectable from "../lib/BackedConnectable";
-import LoadNodeEntity, { fillDefaultLoadNodeFields, NodeType } from "../../store/document/entities/load-node-entity";
+import LoadNodeEntity, { NodeType } from "../../../../common/src/api/document/entities/load-node-entity";
 import { Calculated, CalculatedObject } from "../lib/object-traits/calculated-object";
 import Connectable, { ConnectableObject } from "../lib/object-traits/connectable";
 import { CenteredObject } from "../lib/object-traits/centered-object";
@@ -8,21 +8,23 @@ import { DrawingContext } from "../lib/types";
 import { DrawingArgs } from "../lib/drawable-object";
 import { CalculationContext } from "../../calculations/types";
 import { FlowNode } from "../../calculations/calculation-engine";
-import { Coord } from "../../store/document/types";
 import CanvasContext from "../lib/canvas-context";
 import LoadNodeCalculation from "../../store/document/calculations/load-node-calculation";
 import { CalculationData } from "../../store/document/calculations/calculation-field";
 import * as TM from "transformation-matrix";
 import { getDragPriority } from "../../store/document";
-import { EntityType } from "../../store/document/entities/types";
-import { cloneSimple, lighten } from "../../lib/utils";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
+import { lighten } from "../../lib/utils";
 import Flatten from "@flatten-js/core";
 import DrawableObjectFactory from "../lib/drawable-object-factory";
 import { SelectableObject } from "../lib/object-traits/selectable";
 import CenterDraggableObject from "../lib/object-traits/center-draggable-object";
-import PipeEntity from "../../store/document/entities/pipe-entity";
-import FittingEntity from "../../store/document/entities/fitting-entity";
+import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
+import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import { Matrix } from "transformation-matrix";
+import { Coord } from "../../../../common/src/api/document/drawing";
+import { cloneSimple } from "../../../../common/src/lib/utils";
+import { fillDefaultLoadNodeFields } from "../../store/document/entities/fillDefaultLoadNodeFields";
 
 @SelectableObject
 @CenterDraggableObject

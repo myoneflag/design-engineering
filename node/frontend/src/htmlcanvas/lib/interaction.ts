@@ -1,7 +1,8 @@
-import { Coord, FlowSystemParameters } from "../../../src/store/document/types";
-import { EntityType } from "../../../src/store/document/entities/types";
-import { DrawableEntityConcrete } from "../../../src/store/document/entities/concrete-entity";
-import { FlowConfiguration } from "../../store/document/entities/big-valve/big-valve-entity";
+
+import { EntityType } from "../../../../common/src/api/document/entities/types";
+import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
+import { FlowConfiguration } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
+import { Coord, FlowSystemParameters } from "../../../../common/src/api/document/drawing";
 
 export interface PipeInteraction extends BaseInteraction {
     type: InteractionType.CONTINUING_PIPE | InteractionType.STARTING_PIPE;

@@ -2,7 +2,6 @@ import BackedDrawableObject from "../../../../src/htmlcanvas/lib/backed-drawable
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
 import * as TM from "transformation-matrix";
 import { Matrix } from "transformation-matrix";
-import { Coord, coordDist2 } from "../../../../src/store/document/types";
 import { matrixScale } from "../../../../src/htmlcanvas/utils";
 import CenterDraggableObject from "../../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
 import { Interaction, InteractionType } from "../../../../src/htmlcanvas/lib/interaction";
@@ -10,18 +9,16 @@ import { DrawingContext } from "../../../../src/htmlcanvas/lib/types";
 import BigValveEntity, {
     BigValveType,
     SystemNodeEntity
-} from "../../../store/document/entities/big-valve/big-valve-entity";
+} from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import DrawableObjectFactory from "../../../../src/htmlcanvas/lib/drawable-object-factory";
-import { EntityType } from "../../../../src/store/document/entities/types";
-import { DrawableEntityConcrete } from "../../../../src/store/document/entities/concrete-entity";
+import { EntityType } from "../../../../../common/src/api/document/entities/types";
+import { DrawableEntityConcrete } from "../../../../../common/src/api/document/entities/concrete-entity";
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
 import { SelectableObject } from "../../../../src/htmlcanvas/lib/object-traits/selectable";
 import { CenteredObject } from "../../../../src/htmlcanvas/lib/object-traits/centered-object";
 import {
     drawRpzdDouble,
     getRpzdHeadLoss,
-    interpolateTable,
-    parseCatalogNumberExact,
     VALVE_HEIGHT_MM
 } from "../../../../src/htmlcanvas/lib/utils";
 import { CalculationContext } from "../../../../src/calculations/types";
@@ -33,14 +30,16 @@ import {
     FIELD_HEIGHT
 } from "../../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import { CalculationData } from "../../../../src/store/document/calculations/calculation-field";
-import { assertUnreachable } from "../../../../src/config";
-import { cloneSimple, getValveK } from "../../../lib/utils";
+import { getValveK } from "../../../lib/utils";
 import SystemNode from "./system-node";
 import BigValveCalculation from "../../../store/document/calculations/big-valve-calculation";
 import Flatten from "@flatten-js/core";
 import Cached from "../../lib/cached";
-import { ValveType } from "../../../store/document/entities/directed-valves/valve-types";
+import { ValveType } from "../../../../../common/src/api/document/entities/directed-valves/valve-types";
 import { StandardFlowSystemUids } from "../../../store/catalog";
+import { assertUnreachable } from "../../../../../common/src/api/config";
+import { Coord, coordDist2 } from "../../../../../common/src/api/document/drawing";
+import { cloneSimple, interpolateTable, parseCatalogNumberExact } from "../../../../../common/src/lib/utils";
 
 export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 

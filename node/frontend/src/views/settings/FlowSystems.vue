@@ -38,12 +38,13 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { DocumentState, initialDocumentState, initialDrawing } from "../../../src/store/document/types";
+import { DocumentState, initialDocumentState} from "../../../src/store/document/types";
 import SettingsFieldBuilder from "../../../src/components/editor/lib/SettingsFieldBuilder.vue";
 import uuid from "uuid";
 import FlowSystemPicker from "../../../src/components/editor/FlowSystemPicker.vue";
 import * as _ from "lodash";
-import { cloneSimple } from "../../lib/utils";
+import { initialDrawing } from "../../../../common/src/api/document/drawing";
+import { cloneSimple } from "../../../../common/src/lib/utils";
 
 @Component({
     components: { SettingsFieldBuilder, FlowSystemPicker },

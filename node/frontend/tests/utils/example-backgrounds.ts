@@ -1,5 +1,5 @@
-import {BackgroundEntity} from '../../src/store/document/entities/background-entity';
-import {EntityType} from '../../src/store/document/entities/types';
+import {BackgroundEntity} from '../../../common/src/api/document/entities/background-entity';
+import {EntityType} from '../../../common/src/api/document/entities/types';
 
 export const bg1: BackgroundEntity = {
     parentUid: null,

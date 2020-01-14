@@ -72,10 +72,10 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import MainNavBar from "../../components/MainNavBar.vue";
-import { Catalog } from "../../store/catalog/types";
 import { CatalogSchema, getCatalogDisplaySchema, Page, Table } from "../../lib/catalog/displaySchema";
 import { getPropertyByString } from "../../lib/utils";
 import { RawLocation } from "vue-router";
+import { Catalog } from "../../../../common/src/api/catalog/types";
 @Component({
     components: { MainNavBar },
     props: {

@@ -1,12 +1,13 @@
 import DrawableObject from "../../../src/htmlcanvas/lib/drawable-object";
-import { Coord, DocumentState, DrawableEntity, WithID } from "../../../src/store/document/types";
+import { DocumentState} from "../../../src/store/document/types";
 import * as _ from "lodash";
 import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
-import { DrawableEntityConcrete } from "../../../src/store/document/entities/concrete-entity";
+import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 import Layer from "../../../src/htmlcanvas/layers/layer";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { ObjectStore } from "./object-store";
+import { Coord, DrawableEntity, WithID } from "../../../../common/src/api/document/drawing";
 
 export default abstract class BackedDrawableObject<T extends DrawableEntityConcrete> extends BaseBackedObject {
     entity: T;

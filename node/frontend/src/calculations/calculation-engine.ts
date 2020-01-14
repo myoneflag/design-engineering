@@ -1,33 +1,23 @@
-import { DocumentState, DrawingState } from "../../src/store/document/types";
+import { DocumentState} from "../../src/store/document/types";
 import { SelectionTarget } from "../../src/htmlcanvas/lib/types";
-import { EntityType } from "../../src/store/document/entities/types";
-import PipeEntity, { fillPipeDefaultFields, makePipeFields } from "../../src/store/document/entities/pipe-entity";
-import { makeValveFields } from "../../src/store/document/entities/fitting-entity";
-import { makeRiserFields } from "../store/document/entities/riser-entity";
+import { EntityType } from "../../../common/src/api/document/entities/types";
+import PipeEntity, { fillPipeDefaultFields, makePipeFields } from "../../../common/src/api/document/entities/pipe-entity";
+import { makeValveFields } from "../../../common/src/api/document/entities/fitting-entity";
+import { makeRiserFields } from "../../../common/src/api/document/entities/riser-entity";
 import {
     BigValveType,
     makeBigValveFields,
     SystemNodeEntity
-} from "../store/document/entities/big-valve/big-valve-entity";
+} from "../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import FixtureEntity, {
     fillFixtureFields,
     makeFixtureFields
-} from "../../src/store/document/entities/fixtures/fixture-entity";
+} from "../../../common/src/api/document/entities/fixtures/fixture-entity";
 import { DemandType } from "../../src/calculations/types";
 import Graph from "../../src/calculations/graph";
 import EquationEngine from "../../src/calculations/equation-engine";
-import { Catalog, PipeSpec } from "../../src/store/catalog/types";
 import BaseBackedObject from "../../src/htmlcanvas/lib/base-backed-object";
 import UnionFind from "../../src/calculations/union-find";
-import { cloneSimple } from "../../src/lib/utils";
-import {
-    interpolateTable,
-    lowerBoundTable,
-    parseCatalogNumberExact,
-    parseCatalogNumberOrMax,
-    parseCatalogNumberOrMin,
-    upperBoundTable
-} from "../../src/htmlcanvas/lib/utils";
 import Pipe from "../../src/htmlcanvas/objects/pipe";
 import {
     getDarcyWeisbachMH,
@@ -37,18 +27,16 @@ import {
     head2kpa
 } from "../../src/calculations/pressure-drops";
 import FlowSolver from "../../src/calculations/flow-solver";
-import { PropertyField } from "../../src/store/document/entities/property-field";
+import { PropertyField } from "../../../common/src/api/document/entities/property-field";
 import { MainEventBus } from "../../src/store/main-event-bus";
 import { getObjectFrictionHeadLoss } from "../../src/calculations/entity-pressure-drops";
-import { DrawableEntityConcrete, isConnectableEntity } from "../../src/store/document/entities/concrete-entity";
-import { assertUnreachable, isGermanStandard } from "../../src/config";
+import { DrawableEntityConcrete, isConnectableEntity } from "../../../common/src/api/document/entities/concrete-entity";
 import BigValve from "../htmlcanvas/objects/big-valve/bigValve";
 // tslint:disable-next-line:max-line-length
 import DirectedValveEntity, {
-    determineConnectableSystemUid,
     makeDirectedValveFields
-} from "../../src/store/document/entities/directed-valves/directed-valve-entity";
-import { ValveType } from "../../src/store/document/entities/directed-valves/valve-types";
+} from "../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
+import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import {
     addPsdCounts,
     comparePsdCounts,
@@ -71,14 +59,25 @@ import { isCalculated } from "../store/document/calculations";
 import DrawableObjectFactory from "../htmlcanvas/lib/drawable-object-factory";
 import { Calculated } from "../htmlcanvas/lib/object-traits/calculated-object";
 import stringify from "json-stable-stringify";
-import { makeLoadNodesFields, NodeType } from "../store/document/entities/load-node-entity";
+import { makeLoadNodesFields, NodeType } from "../../../common/src/api/document/entities/load-node-entity";
 import { GlobalStore } from "../htmlcanvas/lib/global-store";
 import { ObjectStore } from "../htmlcanvas/lib/object-store";
-import { makeFlowSourceFields } from "../store/document/entities/flow-source-entity";
+import { makeFlowSourceFields } from "../../../common/src/api/document/entities/flow-source-entity";
 import FlowSourceCalculation from "../store/document/calculations/flow-source-calculation";
 import FlowSource from "../htmlcanvas/objects/flow-source";
-import { makePlantEntityFields } from "../store/document/entities/plant-entity";
+import { makePlantEntityFields } from "../../../common/src/api/document/entities/plant-entity";
 import Plant from "../htmlcanvas/objects/plant";
+import { assertUnreachable, isGermanStandard } from "../../../common/src/api/config";
+import { Catalog, PipeSpec } from "../../../common/src/api/catalog/types";
+import { DrawingState } from "../../../common/src/api/document/drawing";
+import {
+    cloneSimple,
+    interpolateTable,
+    lowerBoundTable,
+    parseCatalogNumberExact, parseCatalogNumberOrMax, parseCatalogNumberOrMin,
+    upperBoundTable
+} from "../../../common/src/lib/utils";
+import { determineConnectableSystemUid } from "../store/document/entities/lib";
 
 export const SELF_CONNECTION = "SELF_CONNECTION";
 
@@ -216,7 +215,7 @@ export default class CalculationEngine {
                     fields = makeBigValveFields(obj.entity);
                     break;
                 case EntityType.FIXTURE:
-                    fields = makeFixtureFields(this.doc, obj.entity);
+                    fields = makeFixtureFields(this.doc.drawing, obj.entity);
                     break;
                 case EntityType.DIRECTED_VALVE:
                     fields = makeDirectedValveFields(this.doc.drawing.metadata.flowSystems, obj.entity.valve);

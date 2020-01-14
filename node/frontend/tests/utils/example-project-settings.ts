@@ -1,5 +1,6 @@
-import {CalculationParameters, FlowSystemParameters, GeneralInfo} from '../../src/store/document/types';
-import {SupportedPsdStandards} from '../../src/config';
+
+import { SupportedPsdStandards } from "../../../common/src/api/config";
+import { CalculationParameters, FlowSystemParameters, GeneralInfo } from "../../../common/src/api/document/drawing";
 
 export const gi1: GeneralInfo = {
     approved: '',

@@ -1,10 +1,10 @@
 import { FieldCategory, CalculationField, Units } from "../../../../src/store/document/calculations/calculation-field";
 import { Calculation, PsdCalculation } from "../../../../src/store/document/calculations/types";
-import { isGermanStandard } from "../../../../src/config";
-import { DrawingState } from "../../../../src/store/document/types";
-import { SystemNodeEntity } from "../entities/big-valve/big-valve-entity";
+import { SystemNodeEntity } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import { getPsdUnitName } from "../../../calculations/utils";
 import set = Reflect.set;
+import { isGermanStandard } from "../../../../../common/src/api/config";
+import { DrawingState } from "../../../../../common/src/api/document/drawing";
 
 export default interface SystemNodeCalculation extends PsdCalculation, Calculation {
     pressureKPA: number | null;

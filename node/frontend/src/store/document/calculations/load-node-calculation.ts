@@ -1,7 +1,7 @@
 import { FieldCategory, CalculationField, Units } from "../../../../src/store/document/calculations/calculation-field";
 import { StandardFlowSystemUids } from "../../../../src/store/catalog";
 import { Calculation } from "../../../../src/store/document/calculations/types";
-import LoadNodeEntity from "../entities/load-node-entity";
+import LoadNodeEntity from "../../../../../common/src/api/document/entities/load-node-entity";
 
 export default interface LoadNodeCalculation extends Calculation {
     pressureKPA: number | null;

@@ -110,8 +110,8 @@ import { DocumentState } from "../../../../src/store/document/types";
 import { Compact } from "vue-color";
 import * as _ from "lodash";
 import { isString } from "lodash";
-import { Choice } from "../../../../src/lib/types";
 import { getPropertyByString, setPropertyByString } from "../../../lib/utils";
+import { Choice } from "../../../../../common/src/lib/utils";
 
 @Component({
     props: {

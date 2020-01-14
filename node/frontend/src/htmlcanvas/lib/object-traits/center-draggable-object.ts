@@ -1,9 +1,8 @@
 import { Draggable, DraggableObject } from "../../../../src/htmlcanvas/lib/object-traits/draggable-object";
 import BackedDrawableObject from "../../../../src/htmlcanvas/lib/backed-drawable-object";
-import { CenteredEntity, ConnectableEntity, Coord, DrawableEntity } from "../../../../src/store/document/types";
 import Connectable from "../../../../src/htmlcanvas/lib/object-traits/connectable";
 import * as TM from "transformation-matrix";
-import { CenteredEntityConcrete, isConnectableEntity } from "../../../../src/store/document/entities/concrete-entity";
+import { CenteredEntityConcrete, isConnectableEntity } from "../../../../../common/src/api/document/entities/concrete-entity";
 import { InteractionType } from "../../../../src/htmlcanvas/lib/interaction";
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
 import { moveOnto } from "../../../../src/htmlcanvas/lib/black-magic/move-onto";
@@ -11,6 +10,12 @@ import BackedConnectable from "../../../../src/htmlcanvas/lib/BackedConnectable"
 import assert from "assert";
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
 import Pipe from "../../../../src/htmlcanvas/objects/pipe";
+import {
+    CenteredEntity,
+    ConnectableEntity,
+    Coord,
+    DrawableEntity
+} from "../../../../../common/src/api/document/drawing";
 
 export default function CenterDraggableObject<
     T extends new (...args: any[]) => BackedDrawableObject<CenteredEntityConcrete>

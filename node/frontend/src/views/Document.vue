@@ -13,11 +13,11 @@ import {FileWebsocketMessageType} from "../../src/api/types";
     import DrawingCanvas from "../../src/components/editor/DrawingCanvas.vue";
     import { loadCatalog } from "../../src/api/catalog";
     import LoadingScreen from "../../src/views/LoadingScreen.vue";
-    import { Catalog } from "../../src/store/catalog/types";
     import { DocumentState } from "../../src/store/document/types";
     import { closeDocument, getDocument, openDocument } from "../../src/api/document";
     import { MainEventBus } from "../store/main-event-bus";
-    import { AccessLevel, User } from "../../../backend/src/entity/User";
+    import { AccessLevel, User } from "../../../common/src/models/User";
+    import { Catalog } from "../../../common/src/api/catalog/types";
 
     @Component({
         components: { LoadingScreen, DrawingCanvas, DrawingNavBar }

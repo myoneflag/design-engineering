@@ -1,28 +1,27 @@
 // Stores auxillary data and objects for the entire document across all levels.
 import {
     CalculatableEntityConcrete,
-    CalculationConcrete,
     DrawableEntityConcrete
-} from "../../store/document/entities/concrete-entity";
+} from "../../../../common/src/api/document/entities/concrete-entity";
 import { DocumentState } from "../../store/document/types";
 import BaseBackedObject from "./base-backed-object";
 import Vue from "vue";
 import DrawableObjectFactory from "./drawable-object-factory";
-import { EntityType } from "../../store/document/entities/types";
-import PipeEntity from "../../store/document/entities/pipe-entity";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
+import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
 import PipeCalculation, { emptyPipeCalculation } from "../../store/document/calculations/pipe-calculation";
-import RiserEntity from "../../store/document/entities/riser-entity";
+import RiserEntity from "../../../../common/src/api/document/entities/riser-entity";
 import RiserCalculation, { emptyRiserCalculations } from "../../store/document/calculations/riser-calculation";
-import BigValveEntity, { SystemNodeEntity } from "../../store/document/entities/big-valve/big-valve-entity";
+import BigValveEntity, { SystemNodeEntity } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 // tslint:disable-next-line:max-line-length
 import BigValveCalculation, {
     EmptyBigValveCalculations
 } from "../../store/document/calculations/big-valve-calculation";
-import FittingEntity from "../../store/document/entities/fitting-entity";
+import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import FittingCalculation, { emptyFittingCalculation } from "../../store/document/calculations/fitting-calculation";
-import FixtureEntity from "../../store/document/entities/fixtures/fixture-entity";
+import FixtureEntity from "../../../../common/src/api/document/entities/fixtures/fixture-entity";
 import FixtureCalculation, { emptyFixtureCalculation } from "../../store/document/calculations/fixture-calculation";
-import DirectedValveEntity from "../../store/document/entities/directed-valves/directed-valve-entity";
+import DirectedValveEntity from "../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
 // tslint:disable-next-line:max-line-length
 import DirectedValveCalculation, {
     emptyDirectedValveCalculation
@@ -31,16 +30,17 @@ import DirectedValveCalculation, {
 import SystemNodeCalculation, {
     emptySystemNodeCalculation
 } from "../../store/document/calculations/system-node-calculation";
-import LoadNodeEntity from "../../store/document/entities/load-node-entity";
+import LoadNodeEntity from "../../../../common/src/api/document/entities/load-node-entity";
 import LoadNodeCalculation from "../../store/document/calculations/load-node-calculation";
-import { cloneSimple } from "../../lib/utils";
 import Pipe from "../objects/pipe";
 import { ObjectStore } from "./object-store";
-import FlowSourceEntity from "../../store/document/entities/flow-source-entity";
+import FlowSourceEntity from "../../../../common/src/api/document/entities/flow-source-entity";
 import FlowSourceCalculation, { emptyFlowSourceCalculation } from "../../store/document/calculations/flow-source-calculation";
-import { assertUnreachable } from "../../config";
-import PlantEntity from "../../store/document/entities/plant-entity";
+import PlantEntity from "../../../../common/src/api/document/entities/plant-entity";
 import PlantCalculation, { emptyPlantCalculation } from "../../store/document/calculations/plant-calculation";
+import { assertUnreachable } from "../../../../common/src/api/config";
+import { cloneSimple } from "../../../../common/src/lib/utils";
+import { CalculationConcrete } from "../../store/document/calculations/calculation-concrete";
 
 export class GlobalStore extends ObjectStore {
     entitiesInLevel = new Map<string | null, Set<string>>();

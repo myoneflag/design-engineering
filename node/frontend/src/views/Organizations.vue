@@ -45,7 +45,7 @@
 
 <script lang="ts">
 import { getOrganizations } from "../api/organizations";
-import { Organization } from "../../../backend/src/entity/Organization";
+import { Organization } from "../../../common/src/models/Organization";
 import Vue from "vue";
 import MainNavBar from "../../src/components/MainNavBar.vue";
 import Component from "vue-class-component";

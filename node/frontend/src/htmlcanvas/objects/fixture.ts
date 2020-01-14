@@ -2,20 +2,19 @@ import BackedDrawableObject from "../../../src/htmlcanvas/lib/backed-drawable-ob
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import * as TM from "transformation-matrix";
 import { Matrix } from "transformation-matrix";
-import { Coord } from "../../../src/store/document/types";
 import { decomposeMatrix, matrixScale } from "../../../src/htmlcanvas/utils";
 import { MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
 import Connectable from "../../../src/htmlcanvas/lib/object-traits/connectable";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
 import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
-import BigValveEntity from "../../store/document/entities/big-valve/big-valve-entity";
+import BigValveEntity from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
-import { EntityType } from "../../../src/store/document/entities/types";
-import FixtureEntity from "../../../src/store/document/entities/fixtures/fixture-entity";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
+import FixtureEntity from "../../../../common/src/api/document/entities/fixtures/fixture-entity";
 import { StandardFlowSystemUids } from "../../../src/store/catalog";
 import { DEFAULT_FONT_NAME } from "../../../src/config";
-import { DrawableEntityConcrete } from "../../../src/store/document/entities/concrete-entity";
+import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
 import Flatten from "@flatten-js/core";
@@ -29,9 +28,10 @@ import {
     FIELD_HEIGHT
 } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
-import { cloneSimple } from "../../lib/utils";
 import FixtureCalculation from "../../store/document/calculations/fixture-calculation";
 import Cached from "../lib/cached";
+import { Coord } from "../../../../common/src/api/document/drawing";
+import { cloneSimple } from "../../../../common/src/lib/utils";
 
 @CalculatedObject
 @SelectableObject

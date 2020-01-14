@@ -1,4 +1,4 @@
-import {DrawingState} from '../../../src/store/document/types';
+import { DrawingState } from "../../../../common/src/api/document/drawing";
 
 
 describe('calculation-engine.ts', () => {

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
+    "target": "esnext",
+    "module": "esnext",
     "outDir": "dist",
     "sourceMap": true,
     "experimentalDecorators": true,
@@ -9,6 +9,10 @@
     "resolveJsonModule": true,
     "strictPropertyInitialization": false
   },
-  "include": ["src/**/*.ts"],
+  "baseUrl": ".",
+  "paths": {
+    "typeorm": ["./src/typeorm.d.ts"]
+  },
+  "include": ["src/**/*.ts", "../common/src/**/*.ts"],
   "exclude": ["node_modules"]
 }

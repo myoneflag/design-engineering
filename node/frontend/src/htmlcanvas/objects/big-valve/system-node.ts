@@ -1,19 +1,19 @@
 import { Interaction, InteractionType } from "../../../../src/htmlcanvas/lib/interaction";
 import DrawableObjectFactory from "../../../../src/htmlcanvas/lib/drawable-object-factory";
-import { EntityType } from "../../../../src/store/document/entities/types";
+import { EntityType } from "../../../../../common/src/api/document/entities/types";
 import { ConnectableObject } from "../../../../src/htmlcanvas/lib/object-traits/connectable";
-import { Coord, DocumentState } from "../../../../src/store/document/types";
+import { DocumentState } from "../../../../src/store/document/types";
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
 import { InvisibleNode } from "../../../../src/htmlcanvas/objects/invisible-node";
 import Flatten from "@flatten-js/core";
 import { DrawingContext } from "../../../../src/htmlcanvas/lib/types";
-import { cloneSimple, lighten } from "../../../../src/lib/utils";
-import { FlowConfiguration, SystemNodeEntity } from "../../../store/document/entities/big-valve/big-valve-entity";
+import { lighten } from "../../../../src/lib/utils";
+import { FlowConfiguration, SystemNodeEntity } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import { getDragPriority } from "../../../../src/store/document";
 import {
     ConnectableEntityConcrete,
     DrawableEntityConcrete
-} from "../../../../src/store/document/entities/concrete-entity";
+} from "../../../../../common/src/api/document/entities/concrete-entity";
 import Centered, { CenteredObjectNoParent } from "../../../../src/htmlcanvas/lib/object-traits/centered-object";
 import { CalculationContext } from "../../../../src/calculations/types";
 import { FlowNode } from "../../../../src/calculations/calculation-engine";
@@ -22,9 +22,11 @@ import { Calculated, CalculatedObject } from "../../../../src/htmlcanvas/lib/obj
 import { CalculationData } from "../../../../src/store/document/calculations/calculation-field";
 import * as TM from "transformation-matrix";
 import { Matrix } from "transformation-matrix";
-import { assertUnreachable } from "../../../../src/config";
-import PipeEntity from "../../../store/document/entities/pipe-entity";
+import PipeEntity from "../../../../../common/src/api/document/entities/pipe-entity";
 import SystemNodeCalculation from "../../../store/document/calculations/system-node-calculation";
+import { assertUnreachable } from "../../../../../common/src/api/config";
+import { Coord } from "../../../../../common/src/api/document/drawing";
+import { cloneSimple } from "../../../../../common/src/lib/utils";
 
 @CalculatedObject
 @ConnectableObject

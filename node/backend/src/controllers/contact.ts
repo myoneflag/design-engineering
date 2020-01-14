@@ -1,10 +1,10 @@
 import {AuthRequired} from "../helpers/withAuth";
 import {NextFunction, Request, Response, Router} from "express";
 import {ApiHandleError} from "../helpers/apiWrapper";
-import {allContactMessageColumns, ContactMessage} from "../entity/ContactMessage";
+import {allContactMessageColumns, ContactMessage} from "../../../common/src/models/ContactMessage";
 import * as NodeMailer from 'nodemailer';
-import {AccessLevel, User} from "../entity/User";
-import {Session} from "../entity/Session";
+import {AccessLevel, User} from "../../../common/src/models/User";
+import {Session} from "../../../common/src/models/Session";
 import {getConnection, LessThanOrEqual} from "typeorm";
 
 async function sendToSubscribers(contact: ContactMessage) {

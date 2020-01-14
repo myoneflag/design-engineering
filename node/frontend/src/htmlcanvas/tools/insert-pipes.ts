@@ -1,23 +1,19 @@
 import {
-    ConnectableEntity,
-    Coord,
-    DocumentState,
-    FlowSystemParameters,
-    NetworkType
+    DocumentState
 } from "../../../src/store/document/types";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { InteractionType } from "../../../src/htmlcanvas/lib/interaction";
 import { MainEventBus } from "../../../src/store/main-event-bus";
 import PointTool from "../../../src/htmlcanvas/tools/point-tool";
-import { EntityType } from "../../../src/store/document/entities/types";
-import FittingEntity from "../../../src/store/document/entities/fitting-entity";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
+import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import uuid from "uuid";
-import PipeEntity from "../../../src/store/document/entities/pipe-entity";
+import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
 import { getInsertCoordsAt, maxHeightOfConnection } from "../../../src/htmlcanvas/lib/utils";
 import BackedDrawableObject from "../../../src/htmlcanvas/lib/backed-drawable-object";
 import Connectable from "../../../src/htmlcanvas/lib/object-traits/connectable";
 import Flatten from "@flatten-js/core";
-import { ConnectableEntityConcrete, isConnectableEntity } from "../../../src/store/document/entities/concrete-entity";
+import { ConnectableEntityConcrete, isConnectableEntity } from "../../../../common/src/api/document/entities/concrete-entity";
 import { addValveAndSplitPipe } from "../../../src/htmlcanvas/lib/black-magic/split-pipe";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
 import { SelectMode } from "../../../src/htmlcanvas/layers/layer";
@@ -25,6 +21,12 @@ import { KeyCode } from "../../../src/htmlcanvas/utils";
 import BackedConnectable, { BaseBackedConnectable } from "../../../src/htmlcanvas/lib/BackedConnectable";
 import Vue from "vue";
 import { rebaseAll } from "../lib/black-magic/rebase-all";
+import {
+    ConnectableEntity,
+    Coord,
+    FlowSystemParameters,
+    NetworkType
+} from "../../../../common/src/api/document/drawing";
 
 export default function insertPipes(context: CanvasContext, system: FlowSystemParameters, network: NetworkType) {
     // strategy:

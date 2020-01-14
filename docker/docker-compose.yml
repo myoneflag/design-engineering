@@ -43,7 +43,7 @@ services:
             - PG_S3_BACKUP_BUCKET=h2x-db-backups
             - PG_S3_BACKUP_ACCESS_KEY=${AWS_KEY}
             - PG_S3_BACKUP_SECRET_KEY=${AWS_SECRET}
-            - PG_S3_BACKUP_HOST=h2x_db
+            - PG_S3_BACKUP_HOST=db
             - PG_S3_BACKUP_USER=postgres
             - PG_S3_BACKUP_DB=h2x
             - PG_S3_BACKUP_PASSWORD=postgres

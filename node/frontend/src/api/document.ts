@@ -1,9 +1,9 @@
-import { APIResult, DocumentWSMessage, DocumentWSMessageType } from "../../../common/src/api/types";
-import * as OT from "../../src/store/document/operation-transforms/operation-transforms";
+import { APIResult, DocumentWSMessage, DocumentWSMessageType } from "../../../common/src/api/document/types";
+import * as OT from "../../../common/src/api/document/operation-transforms";
 import axios from "axios";
-import { Document } from "../../../backend/src/entity/Document";
-import { Organization } from "../../../backend/src/entity/Organization";
-import { GeneralInfo } from "../store/document/types";
+import { Document } from "../../../common/src/models/Document";
+import { Organization } from "../../../common/src/models/Organization";
+import { GeneralInfo } from "../../../common/src/api/document/drawing";
 
 const wss = new Map<number, WebSocket>();
 

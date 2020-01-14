@@ -1,6 +1,6 @@
 import axios from "axios";
-import { APIResult } from "../../../common/src/api/types";
-import { User } from "../../../backend/src/entity/User";
+import { APIResult } from "../../../common/src/api/document/types";
+import { User } from "../../../common/src/models/User";
 
 export async function changePasswords(currentPassword: string, newPassword: string): Promise<APIResult<string>> {
     try {

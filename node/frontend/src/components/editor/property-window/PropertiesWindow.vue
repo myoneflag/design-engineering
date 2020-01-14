@@ -142,10 +142,10 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import FloorPlanProperties from "../../../../src/components/editor/property-window/FloorPlanProperties.vue";
 import RiserProperties from "./RiserProperties.vue";
-import { DocumentState, DrawableEntity } from "../../../../src/store/document/types";
+import { DocumentState} from "../../../../src/store/document/types";
 import FittingProperties from "../../../../src/components/editor/property-window/FittingProperties.vue";
 import PipeProperties from "../../../../src/components/editor/property-window/PipeProperties.vue";
-import { EntityType } from "../../../../src/store/document/entities/types";
+import { EntityType } from "../../../../../common/src/api/document/entities/types";
 import BigValveProperties from "./BigValveProperties.vue";
 import FixtureProperties from "../../../../src/components/editor/property-window/FixtureProperties.vue";
 import { MainEventBus } from "../../../../src/store/main-event-bus";
@@ -153,17 +153,18 @@ import MultiFieldBuilder from "../../../../src/components/editor/lib/MultiFieldB
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
 import { AutoConnector } from "../../../../src/htmlcanvas/lib/black-magic/auto-connect";
 import DirectedValveProperties from "../../../../src/components/editor/property-window/DirectedValveProperties.vue";
-import { Catalog } from "../../../../src/store/catalog/types";
 import Fixture from "../../../../src/htmlcanvas/objects/fixture";
 import { countPsdUnits, getPsdUnitName, PsdUnitsByFlowSystem } from "../../../../src/calculations/utils";
-import { isGermanStandard } from "../../../../src/config";
 import { StandardFlowSystemUids } from "../../../../src/store/catalog";
-import { DrawableEntityConcrete } from "../../../store/document/entities/concrete-entity";
+import { DrawableEntityConcrete } from "../../../../../common/src/api/document/entities/concrete-entity";
 import LoadNodeProperties from "./LoadNodeProperties.vue";
 import { isCalculated } from "../../../store/document/calculations";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import FlowSourceProperties from "./FlowSourceProperties.vue";
 import PlantProperties from "./PlantProperties.vue";
+import { isGermanStandard } from "../../../../../common/src/api/config";
+import { Catalog } from "../../../../../common/src/api/catalog/types";
+import { DrawableEntity } from "../../../../../common/src/api/document/drawing";
 
 @Component({
     components: {

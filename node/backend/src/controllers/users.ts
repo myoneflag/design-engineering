@@ -1,11 +1,11 @@
 import { NextFunction, Request, Response, Router } from "express";
-import { Session } from "../entity/Session";
+import { Session } from "../../../common/src/models/Session";
 import { ApiHandleError } from "../helpers/apiWrapper";
 import { AuthRequired } from "../helpers/withAuth";
-import { AccessLevel, User } from "../entity/User";
+import { AccessLevel, User } from "../../../common/src/models/User";
 import { AccessType, withOrganization, withUser } from "../helpers/withResources";
 import { registerUser } from "./login";
-import { Organization } from "../entity/Organization";
+import { Organization } from "../../../common/src/models/Organization";
 
 export class UserController {
 

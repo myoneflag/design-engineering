@@ -1,7 +1,7 @@
-import { Coord, DocumentState } from "../../../src/store/document/types";
+import { DocumentState } from "../../../src/store/document/types";
 import { MainEventBus } from "../../../src/store/main-event-bus";
 import PointTool from "../../../src/htmlcanvas/tools/point-tool";
-import { EntityType } from "../../../src/store/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import uuid from "uuid";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import BigValveEntity, {
@@ -11,12 +11,13 @@ import BigValveEntity, {
     SystemNodeEntity,
     TemperingValve,
     TmvValve
-} from "../../store/document/entities/big-valve/big-valve-entity";
+} from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import { StandardFlowSystemUids } from "../../../src/store/catalog";
 import BigValve from "../objects/big-valve/bigValve";
 import { KeyCode } from "../../../src/htmlcanvas/utils";
 import connectBigValveToSource from "../lib/black-magic/connect-big-valve-to-source";
-import { assertUnreachable } from "../../config";
+import { assertUnreachable } from "../../../../common/src/api/config";
+import { Coord } from "../../../../common/src/api/document/drawing";
 
 export default function insertBigValve(context: CanvasContext, bigValveType: BigValveType, angle: number) {
     const tmvUid = uuid();

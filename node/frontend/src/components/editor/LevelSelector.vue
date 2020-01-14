@@ -146,12 +146,14 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { DocumentState, Level } from "../../store/document/types";
+import { DocumentState} from "../../store/document/types";
 import uuid from "uuid";
 import { countPsdUnits, getPsdUnitName } from "../../calculations/utils";
-import { Catalog } from "../../store/catalog/types";
 import { lighten } from "../../lib/utils";
-import { GROUND_FLOOR_MIN_HEIGHT_M, LEVEL_HEIGHT_DIFF_M } from "../../lib/types";
+import { GROUND_FLOOR_MIN_HEIGHT_M} from "../../lib/types";
+import { Catalog } from "../../../../common/src/api/catalog/types";
+import { Level } from "../../../../common/src/api/document/drawing";
+import { LEVEL_HEIGHT_DIFF_M } from "../../../../common/src/api/config";
 
 @Component({
     props: {

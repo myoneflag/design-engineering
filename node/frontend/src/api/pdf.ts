@@ -1,6 +1,6 @@
 import axios from "axios";
-import { PaperSize } from "../../../common/src/paper-config";
-import { APIResult } from "../../../common/src/api/types";
+import { PaperSize } from "../../../common/src/api/paper-config";
+import { APIResult } from "../../../common/src/api/document/types";
 
 export interface PDFRenderResult {
     scaleName: string;

@@ -1,9 +1,9 @@
 import DrawableObject from "../../../src/htmlcanvas/lib/drawable-object";
 import * as TM from "transformation-matrix";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
-import { Coord } from "../../../src/store/document/types";
 import Layer from "../../../src/htmlcanvas/layers/layer";
 import Flatten from "@flatten-js/core";
+import { Coord } from "../../../../common/src/api/document/drawing";
 
 export default class SelectBox extends DrawableObject {
     pointA: Coord;

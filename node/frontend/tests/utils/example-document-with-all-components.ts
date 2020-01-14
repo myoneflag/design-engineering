@@ -1,10 +1,10 @@
 import {CalculationFilter, DocumentState} from '../../src/store/document/types';
-import {SupportedPsdStandards} from '../../src/config';
-import {EntityType} from '../../src/store/document/entities/types';
-import {OPERATION_NAMES} from '../../src/store/document/operation-transforms/operation-transforms';
+import {EntityType} from '../../../common/src/api/document/entities/types';
+import {OPERATION_NAMES} from '../../../common/src/api/document/operation-transforms';
 import {ViewPort} from '../../src/htmlcanvas/viewport';
 import * as TM from 'transformation-matrix';
-import {ValveType} from '../../src/store/document/entities/directed-valves/valve-types';
+import {ValveType} from '../../../common/src/api/document/entities/directed-valves/valve-types';
+import { SupportedPsdStandards } from "../../../common/src/api/config";
 
 export function createExampleCompleteDocument(): DocumentState {
     return {

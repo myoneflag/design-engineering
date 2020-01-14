@@ -54,8 +54,8 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { DocumentState } from "../../../src/store/document/types";
 import SettingsFieldBuilder from "../../../src/components/editor/lib/SettingsFieldBuilder.vue";
-import { PIPE_SIZING_METHODS, RING_MAIN_CALCULATION_METHODS, getPsdMethods } from "../../../src/config";
-import { Catalog, FixtureSpec } from "../../../src/store/catalog/types";
+import { getPsdMethods, PIPE_SIZING_METHODS, RING_MAIN_CALCULATION_METHODS } from "../../../../common/src/api/config";
+import { Catalog, FixtureSpec } from "../../../../common/src/api/catalog/types";
 
 @Component({
     components: { SettingsFieldBuilder },

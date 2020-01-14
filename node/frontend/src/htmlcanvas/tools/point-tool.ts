@@ -1,4 +1,3 @@
-import { Coord } from "../../../src/store/document/types";
 import { POINT_TOOL, ToolHandler } from "../../../src/htmlcanvas/lib/tool";
 import { UNHANDLED } from "../../../src/htmlcanvas/types";
 import { ViewPort } from "../../../src/htmlcanvas/viewport";
@@ -8,6 +7,7 @@ import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import { KeyCode, keyCode2Image } from "../../../src/htmlcanvas/utils";
 import { DEFAULT_FONT_NAME } from "../../../src/config";
+import { Coord } from "../../../../common/src/api/document/drawing";
 
 export default class PointTool implements ToolHandler {
     onPointChosen: (worldCoord: Coord, event: MouseEvent) => void;

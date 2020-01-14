@@ -39,7 +39,7 @@ import Component from "vue-class-component";
 import { Route } from "vue-router";
 import MainNavBar from "../components/MainNavBar.vue";
 import { getOrganization, updateOrganization } from "../api/organizations";
-import { Organization as IOrganization } from "../../../backend/src/entity/Organization";
+import { Organization as IOrganization } from "../../../common/src/models/Organization";
 
 @Component({
     components: { MainNavBar },

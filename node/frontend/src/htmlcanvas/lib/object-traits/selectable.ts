@@ -1,10 +1,10 @@
-import { Coord } from "../../../../src/store/document/types";
 import DrawableObject from "../../../../src/htmlcanvas/lib/drawable-object";
 import { MouseMoveResult, UNHANDLED } from "../../../../src/htmlcanvas/types";
 import { ViewPort } from "../../../../src/htmlcanvas/viewport";
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
 import BackedDrawableObject from "../../../../src/htmlcanvas/lib/backed-drawable-object";
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
+import { Coord } from "../../../../../common/src/api/document/drawing";
 
 export interface Selectable {
     inBounds(objectCoord: Coord, objectRadius?: number): boolean;

@@ -1,7 +1,7 @@
-import { APIResult } from "../../../common/src/api/types";
-import { Document } from "../../../backend/src/entity/Document";
+import { APIResult } from "../../../common/src/api/document/types";
+import { Document } from "../../../common/src/models/Document";
 import axios from "axios";
-import { ErrorReport, ErrorStatus } from "../../../backend/src/entity/Error";
+import { ErrorReport, ErrorStatus } from "../../../common/src/models/Error";
 import { CreateErrorRequest } from "../../../backend/src/models/Error";
 
 export async function getErrorReports(

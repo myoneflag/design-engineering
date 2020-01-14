@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response, Router } from "express";
-import { AccessEvents } from "../entity/AccessEvents";
-import { Organization } from "../entity/Organization";
-import { Session } from "../entity/Session";
-import { AccessLevel, User } from "../entity/User";
+import { AccessEvents } from "../../../common/src/models/AccessEvents";
+import { Organization } from "../../../common/src/models/Organization";
+import { Session } from "../../../common/src/models/Session";
+import { AccessLevel, User } from "../../../common/src/models/User";
 import { ApiHandleError } from "../helpers/apiWrapper";
 import { AuthRequired } from "../helpers/withAuth";
 import { AccessType, withOrganization, withUser } from "../helpers/withResources";

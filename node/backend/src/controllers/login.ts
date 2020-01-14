@@ -1,13 +1,13 @@
 import * as bcrypt from "bcrypt";
 import { NextFunction, Request, Response, Router } from "express";
 import uuid from "uuid";
-import { AccessEvents, LoginEventType } from "../entity/AccessEvents";
-import { Session } from "../entity/Session";
-import { AccessLevel, User } from "../entity/User";
+import { AccessEvents, LoginEventType } from "../../../common/src/models/AccessEvents";
+import { Session } from "../../../common/src/models/Session";
+import { AccessLevel, User } from "../../../common/src/models/User";
 import { ApiHandleError } from "../helpers/apiWrapper";
 import { AuthRequired } from "../helpers/withAuth";
 
-export async function registerUser(username: string, name: string, email: string, subscribed: boolean, password: string, access: AccessLevel): Promise<User> {
+export async function registerUser(username: string, name: string, email: string | null, subscribed: boolean, password: string, access: AccessLevel): Promise<User> {
     const login = User.create();
     login.username = username;
     login.name = name;
@@ -133,6 +133,10 @@ export class LoginController {
 
         const loginInternal = await session.user;
         const login = await User.findOne({where: {username: loginInternal.username}, select: ['passwordHash', 'username']});
+
+        if (!login) {
+            throw new Error('user not found');
+        }
 
         const result = await bcrypt.compare(currentPassword, login.passwordHash);
 

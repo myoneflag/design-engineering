@@ -1,9 +1,9 @@
 import { FieldCategory, CalculationField, Units } from "../../../../src/store/document/calculations/calculation-field";
 import { Calculation, PsdCalculation } from "../../../../src/store/document/calculations/types";
-import { isGermanStandard } from "../../../../src/config";
-import { DrawingState } from "../../../../src/store/document/types";
-import RiserEntity from "../entities/riser-entity";
-import FlowSourceEntity from "../entities/flow-source-entity";
+import RiserEntity from "../../../../../common/src/api/document/entities/riser-entity";
+import FlowSourceEntity from "../../../../../common/src/api/document/entities/flow-source-entity";
+import { isGermanStandard } from "../../../../../common/src/api/config";
+import { DrawingState } from "../../../../../common/src/api/document/drawing";
 
 export default interface FlowSourceCalculation extends Calculation {
     pressureKPA: number | null;

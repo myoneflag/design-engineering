@@ -1,7 +1,7 @@
 import { CalculationField, FieldCategory, Units } from "../../../../src/store/document/calculations/calculation-field";
-import DirectedValveEntity from "../../../../src/store/document/entities/directed-valves/directed-valve-entity";
+import DirectedValveEntity from "../../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
 import { Calculation } from "../../../../src/store/document/calculations/types";
-import { ValveType } from "../entities/directed-valves/valve-types";
+import { ValveType } from "../../../../../common/src/api/document/entities/directed-valves/valve-types";
 
 export default interface DirectedValveCalculation extends Calculation {
     flowRateLS: number | null;

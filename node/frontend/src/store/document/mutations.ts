@@ -1,17 +1,18 @@
 import { MutationTree } from "vuex";
-import { blankDiffFilter, DiffFilter, DocumentState, DrawingState, initialDocumentState, Level } from "./types";
-import * as OT from "./operation-transforms/operation-transforms";
-import { OPERATION_NAMES } from "./operation-transforms/operation-transforms";
+import { blankDiffFilter, DiffFilter, DocumentState, initialDocumentState} from "./types";
+import * as OT from "../../../../common/src/api/document/operation-transforms";
+import { OPERATION_NAMES } from "../../../../common/src/api/document/operation-transforms";
 import { MainEventBus } from "../../../src/store/main-event-bus";
 import { applyDiffVue, applyOtOnState } from "../../../src/store/document/operation-transforms/state-ot-apply";
-import { cloneSimple } from "../../../src/lib/utils";
-import { DrawableEntityConcrete } from "../../../src/store/document/entities/concrete-entity";
-import { EntityType } from "../../../src/store/document/entities/types";
+import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import stringify from "json-stable-stringify";
 import Vue from "vue";
-import PipeEntity from "./entities/pipe-entity";
-import { diffState } from "./operation-transforms/state-differ";
+import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
+import { diffState } from "../../../../common/src/api/document/state-differ";
 import * as _ from "lodash";
+import { DrawingState, Level } from "../../../../common/src/api/document/drawing";
+import { cloneSimple } from "../../../../common/src/lib/utils";
 
 function logEntityMutation(
     state: DocumentState,
