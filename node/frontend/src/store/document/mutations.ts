@@ -3,7 +3,7 @@ import { blankDiffFilter, DiffFilter, DocumentState, DrawingState, initialDocume
 import * as OT from "./operation-transforms/operation-transforms";
 import { OPERATION_NAMES } from "./operation-transforms/operation-transforms";
 import { MainEventBus } from "../../../src/store/main-event-bus";
-import { applyOtOnState } from "../../../src/store/document/operation-transforms/state-ot-apply";
+import { applyDiffVue, applyOtOnState } from "../../../src/store/document/operation-transforms/state-ot-apply";
 import { cloneSimple } from "../../../src/lib/utils";
 import { DrawableEntityConcrete } from "../../../src/store/document/entities/concrete-entity";
 import { EntityType } from "../../../src/store/document/entities/types";
@@ -61,7 +61,7 @@ export const mutations: MutationTree<DocumentState> = {
      * @param state
      * @param operation
      */
-    applyOperation(state, operation: OT.OperationTransformConcrete) {
+    applyRemoteOperation(state, operation: OT.OperationTransformConcrete) {
         state.history.push(operation);
 
         let newData = false;
@@ -98,6 +98,10 @@ export const mutations: MutationTree<DocumentState> = {
         const ogFilter = cloneSimple(state.diffFilter);
 
         if (operation.type === OT.OPERATION_NAMES.COMMITTED_OPERATION) {
+            if (state.stagedCommits.length) {
+                state.undoStack.splice(0);
+                state.undoIndex = 0;
+            }
             while (state.stagedCommits.length) {
                 const toApply = state.stagedCommits[0];
                 let handled: boolean = true;
@@ -135,6 +139,17 @@ export const mutations: MutationTree<DocumentState> = {
             MainEventBus.$emit("committed", true);
         } // else, the data is already represented on screen
     },
+
+    applyDiff(state, diff: any) {
+        const prevDrawing = cloneSimple(state.drawing);
+        applyDiffVue(state.drawing, diff);
+        const changes = marshalChanges(prevDrawing, state.drawing, diff, true);
+        proxyUpFromStateDiff(state, diff);
+        changes.forEach(([e, v]) => {
+            MainEventBus.$emit(e, v);
+        });
+    },
+
 
     revert(state, redraw) {
         // TODO: emit a reset-level for every changed level. At the moment, we are just resetting current visible
@@ -369,7 +384,7 @@ function proxyUpFromStateDiff(state: DocumentState, diff: any) {
 }
 
 // Call this before destroying the current state to figure out what we need to alert changes for.
-function marshalChanges(from: DrawingState, to: DrawingState, diff: any): Array<[string, any]> {
+function marshalChanges(from: DrawingState, to: DrawingState, diff: any, fuzzy: boolean = false): Array<[string, any]> {
     const res: Array<[string, any]> = [];
     if (diff.shared && from.shared) {
         Object.keys(diff.shared).forEach((uid) => {
@@ -380,7 +395,9 @@ function marshalChanges(from: DrawingState, to: DrawingState, diff: any): Array<
             } else if (to.shared.hasOwnProperty(uid)) {
                 res.push(["add-entity", { entity: to.shared[uid], levelUid: null }]);
             } else {
-                throw new Error("invalid diff state - diffing something that no sides have");
+                if (!fuzzy) {
+                    throw new Error("invalid diff state - diffing something that no sides have");
+                }
             }
         });
     }
@@ -401,7 +418,9 @@ function marshalChanges(from: DrawingState, to: DrawingState, diff: any): Array<
                         } else if (to.levels[lvlUid].entities.hasOwnProperty(uid)) {
                             res.push(["add-entity", { entity: to.levels[lvlUid].entities[uid], levelUid: lvlUid }]);
                         } else {
-                            throw new Error("invalid diff state - diffing something that no sides have");
+                            if (!fuzzy) {
+                                throw new Error("invalid diff state - diffing something that no sides have");
+                            }
                         }
                     });
                 }
@@ -410,7 +429,9 @@ function marshalChanges(from: DrawingState, to: DrawingState, diff: any): Array<
             } else if (to.levels.hasOwnProperty(lvlUid)) {
                 res.push(["add-level", to.levels[lvlUid]]);
             } else {
-                throw new Error("invalid diff state - diffing a level that doesn't exist on any");
+                if (!fuzzy) {
+                    throw new Error("invalid diff state - diffing a level that doesn't exist on any");
+                }
             }
         });
     }

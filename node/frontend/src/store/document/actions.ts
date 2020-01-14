@@ -10,10 +10,11 @@ import { cloneSimple } from "../../../src/lib/utils";
 import { submitOperation, updateDocument } from "../../../src/api/document";
 import Vue from "vue";
 import { MainEventBus } from "../main-event-bus";
+import { assertUnreachable } from "../../config";
 
 export const actions: ActionTree<DocumentState, RootState> = {
     applyRemoteOperation({ commit, state }, op) {
-        commit("applyOperation", op);
+        commit("applyRemoteOperation", op);
     },
 
     addEntity({ commit, state }, entity) {
@@ -45,7 +46,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
     },
 
     // Call this action to commit the current operation transforms. TODO: make that atomic.
-    commit({ commit, state }) {
+    commit({ commit, state }, logUndo: boolean = true) {
         if (state.uiState.viewOnly) {
             commit('revert');
             return;
@@ -73,6 +74,11 @@ export const actions: ActionTree<DocumentState, RootState> = {
         }
 
         if (diff.length) {
+            if (logUndo) {
+                state.undoStack.splice(state.undoIndex);
+                state.undoStack.push(cloneSimple(diff));
+                state.undoIndex ++;
+            }
             diff.push({ type: OPERATION_NAMES.COMMITTED_OPERATION, id: -1 });
         }
 
@@ -92,6 +98,49 @@ export const actions: ActionTree<DocumentState, RootState> = {
         });
 
         MainEventBus.$emit("committed", true);
+    },
+
+    undo(args) {
+        const {commit, state, dispatch} = args;
+        if (state.undoIndex) {
+            state.undoIndex --;
+            for (let i = state.undoStack[state.undoIndex].length - 1; i >= 0; i--) {
+                const op = state.undoStack[state.undoIndex][i];
+                switch (op.type) {
+                    case OPERATION_NAMES.DIFF_OPERATION:
+                        commit('applyDiff', op.inverse);
+                        break;
+                    case OPERATION_NAMES.COMMITTED_OPERATION:
+                        throw new Error('Don\'t know how to handle this');
+                    default:
+                        assertUnreachable(op);
+                }
+            }
+        }
+
+        dispatch('commit', false);
+    },
+
+    redo(args) {
+        const {commit, state, dispatch} = args;
+        if (state.undoIndex < state.undoStack.length) {
+            // tslint:disable-next-line:prefer-for-of
+            for (let i = 0; i < state.undoStack[state.undoIndex].length; i ++) {
+                const op = state.undoStack[state.undoIndex][i];
+                switch (op.type) {
+                    case OPERATION_NAMES.DIFF_OPERATION:
+                        commit('applyDiff', op.diff);
+                        break;
+                    case OPERATION_NAMES.COMMITTED_OPERATION:
+                        throw new Error('Don\'t know how to handle this');
+                    default:
+                        assertUnreachable(op);
+                }
+            }
+            state.undoIndex ++;
+        }
+
+        dispatch('commit', false);
     },
 
     setId({ commit, state }, payload) {

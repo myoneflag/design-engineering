@@ -5,6 +5,28 @@ import { GridLineMode } from "../../store/document/types";
             <b-row>
                 <b-col>
                     <b-button-group>
+                        <b-button
+                                variant="outline-dark"
+                                v-b-tooltip.hover="{ title: 'Undo' }"
+                                class="toolBtn"
+                                :disabled="document.undoIndex <= 0"
+                                @click="onUndo"
+                        >
+                            <v-icon name="undo" scale="1.5" />
+                        </b-button>
+                        <b-button
+                                variant="outline-dark"
+                                v-b-tooltip.hover="{ title: 'Redo' }"
+                                class="toolBtn"
+                                :disabled="document.undoIndex >= document.undoStack.length"
+                                @click="onRedo"
+                        >
+                            <v-icon name="redo" scale="1.5" />
+                        </b-button>
+                    </b-button-group>
+                </b-col>
+                <b-col>
+                    <b-button-group>
                         <template v-for="tool in TOOLBAR_BUTTONS" v-text="tool.tooltip">
                             <b-button
                                 class="toolBtn"
@@ -63,6 +85,8 @@ import { GridLineMode } from "../../store/document/types";
         onToolClick: Function,
         onFitToViewClick: Function,
         onChange: Function,
+        onUndo: Function,
+        onRedo: Function,
     }
 })
 export default class Toolbar extends Vue {
@@ -98,8 +122,6 @@ export default class Toolbar extends Vue {
     get document(): DocumentState {
         return this.$store.getters['document/document'];
     }
-
-
 }
 </script>
 

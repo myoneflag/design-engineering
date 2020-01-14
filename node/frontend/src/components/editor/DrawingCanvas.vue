@@ -69,6 +69,8 @@
                 :on-tool-click="changeTool"
                 :on-fit-to-view-click="fitToView"
                 :on-change="scheduleDraw"
+                :on-undo="onUndo"
+                :on-redo="onRedo"
                 v-if="initialized"
             ></Toolbar>
 
@@ -100,7 +102,13 @@ import PropertiesWindow from "../../../src/components/editor/property-window/Pro
 import { DrawingMode, MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
 import BackgroundLayer from "../../../src/htmlcanvas/layers/background-layer";
 import * as TM from "transformation-matrix";
-import { cooperativeYield, decomposeMatrix, InterruptedError, matrixScale } from "../../../src/htmlcanvas/utils";
+import {
+    cooperativeYield,
+    decomposeMatrix,
+    InterruptedError,
+    KeyCode,
+    matrixScale
+} from "../../../src/htmlcanvas/utils";
 import Toolbar from "../../../src/components/editor/Toolbar.vue";
 import LoadingScreen from "../../../src/views/LoadingScreen.vue";
 import { MainEventBus } from "../../../src/store/main-event-bus";
@@ -488,6 +496,8 @@ export default class DrawingCanvas extends Vue {
         MainEventBus.$on("update-pipe-endpoints", this.onPipeEndpoints);
         MainEventBus.$on("update-entity", this.onUpdateEntity);
 
+        MainEventBus.$on('keydown', this.onKeyDown);
+
         this.$watch(
             () => this.document.uiState.drawingMode,
             (newVal) => {
@@ -652,6 +662,34 @@ export default class DrawingCanvas extends Vue {
     onCurrentLevelChanged() {
         this.resetVisibleLevel();
         this.scheduleDraw();
+    }
+
+    onKeyDown(event: KeyboardEvent) {
+        if (event.keyCode === KeyCode.Z) {
+            if (event.ctrlKey) {
+                if (event.shiftKey) {
+                    this.onRedo();
+                } else {
+                    this.onUndo();
+                }
+            }
+        } else if (event.keyCode === KeyCode.Y) {
+            if (event.ctrlKey) {
+                this.onRedo();
+            }
+        }
+    }
+
+    onUndo() {
+        if (this.toolHandler === null) {
+            this.$store.dispatch('document/undo');
+        }
+    }
+
+    onRedo() {
+        if (this.toolHandler === null) {
+            this.$store.dispatch('document/redo');
+        }
     }
 
     onRevertLevel(levelUid: string) {
