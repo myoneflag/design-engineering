@@ -117,7 +117,7 @@ export default class Fixtures extends Vue {
     }
 
     save() {
-        this.$store.dispatch("document/commit").then(() => {
+        this.$store.dispatch("document/commit", false).then(() => {
             this.$bvToast.toast("Saved successfully!", { variant: "success", title: "Success" });
         });
     }

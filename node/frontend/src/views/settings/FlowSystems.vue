@@ -138,7 +138,7 @@ export default class FlowSystems extends Vue {
     }
 
     save() {
-        this.$store.dispatch("document/commit").then(() => {
+        this.$store.dispatch("document/commit", false).then(() => {
             (this as any).$bvToast.toast("Saved successfully!", { variant: "success", title: "Success" });
         });
     }

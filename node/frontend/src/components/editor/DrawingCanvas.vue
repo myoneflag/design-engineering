@@ -537,6 +537,7 @@ export default class DrawingCanvas extends Vue {
         MainEventBus.$off("revert-level", this.onRevertLevel);
         MainEventBus.$off("update-pipe-endpoints", this.onPipeEndpoints);
         MainEventBus.$off("update-entity", this.onUpdateEntity);
+        MainEventBus.$off('keydown', this.onKeyDown);
         this.document.uiState.lastCalculationId = -1;
     }
 
