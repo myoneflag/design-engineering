@@ -220,8 +220,8 @@ export function ConnectableObject<
             return result;
         }
 
-        validate(context: CanvasContext): APIResult<void> {
-            const pres = super.validate(context);
+        validate(context: CanvasContext, tryToFix: boolean): APIResult<void> {
+            const pres = super.validate(context, tryToFix);
             if (pres && !pres.success) {
                 return pres;
             }

@@ -496,7 +496,6 @@ export default class DrawingCanvas extends Vue {
         MainEventBus.$on('keydown', this.onKeyDown);
 
         MainEventBus.$on('validate-and-commit', this.onValidateAndCommit);
-
         MainEventBus.$on('drawing-loaded', this.onDrawingLoaded);
 
         this.$watch(
@@ -514,6 +513,12 @@ export default class DrawingCanvas extends Vue {
 
         this.allLayers.push(this.backgroundLayer, this.hydraulicsLayer, this.calculationLayer);
         this.processDocumentInitial();
+
+
+        if (this.document.uiState.loaded) {
+            this.onDrawingLoaded();
+        }
+
 
         // set view on groundiest floor
         this.selectGroundFloor();
@@ -545,7 +550,7 @@ export default class DrawingCanvas extends Vue {
     }
 
     onDrawingLoaded() {
-        this.onValidateAndCommit(false);
+        this.onValidateAndCommit(false, true);
     }
 
     onChangeFromLayer(uids: string[]) {
@@ -837,10 +842,10 @@ export default class DrawingCanvas extends Vue {
         }
     }
 
-    onValidateAndCommit(logUndo: boolean) {
+    onValidateAndCommit(logUndo: boolean, tryToFix: boolean = false) {
         rebaseAll(this);
         this.murderOrphans();
-        const res = this.validate();
+        const res = this.validate(tryToFix);
         if (res.success) {
             this.$store.dispatch('document/commit', logUndo);
         } else {
@@ -851,6 +856,7 @@ export default class DrawingCanvas extends Vue {
     }
 
     murderOrphans() {
+        console.log(this.globalStore.size);
         for (const o of this.globalStore.values()) {
             switch (o.entity.type) {
                 case EntityType.BACKGROUND_IMAGE:
@@ -872,6 +878,7 @@ export default class DrawingCanvas extends Vue {
 
                     if (!ok) {
                         this.deleteEntity(o);
+                    } else {
                     }
                     break;
                 case EntityType.RISER:
@@ -895,9 +902,9 @@ export default class DrawingCanvas extends Vue {
         }
     }
 
-    validate(): APIResult<void> {
+    validate(tryToFix: boolean): APIResult<void> {
         for (const o of this.globalStore.values()) {
-            const res = o.validate(this);
+            const res = o.validate(this, tryToFix);
             if (!res.success) {
                 return res;
             }

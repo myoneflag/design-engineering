@@ -180,8 +180,8 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         // nada
     }
 
-    validate(context: CanvasContext): APIResult<void> {
-        const pres = super.validate(context);
+    validate(context: CanvasContext, tryToFix: boolean): APIResult<void> {
+        const pres = super.validate(context, tryToFix);
         if (pres && !pres.success) {
             return pres;
         }
@@ -191,18 +191,27 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
             // check the sanity of heights
             if (this.entity.bottomHeightM !== null) {
                 if (this.entity.bottomHeightM > this.minPipeHeight(context)) {
-                    return {
-                        success: false,
-                        message: "Riser bottom can't be higher than our lowest pipe"
-                    };
+                    if (tryToFix) {
+                        this.entity.bottomHeightM = this.minPipeHeight(context);
+                    } else {
+
+                        return {
+                            success: false,
+                            message: "Riser bottom can't be higher than our lowest pipe (" + this.entity.uid + ", " + this.entity.bottomHeightM + ' ' + this.entity.topHeightM + ", " + this.minPipeHeight(context) + ")",
+                        };
+                    }
                 }
             }
             if (this.entity.topHeightM !== null) {
                 if (this.entity.topHeightM < this.maxPipeHeight(context)) {
-                    return {
-                        success: false,
-                        message: "Riser top can't be lower than our highest pipe"
-                    };
+                    if (tryToFix) {
+                        this.entity.topHeightM = this.maxPipeHeight(context);
+                    } else {
+                        return {
+                            success: false,
+                            message: "Riser top can't be lower than our highest pipe. (" + this.entity.uid + ", " + this.entity.topHeightM + ' ' + this.entity.topHeightM + ", " + this.maxPipeHeight(context) + ")",
+                        };
+                    }
                 }
             }
         }

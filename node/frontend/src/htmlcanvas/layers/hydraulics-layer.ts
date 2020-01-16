@@ -49,6 +49,7 @@ export default class HydraulicsLayer extends LayerImplementation {
             const risers = Object.values(doc.drawing.shared);
             risers.forEach((r) => {
                 if (levelIncludesRiser(doc.drawing.levels[doc.uiState.levelUid!], r, sortedLevels)) {
+                    console.log('including riser ' + r.uid);
                     entities.push([r, null]);
                 }
             });

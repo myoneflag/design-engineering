@@ -166,7 +166,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
         /**/
     }
 
-    validate(context: CanvasContext): APIResult<void> {
+    validate(context: CanvasContext, tryToFix: boolean): APIResult<void> {
         return {success: true, data: undefined};
     }
 }
