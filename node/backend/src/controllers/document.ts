@@ -1,16 +1,18 @@
-import {NextFunction, Request, Response, Router} from "express";
-import * as _ from 'lodash';
-import {DocumentWSMessage, DocumentWSMessageType} from "../../../common/src/api/document/types";
-import {initialCatalog} from "../../../common/src/api/catalog/initial-catalog/initial-catalog";
-import {OperationTransformConcrete} from "../../../common/src/api/document/operation-transforms";
-import {initialDocumentState} from "../../../frontend/src/store/document/types";
-import {Document} from "../../../common/src/models/Document";
-import {Operation} from "../../../common/src/models/Operation";
-import {Session} from "../../../common/src/models/Session";
-import {AccessLevel, User} from "../../../common/src/models/User";
-import {ApiHandleError} from "../helpers/apiWrapper";
-import {AuthRequired, withAuth} from "../helpers/withAuth";
-import {AccessType, withDocument, withOrganization} from "../helpers/withResources";
+import { NextFunction, Request, Response, Router } from "express";
+import { DocumentWSMessage, DocumentWSMessageType } from "../../../common/src/api/document/types";
+import { OPERATION_NAMES, OperationTransformConcrete } from "../../../common/src/api/document/operation-transforms";
+import { Document } from "../../../common/src/models/Document";
+import { Operation } from "../../../common/src/models/Operation";
+import { Session } from "../../../common/src/models/Session";
+import { AccessLevel, User } from "../../../common/src/models/User";
+import { ApiHandleError } from "../helpers/apiWrapper";
+import { AuthRequired, withAuth } from "../helpers/withAuth";
+import { AccessType, withDocument, withOrganization } from "../helpers/withResources";
+import { initialDrawing } from "../../../common/src/api/document/drawing";
+import { cloneSimple } from "../../../common/src/lib/utils";
+import { applyDiffNative } from "../../../common/src/api/document/state-ot-apply";
+import { diffState } from "../../../common/src/api/document/state-differ";
+import { CURRENT_VERSION } from "../../../common/src/api/upgrade";
 
 export class DocumentController {
     @ApiHandleError()
@@ -73,7 +75,8 @@ export class DocumentController {
             doc.organization = Promise.resolve(org1);
             doc.createdBy = user;
             doc.createdOn = new Date();
-            doc.metadata = initialDocumentState.drawing.metadata.generalInfo;
+            doc.metadata = cloneSimple(initialDrawing.metadata.generalInfo);
+            doc.version = CURRENT_VERSION;
 
             await doc.save();
 
@@ -215,10 +218,31 @@ async function ensureDocumentLoaded(id: number) {
             .orderBy('operation.orderIndex', 'ASC')
             .getMany();
 
+        // form document to get snapshot
+        let lastOpId = 0;
+        const drawing = cloneSimple(initialDrawing);
+        for (const op of operations) {
+            if (op.operation.type === OPERATION_NAMES.DIFF_OPERATION) {
+                applyDiffNative(drawing, op.operation.diff);
+            }
+            lastOpId = op.orderIndex;
+        }
 
-        operations.forEach((o) => {
-            operationQueue.push(o.operation);
-        });
+        const doc = (await Document.findByIds([id]))[0];
+        doc.metadata = drawing.metadata.generalInfo;
+        await doc.save();
+
+        const wholeThing = diffState(initialDrawing, drawing, undefined);
+
+        if (operations.length) {
+            if (wholeThing.length) {
+                wholeThing[0].id = lastOpId - 1;
+                operationQueue.push(wholeThing[0]);
+            }
+            operationQueue.push({type: OPERATION_NAMES.COMMITTED_OPERATION, id: lastOpId});
+        }
+
+
         operationQueues.set(id, [operationQueue]);
         isLoading.delete(id);
     }

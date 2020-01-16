@@ -1,7 +1,7 @@
 module.exports = {
    "type": "postgres",
-   "host":  process.env.H2X_MODE === "production" ? "db" : "localhost",
-   "port": 5432,
+    "host":  process.env.H2X_DATABASE || (process.env.H2X_MODE === "production" ? "db" : "localhost"),
+    "port": 5432,
    "username": "postgres",
    "password": "postgres",
    "database": "h2x",

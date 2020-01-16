@@ -11,7 +11,7 @@
     "cover": "nyc npm run test:unit"
   },
   "dependencies": {
-    "@flatten-js/core": "^1.0.17",
+    "@flatten-js/core": "1.0.18",
     "@types/assert": "^1.4.3",
     "@types/deep-equal": "^1.0.1",
     "@types/json-stable-stringify": "^1.0.32",

@@ -7,6 +7,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "resolveJsonModule": true,
+    "moduleResolution": "node",
     "strictPropertyInitialization": false
   },
   "baseUrl": ".",
