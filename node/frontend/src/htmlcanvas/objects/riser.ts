@@ -1,7 +1,7 @@
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import RiserEntity from "../../../../common/src/api/document/entities/riser-entity";
 import * as TM from "transformation-matrix";
-import { DocumentState} from "../../../src/store/document/types";
+import { DocumentState } from "../../../src/store/document/types";
 import { matrixScale } from "../../../src/htmlcanvas/utils";
 import { lighten } from "../../../src/lib/utils";
 import Connectable, { ConnectableObject } from "../../../src/htmlcanvas/lib/object-traits/connectable";
@@ -14,18 +14,19 @@ import { getDragPriority } from "../../../src/store/document";
 import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
 import { CenteredObjectNoParent } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
 import { CalculationContext } from "../../../src/calculations/types";
-import { FlowNode, SELF_CONNECTION } from "../../../src/calculations/calculation-engine";
+import { FlowNode } from "../../../src/calculations/calculation-engine";
 import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
 import CanvasContext from "../lib/canvas-context";
-import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
-import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
+import { DrawableEntityConcrete, EdgeLikeEntity } from "../../../../common/src/api/document/entities/concrete-entity";
 import RiserCalculation from "../../store/document/calculations/riser-calculation";
 import Pipe from "./pipe";
 import { getFluidDensityOfSystem, head2kpa } from "../../calculations/pressure-drops";
-import { Coord, FlowSystemParameters, NetworkType } from "../../../../common/src/api/document/drawing";
-import { cloneSimple } from "../../../../common/src/lib/utils";
+import { Coord, FlowSystemParameters } from "../../../../common/src/api/document/drawing";
+import { getEdgeLikeHeightAboveGroundM } from "../lib/utils";
+import { GlobalStore } from "../lib/global-store";
+import { APIResult } from "../../../../common/src/api/document/types";
 
 @CalculatedObject
 @SelectableObject
@@ -175,6 +176,76 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         // nada
     }
 
+    validate(context: CanvasContext): APIResult<void> {
+        const pres = super.validate(context);
+        if (pres && !pres.success) {
+            return pres;
+        }
+
+        if (this.objectStore instanceof GlobalStore) {
+
+            // check the sanity of heights
+            if (this.entity.bottomHeightM !== null) {
+                if (this.entity.bottomHeightM > this.minPipeHeight(context)) {
+                    return {
+                        success: false,
+                        message: "Riser bottom can't be higher than our lowest pipe"
+                    };
+                }
+            }
+            if (this.entity.topHeightM !== null) {
+                if (this.entity.topHeightM < this.maxPipeHeight(context)) {
+                    return {
+                        success: false,
+                        message: "Riser top can't be lower than our highest pipe"
+                    };
+                }
+            }
+        }
+        return {
+            success: true,
+            data: undefined,
+        };
+    }
+
+    minPipeHeight(context: CanvasContext): number {
+        if (!(this.objectStore instanceof GlobalStore)) {
+            throw new Error("minPipeHeight only works in the global context");
+        }
+        const conns = this.objectStore.getConnections(this.uid);
+        if (conns.length === 0) {
+            return Infinity;
+        }
+        const gs = this.objectStore as GlobalStore;
+        return Math.min(...conns.map((uid) =>
+            getEdgeLikeHeightAboveGroundM(gs.get(uid)!.entity as EdgeLikeEntity, {
+                doc: context.document,
+                catalog: context.effectiveCatalog,
+                globalStore: context.globalStore,
+                drawing: context.document.drawing,
+            })
+        ));
+    }
+
+    maxPipeHeight(context: CanvasContext): number {
+        if (!(this.objectStore instanceof GlobalStore)) {
+            throw new Error("maxPipeHeight only works in the global context");
+        }
+        const conns = this.objectStore.getConnections(this.uid);
+        if (conns.length === 0) {
+            return -Infinity;
+        }
+        const gs = this.objectStore as GlobalStore;
+        return Math.max(...conns.map((uid) =>
+            getEdgeLikeHeightAboveGroundM(gs.get(uid)!.entity as EdgeLikeEntity, {
+                doc: context.document,
+                catalog: context.effectiveCatalog,
+                globalStore: context.globalStore,
+                drawing: context.document.drawing,
+            })
+        ));
+    }
+
     getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[] {
         const tower = this.getCalculationTower(context);
         // Insert a flow source into the group somewhere to simulate the riser.
@@ -187,7 +258,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         // explicitly create this to help with refactors
         const res: RiserCalculation = {
             heights: {},
-            warning: null,
+            warning: null
         };
 
         const tower = this.getCalculationTower(context);
@@ -204,15 +275,15 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                 flowRateLS: null,
                 heightAboveGround: null,
                 psdUnits: null,
-                pressureKPA: null,
+                pressureKPA: null
             };
 
             // iterate pipe if need be. Note, we don't want to go over.
             while (
                 topOfPipe + 1 < tower.length
                 && tower[topOfPipe][0].calculationHeightM! <= levels[lvlUid].floorHeightM
-            ) {
-                topOfPipe ++;
+                ) {
+                topOfPipe++;
             }
 
 
@@ -226,7 +297,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                     calc.peakFlowRate!,
                     { connectable: tower[topOfPipe - 1][0].uid, connection: pipe.uid },
                     { connectable: tower[topOfPipe][0].uid, connection: pipe.uid },
-                    true,
+                    true
                 );
 
                 if (totalHL != null) {
@@ -245,8 +316,8 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                             pressureKPA: bottomPressure - head2kpa(
                                 partialHL,
                                 getFluidDensityOfSystem(pipe.entity.systemUid, context.doc, context.catalog)!,
-                                context.doc.drawing.metadata.calculationParams.gravitationalAcceleration,
-                            ),
+                                context.doc.drawing.metadata.calculationParams.gravitationalAcceleration
+                            )
                         };
                     }
                 }

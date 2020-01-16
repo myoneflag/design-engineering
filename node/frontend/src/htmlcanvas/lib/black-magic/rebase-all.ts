@@ -10,7 +10,7 @@ import {
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
 
 export function rebaseAll(context: CanvasContext) {
-    context.objectStore.forEach((o) => {
+    context.globalStore.forEach((o) => {
         if (isCentered(o.entity.type)) {
             const co = o as BaseBackedObject & Centered;
             co.debase();

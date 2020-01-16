@@ -413,7 +413,6 @@ export abstract class LayerImplementation implements Layer {
             const o = this.objectStore.get(uid) as BaseBackedObject & Draggable;
             o.onDragFinish(event, context, true);
         });
-        rebaseAll(context);
         this.onCommit(this.objectStore.get(grabState.toMoveUids[0])!.entity);
     }
 

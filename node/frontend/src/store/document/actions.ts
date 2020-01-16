@@ -45,8 +45,13 @@ export const actions: ActionTree<DocumentState, RootState> = {
         commit("setCurrentLevelUid", levelUid);
     },
 
+    validateAndCommit({commit, state}, logUndo: boolean = true) {
+        MainEventBus.$emit('validate-and-commit', logUndo);
+    },
+
     // Call this action to commit the current operation transforms. TODO: make that atomic.
     commit({ commit, state }, logUndo: boolean = true) {
+        console.log('committing');
         if (state.uiState.viewOnly) {
             commit('revert');
             return;
@@ -148,6 +153,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
     },
 
     revert({ commit, state }, redraw) {
+        console.log('reverting');
         // We need to wait for entity mutation watchers to fire and update the filter.
         // Reverse all optimistic operations
         commit("revert", redraw);

@@ -85,6 +85,11 @@ const router = new Router({
                             path: "document",
                             name: "settings/document",
                             component: () => import(/* webpackChunkName: "document" */ "./views/settings/Document.vue")
+                        },
+                        {
+                            path: "debug",
+                            name: "settings/debug",
+                            component: () => import(/* webpackChunkName: "debug" */ "./views/settings/Debug.vue")
                         }
                     ],
 

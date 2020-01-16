@@ -197,7 +197,7 @@ export default class FloorPlanProperties extends Vue {
                     background.key = res.data.key;
                     background.filename = this.file!.name;
                     this.$props.onChange();
-                    this.$store.dispatch("document/commit");
+                    this.$store.dispatch("document/validateAndCommit");
                 } else {
                     this.$bvToast.toast(res.message, {
                         title: "Error Replacing Background",
@@ -221,7 +221,7 @@ export default class FloorPlanProperties extends Vue {
             this.background.scaleFactor *= factor;
 
             this.$props.onChange();
-            this.$store.dispatch("document/commit");
+            this.$store.dispatch("document/validateAndCommit");
         }
     }
 
@@ -244,13 +244,13 @@ export default class FloorPlanProperties extends Vue {
     rotateLeft() {
         this.background.rotation = (((this.background.rotation - 45) % 360) + 360) % 360;
         this.$props.onChange();
-        this.$store.dispatch("document/commit");
+        this.$store.dispatch("document/validateAndCommit");
     }
 
     rotateRight() {
         this.background.rotation = (((this.background.rotation + 45) % 360) + 360) % 360;
         this.$props.onChange();
-        this.$store.dispatch("document/commit");
+        this.$store.dispatch("document/validateAndCommit");
     }
 
     deployPointTool(onPoint: (worldCoord: Coord) => void) {
@@ -279,7 +279,7 @@ export default class FloorPlanProperties extends Vue {
             this.background.pointA = d.toObjectCoord(worldCoord);
 
             this.$props.onChange();
-            this.$store.dispatch("document/commit");
+            this.$store.dispatch("document/validateAndCommit");
         });
     }
 
@@ -289,7 +289,7 @@ export default class FloorPlanProperties extends Vue {
             this.background.pointB = d.toObjectCoord(worldCoord);
 
             this.$props.onChange();
-            this.$store.dispatch("document/commit");
+            this.$store.dispatch("document/validateAndCommit");
         });
     }
 }

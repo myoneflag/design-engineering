@@ -963,8 +963,7 @@ export class AutoConnector {
                 }
             }
 
-            rebaseAll(this.context);
-            this.context.$store.dispatch("document/commit");
+            this.context.$store.dispatch("document/validateAndCommit");
         } finally {
             this.teardown();
         }

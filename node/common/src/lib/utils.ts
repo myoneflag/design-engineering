@@ -23,7 +23,7 @@ export function cloneSimple<T>(obj: T): T {
 
 export interface Choice {
     name: string;
-    key: string | null;
+    key: string | number | null;
     disabled?: boolean;
 }
 

@@ -70,7 +70,7 @@ export default function insertDirectedValve(
             },
             (worldCoord, event) => {
                 context.interactive = null;
-                context.$store.dispatch("document/commit").then(() => {
+                context.$store.dispatch("document/validateAndCommit").then(() => {
                     /**/
                 });
             },

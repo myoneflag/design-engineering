@@ -2,7 +2,9 @@ import { EntityType } from "../types";
 import { FieldType, PropertyField } from "../property-field";
 import { DirectedValveConcrete, ValveType } from "./valve-types";
 import { assertUnreachable } from "../../../config";
-import { Color, ConnectableEntity, Coord, FlowSystemParameters } from "../../drawing";
+import { Color, ConnectableEntity, Coord, DrawingState, FlowSystemParameters } from "../../drawing";
+import { Catalog } from "../../../catalog/types";
+import { Choice, parseCatalogNumberOrMin } from "../../../../lib/utils";
 
 export default interface DirectedValveEntity extends ConnectableEntity {
     type: EntityType.DIRECTED_VALVE;
@@ -16,8 +18,9 @@ export default interface DirectedValveEntity extends ConnectableEntity {
 }
 
 export function makeDirectedValveFields(
-    systems: FlowSystemParameters[],
-    valve: DirectedValveConcrete
+    entity: DirectedValveEntity,
+    catalog: Catalog,
+    drawing: DrawingState,
 ): PropertyField[] {
     const fields: PropertyField[] = [
         {
@@ -26,7 +29,7 @@ export function makeDirectedValveFields(
             hasDefault: false,
             isCalculated: false,
             type: FieldType.FlowSystemChoice,
-            params: { systems },
+            params: { systems: drawing.metadata.flowSystems },
             multiFieldId: "systemUid"
         },
 
@@ -41,7 +44,7 @@ export function makeDirectedValveFields(
         }
     ];
 
-    switch (valve.type) {
+    switch (entity.valve.type) {
         case ValveType.CHECK_VALVE:
             break;
         case ValveType.ISOLATION_VALVE:
@@ -66,17 +69,23 @@ export function makeDirectedValveFields(
         case ValveType.RPZD_DOUBLE_ISOLATED:
         case ValveType.RPZD_DOUBLE_SHARED:
         case ValveType.RPZD_SINGLE:
+            const sizes = Object.keys(catalog.backflowValves[entity.valve.catalogId].valvesBySize).map((s) => {
+                const c: Choice = {
+                    disabled: false, key: parseCatalogNumberOrMin(s), name: s + 'mm',
+                };
+                return c;
+            });
             fields.push({
                 property: "valve.sizeMM",
                 title: "Size (mm):",
                 hasDefault: false,
-                isCalculated: false,
-                type: FieldType.Number,
-                params: { min: 0, max: null },
+                isCalculated: true,
+                type: FieldType.Choice,
+                params: { choices: sizes, initialValue: sizes[0].key},
                 multiFieldId: "diameterMM",
                 requiresInput: false
             });
-            if (valve.type === ValveType.RPZD_DOUBLE_ISOLATED) {
+            if (entity.valve.type === ValveType.RPZD_DOUBLE_ISOLATED) {
                 fields.push({
                     property: "valve.isolateOneWhenCalculatingHeadLoss",
                     title: "Isolate When Calculation Head Loss?",
@@ -93,7 +102,7 @@ export function makeDirectedValveFields(
         case ValveType.STRAINER:
             break;
         default:
-            assertUnreachable(valve);
+            assertUnreachable(entity.valve);
     }
 
     return fields;

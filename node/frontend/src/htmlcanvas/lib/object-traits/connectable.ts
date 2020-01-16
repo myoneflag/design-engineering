@@ -23,6 +23,7 @@ import uuid from "uuid";
 import Fitting from "../../objects/fitting";
 import { Coord, Coord3D, NetworkType } from "../../../../../common/src/api/document/drawing";
 import { determineConnectableNetwork, determineConnectableSystemUid } from "../../../store/document/entities/lib";
+import { APIResult } from "../../../../../common/src/api/document/types";
 
 export default interface Connectable {
     getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]>;
@@ -217,6 +218,34 @@ export function ConnectableObject<
                 }
             });
             return result;
+        }
+
+        validate(context: CanvasContext): APIResult<void> {
+            const pres = super.validate(context);
+            if (pres && !pres.success) {
+                return pres;
+            }
+
+            const conns = context.globalStore.getConnections(this.uid);
+
+            if (this.maximumConnections !== null && conns.length > this.maximumConnections) {
+                return {
+                    success: false,
+                    message: "Too many connections coming out of a " + this.type,
+                };
+            }
+
+            if (this.minimumConnections !== null && conns.length < this.minimumConnections) {
+                return {
+                    success: false,
+                    message: "Too few connections coming out of a " + this.type,
+                };
+            }
+
+            return {
+                success: true,
+                data: undefined,
+            };
         }
 
         getAngleDiffs(): number[] {

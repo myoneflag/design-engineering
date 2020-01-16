@@ -173,7 +173,7 @@ export default function insertBigValve(context: CanvasContext, bigValveType: Big
                 context.scheduleDraw();
             },
             (wc: Coord) => {
-                context.$store.dispatch("document/commit");
+                context.$store.dispatch("document/validateAndCommit");
             },
             "Insert TMV",
             [

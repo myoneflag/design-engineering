@@ -1,8 +1,10 @@
 import { FieldType, PropertyField } from "./property-field";
 import { EntityType } from "./types";
 import { Color, ConnectableEntity, Coord, DrawingState, FlowSystemParameters, NetworkType } from "../drawing";
-import { Choice, cloneSimple } from "../../../lib/utils";
+import { Choice, cloneSimple, parseCatalogNumberOrMin } from "../../../lib/utils";
 import { LEVEL_HEIGHT_DIFF_M } from "../../config";
+import { Catalog } from "../../catalog/types";
+import { fillPipeDefaultFields } from "./pipe-entity";
 
 export default interface RiserEntity extends ConnectableEntity {
     type: EntityType.RISER;
@@ -19,7 +21,20 @@ export default interface RiserEntity extends ConnectableEntity {
     topHeightM: number | null;
 }
 
-export function makeRiserFields(materials: Choice[], systems: FlowSystemParameters[]): PropertyField[] {
+export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: DrawingState): PropertyField[] {
+    const result = fillRiserDefaults(drawing, entity);
+    const materials = Object.keys(catalog.pipes).map((mat) => {
+        const c: Choice = {
+            disabled: false, key: mat, name: catalog.pipes[mat].name,
+        };
+        return c;
+    });
+    const diameters = Object.keys(catalog.pipes[result.material!].pipesBySize).map((d) => {
+        const c: Choice = {
+            disabled: false, key: parseCatalogNumberOrMin(d), name: d + 'mm',
+        };
+        return c;
+    });
     return [
         {
             property: "systemUid",
@@ -27,7 +42,7 @@ export function makeRiserFields(materials: Choice[], systems: FlowSystemParamete
             hasDefault: false,
             isCalculated: false,
             type: FieldType.FlowSystemChoice,
-            params: { systems },
+            params: { systems: drawing.metadata.flowSystems },
             multiFieldId: "systemUid"
         },
 
@@ -63,11 +78,14 @@ export function makeRiserFields(materials: Choice[], systems: FlowSystemParamete
 
         {
             property: "diameterMM",
-            title: "Diameter (mm)",
+            title: "Diameter",
             hasDefault: false,
             isCalculated: true,
-            type: FieldType.Number,
-            params: { min: 0, max: null, initialValue: 100 },
+            type: FieldType.Choice,
+            params: {
+                choices: diameters,
+                initialValue: diameters[0].key,
+            },
             multiFieldId: "diameterMM"
         },
 

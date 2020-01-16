@@ -20,6 +20,7 @@
                             >Calculations</b-nav-item
                         >
                         <b-nav-item :to="{ name: 'settings/document' }" active-class="active">Document</b-nav-item>
+                        <b-nav-item :to="{ name: 'settings/debug' }" active-class="active" style="opacity: 0.1">Debug</b-nav-item>
                     </b-nav>
                 </b-col>
                 <b-col cols="10">
