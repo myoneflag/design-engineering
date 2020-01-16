@@ -497,6 +497,8 @@ export default class DrawingCanvas extends Vue {
 
         MainEventBus.$on('validate-and-commit', this.onValidateAndCommit);
 
+        MainEventBus.$on('drawing-loaded', this.onDrawingLoaded);
+
         this.$watch(
             () => this.document.uiState.drawingMode,
             (newVal) => {
@@ -538,7 +540,12 @@ export default class DrawingCanvas extends Vue {
         MainEventBus.$off("update-entity", this.onUpdateEntity);
         MainEventBus.$off('keydown', this.onKeyDown);
         MainEventBus.$off('validate-and-commit', this.onValidateAndCommit);
+        MainEventBus.$off('drawing-loaded', this.onDrawingLoaded);
         this.document.uiState.lastCalculationId = -1;
+    }
+
+    onDrawingLoaded() {
+        this.onValidateAndCommit(false);
     }
 
     onChangeFromLayer(uids: string[]) {
@@ -845,10 +852,45 @@ export default class DrawingCanvas extends Vue {
 
     murderOrphans() {
         for (const o of this.globalStore.values()) {
-            if (o.entity.type === EntityType.FITTING) {
-                if (this.globalStore.getConnections(o.entity.uid).length === 0) {
-                    this.deleteEntity(o);
-                }
+            switch (o.entity.type) {
+                case EntityType.BACKGROUND_IMAGE:
+                    break;
+                case EntityType.FITTING:
+                    if (this.globalStore.getConnections(o.entity.uid).length === 0) {
+                        this.deleteEntity(o);
+                    }
+                    break;
+                case EntityType.PIPE:
+                    let ok = true;
+                    const myLevel = this.globalStore.levelOfEntity.get(o.entity.uid);
+                    for (const uid of o.entity.endpointUid) {
+                        const eLvl = this.globalStore.levelOfEntity.get(uid);
+                        if (eLvl !== null && eLvl !== myLevel) {
+                            ok = false;
+                        }
+                    }
+
+                    if (!ok) {
+                        this.deleteEntity(o);
+                    }
+                    break;
+                case EntityType.RISER:
+                    break;
+                case EntityType.SYSTEM_NODE:
+                    break;
+                case EntityType.BIG_VALVE:
+                    break;
+                case EntityType.FIXTURE:
+                    break;
+                case EntityType.DIRECTED_VALVE:
+                    break;
+                case EntityType.LOAD_NODE:
+                    break;
+                case EntityType.FLOW_SOURCE:
+                    break;
+                case EntityType.PLANT:
+                    break;
+
             }
         }
     }
@@ -873,6 +915,9 @@ export default class DrawingCanvas extends Vue {
         }
         const toDelete = object.prepareDelete(this);
         const deleted = new Set<string>();
+
+        console.log(JSON.stringify(toDelete.map((o) => o.uid), null, 2));
+
         toDelete.forEach((drawableObject) => {
             if (drawableObject.entity === undefined) {
                 return;

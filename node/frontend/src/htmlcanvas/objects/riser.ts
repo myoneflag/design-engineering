@@ -160,8 +160,12 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         throw new Error("This entity shouldn't be part of calculations");
     }
 
-    prepareDelete(): BaseBackedObject[] {
-        return [];
+    prepareDelete(context: CanvasContext): BaseBackedObject[] {
+        const conns = context.globalStore.getConnections(this.uid);
+        return [
+            ...conns.map((uid) => context.globalStore.get(uid)!),
+            this,
+        ];
     }
 
     rememberToRegister(): void {

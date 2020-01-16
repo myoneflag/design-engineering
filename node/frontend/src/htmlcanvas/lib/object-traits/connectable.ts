@@ -340,6 +340,11 @@ export function ConnectableObject<
         }
 
         prepareDelete(context: CanvasContext): BaseBackedObject[] {
+            const pres = super.prepareDelete(context);
+            if (pres.length) {
+                return pres;
+            }
+
             this.debase();
             // Delete all connected pipes.
             // make that work.
@@ -390,7 +395,7 @@ export function ConnectableObject<
 
                 return result;
             } else {
-                // we are an irregular connetable. Instead of deleting, turn into a fixture instead.
+                // we are an irregular connetable. Instead of deleting, turn into a fitting instead.
                 const conns = this.objectStore.getConnections(this.uid);
                 if (conns.length === 0) {
                     // just an hero

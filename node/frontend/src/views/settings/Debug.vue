@@ -65,7 +65,7 @@
             const newDoc = JSON.parse(this.drawingJson);
             Object.assign(this.document.drawing, newDoc);
             await this.$store.dispatch('document/commit');
-            window.location.reload();
+            //window.location.reload();
         }
 
         log() {
