@@ -106,7 +106,7 @@ export default function insertFlowSource(context: CanvasContext, system: FlowSys
                 });
             },
             () => {
-                context.$store.dispatch("document/commit").then(() => {
+                context.$store.dispatch("document/validateAndCommit").then(() => {
                     // Notify the user that there's fields to select
                     MainEventBus.$emit("select", { uid: newUid, property: "pressureKPA", recenter: false });
                 });

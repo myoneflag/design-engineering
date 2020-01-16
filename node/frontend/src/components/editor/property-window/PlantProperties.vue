@@ -66,7 +66,7 @@
         }
 
         async onCommit() {
-            await this.$store.dispatch("document/commit");
+            await this.$store.dispatch("document/validateAndCommit");
         }
     }
 </script>

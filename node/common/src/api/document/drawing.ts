@@ -204,8 +204,8 @@ export const initialDrawing: DrawingState = {
         calculationParams: {
             psdMethod: SupportedPsdStandards.as35002018LoadingUnits,
             dwellingMethod: null,
-            ringMainCalculationMethod: RING_MAIN_CALCULATION_METHODS[0].key!,
-            pipeSizingMethod: PIPE_SIZING_METHODS[0].key!,
+            ringMainCalculationMethod: RING_MAIN_CALCULATION_METHODS[0].key as string,
+            pipeSizingMethod: PIPE_SIZING_METHODS[0].key as string,
 
             ceilingPipeHeightM: 3.0,
             roomTemperatureC: 20,

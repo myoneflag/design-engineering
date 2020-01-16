@@ -43,8 +43,9 @@ import PipeEntity, { fillPipeDefaultFields, makePipeFields } from "../../../../.
 export default class PipeProperties extends Vue {
     get fields() {
         return makePipeFields(
-            this.$store.getters["catalog/defaultPipeMaterialChoices"],
-            this.document.drawing.metadata.flowSystems
+            this.$props.selectedEntity,
+            this.$store.getters['catalog/default'],
+            this.document.drawing,
         );
     }
 
@@ -65,7 +66,7 @@ export default class PipeProperties extends Vue {
     }
 
     onCommit() {
-        this.$store.dispatch("document/commit");
+        this.$store.dispatch("document/validateAndCommit");
     }
 }
 </script>

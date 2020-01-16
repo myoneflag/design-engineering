@@ -45,7 +45,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         DrawableObjectFactory.registerEntity(EntityType.FITTING, Fitting);
     }
 
-    minimumConnections = 1;
+    minimumConnections = 0;
     maximumConnections = null;
     dragPriority = getDragPriority(EntityType.FITTING);
 

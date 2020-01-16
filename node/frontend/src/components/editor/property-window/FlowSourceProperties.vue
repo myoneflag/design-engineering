@@ -62,7 +62,7 @@
         }
 
         onCommit() {
-            this.$store.dispatch("document/commit");
+            this.$store.dispatch("document/validateAndCommit");
         }
     }
 </script>

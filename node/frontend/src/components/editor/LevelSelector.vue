@@ -205,7 +205,7 @@ export default class LevelSelector extends Vue {
             uid: uuid()
         };
         this.$store.dispatch("document/addLevel", newLvl);
-        this.$store.dispatch("document/commit");
+        this.$store.dispatch("document/validateAndCommit");
     }
 
     addBelow() {
@@ -226,7 +226,7 @@ export default class LevelSelector extends Vue {
             uid: uuid()
         };
         this.$store.dispatch("document/addLevel", newLvl);
-        this.$store.dispatch("document/commit");
+        this.$store.dispatch("document/validateAndCommit");
     }
 
     get catalog(): Catalog {
@@ -261,13 +261,13 @@ export default class LevelSelector extends Vue {
             .then((res) => {
                 if (res) {
                     this.$store.dispatch("document/deleteLevel", level);
-                    this.$store.dispatch("document/commit");
+                    this.$store.dispatch("document/validateAndCommit");
                 }
             });
     }
 
     commit() {
-        this.$store.dispatch('document/commit');
+        this.$store.dispatch('document/validateAndCommit');
     }
 }
 </script>

@@ -203,10 +203,10 @@ export default class CalculationEngine {
             let fields: PropertyField[] = [];
             switch (obj.entity.type) {
                 case EntityType.RISER:
-                    fields = makeRiserFields([], []);
+                    fields = makeRiserFields(obj.entity, this.catalog, this.drawing);
                     break;
                 case EntityType.PIPE:
-                    fields = makePipeFields([], []);
+                    fields = makePipeFields(obj.entity, this.catalog, this.doc.drawing);
                     break;
                 case EntityType.FITTING:
                     fields = makeValveFields([], []);
@@ -218,7 +218,7 @@ export default class CalculationEngine {
                     fields = makeFixtureFields(this.doc.drawing, obj.entity);
                     break;
                 case EntityType.DIRECTED_VALVE:
-                    fields = makeDirectedValveFields(this.doc.drawing.metadata.flowSystems, obj.entity.valve);
+                    fields = makeDirectedValveFields(obj.entity, this.catalog, this.doc.drawing);
                     break;
                 case EntityType.FLOW_SOURCE:
                     fields = makeFlowSourceFields([], []);

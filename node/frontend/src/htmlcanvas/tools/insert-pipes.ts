@@ -1,6 +1,4 @@
-import {
-    DocumentState
-} from "../../../src/store/document/types";
+import { DocumentState } from "../../../src/store/document/types";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { InteractionType } from "../../../src/htmlcanvas/lib/interaction";
 import { MainEventBus } from "../../../src/store/main-event-bus";
@@ -9,18 +7,19 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
 import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import uuid from "uuid";
 import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
-import { getInsertCoordsAt, maxHeightOfConnection } from "../../../src/htmlcanvas/lib/utils";
+import { maxHeightOfConnection } from "../../../src/htmlcanvas/lib/utils";
 import BackedDrawableObject from "../../../src/htmlcanvas/lib/backed-drawable-object";
 import Connectable from "../../../src/htmlcanvas/lib/object-traits/connectable";
 import Flatten from "@flatten-js/core";
-import { ConnectableEntityConcrete, isConnectableEntity } from "../../../../common/src/api/document/entities/concrete-entity";
+import {
+    ConnectableEntityConcrete,
+    isConnectableEntity
+} from "../../../../common/src/api/document/entities/concrete-entity";
 import { addValveAndSplitPipe } from "../../../src/htmlcanvas/lib/black-magic/split-pipe";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
 import { SelectMode } from "../../../src/htmlcanvas/layers/layer";
 import { KeyCode } from "../../../src/htmlcanvas/utils";
-import BackedConnectable, { BaseBackedConnectable } from "../../../src/htmlcanvas/lib/BackedConnectable";
-import Vue from "vue";
-import { rebaseAll } from "../lib/black-magic/rebase-all";
+import { BaseBackedConnectable } from "../../../src/htmlcanvas/lib/BackedConnectable";
 import {
     ConnectableEntity,
     Coord,
@@ -119,7 +118,7 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
 
                 context.$store.dispatch("document/commit").then(() => {
                     context.interactive = null;
-                    insertPipeChain(context, entity, system, network, heightM);
+                    insertPipeChain(context, entity, system, network, heightM, 0);
                 });
             },
             "Start Pipe"
@@ -132,7 +131,8 @@ function insertPipeChain(
     lastAttachment: ConnectableEntity,
     system: FlowSystemParameters,
     network: NetworkType,
-    heightM: number
+    heightM: number,
+    chainNumber: number,
 ) {
     let nextEntity: ConnectableEntityConcrete | FittingEntity;
     const pipeUid = uuid();
@@ -148,13 +148,10 @@ function insertPipeChain(
 
                     // it's possible that we are drawing the first connection, in which case we will have an
                     // orphaned valve. Delete it.
-                    if (
-                        context.objectStore.getConnections(lastAttachment.uid).length <
-                        (context.globalStore.get(lastAttachment.uid) as BaseBackedConnectable).minimumConnections
-                    ) {
-                        context.deleteEntity(context.objectStore.get(lastAttachment.uid)!);
+
+                    if (chainNumber === 0) {
+                        context.$store.dispatch('document/undo');
                     }
-                    context.$store.dispatch("document/commit", false);
                 }
 
                 if (!displaced) {
@@ -284,12 +281,12 @@ function insertPipeChain(
             (wc: Coord) => {
                 context.interactive = null;
                 // committed to the point. And also create new pipe, continue the chain.
-                context.$store.dispatch("document/commit").then(() => {
+                context.$store.dispatch("document/validateAndCommit").then(() => {
                     const currConns = context.globalStore.getConnections(nextEntity.uid).length;
                     const maxConns =
                         (context.objectStore.get(nextEntity.uid) as BaseBackedConnectable).maximumConnections;
                     if (maxConns === null || currConns < maxConns) {
-                        insertPipeChain(context, nextEntity, system, network, heightM);
+                        insertPipeChain(context, nextEntity, system, network, heightM, chainNumber + 1);
                     }
 
                 });

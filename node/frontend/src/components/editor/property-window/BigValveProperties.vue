@@ -80,7 +80,7 @@ export default class BigValveProperties extends Vue {
     }
 
     onCommit() {
-        this.$store.dispatch("document/commit");
+        this.$store.dispatch("document/validateAndCommit");
     }
 }
 </script>

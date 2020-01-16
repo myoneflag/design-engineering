@@ -1,3 +1,4 @@
+import { FieldType } from "../../../../../common/src/api/document/entities/property-field";
 import {EntityType} from "../../../store/document/entities/types";
 <template>
     <b-container>
@@ -22,11 +23,18 @@ import {EntityType} from "../../../store/document/entities/types";
 <script lang="ts">
     import Vue from "vue";
     import BaseBackedObject from "../../../htmlcanvas/lib/base-backed-object";
-    import { FieldType, PropertyField } from "../../../../../common/src/api/document/entities/property-field";
+    import {
+        ChoiceField,
+        FieldType,
+        PropertyField
+    } from "../../../../../common/src/api/document/entities/property-field";
     import { DrawableEntityConcrete } from "../../../../../common/src/api/document/entities/concrete-entity";
     import { makeBackgroundFields } from "../../../../../common/src/api/document/entities/background-entity";
     import { fillPipeDefaultFields, makePipeFields } from "../../../../../common/src/api/document/entities/pipe-entity";
-    import { fillValveDefaultFields, makeValveFields } from "../../../../../common/src/api/document/entities/fitting-entity";
+    import {
+        fillValveDefaultFields,
+        makeValveFields
+    } from "../../../../../common/src/api/document/entities/fitting-entity";
     import Component from "vue-class-component";
     import { EntityType } from "../../../../../common/src/api/document/entities/types";
     import { DocumentState } from "../../../../src/store/document/types";
@@ -41,13 +49,17 @@ import {EntityType} from "../../../store/document/entities/types";
     } from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
     import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
     import Pipe from "../../../../src/htmlcanvas/objects/pipe";
-    import {
-        makeDirectedValveFields
-    } from "../../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
+    import { makeDirectedValveFields } from "../../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
     import { makeLoadNodesFields } from "../../../../../common/src/api/document/entities/load-node-entity";
     import { getPropertyByString, setPropertyByString } from "../../../lib/utils";
-    import { fillFlowSourceDefaults, makeFlowSourceFields } from "../../../../../common/src/api/document/entities/flow-source-entity";
-    import { fillPlantDefaults, makePlantEntityFields } from "../../../../../common/src/api/document/entities/plant-entity";
+    import {
+        fillFlowSourceDefaults,
+        makeFlowSourceFields
+    } from "../../../../../common/src/api/document/entities/flow-source-entity";
+    import {
+        fillPlantDefaults,
+        makePlantEntityFields
+    } from "../../../../../common/src/api/document/entities/plant-entity";
     import { assertUnreachable } from "../../../../../common/src/api/config";
     import { Catalog } from "../../../../../common/src/api/catalog/types";
     import { cloneSimple } from "../../../../../common/src/lib/utils";
@@ -67,7 +79,7 @@ import {EntityType} from "../../../store/document/entities/types";
     export default class MultiFieldBuilder extends Vue {
         get fields() {
             let ret: PropertyField[] = [];
-            const seen = new Set<string>();
+            const seen = new Map<string, PropertyField>();
             const types = new Set<EntityType>();
             let first = true;
             this.$props.selectedObjects.forEach((obj: BaseBackedObject) => {
@@ -75,8 +87,15 @@ import {EntityType} from "../../../store/document/entities/types";
                 if (first) {
                     fields.forEach((f) => {
                         if (!seen.has(f.multiFieldId!)) {
-                            seen.add(f.multiFieldId!);
+                            seen.set(f.multiFieldId!, f);
                             ret.push(f);
+                        } else {
+                            if (f.type === FieldType.Choice) {
+                                const op = seen.get(f.multiFieldId!) as ChoiceField;
+                                op.params.choices = op.params.choices.filter((c) =>
+                                    f.params.choices.find((cc) => cc.key === c.key)
+                                );
+                            }
                         }
                     });
                 } else {
@@ -108,13 +127,15 @@ import {EntityType} from "../../../store/document/entities/types";
                     ).filter((p) => p.multiFieldId);
                 case EntityType.PIPE:
                     return makePipeFields(
-                        this.$store.getters["catalog/defaultPipeMaterialChoices"],
-                        this.document.drawing.metadata.flowSystems
+                        entity,
+                        this.$store.getters['catalog/default'],
+                        this.document.drawing,
                     ).filter((p) => p.multiFieldId);
                 case EntityType.RISER:
                     return makeRiserFields(
-                        this.$store.getters["catalog/defaultPipeMaterialChoices"],
-                        this.document.drawing.metadata.flowSystems
+                        entity,
+                        this.$store.getters['catalog/default'],
+                        this.document.drawing,
                     ).filter((p) => p.multiFieldId);
                 case EntityType.BIG_VALVE:
                     return makeBigValveFields(entity).filter((p) => p.multiFieldId)
@@ -123,7 +144,11 @@ import {EntityType} from "../../../store/document/entities/types";
                     return makeFixtureFields(this.document.drawing, entity).filter((p) => p.multiFieldId)
                         .filter((p) => p.multiFieldId);
                 case EntityType.DIRECTED_VALVE:
-                    return makeDirectedValveFields(this.document.drawing.metadata.flowSystems, entity.valve).filter(
+                    return makeDirectedValveFields(
+                        entity,
+                        this.$store.getters['catalog/default'],
+                        this.document.drawing,
+                    ).filter(
                         (p) => p.multiFieldId
                     ).filter((p) => p.multiFieldId);
                 case EntityType.SYSTEM_NODE:
@@ -292,7 +317,7 @@ import {EntityType} from "../../../store/document/entities/types";
         }
 
         onCommit() {
-            this.$store.dispatch("document/commit");
+            this.$store.dispatch("document/validateAndCommit");
         }
     }
 </script>

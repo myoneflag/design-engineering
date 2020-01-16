@@ -68,9 +68,11 @@ import { fillDirectedValveFields } from "../../../store/document/entities/fillDi
 })
 export default class DirectedValveProperties extends Vue {
     get fields() {
+        console.log(JSON.stringify(this.$props.selectedEntity));
         return makeDirectedValveFields(
-            this.document.drawing.metadata.flowSystems,
-            (this.$props.selectedEntity as DirectedValveEntity).valve
+            this.$props.selectedEntity,
+            this.catalog,
+            this.document.drawing,
         );
     }
 
@@ -94,7 +96,7 @@ export default class DirectedValveProperties extends Vue {
         return ValveType;
     }
     async onCommit() {
-        await this.$store.dispatch("document/commit");
+        await this.$store.dispatch("document/validateAndCommit");
     }
 
     flip() {

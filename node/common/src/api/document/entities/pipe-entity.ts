@@ -1,7 +1,9 @@
 import { FieldType, PropertyField } from "./property-field";
 import { EntityType } from "./types";
 import { Color, DrawableEntity, DrawingState, FlowSystemParameters, NetworkType } from "../drawing";
-import { Choice, cloneSimple } from "../../../lib/utils";
+import { Choice, cloneSimple, parseCatalogNumberOrMin } from "../../../lib/utils";
+import { catalog } from "../../../../../frontend/src/store/catalog/index";
+import { Catalog } from "../../catalog/types";
 
 export default interface PipeEntity extends DrawableEntity {
     type: EntityType.PIPE;
@@ -27,7 +29,20 @@ export interface MutablePipe {
     endpointUid: readonly [string, string];
 }
 
-export function makePipeFields(materials: Choice[], systems: FlowSystemParameters[]): PropertyField[] {
+export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: DrawingState): PropertyField[] {
+    const result = fillPipeDefaultFields(drawing, 0, entity);
+    const materials = Object.keys(catalog.pipes).map((mat) => {
+        const c: Choice = {
+            disabled: false, key: mat, name: catalog.pipes[mat].name,
+        };
+        return c;
+    });
+    const diameters = Object.keys(catalog.pipes[result.material!].pipesBySize).map((d) => {
+        const c: Choice = {
+            disabled: false, key: parseCatalogNumberOrMin(d), name: d + 'mm',
+        };
+        return c;
+    });
     return [
         {
             property: "systemUid",
@@ -35,7 +50,7 @@ export function makePipeFields(materials: Choice[], systems: FlowSystemParameter
             hasDefault: false,
             isCalculated: false,
             type: FieldType.FlowSystemChoice,
-            params: { systems },
+            params: { systems: drawing.metadata.flowSystems },
             multiFieldId: "systemUid"
         },
         {
@@ -99,8 +114,11 @@ export function makePipeFields(materials: Choice[], systems: FlowSystemParameter
             title: "Diameter",
             hasDefault: false,
             isCalculated: true,
-            type: FieldType.Number,
-            params: { min: 0, max: null, initialValue: 50 },
+            type: FieldType.Choice,
+            params: {
+                choices: diameters,
+                initialValue: diameters[0].key,
+            },
             multiFieldId: "diameterMM"
         },
 

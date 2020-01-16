@@ -97,7 +97,7 @@ export default function insertPlant(context: CanvasContext, angle: number) {
                 context.scheduleDraw();
             },
             (wc: Coord) => {
-                context.$store.dispatch("document/commit").then(() => {
+                context.$store.dispatch("document/validateAndCommit").then(() => {
                     /**/
                 });
             },

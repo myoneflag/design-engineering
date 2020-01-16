@@ -43,8 +43,9 @@ import { DocumentState } from "../../../../src/store/document/types";
 export default class RiserProperties extends Vue {
     get fields() {
         return makeRiserFields(
-            this.$store.getters["catalog/defaultPipeMaterialChoices"],
-            this.document.drawing.metadata.flowSystems
+            this.$props.selectedEntity,
+            this.$store.getters['document/catalog'],
+            this.document.drawing,
         );
     }
 
@@ -61,7 +62,7 @@ export default class RiserProperties extends Vue {
     }
 
     onCommit() {
-        this.$store.dispatch("document/commit");
+        this.$store.dispatch("document/validateAndCommit");
     }
 }
 </script>

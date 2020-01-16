@@ -21,6 +21,7 @@ import * as _ from "lodash";
 import { GlobalStore } from "./global-store";
 import { ObjectStore } from "./object-store";
 import { Coord, Coord3D, DrawableEntity } from "../../../../common/src/api/document/drawing";
+import { APIResult } from "../../../../common/src/api/document/types";
 
 export default abstract class BaseBackedObject extends DrawableObject {
     entityBacked: () => DrawableEntityConcrete;
@@ -163,5 +164,9 @@ export default abstract class BaseBackedObject extends DrawableObject {
 
     onUpdate() {
         /**/
+    }
+
+    validate(context: CanvasContext): APIResult<void> {
+        return {success: true, data: undefined};
     }
 }
