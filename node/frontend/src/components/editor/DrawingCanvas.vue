@@ -877,7 +877,11 @@ export default class DrawingCanvas extends Vue {
                     }
 
                     if (!ok) {
-                        this.deleteEntity(o);
+                        const ep: EntityParam = {
+                            entity: o.entity,
+                            levelUid: this.globalStore.levelOfEntity.get(o.entity.uid)!,
+                        };
+                        this.$store.dispatch('document/deleteEntityOn', ep);
                     } else {
                     }
                     break;
