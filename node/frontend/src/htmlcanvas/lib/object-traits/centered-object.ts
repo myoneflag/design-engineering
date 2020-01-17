@@ -39,7 +39,7 @@ export function CenteredObject<
 
         rebase(context: CanvasContext) {
             assert(this.entity.parentUid === null);
-            const [par, oc] = getInsertCoordsAt(context, this.entity.center);
+            const [par, oc] = getInsertCoordsAt(context, this.entity.center, context.globalStore.levelOfEntity.get(this.uid)!);
             this.entity.parentUid = par;
             this.entity.center = oc;
         }

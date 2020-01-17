@@ -1030,6 +1030,7 @@ export default class DrawingCanvas extends Vue {
     }
 
     resetVisibleLevel() {
+        console.log('resetting level');
         if (
             this.document.uiState.levelUid === null ||
             (!this.document.drawing.levels.hasOwnProperty(this.document.uiState.levelUid) &&
@@ -1049,6 +1050,9 @@ export default class DrawingCanvas extends Vue {
         }
 
         this.allLayers.forEach((l) => l.resetDocument(this.document));
+
+        console.log('attempting to validate after resetting level');
+        this.onValidateAndCommit(false, false);
         this.updating = false;
     }
 
