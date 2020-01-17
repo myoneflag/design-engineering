@@ -30,8 +30,8 @@ export function moveOnto(
         );
         assert(focus!.uid === source.uid);
     } else {
-        dest.debase();
-        source.debase();
+        dest.debase(context);
+        source.debase(context);
         const entity = dest.entity;
         const finalCenter = dest.entity.center;
         // delete incidental pipes

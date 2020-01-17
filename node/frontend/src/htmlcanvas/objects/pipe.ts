@@ -408,7 +408,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
             const nwp = projLine.intersect(incident);
             assert(nwp.length === 1);
-            o.debase();
+            o.debase(context);
             o.entity.center = { x: nwp[0].x, y: nwp[0].y };
             o.rebase(context);
 
@@ -460,7 +460,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             // just plop the pipe to the other side
             const e = this.objectStore.get(needToReposition[0]) as BackedConnectable<ConnectableEntityConcrete>;
             if (e.type !== EntityType.SYSTEM_NODE) {
-                e.debase();
+                e.debase(context);
 
                 const otherSide = this.entity.endpointUid.filter((euid) => euid !== needToReposition[0])[0];
                 const oo = this.objectStore.get(otherSide) as BackedConnectable<ConnectableEntityConcrete>;
@@ -484,7 +484,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             this.entity.endpointUid.forEach((euid) => {
                 const o = this.objectStore.get(euid) as BackedConnectable<ConnectableEntityConcrete>;
                 if (o.type !== EntityType.SYSTEM_NODE) {
-                    o.debase();
+                    o.debase(context);
                     o.entity.center.x += eventObjectCoord.x - grabbedObjectCoord.x;
                     o.entity.center.y += eventObjectCoord.y - grabbedObjectCoord.y;
                     o.rebase(context);

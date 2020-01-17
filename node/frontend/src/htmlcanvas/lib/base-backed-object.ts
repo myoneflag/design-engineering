@@ -91,7 +91,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
         throw new Error("Not implemented. Please use @CalculatedObject to implement.");
     }
 
-    debase(): void {
+    debase(context: CanvasContext): void {
         throw new Error("Method not implemented. Please use @Connectable to implement.");
     }
 

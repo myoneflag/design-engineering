@@ -19,7 +19,7 @@ import * as TM from "transformation-matrix";
 import { Coord } from "../../../../../common/src/api/document/drawing";
 
 export default interface Centered {
-    debase(): void;
+    debase(context: CanvasContext): void;
     rebase(context: CanvasContext): void;
 }
 
@@ -30,7 +30,10 @@ export function CenteredObject<
     return class extends constructor implements Connectable {
         centered: true = true;
 
-        debase(): void {
+        debase(context: CanvasContext): void {
+            if (context.document.uiState.levelUid !== context.globalStore.levelOfEntity.get(this.uid)) {
+                return;
+            }
             const wc = this.toWorldCoord({ x: 0, y: 0 });
             this.entity.parentUid = null;
             this.entity.center.x = wc.x;
@@ -38,8 +41,13 @@ export function CenteredObject<
         }
 
         rebase(context: CanvasContext) {
-            assert(this.entity.parentUid === null);
-            const [par, oc] = getInsertCoordsAt(context, this.entity.center, context.globalStore.levelOfEntity.get(this.uid)!);
+            if (context.document.uiState.levelUid !== context.globalStore.levelOfEntity.get(this.uid)) {
+                return;
+            }
+            if (this.entity.parentUid !== null) {
+                throw new Error('Entity must be orphan before reparenting');
+            }
+            const [par, oc] = getInsertCoordsAt(context, this.entity.center);
             this.entity.parentUid = par;
             this.entity.center = oc;
         }

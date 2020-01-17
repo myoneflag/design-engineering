@@ -21,42 +21,9 @@ import { ObjectStore } from "./object-store";
 import { assertUnreachable, LEVEL_HEIGHT_DIFF_M } from "../../../../common/src/api/config";
 import { Coord, DrawableEntity, Level } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, interpolateTable, upperBoundTable } from "../../../../common/src/lib/utils";
-import { BackgroundEntity } from "../../../../common/src/api/document/entities/background-entity";
-import { BackgroundImage } from "../objects/background-image";
 
-export function getInsertCoordsAt(context: CanvasContext, wc: Coord, lvlUid: string): [string | null, Coord] {
-    let floor = null;
-
-    if (lvlUid === null) {
-        return [null, wc];
-    }
-
-    for (const k of Object.keys(context.document.drawing.levels[lvlUid].entities)) {
-        const o = context.globalStore.get(k)!;
-        if (o.entity.type === EntityType.BACKGROUND_IMAGE) {
-            if (context.globalStore.levelOfEntity.get(o.entity.uid) === lvlUid) {
-                const bg = o as BackgroundImage;
-                if (bg.inBounds(bg.toObjectCoord(wc))) {
-                    floor = bg;
-                }
-            }
-        }
-    }
-    /*
-    for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
-        const selectId = this.uidsInOrder[i];
-        if (this.objectStore.get(selectId)) {
-            const background = this.objectStore.get(selectId);
-            if (background instanceof BackgroundImage) {
-                if (background.inBounds(background.toObjectCoord(worldCoord))) {
-                    return background;
-                }
-            } else {
-                throw new Error("Exepected background image, got" + JSON.stringify(background) + "instead");
-            }
-        }
-    }*/
-
+export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
+    const floor = context.backgroundLayer.getBackgroundAt(wc);
     let parentUid: string | null = null;
     let oc = cloneSimple(wc);
     if (floor != null) {

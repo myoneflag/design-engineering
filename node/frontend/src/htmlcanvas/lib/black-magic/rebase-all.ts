@@ -13,7 +13,7 @@ export function rebaseAll(context: CanvasContext) {
     context.globalStore.forEach((o) => {
         if (isCentered(o.entity.type)) {
             const co = o as BaseBackedObject & Centered;
-            co.debase();
+            co.debase(context);
             co.rebase(context);
         }
     });

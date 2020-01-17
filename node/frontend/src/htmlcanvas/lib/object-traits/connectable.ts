@@ -345,7 +345,7 @@ export function ConnectableObject<
                 return pres;
             }
 
-            this.debase();
+            this.debase(context);
             // Delete all connected pipes.
             // make that work.
             // If we are not a pipe,
@@ -421,7 +421,7 @@ export function ConnectableObject<
                             p.entity.endpointUid[1] = fitting.uid;
                         }
                     }
-                    (this.objectStore.get(fitting.uid) as Fitting).debase();
+                    (this.objectStore.get(fitting.uid) as Fitting).debase(context);
                     (this.objectStore.get(fitting.uid) as Fitting).rebase(context);
 
                     return [this];
