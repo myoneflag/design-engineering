@@ -8,20 +8,21 @@ import Layer from "../../../src/htmlcanvas/layers/layer";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { ObjectStore } from "./object-store";
 import { Coord, DrawableEntity, WithID } from "../../../../common/src/api/document/drawing";
+import { GlobalStore } from "./global-store";
 
 export default abstract class BackedDrawableObject<T extends DrawableEntityConcrete> extends BaseBackedObject {
     entity: T;
 
     constructor(
         vm: Vue | undefined,
-        objectStore: ObjectStore,
-        layer: Layer,
-        obj: () => T,
+        globalStore: GlobalStore,
+        document: DocumentState,
+        obj: T,
         onSelect: (event: MouseEvent | KeyboardEvent) => void,
         onChange: () => void,
         onCommit: (event: MouseEvent | KeyboardEvent) => void
     ) {
-        super(vm, objectStore, layer, obj, onSelect, onChange, onCommit);
+        super(vm, globalStore, document, obj, onSelect, onChange, onCommit);
     }
 
     // Unfortunately, typescript does not allow abstract static methods. So this is just a human reminder
@@ -32,9 +33,9 @@ export default abstract class BackedDrawableObject<T extends DrawableEntityConcr
 
 export type BaseBackedConstructor = new (
     vm: Vue | undefined,
-    objectStore: ObjectStore,
-    layer: Layer,
-    obj: () => DrawableEntity,
+    globalStore: GlobalStore,
+    document: DocumentState,
+    obj: DrawableEntity,
     onSelect: (event: MouseEvent | KeyboardEvent) => void,
     onChange: () => void,
     onCommit: (event: MouseEvent | KeyboardEvent) => void
@@ -42,9 +43,9 @@ export type BaseBackedConstructor = new (
 
 export type BackedObjectConstructor<T extends DrawableEntityConcrete> = new (
     vm: Vue | undefined,
-    objectStore: ObjectStore,
-    layer: Layer,
-    obj: () => T,
+    objectStore: GlobalStore,
+    document: DocumentState,
+    obj: T,
     onSelect: (event: MouseEvent | KeyboardEvent) => void,
     onChange: () => void,
     onCommit: (event: MouseEvent | KeyboardEvent) => void

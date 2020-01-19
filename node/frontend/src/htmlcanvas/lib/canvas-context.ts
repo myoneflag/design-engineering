@@ -15,6 +15,7 @@ import { GlobalStore } from "./global-store";
 import { ObjectStore } from "./object-store";
 import { Catalog } from "../../../../common/src/api/catalog/types";
 import { DrawableEntity } from "../../../../common/src/api/document/drawing";
+import Layer from "../layers/layer";
 
 // Expose the members of CanvasContext (a vue object) to other classes and methods
 // (regular javascript objects). For some reason, extended methods and members are
@@ -23,8 +24,8 @@ export default interface CanvasContext {
     backgroundLayer: BackgroundLayer;
     hydraulicsLayer: HydraulicsLayer;
     calculationLayer: CalculationLayer;
+    activeLayer: Layer;
 
-    objectStore: ObjectStore;
     globalStore: GlobalStore;
     document: DocumentState;
     effectiveCatalog: Catalog;
@@ -46,4 +47,6 @@ export default interface CanvasContext {
     scheduleDraw(): void;
 
     deleteEntity(object: BaseBackedObject, throwIfNotFound?: boolean): void;
+
+    isSelected(uid: string): boolean;
 }

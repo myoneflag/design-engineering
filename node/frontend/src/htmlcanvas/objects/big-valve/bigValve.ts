@@ -227,22 +227,22 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         const list: BaseBackedObject[] = [];
         switch (this.entity.valve.type) {
             case BigValveType.TMV:
-                list.push(...this.objectStore.get(this.entity.valve.coldOutputUid)!.prepareDelete(context));
-                list.push(...this.objectStore.get(this.entity.valve.warmOutputUid)!.prepareDelete(context));
+                list.push(...this.globalStore.get(this.entity.valve.coldOutputUid)!.prepareDelete(context));
+                list.push(...this.globalStore.get(this.entity.valve.warmOutputUid)!.prepareDelete(context));
                 break;
             case BigValveType.TEMPERING:
-                list.push(...this.objectStore.get(this.entity.valve.warmOutputUid)!.prepareDelete(context));
+                list.push(...this.globalStore.get(this.entity.valve.warmOutputUid)!.prepareDelete(context));
                 break;
             case BigValveType.RPZD_HOT_COLD:
-                list.push(...this.objectStore.get(this.entity.valve.coldOutputUid)!.prepareDelete(context));
-                list.push(...this.objectStore.get(this.entity.valve.hotOutputUid)!.prepareDelete(context));
+                list.push(...this.globalStore.get(this.entity.valve.coldOutputUid)!.prepareDelete(context));
+                list.push(...this.globalStore.get(this.entity.valve.hotOutputUid)!.prepareDelete(context));
                 break;
             default:
                 assertUnreachable(this.entity.valve);
         }
         list.push(
-            ...this.objectStore.get(this.entity.coldRoughInUid)!.prepareDelete(context),
-            ...this.objectStore.get(this.entity.hotRoughInUid)!.prepareDelete(context),
+            ...this.globalStore.get(this.entity.coldRoughInUid)!.prepareDelete(context),
+            ...this.globalStore.get(this.entity.hotRoughInUid)!.prepareDelete(context),
             this
         );
         return list;
@@ -263,7 +263,7 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
             default:
                 assertUnreachable(this.entity.valve);
         }
-        return result.map((uid) => this.objectStore.get(uid) as SystemNode);
+        return result.map((uid) => this.globalStore.get(uid) as SystemNode);
     }
 
     offerJoiningInteraction(requestSystemUid: string, interaction: Interaction): DrawableEntityConcrete[] | null {
@@ -305,38 +305,38 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         const e: BigValveEntity = cloneSimple(this.entity);
         e.uid += ".calculation";
 
-        e.hotRoughInUid = (this.objectStore.get(e.hotRoughInUid) as SystemNode).getCalculationNode(
+        e.hotRoughInUid = (this.globalStore.get(e.hotRoughInUid) as SystemNode).getCalculationNode(
             context,
             this.uid
         ).uid;
-        e.coldRoughInUid = (this.objectStore.get(e.coldRoughInUid) as SystemNode).getCalculationNode(
+        e.coldRoughInUid = (this.globalStore.get(e.coldRoughInUid) as SystemNode).getCalculationNode(
             context,
             this.uid
         ).uid;
 
         switch (e.valve.type) {
             case BigValveType.TMV:
-                e.valve.warmOutputUid = (this.objectStore.get(e.valve.warmOutputUid) as SystemNode).getCalculationNode(
+                e.valve.warmOutputUid = (this.globalStore.get(e.valve.warmOutputUid) as SystemNode).getCalculationNode(
                     context,
                     this.uid
                 ).uid;
-                e.valve.coldOutputUid = (this.objectStore.get(e.valve.coldOutputUid) as SystemNode).getCalculationNode(
+                e.valve.coldOutputUid = (this.globalStore.get(e.valve.coldOutputUid) as SystemNode).getCalculationNode(
                     context,
                     this.uid
                 ).uid;
                 break;
             case BigValveType.TEMPERING:
-                e.valve.warmOutputUid = (this.objectStore.get(e.valve.warmOutputUid) as SystemNode).getCalculationNode(
+                e.valve.warmOutputUid = (this.globalStore.get(e.valve.warmOutputUid) as SystemNode).getCalculationNode(
                     context,
                     this.uid
                 ).uid;
                 break;
             case BigValveType.RPZD_HOT_COLD:
-                e.valve.hotOutputUid = (this.objectStore.get(e.valve.hotOutputUid) as SystemNode).getCalculationNode(
+                e.valve.hotOutputUid = (this.globalStore.get(e.valve.hotOutputUid) as SystemNode).getCalculationNode(
                     context,
                     this.uid
                 ).uid;
-                e.valve.coldOutputUid = (this.objectStore.get(e.valve.coldOutputUid) as SystemNode).getCalculationNode(
+                e.valve.coldOutputUid = (this.globalStore.get(e.valve.coldOutputUid) as SystemNode).getCalculationNode(
                     context,
                     this.uid
                 ).uid;

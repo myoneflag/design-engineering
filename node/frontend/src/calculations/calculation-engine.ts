@@ -340,8 +340,9 @@ export default class CalculationEngine {
 
                 (e as any).__calc__ = true;
                 DrawableObjectFactory.buildGhost(
-                    () => e,
+                    e,
                     this.globalStore,
+                    this.doc,
                     this.globalStore.levelOfEntity.get(o.uid)!,
                     undefined
                 );

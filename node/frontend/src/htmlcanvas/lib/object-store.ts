@@ -8,9 +8,6 @@ import BackedConnectable from "./BackedConnectable";
 import { ConnectableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 
 export class ObjectStore extends Map<string, BaseBackedObject> {
-    vm: Vue;
-    doc: DocumentState;
-
     dependsOn = new Map<string, Map<string, Set<string>>>();
     dependedBy = new Map<string, Map<string, Set<string>>>();
     protected connections = new Map<string, string[]>();
@@ -18,9 +15,18 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
     protected graveyard = new Map<string, BaseBackedObject>();
     protected preserveList = new Set<string>();
 
-    constructor(vm: Vue) {
+    constructor() {
         super();
-        this.vm = vm;
+    }
+
+    clear() {
+        super.clear();
+        this.dependsOn.clear();
+        this.dependedBy.clear();
+        this.connections.clear();
+        this.oldEndpoints.clear();
+        this.graveyard.clear();
+        this.preserveList.clear();
     }
 
     getConnections(uid: string): string[] {

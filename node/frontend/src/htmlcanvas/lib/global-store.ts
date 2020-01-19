@@ -50,6 +50,13 @@ export class GlobalStore extends ObjectStore {
 
     lastDoc: DocumentState | undefined = undefined;
 
+    clear() {
+        super.clear();
+        this.entitiesInLevel.clear();
+        this.levelOfEntity.clear();
+        this.calculationStore.clear();
+    }
+
     set(key: string, value: BaseBackedObject, levelUid?: string | null): this {
         if (levelUid === undefined) {
             throw new Error("Need a level to set in global store.");
@@ -67,61 +74,6 @@ export class GlobalStore extends ObjectStore {
         this.levelOfEntity.delete(key);
         this.entitiesInLevel.get(lvl)!.delete(key);
         return super.delete(key);
-    }
-
-    resetLevel(levelUid: string | null, entities: DrawableEntityConcrete[], doc: DocumentState, vm: Vue) {
-        if (this.doc !== doc && this.doc !== undefined) {
-            throw new Error("doc is different");
-        }
-        this.doc = doc;
-        let inLevelNow = new Set<string>();
-        if (this.entitiesInLevel.has(levelUid)) {
-            inLevelNow = new Set(this.entitiesInLevel.get(levelUid)!);
-        }
-
-        const goal = new Set(entities.map((e) => e.uid));
-        // Delete gone ones
-        inLevelNow.forEach((u) => {
-            if (!goal.has(u)) {
-                this.delete(u);
-            }
-        });
-
-        // add new ones
-        entities.forEach((e) => {
-            if (!inLevelNow.has(e.uid)) {
-                const o = DrawableObjectFactory.buildGhost(
-                    () => {
-                        if (levelUid !== null && !doc.drawing.levels.hasOwnProperty(levelUid)) {
-                            throw new Error("level not found " + levelUid);
-                        }
-                        return levelUid ? doc.drawing.levels[levelUid].entities[e.uid] : doc.drawing.shared[e.uid];
-                    },
-                    this,
-                    levelUid,
-                    vm
-                );
-                // this.set(e.uid, o, levelUid); Already done by buildGhost
-            }
-        });
-
-        // update existing ones
-        entities.forEach((e) => {
-            if (inLevelNow.has(e.uid)) {
-                if (e.type === EntityType.PIPE) {
-                    this.updatePipeEndpoints(e.uid);
-                }
-            }
-        });
-    }
-
-    onLevelDelete(levelUid: string) {
-        if (this.entitiesInLevel.get(levelUid)) {
-            this.entitiesInLevel.get(levelUid)!.forEach((euid) => {
-                this.delete(euid);
-            });
-        }
-        this.entitiesInLevel.delete(levelUid);
     }
 
     getOrCreateCalculation(entity: PipeEntity): PipeCalculation;
@@ -199,6 +151,17 @@ export class GlobalStore extends ObjectStore {
     clearCalculations() {
         this.calculationStore.clear();
     }
+
+    onLevelDelete(levelUid: string) {
+        if (this.entitiesInLevel.get(levelUid)) {
+            this.entitiesInLevel.get(levelUid)!.forEach((euid) => {
+                this.delete(euid);
+            });
+        }
+        this.entitiesInLevel.delete(levelUid);
+    }
+
+
 
     sanityCheck(doc: DocumentState) {
         if (this.lastDoc !== undefined && doc !== this.lastDoc) {

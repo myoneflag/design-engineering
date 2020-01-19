@@ -64,54 +64,61 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to
     // complete the type.
 
-    drawInternal({ ctx, doc }: DrawingContext, { active, selected }: DrawingArgs): void {
-        // asdf
-        const scale = matrixScale(ctx.getTransform());
+    drawInternal({ ctx, doc, vp }: DrawingContext, { active, selected }: DrawingArgs): void {
+        try {
+            // asdf
+            const scale = matrixScale(ctx.getTransform());
 
-        if (this.objectStore.getConnections(this.entity.uid).length === 2) {
-            // TODO: draw an angled arc.
-        } // else {
+            if (this.globalStore.getConnections(this.entity.uid).length === 2) {
+                // TODO: draw an angled arc.
+            } // else {
 
-        ctx.lineCap = "round";
+            ctx.lineCap = "round";
 
-        const minJointLength = this.FITTING_DIAMETER_PIXELS / scale;
+            const minJointLength = this.FITTING_DIAMETER_PIXELS / scale;
 
-        const defaultWidth = Math.max(this.FITTING_DIAMETER_PIXELS / scale, 25 / this.toWorldLength(1));
-        this.lastDrawnWidth = defaultWidth;
-        this.lastDrawnLength = Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM));
+            const defaultWidth = Math.max(this.FITTING_DIAMETER_PIXELS / scale, 25 / this.toWorldLength(1));
+            this.lastDrawnWidth = defaultWidth;
+            this.lastDrawnLength = Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM));
 
-        this.lastRadials = this.getRadials();
-        this.lastRadials.forEach(([wc, pipe]) => {
-            let targetWidth = defaultWidth;
-            if (pipe.entity.type === EntityType.PIPE) {
-                if ((pipe as Pipe).lastDrawnWidth) {
-                    targetWidth = Math.max(
-                        defaultWidth,
-                        (pipe as Pipe).lastDrawnWidth + this.FITTING_DIAMETER_PIXELS / scale
-                    );
+            this.lastRadials = this.getRadials();
+            this.lastRadials.forEach(([wc, pipe]) => {
+                let targetWidth = defaultWidth;
+                if (pipe.entity.type === EntityType.PIPE) {
+                    if ((pipe as Pipe).lastDrawnWidth) {
+                        targetWidth = Math.max(
+                            defaultWidth,
+                            (pipe as Pipe).lastDrawnWidth + this.FITTING_DIAMETER_PIXELS / scale
+                        );
+                    }
                 }
-            }
-            const oc = this.toObjectCoord(wc);
-            const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
-            const small = vec.normalize().multiply(Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM)));
-            if (active && selected) {
-                ctx.beginPath();
-                ctx.lineWidth = targetWidth + (this.FITTING_DIAMETER_PIXELS * 2) / scale;
+                const oc = this.toObjectCoord(wc);
+                const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
+                const small = vec.normalize().multiply(Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM)));
+                if (active && selected) {
+                    ctx.beginPath();
+                    ctx.lineWidth = targetWidth + (this.FITTING_DIAMETER_PIXELS * 2) / scale;
 
-                this.lastDrawnWidth = defaultWidth + (this.FITTING_DIAMETER_PIXELS * 2) / scale;
-                ctx.strokeStyle = lighten(this.displayEntity(doc).color!.hex, 50, 0.5);
+                    this.lastDrawnWidth = defaultWidth + (this.FITTING_DIAMETER_PIXELS * 2) / scale;
+                    ctx.strokeStyle = lighten(this.displayEntity(doc).color!.hex, 50, 0.5);
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(small.x, small.y);
+                    ctx.stroke();
+                }
+
+                ctx.strokeStyle = this.displayEntity(doc).color!.hex;
+                ctx.lineWidth = targetWidth;
+                ctx.beginPath();
                 ctx.moveTo(0, 0);
                 ctx.lineTo(small.x, small.y);
                 ctx.stroke();
-            }
-
-            ctx.strokeStyle = this.displayEntity(doc).color!.hex;
-            ctx.lineWidth = targetWidth;
+            });
+        } catch (e) {
+            ctx.fillStyle = "rgba(255, 100, 100, 0.4)";
             ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(small.x, small.y);
-            ctx.stroke();
-        });
+            ctx.arc(0, 0, this.toObjectLength(vp.toWorldLength(10)), 0, Math.PI * 2);
+            ctx.fill();
+        }
     }
 
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
@@ -147,7 +154,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
     }
 
     get friendlyTypeName(): string {
-        const connections = this.objectStore.getConnections(this.entity.uid);
+        const connections = this.globalStore.getConnections(this.entity.uid);
         if (connections.length === 4) {
             return "Cross fitting";
         } else if (connections.length === 3) {
@@ -195,10 +202,10 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
         let smallestDiameterMM: number | undefined;
         let largestDiameterMM: number | undefined;
-        const connections = this.objectStore.getConnections(this.entity.uid);
+        const connections = this.globalStore.getConnections(this.entity.uid);
         const internals: string[] = [];
         connections.forEach((p) => {
-            const pipe = this.objectStore.get(p) as Pipe;
+            const pipe = this.globalStore.get(p) as Pipe;
             const thisDiameter = parseCatalogNumberExact(
                 context.globalStore.getCalculation(pipe.entity)!.realInternalDiameterMM
             )!;

@@ -65,7 +65,7 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         const baseRadius = this.baseRadius;
         const radius = Math.max(baseRadius, vp.toWorldLength(baseRadius / 50));
 
-        const filled = fillDefaultLoadNodeFields(context.doc, this.objectStore, this.entity);
+        const filled = fillDefaultLoadNodeFields(context.doc, this.globalStore, this.entity);
 
         if (args.selected) {
             const sr = Math.max(baseRadius + 20, vp.toWorldLength(baseRadius / 50 + 2));

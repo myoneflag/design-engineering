@@ -41,7 +41,19 @@
                                 Created: {{ new Date(doc.createdOn).toLocaleDateString() }}
                             </b-card-text>
 
-                            <b-button :to="'/document/' + doc.id" variant="primary">Open Drawing</b-button>
+                            <b-dropdown split :split-to="'/document/' + doc.id" variant="primary" text="Open Drawing" class="m-2" no-caret>
+
+                                <b-dropdown-item @click="clone(doc)">Make Copy</b-dropdown-item>
+                                <b-dropdown-item
+                                        href="#"
+                                        v-if="canDeleteDoc(doc)"
+                                        variant="danger"
+                                        @click="deleteDoc(doc)"
+
+                                >
+                                    Delete
+                                </b-dropdown-item>
+                            </b-dropdown>
                         </b-card>
                     </b-col>
                 </b-row>
@@ -55,9 +67,10 @@ import { Component, Vue } from "vue-property-decorator";
 import MainNavBar from "../../src/components/MainNavBar.vue";
 import { State, Action, Getter } from "vuex-class";
 import { DocumentState } from "../../src/store/document/types";
-import { Document } from "../../../common/src/models/Document";
-import { createDocument, getDocuments } from "../api/document";
+import { canUserDeleteDocument, Document } from "../../../common/src/models/Document";
+import { cloneDocument, createDocument, deleteDocument, getDocuments } from "../api/document";
 import { User } from "../../../common/src/models/User";
+import Doc = Mocha.reporters.Doc;
 
 @Component({
     components: {
@@ -69,6 +82,15 @@ export default class Home extends Vue {
     loaded: boolean = false;
 
     mounted() {
+        this.reloadDocuments();
+    }
+
+    get profile(): User {
+        return this.$store.getters["profile/profile"];
+    }
+
+    reloadDocuments() {
+
         // fill documents
         getDocuments().then((res) => {
             if (res.success) {
@@ -81,10 +103,6 @@ export default class Home extends Vue {
                 });
             }
         });
-    }
-
-    get profile(): User {
-        return this.$store.getters["profile/profile"];
     }
 
     createDocument() {
@@ -103,6 +121,50 @@ export default class Home extends Vue {
             this.$bvToast.toast("You need to belong to an organization to create a document", {
                 variant: "danger",
                 title: "Error creating new document"
+            });
+        }
+    }
+
+    canDeleteDoc(doc: Document) {
+        if (!this.profile) {
+            return false;
+        }
+
+        return canUserDeleteDocument(doc, this.profile);
+    }
+
+    async deleteDoc(doc: Document) {
+        const confirm = await this.$bvModal.msgBoxConfirm(
+            'Are you sure you want to delete the document "' + doc.metadata.title + '"?',
+        );
+        if (confirm) {
+            const res = await deleteDocument(doc.id);
+            if (res.success) {
+                this.reloadDocuments();
+            } else {
+                this.$bvToast.toast(res.message, {
+                    variant: 'danger',
+                    title: 'Failed to Delete Drawing',
+                });
+            }
+        }
+    }
+
+    async clone(doc: Document) {
+        if (this.profile && this.profile.organization) {
+            const res = await cloneDocument(doc.id, this.profile.organization.id);
+            if (res.success) {
+                this.reloadDocuments();
+            } else {
+                this.$bvToast.toast(res.message, {
+                    variant: 'danger',
+                    title: 'Error Making Copy',
+                });
+            }
+        } else {
+            this.$bvToast.toast('You need to be part of an organization to store drawings', {
+                variant: 'danger',
+                title: 'Cannot Make Copy',
             });
         }
     }

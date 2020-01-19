@@ -20,9 +20,8 @@ export default abstract class DrawableObject {
     centered: boolean = false;
     calculated: boolean = false;
 
-    constructor(parent: DrawableObject | null, layer: Layer) {
+    constructor(parent: DrawableObject | null) {
         this.parentInternal = parent;
-        this.layer = layer;
     }
 
     get parent(): DrawableObject | null {

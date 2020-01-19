@@ -6,9 +6,15 @@ import { OPERATION_NAMES } from "../../common/src/api/document/operation-transfo
 import { applyDiffNative } from "../../common/src/api/document/state-ot-apply";
 import { CURRENT_VERSION, upgrade0to1 } from "../../common/src/api/upgrade";
 import { diffState } from "../../common/src/api/document/state-differ";
+import { stringify } from "querystring";
 
 export async function upgradeDocument(doc: Document) {
-    let drawing = getInitialDrawing(doc);
+    const drawing = getInitialDrawing(doc);
+    let upgraded = getInitialDrawing();
+
+    if (doc.version === CURRENT_VERSION) {
+        return;
+    }
 
     const ops = await Operation.createQueryBuilder('operation')
         .where('operation.document = :document', {document: doc.id})
@@ -19,51 +25,51 @@ export async function upgradeDocument(doc: Document) {
         switch (op.operation.type) {
             case OPERATION_NAMES.DIFF_OPERATION:
                 applyDiffNative(drawing, op.operation.diff);
+
+                let newUpgraded = cloneSimple(drawing);
+                switch (doc.version) {
+                    case 0:
+                        console.log('upgrading doc ' + doc.id + ' from version 0 to 1');
+                        newUpgraded = upgrade0to1(newUpgraded);
+                    // noinspection FallThroughInSwitchStatementJS
+                    case 1:
+                        // done
+                        break;
+                }
+
+                const upgradedOps = diffState(upgraded, newUpgraded, undefined);
+                upgraded = newUpgraded;
+                if (upgradedOps.length) {
+                    if (upgradedOps[0].type === OPERATION_NAMES.DIFF_OPERATION) {
+                        if (stringify(op.operation) !== stringify(upgradedOps[0]) ) {
+                            op.operation = upgradedOps[0];
+                            await op.save();
+                        }
+                    } else {
+                        throw new Error('diffState returned something unusual');
+                    }
+                } else {
+                    await op.remove();
+                }
                 break;
             case OPERATION_NAMES.COMMITTED_OPERATION:
                 break;
         }
     }
 
-    const original = cloneSimple(drawing);
     // upgrade
-    switch (doc.version) {
-        case 0:
-            console.log('upgrading doc ' + doc.id + ' from version 0 to 1');
-            drawing = upgrade0to1(drawing);
-        // noinspection FallThroughInSwitchStatementJS
-        case 1:
-            // done
-            break;
-    }
-
-    const upgradeOp = diffState(original, drawing, undefined);
-    const inverse = diffState(drawing, original, undefined);
     doc.version = CURRENT_VERSION;
 
-    const nextOpIndex = ops.length ? ops[ops.length - 1].orderIndex + 1 : 1;
-    if (upgradeOp.length) {
-        console.log('writing op for doc: ' + JSON.stringify(upgradeOp));
-        const newOp: Operation = Operation.create();
-        newOp.orderIndex = nextOpIndex;
-        newOp.document = Promise.resolve(doc);
-        newOp.operation = upgradeOp[0];
-
-        await newOp.save();
-
-        const committedOp = Operation.create();
-        committedOp.orderIndex = nextOpIndex + 1;
-        committedOp.document = Promise.resolve(doc);
-        committedOp.operation = {
-            type: OPERATION_NAMES.COMMITTED_OPERATION,
-            id: nextOpIndex + 1,
-        };
-
-        await committedOp.save();
-    }
+    doc.metadata = drawing.metadata.generalInfo;
+    await doc.save();
 }
 
-export function getInitialDrawing(doc: Document) {
+export function getInitialDrawing(doc?: Document) {
+    if (!doc) {
+        // latest
+        return cloneSimple(initialDrawing);
+    }
+
     switch (doc.version) {
         case 0:
         case 1:

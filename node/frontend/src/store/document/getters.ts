@@ -2,6 +2,9 @@ import { GetterTree } from "vuex";
 import { DocumentState, initialDocumentState} from "./types";
 import { RootState } from "../types";
 import { Level } from "../../../../common/src/api/document/drawing";
+import { OPERATION_NAMES, OperationTransformConcrete } from "../../../../common/src/api/document/operation-transforms";
+import { Operation } from "../../../../common/src/models/Operation";
+import { assertUnreachable } from "../../../../common/src/api/config";
 
 export const getters: GetterTree<DocumentState, RootState> = {
     title(state): string {
@@ -50,5 +53,24 @@ export const getters: GetterTree<DocumentState, RootState> = {
 
     isSyncing(state): boolean {
         return state.optimisticHistory.length > 0;
+    },
+
+    discreteHistory(state): Operation[][] {
+        const result: Operation[][] = [];
+        let build: Operation[] = [];
+        for (const op of state.fullHistory) {
+            switch (op.operation.type) {
+                case OPERATION_NAMES.DIFF_OPERATION:
+                    build.push(op);
+                    break;
+                case OPERATION_NAMES.COMMITTED_OPERATION:
+                    result.push(build);
+                    build = [];
+                    break;
+                default:
+                    assertUnreachable(op.operation);
+            }
+        }
+        return result;
     },
 };

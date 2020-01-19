@@ -13,6 +13,7 @@ import { cloneSimple } from "../../../common/src/lib/utils";
 import { applyDiffNative } from "../../../common/src/api/document/state-ot-apply";
 import { diffState } from "../../../common/src/api/document/state-differ";
 import { CURRENT_VERSION } from "../../../common/src/api/upgrade";
+import { MoreThan } from "typeorm";
 
 export class DocumentController {
     @ApiHandleError()
@@ -84,7 +85,7 @@ export class DocumentController {
                 success: true,
                 data: doc,
             });
-        })
+        });
     }
 
     @ApiHandleError()
@@ -190,6 +191,115 @@ export class DocumentController {
             });
         });
     }
+
+    @ApiHandleError()
+    @AuthRequired()
+    public async findOperations(req: Request, res: Response, next: NextFunction, session: Session) {
+        await withDocument(Number(req.params.id), res, session, AccessType.READ, async (doc) => {
+            console.log(JSON.stringify(req.query));
+            const after = req.query.after === undefined ? -1 : Number(req.query.after) ;
+            const ops = await Operation
+                .createQueryBuilder('operation')
+                .leftJoinAndSelect('operation.blame', 'user')
+                .where('operation.document = :document', {document: doc.id})
+                .andWhere('operation."orderIndex" > :after', {after})
+                .orderBy('"orderIndex"', 'ASC')
+                .getMany();
+
+            res.status(200).send({
+                success: true,
+                data: ops,
+            });
+        });
+    }
+
+    @ApiHandleError()
+    @AuthRequired()
+    public async clone(req: Request, res: Response, next: NextFunction, session: Session) {
+        const user = await session.user;
+        const targetId = Number(req.params.id);
+
+        withDocument(targetId, res, session, AccessType.READ, async (target) => {
+
+            const userWithOrg = await User.findOne({username: user.username}, {relations: ['organization']});
+            const org = userWithOrg.organization;
+            if (user.accessLevel >= AccessLevel.MANAGER) {
+                // We can only create in our own org.
+                if (org === undefined || req.body.organization !== org.id) {
+                    res.status(401).send({
+                        success: false,
+                        message: "You can only create documents in your own organization. You are in " + (org ? org.id : "no organization"),
+                    });
+                    return;
+                }
+            }
+
+            let qorg = req.body.organization;
+            if (!qorg && org) {
+                qorg = org.id;
+            }
+
+            console.log('query org id: ' + qorg);
+
+            await withOrganization(qorg, res, session, AccessType.READ, async (org1) => {
+                const doc = Document.create();
+                doc.organization = Promise.resolve(org1);
+                doc.createdBy = user;
+                doc.createdOn = new Date();
+                doc.metadata = target.metadata;
+                doc.metadata.title = 'Copy of ' + doc.metadata.title;
+
+                await doc.save();
+
+                const ops = await Operation.createQueryBuilder('operation')
+                    .where('operation.document = :document', {document: target.id})
+                    .orderBy('"orderIndex"', 'ASC')
+                    .getMany();
+
+                let lastOrderIndex = 0;
+                for (const op of ops) {
+                    const newOp = Operation.create();
+                    Object.assign(newOp, op);
+                    newOp.document = Promise.resolve(doc);
+                    await newOp.save();
+                    lastOrderIndex = newOp.orderIndex;
+                }
+
+                const drawing = cloneSimple(initialDrawing);
+                const drawingWithTitle = cloneSimple(initialDrawing);
+                drawingWithTitle.metadata.generalInfo.title = 'Copy of ' + drawingWithTitle.metadata.generalInfo.title;
+
+
+                const titleChangeDiff = diffState(drawing, drawingWithTitle, undefined);
+
+                if (titleChangeDiff.length) {
+                    const titleChangeOp = Operation.create();
+                    titleChangeOp.orderIndex = lastOrderIndex + 1;
+                    titleChangeOp.document = Promise.resolve(doc);
+                    titleChangeOp.blame = session.user;
+                    titleChangeOp.dateTime = new Date();
+                    titleChangeOp.operation = titleChangeDiff[0];
+
+
+                    const commitOp = Operation.create();
+                    commitOp.orderIndex = lastOrderIndex + 2;
+                    commitOp.document = Promise.resolve(doc);
+                    commitOp.blame = session.user;
+                    commitOp.dateTime = new Date();
+                    commitOp.operation = { type: OPERATION_NAMES.COMMITTED_OPERATION, id: lastOrderIndex + 2};
+
+                    await titleChangeOp.save();
+                    await commitOp.save();
+                }
+
+                res.status(200).send({
+                    success: true,
+                    data: doc,
+                });
+            });
+
+        });
+    }
 }
 
 const operationQueues = new  Map<number, OperationTransformConcrete[][]>();
@@ -248,7 +358,7 @@ async function ensureDocumentLoaded(id: number) {
     }
 }
 
-async function receiveOperations(id: number, ops: OperationTransformConcrete[]) {
+async function receiveOperations(id: number, ops: OperationTransformConcrete[], user: User) {
     if (ops.length === 0) {
         return;
     }
@@ -274,6 +384,8 @@ async function receiveOperations(id: number, ops: OperationTransformConcrete[]) 
     await Promise.all(ops.map((op) => {
         const toStore = Operation.create();
         toStore.document = Promise.resolve(doc);
+        toStore.dateTime = new Date();
+        toStore.blame = user;
 
         toStore.operation = op;
         toStore.orderIndex = op.id;
@@ -366,10 +478,10 @@ router.ws('/:id/websocket', (ws, req) => {
 
                 // We can afford to move this later (we need it after ensureDocumentLoaded) because users are not
                 // expected to start giving us messages until after the document is loaded.
-                ws.on('message', message => {
+                ws.on('message', (message) => {
                     // received operations
                     const ops: OperationTransformConcrete[] = JSON.parse(message as string);
-                    receiveOperations(doc.id, ops);
+                    receiveOperations(doc.id, ops, session.user);
                 });
 
 
@@ -398,6 +510,8 @@ router.post('/:id/reset', controller.reset.bind(controller));
 
 router.post('/', controller.create.bind(controller));
 router.delete('/:id', controller.delete.bind(controller));
+router.post('/:id/clone', controller.clone.bind(controller));
+router.get('/:id/operations', controller.findOperations.bind(controller));
 router.put('/:id', controller.update.bind(controller));
 router.get('/:id', controller.findOne.bind(controller));
 router.get('/', controller.find.bind(controller));

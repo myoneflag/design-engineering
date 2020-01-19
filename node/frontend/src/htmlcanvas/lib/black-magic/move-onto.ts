@@ -45,26 +45,27 @@ export function moveOnto(
             loser = tmp;
         }
 
-        const incidental = context.objectStore
+        const incidental = context.globalStore
             .getConnections(source.uid)
-            .filter((puid) => context.objectStore.getConnections(dest.uid).includes(puid));
+            .filter((puid) => context.globalStore.getConnections(dest.uid).includes(puid));
         incidental.forEach((pipe) => {
             // Non cascadingly delete
-            context.$store.dispatch("document/deleteEntity", context.objectStore.get(pipe)!.entity);
+            context.$store.dispatch("document/deleteEntity", context.globalStore.get(pipe)!.entity);
         });
 
-        const pipeE = context.objectStore.getConnections(loser.uid).map((puid) => {
-            return cloneSimple(context.objectStore.get(puid)!.entity) as PipeEntity;
-        });
 
         survivor.entity.center.x = finalCenter.x;
         survivor.entity.center.y = finalCenter.y;
 
-        cloneSimple(context.objectStore.getConnections(loser.uid)).forEach((puid) => {
-            const pipe = context.objectStore.get(puid)!.entity as PipeEntity;
+        cloneSimple(context.globalStore.getConnections(loser.uid)).forEach((puid) => {
+            const pipe = context.globalStore.get(puid)!.entity as PipeEntity;
             assert(pipe.type === EntityType.PIPE);
 
             assert((pipe.endpointUid[0] === loser.uid) !== (pipe.endpointUid[1] === loser.uid));
+
+            //pipe.endpointUid[0] = loser.uid ? survivor.uid : pipe.endpointUid[0];
+            //pipe.endpointUid[1] = loser.uid ? survivor.uid : pipe.endpointUid[1];
+
 
             context.$store.dispatch("document/updatePipeEndpoints", {
                 entity: pipe,
@@ -75,7 +76,7 @@ export function moveOnto(
             });
         });
 
-        if (context.objectStore.has(loser.uid)) {
+        if (context.globalStore.has(loser.uid)) {
             context.deleteEntity(loser, false);
         }
     }

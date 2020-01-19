@@ -241,7 +241,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
     prepareDelete(context: CanvasContext): BaseBackedObject[] {
         const result: BaseBackedObject[] = [];
         for (const suid of this.entity.roughInsInOrder) {
-            result.push(...this.objectStore.get(this.entity.roughIns[suid].uid)!.prepareDelete(context));
+            result.push(...this.globalStore.get(this.entity.roughIns[suid].uid)!.prepareDelete(context));
         }
         result.push(this);
 
@@ -250,7 +250,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
 
     offerJoiningInteraction(systemUid: string, interaction: Interaction) {
         if (systemUid in this.entity.roughIns) {
-            const obj = this.objectStore.get(this.entity.roughIns[systemUid].uid);
+            const obj = this.globalStore.get(this.entity.roughIns[systemUid].uid);
             if (obj && obj.offerInteraction(interaction)) {
                 return [obj.entity, this.entity];
             }
@@ -290,7 +290,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         e.uid += ".calculation";
 
         for (const suid of e.roughInsInOrder) {
-            e.roughIns[suid].uid = this.objectStore
+            e.roughIns[suid].uid = this.globalStore
                 .get(e.roughIns[suid].uid)!
                 .getCalculationNode(context, this.uid).uid;
         }
@@ -309,7 +309,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
     getNeighbours(): BaseBackedObject[] {
         const res: BaseBackedObject[] = [];
         for (const suid of this.entity.roughInsInOrder) {
-            res.push(...this.objectStore.get(this.entity.roughIns[suid].uid)!.getNeighbours());
+            res.push(...this.globalStore.get(this.entity.roughIns[suid].uid)!.getNeighbours());
         }
         return res;
     }

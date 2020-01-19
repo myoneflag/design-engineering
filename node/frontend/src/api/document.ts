@@ -4,6 +4,8 @@ import axios from "axios";
 import { Document } from "../../../common/src/models/Document";
 import { Organization } from "../../../common/src/models/Organization";
 import { GeneralInfo } from "../../../common/src/api/document/drawing";
+import { OperationTransformConcrete } from "../../../common/src/api/document/operation-transforms";
+import { Operation } from "../../../common/src/models/Operation";
 
 const wss = new Map<number, WebSocket>();
 
@@ -175,6 +177,31 @@ export async function resetDocument(id: number): Promise<APIResult<void>> {
 export async function deleteDocument(id: number): Promise<APIResult<void>> {
     try {
         return (await axios.delete("/api/documents/" + id)).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return { success: false, message: e.response.data.message };
+        } else {
+            return { success: false, message: e.message };
+        }
+    }
+}
+
+export async function cloneDocument(id: number, organization: string): Promise<APIResult<Document>> {
+    try {
+        return (await axios.post("/api/documents/" + id + "/clone", {organization})).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return { success: false, message: e.response.data.message };
+        } else {
+            return { success: false, message: e.message };
+        }
+    }
+}
+
+
+export async function getDocumentOperations(id: number, after: number): Promise<APIResult<Operation[]>> {
+    try {
+        return (await axios.get("/api/documents/" + id + "/operations", {params: {after}}, )).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };

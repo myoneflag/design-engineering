@@ -107,8 +107,8 @@ export function ConnectableObject<
                         if (hasLowerInBetween) {
                             // draw
                             const maxWidthWorld = Math.max(
-                                (this.objectStore.get(r.uid) as Pipe).lastDrawnWidth,
-                                (this.objectStore.get(huid) as Pipe).lastDrawnWidth
+                                (this.globalStore.get(r.uid) as Pipe).lastDrawnWidth,
+                                (this.globalStore.get(huid) as Pipe).lastDrawnWidth
                             );
                             const maxWidth = this.toObjectLength(maxWidthWorld) + 2;
 
@@ -185,12 +185,12 @@ export function ConnectableObject<
         )
         getRadials(exclude: string | null = null): Array<[Coord3D, BaseBackedObject]> {
             const result: Array<[Coord3D, BaseBackedObject]> = [];
-            this.objectStore.getConnections(this.entity.uid).forEach((uid) => {
+            this.globalStore.getConnections(this.entity.uid).forEach((uid) => {
                 if (uid === exclude) {
                     return;
                 }
 
-                const connected = this.objectStore.get(uid) as BaseBackedObject;
+                const connected = this.globalStore.get(uid) as BaseBackedObject;
 
                 if (connected === undefined) {
                     throw new Error("connectable not found: " + uid + " of " + JSON.stringify(this.entity));
@@ -206,9 +206,9 @@ export function ConnectableObject<
                                 " " +
                                 pipeObject.uid +
                                 "\n" +
-                                JSON.stringify(this.objectStore.getConnections(this.entity.uid)) +
+                                JSON.stringify(this.globalStore.getConnections(this.entity.uid)) +
                                 " \n" +
-                                JSON.stringify(this.objectStore.get(this.uid)!.entity)
+                                JSON.stringify(this.globalStore.get(this.uid)!.entity)
                         );
                     }
 
@@ -285,7 +285,7 @@ export function ConnectableObject<
             const angles = this.getSortedAngles();
             let candidates: Array<[number, number]> = [];
 
-            if (this.objectStore.getConnections(this.entity.uid).length >= 2) {
+            if (this.globalStore.getConnections(this.entity.uid).length >= 2) {
                 for (let i = 0; i < angles.length; i++) {
                     const a = angles[i];
                     const b = angles[(i + 1) % angles.length];
@@ -301,7 +301,7 @@ export function ConnectableObject<
                     [candidates[0][0] + (Math.PI * 3) / 4, -1],
                     [candidates[0][0] - (Math.PI * 3) / 4, -1]
                 );
-            } else if (this.objectStore.getConnections(this.entity.uid).length === 1) {
+            } else if (this.globalStore.getConnections(this.entity.uid).length === 1) {
                 candidates = [
                     [angles[0] + Math.PI, -1],
                     [angles[0] + Math.PI + Math.PI / 4, -1],
@@ -354,11 +354,11 @@ export function ConnectableObject<
             if (isStraight) {
                 let onePipe!: PipeEntity;
                 // If we were straight, restore the pipe first
-                const ends = this.objectStore
+                const ends = this.globalStore
                     .getConnections(this.entity.uid)
                     .slice()
                     .map((cuid) => {
-                        const c = this.objectStore.get(cuid) as Pipe;
+                        const c = this.globalStore.get(cuid) as Pipe;
                         onePipe = c.entity;
                         const other =
                             c.entity.endpointUid[0] === this.uid ? c.entity.endpointUid[1] : c.entity.endpointUid[0];
@@ -377,11 +377,11 @@ export function ConnectableObject<
 
             if (this.entity.type === EntityType.FITTING || isStraight) {
                 const result: BaseBackedObject[] = [];
-                this.objectStore
+                this.globalStore
                     .getConnections(this.entity.uid)
                     .slice()
                     .forEach((c) => {
-                        const o = this.objectStore.get(c);
+                        const o = this.globalStore.get(c);
                         if (o instanceof Pipe) {
                             result.push(...o.prepareDelete(context));
                         } else {
@@ -396,7 +396,7 @@ export function ConnectableObject<
                 return result;
             } else {
                 // we are an irregular connetable. Instead of deleting, turn into a fitting instead.
-                const conns = this.objectStore.getConnections(this.uid);
+                const conns = this.globalStore.getConnections(this.uid);
                 if (conns.length === 0) {
                     // just an hero
                     return [this];
@@ -407,22 +407,22 @@ export function ConnectableObject<
                         center: this.entity.center,
                         color: null,
                         parentUid: this.entity.parentUid,
-                        systemUid: determineConnectableSystemUid(this.objectStore, this.entity)!,
+                        systemUid: determineConnectableSystemUid(this.globalStore, this.entity)!,
                         type: EntityType.FITTING,
                         uid: uuid()
                     };
                     context.$store.dispatch("document/addEntity", fitting);
 
                     for (const uid of conns.slice()) {
-                        const p = this.objectStore.get(uid) as Pipe;
+                        const p = this.globalStore.get(uid) as Pipe;
                         if (p.entity.endpointUid[0] === this.uid) {
                             p.entity.endpointUid[0] = fitting.uid;
                         } else {
                             p.entity.endpointUid[1] = fitting.uid;
                         }
                     }
-                    (this.objectStore.get(fitting.uid) as Fitting).debase(context);
-                    (this.objectStore.get(fitting.uid) as Fitting).rebase(context);
+                    (this.globalStore.get(fitting.uid) as Fitting).debase(context);
+                    (this.globalStore.get(fitting.uid) as Fitting).rebase(context);
 
                     return [this];
                 }
@@ -525,8 +525,8 @@ export function ConnectableObject<
                 }
             }
 
-            const fromo = this.objectStore.get(from.connection);
-            const too = this.objectStore.get(to.connection);
+            const fromo = this.globalStore.get(from.connection);
+            const too = this.globalStore.get(to.connection);
             if (!fromo || fromo.type !== EntityType.PIPE || !too || too.type !== EntityType.PIPE) {
                 return 0;
             }
@@ -583,7 +583,7 @@ export function ConnectableObject<
 
         getCalculationConnectionGroups(context: CalculationContext): EdgeLikeEntity[][] {
             const edgeLikes = this.getCalculationConnections()
-                .map((puid) => this.objectStore.get(puid)!.entity as EdgeLikeEntity)
+                .map((puid) => this.globalStore.get(puid)!.entity as EdgeLikeEntity)
                 .sort((a, b) => getEdgeLikeHeightAboveGroundM(a, context) - getEdgeLikeHeightAboveGroundM(b, context));
 
             const res: EdgeLikeEntity[][] = [];
@@ -617,7 +617,7 @@ export function ConnectableObject<
                         JSON.stringify(this.entity) +
                         "\n " +
                         "connections: " +
-                        JSON.stringify(this.objectStore.getConnections(this.uid)) +
+                        JSON.stringify(this.globalStore.getConnections(this.uid)) +
                         "" +
                         "arg: " +
                         connectionUid
@@ -648,7 +648,7 @@ export function ConnectableObject<
             }
 
             const result: Array<[FittingEntity, PipeEntity] | [FittingEntity]> = [];
-            const systemUid = determineConnectableSystemUid(this.objectStore, this.entity)!;
+            const systemUid = determineConnectableSystemUid(this.globalStore, this.entity)!;
 
             let lastGroup: EdgeLikeEntity[] | undefined;
 
@@ -697,12 +697,12 @@ export function ConnectableObject<
         }
 
         getCalculationConnections(): string[] {
-            return [...this.objectStore.getConnections(this.uid), ...super.getCalculationConnections()];
+            return [...this.globalStore.getConnections(this.uid), ...super.getCalculationConnections()];
         }
 
         getNeighbours(): BaseBackedObject[] {
-            const conn = this.objectStore.getConnections(this.uid);
-            return [...conn.map((uid) => this.objectStore.get(uid)!), ...super.getNeighbours()];
+            const conn = this.globalStore.getConnections(this.uid);
+            return [...conn.map((uid) => this.globalStore.get(uid)!), ...super.getNeighbours()];
         }
 
         @Cached((kek) => new Set(kek.getParentChain().map((o) => o.uid)))

@@ -1,4 +1,4 @@
-import { DocumentState} from "../../../src/store/document/types";
+import { DocumentState, EntityParam } from "../../../src/store/document/types";
 import { MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
 import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
@@ -17,11 +17,6 @@ import { Coord, DrawableEntity, WithID } from "../../../../common/src/api/docume
 
 export default interface Layer {
     uidsInOrder: string[];
-    selectedEntities: DrawableEntityConcrete[];
-    selectedObjects: BaseBackedObject[];
-    selectedIds: string[];
-
-    select(objects: BaseBackedObject[], mode: SelectMode): void;
 
     draw(
         context: DrawingContext,
@@ -30,7 +25,7 @@ export default interface Layer {
         exclude: Set<string>,
         ...args: any[]
     ): Promise<any>;
-    resetDocument(doc: DocumentState): any;
+
     drawReactiveLayer(context: DrawingContext, interactive: string[], reactive: Set<string>): any;
 
     onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult;
@@ -47,14 +42,13 @@ export default interface Layer {
 
     isSelected(object: BaseBackedObject | string): boolean;
 
-    addEntity(entity: () => DrawableEntityConcrete): void;
-    deleteEntity(entity: DrawableEntityConcrete): void;
-
     offerInteraction(
         interaction: Interaction,
         filter?: (objects: DrawableEntityConcrete[]) => boolean,
         sortBy?: (objects: DrawableEntityConcrete[]) => any
     ): DrawableEntityConcrete[] | null;
+
+    off(): void;
 }
 
 export enum SelectMode {
@@ -65,70 +59,86 @@ export enum SelectMode {
 }
 
 export abstract class LayerImplementation implements Layer {
-    objectStore: ObjectStore;
+    context: CanvasContext;
     uidsInOrder: string[] = [];
-
-    selectedIds: string[] = [];
     draggedObjects: BaseBackedObject[] | null = null;
 
-    onChange: (uids: string[]) => any;
-    onSelect: () => any;
-    onCommit: (obj: DrawableEntityConcrete) => any;
+    constructor(context: CanvasContext) {
+        this.context = context;
 
-    constructor(
-        objectStore: ObjectStore,
-        onChange: (uids: string[]) => any,
-        onSelect: () => any,
-        onCommit: (obj: DrawableEntityConcrete) => any
-    ) {
-        this.onChange = onChange;
-        this.onSelect = onSelect;
-        this.onCommit = onCommit;
-        this.objectStore = objectStore;
+        MainEventBus.$on('current-level-changed', this.reloadLevel.bind(this));
+        MainEventBus.$on('add-entity', this.addEntity.bind(this));
+        MainEventBus.$on('delete-entity', this.deleteEntity.bind(this));
+
+        this.reloadLevel();
+    }
+
+    off() {
+
+        MainEventBus.$off('current-level-changed', this.reloadLevel.bind(this));
+        MainEventBus.$off('add-entity', this.addEntity.bind(this));
+        MainEventBus.$off('delete-entity', this.deleteEntity.bind(this));
+    }
+
+    addEntity({ entity, levelUid }: EntityParam) {
+        if (this.shouldAccept(entity)) {
+            if (this.uidsInOrder.includes(entity.uid)) {
+                // This can happen if we were asked to reset level during a multi operation with a lagged event
+                // that was behind the global state. But we will tolerate this.
+                return;
+            }
+            for (let i = 0; i <= this.uidsInOrder.length; i++) {
+                const io = this.context.globalStore.get(this.uidsInOrder[i]);
+
+                // we can't assume the existence of the object, because our state (which is updated by events)
+                // can be behind the actual objectstore state (which is updated directly in the store).
+                if (i === this.uidsInOrder.length || (io && this.entitySortOrder(io.entity) >= this.entitySortOrder(entity))) {
+                    this.uidsInOrder.splice(i, 0, entity.uid);
+                    break;
+                }
+            }
+        }
+    }
+
+    deleteEntity({ entity, levelUid }: EntityParam) {
+        if (this.uidsInOrder.includes(entity.uid)) {
+            this.uidsInOrder.splice(this.uidsInOrder.indexOf(entity.uid), 1);
+        }
+    }
+
+    reloadLevel() {
+        this.uidsInOrder.splice(0);
+
+        // Our sync with the globalstore is only eventually consistent, but this is still OK.
+        // If we miss out things that would later be deleted, that's OK.
+        // If we add things that would later be added, that's OK too.
+        this.context.globalStore.forEach((o) => {
+            if (this.shouldAccept(o.entity)) {
+                this.uidsInOrder.push(o.entity.uid);
+            }
+        });
+
+        this.uidsInOrder.sort((a, b) =>
+            this.entitySortOrder(this.context.globalStore.get(a)!.entity) -
+            this.entitySortOrder(this.context.globalStore.get(b)!.entity)
+        );
+    }
+
+    get selectedIds(): string[] {
+        return this.context.document.uiState.selectedUids;
     }
 
     get selectedObjects() {
-        return this.selectedIds.map((uid) => this.objectStore.get(uid)!);
+        return this.selectedIds.map((uid) => this.context.globalStore.get(uid)!);
     }
 
     get selectedEntities() {
         return this.selectedObjects.map((o) => o.entity);
     }
 
-    select(objects: BaseBackedObject[] | string[], mode: SelectMode): void {
-        let ids: string[];
+    abstract shouldAccept(entity: DrawableEntityConcrete): boolean;
 
-        if (objects.length !== 0 && objects[0] instanceof BaseBackedObject) {
-            ids = (objects as BaseBackedObject[]).map((o) => o.uid);
-        } else {
-            ids = objects as string[];
-        }
-        switch (mode) {
-            case SelectMode.Replace:
-                this.selectedIds.splice(0, this.selectedIds.length, ...ids);
-                return;
-            case SelectMode.Toggle:
-                const common = this.selectedIds.filter((uid) => ids.includes(uid));
-                this.selectedIds.push(...ids);
-                this.selectedIds.splice(
-                    0,
-                    this.selectedIds.length,
-                    ...this.selectedIds.filter((uid) => !common.includes(uid))
-                );
-                return;
-            case SelectMode.Add:
-                this.selectedIds.push(...ids.filter((uid) => !this.selectedIds.includes(uid)));
-                return;
-            case SelectMode.Exclude:
-                this.selectedIds.splice(
-                    0,
-                    this.selectedIds.length,
-                    ...this.selectedIds.filter((uid) => !ids.includes(uid))
-                );
-                return;
-        }
-        assertUnreachable(mode);
-    }
+    abstract entitySortOrder(entity: DrawableEntityConcrete): number;
 
     isSelected(object: BaseBackedObject | string) {
         if (object instanceof BaseBackedObject) {
@@ -151,7 +161,7 @@ export abstract class LayerImplementation implements Layer {
         uidsToDraw.sort((a, b) => myMap.get(a)! - myMap.get(b)!);
 
         uidsToDraw.forEach((uid) => {
-            const o = this.objectStore.get(uid);
+            const o = this.context.globalStore.get(uid);
             if (o) {
                 o.draw(context, {
                     active: true,
@@ -171,8 +181,8 @@ export abstract class LayerImplementation implements Layer {
 
         for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
             const uid = this.uidsInOrder[i];
-            if (this.objectStore.has(uid)) {
-                const object = this.objectStore.get(uid)!;
+            if (this.context.globalStore.has(uid)) {
+                const object = this.context.globalStore.get(uid)!;
                 if (object.entity === undefined) {
                     throw new Error("object is deleted but still in this layer " + uid);
                 }
@@ -212,8 +222,8 @@ export abstract class LayerImplementation implements Layer {
     onMouseDown(event: MouseEvent, context: CanvasContext) {
         for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
             const uid = this.uidsInOrder[i];
-            if (this.objectStore.has(uid)) {
-                const object = this.objectStore.get(uid)!;
+            if (this.context.globalStore.has(uid)) {
+                const object = this.context.globalStore.get(uid)!;
                 if (object.onMouseDown(event, context)) {
                     return true;
                 }
@@ -234,8 +244,8 @@ export abstract class LayerImplementation implements Layer {
 
         for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
             const uid = this.uidsInOrder[i];
-            if (this.objectStore.has(uid)) {
-                const object = this.objectStore.get(uid)!;
+            if (this.context.globalStore.has(uid)) {
+                const object = this.context.globalStore.get(uid)!;
                 const res = object.onMouseMove(event, context);
                 if (res.handled) {
                     return res;
@@ -255,8 +265,8 @@ export abstract class LayerImplementation implements Layer {
 
         for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
             const uid = this.uidsInOrder[i];
-            if (this.objectStore.has(uid)) {
-                const object = this.objectStore.get(uid)!;
+            if (this.context.globalStore.has(uid)) {
+                const object = this.context.globalStore.get(uid)!;
                 if (object.onMouseUp(event, context)) {
                     return true;
                 }
@@ -264,50 +274,26 @@ export abstract class LayerImplementation implements Layer {
         }
 
         if (!event.shiftKey && !event.ctrlKey) {
-            this.select([], SelectMode.Replace);
+            this.context.document.uiState.selectedUids.splice(0);
         }
-
-        this.onSelect();
 
         return false;
     }
 
     dragObjects(objects: BaseBackedObject[], context: CanvasContext): void {
         context.isLayerDragging = true;
-        this.objectStore.preserve(objects.map((o) => o.uid));
+        this.context.globalStore.preserve(objects.map((o) => o.uid));
         this.draggedObjects = objects;
     }
 
     releaseDrag(context: CanvasContext): void {
-        this.objectStore.preserve([]);
+        this.context.globalStore.preserve([]);
         context.isLayerDragging = false;
         this.draggedObjects = null;
     }
 
-    onSelected(event: MouseEvent | KeyboardEvent, uid: string) {
-        let diffed = false;
-        if (event.ctrlKey) {
-            this.select([uid], SelectMode.Add);
-            diffed = true;
-        } else if (event.shiftKey) {
-            if (this.isSelected(uid)) {
-                diffed = true;
-            }
-            this.select([uid], SelectMode.Exclude);
-        } else {
-            if (!this.isSelected(uid) || this.selectedIds.length !== 1) {
-                diffed = true;
-            }
-            this.select([uid], SelectMode.Replace);
-        }
-
-        if (diffed) {
-            this.onSelect();
-        }
-    }
-
     multiDragOrder(uid: string): number {
-        const e = this.objectStore.get(uid)!.entity;
+        const e = this.context.globalStore.get(uid)!.entity;
         switch (e.type) {
             case EntityType.BACKGROUND_IMAGE:
                 return 0;
@@ -333,9 +319,9 @@ export abstract class LayerImplementation implements Layer {
 
         // figure out which elements need to get drag events.
         const toMoveUids: string[] = this.selectedIds.filter((uid) => {
-            const o = this.objectStore.get(uid)!;
+            const o = this.context.globalStore.get(uid)!;
             if (o.entity.parentUid) {
-                const po = this.objectStore.get(o.entity.parentUid)!;
+                const po = this.context.globalStore.get(o.entity.parentUid)!;
                 if (this.isSelected(po.uid)) {
                     return false;
                 }
@@ -380,7 +366,7 @@ export abstract class LayerImplementation implements Layer {
         const initialStates = new Map<string, any>();
         const initialObjectCoords = new Map<string, Coord>();
         toMoveUids.forEach((uid) => {
-            const o = this.objectStore.get(uid) as BaseBackedObject & Draggable;
+            const o = this.context.globalStore.get(uid) as BaseBackedObject & Draggable;
             initialStates.set(uid, o.onDragStart(event, o.toObjectCoord(world), context, true));
             initialObjectCoords.set(uid, o.toObjectCoord(world));
         });
@@ -395,7 +381,7 @@ export abstract class LayerImplementation implements Layer {
     onMultiSelectDrag(event: MouseEvent, world: Coord, grabState: MultiSelectDragParams, context: CanvasContext) {
         context.$store.dispatch("document/revert", false);
         grabState.toMoveUids.forEach((uid) => {
-            const o = this.objectStore.get(uid) as BaseBackedObject & Draggable;
+            const o = this.context.globalStore.get(uid) as BaseBackedObject & Draggable;
             o.onDrag(
                 event,
                 grabState.initialObjectCoords.get(uid)!,
@@ -405,80 +391,15 @@ export abstract class LayerImplementation implements Layer {
                 true
             );
         });
-        this.onChange(grabState.toMoveUids);
+        context.scheduleDraw();
     }
 
     onMultiSelectDragFinish(event: MouseEvent, grabState: MultiSelectDragParams, context: CanvasContext): void {
         grabState.toMoveUids.forEach((uid) => {
-            const o = this.objectStore.get(uid) as BaseBackedObject & Draggable;
+            const o = this.context.globalStore.get(uid) as BaseBackedObject & Draggable;
             o.onDragFinish(event, context, true);
         });
-        this.onCommit(this.objectStore.get(grabState.toMoveUids[0])!.entity);
     }
-
-    addEntity(entity: () => DrawableEntityConcrete): void {
-        const uid = entity().uid;
-        DrawableObjectFactory.buildVisible(this, entity, this.objectStore, {
-            onSelected: (e) => this.onSelected(e, uid),
-            onChange: () => this.onChange([uid]),
-            onCommit: (e) => this.onCommit(entity())
-        });
-        /*
-        const getSortOrder = (i: number) => {
-            const io = this.objectStore.get(this.uidsInOrder[i]);
-            return this.entitySortOrder(io!.entity);
-        };
-
-        const myVal = this.entitySortOrder(entity());
-        let high = this.uidsInOrder.length;
-        let low = 0; // find first element
-        while (low < high) {
-            const mid = Math.floor((low + high) / 2);
-            const midVal = getSortOrder(mid);
-
-            if (midVal > myVal) {
-                high = mid;
-            } else {
-                low = mid + 1;
-            }
-        }
-        this.uidsInOrder.splice(low, 0, entity().uid);
-*/
-
-        for (let i = 0; i <= this.uidsInOrder.length; i++) {
-            const io = this.objectStore.get(this.uidsInOrder[i]);
-
-            if (i === this.uidsInOrder.length || this.entitySortOrder(io!.entity) >= this.entitySortOrder(entity())) {
-                this.uidsInOrder.splice(i, 0, entity().uid);
-                break;
-            }
-
-            if (io === undefined) {
-                throw new Error("we have a uid that is not found " + this.uidsInOrder[i]);
-            }
-        }
-    }
-
-    deleteEntity(entity: DrawableEntityConcrete): void {
-        const ix = this.uidsInOrder.indexOf(entity.uid);
-        if (ix === -1) {
-            // Do not throw an error
-        } else {
-            this.uidsInOrder.splice(ix, 1);
-        }
-
-        this.objectStore.delete(entity.uid);
-
-        if (this.selectedIds.includes(entity.uid)) {
-            this.selectedIds.splice(this.selectedIds.indexOf(entity.uid), 1);
-        }
-    }
-
-    entitySortOrder(entity: DrawableEntityConcrete): number {
-        return 0;
-    }
-
-    abstract resetDocument(doc: DocumentState): any;
 }
 
 export interface MultiSelectDragParams {

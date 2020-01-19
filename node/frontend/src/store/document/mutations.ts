@@ -1,9 +1,9 @@
 import { MutationTree } from "vuex";
-import { blankDiffFilter, DiffFilter, DocumentState, initialDocumentState} from "./types";
+import { blankDiffFilter, DocumentState, EntityParam, EntityParamNullable, initialDocumentState } from "./types";
 import * as OT from "../../../../common/src/api/document/operation-transforms";
 import { OPERATION_NAMES } from "../../../../common/src/api/document/operation-transforms";
 import { MainEventBus } from "../../../src/store/main-event-bus";
-import { applyDiffVue, applyOtOnState } from "../../../src/store/document/operation-transforms/state-ot-apply";
+import { applyDiffVue, applyOpOntoStateVue } from "../../../src/store/document/operation-transforms/state-ot-apply";
 import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import stringify from "json-stable-stringify";
@@ -11,8 +11,13 @@ import Vue from "vue";
 import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
 import { diffState } from "../../../../common/src/api/document/state-differ";
 import * as _ from "lodash";
-import { DrawingState, Level } from "../../../../common/src/api/document/drawing";
+import { DrawingState, initialDrawing, Level } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
+import { GlobalStore } from "../../htmlcanvas/lib/global-store";
+import DrawableObjectFactory from "../../htmlcanvas/lib/drawable-object-factory";
+import { DrawingMode } from "../../htmlcanvas/types";
+
+export const globalStore = new GlobalStore();
 
 function logEntityMutation(
     state: DocumentState,
@@ -53,6 +58,140 @@ function logLevelMutation(state: DocumentState, levelUid: string) {
             }
         });
     }
+}
+
+function onAddEntity({entity, levelUid}: EntityParam, state: DocumentState) {
+    try {
+        DrawableObjectFactory.buildVisible(
+            entity,
+            globalStore,
+            state,
+            levelUid,
+            {
+                onRedrawNeeded: () => MainEventBus.$emit('redraw', entity),
+                onInteractionComplete: () => MainEventBus.$emit('interaction-complete', entity),
+                onSelect: (e) => MainEventBus.$emit('entity-select', {entity, e}),
+            }
+        );
+    } catch (e) {
+        // todo: telemetry this
+        // tslint:disable-next-line:no-console
+        console.log('warning: Creating entity that isn\'t registered: ' + JSON.stringify(entity));
+    }
+}
+
+function onDeleteEntity({entity, levelUid}: EntityParam, state: DocumentState) {
+
+    if (state.uiState.selectedUids.includes(entity.uid)) {
+        state.uiState.selectedUids.splice(state.uiState.selectedUids.indexOf(entity.uid), 1);
+    }
+    globalStore.delete(entity.uid);
+}
+
+function onAddLevel(level: Level, state: DocumentState) {
+    if (!globalStore.entitiesInLevel.has(level.uid)) {
+        globalStore.entitiesInLevel.set(level.uid, new Set());
+    }
+
+    for (let entity of Object.values(level.entities)) {
+        entity = proxyEntity(entity, entityHandler(state, level.uid, entity.uid));
+        onAddEntity({entity, levelUid: level.uid}, state);
+    }
+}
+
+function onDeleteLevel(level: Level, state: DocumentState) {
+    console.log('level deleted');
+    Object.keys(level.entities).forEach((uid) => {
+        if (state.uiState.selectedUids.includes(uid)) {
+            state.uiState.selectedUids.splice(state.uiState.selectedUids.indexOf(uid), 1);
+        }
+    });
+
+    globalStore.onLevelDelete(level.uid);
+}
+
+function onUpdateEntity(uid: string) {
+    if (globalStore.has(uid)) {
+        globalStore.onEntityChange(uid);
+    }
+}
+
+function beforeEvent(event: string, args: any, state: DocumentState) {
+    if (event === 'update-entity') {
+        onUpdateEntity(args);
+    } else if (event === 'add-entity') {
+        let {entity, levelUid}: EntityParamNullable = args;
+        //entity =
+        onAddEntity(args, state);
+    } else if (event === 'delete-entity') {
+        onDeleteEntity(args, state);
+    } else if (event === 'add-level') {
+        onAddLevel(args, state);
+    } else if (event === 'delete-level') {
+        onDeleteLevel(args, state);
+    }
+}
+
+function deleteEntityOn(state: DocumentState, { entity, levelUid }: EntityParamNullable) {
+    if (levelUid === null) {
+        if (entity.type !== EntityType.RISER) {
+            throw new Error(
+                "Deleting a non shared object from the shared level " + levelUid + " " + JSON.stringify(entity)
+            );
+        }
+        Vue.delete(state.drawing.shared, entity.uid);
+        logEntityMutation(state, { entityUid: entity.uid, levelUid: null });
+    } else if (entity.uid in state.drawing.levels[levelUid].entities) {
+        Vue.delete(state.drawing.levels[levelUid].entities, entity.uid);
+        logEntityMutation(state, { entityUid: entity.uid, levelUid: null });
+    } else {
+        throw new Error("Deleted an entity that doesn't exist " + JSON.stringify(entity) + " on level " + levelUid);
+    }
+
+    logEntityMutation(state, { entityUid: entity.uid, levelUid });
+    beforeEvent('delete-entity', { entity, levelUid }, state);
+    MainEventBus.$emit("delete-entity", { entity, levelUid });
+}
+
+function addEntityOn(state: DocumentState, { entity, levelUid }: EntityParamNullable) {
+    if (levelUid === null) {
+        entity = proxyEntity(entity, entityHandler(state, null, entity.uid));
+        Vue.set(state.drawing.shared, entity.uid, entity);
+        logEntityMutation(state, { entityUid: entity.uid, levelUid });
+    } else {
+        entity = proxyEntity(entity, entityHandler(state, levelUid, entity.uid));
+        Vue.set(state.drawing.levels[levelUid].entities, entity.uid, entity);
+        logEntityMutation(state, { entityUid: entity.uid, levelUid });
+    }
+
+    beforeEvent('add-entity', {entity, levelUid}, state);
+    MainEventBus.$emit("add-entity", { entity, levelUid });
+}
+
+function changeDrawing(state: DocumentState, newDrawing: DrawingState, filter: any, redraw: boolean) {
+    //newDrawing = cloneSimple(newDrawing);
+    const reverseDiff = diffState(state.drawing, newDrawing, filter);
+
+    reverseDiff.forEach((op) => {
+        switch (op.type) {
+            case OPERATION_NAMES.DIFF_OPERATION:
+                const changes = marshalChanges(state.drawing, newDrawing, op.diff);
+                applyOpOntoStateVue(state.drawing, op);
+                proxyUpFromStateDiff(state, op.diff);
+                changes.forEach(([e, v]) => {
+                    beforeEvent(e, v, state);
+                });
+                changes.forEach(([e, v]) => {
+                    MainEventBus.$emit(e, v);
+                });
+                break;
+            case OPERATION_NAMES.COMMITTED_OPERATION:
+                MainEventBus.$emit("committed", redraw);
+                break;
+        }
+    });
+
+    Vue.set(state, "diffFilter", blankDiffFilter());
 }
 
 export const mutations: MutationTree<DocumentState> = {
@@ -108,13 +247,20 @@ export const mutations: MutationTree<DocumentState> = {
                 let handled: boolean = true;
                 switch (toApply.type) {
                     case OT.OPERATION_NAMES.DIFF_OPERATION: {
-                        applyOtOnState(state.drawing, cloneSimple(toApply));
-                        const changes = marshalChanges(state.committedDrawing, state.drawing, toApply.diff);
-                        applyOtOnState(state.committedDrawing, cloneSimple(toApply));
-                        proxyUpFromStateDiff(state, toApply.diff);
-                        changes.forEach(([e, v]) => {
-                            MainEventBus.$emit(e, v);
-                        });
+                        if (state.uiState.drawingMode !== DrawingMode.History) {
+                            applyOpOntoStateVue(state.drawing, toApply);
+                            proxyUpFromStateDiff(state, toApply.diff);
+                            const changes = marshalChanges(state.committedDrawing, state.drawing, toApply.diff);
+                            applyOpOntoStateVue(state.committedDrawing, cloneSimple(toApply));
+                            changes.forEach(([e, v]) => {
+                                beforeEvent(e, v, state);
+                            });
+                            changes.forEach(([e, v]) => {
+                                MainEventBus.$emit(e, v);
+                            });
+                        } else {
+                            applyOpOntoStateVue(state.committedDrawing, cloneSimple(toApply));
+                        }
                         break;
                     }
 
@@ -147,64 +293,45 @@ export const mutations: MutationTree<DocumentState> = {
         const changes = marshalChanges(prevDrawing, state.drawing, diff, true);
         proxyUpFromStateDiff(state, diff);
         changes.forEach(([e, v]) => {
+            beforeEvent(e, v, state);
+        });
+        changes.forEach(([e, v]) => {
             MainEventBus.$emit(e, v);
         });
     },
 
 
     revert(state, redraw) {
-        // TODO: emit a reset-level for every changed level. At the moment, we are just resetting current visible
-        // level. This is to allow global state to save state.
-        const reverseDiff = diffState(state.drawing, state.committedDrawing, state.diffFilter);
+        if (state.uiState.drawingMode === DrawingMode.History) {
+            return;
+        }
+        changeDrawing(state, state.committedDrawing, state.diffFilter, redraw);
+    },
 
-        reverseDiff.forEach((op) => {
-            switch (op.type) {
-                case OPERATION_NAMES.DIFF_OPERATION:
-                    const changes = marshalChanges(state.drawing, state.committedDrawing, op.diff);
-                    applyOtOnState(state.drawing, op);
-                    proxyUpFromStateDiff(state, op.diff);
-                    changes.forEach(([e, v]) => {
-                        MainEventBus.$emit(e, v);
-                    });
-                    break;
-                case OPERATION_NAMES.COMMITTED_OPERATION:
-                    MainEventBus.$emit("committed", redraw);
-                    break;
-            }
-        });
-        Vue.set(state, "diffFilter", blankDiffFilter());
+    revertFull(state) {
+        changeDrawing(state, state.committedDrawing, undefined, true);
+    },
+
+    resetDrawing(state) {
+        changeDrawing(state, cloneSimple(initialDrawing), undefined, true);
     },
 
     reset(state) {
         Object.assign(state, cloneSimple(initialDocumentState));
+        globalStore.clear();
     },
 
     loaded(state, loaded) {
         state.uiState.loaded = loaded;
     },
 
-    addEntityOn(state, { entity, levelUid }) {
-        if (levelUid === null) {
-            Vue.set(state.drawing.shared, entity.uid, entity);
-            logEntityMutation(state, { entityUid: entity.uid, levelUid });
-        } else {
-            Vue.set(state.drawing.levels[levelUid].entities, entity.uid, entity);
-            logEntityMutation(state, { entityUid: entity.uid, levelUid });
-        }
-        MainEventBus.$emit("add-entity", { entity, levelUid });
-    },
+    addEntityOn,
 
     addEntity(state, entity: DrawableEntityConcrete) {
         if (entity.type === EntityType.RISER) {
-            entity = proxyEntity(entity, entityHandler(state, null, entity.uid));
-            Vue.set(state.drawing.shared, entity.uid, entity);
-            logEntityMutation(state, { entityUid: entity.uid, levelUid: null });
-            MainEventBus.$emit("add-entity", { entity, levelUid: null });
+            addEntityOn(state, {entity, levelUid: null});
         } else {
-            entity = proxyEntity(entity, entityHandler(state, state.uiState.levelUid!, entity.uid));
-            Vue.set(state.drawing.levels[state.uiState.levelUid!].entities, entity.uid, entity);
-            logEntityMutation(state, { entityUid: entity.uid, levelUid: state.uiState.levelUid });
-            MainEventBus.$emit("add-entity", { entity, levelUid: state.uiState.levelUid! });
+            addEntityOn(state, {entity, levelUid: state.uiState.levelUid!});
         }
     },
 
@@ -214,43 +341,13 @@ export const mutations: MutationTree<DocumentState> = {
 
     deleteEntity(state, entity) {
         if (entity.type === EntityType.RISER) {
-            if (entity.uid in state.drawing.shared) {
-                Vue.delete(state.drawing.shared, entity.uid);
-                MainEventBus.$emit("delete-entity", { entity, levelUid: null });
-            } else {
-                throw new Error("Deleted an entity that doesn't exist " + JSON.stringify(entity));
-            }
-
-            logEntityMutation(state, { entityUid: entity.uid, levelUid: null });
-        } else if (entity.uid in state.drawing.levels[state.uiState.levelUid!].entities) {
-            Vue.delete(state.drawing.levels[state.uiState.levelUid!].entities, entity.uid);
-
-            logEntityMutation(state, { entityUid: entity.uid, levelUid: state.uiState.levelUid });
-            MainEventBus.$emit("delete-entity", { entity, levelUid: state.uiState.levelUid! });
+            deleteEntityOn(state, {entity, levelUid: null});
         } else {
-            throw new Error("Deleted an entity that doesn't exist " + JSON.stringify(entity));
+            deleteEntityOn(state, {entity, levelUid: state.uiState.levelUid!});
         }
     },
 
-    deleteEntityOn(state, { entity, levelUid }) {
-        if (levelUid === null) {
-            if (entity.type !== EntityType.RISER) {
-                throw new Error(
-                    "Deleting a non shared object from the shared level " + levelUid + " " + JSON.stringify(entity)
-                );
-            }
-            Vue.delete(state.drawing.shared, entity.uid);
-            logEntityMutation(state, { entityUid: entity.uid, levelUid: null });
-        } else if (entity.uid in state.drawing.levels[levelUid].entities) {
-            Vue.delete(state.drawing.levels[levelUid].entities, entity.uid);
-            logEntityMutation(state, { entityUid: entity.uid, levelUid: null });
-        } else {
-            throw new Error("Deleted an entity that doesn't exist " + JSON.stringify(entity) + " on level " + levelUid);
-        }
-
-        logEntityMutation(state, { entityUid: entity.uid, levelUid });
-        MainEventBus.$emit("delete-entity", { entity, levelUid });
-    },
+    deleteEntityOn,
 
     addLevel(state, level: Level) {
         level = proxyLevel(level, state, level.uid);
@@ -259,6 +356,7 @@ export const mutations: MutationTree<DocumentState> = {
         });
         Vue.set(state.drawing.levels, level.uid, level);
         logLevelMutation(state, level.uid);
+        beforeEvent('add-level', level, state);
         MainEventBus.$emit("add-level", level);
     },
 
@@ -269,6 +367,7 @@ export const mutations: MutationTree<DocumentState> = {
             throw new Error("Deleted a level that doesn't exist " + JSON.stringify(level));
         }
         logLevelMutation(state, level.uid);
+        beforeEvent('delete-level', level, state);
         MainEventBus.$emit("delete-level", level);
         if (level.uid === state.uiState.levelUid) {
             state.uiState.levelUid = null;
@@ -306,6 +405,7 @@ function entityHandler(state: DocumentState, levelUid: string | null, entityUid:
                     target[key] = value;
                 }
 
+                beforeEvent('update-entity', entityUid, state);
                 MainEventBus.$emit("update-entity", entityUid);
             }
             return true;
@@ -342,6 +442,7 @@ function proxyEntity<T>(obj: T, handler: ProxyHandler<any>): T {
             (obj as any)[k] = proxyEntity((obj as any)[k], handler);
         });
         const proxy = new Proxy(obj, handler);
+
         return proxy;
     } else {
         return obj;
@@ -394,7 +495,7 @@ function marshalChanges(from: DrawingState, to: DrawingState, diff: any, fuzzy: 
             } else if (from.shared.hasOwnProperty(uid)) {
                 res.push(["delete-entity", { entity: from.shared[uid], levelUid: null }]);
             } else if (to.shared.hasOwnProperty(uid)) {
-                res.push(["add-entity", { entity: to.shared[uid], levelUid: null }]);
+                res.push(["add-entity", { entity: diff.shared[uid], levelUid: null }]);
             } else {
                 if (!fuzzy) {
                     throw new Error("invalid diff state - diffing something that no sides have");
@@ -417,7 +518,7 @@ function marshalChanges(from: DrawingState, to: DrawingState, diff: any, fuzzy: 
                         } else if (from.levels[lvlUid].entities.hasOwnProperty(uid)) {
                             res.push(["delete-entity", { entity: from.levels[lvlUid].entities[uid], levelUid: lvlUid }]);
                         } else if (to.levels[lvlUid].entities.hasOwnProperty(uid)) {
-                            res.push(["add-entity", { entity: to.levels[lvlUid].entities[uid], levelUid: lvlUid }]);
+                            res.push(["add-entity", { entity: diff.levels[lvlUid].entities[uid], levelUid: lvlUid }]);
                         } else {
                             if (!fuzzy) {
                                 throw new Error("invalid diff state - diffing something that no sides have");
@@ -428,7 +529,7 @@ function marshalChanges(from: DrawingState, to: DrawingState, diff: any, fuzzy: 
             } else if (from.levels.hasOwnProperty(lvlUid)) {
                 res.push(["delete-level", from.levels[lvlUid]]);
             } else if (to.levels.hasOwnProperty(lvlUid)) {
-                res.push(["add-level", to.levels[lvlUid]]);
+                res.push(["add-level", diff.levels[lvlUid]]);
             } else {
                 if (!fuzzy) {
                     throw new Error("invalid diff state - diffing a level that doesn't exist on any");

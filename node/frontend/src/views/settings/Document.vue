@@ -30,7 +30,7 @@ import {AccessLevel} from "../../../../backend/src/entity/User"; import {AccessL
 import Vue from "vue";
 import Component from "vue-class-component";
 import { deleteDocument, getDocument, getDocuments, resetDocument } from "../../api/document";
-import { Document as IDocument } from "../../../../common/src/models/Document";
+import { canUserDeleteDocument, Document as IDocument } from "../../../../common/src/models/Document";
 import { AccessLevel, User } from "../../../../common/src/models/User";
 
 @Component({
@@ -107,15 +107,11 @@ export default class Document extends Vue {
             return false;
         }
 
-        if (this.document.createdBy.username === this.profile.username) {
-            return true;
+        if (!this.profile) {
+            return false;
         }
 
-        if (this.profile.accessLevel <= AccessLevel.MANAGER) {
-            return true;
-        }
-
-        return false;
+        return canUserDeleteDocument(this.document, this.profile);
     }
 }
 </script>

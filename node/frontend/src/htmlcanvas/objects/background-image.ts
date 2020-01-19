@@ -64,7 +64,6 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         DrawableObjectFactory.registerEntity(EntityType.BACKGROUND_IMAGE, BackgroundImage);
     }
 
-    image!: HTMLImageElement | null;
     imgScale!: { x: number; y: number };
 
     grabbedPoint: [number, number] | null = null;
@@ -74,6 +73,8 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
     shiftKey: boolean = false;
 
     oldKey: string = "";
+
+    images = new Map<string, HTMLImageElement | null>(); // null means we are loading.
 
     drawPoint(context: DrawingContext, objectCoord: Coord, label: string) {
         const { ctx } = context;
@@ -92,7 +93,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
 
     prepareDelete(context: CanvasContext): BaseBackedObject[] {
         const result: BaseBackedObject[] = [this];
-        this.objectStore.forEach((v) => {
+        this.globalStore.forEach((v) => {
             if (v.entity.parentUid === this.entity.uid) {
                 result.push(...v.prepareDelete(context));
             }
@@ -101,13 +102,6 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
     }
 
     initializeImage(onLoad: (image: BackgroundImage) => any) {
-        if (this.objectStore instanceof GlobalStore) {
-            // this is a ghost
-            return;
-        }
-
-        this.image = null;
-
         const target = this.entity.key;
         ImageLoader.get(this.entity.key).then((image) => {
             if (this.entity.key !== target) {
@@ -127,7 +121,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
 
             this.imgScale.y = this.imgScale.x;
 
-            this.image = image;
+            this.images.set(target, image);
             onLoad(this);
         });
     }
@@ -144,13 +138,17 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         h: number,
         active: boolean
     ) {
-        if (this.image) {
+
+
+
+        if (this.images.get(this.entity.key)) {
+            const image = this.images.get(this.entity.key)!;
             const sx = matrixScale(ctx.getTransform());
             const oldAlpha = ctx.globalAlpha;
             ctx.globalAlpha = alpha;
             const { x, y } = {
-                x: (l - this.image.naturalWidth / 2) * this.imgScale.x,
-                y: (t - this.image.naturalHeight / 2) * this.imgScale.y
+                x: (l - image.naturalWidth / 2) * this.imgScale.x,
+                y: (t - image.naturalHeight / 2) * this.imgScale.y
             };
             const oldCompositeOperation = ctx.globalCompositeOperation;
 
@@ -161,7 +159,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
 
             // Draw a potentially rotated image
             ctx.drawImage(
-                this.image,
+                image,
                 l - this.entity.offset.x / this.imgScale.x,
                 t - this.entity.offset.y / this.imgScale.y,
                 w,
@@ -201,11 +199,12 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         active: boolean
     ) {
         // We use an inverse viewport to find the appropriate clip bounds.
-        if (this.image) {
+        if (this.images.get(this.entity.key)) {
+            const image = this.images.get(this.entity.key)!;
             const ivp = new ViewPort(
                 TM.transform(TM.scale(this.imgScale.x, this.imgScale.y)),
-                this.image.naturalWidth,
-                this.image.naturalHeight
+                image.naturalWidth,
+                image.naturalHeight
             );
 
             // Remember that when going from world view to image coordinate view,
@@ -215,6 +214,11 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
 
             this.naturalClipDraw(ctx, alpha, l.x, t.y, w / this.imgScale.x, h / this.imgScale.y, active);
         } else {
+            if (!this.images.has(this.entity.key)) {
+                this.images.set(this.entity.key, null);
+                this.initializeImage(() => this.onRedrawNeeded());
+            }
+
             const oldAlpha = ctx.globalAlpha;
             ctx.globalAlpha = 0.5;
             ctx.fillStyle = "#AAAAAA";
@@ -231,14 +235,15 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
     // Draw without world space concerns
     drawInternal(context: DrawingContext, { selected, active }: DrawingArgs) {
         const { ctx, vp } = context;
-        if (selected && active && this.image) {
+        if (selected && active && this.images.get(this.entity.key)) {
+            const image = this.images.get(this.entity.key)!;
             this.naturalClipDraw(
                 ctx,
                 0.2,
                 this.entity.offset.x / this.imgScale.x,
                 this.entity.offset.y / this.imgScale.y,
-                this.image.naturalWidth,
-                this.image.naturalHeight,
+                image.naturalWidth,
+                image.naturalHeight,
                 active
             );
         }
@@ -327,14 +332,14 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
                     this.center.y = this.grabbedCenterState[1] + w.y - this.grabbedPoint[1];
                 }
 
-                this.onChange();
+                this.onRedrawNeeded();
                 return { handled: true, cursor: "Move" };
             } else {
                 return UNHANDLED;
             }
         } else {
             if (this.grabbedCenterState != null || this.grabbedPoint != null) {
-                this.onCommit(event);
+                this.onInteractionComplete(event);
             }
             this.grabbedCenterState = null;
             this.grabbedPoint = null;
@@ -350,8 +355,8 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
             this.grabbedPoint = null;
             this.grabbedCenterState = null;
             this.hasDragged = false;
-            this.onChange();
-            this.onCommit(event);
+            this.onRedrawNeeded();
+            this.onInteractionComplete(event);
             return true;
         }
         return false;
@@ -397,11 +402,9 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
     getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[] {
         return [];
     }
+
     onUpdate() {
         if (this.entity && this.entity.key !== this.oldKey) {
-            this.initializeImage(() => {
-                this.onChange();
-            });
             this.oldKey = this.entity.key;
         }
     }

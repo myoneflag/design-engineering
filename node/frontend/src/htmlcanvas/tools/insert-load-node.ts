@@ -43,7 +43,7 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType) {
                         (o) => {
                             return (
                                 o[0].type === EntityType.FITTING &&
-                                context.objectStore.getConnections(o[0].uid).length <= 1
+                                context.globalStore.getConnections(o[0].uid).length <= 1
                             );
                         }
                     );
@@ -90,13 +90,13 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType) {
                     context.$store.dispatch("document/addEntity", newEntity);
 
                     if (interactive) {
-                        const object = context.objectStore.get(interactive[0].uid)! as Fitting;
+                        const object = context.globalStore.get(interactive[0].uid)! as Fitting;
 
                         const entity = object.entity as FittingEntity;
-                        connections = cloneSimple(context.objectStore.getConnections(entity.uid));
+                        connections = cloneSimple(context.globalStore.getConnections(entity.uid));
 
                         connections.forEach((e) => {
-                            const other = context.objectStore.get(e);
+                            const other = context.globalStore.get(e);
                             if (other instanceof Pipe) {
                                 if (other.entity.endpointUid[0] === entity.uid) {
                                     context.$store.dispatch("document/updatePipeEndpoints", {

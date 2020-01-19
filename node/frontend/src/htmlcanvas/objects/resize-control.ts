@@ -19,7 +19,6 @@ enum Sides {
 type Handle = [number, number, Sides[], string];
 
 export class ResizeControl extends DrawableObject {
-    onChange: ((_: ResizeControl) => any) | null;
     onCommit: ((_: ResizeControl) => any) | null;
     handles: Handle[];
 
@@ -27,13 +26,10 @@ export class ResizeControl extends DrawableObject {
 
     constructor(
         parent: SizeableObject,
-        layer: Layer,
-        onChange: (_: ResizeControl) => any,
         onCommit: (_: ResizeControl) => any
     ) {
-        super(parent, layer);
+        super(parent);
         this.handles = this.getHandles();
-        this.onChange = onChange;
         this.onCommit = onCommit;
     }
 
@@ -123,9 +119,6 @@ export class ResizeControl extends DrawableObject {
                     this.h = w.y - this.y;
                 }
 
-                if (this.onChange != null) {
-                    this.onChange(this);
-                }
                 return { handled: true, cursor: "move" };
             }
             return UNHANDLED;

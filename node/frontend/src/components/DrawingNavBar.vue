@@ -1,5 +1,6 @@
-import { AccessLevel } from "../../../backend/src/entity/User";
-import { AccessLevel } from "../../../backend/src/entity/User";
+import { DrawingMode } from "../htmlcanvas/types";
+import { DrawingMode } from "../htmlcanvas/types";
+import { DrawingMode } from "../htmlcanvas/types";
 <template>
     <b-navbar type="light">
         <b-navbar-nav>
@@ -48,6 +49,21 @@ import { AccessLevel } from "../../../backend/src/entity/User";
 
 
         <b-navbar-nav class="ml-auto" id="view-only-label">
+
+            <b-button
+                    :variant="document.uiState.drawingMode === DrawingMode.History ? 'light' : 'light'"
+                    :pressed="document.uiState.drawingMode === DrawingMode.History"
+                    :disabled="historyLoading"
+                    size="sm"
+                    class="my-2 my-sm-0"
+                    @click="historyClick"
+                    style="margin-right: 10px"
+            >
+                <b-spinner v-if="historyLoading" style="width: 1em; height: 1em;"></b-spinner>
+                <v-icon name="history" v-else/>
+                History
+            </b-button>
+
             <b-button  v-if="document.uiState.viewOnly" variant="danger" :disabled="viewOnlyDisabled" @click="viewOnlyClick">
                 <v-icon name="eye"/>
                 View Only
@@ -77,12 +93,15 @@ import { AccessLevel } from "../../../backend/src/entity/User";
 
 <script lang="ts">
     import { Vue } from "vue-property-decorator";
-    import { DocumentState} from "../store/document/types";
+    import { DocumentState } from "../store/document/types";
     import { State } from "vuex-class";
     import Component from "vue-class-component";
     import ProfileMenuItem from "../../src/components/ProfileMenuItem.vue";
     import { AccessLevel, User } from "../../../common/src/models/User";
     import { Level } from "../../../common/src/api/document/drawing";
+    import { getDocumentOperations } from "../api/document";
+    import { DrawingMode } from "../htmlcanvas/types";
+    import { Operation } from "../../../common/src/models/Operation";
 
     @Component({
     components: { ProfileMenuItem },
@@ -94,6 +113,7 @@ export default class DrawingNavBar extends Vue {
     @State("document") documentState!: DocumentState;
 
     titleEditing = false;
+    historyLoading = false;
 
     get profile(): User {
         return this.$store.getters["profile/profile"];
@@ -140,9 +160,52 @@ export default class DrawingNavBar extends Vue {
         return true;
     }
 
+    get discreteHistory(): Operation[][] {
+        return this.$store.getters['document/discreteHistory'];
+    }
+
+    async historyClick() {
+        if (this.historyLoading) {
+            return;
+        }
+
+        if (this.document.uiState.drawingMode === DrawingMode.History) {
+            await this.$store.dispatch('document/revertFull');
+            this.document.uiState.drawingMode = DrawingMode.Hydraulics;
+            return;
+        }
+
+        this.historyLoading = true;
+        try {
+            const after = this.document.fullHistory.length ?
+                this.document.fullHistory[this.document.fullHistory.length - 1].orderIndex : -1;
+            const ops = await getDocumentOperations(this.document.documentId, after);
+            if (ops.success) {
+                this.document.fullHistory.push(...ops.data);
+                this.document.uiState.historyIndex = -1;
+
+                await this.$store.dispatch('document/resetDrawing');
+
+                this.document.uiState.drawingMode = DrawingMode.History;
+
+            } else {
+                this.$bvToast.toast(ops.message, {
+                    variant: 'danger',
+                    title: 'Couldn\'t Load Document History',
+                });
+            }
+        } finally {
+            this.historyLoading = false;
+        }
+    }
+
     commit() {
         this.titleEditing = false;
         this.$store.dispatch("document/commit");
+    }
+
+    get DrawingMode() {
+        return DrawingMode;
     }
 }
 </script>

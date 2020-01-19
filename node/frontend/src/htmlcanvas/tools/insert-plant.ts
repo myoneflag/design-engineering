@@ -93,7 +93,7 @@ export default function insertPlant(context: CanvasContext, angle: number) {
                 context.$store.dispatch('document/addEntity', inlet);
                 context.$store.dispatch('document/addEntity', outlet);
 
-                context.objectStore.get(newEntity.uid)!.rebase(context);
+                context.globalStore.get(newEntity.uid)!.rebase(context);
                 context.scheduleDraw();
             },
             (wc: Coord) => {

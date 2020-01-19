@@ -11,9 +11,8 @@ import { upgradeDocument } from "./upgrade-drawing";
 const PORT = CONFIG.PORT;
 Error.stackTraceLimit = Infinity;
 
-
-
 async function initializeDatabase() {
+    const repo = getRepository(User);
     const logins = await User.count();
     if (logins === 0) {
 

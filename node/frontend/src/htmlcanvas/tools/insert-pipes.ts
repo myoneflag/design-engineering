@@ -84,7 +84,7 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                     if (target.type === EntityType.PIPE) {
                         entity = addValveAndSplitPipe(
                             context,
-                            context.objectStore.get(target.uid) as Pipe,
+                            context.globalStore.get(target.uid) as Pipe,
                             wc,
                             target.systemUid,
                             30
@@ -113,7 +113,7 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                     };
                     entity = valveEntity;
                     context.$store.dispatch("document/addEntity", valveEntity);
-                    context.objectStore.get(valveEntity.uid)!.rebase(context);
+                    context.globalStore.get(valveEntity.uid)!.rebase(context);
                 }
 
                 context.$store.dispatch("document/commit").then(() => {
@@ -191,28 +191,26 @@ function insertPipeChain(
                     if (interactive[0].type === EntityType.PIPE) {
                         nextEntity = addValveAndSplitPipe(
                             context,
-                            context.objectStore.get(interactive[0].uid) as Pipe,
+                            context.globalStore.get(interactive[0].uid) as Pipe,
                             wc,
                             system.uid,
                             30
                         ).focus as ConnectableEntityConcrete;
                     } else if (isConnectableEntity(interactive[0])) {
                         nextEntity = interactive[0] as ConnectableEntityConcrete;
-                        context.hydraulicsLayer.select(
-                            [context.objectStore.get(interactive[0].uid)!],
-                            SelectMode.Replace
-                        );
+                        context.document.uiState.selectedUids.splice(0);
+                        context.document.uiState.selectedUids.push(interactive[0].uid);
                     } else {
                         throw new Error("Don't know how to handle this");
                     }
                 } else {
                     // Create an endpoint fitting for it instead
-                    context.hydraulicsLayer.select([], SelectMode.Replace);
+                    context.document.uiState.selectedUids.splice(0);
                     if (!event.shiftKey) {
                         // Snap onto a direction.
 
                         const bases = [Flatten.vector(0, 1)];
-                        const connectable = context.objectStore.get(lastAttachment.uid) as BackedDrawableObject<
+                        const connectable = context.globalStore.get(lastAttachment.uid) as BackedDrawableObject<
                             ConnectableEntityConcrete
                         > &
                             Connectable;
@@ -254,7 +252,7 @@ function insertPipeChain(
                     };
 
                     context.$store.dispatch("document/addEntity", nextEntity);
-                    context.objectStore.get(nextEntity.uid)!.rebase(context);
+                    context.globalStore.get(nextEntity.uid)!.rebase(context);
                 }
 
                 const pipe: PipeEntity = {
@@ -284,7 +282,7 @@ function insertPipeChain(
                 context.$store.dispatch("document/validateAndCommit").then(() => {
                     const currConns = context.globalStore.getConnections(nextEntity.uid).length;
                     const maxConns =
-                        (context.objectStore.get(nextEntity.uid) as BaseBackedConnectable).maximumConnections;
+                        (context.globalStore.get(nextEntity.uid) as BaseBackedConnectable).maximumConnections;
                     if (maxConns === null || currConns < maxConns) {
                         insertPipeChain(context, nextEntity, system, network, heightM, chainNumber + 1);
                     }
@@ -322,11 +320,11 @@ function insertPipeChain(
                 ]
             ],
             () => {
-                if (newPipe && context.objectStore.has(newPipe.uid)) {
+                if (newPipe && context.globalStore.has(newPipe.uid)) {
                     return [
                         "Height: " + heightM.toPrecision(3) + "m",
                         "Length: " +
-                            (context.objectStore.get(newPipe.uid) as Pipe).computedLengthM.toPrecision(4) +
+                            (context.globalStore.get(newPipe.uid) as Pipe).computedLengthM.toPrecision(4) +
                             "m"
                     ];
                 } else {

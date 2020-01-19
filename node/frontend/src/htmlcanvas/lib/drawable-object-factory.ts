@@ -9,6 +9,8 @@ import Layer from "../../../src/htmlcanvas/layers/layer";
 import { GlobalStore } from "./global-store";
 import { ObjectStore } from "./object-store";
 import { DrawableEntity } from "../../../../common/src/api/document/drawing";
+import { DocumentState } from "../../store/document/types";
+import doc = Mocha.reporters.doc;
 
 export default class DrawableObjectFactory {
     static constructors: Map<EntityType, BaseBackedConstructor> = new Map<EntityType, BaseBackedConstructor>();
@@ -23,23 +25,24 @@ export default class DrawableObjectFactory {
     // Set hadndlers to false to create object without adding it to the state.
     // Use this if you just need an object instance for calculations, for example.
     static buildVisible<T extends EntityType>(
-        layer: Layer,
-        entity: () => DrawableEntity & { type: T },
-        objectStore: ObjectStore,
+        entity: DrawableEntity & { type: T },
+        globalStore: GlobalStore,
+        document: DocumentState,
+        levelUid: string | null,
         handlers: Handlers
     ) {
-        const GenericDrawable = this.constructors.get(entity().type);
+        const GenericDrawable = this.constructors.get(entity.type);
         if (GenericDrawable) {
             const object: BaseBackedObject = new GenericDrawable(
                 undefined,
-                objectStore,
-                layer,
+                globalStore,
+                document,
                 entity,
-                (e) => handlers.onSelected(e),
-                handlers.onChange,
-                (e) => handlers.onCommit(e)
+                (e) => handlers.onSelect(e),
+                handlers.onRedrawNeeded,
+                (e) => handlers.onInteractionComplete(e)
             );
-            objectStore.set(entity().uid, object);
+            globalStore.set(entity.uid, object, levelUid);
             return object;
         } else {
             throw new Error("request to build unknown entity: " + JSON.stringify(entity));
@@ -47,17 +50,18 @@ export default class DrawableObjectFactory {
     }
 
     static buildGhost(
-        entity: () => DrawableEntityConcrete,
+        entity: DrawableEntityConcrete,
         global: GlobalStore,
+        document: DocumentState,
         levelUid: string | null,
         vm: Vue | undefined
     ) {
-        const GenericDrawable = this.constructors.get(entity().type);
+        const GenericDrawable = this.constructors.get(entity.type);
         if (GenericDrawable) {
             const object: BaseBackedObject = new GenericDrawable(
                 vm,
                 global,
-                undefined as any,
+                document,
                 entity,
                 () => {
                     /**/
@@ -69,7 +73,7 @@ export default class DrawableObjectFactory {
                     /**/
                 }
             );
-            global.set(entity().uid, object, levelUid);
+            global.set(entity.uid, object, levelUid);
             return object;
         } else {
             throw new Error("request to build unknown entity: " + JSON.stringify(entity));
@@ -78,7 +82,7 @@ export default class DrawableObjectFactory {
 }
 
 export interface Handlers {
-    onSelected: (event: MouseEvent | KeyboardEvent) => void;
-    onChange: () => void;
-    onCommit: (event: MouseEvent | KeyboardEvent) => void;
+    onSelect: (event: MouseEvent | KeyboardEvent) => void;
+    onRedrawNeeded: () => void;
+    onInteractionComplete: (event: MouseEvent | KeyboardEvent) => void;
 }

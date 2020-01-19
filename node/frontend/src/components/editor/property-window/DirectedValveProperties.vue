@@ -19,7 +19,7 @@ import {ValveType} from "../../../../src/store/document/entities/directed-valves
         </b-row>
         <b-row style="margin-top: 10px;" v-if="selectedEntity.valve.type === ValveType.ISOLATION_VALVE">
             <b-col>
-                <b-button variant="success" @click="openCloseIsolation">
+                <b-button variant="success" @click="openCloseIsolation" :disabled="readOnly">
                     {{ selectedEntity.valve.isClosed ? "Click to Open" : "Click to Close" }}
                 </b-button>
             </b-col>
@@ -54,6 +54,7 @@ import DirectedValve from "../../../../src/htmlcanvas/objects/directed-valve";
 import { ValveType } from "../../../../../common/src/api/document/entities/directed-valves/valve-types";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
 import { fillDirectedValveFields } from "../../../store/document/entities/fillDirectedValveFields";
+import { DrawingMode } from "../../../htmlcanvas/types";
 
 @Component({
     components: { PropertiesFieldBuilder },
@@ -68,7 +69,6 @@ import { fillDirectedValveFields } from "../../../store/document/entities/fillDi
 })
 export default class DirectedValveProperties extends Vue {
     get fields() {
-        console.log(JSON.stringify(this.$props.selectedEntity));
         return makeDirectedValveFields(
             this.$props.selectedEntity,
             this.catalog,
@@ -97,6 +97,10 @@ export default class DirectedValveProperties extends Vue {
     }
     async onCommit() {
         await this.$store.dispatch("document/validateAndCommit");
+    }
+
+    get readonly() {
+        return this.document.uiState.viewOnly || this.document.uiState.drawingMode === DrawingMode.History;
     }
 
     flip() {

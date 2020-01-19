@@ -165,6 +165,7 @@ import PlantProperties from "./PlantProperties.vue";
 import { isGermanStandard } from "../../../../../common/src/api/config";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
 import { DrawableEntity } from "../../../../../common/src/api/document/drawing";
+import { DrawingMode } from "../../../htmlcanvas/types";
 
 @Component({
     components: {
@@ -187,7 +188,8 @@ import { DrawableEntity } from "../../../../../common/src/api/document/drawing";
         mode: Number,
         objectStore: Map, // MAP. don't change it
         onChange: Function,
-        onDelete: Function
+        onDelete: Function,
+        readOnly: Boolean,
     }
 })
 export default class PropertiesWindow extends Vue {
@@ -197,6 +199,10 @@ export default class PropertiesWindow extends Vue {
 
     destroyed() {
         MainEventBus.$off("delete-pressed", this.$props.onDelete);
+    }
+
+    get readonly() {
+        return this.document.uiState.viewOnly || this.document.uiState.drawingMode === DrawingMode.History;
     }
 
     autoConnect() {

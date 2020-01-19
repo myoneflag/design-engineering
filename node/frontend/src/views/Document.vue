@@ -62,7 +62,6 @@ import {FileWebsocketMessageType} from "../../src/api/types";
                         }
                     });
 
-                    console.log('loaded');
                     MainEventBus.$emit('drawing-loaded');
                 },
                 (msg) => {

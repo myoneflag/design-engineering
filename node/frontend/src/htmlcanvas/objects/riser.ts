@@ -27,6 +27,7 @@ import { Coord, FlowSystemParameters } from "../../../../common/src/api/document
 import { getEdgeLikeHeightAboveGroundM } from "../lib/utils";
 import { GlobalStore } from "../lib/global-store";
 import { APIResult } from "../../../../common/src/api/document/types";
+import { Interaction, InteractionType } from "../lib/interaction";
 
 @CalculatedObject
 @SelectableObject
@@ -180,38 +181,45 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         // nada
     }
 
+    offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
+        if (interaction.type === InteractionType.MOVE_ONTO_RECEIVE) {
+            return null;
+        } else if (interaction.type === InteractionType.MOVE_ONTO_SEND) {
+            return null;
+        }
+        return super.offerInteraction(interaction);
+    }
+
     validate(context: CanvasContext, tryToFix: boolean): APIResult<void> {
         const pres = super.validate(context, tryToFix);
         if (pres && !pres.success) {
             return pres;
         }
 
-        if (this.objectStore instanceof GlobalStore) {
 
-            // check the sanity of heights
-            if (this.entity.bottomHeightM !== null) {
-                if (this.entity.bottomHeightM > this.minPipeHeight(context)) {
-                    if (tryToFix) {
-                        this.entity.bottomHeightM = this.minPipeHeight(context);
-                    } else {
+        // check the sanity of heights
+        if (this.entity.bottomHeightM !== null) {
+            if (this.entity.bottomHeightM > this.minPipeHeight(context)) {
+                if (tryToFix) {
+                    this.entity.bottomHeightM = this.minPipeHeight(context);
+                } else {
 
-                        return {
-                            success: false,
-                            message: "Riser bottom can't be higher than our lowest pipe (" + this.entity.uid + ", " + this.entity.bottomHeightM + ' ' + this.entity.topHeightM + ", " + this.minPipeHeight(context) + ")",
-                        };
-                    }
+                    return {
+                        success: false,
+                        message: "Riser bottom can't be higher than our lowest pipe (" + this.entity.uid + ", " + this.entity.bottomHeightM + ' ' + this.entity.topHeightM + ", " + this.minPipeHeight(context) + ")",
+                    };
                 }
             }
-            if (this.entity.topHeightM !== null) {
-                if (this.entity.topHeightM < this.maxPipeHeight(context)) {
-                    if (tryToFix) {
-                        this.entity.topHeightM = this.maxPipeHeight(context);
-                    } else {
-                        return {
-                            success: false,
-                            message: "Riser top can't be lower than our highest pipe. (" + this.entity.uid + ", " + this.entity.topHeightM + ' ' + this.entity.topHeightM + ", " + this.maxPipeHeight(context) + ")",
-                        };
-                    }
+        }
+        if (this.entity.topHeightM !== null) {
+            if (this.entity.topHeightM < this.maxPipeHeight(context)) {
+                if (tryToFix) {
+                    this.entity.topHeightM = this.maxPipeHeight(context);
+                } else {
+                    return {
+                        success: false,
+                        message: "Riser top can't be lower than our highest pipe. (" + this.entity.uid + ", " + this.entity.topHeightM + ' ' + this.entity.topHeightM + ", " + this.maxPipeHeight(context) + ")",
+                    };
                 }
             }
         }
@@ -222,14 +230,14 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
     }
 
     minPipeHeight(context: CanvasContext): number {
-        if (!(this.objectStore instanceof GlobalStore)) {
+        if (!(this.globalStore instanceof GlobalStore)) {
             throw new Error("minPipeHeight only works in the global context");
         }
-        const conns = this.objectStore.getConnections(this.uid);
+        const conns = this.globalStore.getConnections(this.uid);
         if (conns.length === 0) {
             return Infinity;
         }
-        const gs = this.objectStore as GlobalStore;
+        const gs = this.globalStore as GlobalStore;
         return Math.min(...conns.map((uid) =>
             getEdgeLikeHeightAboveGroundM(gs.get(uid)!.entity as EdgeLikeEntity, {
                 doc: context.document,
@@ -241,14 +249,14 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
     }
 
     maxPipeHeight(context: CanvasContext): number {
-        if (!(this.objectStore instanceof GlobalStore)) {
+        if (!(this.globalStore instanceof GlobalStore)) {
             throw new Error("maxPipeHeight only works in the global context");
         }
-        const conns = this.objectStore.getConnections(this.uid);
+        const conns = this.globalStore.getConnections(this.uid);
         if (conns.length === 0) {
             return -Infinity;
         }
-        const gs = this.objectStore as GlobalStore;
+        const gs = this.globalStore as GlobalStore;
         return Math.max(...conns.map((uid) =>
             getEdgeLikeHeightAboveGroundM(gs.get(uid)!.entity as EdgeLikeEntity, {
                 doc: context.document,

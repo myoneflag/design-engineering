@@ -9,8 +9,8 @@ export class Session extends BaseEntity {
     @PrimaryColumn()
     id: string;
 
-    @ManyToOne(() => User)
-    user: Promise<User>;
+    @ManyToOne(() => User, {eager: true})
+    user: User;
 
     @Column()
     expiresOn: Date;

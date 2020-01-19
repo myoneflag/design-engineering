@@ -4,13 +4,14 @@ import { OPERATION_NAMES } from "../../../../common/src/api/document/operation-t
 import { RootState } from "../types";
 import { blankDiffFilter, DocumentState, EntityParam } from "../../../src/store/document/types";
 import { diffState } from "../../../../common/src/api/document/state-differ";
-import { applyOtOnState } from "../../../src/store/document/operation-transforms/state-ot-apply";
+import { applyOpOntoStateVue } from "../../../src/store/document/operation-transforms/state-ot-apply";
 import * as _ from "lodash";
 import { submitOperation, updateDocument } from "../../../src/api/document";
 import Vue from "vue";
 import { MainEventBus } from "../main-event-bus";
 import { assertUnreachable } from "../../../../common/src/api/config";
 import { cloneSimple } from "../../../../common/src/lib/utils";
+import { DrawingMode } from "../../htmlcanvas/types";
 
 export const actions: ActionTree<DocumentState, RootState> = {
     applyRemoteOperation({ commit, state }, op) {
@@ -51,7 +52,10 @@ export const actions: ActionTree<DocumentState, RootState> = {
 
     // Call this action to commit the current operation transforms. TODO: make that atomic.
     commit({ commit, state }, logUndo: boolean = true) {
-        console.log('committing');
+        if (state.uiState.drawingMode === DrawingMode.History) {
+            return;
+        }
+
         if (state.uiState.viewOnly) {
             commit('revert');
             return;
@@ -70,7 +74,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
             if (v.type !== OPERATION_NAMES.DIFF_OPERATION) {
                 throw new Error("diffState gave a weird operation");
             }
-            applyOtOnState(state.committedDrawing, v);
+            applyOpOntoStateVue(state.committedDrawing, v);
         });
 
         Vue.set(state, "diffFilter", blankDiffFilter());
@@ -105,9 +109,13 @@ export const actions: ActionTree<DocumentState, RootState> = {
         MainEventBus.$emit("committed", true);
     },
 
+    applyDiff({commit, state, dispatch}, diff) {
+        commit('applyDiff', diff);
+    },
+
     undo(args) {
         const {commit, state, dispatch} = args;
-        if (state.undoIndex) {
+        if (state.undoIndex && state.uiState.drawingMode !== DrawingMode.History) {
             state.undoIndex --;
             for (let i = state.undoStack[state.undoIndex].length - 1; i >= 0; i--) {
                 const op = state.undoStack[state.undoIndex][i];
@@ -128,7 +136,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
 
     redo(args) {
         const {commit, state, dispatch} = args;
-        if (state.undoIndex < state.undoStack.length) {
+        if (state.undoIndex < state.undoStack.length && state.uiState.drawingMode !== DrawingMode.History) {
             // tslint:disable-next-line:prefer-for-of
             for (let i = 0; i < state.undoStack[state.undoIndex].length; i ++) {
                 const op = state.undoStack[state.undoIndex][i];
@@ -153,14 +161,20 @@ export const actions: ActionTree<DocumentState, RootState> = {
     },
 
     revert({ commit, state }, redraw) {
-        console.log('reverting');
         // We need to wait for entity mutation watchers to fire and update the filter.
         // Reverse all optimistic operations
         commit("revert", redraw);
     },
-
+    revertFull( { commit, state } ) {
+        commit('revertFull');
+    },
     reset({ commit, state }) {
         commit("reset");
+    },
+
+
+    resetDrawing({ commit, state }) {
+        commit("resetDrawing");
     },
 
     loaded({ commit, state }, loaded) {

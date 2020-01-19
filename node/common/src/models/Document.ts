@@ -2,7 +2,7 @@ import {Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne} from "type
 import {BaseEntity} from "typeorm";
 import {Operation} from "./Operation";
 import {Organization} from "./Organization";
-import {User} from "./User";
+import { AccessLevel, User } from "./User";
 import { GeneralInfo } from "../api/document/drawing";
 
 @Entity()
@@ -28,4 +28,16 @@ export class Document extends BaseEntity {
 
     @Column({default: 0})
     version: number;
+}
+
+export function canUserDeleteDocument(doc: Document, user: User) {
+    if (doc.createdBy.username === user.username) {
+        return true;
+    }
+
+    if (user.accessLevel <= AccessLevel.MANAGER) {
+        return true;
+    }
+
+    return false;
 }
