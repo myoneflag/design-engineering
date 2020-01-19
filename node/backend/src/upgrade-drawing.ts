@@ -77,6 +77,7 @@ export function getInitialDrawing(doc?: Document) {
     switch (doc.version) {
         case 0:
         case 1:
+        case 2:
             return cloneSimple(initialDrawing);
         default:
             throw new Error('invalid state');
