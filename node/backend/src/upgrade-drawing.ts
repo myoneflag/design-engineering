@@ -17,6 +17,7 @@ export async function upgradeDocument(doc: Document) {
     }
 
     const ops = await Operation.createQueryBuilder('operation')
+        .leftJoinAndSelect('operation.blame', 'user')
         .where('operation.document = :document', {document: doc.id})
         .orderBy('operation.orderIndex', "ASC")
         .getMany();

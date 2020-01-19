@@ -252,6 +252,7 @@ export class DocumentController {
                 await doc.save();
 
                 const ops = await Operation.createQueryBuilder('operation')
+                    .leftJoinAndSelect('operation.blame', 'user')
                     .where('operation.document = :document', {document: target.id})
                     .orderBy('"orderIndex"', 'ASC')
                     .getMany();
@@ -259,7 +260,10 @@ export class DocumentController {
                 let lastOrderIndex = 0;
                 for (const op of ops) {
                     const newOp = Operation.create();
-                    Object.assign(newOp, op);
+                    newOp.operation = op.operation;
+                    newOp.dateTime = op.dateTime;
+                    newOp.blame = op.blame;
+                    newOp.orderIndex = op.orderIndex;
                     newOp.document = Promise.resolve(doc);
                     await newOp.save();
                     lastOrderIndex = newOp.orderIndex;
@@ -267,7 +271,7 @@ export class DocumentController {
 
                 const drawing = cloneSimple(initialDrawing);
                 const drawingWithTitle = cloneSimple(initialDrawing);
-                drawingWithTitle.metadata.generalInfo.title = 'Copy of ' + drawingWithTitle.metadata.generalInfo.title;
+                drawingWithTitle.metadata.generalInfo.title = doc.metadata.title;
 
 
                 const titleChangeDiff = diffState(drawing, drawingWithTitle, undefined);
@@ -324,6 +328,7 @@ async function ensureDocumentLoaded(id: number) {
 
         const operations = await Operation
             .createQueryBuilder('operation')
+            .leftJoinAndSelect('operation.blame', 'user')
             .where('operation.document = :document', {document: id})
             .orderBy('operation.orderIndex', 'ASC')
             .getMany();
