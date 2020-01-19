@@ -348,6 +348,10 @@ export function lookupFlowRate(
         fromDwellings = 0;
     }
 
+    if (fromDwellings === null && psdU.dwellings === 0) {
+        fromDwellings = 0;
+    }
+
     if (fromLoading === null || fromDwellings === null) {
         return null;
     }

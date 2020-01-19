@@ -278,6 +278,7 @@ export function drawLoadingUnits(
     } else {
         ctx.fillText("Total PSD:", 80, y - 20);
     }
+    console.log(JSON.stringify(units));
     let coldFR: number | null | undefined;
     let hotFR: number | null | undefined;
     try {
