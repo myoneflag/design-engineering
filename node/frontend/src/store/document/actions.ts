@@ -113,6 +113,10 @@ export const actions: ActionTree<DocumentState, RootState> = {
         commit('applyDiff', diff);
     },
 
+    applyDiffs({commit, state, dispatch}, diffs) {
+        commit('applyDiffs', diffs);
+    },
+
     undo(args) {
         const {commit, state, dispatch} = args;
         if (state.undoIndex && state.uiState.drawingMode !== DrawingMode.History) {

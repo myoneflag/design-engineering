@@ -16,6 +16,7 @@ import { cloneSimple } from "../../../../common/src/lib/utils";
 import { GlobalStore } from "../../htmlcanvas/lib/global-store";
 import DrawableObjectFactory from "../../htmlcanvas/lib/drawable-object-factory";
 import { DrawingMode } from "../../htmlcanvas/types";
+import { applyDiffNative } from "../../../../common/src/api/document/state-ot-apply";
 
 export const globalStore = new GlobalStore();
 
@@ -76,6 +77,7 @@ function onAddEntity({entity, levelUid}: EntityParam, state: DocumentState) {
     } catch (e) {
         // todo: telemetry this
         // tslint:disable-next-line:no-console
+        console.log(e);
         console.log('warning: Creating entity that isn\'t registered: ' + JSON.stringify(entity));
     }
 }
@@ -300,6 +302,22 @@ export const mutations: MutationTree<DocumentState> = {
         });
     },
 
+    applyDiffs(state, diffs: any[]) {
+        const prevDrawing = cloneSimple(state.drawing);
+        for (const diff of diffs) {
+            applyDiffVue(state.drawing, diff);
+            const changes = marshalChanges(prevDrawing, state.drawing, diff, true);
+            proxyUpFromStateDiff(state, diff);
+            changes.forEach(([e, v]) => {
+                beforeEvent(e, v, state);
+            });
+            changes.forEach(([e, v]) => {
+                MainEventBus.$emit(e, v);
+            });
+
+            applyDiffNative(prevDrawing, cloneSimple(diff));
+        }
+    },
 
     revert(state, redraw) {
         if (state.uiState.drawingMode === DrawingMode.History) {

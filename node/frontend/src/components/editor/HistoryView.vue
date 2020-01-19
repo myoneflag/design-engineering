@@ -91,13 +91,14 @@ import { DrawingMode } from "../../htmlcanvas/types";
                     this.document.uiState.selectedUids.splice(0);
                     newVal = Number(newVal);
                     oldVal = Number(oldVal);
+                    const diffs: any[] = [];
                     if (newVal > oldVal) { // fast forward
                         for (let i = oldVal + 1; i <= newVal; i++) {
                             for (let j = 0; j < this.discreteHistory[i].length; j++) {
                                 const op = this.discreteHistory[i][j];
                                 switch (op.operation.type) {
                                     case OPERATION_NAMES.DIFF_OPERATION:
-                                        this.$store.dispatch('document/applyDiff', op.operation.diff);
+                                        diffs.push(op.operation.diff);
                                         break;
                                     case OPERATION_NAMES.COMMITTED_OPERATION:
                                         break;
@@ -112,7 +113,7 @@ import { DrawingMode } from "../../htmlcanvas/types";
                                 const op = this.discreteHistory[i][j];
                                 switch (op.operation.type) {
                                     case OPERATION_NAMES.DIFF_OPERATION:
-                                        this.$store.dispatch('document/applyDiff', op.operation.inverse);
+                                        diffs.push(op.operation.inverse);
                                         break;
                                     case OPERATION_NAMES.COMMITTED_OPERATION:
                                         break;
@@ -120,6 +121,8 @@ import { DrawingMode } from "../../htmlcanvas/types";
                             }
                         }
                     }
+
+                    this.$store.dispatch('document/applyDiffs', diffs);
                     MainEventBus.$emit('redraw');
                 }
             );
