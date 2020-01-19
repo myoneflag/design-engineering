@@ -1,21 +1,18 @@
 import { Draggable, DraggableObject } from "../../../../src/htmlcanvas/lib/object-traits/draggable-object";
 import BackedDrawableObject from "../../../../src/htmlcanvas/lib/backed-drawable-object";
-import Connectable from "../../../../src/htmlcanvas/lib/object-traits/connectable";
 import * as TM from "transformation-matrix";
-import { CenteredEntityConcrete, isConnectableEntity } from "../../../../../common/src/api/document/entities/concrete-entity";
+import {
+    CenteredEntityConcrete,
+    isConnectableEntity
+} from "../../../../../common/src/api/document/entities/concrete-entity";
 import { InteractionType } from "../../../../src/htmlcanvas/lib/interaction";
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
 import { moveOnto } from "../../../../src/htmlcanvas/lib/black-magic/move-onto";
 import BackedConnectable from "../../../../src/htmlcanvas/lib/BackedConnectable";
-import assert from "assert";
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
 import Pipe from "../../../../src/htmlcanvas/objects/pipe";
-import {
-    CenteredEntity,
-    ConnectableEntity,
-    Coord,
-    DrawableEntity
-} from "../../../../../common/src/api/document/drawing";
+import { Coord } from "../../../../../common/src/api/document/drawing";
+import { DrawingMode } from "../../types";
 
 export default function CenterDraggableObject<
     T extends new (...args: any[]) => BackedDrawableObject<CenteredEntityConcrete>
@@ -33,6 +30,11 @@ export default function CenterDraggableObject<
                 context: CanvasContext,
                 isMulti: boolean
             ): void {
+
+                if (this.document.uiState.viewOnly || this.document.uiState.drawingMode === DrawingMode.History) {
+                    return;
+                }
+
                 this.toDelete = null;
 
                 const inv = TM.inverse(this.position);
@@ -72,7 +74,7 @@ export default function CenterDraggableObject<
                     );
 
                     if (draggedOn && draggedOn.length > 0) {
-                        const dest = this.objectStore.get(draggedOn[0].uid);
+                        const dest = this.globalStore.get(draggedOn[0].uid);
                         if (dest instanceof BackedConnectable || dest instanceof Pipe) {
                             moveOnto(this, dest, context);
                         } else {
@@ -80,19 +82,18 @@ export default function CenterDraggableObject<
                         }
                     }
                 }
-
                 if (!isMulti) {
-                    this.onChange();
+                    this.onRedrawNeeded();
                 }
             }
 
             onDragFinish(event: MouseEvent, context: CanvasContext): void {
-                this.layer.releaseDrag(context);
-                this.onCommit(event);
+                context.activeLayer.releaseDrag(context);
+                this.onInteractionComplete(event);
             }
 
             onDragStart(event: MouseEvent, objectCoord: Coord, context: CanvasContext): any {
-                this.layer.dragObjects([this], context);
+                context.activeLayer.dragObjects([this], context);
                 return null;
             }
         }

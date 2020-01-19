@@ -1,3 +1,4 @@
+import { DrawingMode } from "../../../htmlcanvas/types";
 <template>
     <b-container>
         <b-row>
@@ -25,6 +26,7 @@
                                     :checked="isDefaultOverridden(field.property)"
                                     :indeterminate="isDefaultIndeterminate(field.property)"
                                     @input="setIsDefault(field.property, !$event, true)"
+                                    :disabled="readonly"
                                 />
                             </b-col>
                             <b-col cols="4" v-if="field.isCalculated" v-b-tooltip.hover title="Computed value">
@@ -34,6 +36,7 @@
                                     @click="setIsComputed(field, false)"
                                     size="sm"
                                     variant="outline-secondary"
+                                    :disabled="readonly"
                                 >
                                     Computed
                                 </b-button>
@@ -43,6 +46,7 @@
                                     @click="setIsComputed(field, true, true)"
                                     size="sm"
                                     variant="outline-secondary"
+                                    :disabled="readonly"
                                 >
                                     Overriden
                                 </b-button>
@@ -186,19 +190,20 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
-import { DocumentState } from "../../../../src/store/document/types";
-import { Compact } from "vue-color";
-import FlowSystemPicker from "../../../../src/components/editor/FlowSystemPicker.vue";
-import PopoutColourPicker from "../../../../src/components/editor/lib/PopoutColourPicker.vue";
-import { FieldParams, PropertyField } from "../../../../../common/src/api/document/entities/property-field";
-import RotationPicker from "../../../../src/components/editor/lib/RotationPicker.vue";
-import BooleanPicker from "../../../../src/components/editor/lib/BooleanPicker.vue";
-import { getPropertyByString, setPropertyByString } from "../../../../src/lib/utils";
-import { Choice } from "../../../../../common/src/lib/utils";
+    import Vue from "vue";
+    import Component from "vue-class-component";
+    import { DocumentState } from "../../../../src/store/document/types";
+    import { Compact } from "vue-color";
+    import FlowSystemPicker from "../../../../src/components/editor/FlowSystemPicker.vue";
+    import PopoutColourPicker from "../../../../src/components/editor/lib/PopoutColourPicker.vue";
+    import { FieldParams, PropertyField } from "../../../../../common/src/api/document/entities/property-field";
+    import RotationPicker from "../../../../src/components/editor/lib/RotationPicker.vue";
+    import BooleanPicker from "../../../../src/components/editor/lib/BooleanPicker.vue";
+    import { getPropertyByString, setPropertyByString } from "../../../../src/lib/utils";
+    import { Choice } from "../../../../../common/src/lib/utils";
+    import { DrawingMode } from "../../../htmlcanvas/types";
 
-@Component({
+    @Component({
     props: {
         fields: Array,
         reactiveData: Object,
@@ -229,6 +234,10 @@ export default class PropertiesFieldBuilder extends Vue {
 
     get document(): DocumentState {
         return this.$store.getters["document/document"];
+    }
+
+    get readonly() {
+        return this.document.uiState.viewOnly || this.document.uiState.drawingMode === DrawingMode.History;
     }
 
     onCommitInternal() {
@@ -326,6 +335,9 @@ export default class PropertiesFieldBuilder extends Vue {
     }
 
     isDisabled(field: PropertyField) {
+        if (this.readonly) {
+            return true;
+        }
         if (field.requiresInput) {
             return false;
         }

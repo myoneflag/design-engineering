@@ -18,9 +18,12 @@ import {
 } from "../../../src/htmlcanvas/utils";
 import { isCalculated } from "../../../src/store/document/calculations";
 import * as TM from "transformation-matrix";
-import { tm2flatten } from "../../../src/htmlcanvas/lib/utils";
+import { levelIncludesRiser, tm2flatten } from "../../../src/htmlcanvas/lib/utils";
 import { MIN_SCALE } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
-import { isConnectableEntity } from "../../../../common/src/api/document/entities/concrete-entity";
+import {
+    DrawableEntityConcrete,
+    isConnectableEntity
+} from "../../../../common/src/api/document/entities/concrete-entity";
 import { assertUnreachable } from "../../../../common/src/api/config";
 
 const MINIMUM_SIGNIFICANT_PIPE_LENGTH_MM = 500;
@@ -28,6 +31,8 @@ export const SIGNIFICANT_FLOW_THRESHOLD = 1e-5;
 
 export default class CalculationLayer extends LayerImplementation {
     calculator: CalculationEngine = new CalculationEngine();
+
+
     async draw(
         context: DrawingContext,
         active: boolean,
@@ -53,7 +58,8 @@ export default class CalculationLayer extends LayerImplementation {
 
             const obj2props = new Map<string, CalculationData[]>();
 
-            this.objectStore.forEach((o) => {
+            this.uidsInOrder.forEach((uid) => {
+                const o = this.context.globalStore.get(uid)!;
                 if (
                     isCalculated(o.entity) &&
                     o.type in calculationFilters &&
@@ -70,7 +76,9 @@ export default class CalculationLayer extends LayerImplementation {
                 }
             });
 
-            const objList = Array.from(this.objectStore.values()).filter((o) => o.calculated && obj2props.has(o.uid));
+            const objList = Array.from(this.uidsInOrder)
+                .map((uid) => this.context.globalStore.get(uid)!)
+                .filter((o) => o.calculated && obj2props.has(o.uid));
             objList.sort((a, b) => {
                 return -(this.messagePriority(context, a) - this.messagePriority(context, b));
             });
@@ -86,7 +94,10 @@ export default class CalculationLayer extends LayerImplementation {
             }
 
             const onScreenList: BaseBackedObject[] = objList.filter((o) => vp.someOnScreen(o.shape()!));
-            const allOnScreen = Array.from(this.objectStore.values()).filter((o) => vp.someOnScreen(o.shape()!));
+            const allOnScreen =
+                Array.from(this.uidsInOrder)
+                    .map((uid) => this.context.globalStore.get(uid)!)
+                    .filter((o) => vp.someOnScreen(o.shape()!));
 
             await cooperativeYield(shouldContinue);
             if (lvlUid !== context.doc.uiState.levelUid) {
@@ -173,6 +184,37 @@ export default class CalculationLayer extends LayerImplementation {
                 }
             }
         }
+    }
+
+    entitySortOrder(entity: DrawableEntityConcrete): number {
+        return 0;
+    }
+
+    shouldAccept(entity: DrawableEntityConcrete): boolean {
+        switch (entity.type) {
+            case EntityType.RISER:
+                return levelIncludesRiser(
+                    this.context.document.drawing.levels[this.context.document.uiState.levelUid!],
+                    entity,
+                    this.context.$store.getters['document/sortedLevels'],
+                );
+            case EntityType.FITTING:
+            case EntityType.PIPE:
+            case EntityType.SYSTEM_NODE:
+            case EntityType.BIG_VALVE:
+            case EntityType.FIXTURE:
+            case EntityType.DIRECTED_VALVE:
+            case EntityType.LOAD_NODE:
+            case EntityType.PLANT:
+            case EntityType.FLOW_SOURCE:
+                return this.context.globalStore.levelOfEntity.get(entity.uid) ===
+                    this.context.document.uiState.levelUid;
+            case EntityType.BACKGROUND_IMAGE:
+                return false;
+            default:
+                assertUnreachable(entity);
+        }
+        return false;
     }
 
     messagePriority(context: DrawingContext, object: BaseBackedObject): number {

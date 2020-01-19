@@ -28,13 +28,13 @@ export default function connectBigValveToSource(
     let hotObj: SystemNode | undefined;
     let coldDrawn = false;
 
-    coldObj = context.objectStore.get(newBigValve.entity.coldRoughInUid) as SystemNode;
-    hotObj = context.objectStore.get(newBigValve.entity.hotRoughInUid) as SystemNode;
+    coldObj = context.globalStore.get(newBigValve.entity.coldRoughInUid) as SystemNode;
+    hotObj = context.globalStore.get(newBigValve.entity.hotRoughInUid) as SystemNode;
 
-    if (interactive && context.objectStore.getConnections(coldObj.uid).length === 0) {
+    if (interactive && context.globalStore.getConnections(coldObj.uid).length === 0) {
         coldDrawn = true;
         const target = interactive[0];
-        const targetObj = context.objectStore.get(target.uid)!;
+        const targetObj = context.globalStore.get(target.uid)!;
         // rotate our pipe and try again with correct position of cold water
 
         const closePoint = targetObj.shape()!.distanceTo(Flatten.point(wc.x, wc.y))[1].ps;
@@ -52,7 +52,7 @@ export default function connectBigValveToSource(
     // do closest hot pipe
     if (coldDrawn) {
         const interactiveC = getClosestJoinable(context, StandardFlowSystemUids.HotWater, wc, radiusMM, selfUids);
-        if (interactiveC && interactiveC.length && context.objectStore.getConnections(hotObj.uid).length === 0) {
+        if (interactiveC && interactiveC.length && context.globalStore.getConnections(hotObj.uid).length === 0) {
             const pipeE = interactiveC[0];
 
             const hotWc = hotObj.toWorldCoord({ x: 0, y: 0 });
@@ -74,7 +74,7 @@ function leadPipe(
     let pipe: Pipe;
     let valve: ConnectableEntityConcrete;
     if (pipeSpec !== undefined) {
-        const obj = context.objectStore.get(pipeSpec)!;
+        const obj = context.globalStore.get(pipeSpec)!;
         if (obj.entity.type === EntityType.PIPE) {
             valve = addValveAndSplitPipe(context, obj as Pipe, wc, systemUid, 30).focus as FittingEntity;
         } else if (isConnectableEntity(obj.entity)) {
@@ -87,7 +87,7 @@ function leadPipe(
         if (interactive) {
             if (interactive[0].type === EntityType.PIPE) {
                 const pipeE = interactive[0];
-                pipe = context.objectStore.get(pipeE.uid) as Pipe;
+                pipe = context.globalStore.get(pipeE.uid) as Pipe;
                 valve = addValveAndSplitPipe(context, pipe, wc, systemUid, 30).focus as FittingEntity;
             } else if (isConnectableEntity(interactive[0])) {
                 valve = interactive[0] as ConnectableEntityConcrete;
@@ -138,7 +138,7 @@ function getClosestJoinable(
             return !excludeUids.includes(obj[0].uid);
         },
         (object: DrawableEntity[]) => {
-            const obj = context.objectStore.get(object[0].uid);
+            const obj = context.globalStore.get(object[0].uid);
             if (!obj) {
                 return -Infinity;
             }

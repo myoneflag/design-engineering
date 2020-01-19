@@ -55,7 +55,7 @@ export function CalculatedObject<
                         "undefined value: " +
                             JSON.stringify(datum) +
                             " " +
-                            JSON.stringify(this.objectStore.get(datum.attachUid)!.entity)
+                            JSON.stringify(this.globalStore.get(datum.attachUid)!.entity)
                     );
                 }
 

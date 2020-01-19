@@ -2,6 +2,7 @@
   "extends": [
     "tslint:recommended"
   ],
+  "defaultSeverity": "warn",
   "rules": {
     "no-implicit-dependencies": [true, "dev"],
     "no-console": [true, "dev"],

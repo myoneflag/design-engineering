@@ -1,4 +1,7 @@
 import * as _ from "lodash";
+import { applyOpOntoStateVue } from "../../../../frontend/src/store/document/operation-transforms/state-ot-apply";
+import { OperationTransformConcrete } from "./operation-transforms";
+import { cloneSimple } from "../../lib/utils";
 export function applyDiff(
     target: any,
     diff: any,
@@ -10,7 +13,7 @@ export function applyDiff(
     }
 
     if (_.isArray(diff)) {
-        return diff;
+        return cloneSimple(diff);
     } else if (_.isObject(diff)) {
         if (_.isArray(target) || !_.isObject(target)) {
             // convert those primitives and arrays into the object that it ought to be.

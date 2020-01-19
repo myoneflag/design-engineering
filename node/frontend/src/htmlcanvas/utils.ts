@@ -413,13 +413,13 @@ export class InterruptedError extends Error {
     /**/
 }
 
-export function cooperativeYield(shouldContinue?: () => boolean) {
+export function cooperativeYield(shouldContinue?: () => boolean, time?: number) {
     if (shouldContinue) {
         if (!shouldContinue()) {
             throw new InterruptedError("Cooperative yield interrupted");
         }
     }
     return new Promise((resolve, reject) => {
-        setTimeout(resolve);
+        setTimeout(resolve, time);
     });
 }

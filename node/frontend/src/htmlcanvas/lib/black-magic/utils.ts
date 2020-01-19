@@ -2,11 +2,12 @@ import { EntityType } from "../../../../../common/src/api/document/entities/type
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
 import { ObjectStore } from "../object-store";
 import { assertUnreachable } from "../../../../../common/src/api/config";
+import { GlobalStore } from "../global-store";
 
 export function getConnectedFlowComponent(
     targetUid: string,
-    objectStore: ObjectStore,
-    allowed?: Set<string>
+    globalStore: GlobalStore,
+    levelUid: string,
 ): BaseBackedObject[] {
     const q = [targetUid];
 
@@ -20,13 +21,11 @@ export function getConnectedFlowComponent(
         }
         seen.add(top);
 
-        if (allowed) {
-            if (!allowed.has(top)) {
-                continue;
-            }
+        if (globalStore.levelOfEntity.get(top) !== levelUid) {
+            continue;
         }
 
-        const o = objectStore.get(top)!;
+        const o = globalStore.get(top)!;
         result.push(o);
         switch (o.entity.type) {
             case EntityType.SYSTEM_NODE:
@@ -35,7 +34,7 @@ export function getConnectedFlowComponent(
             case EntityType.FLOW_SOURCE:
             case EntityType.FITTING:
             case EntityType.DIRECTED_VALVE:
-                q.push(...objectStore.getConnections(o.entity.uid));
+                q.push(...globalStore.getConnections(o.entity.uid));
                 break;
             case EntityType.PIPE:
                 q.push(...o.entity.endpointUid);

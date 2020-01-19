@@ -67,7 +67,7 @@ export class LoginController {
         const dayAfter = new Date();
         dayAfter.setDate(dayAfter.getDate() + 2);
         existingSession.expiresOn = dayAfter;
-        existingSession.user = Promise.resolve(login);
+        existingSession.user = login;
         await existingSession.save();
 
         res.status(200).send({
@@ -165,7 +165,7 @@ export class LoginController {
         await session.remove();
         const newSession = Session.create();
         newSession.id = uuid();
-        newSession.user = Promise.resolve(login);
+        newSession.user = login;
         const dayAfter = new Date();
         dayAfter.setDate(dayAfter.getDate() + 2);
         newSession.expiresOn = dayAfter;

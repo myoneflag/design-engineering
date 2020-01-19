@@ -6,11 +6,20 @@ import { InteractionType } from "../../../src/htmlcanvas/lib/interaction";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import { addValveAndSplitPipe } from "../../../src/htmlcanvas/lib/black-magic/split-pipe";
 import DirectedValveEntity from "../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
-import { DirectedValveConcrete, ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
+import {
+    DirectedValveConcrete,
+    ValveType
+} from "../../../../common/src/api/document/entities/directed-valves/valve-types";
 import uuid from "uuid";
-import { KeyCode } from "../../../src/htmlcanvas/utils";
+import { cooperativeYield, KeyCode } from "../../../src/htmlcanvas/utils";
 import DirectedValve from "../../../src/htmlcanvas/objects/directed-valve";
-import { Coord, FlowSystemParameters } from "../../../../common/src/api/document/drawing";
+import { ConnectableEntity, Coord, FlowSystemParameters } from "../../../../common/src/api/document/drawing";
+import {
+    ConnectableEntityConcrete,
+    isConnectableEntity
+} from "../../../../common/src/api/document/entities/concrete-entity";
+import { cloneSimple } from "../../../../common/src/lib/utils";
+import BackedDrawableObject from "../lib/backed-drawable-object";
 
 export default function insertDirectedValve(
     context: CanvasContext,
@@ -34,10 +43,10 @@ export default function insertDirectedValve(
                     }
                 }
             },
-            (wc, event) => {
-                context.$store.dispatch("document/revert", false);
+            async (wc, event) => {
+                await context.$store.dispatch("document/revert", false);
 
-                context.offerInteraction(
+                const interactionA = context.offerInteraction(
                     {
                         type: InteractionType.INSERT,
                         entityType: EntityType.DIRECTED_VALVE,
@@ -46,24 +55,75 @@ export default function insertDirectedValve(
                         worldRadius: 30
                     },
                     (drawable) => {
-                        return drawable[0].type === EntityType.PIPE;
+                        return isConnectableEntity(drawable[0]) && context.globalStore.getConnections(drawable[0].uid).length <= 2;
                     }
                 );
 
-                const valveEntity: DirectedValveEntity = createBareValveEntity(valveType, catalogId, wc, null);
-                context.$store.dispatch("document/addEntity", valveEntity);
-
-                if (context.interactive && context.interactive.length) {
-                    const pipeE = context.interactive[0];
-                    pipe = context.objectStore.get(pipeE.uid) as Pipe;
-                    // Project onto pipe
-                    addValveAndSplitPipe(context, pipe, wc, system.uid, 10, valveEntity);
-
-                    if (flipped) {
-                        (context.objectStore.get(valveEntity.uid)! as DirectedValve).flip();
+                const interactionB = context.offerInteraction(
+                    {
+                        type: InteractionType.INSERT,
+                        entityType: EntityType.DIRECTED_VALVE,
+                        systemUid: null,
+                        worldCoord: wc,
+                        worldRadius: 30
+                    },
+                    (drawable) => {
+                        return drawable[0].type === EntityType.PIPE || isConnectableEntity(drawable[0]) && context.globalStore.getConnections(drawable[0].uid).length <= 2;
                     }
-                } else {
-                    pipe = null;
+                );
+
+                const interaction  = interactionA || interactionB;
+
+                const valveEntity: DirectedValveEntity = createBareValveEntity(valveType, catalogId, cloneSimple(wc), null);
+                await context.$store.dispatch("document/addEntity", valveEntity);
+
+                if (interaction && interaction.length) {
+                    if (interaction[0].type === EntityType.PIPE) {
+                        const pipeE = interaction[0];
+                        pipe = context.globalStore.get(pipeE.uid) as Pipe;
+                        // Project onto pipe
+                        addValveAndSplitPipe(context, pipe, wc, system.uid, 10, valveEntity);
+
+                        if (flipped) {
+                            (context.globalStore.get(valveEntity.uid)! as DirectedValve).flip();
+                        }
+                    } else {
+
+                        const object = context.globalStore.get(interaction[0].uid)!;
+                        const entity = object.entity as ConnectableEntity;
+                        const connections = cloneSimple(context.globalStore.getConnections(entity.uid));
+
+                        connections.forEach((e) => {
+                            const other = context.globalStore.get(e);
+                            if (other instanceof Pipe) {
+                                if (other.entity.endpointUid[0] === entity.uid) {
+                                    //other.entity.endpointUid[0] = newUid;
+
+                                    context.$store.dispatch("document/updatePipeEndpoints", {
+                                        entity: other.entity,
+                                        endpoints: [valveEntity.uid, other.entity.endpointUid[1]]
+                                    });
+                                } else {
+                                    //other.entity.endpointUid[1] = newUid;
+
+                                    context.$store.dispatch("document/updatePipeEndpoints", {
+                                        entity: other.entity,
+                                        endpoints: [other.entity.endpointUid[0], valveEntity.uid]
+                                    });
+                                }
+                            } else {
+                                throw new Error("Connection is not a pipe");
+                            }
+                        });
+
+                        const toReplace = object as BackedDrawableObject<ConnectableEntityConcrete>;
+                        valveEntity.center = cloneSimple(toReplace.entity.center);
+                        context.deleteEntity(toReplace);
+
+                        if (flipped) {
+                            (context.globalStore.get(valveEntity.uid)! as DirectedValve).flip();
+                        }
+                    }
                 }
 
                 context.scheduleDraw();

@@ -58,7 +58,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         // We must get the rotation outside of position() because these
         // rotation calculations depend on position(). So apply this rotation
         // to the context manually afterwards when drawing.
-        const connections = this.objectStore.getConnections(this.entity.uid);
+        const connections = this.globalStore.getConnections(this.entity.uid);
         if (connections.length === 0) {
             return 0;
         } else if (connections.length === 1) {
@@ -69,10 +69,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 return canonizeAngleRad(Math.atan2(oc.y, oc.x));
             }
         } else if (connections.length === 2) {
-            const s = this.objectStore.get(this.entity.sourceUid) as Pipe;
+            const s = this.globalStore.get(this.entity.sourceUid) as Pipe;
             const soc = this.toObjectCoord(s.worldEndpoints(this.uid)[0]);
             const other = this.otherUid!;
-            const o = this.objectStore.get(other) as Pipe;
+            const o = this.globalStore.get(other) as Pipe;
             const ooc = this.toObjectCoord(o.worldEndpoints(this.uid)[0]);
             const sa = Math.atan2(soc.y, soc.x);
             const oa = Math.atan2(ooc.y, ooc.x);
@@ -89,7 +89,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     }
 
     get otherUid(): string | undefined {
-        return this.objectStore.getConnections(this.uid).find((uid) => uid !== this.entity.sourceUid);
+        return this.globalStore.getConnections(this.uid).find((uid) => uid !== this.entity.sourceUid);
     }
 
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
@@ -100,7 +100,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         const s = matrixScale(context.ctx.getTransform());
         context.ctx.rotate(this.rotationRad);
 
-        const e = fillDirectedValveFields(context.doc.drawing, this.objectStore, this.entity);
+        const e = fillDirectedValveFields(context.doc.drawing, this.globalStore, this.entity);
         if (selected && active) {
             context.ctx.fillStyle = lighten(e.color!.hex, 50, 0.8);
             context.ctx.fillRect(-VALVE_SIZE_MM * 1.2, -VALVE_SIZE_MM * 1.2, VALVE_SIZE_MM * 2.4, VALVE_SIZE_MM * 2.4);
@@ -236,7 +236,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
     flip() {
         const entity = this.entity;
-        const connections = this.objectStore.getConnections(entity.uid);
+        const connections = this.globalStore.getConnections(entity.uid);
 
         if (connections.length === 1) {
             if (entity.sourceUid === connections[0]) {
@@ -269,8 +269,8 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     }
 
     largestPipeSizeNominalMM(context: CalculationContext): number | null {
-        const sizes = this.objectStore.getConnections(this.entity.uid).map((uid) => {
-            const p = this.objectStore.get(uid) as Pipe;
+        const sizes = this.globalStore.getConnections(this.entity.uid).map((uid) => {
+            const p = this.globalStore.get(uid) as Pipe;
             if (!p || p.type !== EntityType.PIPE) {
                 throw new Error("A non pipe object is connected to a valve");
             }
@@ -310,7 +310,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             }
         }
 
-        if (this.objectStore.getConnections(this.entity.uid).length !== 2) {
+        if (this.globalStore.getConnections(this.entity.uid).length !== 2) {
             throw new Error("need 2 connections to have a calculation here.");
         }
 
@@ -404,10 +404,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     }
 
     connect(uid: string) {
-        if (this.objectStore.getConnections(this.entity.uid).length === 0) {
+        if (this.globalStore.getConnections(this.entity.uid).length === 0) {
             // this.entity.sourceUid = uid;
-        } else if (this.objectStore.getConnections(this.entity.uid).length === 1) {
-            if (this.entity.sourceUid !== this.objectStore.getConnections(this.entity.uid)[0]) {
+        } else if (this.globalStore.getConnections(this.entity.uid).length === 1) {
+            if (this.entity.sourceUid !== this.globalStore.getConnections(this.entity.uid)[0]) {
                 this.entity.sourceUid = uid;
             }
         } else {
@@ -426,8 +426,8 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             const e = cloneSimple(this.entity);
             e.uid = tower[0][0].uid;
             e.calculationHeightM = tower[0][0].calculationHeightM;
-            if (this.objectStore.has(e.sourceUid)) {
-                e.sourceUid = this.objectStore.get(e.sourceUid)!.getCalculationEntities(context)[0].uid;
+            if (this.globalStore.has(e.sourceUid)) {
+                e.sourceUid = this.globalStore.get(e.sourceUid)!.getCalculationEntities(context)[0].uid;
             }
             return [e];
         } else if (tower.length === 2) {
@@ -458,8 +458,8 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
             // we have to figure out whether source is the lower one or higher one.
             if (
-                (this.objectStore.get(this.entity.sourceUid) as Pipe).entity.heightAboveFloorM <
-                (this.objectStore.get(this.otherUid!) as Pipe).entity.heightAboveFloorM
+                (this.globalStore.get(this.entity.sourceUid) as Pipe).entity.heightAboveFloorM <
+                (this.globalStore.get(this.otherUid!) as Pipe).entity.heightAboveFloorM
             ) {
                 // source is #0
                 e.sourceUid = lower;

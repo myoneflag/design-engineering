@@ -79,17 +79,17 @@ export function DraggableObject<T extends new (...args: any[]) => Draggable & Dr
             return super.onMouseUp(event, context) || result;
         }
 
-        isMultiSelected() {
+        isMultiSelected(context: CanvasContext) {
             if (this instanceof BaseBackedObject) {
-                return this.layer.selectedEntities.length > 1 && this.layer.isSelected(this);
+                return context.document.uiState.selectedUids.length > 1 && context.isSelected(this.uid);
             }
             return false;
         }
 
         onDragStartPre(event: MouseEvent, world: Coord, objectCoord: Coord, context: CanvasContext): any {
             context.isLayerDragging = true;
-            if (this.isMultiSelected()) {
-                return this.layer.onMultiSelectDragStart(event, world, context);
+            if (this.isMultiSelected(context)) {
+                return context.activeLayer.onMultiSelectDragStart(event, world, context);
             } else {
                 return this.onDragStart(event, objectCoord, context, false);
             }
@@ -103,8 +103,8 @@ export function DraggableObject<T extends new (...args: any[]) => Draggable & Dr
             grabState: any,
             context: CanvasContext
         ): void {
-            if (this.isMultiSelected()) {
-                return this.layer.onMultiSelectDrag(event, world, grabState, context);
+            if (this.isMultiSelected(context)) {
+                return context.activeLayer.onMultiSelectDrag(event, world, grabState, context);
             } else {
                 return this.onDrag(event, grabbedObjectCoord, eventObjectCoord, grabState, context, false);
             }
@@ -112,8 +112,8 @@ export function DraggableObject<T extends new (...args: any[]) => Draggable & Dr
 
         onDragFinishPre(event: MouseEvent, grabState: any, context: CanvasContext): void {
             context.isLayerDragging = false;
-            if (this.isMultiSelected()) {
-                return this.layer.onMultiSelectDragFinish(event, grabState, context);
+            if (this.isMultiSelected(context)) {
+                return context.activeLayer.onMultiSelectDragFinish(event, grabState, context);
             } else {
                 return this.onDragFinish(event, context, false);
             }

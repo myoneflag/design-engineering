@@ -167,7 +167,7 @@ export default function insertBigValve(context: CanvasContext, bigValveType: Big
                     context.$store.dispatch("document/addEntity", newOut);
                 }
                 if (!event.ctrlKey) {
-                    connectBigValveToSource(context, context.objectStore.get(newBigValve.uid) as BigValve, 20000);
+                    connectBigValveToSource(context, context.globalStore.get(newBigValve.uid) as BigValve, 20000);
                 }
 
                 context.scheduleDraw();

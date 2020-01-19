@@ -6,6 +6,7 @@ import { DrawableEntityConcrete } from "../../../../common/src/api/document/enti
 import { ValveId } from "../../../src/htmlcanvas/lib/types";
 import { DrawingState, initialDrawing } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
+import { Operation } from "../../../../common/src/models/Operation";
 
 // Because of how the diffing engine works, there are restrictions on the data structure for the document state.
 // Rules are:
@@ -32,6 +33,8 @@ export interface UIState {
     lastCalculationUiSettings: CalculationUiSettings;
     isCalculating: boolean;
 
+    selectedUids: string[];
+
     lastUsedFixtureUid: string | null;
     lastUsedValveVid: ValveId | null;
 
@@ -39,6 +42,7 @@ export interface UIState {
     levelUid: string | null;
     viewOnly: boolean;
     viewOnlyReason: string | null;
+    historyIndex: number;
 }
 
 export enum GridLineMode {
@@ -77,6 +81,8 @@ export interface DocumentState {
 
     stagedCommits: Operations.OperationTransformConcrete[];
 
+    fullHistory: Operation[];
+
     // A list of operations that have been performed on the committedDrawing.
     // This implies that changes in the drawing state are not reflected in operations.
     // This also implies that changes are updated from the server.
@@ -104,6 +110,9 @@ export const initialUIState: UIState = {
 
     lastUsedFixtureUid: null,
     lastUsedValveVid: null,
+
+    selectedUids: [],
+    historyIndex: 0,
 
     lastCalculationId: 0,
     lastCalculationUiSettings: {
@@ -133,6 +142,7 @@ export const initialDocumentState: DocumentState = {
     optimisticHistory: [],
     stagedCommits: [],
     history: [],
+    fullHistory: [],
     nextId: 1,
     uiState: cloneSimple(initialUIState),
     documentId: -1
@@ -141,4 +151,9 @@ export const initialDocumentState: DocumentState = {
 export interface EntityParam {
     entity: DrawableEntityConcrete;
     levelUid: string;
+}
+
+export interface EntityParamNullable {
+    entity: DrawableEntityConcrete;
+    levelUid: string | null;
 }

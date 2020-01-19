@@ -9,8 +9,8 @@ export default class SelectBox extends DrawableObject {
     pointA: Coord;
     pointB: Coord;
 
-    constructor(parent: DrawableObject | null, layer: Layer, pointA: Coord, pointB: Coord) {
-        super(parent, layer);
+    constructor(parent: DrawableObject | null, pointA: Coord, pointB: Coord) {
+        super(parent);
         this.pointA = pointA;
         this.pointB = pointB;
     }

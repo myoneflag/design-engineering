@@ -2,6 +2,7 @@ import {Entity, PrimaryGeneratedColumn, Column, OneToOne, ManyToOne} from "typeo
 import {BaseEntity} from "typeorm";
 import {Document} from "./Document";
 import { OperationTransformConcrete } from "../api/document/operation-transforms";
+import { User } from "./User";
 
 @Entity()
 export class Operation extends BaseEntity {
@@ -17,4 +18,10 @@ export class Operation extends BaseEntity {
 
     @Column({type: 'json'})
     operation: OperationTransformConcrete;
+
+    @Column({nullable: true})
+    dateTime: Date | null;
+
+    @ManyToOne(() => User, { nullable: true, eager: true })
+    blame: User | null;
 }

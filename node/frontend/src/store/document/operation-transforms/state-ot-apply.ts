@@ -6,6 +6,6 @@ export function applyDiffVue(target: any, diff: any): any {
     return applyDiff(target, diff, Vue.set, Vue.delete);
 }
 
-export function applyOtOnState(state: any, ops: DiffOperation) {
+export function applyOpOntoStateVue(state: any, ops: DiffOperation) {
     applyDiffVue(state, ops.diff);
 }

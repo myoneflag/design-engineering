@@ -186,7 +186,7 @@ import {EntityType} from "../../../store/document/entities/types";
                 case EntityType.DIRECTED_VALVE:
                     return fillDirectedValveFields(this.document.drawing, this.$props.objectStore, obj.entity);
                 case EntityType.LOAD_NODE:
-                    return fillDefaultLoadNodeFields(this.document, obj.objectStore, obj.entity);
+                    return fillDefaultLoadNodeFields(this.document, obj.globalStore, obj.entity);
                 case EntityType.PLANT:
                     return fillPlantDefaults(obj.entity);
                 case EntityType.FLOW_SOURCE:

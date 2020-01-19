@@ -77,11 +77,16 @@ export class AutoConnector {
     entitiesToConsider: DrawableEntityConcrete[] = [];
 
     groupDistCache = new GroupDistCache();
+    levelUid = '';
 
     constructor(selected: BaseBackedObject[], context: CanvasContext) {
         if (selected === undefined || selected === null) {
             throw new Error("invalid argument for selected");
         }
+        if (!context.document.uiState.levelUid) {
+            throw new Error('Can only auto connect on a level');
+        }
+        this.levelUid = context.document.uiState.levelUid;
         this.selected = selected;
         this.context = context;
         this.processWalls();
@@ -149,7 +154,7 @@ export class AutoConnector {
 
                     subs.forEach((suid) => {
                         this.unionFind.join(suid, suid);
-                        getConnectedFlowComponent(suid, this.context.objectStore).forEach((c) => {
+                        getConnectedFlowComponent(suid, this.context.globalStore, this.levelUid).forEach((c) => {
                             this.allowedUids.add(c.uid);
                             this.unionFind.join(suid, c.uid);
                         });
@@ -277,8 +282,8 @@ export class AutoConnector {
         if (cutoff !== undefined) {
             // we avoid unnecessary calculations by ignoring all entities that can't possibly be closer
             // than cutoff - euclidean distance.
-            const as = this.getOrSetShape(this.context.objectStore.get(a)!);
-            const bs = this.getOrSetShape(this.context.objectStore.get(b)!);
+            const as = this.getOrSetShape(this.context.globalStore.get(a)!);
+            const bs = this.getOrSetShape(this.context.globalStore.get(b)!);
             if (as.distanceTo(bs)[0] > cutoff) {
                 return Infinity;
             }
@@ -297,8 +302,8 @@ export class AutoConnector {
             // Otherwise, nodes at wall height must lead into wall, then it behaves like a pipe.
             //  => lead smaller for big valves which are already in the wall
             //  => lead larger for fixtures which are protruding from the wall
-            let ao = this.context.objectStore.get(a)!;
-            let bo = this.context.objectStore.get(b)!;
+            let ao = this.context.globalStore.get(a)!;
+            let bo = this.context.globalStore.get(b)!;
             if (!ao) {
                 throw new Error("Object is missing: " + a);
             }
@@ -348,7 +353,7 @@ export class AutoConnector {
                     if (me.entity.parentUid === null) {
                         throw new Error("System node has no parent");
                     }
-                    const po = this.context.objectStore.get(me.entity.parentUid)!;
+                    const po = this.context.globalStore.get(me.entity.parentUid)!;
                     let heightM: number;
                     switch (po.entity.type) {
                         case EntityType.BIG_VALVE:
@@ -446,12 +451,12 @@ export class AutoConnector {
                         if (ae.uid === me.uid) {
                             ae = v;
                             if (doit) {
-                                ao = this.context.objectStore.get(v.uid)!;
+                                ao = this.context.globalStore.get(v.uid)!;
                             }
                         } else {
                             be = v;
                             if (doit) {
-                                bo = this.context.objectStore.get(v.uid)!;
+                                bo = this.context.globalStore.get(v.uid)!;
                             }
                         }
 
@@ -511,14 +516,14 @@ export class AutoConnector {
 
         if (doit) {
             if (ao.type === EntityType.PIPE) {
-                ao = this.context.objectStore.get(
+                ao = this.context.globalStore.get(
                     addValveAndSplitPipe(this.context, ao as Pipe, straight[1].end, (ao as Pipe).entity.systemUid, 10)
                         .focus!.uid
                 )!;
             }
 
             if (bo.type === EntityType.PIPE) {
-                bo = this.context.objectStore.get(
+                bo = this.context.globalStore.get(
                     addValveAndSplitPipe(this.context, bo as Pipe, straight[1].start, (bo as Pipe).entity.systemUid, 10)
                         .focus!.uid
                 )!;
@@ -653,7 +658,7 @@ export class AutoConnector {
                 const path = this.getOrSetShape(ao).distanceTo(this.getOrSetShape(bo));
                 if (doit) {
                     if (ao.type === EntityType.PIPE) {
-                        ao = this.context.objectStore.get(
+                        ao = this.context.globalStore.get(
                             addValveAndSplitPipe(
                                 this.context,
                                 ao as Pipe,
@@ -665,7 +670,7 @@ export class AutoConnector {
                     }
 
                     if (bo.type === EntityType.PIPE) {
-                        bo = this.context.objectStore.get(
+                        bo = this.context.globalStore.get(
                             addValveAndSplitPipe(
                                 this.context,
                                 bo as Pipe,
@@ -703,14 +708,14 @@ export class AutoConnector {
             const pd = corner.distanceTo(this.getOrSetShape(ao))[0] + corner.distanceTo(this.getOrSetShape(bo))[0];
             if (doit) {
                 if (ao.type === EntityType.PIPE) {
-                    ao = this.context.objectStore.get(
+                    ao = this.context.globalStore.get(
                         addValveAndSplitPipe(this.context, ao as Pipe, corner, (ao as Pipe).entity.systemUid, 10).focus!
                             .uid
                     )!;
                 }
 
                 if (bo.type === EntityType.PIPE) {
-                    bo = this.context.objectStore.get(
+                    bo = this.context.globalStore.get(
                         addValveAndSplitPipe(this.context, bo as Pipe, corner, (bo as Pipe).entity.systemUid, 10).focus!
                             .uid
                     )!;
@@ -752,7 +757,7 @@ export class AutoConnector {
         // skip this if the systems are not compatible.
         const systems1 = new Set(
             a.map((uid) => {
-                const s = this.getEntitySystem(this.context.objectStore.get(uid)!.entity);
+                const s = this.getEntitySystem(this.context.globalStore.get(uid)!.entity);
                 if (s === null) {
                     throw new Error("auto connected groups must belong to systems " + uid);
                 }
@@ -761,7 +766,7 @@ export class AutoConnector {
         );
         const systems2 = new Set(
             b.map((uid) => {
-                const s = this.getEntitySystem(this.context.objectStore.get(uid)!.entity);
+                const s = this.getEntitySystem(this.context.globalStore.get(uid)!.entity);
                 if (s === null) {
                     throw new Error("auto connecteded groups must belong to systems");
                 }
@@ -814,11 +819,11 @@ export class AutoConnector {
             case EntityType.SYSTEM_NODE:
                 return entity.systemUid;
             case EntityType.DIRECTED_VALVE: {
-                const res = fillDirectedValveFields(this.context.document.drawing, this.context.objectStore, entity);
+                const res = fillDirectedValveFields(this.context.document.drawing, this.context.globalStore, entity);
                 return res.systemUidOption;
             }
             case EntityType.LOAD_NODE: {
-                const res = fillDefaultLoadNodeFields(this.context.document, this.context.objectStore, entity);
+                const res = fillDefaultLoadNodeFields(this.context.document, this.context.globalStore, entity);
                 return res.systemUidOption;
             }
             case EntityType.BACKGROUND_IMAGE:
@@ -869,7 +874,7 @@ export class AutoConnector {
     };
     onAddEntity = ({ entity, levelUid }: EntityParam) => {
         if (this.context.document.uiState.levelUid === levelUid) {
-            this.selected.push(this.context.objectStore.get(entity.uid)!);
+            this.selected.push(this.context.globalStore.get(entity.uid)!);
             this.entitiesToConsider.push(entity);
         }
         if (entity.type === EntityType.PIPE) {

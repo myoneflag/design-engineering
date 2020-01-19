@@ -22,7 +22,7 @@ export function SelectableObject<T extends new (...args: any[]) => Selectable & 
             // Check bounds
             let result = false;
             // Shift key for remove select mode
-            if (this.layer.isSelected(this.uid) === event.shiftKey) {
+            if (context.isSelected(this.uid) === event.shiftKey) {
                 if (this.inBounds(oc)) {
                     this.onSelect(event);
 

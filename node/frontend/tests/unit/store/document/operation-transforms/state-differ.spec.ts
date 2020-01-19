@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 import {diffState} from '../../../../../../common/src/api/document/state-differ';
-import {applyOtOnState} from '../../../../../src/store/document/operation-transforms/state-ot-apply';
+import {applyOpOntoStateVue} from '../../../../../src/store/document/operation-transforms/state-ot-apply';
 
 import {EntityType} from '../../../../../../common/src/api/document/entities/types';
 import {BackgroundEntity} from '../../../../../../common/src/api/document/entities/background-entity';
@@ -17,7 +17,7 @@ import { cloneSimple } from "../../../../../../common/src/lib/utils";
 function roundTripTest(prev: DrawingState, next: DrawingState, expectedOps: number = -1) {
     const prevCopy = cloneSimple(prev);
     const ops = diffState(cloneSimple(prev), cloneSimple(next));
-    ops.forEach((o) => applyOtOnState(prevCopy, o));
+    ops.forEach((o) => applyOpOntoStateVue(prevCopy, o));
     expect(prevCopy).eql(next);
     if (expectedOps !== -1) {
         expect(ops.length).eq(expectedOps);

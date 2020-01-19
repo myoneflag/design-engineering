@@ -268,8 +268,8 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         (excludeUid) => excludeUid
     )
     worldEndpoints(excludeUid: string | null = null): Coord3D[] {
-        const ao = this.objectStore.get(this.entity.endpointUid[0]) as BaseBackedConnectable;
-        const bo = this.objectStore.get(this.entity.endpointUid[1]) as BaseBackedConnectable;
+        const ao = this.globalStore.get(this.entity.endpointUid[0]) as BaseBackedConnectable;
+        const bo = this.globalStore.get(this.entity.endpointUid[1]) as BaseBackedConnectable;
         if (!ao || !bo) {
             throw new Error("One of pipe's endpoints are missing. Pipe is: " + JSON.stringify(this.entity));
         }
@@ -334,13 +334,13 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         isStraight: boolean, // we need a precomputed variable because the object changes during a move.
         context: CanvasContext
     ): FittingEntity | boolean {
-        const o = this.objectStore.get(epUid) as BackedConnectable<ConnectableEntityConcrete>;
+        const o = this.globalStore.get(epUid) as BackedConnectable<ConnectableEntityConcrete>;
         const e = o.entity as ConnectableEntityConcrete;
         if (e.type === EntityType.SYSTEM_NODE) {
             return false;
         }
 
-        if (this.objectStore.getConnections(e.uid).length !== 2) {
+        if (this.globalStore.getConnections(e.uid).length !== 2) {
             return false;
         }
 
@@ -356,7 +356,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 material: this.entity.material,
                 maximumVelocityMS: this.entity.maximumVelocityMS,
                 parentUid: null,
-                network: determineConnectableNetwork(this.objectStore, e)!,
+                network: determineConnectableNetwork(this.globalStore, e)!,
                 systemUid: this.entity.systemUid,
                 type: EntityType.PIPE,
                 uid: uuid()
@@ -399,9 +399,9 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         } else {
             // extend existing pipe
             // find other pipe
-            const econnections = this.objectStore.getConnections(e.uid);
+            const econnections = this.globalStore.getConnections(e.uid);
             const opuid = econnections[0] === this.uid ? econnections[1] : econnections[0];
-            const opo = this.objectStore.get(opuid) as Pipe;
+            const opo = this.globalStore.get(opuid) as Pipe;
             const wep = opo.worldEndpoints();
             const incident = Flatten.line(Flatten.point(wep[0].x, wep[0].y), Flatten.point(wep[1].x, wep[1].y));
             const projLine = Flatten.line(Flatten.point(pointWc.x, pointWc.y), direction.rotate90CCW());
@@ -424,6 +424,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         context: CanvasContext,
         isMultiDrag: boolean
     ) {
+
         if (!isMultiDrag) {
             context.$store.dispatch("document/revert", false);
         }
@@ -432,14 +433,14 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
         const straights: boolean[] = [];
         this.entity.endpointUid.forEach((euid) => {
-            const o = this.objectStore.get(euid) as BackedConnectable<ConnectableEntityConcrete>;
+            const o = this.globalStore.get(euid) as BackedConnectable<ConnectableEntityConcrete>;
             straights.push(o.isStraight(30));
         });
 
         let i = 0;
         this.entity.endpointUid.forEach((euid) => {
-            const o = this.objectStore.get(euid)!;
-            if (!o.layer.isSelected(o.uid)) {
+            const o = this.globalStore.get(euid)!;
+            if (!context.isSelected(o.uid)) {
                 const newProjection = {
                     x: grabState.pointOnPipe.x + eventObjectCoord.x - grabbedObjectCoord.x,
                     y: grabState.pointOnPipe.y + eventObjectCoord.y - grabbedObjectCoord.y
@@ -458,12 +459,12 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
         if (needToReposition.length === 1) {
             // just plop the pipe to the other side
-            const e = this.objectStore.get(needToReposition[0]) as BackedConnectable<ConnectableEntityConcrete>;
+            const e = this.globalStore.get(needToReposition[0]) as BackedConnectable<ConnectableEntityConcrete>;
             if (e.type !== EntityType.SYSTEM_NODE) {
                 e.debase(context);
 
                 const otherSide = this.entity.endpointUid.filter((euid) => euid !== needToReposition[0])[0];
-                const oo = this.objectStore.get(otherSide) as BackedConnectable<ConnectableEntityConcrete>;
+                const oo = this.globalStore.get(otherSide) as BackedConnectable<ConnectableEntityConcrete>;
 
                 let center: Coord;
                 if (oo) {
@@ -482,7 +483,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         } else if (needToReposition.length === 2) {
             // just drag the pipe ends like they were objects.
             this.entity.endpointUid.forEach((euid) => {
-                const o = this.objectStore.get(euid) as BackedConnectable<ConnectableEntityConcrete>;
+                const o = this.globalStore.get(euid) as BackedConnectable<ConnectableEntityConcrete>;
                 if (o.type !== EntityType.SYSTEM_NODE) {
                     o.debase(context);
                     o.entity.center.x += eventObjectCoord.x - grabbedObjectCoord.x;
@@ -492,26 +493,26 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             });
         }
         if (!isMultiDrag) {
-            this.onChange();
+            this.onRedrawNeeded();
         }
     }
     onDragFinish(event: MouseEvent, context: CanvasContext, isMultiDrag: boolean): void {
         //
         if (!isMultiDrag) {
-            this.onCommit(event);
+            this.onInteractionComplete(event);
         }
     }
 
     prepareDelete(context: CanvasContext): BaseBackedObject[] {
         const result: BaseBackedObject[] = [this];
         const origEndpoints = cloneSimple(this.entity.endpointUid);
-        if (this.objectStore instanceof GlobalStore) {
+        if (this.globalStore instanceof GlobalStore) {
             context.$store.dispatch("document/updatePipeEndpoints", {
                 entity: this.entity,
                 endpoints: [undefined, undefined]
             });
             for (let i = 0; i < 2; i++) {
-                const a = this.objectStore.get(origEndpoints[i]);
+                const a = this.globalStore.get(origEndpoints[i]);
                 if (a instanceof BackedConnectable) {
                     result.push(...a.prepareDeleteConnection(this.entity.uid, context));
                 } else {
@@ -567,8 +568,8 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 return null;
             case InteractionType.EXTEND_NETWORK:
                 if (
-                    this.objectStore.get(this.entity.endpointUid[0])!.type === EntityType.SYSTEM_NODE ||
-                    this.objectStore.get(this.entity.endpointUid[1])!.type === EntityType.SYSTEM_NODE
+                    this.globalStore.get(this.entity.endpointUid[0])!.type === EntityType.SYSTEM_NODE ||
+                    this.globalStore.get(this.entity.endpointUid[1])!.type === EntityType.SYSTEM_NODE
                 ) {
                     if (this.computedLengthM < PIPE_STUB_MAX_LENGTH_MM) {
                         // we can't be the stub pipe of the system node
@@ -734,10 +735,10 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         const pe = cloneSimple(this.entity);
         pe.uid += ".calculation";
         (pe as MutablePipe).endpointUid = [
-            (this.objectStore.get(pe.endpointUid[0]) as BaseBackedConnectable).getCalculationNode(context, this.uid)
+            (this.globalStore.get(pe.endpointUid[0]) as BaseBackedConnectable).getCalculationNode(context, this.uid)
                 .uid,
 
-            (this.objectStore.get(pe.endpointUid[1]) as BaseBackedConnectable).getCalculationNode(context, this.uid).uid
+            (this.globalStore.get(pe.endpointUid[1]) as BaseBackedConnectable).getCalculationNode(context, this.uid).uid
         ];
         return [pe];
     }
@@ -747,7 +748,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
     }
 
     getNeighbours(): BaseBackedObject[] {
-        return this.entity.endpointUid.map((uid) => this.objectStore.get(uid)!);
+        return this.entity.endpointUid.map((uid) => this.globalStore.get(uid)!);
     }
 
     protected refreshObjectInternal(obj: PipeEntity): void {

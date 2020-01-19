@@ -48,6 +48,7 @@ export async function withAuth<T>(
     const sessionId = req.cookies['session-id'];
     const s =  await Session.findOne({id: sessionId});
     if (s) {
+        await s.reload();
         event.username = (await s.user).username;
         event.user = (await s.user);
 

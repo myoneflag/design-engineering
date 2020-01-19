@@ -153,8 +153,8 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         const list: BaseBackedObject[] = [];
 
         list.push(
-            ...this.objectStore.get(this.entity.inletUid)!.prepareDelete(context),
-            ...this.objectStore.get(this.entity.outletUid)!.prepareDelete(context),
+            ...this.globalStore.get(this.entity.inletUid)!.prepareDelete(context),
+            ...this.globalStore.get(this.entity.outletUid)!.prepareDelete(context),
             this
         );
         return list;
@@ -162,7 +162,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
 
     getInletsOutlets(): SystemNode[] {
         const result: string[] = [this.entity.inletUid, this.entity.outletUid];
-        return result.map((uid) => this.objectStore.get(uid) as SystemNode);
+        return result.map((uid) => this.globalStore.get(uid) as SystemNode);
     }
 
     offerJoiningInteraction(requestSystemUid: string, interaction: Interaction): DrawableEntityConcrete[] | null {
@@ -204,11 +204,11 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         const e: PlantEntity = cloneSimple(this.entity);
         e.uid += ".calculation";
 
-        e.outletUid = (this.objectStore.get(e.outletUid) as SystemNode).getCalculationNode(
+        e.outletUid = (this.globalStore.get(e.outletUid) as SystemNode).getCalculationNode(
             context,
             this.uid
         ).uid;
-        e.inletUid = (this.objectStore.get(e.inletUid) as SystemNode).getCalculationNode(
+        e.inletUid = (this.globalStore.get(e.inletUid) as SystemNode).getCalculationNode(
             context,
             this.uid
         ).uid;
@@ -288,8 +288,8 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
     onUpdate() {
         super.onUpdate();
 
-        const outlet = this.objectStore.get(this.entity.outletUid);
-        const inlet = this.objectStore.get(this.entity.inletUid);
+        const outlet = this.globalStore.get(this.entity.outletUid);
+        const inlet = this.globalStore.get(this.entity.inletUid);
 
         if (outlet instanceof SystemNode) {
             if (outlet.entity.systemUid !== this.entity.outletSystemUid) {

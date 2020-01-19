@@ -1,5 +1,5 @@
 import DrawableObject from "../../../src/htmlcanvas/lib/drawable-object";
-import { CalculationFilters} from "../../../src/store/document/types";
+import { CalculationFilters, DocumentState } from "../../../src/store/document/types";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
@@ -24,39 +24,67 @@ import { Coord, Coord3D, DrawableEntity } from "../../../../common/src/api/docum
 import { APIResult } from "../../../../common/src/api/document/types";
 
 export default abstract class BaseBackedObject extends DrawableObject {
-    entityBacked: () => DrawableEntityConcrete;
-    objectStore: ObjectStore;
+    entityBacked: DrawableEntityConcrete;
+    document: DocumentState;
+    globalStore: GlobalStore;
     vm: Vue | undefined;
     cache = new Map<string, any>();
 
     protected onSelect: (event: MouseEvent | KeyboardEvent) => void;
-    protected onChange: () => void;
-    protected onCommit: (event: MouseEvent | KeyboardEvent) => void;
+    // Manually use this when automatic redraw (on data change) doesn't pick it up, eg. Background loading.
+    protected onRedrawNeeded: () => void;
+    protected onInteractionComplete: (event: MouseEvent | KeyboardEvent) => void;
 
     protected constructor(
         vm: Vue | undefined,
-        objectStore: ObjectStore,
-        layer: Layer,
-        obj: () => DrawableEntityConcrete,
+        globalStore: GlobalStore,
+        document: DocumentState,
+        obj: DrawableEntityConcrete,
         onSelect: (event: MouseEvent | KeyboardEvent) => void,
-        onChange: () => void,
-        onCommit: (event: MouseEvent | KeyboardEvent) => void
+        onRedrawNeeded: () => void,
+        onInteractionComplete: (event: MouseEvent | KeyboardEvent) => void
     ) {
-        super(null, layer);
+        super(null);
         this.vm = vm;
         this.entityBacked = obj;
+        this.document = document;
         this.onSelect = onSelect;
-        this.onChange = onChange;
-        this.onCommit = onCommit;
-        this.objectStore = objectStore;
+        this.onRedrawNeeded = onRedrawNeeded;
+        this.onInteractionComplete = onInteractionComplete;
+        this.globalStore = globalStore;
         this.onUpdate();
+    }
+
+    get entity() {
+        //return this.entityBacked;
+        if (this.globalStore.has(this.entityBacked.uid)) {
+            const lvl = this.globalStore.levelOfEntity.get(this.entityBacked.uid);
+            if (lvl !== null && lvl !== undefined) {
+                if (this.document.drawing.levels.hasOwnProperty(lvl)) {
+                    if (this.document.drawing.levels[lvl].entities.hasOwnProperty(this.entityBacked.uid)) {
+                        return this.document.drawing.levels[lvl].entities[this.entityBacked.uid];
+                    } else {
+                        return this.entityBacked;
+                    }
+                } else {
+                    console.log("somehow, entity " + JSON.stringify(this.entityBacked) + " doens't have a level to exist on: " + lvl + " of all levels: " + JSON.stringify(Array.from(Object.keys(this.document.drawing.levels))));
+                    console.log("Yet globalstore has " + JSON.stringify(Array.from(this.globalStore.keys())));
+                    console.log("object store objects in that level: " + JSON.stringify(Array.from(this.globalStore.entitiesInLevel.get(this.entityBacked.uid)!.values())));
+                    return this.entityBacked;
+                }
+            } else {
+                return this.document.drawing.shared[this.entityBacked.uid];
+            }
+        } else {
+            return this.entityBacked;
+        }
     }
 
     get parent() {
         if (this.entity.parentUid === null) {
             return null;
         } else {
-            const result = this.objectStore.get(this.entity.parentUid);
+            const result = this.globalStore.get(this.entity.parentUid);
             if (result) {
                 return result;
             }
@@ -64,10 +92,6 @@ export default abstract class BaseBackedObject extends DrawableObject {
                 "Parent object not created. parent uid: " + this.entity.parentUid + " this uid " + this.entity.uid
             );
         }
-    }
-
-    get entity() {
-        return this.entityBacked();
     }
 
     drawCalculationBox(

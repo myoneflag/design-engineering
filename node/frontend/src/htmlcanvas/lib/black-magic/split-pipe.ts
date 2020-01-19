@@ -53,8 +53,6 @@ export function addValveAndSplitPipe(
 
         context.$store.dispatch("document/addEntity", newValve);
     } else {
-        const nvo = context.objectStore.get(newValve.uid) as BackedConnectable<ConnectableEntityConcrete>;
-
         newValve.center = hoverWc;
         newValve.parentUid = null;
     }

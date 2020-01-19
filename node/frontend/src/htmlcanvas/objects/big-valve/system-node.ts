@@ -48,7 +48,7 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
         switch (interaction.type) {
             case InteractionType.STARTING_PIPE:
             case InteractionType.CONTINUING_PIPE:
-                if (this.objectStore.getConnections(this.entity.uid).length > 0) {
+                if (this.globalStore.getConnections(this.entity.uid).length > 0) {
                     return null;
                 }
                 if (interaction.system.uid !== this.entity.systemUid) {
@@ -56,7 +56,7 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
                 }
                 break;
             case InteractionType.MOVE_ONTO_RECEIVE:
-                if (this.objectStore.getConnections(this.entity.uid).length > 0) {
+                if (this.globalStore.getConnections(this.entity.uid).length > 0) {
                     return null;
                 }
                 break;
@@ -77,7 +77,7 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
 
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
         // Choose to show away from the parent
-        const po = this.objectStore.get(this.entity.parentUid!)!;
+        const po = this.globalStore.get(this.entity.parentUid!)!;
         switch (po.entity.type) {
             case EntityType.FITTING:
             case EntityType.RISER:
@@ -184,7 +184,7 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
                 const se: SystemNodeEntity = cloneSimple(this.entity);
                 se.uid = level[0].uid;
                 se.calculationHeightM = level[0].calculationHeightM;
-                se.parentUid = (this.objectStore.get(se.parentUid!) as BaseBackedObject).getCalculationEntities(
+                se.parentUid = (this.globalStore.get(se.parentUid!) as BaseBackedObject).getCalculationEntities(
                     context
                 )[0].uid;
                 level[0] = se;

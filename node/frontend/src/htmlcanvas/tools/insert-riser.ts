@@ -67,16 +67,16 @@ export default function insertRiser(context: CanvasContext, system: FlowSystemPa
                     context.$store.dispatch("document/addEntity", newEntity);
 
                     if (interactive) {
-                        const object = context.objectStore.get(interactive[0].uid)!;
+                        const object = context.globalStore.get(interactive[0].uid)!;
                         if (object instanceof Pipe) {
                             addValveAndSplitPipe(context, object, wc, object.entity.systemUid, 50, newEntity);
                             wc = newEntity.center;
                         } else {
                             const entity = object.entity as ConnectableEntity;
-                            connections = cloneSimple(context.objectStore.getConnections(entity.uid));
+                            connections = cloneSimple(context.globalStore.getConnections(entity.uid));
 
                             connections.forEach((e) => {
-                                const other = context.objectStore.get(e);
+                                const other = context.globalStore.get(e);
                                 if (other instanceof Pipe) {
                                     if (other.entity.endpointUid[0] === entity.uid) {
                                         context.$store.dispatch("document/updatePipeEndpoints", {

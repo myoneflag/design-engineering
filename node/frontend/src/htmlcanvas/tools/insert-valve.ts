@@ -41,7 +41,7 @@ export default function insertValve(context: CanvasContext, system: FlowSystemPa
 
                 if (context.interactive && context.interactive.length) {
                     const pipeE = context.interactive[0];
-                    pipe = context.objectStore.get(pipeE.uid) as Pipe;
+                    pipe = context.globalStore.get(pipeE.uid) as Pipe;
                     // Project onto pipe
                     addValveAndSplitPipe(context, pipe, wc, system.uid, 50);
                 } else {

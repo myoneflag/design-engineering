@@ -33,14 +33,14 @@ export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | 
     return [parentUid, oc];
 }
 
-export function getBoundingBox(objectStore: ObjectStore, document: DocumentState) {
+export function getVisibleBoundingBox(globalStore: GlobalStore, document: DocumentState) {
     let l = Infinity;
     let r = -Infinity;
     let t = Infinity;
     let b = -Infinity;
 
     const look = (e: DrawableEntity) => {
-        const obj = objectStore.get(e.uid);
+        const obj = globalStore.get(e.uid);
         if (obj) {
             const bb = obj.shape();
             if (bb) {
@@ -59,8 +59,8 @@ export function getBoundingBox(objectStore: ObjectStore, document: DocumentState
     return { l, r, t, b };
 }
 
-export function getDocumentCenter(objectStore: ObjectStore, document: DocumentState): Coord {
-    const { l, r, t, b } = getBoundingBox(objectStore, document);
+export function getDocumentCenter(globalStore: GlobalStore, document: DocumentState): Coord {
+    const { l, r, t, b } = getVisibleBoundingBox(globalStore, document);
     return { x: (l + r) / 2, y: (t + b) / 2 };
 }
 
@@ -107,7 +107,7 @@ export function getFloorHeight(globalStore: GlobalStore, doc: DocumentState, ent
 }
 
 export function getSystemNodeHeightM(entity: SystemNodeEntity, context: CanvasContext): number {
-    const po = context.objectStore.get(entity.parentUid!)!;
+    const po = context.globalStore.get(entity.parentUid!)!;
     return getEdgeLikeHeightAboveFloorM(po.entity as EdgeLikeEntity, {
         drawing: context.document.drawing,
         catalog: context.effectiveCatalog,
@@ -126,8 +126,8 @@ export function maxHeightOfConnection(entity: ConnectableEntityConcrete, context
         }
     }
 
-    context.objectStore.getConnections(entity.uid).forEach((cuid) => {
-        const o = context.objectStore.get(cuid)!;
+    context.globalStore.getConnections(entity.uid).forEach((cuid) => {
+        const o = context.globalStore.get(cuid)!;
         if (o.entity.type === EntityType.PIPE) {
             height = Math.max(o.entity.heightAboveFloorM, height);
         }
@@ -143,8 +143,8 @@ export function minHeightOfConnection(entity: ConnectableEntityConcrete, context
     if (entity.type === EntityType.SYSTEM_NODE) {
         height = getSystemNodeHeightM(entity, context);
     }
-    context.objectStore.getConnections(entity.uid).forEach((cuid) => {
-        const o = context.objectStore.get(cuid)!;
+    context.globalStore.getConnections(entity.uid).forEach((cuid) => {
+        const o = context.globalStore.get(cuid)!;
         if (o.entity.type === EntityType.PIPE) {
             height = Math.min(o.entity.heightAboveFloorM, height);
         }
@@ -160,6 +160,9 @@ export function tm2flatten(m: TM.Matrix): Flatten.Matrix {
 }
 
 export function levelIncludesRiser(level: Level, riser: RiserEntity, sortedLevels: Level[]): boolean {
+    if (level == null) {
+        return false; // this shouldn't really be a case.
+    }
     if (riser.bottomHeightM === null && riser.topHeightM === null) {
         return true;
     } else if (riser.bottomHeightM === null) {
