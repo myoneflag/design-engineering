@@ -326,8 +326,7 @@ export function lookupFlowRate(
                     systemUid === StandardFlowSystemUids.WarmWater
                 ) {
                     fromDwellings = interpolateTable(dStandard.hotColdTable, psdU.dwellings, true, (e) => e.hot);
-                }
-                if (psdU.dwellings) {
+                } else if (psdU.dwellings) {
                     throw new Error("Cannot determine flow rate with this metric");
                 } else {
                     fromDwellings = 0;
