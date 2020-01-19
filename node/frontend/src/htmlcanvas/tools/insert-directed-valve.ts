@@ -20,6 +20,7 @@ import {
 } from "../../../../common/src/api/document/entities/concrete-entity";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import BackedDrawableObject from "../lib/backed-drawable-object";
+import { BaseBackedConnectable } from "../lib/BackedConnectable";
 
 export default function insertDirectedValve(
     context: CanvasContext,
@@ -89,8 +90,10 @@ export default function insertDirectedValve(
                         }
                     } else {
 
-                        const object = context.globalStore.get(interaction[0].uid)!;
-                        const entity = object.entity as ConnectableEntity;
+                        const object = context.globalStore.get(interaction[0].uid) as BaseBackedConnectable;
+                        object.debase(context);
+                        const entity = object.entity;
+
                         const connections = cloneSimple(context.globalStore.getConnections(entity.uid));
 
                         connections.forEach((e) => {

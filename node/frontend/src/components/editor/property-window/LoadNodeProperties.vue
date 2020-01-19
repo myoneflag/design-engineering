@@ -60,7 +60,7 @@ export default class LoadNodeProperties extends Vue {
     }
 
     get defaultData(): LoadNodeEntity {
-        return fillDefaultLoadNodeFields(this.document, this.$props.selectedObject.objectStore, this.reactiveData);
+        return fillDefaultLoadNodeFields(this.document, this.$props.selectedObject.globalStore, this.reactiveData);
     }
 
     onCommit() {

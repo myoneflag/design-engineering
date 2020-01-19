@@ -8,12 +8,11 @@ import { initialCatalog } from "./catalog/initial-catalog/initial-catalog";
 // implement the upgrade method below.
 // Remember to also add this function to the upgrade function in default.
 
-export const CURRENT_VERSION = 1;
+export const CURRENT_VERSION = 2;
 
-export function upgrade0to1(original: DrawingState): DrawingState {
-    const curr = cloneSimple(original);
+export function upgrade0to1(original: DrawingState) {
     // We have to fix one problem. Kitchen Sinks are broken.
-    for (const level of Object.values(curr.levels)) {
+    for (const level of Object.values(original.levels)) {
         const entities = level.entities;
         for (const e of Object.values(entities)) {
             if (e.type === EntityType.FIXTURE) {
@@ -26,6 +25,18 @@ export function upgrade0to1(original: DrawingState): DrawingState {
             }
         }
     }
+}
 
-    return curr;
+export function upgrade1to2(original: DrawingState) {
+    // We have to fix one problem. Kitchen Sinks are broken.
+    for (const level of Object.values(original.levels)) {
+        const entities = level.entities;
+        for (const e of Object.values(entities)) {
+            if (e.type === EntityType.PLANT) {
+                if (e.rightToLeft === undefined) {
+                    e.rightToLeft = false;
+                }
+            }
+        }
+    }
 }

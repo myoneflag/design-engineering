@@ -4,7 +4,7 @@ import { cloneSimple } from "../../common/src/lib/utils";
 import { Operation } from "../../common/src/models/Operation";
 import { OPERATION_NAMES } from "../../common/src/api/document/operation-transforms";
 import { applyDiffNative } from "../../common/src/api/document/state-ot-apply";
-import { CURRENT_VERSION, upgrade0to1 } from "../../common/src/api/upgrade";
+import { CURRENT_VERSION, upgrade0to1, upgrade1to2 } from "../../common/src/api/upgrade";
 import { diffState } from "../../common/src/api/document/state-differ";
 import { stringify } from "querystring";
 
@@ -26,18 +26,22 @@ export async function upgradeDocument(doc: Document) {
             case OPERATION_NAMES.DIFF_OPERATION:
                 applyDiffNative(drawing, op.operation.diff);
 
-                let newUpgraded = cloneSimple(drawing);
+                const newUpgraded = cloneSimple(drawing);
                 switch (doc.version) {
                     case 0:
                         console.log('upgrading doc ' + doc.id + ' from version 0 to 1');
-                        newUpgraded = upgrade0to1(newUpgraded);
+                        upgrade0to1(newUpgraded);
                     // noinspection FallThroughInSwitchStatementJS
                     case 1:
                         // done
+                        console.log('upgrading doc ' + doc.id + ' from version 1 to 2');
+                        upgrade1to2(newUpgraded);
+                    // noinspection FallThroughInSwitchStatementJS
+                    case CURRENT_VERSION:
                         break;
                 }
 
-                const upgradedOps = diffState(upgraded, newUpgraded, undefined);
+                const upgradedOps = cloneSimple(diffState(upgraded, newUpgraded, undefined));
                 upgraded = newUpgraded;
                 if (upgradedOps.length) {
                     if (upgradedOps[0].type === OPERATION_NAMES.DIFF_OPERATION) {

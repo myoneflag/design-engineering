@@ -73,7 +73,11 @@ export default abstract class BaseBackedObject extends DrawableObject {
                     return this.entityBacked;
                 }
             } else {
-                return this.document.drawing.shared[this.entityBacked.uid];
+                if (this.document.drawing.shared.hasOwnProperty(this.entityBacked.uid)) {
+                    return this.document.drawing.shared[this.entityBacked.uid];
+                } else {
+                    return this.entityBacked;
+                }
             }
         } else {
             return this.entityBacked;

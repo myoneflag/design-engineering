@@ -83,6 +83,13 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         }
 
         ctx.fillStyle = filled.color!.hex;
+        if (args.calculationFilters) {
+            const calculation = this.globalStore.getOrCreateCalculation(this.entity);
+            if (!calculation.pressureKPA) {
+                ctx.fillStyle = '#888888';
+            }
+        }
+
         ctx.strokeStyle = lighten(filled.color!.hex, -10);
         if (
             this.entity.node.type === NodeType.DWELLING &&

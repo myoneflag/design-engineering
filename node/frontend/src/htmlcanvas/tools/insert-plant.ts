@@ -15,7 +15,7 @@ import { SupportedPsdStandards } from "../../../../common/src/api/config";
 import { Coord } from "../../../../common/src/api/document/drawing";
 import { parseCatalogNumberExact } from "../../../../common/src/lib/utils";
 
-export default function insertPlant(context: CanvasContext, angle: number) {
+export default function insertPlant(context: CanvasContext, angle: number, rightToLeft: boolean = false) {
     const plantUid = uuid();
     let newEntity: PlantEntity | null = null;
 
@@ -53,6 +53,8 @@ export default function insertPlant(context: CanvasContext, angle: number) {
                     pumpPressureKPA: null,
                     center: wc,
 
+                    rightToLeft,
+
                     parentUid: null,
                     type: EntityType.PLANT,
                     uid: plantUid,
@@ -66,7 +68,7 @@ export default function insertPlant(context: CanvasContext, angle: number) {
 
                 const inlet: SystemNodeEntity = {
                     center: {
-                        x: -newEntity.widthMM / 2,
+                        x: -newEntity.widthMM / 2 * (rightToLeft ? -1 : 1),
                         y: 0
                     },
                     parentUid: plantUid,
@@ -79,7 +81,7 @@ export default function insertPlant(context: CanvasContext, angle: number) {
 
                 const outlet: SystemNodeEntity = {
                     center: {
-                        x: newEntity.widthMM / 2,
+                        x: newEntity.widthMM / 2 * (rightToLeft ? -1 : 1),
                         y: 0
                     },
                     parentUid: plantUid,
@@ -136,6 +138,16 @@ export default function insertPlant(context: CanvasContext, angle: number) {
                             } else {
                                 angle -= 45;
                             }
+                            onRefresh();
+                        }
+                    }
+                ],
+                [
+                    KeyCode.SPACE,
+                    {
+                        name: "Flip Inlet-Outlet",
+                        fn: (event: KeyboardEvent, onRefresh: () => void) => {
+                            rightToLeft = !rightToLeft;
                             onRefresh();
                         }
                     }

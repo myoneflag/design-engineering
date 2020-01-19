@@ -81,6 +81,15 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             ctx.rect(l, t, r - l, b - t);
             ctx.stroke();
 
+            ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+            const ts = Math.min(this.entity.widthMM, this.entity.heightMM) * 0.7;
+            ctx.beginPath();
+            ctx.moveTo( - ts / 2 * (this.entity.rightToLeft ? -1 : 1),  - ts / 2);
+            ctx.lineTo( + ts / 2 * (this.entity.rightToLeft ? -1 : 1), 0);
+            ctx.lineTo( - ts / 2 * (this.entity.rightToLeft ? -1 : 1),  + ts / 2);
+            ctx.closePath();
+            ctx.fill();
+
             if (selected) {
 
                 ctx.fillStyle = "rgba(100, 100, 255, 0.2)";
@@ -296,8 +305,8 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 outlet.entity.systemUid = this.entity.outletSystemUid;
             }
 
-            if (Math.abs(outlet.entity.center.x - this.entity.widthMM / 2) > EPS) {
-                outlet.entity.center.x = this.entity.widthMM / 2;
+            if (Math.abs(outlet.entity.center.x - (this.entity.widthMM / 2 * (this.entity.rightToLeft ? -1 : 1))) > EPS) {
+                outlet.entity.center.x = this.entity.widthMM / 2 * (this.entity.rightToLeft ? -1 : 1);
             }
         }
 
@@ -306,8 +315,8 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 inlet.entity.systemUid = this.entity.inletSystemUid;
             }
 
-            if (Math.abs(inlet.entity.center.x + this.entity.widthMM / 2) > EPS) {
-                inlet.entity.center.x = - this.entity.widthMM / 2;
+            if (Math.abs(inlet.entity.center.x - (- this.entity.widthMM / 2 * (this.entity.rightToLeft ? -1 : 1))) > EPS) {
+                inlet.entity.center.x = - this.entity.widthMM / 2 * (this.entity.rightToLeft ? -1 : 1);
             }
         }
     }

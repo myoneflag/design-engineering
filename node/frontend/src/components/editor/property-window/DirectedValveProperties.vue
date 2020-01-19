@@ -99,7 +99,7 @@ export default class DirectedValveProperties extends Vue {
         await this.$store.dispatch("document/validateAndCommit");
     }
 
-    get readonly() {
+    get readOnly() {
         return this.document.uiState.viewOnly || this.document.uiState.drawingMode === DrawingMode.History;
     }
 

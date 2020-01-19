@@ -172,7 +172,7 @@ function addEntityOn(state: DocumentState, { entity, levelUid }: EntityParamNull
 
 function changeDrawing(state: DocumentState, newDrawing: DrawingState, filter: any, redraw: boolean) {
     //newDrawing = cloneSimple(newDrawing);
-    const reverseDiff = diffState(state.drawing, newDrawing, filter);
+    const reverseDiff = cloneSimple(diffState(state.drawing, newDrawing, filter));
 
     reverseDiff.forEach((op) => {
         switch (op.type) {

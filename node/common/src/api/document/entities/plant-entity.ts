@@ -12,6 +12,7 @@ export default interface PlantEntity extends CenteredEntity {
     name: string;
 
     rotation: number;
+    rightToLeft: boolean;
 
     heightAboveFloorM: number;
 
@@ -31,6 +32,16 @@ export default interface PlantEntity extends CenteredEntity {
 
 export function makePlantEntityFields(systems: FlowSystemParameters[]): PropertyField[] {
     return [
+        {
+            property: "rightToLeft",
+            title: "Right to Left?",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.Boolean,
+            params: null ,
+            multiFieldId: "rightToLeft"
+        },
+
         {
             property: "inletSystemUid",
             title: "Inlet Flow System",
