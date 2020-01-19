@@ -21,7 +21,7 @@ import { DrawingMode } from "../../htmlcanvas/types";
                         </b-btn>
                     </b-btn-group>
                     <b-card-text>
-                        <template v-if="document.uiState.historyIndex >= 0 && document.uiState.historyIndex < discreteHistory">
+                        <template v-if="document.uiState.historyIndex >= 0 && document.uiState.historyIndex < discreteHistory.length">
                             <p>Date: {{
                                 discreteHistory[document.uiState.historyIndex][0].dateTime ?
                                 new Date(discreteHistory[document.uiState.historyIndex][0].dateTime).toLocaleString() :
