@@ -64,8 +64,10 @@ export const getters: GetterTree<DocumentState, RootState> = {
                     build.push(op);
                     break;
                 case OPERATION_NAMES.COMMITTED_OPERATION:
-                    result.push(build);
-                    build = [];
+                    if (build.length) {
+                        result.push(build);
+                        build = [];
+                    }
                     break;
                 default:
                     assertUnreachable(op.operation);
