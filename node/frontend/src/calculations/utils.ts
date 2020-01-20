@@ -352,12 +352,16 @@ export function lookupFlowRate(
         fromDwellings = 0;
     }
 
-    if (fromLoading === null || fromDwellings === null) {
+    if ((fromDwellings === null ) && fromLoading === null) {
+        return null;
+    }
+
+    if ((fromDwellings === 0) && fromLoading === null) {
         return null;
     }
 
     if (fromDwellings === 0) {
-        return fromLoading + psdU.continuousFlowLS;
+        return fromLoading! + psdU.continuousFlowLS;
     } else {
         return fromDwellings;
     }
