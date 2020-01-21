@@ -217,7 +217,6 @@ export function drawGridLines(context: DrawingContext) {
         }
 
         ctx.setLineDash([]);
-        console.log(grids);
     } else if (context.doc.uiState.gridLines === GridLineMode.ORIGIN) {
         const origin = vp.toScreenCoord({x: 0, y: 0});
 
@@ -278,7 +277,6 @@ export function drawLoadingUnits(
     } else {
         ctx.fillText("Total PSD:", 80, y - 20);
     }
-    console.log(JSON.stringify(units));
     let coldFR: number | null | undefined;
     let hotFR: number | null | undefined;
     try {

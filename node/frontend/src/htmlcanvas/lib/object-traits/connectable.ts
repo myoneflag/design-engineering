@@ -150,7 +150,9 @@ export function ConnectableObject<
                                 ctx.lineTo(l1e.x, l1e.y);
                                 ctx.stroke();
                                 ctx.beginPath();
-                                ctx.arc(0, 0, maxWidth, a - Math.PI / 2, mya + Math.PI / 2, true);
+                                if (adiff > Math.PI + EPS) {
+                                    ctx.arc(0, 0, maxWidth, a - Math.PI / 2, mya + Math.PI / 2, true);
+                                }
                                 ctx.moveTo(l2e.x, l2e.y);
                                 ctx.lineTo(l2s.x, l2s.y);
                                 ctx.stroke();

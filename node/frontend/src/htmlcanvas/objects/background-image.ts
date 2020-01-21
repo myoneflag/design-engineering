@@ -25,8 +25,12 @@ import { GlobalStore } from "../lib/global-store";
 import ImageLoader from "../lib/image-loader";
 import { Coord, Rectangle } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
+import { FloorPlanRender, FloorPlanRenders } from "../../../../common/src/api/document/types";
+import { getFloorPlanRenders } from "../../api/pdf";
 
 export const imageStore = new Map<string, HTMLImageElement>();
+
+export const RESOLUTION_TOLERANCE = 2;
 
 export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> implements Sizeable {
     get position() {
@@ -64,8 +68,6 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         DrawableObjectFactory.registerEntity(EntityType.BACKGROUND_IMAGE, BackgroundImage);
     }
 
-    imgScale!: { x: number; y: number };
-
     grabbedPoint: [number, number] | null = null;
     grabbedCenterState: [number, number] | null = null;
     grabbedOffsetState: Coord | null = null;
@@ -74,7 +76,9 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
 
     oldKey: string = "";
 
-    images = new Map<string, HTMLImageElement | null>(); // null means we are loading.
+    imageCache = new Map<string, HTMLImageElement | null>(); // null means we are loading.
+
+    renderIndex: FloorPlanRenders | null | false = null; // false means loading
 
     drawPoint(context: DrawingContext, objectCoord: Coord, label: string) {
         const { ctx } = context;
@@ -101,36 +105,100 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         return result;
     }
 
-    initializeImage(onLoad: (image: BackgroundImage) => any) {
-        const target = this.entity.key;
-        ImageLoader.get(this.entity.key).then((image) => {
-            if (this.entity.key !== target) {
-                // the image changed before we finished loading
-                return;
+    // If an image is immediately available, return the best one. Otherwise (or in addition), load the best one and
+    // redraw when appropriate.
+    chooseImage(context: DrawingContext): HTMLImageElement | null {
+        // target resolution
+        const widthInPixels = context.vp.toScreenLength(this.toWorldLength(this.width));
+
+        // find image in thing.
+        if (this.renderIndex === false) {
+            return null;
+        }
+
+        if (this.renderIndex === null) {
+            this.renderIndex = false;
+            getFloorPlanRenders(this.entity.key).then((res) => {
+                if (res.success) {
+                    this.renderIndex = res.data;
+                    this.onRedrawNeeded();
+                }
+            });
+            return null;
+        }
+
+        if (Object.keys(this.renderIndex.bySize).length === 0) {
+            return null;
+        }
+
+        let bestVal: FloorPlanRender | null = null;
+        let lastVal!: FloorPlanRender;
+        const renders = Object.values(this.renderIndex.bySize).sort((a, b) => a.width - b.width);
+        let bestValI = renders.length - 1;
+        for (let i = 0; i < renders.length; i++) {
+            const k = renders[i];
+            if (k.width * RESOLUTION_TOLERANCE >= widthInPixels) {
+                bestVal = k;
+                bestValI = i;
+                break;
+            }
+            lastVal = k;
+        }
+        if (bestVal === null) {
+            bestVal = lastVal;
+        }
+
+        if (bestVal.images.length !== 1) {
+            throw new Error('only layers with one image are supported right now');
+        }
+
+        // check if current image exists
+        const imageVal = this.imageCache.get(bestVal.images[0].key);
+        if (imageVal) {
+            return imageVal;
+        }
+
+        // otherwise, provoke the loading of the image
+        if (imageVal !== null) { // check that it isn't already loading
+            this.imageCache.set(bestVal.images[0].key, null);
+            ImageLoader.get(bestVal.images[0].key).then((img) => {
+                this.imageCache.set(bestVal!.images[0].key, img);
+                this.onRedrawNeeded();
+            });
+        }
+
+        // and finally return a more suitable image.
+        for (let i = bestValI - 1; i >= 0; i--) {
+            if (renders[i].images.length !== 1) {
+                throw new Error('only layers with one image are supported right now');
             }
 
-            this.imgScale = {
-                x: this.width / image.naturalWidth,
-                y: this.height / image.naturalHeight
-            };
+            const img = this.imageCache.get(renders[i].images[0].key);
+            if (img) {
+                return img;
+            }
+        }
 
-            // Now now, we all know the scales better be the same
-            if (Math.abs(this.imgScale.x / this.imgScale.y - 1) > 0.05) {
-                throw new Error("Image aspect ratio differs from paper aspect ratio by more than 5%");
+        for (let i = bestValI + 1; i < renders.length; i++) {
+            if (renders[i].images.length !== 1) {
+                throw new Error('only layers with one image are supported right now');
             }
 
-            this.imgScale.y = this.imgScale.x;
+            const img = this.imageCache.get(renders[i].images[0].key);
+            if (img) {
+                return img;
+            }
+        }
 
-            this.images.set(target, image);
-            onLoad(this);
-        });
+        // no images loaded at all.
+        return null;
     }
 
     /**
      * Draw with natural clip
      */
     naturalClipDraw(
-        ctx: CanvasRenderingContext2D,
+        context: DrawingContext,
         alpha: number,
         l: number,
         t: number,
@@ -138,30 +206,33 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         h: number,
         active: boolean
     ) {
+        const ctx = context.ctx;
+        const image = this.chooseImage(context);
+
+        if (image) {
+            const imgScaleX = this.width / image.width;
+            const imgScaleY = this.height / image.height;
 
 
-
-        if (this.images.get(this.entity.key)) {
-            const image = this.images.get(this.entity.key)!;
             const sx = matrixScale(ctx.getTransform());
             const oldAlpha = ctx.globalAlpha;
             ctx.globalAlpha = alpha;
             const { x, y } = {
-                x: (l - image.naturalWidth / 2) * this.imgScale.x,
-                y: (t - image.naturalHeight / 2) * this.imgScale.y
+                x: (l - image.naturalWidth / 2) * imgScaleX,
+                y: (t - image.naturalHeight / 2) * imgScaleY
             };
             const oldCompositeOperation = ctx.globalCompositeOperation;
 
-            const sw = w * this.imgScale.x;
-            const sh = h * this.imgScale.y;
+            const sw = w * imgScaleX;
+            const sh = h * imgScaleY;
             ctx.fillStyle = "#FFFFFF";
             ctx.fillRect(x, y, sw, sh);
 
             // Draw a potentially rotated image
             ctx.drawImage(
                 image,
-                l - this.entity.offset.x / this.imgScale.x,
-                t - this.entity.offset.y / this.imgScale.y,
+                l - this.entity.offset.x / imgScaleX,
+                t - this.entity.offset.y / imgScaleY,
                 w,
                 h,
                 x,
@@ -189,7 +260,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
     }
 
     objectClipDraw(
-        ctx: CanvasRenderingContext2D,
+        context: DrawingContext,
         alpha: number,
         x: number,
         y: number,
@@ -199,10 +270,15 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         active: boolean
     ) {
         // We use an inverse viewport to find the appropriate clip bounds.
-        if (this.images.get(this.entity.key)) {
-            const image = this.images.get(this.entity.key)!;
+        const ctx = context.ctx;
+        const image = this.chooseImage(context);
+
+        if (image) {
+            const imgScaleX = this.width / image.width;
+            const imgScaleY = this.height / image.height;
+
             const ivp = new ViewPort(
-                TM.transform(TM.scale(this.imgScale.x, this.imgScale.y)),
+                TM.transform(TM.scale(imgScaleX, imgScaleY)),
                 image.naturalWidth,
                 image.naturalHeight
             );
@@ -212,12 +288,8 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
             const l = ivp.toScreenCoord({ x, y });
             const t = ivp.toScreenCoord({ x, y });
 
-            this.naturalClipDraw(ctx, alpha, l.x, t.y, w / this.imgScale.x, h / this.imgScale.y, active);
+            this.naturalClipDraw(context, alpha, l.x, t.y, w / imgScaleX, h / imgScaleY, active);
         } else {
-            if (!this.images.has(this.entity.key)) {
-                this.images.set(this.entity.key, null);
-                this.initializeImage(() => this.onRedrawNeeded());
-            }
 
             const oldAlpha = ctx.globalAlpha;
             ctx.globalAlpha = 0.5;
@@ -235,13 +307,17 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
     // Draw without world space concerns
     drawInternal(context: DrawingContext, { selected, active }: DrawingArgs) {
         const { ctx, vp } = context;
-        if (selected && active && this.images.get(this.entity.key)) {
-            const image = this.images.get(this.entity.key)!;
+        const image = this.chooseImage(context);
+
+        if (selected && active && image) {
+            const imgScaleX = this.width / image.width;
+            const imgScaleY = this.height / image.height;
+
             this.naturalClipDraw(
-                ctx,
+                context,
                 0.2,
-                this.entity.offset.x / this.imgScale.x,
-                this.entity.offset.y / this.imgScale.y,
+                this.entity.offset.x / imgScaleX,
+                this.entity.offset.y / imgScaleY,
                 image.naturalWidth,
                 image.naturalHeight,
                 active
@@ -254,7 +330,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         }
 
         this.objectClipDraw(
-            ctx,
+            context,
             alpha,
             this.boundary.x,
             this.boundary.y,

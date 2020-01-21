@@ -1,5 +1,6 @@
 // please also maintain the equivalent messages in the backend code.
 import * as OT from "./operation-transforms";
+import { Coord } from "./drawing";
 
 export enum DocumentWSMessageType {
     OPERATION = 'OPERATION',
@@ -37,3 +38,25 @@ export interface Failure {
 
 export type APIResult<T> = Success<T> | Failure;
 
+export interface FloorPlanRenders {
+    bySize: {[key: string]: FloorPlanRender};
+}
+
+export interface FloorPlanRender {
+    images: FloorPlanImage[];
+    width: number;
+    height: number;
+}
+
+export interface FloorPlanImage {
+    topLeft: Coord;
+    width: number;
+    height: number;
+    key: string;
+}
+
+export enum RenderSize {
+    SMALL,
+    MEDIUM,
+    LARGE,
+}
