@@ -63,6 +63,13 @@ function logLevelMutation(state: DocumentState, levelUid: string) {
 
 function onAddEntity({entity, levelUid}: EntityParam, state: DocumentState) {
     try {
+        // get entity form drawable
+        if (levelUid === null) {
+            entity = state.drawing.shared[entity.uid];
+        } else {
+            entity = state.drawing.levels[levelUid].entities[entity.uid];
+        }
+
         DrawableObjectFactory.buildVisible(
             entity,
             globalStore,

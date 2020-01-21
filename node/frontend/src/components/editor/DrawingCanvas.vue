@@ -118,7 +118,7 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
     import { ToolConfig } from "../../../src/store/tools/types";
     import { DEFAULT_TOOL, ToolHandler } from "../../../src/htmlcanvas/lib/tool";
     import uuid from "uuid";
-    import { renderPdf } from "../../../src/api/pdf";
+    import { getFloorPlanRenders, renderPdf } from "../../../src/api/pdf";
     import HydraulicsLayer from "../../../src/htmlcanvas/layers/hydraulics-layer";
     import Layer, { SelectMode } from "../../../src/htmlcanvas/layers/layer";
     import HydraulicsInsertPanel from "../../../src/components/editor/HydraulicsInsertPanel.vue";
@@ -1393,9 +1393,11 @@ export default class DrawingCanvas extends Vue {
             return;
         }
 
+
         const lvlUid = this.currentLevel.uid;
         renderPdf(file).then((res) => {
             if (res.success) {
+                console.log(JSON.stringify(res.data));
                 const { paperSize, scale, scaleName, key, totalPages } = res.data;
                 const width = paperSize.widthMM / scale;
                 const height = paperSize.heightMM / scale;

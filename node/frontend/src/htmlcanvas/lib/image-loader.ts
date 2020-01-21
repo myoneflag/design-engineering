@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getImageLink } from "../../api/pdf";
+import { getFloorPlanRenders, getImageLink } from "../../api/pdf";
 
 export default class ImageLoader {
     static images = new Map<string, Promise<HTMLImageElement>>();
@@ -8,6 +8,8 @@ export default class ImageLoader {
         if (!this.images.has(key)) {
 
             const result = new Promise<HTMLImageElement>(async (resolve, reject) => {
+
+                // get system render first
 
                 const imageLinks = await getImageLink(key);
                 if (imageLinks.success) {

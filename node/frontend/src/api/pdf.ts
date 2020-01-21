@@ -1,6 +1,6 @@
 import axios from "axios";
 import { PaperSize } from "../../../common/src/api/paper-config";
-import { APIResult } from "../../../common/src/api/document/types";
+import { APIResult, FloorPlanRenders } from "../../../common/src/api/document/types";
 
 export interface PDFRenderResult {
     scaleName: string;
@@ -10,7 +10,7 @@ export interface PDFRenderResult {
     totalPages: number;
 }
 
-export interface GetImageLinkResult {
+export interface ImageLinkResult {
     get: string;
     head: string;
 }
@@ -36,10 +36,24 @@ export const renderPdf = async (file: File): Promise<APIResult<PDFRenderResult>>
     }
 };
 
-export async function getImageLink(key: string): Promise<APIResult<GetImageLinkResult>> {
+export async function getImageLink(key: string): Promise<APIResult<ImageLinkResult>> {
     try {
         return (
             await axios.get("/api/uploadPdf/" + key)
+        ).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return { success: false, message: e.response.data.message };
+        } else {
+            return { success: false, message: e.message };
+        }
+    }
+}
+
+export async function getFloorPlanRenders(key: string): Promise<APIResult<FloorPlanRenders>> {
+    try {
+        return (
+            await axios.get("/api/uploadPdf/" + key + "/renders")
         ).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {

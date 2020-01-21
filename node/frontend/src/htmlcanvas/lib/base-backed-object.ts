@@ -6,7 +6,7 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
 import {
     ConnectableEntityConcrete,
     DrawableEntityConcrete,
-    EdgeLikeEntity
+    EdgeLikeEntity, isConnectableEntity
 } from "../../../../common/src/api/document/entities/concrete-entity";
 import Layer from "../../../src/htmlcanvas/layers/layer";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
@@ -56,32 +56,27 @@ export default abstract class BaseBackedObject extends DrawableObject {
     }
 
     get entity() {
-        //return this.entityBacked;
+        return this.entityBacked;/*
+        let pathedEntity: DrawableEntityConcrete | undefined;
         if (this.globalStore.has(this.entityBacked.uid)) {
             const lvl = this.globalStore.levelOfEntity.get(this.entityBacked.uid);
             if (lvl !== null && lvl !== undefined) {
                 if (this.document.drawing.levels.hasOwnProperty(lvl)) {
                     if (this.document.drawing.levels[lvl].entities.hasOwnProperty(this.entityBacked.uid)) {
-                        return this.document.drawing.levels[lvl].entities[this.entityBacked.uid];
-                    } else {
-                        return this.entityBacked;
+                        pathedEntity = this.document.drawing.levels[lvl].entities[this.entityBacked.uid];
                     }
-                } else {
-                    console.log("somehow, entity " + JSON.stringify(this.entityBacked) + " doens't have a level to exist on: " + lvl + " of all levels: " + JSON.stringify(Array.from(Object.keys(this.document.drawing.levels))));
-                    console.log("Yet globalstore has " + JSON.stringify(Array.from(this.globalStore.keys())));
-                    console.log("object store objects in that level: " + JSON.stringify(Array.from(this.globalStore.entitiesInLevel.get(this.entityBacked.uid)!.values())));
-                    return this.entityBacked;
                 }
             } else {
                 if (this.document.drawing.shared.hasOwnProperty(this.entityBacked.uid)) {
-                    return this.document.drawing.shared[this.entityBacked.uid];
-                } else {
-                    return this.entityBacked;
+                    pathedEntity = this.document.drawing.shared[this.entityBacked.uid];
                 }
             }
-        } else {
-            return this.entityBacked;
         }
+        if (pathedEntity) {
+             return pathedEntity;
+        }
+
+        return this.entityBacked; */
     }
 
     get parent() {
