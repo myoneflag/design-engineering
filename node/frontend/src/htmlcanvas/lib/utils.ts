@@ -169,13 +169,13 @@ export function levelIncludesRiser(level: Level, riser: RiserEntity, sortedLevel
         return riser.topHeightM! >= level.floorHeightM;
     } else if (riser.topHeightM === null) {
         const i = sortedLevels.findIndex((l) => l.uid === level.uid);
-        const roofheight = i < sortedLevels.length - 1 ? sortedLevels[i + 1].floorHeightM : level.floorHeightM + LEVEL_HEIGHT_DIFF_M;
-        return riser.bottomHeightM! <= roofheight;
+        const roofheight = i ? sortedLevels[i - 1].floorHeightM : level.floorHeightM + LEVEL_HEIGHT_DIFF_M;
+        return riser.bottomHeightM! < roofheight;
     } else {
         if (riser.topHeightM >= level.floorHeightM) {
             const i = sortedLevels.findIndex((l) => l.uid === level.uid);
-            const roofheight = i < sortedLevels.length - 1 ? sortedLevels[i + 1].floorHeightM : level.floorHeightM + LEVEL_HEIGHT_DIFF_M;
-            return riser.bottomHeightM <= roofheight;
+            const roofheight = i ? sortedLevels[i - 1].floorHeightM : level.floorHeightM + LEVEL_HEIGHT_DIFF_M;
+            return riser.bottomHeightM < roofheight;
         }
         return false;
     }

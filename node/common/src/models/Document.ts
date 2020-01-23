@@ -5,11 +5,20 @@ import {Organization} from "./Organization";
 import { AccessLevel, User } from "./User";
 import { GeneralInfo } from "../api/document/drawing";
 
+export enum DocumentStatus {
+    ACTIVE,
+    DELETED,
+    PENDING,
+}
+
 @Entity()
 export class Document extends BaseEntity {
 
     @PrimaryGeneratedColumn()
     id: number;
+
+    @Column({default: DocumentStatus.ACTIVE})
+    state: DocumentStatus;
 
     @OneToMany(() => Operation, (op: Operation) => op.document, {cascade: true})
     operations: Promise<Operation[]>;
@@ -31,8 +40,25 @@ export class Document extends BaseEntity {
 }
 
 export function canUserDeleteDocument(doc: Document, user: User) {
+    if (doc.state !== DocumentStatus.ACTIVE) {
+        return false;
+    }
+
     if (doc.createdBy.username === user.username) {
         return true;
+    }
+
+    if (user.accessLevel <= AccessLevel.MANAGER) {
+        return true;
+    }
+
+    return false;
+}
+
+
+export function canUserRestoreDocument(doc: Document, user: User) {
+    if (doc.state !== DocumentStatus.DELETED) {
+        return false;
     }
 
     if (user.accessLevel <= AccessLevel.MANAGER) {
