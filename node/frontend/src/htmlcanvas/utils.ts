@@ -341,17 +341,31 @@ export function keyCode2Image(keyCode: KeyCode): HTMLImageElement {
 
 export function polygonsOverlap(a: Flatten.Polygon, b: Flatten.Polygon) {
     let found = false;
-    a.edges.forEach((s: Flatten.Segment) => {
+    a.edges.forEach((s: Flatten.Edge) => {
         if (!found && b.contains(s.start)) {
             found = true;
         }
     });
 
-    b.edges.forEach((s: Flatten.Segment) => {
+    b.edges.forEach((s: Flatten.Edge) => {
         if (!found && a.contains(s.start)) {
             found = true;
         }
     });
+
+
+    a.edges.forEach((sa: Flatten.Edge) => {
+        if (found) {
+            return;
+        }
+        b.edges.forEach((sb: Flatten.Edge) => {
+            if (!found && sa.shape.intersect(sb.shape).length) {
+                found = true;
+            }
+        });
+    });
+
+
 
     return found;
 }

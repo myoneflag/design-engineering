@@ -36,7 +36,7 @@ export default class BackgroundLayer extends LayerImplementation {
                     });
                 }
             } else {
-                throw new Error("Expected background image, got " + JSON.stringify(background) + " instead");
+                throw new Error("Expected background image, got " + background!.type + " instead");
             }
             await cooperativeYield(shouldContinue);
         }
@@ -102,7 +102,7 @@ export default class BackgroundLayer extends LayerImplementation {
                         return background;
                     }
                 } else {
-                    throw new Error("Exepected background image, got" + JSON.stringify(background) + "instead");
+                    throw new Error("Exepected background image, got" + background!.type + "instead");
                 }
             }
         }
