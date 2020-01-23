@@ -19,19 +19,24 @@ import {
 import { isCalculated } from "../../../src/store/document/calculations";
 import * as TM from "transformation-matrix";
 import { levelIncludesRiser, tm2flatten } from "../../../src/htmlcanvas/lib/utils";
-import { MIN_SCALE } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
+import { MIN_SCALE, WARNING_WIDTH } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import {
     DrawableEntityConcrete,
     isConnectableEntity
 } from "../../../../common/src/api/document/entities/concrete-entity";
 import { assertUnreachable } from "../../../../common/src/api/config";
+import LayoutAllocator from "../lib/layout-allocator";
+import stringify from "json-stable-stringify";
 
 const MINIMUM_SIGNIFICANT_PIPE_LENGTH_MM = 500;
 export const SIGNIFICANT_FLOW_THRESHOLD = 1e-5;
+export const LABEL_RESOLUTION_PX = 20;
+export const MIN_LABEL_RESOLUTION_WL = 20;
 
 export default class CalculationLayer extends LayerImplementation {
     calculator: CalculationEngine = new CalculationEngine();
 
+    layout = new Map<string, LayoutAllocator<[string, TM.Matrix, CalculationData[], boolean]>>();
 
     async draw(
         context: DrawingContext,
@@ -40,150 +45,145 @@ export default class CalculationLayer extends LayerImplementation {
         reactive: Set<string>,
         calculationFilters: CalculationFilters | null
     ) {
+        // TODO: asyncify
+        const { ctx, vp } = context;
+        if (active && calculationFilters) {
+
+            const resolutionWL = Math.max(vp.toWorldLength(LABEL_RESOLUTION_PX), MIN_LABEL_RESOLUTION_WL);
+            const rexp = Math.ceil(Math.log2(resolutionWL));
+            const effRes =  Math.pow(2, rexp);
+            const scaleWarp = effRes / resolutionWL;
+
+            const layout = await this.getOrCreateLayout(context, effRes, shouldContinueInternal, calculationFilters);
+
+            if (!layout) {
+                return;
+            }
+
+            for (const label of layout.getLabels()) {
+                const loc = TM.applyToPoint(label[1], { x: 0, y: 0 });
+                if (vp.someOnScreen(Flatten.point(loc.x, loc.y))) {
+                    const o = context.globalStore.get(label[0])!;
+                    if (label[3]) {
+                        // warning only
+                        vp.prepareContext(context.ctx, ...o.world2object);
+                        const s = matrixScale(context.ctx.getTransform());
+                        context.ctx.scale(MIN_SCALE / s, MIN_SCALE / s);
+                        const box = o.drawCalculationBox(context, [], false, true);
+                    } else {
+                        // actual message
+
+                        vp.prepareContext(context.ctx, label[1]);
+                        context.ctx.scale(1 / scaleWarp, 1 / scaleWarp);
+                        o!.drawCalculationBox(context, label[2]);
+                    }
+                }
+            }
+        }
+    }
+
+    async getOrCreateLayout(
+        context: DrawingContext,
+        resolution: number,
+        shouldContinueInternal: () => boolean,
+        calculationFilters: CalculationFilters
+    ): Promise<LayoutAllocator<[string, TM.Matrix, CalculationData[], boolean]> | undefined> {
         const lvlUid = context.doc.uiState.levelUid;
+        const key = stringify(calculationFilters) + '..' + lvlUid + '..' + resolution;
+
+        if (this.layout.has(key)) {
+            return this.layout.get(key)!;
+        }
+
+        const res = new LayoutAllocator<[string, TM.Matrix, CalculationData[], boolean]>(resolution);
+
+        let { ctx, vp } = context;
+        // standardize the layers to factors of 2.
+        const rescale = resolution / vp.toWorldLength(LABEL_RESOLUTION_PX);
+        console.log('rescaling by ' + rescale);
+        vp = vp.copy();
+        vp.rescale(rescale , 0, 0);
+        context = {...context, vp};
+
         const shouldContinue = () => {
             if (lvlUid !== context.doc.uiState.levelUid) {
                 return false;
             }
             return shouldContinueInternal();
         };
-        // TODO: asyncify
-        const { ctx, vp } = context;
-        if (active && calculationFilters) {
-            // 1. Load all calculation data and record them
-            // 2. Load all message layout options for this data. Not explcitly needed as a separate step
-            // 3. Order objects by importance
-            // 4. Draw messages for objects, keeping track of what was drawn and avoid overlaps by drawing
-            // in a new place.
 
-            const obj2props = new Map<string, CalculationData[]>();
+        // 1. Load all calculation data and record them
+        // 2. Load all message layout options for this data. Not explcitly needed as a separate step
+        // 3. Order objects by importance
+        // 4. Draw messages for objects, keeping track of what was drawn and avoid overlaps by drawing
+        // in a new place.
 
-            this.uidsInOrder.forEach((uid) => {
-                const o = this.context.globalStore.get(uid)!;
-                if (
-                    isCalculated(o.entity) &&
-                    o.type in calculationFilters &&
-                    calculationFilters[o.type].enabled &&
-                    context.globalStore.getCalculation(o.entity)
-                ) {
-                    const fields = o.getCalculationFields(context, calculationFilters);
-                    fields.forEach((f) => {
-                        if (!obj2props.has(f.attachUid)) {
-                            obj2props.set(f.attachUid, []);
-                        }
-                        obj2props.get(f.attachUid)!.push(f);
-                    });
-                }
-            });
+        const obj2props = new Map<string, CalculationData[]>();
 
-            const objList = Array.from(this.uidsInOrder)
-                .map((uid) => this.context.globalStore.get(uid)!)
-                .filter((o) => o.calculated && obj2props.has(o.uid));
-            objList.sort((a, b) => {
-                return -(this.messagePriority(context, a) - this.messagePriority(context, b));
-            });
-
-            const spentShapes: Flatten.Polygon[] = [];
-            let po = 0;
-            let pos = 0;
-            let nb = 0;
-
-            await cooperativeYield(shouldContinue);
-            if (lvlUid !== context.doc.uiState.levelUid) {
-                return;
+        this.uidsInOrder.forEach((uid) => {
+            const o = this.context.globalStore.get(uid)!;
+            if (
+                isCalculated(o.entity) &&
+                o.type in calculationFilters &&
+                calculationFilters[o.type].enabled &&
+                context.globalStore.getCalculation(o.entity)
+            ) {
+                const fields = o.getCalculationFields(context, calculationFilters);
+                fields.forEach((f) => {
+                    if (!obj2props.has(f.attachUid)) {
+                        obj2props.set(f.attachUid, []);
+                    }
+                    obj2props.get(f.attachUid)!.push(f);
+                });
             }
 
-            const onScreenList: BaseBackedObject[] = objList.filter((o) => vp.someOnScreen(o.shape()!));
-            const allOnScreen =
-                Array.from(this.uidsInOrder)
-                    .map((uid) => this.context.globalStore.get(uid)!)
-                    .filter((o) => vp.someOnScreen(o.shape()!));
+            // don't let labels overlap fittings.
+            if (isConnectableEntity(o.entity)) {
+                res.placeBlock(o.shape()!);
+            }
+        });
 
-            await cooperativeYield(shouldContinue);
-            if (lvlUid !== context.doc.uiState.levelUid) {
-                return;
+        const objList = Array.from(this.uidsInOrder)
+            .map((uid) => this.context.globalStore.get(uid)!)
+            .filter((o) => o.calculated && obj2props.has(o.uid));
+        objList.sort((a, b) => {
+            return -(this.messagePriority(context, a) - this.messagePriority(context, b));
+        });
+
+        let nb = 0;
+
+        await cooperativeYield(shouldContinue);
+        if (lvlUid !== context.doc.uiState.levelUid) {
+            return;
+        }
+
+        // tslint:disable-next-line:prefer-for-of
+        for (let i = 0; i < objList.length; i++) {
+            const o = objList[i];
+
+            vp.prepareContext(context.ctx);
+            const boxes = o.measureCalculationBox(context, obj2props.get(o.uid) || []);
+            nb += boxes.length;
+            let drawn = false;
+            for (const [position, shape] of boxes) {
+                if (res.tryPlace(shape, [o.uid, position, obj2props.get(o.uid) || [], false])) {
+                    drawn = true;
+                    break;
+                }
             }
 
-            // tslint:disable-next-line:prefer-for-of
-            for (let i = 0; i < objList.length; i++) {
-                const o = objList[i];
-
-                if (!vp.someOnScreen(o.shape()!)) {
-                    continue;
-                }
-
-                vp.prepareContext(context.ctx);
-                const boxes = o.measureCalculationBox(context, obj2props.get(o.uid) || []);
-                nb += boxes.length;
-                let drawn = false;
-                for (const [position, shape] of boxes) {
-                    if (!vp.someOnScreen(shape)) {
-                        continue;
-                    }
-
-                    let invalid = false;
-
-                    for (const shapeCheck of spentShapes) {
-                        po++;
-                        if (polygonsOverlap(shapeCheck, shape)) {
-                            invalid = true;
-                            break;
-                        }
-                    }
-
-                    if (!invalid) {
-                        // don't cover connectables
-                        for (const c of allOnScreen) {
-                            if (
-                                (isConnectableEntity(c.entity) ||
-                                c.entity.type === EntityType.FIXTURE ||
-                                c.entity.type === EntityType.BIG_VALVE)
-                            ) {
-                                pos++;
-
-                                if (polygonOverlapsShapeApprox(shape, c.shape()!)) {
-                                    invalid = true;
-                                    break;
-                                }
-
-                                if (pos % 5000 === 4999) {
-                                    await cooperativeYield(shouldContinue);
-                                    if (lvlUid !== context.doc.uiState.levelUid) {
-                                        return;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if (!invalid) {
-                        // Draw it!
-                        // Remember to prepare the context.
-
-                        vp.prepareContext(context.ctx, position);
-                        const box = o.drawCalculationBox(context, obj2props.get(o.uid)!, false);
-                        spentShapes.push(shape);
-                        drawn = true;
-                        break;
-                    }
-                }
-
-                if (!drawn) {
-                    // warnings must be drawn
-                    if (o.calculated && o.hasWarning(context)) {
-                        vp.prepareContext(context.ctx, ...o.world2object);
-                        const s = matrixScale(context.ctx.getTransform());
-                        context.ctx.scale(MIN_SCALE / s, MIN_SCALE / s);
-
-                        const box = o.drawCalculationBox(context, [], false, true);
-                        let p = new Flatten.Polygon();
-                        p.addFace(box);
-                        p = p.transform(tm2flatten(TM.transform(TM.inverse(context.ctx.getTransform()), vp.position)));
-                        spentShapes.push(p);
-                    }
+            if (!drawn) {
+                // warnings must be drawn
+                if (o.calculated && o.hasWarning(context)) {
+                    const wc = o.toWorldCoord();
+                    res.place(Flatten.circle(Flatten.point(wc.x, wc.y), vp.toWorldLength(WARNING_WIDTH)), [o.uid, o.position, obj2props.get(o.uid) || [], true]);
                 }
             }
         }
+
+        console.log('there are ' + Array.from(res.cache.values()).map((v) => Array.from(v.values())).flat().length + ' discrete boxes');
+        this.layout.set(key, res);
+        return res;
     }
 
     entitySortOrder(entity: DrawableEntityConcrete): number {
@@ -258,6 +258,8 @@ export default class CalculationLayer extends LayerImplementation {
     }
 
     calculate(context: CanvasContext, demandType: DemandType, done: () => void) {
+
+        this.layout.clear();
 
         context.document.uiState.isCalculating = true;
         this.calculator.calculate(context.globalStore, context.document, context.effectiveCatalog, demandType, (success) => {

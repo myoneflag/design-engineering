@@ -10,6 +10,8 @@ import Layer from "../../../src/htmlcanvas/layers/layer";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { Coord, Rectangle } from "../../../../common/src/api/document/drawing";
 
+export type BoxableShape = Flatten.Segment | Flatten.Point | Flatten.Polygon | Flatten.Circle;
+
 export default abstract class DrawableObject {
     abstract position: Matrix;
     parentInternal: DrawableObject | null; // null parents mean root objects
@@ -222,7 +224,7 @@ export default abstract class DrawableObject {
     }
 
     // For figuring out how to fit the view.
-    shape(): Flatten.Segment | Flatten.Point | Flatten.Polygon | Flatten.Circle | null {
+    shape(): BoxableShape | null {
         const point = this.toWorldCoord({ x: 0, y: 0 });
         return Flatten.point(point.x, point.y);
     }
