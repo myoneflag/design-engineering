@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { DocumentWSMessage, DocumentWSMessageType } from "../../../common/src/api/document/types";
 import { OPERATION_NAMES, OperationTransformConcrete } from "../../../common/src/api/document/operation-transforms";
-import { Document } from "../../../common/src/models/Document";
+import { Document, DocumentStatus } from "../../../common/src/models/Document";
 import { Operation } from "../../../common/src/models/Operation";
 import { Session } from "../../../common/src/models/Session";
 import { AccessLevel, User } from "../../../common/src/models/User";
@@ -13,7 +13,7 @@ import { cloneSimple } from "../../../common/src/lib/utils";
 import { applyDiffNative } from "../../../common/src/api/document/state-ot-apply";
 import { diffState } from "../../../common/src/api/document/state-differ";
 import { CURRENT_VERSION } from "../../../common/src/api/upgrade";
-import { MoreThan } from "typeorm";
+import { Brackets } from "typeorm";
 
 export class DocumentController {
     @ApiHandleError()
@@ -78,6 +78,7 @@ export class DocumentController {
             doc.createdOn = new Date();
             doc.metadata = cloneSimple(initialDrawing.metadata.generalInfo);
             doc.version = CURRENT_VERSION;
+            doc.state = DocumentStatus.ACTIVE;
 
             await doc.save();
 
@@ -107,16 +108,34 @@ export class DocumentController {
                 operationQueues.delete(doc.id);
             }
 
-            await Promise.all((await doc.operations).map((o) => {
-                return o.remove();
-            }));
+            doc.state = DocumentStatus.DELETED;
+            await doc.save();
 
-            await doc.remove();
             res.status(200).send({
                 success: true,
                 data: null,
             });
         })
+    }
+
+    @ApiHandleError()
+    @AuthRequired()
+    public async restore(req: Request, res: Response, next: NextFunction, session: Session) {
+        await withDocument(Number(req.params.id), res, session, AccessType.UPDATE, async (doc) => {
+            if (doc.state !== DocumentStatus.DELETED) {
+                res.status(400).send({
+                    success: false,
+                    message: "can't restore a document that isn't deleted",
+                });
+            }
+            doc.state = DocumentStatus.ACTIVE;
+            await doc.save();
+
+            res.status(200).send({
+                success: true,
+                data: null,
+            });
+        });
     }
 
     @ApiHandleError()
@@ -166,6 +185,13 @@ export class DocumentController {
                 results = await Document
                     .createQueryBuilder('document')
                     .where('document.organization = :organization', {organization: org.id})
+                    .andWhere(new Brackets((qb) => {
+                        qb.where('document.state = :state', {state: DocumentStatus.ACTIVE});
+
+                        if (session.user.accessLevel <= AccessLevel.MANAGER) {
+                            qb.orWhere('document.state = :state', {state: DocumentStatus.DELETED});
+                        }
+                    }))
                     .orderBy('document.createdOn', 'DESC')
                     .getMany();
             }
@@ -248,6 +274,7 @@ export class DocumentController {
                 doc.createdOn = new Date();
                 doc.metadata = target.metadata;
                 doc.metadata.title = 'Copy of ' + doc.metadata.title;
+                doc.state = DocumentStatus.PENDING;
 
                 await doc.save();
 
@@ -295,6 +322,9 @@ export class DocumentController {
                     await titleChangeOp.save();
                     await commitOp.save();
                 }
+
+                doc.state = DocumentStatus.ACTIVE;
+                await doc.save();
 
                 res.status(200).send({
                     success: true,
@@ -519,6 +549,7 @@ router.post('/:id/clone', controller.clone.bind(controller));
 router.get('/:id/operations', controller.findOperations.bind(controller));
 router.put('/:id', controller.update.bind(controller));
 router.get('/:id', controller.findOne.bind(controller));
+router.post('/:id/restore', controller.restore.bind(controller));
 router.get('/', controller.find.bind(controller));
 
 export const documentRouter = router;

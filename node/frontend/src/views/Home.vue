@@ -28,12 +28,12 @@
                     <b-col sm="6" md="4" lg="3" v-for="doc in documents" :key="doc.id">
                         <b-card
                             :title="doc.metadata.title"
-                            img-src="https://conversionxl.com/wp-content/uploads/2013/03/blueprint-architecture.png"
+                            :img-src="docIcon(doc)"
                             img-alt="Image"
                             img-top
                             tag="article"
                             style="max-width: 20rem;"
-                            class="mb-2"
+                            class="mb-2 doc-tile"
                         >
                             <b-card-text>
                                 {{ doc.metadata.description }}<br />
@@ -49,9 +49,17 @@
                                         v-if="canDeleteDoc(doc)"
                                         variant="danger"
                                         @click="deleteDoc(doc)"
-
                                 >
                                     Delete
+                                </b-dropdown-item>
+
+                                <b-dropdown-item
+                                        href="#"
+                                        v-if="canRestoreDoc(doc)"
+                                        variant="success"
+                                        @click="restoreDoc(doc)"
+                                >
+                                    Restore
                                 </b-dropdown-item>
                             </b-dropdown>
                         </b-card>
@@ -67,10 +75,16 @@ import { Component, Vue } from "vue-property-decorator";
 import MainNavBar from "../../src/components/MainNavBar.vue";
 import { State, Action, Getter } from "vuex-class";
 import { DocumentState } from "../../src/store/document/types";
-import { canUserDeleteDocument, Document } from "../../../common/src/models/Document";
-import { cloneDocument, createDocument, deleteDocument, getDocuments } from "../api/document";
+import {
+    canUserDeleteDocument,
+    canUserRestoreDocument,
+    Document,
+    DocumentStatus
+} from "../../../common/src/models/Document";
+import { cloneDocument, createDocument, deleteDocument, getDocuments, restoreDocument } from "../api/document";
 import { User } from "../../../common/src/models/User";
 import Doc = Mocha.reporters.Doc;
+import { assertUnreachable } from "../../../common/src/api/config";
 
 @Component({
     components: {
@@ -87,6 +101,19 @@ export default class Home extends Vue {
 
     get profile(): User {
         return this.$store.getters["profile/profile"];
+    }
+
+    docIcon(doc: Document) {
+        switch (doc.state) {
+            case DocumentStatus.ACTIVE:
+                return require('../assets/blueprint-architecture.png');
+            case DocumentStatus.DELETED:
+                return require('../assets/deleted.png');
+            case DocumentStatus.PENDING:
+                return require('../assets/pending.png');
+            default:
+                assertUnreachable(doc.state);
+        }
     }
 
     reloadDocuments() {
@@ -133,6 +160,14 @@ export default class Home extends Vue {
         return canUserDeleteDocument(doc, this.profile);
     }
 
+    canRestoreDoc(doc: Document) {
+        if (!this.profile) {
+            return false;
+        }
+
+        return canUserRestoreDocument(doc, this.profile);
+    }
+
     async deleteDoc(doc: Document) {
         const confirm = await this.$bvModal.msgBoxConfirm(
             'Are you sure you want to delete the document "' + doc.metadata.title + '"?',
@@ -147,6 +182,18 @@ export default class Home extends Vue {
                     title: 'Failed to Delete Drawing',
                 });
             }
+        }
+    }
+
+    async restoreDoc(doc: Document) {
+        const res = await restoreDocument(doc.id);
+        if (res.success) {
+            this.reloadDocuments();
+        } else {
+            this.$bvToast.toast(res.message, {
+                variant: 'danger',
+                title: 'Failed to Restore Drawing',
+            });
         }
     }
 
@@ -172,7 +219,11 @@ export default class Home extends Vue {
 </script>
 
 <style lang="less">
-h1 {
-    padding-top: 50px;
-}
+    h1 {
+        padding-top: 50px;
+    }
+
+    .doc-tile img {
+        max-height: 150px;
+    }
 </style>

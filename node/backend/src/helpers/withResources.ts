@@ -1,8 +1,8 @@
-import {Organization} from "../../../common/src/models/Organization";
-import {Request, Response} from "express";
-import {Document} from "../../../common/src/models/Document";
-import {AccessLevel, User} from "../../../common/src/models/User";
-import {Session} from "../../../common/src/models/Session";
+import { Organization } from "../../../common/src/models/Organization";
+import { Response } from "express";
+import { Document, DocumentStatus } from "../../../common/src/models/Document";
+import { AccessLevel, User } from "../../../common/src/models/User";
+import { Session } from "../../../common/src/models/Session";
 
 // Helper functions for resource gathering + permission checking.
 
@@ -11,6 +11,7 @@ export enum AccessType {
     READ,
     UPDATE,
     DELETE,
+    RESTORE,
 }
 
 export async function withOrganization<T>(
@@ -116,10 +117,19 @@ export async function withDocument<T>(
         if (res) {
             res.status(404).send({
                 success: false,
-                message: "Organization with id " + id + " cannot be found",
+                message: "Document with id " + id + " cannot be found",
             });
         }
         return;
+    }
+
+    if (doc.state !== DocumentStatus.ACTIVE) {
+        if (user.accessLevel > AccessLevel.MANAGER) {
+            res.status(404).send({
+                success: false,
+                message: "Document with id " + id + " cannot be found",
+            });
+        }
     }
 
     if (access === AccessType.DELETE) {
@@ -182,6 +192,8 @@ export async function withDocument<T>(
             }
         }
     }
+
+
 
     if (access === AccessType.CREATE) {
         if (res) {

@@ -186,6 +186,18 @@ export async function deleteDocument(id: number): Promise<APIResult<void>> {
     }
 }
 
+export async function restoreDocument(id: number): Promise<APIResult<void>> {
+    try {
+        return (await axios.post("/api/documents/" + id + '/restore')).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return { success: false, message: e.response.data.message };
+        } else {
+            return { success: false, message: e.message };
+        }
+    }
+}
+
 export async function cloneDocument(id: number, organization: string): Promise<APIResult<Document>> {
     try {
         return (await axios.post("/api/documents/" + id + "/clone", {organization})).data;
