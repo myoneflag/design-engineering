@@ -24,7 +24,7 @@ import Pipe from "../../../src/htmlcanvas/objects/pipe";
 import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
 import { CenteredObject } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
 import { CalculationContext } from "../../../src/calculations/types";
-import { FlowNode, SELF_CONNECTION } from "../../../src/calculations/calculation-engine";
+import { FlowNode, FLOW_SOURCE_EDGE } from "../../../src/calculations/calculation-engine";
 import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
 import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
@@ -179,7 +179,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         to: FlowNode,
         signed: boolean
     ): number {
-        if (from.connection === SELF_CONNECTION || to.connection === SELF_CONNECTION) {
+        if (from.connection === FLOW_SOURCE_EDGE || to.connection === FLOW_SOURCE_EDGE) {
             throw new Error("I don't like it");
         }
 

@@ -14,16 +14,18 @@ export default class Graph<N, E> {
     sn: (node: N) => string;
 
     visited = 0;
+    bridgeTimeTick = 0;
 
     constructor(sn: (node: N) => string) {
         this.sn = sn;
     }
 
     addNode(node: N) {
-        if (!this.adjacencyList.has(this.sn(node))) {
-            this.adjacencyList.set(this.sn(node), []);
-            this.reverseAdjacencyList.set(this.sn(node), []);
-            this.id2Node.set(this.sn(node), node);
+        const nk = this.sn(node);
+        if (!this.adjacencyList.has(nk)) {
+            this.adjacencyList.set(nk, []);
+            this.reverseAdjacencyList.set(nk, []);
+            this.id2Node.set(nk, node);
         }
     }
 
@@ -76,10 +78,101 @@ export default class Graph<N, E> {
     dagTraversal(roots: N[]): Array<Traversal<N, E>> {
         const traversals: Array<Traversal<N, E>> = new Array<Traversal<N, E>>();
         const seen: Set<string> = new Set<string>();
-        roots.forEach((root) => {
+        for (const root of roots) {
             this.dagTraversalRecursive(root, null, seen, traversals);
-        });
+        }
         return traversals;
+    }
+
+    // Only applies to undirected graphs.
+    bridgeUtil(u: N, visited: Set<string>, disc: Map<string, number>, low: Map<string, number>, parent: Map<string, N>, bridges: Array<Edge<N, E>>) {
+        const uk = this.sn(u);
+        visited.add(uk);
+        this.bridgeTimeTick ++;
+        disc.set(uk, this.bridgeTimeTick);
+        low.set(uk, this.bridgeTimeTick);
+
+        for (const e of [...this.adjacencyList.get(uk)!, ...this.reverseAdjacencyList.get(uk)!]) {
+            const v = e.to;
+            const vk = this.sn(v);
+
+            if (!visited.has(vk)) {
+                parent.set(vk, u);
+                this.bridgeUtil(v, visited, disc, low, parent, bridges);
+
+                low.set(uk, Math.min(low.get(uk)!, low.get(vk)!));
+
+                if (low.get(vk)! > disc.get(uk)!) {
+                    bridges.push(e);
+                }
+
+            } else if (vk !== (parent.get(uk) ? this.sn(parent.get(uk)!) : '')) {
+                low.set(uk, Math.min(low.get(uk)!, disc.get(vk)!));
+            }
+        }
+    }
+
+    findBridges(): Array<Edge<N, E>> {
+        const visited = new Set<string>();
+        const disc = new Map<string, number>();
+        const low = new Map<string, number>();
+        const parent = new Map<string, N>();
+
+        const bridges: Edge<N, E>[] = [];
+
+        for (const n of this.id2Node.values()) {
+            if (!visited.has(this.sn(n))) {
+                this.bridgeUtil(n, visited, disc, low, parent, bridges);
+            }
+        }
+
+        return bridges;
+    }
+
+    findBridgeSeparatedComponents(): [Array<Edge<N, E>>, Array<SubGraph<N, E>>] {
+        const bridges = this.findBridges();
+
+        const components: Array<SubGraph<N, E>> = [];
+
+        const visited = new Set<string>();
+        const visitedEdges = new Set<string>();
+        const bridgeEdges = new Set<string>();
+        for (const b of bridges) {
+            visitedEdges.add(b.uid);
+            bridgeEdges.add(b.uid);
+        }
+        // find the resulting bridge-sea
+        for (const e of this.edgeList.values()) {
+            if (!visitedEdges.has(e.uid) || bridgeEdges.has(e.uid)) {
+                const component: SubGraph<N, E> = [[], []];
+
+                if (bridgeEdges.has(e.uid)) {
+                    component[0].push(e.from);
+                    component[0].push(e.to);
+                    component[1].push(e);
+                } else {
+                    this.dfs(
+                        e.to,
+                        (node) => {
+                            component[0].push(node);
+                        },
+                        undefined,
+                        (edge) => {
+                            component[1].push(edge);
+                        },
+                        undefined,
+                        visited,
+                        visitedEdges,
+                        false,
+                        false,
+                    );
+                }
+
+                components.push(component);
+            }
+        }
+
+        return [bridges, components];
     }
 
     dagTraversalRecursive(
@@ -88,26 +181,27 @@ export default class Graph<N, E> {
         seen: Set<string>,
         traversals: Array<Traversal<N, E>>
     ) {
-        if (seen.has(this.sn(curr))) {
+        const ck = this.sn(curr);
+        if (seen.has(ck)) {
             return;
         }
-        seen.add(this.sn(curr));
+        seen.add(ck);
         const traversal: Traversal<N, E> = {
             node: curr,
             parent: parentPath,
             children: []
         };
 
-        const nei = this.adjacencyList.get(this.sn(curr));
+        const nei = this.adjacencyList.get(ck);
         if (nei) {
-            nei.forEach((next) => {
+            for (const next of nei) {
                 if (parentPath === null || parentPath.from !== next.to) {
                     traversal.children.push(next);
                 }
                 if (!seen.has(this.sn(next.to))) {
                     this.dagTraversalRecursive(next.to, next, seen, traversals);
                 }
-            });
+            };
         } else {
             throw new Error("Node missing from adjacency list " + curr);
         }
@@ -174,9 +268,9 @@ export default class Graph<N, E> {
                 nei = [...forward, ...backward];
             }
 
-            nei.forEach((next) => {
+            for (const next of nei) {
                 if (seenEdges!.has(next.uid)) {
-                    return;
+                    continue;
                 }
                 seenEdges!.add(next.uid);
 
@@ -187,7 +281,7 @@ export default class Graph<N, E> {
                             leaveEdge(next);
                         }
 
-                        return;
+                        continue;
                     }
                 }
                 if (!seen!.has(this.sn(next.to))) {
@@ -196,11 +290,95 @@ export default class Graph<N, E> {
                 if (leaveEdge) {
                     leaveEdge(next);
                 }
-            });
+            }
 
             if (leaveNode) {
                 leaveNode(curr);
             }
+        }
+    }
+
+    /**
+     * Guaranteed that visitEdge is called exactly once for all reachable edges, and visitNode
+     * is called once for each visitable node.
+     */
+    dfsRecursive(
+        start: N,
+        visitNode?: (node: N) => boolean | void,
+        leaveNode?: (node: N) => void,
+        visitEdge?: (edge: Edge<N, E>) => boolean | void,
+        leaveEdge?: (edge: Edge<N, E>) => void,
+        seen?: Set<string>,
+        seenEdges?: Set<string>,
+        directed: boolean = true,
+        reversed: boolean = false
+    ) {
+        this.visited++;
+        if (seenEdges === undefined) {
+            seenEdges = new Set<string>();
+        }
+        if (seen === undefined) {
+            seen = new Set<string>();
+        }
+
+        const currS = this.sn(start);
+
+        if (seen.has(currS)) {
+            return;
+        }
+        seen.add(currS);
+
+        if (visitNode) {
+            const should = visitNode(start);
+            if (should !== undefined && should) {
+                if (leaveNode) {
+                    leaveNode(start);
+                }
+                return;
+            }
+        }
+
+        let nei;
+        const forward = this.adjacencyList.get(currS);
+        const backward = this.reverseAdjacencyList.get(currS);
+        if (!forward || !backward) {
+            throw new Error("cannot find node " + currS);
+        }
+        if (!reversed) {
+            nei = forward;
+        } else {
+            nei = backward;
+        }
+        if (!directed) {
+            nei = [...forward, ...backward];
+        }
+
+        for (const next of nei) {
+            if (seenEdges!.has(next.uid)) {
+                continue;
+            }
+            seenEdges!.add(next.uid);
+
+            if (visitEdge) {
+                const should = visitEdge(next);
+                if (should !== undefined && should) {
+                    if (leaveEdge) {
+                        leaveEdge(next);
+                    }
+
+                    continue;
+                }
+            }
+            if (!seen!.has(this.sn(next.to))) {
+                this.dfsRecursive(next.to, visitNode, leaveNode, visitEdge, leaveEdge, seen, seenEdges, directed, reversed);
+            }
+            if (leaveEdge) {
+                leaveEdge(next);
+            }
+        }
+
+        if (leaveNode) {
+            leaveNode(start);
         }
     }
 
@@ -219,7 +397,9 @@ export default class Graph<N, E> {
         }
         const exNodes = new Set<string>();
         if (excludedNodes !== undefined) {
-            excludedNodes.forEach((n) => exNodes.add(this.sn(n)));
+            for (const n of excludedNodes) {
+                exNodes.add(this.sn(n));
+            }
         }
 
         const start: Array<DijkstraNode<N, E>> = [
@@ -260,9 +440,9 @@ export default class Graph<N, E> {
                 nei = [...forward, ...backward];
             }
 
-            nei.forEach((edge) => {
+            for (const edge of nei) {
                 if (excludedEdges!.has(edge.uid)) {
-                    return;
+                    continue;
                 }
                 excludedEdges!.add(edge.uid);
 
@@ -271,7 +451,7 @@ export default class Graph<N, E> {
                     node: edge.to,
                     parent: edge
                 });
-            });
+            }
         }
     }
 
@@ -304,6 +484,8 @@ export default class Graph<N, E> {
         return components;
     }
 
+
+
     anyPath(
         from: N,
         to: Set<N> | N[] | N,
@@ -319,12 +501,16 @@ export default class Graph<N, E> {
         let seenNodesS: Set<string> | undefined;
         if (seenNodes) {
             seenNodesS = new Set<string>();
-            seenNodes.forEach((n) => seenNodesS!.add(this.sn(n)));
+            for (const n of seenNodes) {
+                seenNodesS!.add(this.sn(n));
+            }
         }
 
         const toS = new Set<string>();
         if (to instanceof Set || to instanceof Array) {
-            to.forEach((n: N) => toS.add(this.sn(n)));
+            for (const n of to) {
+                toS.add(this.sn(n));
+            }
         } else {
             toS.add(this.sn(to));
         }
@@ -372,9 +558,13 @@ export default class Graph<N, E> {
 
         const toS: Set<string> = new Set<string>();
         if (to instanceof Set) {
-            to.forEach((n) => toS.add(this.sn(n)));
+            for (const n of to) {
+                toS.add(this.sn(n));
+            }
         } else if (to instanceof Array) {
-            to.forEach((n) => toS.add(this.sn(n)));
+            for (const n of to) {
+                toS.add(this.sn(n));
+            }
         } else {
             toS.add(this.sn(to));
         }
@@ -442,9 +632,9 @@ export default class Graph<N, E> {
         const seenEdges: Set<string> = new Set<string>();
 
         this.adjacencyList.forEach((v) => {
-            v.forEach((e) => {
+            for (const e of v) {
                 if (seenEdges.has(e.uid)) {
-                    return;
+                    continue;
                 }
 
                 const newEdges = new Set<string>([e.uid]);
@@ -452,10 +642,12 @@ export default class Graph<N, E> {
 
                 if (thisCycle) {
                     thisCycle.push(e);
-                    thisCycle.forEach((ee) => seenEdges.add(ee.uid));
+                    for (const ee of thisCycle) {
+                        seenEdges.add(ee.uid);
+                    }
                     result.push(thisCycle);
                 }
-            });
+            }
         });
 
         return result;
@@ -489,7 +681,9 @@ export default class Graph<N, E> {
                     const path1Reversed = this.reversePath(srcPath1);
                     const fullPath: Array<Edge<N, E>> = [...path1Reversed, v, ...srcPath2];
                     result.push(fullPath);
-                    fullPath.forEach((e) => done.add(e.uid));
+                    for (const e of fullPath) {
+                        done.add(e.uid);
+                    }
                 } else {
                     notAccountedFor.add(k);
                 }

@@ -32,6 +32,10 @@ export default class UnionFind<T> {
     }
 
     groups(): T[][] {
+        return Array.from(this.groupsMap().values());
+    }
+
+    groupsMap(): Map<T, T[]> {
         const byGroup = new Map<T, T[]>();
         this.parent.forEach((k, n) => {
             const g = this.find(k);
@@ -42,6 +46,6 @@ export default class UnionFind<T> {
             byGroup.get(g)!.push(n);
         });
 
-        return Array.from(byGroup.values());
+        return byGroup;
     }
 }

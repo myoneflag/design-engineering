@@ -5,7 +5,7 @@ import {expect} from 'chai';
 import {ValveType} from '../../../../common/src/api/document/entities/directed-valves/valve-types';
 import * as _ from 'lodash';
 import BaseBackedObject from '../../../src/htmlcanvas/lib/base-backed-object';
-import {FlowNode, SELF_CONNECTION} from '../../../src/calculations/calculation-engine';
+import {FlowNode, FLOW_SOURCE_EDGE} from '../../../src/calculations/calculation-engine';
 import {CalculationContext} from '../../../src/calculations/types';
 import Pipe from '../../../src/htmlcanvas/objects/pipe';
 import {emptyPipeCalculation} from '../../../src/store/document/calculations/pipe-calculation';
