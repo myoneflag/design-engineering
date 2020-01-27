@@ -5,7 +5,7 @@ import { ternarySearchForGlobalMin } from "../../src/calculations/search-functio
 import RiserEntity from "../../../common/src/api/document/entities/riser-entity";
 import { FlowAssignment } from "../../src/calculations/flow-assignment";
 import { getObjectFrictionHeadLoss } from "./entity-pressure-drops";
-import { FlowEdge, FlowNode, SELF_CONNECTION } from "../../src/calculations/calculation-engine";
+import { FlowEdge, FlowNode, FLOW_SOURCE_EDGE } from "../../src/calculations/calculation-engine";
 import Fitting from "../../src/htmlcanvas/objects/fitting";
 import { GlobalStore } from "../htmlcanvas/lib/global-store";
 import { ObjectStore } from "../htmlcanvas/lib/object-store";
@@ -47,7 +47,7 @@ export default class FlowSolver {
 
         const sources = Array.from(suppliesKPA.keys()).map((suid) => ({
             connectable: suid,
-            connection: SELF_CONNECTION
+            connection: FLOW_SOURCE_EDGE
         }));
         const arcCover = this.network.sourceArcCover(sources, accountedFor);
         arcCover.forEach((arc) => {
@@ -190,7 +190,7 @@ export default class FlowSolver {
             // find a source for this flow.
             const path = this.network.anyPath(
                 { connectable: n, connection: this.globalStore.get(n)!.entity.parentUid! },
-                Array.from(suppliesKPA.keys()).map((k) => ({ connectable: k, connection: SELF_CONNECTION })),
+                Array.from(suppliesKPA.keys()).map((k) => ({ connectable: k, connection: FLOW_SOURCE_EDGE })),
                 undefined,
                 undefined,
                 true,

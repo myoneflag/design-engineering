@@ -14,7 +14,7 @@ import { getDragPriority } from "../../../src/store/document";
 import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
 import { CenteredObjectNoParent } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
 import { CalculationContext } from "../../../src/calculations/types";
-import { FlowNode, SELF_CONNECTION } from "../../../src/calculations/calculation-engine";
+import { FlowNode, FLOW_SOURCE_EDGE } from "../../../src/calculations/calculation-engine";
 import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
@@ -185,7 +185,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         }
 
         // Avoid backflow
-        if (to.connection === SELF_CONNECTION) {
+        if (to.connection === FLOW_SOURCE_EDGE) {
             return sign * (1e10 + flowLS);
         } else {
             return 0;

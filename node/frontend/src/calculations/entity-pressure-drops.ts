@@ -5,7 +5,7 @@ import { getDarcyWeisbachFlatMH } from "../../src/calculations/pressure-drops";
 import Fitting from "../../src/htmlcanvas/objects/fitting";
 import { SystemNodeEntity } from "../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import { CalculationContext } from "../../src/calculations/types";
-import { FlowNode, SELF_CONNECTION } from "../../src/calculations/calculation-engine";
+import { FlowNode, FLOW_SOURCE_EDGE } from "../../src/calculations/calculation-engine";
 import { interpolateTable, parseCatalogNumberExact } from "../../../common/src/lib/utils";
 
 export function getObjectFrictionHeadLoss(

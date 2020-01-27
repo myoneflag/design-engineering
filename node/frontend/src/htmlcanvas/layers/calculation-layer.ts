@@ -262,6 +262,7 @@ export default class CalculationLayer extends LayerImplementation {
         this.layout.clear();
 
         context.document.uiState.isCalculating = true;
+        this.calculator = new CalculationEngine();
         this.calculator.calculate(context.globalStore, context.document, context.effectiveCatalog, demandType, (success) => {
             if (success) {
                 context.document.uiState.lastCalculationId = context.document.nextId;
