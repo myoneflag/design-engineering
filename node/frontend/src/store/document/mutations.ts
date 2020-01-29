@@ -349,6 +349,10 @@ export const mutations: MutationTree<DocumentState> = {
         state.uiState.loaded = loaded;
     },
 
+    resetPastes(state) {
+        state.uiState.pastesByLevel = {};
+    },
+
     addEntityOn,
 
     addEntity(state, entity: DrawableEntityConcrete) {

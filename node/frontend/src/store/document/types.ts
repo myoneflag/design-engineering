@@ -43,6 +43,8 @@ export interface UIState {
     viewOnly: boolean;
     viewOnlyReason: string | null;
     historyIndex: number;
+
+    pastesByLevel: {[key: string]: number}
 }
 
 export enum GridLineMode {
@@ -123,6 +125,8 @@ export const initialUIState: UIState = {
     levelUid: null,
     viewOnly: true,
     viewOnlyReason: null,
+
+    pastesByLevel: {},
 };
 
 export function blankDiffFilter() {

@@ -25,6 +25,28 @@ import { GridLineMode } from "../../store/document/types";
                         </b-button>
                     </b-button-group>
                 </b-col>
+
+                <b-col>
+                    <b-button-group>
+                        <b-button
+                                variant="outline-dark"
+                                v-b-tooltip.hover="{ title: 'Copy' }"
+                                class="toolBtn"
+                                @click="onCopy"
+                        >
+                            <v-icon name="copy" scale="1.5" />
+                        </b-button>
+                        <b-button
+                                variant="outline-dark"
+                                v-b-tooltip.hover="{ title: 'Paste' }"
+                                class="toolBtn"
+                                @click="onPaste"
+                        >
+                            <v-icon name="paste" scale="1.5" />
+                        </b-button>
+                    </b-button-group>
+                </b-col>
+
                 <b-col>
                     <b-button-group>
                         <template v-for="tool in TOOLBAR_BUTTONS" v-text="tool.tooltip">
@@ -87,6 +109,8 @@ import { GridLineMode } from "../../store/document/types";
         onChange: Function,
         onUndo: Function,
         onRedo: Function,
+        onCopy: Function,
+        onPaste: Function,
     }
 })
 export default class Toolbar extends Vue {
