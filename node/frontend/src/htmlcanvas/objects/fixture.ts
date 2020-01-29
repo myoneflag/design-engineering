@@ -313,4 +313,14 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         }
         return res;
     }
+
+    getCopiedObjects(): BaseBackedObject[] {
+        const res: BaseBackedObject[] = [this];
+
+        for (const suid of this.entity.roughInsInOrder) {
+            res.push(this.globalStore.get(this.entity.roughIns[suid].uid)!);
+        }
+
+        return res;
+    }
 }

@@ -109,6 +109,10 @@ export const actions: ActionTree<DocumentState, RootState> = {
         MainEventBus.$emit("committed", true);
     },
 
+    resetPastes({commit, state, dispatch}) {
+        commit('resetPastes');
+    },
+
     applyDiff({commit, state, dispatch}, diff) {
         commit('applyDiff', diff);
     },

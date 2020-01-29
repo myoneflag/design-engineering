@@ -707,6 +707,10 @@ export function ConnectableObject<
             return [...conn.map((uid) => this.globalStore.get(uid)!), ...super.getNeighbours()];
         }
 
+        getCopiedObjects(): BaseBackedObject[] {
+            return [this];
+        }
+
         @Cached((kek) => new Set(kek.getParentChain().map((o) => o.uid)))
         shape() {
             const point = this.toWorldCoord({ x: 0, y: 0 });

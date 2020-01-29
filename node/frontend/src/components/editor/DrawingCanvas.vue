@@ -82,6 +82,8 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
                 :on-change="scheduleDraw"
                 :on-undo="onUndo"
                 :on-redo="onRedo"
+                :on-copy="copySelected"
+                :on-paste="paste"
                 v-if="initialized"
             ></Toolbar>
 
@@ -124,7 +126,7 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
     import Layer, { SelectMode } from "../../../src/htmlcanvas/layers/layer";
     import HydraulicsInsertPanel from "../../../src/components/editor/HydraulicsInsertPanel.vue";
     import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
-    import { EntityType } from "../../../../common/src/api/document/entities/types";
+    import { EntityType, getReferences } from "../../../../common/src/api/document/entities/types";
     import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
     import insertRiser from "../../htmlcanvas/tools/insert-riser";
     import insertPipes from "../../../src/htmlcanvas/tools/insert-pipes";
@@ -140,7 +142,10 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
     import CalculationEngine from "../../../src/calculations/calculation-engine";
     import CalculationLayer from "../../../src/htmlcanvas/layers/calculation-layer";
     import { getVisibleBoundingBox, levelIncludesRiser } from "../../../src/htmlcanvas/lib/utils";
-    import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
+    import {
+        DrawableEntityConcrete,
+        isCenteredEntity, isConnectableEntity
+    } from "../../../../common/src/api/document/entities/concrete-entity";
     import SelectBox from "../../../src/htmlcanvas/objects/select-box";
     import * as _ from "lodash";
     import { AutoConnector } from "../../../src/htmlcanvas/lib/black-magic/auto-connect";
@@ -167,6 +172,7 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
     import { globalStore } from "../../store/document/mutations";
     import HistoryView from "./HistoryView.vue";
     import { DEFAULT_FONT_NAME } from "../../config";
+    import { cloneSimple } from "../../../../common/src/lib/utils";
 
     @Component({
         components: {
@@ -718,18 +724,32 @@ export default class DrawingCanvas extends Vue {
     }
 
     onKeyDown(event: KeyboardEvent) {
-        if (event.keyCode === KeyCode.Z) {
-            if (event.ctrlKey) {
-                if (event.shiftKey) {
-                    this.onRedo();
-                } else {
-                    this.onUndo();
+        switch (event.keyCode) {
+            case KeyCode.Z:
+                if (event.ctrlKey) {
+                    if (event.shiftKey) {
+                        this.onRedo();
+                    } else {
+                        this.onUndo();
+                    }
                 }
-            }
-        } else if (event.keyCode === KeyCode.Y) {
-            if (event.ctrlKey) {
-                this.onRedo();
-            }
+                break;
+            case KeyCode.Y:
+                if (event.ctrlKey) {
+                    this.onRedo();
+                }
+                break;
+            case KeyCode.C:
+                if (event.ctrlKey) {
+                    this.copySelected();
+                }
+                break;
+            case KeyCode.V:
+                if (event.ctrlKey) {
+                    this.paste();
+                }
+            default:
+                break;
         }
     }
 
@@ -1358,6 +1378,95 @@ export default class DrawingCanvas extends Vue {
             }
         }
 
+    }
+
+    async copySelected() {
+        this.$store.dispatch('document/resetPastes');
+        const entities: DrawableEntityConcrete[] = [];
+        const objects = Array.from(this.selectedObjects);
+        const seenUids = new Set<string>();
+        for (let i = 0; i < objects.length; i++) {
+            if (seenUids.has(objects[i].uid)) {
+                continue;
+            }
+            seenUids.add(objects[i].uid);
+            if (isCenteredEntity(objects[i].entity)) {
+                objects[i].debase(this);
+            }
+
+            const toCopy = objects[i].getCopiedObjects();
+            objects.push(...toCopy);
+
+            const entity = cloneSimple(objects[i].entity);
+            entities.push(entity);
+            if (isCenteredEntity(objects[i].entity)) {
+                objects[i].rebase(this);
+            }
+        }
+
+        await navigator.clipboard.writeText(JSON.stringify({
+            type: 'h2x_clipboard',
+            entities: entities,
+        }));
+        Vue.set(this.document.uiState.pastesByLevel, this.document.uiState.levelUid || 'null', 1);
+    }
+
+    async paste() {
+        const text = await navigator.clipboard.readText();
+        try {
+            const val = JSON.parse(text);
+            if (val.hasOwnProperty('type') && val.type === 'h2x_clipboard') {
+                const entities: DrawableEntityConcrete[] = val.entities;
+
+                const uidMap = new Map<string, string>();
+                for (const e of entities) {
+                    uidMap.set(e.uid, uuid());
+                }
+
+                const entitiesCopied: DrawableEntityConcrete[] = [];
+                for (const e of entities) {
+                    if (!uidMap.has(e.uid)) {
+                        throw new Error('UID reference not found for entity ' + JSON.stringify(e) + ' the uid itself');
+                    }
+                    e.uid = uidMap.get(e.uid)!;
+                    let etext = JSON.stringify(e);
+                    for (const r of getReferences(e)) {
+                        if (!uidMap.has(r)) {
+                            throw new Error('UID reference not found for entity ' + JSON.stringify(e) + ' reference ' + r);
+                        }
+
+                        etext = etext.replace(r, uidMap.get(r)!);
+                    }
+                    entitiesCopied.push(JSON.parse(etext));
+                }
+
+                let nPastes = this.document.uiState.pastesByLevel[this.document.uiState.levelUid || 'null'] || 0;
+                for (const e of entitiesCopied) {
+                    if (isCenteredEntity(e)) {
+                        if (e.parentUid === null) {
+                            e.center.x += 1000 * nPastes;
+                            e.center.y += 1000 * nPastes;
+                        }
+                    }
+
+                    this.$store.dispatch('document/addEntity', e);
+                    if (isCenteredEntity(e)) {
+                        this.globalStore.get(e.uid)!.rebase(this);
+                    }
+                }
+                nPastes ++;
+                Vue.set(this.document.uiState.pastesByLevel, this.document.uiState.levelUid || 'null', nPastes);
+
+                this.select(entitiesCopied.map((e) => this.globalStore.get(e.uid)!).filter((o) => o.selectable), SelectMode.Replace);
+            }
+            this.$store.dispatch('document/commit');
+        } catch (e) {
+            //
+            console.log('pasted but there wasn\'t anything good');
+            console.log(e);
+            console.log(text);
+        }
+        this.scheduleDraw();
     }
 
     onDrop(value: any, event: DragEvent) {

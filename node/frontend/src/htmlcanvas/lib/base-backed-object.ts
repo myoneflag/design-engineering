@@ -185,6 +185,10 @@ export default abstract class BaseBackedObject extends DrawableObject {
         }
     }
 
+    getCopiedObjects(): BaseBackedObject[] {
+        return [this, ...this.getNeighbours()];
+    }
+
     onUpdate() {
         /**/
     }

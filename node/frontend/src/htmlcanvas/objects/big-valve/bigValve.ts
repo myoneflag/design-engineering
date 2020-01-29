@@ -478,6 +478,10 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         return res;
     }
 
+    getCopiedObjects(): BaseBackedObject[] {
+        return [this, ...this.getInletsOutlets()];
+    }
+
     @Cached((kek) => new Set(kek.getParentChain().map((o) => o.uid)))
     shape(): Flatten.Segment | Flatten.Point | Flatten.Polygon | Flatten.Circle | null {
         return super.shape();
