@@ -94,24 +94,28 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
                 }
                 const oc = this.toObjectCoord(wc);
                 const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
-                const small = vec.normalize().multiply(Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM)));
-                if (active && selected) {
-                    ctx.beginPath();
-                    ctx.lineWidth = targetWidth + (this.FITTING_DIAMETER_PIXELS * 2) / scale;
 
-                    this.lastDrawnWidth = defaultWidth + (this.FITTING_DIAMETER_PIXELS * 2) / scale;
-                    ctx.strokeStyle = lighten(this.displayEntity(doc).color!.hex, 50, 0.5);
+                if (vec.length > EPS) {
+                    const small = vec.normalize().multiply(Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM)));
+                    if (active && selected) {
+                        ctx.beginPath();
+                        ctx.lineWidth = targetWidth + (this.FITTING_DIAMETER_PIXELS * 2) / scale;
+
+                        this.lastDrawnWidth = defaultWidth + (this.FITTING_DIAMETER_PIXELS * 2) / scale;
+                        ctx.strokeStyle = lighten(this.displayEntity(doc).color!.hex, 50, 0.5);
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(small.x, small.y);
+                        ctx.stroke();
+                    }
+
+                    ctx.strokeStyle = this.displayEntity(doc).color!.hex;
+                    ctx.lineWidth = targetWidth;
+                    ctx.beginPath();
                     ctx.moveTo(0, 0);
                     ctx.lineTo(small.x, small.y);
                     ctx.stroke();
                 }
 
-                ctx.strokeStyle = this.displayEntity(doc).color!.hex;
-                ctx.lineWidth = targetWidth;
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.lineTo(small.x, small.y);
-                ctx.stroke();
             });
         } catch (e) {
             ctx.fillStyle = "rgba(255, 100, 100, 0.4)";
@@ -135,15 +139,17 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             this.lastRadials.forEach(([wc]) => {
                 const oc = this.toObjectCoord(wc);
                 const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
-                const small = vec.normalize().multiply(this.lastDrawnLength);
+                if (vec.length > EPS) {
+                    const small = vec.normalize().multiply(this.lastDrawnLength);
 
-                if (
-                    Flatten.segment(Flatten.point(0, 0), Flatten.point(small.x, small.y)).distanceTo(
-                        Flatten.point(moc.x, moc.y)
-                    )[0] <=
-                    this.lastDrawnWidth + radius
-                ) {
-                    selected = true;
+                    if (
+                        Flatten.segment(Flatten.point(0, 0), Flatten.point(small.x, small.y)).distanceTo(
+                            Flatten.point(moc.x, moc.y)
+                        )[0] <=
+                        this.lastDrawnWidth + radius
+                    ) {
+                        selected = true;
+                    }
                 }
             });
             return selected;
@@ -228,7 +234,10 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         const fromv = new math3d.Vector3(fromc.x, fromc.y, fromc.z);
         const tov = new math3d.Vector3(toc.x, toc.y, toc.z);
 
-        const angle = Math.abs(canonizeAngleRad(Math.acos(fromv.normalize().dot(tov.normalize()))));
+        let angle: number = 0;
+        if (fromv.magnitude > EPS && tov.magnitude > EPS) {
+            angle = Math.abs(canonizeAngleRad(Math.acos(fromv.normalize().dot(tov.normalize()))));
+        }
 
         if (connections.length === 2) {
             // through valve

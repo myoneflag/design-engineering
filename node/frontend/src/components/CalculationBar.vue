@@ -43,9 +43,12 @@
                 <b-spinner style="width: 1.8rem; height: 1.8rem;"></b-spinner>
                 <label>&nbsp; Calculating</label>
             </template>
-            <template v-else>
+            <template v-else-if="upToDate()">
                 <v-icon name="check" scale="2" color="green"></v-icon>
                 <label>&nbsp; Calculations up to date</label>
+            </template>
+            <template v-else>
+                <b-button variant="warning" @click="reCalculate">Recalculate</b-button>
             </template>
         </b-col>
     </b-row>
@@ -62,7 +65,8 @@ import { DemandType } from "../../src/calculations/types";
     components: { FlowSystemPicker },
     props: {
         demandType: Number,
-        isCalculating: Boolean
+        isCalculating: Boolean,
+        onReCalculate: Function,
     }
 })
 export default class CalculationBar extends Vue {
@@ -70,6 +74,14 @@ export default class CalculationBar extends Vue {
 
     settings() {
         this.$router.push({ name: "settings/calculations" });
+    }
+
+    upToDate() {
+        return this.$store.getters['document/calculationsUpToDate'];
+    }
+
+    reCalculate() {
+        this.$props.onReCalculate();
     }
 }
 </script>

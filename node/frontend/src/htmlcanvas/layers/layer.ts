@@ -224,8 +224,13 @@ export abstract class LayerImplementation implements Layer {
             const uid = this.uidsInOrder[i];
             if (this.context.globalStore.has(uid)) {
                 const object = this.context.globalStore.get(uid)!;
-                if (object.onMouseDown(event, context)) {
-                    return true;
+                try {
+                    if (object.onMouseDown(event, context)) {
+                        return true;
+                    }
+                } catch (e) {
+                    console.log('warning: error in object handler for mousedown: ');
+                    console.log(e);
                 }
             }
         }
@@ -245,10 +250,15 @@ export abstract class LayerImplementation implements Layer {
         for (let i = this.uidsInOrder.length - 1; i >= 0; i--) {
             const uid = this.uidsInOrder[i];
             if (this.context.globalStore.has(uid)) {
-                const object = this.context.globalStore.get(uid)!;
-                const res = object.onMouseMove(event, context);
-                if (res.handled) {
-                    return res;
+                try {
+                    const object = this.context.globalStore.get(uid)!;
+                    const res = object.onMouseMove(event, context);
+                    if (res.handled) {
+                        return res;
+                    }
+                } catch (e) {
+                    console.log('warning: error in object handler for mouseMove: ');
+                    console.log(e);
                 }
             }
         }
@@ -267,8 +277,13 @@ export abstract class LayerImplementation implements Layer {
             const uid = this.uidsInOrder[i];
             if (this.context.globalStore.has(uid)) {
                 const object = this.context.globalStore.get(uid)!;
-                if (object.onMouseUp(event, context)) {
-                    return true;
+                try {
+                    if (object.onMouseUp(event, context)) {
+                        return true;
+                    }
+                } catch (e) {
+                    console.log('warning: error in object handler for mouseMove: ');
+                    console.log(e);
                 }
             }
         }

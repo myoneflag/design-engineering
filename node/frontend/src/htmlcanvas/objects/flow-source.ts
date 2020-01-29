@@ -12,7 +12,7 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
 import BackedConnectable from "../../../src/htmlcanvas/lib/BackedConnectable";
 import { getDragPriority } from "../../../src/store/document";
 import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
-import { CenteredObjectNoParent } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
+import { CenteredObject, CenteredObjectNoParent } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
 import { CalculationContext } from "../../../src/calculations/types";
 import { FlowNode, FLOW_SOURCE_EDGE } from "../../../src/calculations/calculation-engine";
 import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
@@ -31,7 +31,7 @@ import { cloneSimple } from "../../../../common/src/lib/utils";
 @SelectableObject
 @CenterDraggableObject
 @ConnectableObject
-@CenteredObjectNoParent
+@CenteredObject
 export default class FlowSource extends BackedConnectable<FlowSourceEntity> implements Connectable, Calculated {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.FLOW_SOURCE, FlowSource);
@@ -200,13 +200,6 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         //
     }
 
-    debase(): void {
-        // nada
-    }
-
-    rebase(context: CanvasContext): void {
-        // nada
-    }
 
     getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[] {
         const tower: Array<

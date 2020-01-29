@@ -99,7 +99,7 @@ import {EntityType} from "../../../../src/store/document/entities/types";
                 <b-row v-b-tooltip.hover="{ title: psdName }">
                     <b-col>
                         <h6 v-for="suid in Object.keys(psdUnits)" :key="suid">
-                            {{ systemPsdUnitName(suid) }}: {{ psdUnits[suid].units.toPrecision(2) }}
+                            {{ systemPsdUnitName(suid) }}: {{ Number(psdUnits[suid].units.toFixed(2)) }}
                         </h6>
                     </b-col>
                 </b-row>

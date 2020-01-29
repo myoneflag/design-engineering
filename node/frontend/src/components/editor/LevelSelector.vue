@@ -245,9 +245,21 @@ export default class LevelSelector extends Vue {
             return Object.keys(result).map((k) => {
                 const system = this.document.drawing.metadata.flowSystems.find((fs) => fs.uid === k);
                 const hex = system ? system.color.hex : "#555555";
-                const text =
-                    result[k].units +
-                    getPsdUnitName(this.document.drawing.metadata.calculationParams.psdMethod).abbreviation;
+                let text = '';
+                if (result[k].units) {
+                    if (text) {
+                        text += ' ';
+                    }
+                    text +=
+                        Number(result[k].units.toFixed(2)) +
+                        getPsdUnitName(this.document.drawing.metadata.calculationParams.psdMethod).abbreviation;
+                }
+                if (result[k].dwellings) {
+                    if (text) {
+                        text += ' ';
+                    }
+                    text += Number(result[k].dwellings) + 'DWG';
+                }
                 return { hex, text };
             });
         } else {

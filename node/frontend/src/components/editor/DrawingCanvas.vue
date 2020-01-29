@@ -72,6 +72,7 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
                 v-if="document.uiState.drawingMode === 2 && initialized"
                 :demandType.sync="demandType"
                 :is-calculating="isCalculating"
+                :on-re-calculate="considerCalculating"
             />
 
             <Toolbar
@@ -1220,7 +1221,7 @@ export default class DrawingCanvas extends Vue {
                         this.document,
                         this.effectiveCatalog,
                         this.globalStore,
-                    )
+                    ),
                 );
             }
         }
@@ -1348,10 +1349,7 @@ export default class DrawingCanvas extends Vue {
 
     considerCalculating() {
         if (this.document.uiState.drawingMode === DrawingMode.Calculations) {
-            if (
-                this.document.uiState.lastCalculationId < this.document.nextId ||
-                this.document.uiState.lastCalculationUiSettings.demandType !== this.demandType
-            ) {
+            if (!this.$store.getters['document/calculationsUpToDate']) {
                 if (!this.document.uiState.isCalculating) {
                     this.calculationLayer.calculate(this, this.demandType, () => {
                         this.scheduleDraw();
@@ -1359,6 +1357,7 @@ export default class DrawingCanvas extends Vue {
                 }
             }
         }
+
     }
 
     onDrop(value: any, event: DragEvent) {

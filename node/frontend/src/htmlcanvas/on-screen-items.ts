@@ -284,34 +284,31 @@ export function drawLoadingUnits(
             units[StandardFlowSystemUids.ColdWater],
             context.doc,
             catalog,
-            StandardFlowSystemUids.ColdWater
+            StandardFlowSystemUids.ColdWater,
+            true,
         );
     } catch (e) {
-        /**/
     }
     try {
         hotFR = lookupFlowRate(
             addPsdCounts(units[StandardFlowSystemUids.HotWater], units[StandardFlowSystemUids.WarmWater]),
             context.doc,
             catalog,
-            StandardFlowSystemUids.HotWater
+            StandardFlowSystemUids.HotWater,
+            true,
         );
     } catch (e) {
         /**/
     }
 
-    if (coldFR === null) {
-        coldFR = 0;
-    }
-    if (hotFR === null) {
-        hotFR = 0;
-    }
+    console.log(units);
+
 
     let coldSpareText: string = "error";
     let hotSpareText: string = "error";
     let coldText: string = "error";
     let hotText: string = "error";
-    if (coldFR !== undefined) {
+    if (coldFR != null) {
         const coldFRSpare =
             coldFR *
             (1 +
@@ -321,7 +318,7 @@ export function drawLoadingUnits(
         coldSpareText = coldFRSpare.toPrecision(3);
         coldText = coldFR.toPrecision(3);
     }
-    if (hotFR !== undefined) {
+    if (hotFR != null) {
         const hotFRSpare =
             hotFR *
             (1 +
@@ -339,7 +336,11 @@ export function drawLoadingUnits(
     ctx.fillText(hotSpareText + " L/s ", 80, y + 20);
 
     ctx.font = "10px " + DEFAULT_FONT_NAME;
-    ctx.fillText(catalog.psdStandards[context.doc.drawing.metadata.calculationParams.psdMethod].name, 20, y + 40);
+    let psdMethodName = catalog.psdStandards[context.doc.drawing.metadata.calculationParams.psdMethod].name;
+    if (context.doc.drawing.metadata.calculationParams.dwellingMethod) {
+        psdMethodName = catalog.dwellingStandards[context.doc.drawing.metadata.calculationParams.dwellingMethod].name;
+    }
+    ctx.fillText(psdMethodName, 20, y + 40);
     ctx.fillText("Inc. Continuous Flow", 20, y + 50);
     ctx.fillText("Inc. Reticulation Spare Capacity", 20, y + 60);
 }

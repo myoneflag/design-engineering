@@ -1894,7 +1894,6 @@ export default class CalculationEngine {
                     break;
                 }
                 case EntityType.FITTING:
-                case EntityType.LOAD_NODE:
                 case EntityType.DIRECTED_VALVE: {
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity) as
                         | FittingCalculation
@@ -1959,6 +1958,7 @@ export default class CalculationEngine {
                     }
                     break;
                 }
+                case EntityType.LOAD_NODE:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.FLOW_SOURCE: {
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity) as

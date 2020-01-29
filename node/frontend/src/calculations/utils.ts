@@ -267,7 +267,8 @@ export function lookupFlowRate(
     psdU: PsdCountEntry,
     doc: DocumentState,
     catalog: Catalog,
-    systemUid: string
+    systemUid: string,
+    forceDwellings: boolean = false,
 ): number | null {
     const psd = doc.drawing.metadata.calculationParams.psdMethod;
     const standard = catalog.psdStandards[psd];
@@ -352,17 +353,15 @@ export function lookupFlowRate(
         fromDwellings = 0;
     }
 
-    if ((fromDwellings === null ) && fromLoading === null) {
-        return null;
-    }
-
-    if ((fromDwellings === 0) && fromLoading === null) {
-        return null;
-    }
-
-    if (fromDwellings === 0) {
+    if (fromDwellings === 0 && (!forceDwellings || doc.drawing.metadata.calculationParams.dwellingMethod === null)) {
+        if (fromLoading === null) {
+            return null;
+        }
         return fromLoading! + psdU.continuousFlowLS;
     } else {
+        if (fromDwellings === null) {
+            return null;
+        }
         return fromDwellings;
     }
 }

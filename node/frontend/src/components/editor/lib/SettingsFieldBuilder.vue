@@ -111,7 +111,7 @@ import { Compact } from "vue-color";
 import * as _ from "lodash";
 import { isString } from "lodash";
 import { getPropertyByString, setPropertyByString } from "../../../lib/utils";
-import { Choice } from "../../../../../common/src/lib/utils";
+import { Choice, cloneSimple } from "../../../../../common/src/lib/utils";
 
 @Component({
     props: {
@@ -172,7 +172,7 @@ export default class SettingsFieldBuilder extends Vue {
             this.$props.onBack();
         } else {
             // revert
-            Object.assign(this.$props.reactiveData, this.$props.originalData);
+            Object.assign(this.$props.reactiveData, cloneSimple(this.$props.originalData));
             if (this.$props.onRevert) {
                 this.$props.onRevert();
             }

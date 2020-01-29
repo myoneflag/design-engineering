@@ -109,7 +109,6 @@ function onAddLevel(level: Level, state: DocumentState) {
 }
 
 function onDeleteLevel(level: Level, state: DocumentState) {
-    console.log('level deleted');
     Object.keys(level.entities).forEach((uid) => {
         if (state.uiState.selectedUids.includes(uid)) {
             state.uiState.selectedUids.splice(state.uiState.selectedUids.indexOf(uid), 1);

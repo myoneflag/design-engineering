@@ -75,4 +75,14 @@ export const getters: GetterTree<DocumentState, RootState> = {
         }
         return result;
     },
+
+    calculationsUpToDate(state): boolean {
+        if (
+            state.uiState.lastCalculationId < state.nextId ||
+            state.uiState.lastCalculationUiSettings.demandType !== state.uiState.demandType
+        ) {
+            return false;
+        }
+        return true;
+    }
 };
