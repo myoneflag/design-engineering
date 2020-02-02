@@ -384,7 +384,7 @@ export default class Graph<N, E> {
 
     dijkstra(
         curr: N,
-        getDistance: (edge: Edge<N, E>) => number,
+        getDistance: (edge: Edge<N, E>, weight: number) => number,
         visitNode?: (dijk: DijkstraNode<N, E>) => boolean | void,
         visitEdge?: (edge: Edge<N, E>) => boolean | void,
         excludedNodes?: Set<N>,
@@ -447,7 +447,7 @@ export default class Graph<N, E> {
                 excludedEdges!.add(edge.uid);
 
                 q.push({
-                    weight: top.weight + getDistance(edge),
+                    weight: top.weight + getDistance(edge, top.weight),
                     node: edge.to,
                     parent: edge
                 });

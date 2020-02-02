@@ -203,7 +203,6 @@ export function countPsdProfile(profile: PsdProfile): PsdCountEntry {
     byCorrelated.forEach((contextual) => {
         total = addPsdCounts(total, contextual);
     });
-
     return total;
 }
 

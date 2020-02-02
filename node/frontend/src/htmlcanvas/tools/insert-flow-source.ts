@@ -17,10 +17,11 @@ import FlowSourceEntity from "../../../../common/src/api/document/entities/flow-
 import { ConnectableEntity, Coord, FlowSystemParameters } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { cooperativeYield } from "../utils";
+import { moveOnto } from "../lib/black-magic/move-onto";
+import { BaseBackedConnectable } from "../lib/BackedConnectable";
 
 export default function insertFlowSource(context: CanvasContext, system: FlowSystemParameters) {
     const newUid = uuid();
-    let toReplace: BackedDrawableObject<ConnectableEntityConcrete> | null = null;
     MainEventBus.$emit(
         "set-tool-handler",
         new PointTool(
@@ -67,44 +68,11 @@ export default function insertFlowSource(context: CanvasContext, system: FlowSys
                     await context.$store.dispatch("document/addEntity", newEntity);
 
                     if (interactive) {
-                        const object = context.globalStore.get(interactive[0].uid)!;
-                        if (object instanceof Pipe) {
-                            addValveAndSplitPipe(context, object, wc, object.entity.systemUid, 50, newEntity);
-                            wc = newEntity.center;
-                        } else {
-                            const entity = object.entity as ConnectableEntity;
-                            connections = cloneSimple(context.globalStore.getConnections(entity.uid));
-
-                            connections.forEach((e) => {
-                                const other = context.globalStore.get(e);
-                                if (other instanceof Pipe) {
-                                    if (other.entity.endpointUid[0] === entity.uid) {
-                                        //other.entity.endpointUid[0] = newUid;
-
-                                        context.$store.dispatch("document/updatePipeEndpoints", {
-                                            entity: other.entity,
-                                            endpoints: [newUid, other.entity.endpointUid[1]]
-                                        });
-                                    } else {
-                                        //other.entity.endpointUid[1] = newUid;
-
-                                        context.$store.dispatch("document/updatePipeEndpoints", {
-                                            entity: other.entity,
-                                            endpoints: [other.entity.endpointUid[0], newUid]
-                                        });
-                                    }
-                                } else {
-                                    throw new Error("Connection is not a pipe");
-                                }
-                            });
-
-                            toReplace = object as BackedDrawableObject<ConnectableEntityConcrete>;
-                            newEntity.center = toReplace.entity.center;
-                            wc = object.toWorldCoord({ x: 0, y: 0 });
-                            context.deleteEntity(toReplace);
-                        }
-                    } else {
-                        toReplace = null;
+                        moveOnto(
+                            context.globalStore.get(newEntity.uid)! as BaseBackedConnectable,
+                            context.globalStore.get(interactive[0].uid)! as BaseBackedConnectable,
+                            context,
+                        );
                     }
 
                     // rebaseAll(context);

@@ -309,9 +309,6 @@ export default class PropertiesFieldBuilder extends Vue {
                 setPropertyByString(this.$props.reactiveData, property, (field.params as FieldParams).initialValue);
             }
         }
-        console.log('set is computed', val, commit);
-        console.log(property);
-        console.log(this.renderedData(property));
         this.$props.onChange();
         if (commit) {
             this.$props.onCommit();

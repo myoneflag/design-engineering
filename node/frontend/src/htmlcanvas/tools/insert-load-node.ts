@@ -12,6 +12,8 @@ import FittingEntity from "../../../../common/src/api/document/entities/fitting-
 import Fitting from "../objects/fitting";
 import { Coord } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
+import { moveOnto } from "../lib/black-magic/move-onto";
+import { BaseBackedConnectable } from "../lib/BackedConnectable";
 
 export default function insertLoadNode(context: CanvasContext, type: NodeType) {
     const newUid = uuid();
@@ -66,6 +68,7 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType) {
                                 calculationHeightM: null,
                                 parentUid: null,
                                 type: EntityType.LOAD_NODE,
+                                linkedToUid: null,
                                 uid: newUid
                             };
 
@@ -82,6 +85,7 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType) {
                                 calculationHeightM: null,
                                 parentUid: null,
                                 type: EntityType.LOAD_NODE,
+                                linkedToUid: null,
                                 uid: newUid
                             };
                             break;
@@ -90,36 +94,11 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType) {
                     context.$store.dispatch("document/addEntity", newEntity);
 
                     if (interactive) {
-                        const object = context.globalStore.get(interactive[0].uid)! as Fitting;
-
-                        const entity = object.entity as FittingEntity;
-                        connections = cloneSimple(context.globalStore.getConnections(entity.uid));
-
-                        connections.forEach((e) => {
-                            const other = context.globalStore.get(e);
-                            if (other instanceof Pipe) {
-                                if (other.entity.endpointUid[0] === entity.uid) {
-                                    context.$store.dispatch("document/updatePipeEndpoints", {
-                                        entity: other.entity,
-                                        endpoints: [newUid, other.entity.endpointUid[1]]
-                                    });
-                                } else {
-                                    context.$store.dispatch("document/updatePipeEndpoints", {
-                                        entity: other.entity,
-                                        endpoints: [other.entity.endpointUid[0], newUid]
-                                    });
-                                }
-                            } else {
-                                throw new Error("Connection is not a pipe");
-                            }
-                        });
-
-                        toReplace = object as BackedDrawableObject<ConnectableEntityConcrete>;
-                        newEntity.center = toReplace.entity.center;
-                        wc = object.toWorldCoord({ x: 0, y: 0 });
-                        context.deleteEntity(toReplace);
-                    } else {
-                        toReplace = null;
+                        moveOnto(
+                            context.globalStore.get(newEntity.uid)! as BaseBackedConnectable,
+                            context.globalStore.get(interactive[0].uid)! as BaseBackedConnectable,
+                            context,
+                        );
                     }
 
                     // rebaseAll(context);

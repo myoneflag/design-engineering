@@ -148,10 +148,6 @@ function insertPipeChain(
 
                     // it's possible that we are drawing the first connection, in which case we will have an
                     // orphaned valve. Delete it.
-
-                    if (chainNumber === 0) {
-                        context.$store.dispatch('document/undo');
-                    }
                 }
 
                 if (!displaced) {

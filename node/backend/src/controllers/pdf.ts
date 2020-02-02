@@ -153,8 +153,6 @@ export async function ensurePdfEventuallyLoaded(pdfPath: string, pngHash: string
     const [widthS, heightS] = output.stdout.split(' ')[2].split('x');
     const width = Number(widthS);
     const height = Number(heightS);
-    console.log('width ' + width + ' height ' + height);
-
 
     for (const size of [RenderSize.SMALL, RenderSize.MEDIUM, RenderSize.LARGE]) {
         if (floorPlan.renders.bySize.hasOwnProperty(size)) {

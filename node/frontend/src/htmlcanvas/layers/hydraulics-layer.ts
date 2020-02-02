@@ -1,6 +1,6 @@
 import { LayerImplementation, SelectMode } from "../../../src/htmlcanvas/layers/layer";
 import { DrawingMode } from "../../../src/htmlcanvas/types";
-import { CalculationFilters, DocumentState } from "../../../src/store/document/types";
+import { CalculationFilters, DocumentState, EntityParam } from "../../../src/store/document/types";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import DrawableObject from "../../../src/htmlcanvas/lib/drawable-object";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
@@ -30,7 +30,7 @@ export default class HydraulicsLayer extends LayerImplementation {
                     try {
                         this.context.globalStore.get(v)!.draw(context, { active, selected: false, calculationFilters });
                     } catch (e) {
-                        console.log(e);
+                        // tslint:disable-next-line:no-console
                     }
                 }
             }
@@ -88,5 +88,9 @@ export default class HydraulicsLayer extends LayerImplementation {
                 assertUnreachable(entity);
         }
         return false;
+    }
+
+    addEntity({ entity, levelUid }: EntityParam) {
+        super.addEntity({ entity, levelUid });
     }
 }

@@ -1,3 +1,7 @@
+import { EntityType } from "../../../../common/src/api/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import { DrawingMode } from "../../htmlcanvas/types";
 import { DrawingMode } from "../../htmlcanvas/types";
 import { DrawingMode } from "../../htmlcanvas/types";
@@ -121,7 +125,7 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
     import { ToolConfig } from "../../../src/store/tools/types";
     import { DEFAULT_TOOL, ToolHandler } from "../../../src/htmlcanvas/lib/tool";
     import uuid from "uuid";
-    import { getFloorPlanRenders, renderPdf } from "../../../src/api/pdf";
+    import { renderPdf } from "../../../src/api/pdf";
     import HydraulicsLayer from "../../../src/htmlcanvas/layers/hydraulics-layer";
     import Layer, { SelectMode } from "../../../src/htmlcanvas/layers/layer";
     import HydraulicsInsertPanel from "../../../src/components/editor/HydraulicsInsertPanel.vue";
@@ -144,7 +148,7 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
     import { getVisibleBoundingBox, levelIncludesRiser } from "../../../src/htmlcanvas/lib/utils";
     import {
         DrawableEntityConcrete,
-        isCenteredEntity, isConnectableEntity
+        isCenteredEntity
     } from "../../../../common/src/api/document/entities/concrete-entity";
     import SelectBox from "../../../src/htmlcanvas/objects/select-box";
     import * as _ from "lodash";
@@ -173,6 +177,9 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
     import HistoryView from "./HistoryView.vue";
     import { DEFAULT_FONT_NAME } from "../../config";
     import { cloneSimple } from "../../../../common/src/lib/utils";
+    import Riser from "../../htmlcanvas/objects/riser";
+    import stringify from 'json-stable-stringify';
+    import insertDwellingHotCold from "../../htmlcanvas/tools/insert-dwelling-hot-cold";
 
     @Component({
         components: {
@@ -282,7 +289,11 @@ export default class DrawingCanvas extends Vue {
 
             { type: ValveType.RPZD_SINGLE, catalogId: "RPZD", name: "RPZD" },
             { type: ValveType.RPZD_DOUBLE_SHARED, catalogId: "RPZD", name: "Double RPZD - 50/50 Load Each" },
-            { type: ValveType.RPZD_DOUBLE_ISOLATED, catalogId: "RPZD", name: "Double RPZD - 100% Load Each" }
+            { type: ValveType.RPZD_DOUBLE_ISOLATED, catalogId: "RPZD", name: "Double RPZD - 100% Load Each" },
+
+            { type: ValveType.PRV_SINGLE, catalogId: "prv", name: "Pressure Reducing Valve" },
+            { type: ValveType.PRV_DOUBLE, catalogId: "prv", name: "PRV Dual - 50% Load Each" },
+            { type: ValveType.PRV_TRIPLE, catalogId: "prv", name: "PRV Trio - 33% Load Each" },
         ].map((a) => {
             if (a.name === "") {
                 a.name = this.effectiveCatalog.valves[a.catalogId].name;
@@ -605,7 +616,7 @@ export default class DrawingCanvas extends Vue {
         switch (mode) {
             case SelectMode.Replace:
                 this.selectedIds.splice(0, this.selectedIds.length, ...ids);
-                return;
+                break;
             case SelectMode.Toggle:
                 const common = this.selectedIds.filter((uid) => ids.includes(uid));
                 this.selectedIds.push(...ids);
@@ -614,19 +625,25 @@ export default class DrawingCanvas extends Vue {
                     this.selectedIds.length,
                     ...this.selectedIds.filter((uid) => !common.includes(uid))
                 );
-                return;
+                break;
             case SelectMode.Add:
                 this.selectedIds.push(...ids.filter((uid) => !this.selectedIds.includes(uid)));
-                return;
+                break;
             case SelectMode.Exclude:
                 this.selectedIds.splice(
                     0,
                     this.selectedIds.length,
                     ...this.selectedIds.filter((uid) => !ids.includes(uid))
                 );
-                return;
+                break;
+            default:
+                assertUnreachable(mode);
         }
-        assertUnreachable(mode);
+        let backgroundEntityIndex =
+            this.selectedIds.findIndex((euid) => this.globalStore.get(euid)!.type === EntityType.BACKGROUND_IMAGE);
+        if (backgroundEntityIndex !== -1) {
+            this.selectedIds.splice(0, this.selectedIds.length, this.selectedIds[backgroundEntityIndex]);
+        }
     }
 
     onDrawingLoaded() {
@@ -1106,7 +1123,7 @@ export default class DrawingCanvas extends Vue {
     }
 
     hydraulicsInsert(params: {
-        entityName: string;
+        entityName: EntityType;
         system: FlowSystemParameters;
         catalogId: string;
         valveType: ValveType;
@@ -1114,6 +1131,7 @@ export default class DrawingCanvas extends Vue {
         bigValveType: BigValveType;
         valveName: string;
         networkType: NetworkType;
+        variant: string;
     }) {
         const { entityName, system, catalogId, valveType, nodeType, valveName, networkType, bigValveType } = params;
         this.select([], SelectMode.Replace);
@@ -1139,7 +1157,11 @@ export default class DrawingCanvas extends Vue {
             };
             insertDirectedValve(this, valveType, catalogId, system);
         } else if (entityName === EntityType.LOAD_NODE) {
-            insertLoadNode(this, nodeType);
+            if (params.variant === "hot-cold-dwelling") {
+                insertDwellingHotCold(this, 0);
+            } else {
+                insertLoadNode(this, nodeType);
+            }
         } else if (entityName === EntityType.FLOW_SOURCE) {
             insertFlowSource(this, system);
         } else if (entityName === EntityType.PLANT) {
@@ -1198,12 +1220,14 @@ export default class DrawingCanvas extends Vue {
             this.reactiveDrawSet().forEach((uid) => {
                 reactive.add(uid);
             });
-            this.activeLayer.drawReactiveLayer(
-                context,
-                this.document.uiState.drawingMode === DrawingMode.History ?
-                    [] : [...this.interactiveUids, ...this.uncommittedEntityUids],
-                reactive
-            );
+            for (const layer of this.allLayers) {
+                layer.drawReactiveLayer(
+                    context,
+                    this.document.uiState.drawingMode === DrawingMode.History ?
+                        [] : [...this.interactiveUids, ...this.uncommittedEntityUids],
+                    reactive
+                );
+            }
         }
 
         // Draw on screen HUD
@@ -1416,39 +1440,76 @@ export default class DrawingCanvas extends Vue {
         try {
             const val = JSON.parse(text);
             if (val.hasOwnProperty('type') && val.type === 'h2x_clipboard') {
+
+                let nPastes = this.document.uiState.pastesByLevel[this.document.uiState.levelUid || 'null'] || 0;
+
                 const entities: DrawableEntityConcrete[] = val.entities;
+
+
+                let hasBackground = false;
+                let bgWidth = 0;
+                for (const e of entities) {
+                    if (e.type === EntityType.BACKGROUND_IMAGE) {
+                        hasBackground = true;
+                        bgWidth = Math.max(bgWidth, e.crop.w);
+                    }
+                }
 
                 const uidMap = new Map<string, string>();
                 for (const e of entities) {
+                    if (!nPastes && e.type === EntityType.RISER) {
+                        // Don't duplicate the risers if copying from one level to the other
+                        if (this.globalStore.has(e.uid)) {
+                            if (stringify((this.globalStore.get(e.uid) as Riser).entity.center) === stringify(e.center)) {
+                                continue;
+                            }
+                        }
+                    }
                     uidMap.set(e.uid, uuid());
                 }
 
                 const entitiesCopied: DrawableEntityConcrete[] = [];
                 for (const e of entities) {
                     if (!uidMap.has(e.uid)) {
-                        throw new Error('UID reference not found for entity ' + JSON.stringify(e) + ' the uid itself');
+                        continue;
                     }
                     e.uid = uidMap.get(e.uid)!;
                     let etext = JSON.stringify(e);
                     for (const r of getReferences(e)) {
                         if (!uidMap.has(r)) {
-                            throw new Error('UID reference not found for entity ' + JSON.stringify(e) + ' reference ' + r);
+                            // This is actually a normal case now for when we want to reference existing objects.
+                            // throw new Error('UID reference not found for entity ' + JSON.stringify(e) + ' reference ' + r);
+                        } else {
+                            etext = etext.replace(r, uidMap.get(r)!);
                         }
-
-                        etext = etext.replace(r, uidMap.get(r)!);
                     }
                     entitiesCopied.push(JSON.parse(etext));
                 }
 
-                let nPastes = this.document.uiState.pastesByLevel[this.document.uiState.levelUid || 'null'] || 0;
-                for (const e of entitiesCopied) {
-                    if (isCenteredEntity(e)) {
-                        if (e.parentUid === null) {
-                            e.center.x += 1000 * nPastes;
-                            e.center.y += 1000 * nPastes;
-                        }
-                    }
 
+                for (const e of entitiesCopied) {
+
+                    if (hasBackground) {
+                        // Offset only the background after each paste
+                        if (e.type === EntityType.BACKGROUND_IMAGE) {
+                            e.center.x += (bgWidth + 2000) * nPastes;
+                        }
+
+                        if (isCenteredEntity(e)) {
+                            if (e.parentUid === null) {
+                                e.center.x += (bgWidth + 2000) * nPastes;
+                            }
+                        }
+                    } else {
+                        // Offset the location by incremental amounts after each paste
+                        if (isCenteredEntity(e)) {
+                            if (e.parentUid === null) {
+                                e.center.x += 1000 * nPastes;
+                                e.center.y += 1000 * nPastes;
+                            }
+                        }
+
+                    }
                     this.$store.dispatch('document/addEntity', e);
                     if (isCenteredEntity(e)) {
                         this.globalStore.get(e.uid)!.rebase(this);
@@ -1459,12 +1520,9 @@ export default class DrawingCanvas extends Vue {
 
                 this.select(entitiesCopied.map((e) => this.globalStore.get(e.uid)!).filter((o) => o.selectable), SelectMode.Replace);
             }
-            this.$store.dispatch('document/commit');
+            this.$store.dispatch('document/validateAndCommit');
         } catch (e) {
             //
-            console.log('pasted but there wasn\'t anything good');
-            console.log(e);
-            console.log(text);
         }
         this.scheduleDraw();
     }
@@ -1505,7 +1563,6 @@ export default class DrawingCanvas extends Vue {
         const lvlUid = this.currentLevel.uid;
         renderPdf(file).then((res) => {
             if (res.success) {
-                console.log(JSON.stringify(res.data));
                 const { paperSize, scale, scaleName, key, totalPages } = res.data;
                 const width = paperSize.widthMM / scale;
                 const height = paperSize.heightMM / scale;

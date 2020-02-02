@@ -301,8 +301,6 @@ export function drawLoadingUnits(
         /**/
     }
 
-    console.log(units);
-
 
     let coldSpareText: string = "error";
     let hotSpareText: string = "error";

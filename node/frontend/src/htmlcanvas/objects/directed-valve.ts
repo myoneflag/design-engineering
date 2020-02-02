@@ -40,6 +40,7 @@ import { Coord, DrawableEntity } from "../../../../common/src/api/document/drawi
 import { cloneSimple, lowerBoundTable, parseCatalogNumberExact } from "../../../../common/src/lib/utils";
 import { fillDirectedValveFields } from "../../store/document/entities/fillDirectedValveFields";
 import { determineConnectableSystemUid } from "../../store/document/entities/lib";
+import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
 
 @CalculatedObject
 @SelectableObject
@@ -119,8 +120,16 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             case ValveType.ISOLATION_VALVE:
                 this.drawIsolationValve(context);
                 break;
-            case ValveType.PRESSURE_RELIEF_VALVE:
-                this.drawPressureReliefValve(context);
+            case ValveType.PRV_SINGLE:
+                this.drawPrvSingle(context);
+                break;
+
+            case ValveType.PRV_DOUBLE:
+                this.drawPrvDouble(context);
+                break;
+
+            case ValveType.PRV_TRIPLE:
+                this.drawPrvTriple(context);
                 break;
             case ValveType.RPZD_SINGLE:
                 this.drawRpzdSingle(context);
@@ -174,8 +183,42 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         }
     }
 
-    drawPressureReliefValve(context: DrawingContext) {
-        //
+    drawPrvN(context: DrawingContext, n: number) {
+
+        const ctx = context.ctx;
+        const oldfs = ctx.fillStyle;
+        ctx.fillStyle = "#ffffff";
+
+        ctx.fillRect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * (2 * n / 2 + 0.3) , VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * (2 * n + 0.6));
+
+
+        ctx.beginPath();
+        ctx.rect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * (2 * n / 2 + 0.3), VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * (2 * n + 0.6));
+        ctx.stroke();
+
+
+        ctx.fillStyle = oldfs;
+        for (let i = 0; i < n; i++) {
+            const yOffset = (- n / 2 + i + 0.5) * (VALVE_SIZE_MM * 1.3);
+            ctx.beginPath();
+            ctx.moveTo(-VALVE_HEIGHT_MM, -VALVE_SIZE_MM / 2 + yOffset);
+            ctx.lineTo(-VALVE_HEIGHT_MM, VALVE_SIZE_MM / 2 + yOffset);
+            ctx.lineTo(VALVE_HEIGHT_MM, 0 + yOffset);
+            ctx.closePath();
+            ctx.fill();
+        }
+    }
+
+    drawPrvSingle(context: DrawingContext) {
+        this.drawPrvN(context, 1);
+    }
+
+    drawPrvDouble(context: DrawingContext) {
+        this.drawPrvN(context, 2);
+    }
+
+    drawPrvTriple(context: DrawingContext) {
+        this.drawPrvN(context, 3);
     }
 
     drawRpzdSingle(context: DrawingContext) {
@@ -295,7 +338,8 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         flowLS: number,
         from: FlowNode,
         to: FlowNode,
-        signed: boolean
+        signed: boolean,
+        pressureKPA: number | null,
     ): number | null {
         const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
 
@@ -370,9 +414,34 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                         : false
                 );
             }
-            case ValveType.PRESSURE_RELIEF_VALVE:
-                // TODO
-                break;
+            case ValveType.PRV_SINGLE:
+            case ValveType.PRV_DOUBLE:
+            case ValveType.PRV_TRIPLE:
+                if (from.connection === this.entity.sourceUid) {
+                    // ok.
+                    const myPressure = pressureKPA;
+
+                    const systemUid = determineConnectableSystemUid(context.globalStore, this.entity);
+                    if (systemUid === undefined) {
+                        return null;
+                    }
+
+                    if (myPressure !== null) {
+                        if (myPressure > this.entity.valve.targetPressureKPA!) {
+                            return kpa2head(
+                                myPressure - this.entity.valve.targetPressureKPA!,
+                                getFluidDensityOfSystem(systemUid, context.doc, context.catalog)!,
+                                context.doc.drawing.metadata.calculationParams.gravitationalAcceleration,
+                            );
+                        } else {
+                            return 0;
+                        }
+                    } else {
+                        return null;
+                    }
+                } else {
+                    return null;
+                }
         }
 
         const volLM = (this.largestPipeSizeNominalMM(context)! ** 2 * Math.PI) / 4 / 1000;
@@ -397,8 +466,12 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 return "RPZD";
             case ValveType.RPZD_DOUBLE_SHARED:
                 return "RPZD Double - 50/50 Load";
-            case ValveType.PRESSURE_RELIEF_VALVE:
-                return "PRV";
+            case ValveType.PRV_SINGLE:
+                return "PRV Single";
+            case ValveType.PRV_DOUBLE:
+                return "PRV Double (50% Load Each)";
+            case ValveType.PRV_TRIPLE:
+                return "PRV Triple (33.3% Load Each)";
         }
         assertUnreachable(this.entity.valve);
     }

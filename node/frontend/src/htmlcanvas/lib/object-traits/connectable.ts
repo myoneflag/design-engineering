@@ -499,8 +499,9 @@ export function ConnectableObject<
             from: FlowNode,
             to: FlowNode,
             signed: boolean,
+            pressureKPA: number | null,
             pipeSizes?: [number, number]
-        ): number {
+        ): number | null {
             hlcounts++;
             if (this.entity.type === EntityType.SYSTEM_NODE) {
                 // @ts-ignore
@@ -566,13 +567,15 @@ export function ConnectableObject<
 
             if (Math.abs(flowLS) < EPS) {
                 // @ts-ignore
-                return super.getFrictionHeadLoss(context, oFlowLS, oFrom, oTo, signed);
+                return super.getFrictionHeadLoss(context, oFlowLS, oFrom, oTo, signed, pressureKPA);
             }
-            return (
-                sign * ((k * velocityMS ** 2) / (2 * ga)) +
-                // @ts-ignore
-                super.getFrictionHeadLoss(context, oFlowLS, oFrom, oTo, signed)
-            );
+            // @ts-ignore
+            const componentHL =  super.getFrictionHeadLoss(context, oFlowLS, oFrom, oTo, signed, pressureKPA);
+            if (componentHL !== null) {
+                return sign * ((k * velocityMS ** 2) / (2 * ga)) + componentHL;
+            } else {
+                return null;
+            }
         }
 
         connect(uid: string) {

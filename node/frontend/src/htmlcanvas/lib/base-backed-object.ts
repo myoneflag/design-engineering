@@ -56,27 +56,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
     }
 
     get entity() {
-        return this.entityBacked;/*
-        let pathedEntity: DrawableEntityConcrete | undefined;
-        if (this.globalStore.has(this.entityBacked.uid)) {
-            const lvl = this.globalStore.levelOfEntity.get(this.entityBacked.uid);
-            if (lvl !== null && lvl !== undefined) {
-                if (this.document.drawing.levels.hasOwnProperty(lvl)) {
-                    if (this.document.drawing.levels[lvl].entities.hasOwnProperty(this.entityBacked.uid)) {
-                        pathedEntity = this.document.drawing.levels[lvl].entities[this.entityBacked.uid];
-                    }
-                }
-            } else {
-                if (this.document.drawing.shared.hasOwnProperty(this.entityBacked.uid)) {
-                    pathedEntity = this.document.drawing.shared[this.entityBacked.uid];
-                }
-            }
-        }
-        if (pathedEntity) {
-             return pathedEntity;
-        }
-
-        return this.entityBacked; */
+        return this.entityBacked;
     }
 
     get parent() {
@@ -138,7 +118,8 @@ export default abstract class BaseBackedObject extends DrawableObject {
         flowLS: number,
         from: FlowNode,
         to: FlowNode,
-        signed: boolean
+        signed: boolean,
+        pressureKPA: number | null,
     ): number | null;
 
     get uid() {

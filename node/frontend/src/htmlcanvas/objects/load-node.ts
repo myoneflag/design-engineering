@@ -25,6 +25,7 @@ import { Matrix } from "transformation-matrix";
 import { Coord } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { fillDefaultLoadNodeFields } from "../../store/document/entities/fillDefaultLoadNodeFields";
+import { ConnectableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 
 @SelectableObject
 @CenterDraggableObject
@@ -48,7 +49,7 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
 
     get baseRadius() {
         if (this.entity.node.type === NodeType.DWELLING) {
-            return 300;
+            return 200;
         } else {
             return 150;
         }
@@ -66,6 +67,7 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         const radius = Math.max(baseRadius, vp.toWorldLength(baseRadius / 50));
 
         const filled = fillDefaultLoadNodeFields(context.doc, this.globalStore, this.entity);
+
 
         if (args.selected) {
             const sr = Math.max(baseRadius + 20, vp.toWorldLength(baseRadius / 50 + 2));
@@ -100,6 +102,24 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         ctx.beginPath();
         this.strokeShape(context, radius);
         ctx.fill();
+
+
+        if (this.entity.linkedToUid) {
+            // draw chain link
+            const other = this.globalStore.get(this.entity.linkedToUid);
+            if (other) {
+                const lineWidth = Math.max(vp.toWorldLength(2), 20);
+                const oe = other.entity as ConnectableEntityConcrete;
+                const otherLoc = this.toObjectCoord(other.toWorldCoord());
+
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = lineWidth;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(otherLoc.x, otherLoc.y);
+                ctx.stroke();
+            }
+        }
     }
 
     strokeShape(context: DrawingContext, radius: number) {
@@ -177,6 +197,9 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         proj.parentUid = res[0].parentUid;
         proj.uid = res[0].uid;
         proj.calculationHeightM = tower[0][0].calculationHeightM;
+
+        // we have to set this to the original (canonical) so that we don't have to change children.
+        proj.linkedToUid = proj.linkedToUid || this.entity.uid;
 
         return [proj, ...res.splice(1)];
     }
