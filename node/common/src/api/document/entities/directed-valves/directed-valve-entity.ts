@@ -2,7 +2,7 @@ import { EntityType } from "../types";
 import { FieldType, PropertyField } from "../property-field";
 import { DirectedValveConcrete, ValveType } from "./valve-types";
 import { assertUnreachable } from "../../../config";
-import { Color, ConnectableEntity, Coord, DrawingState, FlowSystemParameters } from "../../drawing";
+import { Color, ConnectableEntity, Coord, DrawingState } from "../../drawing";
 import { Catalog } from "../../../catalog/types";
 import { Choice, parseCatalogNumberOrMin } from "../../../../lib/utils";
 
@@ -20,7 +20,7 @@ export default interface DirectedValveEntity extends ConnectableEntity {
 export function makeDirectedValveFields(
     entity: DirectedValveEntity,
     catalog: Catalog,
-    drawing: DrawingState,
+    drawing: DrawingState
 ): PropertyField[] {
     const fields: PropertyField[] = [
         {
@@ -54,24 +54,13 @@ export function makeDirectedValveFields(
                     type: FieldType.Boolean, params: null,  multiFieldId: 'isClosed' },
             );*/
             break;
-        case ValveType.PRESSURE_RELIEF_VALVE:
-            fields.push({
-                property: "valve.targetPressureKPA",
-                title: "Target Pressure (KPA):",
-                hasDefault: false,
-                isCalculated: false,
-                type: FieldType.Number,
-                params: { min: 0, max: null },
-                multiFieldId: "targetPressure",
-                requiresInput: true
-            });
-            break;
         case ValveType.RPZD_DOUBLE_ISOLATED:
         case ValveType.RPZD_DOUBLE_SHARED:
-        case ValveType.RPZD_SINGLE:
+        case ValveType.RPZD_SINGLE: {
+
             const sizes = Object.keys(catalog.backflowValves[entity.valve.catalogId].valvesBySize).map((s) => {
                 const c: Choice = {
-                    disabled: false, key: parseCatalogNumberOrMin(s), name: s + 'mm',
+                    disabled: false, key: parseCatalogNumberOrMin(s), name: s + "mm"
                 };
                 return c;
             });
@@ -81,7 +70,7 @@ export function makeDirectedValveFields(
                 hasDefault: false,
                 isCalculated: true,
                 type: FieldType.Choice,
-                params: { choices: sizes, initialValue: sizes[0].key},
+                params: { choices: sizes, initialValue: sizes[0].key },
                 multiFieldId: "diameterMM",
                 requiresInput: false
             });
@@ -97,10 +86,56 @@ export function makeDirectedValveFields(
                 });
             }
             break;
+        }
         case ValveType.WATER_METER:
             break;
         case ValveType.STRAINER:
             break;
+        case ValveType.PRV_SINGLE:
+        case ValveType.PRV_DOUBLE:
+        case ValveType.PRV_TRIPLE: {
+            const sizes = Object.keys(catalog.prv).map((s) => {
+                const c: Choice = {
+                    disabled: false, key: parseCatalogNumberOrMin(s), name: s + "mm"
+                };
+                return c;
+            });
+            fields.push({
+                property: "valve.sizeMM",
+                title: "Size (mm):",
+                hasDefault: false,
+                isCalculated: true,
+                type: FieldType.Choice,
+                params: { choices: sizes, initialValue: sizes[0].key },
+                multiFieldId: "diameterMM",
+                requiresInput: false
+            });
+            fields.push({
+                property: "valve.targetPressureKPA",
+                title: "Target Pressure (KPA):",
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: "targetPressure",
+                requiresInput: true
+            });
+            break;
+            if (entity.valve.type === ValveType.PRV_DOUBLE ||
+                entity.valve.type === ValveType.PRV_TRIPLE
+            ) {
+                fields.push({
+                    property: "valve.isolateOneWhenCalculatingHeadLoss",
+                    title: "Isolate When Calculation Head Loss?",
+                    hasDefault: false,
+                    isCalculated: false,
+                    params: null,
+                    type: FieldType.Boolean,
+                    multiFieldId: "isolateOneWhenCalculatingHeadLoss"
+                });
+            }
+            break;
+        }
         default:
             assertUnreachable(entity.valve);
     }

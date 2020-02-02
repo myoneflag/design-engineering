@@ -661,7 +661,8 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         flowLS: number,
         from: FlowNode,
         to: FlowNode,
-        signed: boolean
+        signed: boolean,
+        pressureKPA: number | null,
     ): number | null {
         const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
         const { drawing, catalog, globalStore } = context;

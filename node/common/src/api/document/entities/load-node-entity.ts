@@ -26,6 +26,8 @@ export default interface LoadNodeEntity extends DrawableEntity, CenteredEntity {
     calculationHeightM: number | null;
 
     node: LoadNode | DwellingNode;
+
+    linkedToUid: string | null;
 }
 
 export function makeLoadNodesFields(systems: FlowSystemParameters[], value: LoadNodeEntity): PropertyField[] {

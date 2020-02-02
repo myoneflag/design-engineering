@@ -318,7 +318,8 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                     calc.peakFlowRate!,
                     { connectable: tower[topOfPipe - 1][0].uid, connection: pipe.uid },
                     { connectable: tower[topOfPipe][0].uid, connection: pipe.uid },
-                    true
+                    true,
+                    null,
                 );
 
                 if (totalHL != null) {

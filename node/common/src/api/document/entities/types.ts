@@ -51,24 +51,39 @@ export function getEntityName(type: EntityType): string {
 }
 
 export function getReferences(entity: DrawableEntityConcrete): string[] {
+    const refs: string[] = [];
+    if (entity.parentUid) {
+        refs.push(entity.parentUid);
+    }
+
     switch (entity.type) {
         case EntityType.BACKGROUND_IMAGE:
-        case EntityType.SYSTEM_NODE:
         case EntityType.RISER:
         case EntityType.LOAD_NODE:
         case EntityType.FITTING:
         case EntityType.FLOW_SOURCE:
-            return [];
+            break;
+        case EntityType.SYSTEM_NODE:
+            refs.push(entity.parentUid!);
+            break;
         case EntityType.PIPE:
-            return [entity.endpointUid[0], entity.endpointUid[1]];
+            refs.push(entity.endpointUid[0], entity.endpointUid[1]);
+            break;
         case EntityType.BIG_VALVE:
-            return [entity.coldRoughInUid, entity.hotRoughInUid];
+            refs.push(entity.coldRoughInUid, entity.hotRoughInUid);
+            break;
         case EntityType.FIXTURE:
-            return entity.roughInsInOrder.map((r) => entity.roughIns[r].uid);
+            refs.push(...entity.roughInsInOrder.map((r) => entity.roughIns[r].uid));
+            break;
         case EntityType.DIRECTED_VALVE:
-            return [entity.sourceUid];
+            refs.push(entity.sourceUid);
+            break;
         case EntityType.PLANT:
-            return [entity.inletUid, entity.outletUid];
+            refs.push(entity.inletUid, entity.outletUid);
+            break;
+        default:
+            assertUnreachable(entity);
     }
-    assertUnreachable(entity);
+
+    return refs;
 }

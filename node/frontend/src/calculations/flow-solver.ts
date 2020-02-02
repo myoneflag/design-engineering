@@ -129,7 +129,9 @@ export default class FlowSolver {
                         connector,
                         flows.getFlow(v.uid, this.network.sn(v.from)) + num,
                         v.from,
-                        v.to
+                        v.to,
+                        true,
+                        null,
                     );
                     if (delta === null) {
                         throw new Error("Could not get friction loss of pipe");

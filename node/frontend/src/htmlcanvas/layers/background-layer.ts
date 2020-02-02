@@ -9,6 +9,7 @@ import { DrawableEntityConcrete } from "../../../../common/src/api/document/enti
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import { cooperativeYield } from "../utils";
 import { Coord } from "../../../../common/src/api/document/drawing";
+import { SelectableObject } from "../lib/object-traits/selectable";
 
 export default class BackgroundLayer extends LayerImplementation {
     resizeBox: ResizeControl | null = null;

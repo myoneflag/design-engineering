@@ -73,6 +73,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
     grabbedOffsetState: Coord | null = null;
     hasDragged: boolean = false;
     shiftKey: boolean = false;
+    selectable = true;
 
     oldKey: string = "";
 
@@ -348,6 +349,20 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
                 this.drawPoint(context, this.entity.pointB, "B");
             }
         }
+    }
+
+    getCopiedObjects(): BaseBackedObject[] {
+        const res: BaseBackedObject[] = [this];
+        const mylvl = this.globalStore.levelOfEntity.get(this.uid)!;
+        for (const euid of this.globalStore.entitiesInLevel.get(mylvl)!.values()) {
+            const obj = this.globalStore.get(euid)!;
+            if (obj.entity.parentUid === this.uid) {
+                res.push(obj);
+                const conns = this.globalStore.getConnections(obj.uid);
+                res.push(...conns.map((c) => this.globalStore.get(c)!));
+            }
+        }
+        return res;
     }
 
     /**

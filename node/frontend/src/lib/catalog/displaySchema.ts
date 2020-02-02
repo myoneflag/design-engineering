@@ -1,6 +1,6 @@
 import CatalogState from "../../store/catalog/types";
 import {
-    Catalog, DwellingSpec,
+    Catalog, Diameter, DwellingSpec,
     FixtureSpec,
     FluidsSpec,
     LoadingUnit,
@@ -274,8 +274,28 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                 }
             }
         },
-        backflowValves: {
+        prv: {
             order: 8,
+            name: 'Pressure Reducing Valves',
+            table: {
+                primaryName: 'Nominal Diameter (mm)',
+                columns: [
+                    ['minInletPressureKPA', 'Min. Inlet Pressure (kPA)'],
+                    ['maxInletPressureKPA', 'Max. Inlet Pressure (kPA)'],
+                    ['minFlowRateLS', 'Min. Flow Rate (L/s)'],
+                    ['maxFlowRateLS', 'Max. Flow Rate (L/s)']
+                ],
+                link: {
+                    diameterNominalMM: { order: 1, name: "Nominal Diameter (mm)"},
+                    minInletPressureKPA: { order: 2, name: 'Min. Inlet Pressure (kPA)'},
+                    maxInletPressureKPA: { order: 3, name: 'Max. Inlet Pressure (kPA)'},
+                    minFlowRateLS: { order: 4, name: 'Min. Flow Rate (L/s)'},
+                    maxFlowRateLS: { order: 5, name: 'Max. Flow Rate (L/s)'},
+                }
+            }
+        },
+        backflowValves: {
+            order: 9,
             name: "Backflow Valves",
             table: {
                 primaryName: null,

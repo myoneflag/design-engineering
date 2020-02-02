@@ -43,6 +43,15 @@ export interface Catalog {
     psdStandards: { [key: string]: PSDSpec };
     dwellingStandards: { [key: string]: DwellingSpec };
     fluids: { [key: string]: FluidsSpec };
+    prv: { [key: string]: PRVSize};
+}
+
+export interface PRVSize {
+    minInletPressureKPA: string | null;
+    maxInletPressureKPA: string | null;
+    minFlowRateLS: string | null;
+    maxFlowRateLS: string | null;
+    diameterNominalMM: Diameter;
 }
 
 export interface FixtureSpec {

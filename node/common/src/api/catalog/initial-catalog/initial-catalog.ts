@@ -590,6 +590,78 @@ export const initialCatalog = {
             }
         }
     },
+    prv: {
+            15: {
+                minInletPressureKPA: "200",
+                maxInletPressureKPA: null,
+                minFlowRateLS: "1",
+                maxFlowRateLS: "2",
+                diameterNominalMM: 15,
+            },
+            20: {
+                minInletPressureKPA: "200",
+                maxInletPressureKPA: null,
+                minFlowRateLS: "1",
+                maxFlowRateLS: "2",
+                diameterNominalMM: 20,
+            },
+            25: {
+                minInletPressureKPA: "200",
+                maxInletPressureKPA: null,
+                minFlowRateLS: "1",
+                maxFlowRateLS: "2",
+                diameterNominalMM: 25,
+            },
+            32: {
+                minInletPressureKPA: "200",
+                maxInletPressureKPA: null,
+                minFlowRateLS: "3",
+                maxFlowRateLS: "4",
+                diameterNominalMM: 32,
+            },
+            40: {
+                minInletPressureKPA: "200",
+                maxInletPressureKPA: null,
+                minFlowRateLS: "3",
+                maxFlowRateLS: "4",
+                diameterNominalMM: 40,
+            },
+            50: {
+                minInletPressureKPA: "200",
+                maxInletPressureKPA: null,
+                minFlowRateLS: "3",
+                maxFlowRateLS: "4",
+                diameterNominalMM: 50,
+            },
+            65: {
+                minInletPressureKPA: "200",
+                maxInletPressureKPA: null,
+                minFlowRateLS: "3",
+                maxFlowRateLS: "4",
+                diameterNominalMM: 65,
+            },
+            80: {
+                minInletPressureKPA: "200",
+                maxInletPressureKPA: null,
+                minFlowRateLS: "3",
+                maxFlowRateLS: "4",
+                diameterNominalMM: 80,
+            },
+            100: {
+                minInletPressureKPA: "200",
+                maxInletPressureKPA: null,
+                minFlowRateLS: "3",
+                maxFlowRateLS: "4",
+                diameterNominalMM: 100,
+            },
+            150: {
+                minInletPressureKPA: "200",
+                maxInletPressureKPA: null,
+                minFlowRateLS: "3",
+                maxFlowRateLS: "4",
+                diameterNominalMM: 150,
+            },
+    },
     pipes: {
         castIronCoated: {
             name: "Cast Iron (Coated)",

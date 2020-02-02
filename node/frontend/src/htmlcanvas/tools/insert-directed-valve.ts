@@ -184,11 +184,21 @@ function createBareValve(type: ValveType, catalogId: string): DirectedValveConcr
                 catalogId: catalogId as any,
                 type
             };
-        case ValveType.PRESSURE_RELIEF_VALVE:
+        case ValveType.PRV_SINGLE:
             return {
                 targetPressureKPA: 0,
                 catalogId: catalogId as any,
-                type
+                type,
+                sizeMM: null,
+            };
+        case ValveType.PRV_DOUBLE:
+        case ValveType.PRV_TRIPLE:
+            return {
+                targetPressureKPA: null,
+                catalogId: catalogId as any,
+                type,
+                sizeMM: null,
+                isolateOneWhenCalculatingHeadLoss: false,
             };
         case ValveType.RPZD_DOUBLE_ISOLATED:
         case ValveType.RPZD_SINGLE:

@@ -84,8 +84,6 @@ function onAddEntity({entity, levelUid}: EntityParam, state: DocumentState) {
     } catch (e) {
         // todo: telemetry this
         // tslint:disable-next-line:no-console
-        console.log(e);
-        console.log('warning: Creating entity that isn\'t registered: ' + JSON.stringify(entity));
     }
 }
 
