@@ -123,6 +123,12 @@
 
         scrolledToBottom = false;
 
+        mount() {
+            setTimeout(() => {
+                this.scrolledToBottom = true;
+            }, 10000);
+        }
+
         get profile(): User {
             return this.$store.getters["profile/profile"];
         }

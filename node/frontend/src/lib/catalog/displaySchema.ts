@@ -289,8 +289,9 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                     diameterNominalMM: { order: 1, name: "Nominal Diameter (mm)"},
                     minInletPressureKPA: { order: 2, name: 'Min. Inlet Pressure (kPA)'},
                     maxInletPressureKPA: { order: 3, name: 'Max. Inlet Pressure (kPA)'},
-                    minFlowRateLS: { order: 4, name: 'Min. Flow Rate (L/s)'},
-                    maxFlowRateLS: { order: 5, name: 'Max. Flow Rate (L/s)'},
+                    maxPressureDropRatio: { order: 4, name: 'Max. Pressure Drop Ratio'},
+                    minFlowRateLS: { order: 5, name: 'Min. Flow Rate (L/s)'},
+                    maxFlowRateLS: { order: 6, name: 'Max. Flow Rate (L/s)'},
                 }
             }
         },

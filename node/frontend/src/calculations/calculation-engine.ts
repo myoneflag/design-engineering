@@ -85,8 +85,15 @@ import { getPropertyByString } from "../lib/utils";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
-export const FLOW_SOURCE_ROOT_NODE: FlowNode = {connectable: FLOW_SOURCE_ROOT, connection: FLOW_SOURCE_EDGE};
-export const FLOW_SOURCE_ROOT_BRIDGE: Edge<FlowNode | undefined, undefined> = { from: undefined, to: FLOW_SOURCE_ROOT_NODE, value: undefined, uid: "FLOW_SOURCE_ROOT_BRIDGE", isDirected: true, isReversed: false};
+export const FLOW_SOURCE_ROOT_NODE: FlowNode = { connectable: FLOW_SOURCE_ROOT, connection: FLOW_SOURCE_EDGE };
+export const FLOW_SOURCE_ROOT_BRIDGE: Edge<FlowNode | undefined, undefined> = {
+    from: undefined,
+    to: FLOW_SOURCE_ROOT_NODE,
+    value: undefined,
+    uid: "FLOW_SOURCE_ROOT_BRIDGE",
+    isDirected: true,
+    isReversed: false
+};
 
 export enum EdgeType {
     PIPE,
@@ -160,23 +167,23 @@ export default class CalculationEngine {
         if (this.globalStore.dependedBy.size) {
             throw new Error(
                 "couldn't clear cache, dependedBy still " +
-                    JSON.stringify(this.globalStore.dependedBy, (key, value) => {
-                        if (value instanceof Map) {
-                            return [...value];
-                        }
-                        return value;
-                    })
+                JSON.stringify(this.globalStore.dependedBy, (key, value) => {
+                    if (value instanceof Map) {
+                        return [...value];
+                    }
+                    return value;
+                })
             );
         }
         if (this.globalStore.dependsOn.size) {
             throw new Error(
                 "couldn't clear cache, dependsOn still " +
-                    JSON.stringify([...this.globalStore.dependsOn], (key, value) => {
-                        if (value instanceof Map) {
-                            return [...value];
-                        }
-                        return value;
-                    })
+                JSON.stringify([...this.globalStore.dependsOn], (key, value) => {
+                    if (value instanceof Map) {
+                        return [...value];
+                    }
+                    return value;
+                })
             );
         }
         this.globalStore.forEach((o) => {
@@ -257,7 +264,7 @@ export default class CalculationEngine {
                 if (!selectObject) {
                     if (field.requiresInput) {
                         const val = getPropertyByString(obj.entity, field.property);
-                        if (val === null || val === '') {
+                        if (val === null || val === "") {
                             selectObject = {
                                 uid: obj.uid,
                                 property: field.property,
@@ -277,7 +284,7 @@ export default class CalculationEngine {
                 if (o.entity.pumpPressureKPA && o.entity.pressureLossKPA) {
                     selectObject = {
                         uid: o.uid,
-                        property: 'pumpPressureKPA',
+                        property: "pumpPressureKPA",
                         message: "Only Pump Pressure or Pressure Loss may be set, but not both",
                         variant: "danger",
                         title: "Please Choose Only One",
@@ -371,14 +378,14 @@ export default class CalculationEngine {
             (e) => {
                 if (this.allBridges.has(e.uid)) {
                     if (e.uid !== bridgeStack.pop()!.uid) {
-                        throw new Error('traversal error');
+                        throw new Error("traversal error");
                     }
                 }
             },
             undefined,
             undefined,
             true,
-            false,
+            false
         );
     }
 
@@ -449,7 +456,7 @@ export default class CalculationEngine {
 
                     for (const suid of entity.roughInsInOrder) {
                         calculation.pressures[suid] = this.getAbsolutePressurePoint(
-                            { connectable: entity.roughIns[suid].uid, connection: entity.uid },
+                            { connectable: entity.roughIns[suid].uid, connection: entity.uid }
                         );
                     }
                     break;
@@ -457,10 +464,10 @@ export default class CalculationEngine {
                 case EntityType.BIG_VALVE: {
                     const calculation = this.globalStore.getOrCreateCalculation(entity);
                     calculation.coldPressureKPA = this.getAbsolutePressurePoint(
-                        { connectable: entity.coldRoughInUid, connection: entity.uid },
+                        { connectable: entity.coldRoughInUid, connection: entity.uid }
                     );
                     calculation.hotPressureKPA = this.getAbsolutePressurePoint(
-                        { connectable: entity.hotRoughInUid, connection: entity.uid },
+                        { connectable: entity.hotRoughInUid, connection: entity.uid }
                     );
                     break;
                 }
@@ -484,7 +491,7 @@ export default class CalculationEngine {
                     let minPressure: number | null = null;
                     candidates.forEach((cuid) => {
                         const thisPressure = this.getAbsolutePressurePoint(
-                            { connectable: entity.uid, connection: cuid },
+                            { connectable: entity.uid, connection: cuid }
                         );
                         if (thisPressure != null && (maxPressure === null || thisPressure > maxPressure)) {
                             maxPressure = thisPressure;
@@ -568,7 +575,7 @@ export default class CalculationEngine {
         }
     }
 
-    getStaticPressure(node: FlowNode,  heightM: number): number {
+    getStaticPressure(node: FlowNode, heightM: number): number {
         let highPressure: number | null = null;
         this.flowGraph.dfs(
             node,
@@ -635,7 +642,7 @@ export default class CalculationEngine {
                                         edge.from,
                                         edge.to,
                                         true,
-                                        finalPressureKPA,
+                                        finalPressureKPA
                                     );
                                     if (headLoss === null) {
                                         return -Infinity;
@@ -690,10 +697,10 @@ export default class CalculationEngine {
                                     return hl === null
                                         ? -Infinity
                                         : head2kpa(
-                                              hl,
-                                              getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
-                                              this.ga
-                                          );
+                                            hl,
+                                            getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
+                                            this.ga
+                                        );
                                 } else {
                                     throw new Error("misconfigured flow graph");
                                 }
@@ -735,10 +742,10 @@ export default class CalculationEngine {
                                     return hl === null
                                         ? -Infinity
                                         : head2kpa(
-                                              hl,
-                                              getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
-                                              this.ga
-                                          );
+                                            hl,
+                                            getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
+                                            this.ga
+                                        );
                                 } else {
                                     return 1000000;
                                 }
@@ -748,21 +755,21 @@ export default class CalculationEngine {
                                 if (obj.entity.pumpPressureKPA !== null) {
                                     if (flowFrom.connectable === obj.entity.inletUid) {
                                         if (flowTo.connectable !== obj.entity.outletUid) {
-                                            throw new Error('misconfigured flow graph');
+                                            throw new Error("misconfigured flow graph");
                                         }
-                                        return - obj.entity.pumpPressureKPA;
+                                        return -obj.entity.pumpPressureKPA;
                                     } else {
                                         if (flowTo.connectable !== obj.entity.inletUid ||
                                             flowFrom.connectable !== obj.entity.outletUid) {
-                                            throw new Error('misconfigured flow graph');
+                                            throw new Error("misconfigured flow graph");
                                         }
-                                        return + obj.entity.pumpPressureKPA;
+                                        return +obj.entity.pumpPressureKPA;
                                     }
                                 }
                                 return 0;
                             }
                             case EdgeType.FLOW_SOURCE_EDGE:
-                                throw new Error('oopsies');
+                                throw new Error("oopsies");
                         }
                     },
                     (dijk) => {
@@ -885,8 +892,8 @@ export default class CalculationEngine {
                             { connectable: obj.uid, connection: FLOW_SOURCE_EDGE },
                             {
                                 type: EdgeType.FLOW_SOURCE_EDGE,
-                                uid: obj.entity.uid,
-                            },
+                                uid: obj.entity.uid
+                            }
                         );
                     } else if (obj.entity.type === EntityType.SYSTEM_NODE) {
                         if (!obj.entity.parentUid) {
@@ -921,15 +928,15 @@ export default class CalculationEngine {
                     this.flowGraph.addDirectedEdge(
                         {
                             connectable: obj.entity.inletUid,
-                            connection: obj.entity.uid,
+                            connection: obj.entity.uid
                         },
                         {
                             connectable: obj.entity.outletUid,
-                            connection: obj.entity.uid,
+                            connection: obj.entity.uid
                         },
                         {
                             type: EdgeType.PLANT_THROUGH,
-                            uid: obj.entity.uid,
+                            uid: obj.entity.uid
                         }
                     );
                     break;
@@ -1116,8 +1123,8 @@ export default class CalculationEngine {
                         demandLS.set(
                             n,
                             perUnit * leaf2PsdU.get(n)!.units +
-                                perDwelling * leaf2PsdU.get(n)!.dwellings +
-                                leaf2PsdU.get(n)!.continuousFlowLS
+                            perDwelling * leaf2PsdU.get(n)!.dwellings +
+                            leaf2PsdU.get(n)!.continuousFlowLS
                         );
                     }
                 });
@@ -1230,21 +1237,21 @@ export default class CalculationEngine {
                         if (node.uid === fixture.roughIns[suid].uid) {
                             if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
                                 return {
-                                        units: Number(mainFixture.roughIns[suid].designFlowRateLS),
-                                        continuousFlowLS: mainFixture.roughIns[suid].continuousFlowLS!,
-                                        dwellings: 0,
-                                        entity: node.entity.uid,
-                                        correlationGroup: fixture.uid,
-                                    };
+                                    units: Number(mainFixture.roughIns[suid].designFlowRateLS),
+                                    continuousFlowLS: mainFixture.roughIns[suid].continuousFlowLS!,
+                                    dwellings: 0,
+                                    entity: node.entity.uid,
+                                    correlationGroup: fixture.uid
+                                };
 
                             } else {
                                 return {
-                                        units: Number(mainFixture.roughIns[suid].loadingUnits),
-                                        continuousFlowLS: mainFixture.roughIns[suid].continuousFlowLS!,
-                                        dwellings: 0,
-                                        entity: node.entity.uid,
-                                        correlationGroup: fixture.uid,
-                                    };
+                                    units: Number(mainFixture.roughIns[suid].loadingUnits),
+                                    continuousFlowLS: mainFixture.roughIns[suid].continuousFlowLS!,
+                                    dwellings: 0,
+                                    entity: node.entity.uid,
+                                    correlationGroup: fixture.uid
+                                };
                             }
                         }
                     }
@@ -1272,29 +1279,29 @@ export default class CalculationEngine {
                 case NodeType.LOAD_NODE:
                     if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
                         return {
-                                units: node.entity.node.designFlowRateLS,
-                                continuousFlowLS: node.entity.node.continuousFlowLS,
-                                dwellings: 0,
-                                entity: node.entity.uid,
-                                correlationGroup,
-                            };
+                            units: node.entity.node.designFlowRateLS,
+                            continuousFlowLS: node.entity.node.continuousFlowLS,
+                            dwellings: 0,
+                            entity: node.entity.uid,
+                            correlationGroup
+                        };
                     } else {
                         return {
-                                units: node.entity.node.loadingUnits,
-                                continuousFlowLS: node.entity.node.continuousFlowLS,
-                                dwellings: 0,
-                                entity: node.entity.uid,
-                                correlationGroup,
-                            };
+                            units: node.entity.node.loadingUnits,
+                            continuousFlowLS: node.entity.node.continuousFlowLS,
+                            dwellings: 0,
+                            entity: node.entity.uid,
+                            correlationGroup
+                        };
                     }
                 case NodeType.DWELLING:
                     return {
-                            units: 0,
-                            continuousFlowLS: 0,
-                            dwellings: node.entity.node.dwellings,
-                            entity: node.entity.uid,
-                            correlationGroup,
-                        };
+                        units: 0,
+                        continuousFlowLS: 0,
+                        dwellings: node.entity.node.dwellings,
+                        entity: node.entity.uid,
+                        correlationGroup
+                    };
                 default:
             }
             assertUnreachable(node.entity.node);
@@ -1669,7 +1676,7 @@ export default class CalculationEngine {
 
                                     const size = this.sizePrvForFlowRate(
                                         obj.entity.valve.type,
-                                        pCalc.peakFlowRate,
+                                        pCalc.peakFlowRate
                                     );
 
                                     if (size !== null) {
@@ -1772,7 +1779,7 @@ export default class CalculationEngine {
             const wet = this.firstWet.get(stringify(flowEdge))!;
             const dryUids = endpointUids.filter((ep) => ep !== wet.connectable);
             if (dryUids.length !== 1) {
-                throw new Error('dry is neigh');
+                throw new Error("dry is neigh");
             }
             const dryUid = dryUids[0];
 
@@ -1824,7 +1831,7 @@ export default class CalculationEngine {
                                     { connection: o.uid, connectable: o.entity.coldRoughInUid },
                                     { connection: o.uid, connectable: o.entity.valve.coldOutputUid },
                                     true,
-                                    calculation.coldPressureKPA,
+                                    calculation.coldPressureKPA
                                 );
                                 calculation.outputs[StandardFlowSystemUids.ColdWater].pressureDropKPA =
                                     hl === null
@@ -1850,7 +1857,7 @@ export default class CalculationEngine {
                                     { connection: o.uid, connectable: o.entity.hotRoughInUid },
                                     { connection: o.uid, connectable: o.entity.valve.warmOutputUid },
                                     true,
-                                    calculation.hotPeakFlowRate,
+                                    calculation.hotPeakFlowRate
                                 );
                                 calculation.outputs[StandardFlowSystemUids.WarmWater].pressureDropKPA =
                                     hl === null
@@ -1876,7 +1883,7 @@ export default class CalculationEngine {
                                     { connection: o.uid, connectable: o.entity.coldRoughInUid },
                                     { connection: o.uid, connectable: o.entity.valve.coldOutputUid },
                                     true,
-                                    calculation.coldPressureKPA,
+                                    calculation.coldPressureKPA
                                 );
                                 calculation.outputs[StandardFlowSystemUids.ColdWater].pressureDropKPA =
                                     hl === null
@@ -1901,7 +1908,7 @@ export default class CalculationEngine {
                                     { connection: o.uid, connectable: o.entity.valve.hotOutputUid },
                                     true,
 
-                                    calculation.hotPeakFlowRate,
+                                    calculation.hotPeakFlowRate
                                 );
                                 calculation.outputs[StandardFlowSystemUids.HotWater].pressureDropKPA =
                                     hl === null
@@ -1931,7 +1938,7 @@ export default class CalculationEngine {
                             { connection: o.uid, connectable: o.entity.endpointUid[0] },
                             { connection: o.uid, connectable: o.entity.endpointUid[1] },
                             true,
-                            null,
+                            null
                         );
                         calculation.pressureDropKpa =
                             hl === null
@@ -1971,7 +1978,7 @@ export default class CalculationEngine {
                                     { connectable: o.uid, connection: connections[0] },
                                     { connectable: o.uid, connection: connections[1] },
                                     true,
-                                    calculation.pressureKPA,
+                                    calculation.pressureKPA
                                 );
                                 const dir1 =
                                     hl1 === null
@@ -1991,7 +1998,7 @@ export default class CalculationEngine {
                                     { connectable: o.uid, connection: connections[1] },
                                     { connectable: o.uid, connection: connections[0] },
                                     true,
-                                    calculation.pressureKPA,
+                                    calculation.pressureKPA
                                 );
                                 const dir2 =
                                     hl2 === null
@@ -2025,7 +2032,7 @@ export default class CalculationEngine {
 
                     calculation.flowRateLS = 0;
                     for (const conn of conns) {
-                        const p = this.globalStore.get(conn) as Pipe
+                        const p = this.globalStore.get(conn) as Pipe;
                         const pCalc = this.globalStore.getOrCreateCalculation(p.entity);
                         if (pCalc.peakFlowRate) {
                             calculation.flowRateLS += pCalc.peakFlowRate;
@@ -2075,7 +2082,7 @@ export default class CalculationEngine {
                     break;
                 case EntityType.BIG_VALVE:
                     break;
-                case EntityType.FIXTURE:
+                case EntityType.FIXTURE: {
                     const e = fillFixtureFields(this.doc.drawing, this.catalog, o.entity);
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity);
 
@@ -2098,7 +2105,39 @@ export default class CalculationEngine {
                         }
                     }
                     break;
-                case EntityType.DIRECTED_VALVE:
+                }
+                case EntityType.DIRECTED_VALVE: {
+                    const calculation = this.globalStore.getOrCreateCalculation(o.entity);
+                    switch (o.entity.valve.type) {
+                        case ValveType.CHECK_VALVE:
+                            break;
+                        case ValveType.ISOLATION_VALVE:
+                            break;
+                        case ValveType.WATER_METER:
+                            break;
+                        case ValveType.STRAINER:
+                            break;
+                        case ValveType.RPZD_SINGLE:
+                            break;
+                        case ValveType.RPZD_DOUBLE_SHARED:
+                            break;
+                        case ValveType.RPZD_DOUBLE_ISOLATED:
+                            break;
+                        case ValveType.PRV_SINGLE:
+                        case ValveType.PRV_DOUBLE:
+                        case ValveType.PRV_TRIPLE:
+                            const inPressure = calculation.pressureKPA;
+                            if (inPressure !== null && o.entity.valve.targetPressureKPA !== null && calculation.sizeMM !== null) {
+                                const ratio = parseCatalogNumberExact(this.catalog.prv[calculation.sizeMM].maxPressureDropRatio);
+                                if (ratio !== null && inPressure > o.entity.valve.targetPressureKPA * ratio) {
+                                    calculation.warning = "Pressure of " + inPressure.toFixed(2) + " is more than " + ratio + "x the target pressure of " + o.entity.valve.targetPressureKPA;
+                                }
+                            }
+                            break;
+                        default:
+                            assertUnreachable(o.entity.valve);
+                    }
+                }
                 case EntityType.RISER:
                 case EntityType.PLANT:
                 case EntityType.LOAD_NODE:
@@ -2110,13 +2149,13 @@ export default class CalculationEngine {
     }
 
     serializeDirectedEdge(edge: Edge<FlowNode | undefined, FlowEdge | undefined>, dst: FlowNode) {
-        return dst.connection + ' ' + dst.connectable + ' ' + edge.uid;
+        return dst.connection + " " + dst.connectable + " " + edge.uid;
     }
 
     precomputePsdAfterBridge(
         bridge: Edge<FlowNode | undefined, FlowEdge | undefined>,
         dst: FlowNode,
-        visitedEdges: Set<string>,
+        visitedEdges: Set<string>
     ): PsdProfile {
 
         const key = this.serializeDirectedEdge(bridge, dst);
@@ -2149,7 +2188,7 @@ export default class CalculationEngine {
                 visited,
                 visitedEdges,
                 true,
-                false,
+                false
             );
             this.psdAfterBridgeCache.set(key, retVal);
         }
@@ -2192,7 +2231,7 @@ export default class CalculationEngine {
                 undefined,
                 visitedEdges,
                 true,
-                false,
+                false
             );
 
             const excludedProfile = new PsdProfile();

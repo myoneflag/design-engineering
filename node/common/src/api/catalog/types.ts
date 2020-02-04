@@ -51,6 +51,7 @@ export interface PRVSize {
     maxInletPressureKPA: string | null;
     minFlowRateLS: string | null;
     maxFlowRateLS: string | null;
+    maxPressureDropRatio: string | null;
     diameterNominalMM: Diameter;
 }
 

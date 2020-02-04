@@ -135,6 +135,18 @@ export default class CalculationLayer extends LayerImplementation {
                     }
                     obj2props.get(f.attachUid)!.push(f);
                 });
+
+            }
+
+
+            // Add an empty record to obj2props to notify the script further down to add the full warning box.
+            // We only withhold adding records to obj2props on empty stuff because empty data generates empty
+            // boxes, which sadly causes ILLEGAL_PARAMETERS in Flatten further down (a bug) :( so this is a
+            // workaround but in theory is not needed.
+            if (isCalculated(o.entity) && context.globalStore.getCalculation(o.entity)!.warning) {
+                if (!obj2props.has(o.uid)) {
+                    obj2props.set(o.uid, []);
+                }
             }
 
             // don't let labels overlap fittings.
@@ -145,7 +157,7 @@ export default class CalculationLayer extends LayerImplementation {
 
         const objList = Array.from(this.uidsInOrder)
             .map((uid) => this.context.globalStore.get(uid)!)
-            .filter((o) => o.calculated && obj2props.has(o.uid));
+            .filter((o) => o.calculated);
         objList.sort((a, b) => {
             return -(this.messagePriority(context, a) - this.messagePriority(context, b));
         });
@@ -162,13 +174,16 @@ export default class CalculationLayer extends LayerImplementation {
             const o = objList[i];
 
             vp.prepareContext(context.ctx);
-            const boxes = o.measureCalculationBox(context, obj2props.get(o.uid) || []);
-            nb += boxes.length;
             let drawn = false;
-            for (const [position, shape] of boxes) {
-                if (res.tryPlace(shape, [o.uid, position, obj2props.get(o.uid) || [], false])) {
-                    drawn = true;
-                    break;
+
+            if (obj2props.has(o.uid)) {
+                const boxes = o.measureCalculationBox(context, obj2props.get(o.uid) || []);
+                nb += boxes.length;
+                for (const [position, shape] of boxes) {
+                    if (res.tryPlace(shape, [o.uid, position, obj2props.get(o.uid) || [], false])) {
+                        drawn = true;
+                        break;
+                    }
                 }
             }
 
@@ -181,7 +196,6 @@ export default class CalculationLayer extends LayerImplementation {
             }
         }
 
-        console.log('there are ' + Array.from(res.cache.values()).map((v) => Array.from(v.values())).flat().length + ' discrete boxes');
         this.layout.set(key, res);
         return res;
     }
