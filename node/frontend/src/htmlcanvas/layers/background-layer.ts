@@ -13,6 +13,7 @@ import { SelectableObject } from "../lib/object-traits/selectable";
 
 export default class BackgroundLayer extends LayerImplementation {
     resizeBox: ResizeControl | null = null;
+    resizeBoxTargetUid: string | null = null;
 
     async draw(
         context: DrawingContext,
@@ -73,18 +74,30 @@ export default class BackgroundLayer extends LayerImplementation {
 
     // When the state changes, the selection box needs to follow.
     updateSelectionBox() {
-        this.resizeBox = null;
+        let newResizeTargetUid: string | null = null;
         this.uidsInOrder.forEach((selectId) => {
             if (this.isSelected(selectId)) {
-                const background = this.context.globalStore.get(selectId)! as BackgroundImage;
+                newResizeTargetUid = selectId;
+            }
+        });
+
+        if (newResizeTargetUid !== this.resizeBoxTargetUid) {
+            this.resizeBoxTargetUid = newResizeTargetUid;
+
+            if (newResizeTargetUid) {
+
+                const background = this.context.globalStore.get(newResizeTargetUid)! as BackgroundImage;
                 this.resizeBox = new ResizeControl(
                     background,
                     () => {
                         this.context.$store.dispatch('document/validateAndCommit');
-                    }
+                    },
+                    () => this.context.scheduleDraw(),
                 );
+            } else {
+                this.resizeBox = null;
             }
-        });
+        }
     }
 
     drawReactiveLayer(context: DrawingContext, interactive: string[]) {
