@@ -4,9 +4,9 @@ import { cloneSimple } from "../../common/src/lib/utils";
 import { Operation } from "../../common/src/models/Operation";
 import { OPERATION_NAMES } from "../../common/src/api/document/operation-transforms";
 import { applyDiffNative } from "../../common/src/api/document/state-ot-apply";
-import { CURRENT_VERSION, upgrade0to1, upgrade1to2, upgrade2to3 } from "../../common/src/api/upgrade";
+import { CURRENT_VERSION, upgrade0to1, upgrade1to2, upgrade2to3, upgrade3to4 } from "../../common/src/api/upgrade";
 import { diffState } from "../../common/src/api/document/state-differ";
-import { stringify } from "querystring";
+import stringify from 'json-stable-stringify';
 
 export async function upgradeDocument(doc: Document) {
     const drawing = getInitialDrawing(doc);
@@ -31,15 +31,17 @@ export async function upgradeDocument(doc: Document) {
                 applyDiffNative(drawing, op.operation.diff);
 
                 const newUpgraded = cloneSimple(drawing);
+                let updated = false;
                 switch (doc.version) {
                     case 0:
-                        upgrade0to1(newUpgraded);
-                    // noinspection FallThroughInSwitchStatementJS
                     case 1:
-                        upgrade1to2(newUpgraded);
-                    // noinspection FallThroughInSwitchStatementJS
                     case 2:
+                    case 3:
+                        // Because of some problem before, we have to re-upgrade :/
+                        upgrade0to1(newUpgraded);
+                        upgrade1to2(newUpgraded);
                         upgrade2to3(newUpgraded);
+                        updated = upgrade3to4(newUpgraded) || updated;
                     // noinspection FallThroughInSwitchStatementJS
                     case CURRENT_VERSION:
                         break;
@@ -50,6 +52,7 @@ export async function upgradeDocument(doc: Document) {
                 if (upgradedOps.length) {
                     if (upgradedOps[0].type === OPERATION_NAMES.DIFF_OPERATION) {
                         if (stringify(op.operation) !== stringify(upgradedOps[0]) ) {
+                            console.log('saving operation ' + JSON.stringify(op.operation));
                             op.operation = upgradedOps[0];
                             await op.save();
                         }
@@ -83,6 +86,7 @@ export function getInitialDrawing(doc?: Document) {
         case 1:
         case 2:
         case 3:
+        case 4:
             return cloneSimple(initialDrawing);
         default:
             throw new Error('invalid state');

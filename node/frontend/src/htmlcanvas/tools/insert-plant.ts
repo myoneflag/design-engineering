@@ -4,16 +4,14 @@ import PointTool from "../../../src/htmlcanvas/tools/point-tool";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import uuid from "uuid";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
-import { getInsertCoordsAt} from "../../../src/htmlcanvas/lib/utils";
-import FixtureEntity from "../../../../common/src/api/document/entities/fixtures/fixture-entity";
-import { FlowConfiguration, SystemNodeEntity } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
+import {
+    FlowConfiguration,
+    SystemNodeEntity
+} from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import { StandardFlowSystemUids } from "../../../src/store/catalog";
 import { KeyCode } from "../../../src/htmlcanvas/utils";
-import PlantEntity from "../../../../common/src/api/document/entities/plant-entity";
-import FlowSystems from "../../views/settings/FlowSystems.vue";
-import { SupportedPsdStandards } from "../../../../common/src/api/config";
+import PlantEntity, { PressureMethod } from "../../../../common/src/api/document/entities/plant-entity";
 import { Coord } from "../../../../common/src/api/document/drawing";
-import { parseCatalogNumberExact } from "../../../../common/src/lib/utils";
 
 export default function insertPlant(context: CanvasContext, angle: number, rightToLeft: boolean = false) {
     const plantUid = uuid();
@@ -48,9 +46,11 @@ export default function insertPlant(context: CanvasContext, angle: number, right
                     inletSystemUid: StandardFlowSystemUids.ColdWater,
                     inletUid,
                     pressureLossKPA: null,
+                    staticPressureKPA: null,
+                    pumpPressureKPA: null,
+                    pressureMethod: PressureMethod.FIXED_PRESSURE_LOSS,
                     outletSystemUid: StandardFlowSystemUids.HotWater,
                     outletUid,
-                    pumpPressureKPA: null,
                     center: wc,
 
                     rightToLeft,
@@ -61,7 +61,6 @@ export default function insertPlant(context: CanvasContext, angle: number, right
 
                     name: "Plant",
                     rotation: angle,
-                    makeStaticPressure: false,
                 };
 
                 context.$store.dispatch("document/addEntity", newEntity);

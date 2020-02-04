@@ -17,7 +17,7 @@ import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
 import { CenteredObject } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
 import {
-    drawRpzdDouble,
+    drawRpzdDouble, getPlantPressureLossKPA,
     getRpzdHeadLoss,
     VALVE_HEIGHT_MM
 } from "../../../src/htmlcanvas/lib/utils";
@@ -38,9 +38,12 @@ import Flatten from "@flatten-js/core";
 import Cached from "../lib/cached";
 import { ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
 import { StandardFlowSystemUids } from "../../store/catalog";
-import PlantEntity from "../../../../common/src/api/document/entities/plant-entity";
+import PlantEntity, {
+    fillPlantDefaults,
+    PressureMethod
+} from "../../../../common/src/api/document/entities/plant-entity";
 import PlantCalculation from "../../store/document/calculations/plant-calculation";
-import { EPS } from "../../calculations/pressure-drops";
+import { EPS, getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
 import { assertUnreachable } from "../../../../common/src/api/config";
 import { Coord, coordDist2 } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, interpolateTable, parseCatalogNumberExact } from "../../../../common/src/lib/utils";
@@ -234,7 +237,8 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         flowLS: number,
         from: FlowNode,
         to: FlowNode,
-        signed: boolean
+        signed: boolean,
+        pressureKPA: number | null,
     ): number | null {
         const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
         let sign = 1;
@@ -264,17 +268,16 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             return sign * (1e10 + flowLS);
         }
 
-        // https://neutrium.net/equipment/conversion-between-head-and-pressure/
-        if (this.entity.pumpPressureKPA !== null) {
-            return sign * - this.entity.pumpPressureKPA;
+        const pl = getPlantPressureLossKPA(this.entity, pressureKPA);
+        if (pl === null) {
+            return null;
         }
 
-        if (this.entity.pressureLossKPA) {
-            return sign * this.entity.pressureLossKPA;
-        }
-
-        // TODO: allow user inputted K value or even fixed pressure losses.
-        return 0;
+        return sign * kpa2head(
+            pl,
+            getFluidDensityOfSystem(this.entity.inletSystemUid, context.doc, context.catalog)!,
+            context.drawing.metadata.calculationParams.gravitationalAcceleration,
+        );
     }
 
     rememberToRegister(): void {

@@ -162,7 +162,7 @@ import {EntityType} from "../../../store/document/entities/types";
                         this.document.drawing.metadata.flowSystems,
                     ).filter((p) => p.multiFieldId);
                 case EntityType.PLANT:
-                    return makePlantEntityFields(this.document.drawing.metadata.flowSystems);
+                    return makePlantEntityFields(entity, this.document.drawing.metadata.flowSystems);
             }
             assertUnreachable(entity);
         }

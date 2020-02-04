@@ -21,6 +21,7 @@ import { ObjectStore } from "./object-store";
 import { assertUnreachable, LEVEL_HEIGHT_DIFF_M } from "../../../../common/src/api/config";
 import { Coord, DrawableEntity, Level } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, interpolateTable, upperBoundTable } from "../../../../common/src/lib/utils";
+import PlantEntity, { fillPlantDefaults, PressureMethod } from "../../../../common/src/api/document/entities/plant-entity";
 
 export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
     const floor = context.backgroundLayer.getBackgroundAt(wc);
@@ -255,4 +256,24 @@ export function drawRpzdDouble(context: DrawingContext, colors: [string, string]
         ctx.closePath();
         ctx.fill();
     }
+}
+
+export function getPlantPressureLossKPA(entity: PlantEntity, pressureKPA: number | null) {
+
+    const filled = fillPlantDefaults(entity);
+
+    switch (filled.pressureMethod) {
+        case PressureMethod.PUMP_DUTY:
+            return -filled.pumpPressureKPA!;
+        case PressureMethod.FIXED_PRESSURE_LOSS:
+            return filled.pressureLossKPA!;
+        case PressureMethod.STATIC_PRESSURE:
+            if (pressureKPA !== null) {
+                return ( pressureKPA - filled.staticPressureKPA! )!;
+            } else {
+                return null;
+            }
+    }
+
+    return 0;
 }

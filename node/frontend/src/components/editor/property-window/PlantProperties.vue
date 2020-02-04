@@ -46,7 +46,7 @@
     })
     export default class PlantProperties extends Vue {
         get fields() {
-            return makePlantEntityFields(this.document.drawing.metadata.flowSystems);
+            return makePlantEntityFields(this.$props.selectedEntity, this.document.drawing.metadata.flowSystems);
         }
 
         get reactiveData() {

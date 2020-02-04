@@ -82,6 +82,7 @@ import {
 } from "../../../common/src/lib/utils";
 import { determineConnectableSystemUid } from "../store/document/entities/lib";
 import { getPropertyByString } from "../lib/utils";
+import { getPlantPressureLossKPA } from "../htmlcanvas/lib/utils";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -251,7 +252,7 @@ export default class CalculationEngine {
                     fields = makeLoadNodesFields([], obj.entity);
                     break;
                 case EntityType.PLANT:
-                    fields = makePlantEntityFields([]);
+                    fields = makePlantEntityFields(obj.entity, []);
                     break;
                 case EntityType.SYSTEM_NODE:
                 case EntityType.BACKGROUND_IMAGE:
@@ -275,21 +276,6 @@ export default class CalculationEngine {
                             };
                         }
                     }
-                }
-            }
-        });
-
-        this.globalStore.forEach((o) => {
-            if (o.entity.type === EntityType.PLANT) {
-                if (o.entity.pumpPressureKPA && o.entity.pressureLossKPA) {
-                    selectObject = {
-                        uid: o.uid,
-                        property: "pumpPressureKPA",
-                        message: "Only Pump Pressure or Pressure Loss may be set, but not both",
-                        variant: "danger",
-                        title: "Please Choose Only One",
-                        recenter: true
-                    };
                 }
             }
         });
@@ -751,22 +737,22 @@ export default class CalculationEngine {
                                 }
                             }
                             case EdgeType.PLANT_THROUGH: {
-                                const obj = this.globalStore.get(edge.value.uid) as Plant;
-                                if (obj.entity.pumpPressureKPA !== null) {
-                                    if (flowFrom.connectable === obj.entity.inletUid) {
-                                        if (flowTo.connectable !== obj.entity.outletUid) {
-                                            throw new Error("misconfigured flow graph");
-                                        }
-                                        return -obj.entity.pumpPressureKPA;
-                                    } else {
-                                        if (flowTo.connectable !== obj.entity.inletUid ||
-                                            flowFrom.connectable !== obj.entity.outletUid) {
-                                            throw new Error("misconfigured flow graph");
-                                        }
-                                        return +obj.entity.pumpPressureKPA;
-                                    }
+                                const plant = obj as Plant;
+
+                                const conns = this.globalStore.getConnections(plant.entity.inletUid);
+                                let flowLS: number | null = 0;
+                                if (conns.length === 1) {
+                                    flowLS = this.globalStore.getOrCreateCalculation(this.globalStore.get(conns[0])!.entity as PipeEntity).peakFlowRate;
                                 }
-                                return 0;
+
+                                const hl = getObjectFrictionHeadLoss(this, obj, flowLS!, flowFrom, flowTo, true, finalPressureKPA);
+                                return hl === null
+                                    ? -Infinity
+                                    : head2kpa(
+                                        hl,
+                                        getFluidDensityOfSystem(plant.entity.inletSystemUid, this.doc, this.catalog)!,
+                                        this.ga
+                                    );
                             }
                             case EdgeType.FLOW_SOURCE_EDGE:
                                 throw new Error("oopsies");
@@ -2050,11 +2036,9 @@ export default class CalculationEngine {
                 }
                 case EntityType.PLANT: {
                     const calc = this.globalStore.getOrCreateCalculation(o.entity);
-                    if (o.entity.pumpPressureKPA === null) {
-                        calc.pressureDropKPA = o.entity.pressureLossKPA || 0;
-                    } else {
-                        calc.pressureDropKPA = -o.entity.pumpPressureKPA;
-                    }
+                    const inlet = this.globalStore.get(o.entity.inletUid)!.entity as SystemNodeEntity;
+                    const inletCalc = this.globalStore.getOrCreateCalculation(inlet);
+                    calc.pressureDropKPA = getPlantPressureLossKPA(o.entity, inletCalc.pressureKPA);
                     break;
                 }
                 case EntityType.FIXTURE:
