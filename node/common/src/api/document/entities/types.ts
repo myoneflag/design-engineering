@@ -1,5 +1,6 @@
 import { DrawableEntityConcrete } from "./concrete-entity";
 import { assertUnreachable } from "../../config";
+import { BigValveType } from "./big-valve/big-valve-entity";
 
 export enum EntityType {
     BACKGROUND_IMAGE = "BACKGROUND_IMAGE",
@@ -59,9 +60,13 @@ export function getReferences(entity: DrawableEntityConcrete): string[] {
     switch (entity.type) {
         case EntityType.BACKGROUND_IMAGE:
         case EntityType.RISER:
-        case EntityType.LOAD_NODE:
         case EntityType.FITTING:
         case EntityType.FLOW_SOURCE:
+            break;
+        case EntityType.LOAD_NODE:
+            if (entity.linkedToUid) {
+                refs.push(entity.linkedToUid);
+            }
             break;
         case EntityType.SYSTEM_NODE:
             refs.push(entity.parentUid!);
@@ -71,6 +76,19 @@ export function getReferences(entity: DrawableEntityConcrete): string[] {
             break;
         case EntityType.BIG_VALVE:
             refs.push(entity.coldRoughInUid, entity.hotRoughInUid);
+            switch (entity.valve.type) {
+                case BigValveType.TMV:
+                    refs.push(entity.valve.coldOutputUid);
+                    refs.push(entity.valve.warmOutputUid);
+                    break;
+                case BigValveType.TEMPERING:
+                    refs.push(entity.valve.warmOutputUid);
+                    break;
+                case BigValveType.RPZD_HOT_COLD:
+                    refs.push(entity.valve.hotOutputUid);
+                    refs.push(entity.valve.coldOutputUid);
+                    break;
+            }
             break;
         case EntityType.FIXTURE:
             refs.push(...entity.roughInsInOrder.map((r) => entity.roughIns[r].uid));

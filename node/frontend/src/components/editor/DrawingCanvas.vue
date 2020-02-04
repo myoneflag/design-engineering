@@ -1476,7 +1476,7 @@ export default class DrawingCanvas extends Vue {
                     e.uid = uidMap.get(e.uid)!;
                     let etext = JSON.stringify(e);
                     for (const r of getReferences(e)) {
-                        if (!uidMap.has(r)) {
+                        if (r != null && !uidMap.has(r)) {
                             // This is actually a normal case now for when we want to reference existing objects.
                             // throw new Error('UID reference not found for entity ' + JSON.stringify(e) + ' reference ' + r);
                         } else {
