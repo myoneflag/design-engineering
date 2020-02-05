@@ -48,6 +48,7 @@ import {
     parseCatalogNumberExact
 } from "../../../../common/src/lib/utils";
 import { determineConnectableNetwork } from "../../store/document/entities/lib";
+import { assertUnreachable, ComponentPressureLossMethod } from "../../../../common/src/api/config";
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 3.5;
@@ -698,6 +699,19 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             interpolateTable(fluid.dynamicViscosityByTemperature, system.temperature)
         );
 
+        let pipeLength = this.entity.lengthM == null ? this.computedLengthM : this.entity.lengthM;
+
+        switch (context.drawing.metadata.calculationParams.componentPressureLossMethod) {
+            case ComponentPressureLossMethod.INDIVIDUALLY:
+                // Find pressure loss from components
+                break;
+            case ComponentPressureLossMethod.PERCENT_ON_TOP_OF_PIPE:
+                pipeLength *= (1 + 0.01 * context.drawing.metadata.calculationParams.pipePressureLossAddOnPCT);
+                break;
+            default:
+                assertUnreachable(context.drawing.metadata.calculationParams.componentPressureLossMethod);
+        }
+
         const retval =
             sign *
             getDarcyWeisbachFlatMH(
@@ -705,7 +719,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 parseCatalogNumberExact(page.colebrookWhiteCoefficient)!,
                 parseCatalogNumberExact(fluid.densityKGM3)!,
                 dynamicViscosity!,
-                this.entity.lengthM == null ? this.computedLengthM : this.entity.lengthM,
+                pipeLength,
                 velocityMS,
                 ga
             );

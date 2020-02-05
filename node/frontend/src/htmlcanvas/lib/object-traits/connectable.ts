@@ -3,13 +3,16 @@ import Pipe from "../../../../src/htmlcanvas/objects/pipe";
 import assert from "assert";
 import { EntityType } from "../../../../../common/src/api/document/entities/types";
 import BackedConnectable from "../../../../src/htmlcanvas/lib/BackedConnectable";
-import { ConnectableEntityConcrete, EdgeLikeEntity } from "../../../../../common/src/api/document/entities/concrete-entity";
+import {
+    ConnectableEntityConcrete,
+    EdgeLikeEntity
+} from "../../../../../common/src/api/document/entities/concrete-entity";
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
 import { DrawingContext } from "../../../../src/htmlcanvas/lib/types";
 import Flatten from "@flatten-js/core";
 import { PIPE_HEIGHT_GRAPHIC_EPS_MM } from "../../../../src/config";
 import { CalculationContext } from "../../../../src/calculations/types";
-import { FlowEdge, FlowNode } from "../../../../src/calculations/calculation-engine";
+import { FlowNode } from "../../../../src/calculations/calculation-engine";
 import { angleDiffRad } from "../../../../src/lib/utils";
 import { DrawingArgs } from "../../../../src/htmlcanvas/lib/drawable-object";
 import { CalculationData } from "../../../../src/store/document/calculations/calculation-field";
@@ -21,9 +24,10 @@ import Cached from "../cached";
 import stringify from "json-stable-stringify";
 import uuid from "uuid";
 import Fitting from "../../objects/fitting";
-import { Coord, Coord3D, NetworkType } from "../../../../../common/src/api/document/drawing";
+import { Coord, Coord3D } from "../../../../../common/src/api/document/drawing";
 import { determineConnectableNetwork, determineConnectableSystemUid } from "../../../store/document/entities/lib";
 import { APIResult } from "../../../../../common/src/api/document/types";
+import { assertUnreachable, ComponentPressureLossMethod } from "../../../../../common/src/api/config";
 
 export default interface Connectable {
     getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]>;
@@ -503,10 +507,6 @@ export function ConnectableObject<
             pipeSizes?: [number, number]
         ): number | null {
             hlcounts++;
-            if (this.entity.type === EntityType.SYSTEM_NODE) {
-                // @ts-ignore
-                return super.getFrictionHeadLoss(context, flowLS, from, to, signed);
-            }
 
             // We going to do pipe size changes here for any connectable.
             const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
@@ -526,6 +526,25 @@ export function ConnectableObject<
                 if (signed) {
                     sign = -1;
                 }
+            }
+
+
+            // @ts-ignore
+            const componentHL =  super.getFrictionHeadLoss(context, oFlowLS, oFrom, oTo, signed, pressureKPA);
+
+            if (this.entity.type === EntityType.SYSTEM_NODE) {
+                // @ts-ignore
+                return componentHL;
+            }
+
+            switch (context.drawing.metadata.calculationParams.componentPressureLossMethod) {
+                case ComponentPressureLossMethod.INDIVIDUALLY:
+                    // Find pressure loss from pipe size changes
+                    break;
+                case ComponentPressureLossMethod.PERCENT_ON_TOP_OF_PIPE:
+                    return componentHL;
+                default:
+                    assertUnreachable(context.drawing.metadata.calculationParams.componentPressureLossMethod);
             }
 
             const fromo = this.globalStore.get(from.connection);
@@ -565,12 +584,12 @@ export function ConnectableObject<
 
             const k = 0.8 * Math.sin(angle / 2) * (1 - smallSize ** 2 / largeSize ** 2);
 
+
             if (Math.abs(flowLS) < EPS) {
                 // @ts-ignore
-                return super.getFrictionHeadLoss(context, oFlowLS, oFrom, oTo, signed, pressureKPA);
+                return componentHL;
             }
-            // @ts-ignore
-            const componentHL =  super.getFrictionHeadLoss(context, oFlowLS, oFrom, oTo, signed, pressureKPA);
+
             if (componentHL !== null) {
                 return sign * ((k * velocityMS ** 2) / (2 * ga)) + componentHL;
             } else {

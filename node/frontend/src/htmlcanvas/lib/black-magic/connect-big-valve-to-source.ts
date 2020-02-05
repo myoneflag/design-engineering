@@ -39,11 +39,12 @@ export default function connectBigValveToSource(
 
         const closePoint = targetObj.shape()!.distanceTo(Flatten.point(wc.x, wc.y))[1].ps;
         const currA = newBigValve.toWorldAngleDeg(0);
-        const desiredA =
+        let desiredA =
             (-Flatten.vector(Flatten.point(wc.x, wc.y), closePoint).angleTo(Flatten.vector(0, -1)) / Math.PI) * 180;
 
+        // round angle to 45 deg
+        desiredA = Math.round(desiredA / 45) * 45;
         newBigValve.entity.rotation = (((desiredA - currA) % 360) + 360) % 360;
-
         const coldLoc = coldObj.toWorldCoord({ x: 0, y: 0 });
 
         leadPipe(context, coldLoc, coldObj.entity, StandardFlowSystemUids.ColdWater, target.uid, undefined, selfUids);

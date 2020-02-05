@@ -20,7 +20,7 @@ export const initialCatalog = {
                     "warm-water": "3"
                 }
             },
-            roughIns: ["cold-water", "warm-water"],
+            roughIns: ["warm-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Ablution Trough",
@@ -50,7 +50,7 @@ export const initialCatalog = {
                     "warm-water": "1"
                 }
             },
-            roughIns: ["cold-water", "warm-water"],
+            roughIns: ["warm-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Basin",
@@ -80,7 +80,7 @@ export const initialCatalog = {
                     "warm-water": "8"
                 }
             },
-            roughIns: ["cold-water", "warm-water"],
+            roughIns: ["warm-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Bath",
@@ -110,7 +110,7 @@ export const initialCatalog = {
                     "hot-water": "2",
                 }
             },
-            roughIns: ["cold-water", "hot-water"],
+            roughIns: ["hot-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Bedpan Sanitiser",
@@ -140,7 +140,7 @@ export const initialCatalog = {
                     "warm-water": "2"
                 }
             },
-            roughIns: ["cold-water", "warm-water"],
+            roughIns: ["warm-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Beverage Bay",
@@ -170,7 +170,7 @@ export const initialCatalog = {
                     "warm-water": "8"
                 }
             },
-            roughIns: ["cold-water", "warm-water"],
+            roughIns: ["warm-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Birthing Pool",
@@ -200,7 +200,7 @@ export const initialCatalog = {
                     "hot-water": "3"
                 }
             },
-            roughIns: ["cold-water", "hot-water"],
+            roughIns: ["hot-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Cleaners sink",
@@ -230,7 +230,7 @@ export const initialCatalog = {
                     "hot-water": "3"
                 }
             },
-            roughIns: ["cold-water", "hot-water"],
+            roughIns: ["hot-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Dishwasher",
@@ -286,7 +286,7 @@ export const initialCatalog = {
                     "hot-water": "2",
                 }
             },
-            roughIns: ["cold-water", "hot-water"],
+            roughIns: ["hot-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Flushing Rim Sink",
@@ -342,7 +342,7 @@ export const initialCatalog = {
                     "warm-water": "3"
                 }
             },
-            roughIns: ["cold-water", "warm-water"],
+            roughIns: ["warm-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Kitchen Sink (Warm)",
@@ -372,7 +372,7 @@ export const initialCatalog = {
                     "hot-water": "3"
                 }
             },
-            roughIns: ["cold-water", "hot-water"],
+            roughIns: ["hot-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Kitchen Sink (Hot)",
@@ -402,7 +402,7 @@ export const initialCatalog = {
                     "warm-water": "3"
                 }
             },
-            roughIns: ["cold-water", "warm-water"],
+            roughIns: ["warm-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Laundry Trough (Warm)",
@@ -432,7 +432,7 @@ export const initialCatalog = {
                     "hot-water": "3"
                 }
             },
-            roughIns: ["cold-water", "hot-water"],
+            roughIns: ["hot-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Laundry Trough (Hot)",
@@ -462,7 +462,7 @@ export const initialCatalog = {
                     "warm-water": "2"
                 }
             },
-            roughIns: ["cold-water", "warm-water"],
+            roughIns: ["warm-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Shower",
@@ -518,7 +518,7 @@ export const initialCatalog = {
                     "hot-water": "3"
                 }
             },
-            roughIns: ["cold-water", "hot-water"],
+            roughIns: ["hot-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Washing Machine",

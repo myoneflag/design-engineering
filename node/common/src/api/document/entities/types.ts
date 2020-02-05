@@ -51,6 +51,7 @@ export function getEntityName(type: EntityType): string {
     assertUnreachable(type);
 }
 
+// for copy paste to replace
 export function getReferences(entity: DrawableEntityConcrete): string[] {
     const refs: string[] = [];
     if (entity.parentUid) {
