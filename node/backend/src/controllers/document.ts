@@ -189,7 +189,7 @@ export class DocumentController {
                         qb.where('document.state = :state', {state: DocumentStatus.ACTIVE});
 
                         if (session.user.accessLevel <= AccessLevel.MANAGER) {
-                            qb.orWhere('document.state = :state', {state: DocumentStatus.DELETED});
+                            qb.orWhere('document.state = :state2', {state2: DocumentStatus.DELETED});
                         }
                     }))
                     .orderBy('document.createdOn', 'DESC')
