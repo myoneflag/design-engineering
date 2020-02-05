@@ -1,3 +1,6 @@
+import { AccessLevel } from "../../../common/src/models/User";
+import { DocumentStatus } from "../../../common/src/models/Document";
+import { DocumentStatus } from "../../../common/src/models/Document";
 <template>
     <div>
         <MainNavBar></MainNavBar>
@@ -11,11 +14,20 @@
                     </b-col>
                 </b-row>
                 <b-row style="margin-bottom: 30px">
+                    <b-col></b-col>
                     <b-col>
                         <b-button size="lg" variant="success" @click="createDocument"
                             ><v-icon name="plus"></v-icon> New Drawing</b-button
                         >
                     </b-col>
+                        <b-col>
+                            <b-checkbox
+                                    v-if="profile.accessLevel <= AccessLevel.MANAGER"
+                                    @change="toggleShowDeleted"
+                            >
+                                Show Deleted
+                            </b-checkbox>
+                        </b-col>
                 </b-row>
                 <b-row>
                     <b-col>
@@ -25,45 +37,47 @@
                     </b-col>
                 </b-row>
                 <b-row>
-                    <b-col sm="6" md="4" lg="3" v-for="doc in documents" :key="doc.id">
-                        <b-card
-                            :title="doc.metadata.title"
-                            :img-src="docIcon(doc)"
-                            img-alt="Image"
-                            img-top
-                            tag="article"
-                            style="max-width: 20rem;"
-                            class="mb-2 doc-tile"
-                        >
-                            <b-card-text>
-                                {{ doc.metadata.description }}<br />
-                                Owner: {{ doc.createdBy.username }}<br />
-                                Created: {{ new Date(doc.createdOn).toLocaleDateString() }}
-                            </b-card-text>
+                    <template v-for="doc in documents">
+                        <b-col sm="6" md="4" lg="3" :key="doc.id"  v-if="docVisible(doc)">
+                            <b-card
+                                :title="doc.metadata.title"
+                                :img-src="docIcon(doc)"
+                                img-alt="Image"
+                                img-top
+                                tag="article"
+                                style="max-width: 20rem;"
+                                class="mb-2 doc-tile"
+                            >
+                                <b-card-text>
+                                    {{ doc.metadata.description }}<br />
+                                    Owner: {{ doc.createdBy.username }}<br />
+                                    Created: {{ new Date(doc.createdOn).toLocaleDateString() }}
+                                </b-card-text>
 
-                            <b-dropdown split :split-to="'/document/' + doc.id" variant="primary" text="Open Drawing" class="m-2" no-caret>
+                                <b-dropdown split :split-to="'/document/' + doc.id" variant="primary" text="Open Drawing" class="m-2" no-caret>
 
-                                <b-dropdown-item @click="clone(doc)">Make Copy</b-dropdown-item>
-                                <b-dropdown-item
-                                        href="#"
-                                        v-if="canDeleteDoc(doc)"
-                                        variant="danger"
-                                        @click="deleteDoc(doc)"
-                                >
-                                    Delete
-                                </b-dropdown-item>
+                                    <b-dropdown-item @click="clone(doc)">Make Copy</b-dropdown-item>
+                                    <b-dropdown-item
+                                            href="#"
+                                            v-if="canDeleteDoc(doc)"
+                                            variant="danger"
+                                            @click="deleteDoc(doc)"
+                                    >
+                                        Delete
+                                    </b-dropdown-item>
 
-                                <b-dropdown-item
-                                        href="#"
-                                        v-if="canRestoreDoc(doc)"
-                                        variant="success"
-                                        @click="restoreDoc(doc)"
-                                >
-                                    Restore
-                                </b-dropdown-item>
-                            </b-dropdown>
-                        </b-card>
-                    </b-col>
+                                    <b-dropdown-item
+                                            href="#"
+                                            v-if="canRestoreDoc(doc)"
+                                            variant="success"
+                                            @click="restoreDoc(doc)"
+                                    >
+                                        Restore
+                                    </b-dropdown-item>
+                                </b-dropdown>
+                            </b-card>
+                        </b-col>
+                    </template>
                 </b-row>
             </b-container>
         </div>
@@ -71,22 +85,20 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import MainNavBar from "../../src/components/MainNavBar.vue";
-import { State, Action, Getter } from "vuex-class";
-import { DocumentState } from "../../src/store/document/types";
-import {
-    canUserDeleteDocument,
-    canUserRestoreDocument,
-    Document,
-    DocumentStatus
-} from "../../../common/src/models/Document";
-import { cloneDocument, createDocument, deleteDocument, getDocuments, restoreDocument } from "../api/document";
-import { User } from "../../../common/src/models/User";
-import Doc = Mocha.reporters.Doc;
-import { assertUnreachable } from "../../../common/src/api/config";
+    import { Component, Vue } from "vue-property-decorator";
+    import MainNavBar from "../../src/components/MainNavBar.vue";
+    import {
+        canUserDeleteDocument,
+        canUserRestoreDocument,
+        Document,
+        DocumentStatus
+    } from "../../../common/src/models/Document";
+    import { cloneDocument, createDocument, deleteDocument, getDocuments, restoreDocument } from "../api/document";
+    import { AccessLevel, User } from "../../../common/src/models/User";
+    import { assertUnreachable } from "../../../common/src/api/config";
+    import Doc = Mocha.reporters.Doc;
 
-@Component({
+    @Component({
     components: {
         MainNavBar
     }
@@ -94,6 +106,7 @@ import { assertUnreachable } from "../../../common/src/api/config";
 export default class Home extends Vue {
     documents: Document[] = [];
     loaded: boolean = false;
+    showDeleted: boolean = false;
 
     mounted() {
         this.reloadDocuments();
@@ -116,6 +129,23 @@ export default class Home extends Vue {
         }
     }
 
+    docVisible(doc: Document) {
+        switch (doc.state) {
+            case DocumentStatus.ACTIVE:
+                return true;
+            case DocumentStatus.DELETED:
+                return this.showDeleted;
+            case DocumentStatus.PENDING:
+                return this.profile.accessLevel <= AccessLevel.ADMIN;
+            default:
+                assertUnreachable(doc.state);
+        }
+    }
+
+    get AccessLevel() {
+        return AccessLevel;
+    }
+
     reloadDocuments() {
 
         // fill documents
@@ -130,6 +160,10 @@ export default class Home extends Vue {
                 });
             }
         });
+    }
+
+    toggleShowDeleted() {
+        this.showDeleted = !this.showDeleted;
     }
 
     createDocument() {
