@@ -34,7 +34,7 @@ import DirectedValveCalculation, {
 } from "../../store/document/calculations/directed-valve-calculation";
 import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import uuid from "uuid";
-import { assertUnreachable } from "../../../../common/src/api/config";
+import { assertUnreachable, ComponentPressureLossMethod } from "../../../../common/src/api/config";
 import { Catalog } from "../../../../common/src/api/catalog/types";
 import { Coord, DrawableEntity } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, lowerBoundTable, parseCatalogNumberExact } from "../../../../common/src/lib/utils";
@@ -358,19 +358,12 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             throw new Error("need 2 connections to have a calculation here.");
         }
 
-        let kValue: number | null = 0;
+        // 1. Directional control
         switch (this.entity.valve.type) {
             case ValveType.CHECK_VALVE:
             case ValveType.ISOLATION_VALVE:
             case ValveType.WATER_METER:
             case ValveType.STRAINER: {
-                const table = context.catalog.valves[this.entity.valve.catalogId];
-                const size = this.largestPipeSizeNominalMM(context);
-                if (size === null) {
-                    return null;
-                }
-                kValue = parseCatalogNumberExact(lowerBoundTable(table.valvesBySize, size)!.kValue);
-
                 if (this.entity.valve.type === ValveType.CHECK_VALVE) {
                     // go the right way
                     if (from.connection !== this.entity.sourceUid) {
@@ -390,7 +383,45 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 if (from.connection !== this.entity.sourceUid) {
                     return sign * (1e10 + flowLS);
                 }
+                break;
+            }
+            case ValveType.PRV_SINGLE:
+            case ValveType.PRV_DOUBLE:
+            case ValveType.PRV_TRIPLE:
+                break;
+        }
 
+        // 2. Pressure Loss Method
+        switch (context.drawing.metadata.calculationParams.componentPressureLossMethod) {
+            case ComponentPressureLossMethod.INDIVIDUALLY:
+                // Find pressure loss from components
+                break;
+            case ComponentPressureLossMethod.PERCENT_ON_TOP_OF_PIPE:
+                return 0;
+            default:
+                assertUnreachable(context.drawing.metadata.calculationParams.componentPressureLossMethod);
+        }
+
+        // 3. Component pressure loss
+        let kValue: number | null = 0;
+        switch (this.entity.valve.type) {
+            case ValveType.CHECK_VALVE:
+            case ValveType.ISOLATION_VALVE:
+            case ValveType.WATER_METER:
+            case ValveType.STRAINER: {
+                const table = context.catalog.valves[this.entity.valve.catalogId];
+                const size = this.largestPipeSizeNominalMM(context);
+                if (size === null) {
+                    return null;
+                }
+                kValue = parseCatalogNumberExact(lowerBoundTable(table.valvesBySize, size)!.kValue);
+                break;
+            }
+
+
+            case ValveType.RPZD_SINGLE:
+            case ValveType.RPZD_DOUBLE_SHARED:
+            case ValveType.RPZD_DOUBLE_ISOLATED: {
                 const calcs = context.globalStore.getOrCreateCalculation(this.entity);
                 const size = calcs.sizeMM;
                 if (size === null) {
@@ -414,6 +445,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                         : false
                 );
             }
+
             case ValveType.PRV_SINGLE:
             case ValveType.PRV_DOUBLE:
             case ValveType.PRV_TRIPLE:

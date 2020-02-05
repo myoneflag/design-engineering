@@ -34,6 +34,7 @@ import math3d from "math3d";
 import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
 import { Coord } from "../../../../common/src/api/document/drawing";
 import { parseCatalogNumberExact } from "../../../../common/src/lib/utils";
+import { assertUnreachable, ComponentPressureLossMethod } from "../../../../common/src/api/config";
 
 @CalculatedObject
 @SelectableObject
@@ -191,6 +192,16 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
         if (Math.abs(flowLS) < EPS) {
             return 0;
+        }
+
+        switch (context.drawing.metadata.calculationParams.componentPressureLossMethod) {
+            case ComponentPressureLossMethod.INDIVIDUALLY:
+                // Find pressure loss from components
+                break;
+            case ComponentPressureLossMethod.PERCENT_ON_TOP_OF_PIPE:
+                return 0;
+            default:
+                assertUnreachable(context.drawing.metadata.calculationParams.componentPressureLossMethod);
         }
 
         const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;

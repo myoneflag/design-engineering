@@ -622,8 +622,9 @@ export default class CalculationEngine {
                                         return -Infinity; // The following values are unknown, because this pressure
                                         // drop is unknown.
                                     }
-                                    const headLoss = obj.getFrictionHeadLoss(
+                                    const headLoss = getObjectFrictionHeadLoss(
                                         this,
+                                        obj,
                                         calculation.peakFlowRate,
                                         edge.from,
                                         edge.to,
@@ -1811,8 +1812,9 @@ export default class CalculationEngine {
                         case BigValveType.TMV: {
                             const fr = calculation.coldPeakFlowRate;
                             if (fr !== null) {
-                                const hl = o.getFrictionHeadLoss(
+                                const hl = getObjectFrictionHeadLoss(
                                     this,
+                                    o,
                                     fr,
                                     { connection: o.uid, connectable: o.entity.coldRoughInUid },
                                     { connection: o.uid, connectable: o.entity.valve.coldOutputUid },
@@ -1837,8 +1839,9 @@ export default class CalculationEngine {
                         case BigValveType.TEMPERING: {
                             const frw = calculation.hotPeakFlowRate;
                             if (frw !== null) {
-                                const hl = o.getFrictionHeadLoss(
+                                const hl = getObjectFrictionHeadLoss(
                                     this,
+                                    o,
                                     frw,
                                     { connection: o.uid, connectable: o.entity.hotRoughInUid },
                                     { connection: o.uid, connectable: o.entity.valve.warmOutputUid },
@@ -1863,8 +1866,9 @@ export default class CalculationEngine {
                         case BigValveType.RPZD_HOT_COLD: {
                             const fr = calculation.coldPeakFlowRate;
                             if (fr !== null) {
-                                const hl = o.getFrictionHeadLoss(
+                                const hl = getObjectFrictionHeadLoss(
                                     this,
+                                    o,
                                     fr,
                                     { connection: o.uid, connectable: o.entity.coldRoughInUid },
                                     { connection: o.uid, connectable: o.entity.valve.coldOutputUid },
@@ -1887,8 +1891,9 @@ export default class CalculationEngine {
 
                             const frh = calculation.hotPeakFlowRate;
                             if (frh !== null) {
-                                const hl = o.getFrictionHeadLoss(
+                                const hl = getObjectFrictionHeadLoss(
                                     this,
+                                    o,
                                     frh,
                                     { connection: o.uid, connectable: o.entity.hotRoughInUid },
                                     { connection: o.uid, connectable: o.entity.valve.hotOutputUid },
@@ -1918,8 +1923,9 @@ export default class CalculationEngine {
                 case EntityType.PIPE: {
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity);
                     if (calculation.peakFlowRate !== null) {
-                        const hl = o.getFrictionHeadLoss(
+                        const hl = getObjectFrictionHeadLoss(
                             this,
+                            o,
                             calculation.peakFlowRate,
                             { connection: o.uid, connectable: o.entity.endpointUid[0] },
                             { connection: o.uid, connectable: o.entity.endpointUid[1] },
@@ -1958,8 +1964,9 @@ export default class CalculationEngine {
                             if (pipeCalc1!.peakFlowRate !== null && pipeCalc2!.peakFlowRate !== null) {
                                 calculation.flowRateLS = Math.min(pipeCalc1!.peakFlowRate, pipeCalc2!.peakFlowRate);
 
-                                const hl1 = o.getFrictionHeadLoss(
+                                const hl1 = getObjectFrictionHeadLoss(
                                     this,
+                                    o,
                                     calculation.flowRateLS,
                                     { connectable: o.uid, connection: connections[0] },
                                     { connectable: o.uid, connection: connections[1] },
@@ -1978,8 +1985,9 @@ export default class CalculationEngine {
                                         )!,
                                         this.ga
                                         );
-                                const hl2 = o.getFrictionHeadLoss(
+                                const hl2 = getObjectFrictionHeadLoss(
                                     this,
+                                    o,
                                     calculation.flowRateLS,
                                     { connectable: o.uid, connection: connections[1] },
                                     { connectable: o.uid, connection: connections[0] },

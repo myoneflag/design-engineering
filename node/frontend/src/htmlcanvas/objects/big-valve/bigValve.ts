@@ -37,7 +37,7 @@ import Flatten from "@flatten-js/core";
 import Cached from "../../lib/cached";
 import { ValveType } from "../../../../../common/src/api/document/entities/directed-valves/valve-types";
 import { StandardFlowSystemUids } from "../../../store/catalog";
-import { assertUnreachable } from "../../../../../common/src/api/config";
+import { assertUnreachable, ComponentPressureLossMethod } from "../../../../../common/src/api/config";
 import { Coord, coordDist2 } from "../../../../../common/src/api/document/drawing";
 import { cloneSimple, interpolateTable, parseCatalogNumberExact } from "../../../../../common/src/lib/utils";
 
@@ -403,6 +403,17 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
             // Water not flowing the correct direction
             return sign * (1e10 + flowLS);
         }
+
+        switch (context.drawing.metadata.calculationParams.componentPressureLossMethod) {
+            case ComponentPressureLossMethod.INDIVIDUALLY:
+                // Find pressure loss from pipe size changes
+                break;
+            case ComponentPressureLossMethod.PERCENT_ON_TOP_OF_PIPE:
+                return 0;
+            default:
+                assertUnreachable(context.drawing.metadata.calculationParams.componentPressureLossMethod);
+        }
+
 
         // The actial pressure drop depends on the connection
         let pdKPA: number | null = null;

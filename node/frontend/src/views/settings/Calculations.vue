@@ -20,7 +20,7 @@ import {
     isSupportedDwellingStandard
 } from "../../../src/config";
 import {
-    assertUnreachable,
+    assertUnreachable, COMPONENT_PRESSURE_LOSS_METHODS, ComponentPressureLossMethod,
     getPsdMethods,
     isSupportedPsdStandard, PIPE_SIZING_METHODS, SupportedDwellingStandards,
     SupportedPsdStandards
@@ -61,6 +61,20 @@ export default class Calculations extends Vue {
 
         result.push(
             ["pipeSizingMethod", "Pipe Sizing Method:", "choice", PIPE_SIZING_METHODS],
+            ["componentPressureLossMethod", "Pressure Loss Method:", "choice", COMPONENT_PRESSURE_LOSS_METHODS]
+        );
+
+        switch (this.document.drawing.metadata.calculationParams.componentPressureLossMethod) {
+            case ComponentPressureLossMethod.INDIVIDUALLY:
+                break;
+            case ComponentPressureLossMethod.PERCENT_ON_TOP_OF_PIPE:
+                result.push(["pipePressureLossAddOnPCT", "Length on top of Pipe for Pressure Loss Calculations (%)", "range", 0, 100]);
+                break;
+            default:
+                assertUnreachable(this.document.drawing.metadata.calculationParams.componentPressureLossMethod);
+        }
+
+        result.push(
             // ['ringMainCalculationMethod', 'Ring Main Calculation Method:', 'choice', RING_MAIN_CALCULATION_METHODS],
             ["ceilingPipeHeightM", "Default Pipe Height Above Floor (m):", "number"],
             ["roomTemperatureC", "Room Temperature (°C):", "range", 10, 40],

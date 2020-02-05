@@ -94,4 +94,15 @@ export const PIPE_SIZING_METHODS: Choice[] = [
     { name: "Keep maximum velocity within bounds", key: "velocity" },
     { name: "Keep maximum pressure drop within bounds", key: "pressure", disabled: true }
 ];
+
+export enum ComponentPressureLossMethod {
+    INDIVIDUALLY = "INDIVIDUALLY",
+    PERCENT_ON_TOP_OF_PIPE = "PERCENT_ON_TOP_OF_PIPE",
+}
+
+export const COMPONENT_PRESSURE_LOSS_METHODS: Choice[] = [
+    { name: "Based on all system component's specific pressure loss", key: ComponentPressureLossMethod.INDIVIDUALLY },
+    { name: "Percentage on top of pipe lengths only", key: ComponentPressureLossMethod.PERCENT_ON_TOP_OF_PIPE },
+];
+
 export const LEVEL_HEIGHT_DIFF_M = 3;

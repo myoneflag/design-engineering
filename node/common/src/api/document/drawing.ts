@@ -1,5 +1,6 @@
 import { DrawableEntityConcrete } from "./entities/concrete-entity";
 import {
+    ComponentPressureLossMethod,
     PIPE_SIZING_METHODS,
     RING_MAIN_CALCULATION_METHODS,
     SupportedDwellingStandards,
@@ -107,6 +108,8 @@ export interface CalculationParameters {
     dwellingMethod: SupportedDwellingStandards | null;
     ringMainCalculationMethod: string;
     pipeSizingMethod: string;
+    componentPressureLossMethod: ComponentPressureLossMethod;
+    pipePressureLossAddOnPCT: number;
 
     ceilingPipeHeightM: number;
     roomTemperatureC: number;
@@ -206,6 +209,8 @@ export const initialDrawing: DrawingState = {
             dwellingMethod: null,
             ringMainCalculationMethod: RING_MAIN_CALCULATION_METHODS[0].key as string,
             pipeSizingMethod: PIPE_SIZING_METHODS[0].key as string,
+            componentPressureLossMethod: ComponentPressureLossMethod.INDIVIDUALLY,
+            pipePressureLossAddOnPCT: 0,
 
             ceilingPipeHeightM: 3.0,
             roomTemperatureC: 20,
