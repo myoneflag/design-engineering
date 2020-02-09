@@ -109,6 +109,7 @@ export default function insertBigValve(context: CanvasContext, bigValveType: Big
                     systemUid: StandardFlowSystemUids.ColdWater,
                     calculationHeightM: null,
                     uid: coldUid,
+                    allowAllSystems: false,
                     configuration: FlowConfiguration.INPUT
                 };
 
@@ -119,6 +120,7 @@ export default function insertBigValve(context: CanvasContext, bigValveType: Big
                     calculationHeightM: null,
                     systemUid: StandardFlowSystemUids.HotWater,
                     uid: hotUid,
+                    allowAllSystems: false,
                     configuration: FlowConfiguration.INPUT
                 };
 
@@ -156,6 +158,7 @@ export default function insertBigValve(context: CanvasContext, bigValveType: Big
                         calculationHeightM: null,
                         systemUid: sysUid,
                         uid: nodeUid,
+                        allowAllSystems: false,
                         configuration: FlowConfiguration.OUTPUT
                     };
 

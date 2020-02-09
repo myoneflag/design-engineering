@@ -2,16 +2,19 @@ import BackedDrawableObject from "../../../src/htmlcanvas/lib/backed-drawable-ob
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import {
     ConnectableEntityConcrete,
-    DrawableEntityConcrete, hasExplicitSystemUid, isConnectableEntity, isConnectableEntityType
+    DrawableEntityConcrete,
+    hasExplicitSystemUid,
+    isConnectableEntity,
+    isConnectableEntityType
 } from "../../../../common/src/api/document/entities/concrete-entity";
 import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
-import { getDragPriority} from "../../../src/store/document";
+import { getDragPriority } from "../../../src/store/document";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { Matrix } from "transformation-matrix";
-import * as TM from "transformation-matrix";
 import { Coord } from "../../../../common/src/api/document/drawing";
 import { determineConnectableSystemUid } from "../../store/document/entities/lib";
+import { SystemNodeEntity } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 
 // TODO: this entire abstract class is obsolete and should be encapsulated in the ConnectableObject
 // decorator.
@@ -33,6 +36,13 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
     }
 
     offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
+        let allowAllSystemUid = false;
+        if (this.entity.type === EntityType.SYSTEM_NODE) {
+            if ((this.entity as SystemNodeEntity).allowAllSystems) {
+                allowAllSystemUid = true;
+            }
+        }
+
         switch (interaction.type) {
             case InteractionType.INSERT:
                 if (
@@ -40,7 +50,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                     getDragPriority(interaction.entityType) >= this.dragPriority
                 ) {
                     if (hasExplicitSystemUid(this.entity) && interaction.systemUid) {
-                        if (interaction.systemUid !== this.entity.systemUid) {
+                        if (interaction.systemUid !== this.entity.systemUid && !allowAllSystemUid) {
                             return null;
                         }
                     }
@@ -52,7 +62,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                 const resultingConnections = this.globalStore.getConnections(this.entity.uid).length + 1;
                 if (this.numConnectionsInBound(resultingConnections)) {
                     if (hasExplicitSystemUid(this.entity)) {
-                        if (interaction.system.uid !== this.entity.systemUid) {
+                        if (interaction.system.uid !== this.entity.systemUid && !allowAllSystemUid) {
                             return null;
                         }
                     }
@@ -75,7 +85,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                         )
                     ) {
                         if (hasExplicitSystemUid(this.entity) && hasExplicitSystemUid(interaction.src)) {
-                            if (this.entity.systemUid !== interaction.src.systemUid) {
+                            if (this.entity.systemUid !== interaction.src.systemUid && !allowAllSystemUid) {
                                 return null;
                             }
                         }
@@ -100,7 +110,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                         )
                     ) {
                         if (hasExplicitSystemUid(this.entity) && hasExplicitSystemUid(interaction.dest)) {
-                            if (this.entity.systemUid !== interaction.dest.systemUid) {
+                            if (this.entity.systemUid !== interaction.dest.systemUid && !allowAllSystemUid) {
                                 return null;
                             }
                         }
@@ -125,7 +135,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                     const suid = determineConnectableSystemUid(this.globalStore, entity);
                     isSystemCorrect = interaction.systemUid === null || interaction.systemUid === suid;
                 } else {
-                    isSystemCorrect = interaction.systemUid === null || interaction.systemUid === entity.systemUid;
+                    isSystemCorrect = allowAllSystemUid || interaction.systemUid === null || interaction.systemUid === entity.systemUid;
                 }
 
                 if (isSystemCorrect) {

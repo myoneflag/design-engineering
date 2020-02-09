@@ -57,6 +57,7 @@ export default interface BigValveEntity extends DrawableEntity {
 export interface SystemNodeEntity extends InvisibleNodeEntity {
     type: EntityType.SYSTEM_NODE;
     systemUid: string;
+    allowAllSystems: boolean;
     configuration: FlowConfiguration;
 }
 

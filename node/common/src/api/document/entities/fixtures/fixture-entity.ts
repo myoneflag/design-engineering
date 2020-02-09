@@ -12,6 +12,7 @@ export interface RoughInRecord {
     loadingUnits: number | null;
     designFlowRateLS: number | null;
     continuousFlowLS: number | null;
+    allowAllSystems: boolean;
 }
 
 export default interface FixtureEntity extends DrawableEntity {
@@ -100,6 +101,16 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity):
             },
 
             {
+                property: "roughIns." + suid + ".allowAllSystems",
+                title: "Allow Other Systems to Connect?",
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Boolean,
+                params: null,
+                multiFieldId: suid + "-allowAllSystems"
+            },
+
+            {
                 property: "roughIns." + suid + ".designFlowRateLS",
                 title: "Full Flow Rate (L/s)",
                 hasDefault: true,
@@ -108,6 +119,7 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity):
                 params: { min: 0, max: null },
                 multiFieldId: suid + "-designFlowRateLS"
             },
+
             {
                 property: "roughIns." + suid + ".continuousFlowLS",
                 title: "Continuous Flow (L/s)",

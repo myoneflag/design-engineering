@@ -227,10 +227,9 @@ export const mutations: MutationTree<DocumentState> = {
             } else {
                 state.uiState.viewOnly = true;
                 state.uiState.viewOnlyReason = "Conflict while editing simultaneously - please refresh";
-                this.revert(state, true);
 
                 throw new Error(
-                    "Optimistic operation conflict. TODO: rewind with undo's here. New object is: \n" +
+                    "Editing simultaneously is not currently supported. However you can view simultaneously.\n" +
                         JSON.stringify(operation) +
                         "\n" +
                         "old object is:\n" +
