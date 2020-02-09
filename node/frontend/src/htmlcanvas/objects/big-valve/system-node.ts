@@ -51,7 +51,7 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
                 if (this.globalStore.getConnections(this.entity.uid).length > 0) {
                     return null;
                 }
-                if (interaction.system.uid !== this.entity.systemUid) {
+                if (interaction.system.uid !== this.entity.systemUid && !this.entity.allowAllSystems) {
                     return null;
                 }
                 break;

@@ -4,7 +4,14 @@ import { cloneSimple } from "../../common/src/lib/utils";
 import { Operation } from "../../common/src/models/Operation";
 import { OPERATION_NAMES } from "../../common/src/api/document/operation-transforms";
 import { applyDiffNative } from "../../common/src/api/document/state-ot-apply";
-import { CURRENT_VERSION, upgrade0to1, upgrade1to2, upgrade2to3, upgrade3to4 } from "../../common/src/api/upgrade";
+import {
+    CURRENT_VERSION,
+    upgrade0to1,
+    upgrade1to2,
+    upgrade2to3,
+    upgrade3to4,
+    upgrade4to5, upgrade5to6
+} from "../../common/src/api/upgrade";
 import { diffState } from "../../common/src/api/document/state-differ";
 import stringify from 'json-stable-stringify';
 
@@ -43,6 +50,12 @@ export async function upgradeDocument(doc: Document) {
                         upgrade2to3(newUpgraded);
                         updated = upgrade3to4(newUpgraded) || updated;
                     // noinspection FallThroughInSwitchStatementJS
+                    case 4:
+                        upgrade4to5(newUpgraded);
+                    // noinspection FallThroughInSwitchStatementJS
+                    case 5:
+                        upgrade5to6(newUpgraded);
+                    // noinspection FallThroughInSwitchStatementJS
                     case CURRENT_VERSION:
                         break;
                 }
@@ -52,7 +65,6 @@ export async function upgradeDocument(doc: Document) {
                 if (upgradedOps.length) {
                     if (upgradedOps[0].type === OPERATION_NAMES.DIFF_OPERATION) {
                         if (stringify(op.operation) !== stringify(upgradedOps[0]) ) {
-                            console.log('saving operation ' + JSON.stringify(op.operation));
                             op.operation = upgradedOps[0];
                             await op.save();
                         }
@@ -87,6 +99,8 @@ export function getInitialDrawing(doc?: Document) {
         case 2:
         case 3:
         case 4:
+        case 5:
+        case 6:
             return cloneSimple(initialDrawing);
         default:
             throw new Error('invalid state');

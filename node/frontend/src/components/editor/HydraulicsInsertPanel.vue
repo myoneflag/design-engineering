@@ -234,6 +234,14 @@
         <b-col>
             <b-dropdown text="Nodes" class="insertEntityBtn" variant="outline-dark">
                 <b-dropdown-item
+                        :disabled="document.drawing.metadata.calculationParams.dwellingMethod === null"
+                        variant="outline-dark"
+                        class="shower btn-sm"
+                        @click="$emit('insert', { entityName: entityNames.LOAD_NODE, variant: 'hot-cold-dwelling' })"
+                >
+                    Hot/Cold Dwelling Node Pair
+                </b-dropdown-item>
+                <b-dropdown-item
                     variant="outline-dark"
                     class="shower btn-sm"
                     @click="$emit('insert', { entityName: entityNames.LOAD_NODE, nodeType: NodeType.LOAD_NODE })"
@@ -246,13 +254,7 @@
                     @click="$emit('insert', { entityName: entityNames.LOAD_NODE, nodeType: NodeType.DWELLING })"
                     >Dwelling Node</b-dropdown-item
                 >
-                <b-dropdown-item
-                        :disabled="document.drawing.metadata.calculationParams.dwellingMethod === null"
-                        variant="outline-dark"
-                        class="shower btn-sm"
-                        @click="$emit('insert', { entityName: entityNames.LOAD_NODE, variant: 'hot-cold-dwelling' })"
-                >Hot/Cold Dwelling Node Pair</b-dropdown-item
-                >
+
             </b-dropdown>
         </b-col>
     </b-row>

@@ -16,9 +16,10 @@ import { DrawingMode } from "../../../htmlcanvas/types";
                     <div :class="missingRequired(field) ? 'pulse-orange' : ''" :ref="'field-' + field.property">
                         <b-row :style="'margin-top: -10px; margin-bottom: -5px;'">
                             <b-col>
-                                <label class="float-left" style="text-align: left; font-size: 15px;">{{
+                                <label class="float-left" style="text-align: left; font-size: 15px;" v-if="field.type !== 'title'">{{
                                     field.title
                                 }}</label>
+                                <hr v-else>
                             </b-col>
                             <b-col cols="2" v-if="field.hasDefault" v-b-tooltip.hover title="Override Default">
                                 <b-check

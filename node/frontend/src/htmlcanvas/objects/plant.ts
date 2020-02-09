@@ -185,10 +185,8 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             return coordDist2(awc, interaction.worldCoord) - coordDist2(bwc, interaction.worldCoord);
         });
         for (const sys of inouts) {
-            if (sys.entity.systemUid === requestSystemUid) {
-                if (sys.offerInteraction(interaction)) {
-                    return [sys.entity, this.entity];
-                }
+            if (sys.offerInteraction(interaction)) {
+                return [sys.entity, this.entity];
             }
         }
         return null;

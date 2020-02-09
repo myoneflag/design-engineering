@@ -36,8 +36,6 @@ export default function insertFlowSource(context: CanvasContext, system: FlowSys
             async (wc: Coord) => {
                 // Preview
                 await context.$store.dispatch("document/revert", false);
-
-
                     const interactive = context.offerInteraction(
                         {
                             entityType: EntityType.RISER,

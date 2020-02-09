@@ -91,7 +91,11 @@ export const actions: ActionTree<DocumentState, RootState> = {
             diff.push({ type: OPERATION_NAMES.COMMITTED_OPERATION, id: -1 });
         }
 
+
+
         state.optimisticHistory.push(...diff);
+
+        const prevHistoryId = state.history.length ? state.history[state.history.length - 1].id : -1;
 
         submitOperation(
             state.documentId,
@@ -105,6 +109,16 @@ export const actions: ActionTree<DocumentState, RootState> = {
             window.alert('Unable to Save: There is a connection issue with the server. Please refresh. \n' +
              e.message + "\n" + e.trace);
         });
+
+        setTimeout(() => {
+            const thisHistoryId = state.history.length ? state.history[state.history.length - 1].id : -1;
+            if (thisHistoryId === prevHistoryId) {
+                // didn't update successfully
+                state.uiState.viewOnly = true;
+                state.uiState.viewOnlyReason = 'Having trouble saving, please refresh';
+                window.alert('Having trouble saving for the last 10 seconds, please refresh');
+            }
+        }, 10000);
 
         MainEventBus.$emit("committed", true);
     },

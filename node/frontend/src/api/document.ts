@@ -6,6 +6,7 @@ import { Organization } from "../../../common/src/models/Organization";
 import { GeneralInfo } from "../../../common/src/api/document/drawing";
 import { OperationTransformConcrete } from "../../../common/src/api/document/operation-transforms";
 import { Operation } from "../../../common/src/models/Operation";
+import { cooperativeYield } from "../htmlcanvas/utils";
 
 const wss = new Map<number, WebSocket>();
 
@@ -89,7 +90,20 @@ export async function closeDocument(id: number) {
 
 export async function sendOperations(id: number, ops: OT.OperationTransformConcrete[]) {
     if (wss.has(id)) {
-        await wss.get(id)!.send(JSON.stringify(ops));
+        const p = wss.get(id)!.send(JSON.stringify(ops));
+        const timedOut = await (Promise.race([p, new Promise((res, rej) => {
+            setTimeout(() => {
+                res(true);
+            }, 1000);
+        })]));
+
+        if (timedOut) {
+            console.log('Timed out');
+            await p;
+            console.log('restored');
+        } else {
+            console.log('sent');
+        }
     } else {
         throw new Error("Document already closed");
     }

@@ -75,6 +75,7 @@ export default function insertPlant(context: CanvasContext, angle: number, right
                     calculationHeightM: null,
                     systemUid: StandardFlowSystemUids.ColdWater,
                     uid: inletUid,
+                    allowAllSystems: false,
                     configuration: FlowConfiguration.INPUT
                 };
 
@@ -88,6 +89,7 @@ export default function insertPlant(context: CanvasContext, angle: number, right
                     calculationHeightM: null,
                     systemUid: StandardFlowSystemUids.HotWater,
                     uid: outletUid,
+                    allowAllSystems: false,
                     configuration: FlowConfiguration.OUTPUT
                 };
 

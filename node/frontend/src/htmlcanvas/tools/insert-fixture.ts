@@ -65,6 +65,7 @@ export default function insertFixture(context: CanvasContext, fixtureName: strin
                         loadingUnits: null,
                         maxPressureKPA: null,
                         minPressureKPA: null,
+                        allowAllSystems: false,
                         uid: uuid()
                     };
                 }
@@ -84,6 +85,7 @@ export default function insertFixture(context: CanvasContext, fixtureName: strin
                         parentUid: fixtureUid,
                         type: EntityType.SYSTEM_NODE,
                         calculationHeightM: null,
+                        allowAllSystems: false,
                         systemUid: suid,
                         uid: snuid,
                         configuration: FlowConfiguration.INPUT

@@ -128,7 +128,7 @@
                         {
                             title: "Pipe Vertical Pressure Loss",
                             id: "pipe-vertical-pressure-loss",
-                            content: "<p>In addition to any pressure loss in pipes due to friction loss from the flow rate and through the fittings, there are additional losses when the pipe changes level. For example, if the flow is going down a riser, it gains 9.81kPa/metre; if the flow is going up a riser, it loses 9.81kPa/metre."
+                            content: "<p>In addition to any pressure loss in pipes due to friction loss from the flow rate and through the fittings, there are additional losses when the pipe changes level. For example, if the flow is going down a riser, it gains 9.81kPa/metre; if the flow is going up a riser, it loses 9.81kPa/metre. However we don't take into account changes to atmospheric pressure, or minute difference in gravitational acceleration."
                         },
 
                         {

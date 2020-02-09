@@ -32,6 +32,7 @@ import FixtureCalculation from "../../store/document/calculations/fixture-calcul
 import Cached from "../lib/cached";
 import { Coord } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
+import SystemNode from "./big-valve/system-node";
 
 @CalculatedObject
 @SelectableObject
@@ -322,5 +323,16 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         }
 
         return res;
+    }
+
+    onUpdate() {
+        super.onUpdate();
+        // sync the allowAllSystems setting
+        for (const ri of Object.values(this.entity.roughIns)) {
+            const s = this.globalStore.get(ri.uid) as SystemNode;
+            if (s && ri.allowAllSystems !== s.entity.allowAllSystems) {
+                s.entity.allowAllSystems = ri.allowAllSystems;
+            }
+        }
     }
 }
