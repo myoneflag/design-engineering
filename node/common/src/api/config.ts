@@ -84,10 +84,18 @@ export enum SupportedDwellingStandards {
     barriesBookDwellings = "barriesBookDwellings"
 }
 
+
+export enum RingMainCalculationMethod {
+    PSD_FLOW_RATE_DISTRIBUTED = 'PSD_FLOW_RATE_DISTRIBUTED',
+    ISOLATION_CASES = 'ISOLATION_CASES',
+    MAX_DISTRIBUTED_AND_ISOLATION_CASES = 'MAX_DISTRIBUTED_AND_ISOLATION_CASES',
+}
+
 export const RING_MAIN_CALCULATION_METHODS: Choice[] = [
-    { name: "Flow rate assigned to each fixture as %", disabled: true, key: "fixturePCT" },
-    { name: "Flow rate assigned to fixtures evenly", disabled: true, key: "fixtureEven" },
-    { name: "Flow rate assigned to most disadvantaged fixtures", disabled: true, key: "fixtureDisadvantaged" },
+    { name: "Isolation Cases by Closing any Isolation Valve", disabled: false, key: RingMainCalculationMethod.ISOLATION_CASES },
+    { name: "PSD Flow rate distributed according to Loading/Dwelling Units", disabled: true, key:  RingMainCalculationMethod.PSD_FLOW_RATE_DISTRIBUTED},
+
+    { name: "Max. of Distributed PSD or Isolation Method", disabled: true, key: RingMainCalculationMethod.MAX_DISTRIBUTED_AND_ISOLATION_CASES },
     { name: "99th percentile computer simulated PSD", disabled: true, key: "monteCarlo" }
 ];
 export const PIPE_SIZING_METHODS: Choice[] = [

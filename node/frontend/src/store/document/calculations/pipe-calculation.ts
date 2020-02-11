@@ -1,7 +1,7 @@
 import { FieldCategory, CalculationField, Units } from "../../../../src/store/document/calculations/calculation-field";
 import { Calculation, PsdCalculation } from "../../../../src/store/document/calculations/types";
 import PipeEntity, { fillPipeDefaultFields } from "../../../../../common/src/api/document/entities/pipe-entity";
-import { getPsdUnitName } from "../../../calculations/utils";
+import { getPsdUnitName, PsdProfile } from "../../../calculations/utils";
 import set = Reflect.set;
 import { isGermanStandard } from "../../../../../common/src/api/config";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
@@ -15,6 +15,10 @@ export default interface PipeCalculation extends PsdCalculation, Calculation {
     realInternalDiameterMM: number | null;
     pressureDropKpa: number | null;
     lengthM: number | null;
+    flowFrom: string | null;
+
+    psdProfile: PsdProfile | null;
+    isRingMain: boolean | null;
 
     velocityRealMS: number | null;
 
@@ -159,7 +163,10 @@ export function emptyPipeCalculation(): PipeCalculation {
         realNominalPipeDiameterMM: null,
         lengthM: null,
         temperatureRange: null,
+        isRingMain: null,
         velocityRealMS: null,
-        warning: null
+        warning: null,
+        psdProfile: null,
+        flowFrom: null,
     };
 }

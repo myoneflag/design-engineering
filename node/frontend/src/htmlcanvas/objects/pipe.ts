@@ -52,6 +52,7 @@ import { assertUnreachable, ComponentPressureLossMethod } from "../../../../comm
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 3.5;
+export const RING_MAIN_HEAD_LOSS_CONSTANT = 1.28;
 
 @CalculatedObject
 @SelectableObject
@@ -712,7 +713,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 assertUnreachable(context.drawing.metadata.calculationParams.componentPressureLossMethod);
         }
 
-        const retval =
+        let retval =
             sign *
             getDarcyWeisbachFlatMH(
                 parseCatalogNumberExact(page.diameterInternalMM)!,
@@ -723,6 +724,11 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 velocityMS,
                 ga
             );
+
+        const calc = context.globalStore.getOrCreateCalculation(this.entity);
+        if (calc.isRingMain) {
+            retval *= RING_MAIN_HEAD_LOSS_CONSTANT;
+        }
 
         let heightHeadLoss = 0;
         const fromo = context.globalStore.get(from.connectable) as BaseBackedConnectable;

@@ -24,6 +24,7 @@ export interface IsolationValve extends DirectedValve {
     type: ValveType.ISOLATION_VALVE;
     catalogId: "gateValve" | "ballValve" | "butterflyValve";
     isClosed: boolean;
+    makeIsolationCaseOnRingMains: boolean;
 }
 
 export interface WaterMeter extends DirectedValve {

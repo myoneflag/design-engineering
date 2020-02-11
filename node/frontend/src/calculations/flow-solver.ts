@@ -10,22 +10,19 @@ import Fitting from "../../src/htmlcanvas/objects/fitting";
 import { GlobalStore } from "../htmlcanvas/lib/global-store";
 import { ObjectStore } from "../htmlcanvas/lib/object-store";
 import { Catalog } from "../../../common/src/api/catalog/types";
+import { CalculationContext } from "./types";
 
 export const MINIMUM_FLOW_RATE_CHANGE = 0.0001;
 
 export default class FlowSolver {
     network: Graph<FlowNode, FlowEdge>;
-    globalStore: GlobalStore;
-    catalog: Catalog;
-    doc: DocumentState;
+    context: CalculationContext;
     ga: number;
 
-    constructor(network: Graph<FlowNode, FlowEdge>, globalStore: GlobalStore, doc: DocumentState, catalog: Catalog) {
+    constructor(network: Graph<FlowNode, FlowEdge>, context: CalculationContext) {
         this.network = network;
-        this.globalStore = globalStore;
-        this.catalog = catalog;
-        this.doc = doc;
-        this.ga = doc.drawing.metadata.calculationParams.gravitationalAcceleration;
+        this.context = context;
+        this.ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
     }
 
     // Given a flow network of pipes, joints with given diameters, and the flow sources and sinks,
@@ -72,7 +69,7 @@ export default class FlowSolver {
             }
             let adjustments = 0;
             cycles.forEach((c) => {
-                adjustments += Math.abs(this.adjustPath(flowRates, c, 0));
+                adjustments += Math.abs(adjustPathHardyCross(flowRates, c,  this.network,0, this.context));
             });
 
             arcCover.forEach((a) => {
@@ -82,17 +79,17 @@ export default class FlowSolver {
                     throw new Error("Endpoint of arc is not a source");
                 }
                 const fromDensity = getFluidDensityOfSystem(
-                    (this.globalStore.get(a[0].from.connectable)!.entity as RiserEntity).systemUid,
-                    this.doc,
-                    this.catalog
+                    (this.context.globalStore.get(a[0].from.connectable)!.entity as RiserEntity).systemUid,
+                    this.context.doc,
+                    this.context.catalog
                 );
                 const toDensity = getFluidDensityOfSystem(
-                    (this.globalStore.get(a[a.length - 1].from.connectable)!.entity as RiserEntity).systemUid,
-                    this.doc,
-                    this.catalog
+                    (this.context.globalStore.get(a[a.length - 1].from.connectable)!.entity as RiserEntity).systemUid,
+                    this.context.doc,
+                    this.context.catalog
                 );
                 const diffHead = kpa2head(toKPA, fromDensity!, this.ga) - kpa2head(fromKPA, toDensity!, this.ga);
-                adjustments += Math.abs(this.adjustPath(flowRates, a, diffHead));
+                adjustments += Math.abs(adjustPathHardyCross(flowRates, a, this.network, diffHead, this.context));
             });
 
             if (adjustments < MINIMUM_FLOW_RATE_CHANGE) {
@@ -102,96 +99,13 @@ export default class FlowSolver {
         return flowRates;
     }
 
-    // Tracks the pressure drop along the path, and augments the path so that the pressure difference is the same as
-    // the expected difference.
-    // Returns the delta speed, for iteration exit purposes.
-    adjustPath(
-        flows: FlowAssignment,
-        path: Array<Edge<FlowNode, FlowEdge>>,
-        expectedDifferenceHead: number = 0
-    ): number {
-        // Augment the path backwards
-        // Use ternary search to find the smallest value of the sum of concave functions.
-        let totalHeadLoss: number = 0;
-        try {
-            const bestAdjustment = ternarySearchForGlobalMin((num) => {
-                totalHeadLoss = 0;
-                path.forEach((v) => {
-                    const connector = this.globalStore.get(v.value.uid)!;
-
-                    const delta = getObjectFrictionHeadLoss(
-                        {
-                            drawing: this.doc.drawing,
-                            catalog: this.catalog,
-                            globalStore: this.globalStore,
-                            doc: this.doc
-                        },
-                        connector,
-                        flows.getFlow(v.uid, this.network.sn(v.from)) + num,
-                        v.from,
-                        v.to,
-                        true,
-                        null,
-                    );
-                    if (delta === null) {
-                        throw new Error("Could not get friction loss of pipe");
-                    }
-                    totalHeadLoss += delta;
-                });
-                return Math.abs(-expectedDifferenceHead - totalHeadLoss);
-            });
-
-            path.forEach((v) => {
-                flows.addFlow(v.uid, this.network.sn(v.from), bestAdjustment);
-            });
-
-            return bestAdjustment;
-        } catch (e) {
-            // tslint:disable-next-line:no-console
-            console.log(
-                "error while adjusting path: " +
-                    JSON.stringify(path.map((v) => this.globalStore.get(v.value.uid)!.type)) +
-                    " expected difference: " +
-                    expectedDifferenceHead
-            );
-
-            // tslint:disable-next-line:no-console
-            console.log("og flows: " + JSON.stringify(path.map((p) => flows.getFlow(p.uid, this.network.sn(p.from)))));
-            // tslint:disable-next-line:no-console
-            console.log("uids: " + JSON.stringify(path.map((p) => p.value.uid)));
-
-            // tslint:disable-next-line:no-console
-            console.log("last ones:");
-            const o = this.globalStore.get(path[0].value.uid) as Fitting;
-            for (let i = -0.25; i <= 0.25; i += 0.01) {
-                // tslint:disable-next-line:no-console
-                console.log(
-                    o.getFrictionHeadLoss(
-                        {
-                            drawing: this.doc.drawing,
-                            catalog: this.catalog,
-                            globalStore: this.globalStore,
-                            doc: this.doc
-                        },
-                        i,
-                        path[1].from,
-                        path[1].to,
-                        true
-                    )
-                );
-            }
-
-            throw e;
-        }
-    }
-
     getInitialFlowRates(demandsLS: Map<string, number>, suppliesKPA: Map<string, number>): FlowAssignment {
         const result: FlowAssignment = new FlowAssignment();
 
         demandsLS.forEach((f, n) => {
             // find a source for this flow.
             const path = this.network.anyPath(
-                { connectable: n, connection: this.globalStore.get(n)!.entity.parentUid! },
+                { connectable: n, connection: this.context.globalStore.get(n)!.entity.parentUid! },
                 Array.from(suppliesKPA.keys()).map((k) => ({ connectable: k, connection: FLOW_SOURCE_EDGE })),
                 undefined,
                 undefined,
@@ -206,5 +120,80 @@ export default class FlowSolver {
         });
 
         return result;
+    }
+}
+
+// Tracks the pressure drop along the path, and augments the path so that the pressure difference is the same as
+// the expected difference.
+// Returns the delta speed, for iteration exit purposes.
+export function adjustPathHardyCross(
+    flows: FlowAssignment,
+    path: Array<Edge<FlowNode, FlowEdge>>,
+    network: Graph<FlowNode, FlowEdge>,
+    expectedDifferenceHead: number = 0,
+    context: CalculationContext,
+): number {
+    // Augment the path backwards
+    // Use ternary search to find the smallest value of the sum of concave functions.
+    let totalHeadLoss: number = 0;
+    try {
+        const bestAdjustment = ternarySearchForGlobalMin((num) => {
+            totalHeadLoss = 0;
+            path.forEach((v) => {
+                const connector = context.globalStore.get(v.value.uid)!;
+
+                const delta = getObjectFrictionHeadLoss(
+                    context,
+                    connector,
+                    flows.getFlow(v.uid, network.sn(v.from)) + num,
+                    v.from,
+                    v.to,
+                    true,
+                    null,
+                );
+                if (delta === null) {
+                    throw new Error("Could not get friction loss of pipe");
+                }
+                totalHeadLoss += delta;
+            });
+            return Math.abs(-expectedDifferenceHead - totalHeadLoss);
+        });
+
+        path.forEach((v) => {
+            flows.addFlow(v.uid, network.sn(v.from), bestAdjustment);
+        });
+
+        return bestAdjustment;
+    } catch (e) {
+        // tslint:disable-next-line:no-console
+        console.log(
+            "error while adjusting path: " +
+            JSON.stringify(path.map((v) => context.globalStore.get(v.value.uid)!.type)) +
+            " expected difference: " +
+            expectedDifferenceHead
+        );
+
+        // tslint:disable-next-line:no-console
+        console.log("og flows: " + JSON.stringify(path.map((p) => flows.getFlow(p.uid, network.sn(p.from)))));
+        // tslint:disable-next-line:no-console
+        console.log("uids: " + JSON.stringify(path.map((p) => p.value.uid)));
+
+        // tslint:disable-next-line:no-console
+        console.log("last ones:");
+        const o = context.globalStore.get(path[0].value.uid) as Fitting;
+        for (let i = -0.25; i <= 0.25; i += 0.01) {
+            // tslint:disable-next-line:no-console
+            console.log(
+                o.getFrictionHeadLoss(
+                    context,
+                    i,
+                    path[1].from,
+                    path[1].to,
+                    true
+                )
+            );
+        }
+
+        throw e;
     }
 }
