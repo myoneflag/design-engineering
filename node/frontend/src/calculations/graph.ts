@@ -492,7 +492,8 @@ export default class Graph<N, E> {
         seenNodes?: Set<N>,
         seenEdges?: Set<string>,
         directed: boolean = true,
-        reversed: boolean = false
+        reversed: boolean = false,
+        edgeFilter?: (e: Edge<N, E>) => boolean,
     ): Array<Edge<N, E>> | null {
         const cache: Array<Edge<N, E>> = [];
         let result: Array<Edge<N, E>> | null = null;
@@ -515,7 +516,7 @@ export default class Graph<N, E> {
             toS.add(this.sn(to));
         }
 
-        this.dfs(
+        this.dfsRecursive(
             from,
             (n) => {
                 if (toS.has(this.sn(n))) {
@@ -530,6 +531,11 @@ export default class Graph<N, E> {
                     return true;
                 }
                 cache.push(e);
+                if (edgeFilter) {
+                    if (!edgeFilter(e)) {
+                        return true;
+                    }
+                }
                 return false;
             },
             (e) => {
@@ -633,24 +639,29 @@ export default class Graph<N, E> {
 
         this.adjacencyList.forEach((v) => {
             for (const e of v) {
-                if (seenEdges.has(e.uid)) {
-                    continue;
-                }
-
-                const newEdges = new Set<string>([e.uid]);
-                const thisCycle = this.anyPath(e.to, e.from, undefined, newEdges, directed);
-
-                if (thisCycle) {
-                    thisCycle.push(e);
-                    for (const ee of thisCycle) {
-                        seenEdges.add(ee.uid);
-                    }
-                    result.push(thisCycle);
-                }
+                const ret = this.getCycleCovering(seenEdges, e, directed, () => true);
             }
         });
 
         return result;
+    }
+
+    getCycleCovering(seenEdges: Set<string>, e: Edge<N, E>, directed: boolean, edgeFilter: (e: Edge<N, E>) => boolean) {
+        if (seenEdges.has(e.uid)) {
+            return null;
+        }
+
+        const newEdges = new Set<string>([e.uid]);
+        const thisCycle = this.anyPath(e.to, e.from, undefined, newEdges, directed, false, edgeFilter);
+
+        if (thisCycle) {
+            thisCycle.push(e);
+            for (const ee of thisCycle) {
+                seenEdges.add(ee.uid);
+            }
+            return thisCycle;
+        }
+        return null;
     }
 
     sourceArcCover(sources: N[], accountedFor?: Set<string>): Array<Array<Edge<N, E>>> {

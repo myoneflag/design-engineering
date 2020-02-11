@@ -34,7 +34,7 @@ export function getFrictionFactor(pipeInternalDiameterMM: number, pipeRoughness:
         }
         curr = next;
         if (iter > 500) {
-            throw new Error("infinite loop in friction calculation");
+            throw new Error("infinite loop in friction calculation. reynolds Number: " + reynoldsNumber);
         }
     }
     return curr;

@@ -178,10 +178,16 @@ function createBareValve(type: ValveType, catalogId: string): DirectedValveConcr
         case ValveType.CHECK_VALVE:
         case ValveType.WATER_METER:
         case ValveType.STRAINER:
+            return {
+                isClosed: false,
+                catalogId: catalogId as any,
+                type
+            };
         case ValveType.ISOLATION_VALVE:
             return {
                 isClosed: false,
                 catalogId: catalogId as any,
+                makeIsolationCaseOnRingMains: true,
                 type
             };
         case ValveType.PRV_SINGLE:

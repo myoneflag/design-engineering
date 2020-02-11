@@ -280,23 +280,25 @@ export function drawLoadingUnits(
     let coldFR: number | null | undefined;
     let hotFR: number | null | undefined;
     try {
-        coldFR = lookupFlowRate(
+        const res = lookupFlowRate(
             units[StandardFlowSystemUids.ColdWater],
             context.doc,
             catalog,
             StandardFlowSystemUids.ColdWater,
             true,
         );
+        coldFR = res ? res.flowRateLS : null;
     } catch (e) {
     }
     try {
-        hotFR = lookupFlowRate(
+        const res = lookupFlowRate(
             addPsdCounts(units[StandardFlowSystemUids.HotWater], units[StandardFlowSystemUids.WarmWater]),
             context.doc,
             catalog,
             StandardFlowSystemUids.HotWater,
             true,
         );
+        hotFR = res ? res.flowRateLS : null;
     } catch (e) {
         /**/
     }

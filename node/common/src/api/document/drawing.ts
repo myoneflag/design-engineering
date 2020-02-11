@@ -2,7 +2,7 @@ import { DrawableEntityConcrete } from "./entities/concrete-entity";
 import {
     ComponentPressureLossMethod,
     PIPE_SIZING_METHODS,
-    RING_MAIN_CALCULATION_METHODS,
+    RingMainCalculationMethod,
     SupportedDwellingStandards,
     SupportedPsdStandards
 } from "../config";
@@ -106,7 +106,7 @@ export interface FlowSystemParameters extends WithID {
 export interface CalculationParameters {
     psdMethod: SupportedPsdStandards;
     dwellingMethod: SupportedDwellingStandards | null;
-    ringMainCalculationMethod: string;
+    ringMainCalculationMethod: RingMainCalculationMethod;
     pipeSizingMethod: string;
     componentPressureLossMethod: ComponentPressureLossMethod;
     pipePressureLossAddOnPCT: number;
@@ -115,6 +115,7 @@ export interface CalculationParameters {
     roomTemperatureC: number;
     gravitationalAcceleration: number;
 }
+
 
 export const initialDrawing: DrawingState = {
     metadata: {
@@ -207,7 +208,7 @@ export const initialDrawing: DrawingState = {
         calculationParams: {
             psdMethod: SupportedPsdStandards.as35002018LoadingUnits,
             dwellingMethod: null,
-            ringMainCalculationMethod: RING_MAIN_CALCULATION_METHODS[0].key as string,
+            ringMainCalculationMethod: RingMainCalculationMethod.ISOLATION_CASES,
             pipeSizingMethod: PIPE_SIZING_METHODS[0].key as string,
             componentPressureLossMethod: ComponentPressureLossMethod.INDIVIDUALLY,
             pipePressureLossAddOnPCT: 0,

@@ -182,6 +182,12 @@ export function insertPsdProfile(profile: PsdProfile, count: ContextualPCE) {
     }
 }
 
+export function mergePsdProfile(profile: PsdProfile, other: PsdProfile) {
+    for (const p of other.values()) {
+        insertPsdProfile(profile, p);
+    }
+}
+
 export function countPsdProfile(profile: PsdProfile): PsdCountEntry {
     const byCorrelated = new Map<string, PsdCountEntry>();
 
@@ -262,13 +268,18 @@ export function getPsdUnitName(psdMethod: SupportedPsdStandards): { name: string
     assertUnreachable(psdMethod);
 }
 
+export interface FlowRateResult {
+    flowRateLS: number;
+    fromDwellings: boolean;
+}
+
 export function lookupFlowRate(
     psdU: PsdCountEntry,
     doc: DocumentState,
     catalog: Catalog,
     systemUid: string,
     forceDwellings: boolean = false,
-): number | null {
+): FlowRateResult | null {
     const psd = doc.drawing.metadata.calculationParams.psdMethod;
     const standard = catalog.psdStandards[psd];
 
@@ -356,12 +367,12 @@ export function lookupFlowRate(
         if (fromLoading === null) {
             return null;
         }
-        return fromLoading! + psdU.continuousFlowLS;
+        return { flowRateLS: fromLoading! + psdU.continuousFlowLS, fromDwellings: false } ;
     } else {
         if (fromDwellings === null) {
             return null;
         }
-        return fromDwellings;
+        return { flowRateLS: fromDwellings, fromDwellings: true };
     }
 }
 

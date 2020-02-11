@@ -53,6 +53,15 @@ export function makeDirectedValveFields(
                 { property: 'valve.isClosed', title: 'Is Closed:', hasDefault: false, isCalculated: false,
                     type: FieldType.Boolean, params: null,  multiFieldId: 'isClosed' },
             );*/
+            fields.push({
+                property: "valve.makeIsolationCaseOnRingMains",
+                title: "Make Isolation Case on Ring Mains:",
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Boolean,
+                params: null,
+                multiFieldId: "makeIsolationCaseOnRingMains",
+            });
             break;
         case ValveType.RPZD_DOUBLE_ISOLATED:
         case ValveType.RPZD_DOUBLE_SHARED:

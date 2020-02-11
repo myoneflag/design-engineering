@@ -83,6 +83,7 @@ import {
 import { determineConnectableSystemUid } from "../store/document/entities/lib";
 import { getPropertyByString } from "../lib/utils";
 import { getPlantPressureLossKPA } from "../htmlcanvas/lib/utils";
+import { RingMainCalculator } from "./ring-main-calculator";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -303,7 +304,7 @@ export default class CalculationEngine {
 
                 this.preCompute();
                 this.sizeDefiniteTransports();
-                // this.sizeRingsAndRoots(sources);
+                this.sizeRingMains();
                 this.calculateAllPointPressures();
                 this.fillPressureDropFields();
                 this.createWarnings();
@@ -321,6 +322,11 @@ export default class CalculationEngine {
         if (!this.equationEngine.isComplete()) {
             throw new Error("Calculations could not complete \n");
         }
+    }
+
+    sizeRingMains() {
+        const rmc = new RingMainCalculator(this);
+        rmc.calculateAllRings();
     }
 
     precomputeBridges() {
@@ -982,7 +988,7 @@ export default class CalculationEngine {
                                 connection: other
                             },
                             {
-                                type: EdgeType.CHECK_THROUGH,
+                                type: EdgeType.ISOLATION_THROUGH,
                                 uid: entity.uid
                             }
                         );
@@ -1013,183 +1019,6 @@ export default class CalculationEngine {
             }
         } else if (connections.length > 2) {
             throw new Error("too many pipes coming out of this one");
-        }
-    }
-
-    sizeRingsAndRoots(sources: FlowNode[]) {
-        // For each connected component, find the total PsdUs, thus the flow rates, then distribute
-        // the flow rate equally to each fixture. From these flow rates, we can then calculate the
-        // flow network, and iteratively re-size the pipes.
-        const leaf2PsdU = new Map<string, PsdCountEntry>();
-        const flowConnectedUF = new UnionFind<string>();
-        sources.forEach((s) => {
-            this.flowGraph.dfs(s, (n) => {
-                const psdU = this.getTerminalPsdU(n);
-                if (psdU) {
-                    leaf2PsdU.set(n.connectable, psdU);
-                }
-                flowConnectedUF.join(s.connectable, n.connectable);
-            });
-        });
-
-        const demandLS = new Map<string, number>();
-        const sourcesKPA = new Map<string, number>();
-
-        sources.forEach((s) => {
-            const source = this.globalStore.get(s.connectable)!;
-            if (source.entity.type === EntityType.FLOW_SOURCE) {
-                sourcesKPA.set(s.connectable, source.entity.pressureKPA!);
-            } else {
-                throw new Error("Flow coming in from an entity that isn't a source");
-            }
-        });
-
-        const flowComponents = flowConnectedUF.groups();
-        flowComponents.forEach((group) => {
-            let totalPsdU = zeroPsdCounts();
-            group.forEach((n) => {
-                if (leaf2PsdU.has(n)) {
-                    totalPsdU = addPsdCounts(totalPsdU, leaf2PsdU.get(n)!);
-                }
-            });
-
-            let systemUid: string | undefined;
-            for (const uid of group) {
-                const o = this.globalStore.get(uid);
-                if (o) {
-                    if (isConnectableEntity(o.entity)) {
-                        systemUid = determineConnectableSystemUid(this.globalStore, o.entity);
-                    } else if (o.entity.type === EntityType.PIPE) {
-                        systemUid = o.entity.systemUid;
-                    }
-                    if (systemUid) {
-                        break;
-                    }
-                }
-            }
-
-            if (!isZeroPsdCounts(totalPsdU)) {
-                if (!systemUid) {
-                    throw new Error("Cannot determine system UID but we need it");
-                }
-
-                const frFromUnits = lookupFlowRate(
-                    {
-                        units: totalPsdU.units,
-                        dwellings: 0,
-                        continuousFlowLS: 0
-                    },
-                    this.doc,
-                    this.catalog,
-                    systemUid
-                );
-
-                const frFromDwellings = lookupFlowRate(
-                    {
-                        units: 0,
-                        dwellings: totalPsdU.dwellings,
-                        continuousFlowLS: 0
-                    },
-                    this.doc,
-                    this.catalog,
-                    systemUid
-                );
-
-                if (frFromUnits === null) {
-                    throw new Error("Could not get flow rate from loading units");
-                }
-                if (frFromDwellings === null) {
-                    throw new Error("Could not get flow rate from dwellings");
-                }
-
-                const perUnit = frFromUnits / totalPsdU.units;
-                const perDwelling = totalPsdU.dwellings ? frFromDwellings / totalPsdU.dwellings : 0;
-
-                group.forEach((n) => {
-                    if (leaf2PsdU.has(n) && !isZeroPsdCounts(leaf2PsdU.get(n)!)) {
-                        demandLS.set(
-                            n,
-                            perUnit * leaf2PsdU.get(n)!.units +
-                            perDwelling * leaf2PsdU.get(n)!.dwellings +
-                            leaf2PsdU.get(n)!.continuousFlowLS
-                        );
-                    }
-                });
-            }
-        });
-
-        // Now that we have flows, we can iteratively sizing of pipes.
-        const pipesThatNeedSizing = new Set<string>();
-        this.flowGraph.edgeList.forEach((e) => {
-            if (e.value.type !== EdgeType.PIPE) {
-                return;
-            }
-            const pipeObj = this.globalStore.get(e.value.uid)!;
-            if (pipeObj instanceof Pipe) {
-                let calculation = this.globalStore.getOrCreateCalculation(pipeObj.entity);
-                if (calculation === undefined) {
-                    calculation = this.globalStore.getOrCreateCalculation(pipeObj.entity);
-                    const filled = fillPipeDefaultFields(this.doc.drawing, pipeObj.computedLengthM, pipeObj.entity);
-                    let initialSize = lowerBoundTable(this.catalog.pipes[filled.material!].pipesBySize, 0)!;
-                    if (pipeObj.entity.diameterMM) {
-                        // there is a custom diameter
-                        initialSize = this.getPipeByNominal(pipeObj.entity, pipeObj.entity.diameterMM)!;
-                    }
-                    Object.assign(calculation, {
-                        peakFlowRate: null,
-                        psdUnits: null,
-                        optimalInnerPipeDiameterMM: null,
-                        pressureDropKpa: null,
-                        realInternalDiameterMM: parseCatalogNumberExact(initialSize.diameterInternalMM),
-                        realNominalPipeDiameterMM: parseCatalogNumberExact(initialSize.diameterNominalMM),
-                        temperatureRange: null,
-                        velocityRealMS: null,
-                        warning: null
-                    });
-                    pipesThatNeedSizing.add(pipeObj.entity.uid);
-                } else if (calculation.realInternalDiameterMM === null) {
-                    const filled = fillPipeDefaultFields(this.doc.drawing, pipeObj.computedLengthM, pipeObj.entity);
-                    const initialSize = lowerBoundTable(this.catalog.pipes[filled.material!].pipesBySize, 0)!;
-
-                    calculation.realInternalDiameterMM = parseCatalogNumberExact(initialSize.diameterInternalMM);
-                    calculation.realNominalPipeDiameterMM = parseCatalogNumberExact(initialSize.diameterNominalMM);
-
-                    pipesThatNeedSizing.add(pipeObj.entity.uid);
-                }
-            }
-        });
-
-        const solver = new FlowSolver(this.flowGraph, this.globalStore, this.doc, this.catalog);
-
-        let iters = 0;
-        while (true) {
-            iters++;
-            if (iters > 5) {
-                break;
-            }
-            const assignment = solver.solveFlowsLS(demandLS, sourcesKPA);
-            let changed = false;
-
-            pipesThatNeedSizing.forEach((target) => {
-                const flow = assignment.getFlow(stringify({ type: EdgeType.PIPE, uid: target }));
-
-                // TODO: Size ring mains properly
-                // But for now, just size this main by this flow.
-                const pipe = this.globalStore.get(target) as Pipe;
-                const calculation = this.globalStore.getOrCreateCalculation(pipe.entity);
-                const oldSize = calculation.realInternalDiameterMM;
-                this.sizePipeForFlowRate(pipe.entity, flow);
-                const newSize = calculation.realInternalDiameterMM;
-
-                if (oldSize !== newSize) {
-                    changed = true;
-                }
-            });
-
-            if (!changed) {
-                // Pipe sizes have converged.
-                break;
-            }
         }
     }
 
@@ -1298,11 +1127,14 @@ export default class CalculationEngine {
         }
     }
 
-    configureEntityForPSD(entity: DrawableEntityConcrete, psdU: PsdCountEntry, flowEdge: FlowEdge) {
+    configureEntityForPSD(entity: DrawableEntityConcrete, psdU: PsdCountEntry, flowEdge: FlowEdge, wet: FlowNode | null, profile: PsdProfile) {
         switch (entity.type) {
             case EntityType.PIPE: {
                 const calculation = this.globalStore.getOrCreateCalculation(entity);
                 calculation.psdUnits = psdU;
+                calculation.psdProfile = profile;
+                calculation.flowFrom = wet ? wet.connectable : null;
+                calculation.isRingMain = false;
 
                 const flowRate = lookupFlowRate(psdU, this.doc, this.catalog, entity.systemUid);
 
@@ -1312,7 +1144,7 @@ export default class CalculationEngine {
                         this.sizePipeForFlowRate(entity, 0);
                     }
                 } else {
-                    this.sizePipeForFlowRate(entity, flowRate);
+                    this.sizePipeForFlowRate(entity, flowRate.flowRateLS);
                 }
 
                 return;
@@ -1331,13 +1163,13 @@ export default class CalculationEngine {
                         calculation.rpzdSizeMM![StandardFlowSystemUids.HotWater] = this.sizeRpzdForFlowRate(
                             entity.valve.catalogId,
                             ValveType.RPZD_SINGLE,
-                            flowRate
+                            flowRate.flowRateLS
                         );
                     } else if (flowEdge.type === EdgeType.BIG_VALVE_COLD_COLD) {
                         calculation.rpzdSizeMM![StandardFlowSystemUids.ColdWater] = this.sizeRpzdForFlowRate(
                             entity.valve.catalogId,
                             ValveType.RPZD_SINGLE,
-                            flowRate
+                            flowRate.flowRateLS
                         );
                     } else {
                         throw new Error("Invalid edge on hot-cold RPZD");
@@ -1346,13 +1178,13 @@ export default class CalculationEngine {
 
                 if (flowEdge.type === EdgeType.BIG_VALVE_COLD_COLD) {
                     calculation.coldPsdUs = psdU;
-                    calculation.coldPeakFlowRate = flowRate;
+                    calculation.coldPeakFlowRate = flowRate ? flowRate.flowRateLS : null;
                 } else if (
                     flowEdge.type === EdgeType.BIG_VALVE_HOT_WARM ||
                     flowEdge.type === EdgeType.BIG_VALVE_HOT_HOT
                 ) {
                     calculation.hotPsdUs = psdU;
-                    calculation.hotPeakFlowRate = flowRate;
+                    calculation.hotPeakFlowRate = flowRate ? flowRate.flowRateLS : null;
                 } else {
                     throw new Error("invalid edge in TMV");
                 }
@@ -1758,7 +1590,7 @@ export default class CalculationEngine {
 
         if (exclusiveProfile === false) {
             // No flow source.
-            this.configureEntityForPSD(object.entity, zeroPsdCounts(), flowEdge);
+            this.configureEntityForPSD(object.entity, zeroPsdCounts(), flowEdge, null, new PsdProfile());
         } else {
             const exclusivePsdU = countPsdProfile(exclusiveProfile);
 
@@ -1790,11 +1622,11 @@ export default class CalculationEngine {
                         throw new Error("Invalid PSD situation");
                     }
                     // we have successfully calculated the pipe's loading units.
-                    this.configureEntityForPSD(object.entity, exclusivePsdU, flowEdge);
+                    this.configureEntityForPSD(object.entity, exclusivePsdU, flowEdge, wet, exclusiveProfile);
                 }
             } else {
                 if (isZeroPsdCounts(residualPsdU)) {
-                    this.configureEntityForPSD(object.entity, zeroPsdCounts(), flowEdge);
+                    this.configureEntityForPSD(object.entity, zeroPsdCounts(), flowEdge, wet, new PsdProfile());
                 } else {
                     // TODO: flow rate is ambiguous, and no flow is exclusive to us.
                 }

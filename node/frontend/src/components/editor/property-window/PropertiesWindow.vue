@@ -126,6 +126,9 @@ import {EntityType} from "../../../../src/store/document/entities/types";
                             {{ JSON.stringify(selectedEntities, null, 2) }}
 
                             calculations: {{ selectedEntities.map((e) => getCalculation(e)) }}
+
+
+                            connections: {{ selectedEntities.map((e) => objectStore.getConnections(e.uid)) }}
                         </pre
                     >
                     <b-collapse id="collapse-1-inner" class="mt-2">

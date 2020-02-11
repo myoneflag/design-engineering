@@ -2,6 +2,7 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import { DrawingMode } from "../../htmlcanvas/types";
 import { DrawingMode } from "../../htmlcanvas/types";
 import { DrawingMode } from "../../htmlcanvas/types";
@@ -178,7 +179,7 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
     import { DEFAULT_FONT_NAME } from "../../config";
     import { cloneSimple } from "../../../../common/src/lib/utils";
     import Riser from "../../htmlcanvas/objects/riser";
-    import stringify from 'json-stable-stringify';
+    import stringify from "json-stable-stringify";
     import insertDwellingHotCold from "../../htmlcanvas/tools/insert-dwelling-hot-cold";
 
     @Component({
@@ -845,6 +846,9 @@ export default class DrawingCanvas extends Vue {
 
         rebaseAll(this);
         this.murderOrphans();
+        if (tryToFix) {
+            this.deleteDuplicatePipes();
+        }
         const res = this.validate(tryToFix);
         if (res.success) {
             this.$store.dispatch('document/commit', logUndo);
@@ -852,6 +856,29 @@ export default class DrawingCanvas extends Vue {
             this.$store.dispatch('document/revert');
             this.$bvModal.msgBoxOk(res.message);
             this.scheduleDraw();
+        }
+    }
+
+    deleteDuplicatePipes() {
+        // this is done here rather than at the entity level for performance reasons.
+        let numDeleted = 0;
+        const seen = new Set<string>();
+        for (const o of this.globalStore.values()) {
+            if (o.entity.type === EntityType.PIPE) {
+                const key = o.entity.endpointUid[0] + ':' + o.entity.endpointUid[1];
+                if (seen.has(key)) {
+                    this.deleteEntity(o);
+                    numDeleted ++;
+                } else {
+                    const key2 = o.entity.endpointUid[1] + ':' + o.entity.endpointUid[0];
+                    seen.add(key);
+                    seen.add(key2);
+                }
+            }
+        }
+
+        if (numDeleted) {
+            this.$bvModal.msgBoxOk('Info: Deleted ' + numDeleted + ' duplicate pipes');
         }
     }
 

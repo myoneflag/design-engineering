@@ -7,7 +7,7 @@ import { PlantEntityV3, plantV3toCurrent } from "./document/entities/plant-entit
 // implement the upgrade method below.
 // Remember to also add this function to the upgrade function in default.
 
-export const CURRENT_VERSION = 6;
+export const CURRENT_VERSION = 7;
 
 export function upgrade0to1(original: DrawingState) {
     // We have to fix one problem. Kitchen Sinks are broken.
@@ -102,3 +102,9 @@ export function upgrade5to6(original: DrawingState) {
     }
 }
 
+export function upgrade6to7(original: DrawingState) {
+    if (original.metadata.calculationParams.ringMainCalculationMethod === undefined) {
+        original.metadata.calculationParams.componentPressureLossMethod =
+            initialDrawing.metadata.calculationParams.componentPressureLossMethod;
+    }
+}

@@ -10,7 +10,7 @@ import {
     upgrade1to2,
     upgrade2to3,
     upgrade3to4,
-    upgrade4to5, upgrade5to6
+    upgrade4to5, upgrade5to6, upgrade6to7
 } from "../../common/src/api/upgrade";
 import { diffState } from "../../common/src/api/document/state-differ";
 import stringify from 'json-stable-stringify';
@@ -56,6 +56,9 @@ export async function upgradeDocument(doc: Document) {
                     case 5:
                         upgrade5to6(newUpgraded);
                     // noinspection FallThroughInSwitchStatementJS
+                    case 6:
+                    // noinspection FallThroughInSwitchStatementJS
+                        upgrade6to7(newUpgraded);
                     case CURRENT_VERSION:
                         break;
                 }
@@ -101,6 +104,7 @@ export function getInitialDrawing(doc?: Document) {
         case 4:
         case 5:
         case 6:
+        case CURRENT_VERSION:
             return cloneSimple(initialDrawing);
         default:
             throw new Error('invalid state');
