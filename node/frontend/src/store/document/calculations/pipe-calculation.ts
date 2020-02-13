@@ -7,8 +7,20 @@ import { isGermanStandard } from "../../../../../common/src/api/config";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
 import { DrawingState } from "../../../../../common/src/api/document/drawing";
 
+export enum NoFlowAvailableReason {
+    NO_SOURCE = 'NO_SOURCE',
+    NO_LOADS_CONNECTED = 'NO_LOADS_CONNECTED',
+    TOO_MANY_FLOW_SOURCES = 'TOO_MANY_FLOW_SOURCES',
+    UNUSUAL_CONFIGURATION = 'UNUSUAL_CONFIGURATION',
+    NO_ISOLATION_VALVES_ON_MAIN = 'NO_ISOLATION_VALVES_ON_MAIN',
+    LOADING_UNITS_OUT_OF_BOUNDS = 'LOADING_UNITS_OUT_OF_BOUNDS',
+    NO_SUITABLE_PIPE_SIZE = 'NO_SUITABLE_PIPE_SIZE',
+}
+
 export default interface PipeCalculation extends PsdCalculation, Calculation {
     peakFlowRate: number | null;
+    noFlowAvailableReason: NoFlowAvailableReason | null;
+
     rawPeakFlowRate: number | null;
     optimalInnerPipeDiameterMM: number | null;
     realNominalPipeDiameterMM: number | null;
@@ -155,6 +167,7 @@ export function makePipeCalculationFields(
 export function emptyPipeCalculation(): PipeCalculation {
     return {
         peakFlowRate: null,
+        noFlowAvailableReason: null,
         rawPeakFlowRate: null,
         psdUnits: null,
         optimalInnerPipeDiameterMM: null,

@@ -205,18 +205,41 @@ import {EntityType} from "../../../store/document/entities/types";
 
         getEmptyValue(type: FieldType) {
             switch (type) {
+                case FieldType.TwoPointScale:
+                case FieldType.Title:
                 case FieldType.Text:
                 case FieldType.TextArea:
-                    return "";
                 case FieldType.Rotation:
                 case FieldType.Number:
                     return "";
+                case FieldType.Boolean:
                 case FieldType.Choice:
-                    return "(mixed)";
                 case FieldType.FlowSystemChoice:
                     return "(mixed)";
                 case FieldType.Color:
                     return { hex: "#eeeeee" };
+                default:
+                    assertUnreachable(type);
+            }
+        }
+
+        isEmptyValue(type: FieldType, value: any) {
+            switch (type) {
+                case FieldType.TwoPointScale:
+                case FieldType.Title:
+                case FieldType.Text:
+                case FieldType.TextArea:
+                case FieldType.Rotation:
+                case FieldType.Number:
+                    return value === "";
+                case FieldType.Boolean:
+                case FieldType.Choice:
+                case FieldType.FlowSystemChoice:
+                    return value === "(mixed)";
+                case FieldType.Color:
+                    return value.hasOwnProperty('hex') && value.hex === "#eeeeee";
+                default:
+                    assertUnreachable(type);
             }
         }
 
@@ -254,7 +277,38 @@ import {EntityType} from "../../../store/document/entities/types";
             );
         }
 
+        deconstructCurrentValue(name: string | number | symbol) {
+
+            let concreteValue: any;
+            let concreteIdentical = true;
+            let allDefaultOrCalculated = true;
+            let someDefaultOrCalculated = false;
+            let foundField!: PropertyField;
+            this.$props.selectedObjects.forEach((obj: BaseBackedObject) => {
+                const fields = this.getEntityFields(obj.entity);
+                const field = fields.find((f) => f.multiFieldId === name);
+                if (field) {
+                    foundField = field;
+                    const val = getPropertyByString(obj.entity as any, field.property);
+                    if (val !== null) {
+                        if (concreteValue === undefined || concreteValue === val) {
+                            concreteValue = val;
+                        } else {
+                            concreteIdentical = false;
+                        }
+                        allDefaultOrCalculated = false;
+                    } else {
+                        someDefaultOrCalculated = true;
+                    }
+                }
+            });
+
+            return {concreteValue, concreteIdentical, allDefaultOrCalculated, someDefaultOrCalculated, foundField};
+        }
+
         get reactiveData() {
+
+
             return new Proxy(
                 {},
                 {
@@ -262,29 +316,9 @@ import {EntityType} from "../../../store/document/entities/types";
                         // Undefined means mixed and input value will be default.
                         // Null means definitely computed or definitely default.
                         // Value means all items were explicit and has same value.
-                        let concreteValue: any;
-                        let concreteIdentical = true;
-                        let allDefaultOrCalculated = true;
-                        let someDefaultOrCalculated = false;
-                        let foundField: PropertyField;
-                        this.$props.selectedObjects.forEach((obj: BaseBackedObject) => {
-                            const fields = this.getEntityFields(obj.entity);
-                            const field = fields.find((f) => f.multiFieldId === name);
-                            if (field) {
-                                foundField = field;
-                                const val = getPropertyByString(obj.entity as any, field.property);
-                                if (val !== null) {
-                                    if (concreteValue === undefined || concreteValue === val) {
-                                        concreteValue = val;
-                                    } else {
-                                        concreteIdentical = false;
-                                    }
-                                    allDefaultOrCalculated = false;
-                                } else {
-                                    someDefaultOrCalculated = true;
-                                }
-                            }
-                        });
+
+                        const {concreteValue, concreteIdentical, allDefaultOrCalculated, someDefaultOrCalculated, foundField} =
+                            this.deconstructCurrentValue(name);
 
                         if (allDefaultOrCalculated) {
                             return null;
@@ -299,6 +333,31 @@ import {EntityType} from "../../../store/document/entities/types";
                     set: (target, name, value, receiver) => {
                         if (value === undefined) {
                             return true;
+                        }
+
+
+                        const {concreteValue, concreteIdentical, allDefaultOrCalculated, someDefaultOrCalculated, foundField} =
+                            this.deconstructCurrentValue(name);
+
+                        // aka. If it is a mixed empty value
+                        if (!allDefaultOrCalculated && (someDefaultOrCalculated || !concreteIdentical)) {
+                            // only non-empty values.
+                            if (this.isEmptyValue(foundField.type, value)) {
+                                // This is essentially an "undefault" operation, so we need to restore defaults.
+                                this.$props.selectedObjects.forEach((obj: BaseBackedObject) => {
+
+                                    const fields = this.getEntityFields(obj.entity);
+                                    const field = fields.find((f) => f.multiFieldId === name);
+                                    if (field) {
+                                        const val = getPropertyByString(obj.entity as any, field.property);
+                                        if (val === null) {
+                                            const filled = this.fillObjectFields(obj);
+                                            setPropertyByString(obj.entity, field.property, getPropertyByString(filled, field.property));
+                                        }
+                                    }
+                                });
+                                return true;
+                            }
                         }
 
                         let success = false;

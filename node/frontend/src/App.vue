@@ -1,6 +1,11 @@
 <template>
     <div id="app">
-        <router-view />
+        <template v-if="upToDate">
+            <router-view />
+        </template>
+        <template v-else>
+            <b-spinner style="size: 2em;"></b-spinner> Updating to latest version, please wait...
+        </template>
         <version-number />
     </div>
 </template>
@@ -25,6 +30,9 @@ registerObjectBuilders();
     }
 })
 export default class App extends Vue {
+    upToDate = true;
+    targetVersion: string | null = null;
+
     mounted() {
         document.onkeydown = (evt) => {
             if (document.activeElement === null || document.activeElement.nodeName.toLowerCase() !== "input") {
@@ -44,6 +52,10 @@ export default class App extends Vue {
                 }
             }
         };
+
+        MainEventBus.$on('update-available', () => {
+            this.upToDate = false;
+        })
     }
 }
 </script>

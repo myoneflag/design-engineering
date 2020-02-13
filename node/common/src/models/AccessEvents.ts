@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, BeforeInsert, Column, Entity, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { Organization } from "./Organization";
 import { AccessLevel, User } from "./User";
 
@@ -45,6 +45,14 @@ export class AccessEvents extends BaseEntity {
     @Column()
     success: boolean;
 
-    @ManyToOne(() => User,{ nullable: true })
+    @ManyToOne(() => User,{ nullable: true, eager: false })
     user?: User;
+
+    @BeforeInsert()
+    logToUser() {
+        if (this.user) {
+            this.user.lastActivityOn = this.dateTime;
+            this.user.save();
+        }
+    }
 }

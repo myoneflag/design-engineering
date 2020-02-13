@@ -73,7 +73,7 @@ export class DocumentController {
 
         await withOrganization(qorg, res, session, AccessType.READ, async (org1) => {
             const doc = Document.create();
-            doc.organization = Promise.resolve(org1);
+            doc.organization = org1;
             doc.createdBy = user;
             doc.createdOn = new Date();
             doc.metadata = cloneSimple(initialDrawing.metadata.generalInfo);
@@ -148,7 +148,7 @@ export class DocumentController {
                 let called = false;
                 await withOrganization(organization, res, session, AccessType.UPDATE, async (org) => {
                     called = true;
-                    doc.organization = Promise.resolve(org);
+                    doc.organization = org;
                 });
                 if (!called) {
                     return;
@@ -269,7 +269,7 @@ export class DocumentController {
 
             await withOrganization(qorg, res, session, AccessType.READ, async (org1) => {
                 const doc = Document.create();
-                doc.organization = Promise.resolve(org1);
+                doc.organization = org1;
                 doc.createdBy = user;
                 doc.createdOn = new Date();
                 doc.metadata = target.metadata;
@@ -413,10 +413,9 @@ async function receiveOperations(id: number, ops: OperationTransformConcrete[], 
     });
     oq.push(ops);
 
-
     const doc = await Document.findOne({id});
 
-    await Promise.all(ops.map((op) => {
+    await Promise.all(ops.map(async (op) => {
         const toStore = Operation.create();
         toStore.document = Promise.resolve(doc);
         toStore.dateTime = new Date();
@@ -424,7 +423,14 @@ async function receiveOperations(id: number, ops: OperationTransformConcrete[], 
 
         toStore.operation = op;
         toStore.orderIndex = op.id;
-        return toStore.save();
+
+        if (op.id === ops[ops.length - 1].id) {
+            doc.lastModifiedBy = user;
+            doc.lastModifiedOn = toStore.dateTime;
+            await doc.save();
+        }
+
+        await toStore.save();
     }));
 
     const uh = updateHandlers.get(id)!;

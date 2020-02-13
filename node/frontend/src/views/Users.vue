@@ -1,3 +1,4 @@
+import { AccessLevel } from "../../../common/src/models/User";
 <template>
     <div>
         <MainNavBar></MainNavBar>
@@ -18,22 +19,13 @@
             </b-row>
             <b-row>
                 <b-col>
-                    <b-list-group>
-                        <b-list-group-item
-                            v-for="user in users"
-                            :to="'/users/username/' + user.username"
-                            :key="user.username"
-                        >
-                            <b-row>
-                                <b-col cols="3">{{ user.username }}</b-col>
-                                <b-col cols="3">{{ user.name }}</b-col>
-                                <b-col cols="3">{{
-                                    ["SUPERUSER", "ADMIN", "MANAGER", "USER"][user.accessLevel]
-                                }}</b-col>
-                                <b-col cols="3">{{ user.organization ? user.organization.id : "[no org]" }}</b-col>
-                            </b-row>
-                        </b-list-group-item>
-                    </b-list-group>
+                    <b-table
+                            style="background-color: white"
+                        :items="usersRendered"
+                        :fields="fields"
+                        @row-clicked="userRowClicked"
+                        selectable
+                    ></b-table>
                 </b-col>
             </b-row>
             <b-row style="margin-top: 30px" v-if="profile && profile.accessLevel <= AccessLevel.ADMIN">
@@ -49,15 +41,13 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
-import Vue from "vue";
-import { AccessLevel, User } from "../../../common/src/models/User";
-import { getUsers } from "../api/users";
-import MainNavBar from "../../src/components/MainNavBar.vue";
-import DrawingNavBar from "../components/DrawingNavBar.vue";
-import ProfileState from "../store/profile/types";
+    import { Component } from "vue-property-decorator";
+    import Vue from "vue";
+    import { AccessLevel, User } from "../../../common/src/models/User";
+    import { getUsers } from "../api/users";
+    import MainNavBar from "../../src/components/MainNavBar.vue";
 
-@Component({
+    @Component({
     components: {
         MainNavBar
     }
@@ -81,12 +71,41 @@ export default class Users extends Vue {
         });
     }
 
-    get profile(): ProfileState | null {
+    get usersRendered() {
+        return this.users.map((u) => {
+            return {
+                username: u.username,
+                fullName: u.name,
+                accessLevel: ["SUPERUSER", "ADMIN", "MANAGER", "USER"][u.accessLevel],
+                organization: u.organization? u.organization.name : '',
+                lastActivityOn: u.lastActivityOn ? new Date(u.lastActivityOn).toLocaleString() : '',
+            }
+        })
+    }
+
+    get profile(): User | null {
         return this.$store.getters["profile/profile"];
+    }
+
+    get fields() {
+        const f = [
+            { key: 'username', sortable: true},
+            { key: 'fullName', sortable: true},
+            { key: 'accessLevel', sortable: true},
+            { key: 'organization', sortable: true},
+        ];
+        if (this.profile && this.profile.accessLevel <= AccessLevel.ADMIN) {
+            f.push({ key: 'lastActivityOn', sortable: true});
+        }
+        return f;
     }
 
     get AccessLevel() {
         return AccessLevel;
+    }
+
+    userRowClicked(row: any) {
+        this.$router.push({name: 'user', params: {id: row.username}});
     }
 }
 </script>

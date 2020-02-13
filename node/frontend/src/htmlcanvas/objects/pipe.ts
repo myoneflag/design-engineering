@@ -1,6 +1,9 @@
 import BackedDrawableObject from "../../../src/htmlcanvas/lib/backed-drawable-object";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
-import PipeEntity, { fillPipeDefaultFields, MutablePipe } from "../../../../common/src/api/document/entities/pipe-entity";
+import PipeEntity, {
+    fillPipeDefaultFields,
+    MutablePipe
+} from "../../../../common/src/api/document/entities/pipe-entity";
 import * as TM from "transformation-matrix";
 import { Matrix } from "transformation-matrix";
 import { CalculationFilters, DocumentState } from "../../../src/store/document/types";
@@ -31,7 +34,7 @@ import { SIGNIFICANT_FLOW_THRESHOLD } from "../../../src/htmlcanvas/layers/calcu
 import { FlowNode } from "../../../src/calculations/calculation-engine";
 import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
-import PipeCalculation from "../../../src/store/document/calculations/pipe-calculation";
+import PipeCalculation, { NoFlowAvailableReason } from "../../../src/store/document/calculations/pipe-calculation";
 import {
     Calculated,
     CalculatedObject,
@@ -218,7 +221,9 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 calculation.peakFlowRate !== null &&
                 calculation.peakFlowRate < SIGNIFICANT_FLOW_THRESHOLD
             ) {
-                baseColor = "#aaaaaa";
+                if (calculation.noFlowAvailableReason !== NoFlowAvailableReason.NO_LOADS_CONNECTED) {
+                    baseColor = "#aaaaaa";
+                }
             }
             if (!calculation || calculation.peakFlowRate === null) {
                 ctx.setLineDash([baseWidth * 3, baseWidth * 3]);

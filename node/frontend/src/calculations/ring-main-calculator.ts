@@ -10,6 +10,7 @@ import { adjustPathHardyCross } from "./flow-solver";
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
 import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import { assertUnreachable, RingMainCalculationMethod } from "../../../common/src/api/config";
+import { NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
 
 export class RingMainCalculator {
     engine: CalculationEngine;
@@ -52,6 +53,15 @@ export class RingMainCalculator {
         return res;
     }
 
+    setNoFlowReasonForRing(ring: Array<Edge<FlowNode, FlowEdge>>, reason: NoFlowAvailableReason) {
+        for (const r of ring) {
+            if (r.value.type === EdgeType.PIPE) {
+                const p = this.engine.globalStore.get(r.value.uid) as Pipe;
+                const pCalc = this.engine.globalStore.getOrCreateCalculation(p.entity);
+                pCalc.noFlowAvailableReason = reason;
+            }
+        }
+    }
 
     // Assigns flow equally via PSD.
     sizeSingleRing(ring: Array<Edge<FlowNode, FlowEdge>>): FlowAssignment | null {
@@ -84,17 +94,20 @@ export class RingMainCalculator {
                     const ccalc = this.engine.globalStore.getOrCreateCalculation(this.engine.globalStore.get(cuid)!.entity as PipeEntity);
                     if (ccalc.peakFlowRate === null) {
                         console.log('in/out pipe ' + cuid + ' connected to ' + nuid + ' has no defined demand');
+                        this.setNoFlowReasonForRing(ring, NoFlowAvailableReason.UNUSUAL_CONFIGURATION);
                         return null;
                     }
 
                     if (ccalc.flowFrom === null) {
-                        throw new Error('missing flow from attribute');
+                        if (ccalc.peakFlowRate !== 0) {
+                            throw new Error('missing flow from attribute');
+                        }
                     }
 
                     if (ccalc.flowFrom !== nuid) {
                         // is a source, flowing in.
                         if (sourceNode) {
-                            console.log('muiltiple flow sources, first was ' + sourceNode + ' second was ' + nuid);
+                            this.setNoFlowReasonForRing(ring, NoFlowAvailableReason.TOO_MANY_FLOW_SOURCES);
                             return null;
                         }
                         sourceNode = nuid;
@@ -205,7 +218,9 @@ export class RingMainCalculator {
 
                         const pipeObject = (this.engine.globalStore.get(r.value.uid) as Pipe);
                         const pcalc = this.engine.globalStore.getOrCreateCalculation(pipeObject.entity);
-                        this.engine.sizePipeForFlowRate(pipeObject.entity, Math.abs(peakFlowFromIsolation.getFlow(r.value.uid)));
+                        if (peakFlowFromIsolation.has(r.value.uid)) {
+                            this.engine.sizePipeForFlowRate(pipeObject.entity, Math.abs(peakFlowFromIsolation.getFlow(r.value.uid)));
+                        }
                         pcalc.isRingMain = true;
                     }
                 }
@@ -278,6 +293,7 @@ export class RingMainCalculator {
         }
 
         if (isolationLocations.length === 0) {
+            this.setNoFlowReasonForRing(ring, NoFlowAvailableReason.NO_ISOLATION_VALVES_ON_MAIN);
             return new FlowAssignment();
         }
 

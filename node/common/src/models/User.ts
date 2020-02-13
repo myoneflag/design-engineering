@@ -1,5 +1,6 @@
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryColumn } from "typeorm";
 import { Organization } from "./Organization";
+import { AccessEvents } from "./AccessEvents";
 
 export enum AccessLevel {
     SUPERUSER = 0,  // Can access all data on the platform
@@ -41,6 +42,9 @@ export class User extends BaseEntity {
 
     @Column({ nullable: true })
     eulaAcceptedOn: Date | null;
+
+    @Column({nullable: true})
+    lastActivityOn: Date | null;
 }
 
 export function allUserFields(except?: Array<keyof User>) {

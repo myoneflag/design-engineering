@@ -1,6 +1,7 @@
 /* tslint:disable:no-console */
 
 import { register } from "register-service-worker";
+import { MainEventBus } from "./store/main-event-bus";
 
 if (process.env.NODE_ENV === "production") {
     register(`${process.env.BASE_URL}service-worker.js`, {
@@ -15,8 +16,12 @@ if (process.env.NODE_ENV === "production") {
         },
         cached() {
             console.log("Content has been cached for offline use.");
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 1000);
         },
         updatefound() {
+            MainEventBus.$emit('update-available');
             console.log("New content is downloading.");
         },
         updated() {
