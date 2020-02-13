@@ -16,6 +16,7 @@ import { getWarningSignImg, matrixScale, warningSignImg, wrapText } from "../../
 import { CalculationContext } from "../../../calculations/types";
 import { EntityType } from "../../../../../common/src/api/document/entities/types";
 import { CalculationConcrete } from "../../../store/document/calculations/calculation-concrete";
+import { NoFlowAvailableReason } from "../../../store/document/calculations/pipe-calculation";
 
 export interface Calculated {
     drawCalculationBox(
@@ -113,11 +114,12 @@ export function CalculatedObject<
                 const metrics = ctx.measureText(this.makeDatumText(datum));
                 maxWidth = Math.max(maxWidth, metrics.width);
             }
+            const calculation = context.globalStore.getCalculation(this.entity);
             if (this.hasWarning(context)) {
-                maxWidth = Math.max(maxWidth, WARNING_HINT_WIDTH);
+                const warnWidth = ctx.measureText(calculation!.warning!);
+                maxWidth = Math.max(maxWidth, Math.min(WARNING_HINT_WIDTH, warnWidth.width));
             }
 
-            const calculation = context.globalStore.getCalculation(this.entity);
 
             let height = 0;
             data.forEach((d) => {
@@ -273,11 +275,39 @@ export function CalculatedObject<
             const calculation = context.globalStore.getCalculation(this.entity);
 
             if (this.entity.type === EntityType.PIPE) {
+
                 const pCalc = context.globalStore.getCalculation(this.entity);
                 if (pCalc && pCalc.peakFlowRate === null) {
+                    let ambiguousMessage = 'NOT CALCULATED';
+                    if (pCalc.noFlowAvailableReason) {
+                        switch (pCalc.noFlowAvailableReason) {
+                            case NoFlowAvailableReason.NO_SOURCE:
+                                ambiguousMessage = 'NO SOURCE';
+                                break;
+                            case NoFlowAvailableReason.NO_LOADS_CONNECTED:
+                                ambiguousMessage = 'NO LOADS CONNECTED';
+                                break;
+                            case NoFlowAvailableReason.TOO_MANY_FLOW_SOURCES:
+                                ambiguousMessage = 'MULTIPLE FLOW SOURCES';
+                                break;
+                            case NoFlowAvailableReason.UNUSUAL_CONFIGURATION:
+                                ambiguousMessage = 'UNUSUAL CONFIGURATION';
+                                break;
+                            case NoFlowAvailableReason.NO_ISOLATION_VALVES_ON_MAIN:
+                                ambiguousMessage = 'NO ISOLATION VALVES ON MAIN';
+                                break;
+                            case NoFlowAvailableReason.LOADING_UNITS_OUT_OF_BOUNDS:
+                                ambiguousMessage = 'LOADING UNITS OUT OF BOUNDS';
+                                break;
+                            case NoFlowAvailableReason.NO_SUITABLE_PIPE_SIZE:
+                                ambiguousMessage = 'NO SUITABLE PIPE SIZE';
+                                break;
+
+                        }
+                    }
                     return [
                         {
-                            message: "AMBIGUOUS",
+                            message: ambiguousMessage,
                             attachUid: this.uid,
                             type: CalculationDataType.MESSAGE,
                             systemUid: this.entity.systemUid

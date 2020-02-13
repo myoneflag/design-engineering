@@ -23,8 +23,8 @@ export class Document extends BaseEntity {
     @OneToMany(() => Operation, (op: Operation) => op.document, {cascade: true})
     operations: Promise<Operation[]>;
 
-    @ManyToOne(() => Organization)
-    organization: Promise<Organization>;
+    @ManyToOne(() => Organization, {eager: true})
+    organization: Organization;
 
     @Column()
     createdOn: Date;
@@ -37,6 +37,12 @@ export class Document extends BaseEntity {
 
     @Column({default: 0})
     version: number;
+
+    @Column({nullable: true})
+    lastModifiedOn: Date | null;
+
+    @ManyToOne(() => User, {nullable: true, eager: true})
+    lastModifiedBy: User | null;
 }
 
 export function canUserDeleteDocument(doc: Document, user: User) {

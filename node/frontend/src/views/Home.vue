@@ -1,4 +1,5 @@
 import { AccessLevel } from "../../../common/src/models/User";
+import { AccessLevel } from "../../../common/src/models/User";
 import { DocumentStatus } from "../../../common/src/models/Document";
 import { DocumentStatus } from "../../../common/src/models/Document";
 <template>
@@ -49,9 +50,16 @@ import { DocumentStatus } from "../../../common/src/models/Document";
                                 class="mb-2 doc-tile"
                             >
                                 <b-card-text>
-                                    {{ doc.metadata.description }}<br />
-                                    Owner: {{ doc.createdBy.username }}<br />
-                                    Created: {{ new Date(doc.createdOn).toLocaleDateString() }}
+                                    <template v-if="doc.metadata.description">{{ doc.metadata.description }}</template>
+
+                                    <table style="text-align: left; font-size: 14px">
+                                        <tr><td>Owner: </td><td>{{ doc.createdBy.username }}</td></tr>
+                                        <tr><td>Created: </td><td>{{ new Date(doc.createdOn).toLocaleDateString() }}</td></tr>
+                                        <template v-if="shouldShowCompany() && doc.organization"><tr><td>Company: </td><td>{{ doc.organization.name }}</td></tr></template>
+                                        <template v-if="doc.lastModifiedBy"><tr><td>Modified By: </td><td>{{ doc.lastModifiedBy.username }}</td></tr></template>
+                                        <template v-if="doc.lastModifiedOn"><tr><td>Modified On: </td><td>{{ new Date(doc.lastModifiedOn).toLocaleDateString() }}</td></tr></template>
+                                    </table>
+
                                 </b-card-text>
 
                                 <b-dropdown split :split-to="'/document/' + doc.id" variant="primary" text="Open Drawing" class="m-2" no-caret>
@@ -144,6 +152,10 @@ export default class Home extends Vue {
 
     get AccessLevel() {
         return AccessLevel;
+    }
+
+    shouldShowCompany() {
+        return this.profile ? this.profile.accessLevel <= AccessLevel.ADMIN : false;
     }
 
     reloadDocuments() {

@@ -53,6 +53,7 @@ export default class ProfileMenuItem extends Vue {
                 passwordHash: "",
                 eulaAccepted: false,
                 eulaAcceptedOn: null,
+                lastActivityOn: null,
             };
         } else {
             return profile;

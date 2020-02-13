@@ -164,4 +164,6 @@ export function Index(options?: any) {
     return function(object?: any, propertyName?: any) {};
 }
 
-export class BaseEntity {}
+export class BaseEntity {
+    save?: any;
+}

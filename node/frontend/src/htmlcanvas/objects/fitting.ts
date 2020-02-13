@@ -185,7 +185,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         from: FlowNode,
         to: FlowNode,
         signed: boolean
-    ): number {
+    ): number | null {
         if (from.connection === FLOW_SOURCE_EDGE || to.connection === FLOW_SOURCE_EDGE) {
             throw new Error("I don't like it");
         }
@@ -236,7 +236,8 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         });
 
         if (smallestDiameterMM == null || largestDiameterMM == null) {
-            throw new Error("can't find pipe sizes " + JSON.stringify(internals) + " " + flowLS);
+            // Neighbouring pipes are unsized.
+            return null;
         }
 
         let k: number | null = null;

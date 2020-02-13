@@ -20,7 +20,6 @@ import { DemandType } from "../../src/calculations/types";
 import Graph, { Edge } from "../../src/calculations/graph";
 import EquationEngine from "../../src/calculations/equation-engine";
 import BaseBackedObject from "../../src/htmlcanvas/lib/base-backed-object";
-import UnionFind from "../../src/calculations/union-find";
 import Pipe from "../../src/htmlcanvas/objects/pipe";
 import {
     getDarcyWeisbachMH,
@@ -29,7 +28,6 @@ import {
     getReynoldsNumber,
     head2kpa
 } from "../../src/calculations/pressure-drops";
-import FlowSolver from "../../src/calculations/flow-solver";
 import { PropertyField } from "../../../common/src/api/document/entities/property-field";
 import { MainEventBus } from "../../src/store/main-event-bus";
 import { getObjectFrictionHeadLoss } from "../../src/calculations/entity-pressure-drops";
@@ -39,7 +37,6 @@ import BigValve from "../htmlcanvas/objects/big-valve/bigValve";
 import DirectedValveEntity, { makeDirectedValveFields } from "../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
 import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import {
-    addPsdCounts,
     comparePsdCounts,
     ContextualPCE,
     countPsdProfile,
@@ -84,6 +81,7 @@ import { determineConnectableSystemUid } from "../store/document/entities/lib";
 import { getPropertyByString } from "../lib/utils";
 import { getPlantPressureLossKPA } from "../htmlcanvas/lib/utils";
 import { RingMainCalculator } from "./ring-main-calculator";
+import { NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -1127,7 +1125,7 @@ export default class CalculationEngine {
         }
     }
 
-    configureEntityForPSD(entity: DrawableEntityConcrete, psdU: PsdCountEntry, flowEdge: FlowEdge, wet: FlowNode | null, profile: PsdProfile) {
+    configureEntityForPSD(entity: DrawableEntityConcrete, psdU: PsdCountEntry, flowEdge: FlowEdge, wet: FlowNode | null, profile: PsdProfile, noFlowReason: NoFlowAvailableReason | null) {
         switch (entity.type) {
             case EntityType.PIPE: {
                 const calculation = this.globalStore.getOrCreateCalculation(entity);
@@ -1135,6 +1133,7 @@ export default class CalculationEngine {
                 calculation.psdProfile = profile;
                 calculation.flowFrom = wet ? wet.connectable : null;
                 calculation.isRingMain = false;
+                calculation.noFlowAvailableReason = noFlowReason;
 
                 const flowRate = lookupFlowRate(psdU, this.doc, this.catalog, entity.systemUid);
 
@@ -1142,6 +1141,8 @@ export default class CalculationEngine {
                     // Warn for no PSD
                     if (isZeroPsdCounts(psdU)) {
                         this.sizePipeForFlowRate(entity, 0);
+                    } else {
+                        calculation.noFlowAvailableReason = NoFlowAvailableReason.LOADING_UNITS_OUT_OF_BOUNDS;
                     }
                 } else {
                     this.sizePipeForFlowRate(entity, flowRate.flowRateLS);
@@ -1230,10 +1231,12 @@ export default class CalculationEngine {
             page = this.getPipeByNominal(pipe, pipe.diameterMM);
         }
         if (!page) {
-            page = this.getBiggestPipe(pipe);
+            calculation.noFlowAvailableReason = NoFlowAvailableReason.NO_SUITABLE_PIPE_SIZE;
+            calculation.warning = 'No suitable pipe size in the catalog for this flow rate';
+            return;
         }
-        calculation.realNominalPipeDiameterMM = parseCatalogNumberExact(page!.diameterNominalMM);
-        calculation.realInternalDiameterMM = parseCatalogNumberExact(page!.diameterInternalMM);
+        calculation.realNominalPipeDiameterMM = parseCatalogNumberExact(page.diameterNominalMM);
+        calculation.realInternalDiameterMM = parseCatalogNumberExact(page.diameterInternalMM);
 
         if (calculation.realNominalPipeDiameterMM) {
             calculation.velocityRealMS = this.getVelocityRealMs(pipe);
@@ -1590,7 +1593,7 @@ export default class CalculationEngine {
 
         if (exclusiveProfile === false) {
             // No flow source.
-            this.configureEntityForPSD(object.entity, zeroPsdCounts(), flowEdge, null, new PsdProfile());
+            this.configureEntityForPSD(object.entity, zeroPsdCounts(), flowEdge, null, new PsdProfile(), NoFlowAvailableReason.NO_SOURCE);
         } else {
             const exclusivePsdU = countPsdProfile(exclusiveProfile);
 
@@ -1617,18 +1620,26 @@ export default class CalculationEngine {
                 }
                 if (cmp > 0) {
                     // TODO: Info that flow rate is ambiguous, but some flow is exclusive to us
+                    if (object.entity.type === EntityType.PIPE) {
+                        const pcalc = this.globalStore.getOrCreateCalculation(object.entity);
+                        pcalc.noFlowAvailableReason = NoFlowAvailableReason.UNUSUAL_CONFIGURATION;
+                    }
                 } else {
                     if (cmp < 0) {
                         throw new Error("Invalid PSD situation");
                     }
                     // we have successfully calculated the pipe's loading units.
-                    this.configureEntityForPSD(object.entity, exclusivePsdU, flowEdge, wet, exclusiveProfile);
+                    this.configureEntityForPSD(object.entity, exclusivePsdU, flowEdge, wet, exclusiveProfile, null);
                 }
             } else {
                 if (isZeroPsdCounts(residualPsdU)) {
-                    this.configureEntityForPSD(object.entity, zeroPsdCounts(), flowEdge, wet, new PsdProfile());
+                    this.configureEntityForPSD(object.entity, zeroPsdCounts(), flowEdge, wet, new PsdProfile(), NoFlowAvailableReason.NO_LOADS_CONNECTED);
                 } else {
                     // TODO: flow rate is ambiguous, and no flow is exclusive to us.
+                    if (object.entity.type === EntityType.PIPE) {
+                        const pcalc = this.globalStore.getOrCreateCalculation(object.entity);
+                        pcalc.noFlowAvailableReason = NoFlowAvailableReason.UNUSUAL_CONFIGURATION;
+                    }
                 }
             }
         }
@@ -1911,8 +1922,14 @@ export default class CalculationEngine {
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity);
 
                     for (const suid of e.roughInsInOrder) {
-                        if ((calculation.pressures[suid] || 0) < e.roughIns[suid].minPressureKPA!) {
+                        if (calculation.pressures[suid] === null) {
+
+                            if (!calculation.warning) {
+                                calculation.warning = ' ';
+                            }
+                        } else if ((calculation.pressures[suid] || 0) < e.roughIns[suid].minPressureKPA!) {
                             const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === suid)!;
+
                             calculation.warning =
                                 "Not enough " +
                                 system.name +

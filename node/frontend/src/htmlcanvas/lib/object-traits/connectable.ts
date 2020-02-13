@@ -2,7 +2,7 @@ import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object"
 import Pipe from "../../../../src/htmlcanvas/objects/pipe";
 import assert from "assert";
 import { EntityType } from "../../../../../common/src/api/document/entities/types";
-import BackedConnectable from "../../../../src/htmlcanvas/lib/BackedConnectable";
+import BackedConnectable, { BaseBackedConnectable } from "../../../../src/htmlcanvas/lib/BackedConnectable";
 import {
     ConnectableEntityConcrete,
     EdgeLikeEntity
@@ -58,7 +58,7 @@ const MAX_PIPE_GROUP_SEPARATION_M = 0.05;
 let hlcounts = 0;
 
 export function ConnectableObject<
-    T extends new (...args: any[]) => Connectable & BackedConnectable<ConnectableEntityConcrete>
+    T extends new (...args: any[]) => Connectable & BaseBackedConnectable
 >(constructor: T) {
     // @ts-ignore abstract class expression limitation in the language. In practice this is fine.
     class Generated extends constructor implements Connectable {
@@ -66,6 +66,25 @@ export function ConnectableObject<
             const { active, selected } = args;
             super.drawInternal(context, args);
 
+            const e = this.entity;
+            switch (e.type) {
+                case EntityType.RISER:
+                    // don't do this for risers lol horseshoe
+                    if (!this.entity.uid.startsWith('4075e')) {
+                        // lucky 1 in a million
+                        return;
+                    } else {
+                        break;
+                    }
+                case EntityType.FITTING:
+                case EntityType.SYSTEM_NODE:
+                case EntityType.LOAD_NODE:
+                case EntityType.FLOW_SOURCE:
+                case EntityType.DIRECTED_VALVE:
+                    break;
+                default:
+                    assertUnreachable(e);
+            }
             const { ctx } = context;
 
             // draw rings.
