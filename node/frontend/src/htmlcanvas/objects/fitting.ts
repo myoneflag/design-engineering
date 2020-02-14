@@ -89,7 +89,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
                     if ((pipe as Pipe).lastDrawnWidth) {
                         targetWidth = Math.max(
                             defaultWidth,
-                            (pipe as Pipe).lastDrawnWidth + this.FITTING_DIAMETER_PIXELS / scale
+                            (pipe as Pipe).lastDrawnWidth + Math.min((pipe as Pipe).lastDrawnWidth, this.FITTING_DIAMETER_PIXELS / scale / 2),
                         );
                     }
                 }
@@ -100,7 +100,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
                     const small = vec.normalize().multiply(Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM)));
                     if (active && selected) {
                         ctx.beginPath();
-                        ctx.lineWidth = targetWidth + (this.FITTING_DIAMETER_PIXELS * 2) / scale;
+                        ctx.lineWidth = targetWidth + (this.FITTING_DIAMETER_PIXELS * 2);
 
                         this.lastDrawnWidth = defaultWidth + (this.FITTING_DIAMETER_PIXELS * 2) / scale;
                         ctx.strokeStyle = lighten(this.displayEntity(doc).color!.hex, 50, 0.5);

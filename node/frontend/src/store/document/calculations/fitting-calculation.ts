@@ -1,6 +1,7 @@
 import { FieldCategory, CalculationField, Units } from "../../../../src/store/document/calculations/calculation-field";
 import { Calculation, PsdCalculation } from "../../../../src/store/document/calculations/types";
 import FittingEntity from "../../../../../common/src/api/document/entities/fitting-entity";
+import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 
 export default interface FittingCalculation extends Calculation {
     flowRateLS: number | null;
@@ -8,7 +9,10 @@ export default interface FittingCalculation extends Calculation {
     pressureKPA: number | null;
 }
 
-export function makeFittingCalculationFields(entity: FittingEntity): CalculationField[] {
+export function makeFittingCalculationFields(entity: FittingEntity, globalStore: GlobalStore): CalculationField[] {
+    if (globalStore.getConnections(entity.uid).length === 0) {
+        return [];
+    }
     return [
         {
             property: "flowRateLS",

@@ -889,7 +889,7 @@ export default class DrawingCanvas extends Vue {
                     break;
                 case EntityType.FITTING:
                     if (this.globalStore.getConnections(o.entity.uid).length === 0) {
-                        this.deleteEntity(o);
+                        // this.deleteEntity(o); this is causing issues with multi editing and drawing pipes, first leg.
                     }
                     break;
                 case EntityType.PIPE:
@@ -1792,7 +1792,14 @@ export default class DrawingCanvas extends Vue {
         if (event.deltaY < 0) {
             delta = 1 / (1 - event.deltaY / 500);
         }
+        console.log(delta);
+        const currS = matrixScale(this.viewPort.position);
+        console.log(currS);
+        delta = Math.max(0.5 / currS, delta);
+        delta = Math.min(2000 / currS, delta);
+
         this.viewPort.rescale(delta, event.offsetX, event.offsetY);
+
         this.scheduleDraw();
     }
         isSelected(object: BaseBackedObject | string) {

@@ -81,7 +81,7 @@ export default class CalculationsSidebar extends Vue {
         const existing = cloneSimple(this.document.uiState.calculationFilters as CalculationFilters);
 
         objects.forEach((o) => {
-            const fields = getFields(o.entity, this.document);
+            const fields = getFields(o.entity, this.document, o.globalStore);
             let wasInserted = false;
             if (!(o.entity.type in build)) {
                 Vue.set(build, o.entity.type, {

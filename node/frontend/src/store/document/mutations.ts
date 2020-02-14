@@ -17,6 +17,7 @@ import { GlobalStore } from "../../htmlcanvas/lib/global-store";
 import DrawableObjectFactory from "../../htmlcanvas/lib/drawable-object-factory";
 import { DrawingMode } from "../../htmlcanvas/types";
 import { applyDiffNative } from "../../../../common/src/api/document/state-ot-apply";
+import { assertUnreachable } from "../../../../common/src/api/config";
 
 export const globalStore = new GlobalStore();
 
@@ -200,6 +201,37 @@ function changeDrawing(state: DocumentState, newDrawing: DrawingState, filter: a
     Vue.set(state, "diffFilter", blankDiffFilter());
 }
 
+function applyDiffs(state: DocumentState, diffs: any[]) {
+    const prevDrawing = cloneSimple(state.drawing);
+    for (const diff of diffs) {
+        applyDiffVue(state.drawing, diff);
+        const changes = marshalChanges(prevDrawing, state.drawing, diff, true);
+        proxyUpFromStateDiff(state, diff);
+        changes.forEach(([e, v]) => {
+            beforeEvent(e, v, state);
+        });
+        changes.forEach(([e, v]) => {
+            MainEventBus.$emit(e, v);
+        });
+
+        applyDiffNative(prevDrawing, cloneSimple(diff));
+    }
+}
+
+function applyDiff(state: DocumentState, diff: any) {
+    const prevDrawing = cloneSimple(state.drawing);
+    applyDiffVue(state.drawing, diff);
+    const changes = marshalChanges(prevDrawing, state.drawing, diff, true);
+    proxyUpFromStateDiff(state, diff);
+    changes.forEach(([e, v]) => {
+        beforeEvent(e, v, state);
+    });
+    changes.forEach(([e, v]) => {
+        MainEventBus.$emit(e, v);
+    });
+}
+
+
 export const mutations: MutationTree<DocumentState> = {
     /**
      * Here we apply an operation to the current document.
@@ -225,16 +257,26 @@ export const mutations: MutationTree<DocumentState> = {
                     return;
                 }
             } else {
-                state.uiState.viewOnly = true;
-                state.uiState.viewOnlyReason = "Conflict while editing simultaneously - please refresh";
+                // Revert optimistic history (because there is conflict!) and listen to server.
+                console.log('i have conflict');
+                for (let i = state.optimisticHistory.length - 1; i >= 0; i--) {
+                    const op = state.optimisticHistory[i];
+                    switch (op.type) {
+                        case OPERATION_NAMES.DIFF_OPERATION:
+                            console.log('reverting an optimistic operation');
+                            applyDiff(state, op.inverse);
+                            applyDiffVue(state.committedDrawing, op.inverse);
+                            break;
+                        case OPERATION_NAMES.COMMITTED_OPERATION:
+                            break;
+                        default:
+                            assertUnreachable(op);
+                    }
+                }
 
-                throw new Error(
-                    "Editing simultaneously is not currently supported. However you can view simultaneously.\n" +
-                        JSON.stringify(operation) +
-                        "\n" +
-                        "old object is:\n" +
-                        JSON.stringify(state.optimisticHistory[0])
-                );
+                state.optimisticHistory.splice(0, state.optimisticHistory.length);
+
+                newData = true;
             }
         } else {
             newData = true;
@@ -253,6 +295,7 @@ export const mutations: MutationTree<DocumentState> = {
                 switch (toApply.type) {
                     case OT.OPERATION_NAMES.DIFF_OPERATION: {
                         if (state.uiState.drawingMode !== DrawingMode.History) {
+                            console.log('applying ' + toApply.id);
                             applyOpOntoStateVue(state.drawing, toApply);
                             proxyUpFromStateDiff(state, toApply.diff);
                             const changes = marshalChanges(state.committedDrawing, state.drawing, toApply.diff);
@@ -282,6 +325,7 @@ export const mutations: MutationTree<DocumentState> = {
                 }
             }
         } else {
+            console.log('storing ' + operation.id);
             state.stagedCommits.push(operation);
         }
 
@@ -292,35 +336,9 @@ export const mutations: MutationTree<DocumentState> = {
         } // else, the data is already represented on screen
     },
 
-    applyDiff(state, diff: any) {
-        const prevDrawing = cloneSimple(state.drawing);
-        applyDiffVue(state.drawing, diff);
-        const changes = marshalChanges(prevDrawing, state.drawing, diff, true);
-        proxyUpFromStateDiff(state, diff);
-        changes.forEach(([e, v]) => {
-            beforeEvent(e, v, state);
-        });
-        changes.forEach(([e, v]) => {
-            MainEventBus.$emit(e, v);
-        });
-    },
+    applyDiff,
 
-    applyDiffs(state, diffs: any[]) {
-        const prevDrawing = cloneSimple(state.drawing);
-        for (const diff of diffs) {
-            applyDiffVue(state.drawing, diff);
-            const changes = marshalChanges(prevDrawing, state.drawing, diff, true);
-            proxyUpFromStateDiff(state, diff);
-            changes.forEach(([e, v]) => {
-                beforeEvent(e, v, state);
-            });
-            changes.forEach(([e, v]) => {
-                MainEventBus.$emit(e, v);
-            });
-
-            applyDiffNative(prevDrawing, cloneSimple(diff));
-        }
-    },
+    applyDiffs,
 
     revert(state, redraw) {
         if (state.uiState.drawingMode === DrawingMode.History) {
