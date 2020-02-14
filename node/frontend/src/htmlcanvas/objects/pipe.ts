@@ -54,8 +54,10 @@ import { determineConnectableNetwork } from "../../store/document/entities/lib";
 import { assertUnreachable, ComponentPressureLossMethod } from "../../../../common/src/api/config";
 
 export const TEXT_MAX_SCALE = 0.4;
-export const MIN_PIPE_PIXEL_WIDTH = 3.5;
+export const MIN_PIPE_PIXEL_WIDTH = 1.5;
 export const RING_MAIN_HEAD_LOSS_CONSTANT = 1.28;
+
+let lastDrawnScale: number = 1;
 
 @CalculatedObject
 @SelectableObject
@@ -197,16 +199,17 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
     drawInternal(context: DrawingContext, { active, selected, calculationFilters }: DrawingArgs): void {
         const { ctx, doc } = context;
         const s = matrixScale(ctx.getTransform());
+        lastDrawnScale = s;
 
         // lol what are our coordinates
         const [aw, bw] = this.worldEndpoints();
         const ao = this.toObjectCoord(aw);
         const bo = this.toObjectCoord(bw);
 
-        let targetWWidth = 10;
+        let targetWWidth = 15;
         let baseColor = this.displayObject(doc).color!.hex;
 
-        const baseWidth = Math.max(MIN_PIPE_PIXEL_WIDTH / s, targetWWidth / this.toWorldLength(1));
+        const baseWidth = Math.max(MIN_PIPE_PIXEL_WIDTH / s, targetWWidth / this.toWorldLength(1), MIN_PIPE_PIXEL_WIDTH / s * (5 + Math.log(s)));
         this.lastDrawnWidthInternal = baseWidth;
 
         if (calculationFilters) {
@@ -314,8 +317,14 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         const shape = this.shape();
         let width = this.lastDrawnWidth;
         if (width === undefined) {
-            width = 10;
+            width = 5;
         }
+
+        // make it clickable
+        if (lastDrawnScale) {
+            width = Math.max(width, 8 / lastDrawnScale);
+        }
+
         return shape.distanceTo(new Flatten.Point(oc.x, oc.y))[0] < width + radius;
     }
 

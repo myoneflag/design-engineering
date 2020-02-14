@@ -37,8 +37,8 @@ export const WARNING_HINT_WIDTH = 200;
 export const FIELD_FONT_SIZE = 15;
 export const SCALE_GRADIENT_MIN = 0.05;
 
-export const WARNING_WIDTH = 60;
-export const WARNING_HEIGHT = 50;
+export const WARNING_WIDTH = 45;
+export const WARNING_HEIGHT = 35;
 export const MIN_SCALE = 0.7;
 
 export function CalculatedObject<
@@ -148,7 +148,7 @@ export function CalculatedObject<
                 ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
                 ctx.strokeStyle = "#000";
                 if (this.hasWarning(context)) {
-                    ctx.fillStyle = "rgba(255, 220, 150, 1)";
+                    ctx.fillStyle = "rgb(255,215,0, 0.8)";
                 }
                 ctx.fillRect(-maxWidth / 2, -height / 2, maxWidth, height);
 
@@ -317,7 +317,7 @@ export function CalculatedObject<
             }
 
 
-            return getFields(this.entity, context.doc, context.catalog)
+            return getFields(this.entity, context.doc, context.globalStore, context.catalog)
                 .filter((f) => f.title in filter &&
                     filter[f.title].enabled &&
                     getPropertyByString(calculation, f.property, true) !== undefined

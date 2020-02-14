@@ -118,7 +118,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
                 state.uiState.viewOnlyReason = 'Having trouble saving, please refresh';
                 window.alert('Having trouble saving for the last 10 seconds, please refresh');
             }
-        }, 10000);
+        }, 100000);
 
         MainEventBus.$emit("committed", true);
     },

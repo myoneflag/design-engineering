@@ -21,31 +21,33 @@ export class RingMainCalculator {
         this.engine = engine;
     }
 
-    findRingMains(): Array<Array<Edge<FlowNode, FlowEdge>>> {
+    findUnsizedRingMains(): Array<Array<Edge<FlowNode, FlowEdge>>> {
         // only pipes in undirected rings form ring mains.
         const res: Array<Array<Edge<FlowNode, FlowEdge>>> = [];
         const visitedEdges = new Set<string>();
         for (const e of this.engine.flowGraph.edgeList.values()) {
             if (e.value.type === EdgeType.PIPE && !visitedEdges.has(e.uid)) {
-                const ret = this.engine.flowGraph.getCycleCovering(visitedEdges, e, true, (e) => {
-                    switch (e.value.type) {
-                        case EdgeType.PIPE:
-                        case EdgeType.FITTING_FLOW:
-                        case EdgeType.ISOLATION_THROUGH:
-                            return true; // because undirected
-                        case EdgeType.BIG_VALVE_HOT_HOT:
-                        case EdgeType.BIG_VALVE_HOT_WARM:
-                        case EdgeType.BIG_VALVE_COLD_WARM:
-                        case EdgeType.BIG_VALVE_COLD_COLD:
-                        case EdgeType.FLOW_SOURCE_EDGE:
-                        case EdgeType.CHECK_THROUGH:
-                        case EdgeType.PLANT_THROUGH:
-                            return false; // because directed, and can't form ring main
+                const pCalc = this.engine.globalStore.getOrCreateCalculation((this.engine.globalStore.get(e.value.uid) as Pipe).entity);
+                if (pCalc.peakFlowRate === null) {
+                    const ret = this.engine.flowGraph.getCycleCovering(visitedEdges, e, true, (e) => {
+                        switch (e.value.type) {
+                            case EdgeType.PIPE:
+                            case EdgeType.FITTING_FLOW:
+                            case EdgeType.ISOLATION_THROUGH:
+                                return true; // because undirected
+                            case EdgeType.BIG_VALVE_HOT_HOT:
+                            case EdgeType.BIG_VALVE_HOT_WARM:
+                            case EdgeType.BIG_VALVE_COLD_WARM:
+                            case EdgeType.BIG_VALVE_COLD_COLD:
+                            case EdgeType.FLOW_SOURCE_EDGE:
+                            case EdgeType.CHECK_THROUGH:
+                            case EdgeType.PLANT_THROUGH:
+                                return false; // because directed, and can't form ring main
+                        }
+                    });
+                    if (ret) {
+                        res.push(ret);
                     }
-                });
-
-                if (ret) {
-                    res.push(ret);
                 }
             }
         }
@@ -352,7 +354,7 @@ export class RingMainCalculator {
     }
 
     calculateAllRings() {
-        const rings = this.findRingMains();
+        const rings = this.findUnsizedRingMains();
         console.log('rings: ' + rings.length + ' ' + JSON.stringify(rings.map((rs) => rs.length)));
         for (const r of rings) {
             this.sizeSingleRing(r);

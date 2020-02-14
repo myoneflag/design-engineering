@@ -24,6 +24,7 @@ import { assertUnreachable, isGermanStandard, SupportedPsdStandards } from "../.
 import { Catalog } from "../../../common/src/api/catalog/types";
 import { determineConnectableNetwork, determineConnectableSystemUid } from "../store/document/entities/lib";
 import { interpolateTable, parseCatalogNumberExact } from "../../../common/src/lib/utils";
+import { GlobalStore } from "../htmlcanvas/lib/global-store";
 
 export interface PsdCountEntry {
     units: number;
@@ -376,14 +377,14 @@ export function lookupFlowRate(
     }
 }
 
-export function getFields(entity: DrawableEntityConcrete, doc: DocumentState, catalog?: Catalog): CalculationField[] {
+export function getFields(entity: DrawableEntityConcrete, doc: DocumentState, globalStore: GlobalStore, catalog?: Catalog): CalculationField[] {
     switch (entity.type) {
         case EntityType.RISER:
             return makeRiserCalculationFields(entity, doc);
         case EntityType.PIPE:
             return makePipeCalculationFields(entity, doc.drawing, catalog);
         case EntityType.FITTING:
-            return makeFittingCalculationFields(entity);
+            return makeFittingCalculationFields(entity, globalStore);
         case EntityType.BIG_VALVE:
             return makeBigValveCalculationFields(doc, entity);
         case EntityType.FIXTURE:
