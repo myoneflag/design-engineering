@@ -17,6 +17,7 @@ export interface LoadNode {
 export interface DwellingNode {
     type: NodeType.DWELLING;
     dwellings: number;
+    continuousFlowLS: number;
 }
 
 export default interface LoadNodeEntity extends DrawableEntity, CenteredEntity {
@@ -88,7 +89,8 @@ export function makeLoadNodesFields(systems: FlowSystemParameters[], value: Load
             );
             break;
         case NodeType.DWELLING:
-            fields.push({
+            fields.push(
+                {
                 property: "node.dwellings",
                 title: "Dwelling Units",
                 hasDefault: false,
@@ -96,7 +98,17 @@ export function makeLoadNodesFields(systems: FlowSystemParameters[], value: Load
                 type: FieldType.Number,
                 params: { min: 0, max: null },
                 multiFieldId: "dwellings"
-            });
+                },
+
+                {
+                    property: "node.continuousFlowLS",
+                    title: "Continuous Flow (L/s)",
+                    hasDefault: false,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    params: { min: 0, max: null },
+                    multiFieldId: "continuousFlowLS"
+                });
             break;
     }
 

@@ -45,7 +45,8 @@ export default function insertDwellingHotCold(context: CanvasContext, rotationDE
                     const hotEntity: LoadNodeEntity = {
                         node: {
                             type: NodeType.DWELLING,
-                            dwellings: 1
+                            dwellings: 1,
+                            continuousFlowLS: 0,
                         },
                         systemUidOption: StandardFlowSystemUids.HotWater,
                         center: { x: hotLoc.x, y: hotLoc.y},
@@ -60,7 +61,8 @@ export default function insertDwellingHotCold(context: CanvasContext, rotationDE
                     const coldEntity: LoadNodeEntity = {
                         node: {
                             type: NodeType.DWELLING,
-                                dwellings: 1
+                            dwellings: 1,
+                            continuousFlowLS: 0,
                         },
                         systemUidOption: StandardFlowSystemUids.ColdWater,
                         center: { x: coldLoc.x, y: coldLoc.y},

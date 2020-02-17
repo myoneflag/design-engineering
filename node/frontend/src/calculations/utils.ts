@@ -373,7 +373,7 @@ export function lookupFlowRate(
         if (fromDwellings === null) {
             return null;
         }
-        return { flowRateLS: fromDwellings, fromDwellings: true };
+        return { flowRateLS: fromDwellings + psdU.continuousFlowLS, fromDwellings: true };
     }
 }
 

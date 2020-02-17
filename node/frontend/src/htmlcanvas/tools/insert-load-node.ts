@@ -77,7 +77,8 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType) {
                             newEntity = {
                                 node: {
                                     type: NodeType.DWELLING,
-                                    dwellings: 1
+                                    dwellings: 1,
+                                    continuousFlowLS: 0,
                                 },
                                 systemUidOption: null,
                                 center: cloneSimple(wc),
