@@ -333,6 +333,28 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         return Math.max(...valids);
     }
 
+    largestPipeSizeInternal(context: CalculationContext): number | null {
+        const sizes = this.globalStore.getConnections(this.entity.uid).map((uid) => {
+            const p = this.globalStore.get(uid) as Pipe;
+            if (!p || p.type !== EntityType.PIPE) {
+                throw new Error("A non pipe object is connected to a valve");
+            }
+
+            const calculation = context.globalStore.getCalculation(p.entity);
+            if (!calculation || calculation.realInternalDiameterMM === null) {
+                return null;
+            } else {
+                return calculation.realInternalDiameterMM;
+            }
+        });
+
+        const valids = sizes.filter((u) => u !== null) as number[];
+        if (valids.length === 0) {
+            return null;
+        }
+        return Math.max(...valids);
+    }
+
     getFrictionHeadLoss(
         context: CalculationContext,
         flowLS: number,
@@ -476,7 +498,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 }
         }
 
-        const volLM = (this.largestPipeSizeNominalMM(context)! ** 2 * Math.PI) / 4 / 1000;
+        const volLM = (this.largestPipeSizeInternal(context)! ** 2 * Math.PI) / 4 / 1000;
         const velocityMS = flowLS / volLM;
         if (kValue) {
             return (sign * (kValue * velocityMS ** 2)) / (2 * ga);
