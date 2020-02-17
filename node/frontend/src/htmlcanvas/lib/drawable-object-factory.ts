@@ -1,16 +1,10 @@
 import { EntityType } from "../../../../common/src/api/document/entities/types";
-import BackedDrawableObject, {
-    BackedObjectConstructor,
-    BaseBackedConstructor
-} from "../../../src/htmlcanvas/lib/backed-drawable-object";
+import { BackedObjectConstructor, BaseBackedConstructor } from "../../../src/htmlcanvas/lib/backed-drawable-object";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
-import Layer from "../../../src/htmlcanvas/layers/layer";
 import { GlobalStore } from "./global-store";
-import { ObjectStore } from "./object-store";
 import { DrawableEntity } from "../../../../common/src/api/document/drawing";
 import { DocumentState } from "../../store/document/types";
-import doc = Mocha.reporters.doc;
 
 export default class DrawableObjectFactory {
     static constructors: Map<EntityType, BaseBackedConstructor> = new Map<EntityType, BaseBackedConstructor>();

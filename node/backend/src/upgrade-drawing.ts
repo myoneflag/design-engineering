@@ -59,6 +59,9 @@ export async function upgradeDocument(doc: Document) {
                     case 6:
                     // noinspection FallThroughInSwitchStatementJS
                         upgrade6to7(newUpgraded);
+                    case 7:
+                        // No-op. This is just to remove flaky floats from diffs after an update to the differ.
+                    // noinspection FallThroughInSwitchStatementJS
                     case CURRENT_VERSION:
                         break;
                 }
@@ -104,6 +107,7 @@ export function getInitialDrawing(doc?: Document) {
         case 4:
         case 5:
         case 6:
+        case 7:
         case CURRENT_VERSION:
             return cloneSimple(initialDrawing);
         default:

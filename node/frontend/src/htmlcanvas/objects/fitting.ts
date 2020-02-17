@@ -219,6 +219,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
         let smallestDiameterMM: number | undefined;
         let largestDiameterMM: number | undefined;
+        let smallestDiameterNominalMM: number | undefined;
         const connections = this.globalStore.getConnections(this.entity.uid);
         const internals: string[] = [];
         connections.forEach((p) => {
@@ -226,16 +227,21 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             const thisDiameter = parseCatalogNumberExact(
                 context.globalStore.getCalculation(pipe.entity)!.realInternalDiameterMM
             )!;
+
+            const thisDiameterNominal = parseCatalogNumberExact(
+                context.globalStore.getCalculation(pipe.entity)!.realNominalPipeDiameterMM
+            )!;
             internals.push("" + thisDiameter);
             if (smallestDiameterMM == null || (thisDiameter != null && thisDiameter < smallestDiameterMM)) {
                 smallestDiameterMM = thisDiameter;
+                smallestDiameterNominalMM = thisDiameterNominal;
             }
             if (largestDiameterMM == null || (thisDiameter != null && thisDiameter > largestDiameterMM)) {
                 largestDiameterMM = thisDiameter;
             }
         });
 
-        if (smallestDiameterMM == null || largestDiameterMM == null) {
+        if (smallestDiameterMM == null || largestDiameterMM == null || smallestDiameterNominalMM == null) {
             // Neighbouring pipes are unsized.
             return null;
         }
@@ -254,22 +260,22 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         if (connections.length === 2) {
             // through valve
             if (isRightAngleRad(angle, Math.PI / 8)) {
-                k = getValveK("90Elbow", context.catalog, smallestDiameterMM);
+                k = getValveK("90Elbow", context.catalog, smallestDiameterNominalMM);
             } else if (isAcuteRad(angle)) {
-                k = getValveK("90Elbow", context.catalog, smallestDiameterMM);
+                k = getValveK("90Elbow", context.catalog, smallestDiameterNominalMM);
                 if (k) {
                     k *= 2;
                 }
             } else if (isStraightRad(angle, Math.PI / 8)) {
                 k = 0;
             } else {
-                k = getValveK("45Elbow", context.catalog, smallestDiameterMM);
+                k = getValveK("45Elbow", context.catalog, smallestDiameterNominalMM);
             }
         } else if (connections.length >= 3) {
             if (isStraightRad(angle, Math.PI / 4)) {
-                k = getValveK("tThruFlow", context.catalog, smallestDiameterMM);
+                k = getValveK("tThruFlow", context.catalog, smallestDiameterNominalMM);
             } else {
-                k = getValveK("tThruBranch", context.catalog, smallestDiameterMM);
+                k = getValveK("tThruBranch", context.catalog, smallestDiameterNominalMM);
             }
         } else {
             throw new Error("edge shouldn't exist");
@@ -281,6 +287,9 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
         const volLM = (smallestDiameterMM ** 2 * Math.PI) / 4 / 1000;
         const velocityMS = flowLS / volLM;
+        if (this.uid.includes("c1d713d5-5a4a-4f03-abdd-100cacf832f9")) {
+            console.log('fitting friction loss: ' + k + ' ' + velocityMS + ' ' + ga + ' ' + ((sign * (k * velocityMS ** 2)) / (2 * ga)));
+        }
         return (sign * (k * velocityMS ** 2)) / (2 * ga);
     }
 

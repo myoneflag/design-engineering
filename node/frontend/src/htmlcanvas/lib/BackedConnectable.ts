@@ -18,7 +18,7 @@ import { SystemNodeEntity } from "../../../../common/src/api/document/entities/b
 
 // TODO: this entire abstract class is obsolete and should be encapsulated in the ConnectableObject
 // decorator.
-export default abstract class BackedConnectable<T extends ConnectableEntityConcrete> extends BackedDrawableObject<ConnectableEntityConcrete> {
+export default abstract class BackedConnectable<T extends ConnectableEntityConcrete> extends BackedDrawableObject<T> {
     entity: T;
     abstract minimumConnections: number;
     abstract maximumConnections: number | null;
