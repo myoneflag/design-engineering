@@ -21,9 +21,9 @@ async function initializeDatabase() {
 
     // migrate old documents
     const docs = await Document.find();
-    await Promise.all(docs.map((doc) => {
-        return upgradeDocument(doc);
-    }));
+    for (const doc of docs) {
+        await upgradeDocument(doc);
+    }
 }
 
 createConnection().then(async (connection) => {

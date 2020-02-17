@@ -275,6 +275,7 @@ export class DocumentController {
                 doc.metadata = target.metadata;
                 doc.metadata.title = 'Copy of ' + doc.metadata.title;
                 doc.state = DocumentStatus.PENDING;
+                doc.version = target.version;
 
                 await doc.save();
 
