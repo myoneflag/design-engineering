@@ -10,7 +10,7 @@ import {
     upgrade1to2,
     upgrade2to3,
     upgrade3to4,
-    upgrade4to5, upgrade5to6, upgrade6to7
+    upgrade4to5, upgrade5to6, upgrade6to7, upgrade7to8
 } from "../../common/src/api/upgrade";
 import { diffState } from "../../common/src/api/document/state-differ";
 import stringify from 'json-stable-stringify';
@@ -59,8 +59,9 @@ export async function upgradeDocument(doc: Document) {
                     case 6:
                     // noinspection FallThroughInSwitchStatementJS
                         upgrade6to7(newUpgraded);
+                    // noinspection FallThroughInSwitchStatementJS
                     case 7:
-                        // No-op. This is just to remove flaky floats from diffs after an update to the differ.
+                        upgrade7to8(newUpgraded);
                     // noinspection FallThroughInSwitchStatementJS
                     case CURRENT_VERSION:
                         break;

@@ -1111,7 +1111,7 @@ export default class CalculationEngine {
                 case NodeType.DWELLING:
                     return {
                         units: 0,
-                        continuousFlowLS: 0,
+                        continuousFlowLS: node.entity.node.continuousFlowLS,
                         dwellings: node.entity.node.dwellings,
                         entity: node.entity.uid,
                         correlationGroup
