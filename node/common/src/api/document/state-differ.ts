@@ -1,6 +1,7 @@
 import * as _ from "lodash";
 import { OPERATION_NAMES, OperationTransformConcrete } from "./operation-transforms";
 import { cloneSimple } from "../../lib/utils";
+import { EPS } from "../../../../frontend/src/calculations/pressure-drops";
 
 // Returns the diff object. If no diff, returns undefined.
 export function diffObject(before: any, after: any, filter: any): any {
@@ -55,6 +56,13 @@ export function diffObject(before: any, after: any, filter: any): any {
         if (before === after) {
             return undefined;
         }
+
+        if (typeof before === 'number' && typeof after === 'number') {
+            if (Math.abs(before - after) < EPS) {
+                return undefined;
+            }
+        }
+
         return cloneSimple(after);
     }
 }

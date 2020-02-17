@@ -3,7 +3,7 @@ import { DocumentState } from "../../src/store/document/types";
 import { Catalog } from "../../../common/src/api/catalog/types";
 import { parseCatalogNumberExact } from "../../../common/src/lib/utils";
 
-export const EPS = 1e-10;
+export const EPS = 1e-8;
 export const EPS_ABS = 1e-8;
 
 export function getReynoldsNumber(

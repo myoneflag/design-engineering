@@ -60,7 +60,7 @@ export function CalculatedObject<
                     );
                 }
 
-                const fractionDigits = datum.significantDigits === undefined ? 2 : datum.significantDigits;
+                const fractionDigits = datum.significantDigits === undefined ? 3 : datum.significantDigits;
 
                 let numberText = value === null ? "??" : value.toFixed(fractionDigits);
                 if (datum.format) {

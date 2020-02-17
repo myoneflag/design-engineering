@@ -1475,11 +1475,16 @@ export default class CalculationEngine {
                                 const pCalc = this.globalStore.getOrCreateCalculation(p.entity);
 
                                 if (pCalc.peakFlowRate !== null) {
-                                    const size = this.sizeRpzdForFlowRate(
-                                        obj.entity.valve.catalogId,
-                                        obj.entity.valve.type,
-                                        pCalc.peakFlowRate
-                                    );
+                                    let size: number | null = null;
+                                    if (obj.entity.valve.sizeMM === null) {
+                                        size = this.sizeRpzdForFlowRate(
+                                            obj.entity.valve.catalogId,
+                                            obj.entity.valve.type,
+                                            pCalc.peakFlowRate
+                                        );
+                                    } else {
+                                        size = obj.entity.valve.sizeMM;
+                                    }
                                     if (size !== null) {
                                         const calc = this.globalStore.getOrCreateCalculation(obj.entity);
                                         calc.sizeMM = size;
@@ -1496,10 +1501,14 @@ export default class CalculationEngine {
 
                                 if (pCalc.peakFlowRate !== null) {
 
-                                    const size = this.sizePrvForFlowRate(
+                                    let size = this.sizePrvForFlowRate(
                                         obj.entity.valve.type,
                                         pCalc.peakFlowRate
                                     );
+
+                                    if (obj.entity.valve.sizeMM !== null) {
+                                        size = obj.entity.valve.sizeMM;
+                                    }
 
                                     if (size !== null) {
                                         const calc = this.globalStore.getOrCreateCalculation(obj.entity);

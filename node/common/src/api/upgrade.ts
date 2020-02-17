@@ -7,7 +7,7 @@ import { PlantEntityV3, plantV3toCurrent } from "./document/entities/plant-entit
 // implement the upgrade method below.
 // Remember to also add this function to the upgrade function in default.
 
-export const CURRENT_VERSION = 7;
+export const CURRENT_VERSION = 8;
 
 export function upgrade0to1(original: DrawingState) {
     // We have to fix one problem. Kitchen Sinks are broken.
