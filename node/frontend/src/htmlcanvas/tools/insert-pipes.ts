@@ -47,7 +47,7 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                         type: InteractionType.STARTING_PIPE,
                         system,
                         worldRadius: context.lastDrawingContext
-                            ? Math.max(context.lastDrawingContext.vp.toWorldLength(3), 50)
+                            ? Math.max(context.lastDrawingContext.vp.surfaceToWorldLength(3), 50)
                             : 0,
                         worldCoord: wc
                     },
@@ -66,7 +66,7 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                         type: InteractionType.STARTING_PIPE,
                         system,
                         worldRadius: context.lastDrawingContext
-                            ? Math.max(context.lastDrawingContext.vp.toWorldLength(3), 50)
+                            ? Math.max(context.lastDrawingContext.vp.surfaceToWorldLength(3), 50)
                             : 0,
                         worldCoord: wc
                     },
@@ -168,7 +168,7 @@ function insertPipeChain(
                         type: InteractionType.STARTING_PIPE,
                         system,
                         worldRadius: context.lastDrawingContext
-                            ? Math.max(context.lastDrawingContext.vp.toWorldLength(3), 50)
+                            ? Math.max(context.lastDrawingContext.vp.surfaceToWorldLength(3), 50)
                             : 0,
                         worldCoord: wc
                     },

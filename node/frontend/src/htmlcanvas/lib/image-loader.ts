@@ -25,6 +25,10 @@ export default class ImageLoader {
                         await axios.head(imageLinks.data.head);
                         const image = new Image();
 
+                        // to allow exporting once it's drawn into the canvas.
+                        image.crossOrigin = 'Anonymous';
+
+
                         image.onload = () => {
                             resolve(image);
                         };

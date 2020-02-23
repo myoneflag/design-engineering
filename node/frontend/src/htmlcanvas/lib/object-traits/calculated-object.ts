@@ -148,8 +148,9 @@ export function CalculatedObject<
                 ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
                 ctx.strokeStyle = "#000";
                 if (this.hasWarning(context)) {
-                    ctx.fillStyle = "rgb(255,215,0, 0.8)";
+                    ctx.fillStyle = "rgba(255,215,0, 0.8)";
                 }
+                console.log('calculated object filling rect');
                 ctx.fillRect(-maxWidth / 2, -height / 2, maxWidth, height);
 
                 ctx.font = FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
@@ -207,10 +208,10 @@ export function CalculatedObject<
                 // line to
                 const boxShape = new Flatten.Polygon();
                 const worldMin = vp.toWorldCoord(
-                    TM.applyToPoint(context.ctx.getTransform(), { x: box.xmin, y: box.ymin })
+                    TM.applyToPoint(context.vp.currToScreenTransform(ctx), { x: box.xmin, y: box.ymin })
                 );
                 const worldMax = vp.toWorldCoord(
-                    TM.applyToPoint(context.ctx.getTransform(), { x: box.xmax, y: box.ymax })
+                    TM.applyToPoint(context.vp.currToScreenTransform(ctx), { x: box.xmax, y: box.ymax })
                 );
                 if (this.hasWarning(context)) {
                     worldMin.x -= WARNING_WIDTH;
@@ -226,9 +227,14 @@ export function CalculatedObject<
                 const line = this.shape()!.distanceTo(boxShape);
                 if (!boxShape.contains(line[1].start) || true) {
                     // line is now in world position. Transform line back to current position.
-                    const world2curr = TM.transform(TM.inverse(ctx.getTransform()), vp.world2ScreenMatrix);
+                    const world2curr = TM.transform(TM.inverse(context.vp.currToScreenTransform(ctx)), vp.world2ScreenMatrix);
 
                     const currLine = line[1].transform(tm2flatten(world2curr));
+                    if (isNaN(currLine.start.x)) {
+                        console.log(currLine);
+                        console.log(ctx.getTransform());
+                        console.log('kek');
+                    }
 
                     ctx.strokeStyle = "#AAA";
                     ctx.setLineDash([5, 5]);
@@ -245,7 +251,7 @@ export function CalculatedObject<
         }
 
         measureCalculationBox(context: DrawingContext, data: CalculationData[]): Array<[TM.Matrix, Flatten.Polygon]> {
-            const s = matrixScale(context.ctx.getTransform());
+            const s = context.vp.currToSurfaceScale(context.ctx);
             let newScale: number;
 
             if (s > TEXT_MAX_SCALE) {

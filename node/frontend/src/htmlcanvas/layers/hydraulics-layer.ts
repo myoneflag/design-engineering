@@ -28,7 +28,7 @@ export default class HydraulicsLayer extends LayerImplementation {
             if (!exclude.has(v)) {
                 if (!active || !this.isSelected(v)) {
                     try {
-                        this.context.globalStore.get(v)!.draw(context, { active, selected: false, calculationFilters });
+                        this.context.globalStore.get(v)!.draw(context, { active, selected: false, calculationFilters, forExport: false });
                     } catch (e) {
                         // tslint:disable-next-line:no-console
                     }

@@ -64,13 +64,13 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
     drawInternal(context: DrawingContext, args: DrawingArgs): void {
         const { ctx, vp } = context;
         const baseRadius = this.baseRadius;
-        const radius = Math.max(baseRadius, vp.toWorldLength(baseRadius / 50));
+        const radius = Math.max(baseRadius, vp.surfaceToWorldLength(baseRadius / 50));
 
         const filled = fillDefaultLoadNodeFields(context.doc, this.globalStore, this.entity);
 
 
         if (args.selected) {
-            const sr = Math.max(baseRadius + 20, vp.toWorldLength(baseRadius / 50 + 2));
+            const sr = Math.max(baseRadius + 20, vp.surfaceToWorldLength(baseRadius / 50 + 2));
 
             ctx.fillStyle = lighten(filled.color!.hex, 50);
             if (
@@ -108,7 +108,7 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
             // draw chain link
             const other = this.globalStore.get(this.entity.linkedToUid);
             if (other) {
-                const lineWidth = Math.max(vp.toWorldLength(2), 20);
+                const lineWidth = Math.max(vp.surfaceToWorldLength(2), 20);
                 const oe = other.entity as ConnectableEntityConcrete;
                 const otherLoc = this.toObjectCoord(other.toWorldCoord());
 

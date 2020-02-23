@@ -120,7 +120,6 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { MainEventBus } from "../../../../src/store/main-event-bus";
 import PointTool from "../../../../src/htmlcanvas/tools/point-tool";
-import { DEFAULT_TOOL, POINT_TOOL } from "../../../../src/htmlcanvas/lib/tool";
 import DrawableObject from "../../../../src/htmlcanvas/lib/drawable-object";
 import { BackgroundImage } from "../../../../src/htmlcanvas/objects/background-image";
 import { PDFRenderResult, renderPdf } from "../../../../src/api/pdf";

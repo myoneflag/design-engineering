@@ -7,6 +7,7 @@ import { ValveId } from "../../../src/htmlcanvas/lib/types";
 import { DrawingState, initialDrawing } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { Operation } from "../../../../common/src/models/Operation";
+import { PAPER_SIZES, PaperSize, PaperSizeName } from "../../../../common/src/api/paper-config";
 
 // Because of how the diffing engine works, there are restrictions on the data structure for the document state.
 // Rules are:
@@ -44,7 +45,17 @@ export interface UIState {
     viewOnlyReason: string | null;
     historyIndex: number;
 
-    pastesByLevel: {[key: string]: number}
+    pastesByLevel: {[key: string]: number};
+
+    exportSettings: ExportUiSettings;
+}
+
+export interface ExportUiSettings {
+    paperSize: PaperSize;
+    scale: string;
+    detail: number;
+    coverSheet: boolean;
+    floorPlans: boolean;
 }
 
 export enum GridLineMode {
@@ -127,6 +138,14 @@ export const initialUIState: UIState = {
     viewOnlyReason: null,
 
     pastesByLevel: {},
+
+    exportSettings: {
+        paperSize: PAPER_SIZES.A1,
+        scale: '1:100',
+        detail: 0,
+        coverSheet: true,
+        floorPlans: true,
+    }
 };
 
 export function blankDiffFilter() {

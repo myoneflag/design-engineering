@@ -1,16 +1,3 @@
-import { EntityType } from "../../../../common/src/api/document/entities/types";
-import { EntityType } from "../../../../common/src/api/document/entities/types";
-import { EntityType } from "../../../../common/src/api/document/entities/types";
-import { EntityType } from "../../../../common/src/api/document/entities/types";
-import { EntityType } from "../../../../common/src/api/document/entities/types";
-import { DrawingMode } from "../../htmlcanvas/types";
-import { DrawingMode } from "../../htmlcanvas/types";
-import { DrawingMode } from "../../htmlcanvas/types";
-import { DrawingMode } from "../../htmlcanvas/types";
-import { DrawingMode } from "../../htmlcanvas/types";
-import { DrawingMode } from "../../htmlcanvas/types";
-import { DrawingMode } from "../../htmlcanvas/types";
-import { EntityType } from "../../../../common/src/api/document/entities/types";
 <template>
     <drop @drop="onDrop">
         <!--Anything that needs scrolling needs to be up here, outside of canvasFrame.-->
@@ -27,7 +14,7 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
         </PropertiesWindow>
 
         <CalculationsSidebar
-            v-if="document.uiState.drawingMode === 2 && initialized"
+            v-if="document.uiState.drawingMode === 2 && initialized && (!toolHandler || toolHandler.config.calculationSideBar)"
             :objects="allObjects"
             :on-change="scheduleDraw"
         >
@@ -73,12 +60,20 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
                 :is-drawing="toolHandler !== null"
             />
 
-            <CalculationBar
-                v-if="document.uiState.drawingMode === 2 && initialized"
+            <CalculationTopBar
+                v-if="document.uiState.drawingMode === 2 && initialized && (!toolHandler || toolHandler.config.calculationTopBar)"
                 :demandType.sync="demandType"
                 :is-calculating="isCalculating"
                 :on-re-calculate="considerCalculating"
             />
+
+            <PDFSnapshotTopBar
+                    v-if="toolHandler && toolHandler.config.paperSnapshotTopBar"
+                    :canvas-context="thisContext"
+                    :tool-handler="toolHandler"
+            >
+
+            </PDFSnapshotTopBar>
 
             <Toolbar
                 :current-tool-config="currentTool"
@@ -93,6 +88,7 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
             ></Toolbar>
 
             <InstructionPage v-if="documentBrandNew && toolHandler === null" />
+
 
             <div v-if="document.uiState.levelUid === null" class="choose-level-instruction">
                 <v-icon name="arrow-left" scale="2"></v-icon> Please Choose a Level
@@ -142,7 +138,7 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
     import insertFixture from "../../../src/htmlcanvas/tools/insert-fixture";
     import FloorPlanInsertPanel from "../../../src/components/editor/FloorPlanInsertPanel.vue";
     import InstructionPage from "../../../src/components/editor/InstructionPage.vue";
-    import CalculationBar from "../../../src/components/CalculationBar.vue";
+    import CalculationTopBar from "../CalculationTopBar.vue";
     import { DemandType } from "../../../src/calculations/types";
     import CalculationEngine from "../../../src/calculations/calculation-engine";
     import CalculationLayer from "../../../src/htmlcanvas/layers/calculation-layer";
@@ -181,14 +177,17 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
     import Riser from "../../htmlcanvas/objects/riser";
     import stringify from "json-stable-stringify";
     import insertDwellingHotCold from "../../htmlcanvas/tools/insert-dwelling-hot-cold";
+    import PDFSnapshotTopBar from "../PDFSnapshotTopBar.vue";
+    import CanvasContext from "../../htmlcanvas/lib/canvas-context";
 
     @Component({
         components: {
+            PDFSnapshotTopBar,
             HistoryView,
             LevelSelector,
             DrawingNavBar,
             CalculationsSidebar,
-            CalculationBar,
+            CalculationTopBar,
             InstructionPage,
             FloorPlanInsertPanel,
             LoadingScreen,
@@ -210,6 +209,10 @@ export default class DrawingCanvas extends Vue {
 
     get isLoading() {
         return !this.catalogLoaded || !this.document.uiState.loaded;
+    }
+
+    get thisContext(): CanvasContext {
+        return this;
     }
 
     get shouldDisableUIMouseEvents(): boolean {
@@ -532,6 +535,8 @@ export default class DrawingCanvas extends Vue {
         MainEventBus.$on('validate-and-commit', this.onValidateAndCommit);
         MainEventBus.$on('drawing-loaded', this.onDrawingLoaded);
 
+        MainEventBus.$on('set-scale', this.onSetScale);
+        MainEventBus.$on('set-detail-scale', this.onDetailScale);
         this.$watch(
             () => this.document.uiState.drawingMode,
             (newVal, oldVal) => {
@@ -587,11 +592,30 @@ export default class DrawingCanvas extends Vue {
         MainEventBus.$off('keydown', this.onKeyDown);
         MainEventBus.$off('validate-and-commit', this.onValidateAndCommit);
         MainEventBus.$off('drawing-loaded', this.onDrawingLoaded);
+        MainEventBus.$off('set-scale', this.onSetScale);
+        MainEventBus.$off('set-detail-scale', this.onDetailScale);
         this.document.uiState.lastCalculationId = -1;
     }
 
     onInteractionComplete(entity: DrawableEntityConcrete) {
         this.onValidateAndCommit(true, false);
+    }
+
+    onSetScale(screenScale: number) {
+        const currS = matrixScale(this.viewPort.screen2worldMatrix);
+        this.viewPort.rescale(1 / currS * screenScale, this.viewPort.width / 2, this.viewPort.height / 2);
+    }
+
+    onDetailScale(detailScale: number) {
+        console.log('detail scale: ' + detailScale);
+        // preserve screen scale
+        const oldScreenScale = matrixScale(this.viewPort.screen2worldMatrix);
+        this.viewPort.screenScale = detailScale;
+        const newScreenScale = matrixScale(this.viewPort.screen2worldMatrix);
+        console.log('old: ' + oldScreenScale + ' new: ' + newScreenScale);
+        console.log('old screen s: ' + matrixScale(this.viewPort.screenToSurface) + ' old world s: ' + matrixScale(this.viewPort.surfaceToWorld));
+        this.viewPort.rescale(oldScreenScale / newScreenScale, this.viewPort.width / 2, this.viewPort.height / 2);
+        console.log('new viewport scale: ' + matrixScale(this.viewPort.screen2worldMatrix));
     }
 
     onEntitySelect({entity, e}: {entity: DrawableEntityConcrete, e: MouseEvent}) {
@@ -1260,7 +1284,7 @@ export default class DrawingCanvas extends Vue {
         // Draw on screen HUD
         drawGridLines(context);
         this.ctx!.setTransform(TM.identity());
-        drawPaperScale(this.ctx!, 1 / matrixScale(this.viewPort.position));
+        drawPaperScale(this.ctx!, 1 / matrixScale(this.viewPort.screen2worldMatrix));
 
         if (drawReactive && this.propertiesVisible) {
             if (
@@ -1302,7 +1326,7 @@ export default class DrawingCanvas extends Vue {
 
         // draw selection box
         if (this.selectBox) {
-            this.selectBox.draw(context, { selected: true, active: true, calculationFilters: null });
+            this.selectBox.draw(context, { selected: true, active: true, calculationFilters: null, forExport: false });
         }
 
         if (this.toolHandler) {
@@ -1310,9 +1334,16 @@ export default class DrawingCanvas extends Vue {
             this.toolHandler.draw(context);
         }
     }
-    async drawFull() {
-        const start = new Date();
-        this.simulDraws++;
+
+    beforeDrawWithoutTool() {
+        this.onDetailScale(1);
+    }
+
+    async drawFull(altCtx?: CanvasRenderingContext2D, altVp?: ViewPort, forExport: boolean = false) {
+        console.log('drawing full');
+        if (!forExport) {
+            this.simulDraws++;
+        }
         if (this.simulDraws === 2) {
             throw new Error("Shound't be running 2 simulaneous draws");
         }
@@ -1335,22 +1366,35 @@ export default class DrawingCanvas extends Vue {
             );
 
             const context: DrawingContext = {
-                ctx: buffer.ctx,
-                vp: this.viewPort.copy(),
+                ctx: altCtx || buffer.ctx,
+                vp: altVp || this.viewPort.copy(),
                 doc: this.document,
                 catalog: this.effectiveCatalog,
                 globalStore: this.globalStore
             };
 
+            if (this.toolHandler && !forExport) {
+                this.toolHandler.beforeDraw(context);
+            } else {
+                this.beforeDrawWithoutTool();
+            }
+
+            //context.vp = altVp || this.viewPort.copy(); // hack for the use case of the beforeDraw api. Perhaps there's
+                                                        // a nicer way.
+
             // this.buffer.transform = this.viewPort.world2ScreenMatrix; do that at the end
             this.lastDrawingContext = context;
-            await this.backgroundLayer.draw(
-                context,
-                this.document.uiState.drawingMode === DrawingMode.FloorPlan,
-                shouldContinue,
-                reactive,
-                this.currentTool
-            );
+
+            if (!forExport || this.document.uiState.exportSettings.floorPlans) {
+                await this.backgroundLayer.draw(
+                    context,
+                    this.document.uiState.drawingMode === DrawingMode.FloorPlan,
+                    shouldContinue,
+                    reactive,
+                    this.currentTool,
+                    forExport,
+                );
+            }
             const filters =
                 this.document.uiState.drawingMode === DrawingMode.Calculations
                     ? this.document.uiState.calculationFilters
@@ -1383,11 +1427,12 @@ export default class DrawingCanvas extends Vue {
                         await cooperativeYield(shouldContinue);
                     }*/
 
-            this.buffer = buffer; // swap out the buffer, so that the new render shows the new frame.
 
-            await this.blitBuffer();
-            this.numSkipped = 0;
-            const end = new Date();
+            if (!forExport) {
+                this.buffer = buffer; // swap out the buffer, so that the new render shows the new frame.
+                await this.blitBuffer();
+                this.numSkipped = 0;
+            }
         } catch (e) {
             if (e instanceof InterruptedError) {
                 // that's fine, just exit, because a newer frame wants to render.
@@ -1395,7 +1440,9 @@ export default class DrawingCanvas extends Vue {
                 this.drawError(e);
             }
         } finally {
-            this.simulDraws--;
+            if (!forExport) {
+                this.simulDraws--;
+            }
         }
     }
 
@@ -1576,7 +1623,7 @@ export default class DrawingCanvas extends Vue {
     }
 
     onFloorPlanSelected(file: File) {
-        const m = decomposeMatrix(this.viewPort.position);
+        const m = decomposeMatrix(this.viewPort.surfaceToWorld);
         this.insertFloorPlan(file, { x: m.tx + this.viewPort.width / 2, y: m.ty + this.viewPort.height / 2 });
     }
 
@@ -1793,12 +1840,14 @@ export default class DrawingCanvas extends Vue {
             delta = 1 / (1 - event.deltaY / 500);
         }
         console.log(delta);
-        const currS = matrixScale(this.viewPort.position);
+        const currS = matrixScale(this.viewPort.surfaceToWorld);
         console.log(currS);
         delta = Math.max(0.5 / currS, delta);
         delta = Math.min(2000 / currS, delta);
 
-        this.viewPort.rescale(delta, event.offsetX, event.offsetY);
+        if (!this.toolHandler || !this.toolHandler.config.preventZooming) {
+            this.viewPort.rescale(delta, event.offsetX, event.offsetY);
+        }
 
         this.scheduleDraw();
     }

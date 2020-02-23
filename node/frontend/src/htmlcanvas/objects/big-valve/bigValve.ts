@@ -87,7 +87,7 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
 
         const sw = 1;
 
-        const scale = matrixScale(ctx.getTransform());
+        const scale = context.vp.currToSurfaceScale(ctx);
         ctx.lineWidth = Math.max(1 / scale, 10 * this.toWorldLength(1));
         ctx.strokeStyle = "#000";
         ctx.lineCap = "round";

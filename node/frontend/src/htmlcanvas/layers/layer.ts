@@ -166,7 +166,8 @@ export abstract class LayerImplementation implements Layer {
                 o.draw(context, {
                     active: true,
                     selected: selectedSet.has(uid) || uncommittedSet.has(uid),
-                    calculationFilters: null
+                    calculationFilters: null,
+                    forExport: false,
                 });
             }
         });

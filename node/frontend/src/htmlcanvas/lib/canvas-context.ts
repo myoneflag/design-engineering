@@ -46,6 +46,8 @@ export default interface CanvasContext {
 
     scheduleDraw(): void;
 
+    drawFull(ctx?: CanvasRenderingContext2D, vp?: ViewPort, forExport?: boolean): Promise<void>;
+
     deleteEntity(object: BaseBackedObject, throwIfNotFound?: boolean): void;
 
     isSelected(uid: string): boolean;

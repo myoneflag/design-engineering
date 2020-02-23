@@ -339,6 +339,37 @@ export function keyCode2Image(keyCode: KeyCode): HTMLImageElement {
     return imgStore.get(name)!;
 }
 
+
+
+const dataUrlCache = new Map<string, string | ArrayBuffer | null | Promise<string | ArrayBuffer | null>>();
+export async function fetchDataUrl(url: string, cache: boolean = false): Promise<string | ArrayBuffer | null> {
+    if (dataUrlCache.has(url)) {
+        return dataUrlCache.get(url)!;
+    }
+
+    const p = new Promise<string | ArrayBuffer | null>((res, rej) => {
+        const xhr = new XMLHttpRequest();
+        xhr.onload = () => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                if (cache) {
+                    dataUrlCache.set(url, reader.result);
+                }
+                res(reader.result);
+            };
+            reader.readAsDataURL(xhr.response);
+        };
+        xhr.open('GET', url);
+        xhr.responseType = 'blob';
+        xhr.send();
+    });
+
+    if (cache) {
+        dataUrlCache.set(url, p);
+    }
+    return p;
+}
+
 export function polygonsOverlap(a: Flatten.Polygon, b: Flatten.Polygon) {
     let found = false;
     a.edges.forEach((s: Flatten.Edge) => {

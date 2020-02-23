@@ -14,8 +14,11 @@
                     </b-button>
 
                     <b-dropdown variant="outline-dark" size="sm" class="calculationBtn" text="Export">
-                        <b-dropdown-item variant="outline-dark" size="sm" :disabled="true"
-                            >PDF (Coming soon)
+                        <b-dropdown-item @click="pdfSnapshot" variant="outline-dark" size="sm"
+                            > PDF Snapshot Report
+                        </b-dropdown-item>
+                        <b-dropdown-item @click="fullPdfExport"  variant="outline-dark" size="sm" :disabled="true"
+                        > Full PDF Report (Coming very soon)
                         </b-dropdown-item>
                         <b-dropdown-item variant="outline-dark" size="sm" :disabled="true"
                             >DWG (Coming soon)
@@ -58,6 +61,8 @@ import { getEntityName } from "../../../../common/src/api/document/entities/type
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import { getFields } from "../../../src/calculations/utils";
 import { cloneSimple } from "../../../../common/src/lib/utils";
+import { MainEventBus } from "../../store/main-event-bus";
+import PdfSnapshotTool from "../../htmlcanvas/tools/pdf-snapshot-tool";
 
 @Component({
     components: {},
@@ -141,6 +146,14 @@ export default class CalculationsSidebar extends Vue {
 
     get document(): DocumentState {
         return this.$store.getters["document/document"];
+    }
+
+    pdfSnapshot() {
+        MainEventBus.$emit('set-tool-handler', new PdfSnapshotTool());
+    }
+
+    fullPdfExport() {
+
     }
 
     onCheck(eType: string, prop: string, value: boolean, shouldChange: boolean = true) {

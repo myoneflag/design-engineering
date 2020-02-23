@@ -111,7 +111,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             const avgx = shape.start.x * ratio + shape.end.x * (1 - ratio);
             const avgy = shape.start.y * ratio + shape.end.y * (1 - ratio);
 
-            const length = vp.toScreenLength(shape.length);
+            const length = vp.toSurfaceLength(shape.length);
 
             if (length < 100) {
                 return [];
@@ -170,7 +170,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         const avgx = (shape.start.x + shape.end.x) / 2;
         const avgy = (shape.start.y + shape.end.y) / 2;
 
-        const length = vp.toScreenLength(shape.length);
+        const length = vp.toSurfaceLength(shape.length);
 
         if (length < 100) {
             return;
@@ -187,7 +187,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         ctx.rotate(-angle);
         ctx.translate(0, -this.lastDrawnWidthInternal / 2);
 
-        const s = matrixScale(ctx.getTransform());
+        const s = context.vp.currToSurfaceScale(ctx);
         if (s > TEXT_MAX_SCALE) {
             ctx.scale(1 / TEXT_MAX_SCALE, 1 / TEXT_MAX_SCALE);
         } else {
@@ -198,7 +198,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
     drawInternal(context: DrawingContext, { active, selected, calculationFilters }: DrawingArgs): void {
         const { ctx, doc } = context;
-        const s = matrixScale(ctx.getTransform());
+        const s = context.vp.currToSurfaceScale(ctx);
         lastDrawnScale = s;
 
         // lol what are our coordinates

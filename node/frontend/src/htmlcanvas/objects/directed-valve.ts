@@ -98,7 +98,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     }
 
     drawInternal(context: DrawingContext, { active, selected }: DrawingArgs): void {
-        const s = matrixScale(context.ctx.getTransform());
+        const s = context.vp.currToSurfaceScale(context.ctx);
         context.ctx.rotate(this.rotationRad);
 
         const e = fillDirectedValveFields(context.doc.drawing, this.globalStore, this.entity);
