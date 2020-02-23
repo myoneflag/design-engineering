@@ -20,7 +20,8 @@ export default class BackgroundLayer extends LayerImplementation {
         active: boolean,
         shouldContinue: () => boolean,
         reactive: Set<string>,
-        selectedTool: ToolConfig
+        selectedTool: ToolConfig,
+        forExport: boolean,
     ) {
         this.updateSelectionBox();
 
@@ -34,7 +35,8 @@ export default class BackgroundLayer extends LayerImplementation {
                     background.draw(context, {
                         selected: this.isSelected(selectId),
                         active: active && !selectedTool.focusSelectedObject,
-                        calculationFilters: null
+                        calculationFilters: null,
+                        forExport,
                     });
                 }
             } else {
@@ -54,7 +56,7 @@ export default class BackgroundLayer extends LayerImplementation {
                     this.isSelected(background) &&
                     (background.hasDragged || selectedTool.focusSelectedObject)
                 ) {
-                    background.draw(context, { selected: this.isSelected(selectId), active, calculationFilters: null });
+                    background.draw(context, { selected: this.isSelected(selectId), active, calculationFilters: null, forExport });
                 }
                 await cooperativeYield(shouldContinue);
             }
@@ -102,7 +104,7 @@ export default class BackgroundLayer extends LayerImplementation {
 
     drawReactiveLayer(context: DrawingContext, interactive: string[]) {
         if (this.resizeBox) {
-            this.resizeBox.draw(context, { active: true, selected: true, calculationFilters: null });
+            this.resizeBox.draw(context, { active: true, selected: true, calculationFilters: null, forExport: false });
         }
     }
 

@@ -54,15 +54,14 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
     drawInternal({ ctx, doc, vp }: DrawingContext, { active, selected }: DrawingArgs): void {
         this.lastDrawnWorldRadius = 0;
 
-        const mat = ctx.getTransform();
-        const scale = matrixScale(mat);
+        const scale = vp.currToSurfaceScale(ctx);
         // Minimum screen size for them.
 
         const rawDiameter = 300;
-        const screenMin = vp.toWorldLength(10);
+        const screenMin = vp.surfaceToWorldLength(10);
         this.lastDrawnDiameterW = Math.max(rawDiameter, screenMin);
 
-        const screenSize = vp.toScreenLength(this.lastDrawnDiameterW / 2);
+        const screenSize = vp.toSurfaceLength(this.lastDrawnDiameterW / 2);
 
         ctx.lineWidth = 0;
 

@@ -69,7 +69,7 @@ import { DemandType } from "../../src/calculations/types";
         onReCalculate: Function,
     }
 })
-export default class CalculationBar extends Vue {
+export default class CalculationTopBar extends Vue {
     DemandType = DemandType;
 
     settings() {

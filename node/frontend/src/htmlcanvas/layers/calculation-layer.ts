@@ -49,7 +49,7 @@ export default class CalculationLayer extends LayerImplementation {
         const { ctx, vp } = context;
         if (active && calculationFilters) {
 
-            const resolutionWL = Math.max(vp.toWorldLength(LABEL_RESOLUTION_PX), MIN_LABEL_RESOLUTION_WL);
+            const resolutionWL = Math.max(vp.surfaceToWorldLength(LABEL_RESOLUTION_PX), MIN_LABEL_RESOLUTION_WL);
             const rexp = Math.ceil(Math.log2(resolutionWL));
             const effRes =  Math.pow(2, rexp);
             const scaleWarp = effRes / resolutionWL;
@@ -67,7 +67,7 @@ export default class CalculationLayer extends LayerImplementation {
                     if (label[3]) {
                         // warning only
                         vp.prepareContext(context.ctx, ...o.world2object);
-                        const s = matrixScale(context.ctx.getTransform());
+                        const s = context.vp.currToSurfaceScale(ctx);
                         context.ctx.scale(MIN_SCALE / s, MIN_SCALE / s);
                         const box = o.drawCalculationBox(context, [], false, true);
                     } else {
@@ -99,7 +99,7 @@ export default class CalculationLayer extends LayerImplementation {
 
         let { ctx, vp } = context;
         // standardize the layers to factors of 2.
-        const rescale = resolution / vp.toWorldLength(LABEL_RESOLUTION_PX);
+        const rescale = resolution / vp.surfaceToWorldLength(LABEL_RESOLUTION_PX);
         console.log('rescaling by ' + rescale);
         vp = vp.copy();
         vp.rescale(rescale , 0, 0);
@@ -191,7 +191,7 @@ export default class CalculationLayer extends LayerImplementation {
                 // warnings must be drawn
                 if (o.calculated && o.hasWarning(context)) {
                     const wc = o.toWorldCoord();
-                    res.place(Flatten.circle(Flatten.point(wc.x, wc.y), vp.toWorldLength(WARNING_WIDTH)), [o.uid, o.position, obj2props.get(o.uid) || [], true]);
+                    res.place(Flatten.circle(Flatten.point(wc.x, wc.y), vp.surfaceToWorldLength(WARNING_WIDTH)), [o.uid, o.position, obj2props.get(o.uid) || [], true]);
                 }
             }
         }

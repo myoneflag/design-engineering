@@ -225,8 +225,8 @@ export const VALVE_LINE_WIDTH_MM = 10;
 export const VALVE_SIZE_MM = 140;
 
 export function drawRpzdDouble(context: DrawingContext, colors: [string, string], selected: boolean = false) {
-    const s = matrixScale(context.ctx.getTransform());
-    const baseWidth = Math.max(2.0 / s, VALVE_LINE_WIDTH_MM / context.vp.toWorldLength(1));
+    const s = context.vp.currToSurfaceScale(context.ctx);
+    const baseWidth = Math.max(2.0 / s, VALVE_LINE_WIDTH_MM / context.vp.surfaceToWorldLength(1));
     const ctx = context.ctx;
     ctx.lineWidth = baseWidth;
 

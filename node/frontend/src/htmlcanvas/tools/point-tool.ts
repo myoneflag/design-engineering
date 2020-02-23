@@ -1,4 +1,4 @@
-import { POINT_TOOL, ToolHandler } from "../../../src/htmlcanvas/lib/tool";
+import { ToolHandler } from "../../../src/htmlcanvas/lib/tool";
 import { UNHANDLED } from "../../../src/htmlcanvas/types";
 import { ViewPort } from "../../../src/htmlcanvas/viewport";
 import { ToolConfig } from "../../../src/store/tools/types";
@@ -82,8 +82,25 @@ export default class PointTool implements ToolHandler {
         });
     }
 
+    beforeDraw(context: DrawingContext): void {
+        // nop
+    }
+
     get config(): ToolConfig {
-        return POINT_TOOL;
+        return {
+            name: "point",
+                defaultCursor: "Crosshair",
+                focusSelectedObject: true,
+                icon: "dot-circle",
+                modesEnabled: false,
+                modesVisible: false,
+                text: "Select a Point",
+                tooltip: "point",
+                propertiesEnabled: false,
+                propertiesVisible: false,
+                toolbarEnabled: true,
+                toolbarVisible: true
+        };
     }
 
     onMouseDown(event: MouseEvent, context: CanvasContext) {

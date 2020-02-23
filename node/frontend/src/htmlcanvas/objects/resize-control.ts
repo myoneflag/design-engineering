@@ -163,7 +163,7 @@ export class ResizeControl extends DrawableObject {
         const { ctx } = context;
         const prevDash = ctx.getLineDash();
 
-        const scale = matrixScale(ctx.getTransform());
+        const scale = context.vp.currToScreenScale(ctx);
 
         ctx.lineWidth = 1 / scale;
         ctx.beginPath();

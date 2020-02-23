@@ -58,14 +58,14 @@ export const getFriendlyDistanceUnit = (mm: number): [string, number] => {
     return ["km", 10 * 100 * 1000];
 };
 
-export const drawPaperScale = (ctx: CanvasRenderingContext2D, pxPerMm: number) => {
+export const drawPaperScale = (ctx: CanvasRenderingContext2D, pxPerMm: number, maxWidthPx: number = 4 * 2 * 50, x?: number, y?: number) => {
     ctx.setTransform(TM.identity());
     ctx.lineWidth = 1;
     // draw on bottom left
-    const height = ctx.canvas.height;
+    const height = y === undefined ? ctx.canvas.height : y + 50;
 
     // Draw ruler
-    const minSmallWidth = 4;
+    const minSmallWidth = maxWidthPx / 50 / 2;
     let smallestUnit: number = 0;
     for (const units of SENSIBLE_UNITS_MM) {
         if (units * pxPerMm >= minSmallWidth) {
@@ -80,7 +80,7 @@ export const drawPaperScale = (ctx: CanvasRenderingContext2D, pxPerMm: number) =
     const scaleHeight = 10;
     const scaleBottomOffset = 30;
 
-    const scaleLeftEdge = ctx.canvas.width - minSmallWidth * 2 * 50 - 10;
+    const scaleLeftEdge = x === undefined ? ctx.canvas.width - minSmallWidth * 2 * 50 - 10 : x;
 
     let left: number = scaleLeftEdge;
 

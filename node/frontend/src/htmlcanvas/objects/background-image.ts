@@ -108,7 +108,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
 
     // If an image is immediately available, return the best one. Otherwise (or in addition), load the best one and
     // redraw when appropriate.
-    chooseImage(context: DrawingContext): HTMLImageElement | null {
+    chooseImage(context: DrawingContext, forExport: boolean): HTMLImageElement | null {
         // target resolution
         const widthInPixels = context.vp.toScreenLength(this.toWorldLength(this.width));
 
@@ -141,7 +141,10 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
             if (k.width * RESOLUTION_TOLERANCE >= widthInPixels) {
                 bestVal = k;
                 bestValI = i;
-                break;
+                if (!forExport) {
+                    // Choosing lower res images is only for performance. Recover the high res one when exporting.
+                    break;
+                }
             }
             lastVal = k;
         }
@@ -195,6 +198,31 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         return null;
     }
 
+    // get ready for export.
+    async ensureHighestResImageIsLoaded() {
+        if (this.renderIndex === null) {
+            this.renderIndex = false;
+            const res = await getFloorPlanRenders(this.entity.key);
+            if (res.success) {
+                this.renderIndex = res.data;
+            }
+        }
+
+        if (this.renderIndex === false) {
+            return;
+        }
+
+
+        if (Object.keys(this.renderIndex.bySize).length === 0) {
+            return;
+        }
+
+        const renders = Object.values(this.renderIndex.bySize).sort((a, b) => a.width - b.width);
+        const highestRes = renders[renders.length - 1];
+
+        this.imageCache.set(highestRes.images[0].key, await ImageLoader.get(highestRes.images[0].key));
+    }
+
     /**
      * Draw with natural clip
      */
@@ -205,17 +233,18 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         t: number,
         w: number,
         h: number,
-        active: boolean
+        active: boolean,
+        forExport: boolean,
     ) {
         const ctx = context.ctx;
-        const image = this.chooseImage(context);
+        const image = this.chooseImage(context, forExport);
 
         if (image) {
             const imgScaleX = this.width / image.width;
             const imgScaleY = this.height / image.height;
 
 
-            const sx = matrixScale(ctx.getTransform());
+            const sx = context.vp.currToSurfaceScale(ctx);
             const oldAlpha = ctx.globalAlpha;
             ctx.globalAlpha = alpha;
             const { x, y } = {
@@ -223,7 +252,6 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
                 y: (t - image.naturalHeight / 2) * imgScaleY
             };
             const oldCompositeOperation = ctx.globalCompositeOperation;
-
             const sw = w * imgScaleX;
             const sh = h * imgScaleY;
             ctx.fillStyle = "#FFFFFF";
@@ -242,17 +270,18 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
                 sh
             );
 
-            if (!active) {
+            if (!active && !forExport) {
                 ctx.fillStyle = "#f0f8ff";
                 ctx.globalCompositeOperation = "color";
                 ctx.fillRect(x, y, sw, sh);
             }
 
-            ctx.lineWidth = 1 / sx;
-            ctx.strokeStyle = "#AAAAAA";
-            ctx.beginPath();
-            ctx.strokeRect(x, y, sw, sh);
-            ctx.stroke();
+            if (!forExport) {
+                ctx.lineWidth = 1 / sx;
+                ctx.strokeStyle = "#AAAAAA";
+                ctx.beginPath();
+                ctx.strokeRect(x, y, sw, sh);
+            }
             ctx.globalAlpha = oldAlpha;
             ctx.globalCompositeOperation = oldCompositeOperation;
         } else {
@@ -268,11 +297,12 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         w: number,
         h: number,
         selected: boolean,
-        active: boolean
+        active: boolean,
+        forExport: boolean,
     ) {
         // We use an inverse viewport to find the appropriate clip bounds.
         const ctx = context.ctx;
-        const image = this.chooseImage(context);
+        const image = this.chooseImage(context, forExport);
 
         if (image) {
             const imgScaleX = this.width / image.width;
@@ -284,31 +314,31 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
                 image.naturalHeight
             );
 
-            // Remember that when going from world view to image coordinate view,
-            // we must invert the y axis about the center.
-            const l = ivp.toScreenCoord({ x, y });
-            const t = ivp.toScreenCoord({ x, y });
+            const l = ivp.toSurfaceCoord({ x, y });
+            const t = ivp.toSurfaceCoord({ x, y });
 
-            this.naturalClipDraw(context, alpha, l.x, t.y, w / imgScaleX, h / imgScaleY, active);
+            this.naturalClipDraw(context, alpha, l.x + image.naturalWidth / 2, t.y + image.naturalHeight / 2, w / imgScaleX, h / imgScaleY, active, forExport);
         } else {
 
-            const oldAlpha = ctx.globalAlpha;
-            ctx.globalAlpha = 0.5;
-            ctx.fillStyle = "#AAAAAA";
-            ctx.fillRect(x, y, w, h);
-            const fontSize = Math.round(w / 20);
-            ctx.font = fontSize + "pt " + DEFAULT_FONT_NAME;
-            ctx.fillStyle = "#FFFFFF";
-            const textW = ctx.measureText('Please Wait...');
-            ctx.fillText("Please Wait...", x + w / 2 - textW.width / 2, y + h / 2 + fontSize / 2);
-            ctx.globalAlpha = oldAlpha;
+            if (!forExport) {
+                const oldAlpha = ctx.globalAlpha;
+                ctx.globalAlpha = 0.5;
+                ctx.fillStyle = "#AAAAAA";
+                ctx.fillRect(x, y, w, h);
+                const fontSize = Math.round(w / 20);
+                ctx.font = fontSize + "pt " + DEFAULT_FONT_NAME;
+                ctx.fillStyle = "#FFFFFF";
+                const textW = ctx.measureText('Please Wait...');
+                ctx.fillText("Please Wait...", x + w / 2 - textW.width / 2, y + h / 2 + fontSize / 2);
+                ctx.globalAlpha = oldAlpha;
+            }
         }
     }
 
     // Draw without world space concerns
-    drawInternal(context: DrawingContext, { selected, active }: DrawingArgs) {
+    drawInternal(context: DrawingContext, { selected, active, forExport }: DrawingArgs) {
         const { ctx, vp } = context;
-        const image = this.chooseImage(context);
+        const image = this.chooseImage(context, forExport);
 
         if (selected && active && image) {
             const imgScaleX = this.width / image.width;
@@ -321,12 +351,13 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
                 this.entity.offset.y / imgScaleY,
                 image.naturalWidth,
                 image.naturalHeight,
-                active
+                active,
+                forExport,
             );
         }
 
         let alpha = 1;
-        if (selected && this.hasDragged) {
+        if (selected && this.hasDragged && !forExport) {
             alpha = 0.6;
         }
 
@@ -338,10 +369,11 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
             this.boundary.w,
             this.boundary.h,
             selected,
-            active
+            active,
+            forExport,
         );
 
-        if (selected && active) {
+        if (selected && active && !forExport) {
             if (this.entity.pointA) {
                 this.drawPoint(context, this.entity.pointA, "A");
             }

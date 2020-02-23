@@ -14,6 +14,7 @@ export interface ToolHandler {
     finish: (interrupted: boolean, displaced: boolean) => void;
 
     draw(context: DrawingContext): void;
+    beforeDraw(context: DrawingContext): void;
 }
 
 export const DEFAULT_TOOL: ToolConfig = {
@@ -23,25 +24,11 @@ export const DEFAULT_TOOL: ToolConfig = {
     icon: "mouse-pointer",
     modesEnabled: true,
     modesVisible: true,
+    paperSnapshotTopBar: false,
     text: "Default Mode",
     tooltip: "Default",
     propertiesEnabled: true,
     propertiesVisible: true,
-    toolbarEnabled: true,
-    toolbarVisible: true
-};
-
-export const POINT_TOOL: ToolConfig = {
-    name: "point",
-    defaultCursor: "Crosshair",
-    focusSelectedObject: true,
-    icon: "dot-circle",
-    modesEnabled: false,
-    modesVisible: false,
-    text: "Select a Point",
-    tooltip: "point",
-    propertiesEnabled: false,
-    propertiesVisible: false,
     toolbarEnabled: true,
     toolbarVisible: true
 };

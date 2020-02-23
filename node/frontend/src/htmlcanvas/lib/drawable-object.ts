@@ -142,22 +142,24 @@ export default abstract class DrawableObject {
         });
     }
 
-    withScreen({ ctx }: DrawingContext, current: Coord, fun: () => void) {
+    withScreen({ ctx, vp }: DrawingContext, current: Coord, fun: () => void) {
         const oldTransform = ctx.getTransform();
-        const sc = TM.applyToPoint(ctx.getTransform(), current);
-        ctx.resetTransform();
-        ctx.setTransform(TM.translate(sc.x, sc.y));
+        const sc = TM.applyToPoint(vp.currToScreenTransform(ctx), current);
+
+
+        vp.resetCtxTransformToScreen(ctx);
+        ctx.translate(sc.x, sc.y);
 
         fun();
 
         ctx.setTransform(oldTransform);
     }
 
-    withScreenScale({ ctx }: DrawingContext, current: Coord, fun: () => void) {
+    withScreenScale({ ctx, vp }: DrawingContext, current: Coord, fun: () => void) {
         const oldTransform = ctx.getTransform();
-        const t = decomposeMatrix(ctx.getTransform());
-        const sc = TM.applyToPoint(ctx.getTransform(), current);
-        ctx.resetTransform();
+        const t = decomposeMatrix(vp.currToScreenTransform(ctx));
+        const sc = TM.applyToPoint(vp.currToScreenTransform(ctx), current);
+        vp.resetCtxTransformToScreen(ctx);
         ctx.translate(sc.x, sc.y);
 
         ctx.rotate(t.a);
@@ -168,7 +170,7 @@ export default abstract class DrawableObject {
 
     withWorld({ ctx, vp }: DrawingContext, current: Coord, fun: () => void) {
         const oldTransform = ctx.getTransform();
-        const sc = TM.applyToPoint(ctx.getTransform(), current);
+        const sc = TM.applyToPoint(vp.currToScreenTransform(ctx), current);
 
         const wc = vp.toWorldCoord(sc);
         vp.prepareContext(ctx);
@@ -182,9 +184,9 @@ export default abstract class DrawableObject {
     // Assumes uniform x/y scale
     withWorldScale({ ctx, vp }: DrawingContext, current: Coord, fun: () => void) {
         const oldTransform = ctx.getTransform();
-        const sc = TM.applyToPoint(ctx.getTransform(), current);
+        const sc = TM.applyToPoint(vp.currToScreenTransform(ctx), current);
 
-        const t = decomposeMatrix(ctx.getTransform());
+        const t = decomposeMatrix(vp.currToScreenTransform(ctx));
 
         const wc = vp.toWorldCoord(sc);
         vp.prepareContext(ctx);
@@ -198,9 +200,8 @@ export default abstract class DrawableObject {
     // Assumes uniform x/y scale
     withWorldAngle({ ctx, vp }: DrawingContext, current: Coord, fun: () => void) {
         const oldTransform = ctx.getTransform();
-        const sc = TM.applyToPoint(ctx.getTransform(), current);
 
-        const t = decomposeMatrix(ctx.getTransform());
+        const t = decomposeMatrix(vp.currToScreenTransform(ctx));
 
         ctx.translate(current.x, current.y);
         ctx.rotate(-t.a);
@@ -234,4 +235,5 @@ export interface DrawingArgs {
     selected: boolean;
     active: boolean;
     calculationFilters: CalculationFilters | null;
+    forExport: boolean;
 }

@@ -17,10 +17,17 @@ export interface ToolConfig {
     toolbarVisible: boolean;
     toolbarEnabled: boolean;
 
+    calculationTopBar?: boolean;
+    calculationSideBar?: boolean;
+
+    paperSnapshotTopBar?: boolean;
+
     propertiesVisible: boolean;
     propertiesEnabled: boolean;
 
     focusSelectedObject: boolean;
 
     defaultCursor: string;
+
+    preventZooming?: boolean;
 }

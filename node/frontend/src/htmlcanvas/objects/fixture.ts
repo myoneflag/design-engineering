@@ -75,7 +75,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
     }
 
     drawInternal(context: DrawingContext, { active, selected }: DrawingArgs): void {
-        const scale = matrixScale(context.ctx.getTransform());
+        const scale = context.vp.currToSurfaceScale(context.ctx);
         const ww = Math.max(10 / this.toWorldLength(1), 1 / scale);
 
         const { ctx, vp } = context;
@@ -153,6 +153,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         }
 
         ctx.stroke();
+
 
         this.withWorldAngle(context, { x: 0, y: this.entity.pipeDistanceMM * 1.2 }, () => {
             ctx.font = this.entity.pipeDistanceMM / 2 + "pt " + DEFAULT_FONT_NAME;

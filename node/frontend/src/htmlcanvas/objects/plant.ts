@@ -74,7 +74,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             const boxt = t * 1.2;
             const boxh = (b - t) * 1.2;
 
-            const scale = matrixScale(ctx.getTransform());
+            const scale = context.vp.currToSurfaceScale(ctx);
             ctx.lineWidth = Math.max(1 / scale, 10 * this.toWorldLength(1));
             ctx.strokeStyle = "#000";
             ctx.fillStyle = "rgba(255, 255, 255, 0.8)";

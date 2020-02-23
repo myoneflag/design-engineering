@@ -4,6 +4,7 @@ import { SupportedDwellingStandards } from "../../common/src/api/config";
 import { Choice, cloneSimple } from "../../common/src/lib/utils";
 
 export const DEFAULT_FONT_NAME: string = "Helvetica";
+export const DEFAULT_FONT_NAME_BOLD: string = "Helvetica-Bold";
 
 export function isSupportedDwellingStandard(arg: any): arg is SupportedDwellingStandards {
     return Object.values(SupportedDwellingStandards).includes(arg);

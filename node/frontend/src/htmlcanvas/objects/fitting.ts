@@ -68,7 +68,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
     drawInternal({ ctx, doc, vp }: DrawingContext, { active, selected }: DrawingArgs): void {
         try {
             // asdf
-            const scale = matrixScale(ctx.getTransform());
+            const scale = vp.currToSurfaceScale(ctx);
 
             if (this.globalStore.getConnections(this.entity.uid).length === 2) {
                 // TODO: draw an angled arc.
@@ -121,7 +121,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         } catch (e) {
             ctx.fillStyle = "rgba(255, 100, 100, 0.4)";
             ctx.beginPath();
-            ctx.arc(0, 0, this.toObjectLength(vp.toWorldLength(10)), 0, Math.PI * 2);
+            ctx.arc(0, 0, this.toObjectLength(vp.surfaceToWorldLength(10)), 0, Math.PI * 2);
             ctx.fill();
         }
     }
