@@ -52,6 +52,7 @@ export interface ExportPdfOptions {
     scaleName: string;
     coverSheet: boolean;
     floorPlans: boolean;
+    allLevels: boolean;
 }
 
 export async function scaleSvg(svg: string, scale: number) {
@@ -76,10 +77,11 @@ export async function scaleSvg(svg: string, scale: number) {
     return svgStringify(svgson);
 }
 
-function getLevelName(context: CanvasContext) {
+function getLevelName(context: CanvasContext, levelUid: string | undefined) {
     let levelString = '';
-    if (context.document.uiState.levelUid) {
-        levelString = context.document.drawing.levels[context.document.uiState.levelUid].name;
+    levelUid = levelUid || context.document.uiState.levelUid!;
+    if (levelUid) {
+        levelString = context.document.drawing.levels[levelUid].name;
     }
     return levelString;
 }
@@ -97,7 +99,7 @@ async function getCompanyName(context: CanvasContext): Promise<string | null> {
     return companyNameCache.get(Number(context.document.documentId))!;
 }
 
-async function drawTitleBar(pdf: PDFKit.PDFDocument, context: CanvasContext, paperSize: PaperSize, scaleName: string) {
+async function drawTitleBar(pdf: PDFKit.PDFDocument, context: CanvasContext, paperSize: PaperSize, scaleName: string, levelUid: string) {
     const titleBarLeft = paperSize.widthMM - MARGIN_SIZE_MM - INFO_BAR_SIZE_MM;
     let titleBarTop = MARGIN_SIZE_MM + 10;
 
@@ -129,7 +131,7 @@ async function drawTitleBar(pdf: PDFKit.PDFDocument, context: CanvasContext, pap
 
     // level
     pdf.fontSize(Math.round(mm2pt(8)));
-    let levelString = getLevelName(context);
+    let levelString = getLevelName(context, levelUid);
     const levelTextHeight = pdf.heightOfString(levelString, {width: mm2pt(INFO_BAR_SIZE_MM -  PADDING_MM * 2)});
     titleBarBottom -= pt2mm(levelTextHeight);
     pdf.text(levelString, mm2pt(titleBarLeft +  PADDING_MM ), mm2pt(titleBarBottom), {width: mm2pt(INFO_BAR_SIZE_MM -  PADDING_MM * 2)});
@@ -603,28 +605,48 @@ function hexToRgb(hex: string): [number, number, number] {
 export async function exportPdf(context: CanvasContext, viewPort: ViewPort, options: ExportPdfOptions) {
     const {paperSize, scaleName} = options;
 
-    const {svg, widthPx, heightPx} = await snapshotToSvg(context, viewPort, options);
-
-    console.log(PDFDocument);
-    const doc: PDFKit.PDFDocument = new (window as any).PDFDocument({autoFirstPage: false, width: PAPER_SIZES.A4.heightMM, height: PAPER_SIZES.A4.widthMM});
-
+    const doc: PDFKit.PDFDocument = new (window as any).PDFDocument({autoFirstPage: false, width: options.paperSize.widthMM, height: options.paperSize.heightMM});
     if (options.coverSheet) {
         await drawCoverSheet(context, doc, options);
     }
 
-    doc.addPage({size: [mm2pt(paperSize.widthMM), mm2pt(paperSize.heightMM)]});
+    let levelUids = [];
+    let fileName: string;
+    let dummy = PDFDocument;
+    if (options.allLevels) {
+        for (const level of context.$store.getters['document/sortedLevels']) {
+            levelUids.push(level.uid);
+        }
+        fileName = context.document.drawing.metadata.generalInfo.title + '.pdf';
+    } else {
+        let levelString = getLevelName(context, undefined);
+        if (context.document.uiState.levelUid) {
+            levelString = '-' + context.document.drawing.levels[context.document.uiState.levelUid].name;
+        }
+        fileName = context.document.drawing.metadata.generalInfo.title + ' - ' + levelString + '.pdf';
 
-    const scaled = await scaleSvg(svg, mm2pt((paperSize.widthMM - MARGIN_SIZE_MM * 2 - INFO_BAR_SIZE_MM)) / widthPx);
-    SVGtoPDF(doc, scaled, mm2pt(MARGIN_SIZE_MM), mm2pt(MARGIN_SIZE_MM), {assumePt: true});
+        levelUids.push(context.document.uiState.levelUid);
+    }
 
-    doc.strokeColor('black');
-    doc.rect(mm2pt(MARGIN_SIZE_MM), mm2pt(MARGIN_SIZE_MM), mm2pt((paperSize.widthMM - MARGIN_SIZE_MM * 2 - INFO_BAR_SIZE_MM)), mm2pt(paperSize.heightMM - MARGIN_SIZE_MM * 2));
-    doc.rect(mm2pt((paperSize.widthMM - MARGIN_SIZE_MM - INFO_BAR_SIZE_MM)), mm2pt(MARGIN_SIZE_MM), mm2pt((INFO_BAR_SIZE_MM)), mm2pt(paperSize.heightMM - MARGIN_SIZE_MM * 2));
-    doc.stroke();
+    for (const luid of levelUids.reverse()) {
 
-    await drawTitleBar(doc, context, paperSize, scaleName);
+        const { svg, widthPx, heightPx } = await snapshotToSvg(context, viewPort, options, luid);
 
-    await drawScale(doc, paperSize, scaleName);
+
+        doc.addPage({ size: [mm2pt(paperSize.widthMM), mm2pt(paperSize.heightMM)] });
+
+        const scaled = await scaleSvg(svg, mm2pt((paperSize.widthMM - MARGIN_SIZE_MM * 2 - INFO_BAR_SIZE_MM)) / widthPx);
+        SVGtoPDF(doc, scaled, mm2pt(MARGIN_SIZE_MM), mm2pt(MARGIN_SIZE_MM), { assumePt: true });
+
+        doc.strokeColor('black');
+        doc.rect(mm2pt(MARGIN_SIZE_MM), mm2pt(MARGIN_SIZE_MM), mm2pt((paperSize.widthMM - MARGIN_SIZE_MM * 2 - INFO_BAR_SIZE_MM)), mm2pt(paperSize.heightMM - MARGIN_SIZE_MM * 2));
+        doc.rect(mm2pt((paperSize.widthMM - MARGIN_SIZE_MM - INFO_BAR_SIZE_MM)), mm2pt(MARGIN_SIZE_MM), mm2pt((INFO_BAR_SIZE_MM)), mm2pt(paperSize.heightMM - MARGIN_SIZE_MM * 2));
+        doc.stroke();
+
+        await drawTitleBar(doc, context, paperSize, scaleName, luid);
+
+        await drawScale(doc, paperSize, scaleName);
+    }
 
     const stream = doc.pipe(blobstream());
     stream.on('finish', () => {
@@ -633,15 +655,9 @@ export async function exportPdf(context: CanvasContext, viewPort: ViewPort, opti
         const dataBlob = stream.toBlob('application/pdf');
 
         const objUrl = URL.createObjectURL(dataBlob);
-
-        let levelString = getLevelName(context);
-        if (context.document.uiState.levelUid) {
-            levelString = '-' + context.document.drawing.levels[context.document.uiState.levelUid].name;
-        }
-
         link2.href = objUrl;
         link2.innerHTML ="With createObjectURL";
-        link2.download = context.document.drawing.metadata.generalInfo.title + levelString + '.pdf';
+        link2.download = fileName;
         link2.click();
     });
     doc.end();
@@ -664,9 +680,14 @@ export interface SVGResult {
     heightPx: number;
 }
 
-export async function snapshotToSvg(context: CanvasContext, viewPort: ViewPort, options: ExportPdfOptions): Promise<SVGResult> {
+export async function snapshotToSvg(context: CanvasContext, viewPort: ViewPort, options: ExportPdfOptions, levelUid: string): Promise<SVGResult> {
     const canvasContext = context;
     const ctx = new C2S.C2S(viewPort.width, viewPort.height);
+
+    const oldLevelUid = canvasContext.document.uiState.levelUid;
+    canvasContext.document.uiState.levelUid = levelUid;
+    context.hydraulicsLayer.reloadLevel();
+    context.calculationLayer.reloadLevel();
 
     ctx.getTransform = function()  {
         const attr = this.getTransformAttributeChain();
@@ -687,6 +708,11 @@ export async function snapshotToSvg(context: CanvasContext, viewPort: ViewPort, 
     }
 
     await canvasContext.drawFull(ctx as any as CanvasRenderingContext2D, viewPort, true);
+
+    canvasContext.document.uiState.levelUid = oldLevelUid;
+
+    context.hydraulicsLayer.reloadLevel();
+    context.calculationLayer.reloadLevel();
 
     return {
         svg: ctx.getSerializedSvg(),

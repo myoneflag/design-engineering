@@ -1414,7 +1414,8 @@ export default class DrawingCanvas extends Vue {
                 this.document.uiState.drawingMode === DrawingMode.Calculations,
                 shouldContinue,
                 reactive,
-                filters
+                filters,
+                forExport,
             );
             await cooperativeYield(shouldContinue);
 

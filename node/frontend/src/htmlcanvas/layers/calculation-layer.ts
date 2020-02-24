@@ -43,7 +43,8 @@ export default class CalculationLayer extends LayerImplementation {
         active: boolean,
         shouldContinueInternal: () => boolean,
         reactive: Set<string>,
-        calculationFilters: CalculationFilters | null
+        calculationFilters: CalculationFilters | null,
+        forExport: boolean,
     ) {
         // TODO: asyncify
         const { ctx, vp } = context;
@@ -64,7 +65,7 @@ export default class CalculationLayer extends LayerImplementation {
                 const loc = TM.applyToPoint(label[1], { x: 0, y: 0 });
                 if (vp.someOnScreen(Flatten.point(loc.x, loc.y))) {
                     const o = context.globalStore.get(label[0])!;
-                    if (label[3]) {
+                    if (label[3] && !forExport) {
                         // warning only
                         vp.prepareContext(context.ctx, ...o.world2object);
                         const s = context.vp.currToSurfaceScale(ctx);
@@ -75,7 +76,7 @@ export default class CalculationLayer extends LayerImplementation {
 
                         vp.prepareContext(context.ctx, label[1]);
                         context.ctx.scale(1 / scaleWarp, 1 / scaleWarp);
-                        o!.drawCalculationBox(context, label[2]);
+                        o!.drawCalculationBox(context, label[2], undefined, undefined, forExport);
                     }
                 }
             }

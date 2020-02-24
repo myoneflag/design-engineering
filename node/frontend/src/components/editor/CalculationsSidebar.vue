@@ -15,10 +15,7 @@
 
                     <b-dropdown variant="outline-dark" size="sm" class="calculationBtn" text="Export">
                         <b-dropdown-item @click="pdfSnapshot" variant="outline-dark" size="sm"
-                            > PDF Snapshot Report
-                        </b-dropdown-item>
-                        <b-dropdown-item @click="fullPdfExport"  variant="outline-dark" size="sm" :disabled="true"
-                        > Full PDF Report (Coming very soon)
+                            > PDF
                         </b-dropdown-item>
                         <b-dropdown-item variant="outline-dark" size="sm" :disabled="true"
                             >DWG (Coming soon)

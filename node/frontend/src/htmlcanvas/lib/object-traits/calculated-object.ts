@@ -92,7 +92,8 @@ export function CalculatedObject<
             context: DrawingContext,
             data: CalculationData[],
             dryRun: boolean = false,
-            warnSignOnly: boolean = false
+            warnSignOnly: boolean = false,
+            forExport: boolean = false,
         ): Flatten.Box {
             if (warnSignOnly) {
                 return this.drawWarningSignOnly(context, dryRun);
@@ -131,7 +132,7 @@ export function CalculatedObject<
             });
 
             let warnHeight = 0;
-            if (this.hasWarning(context)) {
+            if (this.hasWarning(context) && !forExport) {
                 ctx.font = "bold " + FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
                 warnHeight = wrapText(ctx, calculation!.warning!, 0, 0, maxWidth, FIELD_HEIGHT, true);
                 height += warnHeight;
@@ -140,14 +141,14 @@ export function CalculatedObject<
 
             const box = new Flatten.Box(-maxWidth / 2, -height / 2, maxWidth / 2, height / 2);
 
-            if (this.hasWarning(context)) {
+            if (this.hasWarning(context) && !forExport) {
                 box.xmin -= WARNING_WIDTH;
             }
 
             if (!dryRun) {
                 ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
                 ctx.strokeStyle = "#000";
-                if (this.hasWarning(context)) {
+                if (this.hasWarning(context) && !forExport) {
                     ctx.fillStyle = "rgba(255,215,0, 0.8)";
                 }
                 console.log('calculated object filling rect');
@@ -156,7 +157,7 @@ export function CalculatedObject<
                 ctx.font = FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
                 ctx.fillStyle = "#000";
 
-                if (this.hasWarning(context)) {
+                if (this.hasWarning(context) && !forExport) {
                     ctx.fillStyle = "#000";
                     ctx.font = "bold " + FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
 
@@ -213,7 +214,7 @@ export function CalculatedObject<
                 const worldMax = vp.toWorldCoord(
                     TM.applyToPoint(context.vp.currToScreenTransform(ctx), { x: box.xmax, y: box.ymax })
                 );
-                if (this.hasWarning(context)) {
+                if (this.hasWarning(context) && !forExport) {
                     worldMin.x -= WARNING_WIDTH;
                 }
                 const worldBox = new Flatten.Box(

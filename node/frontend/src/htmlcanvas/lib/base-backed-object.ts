@@ -77,7 +77,8 @@ export default abstract class BaseBackedObject extends DrawableObject {
         context: DrawingContext,
         data: CalculationData[],
         dryRun?: boolean,
-        warnSingOnly?: boolean
+        warnSingOnly?: boolean,
+        forExport?: boolean,
     ): Flatten.Box {
         throw new Error("Not implemented. Please use @CalculatedObject to implement.");
     }

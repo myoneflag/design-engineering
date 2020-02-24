@@ -28,8 +28,12 @@
         </b-col>
         <b-col class="col-auto">
             <b-button-group>
-                <b-button variant="success" @click="exportPdf" id="export-pdf-btn">
-                    <b-spinner style="width: 1em; height: 1em;" v-if="exporting"></b-spinner> Export
+                <b-button variant="success" @click="exportPdfCurrent" id="export-pdf-btn" :disabled="exporting">
+                    <b-spinner style="width: 1em; height: 1em;" v-if="exporting && !allLevels"></b-spinner> Export This Level
+                </b-button>
+                <b-tooltip target="export-pdf-btn" v-if="exporting" triggers="hover">Downloading full resolution assets</b-tooltip>
+                <b-button variant="success" @click="exportPdfAll" id="export-all-pdf-btn" :disabled="exporting">
+                    <b-spinner style="width: 1em; height: 1em;" v-if="exporting && allLevels"></b-spinner> Export All Levels
                 </b-button>
                 <b-tooltip target="export-pdf-btn" v-if="exporting" triggers="hover">Downloading full resolution assets</b-tooltip>
             </b-button-group>
@@ -69,8 +73,10 @@
     })
     export default class PDFSnapshotTopBar extends Vue {
         exporting = false;
+        allLevels = false;
 
-        async exportPdf() {
+        async exportPdf(allLevels: boolean) {
+            this.allLevels = allLevels;
             if (!(this.$props.toolHandler instanceof PdfSnapshotTool)) {
                 throw new Error('No pdf snapshot tool present');
             }
@@ -99,7 +105,8 @@
                         paperSize: this.document.uiState.exportSettings.paperSize,
                         scaleName: this.document.uiState.exportSettings.scale,
                         coverSheet: this.document.uiState.exportSettings.coverSheet && this.supportsCoverSheet,
-                        floorPlans: this.document.uiState.exportSettings.floorPlans
+                        floorPlans: this.document.uiState.exportSettings.floorPlans,
+                        allLevels,
                     }
                 );
             } catch (e) {
@@ -109,6 +116,14 @@
 
             this.exporting = false;
             MainEventBus.$emit('set-tool-handler', null);
+        }
+
+        async exportPdfCurrent() {
+            await this.exportPdf(false);
+        }
+
+        async exportPdfAll() {
+            await this.exportPdf(true);
         }
 
         get document(): DocumentState {
