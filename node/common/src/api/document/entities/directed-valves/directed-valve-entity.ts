@@ -22,17 +22,22 @@ export function makeDirectedValveFields(
     catalog: Catalog,
     drawing: DrawingState
 ): PropertyField[] {
-    const fields: PropertyField[] = [
-        {
-            property: "systemUidOption",
-            title: "Flow System",
-            hasDefault: false,
-            isCalculated: false,
-            type: FieldType.FlowSystemChoice,
-            params: { systems: drawing.metadata.flowSystems },
-            multiFieldId: "systemUid"
-        },
+    const fields: PropertyField[] = [];
 
+    if (entity.valve.type !== ValveType.RETURN_PUMP) {
+        fields.push(
+            {
+                property: "systemUidOption",
+                title: "Flow System",
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.FlowSystemChoice,
+                params: { systems: drawing.metadata.flowSystems },
+                multiFieldId: "systemUid"
+            },
+        );
+    }
+    fields.push(
         {
             property: "color",
             title: "Color:",
@@ -42,7 +47,7 @@ export function makeDirectedValveFields(
             params: null,
             multiFieldId: "color"
         }
-    ];
+    );
 
     switch (entity.valve.type) {
         case ValveType.CHECK_VALVE:

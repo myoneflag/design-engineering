@@ -86,7 +86,7 @@ export default function insertDirectedValve(
                     valveType,
                     catalogId,
                     cloneSimple(wc),
-                    null
+                    valveType === ValveType.RETURN_PUMP ? system.uid : null,
                 );
                 await context.$store.dispatch("document/addEntity", valveEntity);
 

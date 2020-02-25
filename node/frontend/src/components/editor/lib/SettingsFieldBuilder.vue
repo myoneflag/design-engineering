@@ -86,6 +86,28 @@
                             {{ field[1] }}
                         </h5>
 
+
+                        <b-dropdown
+                                v-else-if="field[2] === 'yesno'"
+                                class="float-left"
+                                size="md"
+                                id="dropdown-1"
+                                :text="getReactiveData(field[0]) ? 'Yes' : 'No'"
+                                variant="outline-secondary"
+                                style="padding-bottom: 20px"
+                        >
+                            <b-dropdown-item
+                                    @click="reactiveData[field[0]] = true"
+                            >
+                                Yes
+                            </b-dropdown-item>
+                            <b-dropdown-item
+                                    @click="reactiveData[field[0]] = false"
+                            >
+                                No
+                            </b-dropdown-item>
+                        </b-dropdown>
+
                         <b-form-input
                             v-else
                             :value="getReactiveData(field[0])"

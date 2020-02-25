@@ -94,11 +94,21 @@ export interface NetworkParams {
     material: string;
 }
 
+export interface FlowSystemParametersV8 extends WithID {
+    name: string;
+    temperature: number;
+    color: Color;
+    fluid: string;
+
+    networks: { [key in keyof typeof NetworkType]: NetworkParams };
+}
+
 export interface FlowSystemParameters extends WithID {
     name: string;
     temperature: number;
     color: Color;
     fluid: string;
+    hasReturnSystem: boolean;
 
     networks: { [key in keyof typeof NetworkType]: NetworkParams };
 }
@@ -137,6 +147,7 @@ export const initialDrawing: DrawingState = {
                 color: { hex: "#009CE0" },
                 uid: "cold-water",
                 fluid: "water",
+                hasReturnSystem: false,
                 networks: {
                     RISERS: {
                         spareCapacityPCT: 0,
@@ -161,6 +172,7 @@ export const initialDrawing: DrawingState = {
                 color: { hex: "#F44E3B" },
                 uid: "hot-water",
                 fluid: "water",
+                hasReturnSystem: true,
                 networks: {
                     RISERS: {
                         spareCapacityPCT: 0,
@@ -185,6 +197,7 @@ export const initialDrawing: DrawingState = {
                 color: { hex: "#F49000" },
                 uid: "warm-water",
                 fluid: "water",
+                hasReturnSystem: false,
                 networks: {
                     RISERS: {
                         spareCapacityPCT: 0,

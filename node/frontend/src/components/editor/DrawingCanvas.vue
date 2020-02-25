@@ -1237,11 +1237,13 @@ export default class DrawingCanvas extends Vue {
             this.document.uiState.lastUsedFixtureUid = catalogId;
             insertFixture(this, catalogId, 0);
         } else if (entityName === EntityType.DIRECTED_VALVE) {
-            this.document.uiState.lastUsedValveVid = {
-                catalogId,
-                name: valveName,
-                type: valveType
-            };
+            if (valveName) {
+                this.document.uiState.lastUsedValveVid = {
+                    catalogId,
+                    name: valveName,
+                    type: valveType
+                };
+            }
             insertDirectedValve(this, valveType, catalogId, system);
         } else if (entityName === EntityType.LOAD_NODE) {
             if (params.variant === "hot-cold-dwelling") {

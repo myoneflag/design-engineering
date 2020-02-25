@@ -186,12 +186,14 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     drawReturnPump(context: DrawingContext) {
         const ctx = context.ctx;
         ctx.beginPath();
-        ctx.moveTo(VALVE_HEIGHT_MM * Math.cos(Math.PI * 2 / 3), VALVE_HEIGHT_MM * Math.cos(Math.PI * 2 / 3));
-        ctx.lineTo(VALVE_HEIGHT_MM * Math.cos(Math.PI * 2 * 2 / 3), VALVE_HEIGHT_MM * Math.cos(Math.PI * 2 * 2/ 3));
+        ctx.moveTo(VALVE_HEIGHT_MM * Math.cos(Math.PI * 3 / 4), VALVE_HEIGHT_MM * Math.sin(Math.PI * 3 / 4));
+        ctx.lineTo(VALVE_HEIGHT_MM * Math.cos(- Math.PI * 3 / 4), VALVE_HEIGHT_MM * Math.sin(- Math.PI * 3 / 4));
         ctx.lineTo(VALVE_HEIGHT_MM, 0);
         ctx.closePath();
         ctx.fill();
-        ctx.arc(0, 0, VALVE_HEIGHT_MM, 0, Math.PI);
+        ctx.beginPath();
+        ctx.arc(0, 0, VALVE_HEIGHT_MM, 0, Math.PI * 2);
+        ctx.stroke();
     }
 
     drawPrvN(context: DrawingContext, n: number) {

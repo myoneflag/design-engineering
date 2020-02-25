@@ -2,6 +2,7 @@ import { FieldType, PropertyField } from "./property-field";
 import { EntityType } from "./types";
 import { CenteredEntity, Coord, FlowSystemParameters } from "../drawing";
 import { cloneSimple } from "../../../lib/utils";
+import { DocumentState } from "../../../../../frontend/src/store/document/types";
 
 export interface PlantEntityV3 extends CenteredEntity {
     type: EntityType.PLANT;
@@ -28,11 +29,38 @@ export interface PlantEntityV3 extends CenteredEntity {
     outletUid: string;
 }
 
+export interface PlantEntityV8 extends CenteredEntity {
+    type: EntityType.PLANT;
+    center: Coord;
+    inletSystemUid: string;
+    outletSystemUid: string;
+
+    name: string;
+
+    rotation: number;
+    rightToLeft: boolean;
+
+    heightAboveFloorM: number;
+
+    widthMM: number;
+    heightMM: number;
+
+    pressureMethod: PressureMethod;
+    pumpPressureKPA: number | null;
+    pressureLossKPA: number | null;
+    staticPressureKPA: number | null;
+
+    inletUid: string;
+    outletUid: string;
+}
+
+
 export default interface PlantEntity extends CenteredEntity {
     type: EntityType.PLANT;
     center: Coord;
     inletSystemUid: string;
     outletSystemUid: string;
+    outletTemperatureC: number | null;
 
     name: string;
 
@@ -73,6 +101,8 @@ export function plantV3toCurrent(entity: PlantEntityV3): PlantEntity {
         center: entity.center,
         inletSystemUid: entity.inletSystemUid,
         outletSystemUid: entity.outletSystemUid,
+        outletTemperatureC: null,
+
         name: entity.name,
         rotation: entity.rotation,
         rightToLeft: entity.rightToLeft || false,
@@ -97,6 +127,8 @@ export enum PressureMethod {
 }
 
 export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemParameters[]): PropertyField[] {
+    const outSystem = systems.find((u) => u.uid === entity.outletSystemUid);
+
     const res: PropertyField[] = [
         {
             property: "rightToLeft",
@@ -147,7 +179,9 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
             params: null,
             multiFieldId: "rotation"
         },
+    ];
 
+    res.push(
         {
             property: "heightAboveFloorM",
             title: "Height Above Floor (m)",
@@ -173,7 +207,20 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
             },
             multiFieldId: "pressureMethod"
         }
-    ];
+    );
+
+    res.push(
+        {
+            property: "outletTemperatureC",
+            title: "Outlet Temperature (C)",
+            hasDefault: true,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: null, max: null },
+            multiFieldId: "outletTemperatureC"
+        },
+
+    );
 
     switch (entity.pressureMethod) {
         case PressureMethod.PUMP_DUTY:
@@ -211,6 +258,9 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
             break;
     }
 
+
+
+
     res.push(
         {
             property: "widthMM",
@@ -236,7 +286,7 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
     return res;
 }
 
-export function fillPlantDefaults(value: PlantEntity) {
+export function fillPlantDefaults(value: PlantEntity, doc: DocumentState) {
     const result = cloneSimple(value);
 
     if (value.pressureLossKPA === null) {
@@ -247,6 +297,10 @@ export function fillPlantDefaults(value: PlantEntity) {
     }
     if (value.staticPressureKPA === null) {
         result.staticPressureKPA = 0;
+    }
+    if (value.outletTemperatureC === null) {
+        const outSystem = doc.drawing.metadata.flowSystems.find((s) => s.uid === value.outletSystemUid);
+        result.outletTemperatureC = outSystem ? outSystem.temperature : doc.drawing.metadata.calculationParams.roomTemperatureC;
     }
 
     return result;

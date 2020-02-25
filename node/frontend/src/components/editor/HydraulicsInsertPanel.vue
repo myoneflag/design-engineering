@@ -115,6 +115,24 @@
                 >
                     Plant
                 </b-button>
+
+                <b-button
+                        variant="outline-dark"
+                        class="insertBtn return-pump btn-sm"
+                        @click="
+                        $emit('insert', {
+                            entityName: entityNames.DIRECTED_VALVE,
+                            system: selectedSystem,
+                            catalogId: 'returnPump',
+                            valveType: ValveType.RETURN_PUMP,
+                        })
+                    "
+                        v-b-tooltip.hover
+                        :title="currentSystemHasReturn ? 'Return Pump' : 'Enable Return Pump in flow system settings'"
+                        :disabled="!currentSystemHasReturn"
+                >
+                </b-button>
+
             </b-button-group>
         </b-col>
 
@@ -269,7 +287,8 @@ import { NodeType } from "../../../../common/src/api/document/entities/load-node
 import { BigValveType } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import { SupportedPsdStandards } from "../../../../common/src/api/config";
 import { Catalog, FixtureSpec } from "../../../../common/src/api/catalog/types";
-import { NetworkType } from "../../../../common/src/api/document/drawing";
+import { FlowSystemParameters, NetworkType } from "../../../../common/src/api/document/drawing";
+import { ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
 
 @Component({
     components: { FlowSystemPicker },
@@ -300,7 +319,7 @@ export default class HydraulicsInsertPanel extends Vue {
         return EntityType;
     }
 
-    get selectedSystem() {
+    get selectedSystem(): FlowSystemParameters {
         return this.$props.flowSystems[this.selectedSystemId];
     }
 
@@ -337,6 +356,14 @@ export default class HydraulicsInsertPanel extends Vue {
 
     selectSystem(value: number) {
         this.selectedSystemId = value;
+    }
+
+    get ValveType() {
+        return ValveType;
+    }
+
+    get currentSystemHasReturn() {
+        return this.selectedSystem.hasReturnSystem;
     }
 }
 </script>
@@ -382,4 +409,11 @@ export default class HydraulicsInsertPanel extends Vue {
     background-repeat: no-repeat;
     background-position: center;
 }
+
+    .insertBtn.return-pump {
+        background-image: url("../../../src/assets/object-icons/valves/pump.png");
+        background-size: 25px;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
 </style>
