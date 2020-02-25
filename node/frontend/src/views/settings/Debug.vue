@@ -1,4 +1,3 @@
-
 <template>
     <div>
         <b-row>
@@ -33,54 +32,53 @@
 </template>
 
 <script lang="ts">
-    import Vue from "vue";
-    import Component from "vue-class-component";
-    import { deleteDocument, getDocument, getDocuments, resetDocument } from "../../api/document";
-    import { Document as IDocument } from "../../../../common/src/models/Document";
-    import { AccessLevel, User } from "../../../../common/src/models/User";
-    import { DocumentState } from "../../store/document/types";
-    import CatalogState from "../../store/catalog/types";
+import Vue from "vue";
+import Component from "vue-class-component";
+import { deleteDocument, getDocument, getDocuments, resetDocument } from "../../api/document";
+import { Document as IDocument } from "../../../../common/src/models/Document";
+import { AccessLevel, User } from "../../../../common/src/models/User";
+import { DocumentState } from "../../store/document/types";
+import CatalogState from "../../store/catalog/types";
 
-    @Component({})
-    export default class Debug extends Vue {
-        drawingJson: string = '';
+@Component({})
+export default class Debug extends Vue {
+    drawingJson: string = "";
 
-        mounted() {
-            this.drawingJson = JSON.stringify(this.document.drawing, null, 2);
-        }
-
-        get profile(): User {
-            return this.$store.getters["profile/profile"];
-        }
-
-        get document(): DocumentState {
-            return this.$store.getters['document/document'];
-        }
-
-        get catalog(): CatalogState {
-            return this.$store.getters['catalog/default'];
-        }
-
-        async save() {
-            const newDoc = JSON.parse(this.drawingJson);
-            Object.assign(this.document.drawing, newDoc);
-            await this.$store.dispatch('document/commit');
-            //window.location.reload();
-        }
-
-        log() {
-            console.log(JSON.parse(JSON.stringify(this.document)));
-        }
-
-        logLive() {
-            console.log(this.document);
-        }
-
-        logCatalog() {
-            console.log(JSON.parse(JSON.stringify(this.catalog)));
-        }
-
+    mounted() {
+        this.drawingJson = JSON.stringify(this.document.drawing, null, 2);
     }
+
+    get profile(): User {
+        return this.$store.getters["profile/profile"];
+    }
+
+    get document(): DocumentState {
+        return this.$store.getters["document/document"];
+    }
+
+    get catalog(): CatalogState {
+        return this.$store.getters["catalog/default"];
+    }
+
+    async save() {
+        const newDoc = JSON.parse(this.drawingJson);
+        Object.assign(this.document.drawing, newDoc);
+        await this.$store.dispatch("document/commit");
+        //window.location.reload();
+    }
+
+    log() {
+        console.log(JSON.parse(JSON.stringify(this.document)));
+    }
+
+    logLive() {
+        console.log(this.document);
+    }
+
+    logCatalog() {
+        console.log(JSON.parse(JSON.stringify(this.catalog)));
+    }
+}
 </script>
 
 <style lang="less"></style>

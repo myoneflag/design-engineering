@@ -24,14 +24,21 @@
                 <b-form>
                     <b-form-input v-model="name" placeholder="Name*"></b-form-input>
                     <b-form-input type="email" v-model="email" placeholder="Email*"></b-form-input>
-                    <b-form-textarea v-model="message" rows="10" :placeholder="'Hey, \n\nI\'m ' + (name ? name : '[You Name]') + ' from [You Company] and I\'m interested in using this software for our office of [10] Hydraulic Engineers.'"></b-form-textarea>
+                    <b-form-textarea
+                        v-model="message"
+                        rows="10"
+                        :placeholder="
+                            'Hey, \n\nI\'m ' +
+                                (name ? name : '[You Name]') +
+                                ' from [You Company] and I\'m interested in using this software for our office of [10] Hydraulic Engineers.'
+                        "
+                    ></b-form-textarea>
                     <b-form-group>
                         <b-button variant="success" :disabled="sent" @click="submit" align="right" v-if="!sending">
-                            {{ sent ? 'Submitted!' : 'Submit'}}
+                            {{ sent ? "Submitted!" : "Submit" }}
                         </b-button>
                         <b-button v-else variant="success" :disabled="true">
-                            <b-spinner style="width: 0.5rem; height: 0.5rem;">
-                            </b-spinner>
+                            <b-spinner style="width: 0.5rem; height: 0.5rem;"> </b-spinner>
                             Submit
                         </b-button>
                     </b-form-group>

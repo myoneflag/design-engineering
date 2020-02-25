@@ -26,7 +26,6 @@ export interface PlantEntityV3 extends CenteredEntity {
 
     inletUid: string;
     outletUid: string;
-
 }
 
 export default interface PlantEntity extends CenteredEntity {
@@ -52,14 +51,12 @@ export default interface PlantEntity extends CenteredEntity {
 
     inletUid: string;
     outletUid: string;
-
 }
 
 export function plantV3toCurrent(entity: PlantEntityV3): PlantEntity {
-    if (entity.hasOwnProperty('pressureMethod')) {
-        return entity as any as PlantEntity;
+    if (entity.hasOwnProperty("pressureMethod")) {
+        return (entity as any) as PlantEntity;
     }
-
 
     let pressureMethod: PressureMethod = PressureMethod.FIXED_PRESSURE_LOSS;
     if (entity.pumpPressureKPA !== null) {
@@ -88,16 +85,15 @@ export function plantV3toCurrent(entity: PlantEntityV3): PlantEntity {
         pressureLossKPA: entity.pressureLossKPA,
 
         staticPressureKPA: null,
-        pressureMethod,
+        pressureMethod
     };
-    console.log(JSON.stringify(result));
     return result;
 }
 
 export enum PressureMethod {
     PUMP_DUTY = "PUMP_DUTY",
     FIXED_PRESSURE_LOSS = "FIXED_PRESSURE_LOSS",
-    STATIC_PRESSURE = "STATIC_PRESSURE",
+    STATIC_PRESSURE = "STATIC_PRESSURE"
 }
 
 export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemParameters[]): PropertyField[] {
@@ -108,7 +104,7 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
             hasDefault: false,
             isCalculated: false,
             type: FieldType.Boolean,
-            params: null ,
+            params: null,
             multiFieldId: "rightToLeft"
         },
 
@@ -131,7 +127,6 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
             params: { systems },
             multiFieldId: "outletSystemUid"
         },
-
 
         {
             property: "name",
@@ -173,10 +168,10 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                 choices: [
                     { name: "Pump Duty", key: PressureMethod.PUMP_DUTY, disabled: false },
                     { name: "Constant Pressure Loss", key: PressureMethod.FIXED_PRESSURE_LOSS, disabled: false },
-                    { name: "Static Pressure", key: PressureMethod.STATIC_PRESSURE, disabled: false },
+                    { name: "Static Pressure", key: PressureMethod.STATIC_PRESSURE, disabled: false }
                 ]
             },
-            multiFieldId: "pressureMethod",
+            multiFieldId: "pressureMethod"
         }
     ];
 
@@ -236,7 +231,6 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
             params: { min: 0, max: null },
             multiFieldId: "heightMM"
         }
-
     );
 
     return res;

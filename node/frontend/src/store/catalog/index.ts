@@ -15,7 +15,7 @@ export const state: CatalogState = {
         dwellingStandards: {},
         fluids: {},
         backflowValves: {},
-        prv: { },
+        prv: {}
     },
     loaded: false
 };

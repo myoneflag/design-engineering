@@ -17,7 +17,8 @@ import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
 import { CenteredObject } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
 import {
-    drawRpzdDouble, getPlantPressureLossKPA,
+    drawRpzdDouble,
+    getPlantPressureLossKPA,
     getRpzdHeadLoss,
     VALVE_HEIGHT_MM
 } from "../../../src/htmlcanvas/lib/utils";
@@ -61,13 +62,13 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
 
     drawInternal(context: DrawingContext, args: DrawingArgs): void {
         const { ctx, vp } = context;
-        const {selected} = args;
+        const { selected } = args;
 
-        this.withWorldScale(context, {x: 0, y: 0}, () => {
+        this.withWorldScale(context, { x: 0, y: 0 }, () => {
             const l = -this.entity.widthMM / 2;
             const r = this.entity.widthMM / 2;
             const b = this.entity.heightMM / 2;
-            const t = - this.entity.heightMM / 2;
+            const t = -this.entity.heightMM / 2;
 
             const boxl = l * 1.2;
             const boxw = (r - l) * 1.2;
@@ -87,27 +88,25 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
             const ts = Math.min(this.entity.widthMM, this.entity.heightMM) * 0.7;
             ctx.beginPath();
-            ctx.moveTo( - ts / 2 * (this.entity.rightToLeft ? -1 : 1),  - ts / 2);
-            ctx.lineTo( + ts / 2 * (this.entity.rightToLeft ? -1 : 1), 0);
-            ctx.lineTo( - ts / 2 * (this.entity.rightToLeft ? -1 : 1),  + ts / 2);
+            ctx.moveTo((-ts / 2) * (this.entity.rightToLeft ? -1 : 1), -ts / 2);
+            ctx.lineTo((+ts / 2) * (this.entity.rightToLeft ? -1 : 1), 0);
+            ctx.lineTo((-ts / 2) * (this.entity.rightToLeft ? -1 : 1), +ts / 2);
             ctx.closePath();
             ctx.fill();
 
             if (selected) {
-
                 ctx.fillStyle = "rgba(100, 100, 255, 0.2)";
                 ctx.fillRect(boxl, boxt, boxw, boxh);
             }
 
-            const fontSize = Math.round( this.toWorldLength(this.entity.widthMM) / this.entity.name.length);
-            ctx.font = fontSize + 'px ' + DEFAULT_FONT_NAME;
+            const fontSize = Math.round(this.toWorldLength(this.entity.widthMM) / this.entity.name.length);
+            ctx.font = fontSize + "px " + DEFAULT_FONT_NAME;
             const measure = ctx.measureText(this.entity.name.toUpperCase());
 
-            ctx.fillStyle = '#000000';
-            ctx.fillText(this.entity.name.toUpperCase(), - measure.width / 2, + fontSize / 3);
+            ctx.fillStyle = "#000000";
+            ctx.fillText(this.entity.name.toUpperCase(), -measure.width / 2, +fontSize / 3);
         });
     }
-
 
     get position(): Matrix {
         const scale = 1 / this.fromParentToWorldLength(1);
@@ -214,14 +213,8 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         const e: PlantEntity = cloneSimple(this.entity);
         e.uid += ".calculation";
 
-        e.outletUid = (this.globalStore.get(e.outletUid) as SystemNode).getCalculationNode(
-            context,
-            this.uid
-        ).uid;
-        e.inletUid = (this.globalStore.get(e.inletUid) as SystemNode).getCalculationNode(
-            context,
-            this.uid
-        ).uid;
+        e.outletUid = (this.globalStore.get(e.outletUid) as SystemNode).getCalculationNode(context, this.uid).uid;
+        e.inletUid = (this.globalStore.get(e.inletUid) as SystemNode).getCalculationNode(context, this.uid).uid;
 
         return [e];
     }
@@ -236,7 +229,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         from: FlowNode,
         to: FlowNode,
         signed: boolean,
-        pressureKPA: number | null,
+        pressureKPA: number | null
     ): number | null {
         const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
         let sign = 1;
@@ -254,13 +247,13 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
 
         if (from.connectable === this.entity.inletSystemUid) {
             if (to.connectable !== this.entity.outletSystemUid) {
-                throw new Error('Misconfigured flow network');
+                throw new Error("Misconfigured flow network");
             }
         }
 
         if (to.connectable === this.entity.inletSystemUid) {
             if (from.connectable !== this.entity.outletSystemUid) {
-                throw new Error('Misconfigured flow network');
+                throw new Error("Misconfigured flow network");
             }
 
             return sign * (1e10 + flowLS);
@@ -271,10 +264,13 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             return null;
         }
 
-        return sign * kpa2head(
-            pl,
-            getFluidDensityOfSystem(this.entity.inletSystemUid, context.doc, context.catalog)!,
-            context.drawing.metadata.calculationParams.gravitationalAcceleration,
+        return (
+            sign *
+            kpa2head(
+                pl,
+                getFluidDensityOfSystem(this.entity.inletSystemUid, context.doc, context.catalog)!,
+                context.drawing.metadata.calculationParams.gravitationalAcceleration
+            )
         );
     }
 
@@ -306,8 +302,10 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 outlet.entity.systemUid = this.entity.outletSystemUid;
             }
 
-            if (Math.abs(outlet.entity.center.x - (this.entity.widthMM / 2 * (this.entity.rightToLeft ? -1 : 1))) > EPS) {
-                outlet.entity.center.x = this.entity.widthMM / 2 * (this.entity.rightToLeft ? -1 : 1);
+            if (
+                Math.abs(outlet.entity.center.x - (this.entity.widthMM / 2) * (this.entity.rightToLeft ? -1 : 1)) > EPS
+            ) {
+                outlet.entity.center.x = (this.entity.widthMM / 2) * (this.entity.rightToLeft ? -1 : 1);
             }
         }
 
@@ -316,8 +314,10 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 inlet.entity.systemUid = this.entity.inletSystemUid;
             }
 
-            if (Math.abs(inlet.entity.center.x - (- this.entity.widthMM / 2 * (this.entity.rightToLeft ? -1 : 1))) > EPS) {
-                inlet.entity.center.x = - this.entity.widthMM / 2 * (this.entity.rightToLeft ? -1 : 1);
+            if (
+                Math.abs(inlet.entity.center.x - (-this.entity.widthMM / 2) * (this.entity.rightToLeft ? -1 : 1)) > EPS
+            ) {
+                inlet.entity.center.x = (-this.entity.widthMM / 2) * (this.entity.rightToLeft ? -1 : 1);
             }
         }
     }

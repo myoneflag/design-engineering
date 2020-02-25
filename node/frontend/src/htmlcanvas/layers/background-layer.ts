@@ -21,7 +21,7 @@ export default class BackgroundLayer extends LayerImplementation {
         shouldContinue: () => boolean,
         reactive: Set<string>,
         selectedTool: ToolConfig,
-        forExport: boolean,
+        forExport: boolean
     ) {
         this.updateSelectionBox();
 
@@ -36,7 +36,7 @@ export default class BackgroundLayer extends LayerImplementation {
                         selected: this.isSelected(selectId),
                         active: active && !selectedTool.focusSelectedObject,
                         calculationFilters: null,
-                        forExport,
+                        forExport
                     });
                 }
             } else {
@@ -56,7 +56,12 @@ export default class BackgroundLayer extends LayerImplementation {
                     this.isSelected(background) &&
                     (background.hasDragged || selectedTool.focusSelectedObject)
                 ) {
-                    background.draw(context, { selected: this.isSelected(selectId), active, calculationFilters: null, forExport });
+                    background.draw(context, {
+                        selected: this.isSelected(selectId),
+                        active,
+                        calculationFilters: null,
+                        forExport
+                    });
                 }
                 await cooperativeYield(shouldContinue);
             }
@@ -87,14 +92,13 @@ export default class BackgroundLayer extends LayerImplementation {
             this.resizeBoxTargetUid = newResizeTargetUid;
 
             if (newResizeTargetUid) {
-
                 const background = this.context.globalStore.get(newResizeTargetUid)! as BackgroundImage;
                 this.resizeBox = new ResizeControl(
                     background,
                     () => {
-                        this.context.$store.dispatch('document/validateAndCommit');
+                        this.context.$store.dispatch("document/validateAndCommit");
                     },
-                    () => this.context.scheduleDraw(),
+                    () => this.context.scheduleDraw()
                 );
             } else {
                 this.resizeBox = null;

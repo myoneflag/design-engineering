@@ -4,109 +4,109 @@ import {AccessLevel} from "../../../backend/src/entity/User"; import {AccessLeve
     <div>
         <MainNavBar></MainNavBar>
         <div style="overflow-y: auto; overflow-x: hidden; height: calc(100vh - 70px)">
-        <b-container>
-            <b-row>
-                <b-col>
-                    <b-button class="float-left" :to="backlink">Back</b-button>
-                </b-col>
-            </b-row>
-            <b-row>
-                <b-col>
-                    <h2>View / Edit Profile</h2>
-                </b-col>
-            </b-row>
-            <b-row>
-                <b-col>
-                    <template v-if="user">
-                        <b-form>
-                            <b-form-group :label-cols="2" label="Username" :disabled="true">
-                                <b-form-input v-model="user.username"></b-form-input>
-                            </b-form-group>
+            <b-container>
+                <b-row>
+                    <b-col>
+                        <b-button class="float-left" :to="backlink">Back</b-button>
+                    </b-col>
+                </b-row>
+                <b-row>
+                    <b-col>
+                        <h2>View / Edit Profile</h2>
+                    </b-col>
+                </b-row>
+                <b-row>
+                    <b-col>
+                        <template v-if="user">
+                            <b-form>
+                                <b-form-group :label-cols="2" label="Username" :disabled="true">
+                                    <b-form-input v-model="user.username"></b-form-input>
+                                </b-form-group>
 
-                            <b-form-group :label-cols="2" label="Full Name">
-                                <b-form-input v-model="user.name"></b-form-input>
-                            </b-form-group>
+                                <b-form-group :label-cols="2" label="Full Name">
+                                    <b-form-input v-model="user.name"></b-form-input>
+                                </b-form-group>
 
-                            <b-form-group :label-cols="2" label="Email">
-                                <b-form-input :required="false" type="email" v-model="user.email"></b-form-input>
-                            </b-form-group>
+                                <b-form-group :label-cols="2" label="Email">
+                                    <b-form-input :required="false" type="email" v-model="user.email"></b-form-input>
+                                </b-form-group>
 
-                            <b-form-group :label-cols="3" label="Subscribe" v-if="profile && profile.accessLevel <= AccessLevel.ADMIN">
-                                <b-form-checkbox v-model="user.subscribed">
-                                    Subscribe to "Contact Us" messages?
-                                </b-form-checkbox>
-                            </b-form-group>
-
-                            <b-form-group :label-cols="2" label="Organization ID">
-                                <b-form-input
-                                    v-model="organization"
-                                    :disabled="!profile || profile.accessLevel >= AccessLevel.MANAGER"
-                                ></b-form-input>
-                            </b-form-group>
-                            <b-button-group>
-                                <b-button
-                                    v-for="a in levels"
-                                    @click="user.accessLevel = a.level"
-                                    :disabled="a.disabled"
-                                    :pressed="a.level === user.accessLevel"
-                                    :variant="a.level === user.accessLevel ? 'primary' : 'info'"
-                                    :key="a.name"
-                                    >{{ a.name }}</b-button
+                                <b-form-group
+                                    :label-cols="3"
+                                    label="Subscribe"
+                                    v-if="profile && profile.accessLevel <= AccessLevel.ADMIN"
                                 >
-                            </b-button-group>
-                        </b-form>
-                        <b-button variant="success" @click="save">Save</b-button>
-                    </template>
-                    <b-alert v-else variant="success" show>Loading...</b-alert>
-                </b-col>
-            </b-row>
+                                    <b-form-checkbox v-model="user.subscribed">
+                                        Subscribe to "Contact Us" messages?
+                                    </b-form-checkbox>
+                                </b-form-group>
 
-            <template  v-if="profile && profile.accessLevel <= AccessLevel.ADMIN">
+                                <b-form-group :label-cols="2" label="Organization ID">
+                                    <b-form-input
+                                        v-model="organization"
+                                        :disabled="!profile || profile.accessLevel >= AccessLevel.MANAGER"
+                                    ></b-form-input>
+                                </b-form-group>
+                                <b-button-group>
+                                    <b-button
+                                        v-for="a in levels"
+                                        @click="user.accessLevel = a.level"
+                                        :disabled="a.disabled"
+                                        :pressed="a.level === user.accessLevel"
+                                        :variant="a.level === user.accessLevel ? 'primary' : 'info'"
+                                        :key="a.name"
+                                        >{{ a.name }}</b-button
+                                    >
+                                </b-button-group>
+                            </b-form>
+                            <b-button variant="success" @click="save">Save</b-button>
+                        </template>
+                        <b-alert v-else variant="success" show>Loading...</b-alert>
+                    </b-col>
+                </b-row>
 
-            <b-row style="margin-top: 50px">
-                <b-button-group>
-                    <b-button @click="changePage(page - 1)" :disabled="page <= 0">
-                        <<
-                    </b-button>
-                    <b-input type="number" v-model="page" @input="changePage($event)">
-
-                    </b-input>
-                    <b-button @click="changePage(page + 1)">
-                        >>
-                    </b-button>
-                </b-button-group>
-            </b-row>
-            <b-row>
-                <b-col>
-
-                    <b-list-group size="sm">
-                        <b-list-group-item
-                                v-for="item in accessItems"
-                                :key="item.id"
-                                size="sm"
-                                style="padding: 0"
-                                v-b-tooltip.hover="{title: JSON.stringify(item)}"
-                        >
-                            <b-row>
-                                <b-col cols="3">
-                                    {{ new Date(item.dateTime).toLocaleString() }}
-                                </b-col>
-                                <b-col cols="2">
-                                    {{ item.type }}
-                                </b-col>
-                                <b-col cols="5">
-                                    {{ item.url }}
-                                </b-col>
-                                <b-col cols="2">
-                                    {{ item.success }}
-                                </b-col>
-                            </b-row>
-                        </b-list-group-item>
-                    </b-list-group>
-                </b-col>
-            </b-row>
-            </template>
-        </b-container>
+                <template v-if="profile && profile.accessLevel <= AccessLevel.ADMIN">
+                    <b-row style="margin-top: 50px">
+                        <b-button-group>
+                            <b-button @click="changePage(page - 1)" :disabled="page <= 0">
+                                <<
+                            </b-button>
+                            <b-input type="number" v-model="page" @input="changePage($event)"> </b-input>
+                            <b-button @click="changePage(page + 1)">
+                                >>
+                            </b-button>
+                        </b-button-group>
+                    </b-row>
+                    <b-row>
+                        <b-col>
+                            <b-list-group size="sm">
+                                <b-list-group-item
+                                    v-for="item in accessItems"
+                                    :key="item.id"
+                                    size="sm"
+                                    style="padding: 0"
+                                    v-b-tooltip.hover="{ title: JSON.stringify(item) }"
+                                >
+                                    <b-row>
+                                        <b-col cols="3">
+                                            {{ new Date(item.dateTime).toLocaleString() }}
+                                        </b-col>
+                                        <b-col cols="2">
+                                            {{ item.type }}
+                                        </b-col>
+                                        <b-col cols="5">
+                                            {{ item.url }}
+                                        </b-col>
+                                        <b-col cols="2">
+                                            {{ item.success }}
+                                        </b-col>
+                                    </b-row>
+                                </b-list-group-item>
+                            </b-list-group>
+                        </b-col>
+                    </b-row>
+                </template>
+            </b-container>
         </div>
     </div>
 </template>
@@ -168,8 +168,8 @@ export default class User extends Vue {
                 this.accessItems = result.data;
             } else {
                 this.$bvToast.toast(result.message, {
-                    variant: 'danger',
-                    title: 'Error Retrieving Access Events',
+                    variant: "danger",
+                    title: "Error Retrieving Access Events"
                 });
             }
         }

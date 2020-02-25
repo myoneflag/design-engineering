@@ -66,18 +66,17 @@ export abstract class LayerImplementation implements Layer {
     constructor(context: CanvasContext) {
         this.context = context;
 
-        MainEventBus.$on('current-level-changed', this.reloadLevel.bind(this));
-        MainEventBus.$on('add-entity', this.addEntity.bind(this));
-        MainEventBus.$on('delete-entity', this.deleteEntity.bind(this));
+        MainEventBus.$on("current-level-changed", this.reloadLevel.bind(this));
+        MainEventBus.$on("add-entity", this.addEntity.bind(this));
+        MainEventBus.$on("delete-entity", this.deleteEntity.bind(this));
 
         this.reloadLevel();
     }
 
     off() {
-
-        MainEventBus.$off('current-level-changed', this.reloadLevel.bind(this));
-        MainEventBus.$off('add-entity', this.addEntity.bind(this));
-        MainEventBus.$off('delete-entity', this.deleteEntity.bind(this));
+        MainEventBus.$off("current-level-changed", this.reloadLevel.bind(this));
+        MainEventBus.$off("add-entity", this.addEntity.bind(this));
+        MainEventBus.$off("delete-entity", this.deleteEntity.bind(this));
     }
 
     addEntity({ entity, levelUid }: EntityParam) {
@@ -92,7 +91,10 @@ export abstract class LayerImplementation implements Layer {
 
                 // we can't assume the existence of the object, because our state (which is updated by events)
                 // can be behind the actual objectstore state (which is updated directly in the store).
-                if (i === this.uidsInOrder.length || (io && this.entitySortOrder(io.entity) >= this.entitySortOrder(entity))) {
+                if (
+                    i === this.uidsInOrder.length ||
+                    (io && this.entitySortOrder(io.entity) >= this.entitySortOrder(entity))
+                ) {
                     this.uidsInOrder.splice(i, 0, entity.uid);
                     break;
                 }
@@ -118,9 +120,10 @@ export abstract class LayerImplementation implements Layer {
             }
         });
 
-        this.uidsInOrder.sort((a, b) =>
-            this.entitySortOrder(this.context.globalStore.get(a)!.entity) -
-            this.entitySortOrder(this.context.globalStore.get(b)!.entity)
+        this.uidsInOrder.sort(
+            (a, b) =>
+                this.entitySortOrder(this.context.globalStore.get(a)!.entity) -
+                this.entitySortOrder(this.context.globalStore.get(b)!.entity)
         );
     }
 
@@ -167,7 +170,7 @@ export abstract class LayerImplementation implements Layer {
                     active: true,
                     selected: selectedSet.has(uid) || uncommittedSet.has(uid),
                     calculationFilters: null,
-                    forExport: false,
+                    forExport: false
                 });
             }
         });
@@ -230,7 +233,7 @@ export abstract class LayerImplementation implements Layer {
                         return true;
                     }
                 } catch (e) {
-                    console.log('warning: error in object handler for mousedown: ');
+                    // tslint:disable-next-line:no-console
                     console.log(e);
                 }
             }
@@ -258,7 +261,9 @@ export abstract class LayerImplementation implements Layer {
                         return res;
                     }
                 } catch (e) {
-                    console.log('warning: error in object handler for mouseMove: ');
+                    // tslint:disable-next-line:no-console
+                    console.log("warning: error in object handler for mouseMove: ");
+                    // tslint:disable-next-line:no-console
                     console.log(e);
                 }
             }
@@ -283,7 +288,9 @@ export abstract class LayerImplementation implements Layer {
                         return true;
                     }
                 } catch (e) {
-                    console.log('warning: error in object handler for mouseMove: ');
+                    // tslint:disable-next-line:no-console
+                    console.log("warning: error in object handler for mouseMove: ");
+                    // tslint:disable-next-line:no-console
                     console.log(e);
                 }
             }

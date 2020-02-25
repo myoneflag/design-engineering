@@ -132,7 +132,7 @@ function insertPipeChain(
     system: FlowSystemParameters,
     network: NetworkType,
     heightM: number,
-    chainNumber: number,
+    chainNumber: number
 ) {
     let nextEntity: ConnectableEntityConcrete | FittingEntity;
     const pipeUid = uuid();
@@ -277,12 +277,11 @@ function insertPipeChain(
                 // committed to the point. And also create new pipe, continue the chain.
                 context.$store.dispatch("document/validateAndCommit").then(() => {
                     const currConns = context.globalStore.getConnections(nextEntity.uid).length;
-                    const maxConns =
-                        (context.globalStore.get(nextEntity.uid) as BaseBackedConnectable).maximumConnections;
+                    const maxConns = (context.globalStore.get(nextEntity.uid) as BaseBackedConnectable)
+                        .maximumConnections;
                     if (maxConns === null || currConns < maxConns) {
                         insertPipeChain(context, nextEntity, system, network, heightM, chainNumber + 1);
                     }
-
                 });
             },
 
@@ -319,9 +318,7 @@ function insertPipeChain(
                 if (newPipe && context.globalStore.has(newPipe.uid)) {
                     return [
                         "Height: " + heightM.toPrecision(3) + "m",
-                        "Length: " +
-                            (context.globalStore.get(newPipe.uid) as Pipe).computedLengthM.toPrecision(4) +
-                            "m"
+                        "Length: " + (context.globalStore.get(newPipe.uid) as Pipe).computedLengthM.toPrecision(4) + "m"
                     ];
                 } else {
                     return [];

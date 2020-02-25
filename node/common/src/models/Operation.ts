@@ -1,12 +1,11 @@
-import {Entity, PrimaryGeneratedColumn, Column, OneToOne, ManyToOne} from "typeorm";
-import {BaseEntity} from "typeorm";
-import {Document} from "./Document";
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, ManyToOne } from "typeorm";
+import { BaseEntity } from "typeorm";
+import { Document } from "./Document";
 import { OperationTransformConcrete } from "../api/document/operation-transforms";
 import { User } from "./User";
 
 @Entity()
 export class Operation extends BaseEntity {
-
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -16,10 +15,10 @@ export class Operation extends BaseEntity {
     @Column()
     orderIndex: number;
 
-    @Column({type: 'json'})
+    @Column({ type: "json" })
     operation: OperationTransformConcrete;
 
-    @Column({nullable: true})
+    @Column({ nullable: true })
     dateTime: Date | null;
 
     @ManyToOne(() => User, { nullable: true, eager: true })

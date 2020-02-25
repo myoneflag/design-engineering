@@ -1,11 +1,14 @@
 import CatalogState from "../../store/catalog/types";
 import {
-    Catalog, Diameter, DwellingSpec,
+    Catalog,
+    Diameter,
+    DwellingSpec,
     FixtureSpec,
     FluidsSpec,
     LoadingUnit,
     MixingValveSpec,
-    PipeMaterial, PSDSpec,
+    PipeMaterial,
+    PSDSpec,
     ValveSpec
 } from "../../../../common/src/api/catalog/types";
 
@@ -276,22 +279,22 @@ export function getCatalogDisplaySchema(): CatalogSchema {
         },
         prv: {
             order: 8,
-            name: 'Pressure Reducing Valves',
+            name: "Pressure Reducing Valves",
             table: {
-                primaryName: 'Nominal Diameter (mm)',
+                primaryName: "Nominal Diameter (mm)",
                 columns: [
-                    ['minInletPressureKPA', 'Min. Inlet Pressure (kPA)'],
-                    ['maxInletPressureKPA', 'Max. Inlet Pressure (kPA)'],
-                    ['minFlowRateLS', 'Min. Flow Rate (L/s)'],
-                    ['maxFlowRateLS', 'Max. Flow Rate (L/s)']
+                    ["minInletPressureKPA", "Min. Inlet Pressure (kPA)"],
+                    ["maxInletPressureKPA", "Max. Inlet Pressure (kPA)"],
+                    ["minFlowRateLS", "Min. Flow Rate (L/s)"],
+                    ["maxFlowRateLS", "Max. Flow Rate (L/s)"]
                 ],
                 link: {
-                    diameterNominalMM: { order: 1, name: "Nominal Diameter (mm)"},
-                    minInletPressureKPA: { order: 2, name: 'Min. Inlet Pressure (kPA)'},
-                    maxInletPressureKPA: { order: 3, name: 'Max. Inlet Pressure (kPA)'},
-                    maxPressureDropRatio: { order: 4, name: 'Max. Pressure Drop Ratio'},
-                    minFlowRateLS: { order: 5, name: 'Min. Flow Rate (L/s)'},
-                    maxFlowRateLS: { order: 6, name: 'Max. Flow Rate (L/s)'},
+                    diameterNominalMM: { order: 1, name: "Nominal Diameter (mm)" },
+                    minInletPressureKPA: { order: 2, name: "Min. Inlet Pressure (kPA)" },
+                    maxInletPressureKPA: { order: 3, name: "Max. Inlet Pressure (kPA)" },
+                    maxPressureDropRatio: { order: 4, name: "Max. Pressure Drop Ratio" },
+                    minFlowRateLS: { order: 5, name: "Min. Flow Rate (L/s)" },
+                    maxFlowRateLS: { order: 6, name: "Max. Flow Rate (L/s)" }
                 }
             }
         },

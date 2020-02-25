@@ -116,7 +116,6 @@ export interface CalculationParameters {
     gravitationalAcceleration: number;
 }
 
-
 export const initialDrawing: DrawingState = {
     metadata: {
         generalInfo: {

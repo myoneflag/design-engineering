@@ -45,7 +45,7 @@ export function CenteredObject<
                 return;
             }
             if (this.entity.parentUid !== null) {
-                throw new Error('Entity must be orphan before reparenting. I am ' + JSON.stringify(this.entity));
+                throw new Error("Entity must be orphan before reparenting. I am " + JSON.stringify(this.entity));
             }
             const [par, oc] = getInsertCoordsAt(context, this.entity.center);
             this.entity.parentUid = par;

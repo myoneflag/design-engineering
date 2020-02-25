@@ -53,9 +53,9 @@ export default class App extends Vue {
             }
         };
 
-        MainEventBus.$on('update-available', () => {
+        MainEventBus.$on("update-available", () => {
             this.upToDate = false;
-        })
+        });
     }
 }
 </script>

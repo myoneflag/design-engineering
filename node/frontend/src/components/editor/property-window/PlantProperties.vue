@@ -7,12 +7,12 @@
         </b-row>
         <slot> </slot>
         <PropertiesFieldBuilder
-                :fields="fields"
-                :reactive-data="reactiveData"
-                :default-data="defaultData"
-                :on-commit="onCommit"
-                :on-change="onChange"
-                :target="targetProperty"
+            :fields="fields"
+            :reactive-data="reactiveData"
+            :default-data="defaultData"
+            :on-commit="onCommit"
+            :on-change="onChange"
+            :target="targetProperty"
         />
         <b-row>
             <b-col>
@@ -25,74 +25,77 @@
 </template>
 
 <script lang="ts">
-    import Vue from "vue";
-    import Component from "vue-class-component";
-    import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
-    import { fillRiserDefaults, makeRiserFields } from "../../../../../common/src/api/document/entities/riser-entity";
-    import { DocumentState } from "../../../../src/store/document/types";
-    import { fillFixtureFields, makeFixtureFields } from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
-    import { fillPlantDefaults, makePlantEntityFields } from "../../../../../common/src/api/document/entities/plant-entity";
-    import { Catalog } from "../../../../../common/src/api/catalog/types";
+import Vue from "vue";
+import Component from "vue-class-component";
+import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
+import { fillRiserDefaults, makeRiserFields } from "../../../../../common/src/api/document/entities/riser-entity";
+import { DocumentState } from "../../../../src/store/document/types";
+import {
+    fillFixtureFields,
+    makeFixtureFields
+} from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
+import { fillPlantDefaults, makePlantEntityFields } from "../../../../../common/src/api/document/entities/plant-entity";
+import { Catalog } from "../../../../../common/src/api/catalog/types";
 
-    @Component({
-        components: { PropertiesFieldBuilder },
-        props: {
-            selectedEntity: Object,
-            selectedObject: Object,
-            targetProperty: String,
-            onDelete: Function,
-            onChange: Function
-        }
-    })
-    export default class PlantProperties extends Vue {
-        get fields() {
-            return makePlantEntityFields(this.$props.selectedEntity, this.document.drawing.metadata.flowSystems);
-        }
-
-        get reactiveData() {
-            return this.$props.selectedEntity;
-        }
-
-        get document(): DocumentState {
-            return this.$store.getters["document/document"];
-        }
-
-        get defaultCatalog(): Catalog {
-            return this.$store.getters["catalog/default"];
-        }
-
-        get defaultData() {
-            return fillPlantDefaults(this.$props.selectedEntity);
-        }
-
-        async onCommit() {
-            await this.$store.dispatch("document/validateAndCommit");
-        }
+@Component({
+    components: { PropertiesFieldBuilder },
+    props: {
+        selectedEntity: Object,
+        selectedObject: Object,
+        targetProperty: String,
+        onDelete: Function,
+        onChange: Function
     }
+})
+export default class PlantProperties extends Vue {
+    get fields() {
+        return makePlantEntityFields(this.$props.selectedEntity, this.document.drawing.metadata.flowSystems);
+    }
+
+    get reactiveData() {
+        return this.$props.selectedEntity;
+    }
+
+    get document(): DocumentState {
+        return this.$store.getters["document/document"];
+    }
+
+    get defaultCatalog(): Catalog {
+        return this.$store.getters["catalog/default"];
+    }
+
+    get defaultData() {
+        return fillPlantDefaults(this.$props.selectedEntity);
+    }
+
+    async onCommit() {
+        await this.$store.dispatch("document/validateAndCommit");
+    }
+}
 </script>
 
 <style lang="less">
-    .sidebar-title {
-        position: relative;
-        font-size: 30px;
-        z-index: 1;
+.sidebar-title {
+    position: relative;
+    font-size: 30px;
+    z-index: 1;
+    overflow: hidden;
+    text-align: center;
+
+    &:before,
+    &:after {
+        position: absolute;
+        top: 51%;
         overflow: hidden;
-        text-align: center;
-
-        &:before,
-        &:after {
-            position: absolute;
-            top: 51%;
-            overflow: hidden;
-            width: 50%;
-            height: 1px;
-            content: "\a0";
-            background-color: lightgray;
-        }
-
-        &:before {
-            margin-left: -50%;
-            text-align: right;
-        }
+        width: 50%;
+        height: 1px;
+        content: "\a0";
+        background-color: lightgray;
     }
+
+    &:before {
+        margin-left: -50%;
+        text-align: right;
+    }
+}
 </style>

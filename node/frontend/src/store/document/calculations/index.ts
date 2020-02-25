@@ -1,4 +1,7 @@
-import { CalculatableEntityConcrete, DrawableEntityConcrete } from "../../../../../common/src/api/document/entities/concrete-entity";
+import {
+    CalculatableEntityConcrete,
+    DrawableEntityConcrete
+} from "../../../../../common/src/api/document/entities/concrete-entity";
 import { EntityType } from "../../../../../common/src/api/document/entities/types";
 import { assertUnreachable } from "../../../../../common/src/api/config";
 import { DrawableEntity } from "../../../../../common/src/api/document/drawing";

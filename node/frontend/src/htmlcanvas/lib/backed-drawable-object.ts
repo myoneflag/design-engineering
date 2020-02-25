@@ -1,5 +1,5 @@
 import DrawableObject from "../../../src/htmlcanvas/lib/drawable-object";
-import { DocumentState} from "../../../src/store/document/types";
+import { DocumentState } from "../../../src/store/document/types";
 import * as _ from "lodash";
 import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";

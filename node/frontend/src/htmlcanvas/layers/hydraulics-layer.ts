@@ -28,7 +28,9 @@ export default class HydraulicsLayer extends LayerImplementation {
             if (!exclude.has(v)) {
                 if (!active || !this.isSelected(v)) {
                     try {
-                        this.context.globalStore.get(v)!.draw(context, { active, selected: false, calculationFilters, forExport: false });
+                        this.context.globalStore
+                            .get(v)!
+                            .draw(context, { active, selected: false, calculationFilters, forExport: false });
                     } catch (e) {
                         // tslint:disable-next-line:no-console
                     }
@@ -69,7 +71,7 @@ export default class HydraulicsLayer extends LayerImplementation {
                 return levelIncludesRiser(
                     this.context.document.drawing.levels[this.context.document.uiState.levelUid!],
                     entity,
-                    this.context.$store.getters['document/sortedLevels'],
+                    this.context.$store.getters["document/sortedLevels"]
                 );
             case EntityType.FITTING:
             case EntityType.PIPE:
@@ -80,8 +82,9 @@ export default class HydraulicsLayer extends LayerImplementation {
             case EntityType.LOAD_NODE:
             case EntityType.PLANT:
             case EntityType.FLOW_SOURCE:
-                return this.context.globalStore.levelOfEntity.get(entity.uid) ===
-                    this.context.document.uiState.levelUid;
+                return (
+                    this.context.globalStore.levelOfEntity.get(entity.uid) === this.context.document.uiState.levelUid
+                );
             case EntityType.BACKGROUND_IMAGE:
                 return false;
             default:

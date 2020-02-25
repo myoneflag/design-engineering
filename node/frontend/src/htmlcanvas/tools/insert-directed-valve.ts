@@ -56,7 +56,10 @@ export default function insertDirectedValve(
                         worldRadius: 30
                     },
                     (drawable) => {
-                        return isConnectableEntity(drawable[0]) && context.globalStore.getConnections(drawable[0].uid).length <= 2;
+                        return (
+                            isConnectableEntity(drawable[0]) &&
+                            context.globalStore.getConnections(drawable[0].uid).length <= 2
+                        );
                     }
                 );
 
@@ -69,13 +72,22 @@ export default function insertDirectedValve(
                         worldRadius: 30
                     },
                     (drawable) => {
-                        return drawable[0].type === EntityType.PIPE || isConnectableEntity(drawable[0]) && context.globalStore.getConnections(drawable[0].uid).length <= 2;
+                        return (
+                            drawable[0].type === EntityType.PIPE ||
+                            (isConnectableEntity(drawable[0]) &&
+                                context.globalStore.getConnections(drawable[0].uid).length <= 2)
+                        );
                     }
                 );
 
-                const interaction  = interactionA || interactionB;
+                const interaction = interactionA || interactionB;
 
-                const valveEntity: DirectedValveEntity = createBareValveEntity(valveType, catalogId, cloneSimple(wc), null);
+                const valveEntity: DirectedValveEntity = createBareValveEntity(
+                    valveType,
+                    catalogId,
+                    cloneSimple(wc),
+                    null
+                );
                 await context.$store.dispatch("document/addEntity", valveEntity);
 
                 if (interaction && interaction.length) {
@@ -89,7 +101,6 @@ export default function insertDirectedValve(
                             (context.globalStore.get(valveEntity.uid)! as DirectedValve).flip();
                         }
                     } else {
-
                         const object = context.globalStore.get(interaction[0].uid) as BaseBackedConnectable;
                         object.debase(context);
                         const entity = object.entity;
@@ -100,14 +111,14 @@ export default function insertDirectedValve(
                             const other = context.globalStore.get(e);
                             if (other instanceof Pipe) {
                                 if (other.entity.endpointUid[0] === entity.uid) {
-                                    //other.entity.endpointUid[0] = newUid;
+                                    // other.entity.endpointUid[0] = newUid;
 
                                     context.$store.dispatch("document/updatePipeEndpoints", {
                                         entity: other.entity,
                                         endpoints: [valveEntity.uid, other.entity.endpointUid[1]]
                                     });
                                 } else {
-                                    //other.entity.endpointUid[1] = newUid;
+                                    // other.entity.endpointUid[1] = newUid;
 
                                     context.$store.dispatch("document/updatePipeEndpoints", {
                                         entity: other.entity,
@@ -195,7 +206,7 @@ function createBareValve(type: ValveType, catalogId: string): DirectedValveConcr
                 targetPressureKPA: 0,
                 catalogId: catalogId as any,
                 type,
-                sizeMM: null,
+                sizeMM: null
             };
         case ValveType.PRV_DOUBLE:
         case ValveType.PRV_TRIPLE:
@@ -204,7 +215,7 @@ function createBareValve(type: ValveType, catalogId: string): DirectedValveConcr
                 catalogId: catalogId as any,
                 type,
                 sizeMM: null,
-                isolateOneWhenCalculatingHeadLoss: false,
+                isolateOneWhenCalculatingHeadLoss: false
             };
         case ValveType.RPZD_DOUBLE_ISOLATED:
         case ValveType.RPZD_SINGLE:

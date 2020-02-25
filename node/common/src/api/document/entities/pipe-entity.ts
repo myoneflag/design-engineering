@@ -33,13 +33,17 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
     const result = fillPipeDefaultFields(drawing, 0, entity);
     const materials = Object.keys(catalog.pipes).map((mat) => {
         const c: Choice = {
-            disabled: false, key: mat, name: catalog.pipes[mat].name,
+            disabled: false,
+            key: mat,
+            name: catalog.pipes[mat].name
         };
         return c;
     });
     const diameters = Object.keys(catalog.pipes[result.material!].pipesBySize).map((d) => {
         const c: Choice = {
-            disabled: false, key: parseCatalogNumberOrMin(d), name: d + 'mm',
+            disabled: false,
+            key: parseCatalogNumberOrMin(d),
+            name: d + "mm"
         };
         return c;
     });
@@ -117,7 +121,7 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
             type: FieldType.Choice,
             params: {
                 choices: diameters,
-                initialValue: diameters[0].key,
+                initialValue: diameters[0].key
             },
             multiFieldId: "diameterMM"
         },

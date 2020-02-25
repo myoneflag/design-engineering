@@ -1,22 +1,21 @@
-import {Entity, PrimaryGeneratedColumn, Column, OneToOne, ManyToOne} from "typeorm";
-import {BaseEntity} from "typeorm";
-import {Document} from "./Document";
-import {User} from "./User";
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, ManyToOne } from "typeorm";
+import { BaseEntity } from "typeorm";
+import { Document } from "./Document";
+import { User } from "./User";
 
 export enum ErrorStatus {
     NEW,
     DOING,
     RESOLVED,
-    HIDDEN,
+    HIDDEN
 }
 
 @Entity()
 export class ErrorReport extends BaseEntity {
-
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => User, {nullable: true, eager: true})
+    @ManyToOne(() => User, { nullable: true, eager: true })
     user: User | null;
 
     @Column()
@@ -40,6 +39,6 @@ export class ErrorReport extends BaseEntity {
     @Column()
     appVersion: string;
 
-    @Column({type: "enum", enum: ErrorStatus})
+    @Column({ type: "enum", enum: ErrorStatus })
     status: ErrorStatus;
 }

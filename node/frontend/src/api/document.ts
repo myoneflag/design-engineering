@@ -91,18 +91,17 @@ export async function closeDocument(id: number) {
 export async function sendOperations(id: number, ops: OT.OperationTransformConcrete[]) {
     if (wss.has(id)) {
         const p = wss.get(id)!.send(JSON.stringify(ops));
-        const timedOut = await (Promise.race([p, new Promise((res, rej) => {
-            setTimeout(() => {
-                res(true);
-            }, 1000);
-        })]));
+        const timedOut = await Promise.race([
+            p,
+            new Promise((res, rej) => {
+                setTimeout(() => {
+                    res(true);
+                }, 1000);
+            })
+        ]);
 
         if (timedOut) {
-            console.log('Timed out');
             await p;
-            console.log('restored');
-        } else {
-            console.log('sent');
         }
     } else {
         throw new Error("Document already closed");
@@ -202,7 +201,7 @@ export async function deleteDocument(id: number): Promise<APIResult<void>> {
 
 export async function restoreDocument(id: number): Promise<APIResult<void>> {
     try {
-        return (await axios.post("/api/documents/" + id + '/restore')).data;
+        return (await axios.post("/api/documents/" + id + "/restore")).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
@@ -214,7 +213,7 @@ export async function restoreDocument(id: number): Promise<APIResult<void>> {
 
 export async function cloneDocument(id: number, organization: string): Promise<APIResult<Document>> {
     try {
-        return (await axios.post("/api/documents/" + id + "/clone", {organization})).data;
+        return (await axios.post("/api/documents/" + id + "/clone", { organization })).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
@@ -224,10 +223,9 @@ export async function cloneDocument(id: number, organization: string): Promise<A
     }
 }
 
-
 export async function getDocumentOperations(id: number, after: number): Promise<APIResult<Operation[]>> {
     try {
-        return (await axios.get("/api/documents/" + id + "/operations", {params: {after}}, )).data;
+        return (await axios.get("/api/documents/" + id + "/operations", { params: { after } })).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };

@@ -38,9 +38,7 @@ export const renderPdf = async (file: File): Promise<APIResult<PDFRenderResult>>
 
 export async function getImageLink(key: string): Promise<APIResult<ImageLinkResult>> {
     try {
-        return (
-            await axios.get("/api/uploadPdf/" + key)
-        ).data;
+        return (await axios.get("/api/uploadPdf/" + key)).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
@@ -52,9 +50,7 @@ export async function getImageLink(key: string): Promise<APIResult<ImageLinkResu
 
 export async function getFloorPlanRenders(key: string): Promise<APIResult<FloorPlanRenders>> {
     try {
-        return (
-            await axios.get("/api/uploadPdf/" + key + "/renders")
-        ).data;
+        return (await axios.get("/api/uploadPdf/" + key + "/renders")).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };

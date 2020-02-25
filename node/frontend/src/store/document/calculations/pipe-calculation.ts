@@ -8,13 +8,13 @@ import { Catalog } from "../../../../../common/src/api/catalog/types";
 import { DrawingState } from "../../../../../common/src/api/document/drawing";
 
 export enum NoFlowAvailableReason {
-    NO_SOURCE = 'NO_SOURCE',
-    NO_LOADS_CONNECTED = 'NO_LOADS_CONNECTED',
-    TOO_MANY_FLOW_SOURCES = 'TOO_MANY_FLOW_SOURCES',
-    UNUSUAL_CONFIGURATION = 'UNUSUAL_CONFIGURATION',
-    NO_ISOLATION_VALVES_ON_MAIN = 'NO_ISOLATION_VALVES_ON_MAIN',
-    LOADING_UNITS_OUT_OF_BOUNDS = 'LOADING_UNITS_OUT_OF_BOUNDS',
-    NO_SUITABLE_PIPE_SIZE = 'NO_SUITABLE_PIPE_SIZE',
+    NO_SOURCE = "NO_SOURCE",
+    NO_LOADS_CONNECTED = "NO_LOADS_CONNECTED",
+    TOO_MANY_FLOW_SOURCES = "TOO_MANY_FLOW_SOURCES",
+    UNUSUAL_CONFIGURATION = "UNUSUAL_CONFIGURATION",
+    NO_ISOLATION_VALVES_ON_MAIN = "NO_ISOLATION_VALVES_ON_MAIN",
+    LOADING_UNITS_OUT_OF_BOUNDS = "LOADING_UNITS_OUT_OF_BOUNDS",
+    NO_SUITABLE_PIPE_SIZE = "NO_SUITABLE_PIPE_SIZE"
 }
 
 export default interface PipeCalculation extends PsdCalculation, Calculation {
@@ -59,7 +59,7 @@ export function makePipeCalculationFields(
             category: FieldCategory.FlowRate,
             systemUid: entity.systemUid,
             defaultEnabled: true
-        },/*
+        } /*
         {
             property: "rawPeakFlowRate",
             title: "Flow Rate (Raw)",
@@ -69,7 +69,7 @@ export function makePipeCalculationFields(
             systemUid: entity.systemUid,
             defaultEnabled: false,
             // format: (v: number | null) => "(" + (v === null ? "??" : v.toFixed(2)) + ")"
-        },*/
+        },*/,
         {
             property: "realNominalPipeDiameterMM",
             title: "Pipe Diameter",
@@ -122,7 +122,7 @@ export function makePipeCalculationFields(
             units: Units.Celsius,
             category: FieldCategory.Temperature,
             systemUid: entity.systemUid
-        },
+        }
 
         /*
         {
@@ -136,29 +136,25 @@ export function makePipeCalculationFields(
     ];
 
     if (settings.metadata.calculationParams.psdMethod !== null) {
-        result.push(
-            {
-                property: "psdUnits.units",
-                title: psdUnit.name,
-                short: psdUnit.abbreviation,
-                units: Units.None,
-                category: FieldCategory.LoadingUnits,
-                systemUid: entity.systemUid
-            }
-        );
+        result.push({
+            property: "psdUnits.units",
+            title: psdUnit.name,
+            short: psdUnit.abbreviation,
+            units: Units.None,
+            category: FieldCategory.LoadingUnits,
+            systemUid: entity.systemUid
+        });
     }
 
     if (settings.metadata.calculationParams.dwellingMethod !== null) {
-        result.push(
-            {
-                property: "psdUnits.dwellings",
-                title: 'Dwellings',
-                short: 'dwlg',
-                units: Units.None,
-                category: FieldCategory.LoadingUnits,
-                systemUid: entity.systemUid
-            },
-        );
+        result.push({
+            property: "psdUnits.dwellings",
+            title: "Dwellings",
+            short: "dwlg",
+            units: Units.None,
+            category: FieldCategory.LoadingUnits,
+            systemUid: entity.systemUid
+        });
     }
 
     return result;
@@ -180,6 +176,6 @@ export function emptyPipeCalculation(): PipeCalculation {
         velocityRealMS: null,
         warning: null,
         psdProfile: null,
-        flowFrom: null,
+        flowFrom: null
     };
 }

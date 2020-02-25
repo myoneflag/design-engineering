@@ -20,7 +20,7 @@ import { AccessLevel } from "../../../common/src/models/User";
             <b-row>
                 <b-col>
                     <b-table
-                            style="background-color: white"
+                        style="background-color: white"
                         :items="usersRendered"
                         :fields="fields"
                         @row-clicked="userRowClicked"
@@ -41,13 +41,13 @@ import { AccessLevel } from "../../../common/src/models/User";
 </template>
 
 <script lang="ts">
-    import { Component } from "vue-property-decorator";
-    import Vue from "vue";
-    import { AccessLevel, User } from "../../../common/src/models/User";
-    import { getUsers } from "../api/users";
-    import MainNavBar from "../../src/components/MainNavBar.vue";
+import { Component } from "vue-property-decorator";
+import Vue from "vue";
+import { AccessLevel, User } from "../../../common/src/models/User";
+import { getUsers } from "../api/users";
+import MainNavBar from "../../src/components/MainNavBar.vue";
 
-    @Component({
+@Component({
     components: {
         MainNavBar
     }
@@ -77,10 +77,10 @@ export default class Users extends Vue {
                 username: u.username,
                 fullName: u.name,
                 accessLevel: ["SUPERUSER", "ADMIN", "MANAGER", "USER"][u.accessLevel],
-                organization: u.organization? u.organization.name : '',
-                lastActivityOn: u.lastActivityOn ? new Date(u.lastActivityOn).toLocaleString() : '',
-            }
-        })
+                organization: u.organization ? u.organization.name : "",
+                lastActivityOn: u.lastActivityOn ? new Date(u.lastActivityOn).toLocaleString() : ""
+            };
+        });
     }
 
     get profile(): User | null {
@@ -89,13 +89,13 @@ export default class Users extends Vue {
 
     get fields() {
         const f = [
-            { key: 'username', sortable: true},
-            { key: 'fullName', sortable: true},
-            { key: 'accessLevel', sortable: true},
-            { key: 'organization', sortable: true},
+            { key: "username", sortable: true },
+            { key: "fullName", sortable: true },
+            { key: "accessLevel", sortable: true },
+            { key: "organization", sortable: true }
         ];
         if (this.profile && this.profile.accessLevel <= AccessLevel.ADMIN) {
-            f.push({ key: 'lastActivityOn', sortable: true});
+            f.push({ key: "lastActivityOn", sortable: true });
         }
         return f;
     }
@@ -105,7 +105,7 @@ export default class Users extends Vue {
     }
 
     userRowClicked(row: any) {
-        this.$router.push({name: 'user', params: {id: row.username}});
+        this.$router.push({ name: "user", params: { id: row.username } });
     }
 }
 </script>

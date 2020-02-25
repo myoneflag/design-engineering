@@ -1,6 +1,4 @@
-import {
-    CalculatableEntityConcrete
-} from "../../../../../common/src/api/document/entities/concrete-entity";
+import { CalculatableEntityConcrete } from "../../../../../common/src/api/document/entities/concrete-entity";
 import { DrawingContext } from "../../../../src/htmlcanvas/lib/types";
 import { CalculationFilters } from "../../../../src/store/document/types";
 import { CalculationData, CalculationDataType } from "../../../../src/store/document/calculations/calculation-field";
@@ -93,7 +91,7 @@ export function CalculatedObject<
             data: CalculationData[],
             dryRun: boolean = false,
             warnSignOnly: boolean = false,
-            forExport: boolean = false,
+            forExport: boolean = false
         ): Flatten.Box {
             if (warnSignOnly) {
                 return this.drawWarningSignOnly(context, dryRun);
@@ -120,7 +118,6 @@ export function CalculatedObject<
                 const warnWidth = ctx.measureText(calculation!.warning!);
                 maxWidth = Math.max(maxWidth, Math.min(WARNING_HINT_WIDTH, warnWidth.width));
             }
-
 
             let height = 0;
             data.forEach((d) => {
@@ -151,7 +148,6 @@ export function CalculatedObject<
                 if (this.hasWarning(context) && !forExport) {
                     ctx.fillStyle = "rgba(255,215,0, 0.8)";
                 }
-                console.log('calculated object filling rect');
                 ctx.fillRect(-maxWidth / 2, -height / 2, maxWidth, height);
 
                 ctx.font = FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
@@ -228,14 +224,12 @@ export function CalculatedObject<
                 const line = this.shape()!.distanceTo(boxShape);
                 if (!boxShape.contains(line[1].start) || true) {
                     // line is now in world position. Transform line back to current position.
-                    const world2curr = TM.transform(TM.inverse(context.vp.currToScreenTransform(ctx)), vp.world2ScreenMatrix);
+                    const world2curr = TM.transform(
+                        TM.inverse(context.vp.currToScreenTransform(ctx)),
+                        vp.world2ScreenMatrix
+                    );
 
                     const currLine = line[1].transform(tm2flatten(world2curr));
-                    if (isNaN(currLine.start.x)) {
-                        console.log(currLine);
-                        console.log(ctx.getTransform());
-                        console.log('kek');
-                    }
 
                     ctx.strokeStyle = "#AAA";
                     ctx.setLineDash([5, 5]);
@@ -282,34 +276,32 @@ export function CalculatedObject<
             const calculation = context.globalStore.getCalculation(this.entity);
 
             if (this.entity.type === EntityType.PIPE) {
-
                 const pCalc = context.globalStore.getCalculation(this.entity);
                 if (pCalc && pCalc.peakFlowRate === null) {
-                    let ambiguousMessage = 'NOT CALCULATED';
+                    let ambiguousMessage = "NOT CALCULATED";
                     if (pCalc.noFlowAvailableReason) {
                         switch (pCalc.noFlowAvailableReason) {
                             case NoFlowAvailableReason.NO_SOURCE:
-                                ambiguousMessage = 'NO SOURCE';
+                                ambiguousMessage = "NO SOURCE";
                                 break;
                             case NoFlowAvailableReason.NO_LOADS_CONNECTED:
-                                ambiguousMessage = 'NO LOADS CONNECTED';
+                                ambiguousMessage = "NO LOADS CONNECTED";
                                 break;
                             case NoFlowAvailableReason.TOO_MANY_FLOW_SOURCES:
-                                ambiguousMessage = 'MULTIPLE FLOW SOURCES';
+                                ambiguousMessage = "MULTIPLE FLOW SOURCES";
                                 break;
                             case NoFlowAvailableReason.UNUSUAL_CONFIGURATION:
-                                ambiguousMessage = 'UNUSUAL CONFIGURATION';
+                                ambiguousMessage = "UNUSUAL CONFIGURATION";
                                 break;
                             case NoFlowAvailableReason.NO_ISOLATION_VALVES_ON_MAIN:
-                                ambiguousMessage = 'NO ISOLATION VALVES ON MAIN';
+                                ambiguousMessage = "NO ISOLATION VALVES ON MAIN";
                                 break;
                             case NoFlowAvailableReason.LOADING_UNITS_OUT_OF_BOUNDS:
-                                ambiguousMessage = 'LOADING UNITS OUT OF BOUNDS';
+                                ambiguousMessage = "LOADING UNITS OUT OF BOUNDS";
                                 break;
                             case NoFlowAvailableReason.NO_SUITABLE_PIPE_SIZE:
-                                ambiguousMessage = 'NO SUITABLE PIPE SIZE';
+                                ambiguousMessage = "NO SUITABLE PIPE SIZE";
                                 break;
-
                         }
                     }
                     return [
@@ -323,11 +315,12 @@ export function CalculatedObject<
                 }
             }
 
-
             return getFields(this.entity, context.doc, context.globalStore, context.catalog)
-                .filter((f) => f.title in filter &&
-                    filter[f.title].enabled &&
-                    getPropertyByString(calculation, f.property, true) !== undefined
+                .filter(
+                    (f) =>
+                        f.title in filter &&
+                        filter[f.title].enabled &&
+                        getPropertyByString(calculation, f.property, true) !== undefined
                 )
                 .map((f) => {
                     const ret: CalculationData = {

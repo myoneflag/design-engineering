@@ -53,7 +53,6 @@ export function moveOnto(
             context.$store.dispatch("document/deleteEntity", context.globalStore.get(pipe)!.entity);
         });
 
-
         survivor.entity.center.x = finalCenter.x;
         survivor.entity.center.y = finalCenter.y;
 
@@ -63,9 +62,8 @@ export function moveOnto(
 
             assert((pipe.endpointUid[0] === loser.uid) !== (pipe.endpointUid[1] === loser.uid));
 
-            //pipe.endpointUid[0] = loser.uid ? survivor.uid : pipe.endpointUid[0];
-            //pipe.endpointUid[1] = loser.uid ? survivor.uid : pipe.endpointUid[1];
-
+            // pipe.endpointUid[0] = loser.uid ? survivor.uid : pipe.endpointUid[0];
+            // pipe.endpointUid[1] = loser.uid ? survivor.uid : pipe.endpointUid[1];
 
             context.$store.dispatch("document/updatePipeEndpoints", {
                 entity: pipe,

@@ -17,11 +17,14 @@ import Pipe from "../../../../src/htmlcanvas/objects/pipe";
 import PipeEntity from "../../../../../common/src/api/document/entities/pipe-entity";
 import uuid from "uuid";
 import FittingEntity from "../../../../../common/src/api/document/entities/fitting-entity";
-import { BigValveType, FlowConfiguration } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
+import {
+    BigValveType,
+    FlowConfiguration
+} from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import assert from "assert";
 import { StandardFlowSystemUids, StandardMaterialUids } from "../../../../src/store/catalog";
 import { MainEventBus } from "../../../../src/store/main-event-bus";
-import { EntityParam} from "../../../../src/store/document/types";
+import { EntityParam } from "../../../../src/store/document/types";
 import { rebaseAll } from "../../../../src/htmlcanvas/lib/black-magic/rebase-all";
 import connectBigValveToSource from "./connect-big-valve-to-source";
 import BigValve from "../../objects/big-valve/bigValve";
@@ -77,14 +80,14 @@ export class AutoConnector {
     entitiesToConsider: DrawableEntityConcrete[] = [];
 
     groupDistCache = new GroupDistCache();
-    levelUid = '';
+    levelUid = "";
 
     constructor(selected: BaseBackedObject[], context: CanvasContext) {
         if (selected === undefined || selected === null) {
             throw new Error("invalid argument for selected");
         }
         if (!context.document.uiState.levelUid) {
-            throw new Error('Can only auto connect on a level');
+            throw new Error("Can only auto connect on a level");
         }
         this.levelUid = context.document.uiState.levelUid;
         this.selected = selected;
@@ -259,7 +262,7 @@ export class AutoConnector {
         return (
             this.getEntityHeight(entity)[1] >
             this.context.document.drawing.metadata.calculationParams.ceilingPipeHeightM -
-            CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM / 1000
+                CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM / 1000
         );
     }
 
@@ -268,7 +271,7 @@ export class AutoConnector {
         return (
             min <=
             this.context.document.drawing.metadata.calculationParams.ceilingPipeHeightM +
-            CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM / 1000
+                CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM / 1000
         ); // && max >= 0; // leave that out 4 now
     }
 
@@ -378,9 +381,13 @@ export class AutoConnector {
                             break;
                         case EntityType.PLANT:
                             if (me.entity.uid === po.entity.inletUid) {
-                                vec = Flatten.vector([-1, 0]).rotate((po.toWorldAngleDeg(0) / 180) * Math.PI).multiply(PLANT_EXTEND_DIST_MM);
+                                vec = Flatten.vector([-1, 0])
+                                    .rotate((po.toWorldAngleDeg(0) / 180) * Math.PI)
+                                    .multiply(PLANT_EXTEND_DIST_MM);
                             } else {
-                                vec = Flatten.vector([1, 0]).rotate((po.toWorldAngleDeg(0) / 180) * Math.PI).multiply(PLANT_EXTEND_DIST_MM);
+                                vec = Flatten.vector([1, 0])
+                                    .rotate((po.toWorldAngleDeg(0) / 180) * Math.PI)
+                                    .multiply(PLANT_EXTEND_DIST_MM);
                             }
                             heightM = po.entity.heightAboveFloorM;
                             break;

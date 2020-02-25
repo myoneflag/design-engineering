@@ -9,11 +9,11 @@
                     :disabled="isDrawing"
                 />
                 <b-button
-                        variant="outline-dark"
-                        class="insertBtn flowsource btn-sm"
-                        @click="$emit('insert', { entityName: entityNames.FLOW_SOURCE, system: selectedSystem })"
-                        v-b-tooltip.hover
-                        title="Flow Source"
+                    variant="outline-dark"
+                    class="insertBtn flowsource btn-sm"
+                    @click="$emit('insert', { entityName: entityNames.FLOW_SOURCE, system: selectedSystem })"
+                    v-b-tooltip.hover
+                    title="Flow Source"
                 ></b-button>
                 <b-button
                     variant="outline-dark"
@@ -103,15 +103,15 @@
                 ></b-button>
 
                 <b-button
-                        variant="outline-dark"
-                        class="insertBtn hot-water-plant btn-sm"
-                        @click="
+                    variant="outline-dark"
+                    class="insertBtn hot-water-plant btn-sm"
+                    @click="
                         $emit('insert', {
-                            entityName: entityNames.PLANT,
+                            entityName: entityNames.PLANT
                         })
                     "
-                        v-b-tooltip.hover
-                        title="Hot Water Plant"
+                    v-b-tooltip.hover
+                    title="Hot Water Plant"
                 >
                     Plant
                 </b-button>
@@ -234,10 +234,10 @@
         <b-col>
             <b-dropdown text="Nodes" class="insertEntityBtn" variant="outline-dark">
                 <b-dropdown-item
-                        :disabled="document.drawing.metadata.calculationParams.dwellingMethod === null"
-                        variant="outline-dark"
-                        class="shower btn-sm"
-                        @click="$emit('insert', { entityName: entityNames.LOAD_NODE, variant: 'hot-cold-dwelling' })"
+                    :disabled="document.drawing.metadata.calculationParams.dwellingMethod === null"
+                    variant="outline-dark"
+                    class="shower btn-sm"
+                    @click="$emit('insert', { entityName: entityNames.LOAD_NODE, variant: 'hot-cold-dwelling' })"
                 >
                     Hot/Cold Dwelling Node Pair
                 </b-dropdown-item>
@@ -254,7 +254,6 @@
                     @click="$emit('insert', { entityName: entityNames.LOAD_NODE, nodeType: NodeType.DWELLING })"
                     >Dwelling Node</b-dropdown-item
                 >
-
             </b-dropdown>
         </b-col>
     </b-row>
@@ -265,7 +264,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import FlowSystemPicker from "../../../src/components/editor/FlowSystemPicker.vue";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
-import { DocumentState} from "../../store/document/types";
+import { DocumentState } from "../../store/document/types";
 import { NodeType } from "../../../../common/src/api/document/entities/load-node-entity";
 import { BigValveType } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import { SupportedPsdStandards } from "../../../../common/src/api/config";

@@ -8,21 +8,20 @@ export enum LoginEventType {
     PASSWORD_CHANGE = "PASSWORD_CHANGE",
     SESSION_GET = "SESSION_GET",
     SESSION_REFRESH = "SESSION_REFRESH",
-    SESSION_EXPIRED = 'SESSION_EXPIRED',
-    UNAUTHORISED_ACCESS = 'UNAUTHORISED_ACCESS',
-    AUTHORISED_ACCESS = 'AUTHORISED_ACCESS',
+    SESSION_EXPIRED = "SESSION_EXPIRED",
+    UNAUTHORISED_ACCESS = "UNAUTHORISED_ACCESS",
+    AUTHORISED_ACCESS = "AUTHORISED_ACCESS",
     ACCEPT_EULA = "ACCEPT_EULA",
-    DECLINE_EULA = "DECLINE_EULA",
+    DECLINE_EULA = "DECLINE_EULA"
 }
 
 @Entity()
 export class AccessEvents extends BaseEntity {
-
     @PrimaryGeneratedColumn()
     id: number;
 
     @Column({
-        type: 'enum',
+        type: "enum",
         enum: LoginEventType
     })
     type: LoginEventType;
@@ -30,7 +29,7 @@ export class AccessEvents extends BaseEntity {
     @Column()
     url: string;
 
-    @Column({nullable: true})
+    @Column({ nullable: true })
     username?: string;
 
     @Column()
@@ -45,7 +44,7 @@ export class AccessEvents extends BaseEntity {
     @Column()
     success: boolean;
 
-    @ManyToOne(() => User,{ nullable: true, eager: false })
+    @ManyToOne(() => User, { nullable: true, eager: false })
     user?: User;
 
     @BeforeInsert()

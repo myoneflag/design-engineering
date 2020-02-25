@@ -8,7 +8,10 @@ import { InvisibleNode } from "../../../../src/htmlcanvas/objects/invisible-node
 import Flatten from "@flatten-js/core";
 import { DrawingContext } from "../../../../src/htmlcanvas/lib/types";
 import { lighten } from "../../../../src/lib/utils";
-import { FlowConfiguration, SystemNodeEntity } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
+import {
+    FlowConfiguration,
+    SystemNodeEntity
+} from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import { getDragPriority } from "../../../../src/store/document";
 import {
     ConnectableEntityConcrete,

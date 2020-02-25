@@ -42,7 +42,6 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity):
         });
     }
 
-
     switch (entity.valve.type) {
         case ValveType.CHECK_VALVE:
         case ValveType.ISOLATION_VALVE:

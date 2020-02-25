@@ -16,11 +16,7 @@ import { DrawableEntityConcrete } from "../../../../../common/src/api/document/e
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
 import { SelectableObject } from "../../../../src/htmlcanvas/lib/object-traits/selectable";
 import { CenteredObject } from "../../../../src/htmlcanvas/lib/object-traits/centered-object";
-import {
-    drawRpzdDouble,
-    getRpzdHeadLoss,
-    VALVE_HEIGHT_MM
-} from "../../../../src/htmlcanvas/lib/utils";
+import { drawRpzdDouble, getRpzdHeadLoss, VALVE_HEIGHT_MM } from "../../../../src/htmlcanvas/lib/utils";
 import { CalculationContext } from "../../../../src/calculations/types";
 import { FlowNode } from "../../../../src/calculations/calculation-engine";
 import { DrawingArgs } from "../../../../src/htmlcanvas/lib/drawable-object";
@@ -411,7 +407,6 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
             default:
                 assertUnreachable(context.drawing.metadata.calculationParams.componentPressureLossMethod);
         }
-
 
         // The actial pressure drop depends on the connection
         let pdKPA: number | null = null;

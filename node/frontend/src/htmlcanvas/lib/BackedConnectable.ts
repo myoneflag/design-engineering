@@ -136,7 +136,10 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                     const suid = determineConnectableSystemUid(this.globalStore, entity);
                     isSystemCorrect = interaction.systemUid === null || interaction.systemUid === suid;
                 } else {
-                    isSystemCorrect = allowAllSystemUid || interaction.systemUid === null || interaction.systemUid === entity.systemUid;
+                    isSystemCorrect =
+                        allowAllSystemUid ||
+                        interaction.systemUid === null ||
+                        interaction.systemUid === entity.systemUid;
                 }
 
                 if (isSystemCorrect) {

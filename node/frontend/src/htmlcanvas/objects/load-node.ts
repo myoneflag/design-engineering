@@ -68,7 +68,6 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
 
         const filled = fillDefaultLoadNodeFields(context.doc, this.globalStore, this.entity);
 
-
         if (args.selected) {
             const sr = Math.max(baseRadius + 20, vp.surfaceToWorldLength(baseRadius / 50 + 2));
 
@@ -88,7 +87,7 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         if (args.calculationFilters) {
             const calculation = this.globalStore.getOrCreateCalculation(this.entity);
             if (!calculation.pressureKPA) {
-                ctx.fillStyle = '#888888';
+                ctx.fillStyle = "#888888";
             }
         }
 
@@ -103,7 +102,6 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         this.strokeShape(context, radius);
         ctx.fill();
 
-
         if (this.entity.linkedToUid) {
             // draw chain link
             const other = this.globalStore.get(this.entity.linkedToUid);
@@ -112,7 +110,7 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
                 const oe = other.entity as ConnectableEntityConcrete;
                 const otherLoc = this.toObjectCoord(other.toWorldCoord());
 
-                ctx.strokeStyle = '#000000';
+                ctx.strokeStyle = "#000000";
                 ctx.lineWidth = lineWidth;
                 ctx.beginPath();
                 ctx.moveTo(0, 0);

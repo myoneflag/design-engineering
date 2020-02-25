@@ -25,7 +25,6 @@ export interface TextAreaParams extends FieldParams {
 
 export interface ChoiceParams extends FieldParams {
     choices: Choice[];
-
 }
 
 export interface FlowSystemChoiceParams extends FieldParams {

@@ -26,47 +26,47 @@ export default function insertFlowSource(context: CanvasContext, system: FlowSys
             async (wc: Coord) => {
                 // Preview
                 await context.$store.dispatch("document/revert", false);
-                    const interactive = context.offerInteraction(
-                        {
-                            entityType: EntityType.RISER,
-                            worldCoord: wc,
-                            systemUid: system.uid,
-                            worldRadius: 10,
-                            type: InteractionType.INSERT
-                        },
-                        (o) => {
-                            return o[0].type === EntityType.FITTING || o[0].type === EntityType.PIPE;
-                        },
-                        ((o) => o[0].type === EntityType.FITTING),
-                    );
-
-                    let connections: string[] = [];
-
-                    const newEntity: FlowSourceEntity = {
-                        center: cloneSimple(wc),
-                        color: null,
-                        calculationHeightM: null,
-                        parentUid: null,
+                const interactive = context.offerInteraction(
+                    {
+                        entityType: EntityType.RISER,
+                        worldCoord: wc,
                         systemUid: system.uid,
-                        type: EntityType.FLOW_SOURCE,
-                        heightAboveGroundM: null,
-                        pressureKPA: null,
-                        uid: newUid
-                    };
+                        worldRadius: 10,
+                        type: InteractionType.INSERT
+                    },
+                    (o) => {
+                        return o[0].type === EntityType.FITTING || o[0].type === EntityType.PIPE;
+                    },
+                    (o) => o[0].type === EntityType.FITTING
+                );
 
-                    await context.$store.dispatch("document/addEntity", newEntity);
+                const connections: string[] = [];
 
-                    if (interactive) {
-                        moveOnto(
-                            context.globalStore.get(newEntity.uid)! as BaseBackedConnectable,
-                            context.globalStore.get(interactive[0].uid)! as BaseBackedConnectable,
-                            context,
-                        );
-                    }
+                const newEntity: FlowSourceEntity = {
+                    center: cloneSimple(wc),
+                    color: null,
+                    calculationHeightM: null,
+                    parentUid: null,
+                    systemUid: system.uid,
+                    type: EntityType.FLOW_SOURCE,
+                    heightAboveGroundM: null,
+                    pressureKPA: null,
+                    uid: newUid
+                };
 
-                    // rebaseAll(context);
+                await context.$store.dispatch("document/addEntity", newEntity);
 
-                    context.scheduleDraw();
+                if (interactive) {
+                    moveOnto(
+                        context.globalStore.get(newEntity.uid)! as BaseBackedConnectable,
+                        context.globalStore.get(interactive[0].uid)! as BaseBackedConnectable,
+                        context
+                    );
+                }
+
+                // rebaseAll(context);
+
+                context.scheduleDraw();
             },
             () => {
                 context.$store.dispatch("document/validateAndCommit").then(() => {

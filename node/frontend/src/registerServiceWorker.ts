@@ -21,7 +21,7 @@ if (process.env.NODE_ENV === "production") {
             }, 1000);
         },
         updatefound() {
-            MainEventBus.$emit('update-available');
+            MainEventBus.$emit("update-available");
             console.log("New content is downloading.");
         },
         updated() {

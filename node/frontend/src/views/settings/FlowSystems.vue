@@ -38,7 +38,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { DocumentState, initialDocumentState} from "../../../src/store/document/types";
+import { DocumentState, initialDocumentState } from "../../../src/store/document/types";
 import SettingsFieldBuilder from "../../../src/components/editor/lib/SettingsFieldBuilder.vue";
 import uuid from "uuid";
 import FlowSystemPicker from "../../../src/components/editor/FlowSystemPicker.vue";

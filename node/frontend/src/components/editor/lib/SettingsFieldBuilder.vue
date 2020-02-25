@@ -66,9 +66,9 @@
                         </b-dropdown>
 
                         <compact-picker
-                                v-else-if="field[2] === 'color'"
-                                :value="getReactiveData(field[0])"
-                                @input="setReactiveData(field[0], $event)"
+                            v-else-if="field[2] === 'color'"
+                            :value="getReactiveData(field[0])"
+                            @input="setReactiveData(field[0], $event)"
                         />
 
                         <h2 v-else-if="field[2] === 'title2'">
@@ -145,7 +145,6 @@ export default class SettingsFieldBuilder extends Vue {
     }
 
     inputChange(value: any) {
-        console.log('input changed ' + value);
     }
 
     getReactiveData(prop: string) {

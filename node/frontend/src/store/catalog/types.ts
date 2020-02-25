@@ -4,4 +4,3 @@ export default interface CatalogState {
     defaultCatalog: Catalog;
     loaded: boolean;
 }
-

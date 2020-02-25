@@ -9,18 +9,20 @@ export default interface PlantCalculation extends Calculation {
 }
 
 export function makePlantCalculationFields(): CalculationField[] {
-    return [{
-        property: "pressureDropKPA",
-        title: "Pressure Drop",
-        short: "",
-        units: Units.KiloPascals,
-        category: FieldCategory.Pressure,
-    }];
+    return [
+        {
+            property: "pressureDropKPA",
+            title: "Pressure Drop",
+            short: "",
+            units: Units.KiloPascals,
+            category: FieldCategory.Pressure
+        }
+    ];
 }
 
 export function emptyPlantCalculation(): PlantCalculation {
     return {
         pressureDropKPA: null,
-        warning: null,
+        warning: null
     };
 }

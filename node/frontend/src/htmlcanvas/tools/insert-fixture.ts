@@ -4,9 +4,12 @@ import PointTool from "../../../src/htmlcanvas/tools/point-tool";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import uuid from "uuid";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
-import { getInsertCoordsAt} from "../../../src/htmlcanvas/lib/utils";
+import { getInsertCoordsAt } from "../../../src/htmlcanvas/lib/utils";
 import FixtureEntity from "../../../../common/src/api/document/entities/fixtures/fixture-entity";
-import { FlowConfiguration, SystemNodeEntity } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
+import {
+    FlowConfiguration,
+    SystemNodeEntity
+} from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import { StandardFlowSystemUids } from "../../../src/store/catalog";
 import { KeyCode } from "../../../src/htmlcanvas/utils";
 import { SupportedPsdStandards } from "../../../../common/src/api/config";

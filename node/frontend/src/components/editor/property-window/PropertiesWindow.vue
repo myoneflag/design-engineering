@@ -80,15 +80,13 @@ import {EntityType} from "../../../../src/store/document/entities/types";
                 :on-delete="onDelete"
             />
             <PlantProperties
-                    v-else-if="entity.type === ENTITY_NAMES.PLANT"
-                    :selected-entity="entity"
-                    :selected-object="selectedObjects[0]"
-                    :on-change="onChange"
-                    :target-property="targetProperty"
-                    :on-delete="onDelete"
+                v-else-if="entity.type === ENTITY_NAMES.PLANT"
+                :selected-entity="entity"
+                :selected-object="selectedObjects[0]"
+                :on-change="onChange"
+                :target-property="targetProperty"
+                :on-delete="onDelete"
             />
-
-
         </template>
         <template v-else>
             <h3>{{ selectedObjects.length + " Objects" }}</h3>
@@ -145,7 +143,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import FloorPlanProperties from "../../../../src/components/editor/property-window/FloorPlanProperties.vue";
 import RiserProperties from "./RiserProperties.vue";
-import { DocumentState} from "../../../../src/store/document/types";
+import { DocumentState } from "../../../../src/store/document/types";
 import FittingProperties from "../../../../src/components/editor/property-window/FittingProperties.vue";
 import PipeProperties from "../../../../src/components/editor/property-window/PipeProperties.vue";
 import { EntityType } from "../../../../../common/src/api/document/entities/types";
@@ -182,7 +180,7 @@ import { DrawingMode } from "../../../htmlcanvas/types";
         FittingProperties,
         RiserProperties,
         FloorPlanProperties,
-        FlowSourceProperties,
+        FlowSourceProperties
     },
     props: {
         selectedEntities: Array,
@@ -192,7 +190,7 @@ import { DrawingMode } from "../../../htmlcanvas/types";
         objectStore: Map, // MAP. don't change it
         onChange: Function,
         onDelete: Function,
-        readOnly: Boolean,
+        readOnly: Boolean
     }
 })
 export default class PropertiesWindow extends Vue {

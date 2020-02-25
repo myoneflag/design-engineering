@@ -4,7 +4,7 @@
     "tslint:recommended"
   ],
   "rules": {
-    "indent": [true, "spaces", 2],
+    "indent": [true, "spaces", 4],
     "interface-name": false,
     "no-consecutive-blank-lines": false,
     "object-literal-sort-keys": false,
@@ -13,7 +13,8 @@
     "member-access": [true, "no-public"],
     "trailing-comma": false,
     "no-var-requires": false,
-    "object-literal-key-quotes": false
+    "object-literal-key-quotes": false,
+    "arrow-parens": true
   },
   "linterOptions": {
     "exclude": [

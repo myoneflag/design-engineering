@@ -30,7 +30,6 @@ export default function CenterDraggableObject<
                 context: CanvasContext,
                 isMulti: boolean
             ): void {
-
                 if (this.document.uiState.viewOnly || this.document.uiState.drawingMode === DrawingMode.History) {
                     return;
                 }

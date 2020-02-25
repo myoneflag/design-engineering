@@ -57,9 +57,9 @@ const MAX_PIPE_GROUP_SEPARATION_M = 0.05;
 
 let hlcounts = 0;
 
-export function ConnectableObject<
-    T extends new (...args: any[]) => Connectable & BaseBackedConnectable
->(constructor: T) {
+export function ConnectableObject<T extends new (...args: any[]) => Connectable & BaseBackedConnectable>(
+    constructor: T
+) {
     // @ts-ignore abstract class expression limitation in the language. In practice this is fine.
     class Generated extends constructor implements Connectable {
         drawInternal(context: DrawingContext, args: DrawingArgs): void {
@@ -70,7 +70,7 @@ export function ConnectableObject<
             switch (e.type) {
                 case EntityType.RISER:
                     // don't do this for risers lol horseshoe
-                    if (!this.entity.uid.startsWith('4075e')) {
+                    if (!this.entity.uid.startsWith("4075e")) {
                         // lucky 1 in a million
                         return;
                     } else {
@@ -256,20 +256,20 @@ export function ConnectableObject<
             if (this.maximumConnections !== null && conns.length > this.maximumConnections) {
                 return {
                     success: false,
-                    message: "Too many connections coming out of a " + this.type,
+                    message: "Too many connections coming out of a " + this.type
                 };
             }
 
             if (this.minimumConnections !== null && conns.length < this.minimumConnections) {
                 return {
                     success: false,
-                    message: "Too few connections coming out of a " + this.type,
+                    message: "Too few connections coming out of a " + this.type
                 };
             }
 
             return {
                 success: true,
-                data: undefined,
+                data: undefined
             };
         }
 
@@ -547,9 +547,8 @@ export function ConnectableObject<
                 }
             }
 
-
             // @ts-ignore
-            const componentHL =  super.getFrictionHeadLoss(context, oFlowLS, oFrom, oTo, signed, pressureKPA);
+            const componentHL = super.getFrictionHeadLoss(context, oFlowLS, oFrom, oTo, signed, pressureKPA);
 
             if (this.entity.type === EntityType.SYSTEM_NODE) {
                 // @ts-ignore
@@ -602,7 +601,6 @@ export function ConnectableObject<
             );
 
             const k = 0.8 * Math.sin(angle / 2) * (1 - smallSize ** 2 / largeSize ** 2);
-
 
             if (Math.abs(flowLS) < EPS) {
                 // @ts-ignore

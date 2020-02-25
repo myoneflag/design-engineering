@@ -2,7 +2,7 @@ import BackgroundLayer from "../../../src/htmlcanvas/layers/background-layer";
 import BackedDrawableObject from "../../../src/htmlcanvas/lib/backed-drawable-object";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import DrawableObject from "../../../src/htmlcanvas/lib/drawable-object";
-import { DocumentState} from "../../../src/store/document/types";
+import { DocumentState } from "../../../src/store/document/types";
 import { Store } from "vuex";
 import { RootState } from "../../../src/store/types";
 import { Interaction } from "../../../src/htmlcanvas/lib/interaction";

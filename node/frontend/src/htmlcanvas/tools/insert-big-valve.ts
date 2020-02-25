@@ -101,7 +101,6 @@ export default function insertBigValve(context: CanvasContext, bigValveType: Big
                     uid: tmvUid
                 };
 
-
                 const newCold: SystemNodeEntity = {
                     center: { x: newBigValve.pipeDistanceMM / 2, y: 0 },
                     parentUid: tmvUid,

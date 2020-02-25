@@ -15,7 +15,7 @@ export function getObjectFrictionHeadLoss(
     from: FlowNode,
     to: FlowNode,
     signed: boolean,
-    pressureKPA: number | null,
+    pressureKPA: number | null
 ): number | null {
     return object.getFrictionHeadLoss(context, flowLS, from, to, signed, pressureKPA);
 }

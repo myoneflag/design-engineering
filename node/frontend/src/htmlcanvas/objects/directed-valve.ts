@@ -184,22 +184,29 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     }
 
     drawPrvN(context: DrawingContext, n: number) {
-
         const ctx = context.ctx;
         const oldfs = ctx.fillStyle;
         ctx.fillStyle = "#ffffff";
 
-        ctx.fillRect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * (2 * n / 2 + 0.3) , VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * (2 * n + 0.6));
-
+        ctx.fillRect(
+            -VALVE_HEIGHT_MM * 1.3,
+            -VALVE_HEIGHT_MM * ((2 * n) / 2 + 0.3),
+            VALVE_HEIGHT_MM * 2.6,
+            VALVE_HEIGHT_MM * (2 * n + 0.6)
+        );
 
         ctx.beginPath();
-        ctx.rect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * (2 * n / 2 + 0.3), VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * (2 * n + 0.6));
+        ctx.rect(
+            -VALVE_HEIGHT_MM * 1.3,
+            -VALVE_HEIGHT_MM * ((2 * n) / 2 + 0.3),
+            VALVE_HEIGHT_MM * 2.6,
+            VALVE_HEIGHT_MM * (2 * n + 0.6)
+        );
         ctx.stroke();
-
 
         ctx.fillStyle = oldfs;
         for (let i = 0; i < n; i++) {
-            const yOffset = (- n / 2 + i + 0.5) * (VALVE_SIZE_MM * 1.3);
+            const yOffset = (-n / 2 + i + 0.5) * (VALVE_SIZE_MM * 1.3);
             ctx.beginPath();
             ctx.moveTo(-VALVE_HEIGHT_MM, -VALVE_SIZE_MM / 2 + yOffset);
             ctx.lineTo(-VALVE_HEIGHT_MM, VALVE_SIZE_MM / 2 + yOffset);
@@ -361,7 +368,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         from: FlowNode,
         to: FlowNode,
         signed: boolean,
-        pressureKPA: number | null,
+        pressureKPA: number | null
     ): number | null {
         const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
 
@@ -440,7 +447,6 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 break;
             }
 
-
             case ValveType.RPZD_SINGLE:
             case ValveType.RPZD_DOUBLE_SHARED:
             case ValveType.RPZD_DOUBLE_ISOLATED: {
@@ -485,7 +491,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                             return kpa2head(
                                 myPressure - this.entity.valve.targetPressureKPA!,
                                 getFluidDensityOfSystem(systemUid, context.doc, context.catalog)!,
-                                context.doc.drawing.metadata.calculationParams.gravitationalAcceleration,
+                                context.doc.drawing.metadata.calculationParams.gravitationalAcceleration
                             );
                         } else {
                             return 0;

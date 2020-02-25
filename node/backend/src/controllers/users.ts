@@ -58,7 +58,6 @@ export class UserController {
     @AuthRequired()
     public async findOne(req: Request, res: Response, next: NextFunction, session: Session) {
         await withUser(req.params.id, res, session, AccessType.READ, async (user) => {
-            console.log('find one user: ' + JSON.stringify(user));
             res.status(200).send({
                 success: true,
                 data: user,

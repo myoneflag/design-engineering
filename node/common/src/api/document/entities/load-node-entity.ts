@@ -91,13 +91,13 @@ export function makeLoadNodesFields(systems: FlowSystemParameters[], value: Load
         case NodeType.DWELLING:
             fields.push(
                 {
-                property: "node.dwellings",
-                title: "Dwelling Units",
-                hasDefault: false,
-                isCalculated: false,
-                type: FieldType.Number,
-                params: { min: 0, max: null },
-                multiFieldId: "dwellings"
+                    property: "node.dwellings",
+                    title: "Dwelling Units",
+                    hasDefault: false,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    params: { min: 0, max: null },
+                    multiFieldId: "dwellings"
                 },
 
                 {
@@ -108,10 +108,10 @@ export function makeLoadNodesFields(systems: FlowSystemParameters[], value: Load
                     type: FieldType.Number,
                     params: { min: 0, max: null },
                     multiFieldId: "continuousFlowLS"
-                });
+                }
+            );
             break;
     }
 
     return fields;
 }
-

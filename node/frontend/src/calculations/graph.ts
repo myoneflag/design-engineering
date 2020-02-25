@@ -85,10 +85,17 @@ export default class Graph<N, E> {
     }
 
     // Only applies to undirected graphs.
-    bridgeUtil(u: N, visited: Set<string>, disc: Map<string, number>, low: Map<string, number>, parent: Map<string, N>, bridges: Array<Edge<N, E>>) {
+    bridgeUtil(
+        u: N,
+        visited: Set<string>,
+        disc: Map<string, number>,
+        low: Map<string, number>,
+        parent: Map<string, N>,
+        bridges: Array<Edge<N, E>>
+    ) {
         const uk = this.sn(u);
         visited.add(uk);
-        this.bridgeTimeTick ++;
+        this.bridgeTimeTick++;
         disc.set(uk, this.bridgeTimeTick);
         low.set(uk, this.bridgeTimeTick);
 
@@ -105,8 +112,7 @@ export default class Graph<N, E> {
                 if (low.get(vk)! > disc.get(uk)!) {
                     bridges.push(e);
                 }
-
-            } else if (vk !== (parent.get(uk) ? this.sn(parent.get(uk)!) : '')) {
+            } else if (vk !== (parent.get(uk) ? this.sn(parent.get(uk)!) : "")) {
                 low.set(uk, Math.min(low.get(uk)!, disc.get(vk)!));
             }
         }
@@ -118,7 +124,7 @@ export default class Graph<N, E> {
         const low = new Map<string, number>();
         const parent = new Map<string, N>();
 
-        const bridges: Edge<N, E>[] = [];
+        const bridges: Array<Edge<N, E>> = [];
 
         for (const n of this.id2Node.values()) {
             if (!visited.has(this.sn(n))) {
@@ -164,7 +170,7 @@ export default class Graph<N, E> {
                         visited,
                         visitedEdges,
                         false,
-                        false,
+                        false
                     );
                 }
 
@@ -201,7 +207,7 @@ export default class Graph<N, E> {
                 if (!seen.has(this.sn(next.to))) {
                     this.dagTraversalRecursive(next.to, next, seen, traversals);
                 }
-            };
+            }
         } else {
             throw new Error("Node missing from adjacency list " + curr);
         }
@@ -370,7 +376,17 @@ export default class Graph<N, E> {
                 }
             }
             if (!seen!.has(this.sn(next.to))) {
-                this.dfsRecursive(next.to, visitNode, leaveNode, visitEdge, leaveEdge, seen, seenEdges, directed, reversed);
+                this.dfsRecursive(
+                    next.to,
+                    visitNode,
+                    leaveNode,
+                    visitEdge,
+                    leaveEdge,
+                    seen,
+                    seenEdges,
+                    directed,
+                    reversed
+                );
             }
             if (leaveEdge) {
                 leaveEdge(next);
@@ -484,8 +500,6 @@ export default class Graph<N, E> {
         return components;
     }
 
-
-
     anyPath(
         from: N,
         to: Set<N> | N[] | N,
@@ -493,7 +507,7 @@ export default class Graph<N, E> {
         seenEdges?: Set<string>,
         directed: boolean = true,
         reversed: boolean = false,
-        edgeFilter?: (e: Edge<N, E>) => boolean,
+        edgeFilter?: (e: Edge<N, E>) => boolean
     ): Array<Edge<N, E>> | null {
         const cache: Array<Edge<N, E>> = [];
         let result: Array<Edge<N, E>> | null = null;

@@ -18,7 +18,7 @@ export enum EntityType {
     LOAD_NODE = "LOAD_NODE",
     PLANT = "PLANT",
 
-    FLOW_SOURCE = "FLOW_SOURCE",
+    FLOW_SOURCE = "FLOW_SOURCE"
 }
 
 export function getEntityName(type: EntityType): string {

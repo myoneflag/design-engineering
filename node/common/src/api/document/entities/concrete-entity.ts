@@ -32,12 +32,7 @@ export type ConnectableEntityConcrete =
     | LoadNodeEntity
     | FlowSourceEntity;
 
-export type HasExplicitSystemUid =
-    | FittingEntity
-    | RiserEntity
-    | SystemNodeEntity
-    | PipeEntity
-    | FlowSourceEntity;
+export type HasExplicitSystemUid = FittingEntity | RiserEntity | SystemNodeEntity | PipeEntity | FlowSourceEntity;
 
 export type CenteredEntityConcrete =
     | BackgroundEntity

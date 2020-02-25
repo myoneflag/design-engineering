@@ -6,20 +6,20 @@ import { GridLineMode } from "../../store/document/types";
                 <b-col>
                     <b-button-group>
                         <b-button
-                                variant="outline-dark"
-                                v-b-tooltip.hover="{ title: 'Undo' }"
-                                class="toolBtn"
-                                :disabled="document.undoIndex <= 0"
-                                @click="onUndo"
+                            variant="outline-dark"
+                            v-b-tooltip.hover="{ title: 'Undo' }"
+                            class="toolBtn"
+                            :disabled="document.undoIndex <= 0"
+                            @click="onUndo"
                         >
                             <v-icon name="undo" scale="1.5" />
                         </b-button>
                         <b-button
-                                variant="outline-dark"
-                                v-b-tooltip.hover="{ title: 'Redo' }"
-                                class="toolBtn"
-                                :disabled="document.undoIndex >= document.undoStack.length"
-                                @click="onRedo"
+                            variant="outline-dark"
+                            v-b-tooltip.hover="{ title: 'Redo' }"
+                            class="toolBtn"
+                            :disabled="document.undoIndex >= document.undoStack.length"
+                            @click="onRedo"
                         >
                             <v-icon name="redo" scale="1.5" />
                         </b-button>
@@ -29,18 +29,18 @@ import { GridLineMode } from "../../store/document/types";
                 <b-col>
                     <b-button-group>
                         <b-button
-                                variant="outline-dark"
-                                v-b-tooltip.hover="{ title: 'Copy' }"
-                                class="toolBtn"
-                                @click="onCopy"
+                            variant="outline-dark"
+                            v-b-tooltip.hover="{ title: 'Copy' }"
+                            class="toolBtn"
+                            @click="onCopy"
                         >
                             <v-icon name="copy" scale="1.5" />
                         </b-button>
                         <b-button
-                                variant="outline-dark"
-                                v-b-tooltip.hover="{ title: 'Paste' }"
-                                class="toolBtn"
-                                @click="onPaste"
+                            variant="outline-dark"
+                            v-b-tooltip.hover="{ title: 'Paste' }"
+                            class="toolBtn"
+                            @click="onPaste"
                         >
                             <v-icon name="paste" scale="1.5" />
                         </b-button>
@@ -78,11 +78,11 @@ import { GridLineMode } from "../../store/document/types";
                             <v-icon name="expand" scale="1.5" />
                         </b-button>
                         <b-button
-                                variant="outline-dark"
-                                v-b-tooltip.hover="{ title: 'Switch Grid Lines' }"
-                                class="toolBtn"
-                                :pressed="document.uiState.gridLines !== GridLineMode.NONE"
-                                @click="switchGridLines"
+                            variant="outline-dark"
+                            v-b-tooltip.hover="{ title: 'Switch Grid Lines' }"
+                            class="toolBtn"
+                            :pressed="document.uiState.gridLines !== GridLineMode.NONE"
+                            @click="switchGridLines"
                         >
                             <v-icon name="border-all" scale="1.5" />
                         </b-button>
@@ -94,14 +94,14 @@ import { GridLineMode } from "../../store/document/types";
 </template>
 
 <script lang="ts">
-    import Vue from "vue";
-    import Component from "vue-class-component";
-    import { DEFAULT_TOOL } from "../../htmlcanvas/lib/tool";
-    import { ToolConfig } from "../../../src/store/tools/types";
-    import { DocumentState, GridLineMode } from "../../store/document/types";
-    import { assertUnreachable } from "../../../../common/src/api/config";
+import Vue from "vue";
+import Component from "vue-class-component";
+import { DEFAULT_TOOL } from "../../htmlcanvas/lib/tool";
+import { ToolConfig } from "../../../src/store/tools/types";
+import { DocumentState, GridLineMode } from "../../store/document/types";
+import { assertUnreachable } from "../../../../common/src/api/config";
 
-    @Component({
+@Component({
     props: {
         currentToolConfig: Object,
         onToolClick: Function,
@@ -110,7 +110,7 @@ import { GridLineMode } from "../../store/document/types";
         onUndo: Function,
         onRedo: Function,
         onCopy: Function,
-        onPaste: Function,
+        onPaste: Function
     }
 })
 export default class Toolbar extends Vue {
@@ -144,7 +144,7 @@ export default class Toolbar extends Vue {
     }
 
     get document(): DocumentState {
-        return this.$store.getters['document/document'];
+        return this.$store.getters["document/document"];
     }
 }
 </script>

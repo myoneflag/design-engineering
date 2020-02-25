@@ -101,7 +101,7 @@ const router = new Router({
                 {
                     path: "calculation-overview",
                     name: "calculation-overview",
-                    component: () => import(/* webpackChunkName: "calc-overview" */ "./views/CalculationOverview.vue"),
+                    component: () => import(/* webpackChunkName: "calc-overview" */ "./views/CalculationOverview.vue")
                 }
             ],
 
@@ -202,7 +202,7 @@ const router = new Router({
 
             meta: {
                 auth: true,
-                minAccessLevel: AccessLevel.SUPERUSER,
+                minAccessLevel: AccessLevel.SUPERUSER
             }
         },
 
@@ -224,7 +224,7 @@ const router = new Router({
             component: ChangePassword,
             meta: {
                 auth: true,
-                needsEula: false,
+                needsEula: false
             }
         },
 
@@ -234,12 +234,12 @@ const router = new Router({
             component: ContactUs
         },
         {
-            path: '/eula',
-            name: 'eula',
+            path: "/eula",
+            name: "eula",
             component: () => import(/* webpackChunkName: "eula" */ "./views/Eula.vue"),
             meta: {
                 auth: true,
-                needsEula: false,
+                needsEula: false
             }
         }
     ]
@@ -272,15 +272,18 @@ router.beforeEach((to, from, next) => {
                         next("/login");
                     }
                 });
-
             } else {
-                const needsEula = to.matched
-                    .filter((r) => r.meta && r.meta.auth && (r.meta.needsEula === undefined || r.meta.needsEula))
-                    .length > 0;
+                const needsEula =
+                    to.matched.filter(
+                        (r) => r.meta && r.meta.auth && (r.meta.needsEula === undefined || r.meta.needsEula)
+                    ).length > 0;
 
                 if (needsEula && !(store.getters["profile/profile"] as IUser).eulaAccepted) {
-                    router.push({name: 'eula'});
-                } else if (requiredAccess !== undefined && store.getters["profile/profile"].accessLevel > requiredAccess) {
+                    router.push({ name: "eula" });
+                } else if (
+                    requiredAccess !== undefined &&
+                    store.getters["profile/profile"].accessLevel > requiredAccess
+                ) {
                     router.push("/login");
                 } else {
                     next();

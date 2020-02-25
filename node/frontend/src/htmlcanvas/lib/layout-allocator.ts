@@ -1,4 +1,4 @@
-import  Flatten from '@flatten-js/core';
+import Flatten from "@flatten-js/core";
 import { polygonOverlapsShapeApprox, polygonsOverlap } from "../utils";
 import { BoxableShape } from "./drawable-object";
 
@@ -6,10 +6,13 @@ import { BoxableShape } from "./drawable-object";
  * This class quickly allocates and queries spaces on screen for rendering non-overlapping and fluid items.
  */
 export default class LayoutAllocator<T> {
-
     cache = new Map<number, Map<number, Array<[BoxableShape, number, T | null]>>>();
     resolution: number;
     result: T[] = [];
+
+    constructor(resolution: number) {
+        this.resolution = resolution;
+    }
 
     toKey(coord: number) {
         return Math.floor(coord / this.resolution);
@@ -40,17 +43,13 @@ export default class LayoutAllocator<T> {
 
         const res: Array<Array<[BoxableShape, number, T | null]>> = [];
 
-        for (let x = l ; x <= r ; x++) {
-            for (let y = t ; y <= b ; y++) {
+        for (let x = l; x <= r; x++) {
+            for (let y = t; y <= b; y++) {
                 res.push(this.getOrInitK(x, y));
             }
         }
 
         return res;
-    }
-
-    constructor(resolution: number) {
-        this.resolution = resolution;
     }
 
     canPlace(shape: Flatten.Polygon): boolean {
@@ -71,8 +70,6 @@ export default class LayoutAllocator<T> {
     }
 
     place(shape: BoxableShape, value: T) {
-
-
         const box = shape.box;
         const l = this.toKey(box.xmin);
         const r = this.toKey(box.xmax);
@@ -81,9 +78,9 @@ export default class LayoutAllocator<T> {
 
         this.getBoxes(shape).forEach((a) => {
             // cheap optimization
-            //if (a.length < 20) {
-                a.push([shape, a.length, value]);
-            //}
+            // if (a.length < 20) {
+            a.push([shape, a.length, value]);
+            // }
         });
 
         this.result.push(value);
@@ -92,7 +89,7 @@ export default class LayoutAllocator<T> {
     placeBlock(shape: BoxableShape) {
         this.getBoxes(shape).forEach((a) => {
             if (a.length < 2) {
-                a.push([shape, - a.length - 1, null]);
+                a.push([shape, -a.length - 1, null]);
             }
         });
     }

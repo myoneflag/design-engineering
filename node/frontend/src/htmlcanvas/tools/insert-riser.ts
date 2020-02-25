@@ -1,4 +1,4 @@
-import { DocumentState} from "../../../src/store/document/types";
+import { DocumentState } from "../../../src/store/document/types";
 import { MainEventBus } from "../../../src/store/main-event-bus";
 import PointTool from "../../../src/htmlcanvas/tools/point-tool";
 import RiserEntity from "../../../../common/src/api/document/entities/riser-entity";
@@ -48,7 +48,7 @@ export default function insertRiser(context: CanvasContext, system: FlowSystemPa
                         }
                     );
 
-                    let connections: string[] = [];
+                    const connections: string[] = [];
 
                     const newEntity: RiserEntity = {
                         bottomHeightM: null,
@@ -72,7 +72,7 @@ export default function insertRiser(context: CanvasContext, system: FlowSystemPa
                         moveOnto(
                             context.globalStore.get(newEntity.uid)! as BaseBackedConnectable,
                             context.globalStore.get(interactive[0].uid)! as BaseBackedConnectable,
-                            context,
+                            context
                         );
                     }
 

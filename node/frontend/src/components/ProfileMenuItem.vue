@@ -1,31 +1,30 @@
 <template>
-        <b-nav-item-dropdown right>
-
-            <template slot="button-content">
-                <v-icon name="user" style="margin-top: -3px"></v-icon>
-                {{ profile.name + ' '}}
-            </template>
-            <b-dropdown-item :to="'/users/username/' + profile.username">Profile</b-dropdown-item>
-            <b-dropdown-item @click="changePassword">Change Password</b-dropdown-item>
-            <template v-if="profile.accessLevel <= AccessLevel.MANAGER">
-                <b-dropdown-divider></b-dropdown-divider>
-                <!--Admin Panel controls-->
-                <b-dropdown-item v-if="profile.accessLevel <= AccessLevel.ADMIN" to="/organizations">
-                    Organizations
-                </b-dropdown-item>
-                <b-dropdown-item to="/users">Users</b-dropdown-item>
-            </template>
-
-            <template v-if="profile.accessLevel <= AccessLevel.SUPERUSER">
-                <b-dropdown-divider></b-dropdown-divider>
-                <b-dropdown-item to="/contacts">Contact Messages</b-dropdown-item>
-                <b-dropdown-item to="/errors">Auto Error Reports</b-dropdown-item>
-            </template>
-
+    <b-nav-item-dropdown right>
+        <template slot="button-content">
+            <v-icon name="user" style="margin-top: -3px"></v-icon>
+            {{ profile.name + " " }}
+        </template>
+        <b-dropdown-item :to="'/users/username/' + profile.username">Profile</b-dropdown-item>
+        <b-dropdown-item @click="changePassword">Change Password</b-dropdown-item>
+        <template v-if="profile.accessLevel <= AccessLevel.MANAGER">
             <b-dropdown-divider></b-dropdown-divider>
-            <b-dropdown-item :to="{name: 'eula'}">License Agreement</b-dropdown-item>
-            <b-dropdown-item @click="logout">Logout</b-dropdown-item>
-        </b-nav-item-dropdown>
+            <!--Admin Panel controls-->
+            <b-dropdown-item v-if="profile.accessLevel <= AccessLevel.ADMIN" to="/organizations">
+                Organizations
+            </b-dropdown-item>
+            <b-dropdown-item to="/users">Users</b-dropdown-item>
+        </template>
+
+        <template v-if="profile.accessLevel <= AccessLevel.SUPERUSER">
+            <b-dropdown-divider></b-dropdown-divider>
+            <b-dropdown-item to="/contacts">Contact Messages</b-dropdown-item>
+            <b-dropdown-item to="/errors">Auto Error Reports</b-dropdown-item>
+        </template>
+
+        <b-dropdown-divider></b-dropdown-divider>
+        <b-dropdown-item :to="{ name: 'eula' }">License Agreement</b-dropdown-item>
+        <b-dropdown-item @click="logout">Logout</b-dropdown-item>
+    </b-nav-item-dropdown>
 </template>
 
 <script lang="ts">
@@ -53,7 +52,7 @@ export default class ProfileMenuItem extends Vue {
                 passwordHash: "",
                 eulaAccepted: false,
                 eulaAcceptedOn: null,
-                lastActivityOn: null,
+                lastActivityOn: null
             };
         } else {
             return profile;

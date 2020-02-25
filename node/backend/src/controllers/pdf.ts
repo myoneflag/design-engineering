@@ -35,9 +35,6 @@ async function getPdfDims(pdfPath: string) {
         pageText += " " + i.str;
     });
 
-    console.log("received pdf:");
-    console.log(pageText);
-
     let paperPattern = "";
     Object.keys(PAPER_SIZES).forEach((name) => {
         if (paperPattern.length) {
@@ -52,7 +49,6 @@ async function getPdfDims(pdfPath: string) {
     let paperSize = "Not detected";
     let scale = "1:100";
     let scaleNumber = 1 / 100;
-    console.log("got match: " + JSON.stringify(m));
 
     if (m) {
 
@@ -91,8 +87,6 @@ async function getPdfDims(pdfPath: string) {
     let w = vp.width / 72 * 25.4;
     let h = vp.height  / 72 * 25.4;
 
-
-    console.log("raw width: " + w + " height: " + h);
 
     let maxw = 0;
     let maxh = 0;
@@ -195,8 +189,6 @@ export async function ensurePdfEventuallyLoaded(pdfPath: string, pngHash: string
         await floorPlan.save();
 
         renderQueue.add(() => convertToPng(pdfPath, pngHash + ext, density)).then(async (pngPath) => {
-
-            console.log("png done rendering: " + pngHash + " to path " + pngPath);
 
             const params: AWS.S3.Types.PutObjectRequest = {
                 Bucket: "h2x-pdf-renders",

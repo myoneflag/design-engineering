@@ -28,7 +28,10 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
 import { DocumentState } from "../../../../src/store/document/types";
-import PipeEntity, { fillPipeDefaultFields, makePipeFields } from "../../../../../common/src/api/document/entities/pipe-entity";
+import PipeEntity, {
+    fillPipeDefaultFields,
+    makePipeFields
+} from "../../../../../common/src/api/document/entities/pipe-entity";
 
 @Component({
     components: { PropertiesFieldBuilder },
@@ -44,8 +47,8 @@ export default class PipeProperties extends Vue {
     get fields() {
         return makePipeFields(
             this.$props.selectedEntity,
-            this.$store.getters['catalog/default'],
-            this.document.drawing,
+            this.$store.getters["catalog/default"],
+            this.document.drawing
         );
     }
 

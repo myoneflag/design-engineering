@@ -1,6 +1,5 @@
-import { DrawingMode } from "../htmlcanvas/types";
-import { DrawingMode } from "../htmlcanvas/types";
-import { DrawingMode } from "../htmlcanvas/types";
+import { DrawingMode } from "../htmlcanvas/types"; import { DrawingMode } from "../htmlcanvas/types"; import {
+DrawingMode } from "../htmlcanvas/types";
 <template>
     <b-navbar type="light">
         <b-navbar-nav>
@@ -47,25 +46,28 @@ import { DrawingMode } from "../htmlcanvas/types";
             </b-nav-item>
         </b-navbar-nav>
 
-
         <b-navbar-nav class="ml-auto" id="view-only-label">
-
             <b-button
-                    :variant="document.uiState.drawingMode === DrawingMode.History ? 'light' : 'light'"
-                    :pressed="document.uiState.drawingMode === DrawingMode.History"
-                    :disabled="historyLoading"
-                    size="sm"
-                    class="my-2 my-sm-0"
-                    @click="historyClick"
-                    style="margin-right: 10px"
+                :variant="document.uiState.drawingMode === DrawingMode.History ? 'light' : 'light'"
+                :pressed="document.uiState.drawingMode === DrawingMode.History"
+                :disabled="historyLoading"
+                size="sm"
+                class="my-2 my-sm-0"
+                @click="historyClick"
+                style="margin-right: 10px"
             >
                 <b-spinner v-if="historyLoading" style="width: 1em; height: 1em;"></b-spinner>
-                <v-icon name="history" v-else/>
+                <v-icon name="history" v-else />
                 History
             </b-button>
 
-            <b-button  v-if="document.uiState.viewOnly" variant="danger" :disabled="viewOnlyDisabled" @click="viewOnlyClick">
-                <v-icon name="eye"/>
+            <b-button
+                v-if="document.uiState.viewOnly"
+                variant="danger"
+                :disabled="viewOnlyDisabled"
+                @click="viewOnlyClick"
+            >
+                <v-icon name="eye" />
                 View Only
                 <b-tooltip v-if="document.uiState.viewOnlyReason" target="view-only-label">
                     {{ document.uiState.viewOnlyReason }}
@@ -76,14 +78,12 @@ import { DrawingMode } from "../htmlcanvas/types";
                 Saving...
             </b-nav-text>
             <b-nav-text v-else>
-                <v-icon name="check"/>
+                <v-icon name="check" />
                 Saved
             </b-nav-text>
 
             <b-nav-text>
-                &nbsp;
-                &nbsp;
-                &nbsp;
+                &nbsp; &nbsp; &nbsp;
             </b-nav-text>
 
             <ProfileMenuItem />
@@ -92,18 +92,18 @@ import { DrawingMode } from "../htmlcanvas/types";
 </template>
 
 <script lang="ts">
-    import { Vue } from "vue-property-decorator";
-    import { DocumentState } from "../store/document/types";
-    import { State } from "vuex-class";
-    import Component from "vue-class-component";
-    import ProfileMenuItem from "../../src/components/ProfileMenuItem.vue";
-    import { AccessLevel, User } from "../../../common/src/models/User";
-    import { Level } from "../../../common/src/api/document/drawing";
-    import { getDocumentOperations } from "../api/document";
-    import { DrawingMode } from "../htmlcanvas/types";
-    import { Operation } from "../../../common/src/models/Operation";
+import { Vue } from "vue-property-decorator";
+import { DocumentState } from "../store/document/types";
+import { State } from "vuex-class";
+import Component from "vue-class-component";
+import ProfileMenuItem from "../../src/components/ProfileMenuItem.vue";
+import { AccessLevel, User } from "../../../common/src/models/User";
+import { Level } from "../../../common/src/api/document/drawing";
+import { getDocumentOperations } from "../api/document";
+import { DrawingMode } from "../htmlcanvas/types";
+import { Operation } from "../../../common/src/models/Operation";
 
-    @Component({
+@Component({
     components: { ProfileMenuItem },
     props: {
         loading: Boolean
@@ -139,12 +139,15 @@ export default class DrawingNavBar extends Vue {
     }
 
     get isSyncing(): boolean {
-        return this.$store.getters['document/isSyncing'];
+        return this.$store.getters["document/isSyncing"];
     }
 
     viewOnlyClick() {
         if (this.profile.accessLevel <= AccessLevel.ADMIN) {
-            if (this.document.uiState.viewOnlyReason === "Superusers view documents in View Only mode by default (click to edit)") {
+            if (
+                this.document.uiState.viewOnlyReason ===
+                "Superusers view documents in View Only mode by default (click to edit)"
+            ) {
                 this.document.uiState.viewOnly = false;
                 this.document.uiState.viewOnlyReason = null;
             }
@@ -153,7 +156,10 @@ export default class DrawingNavBar extends Vue {
 
     get viewOnlyDisabled() {
         if (this.profile.accessLevel <= AccessLevel.ADMIN) {
-            if (this.document.uiState.viewOnlyReason === "Superusers view documents in View Only mode by default (click to edit)") {
+            if (
+                this.document.uiState.viewOnlyReason ===
+                "Superusers view documents in View Only mode by default (click to edit)"
+            ) {
                 return false;
             }
         }
@@ -161,7 +167,7 @@ export default class DrawingNavBar extends Vue {
     }
 
     get discreteHistory(): Operation[][] {
-        return this.$store.getters['document/discreteHistory'];
+        return this.$store.getters["document/discreteHistory"];
     }
 
     async historyClick() {
@@ -170,28 +176,28 @@ export default class DrawingNavBar extends Vue {
         }
 
         if (this.document.uiState.drawingMode === DrawingMode.History) {
-            await this.$store.dispatch('document/revertFull');
+            await this.$store.dispatch("document/revertFull");
             this.document.uiState.drawingMode = DrawingMode.Hydraulics;
             return;
         }
 
         this.historyLoading = true;
         try {
-            const after = this.document.fullHistory.length ?
-                this.document.fullHistory[this.document.fullHistory.length - 1].orderIndex : -1;
+            const after = this.document.fullHistory.length
+                ? this.document.fullHistory[this.document.fullHistory.length - 1].orderIndex
+                : -1;
             const ops = await getDocumentOperations(this.document.documentId, after);
             if (ops.success) {
                 this.document.fullHistory.push(...ops.data);
                 this.document.uiState.historyIndex = -1;
 
-                await this.$store.dispatch('document/resetDrawing');
+                await this.$store.dispatch("document/resetDrawing");
 
                 this.document.uiState.drawingMode = DrawingMode.History;
-
             } else {
                 this.$bvToast.toast(ops.message, {
-                    variant: 'danger',
-                    title: 'Couldn\'t Load Document History',
+                    variant: "danger",
+                    title: "Couldn't Load Document History"
                 });
             }
         } finally {

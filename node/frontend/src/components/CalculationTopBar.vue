@@ -66,7 +66,7 @@ import { DemandType } from "../../src/calculations/types";
     props: {
         demandType: Number,
         isCalculating: Boolean,
-        onReCalculate: Function,
+        onReCalculate: Function
     }
 })
 export default class CalculationTopBar extends Vue {
@@ -77,7 +77,7 @@ export default class CalculationTopBar extends Vue {
     }
 
     upToDate() {
-        return this.$store.getters['document/calculationsUpToDate'];
+        return this.$store.getters["document/calculationsUpToDate"];
     }
 
     reCalculate() {

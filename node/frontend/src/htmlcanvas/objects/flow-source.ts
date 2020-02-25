@@ -1,7 +1,7 @@
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import RiserEntity from "../../../../common/src/api/document/entities/riser-entity";
 import * as TM from "transformation-matrix";
-import { DocumentState} from "../../../src/store/document/types";
+import { DocumentState } from "../../../src/store/document/types";
 import { matrixScale } from "../../../src/htmlcanvas/utils";
 import { lighten } from "../../../src/lib/utils";
 import Connectable, { ConnectableObject } from "../../../src/htmlcanvas/lib/object-traits/connectable";
@@ -19,7 +19,10 @@ import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
 import CanvasContext from "../lib/canvas-context";
-import { ConnectableEntityConcrete, DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
+import {
+    ConnectableEntityConcrete,
+    DrawableEntityConcrete
+} from "../../../../common/src/api/document/entities/concrete-entity";
 import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
 import FlowSourceEntity from "../../../../common/src/api/document/entities/flow-source-entity";
 import { EPS } from "../../calculations/pressure-drops";
@@ -105,7 +108,6 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         );
         ctx.fill();
 
-
         // draw white yin
         ctx.beginPath();
         ctx.fillStyle = "#FFFFFF";
@@ -117,9 +119,9 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
             -this.lastDrawnDiameterW * Math.sin(Math.PI / 3) * 0.45,
             +this.lastDrawnDiameterW * Math.cos(Math.PI / 3) * 0.45,
             this.lastDrawnDiameterW * 0.45,
-            Math.PI * 2 / 3 - Math.PI / 2,
+            (Math.PI * 2) / 3 - Math.PI / 2,
             Math.PI / 3 - Math.PI / 2,
-            true,
+            true
         );
 
         ctx.arc(
@@ -127,8 +129,8 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
             -this.lastDrawnDiameterW * Math.cos(Math.PI / 3) * 0.45,
             this.lastDrawnDiameterW * 0.45,
             Math.PI / 3 + Math.PI - Math.PI / 2,
-            Math.PI * 2 / 3 + Math.PI - Math.PI / 2,
-            false,
+            (Math.PI * 2) / 3 + Math.PI - Math.PI / 2,
+            false
         );
         ctx.closePath();
         ctx.fill();
@@ -199,7 +201,6 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         //
     }
 
-
     getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[] {
         const tower: Array<
             [ConnectableEntityConcrete, PipeEntity] | [ConnectableEntityConcrete]
@@ -211,7 +212,6 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         if (tower.length === 0) {
             return [se];
         }
-
 
         // Insert a flow source into the group somewhere to simulate the riser.
 
@@ -298,7 +298,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
             }
         }
 
-        throw new Error('Numerically, we shouldn\'t be here');
+        throw new Error("Numerically, we shouldn't be here");
     }
 
     collectCalculations(context: CalculationContext): FlowSourceCalculation {
@@ -314,7 +314,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         }
 
         if (calc === undefined) {
-            throw new Error('Flow Source Calculations not found');
+            throw new Error("Flow Source Calculations not found");
         }
 
         // explicitly create this to help with refactors

@@ -69,7 +69,7 @@ export default class FlowSolver {
             }
             let adjustments = 0;
             cycles.forEach((c) => {
-                adjustments += Math.abs(adjustPathHardyCross(flowRates, c,  this.network,0, this.context));
+                adjustments += Math.abs(adjustPathHardyCross(flowRates, c, this.network, 0, this.context));
             });
 
             arcCover.forEach((a) => {
@@ -131,7 +131,7 @@ export function adjustPathHardyCross(
     path: Array<Edge<FlowNode, FlowEdge>>,
     network: Graph<FlowNode, FlowEdge>,
     expectedDifferenceHead: number = 0,
-    context: CalculationContext,
+    context: CalculationContext
 ): number {
     // Augment the path backwards
     // Use ternary search to find the smallest value of the sum of concave functions.
@@ -149,7 +149,7 @@ export function adjustPathHardyCross(
                     v.from,
                     v.to,
                     true,
-                    null,
+                    null
                 );
                 if (delta === null) {
                     throw new Error("Could not get friction loss of pipe");
@@ -168,9 +168,9 @@ export function adjustPathHardyCross(
         // tslint:disable-next-line:no-console
         console.log(
             "error while adjusting path: " +
-            JSON.stringify(path.map((v) => context.globalStore.get(v.value.uid)!.type)) +
-            " expected difference: " +
-            expectedDifferenceHead
+                JSON.stringify(path.map((v) => context.globalStore.get(v.value.uid)!.type)) +
+                " expected difference: " +
+                expectedDifferenceHead
         );
 
         // tslint:disable-next-line:no-console
@@ -183,15 +183,7 @@ export function adjustPathHardyCross(
         const o = context.globalStore.get(path[0].value.uid) as Fitting;
         for (let i = -0.25; i <= 0.25; i += 0.01) {
             // tslint:disable-next-line:no-console
-            console.log(
-                o.getFrictionHeadLoss(
-                    context,
-                    i,
-                    path[1].from,
-                    path[1].to,
-                    true
-                )
-            );
+            console.log(o.getFrictionHeadLoss(context, i, path[1].from, path[1].to, true));
         }
 
         throw e;

@@ -29,34 +29,29 @@ export function makeSystemNodeCalculationFields(entity: SystemNodeEntity, settin
             units: Units.LitersPerSecond,
             systemUid: entity.systemUid,
             category: FieldCategory.FlowRate
-        },
+        }
     ];
 
-
     if (settings.metadata.calculationParams.psdMethod !== null) {
-        result.push(
-            {
-                property: "psdUnits.units",
-                title: psdUnit.name,
-                short: psdUnit.abbreviation,
-                units: Units.None,
-                category: FieldCategory.LoadingUnits,
-                systemUid: entity.systemUid
-            }
-        );
+        result.push({
+            property: "psdUnits.units",
+            title: psdUnit.name,
+            short: psdUnit.abbreviation,
+            units: Units.None,
+            category: FieldCategory.LoadingUnits,
+            systemUid: entity.systemUid
+        });
     }
 
     if (settings.metadata.calculationParams.dwellingMethod !== null) {
-        result.push(
-            {
-                property: "psdUnits.dwellings",
-                title: 'Dwellings',
-                short: 'dwlg',
-                units: Units.None,
-                category: FieldCategory.LoadingUnits,
-                systemUid: entity.systemUid
-            },
-        );
+        result.push({
+            property: "psdUnits.dwellings",
+            title: "Dwellings",
+            short: "dwlg",
+            units: Units.None,
+            category: FieldCategory.LoadingUnits,
+            systemUid: entity.systemUid
+        });
     }
 
     return result;

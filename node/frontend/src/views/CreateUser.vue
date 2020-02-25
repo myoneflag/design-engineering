@@ -85,7 +85,7 @@ export default class CreateUser extends Vue {
         subscribed: false,
         eulaAccepted: false,
         eulaAcceptedOn: null,
-        lastActivityOn: null,
+        lastActivityOn: null
     };
 
     organization: string = "";

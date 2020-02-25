@@ -43,7 +43,7 @@ export interface Catalog {
     psdStandards: { [key: string]: PSDSpec };
     dwellingStandards: { [key: string]: DwellingSpec };
     fluids: { [key: string]: FluidsSpec };
-    prv: { [key: string]: PRVSize};
+    prv: { [key: string]: PRVSize };
 }
 
 export interface PRVSize {

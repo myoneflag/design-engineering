@@ -16,9 +16,9 @@ export function upgrade0to1(original: DrawingState) {
         const entities = level.entities;
         for (const e of Object.values(entities)) {
             if (e.type === EntityType.FIXTURE) {
-                if (e.name === 'kitchenSink') {
-                    if (e.roughInsInOrder[1] === 'hot-water') {
-                        e.name = 'kitchenSinkHot';
+                if (e.name === "kitchenSink") {
+                    if (e.roughInsInOrder[1] === "hot-water") {
+                        e.name = "kitchenSinkHot";
                     }
                 }
             }
@@ -62,7 +62,7 @@ export function upgrade3to4(original: DrawingState) {
         for (const euid of Object.keys(entities)) {
             if (entities[euid].type === EntityType.PLANT) {
                 updated = true;
-                entities[euid] = plantV3toCurrent(entities[euid] as any as PlantEntityV3);
+                entities[euid] = plantV3toCurrent((entities[euid] as any) as PlantEntityV3);
             }
         }
     }
@@ -97,7 +97,6 @@ export function upgrade5to6(original: DrawingState) {
     }
 
     if (original.metadata.calculationParams.pipePressureLossAddOnPCT === undefined) {
-
         original.metadata.calculationParams.pipePressureLossAddOnPCT =
             initialDrawing.metadata.calculationParams.pipePressureLossAddOnPCT;
     }

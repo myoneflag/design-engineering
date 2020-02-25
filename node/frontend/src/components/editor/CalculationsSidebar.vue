@@ -14,9 +14,7 @@
                     </b-button>
 
                     <b-dropdown variant="outline-dark" size="sm" class="calculationBtn" text="Export">
-                        <b-dropdown-item @click="pdfSnapshot" variant="outline-dark" size="sm"
-                            > PDF
-                        </b-dropdown-item>
+                        <b-dropdown-item @click="pdfSnapshot" variant="outline-dark" size="sm"> PDF </b-dropdown-item>
                         <b-dropdown-item variant="outline-dark" size="sm" :disabled="true"
                             >DWG (Coming soon)
                         </b-dropdown-item>
@@ -146,12 +144,10 @@ export default class CalculationsSidebar extends Vue {
     }
 
     pdfSnapshot() {
-        MainEventBus.$emit('set-tool-handler', new PdfSnapshotTool());
+        MainEventBus.$emit("set-tool-handler", new PdfSnapshotTool());
     }
 
-    fullPdfExport() {
-
-    }
+    fullPdfExport() {}
 
     onCheck(eType: string, prop: string, value: boolean, shouldChange: boolean = true) {
         if (!(eType in this.document.uiState.calculationFilters)) {

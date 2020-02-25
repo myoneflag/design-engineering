@@ -69,7 +69,6 @@ export class DocumentController {
             qorg = org.id;
         }
 
-        console.log('query org id: ' + qorg);
 
         await withOrganization(qorg, res, session, AccessType.READ, async (org1) => {
             const doc = Document.create();
@@ -197,7 +196,6 @@ export class DocumentController {
             }
             await Promise.all(results.map((r) => r.reload()));
         } else {
-            console.log('getting all documents');
             results = await Document.find( {order: {'createdOn' : 'DESC'}});
         }
 
@@ -222,7 +220,6 @@ export class DocumentController {
     @AuthRequired()
     public async findOperations(req: Request, res: Response, next: NextFunction, session: Session) {
         await withDocument(Number(req.params.id), res, session, AccessType.READ, async (doc) => {
-            console.log(JSON.stringify(req.query));
             const after = req.query.after === undefined ? -1 : Number(req.query.after) ;
             const ops = await Operation
                 .createQueryBuilder('operation')
@@ -264,8 +261,6 @@ export class DocumentController {
             if (!qorg && org) {
                 qorg = org.id;
             }
-
-            console.log('query org id: ' + qorg);
 
             await withOrganization(qorg, res, session, AccessType.READ, async (org1) => {
                 const doc = Document.create();
@@ -439,6 +434,7 @@ async function receiveOperations(id: number, ops: OperationTransformConcrete[], 
         try {
             return fn(false);
         } catch (e) {
+            // @ts-ignore
             console.log("error updating operation: " + e.message);
         }
     }));
@@ -449,8 +445,6 @@ const router = Router();
 const controller = new DocumentController();
 
 router.ws('/:id/websocket', (ws, req) => {
-
-    console.log('connected to id ' + req.params.id);
     withAuth(req, async (session) => {
             withDocument(Number(req.params.id), null, session, AccessType.UPDATE, async (doc) => {
 
@@ -492,7 +486,6 @@ router.ws('/:id/websocket', (ws, req) => {
                     try {
                         ws.ping("heartbeat");
                     } catch (e) {
-                        console.log("Error during ping");
                         closeHandler();
                     }
                 }, 10000);
@@ -500,9 +493,8 @@ router.ws('/:id/websocket', (ws, req) => {
                 const closeHandler = () => {
                     const toRemove = uh.indexOf(onUpdate);
                     if (toRemove === -1) {
-                        console.log("Already removed, maybe ping and close command both wanted to close");
+                        // console.log("Already removed, maybe ping and close command both wanted to close");
                     } else {
-                        console.log('closed and removing ' + toRemove);
                         uh.splice(toRemove, 1);
                         clearInterval(pingPid);
 

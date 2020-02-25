@@ -39,17 +39,21 @@ export default function insertDwellingHotCold(context: CanvasContext, rotationDE
             (wc: Coord) => {
                 // Preview
                 context.$store.dispatch("document/revert", false).then(() => {
-                    const coldLoc = Flatten.vector(DWELLING_PAIR_DEFAULT_DISTANCE_MM, 0).rotate(rotationDEG / 180 * Math.PI).add(Flatten.vector(wc.x, wc.y));
-                    const hotLoc = Flatten.vector(-DWELLING_PAIR_DEFAULT_DISTANCE_MM, 0).rotate(rotationDEG / 180 * Math.PI).add(Flatten.vector(wc.x, wc.y));
+                    const coldLoc = Flatten.vector(DWELLING_PAIR_DEFAULT_DISTANCE_MM, 0)
+                        .rotate((rotationDEG / 180) * Math.PI)
+                        .add(Flatten.vector(wc.x, wc.y));
+                    const hotLoc = Flatten.vector(-DWELLING_PAIR_DEFAULT_DISTANCE_MM, 0)
+                        .rotate((rotationDEG / 180) * Math.PI)
+                        .add(Flatten.vector(wc.x, wc.y));
 
                     const hotEntity: LoadNodeEntity = {
                         node: {
                             type: NodeType.DWELLING,
                             dwellings: 1,
-                            continuousFlowLS: 0,
+                            continuousFlowLS: 0
                         },
                         systemUidOption: StandardFlowSystemUids.HotWater,
-                        center: { x: hotLoc.x, y: hotLoc.y},
+                        center: { x: hotLoc.x, y: hotLoc.y },
                         color: null,
                         calculationHeightM: null,
                         parentUid: null,
@@ -62,10 +66,10 @@ export default function insertDwellingHotCold(context: CanvasContext, rotationDE
                         node: {
                             type: NodeType.DWELLING,
                             dwellings: 1,
-                            continuousFlowLS: 0,
+                            continuousFlowLS: 0
                         },
                         systemUidOption: StandardFlowSystemUids.ColdWater,
-                        center: { x: coldLoc.x, y: coldLoc.y},
+                        center: { x: coldLoc.x, y: coldLoc.y },
                         color: null,
                         calculationHeightM: null,
                         parentUid: null,
@@ -73,7 +77,6 @@ export default function insertDwellingHotCold(context: CanvasContext, rotationDE
                         linkedToUid: null,
                         uid: coldUid
                     };
-
 
                     context.$store.dispatch("document/addEntity", hotEntity);
                     context.$store.dispatch("document/addEntity", coldEntity);

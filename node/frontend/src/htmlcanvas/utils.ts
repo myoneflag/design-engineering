@@ -339,8 +339,6 @@ export function keyCode2Image(keyCode: KeyCode): HTMLImageElement {
     return imgStore.get(name)!;
 }
 
-
-
 const dataUrlCache = new Map<string, string | ArrayBuffer | null | Promise<string | ArrayBuffer | null>>();
 export async function fetchDataUrl(url: string, cache: boolean = false): Promise<string | ArrayBuffer | null> {
     if (dataUrlCache.has(url)) {
@@ -359,8 +357,8 @@ export async function fetchDataUrl(url: string, cache: boolean = false): Promise
             };
             reader.readAsDataURL(xhr.response);
         };
-        xhr.open('GET', url);
-        xhr.responseType = 'blob';
+        xhr.open("GET", url);
+        xhr.responseType = "blob";
         xhr.send();
     });
 
@@ -384,7 +382,6 @@ export function polygonsOverlap(a: Flatten.Polygon, b: Flatten.Polygon) {
         }
     });
 
-
     a.edges.forEach((sa: Flatten.Edge) => {
         if (found) {
             return;
@@ -395,8 +392,6 @@ export function polygonsOverlap(a: Flatten.Polygon, b: Flatten.Polygon) {
             }
         });
     });
-
-
 
     return found;
 }

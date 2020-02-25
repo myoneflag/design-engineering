@@ -89,17 +89,17 @@ export default class PointTool implements ToolHandler {
     get config(): ToolConfig {
         return {
             name: "point",
-                defaultCursor: "Crosshair",
-                focusSelectedObject: true,
-                icon: "dot-circle",
-                modesEnabled: false,
-                modesVisible: false,
-                text: "Select a Point",
-                tooltip: "point",
-                propertiesEnabled: false,
-                propertiesVisible: false,
-                toolbarEnabled: true,
-                toolbarVisible: true
+            defaultCursor: "Crosshair",
+            focusSelectedObject: true,
+            icon: "dot-circle",
+            modesEnabled: false,
+            modesVisible: false,
+            text: "Select a Point",
+            tooltip: "point",
+            propertiesEnabled: false,
+            propertiesVisible: false,
+            toolbarEnabled: true,
+            toolbarVisible: true
         };
     }
 

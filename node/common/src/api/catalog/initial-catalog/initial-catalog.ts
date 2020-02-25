@@ -99,15 +99,15 @@ export const initialCatalog = {
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "2",
-                    "hot-water": "2",
+                    "hot-water": "2"
                 },
                 barriesBookLoadingUnits: {
                     "cold-water": "2",
-                    "hot-water": "2",
+                    "hot-water": "2"
                 },
                 barriesBookDwellings: {
                     "cold-water": "2",
-                    "hot-water": "2",
+                    "hot-water": "2"
                 }
             },
             roughIns: ["hot-water", "cold-water"],
@@ -118,7 +118,7 @@ export const initialCatalog = {
             probabilityOfUsagePCT: "2",
             qLS: {
                 "cold-water": "0.15",
-                "hot-water": "0.15",
+                "hot-water": "0.15"
             },
             uid: "bedpanSanitiser",
             warmTempC: null
@@ -248,13 +248,13 @@ export const initialCatalog = {
             fixtureUnits: "1",
             loadingUnits: {
                 as35002018LoadingUnits: {
-                    "cold-water": "1",
+                    "cold-water": "1"
                 },
                 barriesBookLoadingUnits: {
-                    "cold-water": "1",
+                    "cold-water": "1"
                 },
                 barriesBookDwellings: {
-                    "cold-water": "1",
+                    "cold-water": "1"
                 }
             },
             roughIns: ["cold-water"],
@@ -264,7 +264,7 @@ export const initialCatalog = {
             outletAboveFloorM: "0.8",
             probabilityOfUsagePCT: "0.5",
             qLS: {
-                "cold-water": "0.1",
+                "cold-water": "0.1"
             },
             uid: "drinkingFountain",
             warmTempC: null
@@ -275,15 +275,15 @@ export const initialCatalog = {
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "2",
-                    "hot-water": "2",
+                    "hot-water": "2"
                 },
                 barriesBookLoadingUnits: {
                     "cold-water": "2",
-                    "hot-water": "2",
+                    "hot-water": "2"
                 },
                 barriesBookDwellings: {
                     "cold-water": "2",
-                    "hot-water": "2",
+                    "hot-water": "2"
                 }
             },
             roughIns: ["hot-water", "cold-water"],
@@ -294,7 +294,7 @@ export const initialCatalog = {
             probabilityOfUsagePCT: "2",
             qLS: {
                 "cold-water": "0.1",
-                "hot-water": "0.1",
+                "hot-water": "0.1"
             },
             uid: "flushingRimSink",
             warmTempC: null
@@ -591,86 +591,86 @@ export const initialCatalog = {
         }
     },
     prv: {
-            15: {
-                minInletPressureKPA: "200",
-                maxInletPressureKPA: "2000",
-                minFlowRateLS: "0.25",
-                maxFlowRateLS: "0.50",
-                maxPressureDropRatio: "2",
-                diameterNominalMM: 15,
-            },
-            20: {
-                minInletPressureKPA: "200",
-                maxInletPressureKPA: "2000",
-                minFlowRateLS: "0.50",
-                maxFlowRateLS: "0.83",
-                maxPressureDropRatio: "2",
-                diameterNominalMM: 20,
-            },
-            25: {
-                minInletPressureKPA: "200",
-                maxInletPressureKPA: "2000",
-                minFlowRateLS: "0.83",
-                maxFlowRateLS: "1.33",
-                maxPressureDropRatio: "2",
-                diameterNominalMM: 25,
-            },
-            32: {
-                minInletPressureKPA: "200",
-                maxInletPressureKPA: "2000",
-                minFlowRateLS: "1.33",
-                maxFlowRateLS: "2.33",
-                maxPressureDropRatio: "2",
-                diameterNominalMM: 32,
-            },
-            40: {
-                minInletPressureKPA: "200",
-                maxInletPressureKPA: "2000",
-                minFlowRateLS: "2.33",
-                maxFlowRateLS: "3",
-                maxPressureDropRatio: "2",
-                diameterNominalMM: 40,
-            },
-            50: {
-                minInletPressureKPA: "200",
-                maxInletPressureKPA: "2000",
-                minFlowRateLS: "3",
-                maxFlowRateLS: "4",
-                maxPressureDropRatio: "2",
-                diameterNominalMM: 50,
-            },
-            65: {
-                minInletPressureKPA: "200",
-                maxInletPressureKPA: "2000",
-                minFlowRateLS: "4",
-                maxFlowRateLS: "5.7",
-                maxPressureDropRatio: "2",
-                diameterNominalMM: 65,
-            },
-            80: {
-                minInletPressureKPA: "200",
-                maxInletPressureKPA: "2000",
-                minFlowRateLS: "5.7",
-                maxFlowRateLS: "8.5",
-                maxPressureDropRatio: "2",
-                diameterNominalMM: 80,
-            },
-            100: {
-                minInletPressureKPA: "200",
-                maxInletPressureKPA: "2000",
-                minFlowRateLS: "8.5",
-                maxFlowRateLS: "15",
-                maxPressureDropRatio: "2",
-                diameterNominalMM: 100,
-            },
-            150: {
-                minInletPressureKPA: "200",
-                maxInletPressureKPA: null,
-                minFlowRateLS: "15",
-                maxFlowRateLS: "34",
-                maxPressureDropRatio: "2",
-                diameterNominalMM: 150,
-            },
+        15: {
+            minInletPressureKPA: "200",
+            maxInletPressureKPA: "2000",
+            minFlowRateLS: "0.25",
+            maxFlowRateLS: "0.50",
+            maxPressureDropRatio: "2",
+            diameterNominalMM: 15
+        },
+        20: {
+            minInletPressureKPA: "200",
+            maxInletPressureKPA: "2000",
+            minFlowRateLS: "0.50",
+            maxFlowRateLS: "0.83",
+            maxPressureDropRatio: "2",
+            diameterNominalMM: 20
+        },
+        25: {
+            minInletPressureKPA: "200",
+            maxInletPressureKPA: "2000",
+            minFlowRateLS: "0.83",
+            maxFlowRateLS: "1.33",
+            maxPressureDropRatio: "2",
+            diameterNominalMM: 25
+        },
+        32: {
+            minInletPressureKPA: "200",
+            maxInletPressureKPA: "2000",
+            minFlowRateLS: "1.33",
+            maxFlowRateLS: "2.33",
+            maxPressureDropRatio: "2",
+            diameterNominalMM: 32
+        },
+        40: {
+            minInletPressureKPA: "200",
+            maxInletPressureKPA: "2000",
+            minFlowRateLS: "2.33",
+            maxFlowRateLS: "3",
+            maxPressureDropRatio: "2",
+            diameterNominalMM: 40
+        },
+        50: {
+            minInletPressureKPA: "200",
+            maxInletPressureKPA: "2000",
+            minFlowRateLS: "3",
+            maxFlowRateLS: "4",
+            maxPressureDropRatio: "2",
+            diameterNominalMM: 50
+        },
+        65: {
+            minInletPressureKPA: "200",
+            maxInletPressureKPA: "2000",
+            minFlowRateLS: "4",
+            maxFlowRateLS: "5.7",
+            maxPressureDropRatio: "2",
+            diameterNominalMM: 65
+        },
+        80: {
+            minInletPressureKPA: "200",
+            maxInletPressureKPA: "2000",
+            minFlowRateLS: "5.7",
+            maxFlowRateLS: "8.5",
+            maxPressureDropRatio: "2",
+            diameterNominalMM: 80
+        },
+        100: {
+            minInletPressureKPA: "200",
+            maxInletPressureKPA: "2000",
+            minFlowRateLS: "8.5",
+            maxFlowRateLS: "15",
+            maxPressureDropRatio: "2",
+            diameterNominalMM: 100
+        },
+        150: {
+            minInletPressureKPA: "200",
+            maxInletPressureKPA: null,
+            minFlowRateLS: "15",
+            maxFlowRateLS: "34",
+            maxPressureDropRatio: "2",
+            diameterNominalMM: 150
+        }
     },
     pipes: {
         castIronCoated: {

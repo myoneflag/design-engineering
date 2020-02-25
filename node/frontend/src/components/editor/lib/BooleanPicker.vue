@@ -16,7 +16,7 @@ import Component from "vue-class-component";
     props: {
         value: Boolean,
         disabled: Boolean,
-        readonly: Boolean,
+        readonly: Boolean
     }
 })
 export default class BooleanPicker extends Vue {

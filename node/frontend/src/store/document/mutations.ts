@@ -62,7 +62,7 @@ function logLevelMutation(state: DocumentState, levelUid: string) {
     }
 }
 
-function onAddEntity({entity, levelUid}: EntityParam, state: DocumentState) {
+function onAddEntity({ entity, levelUid }: EntityParam, state: DocumentState) {
     try {
         // get entity form drawable
         if (levelUid === null) {
@@ -71,25 +71,18 @@ function onAddEntity({entity, levelUid}: EntityParam, state: DocumentState) {
             entity = state.drawing.levels[levelUid].entities[entity.uid];
         }
 
-        DrawableObjectFactory.buildVisible(
-            entity,
-            globalStore,
-            state,
-            levelUid,
-            {
-                onRedrawNeeded: () => MainEventBus.$emit('redraw', entity),
-                onInteractionComplete: () => MainEventBus.$emit('interaction-complete', entity),
-                onSelect: (e) => MainEventBus.$emit('entity-select', {entity, e}),
-            }
-        );
+        DrawableObjectFactory.buildVisible(entity, globalStore, state, levelUid, {
+            onRedrawNeeded: () => MainEventBus.$emit("redraw", entity),
+            onInteractionComplete: () => MainEventBus.$emit("interaction-complete", entity),
+            onSelect: (e) => MainEventBus.$emit("entity-select", { entity, e })
+        });
     } catch (e) {
         // todo: telemetry this
         // tslint:disable-next-line:no-console
     }
 }
 
-function onDeleteEntity({entity, levelUid}: EntityParam, state: DocumentState) {
-
+function onDeleteEntity({ entity, levelUid }: EntityParam, state: DocumentState) {
     if (state.uiState.selectedUids.includes(entity.uid)) {
         state.uiState.selectedUids.splice(state.uiState.selectedUids.indexOf(entity.uid), 1);
     }
@@ -103,7 +96,7 @@ function onAddLevel(level: Level, state: DocumentState) {
 
     for (let entity of Object.values(level.entities)) {
         entity = proxyEntity(entity, entityHandler(state, level.uid, entity.uid));
-        onAddEntity({entity, levelUid: level.uid}, state);
+        onAddEntity({ entity, levelUid: level.uid }, state);
     }
 }
 
@@ -124,17 +117,17 @@ function onUpdateEntity(uid: string) {
 }
 
 function beforeEvent(event: string, args: any, state: DocumentState) {
-    if (event === 'update-entity') {
+    if (event === "update-entity") {
         onUpdateEntity(args);
-    } else if (event === 'add-entity') {
-        let {entity, levelUid}: EntityParamNullable = args;
-        //entity =
+    } else if (event === "add-entity") {
+        const { entity, levelUid }: EntityParamNullable = args;
+        // entity =
         onAddEntity(args, state);
-    } else if (event === 'delete-entity') {
+    } else if (event === "delete-entity") {
         onDeleteEntity(args, state);
-    } else if (event === 'add-level') {
+    } else if (event === "add-level") {
         onAddLevel(args, state);
-    } else if (event === 'delete-level') {
+    } else if (event === "delete-level") {
         onDeleteLevel(args, state);
     }
 }
@@ -156,7 +149,7 @@ function deleteEntityOn(state: DocumentState, { entity, levelUid }: EntityParamN
     }
 
     logEntityMutation(state, { entityUid: entity.uid, levelUid });
-    beforeEvent('delete-entity', { entity, levelUid }, state);
+    beforeEvent("delete-entity", { entity, levelUid }, state);
     MainEventBus.$emit("delete-entity", { entity, levelUid });
 }
 
@@ -171,12 +164,12 @@ function addEntityOn(state: DocumentState, { entity, levelUid }: EntityParamNull
         logEntityMutation(state, { entityUid: entity.uid, levelUid });
     }
 
-    beforeEvent('add-entity', {entity, levelUid}, state);
+    beforeEvent("add-entity", { entity, levelUid }, state);
     MainEventBus.$emit("add-entity", { entity, levelUid });
 }
 
 function changeDrawing(state: DocumentState, newDrawing: DrawingState, filter: any, redraw: boolean) {
-    //newDrawing = cloneSimple(newDrawing);
+    // newDrawing = cloneSimple(newDrawing);
     const reverseDiff = cloneSimple(diffState(state.drawing, newDrawing, filter));
 
     reverseDiff.forEach((op) => {
@@ -231,7 +224,6 @@ function applyDiff(state: DocumentState, diff: any) {
     });
 }
 
-
 export const mutations: MutationTree<DocumentState> = {
     /**
      * Here we apply an operation to the current document.
@@ -258,12 +250,10 @@ export const mutations: MutationTree<DocumentState> = {
                 }
             } else {
                 // Revert optimistic history (because there is conflict!) and listen to server.
-                console.log('i have conflict');
                 for (let i = state.optimisticHistory.length - 1; i >= 0; i--) {
                     const op = state.optimisticHistory[i];
                     switch (op.type) {
                         case OPERATION_NAMES.DIFF_OPERATION:
-                            console.log('reverting an optimistic operation');
                             applyDiff(state, op.inverse);
                             applyDiffVue(state.committedDrawing, op.inverse);
                             break;
@@ -295,7 +285,6 @@ export const mutations: MutationTree<DocumentState> = {
                 switch (toApply.type) {
                     case OT.OPERATION_NAMES.DIFF_OPERATION: {
                         if (state.uiState.drawingMode !== DrawingMode.History) {
-                            console.log('applying ' + toApply.id);
                             applyOpOntoStateVue(state.drawing, toApply);
                             proxyUpFromStateDiff(state, toApply.diff);
                             const changes = marshalChanges(state.committedDrawing, state.drawing, toApply.diff);
@@ -325,7 +314,6 @@ export const mutations: MutationTree<DocumentState> = {
                 }
             }
         } else {
-            console.log('storing ' + operation.id);
             state.stagedCommits.push(operation);
         }
 
@@ -372,9 +360,9 @@ export const mutations: MutationTree<DocumentState> = {
 
     addEntity(state, entity: DrawableEntityConcrete) {
         if (entity.type === EntityType.RISER) {
-            addEntityOn(state, {entity, levelUid: null});
+            addEntityOn(state, { entity, levelUid: null });
         } else {
-            addEntityOn(state, {entity, levelUid: state.uiState.levelUid!});
+            addEntityOn(state, { entity, levelUid: state.uiState.levelUid! });
         }
     },
 
@@ -384,9 +372,9 @@ export const mutations: MutationTree<DocumentState> = {
 
     deleteEntity(state, entity) {
         if (entity.type === EntityType.RISER) {
-            deleteEntityOn(state, {entity, levelUid: null});
+            deleteEntityOn(state, { entity, levelUid: null });
         } else {
-            deleteEntityOn(state, {entity, levelUid: state.uiState.levelUid!});
+            deleteEntityOn(state, { entity, levelUid: state.uiState.levelUid! });
         }
     },
 
@@ -399,7 +387,7 @@ export const mutations: MutationTree<DocumentState> = {
         });
         Vue.set(state.drawing.levels, level.uid, level);
         logLevelMutation(state, level.uid);
-        beforeEvent('add-level', level, state);
+        beforeEvent("add-level", level, state);
         MainEventBus.$emit("add-level", level);
     },
 
@@ -410,7 +398,7 @@ export const mutations: MutationTree<DocumentState> = {
             throw new Error("Deleted a level that doesn't exist " + JSON.stringify(level));
         }
         logLevelMutation(state, level.uid);
-        beforeEvent('delete-level', level, state);
+        beforeEvent("delete-level", level, state);
         MainEventBus.$emit("delete-level", level);
         if (level.uid === state.uiState.levelUid) {
             state.uiState.levelUid = null;
@@ -448,7 +436,7 @@ function entityHandler(state: DocumentState, levelUid: string | null, entityUid:
                     target[key] = value;
                 }
 
-                beforeEvent('update-entity', entityUid, state);
+                beforeEvent("update-entity", entityUid, state);
                 MainEventBus.$emit("update-entity", entityUid);
             }
             return true;
@@ -559,7 +547,10 @@ function marshalChanges(from: DrawingState, to: DrawingState, diff: any, fuzzy: 
                         ) {
                             res.push(["update-entity", uid]);
                         } else if (from.levels[lvlUid].entities.hasOwnProperty(uid)) {
-                            res.push(["delete-entity", { entity: from.levels[lvlUid].entities[uid], levelUid: lvlUid }]);
+                            res.push([
+                                "delete-entity",
+                                { entity: from.levels[lvlUid].entities[uid], levelUid: lvlUid }
+                            ]);
                         } else if (to.levels[lvlUid].entities.hasOwnProperty(uid)) {
                             res.push(["add-entity", { entity: diff.levels[lvlUid].entities[uid], levelUid: lvlUid }]);
                         } else {

@@ -44,15 +44,14 @@ export default class CalculationLayer extends LayerImplementation {
         shouldContinueInternal: () => boolean,
         reactive: Set<string>,
         calculationFilters: CalculationFilters | null,
-        forExport: boolean,
+        forExport: boolean
     ) {
         // TODO: asyncify
         const { ctx, vp } = context;
         if (active && calculationFilters) {
-
             const resolutionWL = Math.max(vp.surfaceToWorldLength(LABEL_RESOLUTION_PX), MIN_LABEL_RESOLUTION_WL);
             const rexp = Math.ceil(Math.log2(resolutionWL));
-            const effRes =  Math.pow(2, rexp);
+            const effRes = Math.pow(2, rexp);
             const scaleWarp = effRes / resolutionWL;
 
             const layout = await this.getOrCreateLayout(context, effRes, shouldContinueInternal, calculationFilters);
@@ -90,7 +89,7 @@ export default class CalculationLayer extends LayerImplementation {
         calculationFilters: CalculationFilters
     ): Promise<LayoutAllocator<[string, TM.Matrix, CalculationData[], boolean]> | undefined> {
         const lvlUid = context.doc.uiState.levelUid;
-        const key = stringify(calculationFilters) + '..' + lvlUid + '..' + resolution;
+        const key = stringify(calculationFilters) + ".." + lvlUid + ".." + resolution;
 
         if (this.layout.has(key)) {
             return this.layout.get(key)!;
@@ -101,10 +100,9 @@ export default class CalculationLayer extends LayerImplementation {
         let { ctx, vp } = context;
         // standardize the layers to factors of 2.
         const rescale = resolution / vp.surfaceToWorldLength(LABEL_RESOLUTION_PX);
-        console.log('rescaling by ' + rescale);
         vp = vp.copy();
-        vp.rescale(rescale , 0, 0);
-        context = {...context, vp};
+        vp.rescale(rescale, 0, 0);
+        context = { ...context, vp };
 
         const shouldContinue = () => {
             if (lvlUid !== context.doc.uiState.levelUid) {
@@ -136,9 +134,7 @@ export default class CalculationLayer extends LayerImplementation {
                     }
                     obj2props.get(f.attachUid)!.push(f);
                 });
-
             }
-
 
             // Add an empty record to obj2props to notify the script further down to add the full warning box.
             // We only withhold adding records to obj2props on empty stuff because empty data generates empty
@@ -192,7 +188,12 @@ export default class CalculationLayer extends LayerImplementation {
                 // warnings must be drawn
                 if (o.calculated && o.hasWarning(context)) {
                     const wc = o.toWorldCoord();
-                    res.place(Flatten.circle(Flatten.point(wc.x, wc.y), vp.surfaceToWorldLength(WARNING_WIDTH)), [o.uid, o.position, obj2props.get(o.uid) || [], true]);
+                    res.place(Flatten.circle(Flatten.point(wc.x, wc.y), vp.surfaceToWorldLength(WARNING_WIDTH)), [
+                        o.uid,
+                        o.position,
+                        obj2props.get(o.uid) || [],
+                        true
+                    ]);
                 }
             }
         }
@@ -211,7 +212,7 @@ export default class CalculationLayer extends LayerImplementation {
                 return levelIncludesRiser(
                     this.context.document.drawing.levels[this.context.document.uiState.levelUid!],
                     entity,
-                    this.context.$store.getters['document/sortedLevels'],
+                    this.context.$store.getters["document/sortedLevels"]
                 );
             case EntityType.FITTING:
             case EntityType.PIPE:
@@ -222,8 +223,9 @@ export default class CalculationLayer extends LayerImplementation {
             case EntityType.LOAD_NODE:
             case EntityType.PLANT:
             case EntityType.FLOW_SOURCE:
-                return this.context.globalStore.levelOfEntity.get(entity.uid) ===
-                    this.context.document.uiState.levelUid;
+                return (
+                    this.context.globalStore.levelOfEntity.get(entity.uid) === this.context.document.uiState.levelUid
+                );
             case EntityType.BACKGROUND_IMAGE:
                 return false;
             default:
@@ -273,26 +275,30 @@ export default class CalculationLayer extends LayerImplementation {
     }
 
     calculate(context: CanvasContext, demandType: DemandType, done: () => void) {
-
         this.layout.clear();
 
         context.document.uiState.isCalculating = true;
         this.calculator = new CalculationEngine();
-        this.calculator.calculate(context.globalStore, context.document, context.effectiveCatalog, demandType, (success) => {
-            if (success) {
-                context.document.uiState.lastCalculationId = context.document.nextId;
-                context.document.uiState.lastCalculationUiSettings = {
-                    demandType
-                };
+        this.calculator.calculate(
+            context.globalStore,
+            context.document,
+            context.effectiveCatalog,
+            demandType,
+            (success) => {
+                if (success) {
+                    context.document.uiState.lastCalculationId = context.document.nextId;
+                    context.document.uiState.lastCalculationUiSettings = {
+                        demandType
+                    };
+                }
+                context.document.uiState.isCalculating = false;
+                // this.resetDocument(context.document);
 
+                // Create new messages
+
+                done();
             }
-            context.document.uiState.isCalculating = false;
-            // this.resetDocument(context.document);
-
-            // Create new messages
-
-            done();
-        });
+        );
     }
 
     onMouseDown(event: MouseEvent, context: CanvasContext) {

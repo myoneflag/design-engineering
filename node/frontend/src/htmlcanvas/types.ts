@@ -2,7 +2,7 @@ export enum DrawingMode {
     FloorPlan = 0,
     Hydraulics = 1,
     Calculations = 2,
-    History = 3,
+    History = 3
 }
 
 export interface MouseMoveResult {

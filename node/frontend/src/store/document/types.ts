@@ -45,7 +45,7 @@ export interface UIState {
     viewOnlyReason: string | null;
     historyIndex: number;
 
-    pastesByLevel: {[key: string]: number};
+    pastesByLevel: { [key: string]: number };
 
     exportSettings: ExportUiSettings;
 }
@@ -59,10 +59,10 @@ export interface ExportUiSettings {
 }
 
 export enum GridLineMode {
-    NONE = 'NONE',
-    ORIGIN = 'ORIGIN',
-    FULL = 'FULL',
-};
+    NONE = "NONE",
+    ORIGIN = "ORIGIN",
+    FULL = "FULL"
+}
 
 export interface CalculationFilters {
     [key: string]: CalculationFilter;
@@ -141,10 +141,10 @@ export const initialUIState: UIState = {
 
     exportSettings: {
         paperSize: PAPER_SIZES.A1,
-        scale: '1:100',
+        scale: "1:100",
         detail: 0,
         coverSheet: true,
-        floorPlans: true,
+        floorPlans: true
     }
 };
 

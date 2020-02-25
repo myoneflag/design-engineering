@@ -7,7 +7,7 @@ import { GlobalStore } from "../global-store";
 export function getConnectedFlowComponent(
     targetUid: string,
     globalStore: GlobalStore,
-    levelUid: string,
+    levelUid: string
 ): BaseBackedObject[] {
     const q = [targetUid];
 

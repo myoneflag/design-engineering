@@ -6,7 +6,8 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
 import {
     ConnectableEntityConcrete,
     DrawableEntityConcrete,
-    EdgeLikeEntity, isConnectableEntity
+    EdgeLikeEntity,
+    isConnectableEntity
 } from "../../../../common/src/api/document/entities/concrete-entity";
 import Layer from "../../../src/htmlcanvas/layers/layer";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
@@ -78,7 +79,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
         data: CalculationData[],
         dryRun?: boolean,
         warnSingOnly?: boolean,
-        forExport?: boolean,
+        forExport?: boolean
     ): Flatten.Box {
         throw new Error("Not implemented. Please use @CalculatedObject to implement.");
     }
@@ -120,7 +121,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
         from: FlowNode,
         to: FlowNode,
         signed: boolean,
-        pressureKPA: number | null,
+        pressureKPA: number | null
     ): number | null;
 
     get uid() {
@@ -176,6 +177,6 @@ export default abstract class BaseBackedObject extends DrawableObject {
     }
 
     validate(context: CanvasContext, tryToFix: boolean): APIResult<void> {
-        return {success: true, data: undefined};
+        return { success: true, data: undefined };
     }
 }

@@ -12,7 +12,9 @@ import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity
 import PipeCalculation, { emptyPipeCalculation } from "../../store/document/calculations/pipe-calculation";
 import RiserEntity from "../../../../common/src/api/document/entities/riser-entity";
 import RiserCalculation, { emptyRiserCalculations } from "../../store/document/calculations/riser-calculation";
-import BigValveEntity, { SystemNodeEntity } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
+import BigValveEntity, {
+    SystemNodeEntity
+} from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 // tslint:disable-next-line:max-line-length
 import BigValveCalculation, {
     EmptyBigValveCalculations
@@ -35,7 +37,9 @@ import LoadNodeCalculation from "../../store/document/calculations/load-node-cal
 import Pipe from "../objects/pipe";
 import { ObjectStore } from "./object-store";
 import FlowSourceEntity from "../../../../common/src/api/document/entities/flow-source-entity";
-import FlowSourceCalculation, { emptyFlowSourceCalculation } from "../../store/document/calculations/flow-source-calculation";
+import FlowSourceCalculation, {
+    emptyFlowSourceCalculation
+} from "../../store/document/calculations/flow-source-calculation";
 import PlantEntity from "../../../../common/src/api/document/entities/plant-entity";
 import PlantCalculation, { emptyPlantCalculation } from "../../store/document/calculations/plant-calculation";
 import { assertUnreachable } from "../../../../common/src/api/config";
@@ -160,8 +164,6 @@ export class GlobalStore extends ObjectStore {
         }
         this.entitiesInLevel.delete(levelUid);
     }
-
-
 
     sanityCheck(doc: DocumentState) {
         if (this.lastDoc !== undefined && doc !== this.lastDoc) {

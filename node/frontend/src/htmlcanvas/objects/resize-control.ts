@@ -25,14 +25,8 @@ export class ResizeControl extends DrawableObject {
 
     selectedHandle: Handle | null = null;
 
-    constructor(
-        parent: SizeableObject,
-        onCommit: (_: ResizeControl) => any,
-        onRedrawNeeded: () => any,
-    ) {
+    constructor(parent: SizeableObject, onCommit: (_: ResizeControl) => any, onRedrawNeeded: () => any) {
         super(parent);
-        console.log('constructed');
-        console.trace();
         this.handles = this.getHandles();
         this.onCommit = onCommit;
         this.onRedrawNeeded = onRedrawNeeded;
@@ -106,7 +100,6 @@ export class ResizeControl extends DrawableObject {
         // do mouse changes
         // tslint:disable-next-line:no-bitwise
         if (event.buttons & 1) {
-            console.log("dragging down. " + this.selectedHandle);
             if (this.selectedHandle != null) {
                 const w = this.toObjectCoord(context.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY }));
                 // start resizing shit
@@ -130,7 +123,6 @@ export class ResizeControl extends DrawableObject {
             }
             return UNHANDLED;
         } else {
-            console.log('dragging up');
             // No buttons are pressed.
             if (this.selectedHandle) {
                 this.selectedHandle = null;

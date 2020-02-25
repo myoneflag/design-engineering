@@ -1,4 +1,3 @@
-
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 import { FlowConfiguration } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";

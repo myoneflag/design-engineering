@@ -1,5 +1,5 @@
 import { GetterTree } from "vuex";
-import { DocumentState, initialDocumentState} from "./types";
+import { DocumentState, initialDocumentState } from "./types";
 import { RootState } from "../types";
 import { Level } from "../../../../common/src/api/document/drawing";
 import { OPERATION_NAMES, OperationTransformConcrete } from "../../../../common/src/api/document/operation-transforms";

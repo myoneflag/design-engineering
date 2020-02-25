@@ -44,8 +44,8 @@ export default class RiserProperties extends Vue {
     get fields() {
         return makeRiserFields(
             this.$props.selectedEntity,
-            this.$store.getters['catalog/default'],
-            this.document.drawing,
+            this.$store.getters["catalog/default"],
+            this.document.drawing
         );
     }
 

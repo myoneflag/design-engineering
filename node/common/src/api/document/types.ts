@@ -3,9 +3,9 @@ import * as OT from "./operation-transforms";
 import { Coord } from "./drawing";
 
 export enum DocumentWSMessageType {
-    OPERATION = 'OPERATION',
-    DOCUMENT_DELETED = 'DOCUMENT_DELETED',
-    DOCUMENT_LOADED = 'DOCUMENT_LOADED',
+    OPERATION = "OPERATION",
+    DOCUMENT_DELETED = "DOCUMENT_DELETED",
+    DOCUMENT_LOADED = "DOCUMENT_LOADED"
 }
 
 export interface OperationMessage {
@@ -17,14 +17,11 @@ export interface DocumentDeletedMessage {
     type: DocumentWSMessageType.DOCUMENT_DELETED;
 }
 
-
 export interface DocumentLoadedMessage {
     type: DocumentWSMessageType.DOCUMENT_LOADED;
 }
 
-
 export type DocumentWSMessage = Array<OperationMessage | DocumentDeletedMessage | DocumentLoadedMessage>;
-
 
 export interface Success<T> {
     success: true;
@@ -39,7 +36,7 @@ export interface Failure {
 export type APIResult<T> = Success<T> | Failure;
 
 export interface FloorPlanRenders {
-    bySize: {[key: string]: FloorPlanRender};
+    bySize: { [key: string]: FloorPlanRender };
 }
 
 export interface FloorPlanRender {
@@ -58,5 +55,5 @@ export interface FloorPlanImage {
 export enum RenderSize {
     SMALL,
     MEDIUM,
-    LARGE,
+    LARGE
 }

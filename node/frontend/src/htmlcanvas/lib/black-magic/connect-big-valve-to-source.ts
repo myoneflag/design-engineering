@@ -5,7 +5,10 @@ import Flatten from "@flatten-js/core";
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
 import PipeEntity from "../../../../../common/src/api/document/entities/pipe-entity";
 import Pipe from "../../../../src/htmlcanvas/objects/pipe";
-import { ConnectableEntityConcrete, isConnectableEntity } from "../../../../../common/src/api/document/entities/concrete-entity";
+import {
+    ConnectableEntityConcrete,
+    isConnectableEntity
+} from "../../../../../common/src/api/document/entities/concrete-entity";
 import { EntityType } from "../../../../../common/src/api/document/entities/types";
 import { addValveAndSplitPipe } from "../../../../src/htmlcanvas/lib/black-magic/split-pipe";
 import FittingEntity from "../../../../../common/src/api/document/entities/fitting-entity";

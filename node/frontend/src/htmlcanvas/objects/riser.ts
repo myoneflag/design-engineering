@@ -162,10 +162,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
 
     prepareDelete(context: CanvasContext): BaseBackedObject[] {
         const conns = context.globalStore.getConnections(this.uid);
-        return [
-            ...conns.map((uid) => context.globalStore.get(uid)!),
-            this,
-        ];
+        return [...conns.map((uid) => context.globalStore.get(uid)!), this];
     }
 
     rememberToRegister(): void {
@@ -195,17 +192,24 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
             return pres;
         }
 
-
         // check the sanity of heights
         if (this.entity.bottomHeightM !== null) {
             if (this.entity.bottomHeightM > this.minPipeHeight(context)) {
                 if (tryToFix) {
                     this.entity.bottomHeightM = this.minPipeHeight(context);
                 } else {
-
                     return {
                         success: false,
-                        message: "Riser bottom can't be higher than our lowest pipe (" + this.entity.uid + ", " + this.entity.bottomHeightM + ' ' + this.entity.topHeightM + ", " + this.minPipeHeight(context) + ")",
+                        message:
+                            "Riser bottom can't be higher than our lowest pipe (" +
+                            this.entity.uid +
+                            ", " +
+                            this.entity.bottomHeightM +
+                            " " +
+                            this.entity.topHeightM +
+                            ", " +
+                            this.minPipeHeight(context) +
+                            ")"
                     };
                 }
             }
@@ -217,14 +221,23 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                 } else {
                     return {
                         success: false,
-                        message: "Riser top can't be lower than our highest pipe. (" + this.entity.uid + ", " + this.entity.topHeightM + ' ' + this.entity.topHeightM + ", " + this.maxPipeHeight(context) + ")",
+                        message:
+                            "Riser top can't be lower than our highest pipe. (" +
+                            this.entity.uid +
+                            ", " +
+                            this.entity.topHeightM +
+                            " " +
+                            this.entity.topHeightM +
+                            ", " +
+                            this.maxPipeHeight(context) +
+                            ")"
                     };
                 }
             }
         }
         return {
             success: true,
-            data: undefined,
+            data: undefined
         };
     }
 
@@ -237,14 +250,16 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
             return Infinity;
         }
         const gs = this.globalStore as GlobalStore;
-        return Math.min(...conns.map((uid) =>
-            getEdgeLikeHeightAboveGroundM(gs.get(uid)!.entity as EdgeLikeEntity, {
-                doc: context.document,
-                catalog: context.effectiveCatalog,
-                globalStore: context.globalStore,
-                drawing: context.document.drawing,
-            })
-        ));
+        return Math.min(
+            ...conns.map((uid) =>
+                getEdgeLikeHeightAboveGroundM(gs.get(uid)!.entity as EdgeLikeEntity, {
+                    doc: context.document,
+                    catalog: context.effectiveCatalog,
+                    globalStore: context.globalStore,
+                    drawing: context.document.drawing
+                })
+            )
+        );
     }
 
     maxPipeHeight(context: CanvasContext): number {
@@ -256,14 +271,16 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
             return -Infinity;
         }
         const gs = this.globalStore as GlobalStore;
-        return Math.max(...conns.map((uid) =>
-            getEdgeLikeHeightAboveGroundM(gs.get(uid)!.entity as EdgeLikeEntity, {
-                doc: context.document,
-                catalog: context.effectiveCatalog,
-                globalStore: context.globalStore,
-                drawing: context.document.drawing,
-            })
-        ));
+        return Math.max(
+            ...conns.map((uid) =>
+                getEdgeLikeHeightAboveGroundM(gs.get(uid)!.entity as EdgeLikeEntity, {
+                    doc: context.document,
+                    catalog: context.effectiveCatalog,
+                    globalStore: context.globalStore,
+                    drawing: context.document.drawing
+                })
+            )
+        );
     }
 
     getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[] {
@@ -288,7 +305,6 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
             return context.doc.drawing.levels[a].floorHeightM - context.doc.drawing.levels[b].floorHeightM;
         });
 
-
         let topOfPipe = 0;
         for (const lvlUid of levelUidsByHeight) {
             res.heights[lvlUid] = {
@@ -300,12 +316,11 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
 
             // iterate pipe if need be. Note, we don't want to go over.
             while (
-                topOfPipe + 1 < tower.length
-                && tower[topOfPipe][0].calculationHeightM! <= levels[lvlUid].floorHeightM
-                ) {
+                topOfPipe + 1 < tower.length &&
+                tower[topOfPipe][0].calculationHeightM! <= levels[lvlUid].floorHeightM
+            ) {
                 topOfPipe++;
             }
-
 
             if (topOfPipe > 0 && tower[topOfPipe][0].calculationHeightM! >= levels[lvlUid].floorHeightM) {
                 const calc = context.globalStore.getOrCreateCalculation(tower[topOfPipe][1]!);
@@ -318,27 +333,30 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                     { connectable: tower[topOfPipe - 1][0].uid, connection: pipe.uid },
                     { connectable: tower[topOfPipe][0].uid, connection: pipe.uid },
                     true,
-                    null,
+                    null
                 );
 
                 if (totalHL != null) {
-                    const totalLength = tower[topOfPipe][0].calculationHeightM! - tower[topOfPipe - 1][0].calculationHeightM!;
+                    const totalLength =
+                        tower[topOfPipe][0].calculationHeightM! - tower[topOfPipe - 1][0].calculationHeightM!;
                     const partialLength = levels[lvlUid].floorHeightM - tower[topOfPipe - 1][0].calculationHeightM!;
                     const partialHL = totalHL * (partialLength / totalLength);
 
-                    const bottomPressure =
-                        context.globalStore.getOrCreateCalculation(tower[topOfPipe - 1][0]).pressureKPA;
+                    const bottomPressure = context.globalStore.getOrCreateCalculation(tower[topOfPipe - 1][0])
+                        .pressureKPA;
 
                     if (bottomPressure) {
                         res.heights[lvlUid] = {
                             flowRateLS: calc.peakFlowRate,
                             heightAboveGround: levels[lvlUid].floorHeightM,
                             psdUnits: calc.psdUnits,
-                            pressureKPA: bottomPressure - head2kpa(
-                                partialHL,
-                                getFluidDensityOfSystem(pipe.entity.systemUid, context.doc, context.catalog)!,
-                                context.doc.drawing.metadata.calculationParams.gravitationalAcceleration
-                            )
+                            pressureKPA:
+                                bottomPressure -
+                                head2kpa(
+                                    partialHL,
+                                    getFluidDensityOfSystem(pipe.entity.systemUid, context.doc, context.catalog)!,
+                                    context.doc.drawing.metadata.calculationParams.gravitationalAcceleration
+                                )
                         };
                     }
                 }

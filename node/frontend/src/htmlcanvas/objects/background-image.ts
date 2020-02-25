@@ -153,7 +153,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         }
 
         if (bestVal.images.length !== 1) {
-            throw new Error('only layers with one image are supported right now');
+            throw new Error("only layers with one image are supported right now");
         }
 
         // check if current image exists
@@ -163,7 +163,8 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         }
 
         // otherwise, provoke the loading of the image
-        if (imageVal !== null) { // check that it isn't already loading
+        if (imageVal !== null) {
+            // check that it isn't already loading
             this.imageCache.set(bestVal.images[0].key, null);
             ImageLoader.get(bestVal.images[0].key).then((img) => {
                 this.imageCache.set(bestVal!.images[0].key, img);
@@ -174,7 +175,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         // and finally return a more suitable image.
         for (let i = bestValI - 1; i >= 0; i--) {
             if (renders[i].images.length !== 1) {
-                throw new Error('only layers with one image are supported right now');
+                throw new Error("only layers with one image are supported right now");
             }
 
             const img = this.imageCache.get(renders[i].images[0].key);
@@ -185,7 +186,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
 
         for (let i = bestValI + 1; i < renders.length; i++) {
             if (renders[i].images.length !== 1) {
-                throw new Error('only layers with one image are supported right now');
+                throw new Error("only layers with one image are supported right now");
             }
 
             const img = this.imageCache.get(renders[i].images[0].key);
@@ -212,7 +213,6 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
             return;
         }
 
-
         if (Object.keys(this.renderIndex.bySize).length === 0) {
             return;
         }
@@ -234,7 +234,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         w: number,
         h: number,
         active: boolean,
-        forExport: boolean,
+        forExport: boolean
     ) {
         const ctx = context.ctx;
         const image = this.chooseImage(context, forExport);
@@ -242,7 +242,6 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         if (image) {
             const imgScaleX = this.width / image.width;
             const imgScaleY = this.height / image.height;
-
 
             const sx = context.vp.currToSurfaceScale(ctx);
             const oldAlpha = ctx.globalAlpha;
@@ -298,7 +297,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         h: number,
         selected: boolean,
         active: boolean,
-        forExport: boolean,
+        forExport: boolean
     ) {
         // We use an inverse viewport to find the appropriate clip bounds.
         const ctx = context.ctx;
@@ -317,9 +316,17 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
             const l = ivp.toSurfaceCoord({ x, y });
             const t = ivp.toSurfaceCoord({ x, y });
 
-            this.naturalClipDraw(context, alpha, l.x + image.naturalWidth / 2, t.y + image.naturalHeight / 2, w / imgScaleX, h / imgScaleY, active, forExport);
+            this.naturalClipDraw(
+                context,
+                alpha,
+                l.x + image.naturalWidth / 2,
+                t.y + image.naturalHeight / 2,
+                w / imgScaleX,
+                h / imgScaleY,
+                active,
+                forExport
+            );
         } else {
-
             if (!forExport) {
                 const oldAlpha = ctx.globalAlpha;
                 ctx.globalAlpha = 0.5;
@@ -328,7 +335,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
                 const fontSize = Math.round(w / 20);
                 ctx.font = fontSize + "pt " + DEFAULT_FONT_NAME;
                 ctx.fillStyle = "#FFFFFF";
-                const textW = ctx.measureText('Please Wait...');
+                const textW = ctx.measureText("Please Wait...");
                 ctx.fillText("Please Wait...", x + w / 2 - textW.width / 2, y + h / 2 + fontSize / 2);
                 ctx.globalAlpha = oldAlpha;
             }
@@ -352,7 +359,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
                 image.naturalWidth,
                 image.naturalHeight,
                 active,
-                forExport,
+                forExport
             );
         }
 
@@ -370,7 +377,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
             this.boundary.h,
             selected,
             active,
-            forExport,
+            forExport
         );
 
         if (selected && active && !forExport) {

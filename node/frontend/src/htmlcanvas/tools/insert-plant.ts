@@ -60,14 +60,14 @@ export default function insertPlant(context: CanvasContext, angle: number, right
                     uid: plantUid,
 
                     name: "Plant",
-                    rotation: angle,
+                    rotation: angle
                 };
 
                 context.$store.dispatch("document/addEntity", newEntity);
 
                 const inlet: SystemNodeEntity = {
                     center: {
-                        x: -newEntity.widthMM / 2 * (rightToLeft ? -1 : 1),
+                        x: (-newEntity.widthMM / 2) * (rightToLeft ? -1 : 1),
                         y: 0
                     },
                     parentUid: plantUid,
@@ -81,7 +81,7 @@ export default function insertPlant(context: CanvasContext, angle: number, right
 
                 const outlet: SystemNodeEntity = {
                     center: {
-                        x: newEntity.widthMM / 2 * (rightToLeft ? -1 : 1),
+                        x: (newEntity.widthMM / 2) * (rightToLeft ? -1 : 1),
                         y: 0
                     },
                     parentUid: plantUid,
@@ -93,8 +93,8 @@ export default function insertPlant(context: CanvasContext, angle: number, right
                     configuration: FlowConfiguration.OUTPUT
                 };
 
-                context.$store.dispatch('document/addEntity', inlet);
-                context.$store.dispatch('document/addEntity', outlet);
+                context.$store.dispatch("document/addEntity", inlet);
+                context.$store.dispatch("document/addEntity", outlet);
 
                 context.globalStore.get(newEntity.uid)!.rebase(context);
                 context.scheduleDraw();

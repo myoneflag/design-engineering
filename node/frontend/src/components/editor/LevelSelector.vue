@@ -24,12 +24,14 @@
                     <v-icon name="chevron-left"></v-icon><v-icon name="chevron-left"></v-icon>
                 </b-list-group-item>
 
-                <b-list-group-item button size="sm"
-                                   class="levelBtn"
-                                   variant="outline-dark"
-                                   @click="addAbove"
-                                   v-b-tooltip.hover.right="{title: 'Add Level Above'}"
-                    ><v-icon name="plus" ></v-icon> LVL</b-list-group-item
+                <b-list-group-item
+                    button
+                    size="sm"
+                    class="levelBtn"
+                    variant="outline-dark"
+                    @click="addAbove"
+                    v-b-tooltip.hover.right="{ title: 'Add Level Above' }"
+                    ><v-icon name="plus"></v-icon> LVL</b-list-group-item
                 >
 
                 <div class="level-selector-scroll">
@@ -52,9 +54,8 @@
                             <template v-if="expanded">
                                 <b-col cols="1" style="padding: 0px">
                                     <b-form-input
-                                            v-b-tooltip.hover.top="{title: 'Abbreviation', boundary: 'viewport'}"
-
-                                            @click="$event.stopPropagation()"
+                                        v-b-tooltip.hover.top="{ title: 'Abbreviation', boundary: 'viewport' }"
+                                        @click="$event.stopPropagation()"
                                         v-model="level.abbreviation"
                                         size="sm"
                                         @blur="commit"
@@ -63,11 +64,11 @@
                                 </b-col>
                                 <b-col cols="3">
                                     <b-form-input
-                                            v-b-tooltip.hover.top="{title: 'Description', boundary: 'viewport'}"
-                                            @click="$event.stopPropagation()"
-                                            v-model="level.name"
-                                            size="sm"
-                                            @blur="commit"
+                                        v-b-tooltip.hover.top="{ title: 'Description', boundary: 'viewport' }"
+                                        @click="$event.stopPropagation()"
+                                        v-model="level.name"
+                                        size="sm"
+                                        @blur="commit"
                                     ></b-form-input>
                                 </b-col>
                                 <b-col cols="2">
@@ -75,8 +76,10 @@
                                         <b-form-input
                                             class="border-right-0"
                                             @click="$event.stopPropagation()"
-                                            v-b-tooltip.hover.top="{title: 'Floor Height Above Sea (m)', boundary: 'viewport'}"
-
+                                            v-b-tooltip.hover.top="{
+                                                title: 'Floor Height Above Sea (m)',
+                                                boundary: 'viewport'
+                                            }"
                                             type="number"
                                             v-model="level.floorHeightM"
                                             size="sm"
@@ -92,9 +95,9 @@
                                 </b-col>
                                 <b-col cols="1" style="padding: 0">
                                     <label
-                                            v-b-tooltip.hover.top="{title: 'Storey Height (m)', boundary: 'viewport'}"
-                                            type="number"
-                                            size="sm"
+                                        v-b-tooltip.hover.top="{ title: 'Storey Height (m)', boundary: 'viewport' }"
+                                        type="number"
+                                        size="sm"
                                         >{{
                                             sortedLevels[idx - 1]
                                                 ? (sortedLevels[idx - 1].floorHeightM - level.floorHeightM).toFixed(2)
@@ -106,9 +109,9 @@
 
                                 <b-col cols="3">
                                     <label
-                                            v-b-tooltip.hover.title="{title: 'Fixture Count', boundary: 'viewport'}"
-                                            type="number"
-                                            size="sm"
+                                        v-b-tooltip.hover.title="{ title: 'Fixture Count', boundary: 'viewport' }"
+                                        type="number"
+                                        size="sm"
                                     >
                                         <span v-for="psd in getLevelPsdFormatted(level)" :style="{ color: psd.hex }"
                                             >{{ psd.text }}&nbsp;</span
@@ -132,10 +135,11 @@
                     </b-list-group-item>
                 </div>
                 <b-list-group-item
-                        button class="levelBtn"
-                        variant="outline-dark"
-                        @click="addBelow"
-                        v-b-tooltip.hover.right="{title: 'Add Level Below'}"
+                    button
+                    class="levelBtn"
+                    variant="outline-dark"
+                    @click="addBelow"
+                    v-b-tooltip.hover.right="{ title: 'Add Level Below' }"
                     ><v-icon name="plus"></v-icon> B</b-list-group-item
                 >
             </b-list-group>
@@ -146,18 +150,18 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { DocumentState} from "../../store/document/types";
+import { DocumentState } from "../../store/document/types";
 import uuid from "uuid";
 import { countPsdUnits, getPsdUnitName } from "../../calculations/utils";
 import { lighten } from "../../lib/utils";
-import { GROUND_FLOOR_MIN_HEIGHT_M} from "../../lib/types";
+import { GROUND_FLOOR_MIN_HEIGHT_M } from "../../lib/types";
 import { Catalog } from "../../../../common/src/api/catalog/types";
 import { Level } from "../../../../common/src/api/document/drawing";
 import { LEVEL_HEIGHT_DIFF_M } from "../../../../common/src/api/config";
 
 @Component({
     props: {
-        objectStore: Map, // not Object, but Map
+        objectStore: Map // not Object, but Map
     }
 })
 export default class LevelSelector extends Vue {
@@ -245,10 +249,10 @@ export default class LevelSelector extends Vue {
             return Object.keys(result).map((k) => {
                 const system = this.document.drawing.metadata.flowSystems.find((fs) => fs.uid === k);
                 const hex = system ? system.color.hex : "#555555";
-                let text = '';
+                let text = "";
                 if (result[k].units) {
                     if (text) {
-                        text += ' ';
+                        text += " ";
                     }
                     text +=
                         Number(result[k].units.toFixed(2)) +
@@ -256,9 +260,9 @@ export default class LevelSelector extends Vue {
                 }
                 if (result[k].dwellings) {
                     if (text) {
-                        text += ' ';
+                        text += " ";
                     }
-                    text += Number(result[k].dwellings) + 'DWG';
+                    text += Number(result[k].dwellings) + "DWG";
                 }
                 return { hex, text };
             });
@@ -279,7 +283,7 @@ export default class LevelSelector extends Vue {
     }
 
     commit() {
-        this.$store.dispatch('document/validateAndCommit');
+        this.$store.dispatch("document/validateAndCommit");
     }
 }
 </script>

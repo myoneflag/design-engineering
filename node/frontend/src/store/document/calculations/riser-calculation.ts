@@ -1,6 +1,6 @@
 import { CalculationField, FieldCategory, Units } from "../../../../src/store/document/calculations/calculation-field";
 import { Calculation } from "../../../../src/store/document/calculations/types";
-import { DocumentState} from "../../../../src/store/document/types";
+import { DocumentState } from "../../../../src/store/document/types";
 import RiserEntity from "../../../../../common/src/api/document/entities/riser-entity";
 import { getPsdUnitName, PsdCountEntry } from "../../../calculations/utils";
 import { isSupportedDwellingStandard } from "../../../config";
@@ -33,7 +33,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             units: Units.KiloPascals,
             systemUid: entity.systemUid,
             category: FieldCategory.Pressure,
-            defaultEnabled: true,
+            defaultEnabled: true
         },
         {
             property: "heights." + lvlUid + ".flowRateLS",
@@ -42,7 +42,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             units: Units.LitersPerSecond,
             systemUid: entity.systemUid,
             category: FieldCategory.FlowRate,
-            defaultEnabled: true,
+            defaultEnabled: true
         },
         {
             property: "heights." + lvlUid + ".heightAboveGround",
@@ -50,36 +50,32 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             short: "",
             units: Units.Meters,
             systemUid: entity.systemUid,
-            category: FieldCategory.Height,
-        },
+            category: FieldCategory.Height
+        }
     );
 
     if (drawing.metadata.calculationParams.psdMethod !== null) {
-        result.push(
-            {
-                property: "heights." + lvlUid + ".psdUnits.units",
-                title: psdUnit.name + ' At Floor',
-                short: psdUnit.abbreviation,
-                units: Units.None,
-                category: FieldCategory.LoadingUnits,
-                systemUid: entity.systemUid,
-                defaultEnabled: true,
-            },
-        );
+        result.push({
+            property: "heights." + lvlUid + ".psdUnits.units",
+            title: psdUnit.name + " At Floor",
+            short: psdUnit.abbreviation,
+            units: Units.None,
+            category: FieldCategory.LoadingUnits,
+            systemUid: entity.systemUid,
+            defaultEnabled: true
+        });
     }
 
     if (drawing.metadata.calculationParams.dwellingMethod !== null) {
-        result.push(
-            {
-                property: "heights." + lvlUid + ".psdUnits.dwellings",
-                title: 'Dwellings',
-                short: 'dwlg',
-                units: Units.None,
-                category: FieldCategory.LoadingUnits,
-                systemUid: entity.systemUid,
-                defaultEnabled: true,
-            }
-        );
+        result.push({
+            property: "heights." + lvlUid + ".psdUnits.dwellings",
+            title: "Dwellings",
+            short: "dwlg",
+            units: Units.None,
+            category: FieldCategory.LoadingUnits,
+            systemUid: entity.systemUid,
+            defaultEnabled: true
+        });
     }
     return result;
 }

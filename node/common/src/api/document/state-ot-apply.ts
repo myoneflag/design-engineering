@@ -39,5 +39,10 @@ export function applyDiff(
 }
 
 export function applyDiffNative(target: any, diff: any) {
-    return applyDiff(target, diff, (t, k, v) => t[k] = v, (t, p) => delete t[p]);
+    return applyDiff(
+        target,
+        diff,
+        (t, k, v) => (t[k] = v),
+        (t, p) => delete t[p]
+    );
 }

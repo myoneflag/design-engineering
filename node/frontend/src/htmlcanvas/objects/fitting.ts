@@ -89,7 +89,8 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
                     if ((pipe as Pipe).lastDrawnWidth) {
                         targetWidth = Math.max(
                             defaultWidth,
-                            (pipe as Pipe).lastDrawnWidth + Math.min((pipe as Pipe).lastDrawnWidth, this.FITTING_DIAMETER_PIXELS / scale / 2),
+                            (pipe as Pipe).lastDrawnWidth +
+                                Math.min((pipe as Pipe).lastDrawnWidth, this.FITTING_DIAMETER_PIXELS / scale / 2)
                         );
                     }
                 }
@@ -97,10 +98,12 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
                 const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
 
                 if (vec.length > EPS) {
-                    const small = vec.normalize().multiply(Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM)));
+                    const small = vec
+                        .normalize()
+                        .multiply(Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM)));
                     if (active && selected) {
                         ctx.beginPath();
-                        ctx.lineWidth = targetWidth + (this.FITTING_DIAMETER_PIXELS * 2);
+                        ctx.lineWidth = targetWidth + this.FITTING_DIAMETER_PIXELS * 2;
 
                         this.lastDrawnWidth = defaultWidth + (this.FITTING_DIAMETER_PIXELS * 2) / scale;
                         ctx.strokeStyle = lighten(this.displayEntity(doc).color!.hex, 50, 0.5);
@@ -116,7 +119,6 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
                     ctx.lineTo(small.x, small.y);
                     ctx.stroke();
                 }
-
             });
         } catch (e) {
             ctx.fillStyle = "rgba(255, 100, 100, 0.4)";
@@ -287,9 +289,6 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
         const volLM = (smallestDiameterMM ** 2 * Math.PI) / 4 / 1000;
         const velocityMS = flowLS / volLM;
-        if (this.uid.includes("c1d713d5-5a4a-4f03-abdd-100cacf832f9")) {
-            console.log('fitting friction loss: ' + k + ' ' + velocityMS + ' ' + ga + ' ' + ((sign * (k * velocityMS ** 2)) / (2 * ga)));
-        }
         return (sign * (k * velocityMS ** 2)) / (2 * ga);
     }
 

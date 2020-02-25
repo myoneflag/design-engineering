@@ -24,7 +24,7 @@ export class ViewPort {
     }
 
     get screenToSurface() {
-        return TM.transform(TM.scale(this.screenScale), TM.translate( -this.width / 2, -this.height / 2));
+        return TM.transform(TM.scale(this.screenScale), TM.translate(-this.width / 2, -this.height / 2));
     }
 
     copy(): ViewPort {
@@ -40,7 +40,10 @@ export class ViewPort {
         // Move, then scale, then move again
         this.surfaceToWorld = TM.transform(this.surfaceToWorld, TM.scale(factor));
         const world2 = this.toWorldCoord({ x: sx, y: sy });
-        this.surfaceToWorld = TM.transform(TM.translate(-(world2.x - world.x), -(world2.y - world.y)), this.surfaceToWorld);
+        this.surfaceToWorld = TM.transform(
+            TM.translate(-(world2.x - world.x), -(world2.y - world.y)),
+            this.surfaceToWorld
+        );
     }
 
     /**
@@ -49,8 +52,8 @@ export class ViewPort {
      * @param dy
      */
     panAbs(dsx: number, dsy: number) {
-        const world1 = this.toWorldCoord({x: 0, y: 0});
-        const world2 = this.toWorldCoord({x: dsx, y: dsy});
+        const world1 = this.toWorldCoord({ x: 0, y: 0 });
+        const world2 = this.toWorldCoord({ x: dsx, y: dsy });
 
         this.surfaceToWorld = TM.transform(TM.translate(world2.x - world1.x, world2.y - world1.y), this.surfaceToWorld);
     }
@@ -99,7 +102,6 @@ export class ViewPort {
             transform.length > 0
                 ? TM.transform(TM.inverse(this.screenToSurface), TM.inverse(this.surfaceToWorld), ...transform)
                 : TM.transform(TM.inverse(this.screenToSurface), TM.inverse(this.surfaceToWorld));
-        console.log('preparing context, m scale: ' + matrixScale(m));
         ctx.setTransform(m);
     }
 
@@ -117,7 +119,6 @@ export class ViewPort {
     toWorldCoord(screen: Coord): Coord {
         return TM.applyToPoint(TM.transform(this.surfaceToWorld, this.screenToSurface), screen);
     }
-
 
     someOnScreen(worldShape: Flatten.Polygon | Flatten.Segment | Flatten.Point | Flatten.Circle): boolean {
         const screen = this.screenWorldShape;

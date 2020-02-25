@@ -1,5 +1,7 @@
 import { CalculationField, FieldCategory, Units } from "../../../../src/store/document/calculations/calculation-field";
-import BigValveEntity, { BigValveType } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
+import BigValveEntity, {
+    BigValveType
+} from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import { StandardFlowSystemUids } from "../../../../src/store/catalog";
 import { Calculation } from "../../../../src/store/document/calculations/types";
 import { PsdCountEntry } from "../../../calculations/utils";
@@ -77,7 +79,7 @@ export function makeBigValveCalculationFields(doc: DocumentState, entity: BigVal
             systemUid: suids[i],
             units: Units.KiloPascals,
             category: FieldCategory.Pressure,
-            defaultEnabled: true,
+            defaultEnabled: true
         });
     }
 

@@ -17,7 +17,7 @@ import { BaseBackedConnectable } from "../lib/BackedConnectable";
 
 export default function insertLoadNode(context: CanvasContext, type: NodeType) {
     const newUid = uuid();
-    let toReplace: BackedDrawableObject<ConnectableEntityConcrete> | null = null;
+    const toReplace: BackedDrawableObject<ConnectableEntityConcrete> | null = null;
     MainEventBus.$emit(
         "set-tool-handler",
         new PointTool(
@@ -50,7 +50,7 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType) {
                         }
                     );
 
-                    let connections: string[] = [];
+                    const connections: string[] = [];
 
                     let newEntity: LoadNodeEntity;
                     switch (type) {
@@ -78,7 +78,7 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType) {
                                 node: {
                                     type: NodeType.DWELLING,
                                     dwellings: 1,
-                                    continuousFlowLS: 0,
+                                    continuousFlowLS: 0
                                 },
                                 systemUidOption: null,
                                 center: cloneSimple(wc),
@@ -98,7 +98,7 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType) {
                         moveOnto(
                             context.globalStore.get(newEntity.uid)! as BaseBackedConnectable,
                             context.globalStore.get(interactive[0].uid)! as BaseBackedConnectable,
-                            context,
+                            context
                         );
                     }
 

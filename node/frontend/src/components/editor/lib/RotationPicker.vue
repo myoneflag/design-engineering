@@ -1,7 +1,7 @@
 <template>
     <b-row style="margin-top: 10px">
         <b-col cols="4">
-            <b-button class="rotateBtn" variant="primary" @click="rotateLeft" size="sm" :disabled="disabled ">
+            <b-button class="rotateBtn" variant="primary" @click="rotateLeft" size="sm" :disabled="disabled">
                 <v-icon name="undo" scale="1.0" />
             </b-button>
         </b-col>
@@ -32,7 +32,7 @@ import Component from "vue-class-component";
 @Component({
     props: {
         value: Number,
-        disabled: Boolean,
+        disabled: Boolean
     }
 })
 export default class RotationPicker extends Vue {

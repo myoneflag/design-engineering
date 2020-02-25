@@ -46,8 +46,8 @@ export const actions: ActionTree<DocumentState, RootState> = {
         commit("setCurrentLevelUid", levelUid);
     },
 
-    validateAndCommit({commit, state}, logUndo: boolean = true) {
-        MainEventBus.$emit('validate-and-commit', logUndo);
+    validateAndCommit({ commit, state }, logUndo: boolean = true) {
+        MainEventBus.$emit("validate-and-commit", logUndo);
     },
 
     // Call this action to commit the current operation transforms. TODO: make that atomic.
@@ -57,7 +57,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
         }
 
         if (state.uiState.viewOnly) {
-            commit('revert');
+            commit("revert");
             return;
         }
 
@@ -86,28 +86,25 @@ export const actions: ActionTree<DocumentState, RootState> = {
             if (logUndo) {
                 state.undoStack.splice(state.undoIndex);
                 state.undoStack.push(cloneSimple(diff));
-                state.undoIndex ++;
+                state.undoIndex++;
             }
             diff.push({ type: OPERATION_NAMES.COMMITTED_OPERATION, id: -1 });
         }
-
-
 
         state.optimisticHistory.push(...diff);
 
         const prevHistoryId = state.history.length ? state.history[state.history.length - 1].id : -1;
 
-        submitOperation(
-            state.documentId,
-            commit,
-            diff
-        ).catch((e) => {
-
+        submitOperation(state.documentId, commit, diff).catch((e) => {
             state.uiState.viewOnly = true;
             state.uiState.viewOnlyReason = "Lost connection to the server - please refresh";
-            this.dispatch('document/revert');
-            window.alert('Unable to Save: There is a connection issue with the server. Please refresh. \n' +
-             e.message + "\n" + e.trace);
+            this.dispatch("document/revert");
+            window.alert(
+                "Unable to Save: There is a connection issue with the server. Please refresh. \n" +
+                    e.message +
+                    "\n" +
+                    e.trace
+            );
         });
 
         setTimeout(() => {
@@ -115,67 +112,67 @@ export const actions: ActionTree<DocumentState, RootState> = {
             if (thisHistoryId === prevHistoryId) {
                 // didn't update successfully
                 state.uiState.viewOnly = true;
-                state.uiState.viewOnlyReason = 'Having trouble saving, please refresh';
-                window.alert('Having trouble saving for the last 10 seconds, please refresh');
+                state.uiState.viewOnlyReason = "Having trouble saving, please refresh";
+                window.alert("Having trouble saving for the last 10 seconds, please refresh");
             }
         }, 100000);
 
         MainEventBus.$emit("committed", true);
     },
 
-    resetPastes({commit, state, dispatch}) {
-        commit('resetPastes');
+    resetPastes({ commit, state, dispatch }) {
+        commit("resetPastes");
     },
 
-    applyDiff({commit, state, dispatch}, diff) {
-        commit('applyDiff', diff);
+    applyDiff({ commit, state, dispatch }, diff) {
+        commit("applyDiff", diff);
     },
 
-    applyDiffs({commit, state, dispatch}, diffs) {
-        commit('applyDiffs', diffs);
+    applyDiffs({ commit, state, dispatch }, diffs) {
+        commit("applyDiffs", diffs);
     },
 
     undo(args) {
-        const {commit, state, dispatch} = args;
+        const { commit, state, dispatch } = args;
         if (state.undoIndex && state.uiState.drawingMode !== DrawingMode.History) {
-            state.undoIndex --;
+            state.undoIndex--;
             for (let i = state.undoStack[state.undoIndex].length - 1; i >= 0; i--) {
                 const op = state.undoStack[state.undoIndex][i];
                 switch (op.type) {
                     case OPERATION_NAMES.DIFF_OPERATION:
-                        commit('applyDiff', op.inverse);
+                        commit("applyDiff", op.inverse);
                         break;
                     case OPERATION_NAMES.COMMITTED_OPERATION:
-                        throw new Error('Don\'t know how to handle this');
+                        throw new Error("Don't know how to handle this");
                     default:
                         assertUnreachable(op);
                 }
             }
         }
 
-        dispatch('commit', false);
+        dispatch("commit", false);
     },
 
     redo(args) {
-        const {commit, state, dispatch} = args;
+        const { commit, state, dispatch } = args;
         if (state.undoIndex < state.undoStack.length && state.uiState.drawingMode !== DrawingMode.History) {
             // tslint:disable-next-line:prefer-for-of
-            for (let i = 0; i < state.undoStack[state.undoIndex].length; i ++) {
+            for (let i = 0; i < state.undoStack[state.undoIndex].length; i++) {
                 const op = state.undoStack[state.undoIndex][i];
                 switch (op.type) {
                     case OPERATION_NAMES.DIFF_OPERATION:
-                        commit('applyDiff', op.diff);
+                        commit("applyDiff", op.diff);
                         break;
                     case OPERATION_NAMES.COMMITTED_OPERATION:
-                        throw new Error('Don\'t know how to handle this');
+                        throw new Error("Don't know how to handle this");
                     default:
                         assertUnreachable(op);
                 }
             }
-            state.undoIndex ++;
+            state.undoIndex++;
         }
 
-        dispatch('commit', false);
+        dispatch("commit", false);
     },
 
     setId({ commit, state }, payload) {
@@ -187,13 +184,12 @@ export const actions: ActionTree<DocumentState, RootState> = {
         // Reverse all optimistic operations
         commit("revert", redraw);
     },
-    revertFull( { commit, state } ) {
-        commit('revertFull');
+    revertFull({ commit, state }) {
+        commit("revertFull");
     },
     reset({ commit, state }) {
         commit("reset");
     },
-
 
     resetDrawing({ commit, state }) {
         commit("resetDrawing");

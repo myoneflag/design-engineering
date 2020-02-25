@@ -154,7 +154,6 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
 
         ctx.stroke();
 
-
         this.withWorldAngle(context, { x: 0, y: this.entity.pipeDistanceMM * 1.2 }, () => {
             ctx.font = this.entity.pipeDistanceMM / 2 + "pt " + DEFAULT_FONT_NAME;
             const abbreviation = this.entity.abbreviation ? this.entity.abbreviation : "";

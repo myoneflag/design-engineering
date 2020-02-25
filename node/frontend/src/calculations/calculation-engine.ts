@@ -34,7 +34,9 @@ import { getObjectFrictionHeadLoss } from "../../src/calculations/entity-pressur
 import { DrawableEntityConcrete, isConnectableEntity } from "../../../common/src/api/document/entities/concrete-entity";
 import BigValve from "../htmlcanvas/objects/big-valve/bigValve";
 // tslint:disable-next-line:max-line-length
-import DirectedValveEntity, { makeDirectedValveFields } from "../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
+import DirectedValveEntity, {
+    makeDirectedValveFields
+} from "../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
 import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import {
     comparePsdCounts,
@@ -108,7 +110,7 @@ export enum EdgeType {
     CHECK_THROUGH,
     ISOLATION_THROUGH,
 
-    PLANT_THROUGH,
+    PLANT_THROUGH
 }
 
 export interface FlowEdge {
@@ -167,23 +169,23 @@ export default class CalculationEngine {
         if (this.globalStore.dependedBy.size) {
             throw new Error(
                 "couldn't clear cache, dependedBy still " +
-                JSON.stringify(this.globalStore.dependedBy, (key, value) => {
-                    if (value instanceof Map) {
-                        return [...value];
-                    }
-                    return value;
-                })
+                    JSON.stringify(this.globalStore.dependedBy, (key, value) => {
+                        if (value instanceof Map) {
+                            return [...value];
+                        }
+                        return value;
+                    })
             );
         }
         if (this.globalStore.dependsOn.size) {
             throw new Error(
                 "couldn't clear cache, dependsOn still " +
-                JSON.stringify([...this.globalStore.dependsOn], (key, value) => {
-                    if (value instanceof Map) {
-                        return [...value];
-                    }
-                    return value;
-                })
+                    JSON.stringify([...this.globalStore.dependsOn], (key, value) => {
+                        if (value instanceof Map) {
+                            return [...value];
+                        }
+                        return value;
+                    })
             );
         }
         this.globalStore.forEach((o) => {
@@ -297,16 +299,12 @@ export default class CalculationEngine {
                 this.configureLUFlowGraph();
                 this.precomputeBridges();
                 this.precomputePsdAfterBridge(FLOW_SOURCE_ROOT_BRIDGE, FLOW_SOURCE_ROOT_NODE, new Set<string>());
-                console.log(this.psdAfterBridgeCache);
-
-
                 this.preCompute();
                 this.sizeDefiniteTransports();
                 this.sizeRingMains();
                 this.calculateAllPointPressures();
                 this.fillPressureDropFields();
                 this.createWarnings();
-
 
                 this.collectResults();
             }
@@ -336,7 +334,6 @@ export default class CalculationEngine {
 
         const lengths = components.map((c) => c[0].length + c[1].length);
         lengths.sort().reverse();
-
 
         const bridgeStack: Array<Edge<FlowNode | undefined, FlowEdge | undefined>> = [FLOW_SOURCE_ROOT_BRIDGE];
 
@@ -445,20 +442,23 @@ export default class CalculationEngine {
                     const calculation = this.globalStore.getOrCreateCalculation(entity);
 
                     for (const suid of entity.roughInsInOrder) {
-                        calculation.pressures[suid] = this.getAbsolutePressurePoint(
-                            { connectable: entity.roughIns[suid].uid, connection: entity.uid }
-                        );
+                        calculation.pressures[suid] = this.getAbsolutePressurePoint({
+                            connectable: entity.roughIns[suid].uid,
+                            connection: entity.uid
+                        });
                     }
                     break;
                 }
                 case EntityType.BIG_VALVE: {
                     const calculation = this.globalStore.getOrCreateCalculation(entity);
-                    calculation.coldPressureKPA = this.getAbsolutePressurePoint(
-                        { connectable: entity.coldRoughInUid, connection: entity.uid }
-                    );
-                    calculation.hotPressureKPA = this.getAbsolutePressurePoint(
-                        { connectable: entity.hotRoughInUid, connection: entity.uid }
-                    );
+                    calculation.coldPressureKPA = this.getAbsolutePressurePoint({
+                        connectable: entity.coldRoughInUid,
+                        connection: entity.uid
+                    });
+                    calculation.hotPressureKPA = this.getAbsolutePressurePoint({
+                        connectable: entity.hotRoughInUid,
+                        connection: entity.uid
+                    });
                     break;
                 }
                 case EntityType.FLOW_SOURCE:
@@ -480,9 +480,10 @@ export default class CalculationEngine {
                     let maxPressure: number | null = null;
                     let minPressure: number | null = null;
                     candidates.forEach((cuid) => {
-                        const thisPressure = this.getAbsolutePressurePoint(
-                            { connectable: entity.uid, connection: cuid }
-                        );
+                        const thisPressure = this.getAbsolutePressurePoint({
+                            connectable: entity.uid,
+                            connection: cuid
+                        });
                         if (thisPressure != null && (maxPressure === null || thisPressure > maxPressure)) {
                             maxPressure = thisPressure;
                         }
@@ -570,7 +571,10 @@ export default class CalculationEngine {
         this.flowGraph.dfs(
             node,
             (n) => {
-                if (this.globalStore.has(n.connectable) && this.globalStore.get(n.connectable)!.type === EntityType.FLOW_SOURCE) {
+                if (
+                    this.globalStore.has(n.connectable) &&
+                    this.globalStore.get(n.connectable)!.type === EntityType.FLOW_SOURCE
+                ) {
                     const source = this.globalStore.get(n.connectable) as FlowSource;
                     const density = getFluidDensityOfSystem(source.entity.systemUid, this.doc, this.catalog)!;
                     const mh = source.entity.heightAboveGroundM! - heightM;
@@ -684,14 +688,22 @@ export default class CalculationEngine {
                                         return Infinity;
                                     }
 
-                                    const hl = getObjectFrictionHeadLoss(this, obj, fr, flowFrom, flowTo, true, finalPressureKPA);
+                                    const hl = getObjectFrictionHeadLoss(
+                                        this,
+                                        obj,
+                                        fr,
+                                        flowFrom,
+                                        flowTo,
+                                        true,
+                                        finalPressureKPA
+                                    );
                                     return hl === null
                                         ? -Infinity
                                         : head2kpa(
-                                            hl,
-                                            getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
-                                            this.ga
-                                        );
+                                              hl,
+                                              getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
+                                              this.ga
+                                          );
                                 } else {
                                     throw new Error("misconfigured flow graph");
                                 }
@@ -729,14 +741,22 @@ export default class CalculationEngine {
                                 )!;
 
                                 if (dist !== null) {
-                                    const hl = getObjectFrictionHeadLoss(this, obj, dist, flowFrom, flowTo, true, finalPressureKPA);
+                                    const hl = getObjectFrictionHeadLoss(
+                                        this,
+                                        obj,
+                                        dist,
+                                        flowFrom,
+                                        flowTo,
+                                        true,
+                                        finalPressureKPA
+                                    );
                                     return hl === null
                                         ? -Infinity
                                         : head2kpa(
-                                            hl,
-                                            getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
-                                            this.ga
-                                        );
+                                              hl,
+                                              getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
+                                              this.ga
+                                          );
                                 } else {
                                     return 1000000;
                                 }
@@ -747,17 +767,27 @@ export default class CalculationEngine {
                                 const conns = this.globalStore.getConnections(plant.entity.inletUid);
                                 let flowLS: number | null = 0;
                                 if (conns.length === 1) {
-                                    flowLS = this.globalStore.getOrCreateCalculation(this.globalStore.get(conns[0])!.entity as PipeEntity).peakFlowRate;
+                                    flowLS = this.globalStore.getOrCreateCalculation(
+                                        this.globalStore.get(conns[0])!.entity as PipeEntity
+                                    ).peakFlowRate;
                                 }
 
-                                const hl = getObjectFrictionHeadLoss(this, obj, flowLS!, flowFrom, flowTo, true, finalPressureKPA);
+                                const hl = getObjectFrictionHeadLoss(
+                                    this,
+                                    obj,
+                                    flowLS!,
+                                    flowFrom,
+                                    flowTo,
+                                    true,
+                                    finalPressureKPA
+                                );
                                 return hl === null
                                     ? -Infinity
                                     : head2kpa(
-                                        hl,
-                                        getFluidDensityOfSystem(plant.entity.inletSystemUid, this.doc, this.catalog)!,
-                                        this.ga
-                                    );
+                                          hl,
+                                          getFluidDensityOfSystem(plant.entity.inletSystemUid, this.doc, this.catalog)!,
+                                          this.ga
+                                      );
                             }
                             case EdgeType.FLOW_SOURCE_EDGE:
                                 throw new Error("oopsies");
@@ -1057,7 +1087,6 @@ export default class CalculationEngine {
                                     entity: node.entity.uid,
                                     correlationGroup: fixture.uid
                                 };
-
                             } else {
                                 return {
                                     units: Number(mainFixture.roughIns[suid].loadingUnits),
@@ -1125,7 +1154,14 @@ export default class CalculationEngine {
         }
     }
 
-    configureEntityForPSD(entity: DrawableEntityConcrete, psdU: PsdCountEntry, flowEdge: FlowEdge, wet: FlowNode | null, profile: PsdProfile, noFlowReason: NoFlowAvailableReason | null) {
+    configureEntityForPSD(
+        entity: DrawableEntityConcrete,
+        psdU: PsdCountEntry,
+        flowEdge: FlowEdge,
+        wet: FlowNode | null,
+        profile: PsdProfile,
+        noFlowReason: NoFlowAvailableReason | null
+    ) {
         switch (entity.type) {
             case EntityType.PIPE: {
                 const calculation = this.globalStore.getOrCreateCalculation(entity);
@@ -1232,7 +1268,7 @@ export default class CalculationEngine {
         }
         if (!page) {
             calculation.noFlowAvailableReason = NoFlowAvailableReason.NO_SUITABLE_PIPE_SIZE;
-            calculation.warning = 'No suitable pipe size in the catalog for this flow rate';
+            calculation.warning = "No suitable pipe size in the catalog for this flow rate";
             return;
         }
         calculation.realNominalPipeDiameterMM = parseCatalogNumberExact(page.diameterNominalMM);
@@ -1439,12 +1475,10 @@ export default class CalculationEngine {
                     if (object.entity.endpointUid[0] === null || object.entity.endpointUid[1] === null) {
                         throw new Error("pipe has dry endpoint: " + object.entity.uid);
                     }
-                    this.sizeDefiniteTransport(
-                        object,
-                        totalReachedPsdU,
-                        { type: EdgeType.PIPE, uid: object.uid },
-                        [object.entity.endpointUid[0], object.entity.endpointUid[1]]
-                    );
+                    this.sizeDefiniteTransport(object, totalReachedPsdU, { type: EdgeType.PIPE, uid: object.uid }, [
+                        object.entity.endpointUid[0],
+                        object.entity.endpointUid[1]
+                    ]);
                     break;
                 case EntityType.DIRECTED_VALVE:
                 case EntityType.LOAD_NODE:
@@ -1500,11 +1534,7 @@ export default class CalculationEngine {
                                 const pCalc = this.globalStore.getOrCreateCalculation(p.entity);
 
                                 if (pCalc.peakFlowRate !== null) {
-
-                                    let size = this.sizePrvForFlowRate(
-                                        obj.entity.valve.type,
-                                        pCalc.peakFlowRate
-                                    );
+                                    let size = this.sizePrvForFlowRate(obj.entity.valve.type, pCalc.peakFlowRate);
 
                                     if (obj.entity.valve.sizeMM !== null) {
                                         size = obj.entity.valve.sizeMM;
@@ -1602,10 +1632,16 @@ export default class CalculationEngine {
 
         if (exclusiveProfile === false) {
             // No flow source.
-            this.configureEntityForPSD(object.entity, zeroPsdCounts(), flowEdge, null, new PsdProfile(), NoFlowAvailableReason.NO_SOURCE);
+            this.configureEntityForPSD(
+                object.entity,
+                zeroPsdCounts(),
+                flowEdge,
+                null,
+                new PsdProfile(),
+                NoFlowAvailableReason.NO_SOURCE
+            );
         } else {
             const exclusivePsdU = countPsdProfile(exclusiveProfile);
-
 
             const wet = this.firstWet.get(stringify(flowEdge))!;
             const dryUids = endpointUids.filter((ep) => ep !== wet.connectable);
@@ -1622,7 +1658,6 @@ export default class CalculationEngine {
             const residualPsdU = countPsdProfile(residualPsdProfile);
 
             if (!isZeroPsdCounts(exclusivePsdU)) {
-
                 const cmp = comparePsdCounts(residualPsdU, exclusivePsdU);
                 if (cmp === null) {
                     throw new Error("Impossible PSD situation");
@@ -1642,7 +1677,14 @@ export default class CalculationEngine {
                 }
             } else {
                 if (isZeroPsdCounts(residualPsdU)) {
-                    this.configureEntityForPSD(object.entity, zeroPsdCounts(), flowEdge, wet, new PsdProfile(), NoFlowAvailableReason.NO_LOADS_CONNECTED);
+                    this.configureEntityForPSD(
+                        object.entity,
+                        zeroPsdCounts(),
+                        flowEdge,
+                        wet,
+                        new PsdProfile(),
+                        NoFlowAvailableReason.NO_LOADS_CONNECTED
+                    );
                 } else {
                     // TODO: flow rate is ambiguous, and no flow is exclusive to us.
                     if (object.entity.type === EntityType.PIPE) {
@@ -1677,14 +1719,14 @@ export default class CalculationEngine {
                                     hl === null
                                         ? hl
                                         : head2kpa(
-                                        hl,
-                                        getFluidDensityOfSystem(
-                                            StandardFlowSystemUids.ColdWater,
-                                            this.doc,
-                                            this.catalog
-                                        )!,
-                                        this.ga
-                                        );
+                                              hl,
+                                              getFluidDensityOfSystem(
+                                                  StandardFlowSystemUids.ColdWater,
+                                                  this.doc,
+                                                  this.catalog
+                                              )!,
+                                              this.ga
+                                          );
                             }
                         }
                         /* fall through */
@@ -1704,14 +1746,14 @@ export default class CalculationEngine {
                                     hl === null
                                         ? null
                                         : head2kpa(
-                                        hl,
-                                        getFluidDensityOfSystem(
-                                            StandardFlowSystemUids.WarmWater,
-                                            this.doc,
-                                            this.catalog
-                                        )!,
-                                        this.ga
-                                        );
+                                              hl,
+                                              getFluidDensityOfSystem(
+                                                  StandardFlowSystemUids.WarmWater,
+                                                  this.doc,
+                                                  this.catalog
+                                              )!,
+                                              this.ga
+                                          );
                             }
                             break;
                         }
@@ -1731,14 +1773,14 @@ export default class CalculationEngine {
                                     hl === null
                                         ? hl
                                         : head2kpa(
-                                        hl,
-                                        getFluidDensityOfSystem(
-                                            StandardFlowSystemUids.ColdWater,
-                                            this.doc,
-                                            this.catalog
-                                        )!,
-                                        this.ga
-                                        );
+                                              hl,
+                                              getFluidDensityOfSystem(
+                                                  StandardFlowSystemUids.ColdWater,
+                                                  this.doc,
+                                                  this.catalog
+                                              )!,
+                                              this.ga
+                                          );
                             }
 
                             const frh = calculation.hotPeakFlowRate;
@@ -1757,14 +1799,14 @@ export default class CalculationEngine {
                                     hl === null
                                         ? hl
                                         : head2kpa(
-                                        hl,
-                                        getFluidDensityOfSystem(
-                                            StandardFlowSystemUids.HotWater,
-                                            this.doc,
-                                            this.catalog
-                                        )!,
-                                        this.ga
-                                        );
+                                              hl,
+                                              getFluidDensityOfSystem(
+                                                  StandardFlowSystemUids.HotWater,
+                                                  this.doc,
+                                                  this.catalog
+                                              )!,
+                                              this.ga
+                                          );
                             }
                             break;
                         }
@@ -1788,14 +1830,14 @@ export default class CalculationEngine {
                             hl === null
                                 ? null
                                 : head2kpa(
-                                hl,
-                                getFluidDensityOfSystem(
-                                    StandardFlowSystemUids.ColdWater,
-                                    this.doc,
-                                    this.catalog
-                                )!,
-                                this.ga
-                                );
+                                      hl,
+                                      getFluidDensityOfSystem(
+                                          StandardFlowSystemUids.ColdWater,
+                                          this.doc,
+                                          this.catalog
+                                      )!,
+                                      this.ga
+                                  );
                     }
                     break;
                 }
@@ -1829,14 +1871,14 @@ export default class CalculationEngine {
                                     hl1 === null
                                         ? null
                                         : head2kpa(
-                                        hl1,
-                                        getFluidDensityOfSystem(
-                                            StandardFlowSystemUids.ColdWater,
-                                            this.doc,
-                                            this.catalog
-                                        )!,
-                                        this.ga
-                                        );
+                                              hl1,
+                                              getFluidDensityOfSystem(
+                                                  StandardFlowSystemUids.ColdWater,
+                                                  this.doc,
+                                                  this.catalog
+                                              )!,
+                                              this.ga
+                                          );
                                 const hl2 = getObjectFrictionHeadLoss(
                                     this,
                                     o,
@@ -1850,14 +1892,14 @@ export default class CalculationEngine {
                                     hl2 === null
                                         ? null
                                         : head2kpa(
-                                        hl2,
-                                        getFluidDensityOfSystem(
-                                            StandardFlowSystemUids.ColdWater,
-                                            this.doc,
-                                            this.catalog
-                                        )!,
-                                        this.ga
-                                        );
+                                              hl2,
+                                              getFluidDensityOfSystem(
+                                                  StandardFlowSystemUids.ColdWater,
+                                                  this.doc,
+                                                  this.catalog
+                                              )!,
+                                              this.ga
+                                          );
                                 if (dir1 === null || dir2 === null) {
                                     (calculation as any).pressureDropKPA = null;
                                 } else {
@@ -1872,7 +1914,8 @@ export default class CalculationEngine {
                 case EntityType.SYSTEM_NODE:
                 case EntityType.FLOW_SOURCE: {
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity) as
-                        FlowSourceCalculation | SystemNodeCalculation;
+                        | FlowSourceCalculation
+                        | SystemNodeCalculation;
 
                     const conns = this.globalStore.getConnections(o.entity.uid);
 
@@ -1888,9 +1931,10 @@ export default class CalculationEngine {
                     if (o.entity.type === EntityType.SYSTEM_NODE) {
                         const sc = calculation as SystemNodeCalculation;
 
-                        sc.psdUnits = this.getTerminalPsdU(
-                            { connectable: o.entity.uid, connection: o.entity.parentUid! }
-                        );
+                        sc.psdUnits = this.getTerminalPsdU({
+                            connectable: o.entity.uid,
+                            connection: o.entity.parentUid!
+                        });
                     }
                     break;
                 }
@@ -1932,9 +1976,8 @@ export default class CalculationEngine {
 
                     for (const suid of e.roughInsInOrder) {
                         if (calculation.pressures[suid] === null) {
-
                             if (!calculation.warning) {
-                                calculation.warning = ' ';
+                                calculation.warning = " ";
                             }
                         } else if ((calculation.pressures[suid] || 0) < e.roughIns[suid].minPressureKPA!) {
                             const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === suid)!;
@@ -1977,10 +2020,22 @@ export default class CalculationEngine {
                         case ValveType.PRV_DOUBLE:
                         case ValveType.PRV_TRIPLE:
                             const inPressure = calculation.pressureKPA;
-                            if (inPressure !== null && o.entity.valve.targetPressureKPA !== null && calculation.sizeMM !== null) {
-                                const ratio = parseCatalogNumberExact(this.catalog.prv[calculation.sizeMM].maxPressureDropRatio);
+                            if (
+                                inPressure !== null &&
+                                o.entity.valve.targetPressureKPA !== null &&
+                                calculation.sizeMM !== null
+                            ) {
+                                const ratio = parseCatalogNumberExact(
+                                    this.catalog.prv[calculation.sizeMM].maxPressureDropRatio
+                                );
                                 if (ratio !== null && inPressure > o.entity.valve.targetPressureKPA * ratio) {
-                                    calculation.warning = "Pressure of " + inPressure.toFixed(2) + " is more than " + ratio + "x the target pressure of " + o.entity.valve.targetPressureKPA;
+                                    calculation.warning =
+                                        "Pressure of " +
+                                        inPressure.toFixed(2) +
+                                        " is more than " +
+                                        ratio +
+                                        "x the target pressure of " +
+                                        o.entity.valve.targetPressureKPA;
                                 }
                             }
                             break;
@@ -2007,7 +2062,6 @@ export default class CalculationEngine {
         dst: FlowNode,
         visitedEdges: Set<string>
     ): PsdProfile {
-
         const key = this.serializeDirectedEdge(bridge, dst);
         const visited = new Set<string>();
 
@@ -2042,7 +2096,6 @@ export default class CalculationEngine {
             );
             this.psdAfterBridgeCache.set(key, retVal);
         }
-
 
         visitedEdges.delete(bridge.uid);
         return this.psdAfterBridgeCache.get(key)!;
@@ -2109,11 +2162,7 @@ export default class CalculationEngine {
     // This will be correct, with the bridge group cache optimization, as long as the excluded nodes and excluded
     // edges are in the same bi-connected component. If not, then this function will use the cache to potentially fetch
     // results from groups that would have changed if the nodes or edges were excluded.
-    getDownstreamPsdUs(
-        starts: FlowNode[],
-        excludedNodes: string[] = [],
-        excludedEdges: string[] = []
-    ): PsdProfile {
+    getDownstreamPsdUs(starts: FlowNode[], excludedNodes: string[] = [], excludedEdges: string[] = []): PsdProfile {
         const seen = new Set<string>(excludedNodes);
         const seenEdges = new Set<string>(excludedEdges);
 

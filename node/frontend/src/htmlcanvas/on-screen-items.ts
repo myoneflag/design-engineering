@@ -3,7 +3,7 @@ import * as TM from "transformation-matrix";
 import { DrawingContext } from "../../src/htmlcanvas/lib/types";
 import { addPsdCounts, lookupFlowRate, PsdUnitsByFlowSystem, zeroPsdCounts } from "../../src/calculations/utils";
 import { StandardFlowSystemUids } from "../../src/store/catalog";
-import { GridLineMode} from "../store/document/types";
+import { GridLineMode } from "../store/document/types";
 import { Catalog } from "../../../common/src/api/catalog/types";
 import { NetworkType } from "../../../common/src/api/document/drawing";
 
@@ -58,7 +58,13 @@ export const getFriendlyDistanceUnit = (mm: number): [string, number] => {
     return ["km", 10 * 100 * 1000];
 };
 
-export const drawPaperScale = (ctx: CanvasRenderingContext2D, pxPerMm: number, maxWidthPx: number = 4 * 2 * 50, x?: number, y?: number) => {
+export const drawPaperScale = (
+    ctx: CanvasRenderingContext2D,
+    pxPerMm: number,
+    maxWidthPx: number = 4 * 2 * 50,
+    x?: number,
+    y?: number
+) => {
     ctx.setTransform(TM.identity());
     ctx.lineWidth = 1;
     // draw on bottom left
@@ -137,9 +143,8 @@ export const drawPaperScale = (ctx: CanvasRenderingContext2D, pxPerMm: number, m
 };
 
 export function drawGridLines(context: DrawingContext) {
-
     const scalesMM = [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000];
-    const {ctx, vp} = context;
+    const { ctx, vp } = context;
 
     if (context.doc.uiState.gridLines === GridLineMode.FULL) {
         // Minor grid lines
@@ -155,31 +160,29 @@ export function drawGridLines(context: DrawingContext) {
         }
         const majorI = minorI + 1;
 
-
-        const tl = vp.toWorldCoord({x: 0, y: 0});
-        const br = vp.toWorldCoord({x: context.vp.width, y: context.vp.height});
+        const tl = vp.toWorldCoord({ x: 0, y: 0 });
+        const br = vp.toWorldCoord({ x: context.vp.width, y: context.vp.height });
         const minorGap = vp.toScreenLength(scalesMM[minorI]);
         const majorGap = vp.toScreenLength(scalesMM[majorI]);
-        const left = tl.x - tl.x % scalesMM[minorI];
-        const top = tl.y - tl.y % scalesMM[minorI];
+        const left = tl.x - (tl.x % scalesMM[minorI]);
+        const top = tl.y - (tl.y % scalesMM[minorI]);
 
-        const leftMajor = tl.x - tl.x % scalesMM[majorI];
-        const topMajor = tl.y - tl.y % scalesMM[majorI];
+        const leftMajor = tl.x - (tl.x % scalesMM[majorI]);
+        const topMajor = tl.y - (tl.y % scalesMM[majorI]);
 
-        const tlS = vp.toScreenCoord({x: left, y: top});
-        const tlMS = vp.toScreenCoord({x: leftMajor, y: topMajor});
+        const tlS = vp.toScreenCoord({ x: left, y: top });
+        const tlMS = vp.toScreenCoord({ x: leftMajor, y: topMajor });
 
         ctx.setTransform(TM.identity());
 
-        ctx.strokeStyle = 'rgba(100, 100, 200, 0.5)';
+        ctx.strokeStyle = "rgba(100, 100, 200, 0.5)";
         ctx.lineWidth = 1;
 
         let grids = 0;
 
         if (minorGap > 50) {
-
             for (let x = tlS.x; x <= vp.width; x += minorGap) {
-                grids ++;
+                grids++;
                 ctx.beginPath();
                 ctx.moveTo(Math.round(x), 0);
                 ctx.lineTo(Math.round(x), vp.height);
@@ -187,21 +190,20 @@ export function drawGridLines(context: DrawingContext) {
             }
 
             for (let y = tlS.y; y <= vp.height; y += minorGap) {
-                grids ++;
+                grids++;
                 ctx.beginPath();
                 ctx.moveTo(0, Math.round(y));
                 ctx.lineTo(vp.width, Math.round(y));
                 ctx.stroke();
             }
-
         }
 
-        ctx.strokeStyle = 'rgba(0, 0, 150, 0.5)';
+        ctx.strokeStyle = "rgba(0, 0, 150, 0.5)";
         ctx.setLineDash([]);
         ctx.lineWidth = 1;
 
         for (let x = tlMS.x; x <= vp.width; x += majorGap) {
-            grids ++;
+            grids++;
             ctx.beginPath();
             ctx.moveTo(Math.round(x), 0);
             ctx.lineTo(Math.round(x), vp.height);
@@ -209,7 +211,7 @@ export function drawGridLines(context: DrawingContext) {
         }
 
         for (let y = tlMS.y; y <= vp.height; y += majorGap) {
-            grids ++;
+            grids++;
             ctx.beginPath();
             ctx.moveTo(0, Math.round(y));
             ctx.lineTo(vp.width, Math.round(y));
@@ -218,9 +220,9 @@ export function drawGridLines(context: DrawingContext) {
 
         ctx.setLineDash([]);
     } else if (context.doc.uiState.gridLines === GridLineMode.ORIGIN) {
-        const origin = vp.toScreenCoord({x: 0, y: 0});
+        const origin = vp.toScreenCoord({ x: 0, y: 0 });
 
-        ctx.strokeStyle = 'rgba(0, 0, 150, 0.5)';
+        ctx.strokeStyle = "rgba(0, 0, 150, 0.5)";
         ctx.setLineDash([]);
         ctx.lineWidth = 1;
         ctx.setTransform(TM.identity());
@@ -254,7 +256,7 @@ export function drawLoadingUnits(
     for (const sys of [
         StandardFlowSystemUids.ColdWater,
         StandardFlowSystemUids.WarmWater,
-        StandardFlowSystemUids.HotWater,
+        StandardFlowSystemUids.HotWater
     ]) {
         if (!units.hasOwnProperty(sys)) {
             units[sys] = zeroPsdCounts();
@@ -285,24 +287,22 @@ export function drawLoadingUnits(
             context.doc,
             catalog,
             StandardFlowSystemUids.ColdWater,
-            true,
+            true
         );
         coldFR = res ? res.flowRateLS : null;
-    } catch (e) {
-    }
+    } catch (e) {}
     try {
         const res = lookupFlowRate(
             addPsdCounts(units[StandardFlowSystemUids.HotWater], units[StandardFlowSystemUids.WarmWater]),
             context.doc,
             catalog,
             StandardFlowSystemUids.HotWater,
-            true,
+            true
         );
         hotFR = res ? res.flowRateLS : null;
     } catch (e) {
         /**/
     }
-
 
     let coldSpareText: string = "error";
     let hotSpareText: string = "error";

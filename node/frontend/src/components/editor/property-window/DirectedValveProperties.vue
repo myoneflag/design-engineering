@@ -69,11 +69,7 @@ import { DrawingMode } from "../../../htmlcanvas/types";
 })
 export default class DirectedValveProperties extends Vue {
     get fields() {
-        return makeDirectedValveFields(
-            this.$props.selectedEntity,
-            this.catalog,
-            this.document.drawing,
-        );
+        return makeDirectedValveFields(this.$props.selectedEntity, this.catalog, this.document.drawing);
     }
 
     get reactiveData(): DirectedValveEntity {

@@ -6,9 +6,7 @@ export default class ImageLoader {
 
     static async get(key: string): Promise<HTMLImageElement> {
         if (!this.images.has(key)) {
-
             const result = new Promise<HTMLImageElement>(async (resolve, reject) => {
-
                 // get system render first
 
                 const imageLinks = await getImageLink(key);
@@ -26,8 +24,7 @@ export default class ImageLoader {
                         const image = new Image();
 
                         // to allow exporting once it's drawn into the canvas.
-                        image.crossOrigin = 'Anonymous';
-
+                        image.crossOrigin = "Anonymous";
 
                         image.onload = () => {
                             resolve(image);
@@ -41,7 +38,6 @@ export default class ImageLoader {
                     }
                     iters++;
                 }
-
             });
 
             this.images.set(key, result);

@@ -1,4 +1,4 @@
-import { CalculationFilters} from "../../../src/store/document/types";
+import { CalculationFilters } from "../../../src/store/document/types";
 import { ViewPort } from "../../../src/htmlcanvas/viewport";
 import { Matrix } from "transformation-matrix";
 import * as TM from "transformation-matrix";
@@ -145,7 +145,6 @@ export default abstract class DrawableObject {
     withScreen({ ctx, vp }: DrawingContext, current: Coord, fun: () => void) {
         const oldTransform = ctx.getTransform();
         const sc = TM.applyToPoint(vp.currToScreenTransform(ctx), current);
-
 
         vp.resetCtxTransformToScreen(ctx);
         ctx.translate(sc.x, sc.y);

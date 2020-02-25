@@ -209,7 +209,11 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         let targetWWidth = 15;
         let baseColor = this.displayObject(doc).color!.hex;
 
-        const baseWidth = Math.max(MIN_PIPE_PIXEL_WIDTH / s, targetWWidth / this.toWorldLength(1), MIN_PIPE_PIXEL_WIDTH / s * (5 + Math.log(s)));
+        const baseWidth = Math.max(
+            MIN_PIPE_PIXEL_WIDTH / s,
+            targetWWidth / this.toWorldLength(1),
+            (MIN_PIPE_PIXEL_WIDTH / s) * (5 + Math.log(s))
+        );
         this.lastDrawnWidthInternal = baseWidth;
 
         if (calculationFilters) {
@@ -440,7 +444,6 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         context: CanvasContext,
         isMultiDrag: boolean
     ) {
-
         if (!isMultiDrag) {
             context.$store.dispatch("document/revert", false);
         }
@@ -558,13 +561,15 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 }
                 return [this.entity];
             case InteractionType.MOVE_ONTO_RECEIVE: {
-
                 if (this.entity.endpointUid.indexOf(interaction.src.uid) !== -1) {
                     return null;
                 }
                 // We can receive valves.
                 if (isConnectableEntity(interaction.src)) {
-                    if (interaction.src.type !== EntityType.DIRECTED_VALVE && interaction.src.type !== EntityType.LOAD_NODE) {
+                    if (
+                        interaction.src.type !== EntityType.DIRECTED_VALVE &&
+                        interaction.src.type !== EntityType.LOAD_NODE
+                    ) {
                         if (interaction.src.systemUid !== this.entity.systemUid) {
                             return null;
                         }
@@ -678,7 +683,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         from: FlowNode,
         to: FlowNode,
         signed: boolean,
-        pressureKPA: number | null,
+        pressureKPA: number | null
     ): number | null {
         const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
         const { drawing, catalog, globalStore } = context;
@@ -721,7 +726,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 // Find pressure loss from components
                 break;
             case ComponentPressureLossMethod.PERCENT_ON_TOP_OF_PIPE:
-                pipeLength *= (1 + 0.01 * context.drawing.metadata.calculationParams.pipePressureLossAddOnPCT);
+                pipeLength *= 1 + 0.01 * context.drawing.metadata.calculationParams.pipePressureLossAddOnPCT;
                 break;
             default:
                 assertUnreachable(context.drawing.metadata.calculationParams.componentPressureLossMethod);

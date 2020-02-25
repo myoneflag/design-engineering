@@ -16,10 +16,13 @@ import { DrawingMode } from "../../../htmlcanvas/types";
                     <div :class="missingRequired(field) ? 'pulse-orange' : ''" :ref="'field-' + field.property">
                         <b-row :style="'margin-top: -10px; margin-bottom: -5px;'">
                             <b-col>
-                                <label class="float-left" style="text-align: left; font-size: 15px;" v-if="field.type !== 'title'">{{
-                                    field.title
-                                }}</label>
-                                <hr v-else>
+                                <label
+                                    class="float-left"
+                                    style="text-align: left; font-size: 15px;"
+                                    v-if="field.type !== 'title'"
+                                    >{{ field.title }}</label
+                                >
+                                <hr v-else />
                             </b-col>
                             <b-col cols="2" v-if="field.hasDefault" v-b-tooltip.hover title="Override Default">
                                 <b-check
@@ -191,20 +194,20 @@ import { DrawingMode } from "../../../htmlcanvas/types";
 </template>
 
 <script lang="ts">
-    import Vue from "vue";
-    import Component from "vue-class-component";
-    import { DocumentState } from "../../../../src/store/document/types";
-    import { Compact } from "vue-color";
-    import FlowSystemPicker from "../../../../src/components/editor/FlowSystemPicker.vue";
-    import PopoutColourPicker from "../../../../src/components/editor/lib/PopoutColourPicker.vue";
-    import { FieldParams, PropertyField } from "../../../../../common/src/api/document/entities/property-field";
-    import RotationPicker from "../../../../src/components/editor/lib/RotationPicker.vue";
-    import BooleanPicker from "../../../../src/components/editor/lib/BooleanPicker.vue";
-    import { getPropertyByString, setPropertyByString } from "../../../../src/lib/utils";
-    import { Choice } from "../../../../../common/src/lib/utils";
-    import { DrawingMode } from "../../../htmlcanvas/types";
+import Vue from "vue";
+import Component from "vue-class-component";
+import { DocumentState } from "../../../../src/store/document/types";
+import { Compact } from "vue-color";
+import FlowSystemPicker from "../../../../src/components/editor/FlowSystemPicker.vue";
+import PopoutColourPicker from "../../../../src/components/editor/lib/PopoutColourPicker.vue";
+import { FieldParams, PropertyField } from "../../../../../common/src/api/document/entities/property-field";
+import RotationPicker from "../../../../src/components/editor/lib/RotationPicker.vue";
+import BooleanPicker from "../../../../src/components/editor/lib/BooleanPicker.vue";
+import { getPropertyByString, setPropertyByString } from "../../../../src/lib/utils";
+import { Choice } from "../../../../../common/src/lib/utils";
+import { DrawingMode } from "../../../htmlcanvas/types";
 
-    @Component({
+@Component({
     props: {
         fields: Array,
         reactiveData: Object,

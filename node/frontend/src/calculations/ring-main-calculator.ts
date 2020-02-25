@@ -27,7 +27,9 @@ export class RingMainCalculator {
         const visitedEdges = new Set<string>();
         for (const e of this.engine.flowGraph.edgeList.values()) {
             if (e.value.type === EdgeType.PIPE && !visitedEdges.has(e.uid)) {
-                const pCalc = this.engine.globalStore.getOrCreateCalculation((this.engine.globalStore.get(e.value.uid) as Pipe).entity);
+                const pCalc = this.engine.globalStore.getOrCreateCalculation(
+                    (this.engine.globalStore.get(e.value.uid) as Pipe).entity
+                );
                 if (pCalc.peakFlowRate === null) {
                     const ret = this.engine.flowGraph.getCycleCovering(visitedEdges, e, true, (e) => {
                         switch (e.value.type) {
@@ -70,13 +72,13 @@ export class RingMainCalculator {
         // find source in ring. At the same time, eliminate cases where there are multiple sources,
         // ambiguous pipes leading in/out.
         const pipesInRing = new Set<string>();
-        console.log('considering new ring...');
+        console.log("considering new ring...");
         for (const r of ring) {
             if (r.value.type === EdgeType.PIPE) {
                 pipesInRing.add(r.value.uid);
             }
         }
-        console.log('ok let\;s go');
+        console.log("ok let;s go");
         let sourceNode: string | null = null;
         const sinks: Array<[FlowNode, PsdProfile]> = [];
         const totalPsd = new PsdProfile();
@@ -87,22 +89,24 @@ export class RingMainCalculator {
                 systemUid = (this.engine.globalStore.get(edge.value.uid) as Pipe).entity.systemUid;
                 const conns = this.engine.globalStore.getConnections(nuid);
 
-                let psd = new PsdProfile();
+                const psd = new PsdProfile();
 
                 for (const cuid of conns) {
                     if (pipesInRing.has(cuid)) {
                         continue;
                     }
-                    const ccalc = this.engine.globalStore.getOrCreateCalculation(this.engine.globalStore.get(cuid)!.entity as PipeEntity);
+                    const ccalc = this.engine.globalStore.getOrCreateCalculation(
+                        this.engine.globalStore.get(cuid)!.entity as PipeEntity
+                    );
                     if (ccalc.peakFlowRate === null) {
-                        console.log('in/out pipe ' + cuid + ' connected to ' + nuid + ' has no defined demand');
+                        console.log("in/out pipe " + cuid + " connected to " + nuid + " has no defined demand");
                         this.setNoFlowReasonForRing(ring, NoFlowAvailableReason.UNUSUAL_CONFIGURATION);
                         return null;
                     }
 
                     if (ccalc.flowFrom === null) {
                         if (ccalc.peakFlowRate !== 0) {
-                            throw new Error('missing flow from attribute');
+                            throw new Error("missing flow from attribute");
                         }
                     }
 
@@ -117,7 +121,6 @@ export class RingMainCalculator {
                         // is a sink, flowing out
                         mergePsdProfile(psd, ccalc.psdProfile!);
                     }
-
                 }
 
                 if (psd.size !== 0) {
@@ -128,7 +131,7 @@ export class RingMainCalculator {
         }
 
         if (sourceNode === null || systemUid === null) {
-            console.log('no source found');
+            console.log("no source found");
             // TODO: everything zero. But wait, this is kinda impossible since we should be sized already at 0...
             return null;
         }
@@ -141,10 +144,10 @@ export class RingMainCalculator {
         for (const [suid, profile] of sinks) {
             const pcount = countPsdProfile(profile);
             if (totalFRLS.fromDwellings) {
-                sinkFlowsLS.set(suid.connectable, totalFRLS.flowRateLS *  pcount.dwellings / psdCountTotal.dwellings);
+                sinkFlowsLS.set(suid.connectable, (totalFRLS.flowRateLS * pcount.dwellings) / psdCountTotal.dwellings);
             } else {
                 const fromUnits = totalFRLS.flowRateLS - psdCountTotal.continuousFlowLS;
-                const fromUnitsAdjusted = fromUnits ? fromUnits * pcount.units / psdCountTotal.units : 0;
+                const fromUnitsAdjusted = fromUnits ? (fromUnits * pcount.units) / psdCountTotal.units : 0;
                 sinkFlowsLS.set(suid.connectable, fromUnitsAdjusted + pcount.continuousFlowLS);
             }
         }
@@ -154,8 +157,8 @@ export class RingMainCalculator {
             actualTotalFlowLS += f;
         }
 
-        console.log('sinkFlowLS: ' + JSON.stringify(Array.from(sinkFlowsLS.entries())));
-        console.log('actual flow rate: ' + actualTotalFlowLS);
+        console.log("sinkFlowLS: " + JSON.stringify(Array.from(sinkFlowsLS.entries())));
+        console.log("actual flow rate: " + actualTotalFlowLS);
 
         // initialize any flow from the only source to each of the sinks, along the ring.
         // Fix the flow at the start to zero. Recreate one possible flow scenario.
@@ -177,15 +180,19 @@ export class RingMainCalculator {
         }
 
         if (Math.abs(currFlow) > EPS) {
-            throw new Error('somehow this didn\'t work');
+            throw new Error("somehow this didn't work");
         }
 
         // initial sizes
         for (const r of ring) {
             if (r.value.type === EdgeType.PIPE) {
-                const pipeObject = (this.engine.globalStore.get(r.value.uid) as Pipe);
+                const pipeObject = this.engine.globalStore.get(r.value.uid) as Pipe;
                 const pcalc = this.engine.globalStore.getOrCreateCalculation(pipeObject.entity);
-                const filled = fillPipeDefaultFields(this.engine.drawing, pipeObject.computedLengthM, pipeObject.entity);
+                const filled = fillPipeDefaultFields(
+                    this.engine.drawing,
+                    pipeObject.computedLengthM,
+                    pipeObject.entity
+                );
                 let initialSize = lowerBoundTable(this.engine.catalog.pipes[filled.material!].pipesBySize, 0)!;
                 if (pipeObject.entity.diameterMM) {
                     // there is a custom diameter
@@ -217,11 +224,13 @@ export class RingMainCalculator {
             case RingMainCalculationMethod.ISOLATION_CASES:
                 for (const r of ring) {
                     if (r.value.type === EdgeType.PIPE) {
-
-                        const pipeObject = (this.engine.globalStore.get(r.value.uid) as Pipe);
+                        const pipeObject = this.engine.globalStore.get(r.value.uid) as Pipe;
                         const pcalc = this.engine.globalStore.getOrCreateCalculation(pipeObject.entity);
                         if (peakFlowFromIsolation.has(r.value.uid)) {
-                            this.engine.sizePipeForFlowRate(pipeObject.entity, Math.abs(peakFlowFromIsolation.getFlow(r.value.uid)));
+                            this.engine.sizePipeForFlowRate(
+                                pipeObject.entity,
+                                Math.abs(peakFlowFromIsolation.getFlow(r.value.uid))
+                            );
                         }
                         pcalc.isRingMain = true;
                     }
@@ -237,13 +246,7 @@ export class RingMainCalculator {
             switch (this.engine.doc.drawing.metadata.calculationParams.ringMainCalculationMethod) {
                 case RingMainCalculationMethod.PSD_FLOW_RATE_DISTRIBUTED:
                 case RingMainCalculationMethod.MAX_DISTRIBUTED_AND_ISOLATION_CASES:
-                    adjustments = adjustPathHardyCross(
-                        assignment,
-                        ring,
-                        this.engine.flowGraph,
-                        0,
-                        this.engine,
-                    );
+                    adjustments = adjustPathHardyCross(assignment, ring, this.engine.flowGraph, 0, this.engine);
                     break;
                 default:
                     assertUnreachable(this.engine.doc.drawing.metadata.calculationParams.ringMainCalculationMethod);
@@ -251,31 +254,37 @@ export class RingMainCalculator {
 
             for (const r of ring) {
                 if (r.value.type === EdgeType.PIPE) {
-
-                    const pipeObject = (this.engine.globalStore.get(r.value.uid) as Pipe);
+                    const pipeObject = this.engine.globalStore.get(r.value.uid) as Pipe;
                     const pcalc = this.engine.globalStore.getOrCreateCalculation(pipeObject.entity);
-                    this.engine.sizePipeForFlowRate(pipeObject.entity, Math.max(
-                        Math.abs(peakFlowFromIsolation.getFlow(r.value.uid)),
-                        Math.abs(assignment.getFlow(r.uid)),
-                    ));
+                    this.engine.sizePipeForFlowRate(
+                        pipeObject.entity,
+                        Math.max(
+                            Math.abs(peakFlowFromIsolation.getFlow(r.value.uid)),
+                            Math.abs(assignment.getFlow(r.uid))
+                        )
+                    );
                     pcalc.isRingMain = true;
                 }
             }
 
             if (adjustments < EPS) {
-                console.log('stopping because no more changes');
+                console.log("stopping because no more changes");
                 break;
             }
-
         }
         return assignment;
     }
 
-    sizeRingWithIsolationScenarios(ring: Array<Edge<FlowNode, FlowEdge>>, sourceNode: string, sinks: Array<[FlowNode, PsdProfile]>, systemUid: string): FlowAssignment {
+    sizeRingWithIsolationScenarios(
+        ring: Array<Edge<FlowNode, FlowEdge>>,
+        sourceNode: string,
+        sinks: Array<[FlowNode, PsdProfile]>,
+        systemUid: string
+    ): FlowAssignment {
         // For this problem, imagine that the source is at 12 o'clock as a visualization only.
         const sourceIx = ring.findIndex((e) => e.to.connectable === sourceNode);
         if (sourceIx === -1) {
-            throw new Error('source not found');
+            throw new Error("source not found");
         }
 
         // find extreme of the isolation valves
@@ -283,10 +292,9 @@ export class RingMainCalculator {
         for (let i = 0; i < ring.length; i++) {
             const ix = (sourceIx + i) % ring.length;
             if (ring[ix].value.type === EdgeType.ISOLATION_THROUGH) {
-
                 const obj = this.engine.globalStore.get(ring[ix].to.connectable) as DirectedValve;
                 if (obj.entity.valve.type !== ValveType.ISOLATION_VALVE) {
-                    throw new Error('misconfigured flow graph');
+                    throw new Error("misconfigured flow graph");
                 }
                 if (obj.entity.valve.makeIsolationCaseOnRingMains) {
                     isolationLocations.push(ix);
@@ -355,7 +363,7 @@ export class RingMainCalculator {
 
     calculateAllRings() {
         const rings = this.findUnsizedRingMains();
-        console.log('rings: ' + rings.length + ' ' + JSON.stringify(rings.map((rs) => rs.length)));
+        console.log("rings: " + rings.length + " " + JSON.stringify(rings.map((rs) => rs.length)));
         for (const r of rings) {
             this.sizeSingleRing(r);
         }

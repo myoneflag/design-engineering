@@ -1,9 +1,7 @@
-import {Entity, PrimaryGeneratedColumn, Column, OneToOne} from "typeorm";
-import {BaseEntity} from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class ContactMessage extends BaseEntity {
-
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -19,12 +17,12 @@ export class ContactMessage extends BaseEntity {
     @Column()
     sentOn: Date;
 
-    @Column({select: false})
+    @Column({ select: false })
     ip: string;
 }
 
 export function allContactMessageColumns(except?: Array<keyof ContactMessage>): Array<keyof ContactMessage> {
-    const res: Array<keyof ContactMessage> = ['id', 'name', 'message', 'email', 'sentOn', 'ip'];
+    const res: Array<keyof ContactMessage> = ["id", "name", "message", "email", "sentOn", "ip"];
     if (except) {
         return res.filter((c) => !except.includes(c));
     } else {

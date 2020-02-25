@@ -14,17 +14,17 @@
         </PropertiesWindow>
 
         <CalculationsSidebar
-            v-if="document.uiState.drawingMode === 2 && initialized && (!toolHandler || toolHandler.config.calculationSideBar)"
+            v-if="
+                document.uiState.drawingMode === 2 &&
+                    initialized &&
+                    (!toolHandler || toolHandler.config.calculationSideBar)
+            "
             :objects="allObjects"
             :on-change="scheduleDraw"
         >
         </CalculationsSidebar>
 
-        <LevelSelector
-            v-if="levelSelectorVisible && initialized"
-            :object-store="globalStore"
-        >
-        </LevelSelector>
+        <LevelSelector v-if="levelSelectorVisible && initialized" :object-store="globalStore"> </LevelSelector>
 
         <div ref="canvasFrame" class="fullFrame" v-bind:class="{ disableMouseEvents: shouldDisableUIMouseEvents }">
             <DrawingNavBar :loading="isLoading" />
@@ -61,18 +61,21 @@
             />
 
             <CalculationTopBar
-                v-if="document.uiState.drawingMode === 2 && initialized && (!toolHandler || toolHandler.config.calculationTopBar)"
+                v-if="
+                    document.uiState.drawingMode === 2 &&
+                        initialized &&
+                        (!toolHandler || toolHandler.config.calculationTopBar)
+                "
                 :demandType.sync="demandType"
                 :is-calculating="isCalculating"
                 :on-re-calculate="considerCalculating"
             />
 
             <PDFSnapshotTopBar
-                    v-if="toolHandler && toolHandler.config.paperSnapshotTopBar"
-                    :canvas-context="thisContext"
-                    :tool-handler="toolHandler"
+                v-if="toolHandler && toolHandler.config.paperSnapshotTopBar"
+                :canvas-context="thisContext"
+                :tool-handler="toolHandler"
             >
-
             </PDFSnapshotTopBar>
 
             <Toolbar
@@ -89,7 +92,6 @@
 
             <InstructionPage v-if="documentBrandNew && toolHandler === null" />
 
-
             <div v-if="document.uiState.levelUid === null" class="choose-level-instruction">
                 <v-icon name="arrow-left" scale="2"></v-icon> Please Choose a Level
             </div>
@@ -99,109 +101,106 @@
 </template>
 
 <script lang="ts">
-    import Vue from "vue";
-    import Component from "vue-class-component";
-    import { ViewPort } from "../../../src/htmlcanvas/viewport";
-    import { DocumentState, EntityParam } from "../../../src/store/document/types";
-    import { drawGridLines, drawLoadingUnits, drawPaperScale } from "../../../src/htmlcanvas/on-screen-items";
-    import ModeButtons from "../../../src/components/editor/ModeButtons.vue";
-    import PropertiesWindow from "../../../src/components/editor/property-window/PropertiesWindow.vue";
-    import { DrawingMode, MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
-    import BackgroundLayer from "../../../src/htmlcanvas/layers/background-layer";
-    import * as TM from "transformation-matrix";
-    import {
-        cooperativeYield,
-        decomposeMatrix,
-        InterruptedError,
-        KeyCode,
-        matrixScale
-    } from "../../../src/htmlcanvas/utils";
-    import Toolbar from "../../../src/components/editor/Toolbar.vue";
-    import LoadingScreen from "../../../src/views/LoadingScreen.vue";
-    import { MainEventBus } from "../../../src/store/main-event-bus";
-    import { ToolConfig } from "../../../src/store/tools/types";
-    import { DEFAULT_TOOL, ToolHandler } from "../../../src/htmlcanvas/lib/tool";
-    import uuid from "uuid";
-    import { renderPdf } from "../../../src/api/pdf";
-    import HydraulicsLayer from "../../../src/htmlcanvas/layers/hydraulics-layer";
-    import Layer, { SelectMode } from "../../../src/htmlcanvas/layers/layer";
-    import HydraulicsInsertPanel from "../../../src/components/editor/HydraulicsInsertPanel.vue";
-    import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
-    import { EntityType, getReferences } from "../../../../common/src/api/document/entities/types";
-    import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
-    import insertRiser from "../../htmlcanvas/tools/insert-riser";
-    import insertPipes from "../../../src/htmlcanvas/tools/insert-pipes";
-    import insertValve from "../../../src/htmlcanvas/tools/insert-valve";
-    import { DrawingContext, SelectionTarget, ValveId } from "../../../src/htmlcanvas/lib/types";
-    import { BackgroundEntity } from "../../../../common/src/api/document/entities/background-entity";
-    import insertBigValve from "../../htmlcanvas/tools/insert-big-valve";
-    import insertFixture from "../../../src/htmlcanvas/tools/insert-fixture";
-    import FloorPlanInsertPanel from "../../../src/components/editor/FloorPlanInsertPanel.vue";
-    import InstructionPage from "../../../src/components/editor/InstructionPage.vue";
-    import CalculationTopBar from "../CalculationTopBar.vue";
-    import { DemandType } from "../../../src/calculations/types";
-    import CalculationEngine from "../../../src/calculations/calculation-engine";
-    import CalculationLayer from "../../../src/htmlcanvas/layers/calculation-layer";
-    import { getVisibleBoundingBox, levelIncludesRiser } from "../../../src/htmlcanvas/lib/utils";
-    import {
-        DrawableEntityConcrete,
-        isCenteredEntity
-    } from "../../../../common/src/api/document/entities/concrete-entity";
-    import SelectBox from "../../../src/htmlcanvas/objects/select-box";
-    import * as _ from "lodash";
-    import { AutoConnector } from "../../../src/htmlcanvas/lib/black-magic/auto-connect";
-    import insertDirectedValve from "../../../src/htmlcanvas/tools/insert-directed-valve";
-    import { ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
-    import { countPsdUnits } from "../../../src/calculations/utils";
-    import CalculationsSidebar from "../../../src/components/editor/CalculationsSidebar.vue";
-    import DrawingNavBar from "../DrawingNavBar.vue";
-    import LevelSelector from "./LevelSelector.vue";
-    import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
-    import util from "util";
-    import insertLoadNode from "../../htmlcanvas/tools/insert-load-node";
-    import { NodeType } from "../../../../common/src/api/document/entities/load-node-entity";
-    import { BigValveType } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
-    import { Buffer } from "./RenderBuffer";
-    import { GlobalStore } from "../../htmlcanvas/lib/global-store";
-    import insertFlowSource from "../../htmlcanvas/tools/insert-flow-source";
-    import insertPlant from "../../htmlcanvas/tools/insert-plant";
-    import { assertUnreachable } from "../../../../common/src/api/config";
-    import { Catalog } from "../../../../common/src/api/catalog/types";
-    import { Coord, FlowSystemParameters, Level, NetworkType } from "../../../../common/src/api/document/drawing";
-    import { APIResult } from "../../../../common/src/api/document/types";
-    import { rebaseAll } from "../../htmlcanvas/lib/black-magic/rebase-all";
-    import { globalStore } from "../../store/document/mutations";
-    import HistoryView from "./HistoryView.vue";
-    import { DEFAULT_FONT_NAME } from "../../config";
-    import { cloneSimple } from "../../../../common/src/lib/utils";
-    import Riser from "../../htmlcanvas/objects/riser";
-    import stringify from "json-stable-stringify";
-    import insertDwellingHotCold from "../../htmlcanvas/tools/insert-dwelling-hot-cold";
-    import PDFSnapshotTopBar from "../PDFSnapshotTopBar.vue";
-    import CanvasContext from "../../htmlcanvas/lib/canvas-context";
+import Vue from "vue";
+import Component from "vue-class-component";
+import { ViewPort } from "../../../src/htmlcanvas/viewport";
+import { DocumentState, EntityParam } from "../../../src/store/document/types";
+import { drawGridLines, drawLoadingUnits, drawPaperScale } from "../../../src/htmlcanvas/on-screen-items";
+import ModeButtons from "../../../src/components/editor/ModeButtons.vue";
+import PropertiesWindow from "../../../src/components/editor/property-window/PropertiesWindow.vue";
+import { DrawingMode, MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
+import BackgroundLayer from "../../../src/htmlcanvas/layers/background-layer";
+import * as TM from "transformation-matrix";
+import {
+    cooperativeYield,
+    decomposeMatrix,
+    InterruptedError,
+    KeyCode,
+    matrixScale
+} from "../../../src/htmlcanvas/utils";
+import Toolbar from "../../../src/components/editor/Toolbar.vue";
+import LoadingScreen from "../../../src/views/LoadingScreen.vue";
+import { MainEventBus } from "../../../src/store/main-event-bus";
+import { ToolConfig } from "../../../src/store/tools/types";
+import { DEFAULT_TOOL, ToolHandler } from "../../../src/htmlcanvas/lib/tool";
+import uuid from "uuid";
+import { renderPdf } from "../../../src/api/pdf";
+import HydraulicsLayer from "../../../src/htmlcanvas/layers/hydraulics-layer";
+import Layer, { SelectMode } from "../../../src/htmlcanvas/layers/layer";
+import HydraulicsInsertPanel from "../../../src/components/editor/HydraulicsInsertPanel.vue";
+import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
+import { EntityType, getReferences } from "../../../../common/src/api/document/entities/types";
+import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
+import insertRiser from "../../htmlcanvas/tools/insert-riser";
+import insertPipes from "../../../src/htmlcanvas/tools/insert-pipes";
+import insertValve from "../../../src/htmlcanvas/tools/insert-valve";
+import { DrawingContext, SelectionTarget, ValveId } from "../../../src/htmlcanvas/lib/types";
+import { BackgroundEntity } from "../../../../common/src/api/document/entities/background-entity";
+import insertBigValve from "../../htmlcanvas/tools/insert-big-valve";
+import insertFixture from "../../../src/htmlcanvas/tools/insert-fixture";
+import FloorPlanInsertPanel from "../../../src/components/editor/FloorPlanInsertPanel.vue";
+import InstructionPage from "../../../src/components/editor/InstructionPage.vue";
+import CalculationTopBar from "../CalculationTopBar.vue";
+import { DemandType } from "../../../src/calculations/types";
+import CalculationEngine from "../../../src/calculations/calculation-engine";
+import CalculationLayer from "../../../src/htmlcanvas/layers/calculation-layer";
+import { getVisibleBoundingBox, levelIncludesRiser } from "../../../src/htmlcanvas/lib/utils";
+import { DrawableEntityConcrete, isCenteredEntity } from "../../../../common/src/api/document/entities/concrete-entity";
+import SelectBox from "../../../src/htmlcanvas/objects/select-box";
+import * as _ from "lodash";
+import { AutoConnector } from "../../../src/htmlcanvas/lib/black-magic/auto-connect";
+import insertDirectedValve from "../../../src/htmlcanvas/tools/insert-directed-valve";
+import { ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
+import { countPsdUnits } from "../../../src/calculations/utils";
+import CalculationsSidebar from "../../../src/components/editor/CalculationsSidebar.vue";
+import DrawingNavBar from "../DrawingNavBar.vue";
+import LevelSelector from "./LevelSelector.vue";
+import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
+import util from "util";
+import insertLoadNode from "../../htmlcanvas/tools/insert-load-node";
+import { NodeType } from "../../../../common/src/api/document/entities/load-node-entity";
+import { BigValveType } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
+import { Buffer } from "./RenderBuffer";
+import { GlobalStore } from "../../htmlcanvas/lib/global-store";
+import insertFlowSource from "../../htmlcanvas/tools/insert-flow-source";
+import insertPlant from "../../htmlcanvas/tools/insert-plant";
+import { assertUnreachable } from "../../../../common/src/api/config";
+import { Catalog } from "../../../../common/src/api/catalog/types";
+import { Coord, FlowSystemParameters, Level, NetworkType } from "../../../../common/src/api/document/drawing";
+import { APIResult } from "../../../../common/src/api/document/types";
+import { rebaseAll } from "../../htmlcanvas/lib/black-magic/rebase-all";
+import { globalStore } from "../../store/document/mutations";
+import HistoryView from "./HistoryView.vue";
+import { DEFAULT_FONT_NAME } from "../../config";
+import { cloneSimple } from "../../../../common/src/lib/utils";
+import Riser from "../../htmlcanvas/objects/riser";
+import stringify from "json-stable-stringify";
+import insertDwellingHotCold from "../../htmlcanvas/tools/insert-dwelling-hot-cold";
+import PDFSnapshotTopBar from "../PDFSnapshotTopBar.vue";
+import CanvasContext from "../../htmlcanvas/lib/canvas-context";
 
-    @Component({
-        components: {
-            PDFSnapshotTopBar,
-            HistoryView,
-            LevelSelector,
-            DrawingNavBar,
-            CalculationsSidebar,
-            CalculationTopBar,
-            InstructionPage,
-            FloorPlanInsertPanel,
-            LoadingScreen,
-            HydraulicsInsertPanel,
-            Overlay: LoadingScreen,
-            Toolbar,
-            PropertiesWindow,
-            ModeButtons
-        },
+@Component({
+    components: {
+        PDFSnapshotTopBar,
+        HistoryView,
+        LevelSelector,
+        DrawingNavBar,
+        CalculationsSidebar,
+        CalculationTopBar,
+        InstructionPage,
+        FloorPlanInsertPanel,
+        LoadingScreen,
+        HydraulicsInsertPanel,
+        Overlay: LoadingScreen,
+        Toolbar,
+        PropertiesWindow,
+        ModeButtons
+    }
 })
 export default class DrawingCanvas extends Vue {
-        get globalStore(): GlobalStore {
-            return globalStore;
-        }
+    get globalStore(): GlobalStore {
+        return globalStore;
+    }
 
     get catalogLoaded(): boolean {
         return this.$store.getters["catalog/loaded"];
@@ -228,9 +227,11 @@ export default class DrawingCanvas extends Vue {
     }
 
     get shouldDisplayModeButtons() {
-        return this.currentTool.modesVisible
-            && this.initialized
-            && this.document.uiState.drawingMode !== DrawingMode.History;
+        return (
+            this.currentTool.modesVisible &&
+            this.initialized &&
+            this.document.uiState.drawingMode !== DrawingMode.History
+        );
     }
 
     get showHistoryBar() {
@@ -247,7 +248,7 @@ export default class DrawingCanvas extends Vue {
         }
 
         const objects: BaseBackedObject[] = Object.values(this.document.drawing.shared)
-            .filter((r) => levelIncludesRiser(this.currentLevel!, r, this.$store.getters['document/sortedLevels']))
+            .filter((r) => levelIncludesRiser(this.currentLevel!, r, this.$store.getters["document/sortedLevels"]))
             .map((e) => this.globalStore.get(e.uid)!);
         if (this.currentLevel) {
             objects.push(...Object.keys(this.currentLevel.entities).map((e) => this.globalStore.get(e)!));
@@ -297,7 +298,7 @@ export default class DrawingCanvas extends Vue {
 
             { type: ValveType.PRV_SINGLE, catalogId: "prv", name: "Pressure Reducing Valve" },
             { type: ValveType.PRV_DOUBLE, catalogId: "prv", name: "PRV Dual - 50% Load Each" },
-            { type: ValveType.PRV_TRIPLE, catalogId: "prv", name: "PRV Trio - 33% Load Each" },
+            { type: ValveType.PRV_TRIPLE, catalogId: "prv", name: "PRV Trio - 33% Load Each" }
         ].map((a) => {
             if (a.name === "") {
                 a.name = this.effectiveCatalog.valves[a.catalogId].name;
@@ -435,7 +436,7 @@ export default class DrawingCanvas extends Vue {
     }
 
     get selectedIds() {
-            return this.document.uiState.selectedUids;
+        return this.document.uiState.selectedUids;
     }
 
     get isCalculating() {
@@ -456,15 +457,9 @@ export default class DrawingCanvas extends Vue {
     hasDragged: boolean = false;
 
     // The layers
-    backgroundLayer: BackgroundLayer = new BackgroundLayer(
-        this,
-    );
-    hydraulicsLayer: HydraulicsLayer = new HydraulicsLayer(
-        this,
-    );
-    calculationLayer: CalculationLayer = new CalculationLayer(
-        this,
-    );
+    backgroundLayer: BackgroundLayer = new BackgroundLayer(this);
+    hydraulicsLayer: HydraulicsLayer = new HydraulicsLayer(this);
+    calculationLayer: CalculationLayer = new CalculationLayer(this);
     allLayers: Layer[] = [];
 
     toolHandler: ToolHandler | null = null;
@@ -514,8 +509,8 @@ export default class DrawingCanvas extends Vue {
         // At the moment, even small diffable updates go through the full treatment.
 
         MainEventBus.$on("redraw", this.scheduleDraw);
-        MainEventBus.$on('entity-select', this.onEntitySelect);
-        MainEventBus.$on('interaction-complete', this.onInteractionComplete);
+        MainEventBus.$on("entity-select", this.onEntitySelect);
+        MainEventBus.$on("interaction-complete", this.onInteractionComplete);
 
         MainEventBus.$on("committed", this.onCommitted);
         MainEventBus.$on("set-tool-handler", this.setToolHandler);
@@ -530,18 +525,18 @@ export default class DrawingCanvas extends Vue {
         MainEventBus.$on("update-pipe-endpoints", this.onPipeEndpoints);
         MainEventBus.$on("update-entity", this.onUpdateEntity);
 
-        MainEventBus.$on('keydown', this.onKeyDown);
+        MainEventBus.$on("keydown", this.onKeyDown);
 
-        MainEventBus.$on('validate-and-commit', this.onValidateAndCommit);
-        MainEventBus.$on('drawing-loaded', this.onDrawingLoaded);
+        MainEventBus.$on("validate-and-commit", this.onValidateAndCommit);
+        MainEventBus.$on("drawing-loaded", this.onDrawingLoaded);
 
-        MainEventBus.$on('set-scale', this.onSetScale);
-        MainEventBus.$on('set-detail-scale', this.onDetailScale);
+        MainEventBus.$on("set-scale", this.onSetScale);
+        MainEventBus.$on("set-detail-scale", this.onDetailScale);
         this.$watch(
             () => this.document.uiState.drawingMode,
             (newVal, oldVal) => {
                 if (oldVal === DrawingMode.History && newVal !== DrawingMode.History) {
-                    this.$store.dispatch('document/revertFull');
+                    this.$store.dispatch("document/revertFull");
                     this.scheduleDraw();
                 }
                 this.document.uiState.selectedUids.splice(0);
@@ -557,11 +552,9 @@ export default class DrawingCanvas extends Vue {
 
         this.allLayers.push(this.backgroundLayer, this.hydraulicsLayer, this.calculationLayer);
 
-
         if (this.document.uiState.loaded) {
             this.onDrawingLoaded();
         }
-
 
         // set view on groundiest floor
         this.selectGroundFloor();
@@ -574,8 +567,8 @@ export default class DrawingCanvas extends Vue {
 
     destroyed() {
         MainEventBus.$off("redraw", this.scheduleDraw);
-        MainEventBus.$off('entity-select', this.onEntitySelect);
-        MainEventBus.$off('interaction-complete', this.onInteractionComplete);
+        MainEventBus.$off("entity-select", this.onEntitySelect);
+        MainEventBus.$off("interaction-complete", this.onInteractionComplete);
 
         MainEventBus.$off("committed", this.onCommitted);
         MainEventBus.$off("set-tool-handler", this.setToolHandler);
@@ -589,11 +582,11 @@ export default class DrawingCanvas extends Vue {
         MainEventBus.$off("current-level-changed", this.onCurrentLevelChanged);
         MainEventBus.$off("update-pipe-endpoints", this.onPipeEndpoints);
         MainEventBus.$off("update-entity", this.onUpdateEntity);
-        MainEventBus.$off('keydown', this.onKeyDown);
-        MainEventBus.$off('validate-and-commit', this.onValidateAndCommit);
-        MainEventBus.$off('drawing-loaded', this.onDrawingLoaded);
-        MainEventBus.$off('set-scale', this.onSetScale);
-        MainEventBus.$off('set-detail-scale', this.onDetailScale);
+        MainEventBus.$off("keydown", this.onKeyDown);
+        MainEventBus.$off("validate-and-commit", this.onValidateAndCommit);
+        MainEventBus.$off("drawing-loaded", this.onDrawingLoaded);
+        MainEventBus.$off("set-scale", this.onSetScale);
+        MainEventBus.$off("set-detail-scale", this.onDetailScale);
         this.document.uiState.lastCalculationId = -1;
     }
 
@@ -603,22 +596,18 @@ export default class DrawingCanvas extends Vue {
 
     onSetScale(screenScale: number) {
         const currS = matrixScale(this.viewPort.screen2worldMatrix);
-        this.viewPort.rescale(1 / currS * screenScale, this.viewPort.width / 2, this.viewPort.height / 2);
+        this.viewPort.rescale((1 / currS) * screenScale, this.viewPort.width / 2, this.viewPort.height / 2);
     }
 
     onDetailScale(detailScale: number) {
-        console.log('detail scale: ' + detailScale);
         // preserve screen scale
         const oldScreenScale = matrixScale(this.viewPort.screen2worldMatrix);
         this.viewPort.screenScale = detailScale;
         const newScreenScale = matrixScale(this.viewPort.screen2worldMatrix);
-        console.log('old: ' + oldScreenScale + ' new: ' + newScreenScale);
-        console.log('old screen s: ' + matrixScale(this.viewPort.screenToSurface) + ' old world s: ' + matrixScale(this.viewPort.surfaceToWorld));
         this.viewPort.rescale(oldScreenScale / newScreenScale, this.viewPort.width / 2, this.viewPort.height / 2);
-        console.log('new viewport scale: ' + matrixScale(this.viewPort.screen2worldMatrix));
     }
 
-    onEntitySelect({entity, e}: {entity: DrawableEntityConcrete, e: MouseEvent}) {
+    onEntitySelect({ entity, e }: { entity: DrawableEntityConcrete; e: MouseEvent }) {
         if (e.ctrlKey) {
             this.select([entity.uid], SelectMode.Add);
         } else if (e.shiftKey) {
@@ -664,8 +653,9 @@ export default class DrawingCanvas extends Vue {
             default:
                 assertUnreachable(mode);
         }
-        let backgroundEntityIndex =
-            this.selectedIds.findIndex((euid) => this.globalStore.get(euid)!.type === EntityType.BACKGROUND_IMAGE);
+        let backgroundEntityIndex = this.selectedIds.findIndex(
+            (euid) => this.globalStore.get(euid)!.type === EntityType.BACKGROUND_IMAGE
+        );
         if (backgroundEntityIndex !== -1) {
             this.selectedIds.splice(0, this.selectedIds.length, this.selectedIds[backgroundEntityIndex]);
         }
@@ -717,7 +707,8 @@ export default class DrawingCanvas extends Vue {
             if (o) {
                 result.add(o.uid);
                 o.getNeighbours().forEach((no) => {
-                    if (no) { // sometimes our object is out of sync because our events lagged, but this should eventually coincide.
+                    if (no) {
+                        // sometimes our object is out of sync because our events lagged, but this should eventually coincide.
                         if (!result.has(no.uid)) {
                             result.add(no.uid);
                             no.getNeighbours().forEach((nno) => {
@@ -797,13 +788,13 @@ export default class DrawingCanvas extends Vue {
 
     onUndo() {
         if (this.toolHandler === null) {
-            this.$store.dispatch('document/undo');
+            this.$store.dispatch("document/undo");
         }
     }
 
     onRedo() {
         if (this.toolHandler === null) {
-            this.$store.dispatch('document/redo');
+            this.$store.dispatch("document/redo");
         }
     }
 
@@ -864,7 +855,7 @@ export default class DrawingCanvas extends Vue {
 
     onValidateAndCommit(logUndo: boolean, tryToFix: boolean = false) {
         if (this.document.uiState.drawingMode === DrawingMode.History) {
-            this.$store.dispatch('document/revert');
+            this.$store.dispatch("document/revert");
             return;
         }
 
@@ -875,9 +866,9 @@ export default class DrawingCanvas extends Vue {
         }
         const res = this.validate(tryToFix);
         if (res.success) {
-            this.$store.dispatch('document/commit', logUndo);
+            this.$store.dispatch("document/commit", logUndo);
         } else {
-            this.$store.dispatch('document/revert');
+            this.$store.dispatch("document/revert");
             this.$bvModal.msgBoxOk(res.message);
             this.scheduleDraw();
         }
@@ -889,12 +880,12 @@ export default class DrawingCanvas extends Vue {
         const seen = new Set<string>();
         for (const o of this.globalStore.values()) {
             if (o.entity.type === EntityType.PIPE) {
-                const key = o.entity.endpointUid[0] + ':' + o.entity.endpointUid[1];
+                const key = o.entity.endpointUid[0] + ":" + o.entity.endpointUid[1];
                 if (seen.has(key)) {
                     this.deleteEntity(o);
-                    numDeleted ++;
+                    numDeleted++;
                 } else {
-                    const key2 = o.entity.endpointUid[1] + ':' + o.entity.endpointUid[0];
+                    const key2 = o.entity.endpointUid[1] + ":" + o.entity.endpointUid[0];
                     seen.add(key);
                     seen.add(key2);
                 }
@@ -902,7 +893,7 @@ export default class DrawingCanvas extends Vue {
         }
 
         if (numDeleted) {
-            this.$bvModal.msgBoxOk('Info: Deleted ' + numDeleted + ' duplicate pipes');
+            this.$bvModal.msgBoxOk("Info: Deleted " + numDeleted + " duplicate pipes");
         }
     }
 
@@ -929,9 +920,9 @@ export default class DrawingCanvas extends Vue {
                     if (!ok) {
                         const ep: EntityParam = {
                             entity: o.entity,
-                            levelUid: this.globalStore.levelOfEntity.get(o.entity.uid)!,
+                            levelUid: this.globalStore.levelOfEntity.get(o.entity.uid)!
                         };
-                        this.$store.dispatch('document/deleteEntityOn', ep);
+                        this.$store.dispatch("document/deleteEntityOn", ep);
                     } else {
                     }
                     break;
@@ -951,7 +942,6 @@ export default class DrawingCanvas extends Vue {
                     break;
                 case EntityType.PLANT:
                     break;
-
             }
         }
     }
@@ -965,7 +955,7 @@ export default class DrawingCanvas extends Vue {
         }
         return {
             success: true,
-            data: undefined,
+            data: undefined
         };
     }
 
@@ -1002,13 +992,12 @@ export default class DrawingCanvas extends Vue {
             const objectLevel = this.globalStore.levelOfEntity.get(selectionTarget.uid);
 
             if (objectLevel && (this.currentLevel === null || objectLevel !== this.currentLevel.uid)) {
-                await this.$store.dispatch('document/setCurrentLevelUid', objectLevel);
+                await this.$store.dispatch("document/setCurrentLevelUid", objectLevel);
                 await cooperativeYield();
             }
 
-
             if (this.currentLevel!.uid !== objectLevel) {
-                throw new Error('Level didn\'t change properly');
+                throw new Error("Level didn't change properly");
             }
 
             const obj = this.globalStore.get(selectionTarget.uid);
@@ -1223,7 +1212,6 @@ export default class DrawingCanvas extends Vue {
     async drawFast() {
         // this.sanityCheckGlobalStore();
         try {
-
             if (this.ctx != null && (this.$refs.canvasFrame as any) != null) {
                 const width = (this.$refs.canvasFrame as any).clientWidth - 1;
                 const height = (this.$refs.canvasFrame as any).clientHeight;
@@ -1274,8 +1262,9 @@ export default class DrawingCanvas extends Vue {
             for (const layer of this.allLayers) {
                 layer.drawReactiveLayer(
                     context,
-                    this.document.uiState.drawingMode === DrawingMode.History ?
-                        [] : [...this.interactiveUids, ...this.uncommittedEntityUids],
+                    this.document.uiState.drawingMode === DrawingMode.History
+                        ? []
+                        : [...this.interactiveUids, ...this.uncommittedEntityUids],
                     reactive
                 );
             }
@@ -1304,25 +1293,22 @@ export default class DrawingCanvas extends Vue {
                     this.effectiveCatalog,
                     countPsdUnits(
                         Array.from(
-                            (this.globalStore.entitiesInLevel
-                                .get(this.document.uiState.levelUid) || new Set())
-                                .values()
+                            (this.globalStore.entitiesInLevel.get(this.document.uiState.levelUid) || new Set()).values()
                         ).map((u) => {
                             if (!this.globalStore.has(u)) {
                                 throw new Error("can't find uid " + u);
                             }
-                            return this.globalStore.get(u)!.entity
+                            return this.globalStore.get(u)!.entity;
                         }),
                         this.document,
                         this.effectiveCatalog,
-                        this.globalStore,
-                    ),
+                        this.globalStore
+                    )
                 );
             }
         }
 
         // draw gridlines
-
 
         // draw selection box
         if (this.selectBox) {
@@ -1340,7 +1326,6 @@ export default class DrawingCanvas extends Vue {
     }
 
     async drawFull(altCtx?: CanvasRenderingContext2D, altVp?: ViewPort, forExport: boolean = false) {
-        console.log('drawing full');
         if (!forExport) {
             this.simulDraws++;
         }
@@ -1380,7 +1365,7 @@ export default class DrawingCanvas extends Vue {
             }
 
             //context.vp = altVp || this.viewPort.copy(); // hack for the use case of the beforeDraw api. Perhaps there's
-                                                        // a nicer way.
+            // a nicer way.
 
             // this.buffer.transform = this.viewPort.world2ScreenMatrix; do that at the end
             this.lastDrawingContext = context;
@@ -1392,7 +1377,7 @@ export default class DrawingCanvas extends Vue {
                     shouldContinue,
                     reactive,
                     this.currentTool,
-                    forExport,
+                    forExport
                 );
             }
             const filters =
@@ -1402,7 +1387,8 @@ export default class DrawingCanvas extends Vue {
 
             await this.hydraulicsLayer.draw(
                 context,
-                this.document.uiState.drawingMode === DrawingMode.Hydraulics || this.document.uiState.drawingMode === DrawingMode.History,
+                this.document.uiState.drawingMode === DrawingMode.Hydraulics ||
+                    this.document.uiState.drawingMode === DrawingMode.History,
                 shouldContinue,
                 reactive,
                 this.document.uiState.drawingMode,
@@ -1415,7 +1401,7 @@ export default class DrawingCanvas extends Vue {
                 shouldContinue,
                 reactive,
                 filters,
-                forExport,
+                forExport
             );
             await cooperativeYield(shouldContinue);
 
@@ -1427,7 +1413,6 @@ export default class DrawingCanvas extends Vue {
                         await this.activeLayer.drawSelectionLayer(context, this.interactive);
                         await cooperativeYield(shouldContinue);
                     }*/
-
 
             if (!forExport) {
                 this.buffer = buffer; // swap out the buffer, so that the new render shows the new frame.
@@ -1457,18 +1442,22 @@ export default class DrawingCanvas extends Vue {
             }
 
             this.ctx.resetTransform();
-            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
             this.ctx.fillRect(0, 0, this.viewPort.width, this.viewPort.height);
-            this.ctx.fillStyle = '#FFFFFF';
-            this.ctx.font = 100 + 'px ' + DEFAULT_FONT_NAME;
-            const dims = this.ctx.measureText('Rendering Error');
-            this.ctx.fillText('Rendering Error', this.viewPort.width / 2 - dims.width / 2, this.viewPort.height / 2 - 50);
+            this.ctx.fillStyle = "#FFFFFF";
+            this.ctx.font = 100 + "px " + DEFAULT_FONT_NAME;
+            const dims = this.ctx.measureText("Rendering Error");
+            this.ctx.fillText(
+                "Rendering Error",
+                this.viewPort.width / 2 - dims.width / 2,
+                this.viewPort.height / 2 - 50
+            );
         }
     }
 
     considerCalculating() {
         if (this.document.uiState.drawingMode === DrawingMode.Calculations) {
-            if (!this.$store.getters['document/calculationsUpToDate']) {
+            if (!this.$store.getters["document/calculationsUpToDate"]) {
                 if (!this.document.uiState.isCalculating) {
                     this.calculationLayer.calculate(this, this.demandType, () => {
                         this.scheduleDraw();
@@ -1476,11 +1465,10 @@ export default class DrawingCanvas extends Vue {
                 }
             }
         }
-
     }
 
     async copySelected() {
-        this.$store.dispatch('document/resetPastes');
+        this.$store.dispatch("document/resetPastes");
         const entities: DrawableEntityConcrete[] = [];
         const objects = Array.from(this.selectedObjects);
         const seenUids = new Set<string>();
@@ -1503,23 +1491,23 @@ export default class DrawingCanvas extends Vue {
             }
         }
 
-        await navigator.clipboard.writeText(JSON.stringify({
-            type: 'h2x_clipboard',
-            entities: entities,
-        }));
-        Vue.set(this.document.uiState.pastesByLevel, this.document.uiState.levelUid || 'null', 1);
+        await navigator.clipboard.writeText(
+            JSON.stringify({
+                type: "h2x_clipboard",
+                entities: entities
+            })
+        );
+        Vue.set(this.document.uiState.pastesByLevel, this.document.uiState.levelUid || "null", 1);
     }
 
     async paste() {
         const text = await navigator.clipboard.readText();
         try {
             const val = JSON.parse(text);
-            if (val.hasOwnProperty('type') && val.type === 'h2x_clipboard') {
-
-                let nPastes = this.document.uiState.pastesByLevel[this.document.uiState.levelUid || 'null'] || 0;
+            if (val.hasOwnProperty("type") && val.type === "h2x_clipboard") {
+                let nPastes = this.document.uiState.pastesByLevel[this.document.uiState.levelUid || "null"] || 0;
 
                 const entities: DrawableEntityConcrete[] = val.entities;
-
 
                 let hasBackground = false;
                 let bgWidth = 0;
@@ -1535,7 +1523,9 @@ export default class DrawingCanvas extends Vue {
                     if (!nPastes && e.type === EntityType.RISER) {
                         // Don't duplicate the risers if copying from one level to the other
                         if (this.globalStore.has(e.uid)) {
-                            if (stringify((this.globalStore.get(e.uid) as Riser).entity.center) === stringify(e.center)) {
+                            if (
+                                stringify((this.globalStore.get(e.uid) as Riser).entity.center) === stringify(e.center)
+                            ) {
                                 continue;
                             }
                         }
@@ -1561,9 +1551,7 @@ export default class DrawingCanvas extends Vue {
                     entitiesCopied.push(JSON.parse(etext));
                 }
 
-
                 for (const e of entitiesCopied) {
-
                     if (hasBackground) {
                         // Offset only the background after each paste
                         if (e.type === EntityType.BACKGROUND_IMAGE) {
@@ -1583,19 +1571,21 @@ export default class DrawingCanvas extends Vue {
                                 e.center.y += 1000 * nPastes;
                             }
                         }
-
                     }
-                    this.$store.dispatch('document/addEntity', e);
+                    this.$store.dispatch("document/addEntity", e);
                     if (isCenteredEntity(e)) {
                         this.globalStore.get(e.uid)!.rebase(this);
                     }
                 }
-                nPastes ++;
-                Vue.set(this.document.uiState.pastesByLevel, this.document.uiState.levelUid || 'null', nPastes);
+                nPastes++;
+                Vue.set(this.document.uiState.pastesByLevel, this.document.uiState.levelUid || "null", nPastes);
 
-                this.select(entitiesCopied.map((e) => this.globalStore.get(e.uid)!).filter((o) => o.selectable), SelectMode.Replace);
+                this.select(
+                    entitiesCopied.map((e) => this.globalStore.get(e.uid)!).filter((o) => o.selectable),
+                    SelectMode.Replace
+                );
             }
-            this.$store.dispatch('document/validateAndCommit');
+            this.$store.dispatch("document/validateAndCommit");
         } catch (e) {
             //
         }
@@ -1606,9 +1596,12 @@ export default class DrawingCanvas extends Vue {
         if (event.dataTransfer) {
             event.preventDefault();
             if (event.dataTransfer.files.length > 1) {
-                this.$bvModal.msgBoxOk("Please drag and drop the .PDF for the " + (this.currentLevel ? this.currentLevel.name : "current") + " level one at a time.");
+                this.$bvModal.msgBoxOk(
+                    "Please drag and drop the .PDF for the " +
+                        (this.currentLevel ? this.currentLevel.name : "current") +
+                        " level one at a time."
+                );
             } else {
-
                 for (let i = 0; i < event.dataTransfer.files.length; i++) {
                     if (!(event.dataTransfer.files.item(i) as File).name.endsWith("pdf")) {
                         continue;
@@ -1619,7 +1612,6 @@ export default class DrawingCanvas extends Vue {
                     this.insertFloorPlan(event.dataTransfer.files.item(i) as File, w);
                 }
             }
-
         }
     }
 
@@ -1633,7 +1625,6 @@ export default class DrawingCanvas extends Vue {
             this.$bvModal.msgBoxOk("Please select a level before uploading a PDF");
             return;
         }
-
 
         const lvlUid = this.currentLevel.uid;
         renderPdf(file).then((res) => {
@@ -1658,12 +1649,12 @@ export default class DrawingCanvas extends Vue {
                     scaleName,
                     uid: uuid(),
                     totalPages,
-                    key,
+                    key
                 };
 
                 const ep: EntityParam = {
                     entity: background,
-                    levelUid: lvlUid,
+                    levelUid: lvlUid
                 };
 
                 this.$store.dispatch("document/addEntityOn", ep);
@@ -1840,9 +1831,7 @@ export default class DrawingCanvas extends Vue {
         if (event.deltaY < 0) {
             delta = 1 / (1 - event.deltaY / 500);
         }
-        console.log(delta);
         const currS = matrixScale(this.viewPort.surfaceToWorld);
-        console.log(currS);
         delta = Math.max(0.5 / currS, delta);
         delta = Math.min(2000 / currS, delta);
 
@@ -1852,14 +1841,13 @@ export default class DrawingCanvas extends Vue {
 
         this.scheduleDraw();
     }
-        isSelected(object: BaseBackedObject | string) {
-            if (object instanceof BaseBackedObject) {
-                return this.selectedIds.indexOf(object.uid) !== -1;
-            } else {
-                return this.selectedIds.indexOf(object) !== -1;
-            }
+    isSelected(object: BaseBackedObject | string) {
+        if (object instanceof BaseBackedObject) {
+            return this.selectedIds.indexOf(object.uid) !== -1;
+        } else {
+            return this.selectedIds.indexOf(object) !== -1;
         }
-
+    }
 }
 </script>
 

@@ -37,7 +37,7 @@ export interface ContextualPCE extends PsdCountEntry {
     correlationGroup: string;
 }
 
-export class PsdProfile extends Map<string, ContextualPCE> {};
+export class PsdProfile extends Map<string, ContextualPCE> {}
 
 export interface PsdUnitsByFlowSystem {
     [key: string]: PsdCountEntry;
@@ -47,7 +47,7 @@ export function countPsdUnits(
     entities: DrawableEntityConcrete[],
     doc: DocumentState,
     catalog: Catalog,
-    objectStore: ObjectStore,
+    objectStore: ObjectStore
 ): PsdUnitsByFlowSystem | null {
     let result: PsdUnitsByFlowSystem | null = null;
     entities.forEach((e) => {
@@ -178,7 +178,12 @@ export function insertPsdProfile(profile: PsdProfile, count: ContextualPCE) {
         profile.set(count.entity, count);
     } else {
         if (!equalPsdCounts(count, profile.get(count.entity)!)) {
-            throw new Error('Psd Profile given inconsistent values, before ' + JSON.stringify(profile.get(count.entity)) + ' after ' + JSON.stringify(count));
+            throw new Error(
+                "Psd Profile given inconsistent values, before " +
+                    JSON.stringify(profile.get(count.entity)) +
+                    " after " +
+                    JSON.stringify(count)
+            );
         }
     }
 }
@@ -196,7 +201,7 @@ export function countPsdProfile(profile: PsdProfile): PsdCountEntry {
         if (byCorrelated.has(contextual.correlationGroup)) {
             const cmp = comparePsdCounts(contextual, byCorrelated.get(contextual.correlationGroup)!);
             if (cmp === null) {
-                throw new Error('could not determine max PSD');
+                throw new Error("could not determine max PSD");
             }
             if (cmp > 0) {
                 byCorrelated.set(contextual.correlationGroup, contextual);
@@ -220,7 +225,7 @@ export function subtractPsdProfiles(profile: PsdProfile, operand: PsdProfile): v
         }
 
         if (!profile.has(contextual.entity)) {
-            throw new Error('Subtracting from a value that doesn\'t exist');
+            throw new Error("Subtracting from a value that doesn't exist");
         }
 
         const prev = profile.get(contextual.entity)!;
@@ -229,7 +234,7 @@ export function subtractPsdProfiles(profile: PsdProfile, operand: PsdProfile): v
             entity: contextual.entity,
             units: prev.units - contextual.units,
             continuousFlowLS: prev.continuousFlowLS - contextual.continuousFlowLS,
-            dwellings: prev.dwellings - contextual.dwellings,
+            dwellings: prev.dwellings - contextual.dwellings
         });
     });
 }
@@ -248,7 +253,7 @@ export function zeroContextualPCE(entity: string, correlationGroup: string): Con
         correlationGroup,
         continuousFlowLS: 0,
         units: 0,
-        dwellings: 0,
+        dwellings: 0
     };
 }
 
@@ -279,7 +284,7 @@ export function lookupFlowRate(
     doc: DocumentState,
     catalog: Catalog,
     systemUid: string,
-    forceDwellings: boolean = false,
+    forceDwellings: boolean = false
 ): FlowRateResult | null {
     const psd = doc.drawing.metadata.calculationParams.psdMethod;
     const standard = catalog.psdStandards[psd];
@@ -306,7 +311,6 @@ export function lookupFlowRate(
 
             fromLoading = a * psdU.units ** b - c;
         }
-
     } else if (standard.type === PSDStandardType.LU_HOT_COLD_LOOKUP_TABLE) {
         const table = standard.hotColdTable;
         if (systemUid === StandardFlowSystemUids.ColdWater) {
@@ -368,7 +372,7 @@ export function lookupFlowRate(
         if (fromLoading === null) {
             return null;
         }
-        return { flowRateLS: fromLoading! + psdU.continuousFlowLS, fromDwellings: false } ;
+        return { flowRateLS: fromLoading! + psdU.continuousFlowLS, fromDwellings: false };
     } else {
         if (fromDwellings === null) {
             return null;
@@ -377,7 +381,12 @@ export function lookupFlowRate(
     }
 }
 
-export function getFields(entity: DrawableEntityConcrete, doc: DocumentState, globalStore: GlobalStore, catalog?: Catalog): CalculationField[] {
+export function getFields(
+    entity: DrawableEntityConcrete,
+    doc: DocumentState,
+    globalStore: GlobalStore,
+    catalog?: Catalog
+): CalculationField[] {
     switch (entity.type) {
         case EntityType.RISER:
             return makeRiserCalculationFields(entity, doc);

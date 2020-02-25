@@ -57,7 +57,7 @@ export function diffObject(before: any, after: any, filter: any): any {
             return undefined;
         }
 
-        if (typeof before === 'number' && typeof after === 'number') {
+        if (typeof before === "number" && typeof after === "number") {
             if (Math.abs(before - after) < EPS) {
                 return undefined;
             }
