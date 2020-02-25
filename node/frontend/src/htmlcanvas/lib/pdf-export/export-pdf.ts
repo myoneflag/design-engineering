@@ -714,6 +714,7 @@ export async function snapshotToSvg(
 
     const oldLevelUid = canvasContext.document.uiState.levelUid;
     canvasContext.document.uiState.levelUid = levelUid;
+    context.backgroundLayer.reloadLevel();
     context.hydraulicsLayer.reloadLevel();
     context.calculationLayer.reloadLevel();
 
