@@ -145,6 +145,8 @@ export function makeDirectedValveFields(
             }
             break;
         }
+        case ValveType.RETURN_PUMP:
+            break;
         default:
             assertUnreachable(entity.valve);
     }

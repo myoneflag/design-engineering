@@ -108,7 +108,8 @@ export enum EdgeType {
     CHECK_THROUGH,
     ISOLATION_THROUGH,
 
-    PLANT_THROUGH
+    PLANT_THROUGH,
+    RETURN_PUMP,
 }
 
 export interface FlowEdge {
@@ -713,6 +714,7 @@ export default class CalculationEngine {
                             }
                             case EdgeType.FITTING_FLOW:
                             case EdgeType.CHECK_THROUGH:
+                            case EdgeType.RETURN_PUMP:
                             case EdgeType.ISOLATION_THROUGH: {
                                 const sourcePipe = this.globalStore.get(flowFrom.connection);
                                 const destPipe = this.globalStore.get(flowTo.connection);
@@ -1045,6 +1047,22 @@ export default class CalculationEngine {
                             uid: entity.uid
                         }
                     );
+                    break;
+                case ValveType.RETURN_PUMP:
+                    this.flowGraph.addEdge(
+                        {
+                            connectable: entity.uid,
+                            connection: entity.sourceUid
+                        },
+                        {
+                            connectable: entity.uid,
+                            connection: other
+                        },
+                        {
+                            type: EdgeType.RETURN_PUMP,
+                            uid: entity.uid
+                        }
+                    )
                     break;
                 default:
                     assertUnreachable(entity.valve);
@@ -1555,6 +1573,7 @@ export default class CalculationEngine {
                         case ValveType.ISOLATION_VALVE:
                         case ValveType.WATER_METER:
                         case ValveType.STRAINER:
+                        case ValveType.RETURN_PUMP:
                             break;
                         default:
                             assertUnreachable(obj.entity.valve);
@@ -2054,6 +2073,8 @@ export default class CalculationEngine {
                                         o.entity.valve.targetPressureKPA;
                                 }
                             }
+                            break;
+                        case ValveType.RETURN_PUMP:
                             break;
                         default:
                             assertUnreachable(o.entity.valve);

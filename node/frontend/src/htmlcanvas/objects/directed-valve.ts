@@ -24,14 +24,11 @@ import {
     VALVE_SIZE_MM
 } from "../../../src/htmlcanvas/lib/utils";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
-import { matrixScale } from "../../../src/htmlcanvas/utils";
 import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
 import PipeEntity, { MutablePipe } from "../../../../common/src/api/document/entities/pipe-entity";
-import DirectedValveCalculation, {
-    emptyDirectedValveCalculation
-} from "../../store/document/calculations/directed-valve-calculation";
+import DirectedValveCalculation, { emptyDirectedValveCalculation } from "../../store/document/calculations/directed-valve-calculation";
 import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import uuid from "uuid";
 import { assertUnreachable, ComponentPressureLossMethod } from "../../../../common/src/api/config";
@@ -145,6 +142,9 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             case ValveType.STRAINER:
                 this.drawStrainer(context);
                 break;
+            case ValveType.RETURN_PUMP:
+                this.drawReturnPump(context);
+                break;
             default:
                 assertUnreachable(this.entity.valve);
         }
@@ -181,6 +181,17 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             ctx.lineTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM);
             ctx.stroke();
         }
+    }
+
+    drawReturnPump(context: DrawingContext) {
+        const ctx = context.ctx;
+        ctx.beginPath();
+        ctx.moveTo(VALVE_HEIGHT_MM * Math.cos(Math.PI * 2 / 3), VALVE_HEIGHT_MM * Math.cos(Math.PI * 2 / 3));
+        ctx.lineTo(VALVE_HEIGHT_MM * Math.cos(Math.PI * 2 * 2 / 3), VALVE_HEIGHT_MM * Math.cos(Math.PI * 2 * 2/ 3));
+        ctx.lineTo(VALVE_HEIGHT_MM, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.arc(0, 0, VALVE_HEIGHT_MM, 0, Math.PI);
     }
 
     drawPrvN(context: DrawingContext, n: number) {
@@ -532,6 +543,8 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 return "PRV Double (50% Load Each)";
             case ValveType.PRV_TRIPLE:
                 return "PRV Triple (33.3% Load Each)";
+            case ValveType.RETURN_PUMP:
+                return 'Return Pump';
         }
         assertUnreachable(this.entity.valve);
     }

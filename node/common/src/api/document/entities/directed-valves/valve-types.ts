@@ -8,7 +8,8 @@ export type DirectedValveConcrete =
     | RPZDDoubleIsolated
     | PressureReliefValveSingle
     | PressureReliefValveDouble
-    | PressureReliefValveTriple;
+    | PressureReliefValveTriple
+    | ReturnPump;
 
 export interface DirectedValve {
     type: ValveType;
@@ -79,6 +80,10 @@ export interface PressureReliefValveTriple extends DirectedValve {
     isolateOneWhenCalculatingHeadLoss: boolean;
 }
 
+export interface ReturnPump extends DirectedValve {
+    type: ValveType.RETURN_PUMP;
+}
+
 export enum ValveType {
     CHECK_VALVE = "CHECK_VALVE",
     ISOLATION_VALVE = "ISOLATION_VALVE",
@@ -90,4 +95,5 @@ export enum ValveType {
     PRV_SINGLE = "PRV_SINGLE",
     PRV_DOUBLE = "PRV_DOUBLE",
     PRV_TRIPLE = "PRV_TRIPLE",
+    RETURN_PUMP = "RETURN_PUMP",
 }

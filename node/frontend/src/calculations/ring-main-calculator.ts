@@ -44,6 +44,7 @@ export class RingMainCalculator {
                             case EdgeType.FLOW_SOURCE_EDGE:
                             case EdgeType.CHECK_THROUGH:
                             case EdgeType.PLANT_THROUGH:
+                            case EdgeType.RETURN_PUMP:
                                 return false; // because directed, and can't form ring main
                         }
                     });

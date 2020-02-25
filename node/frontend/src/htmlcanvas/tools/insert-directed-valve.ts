@@ -11,9 +11,9 @@ import {
     ValveType
 } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
 import uuid from "uuid";
-import { cooperativeYield, KeyCode } from "../../../src/htmlcanvas/utils";
+import { KeyCode } from "../../../src/htmlcanvas/utils";
 import DirectedValve from "../../../src/htmlcanvas/objects/directed-valve";
-import { ConnectableEntity, Coord, FlowSystemParameters } from "../../../../common/src/api/document/drawing";
+import { Coord, FlowSystemParameters } from "../../../../common/src/api/document/drawing";
 import {
     ConnectableEntityConcrete,
     isConnectableEntity
@@ -225,6 +225,11 @@ function createBareValve(type: ValveType, catalogId: string): DirectedValveConcr
                 catalogId: catalogId as any,
                 sizeMM: null,
                 isolateOneWhenCalculatingHeadLoss: true
+            };
+        case ValveType.RETURN_PUMP:
+            return {
+                type,
+                catalogId: '', // TODO: catalog info about the pump
             };
     }
 }
