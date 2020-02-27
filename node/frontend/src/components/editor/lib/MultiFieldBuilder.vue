@@ -176,7 +176,7 @@ export default class MultiFieldBuilder extends Vue {
             case EntityType.LOAD_NODE:
                 return fillDefaultLoadNodeFields(this.document, obj.globalStore, obj.entity);
             case EntityType.PLANT:
-                return fillPlantDefaults(obj.entity);
+                return fillPlantDefaults(obj.entity, this.document.drawing);
             case EntityType.FLOW_SOURCE:
                 return fillFlowSourceDefaults(this.document.drawing, obj.entity);
         }

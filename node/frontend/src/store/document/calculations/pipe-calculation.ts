@@ -17,6 +17,12 @@ export enum NoFlowAvailableReason {
     NO_SUITABLE_PIPE_SIZE = "NO_SUITABLE_PIPE_SIZE"
 }
 
+export enum Configuration {
+    NORMAL = 'NORMAL',
+    RING_MAIN = 'RING_MAIN',
+    RETURN = 'RETURN',
+}
+
 export default interface PipeCalculation extends PsdCalculation, Calculation {
     peakFlowRate: number | null;
     noFlowAvailableReason: NoFlowAvailableReason | null;
@@ -30,7 +36,7 @@ export default interface PipeCalculation extends PsdCalculation, Calculation {
     flowFrom: string | null;
 
     psdProfile: PsdProfile | null;
-    isRingMain: boolean | null;
+    configuration: Configuration | null;
 
     velocityRealMS: number | null;
 
@@ -172,7 +178,7 @@ export function emptyPipeCalculation(): PipeCalculation {
         realNominalPipeDiameterMM: null,
         lengthM: null,
         temperatureRange: null,
-        isRingMain: null,
+        configuration: null,
         velocityRealMS: null,
         warning: null,
         psdProfile: null,

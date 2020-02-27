@@ -65,7 +65,7 @@ export default class PlantProperties extends Vue {
     }
 
     get defaultData() {
-        return fillPlantDefaults(this.$props.selectedEntity);
+        return fillPlantDefaults(this.$props.selectedEntity, this.document.drawing);
     }
 
     async onCommit() {

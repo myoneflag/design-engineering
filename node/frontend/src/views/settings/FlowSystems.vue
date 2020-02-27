@@ -129,7 +129,8 @@ export default class FlowSystems extends Vue {
                 color: { hex: "#FCDC00" },
                 uid: uuid(),
                 fluid: "water",
-                networks: cloneSimple(initialDrawing.metadata.flowSystems[0].networks)
+                networks: cloneSimple(initialDrawing.metadata.flowSystems[0].networks),
+                hasReturnSystem: false,
             });
             this.$store.dispatch("document/commit").then(() => {
                 this.selectedSystemId = this.document.drawing.metadata.flowSystems.length - 1;

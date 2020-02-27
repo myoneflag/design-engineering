@@ -10,7 +10,7 @@ import { adjustPathHardyCross } from "./flow-solver";
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
 import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import { assertUnreachable, RingMainCalculationMethod } from "../../../common/src/api/config";
-import { NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
+import { Configuration, NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
 
 export class RingMainCalculator {
     engine: CalculationEngine;
@@ -34,6 +34,9 @@ export class RingMainCalculator {
                     const ret = this.engine.flowGraph.getCycleCovering(visitedEdges, e, true, (e) => {
                         switch (e.value.type) {
                             case EdgeType.PIPE:
+                                // don't size something that's already sized as a return. Ring mains can't be on returns.
+                                const c = this.engine.globalStore.getOrCreateCalculation(this.engine.globalStore.get(e.value.uid)!.entity as PipeEntity);
+                                return (c.configuration === null || c.configuration === Configuration.RETURN) && c.peakFlowRate === null;
                             case EdgeType.FITTING_FLOW:
                             case EdgeType.ISOLATION_THROUGH:
                                 return true; // because undirected
@@ -234,8 +237,8 @@ export class RingMainCalculator {
                                 Math.abs(peakFlowFromIsolation.getFlow(r.value.uid))
                             );
                         }
-                        pcalc.isRingMain = true;
                         pcalc.psdUnits = psdAssignmentFromIsolation.get(pipeObject.uid) || null;
+                        pcalc.configuration = Configuration.RING_MAIN;
                     }
                 }
                 return peakFlowFromIsolation;
@@ -266,7 +269,7 @@ export class RingMainCalculator {
                             Math.abs(assignment.getFlow(r.uid))
                         )
                     );
-                    pcalc.isRingMain = true;
+                    pcalc.configuration = Configuration.RING_MAIN;
                 }
             }
 

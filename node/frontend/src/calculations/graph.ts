@@ -20,6 +20,24 @@ export default class Graph<N, E> {
         this.sn = sn;
     }
 
+    static fromSubgraph<N, E>(sub: SubGraph<N, E>, sn: (node: N) => string) {
+        const result = new Graph<N, E>(sn);
+        const [nodes, edges] = sub;
+        for (const n of nodes) {
+            result.addNode(n);
+        }
+        for (const e of edges) {
+            result.addDirectedEdge(
+                e.from,
+                e.to,
+                e.value,
+                e.uid,
+                e.isDirected
+            );
+        }
+        return result;
+    }
+
     addNode(node: N) {
         const nk = this.sn(node);
         if (!this.adjacencyList.has(nk)) {
@@ -27,6 +45,114 @@ export default class Graph<N, E> {
             this.reverseAdjacencyList.set(nk, []);
             this.id2Node.set(nk, node);
         }
+    }
+
+    isSeriesParallel(source: N, sink: N) {
+        // use the two operations to see if it's possible to reduce the graph to the degenerate N----N  (K2) graph.
+        // 1. Combine 2 consecutive edges together.
+        // 2. Combine 2 coinciding edges together.
+        // Maintain an index to keep things O(n) or O(n lg n)
+        const edgesByEndpoints = new Map<string, number>();
+        const adjList = new Map<string, string[]>();
+        const sourceS = this.sn(source);
+        const sinkS = this.sn(sink);
+
+        console.log('checking series parallel for a graph with ' + this.edgeList.size + ' edges');
+
+        for (const [eid, edge] of this.edgeList) {
+            const fromS = this.sn(edge.from);
+            const toS = this.sn(edge.to);
+            console.log('caching edge ' + fromS + ' ' + toS);
+            if (!adjList.has(fromS)) {
+                adjList.set(fromS, []);
+            }
+            if (!adjList.has(toS)) {
+                adjList.set(toS, []);
+            }
+
+            adjList.get(fromS)!.push(toS);
+            adjList.get(toS)!.push(fromS);
+
+            const a = JSON.stringify([fromS, toS].sort());
+            edgesByEndpoints.set(a, (edgesByEndpoints.get(a) || 0) + 1);
+        }
+
+        // maintain a queue of nodes to squash / edges to combine.
+        const nodesQ: string[] = [];
+        const edgesQ: string[] = [];
+
+        for (const [node, l] of adjList) {
+            if (l.length === 2 && node !== sourceS && node !== sinkS) {
+                console.log('node ' + node  + ' is a candidate');
+                nodesQ.push(node);
+            }
+        }
+
+        for (const [conns, n] of edgesByEndpoints) {
+            for (let i = 1; i < n; i++) {
+                console.log('edge ' + conns  + ' is a candidate');
+                edgesQ.push(conns);
+            }
+        }
+
+        let edgesRemoved = 0;
+        while (true) {
+
+            if (nodesQ.length) {
+                const n = nodesQ.pop()!;
+                if (adjList.has(n)) {
+                    if (adjList.get(n)!.length === 2 && n !== sourceS && n !== sinkS) {
+                        const [a, b] = adjList.get(n)!;
+                        console.log(' deleting node ' + n + ' conn to ' + a  + ' ' + b);
+                        // remove the two edges adjacent
+                        adjList.get(a)!.splice(adjList.get(a)!.indexOf(n), 1, b);
+                        adjList.get(b)!.splice(adjList.get(b)!.indexOf(n), 1, a);
+                        const ea = JSON.stringify([a, n].sort());
+                        const eb = JSON.stringify([b, n].sort());
+                        const eab = JSON.stringify([a, b].sort());
+                        edgesByEndpoints.set(ea, edgesByEndpoints.get(ea)! - 1);
+                        edgesByEndpoints.set(eb, edgesByEndpoints.get(eb)! - 1);
+                        edgesByEndpoints.set(eab, (edgesByEndpoints.get(eab) || 0) + 1);
+                        if (edgesByEndpoints.get(eab)! > 1) {
+                            console.log('edge ' + eab + ' is now a candidate');
+                            edgesQ.push(eab);
+                        }
+
+                        edgesRemoved ++;
+                    }
+                }
+            } else if (edgesQ.length) {
+                const e = edgesQ.pop()!;
+                if (edgesByEndpoints.has(e) && edgesByEndpoints.get(e)! > 1) {
+                    // remove coinciding edge
+                    const [a, b] = JSON.parse(e);
+                    console.log('deleting edge ' + a + ' ' + b);
+
+                    adjList.get(a)!.splice(adjList.get(a)!.indexOf(b), 1);
+                    adjList.get(b)!.splice(adjList.get(b)!.indexOf(a), 1);
+                    if (adjList.get(a)!.length === 2 && a !== sourceS && a !== sinkS) {
+                        nodesQ.push(a);
+                    }
+                    if (adjList.get(b)!.length === 2 && b !== sourceS && b !== sinkS) {
+                        nodesQ.push(b);
+                    }
+
+                    edgesByEndpoints.set(e, edgesByEndpoints.get(e)! - 1);
+
+                    edgesRemoved ++;
+                }
+            } else {
+                break;
+            }
+        }
+
+        console.log('deleted ' + edgesRemoved + ' in the process');
+        // check that the graph is degenerate
+        if (edgesRemoved === this.edgeList.size - 1) {
+            return true;
+        }
+
+        return false;
     }
 
     addDirectedEdge(from: N, to: N, edgeValue: E, uid?: string, isDirected: boolean = true) {
@@ -479,25 +605,41 @@ export default class Graph<N, E> {
         const seen: Set<string> = new Set<string>();
 
         this.adjacencyList.forEach((adj, node) => {
-            const subGraph: SubGraph<N, E> = [[], []];
-            if (!seen.has(node)) {
-                this.dfs(
-                    this.id2Node.get(node)!,
-                    (n) => {
-                        subGraph[0].push(n);
-                    },
-                    undefined,
-                    (e) => {
-                        subGraph[1].push(e);
-                    },
-                    undefined,
-                    seen
-                );
-                components.push(subGraph);
-            }
+            components.push(this.getConnectedComponent(node, seen));
         });
 
         return components;
+    }
+
+    getConnectedComponent(node: N | string, seen?: Set<string>): SubGraph<N, E> {
+        if (!seen) {
+            seen = new Set<string>();
+        }
+
+        let nodeS: string;
+        if (typeof node === 'string') {
+            nodeS = node;
+        } else {
+            nodeS = this.sn(node);
+        }
+
+        const subGraph: SubGraph<N, E> = [[], []];
+        if (!seen.has(nodeS)) {
+            this.dfs(
+                this.id2Node.get(nodeS)!,
+                (n) => {
+                    subGraph[0].push(n);
+                },
+                undefined,
+                (e) => {
+                    subGraph[1].push(e);
+                },
+                undefined,
+                seen
+            );
+        }
+
+        return subGraph;
     }
 
     anyPath(
@@ -734,6 +876,8 @@ export default class Graph<N, E> {
             }
         );
     }
+
+
 }
 
 export type SubGraph<N, E> = [N[], Array<Edge<N, E>>];

@@ -7,7 +7,6 @@ import PipeEntity, {
 import * as TM from "transformation-matrix";
 import { Matrix } from "transformation-matrix";
 import { CalculationFilters, DocumentState } from "../../../src/store/document/types";
-import { matrixScale } from "../../../src/htmlcanvas/utils";
 import Flatten from "@flatten-js/core";
 import { Draggable, DraggableObject } from "../../../src/htmlcanvas/lib/object-traits/draggable-object";
 import * as _ from "lodash";
@@ -34,7 +33,10 @@ import { SIGNIFICANT_FLOW_THRESHOLD } from "../../../src/htmlcanvas/layers/calcu
 import { FlowNode } from "../../../src/calculations/calculation-engine";
 import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
-import PipeCalculation, { NoFlowAvailableReason } from "../../../src/store/document/calculations/pipe-calculation";
+import PipeCalculation, {
+    Configuration,
+    NoFlowAvailableReason
+} from "../../../src/store/document/calculations/pipe-calculation";
 import {
     Calculated,
     CalculatedObject,
@@ -745,7 +747,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             );
 
         const calc = context.globalStore.getOrCreateCalculation(this.entity);
-        if (calc.isRingMain) {
+        if (calc.configuration === Configuration.RING_MAIN) {
             retval *= RING_MAIN_HEAD_LOSS_CONSTANT;
         }
 

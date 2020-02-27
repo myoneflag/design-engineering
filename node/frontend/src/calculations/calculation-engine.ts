@@ -81,7 +81,7 @@ import { determineConnectableSystemUid } from "../store/document/entities/lib";
 import { getPropertyByString } from "../lib/utils";
 import { getPlantPressureLossKPA } from "../htmlcanvas/lib/utils";
 import { RingMainCalculator } from "./ring-main-calculator";
-import { NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
+import { Configuration, NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -302,6 +302,7 @@ export default class CalculationEngine {
                 this.preCompute();
                 this.sizeDefiniteTransports();
                 this.sizeRingMains();
+                this.calculateReturns();
                 this.calculateAllPointPressures();
                 this.fillPressureDropFields();
                 this.createWarnings();
@@ -374,6 +375,105 @@ export default class CalculationEngine {
             true,
             false
         );
+    }
+
+    calculateReturns() {
+        for (const o of this.networkObjects()) {
+            if (o.entity.type === EntityType.DIRECTED_VALVE && o.entity.valve.type === ValveType.RETURN_PUMP) {
+                const conns = this.globalStore.getConnections(o.entity.uid);
+                if (conns.length !== 2) {
+                    continue;
+                }
+
+                const thisNode = { connectable: o.entity.uid, connection: conns[0] };
+                const component = this.flowGraph.getConnectedComponent(thisNode);
+
+                const newGraph = Graph.fromSubgraph(component, this.serializeNode);
+
+                // add faux edge between source and sink of return pump because it was excluded in the original graph
+                // but is needed here to extract the loops.
+                newGraph.addDirectedEdge(
+                    {
+                        connectable: o.entity.uid,
+                        connection: o.entity.sourceUid,
+                    },
+                    {
+                        connectable: o.entity.uid,
+                        connection: conns[1 - conns.indexOf(o.entity.sourceUid)],
+                    },
+                    {
+                        type: EdgeType.RETURN_PUMP,
+                        uid: o.entity.uid,
+                    },
+                );
+
+                const biConnected = newGraph.findBridgeSeparatedComponents()[1];
+
+                const returnComponent = biConnected.find(([nodes, edges]) => {
+                    return nodes.find((n) => this.serializeNode(n) === this.serializeNode(thisNode));
+                });
+
+                if (!returnComponent) {
+                    throw new Error('Graph algorithm error - no connected component contains the return node');
+                }
+
+                // construct a simple graph for series-parallel analysis
+                const simpleGraph = new Graph<string, FlowEdge>((n) => n);
+                for (const e of returnComponent[1]) {
+                    switch (e.value.type) {
+                        case EdgeType.PIPE:
+                        case EdgeType.BIG_VALVE_HOT_HOT:
+                        case EdgeType.BIG_VALVE_HOT_WARM:
+                        case EdgeType.BIG_VALVE_COLD_WARM:
+                        case EdgeType.BIG_VALVE_COLD_COLD:
+                            // a real edge. Put it in.
+                            if (e.from.connectable === o.entity.uid) {
+                                if (e.from.connection === o.entity.sourceUid) {
+                                    simpleGraph.addEdge(e.from.connectable + '.source', e.to.connectable, e.value);
+                                } else {
+                                    simpleGraph.addEdge(e.from.connectable + '.sink', e.to.connectable, e.value);
+                                }
+                            } else if (e.to.connectable === o.entity.uid) {
+                                if (e.to.connection === o.entity.sourceUid) {
+                                    simpleGraph.addEdge(e.from.connectable, e.to.connectable + '.source', e.value);
+                                } else {
+                                    simpleGraph.addEdge(e.from.connectable, e.to.connectable + '.sink', e.value);
+                                }
+                            } else {
+                                simpleGraph.addEdge(e.from.connectable, e.to.connectable, e.value);
+                            }
+                            break;
+                        case EdgeType.FITTING_FLOW:
+                        case EdgeType.FLOW_SOURCE_EDGE:
+                        case EdgeType.CHECK_THROUGH:
+                        case EdgeType.ISOLATION_THROUGH:
+                        case EdgeType.PLANT_THROUGH:
+                            // an extrapolated edge which will interfere with series parallel analysis.
+                            break;
+                        case EdgeType.RETURN_PUMP:
+                            // DO nothing. The edges related to the pump are done on the pipe.
+                            break;
+                        default:
+                            assertUnreachable(e.value.type);
+                    }
+                }
+
+                if (simpleGraph.isSeriesParallel(o.entity.uid + '.source', o.entity.uid + '.sink')) {
+                    // we are good.
+                    console.log('we are returning with a series parallel graph. Therefore, it is a valid return.');
+                    for (const e of returnComponent[1]) {
+                        if (e.value.type === EdgeType.PIPE) {
+                            const p = this.globalStore.get(e.value.uid)!.entity as PipeEntity;
+                            const pc = this.globalStore.getOrCreateCalculation(p);
+                            pc.configuration = Configuration.RETURN;
+                        }
+                    }
+                } else {
+                    // we are not good.
+                    console.log('our graph is not series parallel');
+                }
+            }
+        }
     }
 
     // Take the calcs from the invisible network and collect them into the visible results.
@@ -1049,6 +1149,9 @@ export default class CalculationEngine {
                     );
                     break;
                 case ValveType.RETURN_PUMP:
+                    /* DO NOT add an edge, because the return pump doesn't transfer any loading units even though it
+                    transfers some flow. Yes, theoretically, a good LU engine will figure that out anyway, but at the
+                    moment the engine isn't good enough for that and adding an edge here will confuse it.
                     this.flowGraph.addEdge(
                         {
                             connectable: entity.uid,
@@ -1062,7 +1165,7 @@ export default class CalculationEngine {
                             type: EdgeType.RETURN_PUMP,
                             uid: entity.uid
                         }
-                    )
+                    )*/
                     break;
                 default:
                     assertUnreachable(entity.valve);
@@ -1190,7 +1293,6 @@ export default class CalculationEngine {
                 calculation.psdUnits = psdU;
                 calculation.psdProfile = profile;
                 calculation.flowFrom = wet ? wet.connectable : null;
-                calculation.isRingMain = false;
                 calculation.noFlowAvailableReason = noFlowReason;
 
                 const flowRate = lookupFlowRate(psdU, this.doc, this.catalog, entity.systemUid);
@@ -1454,13 +1556,13 @@ export default class CalculationEngine {
                 case EntityType.BIG_VALVE:
                     switch (object.entity.valve.type) {
                         case BigValveType.TMV:
-                            this.sizeDefiniteTransport(
+                            this.sizeDefiniteEdge(
                                 object,
                                 totalReachedPsdU,
                                 { type: EdgeType.BIG_VALVE_HOT_WARM, uid: object.uid },
                                 [object.entity.hotRoughInUid, object.entity.valve.warmOutputUid]
                             );
-                            this.sizeDefiniteTransport(
+                            this.sizeDefiniteEdge(
                                 object,
                                 totalReachedPsdU,
                                 { type: EdgeType.BIG_VALVE_COLD_COLD, uid: object.uid },
@@ -1468,7 +1570,7 @@ export default class CalculationEngine {
                             );
                             break;
                         case BigValveType.TEMPERING:
-                            this.sizeDefiniteTransport(
+                            this.sizeDefiniteEdge(
                                 object,
                                 totalReachedPsdU,
                                 { type: EdgeType.BIG_VALVE_HOT_WARM, uid: object.uid },
@@ -1476,13 +1578,13 @@ export default class CalculationEngine {
                             );
                             break;
                         case BigValveType.RPZD_HOT_COLD:
-                            this.sizeDefiniteTransport(
+                            this.sizeDefiniteEdge(
                                 object,
                                 totalReachedPsdU,
                                 { type: EdgeType.BIG_VALVE_COLD_COLD, uid: object.uid },
                                 [object.entity.coldRoughInUid, object.entity.valve.coldOutputUid]
                             );
-                            this.sizeDefiniteTransport(
+                            this.sizeDefiniteEdge(
                                 object,
                                 totalReachedPsdU,
                                 { type: EdgeType.BIG_VALVE_HOT_HOT, uid: object.uid },
@@ -1497,7 +1599,9 @@ export default class CalculationEngine {
                     if (object.entity.endpointUid[0] === null || object.entity.endpointUid[1] === null) {
                         throw new Error("pipe has dry endpoint: " + object.entity.uid);
                     }
-                    this.sizeDefiniteTransport(object, totalReachedPsdU, { type: EdgeType.PIPE, uid: object.uid }, [
+                    const c = this.globalStore.getCalculation(object.entity)!;
+                    c.configuration = Configuration.NORMAL;
+                    this.sizeDefiniteEdge(object, totalReachedPsdU, { type: EdgeType.PIPE, uid: object.uid }, [
                         object.entity.endpointUid[0],
                         object.entity.endpointUid[1]
                     ]);
@@ -1641,7 +1745,7 @@ export default class CalculationEngine {
         return null;
     }
 
-    sizeDefiniteTransport(
+    sizeDefiniteEdge(
         object: BaseBackedObject,
         totalReachedPsdU: PsdProfile,
         flowEdge: FlowEdge,
@@ -1977,7 +2081,7 @@ export default class CalculationEngine {
                     const calc = this.globalStore.getOrCreateCalculation(o.entity);
                     const inlet = this.globalStore.get(o.entity.inletUid)!.entity as SystemNodeEntity;
                     const inletCalc = this.globalStore.getOrCreateCalculation(inlet);
-                    calc.pressureDropKPA = getPlantPressureLossKPA(o.entity, inletCalc.pressureKPA);
+                    calc.pressureDropKPA = getPlantPressureLossKPA(o.entity, this.drawing, inletCalc.pressureKPA);
                     break;
                 }
                 case EntityType.FIXTURE:

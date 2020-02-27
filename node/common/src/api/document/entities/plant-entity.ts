@@ -1,6 +1,6 @@
 import { FieldType, PropertyField } from "./property-field";
 import { EntityType } from "./types";
-import { CenteredEntity, Coord, FlowSystemParameters } from "../drawing";
+import { CenteredEntity, Coord, DrawingState, FlowSystemParameters } from "../drawing";
 import { cloneSimple } from "../../../lib/utils";
 import { DocumentState } from "../../../../../frontend/src/store/document/types";
 
@@ -286,7 +286,7 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
     return res;
 }
 
-export function fillPlantDefaults(value: PlantEntity, doc: DocumentState) {
+export function fillPlantDefaults(value: PlantEntity, drawing: DrawingState) {
     const result = cloneSimple(value);
 
     if (value.pressureLossKPA === null) {
@@ -299,8 +299,8 @@ export function fillPlantDefaults(value: PlantEntity, doc: DocumentState) {
         result.staticPressureKPA = 0;
     }
     if (value.outletTemperatureC === null) {
-        const outSystem = doc.drawing.metadata.flowSystems.find((s) => s.uid === value.outletSystemUid);
-        result.outletTemperatureC = outSystem ? outSystem.temperature : doc.drawing.metadata.calculationParams.roomTemperatureC;
+        const outSystem = drawing.metadata.flowSystems.find((s) => s.uid === value.outletSystemUid);
+        result.outletTemperatureC = outSystem ? outSystem.temperature : drawing.metadata.calculationParams.roomTemperatureC;
     }
 
     return result;

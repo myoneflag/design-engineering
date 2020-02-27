@@ -259,7 +259,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             return sign * (1e10 + flowLS);
         }
 
-        const pl = getPlantPressureLossKPA(this.entity, pressureKPA);
+        const pl = getPlantPressureLossKPA(this.entity, this.document.drawing, pressureKPA);
         if (pl === null) {
             return null;
         }

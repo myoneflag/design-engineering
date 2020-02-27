@@ -50,6 +50,8 @@ export default function insertPlant(context: CanvasContext, angle: number, right
                     pumpPressureKPA: null,
                     pressureMethod: PressureMethod.FIXED_PRESSURE_LOSS,
                     outletSystemUid: StandardFlowSystemUids.HotWater,
+                    outletTemperatureC: null,
+
                     outletUid,
                     center: wc,
 

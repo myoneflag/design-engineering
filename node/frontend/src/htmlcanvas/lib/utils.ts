@@ -19,7 +19,7 @@ import { matrixScale } from "../utils";
 import { GlobalStore } from "./global-store";
 import { ObjectStore } from "./object-store";
 import { assertUnreachable, LEVEL_HEIGHT_DIFF_M } from "../../../../common/src/api/config";
-import { Coord, DrawableEntity, Level } from "../../../../common/src/api/document/drawing";
+import { Coord, DrawableEntity, DrawingState, Level } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, interpolateTable, upperBoundTable } from "../../../../common/src/lib/utils";
 import PlantEntity, {
     fillPlantDefaults,
@@ -261,8 +261,8 @@ export function drawRpzdDouble(context: DrawingContext, colors: [string, string]
     }
 }
 
-export function getPlantPressureLossKPA(entity: PlantEntity, pressureKPA: number | null) {
-    const filled = fillPlantDefaults(entity);
+export function getPlantPressureLossKPA(entity: PlantEntity, drawing: DrawingState, pressureKPA: number | null) {
+    const filled = fillPlantDefaults(entity, drawing);
 
     switch (filled.pressureMethod) {
         case PressureMethod.PUMP_DUTY:

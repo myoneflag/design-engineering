@@ -60,6 +60,7 @@ export default class FlowSystemPicker extends Vue {
             name: this.$props.selectedSystemUid,
             temperature: 0,
             uid: this.$props.selectedSystemUid,
+            hasReturnSystem: false,
             networks: {
                 RISERS: {
                     velocityMS: 0,
