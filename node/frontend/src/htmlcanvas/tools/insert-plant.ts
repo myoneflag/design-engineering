@@ -10,15 +10,22 @@ import {
 } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import { StandardFlowSystemUids } from "../../../src/store/catalog";
 import { KeyCode } from "../../../src/htmlcanvas/utils";
-import PlantEntity, { PressureMethod } from "../../../../common/src/api/document/entities/plant-entity";
+import PlantEntity from "../../../../common/src/api/document/entities/plants/plant-entity";
 import { Coord } from "../../../../common/src/api/document/drawing";
+import {
+    PlantConcrete,
+    PlantType,
+    PressureMethod
+} from "../../../../common/src/api/document/entities/plants/plant-types";
+import { assertUnreachable } from "../../../../common/src/api/config";
 
-export default function insertPlant(context: CanvasContext, angle: number, rightToLeft: boolean = false) {
+export default function insertPlant(context: CanvasContext, angle: number, type: PlantType, inletSystemUid: string, outletSystemUid: string, title: string, rightToLeft: boolean = false) {
     const plantUid = uuid();
     let newEntity: PlantEntity | null = null;
 
     const inletUid = uuid();
     const outletUid = uuid();
+    const returnUid = uuid();
 
     MainEventBus.$emit(
         "set-tool-handler",
@@ -30,7 +37,7 @@ export default function insertPlant(context: CanvasContext, angle: number, right
                         MainEventBus.$emit("set-tool-handler", null);
                     }
                 } else {
-                    insertPlant(context, angle);
+                    insertPlant(context, angle, type, inletSystemUid, outletSystemUid, title, rightToLeft);
                 }
             },
             (wc: Coord) => {
@@ -43,13 +50,9 @@ export default function insertPlant(context: CanvasContext, angle: number, right
                     heightAboveFloorM: 0.75,
                     heightMM: 300,
                     widthMM: 500,
-                    inletSystemUid: StandardFlowSystemUids.ColdWater,
+                    inletSystemUid,
                     inletUid,
-                    pressureLossKPA: null,
-                    staticPressureKPA: null,
-                    pumpPressureKPA: null,
-                    pressureMethod: PressureMethod.FIXED_PRESSURE_LOSS,
-                    outletSystemUid: StandardFlowSystemUids.HotWater,
+                    outletSystemUid,
                     outletTemperatureC: null,
 
                     outletUid,
@@ -61,8 +64,10 @@ export default function insertPlant(context: CanvasContext, angle: number, right
                     type: EntityType.PLANT,
                     uid: plantUid,
 
-                    name: "Plant",
-                    rotation: angle
+                    name: title,
+                    rotation: angle,
+
+                    plant: createPlant(type, outletSystemUid, returnUid),
                 };
 
                 context.$store.dispatch("document/addEntity", newEntity);
@@ -75,7 +80,7 @@ export default function insertPlant(context: CanvasContext, angle: number, right
                     parentUid: plantUid,
                     type: EntityType.SYSTEM_NODE,
                     calculationHeightM: null,
-                    systemUid: StandardFlowSystemUids.ColdWater,
+                    systemUid: inletSystemUid,
                     uid: inletUid,
                     allowAllSystems: false,
                     configuration: FlowConfiguration.INPUT
@@ -89,7 +94,7 @@ export default function insertPlant(context: CanvasContext, angle: number, right
                     parentUid: plantUid,
                     type: EntityType.SYSTEM_NODE,
                     calculationHeightM: null,
-                    systemUid: StandardFlowSystemUids.HotWater,
+                    systemUid: outletSystemUid,
                     uid: outletUid,
                     allowAllSystems: false,
                     configuration: FlowConfiguration.OUTPUT
@@ -97,6 +102,25 @@ export default function insertPlant(context: CanvasContext, angle: number, right
 
                 context.$store.dispatch("document/addEntity", inlet);
                 context.$store.dispatch("document/addEntity", outlet);
+
+                if (type === PlantType.RETURN_SYSTEM) {
+
+                    const retlet: SystemNodeEntity = {
+                        center: {
+                            x: (newEntity.widthMM / 2) * (rightToLeft ? -1 : 1),
+                            y: (newEntity.heightMM / 4)
+                        },
+                        parentUid: plantUid,
+                        type: EntityType.SYSTEM_NODE,
+                        calculationHeightM: null,
+                        systemUid: outletSystemUid,
+                        uid: returnUid,
+                        allowAllSystems: false,
+                        configuration: FlowConfiguration.INPUT
+                    };
+
+                    context.$store.dispatch("document/addEntity", retlet);
+                }
 
                 context.globalStore.get(newEntity.uid)!.rebase(context);
                 context.scheduleDraw();
@@ -158,4 +182,45 @@ export default function insertPlant(context: CanvasContext, angle: number, right
             ]
         )
     );
+}
+
+function createPlant(type: PlantType, outletSystemUid: string, returnUid: string | null): PlantConcrete {
+    switch (type) {
+        case PlantType.RETURN_SYSTEM:
+            return {
+                type,
+                returnUid: returnUid!,
+                pressureLoss: {
+                    pressureMethod: PressureMethod.PUMP_DUTY,
+                    pumpPressureKPA: null,
+                }
+            };
+        case PlantType.PUMP:
+            return {
+                type,
+                pressureLoss: {
+                    pressureMethod: PressureMethod.PUMP_DUTY,
+                    pumpPressureKPA: null,
+                }
+            };
+        case PlantType.TANK:
+            return {
+                type,
+                pressureLoss: {
+                    pressureMethod: PressureMethod.STATIC_PRESSURE,
+                    staticPressureKPA: null,
+                }
+            };
+        case PlantType.CUSTOM:
+            return {
+                type,
+                pressureLoss: {
+                    pressureMethod: PressureMethod.FIXED_PRESSURE_LOSS,
+                    pressureLossKPA: null,
+                    staticPressureKPA: null,
+                    pumpPressureKPA: null,
+                }
+            };
+    }
+    assertUnreachable(type);
 }

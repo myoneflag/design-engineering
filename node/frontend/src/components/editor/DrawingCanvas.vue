@@ -1,3 +1,4 @@
+import { PlantType } from "../../../../common/src/api/document/entities/plants/plant-types";
 <template>
     <drop @drop="onDrop">
         <!--Anything that needs scrolling needs to be up here, outside of canvasFrame.-->
@@ -179,6 +180,7 @@ import insertDwellingHotCold from "../../htmlcanvas/tools/insert-dwelling-hot-co
 import PDFSnapshotTopBar from "../PDFSnapshotTopBar.vue";
 import CanvasContext from "../../htmlcanvas/lib/canvas-context";
 import { getEffectiveFilter } from "../../lib/utils";
+import { PlantType } from '../../../../common/src/api/document/entities/plants/plant-types';
 
 @Component({
     components: {
@@ -1219,8 +1221,12 @@ export default class DrawingCanvas extends Vue {
         valveName: string;
         networkType: NetworkType;
         variant: string;
+        plantType: PlantType;
+        inletSystemUid: string;
+        outletSystemUid: string;
+        title: string;
     }) {
-        const { entityName, system, catalogId, valveType, nodeType, valveName, networkType, bigValveType } = params;
+        const { entityName, system, catalogId, valveType, nodeType, valveName, networkType, bigValveType, plantType, inletSystemUid, outletSystemUid, title} = params;
         this.select([], SelectMode.Replace);
 
         if (entityName === EntityType.RISER) {
@@ -1254,7 +1260,7 @@ export default class DrawingCanvas extends Vue {
         } else if (entityName === EntityType.FLOW_SOURCE) {
             insertFlowSource(this, system);
         } else if (entityName === EntityType.PLANT) {
-            insertPlant(this, 0);
+            insertPlant(this, 0, plantType, inletSystemUid, outletSystemUid, title, false);
         }
     }
 

@@ -2,26 +2,17 @@ import BackedDrawableObject from "../../../src/htmlcanvas/lib/backed-drawable-ob
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import * as TM from "transformation-matrix";
 import { Matrix } from "transformation-matrix";
-import { matrixScale } from "../../../src/htmlcanvas/utils";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
 import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
-import BigValveEntity, {
-    BigValveType,
-    SystemNodeEntity
-} from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
+import BigValveEntity from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
 import { CenteredObject } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
-import {
-    drawRpzdDouble,
-    getPlantPressureLossKPA,
-    getRpzdHeadLoss,
-    VALVE_HEIGHT_MM
-} from "../../../src/htmlcanvas/lib/utils";
+import { getPlantPressureLossKPA } from "../../../src/htmlcanvas/lib/utils";
 import { CalculationContext } from "../../../src/calculations/types";
 import { FlowNode } from "../../../src/calculations/calculation-engine";
 import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
@@ -32,22 +23,15 @@ import {
 } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
 import { DEFAULT_FONT_NAME } from "../../../src/config";
-import { getValveK } from "../../lib/utils";
 import SystemNode from "./big-valve/system-node";
-import BigValveCalculation from "../../store/document/calculations/big-valve-calculation";
 import Flatten from "@flatten-js/core";
 import Cached from "../lib/cached";
-import { ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
-import { StandardFlowSystemUids } from "../../store/catalog";
-import PlantEntity, {
-    fillPlantDefaults,
-    PressureMethod
-} from "../../../../common/src/api/document/entities/plant-entity";
+import PlantEntity from "../../../../common/src/api/document/entities/plants/plant-entity";
 import PlantCalculation from "../../store/document/calculations/plant-calculation";
 import { EPS, getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
-import { assertUnreachable } from "../../../../common/src/api/config";
 import { Coord, coordDist2 } from "../../../../common/src/api/document/drawing";
-import { cloneSimple, interpolateTable, parseCatalogNumberExact } from "../../../../common/src/lib/utils";
+import { cloneSimple } from "../../../../common/src/lib/utils";
+import { PlantType } from "../../../../common/src/api/document/entities/plants/plant-types";
 
 export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 
@@ -296,6 +280,25 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
 
         const outlet = this.globalStore.get(this.entity.outletUid);
         const inlet = this.globalStore.get(this.entity.inletUid);
+        const retlet = this.entity.plant.type === PlantType.RETURN_SYSTEM ? this.globalStore.get(this.entity.plant.returnUid) : undefined;
+
+        if (retlet instanceof SystemNode) {
+            if (retlet.entity.systemUid !== this.entity.outletSystemUid) {
+                retlet.entity.systemUid = this.entity.outletSystemUid;
+            }
+
+            if (
+                Math.abs(retlet.entity.center.x - (this.entity.widthMM / 2) * (this.entity.rightToLeft ? -1 : 1)) > EPS
+            ) {
+                retlet.entity.center.x = (this.entity.widthMM / 2) * (this.entity.rightToLeft ? -1 : 1);
+            }
+
+            if (
+                Math.abs(retlet.entity.center.y - (this.entity.heightMM / 4)) > EPS
+            ) {
+                retlet.entity.center.y = (this.entity.heightMM / 4);
+            }
+        }
 
         if (outlet instanceof SystemNode) {
             if (outlet.entity.systemUid !== this.entity.outletSystemUid) {

@@ -101,85 +101,104 @@
                     v-b-tooltip.hover
                     title="Tempering Valve (Warm)"
                 ></b-button>
-
-                <b-button
-                    variant="outline-dark"
-                    class="insertBtn hot-water-plant btn-sm"
-                    @click="
-                        $emit('insert', {
-                            entityName: entityNames.PLANT
-                        })
-                    "
-                    v-b-tooltip.hover
-                    title="Hot Water Plant"
-                >
-                    Plant
-                </b-button>
-
-                <b-button
-                        variant="outline-dark"
-                        class="insertBtn return-pump btn-sm"
-                        @click="
-                        $emit('insert', {
-                            entityName: entityNames.DIRECTED_VALVE,
-                            system: selectedSystem,
-                            catalogId: 'returnPump',
-                            valveType: ValveType.RETURN_PUMP,
-                        })
-                    "
-                        v-b-tooltip.hover
-                        :title="currentSystemHasReturn ? 'Return Pump' : 'Enable Return Pump in flow system settings'"
-                        :disabled="!currentSystemHasReturn"
-                >
-                </b-button>
-
             </b-button-group>
         </b-col>
 
+
         <b-col>
-            <b-button-group v-if="lastUsedFixtureUid">
-                <b-button
-                    class="insertEntityBtn"
-                    variant="outline-dark"
-                    id="insertEntitySplitBtn"
-                    :disabled="!lastUsedFixture"
-                    @click="
+            <b-button-group>
+                <b-dropdown text="Plants" class="insertEntityBtn" variant="outline-dark">
+                    <b-dropdown-item
+                            variant="outline-dark"
+                            class="hot-water-plant btn-sm"
+                            @click="
                         $emit('insert', {
-                            entityName: entityNames.FIXTURE,
-                            system: selectedSystem,
-                            catalogId: lastUsedFixtureUid
+                            entityName: entityNames.PLANT,
+                            inletSystemUid: StandardFlowSystemUids.ColdWater,
+                            outletSystemUid: StandardFlowSystemUids.HotWater,
+                            plantType: PlantType.RETURN_SYSTEM,
+                            title: 'Hot Water Plant',
                         })
                     "
-                >
-                    {{ lastUsedFixture.name }}
-                </b-button>
-                <b-dropdown text="" class="insertEntityBtn" variant="outline-dark">
+                    >
+                        Hot Water Plant w/Return
+                    </b-dropdown-item>
+
                     <b-dropdown-item
-                        v-for="fixture in availableFixtureList"
-                        :key="fixture.uid"
-                        variant="outline-dark"
-                        class="shower btn-sm"
-                        @click="
-                            $emit('insert', {
-                                entityName: entityNames.FIXTURE,
-                                system: selectedSystem,
-                                catalogId: fixture.uid
-                            })
-                        "
-                        >{{ fixture.name }}</b-dropdown-item
+                            v-if="selectedSystem.uid !== StandardFlowSystemUids.HotWater && selectedSystem.hasReturnSystem"
+                            variant="outline-dark"
+                            class="btn-sm"
+                            @click="
+                        $emit('insert', {
+                            entityName: entityNames.PLANT,
+                            inletSystemUid: StandardFlowSystemUids.ColdWater,
+                            outletSystemUid: selectedSystem.uid,
+                            plantType: PlantType.RETURN_SYSTEM,
+                            title: selectedSystem.name + ' Plant',
+                        })
+                    "
                     >
-                    <b-dropdown-item href="#" variant="info" @click="addRemoveFixturesClick"
-                        >+/- Fixtures</b-dropdown-item
+                        {{ selectedSystem.name + ' Plant w/Return' }}
+                    </b-dropdown-item>
+
+                    <b-dropdown-item
+                            variant="outline-dark"
+                            class="hot-water-plant btn-sm"
+                            @click="
+                        $emit('insert', {
+                            entityName: entityNames.PLANT,
+                            inletSystemUid: selectedSystem.uid,
+                            outletSystemUid: selectedSystem.uid,
+                            plantType: PlantType.TANK,
+                            title: 'Tank',
+                        })
+                    "
                     >
+                        {{ selectedSystem.name + ' Tank' }}
+                    </b-dropdown-item>
+
+
+                    <b-dropdown-item
+                            variant="outline-dark"
+                            class="hot-water-plant btn-sm"
+                            @click="
+                        $emit('insert', {
+                            entityName: entityNames.PLANT,
+                            inletSystemUid: selectedSystem.uid,
+                            outletSystemUid: selectedSystem.uid,
+                            plantType: PlantType.PUMP,
+                            title: 'Pump',
+                        })
+                    "
+                    >
+                        {{ selectedSystem.name + ' Pump' }}
+                    </b-dropdown-item>
+
+                    <b-dropdown-item
+                            variant="outline-dark"
+                            class="btn-sm"
+                            @click="
+                        $emit('insert', {
+                            entityName: entityNames.PLANT,
+                            inletSystemUid: selectedSystem.uid,
+                            outletSystemUid: selectedSystem.uid,
+                            plantType: PlantType.CUSTOM,
+                            title: 'Plant',
+                        })
+                    "
+                    >
+                        Custom Plant
+                    </b-dropdown-item>
+
                 </b-dropdown>
-            </b-button-group>
-            <b-dropdown text="Fixtures" class="insertEntityBtn" variant="outline-dark" v-else>
-                <b-dropdown-item
-                    v-for="fixture in availableFixtureList"
-                    :key="fixture.uid"
-                    variant="outline-dark"
-                    class="shower btn-sm"
-                    @click="
+
+                <b-dropdown text="Fixtures" class="insertEntityBtn" variant="outline-dark">
+                    <b-dropdown-item
+                            v-for="fixture in availableFixtureList"
+                            :key="fixture.uid"
+                            variant="outline-dark"
+                            class="shower btn-sm"
+                            @click="
                         $emit('insert', {
                             entityName: entityNames.FIXTURE,
                             system: selectedSystem,
@@ -187,56 +206,16 @@
                         })
                     "
                     >{{ fixture.name }}</b-dropdown-item
-                >
-                <b-dropdown-item variant="info" @click="addRemoveFixturesClick">+/- Fixtures</b-dropdown-item>
-            </b-dropdown>
-        </b-col>
-
-        <b-col>
-            <b-button-group v-if="lastUsedValveVid">
-                <b-button
-                    class="insertEntityBtn"
-                    variant="outline-dark"
-                    id="insertEntityBtn"
-                    :disabled="!lastUsedValveVid"
-                    @click="
-                        $emit('insert', {
-                            entityName: entityNames.DIRECTED_VALVE,
-                            system: selectedSystem,
-                            catalogId: lastUsedValveVid.catalogId,
-                            valveType: lastUsedValveVid.type,
-                            valveName: lastUsedValveVid.name
-                        })
-                    "
-                >
-                    {{ lastUsedValveVid.name }}
-                </b-button>
-                <b-dropdown text="" class="insertEntityBtn" variant="outline-dark">
-                    <b-dropdown-item
-                        v-for="valve in availableValves"
-                        :key="valve.name"
-                        variant="outline-dark"
-                        class="shower btn-sm"
-                        @click="
-                            $emit('insert', {
-                                entityName: entityNames.DIRECTED_VALVE,
-                                system: selectedSystem,
-                                catalogId: valve.catalogId,
-                                valveType: valve.type,
-                                valveName: valve.name
-                            })
-                        "
-                        >{{ valve.name }}</b-dropdown-item
                     >
+                    <b-dropdown-item variant="info" @click="addRemoveFixturesClick">+/- Fixtures</b-dropdown-item>
                 </b-dropdown>
-            </b-button-group>
-            <b-dropdown text="Valves" class="insertEntityBtn" variant="outline-dark" v-else>
-                <b-dropdown-item
-                    v-for="valve in availableValves"
-                    :key="valve.name"
-                    variant="outline-dark"
-                    class="shower btn-sm"
-                    @click="
+                <b-dropdown text="Valves" class="insertEntityBtn" variant="outline-dark">
+                    <b-dropdown-item
+                            v-for="valve in availableValves"
+                            :key="valve.name"
+                            variant="outline-dark"
+                            class="shower btn-sm"
+                            @click="
                         $emit('insert', {
                             entityName: entityNames.DIRECTED_VALVE,
                             system: selectedSystem,
@@ -246,33 +225,32 @@
                         })
                     "
                     >{{ valve.name }}</b-dropdown-item
-                >
-            </b-dropdown>
-        </b-col>
-        <b-col>
-            <b-dropdown text="Nodes" class="insertEntityBtn" variant="outline-dark">
-                <b-dropdown-item
-                    :disabled="document.drawing.metadata.calculationParams.dwellingMethod === null"
-                    variant="outline-dark"
-                    class="shower btn-sm"
-                    @click="$emit('insert', { entityName: entityNames.LOAD_NODE, variant: 'hot-cold-dwelling' })"
-                >
-                    Hot/Cold Dwelling Node Pair
-                </b-dropdown-item>
-                <b-dropdown-item
-                    variant="outline-dark"
-                    class="shower btn-sm"
-                    @click="$emit('insert', { entityName: entityNames.LOAD_NODE, nodeType: NodeType.LOAD_NODE })"
+                    >
+                </b-dropdown>
+                <b-dropdown text="Nodes" class="insertEntityBtn" variant="outline-dark">
+                    <b-dropdown-item
+                            :disabled="document.drawing.metadata.calculationParams.dwellingMethod === null"
+                            variant="outline-dark"
+                            class="shower btn-sm"
+                            @click="$emit('insert', { entityName: entityNames.LOAD_NODE, variant: 'hot-cold-dwelling' })"
+                    >
+                        Hot/Cold Dwelling Node Pair
+                    </b-dropdown-item>
+                    <b-dropdown-item
+                            variant="outline-dark"
+                            class="shower btn-sm"
+                            @click="$emit('insert', { entityName: entityNames.LOAD_NODE, nodeType: NodeType.LOAD_NODE })"
                     >Fixture Node</b-dropdown-item
-                >
-                <b-dropdown-item
-                    :disabled="document.drawing.metadata.calculationParams.dwellingMethod === null"
-                    variant="outline-dark"
-                    class="shower btn-sm"
-                    @click="$emit('insert', { entityName: entityNames.LOAD_NODE, nodeType: NodeType.DWELLING })"
+                    >
+                    <b-dropdown-item
+                            :disabled="document.drawing.metadata.calculationParams.dwellingMethod === null"
+                            variant="outline-dark"
+                            class="shower btn-sm"
+                            @click="$emit('insert', { entityName: entityNames.LOAD_NODE, nodeType: NodeType.DWELLING })"
                     >Dwelling Node</b-dropdown-item
-                >
-            </b-dropdown>
+                    >
+                </b-dropdown>
+            </b-button-group>
         </b-col>
     </b-row>
 </template>
@@ -289,6 +267,8 @@ import { SupportedPsdStandards } from "../../../../common/src/api/config";
 import { Catalog, FixtureSpec } from "../../../../common/src/api/catalog/types";
 import { FlowSystemParameters, NetworkType } from "../../../../common/src/api/document/drawing";
 import { ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
+import { StandardFlowSystemUids } from "../../store/catalog";
+import { PlantType } from "../../../../common/src/api/document/entities/plants/plant-types";
 
 @Component({
     components: { FlowSystemPicker },
@@ -317,6 +297,14 @@ export default class HydraulicsInsertPanel extends Vue {
 
     get entityNames() {
         return EntityType;
+    }
+
+    get StandardFlowSystemUids() {
+        return StandardFlowSystemUids;
+    }
+
+    get PlantType() {
+        return PlantType;
     }
 
     get selectedSystem(): FlowSystemParameters {

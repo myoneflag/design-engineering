@@ -36,7 +36,7 @@ export class RingMainCalculator {
                             case EdgeType.PIPE:
                                 // don't size something that's already sized as a return. Ring mains can't be on returns.
                                 const c = this.engine.globalStore.getOrCreateCalculation(this.engine.globalStore.get(e.value.uid)!.entity as PipeEntity);
-                                return (c.configuration === null || c.configuration === Configuration.RETURN) && c.peakFlowRate === null;
+                                return (c.configuration === null || c.configuration === Configuration.NORMAL) && c.peakFlowRate === null;
                             case EdgeType.FITTING_FLOW:
                             case EdgeType.ISOLATION_THROUGH:
                                 return true; // because undirected

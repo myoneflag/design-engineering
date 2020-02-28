@@ -22,9 +22,9 @@ import { assertUnreachable, LEVEL_HEIGHT_DIFF_M } from "../../../../common/src/a
 import { Coord, DrawableEntity, DrawingState, Level } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, interpolateTable, upperBoundTable } from "../../../../common/src/lib/utils";
 import PlantEntity, {
-    fillPlantDefaults,
-    PressureMethod
-} from "../../../../common/src/api/document/entities/plant-entity";
+    fillPlantDefaults
+} from "../../../../common/src/api/document/entities/plants/plant-entity";
+import { PressureMethod } from "../../../../common/src/api/document/entities/plants/plant-types";
 
 export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
     const floor = context.backgroundLayer.getBackgroundAt(wc);
@@ -264,14 +264,14 @@ export function drawRpzdDouble(context: DrawingContext, colors: [string, string]
 export function getPlantPressureLossKPA(entity: PlantEntity, drawing: DrawingState, pressureKPA: number | null) {
     const filled = fillPlantDefaults(entity, drawing);
 
-    switch (filled.pressureMethod) {
+    switch (filled.plant.pressureLoss.pressureMethod) {
         case PressureMethod.PUMP_DUTY:
-            return -filled.pumpPressureKPA!;
+            return -filled.plant.pressureLoss.pumpPressureKPA!;
         case PressureMethod.FIXED_PRESSURE_LOSS:
-            return filled.pressureLossKPA!;
+            return filled.plant.pressureLoss.pressureLossKPA!;
         case PressureMethod.STATIC_PRESSURE:
             if (pressureKPA !== null) {
-                return (pressureKPA - filled.staticPressureKPA!)!;
+                return (pressureKPA - filled.plant.pressureLoss.staticPressureKPA!)!;
             } else {
                 return null;
             }

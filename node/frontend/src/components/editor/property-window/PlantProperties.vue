@@ -34,7 +34,7 @@ import {
     fillFixtureFields,
     makeFixtureFields
 } from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
-import { fillPlantDefaults, makePlantEntityFields } from "../../../../../common/src/api/document/entities/plant-entity";
+import { fillPlantDefaults, makePlantEntityFields } from "../../../../../common/src/api/document/entities/plants/plant-entity";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
 
 @Component({

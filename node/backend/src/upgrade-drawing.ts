@@ -6,10 +6,6 @@ import { OPERATION_NAMES } from "../../common/src/api/document/operation-transfo
 import { applyDiffNative } from "../../common/src/api/document/state-ot-apply";
 import {
     CURRENT_VERSION,
-    upgrade0to1,
-    upgrade1to2,
-    upgrade2to3,
-    upgrade3to4,
     upgrade4to5, upgrade5to6, upgrade6to7, upgrade7to8
 } from "../../common/src/api/upgrade";
 import { diffState } from "../../common/src/api/document/state-differ";
@@ -44,11 +40,7 @@ export async function upgradeDocument(doc: Document) {
                     case 1:
                     case 2:
                     case 3:
-                        // Because of some problem before, we have to re-upgrade :/
-                        upgrade0to1(newUpgraded);
-                        upgrade1to2(newUpgraded);
-                        upgrade2to3(newUpgraded);
-                        updated = upgrade3to4(newUpgraded) || updated;
+                        throw new Error('Version too old');
                     // noinspection FallThroughInSwitchStatementJS
                     case 4:
                         upgrade4to5(newUpgraded);

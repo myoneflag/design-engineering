@@ -52,7 +52,7 @@ import {
     fillFlowSourceDefaults,
     makeFlowSourceFields
 } from "../../../../../common/src/api/document/entities/flow-source-entity";
-import { fillPlantDefaults, makePlantEntityFields } from "../../../../../common/src/api/document/entities/plant-entity";
+import { fillPlantDefaults, makePlantEntityFields } from "../../../../../common/src/api/document/entities/plants/plant-entity";
 import { assertUnreachable } from "../../../../../common/src/api/config";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
 import { cloneSimple } from "../../../../../common/src/lib/utils";

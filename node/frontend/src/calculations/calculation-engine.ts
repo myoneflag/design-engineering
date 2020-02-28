@@ -63,7 +63,7 @@ import { ObjectStore } from "../htmlcanvas/lib/object-store";
 import { makeFlowSourceFields } from "../../../common/src/api/document/entities/flow-source-entity";
 import FlowSourceCalculation from "../store/document/calculations/flow-source-calculation";
 import FlowSource from "../htmlcanvas/objects/flow-source";
-import { makePlantEntityFields } from "../../../common/src/api/document/entities/plant-entity";
+import { makePlantEntityFields } from "../../../common/src/api/document/entities/plants/plant-entity";
 import Plant from "../htmlcanvas/objects/plant";
 import { assertUnreachable, isGermanStandard } from "../../../common/src/api/config";
 import { Catalog, PipeSpec } from "../../../common/src/api/catalog/types";
@@ -298,11 +298,11 @@ export default class CalculationEngine {
                 this.buildNetworkObjects();
                 this.configureLUFlowGraph();
                 this.precomputeBridges();
+                this.identifyReturns();
                 this.precomputePsdAfterBridge(FLOW_SOURCE_ROOT_BRIDGE, FLOW_SOURCE_ROOT_NODE, new Set<string>());
                 this.preCompute();
                 this.sizeDefiniteTransports();
                 this.sizeRingMains();
-                this.calculateReturns();
                 this.calculateAllPointPressures();
                 this.fillPressureDropFields();
                 this.createWarnings();
@@ -377,7 +377,7 @@ export default class CalculationEngine {
         );
     }
 
-    calculateReturns() {
+    identifyReturns() {
         for (const o of this.networkObjects()) {
             if (o.entity.type === EntityType.DIRECTED_VALVE && o.entity.valve.type === ValveType.RETURN_PUMP) {
                 const conns = this.globalStore.getConnections(o.entity.uid);
@@ -385,7 +385,9 @@ export default class CalculationEngine {
                     continue;
                 }
 
-                const thisNode = { connectable: o.entity.uid, connection: conns[0] };
+                const dest = conns[1 - conns.indexOf(o.entity.sourceUid)];
+
+                const thisNode = { connectable: o.entity.uid, connection: dest };
                 const component = this.flowGraph.getConnectedComponent(thisNode);
 
                 const newGraph = Graph.fromSubgraph(component, this.serializeNode);
@@ -1600,7 +1602,9 @@ export default class CalculationEngine {
                         throw new Error("pipe has dry endpoint: " + object.entity.uid);
                     }
                     const c = this.globalStore.getCalculation(object.entity)!;
-                    c.configuration = Configuration.NORMAL;
+                    if (c.configuration === null) {
+                        c.configuration = Configuration.NORMAL;
+                    }
                     this.sizeDefiniteEdge(object, totalReachedPsdU, { type: EdgeType.PIPE, uid: object.uid }, [
                         object.entity.endpointUid[0],
                         object.entity.endpointUid[1]
