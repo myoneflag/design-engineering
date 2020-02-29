@@ -82,6 +82,7 @@ import { getPropertyByString } from "../lib/utils";
 import { getPlantPressureLossKPA } from "../htmlcanvas/lib/utils";
 import { RingMainCalculator } from "./ring-main-calculator";
 import { Configuration, NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
+import { PlantType } from "../../../common/src/api/document/entities/plants/plant-types";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -379,16 +380,20 @@ export default class CalculationEngine {
 
     identifyReturns() {
         for (const o of this.networkObjects()) {
-            if (o.entity.type === EntityType.DIRECTED_VALVE && o.entity.valve.type === ValveType.RETURN_PUMP) {
-                const conns = this.globalStore.getConnections(o.entity.uid);
-                if (conns.length !== 2) {
+            if (o.entity.type === EntityType.PLANT && o.entity.plant.type === PlantType.RETURN_SYSTEM) {
+                const connsOutlet = this.globalStore.getConnections(o.entity.outletUid);
+                const connsReturn = this.globalStore.getConnections(o.entity.plant.returnUid);
+                if (connsOutlet.length !== 1) {
+                    continue;
+                }
+                if (connsReturn.length !== 1) {
                     continue;
                 }
 
-                const dest = conns[1 - conns.indexOf(o.entity.sourceUid)];
 
-                const thisNode = { connectable: o.entity.uid, connection: dest };
+                const thisNode = { connectable: o.entity.outletUid, connection: o.entity.uid };
                 const component = this.flowGraph.getConnectedComponent(thisNode);
+                console.log('connected component has ' + JSON.stringify(component));
 
                 const newGraph = Graph.fromSubgraph(component, this.serializeNode);
 
@@ -396,12 +401,12 @@ export default class CalculationEngine {
                 // but is needed here to extract the loops.
                 newGraph.addDirectedEdge(
                     {
-                        connectable: o.entity.uid,
-                        connection: o.entity.sourceUid,
+                        connectable: o.entity.plant.returnUid,
+                        connection:  o.entity.uid ,
                     },
                     {
-                        connectable: o.entity.uid,
-                        connection: conns[1 - conns.indexOf(o.entity.sourceUid)],
+                        connectable: o.entity.outletUid,
+                        connection: o.entity.uid ,
                     },
                     {
                         type: EdgeType.RETURN_PUMP,
@@ -428,22 +433,7 @@ export default class CalculationEngine {
                         case EdgeType.BIG_VALVE_HOT_WARM:
                         case EdgeType.BIG_VALVE_COLD_WARM:
                         case EdgeType.BIG_VALVE_COLD_COLD:
-                            // a real edge. Put it in.
-                            if (e.from.connectable === o.entity.uid) {
-                                if (e.from.connection === o.entity.sourceUid) {
-                                    simpleGraph.addEdge(e.from.connectable + '.source', e.to.connectable, e.value);
-                                } else {
-                                    simpleGraph.addEdge(e.from.connectable + '.sink', e.to.connectable, e.value);
-                                }
-                            } else if (e.to.connectable === o.entity.uid) {
-                                if (e.to.connection === o.entity.sourceUid) {
-                                    simpleGraph.addEdge(e.from.connectable, e.to.connectable + '.source', e.value);
-                                } else {
-                                    simpleGraph.addEdge(e.from.connectable, e.to.connectable + '.sink', e.value);
-                                }
-                            } else {
-                                simpleGraph.addEdge(e.from.connectable, e.to.connectable, e.value);
-                            }
+                            simpleGraph.addEdge(e.from.connectable, e.to.connectable, e.value);
                             break;
                         case EdgeType.FITTING_FLOW:
                         case EdgeType.FLOW_SOURCE_EDGE:
@@ -460,7 +450,7 @@ export default class CalculationEngine {
                     }
                 }
 
-                if (simpleGraph.isSeriesParallel(o.entity.uid + '.source', o.entity.uid + '.sink')) {
+                if (simpleGraph.isSeriesParallel(o.entity.outletSystemUid, o.entity.plant.returnUid)) {
                     // we are good.
                     console.log('we are returning with a series parallel graph. Therefore, it is a valid return.');
                     for (const e of returnComponent[1]) {
@@ -1150,25 +1140,6 @@ export default class CalculationEngine {
                         }
                     );
                     break;
-                case ValveType.RETURN_PUMP:
-                    /* DO NOT add an edge, because the return pump doesn't transfer any loading units even though it
-                    transfers some flow. Yes, theoretically, a good LU engine will figure that out anyway, but at the
-                    moment the engine isn't good enough for that and adding an edge here will confuse it.
-                    this.flowGraph.addEdge(
-                        {
-                            connectable: entity.uid,
-                            connection: entity.sourceUid
-                        },
-                        {
-                            connectable: entity.uid,
-                            connection: other
-                        },
-                        {
-                            type: EdgeType.RETURN_PUMP,
-                            uid: entity.uid
-                        }
-                    )*/
-                    break;
                 default:
                     assertUnreachable(entity.valve);
             }
@@ -1681,7 +1652,6 @@ export default class CalculationEngine {
                         case ValveType.ISOLATION_VALVE:
                         case ValveType.WATER_METER:
                         case ValveType.STRAINER:
-                        case ValveType.RETURN_PUMP:
                             break;
                         default:
                             assertUnreachable(obj.entity.valve);
@@ -2182,11 +2152,10 @@ export default class CalculationEngine {
                                 }
                             }
                             break;
-                        case ValveType.RETURN_PUMP:
-                            break;
                         default:
                             assertUnreachable(o.entity.valve);
                     }
+                    break;
                 }
                 case EntityType.RISER:
                 case EntityType.PLANT:

@@ -24,19 +24,17 @@ export function makeDirectedValveFields(
 ): PropertyField[] {
     const fields: PropertyField[] = [];
 
-    if (entity.valve.type !== ValveType.RETURN_PUMP) {
-        fields.push(
-            {
-                property: "systemUidOption",
-                title: "Flow System",
-                hasDefault: false,
-                isCalculated: false,
-                type: FieldType.FlowSystemChoice,
-                params: { systems: drawing.metadata.flowSystems },
-                multiFieldId: "systemUid"
-            },
-        );
-    }
+    fields.push(
+        {
+            property: "systemUidOption",
+            title: "Flow System",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.FlowSystemChoice,
+            params: { systems: drawing.metadata.flowSystems },
+            multiFieldId: "systemUid"
+        },
+    );
     fields.push(
         {
             property: "color",
@@ -134,7 +132,6 @@ export function makeDirectedValveFields(
                 multiFieldId: "targetPressure",
                 requiresInput: true
             });
-            break;
             if (entity.valve.type === ValveType.PRV_DOUBLE ||
                 entity.valve.type === ValveType.PRV_TRIPLE
             ) {
@@ -150,8 +147,6 @@ export function makeDirectedValveFields(
             }
             break;
         }
-        case ValveType.RETURN_PUMP:
-            break;
         default:
             assertUnreachable(entity.valve);
     }

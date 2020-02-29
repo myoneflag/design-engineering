@@ -32,6 +32,7 @@ import { EPS, getFluidDensityOfSystem, kpa2head } from "../../calculations/press
 import { Coord, coordDist2 } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { PlantType } from "../../../../common/src/api/document/entities/plants/plant-types";
+import { assertUnreachable } from "../../../../common/src/api/config";
 
 export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 
@@ -157,6 +158,19 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
 
     getInletsOutlets(): SystemNode[] {
         const result: string[] = [this.entity.inletUid, this.entity.outletUid];
+        switch (this.entity.plant.type) {
+            case PlantType.RETURN_SYSTEM:
+                result.push(this.entity.plant.returnUid);
+                break;
+            case PlantType.TANK:
+                break;
+            case PlantType.CUSTOM:
+                break;
+            case PlantType.PUMP:
+                break;
+            default:
+                assertUnreachable(this.entity.plant);
+        }
         return result.map((uid) => this.globalStore.get(uid) as SystemNode);
     }
 
@@ -199,6 +213,18 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
 
         e.outletUid = (this.globalStore.get(e.outletUid) as SystemNode).getCalculationNode(context, this.uid).uid;
         e.inletUid = (this.globalStore.get(e.inletUid) as SystemNode).getCalculationNode(context, this.uid).uid;
+
+        switch (e.plant.type) {
+            case PlantType.RETURN_SYSTEM:
+                e.plant.returnUid = (this.globalStore.get(e.plant.returnUid) as SystemNode).getCalculationNode(context, this.uid).uid;
+                break;
+            case PlantType.TANK:
+                break;
+            case PlantType.CUSTOM:
+                break;
+            case PlantType.PUMP:
+                break;
+        }
 
         return [e];
     }

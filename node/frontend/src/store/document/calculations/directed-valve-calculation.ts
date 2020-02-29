@@ -47,7 +47,6 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity):
         case ValveType.ISOLATION_VALVE:
         case ValveType.WATER_METER:
         case ValveType.STRAINER:
-        case ValveType.RETURN_PUMP:
             break;
         case ValveType.RPZD_SINGLE:
         case ValveType.RPZD_DOUBLE_SHARED:

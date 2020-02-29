@@ -21,6 +21,7 @@ import {
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import BackedDrawableObject from "../lib/backed-drawable-object";
 import { BaseBackedConnectable } from "../lib/BackedConnectable";
+import { assertUnreachable } from "../../../../common/src/api/config";
 
 export default function insertDirectedValve(
     context: CanvasContext,
@@ -86,7 +87,7 @@ export default function insertDirectedValve(
                     valveType,
                     catalogId,
                     cloneSimple(wc),
-                    valveType === ValveType.RETURN_PUMP ? system.uid : null,
+                    null,
                 );
                 await context.$store.dispatch("document/addEntity", valveEntity);
 
@@ -226,10 +227,6 @@ function createBareValve(type: ValveType, catalogId: string): DirectedValveConcr
                 sizeMM: null,
                 isolateOneWhenCalculatingHeadLoss: true
             };
-        case ValveType.RETURN_PUMP:
-            return {
-                type,
-                catalogId: '', // TODO: catalog info about the pump
-            };
     }
+    assertUnreachable(type);
 }
