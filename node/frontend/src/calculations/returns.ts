@@ -3,7 +3,7 @@ import { PlantType } from "../../../common/src/api/document/entities/plants/plan
 import Graph from "./graph";
 import { assertUnreachable } from "../../../common/src/api/config";
 import PipeEntity from "../../../common/src/api/document/entities/pipe-entity";
-import { Configuration } from "../store/document/calculations/pipe-calculation";
+import { Configuration, NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
 import CalculationEngine, { EdgeType, FlowEdge } from "./calculation-engine";
 
 export function identifyReturns(engine: CalculationEngine) {
@@ -94,6 +94,14 @@ export function identifyReturns(engine: CalculationEngine) {
                     }
                 }
             } else {
+                for (const e of returnComponent[1]) {
+                    if (e.value.type === EdgeType.PIPE) {
+                        const p = engine.globalStore.get(e.value.uid)!.entity as PipeEntity;
+                        const pc = engine.globalStore.getOrCreateCalculation(p);
+                        pc.configuration = Configuration.RETURN;
+                        pc.noFlowAvailableReason = NoFlowAvailableReason.INVALID_RETURN_NETWORK;
+                    }
+                }
                 // we are not good.
                 console.log('our graph is not series parallel');
             }

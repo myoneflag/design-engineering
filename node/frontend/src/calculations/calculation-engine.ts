@@ -299,8 +299,8 @@ export default class CalculationEngine {
             if (sanityPassed) {
                 this.buildNetworkObjects();
                 this.configureLUFlowGraph();
-                this.precomputeBridges();
                 identifyReturns(this);
+                this.precomputeBridges();
                 this.precomputePsdAfterBridge(FLOW_SOURCE_ROOT_BRIDGE, FLOW_SOURCE_ROOT_NODE, new Set<string>());
                 this.preCompute();
                 this.sizeDefiniteTransports();
@@ -341,6 +341,7 @@ export default class CalculationEngine {
         const bridgeStack: Array<Edge<FlowNode | undefined, FlowEdge | undefined>> = [FLOW_SOURCE_ROOT_BRIDGE];
 
         this.childBridges.set(FLOW_SOURCE_ROOT_BRIDGE.uid, []);
+        const seenEdges = new Set<string>();
 
         this.flowGraph.dfsRecursive(
             FLOW_SOURCE_ROOT_NODE,
@@ -356,6 +357,16 @@ export default class CalculationEngine {
             },
             undefined,
             (e) => {
+                const pc = this.globalStore.getOrCreateCalculation((this.globalStore.get(e.value.uid) as Pipe).entity);
+                // Some pipes may have their flow directions fixed in an earlier step (such as return systems)
+                if (pc.flowFrom) {
+                    if (e.from.connectable !== pc.flowFrom) {
+                        console.log('excluding one direction of edge ' + e.value.uid);
+                        seenEdges.delete(e.uid);
+                        return true;
+                    }
+                }
+
                 if (this.allBridges.has(e.uid)) {
                     this.childBridges.get(bridgeStack[bridgeStack.length - 1].uid)!.push(e);
                     this.childBridges.set(e.uid, []);
@@ -373,7 +384,7 @@ export default class CalculationEngine {
                 }
             },
             undefined,
-            undefined,
+            seenEdges,
             true,
             false
         );
@@ -1705,6 +1716,7 @@ export default class CalculationEngine {
                     if (object.entity.type === EntityType.PIPE) {
                         const pcalc = this.globalStore.getOrCreateCalculation(object.entity);
                         pcalc.noFlowAvailableReason = NoFlowAvailableReason.UNUSUAL_CONFIGURATION;
+                        pcalc.psdUnits = residualPsdU;
                     }
                 }
             }
@@ -2153,6 +2165,16 @@ export default class CalculationEngine {
                 },
                 undefined,
                 (e) => {
+                    const pc = this.globalStore.getOrCreateCalculation((this.globalStore.get(e.value.uid) as Pipe).entity);
+                    // Some pipes may have their flow directions fixed in an earlier step (such as return systems)
+                    if (pc.flowFrom) {
+                        if (e.from.connectable !== pc.flowFrom) {
+                            console.log('excluding one direction of edge ' + e.value.uid);
+                            visitedEdges.delete(e.uid);
+                            return true;
+                        }
+                    }
+
                     if (this.allBridges.has(e.uid)) {
                         seenBridges.add(e.uid);
                         return true;
@@ -2207,6 +2229,19 @@ export default class CalculationEngine {
                 },
                 undefined,
                 (e) => {
+                    if (e.value.type === EdgeType.PIPE) {
+                        const pc = this.globalStore.getOrCreateCalculation((this.globalStore.get(e.value.uid) as Pipe).entity);
+
+                        // Some pipes may have their flow directions fixed in an earlier step (such as return systems)
+                        if (pc.flowFrom) {
+                            if (e.from.connectable !== pc.flowFrom) {
+                                console.log('excluding one direction of edge ' + e.value.uid);
+                                //seenEdges.delete(e.uid);
+                                return true;
+                            }
+                        }
+                    }
+
                     if (this.allBridges.has(e.uid)) {
                         const result = this.precomputePsdAfterBridge(e, e.to, seenEdges);
                         for (const r of result.values()) {
