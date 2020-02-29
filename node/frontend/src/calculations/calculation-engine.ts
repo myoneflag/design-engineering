@@ -83,6 +83,7 @@ import { getPlantPressureLossKPA } from "../htmlcanvas/lib/utils";
 import { RingMainCalculator } from "./ring-main-calculator";
 import { Configuration, NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
 import { PlantType } from "../../../common/src/api/document/entities/plants/plant-types";
+import { identifyReturns } from './returns';
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -299,7 +300,7 @@ export default class CalculationEngine {
                 this.buildNetworkObjects();
                 this.configureLUFlowGraph();
                 this.precomputeBridges();
-                this.identifyReturns();
+                identifyReturns(this);
                 this.precomputePsdAfterBridge(FLOW_SOURCE_ROOT_BRIDGE, FLOW_SOURCE_ROOT_NODE, new Set<string>());
                 this.preCompute();
                 this.sizeDefiniteTransports();
@@ -378,95 +379,6 @@ export default class CalculationEngine {
         );
     }
 
-    identifyReturns() {
-        for (const o of this.networkObjects()) {
-            if (o.entity.type === EntityType.PLANT && o.entity.plant.type === PlantType.RETURN_SYSTEM) {
-                const connsOutlet = this.globalStore.getConnections(o.entity.outletUid);
-                const connsReturn = this.globalStore.getConnections(o.entity.plant.returnUid);
-                if (connsOutlet.length !== 1) {
-                    continue;
-                }
-                if (connsReturn.length !== 1) {
-                    continue;
-                }
-
-
-                const thisNode = { connectable: o.entity.outletUid, connection: o.entity.uid };
-                const component = this.flowGraph.getConnectedComponent(thisNode);
-                console.log('connected component has ' + JSON.stringify(component));
-
-                const newGraph = Graph.fromSubgraph(component, this.serializeNode);
-
-                // add faux edge between source and sink of return pump because it was excluded in the original graph
-                // but is needed here to extract the loops.
-                newGraph.addDirectedEdge(
-                    {
-                        connectable: o.entity.plant.returnUid,
-                        connection:  o.entity.uid ,
-                    },
-                    {
-                        connectable: o.entity.outletUid,
-                        connection: o.entity.uid ,
-                    },
-                    {
-                        type: EdgeType.RETURN_PUMP,
-                        uid: o.entity.uid,
-                    },
-                );
-
-                const biConnected = newGraph.findBridgeSeparatedComponents()[1];
-
-                const returnComponent = biConnected.find(([nodes, edges]) => {
-                    return nodes.find((n) => this.serializeNode(n) === this.serializeNode(thisNode));
-                });
-
-                if (!returnComponent) {
-                    throw new Error('Graph algorithm error - no connected component contains the return node');
-                }
-
-                // construct a simple graph for series-parallel analysis
-                const simpleGraph = new Graph<string, FlowEdge>((n) => n);
-                for (const e of returnComponent[1]) {
-                    switch (e.value.type) {
-                        case EdgeType.PIPE:
-                        case EdgeType.BIG_VALVE_HOT_HOT:
-                        case EdgeType.BIG_VALVE_HOT_WARM:
-                        case EdgeType.BIG_VALVE_COLD_WARM:
-                        case EdgeType.BIG_VALVE_COLD_COLD:
-                            simpleGraph.addEdge(e.from.connectable, e.to.connectable, e.value);
-                            break;
-                        case EdgeType.FITTING_FLOW:
-                        case EdgeType.FLOW_SOURCE_EDGE:
-                        case EdgeType.CHECK_THROUGH:
-                        case EdgeType.ISOLATION_THROUGH:
-                        case EdgeType.PLANT_THROUGH:
-                            // an extrapolated edge which will interfere with series parallel analysis.
-                            break;
-                        case EdgeType.RETURN_PUMP:
-                            // DO nothing. The edges related to the pump are done on the pipe.
-                            break;
-                        default:
-                            assertUnreachable(e.value.type);
-                    }
-                }
-
-                if (simpleGraph.isSeriesParallel(o.entity.outletSystemUid, o.entity.plant.returnUid)) {
-                    // we are good.
-                    console.log('we are returning with a series parallel graph. Therefore, it is a valid return.');
-                    for (const e of returnComponent[1]) {
-                        if (e.value.type === EdgeType.PIPE) {
-                            const p = this.globalStore.get(e.value.uid)!.entity as PipeEntity;
-                            const pc = this.globalStore.getOrCreateCalculation(p);
-                            pc.configuration = Configuration.RETURN;
-                        }
-                    }
-                } else {
-                    // we are not good.
-                    console.log('our graph is not series parallel');
-                }
-            }
-        }
-    }
 
     // Take the calcs from the invisible network and collect them into the visible results.
     collectResults() {
@@ -1265,7 +1177,9 @@ export default class CalculationEngine {
                 const calculation = this.globalStore.getOrCreateCalculation(entity);
                 calculation.psdUnits = psdU;
                 calculation.psdProfile = profile;
-                calculation.flowFrom = wet ? wet.connectable : null;
+                if (!calculation.flowFrom) {
+                    calculation.flowFrom = wet ? wet.connectable : null;
+                }
                 calculation.noFlowAvailableReason = noFlowReason;
 
                 const flowRate = lookupFlowRate(psdU, this.doc, this.catalog, entity.systemUid);

@@ -5,6 +5,13 @@ import TinyQueue from "tinyqueue";
 import stringify from "json-stable-stringify";
 import { cloneSimple } from "../../../common/src/lib/utils";
 
+enum SPEventType {
+    REMOVE_NODE,
+    REMOVE_EDGE,
+}
+
+type SPEvent<N> = {type: SPEventType.REMOVE_NODE, node: N}
+
 export default class Graph<N, E> {
     adjacencyList: Map<string, Array<Edge<N, E>>> = new Map<string, Array<Edge<N, E>>>();
     edgeList: Map<string, Edge<N, E>> = new Map<string, Edge<N, E>>();
@@ -47,7 +54,15 @@ export default class Graph<N, E> {
         }
     }
 
-    isSeriesParallel(source: N, sink: N) {
+    // Returns the map from edge => direction (sourceNode) if the graph is a series parallel graph.
+    isSeriesParallel(source: N, sink: N): Map<string, N> | null {
+        function se(a: string, b: string) {
+            return JSON.stringify([a, b].sort());
+        }
+        function dse(e: string) {
+            return JSON.parse(e);
+        }
+
         // use the two operations to see if it's possible to reduce the graph to the degenerate N----N  (K2) graph.
         // 1. Combine 2 consecutive edges together.
         // 2. Combine 2 coinciding edges together.
@@ -58,6 +73,9 @@ export default class Graph<N, E> {
         const sinkS = this.sn(sink);
 
         console.log('checking series parallel for a graph with ' + this.edgeList.size + ' edges');
+
+        // Here we store when a node compresses its two edges into one.
+        const compressions: Array<[[string, string], string]> = [];
 
         for (const [eid, edge] of this.edgeList) {
             const fromS = this.sn(edge.from);
@@ -73,7 +91,7 @@ export default class Graph<N, E> {
             adjList.get(fromS)!.push(toS);
             adjList.get(toS)!.push(fromS);
 
-            const a = JSON.stringify([fromS, toS].sort());
+            const a = se(fromS, toS);
             edgesByEndpoints.set(a, (edgesByEndpoints.get(a) || 0) + 1);
         }
 
@@ -107,9 +125,9 @@ export default class Graph<N, E> {
                         // remove the two edges adjacent
                         adjList.get(a)!.splice(adjList.get(a)!.indexOf(n), 1, b);
                         adjList.get(b)!.splice(adjList.get(b)!.indexOf(n), 1, a);
-                        const ea = JSON.stringify([a, n].sort());
-                        const eb = JSON.stringify([b, n].sort());
-                        const eab = JSON.stringify([a, b].sort());
+                        const ea = se(a, n);
+                        const eb = se(b, n);
+                        const eab = se(a, b);
                         edgesByEndpoints.set(ea, edgesByEndpoints.get(ea)! - 1);
                         edgesByEndpoints.set(eb, edgesByEndpoints.get(eb)! - 1);
                         edgesByEndpoints.set(eab, (edgesByEndpoints.get(eab) || 0) + 1);
@@ -118,6 +136,8 @@ export default class Graph<N, E> {
                             edgesQ.push(eab);
                         }
 
+                        compressions.push([[ea, eb], eab]);
+
                         edgesRemoved ++;
                     }
                 }
@@ -125,7 +145,7 @@ export default class Graph<N, E> {
                 const e = edgesQ.pop()!;
                 if (edgesByEndpoints.has(e) && edgesByEndpoints.get(e)! > 1) {
                     // remove coinciding edge
-                    const [a, b] = JSON.parse(e);
+                    const [a, b] = dse(e);
                     console.log('deleting edge ' + a + ' ' + b);
 
                     adjList.get(a)!.splice(adjList.get(a)!.indexOf(b), 1);
@@ -149,10 +169,51 @@ export default class Graph<N, E> {
         console.log('deleted ' + edgesRemoved + ' in the process');
         // check that the graph is degenerate
         if (edgesRemoved === this.edgeList.size - 1) {
-            return true;
+            // Reconstruct the ordering of nodes by walking through the compressions backwards, building up a lookup
+            // table of node orders.
+            const orders = new Map<string, string>();
+            orders.set(se(sourceS, sinkS), sourceS);
+            console.log(se(sourceS, sinkS));
+
+            for (const [[ea, eb], eab] of compressions.reverse()) {
+                console.log('deducing, ' + ea + ' ' + eb + ' ' + eab);
+                const src = orders.get(eab)!;
+                const [aba, abb] = dse(eab);
+                const dst = aba === src ? abb : aba;
+
+                if (!src) {
+                    throw new Error("couldn't reconstruct node orderings");
+                }
+
+                for (const e of [ea, eb]) {
+                    const [a, b] = dse(e);
+
+                    if (a === src) {
+                        orders.set(e, a);
+                    } else if (a === dst) {
+                        orders.set(e, b);
+                    } else if (b === src) {
+                        orders.set(e, b);
+                    } else if (b === dst) {
+                        orders.set(e, a);
+                    } else {
+                        throw new Error("couldn't reconstruct node orderings, invalid state.");
+                    }
+                }
+            }
+
+            // convert ordering lookup into map from E to src.
+            const result = new Map<string, N>();
+
+            for (const [eid, edge] of this.edgeList) {
+                const es = se(this.sn(edge.from), this.sn(edge.to));
+                result.set(eid, this.id2Node.get(orders.get(es)!)!);
+            }
+
+            return result;
         }
 
-        return false;
+        return null;
     }
 
     addDirectedEdge(from: N, to: N, edgeValue: E, uid?: string, isDirected: boolean = true) {

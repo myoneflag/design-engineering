@@ -234,6 +234,41 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                     baseColor = "#aaaaaa";
                 }
             }
+
+            ctx.strokeStyle = baseColor;
+            ctx.fillStyle = baseColor;
+            // Direction arrows
+            if (calculation && calculation.configuration === Configuration.RETURN) {
+                if (calculation.flowFrom) {
+                    const endpoints = [this.toObjectCoord(aw), this.toObjectCoord(bw)];
+                    if (calculation.flowFrom.includes(this.entity.endpointUid[1])) {
+                        const tmp = endpoints[1];
+                        endpoints[1] = endpoints[0];
+                        endpoints[0] = tmp;
+                    }
+
+                    const gap = baseWidth * 10;
+                    const vec = Flatten.vector([endpoints[1].x - endpoints[0].x, endpoints[1].y - endpoints[0].y]).normalize();
+                    const orth = vec.rotate90CCW();
+
+                    console.log('drawing direction arrows');
+
+                    for (let dist = gap; dist < this.computedLengthM * 1000; dist += gap) {
+                        console.log('directions');
+                        const base = {x: endpoints[0].x, y: endpoints[0].y};
+                        base.x += vec.x * dist;
+                        base.y += vec.y * dist;
+
+                        ctx.beginPath();
+                        ctx.moveTo(base.x, base.y);
+                        ctx.lineTo(base.x + orth.x * baseWidth * 1.5, base.y + orth.y * baseWidth * 1.5);
+                        ctx.lineTo(base.x + vec.x * baseWidth * 2.5, base.y + vec.y * baseWidth * 2.5);
+                        ctx.lineTo(base.x - orth.x * baseWidth * 1.5, base.y - orth.y * baseWidth * 1.5);
+                        ctx.fill();
+                    }
+                }
+            }
+
             if (!calculation || calculation.peakFlowRate === null) {
                 ctx.setLineDash([baseWidth * 3, baseWidth * 3]);
             }
