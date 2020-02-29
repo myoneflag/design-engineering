@@ -1,6 +1,5 @@
 import { DrawingState, initialDrawing } from "./document/drawing";
 import { EntityType } from "./document/entities/types";
-import { PlantEntityV3, plantV3toCurrent } from "./document/entities/plants/plant-entity";
 import { NodeType } from "./document/entities/load-node-entity";
 
 // This file is for managing upgrades between versions.
