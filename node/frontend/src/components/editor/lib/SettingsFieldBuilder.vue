@@ -57,7 +57,7 @@
                         >
                             <b-dropdown-item
                                 v-for="(choice, index) in field[3]"
-                                @click="reactiveData[field[0]] = choice.key"
+                                @click="setReactiveData(field[0], choice.key)"
                                 :key="index"
                                 :disabled="choice.disabled === undefined ? false : choice.disabled"
                             >
