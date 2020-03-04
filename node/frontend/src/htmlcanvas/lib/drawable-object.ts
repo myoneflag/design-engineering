@@ -185,7 +185,8 @@ export default abstract class DrawableObject {
         const oldTransform = ctx.getTransform();
         const sc = TM.applyToPoint(vp.currToScreenTransform(ctx), current);
 
-        const t = decomposeMatrix(vp.currToScreenTransform(ctx));
+        const t = decomposeMatrix(vp.currToSurfaceTransform(ctx));
+        const m = vp.currToSurfaceTransform(ctx);
 
         const wc = vp.toWorldCoord(sc);
         vp.prepareContext(ctx);

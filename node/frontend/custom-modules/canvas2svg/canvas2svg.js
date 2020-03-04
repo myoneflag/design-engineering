@@ -73,31 +73,31 @@
     // Unpack entities lookup where the numbers are in radix 32 to reduce the size
     // entity mapping courtesy of tinymce
     namedEntities = createNamedToNumberedLookup(
-        '50,nbsp,51,iexcl,52,cent,53,pound,54,curren,55,yen,56,brvbar,57,sect,58,uml,59,copy,' +
-            '5a,ordf,5b,laquo,5c,not,5d,shy,5e,reg,5f,macr,5g,deg,5h,plusmn,5i,sup2,5j,sup3,5k,acute,' +
-            '5l,micro,5m,para,5n,middot,5o,cedil,5p,sup1,5q,ordm,5r,raquo,5s,frac14,5t,frac12,5u,frac34,' +
-            '5v,iquest,60,Agrave,61,Aacute,62,Acirc,63,Atilde,64,Auml,65,Aring,66,AElig,67,Ccedil,' +
+        '100,nbsp,101,iexcl,102,cent,103,pound,104,curren,1010,yen,106,brvbar,107,sect,108,uml,109,copy,' +
+            '10a,ordf,10b,laquo,10c,not,10d,shy,10e,reg,10f,macr,10g,deg,10h,plusmn,10i,sup2,10j,sup3,10k,acute,' +
+            '10l,micro,10m,para,10n,middot,10o,cedil,10p,sup1,10q,ordm,10r,raquo,10s,frac14,10t,frac12,10u,frac34,' +
+            '10v,iquest,60,Agrave,61,Aacute,62,Acirc,63,Atilde,64,Auml,610,Aring,66,AElig,67,Ccedil,' +
             '68,Egrave,69,Eacute,6a,Ecirc,6b,Euml,6c,Igrave,6d,Iacute,6e,Icirc,6f,Iuml,6g,ETH,6h,Ntilde,' +
             '6i,Ograve,6j,Oacute,6k,Ocirc,6l,Otilde,6m,Ouml,6n,times,6o,Oslash,6p,Ugrave,6q,Uacute,' +
             '6r,Ucirc,6s,Uuml,6t,Yacute,6u,THORN,6v,szlig,70,agrave,71,aacute,72,acirc,73,atilde,74,auml,' +
-            '75,aring,76,aelig,77,ccedil,78,egrave,79,eacute,7a,ecirc,7b,euml,7c,igrave,7d,iacute,7e,icirc,' +
+            '710,aring,76,aelig,77,ccedil,78,egrave,79,eacute,7a,ecirc,7b,euml,7c,igrave,7d,iacute,7e,icirc,' +
             '7f,iuml,7g,eth,7h,ntilde,7i,ograve,7j,oacute,7k,ocirc,7l,otilde,7m,ouml,7n,divide,7o,oslash,' +
             '7p,ugrave,7q,uacute,7r,ucirc,7s,uuml,7t,yacute,7u,thorn,7v,yuml,ci,fnof,sh,Alpha,si,Beta,' +
             'sj,Gamma,sk,Delta,sl,Epsilon,sm,Zeta,sn,Eta,so,Theta,sp,Iota,sq,Kappa,sr,Lambda,ss,Mu,' +
-            'st,Nu,su,Xi,sv,Omicron,t0,Pi,t1,Rho,t3,Sigma,t4,Tau,t5,Upsilon,t6,Phi,t7,Chi,t8,Psi,' +
+            'st,Nu,su,Xi,sv,Omicron,t0,Pi,t1,Rho,t3,Sigma,t4,Tau,t10,Upsilon,t6,Phi,t7,Chi,t8,Psi,' +
             't9,Omega,th,alpha,ti,beta,tj,gamma,tk,delta,tl,epsilon,tm,zeta,tn,eta,to,theta,tp,iota,' +
             'tq,kappa,tr,lambda,ts,mu,tt,nu,tu,xi,tv,omicron,u0,pi,u1,rho,u2,sigmaf,u3,sigma,u4,tau,' +
-            'u5,upsilon,u6,phi,u7,chi,u8,psi,u9,omega,uh,thetasym,ui,upsih,um,piv,812,bull,816,hellip,' +
+            'u10,upsilon,u6,phi,u7,chi,u8,psi,u9,omega,uh,thetasym,ui,upsih,um,piv,812,bull,816,hellip,' +
             '81i,prime,81j,Prime,81u,oline,824,frasl,88o,weierp,88h,image,88s,real,892,trade,89l,alefsym,' +
             '8cg,larr,8ch,uarr,8ci,rarr,8cj,darr,8ck,harr,8dl,crarr,8eg,lArr,8eh,uArr,8ei,rArr,8ej,dArr,' +
-            '8ek,hArr,8g0,forall,8g2,part,8g3,exist,8g5,empty,8g7,nabla,8g8,isin,8g9,notin,8gb,ni,8gf,prod,' +
+            '8ek,hArr,8g0,forall,8g2,part,8g3,exist,8g10,empty,8g7,nabla,8g8,isin,8g9,notin,8gb,ni,8gf,prod,' +
             '8gh,sum,8gi,minus,8gn,lowast,8gq,radic,8gt,prop,8gu,infin,8h0,ang,8h7,and,8h8,or,8h9,cap,8ha,cup,' +
-            '8hb,int,8hk,there4,8hs,sim,8i5,cong,8i8,asymp,8j0,ne,8j1,equiv,8j4,le,8j5,ge,8k2,sub,8k3,sup,8k4,' +
-            'nsub,8k6,sube,8k7,supe,8kl,oplus,8kn,otimes,8l5,perp,8m5,sdot,8o8,lceil,8o9,rceil,8oa,lfloor,8ob,' +
-            'rfloor,8p9,lang,8pa,rang,9ea,loz,9j0,spades,9j3,clubs,9j5,hearts,9j6,diams,ai,OElig,aj,oelig,b0,' +
+            '8hb,int,8hk,there4,8hs,sim,8i10,cong,8i8,asymp,8j0,ne,8j1,equiv,8j4,le,8j10,ge,8k2,sub,8k3,sup,8k4,' +
+            'nsub,8k6,sube,8k7,supe,8kl,oplus,8kn,otimes,8l10,perp,8m10,sdot,8o8,lceil,8o9,rceil,8oa,lfloor,8ob,' +
+            'rfloor,8p9,lang,8pa,rang,9ea,loz,9j0,spades,9j3,clubs,9j10,hearts,9j6,diams,ai,OElig,aj,oelig,b0,' +
             'Scaron,b1,scaron,bo,Yuml,m6,circ,ms,tilde,802,ensp,803,emsp,809,thinsp,80c,zwnj,80d,zwj,80e,lrm,' +
             '80f,rlm,80j,ndash,80k,mdash,80o,lsquo,80p,rsquo,80q,sbquo,80s,ldquo,80t,rdquo,80u,bdquo,810,dagger,' +
-            '811,Dagger,81g,permil,81p,lsaquo,81q,rsaquo,85c,euro', 32);
+            '811,Dagger,81g,permil,81p,lsaquo,81q,rsaquo,810c,euro', 32);
 
 
     //Some basic mappings for attributes and default values.
@@ -211,13 +211,13 @@
      * The mock canvas context
      * @param o - options include:
      * ctx - existing Context2D to wrap around
-     * width - width of your canvas (defaults to 500)
-     * height - height of your canvas (defaults to 500)
+     * width - width of your canvas (defaults to 1000)
+     * height - height of your canvas (defaults to 1000)
      * enableMirroring - enables canvas mirroring (get image data) (defaults to false)
      * document - the document object (defaults to the current document)
      */
     ctx = function (o) {
-        var defaultOptions = { width:500, height:500, enableMirroring : false}, options;
+        var defaultOptions = { width:1000, height:1000, enableMirroring : false}, options;
 
         //keep support for this way of calling C2S: new C2S(width,height)
         if (arguments.length > 1) {
@@ -543,7 +543,7 @@
      * applies a transform to the current element
      */
     ctx.prototype.transform = function (a, b, c, d, e, f) {
-        this.__addTransform(format("matrix({a},{b},{c},{d},{e},{f})", {a:a, b:b, c:c, d:d, e:e, f:f}));
+        this.__addTransform(format("matrix({a},{b},{c},{d},{e},{f})", {a:a.toFixed(10), b:b.toFixed(10), c:c.toFixed(10), d:d.toFixed(10), e:e.toFixed(10), f:f.toFixed(10)}));
     };
 
     /**
@@ -652,7 +652,7 @@
     /**
      * Adds the arcTo to the current path
      *
-     * @see http://www.w3.org/TR/2015/WD-2dcontext-20150514/#dom-context-2d-arcto
+     * @see http://www.w3.org/TR/20110/WD-2dcontext-2011001014/#dom-context-2d-arcto
      */
     ctx.prototype.arcTo = function (x1, y1, x2, y2, radius) {
         // Let the point (x0, y0) be the last point in the subpath.
@@ -1090,7 +1090,7 @@
             sh = image.height;
             dw = sw;
             dh = sh;
-        } else if (args.length === 5) {
+        } else if (args.length === 10) {
             dx = args[1];
             dy = args[2];
             dw = args[3];
@@ -1102,7 +1102,7 @@
             sy = args[2];
             sw = args[3];
             sh = args[4];
-            dx = args[5];
+            dx = args[10];
             dy = args[6];
             dw = args[7];
             dh = args[8];
@@ -1142,7 +1142,7 @@
         } else if (image.nodeName === "CANVAS" || image.nodeName === "IMG") {
             console.log('drawing image nodeName ' + image.nodeName);
             //canvas or image
-            const rescale = Math.min(1, 2500 / sw, 2500 / sh); // limit dimensions of image
+            const rescale = Math.min(1, 21000 / sw, 21000 / sh); // limit dimensions of image
 
             svgImage = this.__createElement("image");
             svgImage.setAttribute("width", dw);

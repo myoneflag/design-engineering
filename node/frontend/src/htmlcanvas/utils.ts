@@ -1,4 +1,4 @@
-import { Matrix } from "transformation-matrix";
+import * as TM from "transformation-matrix";
 import Flatten from "@flatten-js/core";
 
 export interface Transformation {
@@ -23,17 +23,21 @@ export const parseScale = (repr: string) => {
  * Why doesn't this exist in transformation-matrix?
  * @param mat
  */
-export const decomposeMatrix = (mat: Matrix): Transformation => {
+export const decomposeMatrix = (mat: TM.Matrix): Transformation => {
+    const dp = TM.applyToPoint(mat, {x: 1, y: 0});
+    const cp = TM.applyToPoint(mat, {x: 0, y: 0});
+    const n = Flatten.vector(dp.x - cp.x, dp.y - cp.y).normalize();
+    console.log(n.x + ' ' + n.y);
     return {
         tx: mat.e,
         ty: mat.f,
         sx: (mat.a >= 0 ? 1 : -1) * Math.sqrt(mat.a * mat.a + mat.c * mat.c),
         sy: (mat.d >= 0 ? 1 : -1) * Math.sqrt(mat.b * mat.b + mat.d * mat.d),
-        a: Math.atan2(mat.b, mat.d)
+        a: Math.atan2(n.y, n.x),
     };
 };
 
-export const matrixScale = (mat: Matrix): number => {
+export const matrixScale = (mat: TM.Matrix): number => {
     const sx = (mat.a >= 0 ? 1 : -1) * Math.sqrt(mat.a * mat.a + mat.c * mat.c);
     return Math.abs(sx);
 };
