@@ -360,7 +360,6 @@
         for (i = 0; i < keys.length; i++) {
             style = STYLES[keys[i]];
             value = this[keys[i]];
-            console.log('applying style key ' + keys[i] + ' value ' + JSON.stringify(value));
             if (style.apply) {
                 //is this a gradient or pattern?
                 if (value instanceof CanvasPattern) {
@@ -583,7 +582,6 @@
      */
     ctx.prototype.__addPathCommand = function (command) {
         if (command.includes('NaN')) {
-            console.log('NaN in path');
             throw new Error('nan in path');
         }
         this.__currentDefaultPath += " ";
@@ -797,7 +795,6 @@
         parent.appendChild(rect);
         this.__currentElement = rect;
 
-        console.log('c2s filling rect');
         this.__applyStyleToCurrentElement("fill");
     };
 
@@ -1117,7 +1114,7 @@
         currentElement = this.__currentElement;
         var translateDirective = "translate(" + dx + ", " + dy + ")";
         if (image instanceof ctx) {
-            console.log('drawing mock canvas');
+            console.log('mock context');
             //canvas2svg mock canvas context. In the future we may want to clone nodes instead.
             //also I'm currently ignoring dw, dh, sw, sh, sx, sy for a mock context.
             svg = image.getSvg().cloneNode(true);
@@ -1144,23 +1141,26 @@
             }
         } else if (image.nodeName === "CANVAS" || image.nodeName === "IMG") {
             console.log('drawing image nodeName ' + image.nodeName);
-            console.log(image.getAttribute("src"));
-            console.log(image.src);
             //canvas or image
+            const rescale = Math.min(1, 2500 / sw, 2500 / sh); // limit dimensions of image
+
             svgImage = this.__createElement("image");
             svgImage.setAttribute("width", dw);
             svgImage.setAttribute("height", dh);
             svgImage.setAttribute("preserveAspectRatio", "none");
 
-            if (sx || sy || sw !== image.width || sh !== image.height) {
+            console.log(sx + ' ' + sy + ' ' + sw + ' ' + image.naturalWidth + ' ' + sh + ' ' + image.naturalHeight + ' ' + dw + ' ' + dh);
+
+            // always set this to true in order to make sure dataurl is used for offline when converting to PDF.
+            if (true) {
                 //crop the image using a temporary canvas
                 // First, we find the closest sensible resolution.
                 const idealWidth = Math.min(dw, image.naturalWidth);
                 const idealHeight = Math.min(dh, image.naturalHeight);
 
                 const scale = Math.min(idealWidth / dw, idealHeight / dh);
-                const rw = scale * dw;
-                const rh = scale * dh;
+                const rw = scale * dw * rescale;
+                const rh = scale * dh * rescale;
 
                 canvas = this.__document.createElement("canvas");
                 canvas.width = rw;
@@ -1169,7 +1169,14 @@
                 context.drawImage(image, sx, sy, sw, sh, 0, 0, rw, rh);
                 image = canvas;
             }
+
             svgImage.setAttribute("transform", translateDirective);
+            console.log(image.nodeName);
+            if (image.nodeName === 'IMG') {
+                console.log(image.getAttribute('src').length);
+            } else {
+                console.log(image.toDataURL().length);
+            }
             svgImage.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href",
                 image.nodeName === "CANVAS" ? image.toDataURL() : image.getAttribute("src"));
             parent.appendChild(svgImage);
@@ -1251,7 +1258,6 @@
 
     // CommonJS/Browserify
     if (typeof module === "object" && typeof module.exports === "object") {
-        console.log('exporting module');
         module.exports = ctx;
     }
 
