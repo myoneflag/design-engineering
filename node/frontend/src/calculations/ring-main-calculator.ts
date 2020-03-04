@@ -2,7 +2,7 @@ import CalculationEngine, { EdgeType, FlowEdge, FlowNode } from "./calculation-e
 import PipeEntity, { fillPipeDefaultFields } from "../../../common/src/api/document/entities/pipe-entity";
 import { Edge } from "./graph";
 import { FlowAssignment } from "./flow-assignment";
-import { countPsdProfile, lookupFlowRate, mergePsdProfile, PsdProfile } from "./utils";
+import { comparePsdCounts, countPsdProfile, lookupFlowRate, mergePsdProfile, PsdCountEntry, PsdProfile } from "./utils";
 import Pipe from "../htmlcanvas/objects/pipe";
 import { lowerBoundTable, parseCatalogNumberExact } from "../../../common/src/lib/utils";
 import { EPS } from "./pressure-drops";
@@ -204,11 +204,12 @@ export class RingMainCalculator {
         }
 
         let peakFlowFromIsolation = new FlowAssignment();
+        let psdAssignmentFromIsolation = new Map<string, PsdCountEntry>();
 
         switch (this.engine.doc.drawing.metadata.calculationParams.ringMainCalculationMethod) {
             case RingMainCalculationMethod.ISOLATION_CASES:
             case RingMainCalculationMethod.MAX_DISTRIBUTED_AND_ISOLATION_CASES:
-                peakFlowFromIsolation = this.sizeRingWithIsolationScenarios(ring, sourceNode, sinks, systemUid);
+                [peakFlowFromIsolation, psdAssignmentFromIsolation] = this.sizeRingWithIsolationScenarios(ring, sourceNode, sinks, systemUid);
                 break;
             case RingMainCalculationMethod.PSD_FLOW_RATE_DISTRIBUTED:
                 break;
@@ -233,6 +234,7 @@ export class RingMainCalculator {
                             );
                         }
                         pcalc.isRingMain = true;
+                        pcalc.psdUnits = psdAssignmentFromIsolation.get(pipeObject.uid) || null;
                     }
                 }
                 return peakFlowFromIsolation;
@@ -279,8 +281,8 @@ export class RingMainCalculator {
         ring: Array<Edge<FlowNode, FlowEdge>>,
         sourceNode: string,
         sinks: Array<[FlowNode, PsdProfile]>,
-        systemUid: string
-    ): FlowAssignment {
+        systemUid: string,
+    ): [FlowAssignment, Map<string, PsdCountEntry>] {
         // For this problem, imagine that the source is at 12 o'clock as a visualization only.
         const sourceIx = ring.findIndex((e) => e.to.connectable === sourceNode);
         if (sourceIx === -1) {
@@ -304,7 +306,7 @@ export class RingMainCalculator {
 
         if (isolationLocations.length === 0) {
             this.setNoFlowReasonForRing(ring, NoFlowAvailableReason.NO_ISOLATION_VALVES_ON_MAIN);
-            return new FlowAssignment();
+            return [new FlowAssignment(), new Map()];
         }
 
         const sinksByConnectable = new Map<string, PsdProfile>();
@@ -312,6 +314,7 @@ export class RingMainCalculator {
             sinksByConnectable.set(fn.connectable, psd);
         }
 
+        const aggregatePsd = new Map<string, PsdCountEntry>();
         const leftToRight = new FlowAssignment();
         // From rightmost isolation valve, work backwards
         let psd = new PsdProfile();
@@ -326,10 +329,13 @@ export class RingMainCalculator {
                     mergePsdProfile(psd, sinksByConnectable.get(ring[ix].to.connectable)!);
                 }
 
-                const fr = lookupFlowRate(countPsdProfile(psd), this.engine.doc, this.engine.catalog, systemUid)!;
+                const psdCount = countPsdProfile(psd);
+                const fr = lookupFlowRate(psdCount, this.engine.doc, this.engine.catalog, systemUid)!;
                 leftToRight.addFlow(ring[ix].value.uid, ring[ix].from.connectable, fr.flowRateLS);
+                aggregatePsd.set(ring[ix].value.uid, psdCount);
             }
         }
+        // ditto for left to right
         const rightToLeft = new FlowAssignment();
         psd = new PsdProfile();
         for (let i = 0; i < ring.length; i++) {
@@ -340,8 +346,17 @@ export class RingMainCalculator {
                     mergePsdProfile(psd, sinksByConnectable.get(ring[ix].from.connectable)!);
                 }
 
-                const fr = lookupFlowRate(countPsdProfile(psd), this.engine.doc, this.engine.catalog, systemUid)!;
+                const psdCount = countPsdProfile(psd);
+                const fr = lookupFlowRate(psdCount, this.engine.doc, this.engine.catalog, systemUid)!;
                 rightToLeft.addFlow(ring[ix].value.uid, ring[ix].to.connectable, fr.flowRateLS);
+                if (aggregatePsd.has(ring[ix].value.uid)) {
+                    const cmp = comparePsdCounts(aggregatePsd.get(ring[ix].value.uid)!, psdCount);
+                    if (cmp !== null && cmp < 0) {
+                        aggregatePsd.set(ring[ix].value.uid, psdCount);
+                    }
+                } else {
+                    aggregatePsd.set(ring[ix].value.uid, psdCount);
+                }
             }
 
             if (ix === sourceIx) {
@@ -352,13 +367,15 @@ export class RingMainCalculator {
         // aggregate left to right
         const aggregate = new FlowAssignment();
         for (const edge of new Set([...leftToRight.keys(), ...rightToLeft.keys()])) {
+            const o = this.engine.globalStore.get(edge)!;
+
             if (Math.abs(rightToLeft.getFlow(edge)) > Math.abs(leftToRight.getFlow(edge))) {
                 aggregate.set(edge, rightToLeft.get(edge)!);
             } else {
                 aggregate.set(edge, leftToRight.get(edge)!);
             }
         }
-        return aggregate;
+        return [aggregate, aggregatePsd];
     }
 
     calculateAllRings() {

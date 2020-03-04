@@ -159,7 +159,7 @@ export function comparePsdCounts(a: PsdCountEntry, b: PsdCountEntry): number | n
         a.continuousFlowLS + EPS < b.continuousFlowLS ? -1 : a.continuousFlowLS - EPS > b.continuousFlowLS ? 1 : 0;
     const dDiff = a.dwellings + EPS < b.dwellings ? -1 : a.dwellings - EPS > b.dwellings ? 1 : 0;
 
-    const small = Math.max(unitDiff, cfDiff, dDiff);
+    const small = Math.min(unitDiff, cfDiff, dDiff);
     const large = Math.max(unitDiff, cfDiff, dDiff);
 
     if (small === 0) {
