@@ -34,9 +34,7 @@ import { getObjectFrictionHeadLoss } from "../../src/calculations/entity-pressur
 import { DrawableEntityConcrete, isConnectableEntity } from "../../../common/src/api/document/entities/concrete-entity";
 import BigValve from "../htmlcanvas/objects/big-valve/bigValve";
 // tslint:disable-next-line:max-line-length
-import DirectedValveEntity, {
-    makeDirectedValveFields
-} from "../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
+import DirectedValveEntity, { makeDirectedValveFields } from "../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
 import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import {
     comparePsdCounts,
@@ -137,6 +135,7 @@ export default class CalculationEngine {
     ga!: number;
 
     entityMaxPressuresKPA = new Map<string, number | null>();
+    nodePressureKPA = new Map<string, number | null>();
     allBridges = new Map<string, Edge<FlowNode, FlowEdge>>();
     psdAfterBridgeCache = new Map<string, PsdProfile>();
     parentBridgeOfWetEdge = new Map<string, Edge<FlowNode | undefined, FlowEdge | undefined>>();
@@ -490,6 +489,10 @@ export default class CalculationEngine {
                         if (minPressure === null || (thisPressure !== null && thisPressure < minPressure)) {
                             minPressure = thisPressure;
                         }
+                        if (entity.type === EntityType.FITTING) {
+                            const fCalc = this.globalStore.getOrCreateCalculation(entity);
+                            fCalc.pressureByEndpointKPA[cuid] = thisPressure;
+                        }
                     });
                     // For the entry, we have to get the highest pressure (the entry pressure)
                     calculation.pressureKPA = maxPressure;
@@ -508,7 +511,7 @@ export default class CalculationEngine {
 
     getAbsolutePressurePoint(node: FlowNode) {
         if (this.demandType === DemandType.PSD) {
-            const num = this.entityMaxPressuresKPA.get(node.connectable);
+            const num = this.nodePressureKPA.get(this.serializeNode(node));
             return num === undefined ? null : num;
         } else {
             const obj = this.globalStore.get(node.connectable)!;
@@ -809,6 +812,7 @@ export default class CalculationEngine {
                         } else {
                             this.entityMaxPressuresKPA.set(dijk.node.connectable, finalPressureKPA);
                         }
+                        this.nodePressureKPA.set(this.serializeNode(dijk.node), finalPressureKPA);
                     }
                 );
             }
@@ -1842,10 +1846,22 @@ export default class CalculationEngine {
                     break;
                 }
                 case EntityType.FITTING:
+                    const calculation = this.globalStore.getOrCreateCalculation(o.entity);
+                    const connections = this.globalStore.getConnections(o.entity.uid);
+                    if (connections.length === 2) {
+                        const p1 = this.globalStore.get(connections[0])!;
+                        const p2 = this.globalStore.get(connections[1])!;
+                        if (p1 instanceof Pipe && p2 instanceof Pipe) {
+                            const pipeCalc1 = this.globalStore.getOrCreateCalculation(p1.entity);
+                            const pipeCalc2 = this.globalStore.getOrCreateCalculation(p2.entity);
+                            if (pipeCalc1!.peakFlowRate !== null && pipeCalc2!.peakFlowRate !== null) {
+                                calculation.flowRateLS = Math.min(pipeCalc1!.peakFlowRate, pipeCalc2!.peakFlowRate);
+                            }
+                        }
+                    }
+                    break;
                 case EntityType.DIRECTED_VALVE: {
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity) as
-                        | FittingCalculation
-                        | SystemNodeCalculation
                         | DirectedValveCalculation;
                     const connections = this.globalStore.getConnections(o.entity.uid);
 

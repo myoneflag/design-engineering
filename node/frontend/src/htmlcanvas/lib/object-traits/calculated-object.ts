@@ -58,11 +58,13 @@ export function CalculatedObject<
                     );
                 }
 
-                const fractionDigits = datum.significantDigits === undefined ? 3 : datum.significantDigits;
-
-                let numberText = value === null ? "??" : value.toFixed(fractionDigits);
+                let numberText: string;
                 if (datum.format) {
                     numberText = datum.format(value);
+                } else {
+                    const fractionDigits = datum.significantDigits === undefined ? 3 : datum.significantDigits;
+
+                    numberText = value === null ? "??" : value.toFixed(fractionDigits);
                 }
                 return numberText + " " + (datum.hideUnits ? "" : datum.units + " ") + datum.short;
             } else {

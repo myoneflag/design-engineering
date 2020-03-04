@@ -312,23 +312,53 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             flowRateLS: calc.flowRateLS,
             pressureDropKPA: calc.pressureDropKPA,
             pressureKPA: calc.pressureKPA,
-            warning: calc.warning
+            warning: calc.warning,
+            pressureByEndpointKPA: {},
         };
 
         const tower = this.getCalculationTower(context);
 
-        if (this.getCalculationConnectionGroups(context).flat().length === 2) {
-            // that's fine
-            if (this.getCalculationTower(context).length === 2) {
-                res.pressureDropKPA =
-                    context.globalStore.getOrCreateCalculation(this.getCalculationTower(context)[0][0])
-                        .pressureDropKPA! +
-                    context.globalStore.getOrCreateCalculation(this.getCalculationTower(context)[1][0])
-                        .pressureDropKPA!;
+        // determine the ranges of pressure drops available. Take the min, and the pressure going out to each pipe.
+        const calculationNeighbours = new Set(context.globalStore.getConnections(this.uid).map((uid) => context.globalStore.get(uid)!.getCalculationEntities(context)[0].uid));
+
+        const pressures: number[] = [];
+        let hasNull = false;
+        for (const e of this.getCalculationEntities(context)) {
+            switch (e.type) {
+                case EntityType.FITTING:
+                    const eCalc = context.globalStore.getOrCreateCalculation(e);
+                    for (const endpoint of Object.keys(eCalc.pressureByEndpointKPA)) {
+                        if (calculationNeighbours.has(endpoint)) {
+                            const pv = eCalc.pressureByEndpointKPA[endpoint];
+                            if (pv !== null) {
+                                pressures.push(pv);
+                            } else {
+                                hasNull = true;
+                            }
+                        }
+                        res.pressureByEndpointKPA[endpoint] = eCalc.pressureByEndpointKPA[endpoint];
+                    }
+                    break;
+                case EntityType.PIPE:
+                    break;
+                default:
+                    assertUnreachable(e);
             }
-        } else {
+        }
+        pressures.sort().reverse();
+
+        if (this.getCalculationConnectionGroups(context).flat().length !== 2) {
             res.flowRateLS = null;
+        }
+
+        if (hasNull || pressures.length <= 1) {
             res.pressureDropKPA = null;
+        } else {
+            if (pressures.length > 2) {
+                res.pressureDropKPA = [pressures[0] - pressures[1], pressures[0] - pressures[pressures.length - 1]];
+            } else {
+                res.pressureDropKPA = pressures[0] - pressures[1];
+            }
         }
 
         tower.forEach(([v, p]) => {

@@ -5,8 +5,9 @@ import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 
 export default interface FittingCalculation extends Calculation {
     flowRateLS: number | null;
-    pressureDropKPA: number | null;
+    pressureDropKPA: number | [number, number] | null;
     pressureKPA: number | null;
+    pressureByEndpointKPA: {[key: string]: number | null};
 }
 
 export function makeFittingCalculationFields(entity: FittingEntity, globalStore: GlobalStore): CalculationField[] {
@@ -28,7 +29,16 @@ export function makeFittingCalculationFields(entity: FittingEntity, globalStore:
             short: "Drop",
             units: Units.KiloPascals,
             systemUid: entity.systemUid,
-            category: FieldCategory.Pressure
+            category: FieldCategory.Pressure,
+            format: (v: number | [number, number] | null) => {
+                if (typeof v === 'number') {
+                    return v.toFixed(3);
+                } else if (v === null) {
+                    return '??';
+                } else {
+                    return v[0].toFixed(3) + ' to ' + v[1].toFixed(3);
+                }
+            }
         },
         {
             property: "pressureKPA",
@@ -47,6 +57,7 @@ export function emptyFittingCalculation(): FittingCalculation {
         flowRateLS: null,
         pressureDropKPA: null,
         pressureKPA: null,
-        warning: null
+        warning: null,
+        pressureByEndpointKPA: {},
     };
 }
