@@ -286,7 +286,6 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
     getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[] {
         const tower = this.getCalculationTower(context);
         // Insert a flow source into the group somewhere to simulate the riser.
-        // TODO: Use a separate flow source entity in the future.
 
         return [...tower.flat()];
     }

@@ -1310,7 +1310,7 @@ export default class CalculationEngine {
         const calculation = this.globalStore.getOrCreateCalculation(pipe);
         const realPipe = lowerBoundTable(
             this.catalog.pipes[filled.material!].pipesBySize,
-            calculation.realInternalDiameterMM!
+            calculation.realNominalPipeDiameterMM!
         )!;
 
         const roughness = parseCatalogNumberExact(realPipe.colebrookWhiteCoefficient);
