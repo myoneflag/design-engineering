@@ -1102,7 +1102,7 @@
             sy = args[2];
             sw = args[3];
             sh = args[4];
-            dx = args[10];
+            dx = args[5];
             dy = args[6];
             dw = args[7];
             dh = args[8];
@@ -1142,7 +1142,7 @@
         } else if (image.nodeName === "CANVAS" || image.nodeName === "IMG") {
             console.log('drawing image nodeName ' + image.nodeName);
             //canvas or image
-            const rescale = Math.min(1, 21000 / sw, 21000 / sh); // limit dimensions of image
+            const rescale = Math.min(1, 10000 / sw, 10000 / sh); // limit dimensions of image
 
             svgImage = this.__createElement("image");
             svgImage.setAttribute("width", dw);
@@ -1151,7 +1151,7 @@
 
             console.log(sx + ' ' + sy + ' ' + sw + ' ' + image.naturalWidth + ' ' + sh + ' ' + image.naturalHeight + ' ' + dw + ' ' + dh);
 
-            // always set this to true in order to make sure dataurl is used for offline when converting to PDF.
+            // always set thig2pdfs to true in order to make sure dataurl is used for offline when converting to PDF.
             if (true) {
                 //crop the image using a temporary canvas
                 // First, we find the closest sensible resolution.
@@ -1166,6 +1166,8 @@
                 canvas.width = rw;
                 canvas.height = rh;
                 context = canvas.getContext("2d");
+                context.fillStyle = '#FFFFFF';
+                context.fillRect(0, 0, rw, rh);
                 context.drawImage(image, sx, sy, sw, sh, 0, 0, rw, rh);
                 image = canvas;
             }
@@ -1175,10 +1177,10 @@
             if (image.nodeName === 'IMG') {
                 console.log(image.getAttribute('src').length);
             } else {
-                console.log(image.toDataURL().length);
+                console.log(image.toDataURL('image/jpeg', 0.2).length);
             }
             svgImage.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href",
-                image.nodeName === "CANVAS" ? image.toDataURL() : image.getAttribute("src"));
+                image.nodeName === "CANVAS" ? image.toDataURL('image/jpeg', 1.0) : image.getAttribute("src"));
             parent.appendChild(svgImage);
         }
     };
