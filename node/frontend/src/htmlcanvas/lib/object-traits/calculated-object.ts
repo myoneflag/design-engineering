@@ -95,7 +95,7 @@ export function CalculatedObject<
             warnSignOnly: boolean = false,
             forExport: boolean = false
         ): Flatten.Box {
-            if (warnSignOnly) {
+            if (warnSignOnly ) {
                 return this.drawWarningSignOnly(context, dryRun);
             }
 
@@ -116,7 +116,7 @@ export function CalculatedObject<
                 maxWidth = Math.max(maxWidth, metrics.width);
             }
             const calculation = context.globalStore.getCalculation(this.entity);
-            if (this.hasWarning(context)) {
+            if (this.hasWarning(context) && !forExport) {
                 const warnWidth = ctx.measureText(calculation!.warning!);
                 maxWidth = Math.max(maxWidth, Math.min(WARNING_HINT_WIDTH, warnWidth.width));
             }

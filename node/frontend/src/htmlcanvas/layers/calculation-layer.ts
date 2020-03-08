@@ -64,12 +64,14 @@ export default class CalculationLayer extends LayerImplementation {
                 const loc = TM.applyToPoint(label[1], { x: 0, y: 0 });
                 if (vp.someOnScreen(Flatten.point(loc.x, loc.y))) {
                     const o = context.globalStore.get(label[0])!;
-                    if (label[3] && !forExport) {
-                        // warning only
-                        vp.prepareContext(context.ctx, ...o.world2object);
-                        const s = context.vp.currToSurfaceScale(ctx);
-                        context.ctx.scale(MIN_SCALE / s, MIN_SCALE / s);
-                        const box = o.drawCalculationBox(context, [], false, true);
+                    if (label[3]) {
+                        if (!forExport) {
+                            // warning only
+                            vp.prepareContext(context.ctx, ...o.world2object);
+                            const s = context.vp.currToSurfaceScale(ctx);
+                            context.ctx.scale(MIN_SCALE / s, MIN_SCALE / s);
+                            const box = o.drawCalculationBox(context, [], false, true);
+                        }
                     } else {
                         // actual message
 

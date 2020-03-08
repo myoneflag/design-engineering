@@ -142,7 +142,7 @@ export const initialUIState: UIState = {
     exportSettings: {
         paperSize: PAPER_SIZES.A1,
         scale: "1:100",
-        detail: 0,
+        detail: -8,
         coverSheet: true,
         floorPlans: true
     }

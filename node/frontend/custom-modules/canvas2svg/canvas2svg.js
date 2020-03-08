@@ -18,7 +18,8 @@
     function format(str, args) {
         var keys = Object.keys(args), i;
         for (i=0; i<keys.length; i++) {
-            str = str.replace(new RegExp("\\{" + keys[i] + "\\}", "gi"), args[keys[i]]);
+            let argv = args[keys[i]];
+            str = str.replace(new RegExp("\\{" + keys[i] + "\\}", "gi"), argv);
         }
         return str;
     }
@@ -1142,7 +1143,7 @@
         } else if (image.nodeName === "CANVAS" || image.nodeName === "IMG") {
             console.log('drawing image nodeName ' + image.nodeName);
             //canvas or image
-            const rescale = Math.min(1, 10000 / sw, 10000 / sh); // limit dimensions of image
+            const rescale = Math.min(1, 5000 / sw, 5000 / sh); // limit dimensions of image
 
             svgImage = this.__createElement("image");
             svgImage.setAttribute("width", dw);
