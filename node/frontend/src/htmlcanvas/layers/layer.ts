@@ -422,6 +422,7 @@ export abstract class LayerImplementation implements Layer {
             const o = this.context.globalStore.get(uid) as BaseBackedObject & Draggable;
             o.onDragFinish(event, context, true);
         });
+        context.$store.dispatch('document/commit', true);
     }
 }
 
