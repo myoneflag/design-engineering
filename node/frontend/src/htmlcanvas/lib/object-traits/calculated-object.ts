@@ -23,7 +23,7 @@ export interface Calculated {
         dryRun: boolean,
         warnSingOnly: boolean
     ): Flatten.Box;
-    measureCalculationBox(context: DrawingContext, data: CalculationData[]): Array<[TM.Matrix, Flatten.Polygon]>;
+    measureCalculationBox(context: DrawingContext, data: CalculationData[], forExport: boolean): Array<[TM.Matrix, Flatten.Polygon]>;
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[];
     getCalculationFields(context: DrawingContext, filters: CalculationFilters): CalculationData[];
     hasWarning(context: DrawingContext): boolean;
@@ -247,7 +247,7 @@ export function CalculatedObject<
             return box;
         }
 
-        measureCalculationBox(context: DrawingContext, data: CalculationData[]): Array<[TM.Matrix, Flatten.Polygon]> {
+        measureCalculationBox(context: DrawingContext, data: CalculationData[], forExport: boolean): Array<[TM.Matrix, Flatten.Polygon]> {
             const s = context.vp.currToSurfaceScale(context.ctx);
             let newScale: number;
 
@@ -263,7 +263,7 @@ export function CalculatedObject<
             }
 
             const locs: TM.Matrix[] = this.locateCalculationBoxWorld(context, data, newScale);
-            const box = this.drawCalculationBox(context, data, true);
+            const box = this.drawCalculationBox(context, data, true, false, forExport);
 
             return locs.map((loc) => {
                 let p = new Flatten.Polygon();

@@ -84,7 +84,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
         throw new Error("Not implemented. Please use @CalculatedObject to implement.");
     }
 
-    measureCalculationBox(context: DrawingContext, data: CalculationData[]): Array<[TM.Matrix, Flatten.Polygon]> {
+    measureCalculationBox(context: DrawingContext, data: CalculationData[], forExport: boolean): Array<[TM.Matrix, Flatten.Polygon]> {
         throw new Error("Not implemented. Please use @CalculatedObject to implement.");
     }
 

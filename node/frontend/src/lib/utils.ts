@@ -2,7 +2,12 @@
 
 import { EPS } from "../../src/calculations/pressure-drops";
 import { Catalog } from "../../../common/src/api/catalog/types";
-import { interpolateTable, parseCatalogNumberExact } from "../../../common/src/lib/utils";
+import { cloneSimple, interpolateTable, parseCatalogNumberExact } from "../../../common/src/lib/utils";
+import BaseBackedObject from "../htmlcanvas/lib/base-backed-object";
+import { CalculationFilters, DocumentState } from "../store/document/types";
+import { getFields } from "../calculations/utils";
+import { getEntityName } from "../../../common/src/api/document/entities/types";
+import Vue from 'vue';
 
 export const lighten = (col: string, percent: number, alpha: number = 1.0) => {
     const num = parseInt(col.substr(1), 16);
@@ -117,4 +122,52 @@ export function setPropertyByString(obj: any, s: string, val: any, existential: 
 export function getValveK(catalogId: string, catalog: Catalog, pipeDiameterMM: number): number | null {
     const table = catalog.valves[catalogId].valvesBySize;
     return interpolateTable(table, pipeDiameterMM, false, (v) => parseCatalogNumberExact(v.kValue));
+}
+
+export function getEffectiveFilter(objects: BaseBackedObject[], calculationFilters: CalculationFilters,  document: DocumentState) {
+    const build: CalculationFilters = {};
+
+    const existing = cloneSimple(calculationFilters);
+
+    objects.forEach((o) => {
+        const fields = getFields(o.entity, document, o.globalStore);
+        let wasInserted = false;
+        if (!(o.entity.type in build)) {
+            Vue.set(build, o.entity.type, {
+                name: getEntityName(o.entity.type),
+                filters: {},
+                enabled: false
+            });
+            wasInserted = true;
+        }
+
+        let hasEnabled = false;
+        fields.forEach((f) => {
+            if (!(f.title in build[o.entity.type].filters)) {
+                Vue.set(build[o.entity.type].filters, f.title, {
+                    name: f.title,
+                    value: false
+                });
+                if (f.defaultEnabled) {
+                    build[o.entity.type].filters[f.title].enabled = true;
+                    hasEnabled = true;
+                }
+            }
+        });
+        if (wasInserted && hasEnabled) {
+            build[o.entity.type].enabled = true;
+        }
+    });
+
+    for (const eType in existing) {
+        if (eType in build && existing.hasOwnProperty(eType)) {
+            for (const prop in existing[eType].filters) {
+                if (prop in build[eType].filters) {
+                    build[eType].filters[prop].enabled = existing[eType].filters[prop].enabled;
+                }
+            }
+            build[eType].enabled = existing[eType].enabled;
+        }
+    }
+    return build;
 }

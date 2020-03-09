@@ -58,6 +58,7 @@ import { getFields } from "../../../src/calculations/utils";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { MainEventBus } from "../../store/main-event-bus";
 import PdfSnapshotTool from "../../htmlcanvas/tools/pdf-snapshot-tool";
+import { getEffectiveFilter } from "../../lib/utils";
 
 @Component({
     components: {},
@@ -74,53 +75,7 @@ export default class CalculationsSidebar extends Vue {
     }
 
     get filters(): CalculationFilters {
-        const build: CalculationFilters = {};
-
-        const objects = this.$props.objects as BaseBackedObject[];
-
-        const existing = cloneSimple(this.document.uiState.calculationFilters as CalculationFilters);
-
-        objects.forEach((o) => {
-            const fields = getFields(o.entity, this.document, o.globalStore);
-            let wasInserted = false;
-            if (!(o.entity.type in build)) {
-                Vue.set(build, o.entity.type, {
-                    name: getEntityName(o.entity.type),
-                    filters: {},
-                    enabled: false
-                });
-                wasInserted = true;
-            }
-
-            let hasEnabled = false;
-            fields.forEach((f) => {
-                if (!(f.title in build[o.entity.type].filters)) {
-                    Vue.set(build[o.entity.type].filters, f.title, {
-                        name: f.title,
-                        value: false
-                    });
-                    if (f.defaultEnabled) {
-                        build[o.entity.type].filters[f.title].enabled = true;
-                        hasEnabled = true;
-                    }
-                }
-            });
-            if (wasInserted && hasEnabled) {
-                build[o.entity.type].enabled = true;
-            }
-        });
-
-        for (const eType in existing) {
-            if (eType in build && existing.hasOwnProperty(eType)) {
-                for (const prop in existing[eType].filters) {
-                    if (prop in build[eType].filters) {
-                        build[eType].filters[prop].enabled = existing[eType].filters[prop].enabled;
-                    }
-                }
-                build[eType].enabled = existing[eType].enabled;
-            }
-        }
-        return build;
+        return getEffectiveFilter(this.$props.objects, this.document.uiState.calculationFilters, this.document);
     }
 
     stageNewFilters() {

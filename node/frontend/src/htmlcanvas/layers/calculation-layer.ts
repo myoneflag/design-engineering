@@ -54,7 +54,7 @@ export default class CalculationLayer extends LayerImplementation {
             const effRes = Math.pow(2, rexp);
             const scaleWarp = effRes / resolutionWL;
 
-            const layout = await this.getOrCreateLayout(context, effRes, shouldContinueInternal, calculationFilters);
+            const layout = await this.getOrCreateLayout(context, effRes, shouldContinueInternal, calculationFilters, forExport);
 
             if (!layout) {
                 return;
@@ -88,10 +88,11 @@ export default class CalculationLayer extends LayerImplementation {
         context: DrawingContext,
         resolution: number,
         shouldContinueInternal: () => boolean,
-        calculationFilters: CalculationFilters
+        calculationFilters: CalculationFilters,
+        forExport: boolean,
     ): Promise<LayoutAllocator<[string, TM.Matrix, CalculationData[], boolean]> | undefined> {
         const lvlUid = context.doc.uiState.levelUid;
-        const key = stringify(calculationFilters) + ".." + lvlUid + ".." + resolution;
+        const key = stringify(calculationFilters) + ".." + lvlUid + ".." + resolution + "." + forExport;
 
         if (this.layout.has(key)) {
             return this.layout.get(key)!;
@@ -142,7 +143,7 @@ export default class CalculationLayer extends LayerImplementation {
             // We only withhold adding records to obj2props on empty stuff because empty data generates empty
             // boxes, which sadly causes ILLEGAL_PARAMETERS in Flatten further down (a bug) :( so this is a
             // workaround but in theory is not needed.
-            if (isCalculated(o.entity) && context.globalStore.getCalculation(o.entity)!.warning) {
+            if (isCalculated(o.entity) && (o.hasWarning(context) && !forExport)) {
                 if (!obj2props.has(o.uid)) {
                     obj2props.set(o.uid, []);
                 }
@@ -176,7 +177,7 @@ export default class CalculationLayer extends LayerImplementation {
             let drawn = false;
 
             if (obj2props.has(o.uid)) {
-                const boxes = o.measureCalculationBox(context, obj2props.get(o.uid) || []);
+                const boxes = o.measureCalculationBox(context, obj2props.get(o.uid) || [], forExport);
                 nb += boxes.length;
                 for (const [position, shape] of boxes) {
                     if (res.tryPlace(shape, [o.uid, position, obj2props.get(o.uid) || [], false])) {
@@ -187,8 +188,8 @@ export default class CalculationLayer extends LayerImplementation {
             }
 
             if (!drawn) {
-                // warnings must be drawn
-                if (o.calculated && o.hasWarning(context)) {
+                // warnings must be drawn. Just show warning symbol.
+                if (o.calculated && o.hasWarning(context) && !forExport) {
                     const wc = o.toWorldCoord();
                     res.place(Flatten.circle(Flatten.point(wc.x, wc.y), vp.surfaceToWorldLength(WARNING_WIDTH)), [
                         o.uid,

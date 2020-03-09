@@ -178,6 +178,7 @@ import stringify from "json-stable-stringify";
 import insertDwellingHotCold from "../../htmlcanvas/tools/insert-dwelling-hot-cold";
 import PDFSnapshotTopBar from "../PDFSnapshotTopBar.vue";
 import CanvasContext from "../../htmlcanvas/lib/canvas-context";
+import { getEffectiveFilter } from "../../lib/utils";
 
 @Component({
     components: {
@@ -1382,7 +1383,7 @@ export default class DrawingCanvas extends Vue {
             }
             const filters =
                 this.document.uiState.drawingMode === DrawingMode.Calculations
-                    ? this.document.uiState.calculationFilters
+                    ? getEffectiveFilter(this.visibleObjects, this.document.uiState.calculationFilters, this.document)
                     : null;
 
             await this.hydraulicsLayer.draw(
