@@ -1,6 +1,6 @@
 import { DrawableEntityConcrete } from "./entities/concrete-entity";
 import {
-    ComponentPressureLossMethod,
+    ComponentPressureLossMethod, InsulationMaterials,
     PIPE_SIZING_METHODS,
     RingMainCalculationMethod,
     SupportedDwellingStandards,
@@ -108,7 +108,11 @@ export interface FlowSystemParameters extends WithID {
     temperature: number;
     color: Color;
     fluid: string;
+
     hasReturnSystem: boolean;
+    returnIsInsulated: boolean;
+    insulationMaterial: InsulationMaterials;
+    insulationThicknessMM: number;
 
     networks: { [key in keyof typeof NetworkType]: NetworkParams };
 }
@@ -148,6 +152,10 @@ export const initialDrawing: DrawingState = {
                 uid: "cold-water",
                 fluid: "water",
                 hasReturnSystem: false,
+                returnIsInsulated: false,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationThicknessMM: 25,
+
                 networks: {
                     RISERS: {
                         spareCapacityPCT: 0,
@@ -173,6 +181,10 @@ export const initialDrawing: DrawingState = {
                 uid: "hot-water",
                 fluid: "water",
                 hasReturnSystem: true,
+                returnIsInsulated: true,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationThicknessMM: 25,
+
                 networks: {
                     RISERS: {
                         spareCapacityPCT: 0,
@@ -198,6 +210,10 @@ export const initialDrawing: DrawingState = {
                 uid: "warm-water",
                 fluid: "water",
                 hasReturnSystem: false,
+                returnIsInsulated: false,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationThicknessMM: 25,
+
                 networks: {
                     RISERS: {
                         spareCapacityPCT: 0,

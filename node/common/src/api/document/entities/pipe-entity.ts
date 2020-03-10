@@ -17,6 +17,7 @@ export default interface PipeEntity extends DrawableEntity {
     lengthM: number | null;
     maximumVelocityMS: number | null;
     diameterMM: number | null;
+
     heightAboveFloorM: number;
 
     color: Color | null;

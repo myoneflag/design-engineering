@@ -2,9 +2,18 @@ import { EntityType } from "../../../common/src/api/document/entities/types";
 import { PlantType } from "../../../common/src/api/document/entities/plants/plant-types";
 import Graph from "./graph";
 import { assertUnreachable } from "../../../common/src/api/config";
-import PipeEntity from "../../../common/src/api/document/entities/pipe-entity";
+import PipeEntity, { fillPipeDefaultFields } from "../../../common/src/api/document/entities/pipe-entity";
 import { Configuration, NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
 import CalculationEngine, { EdgeType, FlowEdge } from "./calculation-engine";
+import { CalculationContext } from "./types";
+import Pipe from "../htmlcanvas/objects/pipe";
+import {
+    AIR_PROPERTIES,
+    SURFACE_EMMISIVITY,
+    THERMAL_CONDUCTIVITY
+} from "../../../common/src/api/constants/air-properties";
+import { evaluatePolynomial } from "../../../common/src/lib/polynomials";
+import Context = Mocha.Context;
 
 export function identifyReturns(engine: CalculationEngine) {
     for (const o of engine.networkObjects()) {
@@ -107,4 +116,96 @@ export function identifyReturns(engine: CalculationEngine) {
             }
         }
     }
+}
+
+const MAX_ITER_CHANGE = 1e-7;
+
+// Context: hot water through a pipe loses temperature as it goes. How much temperature it loses depends on its current
+// temperature, among other things. So to find the heat loss of a whole segment of pipe, we stop at every small
+// temperature change to re-evaluate. Hence this function, which is called many times along a piece of pipe in order
+// to simulate its true heat loss.
+// Using cheguide's iterative formula to calculate heat loss, a port of the spreadsheet.
+export function getHeatLossOfPipeMomentWATT_M(context: CalculationContext, pipe: Pipe, tempC: number, windSpeedMS: number): number | null {
+    const pCalc = context.globalStore.getOrCreateCalculation(pipe.entity);
+    const filled = fillPipeDefaultFields(context.drawing, pipe.computedLengthM, pipe.entity);
+    const ga = context.doc.drawing.metadata.calculationParams.gravitationalAcceleration;
+
+    if (!pCalc.realNominalPipeDiameterMM || !pCalc.realInternalDiameterMM) {
+        return null;
+    }
+
+    const flowSystem = context.doc.drawing.metadata.flowSystems.find((fs) => fs.uid === pipe.entity.systemUid)!;
+
+    const DELTA_INIT = 1;
+    const ambientTemperatureC = context.doc.drawing.metadata.calculationParams.roomTemperatureC;
+    let surfaceTempC = ambientTemperatureC + DELTA_INIT;
+    let interfaceTempC = tempC - DELTA_INIT;
+
+
+    const insulationThicknessMM = flowSystem.insulationThicknessMM;
+    const bareOutsideDiameter = pCalc.realInternalDiameterMM * 1.125;
+    const totalOutsideDiameter = bareOutsideDiameter + insulationThicknessMM * 2;
+
+    let oldHeatLoss = -Infinity;
+
+    while (true) {
+        // Calculation for insulated pipe
+        const averageFilmTemperatureC   = (surfaceTempC + context.doc.drawing.metadata.calculationParams.roomTemperatureC) / 2;
+        const averageFilmTemperatureK   = averageFilmTemperatureC + 273.15;
+        const thermalConductivityW_MK   = evaluatePolynomial(AIR_PROPERTIES.thermalConductivityW_MK_3, averageFilmTemperatureK) / 1e3;
+        const viscosity_N_SM2           = evaluatePolynomial(AIR_PROPERTIES.viscosityNS_M2_7, averageFilmTemperatureK) / 1e7;
+        const prandtlNumber             = evaluatePolynomial(AIR_PROPERTIES.prandtlNumber, averageFilmTemperatureK);
+        const expansionCoefficient_1_K  = 1 / averageFilmTemperatureK;
+        const airDensity_KG_M3          = 29 / 0.0820575 / averageFilmTemperatureK;
+        const kinematicViscosityM2_S    = evaluatePolynomial(AIR_PROPERTIES.kinematicViscosityM2_S_6, averageFilmTemperatureK) / 1e6;
+        const specificHeatKJ_KGK        = evaluatePolynomial(AIR_PROPERTIES.specificHeatKJ_KGK, averageFilmTemperatureK);
+        const alphaM2_S                 = evaluatePolynomial(AIR_PROPERTIES.alphaM2_S_6, averageFilmTemperatureK) / 1e6;
+        const reynoldsNumber            = totalOutsideDiameter / 1000 * windSpeedMS / kinematicViscosityM2_S;
+        const rayleighNumber            = ga * expansionCoefficient_1_K * Math.abs(surfaceTempC - ambientTemperatureC) * (totalOutsideDiameter / 1000) ** 3 / (kinematicViscosityM2_S * alphaM2_S);
+
+        // Air film resistance
+        const radiationW_M2K            = 0.00000005670373 * SURFACE_EMMISIVITY[flowSystem.insulationMaterial] * ((surfaceTempC + 273.15) ** 4 - (ambientTemperatureC + 273.15));
+
+        const nu_forced                 = 0.3 + (0.62*Math.sqrt(reynoldsNumber) * Math.pow(prandtlNumber, 1/3)) * (1 + (reynoldsNumber / 282000) ** (5/8)) ** (4/5) / (1 + (0.4 / prandtlNumber) ** (2/3)) ** (1/4);
+        const forcedConvectionW_M2K     = nu_forced * thermalConductivityW_MK / (totalOutsideDiameter / 1000);
+
+        const nu_free                   = (0.6 + 0.387 * radiationW_M2K ** (1/6) / (1 + (0.559 / prandtlNumber) ** (9 / 16)) ** (8 / 27)) ** 2;
+        const freeConvectionW_M2K       = nu_free * thermalConductivityW_MK / (totalOutsideDiameter / 1000);
+
+        const nu_combined               = (nu_forced ** 4 + nu_free ** 4) ** (1/4);
+        const combinedConvectionW_M2K   = nu_combined * thermalConductivityW_MK / (totalOutsideDiameter / 1000);
+        const overallAirSideHtcW_M2K    = combinedConvectionW_M2K + radiationW_M2K;
+
+        // Pipe Resistance
+        const pipeThermalConductivityW_MK = evaluatePolynomial(THERMAL_CONDUCTIVITY[filled.material!], tempC + 273.15);
+        const pipeWallResistanceM2K_W   = (totalOutsideDiameter / 1000) * Math.log(bareOutsideDiameter / pCalc.realInternalDiameterMM);
+
+        // Insulation Resistance
+        const averageInsulationTempK    = (surfaceTempC + interfaceTempC) / 2 + 273.15;
+        const insulationThermalConductivityW_MK = evaluatePolynomial(THERMAL_CONDUCTIVITY[flowSystem.insulationMaterial], averageInsulationTempK);
+        const insulationResistanceM2K_W = (totalOutsideDiameter / 1000) * Math.log(totalOutsideDiameter / bareOutsideDiameter) / (2 * insulationThermalConductivityW_MK);
+
+        // Overall Resistance
+        const overallResistanceM2_KW    = (insulationResistanceM2K_W + pipeWallResistanceM2K_W + 1) / overallAirSideHtcW_M2K;
+        const heatFlowW_M2              = (tempC - ambientTemperatureC) / overallResistanceM2_KW;
+        interfaceTempC                  = tempC - heatFlowW_M2 * pipeWallResistanceM2K_W;
+
+        surfaceTempC                    = interfaceTempC - heatFlowW_M2 * insulationResistanceM2K_W;
+
+        const heatLossPerUnitLengthW_M  = heatFlowW_M2 * Math.PI * (totalOutsideDiameter / 1000);
+        if (Math.abs(oldHeatLoss - heatLossPerUnitLengthW_M) < MAX_ITER_CHANGE) {
+            return heatLossPerUnitLengthW_M;
+        }
+        oldHeatLoss = heatLossPerUnitLengthW_M;
+    }
+}
+
+
+export function getHeatLossOfPipeWATT(context: CalculationContext, pipe: Pipe, tempC: number) {
+    const filled = fillPipeDefaultFields(context.drawing, pipe.computedLengthM, pipe.entity);
+    const moment = getHeatLossOfPipeMomentWATT_M(context, pipe, tempC, 0);
+    if (moment === null || filled.lengthM === null) {
+        return null;
+    }
+    return moment * filled.lengthM;
 }

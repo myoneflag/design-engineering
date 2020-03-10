@@ -45,6 +45,7 @@ import FlowSystemPicker from "../../../src/components/editor/FlowSystemPicker.vu
 import * as _ from "lodash";
 import { initialDrawing } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
+import { INSULATION_MATERIAL_CHOICES, InsulationMaterials } from "../../../../common/src/api/config";
 
 @Component({
     components: { SettingsFieldBuilder, FlowSystemPicker },
@@ -66,8 +67,24 @@ export default class FlowSystems extends Vue {
             ["temperature", "Entry temperature: (°C)", "range", 10, 100],
             ["color", "Colour:", "color"],
             ["hasReturnSystem", "Has Return System:", "yesno"],
-            ["", "Network Properties", "title3"]
         ];
+
+        if (this.selectedSystem.hasReturnSystem) {
+            fields.push(
+                ['returnIsInsulated', "Return Is Insulated", "yesno"],
+            );
+
+            if (this.selectedSystem.returnIsInsulated) {
+                fields.push(
+                    ['insulationMaterial', "Insulation Material", "choice", INSULATION_MATERIAL_CHOICES],
+                    ['insulationThicknessMM', "Insulation Thickness (mm)", "number"],
+                );
+            }
+        }
+
+        fields.push(
+            ["", "Network Properties", "title3"]
+        );
 
         for (const netKey of Object.keys(this.selectedSystem.networks)) {
             fields.push(
@@ -131,6 +148,9 @@ export default class FlowSystems extends Vue {
                 fluid: "water",
                 networks: cloneSimple(initialDrawing.metadata.flowSystems[0].networks),
                 hasReturnSystem: false,
+                returnIsInsulated: false,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationThicknessMM: 25,
             });
             this.$store.dispatch("document/commit").then(() => {
                 this.selectedSystemId = this.document.drawing.metadata.flowSystems.length - 1;
