@@ -1,8 +1,10 @@
-import { DwellingStandardType } from "./psd-standard/types";
+import { DwellingStandardType, PSDStandardType } from "./psd-standard/types";
 import LoadingUnitTable from "./psd-standard/loading-unit-table";
 import LoadingUnitHotColdTable from "./psd-standard/loading-unit-hot-cold-table";
 import PsdEquation from "./psd-standard/psdEquation";
 import LoadingUnitMaxTable from "./psd-standard/loading-unit-max-table";
+import { PsdProfile } from "../../../../frontend/src/calculations/utils";
+import { SupportedPsdStandards } from "../config";
 
 export interface DwellingUnitHotColdTable {
     type: DwellingStandardType.DWELLING_HOT_COLD_LOOKUP_TABLE;
@@ -62,7 +64,16 @@ export interface FixtureSpec {
     uid: string;
 
     fixtureUnits: string | null;
-    loadingUnits: { [key: string]: LoadingUnit };
+    loadingUnits: {
+        [SupportedPsdStandards.as35002018LoadingUnits]: LoadingUnit,
+        [SupportedPsdStandards.barriesBookLoadingUnits]: LoadingUnit,
+        [SupportedPsdStandards.bs806]: LoadingUnit,
+        [SupportedPsdStandards.bs6700]: LoadingUnit,
+        [SupportedPsdStandards.ipc2018FlushTanks]: LoadingUnit,
+        [SupportedPsdStandards.ipc2018Flushometer]: LoadingUnit,
+        [SupportedPsdStandards.upc2018FlushTanks]: LoadingUnit,
+        [SupportedPsdStandards.upc2018Flushometer]: LoadingUnit,
+    };
     qLS: FlowRateSpec;
     continuousFlowLS?: FlowRateSpec;
     roughIns: string[];

@@ -1,9 +1,10 @@
 import { EntityType } from "../types";
 import { FieldType, PropertyField } from "../property-field";
-import { SupportedPsdStandards } from "../../../config";
-import { Catalog } from "../../../catalog/types";
+import { isLUStandard, SupportedPsdStandards } from "../../../config";
+import { Catalog, LoadingUnit } from "../../../catalog/types";
 import { Coord, DrawableEntity, DrawingState } from "../../drawing";
 import { cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../../lib/utils";
+import { initialCatalog } from "../../../catalog/initial-catalog/initial-catalog";
 
 export interface RoughInRecord {
     uid: string;
@@ -197,7 +198,7 @@ export function fillFixtureFields(
             target.maxPressureKPA = parseCatalogNumberExact(defaultCatalog.fixtures[result.name].maxInletPressureKPA);
         }
 
-        if (psdStrategy in defaultCatalog.fixtures[result.name].loadingUnits) {
+        if (isLUStandard(psdStrategy)) {
             if (target.loadingUnits === null) {
                 target.loadingUnits = parseCatalogNumberOrMin(
                     defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy][systemUid]

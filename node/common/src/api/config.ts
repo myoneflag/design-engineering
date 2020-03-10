@@ -5,7 +5,12 @@ export enum SupportedPsdStandards {
     as35002018LoadingUnits = "as35002018LoadingUnits",
     barriesBookLoadingUnits = "barriesBookLoadingUnits",
 
-    
+    ipc2018FlushTanks = 'ipc2018FlushTanks',
+    ipc2018Flushometer = 'ipc2018Flushometer',
+    bs6700 = 'bs6700',
+    upc2018FlushTanks = 'upc2018FlushTanks',
+    upc2018Flushometer = 'upc2018Flushometer',
+    bs806 = 'bs806',
 
     din1988300Residential = "din1988300Residential",
     din1988300Hospital = "din1988300Hospital",
@@ -15,6 +20,26 @@ export enum SupportedPsdStandards {
     din1988300AssistedLiving = "din1988300AssistedLiving",
     din1988300NursingHome = "din1988300NursingHome"
 }
+
+export type SupportedLUPsdStandards =
+    SupportedPsdStandards.as35002018LoadingUnits |
+    SupportedPsdStandards.barriesBookLoadingUnits |
+
+    SupportedPsdStandards.ipc2018FlushTanks |
+    SupportedPsdStandards.ipc2018Flushometer |
+    SupportedPsdStandards.bs6700 |
+    SupportedPsdStandards.upc2018FlushTanks |
+    SupportedPsdStandards.upc2018Flushometer |
+    SupportedPsdStandards.bs806;
+
+export type SupportedEquationPSDStandards =
+    SupportedPsdStandards.din1988300Residential |
+    SupportedPsdStandards.din1988300Hospital |
+    SupportedPsdStandards.din1988300Hotel |
+    SupportedPsdStandards.din1988300School |
+    SupportedPsdStandards.din1988300Office |
+    SupportedPsdStandards.din1988300AssistedLiving |
+    SupportedPsdStandards.din1988300NursingHome;
 
 export function isSupportedPsdStandard(arg: any): arg is SupportedPsdStandards {
     return Object.values(SupportedPsdStandards).includes(arg);
@@ -26,10 +51,16 @@ export function assertUnreachable(x: never, shouldThrow: boolean = true) {
     }
 }
 
-export function isGermanStandard(psd: SupportedPsdStandards) {
+export function isGermanStandard(psd: SupportedPsdStandards): psd is SupportedEquationPSDStandards {
     switch (psd) {
         case SupportedPsdStandards.as35002018LoadingUnits:
         case SupportedPsdStandards.barriesBookLoadingUnits:
+        case SupportedPsdStandards.bs806:
+        case SupportedPsdStandards.bs6700:
+        case SupportedPsdStandards.ipc2018Flushometer:
+        case SupportedPsdStandards.ipc2018FlushTanks:
+        case SupportedPsdStandards.upc2018Flushometer:
+        case SupportedPsdStandards.upc2018FlushTanks:
             return false;
         case SupportedPsdStandards.din1988300Residential:
         case SupportedPsdStandards.din1988300Hospital:
@@ -44,6 +75,31 @@ export function isGermanStandard(psd: SupportedPsdStandards) {
     return false;
 }
 
+export function isLUStandard(psd: SupportedPsdStandards): psd is SupportedLUPsdStandards {
+    switch (psd) {
+        case SupportedPsdStandards.as35002018LoadingUnits:
+        case SupportedPsdStandards.barriesBookLoadingUnits:
+        case SupportedPsdStandards.bs806:
+        case SupportedPsdStandards.bs6700:
+        case SupportedPsdStandards.ipc2018Flushometer:
+        case SupportedPsdStandards.ipc2018FlushTanks:
+        case SupportedPsdStandards.upc2018Flushometer:
+        case SupportedPsdStandards.upc2018FlushTanks:
+            return true;
+        case SupportedPsdStandards.din1988300Residential:
+        case SupportedPsdStandards.din1988300Hospital:
+        case SupportedPsdStandards.din1988300Hotel:
+        case SupportedPsdStandards.din1988300School:
+        case SupportedPsdStandards.din1988300Office:
+        case SupportedPsdStandards.din1988300AssistedLiving:
+        case SupportedPsdStandards.din1988300NursingHome:
+            return false;
+    }
+    assertUnreachable(psd, false);
+    return false;
+}
+
+
 //
 export const DISPLAY_PSD_METHODS: Choice[] = [
     {
@@ -54,6 +110,11 @@ export const DISPLAY_PSD_METHODS: Choice[] = [
         name: "Barrie's Book Loading Units",
         key: SupportedPsdStandards.barriesBookLoadingUnits
     },
+    { name: "BS 6700", key: SupportedPsdStandards.bs6700 },
+    { name: "BS 806", key: SupportedPsdStandards.bs806 },
+
+    { name: "CIBSE Guide G", disabled: true, key: "CIBSEGuideG" },
+
     {
         name: "DIN 1988-300 - Residential",
         key: SupportedPsdStandards.din1988300Residential
@@ -79,18 +140,13 @@ export const DISPLAY_PSD_METHODS: Choice[] = [
         name: "DIN 1988-300 - Nursing Home",
         key: SupportedPsdStandards.din1988300NursingHome
     },
-    { name: "BS 806", disabled: true, key: "BS806" },
-    { name: "CIBSE Guide G", disabled: true, key: "CIBSEGuideG" },
-    {
-        name: "Uniform Plumbing Code 2018",
-        disabled: true,
-        key: "UnifromPlumbingCode2018"
-    },
-    {
-        name: "International Plumbing Code 2018",
-        disabled: true,
-        key: "InternationalPlumbingCode2018"
-    }
+
+    { name: "International Plumbing Code 2018 Flushometer", key: SupportedPsdStandards.ipc2018Flushometer },
+    { name: "International Plumbing Code 2018 Flush Tanks", key: SupportedPsdStandards.ipc2018FlushTanks },
+
+    { name: "Uniform Plumbing Code 2018 Flushometer", key: SupportedPsdStandards.upc2018Flushometer },
+    { name: "Uniform Plumbing Code 2018 Flush Tanks", key: SupportedPsdStandards.upc2018FlushTanks },
+
 ];
 
 export function getPsdMethods(catalog: Catalog): Choice[] {

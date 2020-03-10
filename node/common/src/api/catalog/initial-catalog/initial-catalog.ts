@@ -15,10 +15,30 @@ export const initialCatalog: Catalog = {
                     "cold-water": "3",
                     "warm-water": "3"
                 },
-                barriesBookDwellings: {
+                bs806: {
                     "cold-water": "3",
-                    "warm-water": "3"
-                }
+                    "warm-water": "3",
+                },
+                bs6700: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
+                ipc2018Flushometer: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
+                ipc2018FlushTanks: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
+                upc2018Flushometer: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
+                upc2018FlushTanks: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
             },
             roughIns: ["warm-water", "cold-water"],
             maxInletPressureKPA: "500",
@@ -45,10 +65,30 @@ export const initialCatalog: Catalog = {
                     "cold-water": "1",
                     "warm-water": "1"
                 },
-                barriesBookDwellings: {
-                    "cold-water": "1",
-                    "warm-water": "1"
-                }
+                bs806: {
+                    "cold-water": "2",
+                    "warm-water": "2",
+                },
+                bs6700: {
+                    "cold-water": "2",
+                    "warm-water": "2",
+                },
+                ipc2018Flushometer: {
+                    "cold-water": "2",
+                    "warm-water": "2",
+                },
+                ipc2018FlushTanks: {
+                    "cold-water": "2",
+                    "warm-water": "2",
+                },
+                upc2018Flushometer: {
+                    "cold-water": "2",
+                    "warm-water": "2",
+                },
+                upc2018FlushTanks: {
+                    "cold-water": "2",
+                    "warm-water": "2",
+                },
             },
             roughIns: ["warm-water", "cold-water"],
             maxInletPressureKPA: "500",
@@ -75,10 +115,30 @@ export const initialCatalog: Catalog = {
                     "cold-water": "8",
                     "warm-water": "8"
                 },
-                barriesBookDwellings: {
-                    "cold-water": "8",
-                    "warm-water": "8"
-                }
+                bs806: {
+                    "cold-water": "10",
+                    "warm-water": "10",
+                },
+                bs6700: {
+                    "cold-water": "10",
+                    "warm-water": "10",
+                },
+                ipc2018Flushometer: {
+                    "cold-water": "4",
+                    "warm-water": "4",
+                },
+                ipc2018FlushTanks: {
+                    "cold-water": "4",
+                    "warm-water": "4",
+                },
+                upc2018Flushometer: {
+                    "cold-water": "4",
+                    "warm-water": "4",
+                },
+                upc2018FlushTanks: {
+                    "cold-water": "4",
+                    "warm-water": "4",
+                },
             },
             roughIns: ["warm-water", "cold-water"],
             maxInletPressureKPA: "500",
@@ -105,10 +165,30 @@ export const initialCatalog: Catalog = {
                     "cold-water": "2",
                     "hot-water": "2"
                 },
-                barriesBookDwellings: {
+                bs806: {
                     "cold-water": "2",
-                    "hot-water": "2"
-                }
+                    "hot-water": "2",
+                },
+                bs6700: {
+                    "cold-water": "2",
+                    "hot-water": "2",
+                },
+                ipc2018Flushometer: {
+                    "cold-water": "2",
+                    "hot-water": "2",
+                },
+                ipc2018FlushTanks: {
+                    "cold-water": "2",
+                    "hot-water": "2",
+                },
+                upc2018Flushometer: {
+                    "cold-water": "2",
+                    "hot-water": "2",
+                },
+                upc2018FlushTanks: {
+                    "cold-water": "2",
+                    "hot-water": "2",
+                },
             },
             roughIns: ["hot-water", "cold-water"],
             maxInletPressureKPA: "500",
@@ -135,10 +215,30 @@ export const initialCatalog: Catalog = {
                     "cold-water": "2",
                     "warm-water": "2"
                 },
-                barriesBookDwellings: {
-                    "cold-water": "2",
-                    "warm-water": "2"
-                }
+                bs806: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
+                bs6700: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
+                ipc2018Flushometer: {
+                    "cold-water": "1.5",
+                    "warm-water": "1.5",
+                },
+                ipc2018FlushTanks: {
+                    "cold-water": "1.5",
+                    "warm-water": "1.5",
+                },
+                upc2018Flushometer: {
+                    "cold-water": "1.5",
+                    "warm-water": "1.5",
+                },
+                upc2018FlushTanks: {
+                    "cold-water": "1.5",
+                    "warm-water": "1.5",
+                },
             },
             roughIns: ["warm-water", "cold-water"],
             maxInletPressureKPA: "500",
@@ -165,10 +265,30 @@ export const initialCatalog: Catalog = {
                     "cold-water": "16",
                     "warm-water": "8"
                 },
-                barriesBookDwellings: {
+                bs806: {
+                    "cold-water": "22",
+                    "warm-water": "22",
+                },
+                bs6700: {
+                    "cold-water": "22",
+                    "warm-water": "22",
+                },
+                ipc2018Flushometer: {
                     "cold-water": "16",
-                    "warm-water": "8"
-                }
+                    "warm-water": "8",
+                },
+                ipc2018FlushTanks: {
+                    "cold-water": "16",
+                    "warm-water": "8",
+                },
+                upc2018Flushometer: {
+                    "cold-water": "16",
+                    "warm-water": "8",
+                },
+                upc2018FlushTanks: {
+                    "cold-water": "16",
+                    "warm-water": "8",
+                },
             },
             roughIns: ["warm-water", "cold-water"],
             maxInletPressureKPA: "500",
@@ -195,10 +315,30 @@ export const initialCatalog: Catalog = {
                     "cold-water": "2",
                     "hot-water": "3"
                 },
-                barriesBookDwellings: {
+                bs806: {
                     "cold-water": "2",
-                    "hot-water": "3"
-                }
+                    "hot-water": "2",
+                },
+                bs6700: {
+                    "cold-water": "2",
+                    "hot-water": "2",
+                },
+                ipc2018Flushometer: {
+                    "cold-water": "2",
+                    "hot-water": "3",
+                },
+                ipc2018FlushTanks: {
+                    "cold-water": "2",
+                    "hot-water": "3",
+                },
+                upc2018Flushometer: {
+                    "cold-water": "2",
+                    "hot-water": "3",
+                },
+                upc2018FlushTanks: {
+                    "cold-water": "2",
+                    "hot-water": "3",
+                },
             },
             roughIns: ["hot-water", "cold-water"],
             maxInletPressureKPA: "500",
@@ -225,10 +365,30 @@ export const initialCatalog: Catalog = {
                     "cold-water": "3",
                     "hot-water": "3"
                 },
-                barriesBookDwellings: {
+                bs806: {
                     "cold-water": "3",
-                    "hot-water": "3"
-                }
+                    "hot-water": "3",
+                },
+                bs6700: {
+                    "cold-water": "3",
+                    "hot-water": "3",
+                },
+                ipc2018Flushometer: {
+                    "cold-water": "1.5",
+                    "hot-water": "1.5",
+                },
+                ipc2018FlushTanks: {
+                    "cold-water": "1.5",
+                    "hot-water": "1.5",
+                },
+                upc2018Flushometer: {
+                    "cold-water": "1.5",
+                    "hot-water": "1.5",
+                },
+                upc2018FlushTanks: {
+                    "cold-water": "1.5",
+                    "hot-water": "1.5",
+                },
             },
             roughIns: ["hot-water", "cold-water"],
             maxInletPressureKPA: "500",
@@ -253,9 +413,24 @@ export const initialCatalog: Catalog = {
                 barriesBookLoadingUnits: {
                     "cold-water": "1"
                 },
-                barriesBookDwellings: {
-                    "cold-water": "1"
-                }
+                bs806: {
+                    "cold-water": "1",
+                },
+                bs6700: {
+                    "cold-water": "1",
+                },
+                ipc2018Flushometer: {
+                    "cold-water": "1",
+                },
+                ipc2018FlushTanks: {
+                    "cold-water": "1",
+                },
+                upc2018Flushometer: {
+                    "cold-water": "1",
+                },
+                upc2018FlushTanks: {
+                    "cold-water": "1",
+                },
             },
             roughIns: ["cold-water"],
             maxInletPressureKPA: "500",
@@ -281,10 +456,30 @@ export const initialCatalog: Catalog = {
                     "cold-water": "2",
                     "hot-water": "2"
                 },
-                barriesBookDwellings: {
+                bs806: {
                     "cold-water": "2",
-                    "hot-water": "2"
-                }
+                    "hot-water": "2",
+                },
+                bs6700: {
+                    "cold-water": "2",
+                    "hot-water": "2",
+                },
+                ipc2018Flushometer: {
+                    "cold-water": "2",
+                    "hot-water": "2",
+                },
+                ipc2018FlushTanks: {
+                    "cold-water": "2",
+                    "hot-water": "2",
+                },
+                upc2018Flushometer: {
+                    "cold-water": "2",
+                    "hot-water": "2",
+                },
+                upc2018FlushTanks: {
+                    "cold-water": "2",
+                    "hot-water": "2",
+                },
             },
             roughIns: ["hot-water", "cold-water"],
             maxInletPressureKPA: "500",
@@ -309,9 +504,24 @@ export const initialCatalog: Catalog = {
                 barriesBookLoadingUnits: {
                     "cold-water": "8"
                 },
-                barriesBookDwellings: {
-                    "cold-water": "8"
-                }
+                bs806: {
+                    "cold-water": "8",
+                },
+                bs6700: {
+                    "cold-water": "8",
+                },
+                ipc2018Flushometer: {
+                    "cold-water": "2.5",
+                },
+                ipc2018FlushTanks: {
+                    "cold-water": "2.5",
+                },
+                upc2018Flushometer: {
+                    "cold-water": "2.5",
+                },
+                upc2018FlushTanks: {
+                    "cold-water": "2.5",
+                },
             },
             roughIns: ["cold-water"],
             maxInletPressureKPA: "500",
@@ -337,10 +547,30 @@ export const initialCatalog: Catalog = {
                     "cold-water": "3",
                     "warm-water": "3"
                 },
-                barriesBookDwellings: {
+                bs806: {
                     "cold-water": "3",
-                    "warm-water": "3"
-                }
+                    "warm-water": "3",
+                },
+                bs6700: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
+                ipc2018Flushometer: {
+                    "cold-water": "1.5",
+                    "warm-water": "1.5",
+                },
+                ipc2018FlushTanks: {
+                    "cold-water": "1.5",
+                    "warm-water": "1.5",
+                },
+                upc2018Flushometer: {
+                    "cold-water": "1.5",
+                    "warm-water": "1.5",
+                },
+                upc2018FlushTanks: {
+                    "cold-water": "1.5",
+                    "warm-water": "1.5",
+                },
             },
             roughIns: ["warm-water", "cold-water"],
             maxInletPressureKPA: "500",
@@ -367,10 +597,30 @@ export const initialCatalog: Catalog = {
                     "cold-water": "3",
                     "hot-water": "3"
                 },
-                barriesBookDwellings: {
+                bs806: {
                     "cold-water": "3",
-                    "hot-water": "3"
-                }
+                    "hot-water": "3",
+                },
+                bs6700: {
+                    "cold-water": "3",
+                    "hot-water": "3",
+                },
+                ipc2018Flushometer: {
+                    "cold-water": "1.5",
+                    "hot-water": "1.5",
+                },
+                ipc2018FlushTanks: {
+                    "cold-water": "1.5",
+                    "hot-water": "1.5",
+                },
+                upc2018Flushometer: {
+                    "cold-water": "1.5",
+                    "hot-water": "1.5",
+                },
+                upc2018FlushTanks: {
+                    "cold-water": "1.5",
+                    "hot-water": "1.5",
+                },
             },
             roughIns: ["hot-water", "cold-water"],
             maxInletPressureKPA: "500",
@@ -397,10 +647,30 @@ export const initialCatalog: Catalog = {
                     "cold-water": "3",
                     "warm-water": "3"
                 },
-                barriesBookDwellings: {
+                bs806: {
                     "cold-water": "3",
-                    "warm-water": "3"
-                }
+                    "warm-water": "3",
+                },
+                bs6700: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
+                ipc2018Flushometer: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
+                ipc2018FlushTanks: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
+                upc2018Flushometer: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
+                upc2018FlushTanks: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
             },
             roughIns: ["warm-water", "cold-water"],
             maxInletPressureKPA: "500",
@@ -427,10 +697,30 @@ export const initialCatalog: Catalog = {
                     "cold-water": "3",
                     "hot-water": "3"
                 },
-                barriesBookDwellings: {
+                bs806: {
                     "cold-water": "3",
-                    "hot-water": "3"
-                }
+                    "hot-water": "3",
+                },
+                bs6700: {
+                    "cold-water": "3",
+                    "hot-water": "3",
+                },
+                ipc2018Flushometer: {
+                    "cold-water": "3",
+                    "hot-water": "3",
+                },
+                ipc2018FlushTanks: {
+                    "cold-water": "3",
+                    "hot-water": "3",
+                },
+                upc2018Flushometer: {
+                    "cold-water": "3",
+                    "hot-water": "3",
+                },
+                upc2018FlushTanks: {
+                    "cold-water": "3",
+                    "hot-water": "3",
+                },
             },
             roughIns: ["hot-water", "cold-water"],
             maxInletPressureKPA: "500",
@@ -457,10 +747,30 @@ export const initialCatalog: Catalog = {
                     "cold-water": "3",
                     "warm-water": "2"
                 },
-                barriesBookDwellings: {
+                bs806: {
                     "cold-water": "3",
-                    "warm-water": "2"
-                }
+                    "warm-water": "3",
+                },
+                bs6700: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
+                ipc2018Flushometer: {
+                    "cold-water": "2",
+                    "warm-water": "2",
+                },
+                ipc2018FlushTanks: {
+                    "cold-water": "2",
+                    "warm-water": "2",
+                },
+                upc2018Flushometer: {
+                    "cold-water": "2",
+                    "warm-water": "2",
+                },
+                upc2018FlushTanks: {
+                    "cold-water": "2",
+                    "warm-water": "2",
+                },
             },
             roughIns: ["warm-water", "cold-water"],
             maxInletPressureKPA: "500",
@@ -485,9 +795,24 @@ export const initialCatalog: Catalog = {
                 barriesBookLoadingUnits: {
                     "cold-water": "2"
                 },
-                barriesBookDwellings: {
-                    "cold-water": "2"
-                }
+                bs806: {
+                    "cold-water": "1",
+                },
+                bs6700: {
+                    "cold-water": "1",
+                },
+                ipc2018Flushometer: {
+                    "cold-water": "2",
+                },
+                ipc2018FlushTanks: {
+                    "cold-water": "2",
+                },
+                upc2018Flushometer: {
+                    "cold-water": "2",
+                },
+                upc2018FlushTanks: {
+                    "cold-water": "2",
+                },
             },
             roughIns: ["cold-water"],
             maxInletPressureKPA: "500",
@@ -513,10 +838,30 @@ export const initialCatalog: Catalog = {
                     "cold-water": "3",
                     "hot-water": "3"
                 },
-                barriesBookDwellings: {
+                bs806: {
                     "cold-water": "3",
-                    "hot-water": "3"
-                }
+                    "hot-water": "3",
+                },
+                bs6700: {
+                    "cold-water": "3",
+                    "hot-water": "3",
+                },
+                ipc2018Flushometer: {
+                    "cold-water": "4",
+                    "hot-water": "4",
+                },
+                ipc2018FlushTanks: {
+                    "cold-water": "4",
+                    "hot-water": "4",
+                },
+                upc2018Flushometer: {
+                    "cold-water": "4",
+                    "hot-water": "4",
+                },
+                upc2018FlushTanks: {
+                    "cold-water": "4",
+                    "hot-water": "4",
+                },
             },
             roughIns: ["hot-water", "cold-water"],
             maxInletPressureKPA: "500",
@@ -541,9 +886,24 @@ export const initialCatalog: Catalog = {
                 barriesBookLoadingUnits: {
                     "cold-water": "2"
                 },
-                barriesBookDwellings: {
-                    "cold-water": "2"
-                }
+                bs806: {
+                    "cold-water": "2",
+                },
+                bs6700: {
+                    "cold-water": "2",
+                },
+                ipc2018Flushometer: {
+                    "cold-water": "2.5",
+                },
+                ipc2018FlushTanks: {
+                    "cold-water": "2.5",
+                },
+                upc2018Flushometer: {
+                    "cold-water": "2.5",
+                },
+                upc2018FlushTanks: {
+                    "cold-water": "2.5",
+                },
             },
             roughIns: ["cold-water"],
             maxInletPressureKPA: "500",
@@ -2154,6 +2514,7 @@ export const initialCatalog: Catalog = {
             type: PSDStandardType.LU_LOOKUP_TABLE,
             name: "BS 6700",
             table: {
+                0: "0.00", // added manually to force interpolation
                 10: "0.3",
                 15: "0.38",
                 20: "0.44",
@@ -2183,6 +2544,7 @@ export const initialCatalog: Catalog = {
             type: PSDStandardType.LU_LOOKUP_TABLE,
             name: "UPC 2018 Flush Tanks",
             table: {
+                0: "0.00", // added manually to force interpolation
                 10: "0.5047216",
                 20: "0.946353",
                 40: "1.577255",
@@ -2210,6 +2572,7 @@ export const initialCatalog: Catalog = {
             type: PSDStandardType.LU_LOOKUP_TABLE,
             name: "UPC 2018 Flushometer",
             table: {
+                0: "0.00", // added manually to force interpolation
                 10: "1.577255",
                 20: "2.208157",
                 40: "2.9652394",
@@ -2238,6 +2601,7 @@ export const initialCatalog: Catalog = {
             type: PSDStandardType.LU_MAX_LOOKUP_TABLE,
             table: {
                 2: {
+                    0: "0.00", // added manually to force interpolation, though this is likely correct
                     2: "0.2",
                     3: "0.24",
                     4: "0.27",
@@ -2272,6 +2636,7 @@ export const initialCatalog: Catalog = {
                     5000: "9",
                 },
                 3: {
+                    0: "0.00", // added manually to force interpolation, though this is likely correct
                     3: "0.3",
                     4: "0.34",
                     5: "0.36",
@@ -2305,6 +2670,7 @@ export const initialCatalog: Catalog = {
                     5000: "9",
                 },
                 4: {
+                    0: "0.00", // added manually to force interpolation, though this is likely correct
                     4: "0.4",
                     5: "0.43",
                     6: "0.46",
@@ -2337,6 +2703,7 @@ export const initialCatalog: Catalog = {
                     5000: "9",
                 },
                 5: {
+                    0: "0.00", // added manually to force interpolation, though this is likely correct
                     5: "0.5",
                     6: "0.53",
                     7: "0.55",
@@ -2368,6 +2735,7 @@ export const initialCatalog: Catalog = {
                     5000: "9",
                 },
                 8: {
+                    0: "0.00", // added manually to force interpolation, though this is likely correct
                     8: "0.8",
                     9: "0.83",
                     10: "0.85",
@@ -2396,6 +2764,7 @@ export const initialCatalog: Catalog = {
                     5000: "9",
                 },
                 15: {
+                    0: "0.00", // added manually to force interpolation, though this is likely correct
                     15: "1.5",
                     20: "1.52",
                     30: "1.54",

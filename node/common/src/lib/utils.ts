@@ -87,14 +87,15 @@ export function interpolateTable<T>(
     table: { [key: string]: T },
     index: number,
     strict: boolean,
-    fn: (entry: T) => string | number | null
+    fn: (entry: T) => string | number | null,
 ): number | null;
 // assumes keys in table are non overlapping
 export function interpolateTable<T>(
     table: { [key: string]: T },
     index: number,
     strict: boolean = false,
-    fn?: (entry: T) => string | number | null
+    fn?: (entry: T) => string | number | null,
+    implyZero: boolean = false,
 ): number | null {
     let lowKey = -Infinity;
     let highKey = Infinity;
@@ -148,6 +149,7 @@ export function interpolateTable<T>(
     return lw * lowValue + hw * highValue;
 }
 
+// returns first table entry with key >= index
 // assumes keys in table are non overlapping
 export function lowerBoundTable<T>(
     table: { [key: string]: T },
@@ -179,6 +181,7 @@ export function lowerBoundTable<T>(
     return highValue;
 }
 
+// returns last table entry with key <= index
 // assumes keys in table are non overlapping
 export function upperBoundTable<T>(
     table: { [key: string]: T },

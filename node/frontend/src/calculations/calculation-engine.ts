@@ -39,14 +39,14 @@ import { ValveType } from "../../../common/src/api/document/entities/directed-va
 import {
     comparePsdCounts,
     ContextualPCE,
-    countPsdProfile,
+    countPsdProfile, FinalPsdCountEntry,
     insertPsdProfile,
     isZeroPsdCounts,
     lookupFlowRate,
     PsdCountEntry,
     PsdProfile,
     subtractPsdProfiles,
-    zeroContextualPCE,
+    zeroContextualPCE, zeroFinalPsdCounts,
     zeroPsdCounts
 } from "../../src/calculations/utils";
 import FittingCalculation from "../../src/store/document/calculations/fitting-calculation";
@@ -1160,7 +1160,7 @@ export default class CalculationEngine {
 
     configureEntityForPSD(
         entity: DrawableEntityConcrete,
-        psdU: PsdCountEntry,
+        psdU: FinalPsdCountEntry,
         flowEdge: FlowEdge,
         wet: FlowNode | null,
         profile: PsdProfile,
@@ -1638,7 +1638,7 @@ export default class CalculationEngine {
             // No flow source.
             this.configureEntityForPSD(
                 object.entity,
-                zeroPsdCounts(),
+                zeroFinalPsdCounts(),
                 flowEdge,
                 null,
                 new PsdProfile(),
@@ -1683,7 +1683,7 @@ export default class CalculationEngine {
                 if (isZeroPsdCounts(residualPsdU)) {
                     this.configureEntityForPSD(
                         object.entity,
-                        zeroPsdCounts(),
+                        zeroFinalPsdCounts(),
                         flowEdge,
                         wet,
                         new PsdProfile(),

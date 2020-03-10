@@ -23,13 +23,22 @@ import { equal } from "assert";
 import { assertUnreachable, isGermanStandard, SupportedPsdStandards } from "../../../common/src/api/config";
 import { Catalog } from "../../../common/src/api/catalog/types";
 import { determineConnectableNetwork, determineConnectableSystemUid } from "../store/document/entities/lib";
-import { interpolateTable, parseCatalogNumberExact } from "../../../common/src/lib/utils";
+import {
+    interpolateTable,
+    lowerBoundTable,
+    parseCatalogNumberExact,
+    upperBoundTable
+} from "../../../common/src/lib/utils";
 import { GlobalStore } from "../htmlcanvas/lib/global-store";
 
 export interface PsdCountEntry {
     units: number;
     continuousFlowLS: number;
     dwellings: number;
+}
+
+export interface FinalPsdCountEntry extends PsdCountEntry {
+    highestLU: number; // for BS 806
 }
 
 export interface ContextualPCE extends PsdCountEntry {
@@ -40,7 +49,7 @@ export interface ContextualPCE extends PsdCountEntry {
 export class PsdProfile extends Map<string, ContextualPCE> {}
 
 export interface PsdUnitsByFlowSystem {
-    [key: string]: PsdCountEntry;
+    [key: string]: FinalPsdCountEntry;
 }
 
 export function countPsdUnits(
@@ -59,7 +68,7 @@ export function countPsdUnits(
                 }
                 mainFixture.roughInsInOrder.forEach((suid) => {
                     if (!(suid in result!)) {
-                        result![suid] = zeroPsdCounts();
+                        result![suid] = zeroFinalPsdCounts();
                     }
                 });
 
@@ -68,6 +77,7 @@ export function countPsdUnits(
                         result[suid].units += mainFixture.roughIns[suid].designFlowRateLS!;
                     } else {
                         result[suid].units += mainFixture.roughIns[suid].loadingUnits!;
+                        result[suid].highestLU = Math.max(result[suid].highestLU, mainFixture.roughIns[suid].loadingUnits!);
                     }
 
                     result[suid].continuousFlowLS += mainFixture.roughIns[suid].continuousFlowLS!;
@@ -81,7 +91,7 @@ export function countPsdUnits(
                         result = {};
                     }
                     if (!result.hasOwnProperty(suid)) {
-                        result[suid] = zeroPsdCounts();
+                        result[suid] = zeroFinalPsdCounts();
                     }
 
                     switch (e.node.type) {
@@ -90,6 +100,7 @@ export function countPsdUnits(
                                 result[suid].units += e.node.designFlowRateLS;
                             } else {
                                 result[suid].units += e.node.loadingUnits;
+                                result[suid].highestLU = Math.max(result[suid].highestLU, e.node.loadingUnits!);
                             }
                             result[suid].continuousFlowLS += e.node.continuousFlowLS;
                             break;
@@ -122,6 +133,15 @@ export function addPsdCounts(a: PsdCountEntry, b: PsdCountEntry): PsdCountEntry 
         units: a.units + b.units,
         continuousFlowLS: a.continuousFlowLS + b.continuousFlowLS,
         dwellings: a.dwellings + b.dwellings
+    };
+}
+
+export function addFinalPsdCounts(a: FinalPsdCountEntry, b: FinalPsdCountEntry): FinalPsdCountEntry {
+    return {
+        units: a.units + b.units,
+        continuousFlowLS: a.continuousFlowLS + b.continuousFlowLS,
+        dwellings: a.dwellings + b.dwellings,
+        highestLU: Math.max(a.highestLU, b.highestLU),
     };
 }
 
@@ -194,8 +214,10 @@ export function mergePsdProfile(profile: PsdProfile, other: PsdProfile) {
     }
 }
 
-export function countPsdProfile(profile: PsdProfile): PsdCountEntry {
+export function countPsdProfile(profile: PsdProfile): FinalPsdCountEntry {
     const byCorrelated = new Map<string, PsdCountEntry>();
+
+    let highestLU = 0;
 
     profile.forEach((contextual) => {
         if (byCorrelated.has(contextual.correlationGroup)) {
@@ -214,8 +236,14 @@ export function countPsdProfile(profile: PsdProfile): PsdCountEntry {
     let total = zeroPsdCounts();
     byCorrelated.forEach((contextual) => {
         total = addPsdCounts(total, contextual);
+        highestLU = Math.max(highestLU, contextual.units);
     });
-    return total;
+    return {
+        units: total.units,
+        dwellings: total.dwellings,
+        continuousFlowLS: total.continuousFlowLS,
+        highestLU,
+    };
 }
 
 export function subtractPsdProfiles(profile: PsdProfile, operand: PsdProfile): void {
@@ -247,6 +275,15 @@ export function zeroPsdCounts(): PsdCountEntry {
     };
 }
 
+export function zeroFinalPsdCounts(): FinalPsdCountEntry {
+    return {
+        units: 0,
+        continuousFlowLS: 0,
+        dwellings: 0,
+        highestLU: 0,
+    };
+}
+
 export function zeroContextualPCE(entity: string, correlationGroup: string): ContextualPCE {
     return {
         entity,
@@ -261,6 +298,12 @@ export function getPsdUnitName(psdMethod: SupportedPsdStandards): { name: string
     switch (psdMethod) {
         case SupportedPsdStandards.as35002018LoadingUnits:
         case SupportedPsdStandards.barriesBookLoadingUnits:
+        case SupportedPsdStandards.upc2018FlushTanks:
+        case SupportedPsdStandards.upc2018Flushometer:
+        case SupportedPsdStandards.ipc2018FlushTanks:
+        case SupportedPsdStandards.ipc2018Flushometer:
+        case SupportedPsdStandards.bs6700:
+        case SupportedPsdStandards.bs806:
             return { name: "Loading Units", abbreviation: "LU" };
         case SupportedPsdStandards.din1988300Residential:
         case SupportedPsdStandards.din1988300Hospital:
@@ -280,7 +323,7 @@ export interface FlowRateResult {
 }
 
 export function lookupFlowRate(
-    psdU: PsdCountEntry,
+    psdU: FinalPsdCountEntry,
     doc: DocumentState,
     catalog: Catalog,
     systemUid: string,
@@ -328,7 +371,14 @@ export function lookupFlowRate(
             break;
         }
         case PSDStandardType.LU_MAX_LOOKUP_TABLE: {
+            // lookup by highest LU
+            let table = lowerBoundTable(standard.table, psdU.highestLU);
+            if (!table) {
+                table = upperBoundTable(standard.table, Infinity)!;
+            }
 
+            // finally, lookup by actual PSD units.
+            fromLoading = interpolateTable(table, psdU.units, true);
             break;
         }
         default:
