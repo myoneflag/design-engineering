@@ -2,6 +2,7 @@ import { DwellingStandardType } from "./psd-standard/types";
 import LoadingUnitTable from "./psd-standard/loading-unit-table";
 import LoadingUnitHotColdTable from "./psd-standard/loading-unit-hot-cold-table";
 import PsdEquation from "./psd-standard/psdEquation";
+import LoadingUnitMaxTable from "./psd-standard/loading-unit-max-table";
 
 export interface DwellingUnitHotColdTable {
     type: DwellingStandardType.DWELLING_HOT_COLD_LOOKUP_TABLE;
@@ -17,7 +18,7 @@ export interface DwellingEquation {
 }
 
 export type Diameter = number | string;
-export type PSDSpec = LoadingUnitTable | LoadingUnitHotColdTable | PsdEquation;
+export type PSDSpec = LoadingUnitTable | LoadingUnitHotColdTable | PsdEquation | LoadingUnitMaxTable;
 export type DwellingSpec = DwellingUnitHotColdTable | DwellingEquation;
 
 export interface BackflowValveSize {

@@ -290,38 +290,49 @@ export function lookupFlowRate(
     const standard = catalog.psdStandards[psd];
 
     let fromLoading: number | null = null;
-    if (standard.type === PSDStandardType.LU_LOOKUP_TABLE) {
-        const table = standard.table;
-        fromLoading = interpolateTable(table, psdU.units, true);
-    } else if (standard.type === PSDStandardType.EQUATION) {
-        if (standard.equation !== "a*(sum(Q,q))^b-c") {
-            throw new Error("Only the german equation a*(sum(Q,q))^b-c is currently supported");
+    switch (standard.type) {
+        case PSDStandardType.LU_LOOKUP_TABLE: {
+            const table = standard.table;
+            fromLoading = interpolateTable(table, psdU.units, true);
+            break;
         }
+        case PSDStandardType.LU_HOT_COLD_LOOKUP_TABLE: {
+            const table = standard.hotColdTable;
+            if (systemUid === StandardFlowSystemUids.ColdWater) {
+                fromLoading = interpolateTable(table, psdU.units, true, (e) => e.cold);
+            } else if (systemUid === StandardFlowSystemUids.HotWater || systemUid === StandardFlowSystemUids.WarmWater) {
+                fromLoading = interpolateTable(table, psdU.units, true, (e) => e.hot);
+            } else {
+                throw new Error("Cannot determine flow rate with this metric");
+            }
+            break;
+        }
+        case PSDStandardType.EQUATION: {
+            if (standard.equation !== "a*(sum(Q,q))^b-c") {
+                throw new Error("Only the german equation a*(sum(Q,q))^b-c is currently supported");
+            }
 
-        if (psdU.units < 0) {
-            throw new Error("PSD units must be positive");
-        } else if (psdU.units <= 0.2) {
-            fromLoading = psdU.units;
-        } else if (psdU.units > 500) {
-            throw new Error("Too much flow - PSD cannot be determined from this standard");
-        } else {
-            const a = parseCatalogNumberExact(standard.variables.a)!;
-            const b = parseCatalogNumberExact(standard.variables.b)!;
-            const c = parseCatalogNumberExact(standard.variables.c)!;
+            if (psdU.units < 0) {
+                throw new Error("PSD units must be positive");
+            } else if (psdU.units <= 0.2) {
+                fromLoading = psdU.units;
+            } else if (psdU.units > 500) {
+                throw new Error("Too much flow - PSD cannot be determined from this standard");
+            } else {
+                const a = parseCatalogNumberExact(standard.variables.a)!;
+                const b = parseCatalogNumberExact(standard.variables.b)!;
+                const c = parseCatalogNumberExact(standard.variables.c)!;
 
-            fromLoading = a * psdU.units ** b - c;
+                fromLoading = a * psdU.units ** b - c;
+            }
+            break;
         }
-    } else if (standard.type === PSDStandardType.LU_HOT_COLD_LOOKUP_TABLE) {
-        const table = standard.hotColdTable;
-        if (systemUid === StandardFlowSystemUids.ColdWater) {
-            fromLoading = interpolateTable(table, psdU.units, true, (e) => e.cold);
-        } else if (systemUid === StandardFlowSystemUids.HotWater || systemUid === StandardFlowSystemUids.WarmWater) {
-            fromLoading = interpolateTable(table, psdU.units, true, (e) => e.hot);
-        } else {
-            throw new Error("Cannot determine flow rate with this metric");
+        case PSDStandardType.LU_MAX_LOOKUP_TABLE: {
+
+            break;
         }
-    } else {
-        throw new Error("PSD not supported");
+        default:
+            assertUnreachable(standard);
     }
 
     if (fromLoading === null && psdU.units === 0) {

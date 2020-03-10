@@ -5,6 +5,8 @@ export enum SupportedPsdStandards {
     as35002018LoadingUnits = "as35002018LoadingUnits",
     barriesBookLoadingUnits = "barriesBookLoadingUnits",
 
+    
+
     din1988300Residential = "din1988300Residential",
     din1988300Hospital = "din1988300Hospital",
     din1988300Hotel = "din1988300Hotel",
