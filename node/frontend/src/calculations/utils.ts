@@ -372,9 +372,9 @@ export function lookupFlowRate(
         }
         case PSDStandardType.LU_MAX_LOOKUP_TABLE: {
             // lookup by highest LU
-            let table = lowerBoundTable(standard.table, psdU.highestLU);
+            let table = lowerBoundTable(standard.maxLuTable, psdU.highestLU);
             if (!table) {
-                table = upperBoundTable(standard.table, Infinity)!;
+                table = upperBoundTable(standard.maxLuTable, Infinity)!;
             }
 
             // finally, lookup by actual PSD units.

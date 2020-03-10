@@ -40,6 +40,7 @@
                                     select-mode="single"
                                     :selectable="true"
                                     @row-selected="(d) => onRowClick(prop, d)"
+                                    responsive="true"
                                 >
                                 </b-table>
                                 <b-table
@@ -49,6 +50,7 @@
                                     :items="getTable(prop).items"
                                     :fields="getTable(prop).fields"
                                     style="max-width: 100%; overflow-x: auto"
+                                    responsive="true"
                                 ></b-table>
                             </b-collapse>
                         </b-col>
@@ -165,37 +167,92 @@ export default class CatalogView extends Vue {
     }
 
     getTable(prop: string) {
-        const table = this.getSchema()[prop]!.table!;
-        const cols = table.columns;
+        const schema = this.getSchema();
+        const table = schema[prop]!.table!;
+        if (!table.twoDimensional) {
 
-        const items = [];
-        const entries = this.currCatalog[prop];
+            const cols = table.columns;
 
-        for (const [key, value] of Object.entries(entries)) {
-            const item: any = {};
-            if (table.primaryName) {
-                item[table.primaryName] = key;
-            }
+            const items = [];
+            const entries = this.currCatalog[prop];
 
-            item._key = key;
-
-            for (const col of cols) {
-                if (col[0] === null) {
-                    item[col[1]] = value;
-                } else {
-                    item[col[1]] = (value as any)[col[0]];
+            for (const [key, value] of Object.entries(entries)) {
+                const item: any = {};
+                if (table.primaryName) {
+                    item[table.primaryName] = key;
                 }
+
+                item._key = key;
+
+                for (const col of cols) {
+                    if (col[0] === null) {
+                        item[col[1]] = value;
+                    } else {
+                        item[col[1]] = (value as any)[col[0]];
+                    }
+                }
+
+                items.push(item);
             }
 
-            items.push(item);
-        }
+            const fields = cols.map((c) => c[1]);
+            if (table.primaryName) {
+                fields.splice(0, 0, table.primaryName);
+            }
 
-        const fields = cols.map((c) => c[1]);
-        if (table.primaryName) {
-            fields.splice(0, 0, table.primaryName);
-        }
+            return { items, fields };
+        } else {
 
-        return { items, fields };
+            const cols = table.columns;
+
+            const newFieldNames = new Set<any>();
+
+            const items = [];
+            const entries = this.currCatalog[prop];
+
+            for (const [key, value] of Object.entries(entries)) {
+                const item: any = {};
+
+                if (table.primaryName) {
+                    item[table.primaryName] = key;
+                }
+
+                item._key = key;
+
+                for (const col of cols) {
+                    if (col[0] === null) {
+                        item[col[1]] = value;
+                    } else {
+                        item[col[1]] = (value as any)[col[0]];
+                    }
+                }
+
+                Object.assign(item, value);
+                for (const c of Object.keys(value as any)) {
+                    newFieldNames.add(c);
+                }
+
+                items.push(item);
+            }
+
+            const fields = cols.map((c) => c[1]);
+
+            for (const c of Array.from(newFieldNames.values()).sort((a, b) => {
+                if (!isNaN(a) && !isNaN(b)) {
+                    return a - b;
+                } else {
+                    return a < b ? -1 : (a > b ? 1 : 0);
+                }
+            })) {
+                fields.push(c);
+            }
+
+            if (table.primaryName) {
+                fields.splice(0, 0, table.primaryName);
+            }
+
+            return { items, fields };
+        }
     }
 
     getSchema(): Page<any> {

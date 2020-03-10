@@ -2599,7 +2599,7 @@ export const initialCatalog: Catalog = {
         bs806: {
             name: "BS 806",
             type: PSDStandardType.LU_MAX_LOOKUP_TABLE,
-            table: {
+            maxLuTable: {
                 2: {
                     0: "0.00", // added manually to force interpolation, though this is likely correct
                     2: "0.2",

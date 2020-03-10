@@ -29,6 +29,7 @@ export interface Table<TV> {
     primaryName: string | null;
     columns: Array<[keyof TV | null, string]>;
     link?: Page<TV> | null;
+    twoDimensional?: boolean;
 }
 
 export type CatalogSchema = Page<Catalog>;
@@ -118,6 +119,15 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                         table: {
                             primaryName: "Loading Units",
                             columns: [[null, "Flow Rate (L/S)"]]
+                        }
+                    },
+                    maxLuTable: {
+                        order: 3,
+                        name: "Loading Unit Table by Highest LU",
+                        table: {
+                            primaryName: "Highest LU / Total",
+                            columns: [],
+                            twoDimensional: true,
                         }
                     },
                     hotColdTable: {
