@@ -44,6 +44,7 @@ export interface TankPlant extends Plant {
 }
 
 export interface ReturnSystemPlant extends Plant {
+    returnMinimumTemperatureC: number | null;
     type: PlantType.RETURN_SYSTEM;
     pressureLoss: PumpPressure;
     returnUid: string;

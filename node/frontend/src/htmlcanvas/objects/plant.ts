@@ -146,14 +146,10 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
     }
 
     prepareDelete(context: CanvasContext): BaseBackedObject[] {
-        const list: BaseBackedObject[] = [];
-
-        list.push(
-            ...this.globalStore.get(this.entity.inletUid)!.prepareDelete(context),
-            ...this.globalStore.get(this.entity.outletUid)!.prepareDelete(context),
+        return [
+            ...this.getInletsOutlets().map((o) => o.prepareDelete(context)).flat(),
             this
-        );
-        return list;
+        ];
     }
 
     getInletsOutlets(): SystemNode[] {

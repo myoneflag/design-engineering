@@ -83,7 +83,7 @@ import { getPlantPressureLossKPA } from "../htmlcanvas/lib/utils";
 import { RingMainCalculator } from "./ring-main-calculator";
 import { Configuration, NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
 import { PlantType } from "../../../common/src/api/document/entities/plants/plant-types";
-import { identifyReturns } from './returns';
+import { identifyReturns, processReturns } from "./returns";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -299,12 +299,15 @@ export default class CalculationEngine {
             if (sanityPassed) {
                 this.buildNetworkObjects();
                 this.configureLUFlowGraph();
-                identifyReturns(this);
+                const returns = identifyReturns(this);
                 this.precomputeBridges();
                 this.precomputePsdAfterBridge(FLOW_SOURCE_ROOT_BRIDGE, FLOW_SOURCE_ROOT_NODE, new Set<string>());
                 this.preCompute();
                 this.sizeDefiniteTransports();
                 this.sizeRingMains();
+
+                processReturns(this, returns);
+
                 this.calculateAllPointPressures();
                 this.fillPressureDropFields();
                 this.createWarnings();

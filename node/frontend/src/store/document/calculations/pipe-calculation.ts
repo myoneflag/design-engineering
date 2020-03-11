@@ -26,9 +26,12 @@ export enum Configuration {
 
 export default interface PipeCalculation extends PsdCalculation, Calculation {
     peakFlowRate: number | null;
+    returnFlowRate: number | null;
+
     noFlowAvailableReason: NoFlowAvailableReason | null;
 
     rawPeakFlowRate: number | null;
+    rawReturnFlowRate: number | null;
     optimalInnerPipeDiameterMM: number | null;
     realNominalPipeDiameterMM: number | null;
     realInternalDiameterMM: number | null;
@@ -66,17 +69,17 @@ export function makePipeCalculationFields(
             category: FieldCategory.FlowRate,
             systemUid: entity.systemUid,
             defaultEnabled: true
-        } /*
+        },
         {
-            property: "rawPeakFlowRate",
-            title: "Flow Rate (Raw)",
-            short: "(Raw)",
+            property: "rawReturnFlowRate",
+            title: "Return Flow Rate (Raw)",
+            short: "(rtn)",
             units: Units.LitersPerSecond,
             category: FieldCategory.FlowRate,
             systemUid: entity.systemUid,
             defaultEnabled: false,
             // format: (v: number | null) => "(" + (v === null ? "??" : v.toFixed(2)) + ")"
-        },*/,
+        },
         {
             property: "realNominalPipeDiameterMM",
             title: "Pipe Diameter",
@@ -170,8 +173,10 @@ export function makePipeCalculationFields(
 export function emptyPipeCalculation(): PipeCalculation {
     return {
         peakFlowRate: null,
+        returnFlowRate: null,
         noFlowAvailableReason: null,
         rawPeakFlowRate: null,
+        rawReturnFlowRate: null,
         psdUnits: null,
         optimalInnerPipeDiameterMM: null,
         realInternalDiameterMM: null,

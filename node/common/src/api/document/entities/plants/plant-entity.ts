@@ -140,6 +140,17 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
 
     switch (entity.plant.type) {
         case PlantType.RETURN_SYSTEM:
+            res.push(
+                {
+                    property: "plant.returnMinimumTemperatureC",
+                    title: "Minimum Return Temperature (C)",
+                    hasDefault: true,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    params: { min: null, max: entity.outletTemperatureC },
+                    multiFieldId: "returnMinimumTemperatureC"
+                },
+            );
             break;
         case PlantType.TANK:
             break;
@@ -157,7 +168,6 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                         choices: [
                             { name: "Pump Duty", key: PressureMethod.PUMP_DUTY, disabled: false },
                             { name: "Constant Pressure Loss", key: PressureMethod.FIXED_PRESSURE_LOSS, disabled: false },
-                            { name: "Static Pressure", key: PressureMethod.STATIC_PRESSURE, disabled: false }
                         ]
                     },
                     multiFieldId: "pressureMethod"
@@ -265,9 +275,26 @@ export function fillPlantDefaults(value: PlantEntity, drawing: DrawingState) {
             assertUnreachable(value.plant.pressureLoss);
     }
 
+
     if (value.outletTemperatureC === null) {
         const outSystem = drawing.metadata.flowSystems.find((s) => s.uid === value.outletSystemUid);
         result.outletTemperatureC = outSystem ? outSystem.temperature : drawing.metadata.calculationParams.roomTemperatureC;
+    }
+
+    switch (value.plant.type) {
+        case PlantType.RETURN_SYSTEM:
+            if (value.plant.returnMinimumTemperatureC === null) {
+                value.plant.returnMinimumTemperatureC = result.outletTemperatureC! - 5;
+            }
+            break;
+        case PlantType.TANK:
+            break;
+        case PlantType.CUSTOM:
+            break;
+        case PlantType.PUMP:
+            break;
+        default:
+            assertUnreachable(value.plant);
     }
 
     return result;

@@ -138,4 +138,5 @@ export interface FluidsSpec {
     name: string;
     densityKGM3: string;
     dynamicViscosityByTemperature: { [key: string]: string };
+    specificHeatByTemperatureKJ_KGK: { [key: string]: string };
 }

@@ -189,6 +189,7 @@ function createPlant(type: PlantType, outletSystemUid: string, returnUid: string
         case PlantType.RETURN_SYSTEM:
             return {
                 type,
+                returnMinimumTemperatureC: null,
                 returnUid: returnUid!,
                 pressureLoss: {
                     pressureMethod: PressureMethod.PUMP_DUTY,

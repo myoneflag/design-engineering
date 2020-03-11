@@ -30,10 +30,13 @@ export interface SeriesTreeNode<E> {
 
 export interface LeafNode<E> {
     type: 'leaf';
-    edge: E;
+    edge: string;
+    edgeConcrete: E;
 }
 
 export type SPTree<E> = ParallelNode<E>;
+
+export type SPNode<E> = ParallelNode<E> | SeriesTreeNode<E> | LeafNode<E>;
 
 export function isSeriesParallel<N, E>(graph: Graph<N, E>, source: N, sink: N): [Map<string, N>, SPTree<Edge<N, E>>] | null {
     function se(a: string, b: string) {
@@ -56,6 +59,7 @@ export function isSeriesParallel<N, E>(graph: Graph<N, E>, source: N, sink: N): 
 
     // Here we store when a node compresses its two edges into one.
     const compressions: Compression[] = [];
+    const leafs: Array<[string, Edge<N, E>]> = [];
 
     for (const [eid, edge] of graph.edgeList) {
         const fromS = graph.sn(edge.from);
@@ -72,6 +76,7 @@ export function isSeriesParallel<N, E>(graph: Graph<N, E>, source: N, sink: N): 
         adjList.get(toS)!.push(fromS);
 
         const a = se(fromS, toS);
+        leafs.push([a, edge]);
         edgesByEndpoints.set(a, (edgesByEndpoints.get(a) || 0) + 1);
     }
 
@@ -228,7 +233,7 @@ export function isSeriesParallel<N, E>(graph: Graph<N, E>, source: N, sink: N): 
 
                     spe.siblings.push({
                         type: "series",
-                        edge: eab,
+                        edge: eab + '.' + spe.siblings.length,
                         children: [na, nb],
                     });
                     break;
@@ -253,7 +258,8 @@ export function isSeriesParallel<N, E>(graph: Graph<N, E>, source: N, sink: N): 
             }
             spn.siblings.push({
                 type: 'leaf',
-                edge: edge,
+                edge: es + '.leaf',
+                edgeConcrete: edge,
             });
         }
 
