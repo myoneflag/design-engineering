@@ -267,6 +267,7 @@ function getNodeHeatLossWATT(context: CalculationContext, node: SPNode<Edge<unkn
                 case EdgeType.PIPE:
                     const pipe = context.globalStore.get(node.edgeConcrete.value.uid) as Pipe;
                     tot = getHeatLossOfPipeWATT(context, pipe, tempC);
+                    console.log('pipe heat loss: ' + pipe.computedLengthM +'m ' + tot);
                     break;
                 case EdgeType.BIG_VALVE_HOT_HOT:
                 case EdgeType.BIG_VALVE_HOT_WARM:
@@ -352,7 +353,9 @@ export function setFlowRatesForReturn(context: CalculationContext, record: Retur
         return;
     }
 
-    const flowRateLS = totalHeatLoss / (specificHeat * (filled.outletTemperatureC! - filled.plant.returnMinimumTemperatureC!));
+    console.log('total heat loss: ' + totalHeatLoss);
+    const flowRateLS = totalHeatLoss/1000 / (specificHeat * (filled.outletTemperatureC! - filled.plant.returnMinimumTemperatureC!));
+    console.log('total flow rate: ' + flowRateLS + ' ' + specificHeat + ' ' + filled.outletTemperatureC + ' ' + filled.plant.returnMinimumTemperatureC);
 
     setFlowRatesNode(context, record.spTree, flowRateLS, node2heatLoss);
 }

@@ -281,10 +281,10 @@ export function fillPlantDefaults(value: PlantEntity, drawing: DrawingState) {
         result.outletTemperatureC = outSystem ? outSystem.temperature : drawing.metadata.calculationParams.roomTemperatureC;
     }
 
-    switch (value.plant.type) {
+    switch (result.plant.type) {
         case PlantType.RETURN_SYSTEM:
-            if (value.plant.returnMinimumTemperatureC === null) {
-                value.plant.returnMinimumTemperatureC = result.outletTemperatureC! - 5;
+            if (result.plant.returnMinimumTemperatureC === null) {
+                result.plant.returnMinimumTemperatureC = result.outletTemperatureC! - 5;
             }
             break;
         case PlantType.TANK:
@@ -294,7 +294,7 @@ export function fillPlantDefaults(value: PlantEntity, drawing: DrawingState) {
         case PlantType.PUMP:
             break;
         default:
-            assertUnreachable(value.plant);
+            assertUnreachable(result.plant);
     }
 
     return result;
