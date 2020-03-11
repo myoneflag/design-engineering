@@ -14,6 +14,7 @@ import {
 } from "../../../common/src/api/constants/air-properties";
 import { evaluatePolynomial } from "../../../common/src/lib/polynomials";
 import Context = Mocha.Context;
+import { isSeriesParallel } from "./series-parallel";
 
 export function identifyReturns(engine: CalculationEngine) {
     for (const o of engine.networkObjects()) {
@@ -87,10 +88,12 @@ export function identifyReturns(engine: CalculationEngine) {
                 }
             }
 
-            const orderLookup = simpleGraph.isSeriesParallel(o.entity.outletUid, o.entity.plant.returnUid);
-            if (orderLookup) {
+            const res = isSeriesParallel(simpleGraph, o.entity.outletUid, o.entity.plant.returnUid);
+            if (res) {
+                const [orderLookup, spTree] = res;
                 console.log('orderLookup:');
                 console.log(JSON.stringify(Array.from(orderLookup.entries())));
+                console.log(spTree);
 
                 // we are good.
                 console.log('we are returning with a series parallel graph. Therefore, it is a valid return.');
