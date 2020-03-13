@@ -16,6 +16,7 @@ export enum NoFlowAvailableReason {
     LOADING_UNITS_OUT_OF_BOUNDS = "LOADING_UNITS_OUT_OF_BOUNDS",
     NO_SUITABLE_PIPE_SIZE = "NO_SUITABLE_PIPE_SIZE",
     INVALID_RETURN_NETWORK = "INVALID_RETURN_NETWORK",
+    NONE = '',
 }
 
 export enum Configuration {

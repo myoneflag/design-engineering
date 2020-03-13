@@ -27,7 +27,6 @@ export const decomposeMatrix = (mat: TM.Matrix): Transformation => {
     const dp = TM.applyToPoint(mat, {x: 1, y: 0});
     const cp = TM.applyToPoint(mat, {x: 0, y: 0});
     const n = Flatten.vector(dp.x - cp.x, dp.y - cp.y).normalize();
-    console.log(n.x + ' ' + n.y);
     return {
         tx: mat.e,
         ty: mat.f,

@@ -99,6 +99,8 @@ export function makeDirectedValveFields(
             }
             break;
         }
+        case ValveType.BALANCING:
+            break;
         case ValveType.WATER_METER:
             break;
         case ValveType.STRAINER:

@@ -108,6 +108,7 @@ export enum EdgeType {
     // reserve some for check valve, pump and isolation types.
     CHECK_THROUGH,
     ISOLATION_THROUGH,
+    BALANCING_THROUGH,
 
     PLANT_THROUGH,
     RETURN_PUMP,
@@ -390,7 +391,6 @@ export default class CalculationEngine {
                 // Some pipes may have their flow directions fixed in an earlier step (such as return systems)
                 if (pc.flowFrom) {
                     if (e.from.connectable !== pc.flowFrom) {
-                        console.log('excluding one direction of edge ' + e.value.uid);
                         seenEdges.delete(e.uid);
                         return true;
                     }
@@ -838,6 +838,8 @@ export default class CalculationEngine {
                                           this.ga
                                       );
                             }
+                            case EdgeType.BALANCING_THROUGH:
+                                return 0; // TODO: balancing valve drops
                             case EdgeType.FLOW_SOURCE_EDGE:
                                 throw new Error("oopsies");
                         }
@@ -1072,6 +1074,24 @@ export default class CalculationEngine {
                         );
                     }
                     break;
+                case ValveType.BALANCING:
+
+                    this.flowGraph.addEdge(
+                        {
+                            connectable: entity.uid,
+                            connection: entity.sourceUid
+                        },
+                        {
+                            connectable: entity.uid,
+                            connection: other
+                        },
+                        {
+                            type: EdgeType.BALANCING_THROUGH,
+                            uid: entity.uid
+                        }
+                    );
+                    break;
+
                 case ValveType.PRV_SINGLE:
                 case ValveType.PRV_DOUBLE:
                 case ValveType.PRV_TRIPLE:
@@ -1312,9 +1332,6 @@ export default class CalculationEngine {
     }
 
     sizePipeForFlowRate(pipe: PipeEntity, requirements: Array<[number | null, number]>) {
-        if (requirements.length > 1) {
-            console.log(JSON.stringify(requirements));
-        }
         const calculation = this.globalStore.getOrCreateCalculation(pipe);
 
         let page: PipeSpec | null = null;
@@ -1570,7 +1587,7 @@ export default class CalculationEngine {
             }
         });
 
-        // Now size RPZD's, based on pipe peak flow rates
+        // Now size RPZD's, PRVs or any other directed valves, based on pipe peak flow rates
         this.networkObjects().forEach((obj) => {
             switch (obj.entity.type) {
                 case EntityType.DIRECTED_VALVE:
@@ -1626,6 +1643,7 @@ export default class CalculationEngine {
                         case ValveType.ISOLATION_VALVE:
                         case ValveType.WATER_METER:
                         case ValveType.STRAINER:
+                        case ValveType.BALANCING:
                             break;
                         default:
                             assertUnreachable(obj.entity.valve);
@@ -2104,6 +2122,8 @@ export default class CalculationEngine {
                             break;
                         case ValveType.RPZD_DOUBLE_ISOLATED:
                             break;
+                        case ValveType.BALANCING:
+                            break;
                         case ValveType.PRV_SINGLE:
                         case ValveType.PRV_DOUBLE:
                         case ValveType.PRV_TRIPLE:
@@ -2218,7 +2238,6 @@ export default class CalculationEngine {
                     // Some pipes may have their flow directions fixed in an earlier step (such as return systems)
                     if (pc.flowFrom) {
                         if (e.from.connectable !== pc.flowFrom) {
-                            console.log('excluding one direction of edge ' + e.value.uid);
                             visitedEdges.delete(e.uid);
                             return true;
                         }

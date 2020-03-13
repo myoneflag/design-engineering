@@ -227,6 +227,11 @@ function createBareValve(type: ValveType, catalogId: string): DirectedValveConcr
                 sizeMM: null,
                 isolateOneWhenCalculatingHeadLoss: true
             };
+        case ValveType.BALANCING:
+            return {
+                type,
+                catalogId: catalogId as any,
+            };
     }
     assertUnreachable(type);
 }

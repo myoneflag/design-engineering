@@ -142,6 +142,9 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             case ValveType.STRAINER:
                 this.drawStrainer(context);
                 break;
+            case ValveType.BALANCING:
+                this.drawIsolationValve(context);
+                break;
             default:
                 assertUnreachable(this.entity.valve);
         }
@@ -542,6 +545,8 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 return "PRV Double (50% Load Each)";
             case ValveType.PRV_TRIPLE:
                 return "PRV Triple (33.3% Load Each)";
+            case ValveType.BALANCING:
+                return "Balancing Valve";
         }
         assertUnreachable(this.entity.valve);
     }

@@ -251,10 +251,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                     const vec = Flatten.vector([endpoints[1].x - endpoints[0].x, endpoints[1].y - endpoints[0].y]).normalize();
                     const orth = vec.rotate90CCW();
 
-                    console.log('drawing direction arrows');
-
                     for (let dist = gap; dist < this.computedLengthM * 1000; dist += gap) {
-                        console.log('directions');
                         const base = {x: endpoints[0].x, y: endpoints[0].y};
                         base.x += vec.x * dist;
                         base.y += vec.y * dist;
@@ -267,6 +264,10 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                         ctx.fill();
                     }
                 }
+            }
+
+            if (!calculation || (calculation.rawReturnFlowRateLS === null && calculation.configuration === Configuration.RETURN)) {
+                ctx.setLineDash([baseWidth * 1, baseWidth * 2]);
             }
 
             if (!calculation || calculation.PSDFlowRateLS === null) {

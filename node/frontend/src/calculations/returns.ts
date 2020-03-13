@@ -16,10 +16,10 @@ import { evaluatePolynomial } from "../../../common/src/lib/polynomials";
 import { isSeriesParallel, SPNode, SPTree } from "./series-parallel";
 import PlantEntity, { fillPlantDefaults } from "../../../common/src/api/document/entities/plants/plant-entity";
 import { interpolateTable } from "../../../common/src/lib/utils";
-import plant from "../htmlcanvas/objects/plant";
+import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
 
 export interface ReturnRecord {
-    spTree: SPTree<Edge<unknown, FlowEdge>>;
+    spTree: SPTree<Edge<string, FlowEdge>>;
     plant: PlantEntity;
 }
 
@@ -39,7 +39,6 @@ export function identifyReturns(engine: CalculationEngine): ReturnRecord[] {
 
             const thisNode = { connectable: o.entity.outletUid, connection: o.entity.uid };
             const component = engine.flowGraph.getConnectedComponent(thisNode);
-            console.log('connected component has ' + JSON.stringify(component));
 
             const newGraph = Graph.fromSubgraph(component, engine.serializeNode);
 
@@ -81,6 +80,7 @@ export function identifyReturns(engine: CalculationEngine): ReturnRecord[] {
                     case EdgeType.BIG_VALVE_COLD_COLD:
                         simpleGraph.addEdge(e.from.connectable, e.to.connectable, e.value, e.uid);
                         break;
+                    case EdgeType.BALANCING_THROUGH:
                     case EdgeType.FITTING_FLOW:
                     case EdgeType.FLOW_SOURCE_EDGE:
                     case EdgeType.CHECK_THROUGH:
@@ -100,12 +100,7 @@ export function identifyReturns(engine: CalculationEngine): ReturnRecord[] {
             if (res) {
                 const [orderLookup, spTree] = res;
                 records.push({spTree, plant: o.entity});
-                console.log('orderLookup:');
-                console.log(JSON.stringify(Array.from(orderLookup.entries())));
-                console.log(spTree);
-
                 // we are good.
-                console.log('we are returning with a series parallel graph. Therefore, it is a valid return.');
                 for (const e of returnComponent[1]) {
                     if (e.value.type === EdgeType.PIPE) {
                         const p = engine.globalStore.get(e.value.uid)!.entity as PipeEntity;
@@ -124,7 +119,6 @@ export function identifyReturns(engine: CalculationEngine): ReturnRecord[] {
                     }
                 }
                 // we are not good.
-                console.log('our graph is not series parallel');
             }
         }
     }
@@ -162,7 +156,6 @@ export function getHeatLossOfPipeMomentWATT_M(context: CalculationContext, pipe:
     let oldHeatLoss = -Infinity;
 
     let iters = 0;
-    console.log('starting calc ======== ');
     while (true) {
         iters += 1;
         if (iters > 10) return null;
@@ -180,7 +173,6 @@ export function getHeatLossOfPipeMomentWATT_M(context: CalculationContext, pipe:
         const reynoldsNumber            = totalOutsideDiameter / 1000 * windSpeedMS / kinematicViscosityM2_S;
         const rayleighNumber            = ga * expansionCoefficient_1_K * Math.abs(surfaceTempC - ambientTemperatureC) * (totalOutsideDiameter / 1000) ** 3 / (kinematicViscosityM2_S * alphaM2_S);
 
-        console.log('part one: ' + averageFilmTemperatureC + ' ' + reynoldsNumber + ' ' + rayleighNumber);
 
         // Air film resistance
         const radiationW_M2K            = 0.00000005670373 * SURFACE_EMMISIVITY[flowSystem.insulationMaterial] * ((surfaceTempC + 273.15) ** 4 - (ambientTemperatureC + 273.15));
@@ -208,20 +200,16 @@ export function getHeatLossOfPipeMomentWATT_M(context: CalculationContext, pipe:
         const overallResistanceM2_KW    = insulationResistanceM2K_W + pipeWallResistanceM2K_W + 1 / overallAirSideHtcW_M2K;
         const heatFlowW_M2              = (tempC - ambientTemperatureC) / overallResistanceM2_KW;
 
-        console.log('overall res: ' + overallResistanceM2_KW);
 
         interfaceTempC                  = tempC - heatFlowW_M2 * pipeWallResistanceM2K_W;
 
         surfaceTempC                    = interfaceTempC - heatFlowW_M2 * insulationResistanceM2K_W;
-        console.log('heat flow: ' + heatFlowW_M2 + ' res: ' + insulationResistanceM2K_W);
 
         const heatLossPerUnitLengthW_M  = heatFlowW_M2 * Math.PI * (totalOutsideDiameter / 1000);
         if (Math.abs(oldHeatLoss - heatLossPerUnitLengthW_M) < MAX_ITER_CHANGE) {
-            console.log("converged to " + heatLossPerUnitLengthW_M);
             return heatLossPerUnitLengthW_M;
         }
         oldHeatLoss = heatLossPerUnitLengthW_M;
-        console.log(heatLossPerUnitLengthW_M + ' ' + pipeWallResistanceM2K_W + ' ' + insulationResistanceM2K_W + ' ' + overallResistanceM2_KW);
     }
 }
 
@@ -268,7 +256,6 @@ function getNodeHeatLossWATT(context: CalculationContext, node: SPNode<Edge<unkn
                 case EdgeType.PIPE:
                     const pipe = context.globalStore.get(node.edgeConcrete.value.uid) as Pipe;
                     tot = getHeatLossOfPipeWATT(context, pipe, tempC);
-                    console.log('pipe heat loss: ' + pipe.computedLengthM +'m ' + tot);
                     break;
                 case EdgeType.BIG_VALVE_HOT_HOT:
                 case EdgeType.BIG_VALVE_HOT_WARM:
@@ -280,6 +267,7 @@ function getNodeHeatLossWATT(context: CalculationContext, node: SPNode<Edge<unkn
                 case EdgeType.ISOLATION_THROUGH:
                 case EdgeType.PLANT_THROUGH:
                 case EdgeType.RETURN_PUMP:
+                case EdgeType.BALANCING_THROUGH:
                     break;
                 default:
                     assertUnreachable(node.edgeConcrete.value.type);
@@ -314,7 +302,6 @@ function setFlowRatesNode(
                         throw new Error('wat impossible - totalHeatLossWATT would have to be null then');
                     }
 
-                    console.log('setting parallel node at ' + thisHeatLossWATT + ' out of ' + totalHeatLossWATT + ' ratio with fr ' + currFlowRate);
                     const tmp = setFlowRatesNode(context, filledReturn, n, currFlowRate * thisHeatLossWATT / totalHeatLossWATT, heatLossCache);
                     if (tmp === null || res === null) {
                         res = null;
@@ -381,7 +368,6 @@ export function setFlowRatesForReturn(context: CalculationEngine, record: Return
     const node2heatLoss = new Map<string, number>();
     const totalHeatLoss = getNodeHeatLossWATT(context, record.spTree, filled.outletTemperatureC!, node2heatLoss);
 
-    console.log('total heat loss: ' + totalHeatLoss);
     const system = context.drawing.metadata.flowSystems.find((fs) => fs.uid === record.plant.outletSystemUid);
     if (!system) {
         throw new Error('Flow system not found');
@@ -391,15 +377,107 @@ export function setFlowRatesForReturn(context: CalculationEngine, record: Return
 
     if (totalHeatLoss === null || specificHeat === null) {
         // can't.
-        console.log('Info that is needed for returns calculation was missing');
         return null;
     }
 
-    console.log('total heat loss: ' + totalHeatLoss);
     const flowRateLS = totalHeatLoss/1000 / (specificHeat * (filled.outletTemperatureC! - filled.plant.returnMinimumTemperatureC!));
-    console.log('total flow rate: ' + flowRateLS + ' ' + specificHeat + ' ' + filled.outletTemperatureC + ' ' + filled.plant.returnMinimumTemperatureC);
 
     return setFlowRatesNode(context, filled.plant, record.spTree, flowRateLS, node2heatLoss);
+}
+
+interface BalanceCheckResult {
+    balanced: boolean;
+    leafSeries: boolean;
+}
+
+function setWarnMissingBalancingValve(engine: CalculationEngine, node: SPNode<Edge<unknown, FlowEdge>>) {
+    switch (node.type) {
+        case "parallel":
+            for (const n of node.siblings) {
+                setWarnMissingBalancingValve(engine, n);
+            }
+            break;
+        case "series":
+            for (const n of node.children) {
+                setWarnMissingBalancingValve(engine, n);
+            }
+            break;
+        case "leaf":
+            if (node.edgeConcrete.value.type === EdgeType.PIPE) {
+                const pipe = engine.globalStore.get(node.edgeConcrete.value.uid) as Pipe;
+                const pCalc = engine.globalStore.getOrCreateCalculation(pipe.entity);
+
+                pCalc.warning = 'Missing Balancing Valve for Return';
+                pCalc.rawReturnFlowRateLS = null; // Create dotted line
+            }
+            break;
+        default:
+            assertUnreachable(node);
+    }
+}
+
+function warnMissingBalancingValvesRecursive(engine: CalculationEngine, node: SPNode<Edge<string, FlowEdge>>): BalanceCheckResult {
+    switch (node.type) {
+        case "parallel": {
+            let balanced = true;
+            let leafSeries = node.siblings.length === 1;
+
+            for (const c of node.siblings) {
+                const res = warnMissingBalancingValvesRecursive(engine, c);
+                balanced = balanced && res.balanced;
+                leafSeries = leafSeries && res.leafSeries;
+
+                if (!res.balanced && (node.siblings.length > 1) && res.leafSeries) {
+                    console.log('setting node balancing ' + JSON.stringify(res) + ' ' + node.siblings.length);
+                    setWarnMissingBalancingValve(engine, c);
+                }
+            }
+
+            return {balanced, leafSeries};
+        }
+        case "series": {
+            let balanced = false;
+            let leafSeries = true;
+            for (const c of node.children) {
+                const res = warnMissingBalancingValvesRecursive(engine, c);
+                balanced = balanced || res.balanced;
+                leafSeries = leafSeries && res.leafSeries;
+            }
+            return {balanced, leafSeries};
+        }
+        case "leaf":
+            let connectedToBalancingValve = false;
+            for (const uid of [node.edgeConcrete.from, node.edgeConcrete.to]) {
+                const o = engine.globalStore.get(uid)!;
+                if (o.entity.type === EntityType.DIRECTED_VALVE) {
+                    if (o.entity.valve.type === ValveType.BALANCING) {
+                        connectedToBalancingValve = true;
+                    }
+                }
+            }
+
+            if (connectedToBalancingValve) {
+                return {
+                    balanced: true,
+                    leafSeries: true,
+                };
+            } else {
+                return {
+                    balanced: false,
+                    leafSeries: true,
+                };
+            }
+    }
+    assertUnreachable(node);
+}
+
+export function warnMissingBalancingValves(engine: CalculationEngine, record: ReturnRecord): boolean {
+    const res = warnMissingBalancingValvesRecursive(engine, record.spTree);
+    console.log('result from return system: ' + JSON.stringify(res));
+    if (!res.balanced && res.leafSeries) {
+        setWarnMissingBalancingValve(engine, record.spTree);
+    }
+    return !res.balanced;
 }
 
 const RETURNS_RESIZE_MAX_ITER = 10;
@@ -416,5 +494,8 @@ export function processReturns(engine: CalculationEngine, returns: ReturnRecord[
 
             console.log('resized a return by ' + diff + ' iter ' + i);
         }
+
+        // Identify segments that don't have balancing valves
+        const hasMissing = warnMissingBalancingValves(engine, ret);
     }
 }

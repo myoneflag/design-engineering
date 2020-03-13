@@ -39,6 +39,7 @@ export class RingMainCalculator {
                                 return (c.configuration === null || c.configuration === Configuration.NORMAL) && c.PSDFlowRateLS === null;
                             case EdgeType.FITTING_FLOW:
                             case EdgeType.ISOLATION_THROUGH:
+                            case EdgeType.BALANCING_THROUGH:
                                 return true; // because undirected
                             case EdgeType.BIG_VALVE_HOT_HOT:
                             case EdgeType.BIG_VALVE_HOT_WARM:
@@ -50,6 +51,7 @@ export class RingMainCalculator {
                             case EdgeType.RETURN_PUMP:
                                 return false; // because directed, and can't form ring main
                         }
+                        assertUnreachable(e.value.type)
                     });
                     if (ret) {
                         res.push(ret);

@@ -291,6 +291,9 @@ export default class DrawingCanvas extends Vue {
             { type: ValveType.ISOLATION_VALVE, catalogId: "gateValve", name: "" },
             { type: ValveType.ISOLATION_VALVE, catalogId: "ballValve", name: "" },
             { type: ValveType.ISOLATION_VALVE, catalogId: "butterflyValve", name: "" },
+
+            { type: ValveType.BALANCING, catalogId: "balancing", name: "Balancing Valve"},
+
             { type: ValveType.CHECK_VALVE, catalogId: "checkValve", name: "" },
             { type: ValveType.WATER_METER, catalogId: "waterMeter", name: "" },
             { type: ValveType.STRAINER, catalogId: "strainer", name: "" },
