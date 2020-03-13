@@ -151,6 +151,32 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                     multiFieldId: "returnMinimumTemperatureC"
                 },
             );
+
+            res.push(
+                {
+                    property: "plant.returnVelocityMS",
+                    title: "Maximum Return Velocity (M/s)",
+                    hasDefault: true,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    params: { min: 0, max: null },
+                    multiFieldId: "returnVelocityMS"
+                },
+            );
+
+
+            res.push(
+                {
+                    property: "plant.addReturnToPSDFlowRate",
+                    title: "Add Return to PSD Flow Rate",
+                    hasDefault: true,
+                    isCalculated: false,
+                    type: FieldType.Boolean,
+                    params: null,
+                    multiFieldId: "addReturnToPSDFlowRate"
+                },
+            );
+
             break;
         case PlantType.TANK:
             break;
@@ -277,7 +303,7 @@ export function fillPlantDefaults(value: PlantEntity, drawing: DrawingState) {
 
 
     if (value.outletTemperatureC === null) {
-        const outSystem = drawing.metadata.flowSystems.find((s) => s.uid === value.outletSystemUid);
+        const outSystem = drawing.metadata.flowSystems.find((s) => s.uid === value.outletSystemUid)!;
         result.outletTemperatureC = outSystem ? outSystem.temperature : drawing.metadata.calculationParams.roomTemperatureC;
     }
 
@@ -285,6 +311,10 @@ export function fillPlantDefaults(value: PlantEntity, drawing: DrawingState) {
         case PlantType.RETURN_SYSTEM:
             if (result.plant.returnMinimumTemperatureC === null) {
                 result.plant.returnMinimumTemperatureC = result.outletTemperatureC! - 5;
+            }
+            if (result.plant.returnVelocityMS === null) {
+                const outSystem = drawing.metadata.flowSystems.find((s) => s.uid === value.outletSystemUid)!;
+                result.plant.returnVelocityMS = outSystem.returnMaxVelocityMS;
             }
             break;
         case PlantType.TANK:

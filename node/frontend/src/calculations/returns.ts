@@ -1,5 +1,5 @@
 import { EntityType } from "../../../common/src/api/document/entities/types";
-import { PlantType } from "../../../common/src/api/document/entities/plants/plant-types";
+import { PlantType, ReturnSystemPlant } from "../../../common/src/api/document/entities/plants/plant-types";
 import Graph, { Edge } from "./graph";
 import { assertUnreachable } from "../../../common/src/api/config";
 import PipeEntity, { fillPipeDefaultFields } from "../../../common/src/api/document/entities/pipe-entity";
@@ -16,6 +16,7 @@ import { evaluatePolynomial } from "../../../common/src/lib/polynomials";
 import { isSeriesParallel, SPNode, SPTree } from "./series-parallel";
 import PlantEntity, { fillPlantDefaults } from "../../../common/src/api/document/entities/plants/plant-entity";
 import { interpolateTable } from "../../../common/src/lib/utils";
+import plant from "../htmlcanvas/objects/plant";
 
 export interface ReturnRecord {
     spTree: SPTree<Edge<unknown, FlowEdge>>;
@@ -293,7 +294,15 @@ function getNodeHeatLossWATT(context: CalculationContext, node: SPNode<Edge<unkn
 }
 
 // The strategy is to split flow rate down the paths, proportional to their heat loss.
-function setFlowRatesNode(context: CalculationContext, currNode: SPNode<Edge<unknown, FlowEdge>>, currFlowRate: number, heatLossCache: Map<string, number | null>) {
+// also, return the delta in pipe sizes that occurred, becuase yeah one of our processes want dat
+function setFlowRatesNode(
+    context: CalculationEngine,
+    filledReturn: ReturnSystemPlant,
+    currNode: SPNode<Edge<unknown, FlowEdge>>,
+    currFlowRate: number,
+    heatLossCache: Map<string, number | null>,
+    ): number| null {
+    let res: number | null = 0;
     switch (currNode.type) {
         case "parallel":
             const totalHeatLossWATT = heatLossCache.get(currNode.edge)!;
@@ -306,31 +315,63 @@ function setFlowRatesNode(context: CalculationContext, currNode: SPNode<Edge<unk
                     }
 
                     console.log('setting parallel node at ' + thisHeatLossWATT + ' out of ' + totalHeatLossWATT + ' ratio with fr ' + currFlowRate);
-                    setFlowRatesNode(context, n, currFlowRate * thisHeatLossWATT / totalHeatLossWATT, heatLossCache);
+                    const tmp = setFlowRatesNode(context, filledReturn, n, currFlowRate * thisHeatLossWATT / totalHeatLossWATT, heatLossCache);
+                    if (tmp === null || res === null) {
+                        res = null;
+                    } else {
+                        res += tmp;
+                    }
                 }
             }
             break;
         case "series":
             for (const n of currNode.children) {
-                setFlowRatesNode(context, n, currFlowRate, heatLossCache);
+                const tmp = setFlowRatesNode(context, filledReturn, n, currFlowRate, heatLossCache);
+                if (tmp === null || res === null) {
+                    res = null;
+                } else {
+                    res += tmp;
+                }
             }
             break;
         case "leaf":
             // physically set the flow rate for the pipe.
             if (currNode.edgeConcrete.value.type === EdgeType.PIPE) {
                 const pipe = context.globalStore.get(currNode.edgeConcrete.value.uid) as Pipe;
+                const filled = fillPipeDefaultFields(context.drawing, pipe.computedLengthM, pipe.entity);
                 const pCalc = context.globalStore.getOrCreateCalculation(pipe.entity);
-                pCalc.rawReturnFlowRate = currFlowRate;
+                pCalc.rawReturnFlowRateLS = currFlowRate;
+
+
+                const origSize = pCalc.realNominalPipeDiameterMM;
+
+                let peakFlowRate = pCalc.PSDFlowRateLS;
+                if (peakFlowRate !== null) {
+                    if (filledReturn.addReturnToPSDFlowRate) {
+                        peakFlowRate += pCalc.rawReturnFlowRateLS;
+                    }
+                }
+
+                context.sizePipeForFlowRate(pipe.entity, [
+                    [peakFlowRate, filled.maximumVelocityMS!],
+                    [pCalc.rawReturnFlowRateLS, filledReturn.returnVelocityMS!],
+                ]);
+                if (pCalc.realNominalPipeDiameterMM === null || origSize === null) {
+                    res = null;
+                } else {
+                    res = Math.abs(pCalc.realNominalPipeDiameterMM - origSize);
+                }
             }
             break;
         default:
             assertUnreachable(currNode);
     }
+    return res;
 }
 
 // Takes a look at the return loop, and calculates the return flow rates of each pipe. Pipes are found as leaf nodes
 // in the series parallel tree.
-export function setFlowRatesForReturn(context: CalculationContext, record: ReturnRecord) {
+export function setFlowRatesForReturn(context: CalculationEngine, record: ReturnRecord): number | null {
     const filled = fillPlantDefaults(record.plant, context.drawing);
 
     if (filled.plant.type !== PlantType.RETURN_SYSTEM) {
@@ -350,18 +391,30 @@ export function setFlowRatesForReturn(context: CalculationContext, record: Retur
 
     if (totalHeatLoss === null || specificHeat === null) {
         // can't.
-        return;
+        console.log('Info that is needed for returns calculation was missing');
+        return null;
     }
 
     console.log('total heat loss: ' + totalHeatLoss);
     const flowRateLS = totalHeatLoss/1000 / (specificHeat * (filled.outletTemperatureC! - filled.plant.returnMinimumTemperatureC!));
     console.log('total flow rate: ' + flowRateLS + ' ' + specificHeat + ' ' + filled.outletTemperatureC + ' ' + filled.plant.returnMinimumTemperatureC);
 
-    setFlowRatesNode(context, record.spTree, flowRateLS, node2heatLoss);
+    return setFlowRatesNode(context, filled.plant, record.spTree, flowRateLS, node2heatLoss);
 }
 
-export function processReturns(context: CalculationContext, returns: ReturnRecord[]) {
+const RETURNS_RESIZE_MAX_ITER = 10;
+
+export function processReturns(engine: CalculationEngine, returns: ReturnRecord[]) {
     for (const ret of returns) {
-        setFlowRatesForReturn(context, ret);
+        // Set flow rates of returns, then resize the pipes if necessary.
+        for (let i = 0; i < RETURNS_RESIZE_MAX_ITER; i++) {
+
+            const diff = setFlowRatesForReturn(engine, ret);
+            if (!diff) {
+                break;
+            }
+
+            console.log('resized a return by ' + diff + ' iter ' + i);
+        }
     }
 }

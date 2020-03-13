@@ -48,6 +48,8 @@ export interface ReturnSystemPlant extends Plant {
     type: PlantType.RETURN_SYSTEM;
     pressureLoss: PumpPressure;
     returnUid: string;
+    addReturnToPSDFlowRate: boolean;
+    returnVelocityMS: number | null;
 }
 
 

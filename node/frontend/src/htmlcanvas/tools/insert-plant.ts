@@ -191,6 +191,8 @@ function createPlant(type: PlantType, outletSystemUid: string, returnUid: string
                 type,
                 returnMinimumTemperatureC: null,
                 returnUid: returnUid!,
+                returnVelocityMS: null,
+                addReturnToPSDFlowRate: true,
                 pressureLoss: {
                     pressureMethod: PressureMethod.PUMP_DUTY,
                     pumpPressureKPA: null,

@@ -227,8 +227,8 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             }
             if (
                 calculation &&
-                calculation.peakFlowRate !== null &&
-                calculation.peakFlowRate < SIGNIFICANT_FLOW_THRESHOLD
+                calculation.PSDFlowRateLS !== null &&
+                calculation.PSDFlowRateLS < SIGNIFICANT_FLOW_THRESHOLD
             ) {
                 if (calculation.noFlowAvailableReason !== NoFlowAvailableReason.NO_LOADS_CONNECTED) {
                     baseColor = "#aaaaaa";
@@ -269,7 +269,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 }
             }
 
-            if (!calculation || calculation.peakFlowRate === null) {
+            if (!calculation || calculation.PSDFlowRateLS === null) {
                 ctx.setLineDash([baseWidth * 3, baseWidth * 3]);
             }
         }

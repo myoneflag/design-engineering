@@ -77,6 +77,7 @@ export default class FlowSystems extends Vue {
             if (this.selectedSystem.returnIsInsulated) {
                 fields.push(
                     ['insulationMaterial', "Insulation Material", "choice", INSULATION_MATERIAL_CHOICES],
+                    ['returnMaxVelocityMS', "Max. Velocity of Return (m/s)", "number"],
                     ['insulationThicknessMM', "Insulation Thickness (mm)", "number"],
                 );
             }
@@ -149,6 +150,7 @@ export default class FlowSystems extends Vue {
                 networks: cloneSimple(initialDrawing.metadata.flowSystems[0].networks),
                 hasReturnSystem: false,
                 returnIsInsulated: false,
+                returnMaxVelocityMS: 1,
                 insulationMaterial: InsulationMaterials.calciumSilicate,
                 insulationThicknessMM: 25,
             });

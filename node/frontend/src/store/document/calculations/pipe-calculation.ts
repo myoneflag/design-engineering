@@ -25,17 +25,16 @@ export enum Configuration {
 }
 
 export default interface PipeCalculation extends PsdCalculation, Calculation {
-    peakFlowRate: number | null;
-    returnFlowRate: number | null;
+    PSDFlowRateLS: number | null;
 
     noFlowAvailableReason: NoFlowAvailableReason | null;
 
-    rawPeakFlowRate: number | null;
-    rawReturnFlowRate: number | null;
+    rawPSDFlowRateLS: number | null;
+    rawReturnFlowRateLS: number | null;
     optimalInnerPipeDiameterMM: number | null;
     realNominalPipeDiameterMM: number | null;
     realInternalDiameterMM: number | null;
-    pressureDropKpa: number | null;
+    pressureDropKPA: number | null;
     lengthM: number | null;
     flowFrom: string | null;
 
@@ -62,7 +61,7 @@ export function makePipeCalculationFields(
 
     const result = [
         {
-            property: "peakFlowRate",
+            property: "PSDFlowRateLS",
             title: "Flow Rate + Spare",
             short: "",
             units: Units.LitersPerSecond,
@@ -71,13 +70,13 @@ export function makePipeCalculationFields(
             defaultEnabled: true
         },
         {
-            property: "rawReturnFlowRate",
+            property: "rawReturnFlowRateLS",
             title: "Return Flow Rate (Raw)",
             short: "(rtn)",
             units: Units.LitersPerSecond,
             category: FieldCategory.FlowRate,
             systemUid: entity.systemUid,
-            defaultEnabled: false,
+            defaultEnabled: true,
             // format: (v: number | null) => "(" + (v === null ? "??" : v.toFixed(2)) + ")"
         },
         {
@@ -101,7 +100,7 @@ export function makePipeCalculationFields(
             systemUid: entity.systemUid
         },
         {
-            property: "pressureDropKpa",
+            property: "pressureDropKPA",
             title: "Pressure Drop",
             short: "Drop",
             units: Units.KiloPascals,
@@ -172,15 +171,14 @@ export function makePipeCalculationFields(
 
 export function emptyPipeCalculation(): PipeCalculation {
     return {
-        peakFlowRate: null,
-        returnFlowRate: null,
+        PSDFlowRateLS: null,
         noFlowAvailableReason: null,
-        rawPeakFlowRate: null,
-        rawReturnFlowRate: null,
+        rawPSDFlowRateLS: null,
+        rawReturnFlowRateLS: null,
         psdUnits: null,
         optimalInnerPipeDiameterMM: null,
         realInternalDiameterMM: null,
-        pressureDropKpa: null,
+        pressureDropKPA: null,
         realNominalPipeDiameterMM: null,
         lengthM: null,
         temperatureRange: null,

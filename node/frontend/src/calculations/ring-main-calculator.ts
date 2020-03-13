@@ -30,13 +30,13 @@ export class RingMainCalculator {
                 const pCalc = this.engine.globalStore.getOrCreateCalculation(
                     (this.engine.globalStore.get(e.value.uid) as Pipe).entity
                 );
-                if (pCalc.peakFlowRate === null) {
+                if (pCalc.PSDFlowRateLS === null) {
                     const ret = this.engine.flowGraph.getCycleCovering(visitedEdges, e, true, (e) => {
                         switch (e.value.type) {
                             case EdgeType.PIPE:
                                 // don't size something that's already sized as a return. Ring mains can't be on returns.
                                 const c = this.engine.globalStore.getOrCreateCalculation(this.engine.globalStore.get(e.value.uid)!.entity as PipeEntity);
-                                return (c.configuration === null || c.configuration === Configuration.NORMAL) && c.peakFlowRate === null;
+                                return (c.configuration === null || c.configuration === Configuration.NORMAL) && c.PSDFlowRateLS === null;
                             case EdgeType.FITTING_FLOW:
                             case EdgeType.ISOLATION_THROUGH:
                                 return true; // because undirected
@@ -102,14 +102,14 @@ export class RingMainCalculator {
                     const ccalc = this.engine.globalStore.getOrCreateCalculation(
                         this.engine.globalStore.get(cuid)!.entity as PipeEntity
                     );
-                    if (ccalc.peakFlowRate === null) {
+                    if (ccalc.PSDFlowRateLS === null) {
                         console.log("in/out pipe " + cuid + " connected to " + nuid + " has no defined demand");
                         this.setNoFlowReasonForRing(ring, NoFlowAvailableReason.UNUSUAL_CONFIGURATION);
                         return null;
                     }
 
                     if (ccalc.flowFrom === null) {
-                        if (ccalc.peakFlowRate !== 0) {
+                        if (ccalc.PSDFlowRateLS !== 0) {
                             throw new Error("missing flow from attribute");
                         }
                     }
@@ -232,7 +232,7 @@ export class RingMainCalculator {
                         const pipeObject = this.engine.globalStore.get(r.value.uid) as Pipe;
                         const pcalc = this.engine.globalStore.getOrCreateCalculation(pipeObject.entity);
                         if (peakFlowFromIsolation.has(r.value.uid)) {
-                            this.engine.sizePipeForFlowRate(
+                            this.engine.setPipePSDFlowRate(
                                 pipeObject.entity,
                                 Math.abs(peakFlowFromIsolation.getFlow(r.value.uid))
                             );
@@ -262,7 +262,7 @@ export class RingMainCalculator {
                 if (r.value.type === EdgeType.PIPE) {
                     const pipeObject = this.engine.globalStore.get(r.value.uid) as Pipe;
                     const pcalc = this.engine.globalStore.getOrCreateCalculation(pipeObject.entity);
-                    this.engine.sizePipeForFlowRate(
+                    this.engine.setPipePSDFlowRate(
                         pipeObject.entity,
                         Math.max(
                             Math.abs(peakFlowFromIsolation.getFlow(r.value.uid)),

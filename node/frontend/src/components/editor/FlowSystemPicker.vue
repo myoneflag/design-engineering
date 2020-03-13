@@ -66,6 +66,7 @@ export default class FlowSystemPicker extends Vue {
             returnIsInsulated: false,
             insulationMaterial: InsulationMaterials.calciumSilicate,
             insulationThicknessMM: 0,
+            returnMaxVelocityMS: 0,
             networks: {
                 RISERS: {
                     velocityMS: 0,

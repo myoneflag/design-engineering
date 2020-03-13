@@ -328,7 +328,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
 
                 const totalHL = pipe.getFrictionHeadLoss(
                     context,
-                    calc.peakFlowRate!,
+                    calc.PSDFlowRateLS!,
                     { connectable: tower[topOfPipe - 1][0].uid, connection: pipe.uid },
                     { connectable: tower[topOfPipe][0].uid, connection: pipe.uid },
                     true,
@@ -346,7 +346,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
 
                     if (bottomPressure) {
                         res.heights[lvlUid] = {
-                            flowRateLS: calc.peakFlowRate,
+                            flowRateLS: calc.PSDFlowRateLS,
                             heightAboveGround: levels[lvlUid].floorHeightM,
                             psdUnits: calc.psdUnits,
                             pressureKPA:

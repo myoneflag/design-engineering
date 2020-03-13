@@ -111,8 +111,10 @@ export interface FlowSystemParameters extends WithID {
 
     hasReturnSystem: boolean;
     returnIsInsulated: boolean;
+    returnMaxVelocityMS: number;
     insulationMaterial: InsulationMaterials;
     insulationThicknessMM: number;
+
 
     networks: { [key in keyof typeof NetworkType]: NetworkParams };
 }
@@ -153,6 +155,7 @@ export const initialDrawing: DrawingState = {
                 fluid: "water",
                 hasReturnSystem: false,
                 returnIsInsulated: false,
+                returnMaxVelocityMS: 1,
                 insulationMaterial: InsulationMaterials.calciumSilicate,
                 insulationThicknessMM: 25,
 
@@ -182,6 +185,7 @@ export const initialDrawing: DrawingState = {
                 fluid: "water",
                 hasReturnSystem: true,
                 returnIsInsulated: true,
+                returnMaxVelocityMS: 1,
                 insulationMaterial: InsulationMaterials.calciumSilicate,
                 insulationThicknessMM: 25,
 
@@ -211,6 +215,7 @@ export const initialDrawing: DrawingState = {
                 fluid: "water",
                 hasReturnSystem: false,
                 returnIsInsulated: false,
+                returnMaxVelocityMS: 1,
                 insulationMaterial: InsulationMaterials.calciumSilicate,
                 insulationThicknessMM: 25,
 

@@ -39,15 +39,15 @@ import { ValveType } from "../../../common/src/api/document/entities/directed-va
 import {
     comparePsdCounts,
     ContextualPCE,
-    countPsdProfile, FinalPsdCountEntry,
+    countPsdProfile,
+    FinalPsdCountEntry,
     insertPsdProfile,
     isZeroPsdCounts,
     lookupFlowRate,
-    PsdCountEntry,
     PsdProfile,
     subtractPsdProfiles,
-    zeroContextualPCE, zeroFinalPsdCounts,
-    zeroPsdCounts
+    zeroContextualPCE,
+    zeroFinalPsdCounts
 } from "../../src/calculations/utils";
 import FittingCalculation from "../../src/store/document/calculations/fitting-calculation";
 import DirectedValveCalculation from "../../src/store/document/calculations/directed-valve-calculation";
@@ -82,7 +82,6 @@ import { getPropertyByString } from "../lib/utils";
 import { getPlantPressureLossKPA } from "../htmlcanvas/lib/utils";
 import { RingMainCalculator } from "./ring-main-calculator";
 import { Configuration, NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
-import { PlantType } from "../../../common/src/api/document/entities/plants/plant-types";
 import { identifyReturns, processReturns } from "./returns";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
@@ -303,7 +302,7 @@ export default class CalculationEngine {
                 this.precomputeBridges();
                 this.precomputePsdAfterBridge(FLOW_SOURCE_ROOT_BRIDGE, FLOW_SOURCE_ROOT_NODE, new Set<string>());
                 this.preCompute();
-                this.sizeDefiniteTransports();
+                this.configureComponentsWithExactPSD();
                 this.sizeRingMains();
 
                 processReturns(this, returns);
@@ -323,6 +322,33 @@ export default class CalculationEngine {
 
         if (!this.equationEngine.isComplete()) {
             throw new Error("Calculations could not complete \n");
+        }
+    }
+
+    sizeAllPipes() {
+        for (const o of this.networkObjects()) {
+            if (!(o instanceof Pipe)) {
+                continue;
+            }
+
+            const calc = this.globalStore.getOrCreateCalculation(o.entity);
+            const filled = fillPipeDefaultFields(this.drawing, o.computedLengthM, o.entity);
+
+            switch (calc.configuration) {
+                case Configuration.NORMAL:
+                case Configuration.RING_MAIN:
+                    this.sizePipeForFlowRate(o.entity, [[calc.PSDFlowRateLS, filled.maximumVelocityMS!]]);
+                    break;
+                case Configuration.RETURN:
+                    const system = this.drawing.metadata.flowSystems.find((fs) => fs.uid === filled.systemUid);
+                    if (!system) {
+                        throw new Error("Pipe has invalid flow system");
+                    }
+
+                    break;
+
+            }
+
         }
     }
 
@@ -648,14 +674,14 @@ export default class CalculationEngine {
                                     const calculation = this.globalStore.getOrCreateCalculation(obj.entity);
 
                                     // recalculate with height
-                                    if (!calculation || calculation.peakFlowRate === null) {
+                                    if (!calculation || calculation.PSDFlowRateLS === null) {
                                         return -Infinity; // The following values are unknown, because this pressure
                                         // drop is unknown.
                                     }
                                     const headLoss = getObjectFrictionHeadLoss(
                                         this,
                                         obj,
-                                        calculation.peakFlowRate,
+                                        calculation.PSDFlowRateLS,
                                         edge.from,
                                         edge.to,
                                         true,
@@ -742,12 +768,12 @@ export default class CalculationEngine {
 
                                 if (sourcePipe instanceof Pipe) {
                                     const srcCalc = this.globalStore.getOrCreateCalculation(sourcePipe.entity);
-                                    srcDist = srcCalc.peakFlowRate || 0;
+                                    srcDist = srcCalc.PSDFlowRateLS || 0;
                                 }
 
                                 if (destPipe instanceof Pipe) {
                                     const destCalc = this.globalStore.getOrCreateCalculation(destPipe.entity);
-                                    destDist = destCalc.peakFlowRate || 0;
+                                    destDist = destCalc.PSDFlowRateLS || 0;
                                 }
 
                                 if (srcDist != null && destDist != null) {
@@ -792,7 +818,7 @@ export default class CalculationEngine {
                                 if (conns.length === 1) {
                                     flowLS = this.globalStore.getOrCreateCalculation(
                                         this.globalStore.get(conns[0])!.entity as PipeEntity
-                                    ).peakFlowRate;
+                                    ).PSDFlowRateLS;
                                 }
 
                                 const hl = getObjectFrictionHeadLoss(
@@ -1201,12 +1227,12 @@ export default class CalculationEngine {
                 if (flowRate === null) {
                     // Warn for no PSD
                     if (isZeroPsdCounts(psdU)) {
-                        this.sizePipeForFlowRate(entity, 0);
+                        this.setPipePSDFlowRate(entity, 0);
                     } else {
                         calculation.noFlowAvailableReason = NoFlowAvailableReason.LOADING_UNITS_OUT_OF_BOUNDS;
                     }
                 } else {
-                    this.sizePipeForFlowRate(entity, flowRate.flowRateLS);
+                    this.setPipePSDFlowRate(entity, flowRate.flowRateLS);
                 }
 
                 return;
@@ -1268,7 +1294,7 @@ export default class CalculationEngine {
         }
     }
 
-    sizePipeForFlowRate(pipe: PipeEntity, flowRateLS: number) {
+    setPipePSDFlowRate(pipe: PipeEntity, flowRateLS: number) {
         const cpipe = fillPipeDefaultFields(this.doc.drawing, 0, pipe);
 
         // apply spare capacity
@@ -1279,12 +1305,35 @@ export default class CalculationEngine {
         }
 
         const calculation = this.globalStore.getOrCreateCalculation(pipe);
-        calculation.peakFlowRate = flowRateLS;
-        calculation.rawPeakFlowRate = rawFlowRate;
+        calculation.PSDFlowRateLS = flowRateLS;
+        calculation.rawPSDFlowRateLS = rawFlowRate;
+
+        this.sizePipeForFlowRate(pipe, [[flowRateLS, cpipe.maximumVelocityMS!]]);
+    }
+
+    sizePipeForFlowRate(pipe: PipeEntity, requirements: Array<[number | null, number]>) {
+        if (requirements.length > 1) {
+            console.log(JSON.stringify(requirements));
+        }
+        const calculation = this.globalStore.getOrCreateCalculation(pipe);
 
         let page: PipeSpec | null = null;
 
-        calculation.optimalInnerPipeDiameterMM = this.calculateInnerDiameter(pipe);
+
+        let sizeMM = Infinity;
+        for (const [flowRate, maxVel] of requirements) {
+            if (flowRate === null) {
+                // one of the requirements contains an undefined value. Not possible.
+                return;
+            }
+            const thisSizeMM = this.calculateInnerDiameter(pipe, flowRate, maxVel);
+            if (thisSizeMM < sizeMM) {
+                sizeMM = thisSizeMM;
+            }
+        }
+
+        calculation.optimalInnerPipeDiameterMM = sizeMM;
+
         if (pipe.diameterMM === null) {
             page = this.getRealPipe(pipe);
         } else {
@@ -1302,7 +1351,7 @@ export default class CalculationEngine {
         if (calculation.realNominalPipeDiameterMM) {
             calculation.velocityRealMS = this.getVelocityRealMs(pipe);
 
-            calculation.pressureDropKpa = head2kpa(
+            calculation.pressureDropKPA = head2kpa(
                 this.getPipePressureDropMH(pipe),
                 getFluidDensityOfSystem(pipe.systemUid, this.doc, this.catalog)!,
                 this.ga
@@ -1310,15 +1359,12 @@ export default class CalculationEngine {
         }
     }
 
-    calculateInnerDiameter(pipe: PipeEntity): number {
-        const computed = fillPipeDefaultFields(this.doc.drawing, 0, pipe);
-
-        const calculation = this.globalStore.getOrCreateCalculation(pipe);
+    calculateInnerDiameter(pipe: PipeEntity, flowRateLS: number, maximumVelocityMS: number): number {
 
         // depends on pipe sizing method
         if (this.doc.drawing.metadata.calculationParams.pipeSizingMethod === "velocity") {
             // http://www.1728.org/flowrate.htm
-            return Math.sqrt((4000 * calculation.peakFlowRate!) / (Math.PI * computed.maximumVelocityMS!));
+            return Math.sqrt((4000 * flowRateLS!) / (Math.PI * maximumVelocityMS!));
         } else {
             throw new Error("Pipe sizing strategy not supported");
         }
@@ -1365,7 +1411,7 @@ export default class CalculationEngine {
 
         const calculation = this.globalStore.getOrCreateCalculation(pipe);
         return (
-            (4000 * calculation.peakFlowRate!) /
+            (4000 * calculation.PSDFlowRateLS!) /
             (Math.PI * parseCatalogNumberExact(calculation.realInternalDiameterMM)! ** 2)
         );
     }
@@ -1448,7 +1494,7 @@ export default class CalculationEngine {
         //    that edge. If there are AND by removing them, it decreases the flow rate, then it is ambiguous. O(N*T).
     }
 
-    sizeDefiniteTransports() {
+    configureComponentsWithExactPSD() {
         const totalReachedPsdU = this.globalReachedPsdUs;
 
         // Size all pipes first
@@ -1457,13 +1503,13 @@ export default class CalculationEngine {
                 case EntityType.BIG_VALVE:
                     switch (object.entity.valve.type) {
                         case BigValveType.TMV:
-                            this.sizeDefiniteEdge(
+                            this.configureComponentIfExactPSD(
                                 object,
                                 totalReachedPsdU,
                                 { type: EdgeType.BIG_VALVE_HOT_WARM, uid: object.uid },
                                 [object.entity.hotRoughInUid, object.entity.valve.warmOutputUid]
                             );
-                            this.sizeDefiniteEdge(
+                            this.configureComponentIfExactPSD(
                                 object,
                                 totalReachedPsdU,
                                 { type: EdgeType.BIG_VALVE_COLD_COLD, uid: object.uid },
@@ -1471,7 +1517,7 @@ export default class CalculationEngine {
                             );
                             break;
                         case BigValveType.TEMPERING:
-                            this.sizeDefiniteEdge(
+                            this.configureComponentIfExactPSD(
                                 object,
                                 totalReachedPsdU,
                                 { type: EdgeType.BIG_VALVE_HOT_WARM, uid: object.uid },
@@ -1479,13 +1525,13 @@ export default class CalculationEngine {
                             );
                             break;
                         case BigValveType.RPZD_HOT_COLD:
-                            this.sizeDefiniteEdge(
+                            this.configureComponentIfExactPSD(
                                 object,
                                 totalReachedPsdU,
                                 { type: EdgeType.BIG_VALVE_COLD_COLD, uid: object.uid },
                                 [object.entity.coldRoughInUid, object.entity.valve.coldOutputUid]
                             );
-                            this.sizeDefiniteEdge(
+                            this.configureComponentIfExactPSD(
                                 object,
                                 totalReachedPsdU,
                                 { type: EdgeType.BIG_VALVE_HOT_HOT, uid: object.uid },
@@ -1504,7 +1550,7 @@ export default class CalculationEngine {
                     if (c.configuration === null) {
                         c.configuration = Configuration.NORMAL;
                     }
-                    this.sizeDefiniteEdge(object, totalReachedPsdU, { type: EdgeType.PIPE, uid: object.uid }, [
+                    this.configureComponentIfExactPSD(object, totalReachedPsdU, { type: EdgeType.PIPE, uid: object.uid }, [
                         object.entity.endpointUid[0],
                         object.entity.endpointUid[1]
                     ]);
@@ -1537,13 +1583,13 @@ export default class CalculationEngine {
                                 const p = this.globalStore.get(conns[0]) as Pipe;
                                 const pCalc = this.globalStore.getOrCreateCalculation(p.entity);
 
-                                if (pCalc.peakFlowRate !== null) {
+                                if (pCalc.PSDFlowRateLS !== null) {
                                     let size: number | null = null;
                                     if (obj.entity.valve.sizeMM === null) {
                                         size = this.sizeRpzdForFlowRate(
                                             obj.entity.valve.catalogId,
                                             obj.entity.valve.type,
-                                            pCalc.peakFlowRate
+                                            pCalc.PSDFlowRateLS
                                         );
                                     } else {
                                         size = obj.entity.valve.sizeMM;
@@ -1562,8 +1608,8 @@ export default class CalculationEngine {
                                 const p = this.globalStore.get(conns[0]) as Pipe;
                                 const pCalc = this.globalStore.getOrCreateCalculation(p.entity);
 
-                                if (pCalc.peakFlowRate !== null) {
-                                    let size = this.sizePrvForFlowRate(obj.entity.valve.type, pCalc.peakFlowRate);
+                                if (pCalc.PSDFlowRateLS !== null) {
+                                    let size = this.sizePrvForFlowRate(obj.entity.valve.type, pCalc.PSDFlowRateLS);
 
                                     if (obj.entity.valve.sizeMM !== null) {
                                         size = obj.entity.valve.sizeMM;
@@ -1647,7 +1693,7 @@ export default class CalculationEngine {
         return null;
     }
 
-    sizeDefiniteEdge(
+    configureComponentIfExactPSD(
         object: BaseBackedObject,
         totalReachedPsdU: PsdProfile,
         flowEdge: FlowEdge,
@@ -1846,17 +1892,17 @@ export default class CalculationEngine {
                 }
                 case EntityType.PIPE: {
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity);
-                    if (calculation.peakFlowRate !== null) {
+                    if (calculation.PSDFlowRateLS !== null) {
                         const hl = getObjectFrictionHeadLoss(
                             this,
                             o,
-                            calculation.peakFlowRate,
+                            calculation.PSDFlowRateLS,
                             { connection: o.uid, connectable: o.entity.endpointUid[0] },
                             { connection: o.uid, connectable: o.entity.endpointUid[1] },
                             true,
                             null
                         );
-                        calculation.pressureDropKpa =
+                        calculation.pressureDropKPA =
                             hl === null
                                 ? null
                                 : head2kpa(
@@ -1880,8 +1926,8 @@ export default class CalculationEngine {
                         if (p1 instanceof Pipe && p2 instanceof Pipe) {
                             const pipeCalc1 = this.globalStore.getOrCreateCalculation(p1.entity);
                             const pipeCalc2 = this.globalStore.getOrCreateCalculation(p2.entity);
-                            if (pipeCalc1!.peakFlowRate !== null && pipeCalc2!.peakFlowRate !== null) {
-                                calculation.flowRateLS = Math.min(pipeCalc1!.peakFlowRate, pipeCalc2!.peakFlowRate);
+                            if (pipeCalc1!.PSDFlowRateLS !== null && pipeCalc2!.PSDFlowRateLS !== null) {
+                                calculation.flowRateLS = Math.min(pipeCalc1!.PSDFlowRateLS, pipeCalc2!.PSDFlowRateLS);
                             }
                         }
                     }
@@ -1897,8 +1943,8 @@ export default class CalculationEngine {
                         if (p1 instanceof Pipe && p2 instanceof Pipe) {
                             const pipeCalc1 = this.globalStore.getOrCreateCalculation(p1.entity);
                             const pipeCalc2 = this.globalStore.getOrCreateCalculation(p2.entity);
-                            if (pipeCalc1!.peakFlowRate !== null && pipeCalc2!.peakFlowRate !== null) {
-                                calculation.flowRateLS = Math.min(pipeCalc1!.peakFlowRate, pipeCalc2!.peakFlowRate);
+                            if (pipeCalc1!.PSDFlowRateLS !== null && pipeCalc2!.PSDFlowRateLS !== null) {
+                                calculation.flowRateLS = Math.min(pipeCalc1!.PSDFlowRateLS, pipeCalc2!.PSDFlowRateLS);
 
                                 const hl1 = getObjectFrictionHeadLoss(
                                     this,
@@ -1965,8 +2011,8 @@ export default class CalculationEngine {
                     for (const conn of conns) {
                         const p = this.globalStore.get(conn) as Pipe;
                         const pCalc = this.globalStore.getOrCreateCalculation(p.entity);
-                        if (pCalc.peakFlowRate) {
-                            calculation.flowRateLS += pCalc.peakFlowRate;
+                        if (pCalc.PSDFlowRateLS) {
+                            calculation.flowRateLS += pCalc.PSDFlowRateLS;
                         }
                     }
 
