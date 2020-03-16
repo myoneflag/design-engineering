@@ -17,6 +17,7 @@ import { isSeriesParallel, SPNode, SPTree } from "./series-parallel";
 import PlantEntity, { fillPlantDefaults } from "../../../common/src/api/document/entities/plants/plant-entity";
 import { interpolateTable } from "../../../common/src/lib/utils";
 import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
+import { emptyDirectedValveCalculation } from "../store/document/calculations/directed-valve-calculation";
 
 export interface ReturnRecord {
     spTree: SPTree<Edge<string, FlowEdge>>;
@@ -482,7 +483,7 @@ export function warnMissingBalancingValves(engine: CalculationEngine, record: Re
 
 const RETURNS_RESIZE_MAX_ITER = 10;
 
-export function processReturns(engine: CalculationEngine, returns: ReturnRecord[]) {
+export function returnFlowRatesAndBalancingValves(engine: CalculationEngine, returns: ReturnRecord[]) {
     for (const ret of returns) {
         // Set flow rates of returns, then resize the pipes if necessary.
         for (let i = 0; i < RETURNS_RESIZE_MAX_ITER; i++) {
@@ -497,5 +498,102 @@ export function processReturns(engine: CalculationEngine, returns: ReturnRecord[
 
         // Identify segments that don't have balancing valves
         const hasMissing = warnMissingBalancingValves(engine, ret);
+    }
+}
+
+
+interface BalanceResult {
+    valveUid: string | null;
+    leafSeries: boolean;
+    minPressure: number | null;
+    maxPressure: number | null;
+}
+
+
+export function findValveBalances(
+    engine: CalculationEngine,
+    nodePressureKPA: Map<string, number | null>,
+    pressureDropKPA: Map<string, number | null>,
+    node: SPNode<Edge<string, FlowEdge>>,
+): BalanceResult {
+    switch (node.type) {
+        case "parallel":
+            let balanced = true;
+            let leafSeries = node.siblings.length === 1;
+
+            for (const c of node.siblings) {
+                const res = findValveBalances(engine, nodePressureKPA, pressureDropKPA, c);
+                balanced = balanced && res.balanced;
+                leafSeries = leafSeries && res.leafSeries;
+
+                if (!res.balanced && (node.siblings.length > 1) && res.leafSeries) {
+                    console.log('setting node balancing ' + JSON.stringify(res) + ' ' + node.siblings.length);
+                    setWarnMissingBalancingValve(engine, c);
+                }
+            }
+
+            return {balanced, leafSeries};
+        case "series": {
+            let valveUid: string | null = null;
+            let leafSeries = true;
+            let minPressure: number | null = Infinity;
+            let maxPressure: number | null = -Infinity;
+            for (const c of node.children) {
+                const res = findValveBalances(engine, nodePressureKPA, c, additionalPressureKPA);
+                valveUid = valveUid || res.valveUid;
+                leafSeries = leafSeries && res.leafSeries;
+                if (res.minPressure === null || minPressure === null) {
+                    minPressure = null;
+                } else {
+                    minPressure = Math.min(minPressure, res.minPressure);
+                }
+
+                if (res.maxPressure === null || maxPressure === null) {
+                    maxPressure = null;
+                } else {
+                    maxPressure = Math.max(maxPressure, res.maxPressure);
+                }
+            }
+            return {valveUid, leafSeries, maxPressure, minPressure};
+        }
+        case "leaf": {
+            let valveUid: string | null = null;
+
+            const pressures = [];
+
+            for (const uid of [node.edgeConcrete.from, node.edgeConcrete.to]) {
+                const o = engine.globalStore.get(uid)!;
+                if (o.entity.type === EntityType.DIRECTED_VALVE) {
+                    if (o.entity.valve.type === ValveType.BALANCING) {
+                        valveUid = o.entity.uid;
+                    }
+                }
+                const p = nodePressureKPA.get(engine.serializeNode({connectable: uid, connection: node.edgeConcrete.value.uid}));
+                pressures.push(p === undefined ? null : p);
+            }
+
+            // prefer null over numbers, to ensure that if we make a min or max exist, it is because every dependent
+            // value was defined.
+            let minPressure = null;
+            let maxPressure = null;
+            if (pressures[0] !== null && pressures[1] !== null) {
+                minPressure = Math.min(pressures[0], pressures[1]);
+                maxPressure = Math.max(pressures[0], pressures[1]);
+            }
+
+            return {
+                valveUid,
+                leafSeries: true,
+
+                minPressure,
+                maxPressure,
+            };
+        }
+    }
+}
+
+export function returnBalanceValves(engine: CalculationEngine, nodePressureKPA: Map<string, number | null>, returns: ReturnRecord[]) {
+    for (const ret of returns) {
+        findValveBalances(engine, nodePressureKPA, ret.spTree, 0);
     }
 }

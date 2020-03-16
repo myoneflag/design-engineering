@@ -82,7 +82,7 @@ import { getPropertyByString } from "../lib/utils";
 import { getPlantPressureLossKPA } from "../htmlcanvas/lib/utils";
 import { RingMainCalculator } from "./ring-main-calculator";
 import { Configuration, NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
-import { identifyReturns, processReturns } from "./returns";
+import { identifyReturns, returnBalanceValves, returnFlowRatesAndBalancingValves } from "./returns";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -306,9 +306,12 @@ export default class CalculationEngine {
                 this.configureComponentsWithExactPSD();
                 this.sizeRingMains();
 
-                processReturns(this, returns);
+                returnFlowRatesAndBalancingValves(this, returns);
 
                 this.calculateAllPointPressures();
+
+                returnBalanceValves(this, this.nodePressureKPA, returns);
+
                 this.fillPressureDropFields();
                 this.createWarnings();
 
