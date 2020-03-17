@@ -227,8 +227,8 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             }
             if (
                 calculation &&
-                calculation.PSDFlowRateLS !== null &&
-                calculation.PSDFlowRateLS < SIGNIFICANT_FLOW_THRESHOLD
+                calculation.totalPeakFlowRateLS !== null &&
+                calculation.totalPeakFlowRateLS < SIGNIFICANT_FLOW_THRESHOLD
             ) {
                 if (calculation.noFlowAvailableReason !== NoFlowAvailableReason.NO_LOADS_CONNECTED) {
                     baseColor = "#aaaaaa";

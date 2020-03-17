@@ -30,13 +30,13 @@ export class RingMainCalculator {
                 const pCalc = this.engine.globalStore.getOrCreateCalculation(
                     (this.engine.globalStore.get(e.value.uid) as Pipe).entity
                 );
-                if (pCalc.PSDFlowRateLS === null) {
+                if (pCalc.totalPeakFlowRateLS === null) {
                     const ret = this.engine.flowGraph.getCycleCovering(visitedEdges, e, true, (e) => {
                         switch (e.value.type) {
                             case EdgeType.PIPE:
                                 // don't size something that's already sized as a return. Ring mains can't be on returns.
                                 const c = this.engine.globalStore.getOrCreateCalculation(this.engine.globalStore.get(e.value.uid)!.entity as PipeEntity);
-                                return (c.configuration === null || c.configuration === Configuration.NORMAL) && c.PSDFlowRateLS === null;
+                                return (c.configuration === null || c.configuration === Configuration.NORMAL) && c.totalPeakFlowRateLS === null;
                             case EdgeType.FITTING_FLOW:
                             case EdgeType.ISOLATION_THROUGH:
                             case EdgeType.BALANCING_THROUGH:
@@ -104,14 +104,14 @@ export class RingMainCalculator {
                     const ccalc = this.engine.globalStore.getOrCreateCalculation(
                         this.engine.globalStore.get(cuid)!.entity as PipeEntity
                     );
-                    if (ccalc.PSDFlowRateLS === null) {
+                    if (ccalc.totalPeakFlowRateLS === null) {
                         console.log("in/out pipe " + cuid + " connected to " + nuid + " has no defined demand");
                         this.setNoFlowReasonForRing(ring, NoFlowAvailableReason.UNUSUAL_CONFIGURATION);
                         return null;
                     }
 
                     if (ccalc.flowFrom === null) {
-                        if (ccalc.PSDFlowRateLS !== 0) {
+                        if (ccalc.totalPeakFlowRateLS !== 0) {
                             throw new Error("missing flow from attribute");
                         }
                     }

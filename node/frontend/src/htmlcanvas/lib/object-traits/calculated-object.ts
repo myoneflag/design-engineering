@@ -280,7 +280,7 @@ export function CalculatedObject<
 
             if (this.entity.type === EntityType.PIPE) {
                 const pCalc = context.globalStore.getCalculation(this.entity);
-                if (pCalc && pCalc.PSDFlowRateLS === null) {
+                if (pCalc && pCalc.totalPeakFlowRateLS === null) {
                     let ambiguousMessage = "NOT CALCULATED";
                     if (pCalc.noFlowAvailableReason) {
                         switch (pCalc.noFlowAvailableReason) {

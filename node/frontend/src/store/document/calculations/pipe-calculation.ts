@@ -26,6 +26,7 @@ export enum Configuration {
 }
 
 export default interface PipeCalculation extends PsdCalculation, Calculation {
+    totalPeakFlowRateLS: number | null;
     PSDFlowRateLS: number | null;
 
     noFlowAvailableReason: NoFlowAvailableReason | null;
@@ -172,6 +173,7 @@ export function makePipeCalculationFields(
 
 export function emptyPipeCalculation(): PipeCalculation {
     return {
+        totalPeakFlowRateLS: null,
         PSDFlowRateLS: null,
         noFlowAvailableReason: null,
         rawPSDFlowRateLS: null,
