@@ -139,7 +139,7 @@ export function getHeatLossOfPipeMomentWATT_M(context: CalculationContext, pipe:
     const filled = fillPipeDefaultFields(context.drawing, pipe.computedLengthM, pipe.entity);
     const ga = context.doc.drawing.metadata.calculationParams.gravitationalAcceleration;
 
-    if (!pCalc.realNominalPipeDiameterMM || !pCalc.realInternalDiameterMM) {
+    if (!pCalc.realNominalPipeDiameterMM || !pCalc.realInternalDiameterMM || !pCalc.realOutsideDiameterMM) {
         return null;
     }
 
@@ -152,7 +152,7 @@ export function getHeatLossOfPipeMomentWATT_M(context: CalculationContext, pipe:
 
 
     const insulationThicknessMM = flowSystem.insulationThicknessMM;
-    const bareOutsideDiameter = pCalc.realInternalDiameterMM * 1.125;
+    const bareOutsideDiameter = pCalc.realOutsideDiameterMM;
     const totalOutsideDiameter = bareOutsideDiameter + insulationThicknessMM * 2;
 
     let oldHeatLoss = -Infinity;

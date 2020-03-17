@@ -36,6 +36,7 @@ export default interface PipeCalculation extends PsdCalculation, Calculation {
     optimalInnerPipeDiameterMM: number | null;
     realNominalPipeDiameterMM: number | null;
     realInternalDiameterMM: number | null;
+    realOutsideDiameterMM: number | null;
     pressureDropKPA: number | null;
     lengthM: number | null;
     flowFrom: string | null;
@@ -183,6 +184,7 @@ export function emptyPipeCalculation(): PipeCalculation {
         realInternalDiameterMM: null,
         pressureDropKPA: null,
         realNominalPipeDiameterMM: null,
+        realOutsideDiameterMM: null,
         lengthM: null,
         temperatureRange: null,
         configuration: null,

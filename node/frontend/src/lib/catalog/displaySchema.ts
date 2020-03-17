@@ -230,6 +230,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                             primaryName: "Nominal Diameter (mm)",
                             columns: [
                                 ["diameterInternalMM", "Internal Diameter (mm)"],
+                                ["diameterOutsideMM", "Outside Diameter (mm)"],
                                 ["colebrookWhiteCoefficient", "Colebrook White Coefficient"],
                                 ["safeWorkingPressureKPA", "Safe Working Pressure (kPa)"]
                             ]

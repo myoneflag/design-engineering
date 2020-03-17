@@ -120,6 +120,7 @@ export interface PipeSpec {
     pipeUid: string;
     diameterNominalMM: Diameter | null;
     diameterInternalMM: Diameter | null;
+    diameterOutsideMM: Diameter | null;
     colebrookWhiteCoefficient: string | null;
     safeWorkingPressureKPA: string | null;
 }

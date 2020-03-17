@@ -206,6 +206,7 @@ export class RingMainCalculator {
                 }
                 pcalc.realNominalPipeDiameterMM = parseCatalogNumberExact(initialSize.diameterNominalMM);
                 pcalc.realInternalDiameterMM = parseCatalogNumberExact(initialSize.diameterInternalMM);
+                pcalc.realOutsideDiameterMM = parseCatalogNumberExact(initialSize.diameterOutsideMM);
             }
         }
 

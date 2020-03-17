@@ -1341,6 +1341,7 @@ export default class CalculationEngine {
         }
         calculation.realNominalPipeDiameterMM = parseCatalogNumberExact(page.diameterNominalMM);
         calculation.realInternalDiameterMM = parseCatalogNumberExact(page.diameterInternalMM);
+        calculation.realOutsideDiameterMM = parseCatalogNumberExact(page.diameterOutsideMM);
 
         if (calculation.realNominalPipeDiameterMM) {
             calculation.velocityRealMS = this.getVelocityRealMs(pipe);
