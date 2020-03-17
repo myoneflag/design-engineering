@@ -1297,7 +1297,7 @@ export default class CalculationEngine {
         const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === cpipe.systemUid!);
         const rawFlowRate = flowRateLS;
         if (system) {
-            flowRateLS = flowRateLS * (1 + system.networks[pipe.network].spareCapacityPCT / 100);
+            flowRateLS = flowRateLS * (1 + Number(system.networks[pipe.network].spareCapacityPCT) / 100);
         }
 
         const calculation = this.globalStore.getOrCreateCalculation(pipe);
@@ -1314,14 +1314,14 @@ export default class CalculationEngine {
         let page: PipeSpec | null = null;
 
 
-        let sizeMM = Infinity;
+        let sizeMM = -Infinity;
         for (const [flowRate, maxVel] of requirements) {
             if (flowRate === null) {
                 // one of the requirements contains an undefined value. Not possible.
                 return;
             }
             const thisSizeMM = this.calculateInnerDiameter(pipe, flowRate, maxVel);
-            if (thisSizeMM < sizeMM) {
+            if (thisSizeMM > sizeMM) {
                 sizeMM = thisSizeMM;
             }
         }

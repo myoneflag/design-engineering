@@ -169,7 +169,7 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                 {
                     property: "plant.addReturnToPSDFlowRate",
                     title: "Add Return to PSD Flow Rate",
-                    hasDefault: true,
+                    hasDefault: false,
                     isCalculated: false,
                     type: FieldType.Boolean,
                     params: null,
@@ -204,40 +204,42 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
             assertUnreachable(entity.plant);
     }
 
-    switch (entity.plant.pressureLoss.pressureMethod) {
-        case PressureMethod.PUMP_DUTY:
-            res.push({
-                property: "plant.pressureLoss.pumpPressureKPA",
-                title: "Pump Pressure (kPa)",
-                hasDefault: true,
-                isCalculated: false,
-                type: FieldType.Number,
-                params: { min: 0, max: null },
-                multiFieldId: "pumpPressureKPA"
-            });
-            break;
-        case PressureMethod.FIXED_PRESSURE_LOSS:
-            res.push({
-                property: "plant.pressureLoss.pressureLossKPA",
-                title: "Pressure Loss (kPa)",
-                hasDefault: true,
-                isCalculated: false,
-                type: FieldType.Number,
-                params: { min: 0, max: null },
-                multiFieldId: "pressureLossKPA"
-            });
-            break;
-        case PressureMethod.STATIC_PRESSURE:
-            res.push({
-                property: "plant.pressureLoss.staticPressureKPA",
-                title: "Static Pressure (kPa)",
-                hasDefault: true,
-                isCalculated: false,
-                type: FieldType.Number,
-                params: { min: 0, max: null },
-                multiFieldId: "staticPressureKPA"
-            });
-            break;
+    if (entity.plant.type !== PlantType.RETURN_SYSTEM) {
+        switch (entity.plant.pressureLoss.pressureMethod) {
+            case PressureMethod.PUMP_DUTY:
+                res.push({
+                    property: "plant.pressureLoss.pumpPressureKPA",
+                    title: "Pump Pressure (kPa)",
+                    hasDefault: true,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    params: { min: 0, max: null },
+                    multiFieldId: "pumpPressureKPA"
+                });
+                break;
+            case PressureMethod.FIXED_PRESSURE_LOSS:
+                res.push({
+                    property: "plant.pressureLoss.pressureLossKPA",
+                    title: "Pressure Loss (kPa)",
+                    hasDefault: true,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    params: { min: 0, max: null },
+                    multiFieldId: "pressureLossKPA"
+                });
+                break;
+            case PressureMethod.STATIC_PRESSURE:
+                res.push({
+                    property: "plant.pressureLoss.staticPressureKPA",
+                    title: "Static Pressure (kPa)",
+                    hasDefault: true,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    params: { min: 0, max: null },
+                    multiFieldId: "staticPressureKPA"
+                });
+                break;
+        }
     }
 
     res.push(
@@ -281,30 +283,32 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
 export function fillPlantDefaults(value: PlantEntity, drawing: DrawingState) {
     const result = cloneSimple(value);
 
-    switch (value.plant.pressureLoss.pressureMethod) {
-        case PressureMethod.PUMP_DUTY:
-            if (value.plant.pressureLoss.pumpPressureKPA === null) {
-                value.plant.pressureLoss.pumpPressureKPA = 0;
-            }
-            break;
-        case PressureMethod.STATIC_PRESSURE:
-            if (value.plant.pressureLoss.staticPressureKPA === null) {
-                value.plant.pressureLoss.staticPressureKPA = 0;
-            }
-            break;
-        case PressureMethod.FIXED_PRESSURE_LOSS:
-            if (value.plant.pressureLoss.pressureLossKPA === null) {
-                value.plant.pressureLoss.pressureLossKPA = 0;
-            }
-            break;
-        default:
-            assertUnreachable(value.plant.pressureLoss);
-    }
+    if (value.plant.type !== PlantType.RETURN_SYSTEM) {
+        switch (value.plant.pressureLoss.pressureMethod) {
+            case PressureMethod.PUMP_DUTY:
+                if (value.plant.pressureLoss.pumpPressureKPA === null) {
+                    value.plant.pressureLoss.pumpPressureKPA = 0;
+                }
+                break;
+            case PressureMethod.STATIC_PRESSURE:
+                if (value.plant.pressureLoss.staticPressureKPA === null) {
+                    value.plant.pressureLoss.staticPressureKPA = 0;
+                }
+                break;
+            case PressureMethod.FIXED_PRESSURE_LOSS:
+                if (value.plant.pressureLoss.pressureLossKPA === null) {
+                    value.plant.pressureLoss.pressureLossKPA = 0;
+                }
+                break;
+            default:
+                assertUnreachable(value.plant.pressureLoss);
+        }
 
+    }
 
     if (value.outletTemperatureC === null) {
         const outSystem = drawing.metadata.flowSystems.find((s) => s.uid === value.outletSystemUid)!;
-        result.outletTemperatureC = outSystem ? outSystem.temperature : drawing.metadata.calculationParams.roomTemperatureC;
+        result.outletTemperatureC = outSystem ? Number(outSystem.temperature) : Number(drawing.metadata.calculationParams.roomTemperatureC);
     }
 
     switch (result.plant.type) {
@@ -314,7 +318,7 @@ export function fillPlantDefaults(value: PlantEntity, drawing: DrawingState) {
             }
             if (result.plant.returnVelocityMS === null) {
                 const outSystem = drawing.metadata.flowSystems.find((s) => s.uid === value.outletSystemUid)!;
-                result.plant.returnVelocityMS = outSystem.returnMaxVelocityMS;
+                result.plant.returnVelocityMS = Number(outSystem.returnMaxVelocityMS);
             }
             break;
         case PlantType.TANK:

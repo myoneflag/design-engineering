@@ -193,10 +193,6 @@ function createPlant(type: PlantType, outletSystemUid: string, returnUid: string
                 returnUid: returnUid!,
                 returnVelocityMS: null,
                 addReturnToPSDFlowRate: true,
-                pressureLoss: {
-                    pressureMethod: PressureMethod.PUMP_DUTY,
-                    pumpPressureKPA: null,
-                }
             };
         case PlantType.PUMP:
             return {

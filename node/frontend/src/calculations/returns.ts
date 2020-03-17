@@ -18,6 +18,7 @@ import PlantEntity, { fillPlantDefaults } from "../../../common/src/api/document
 import { interpolateTable } from "../../../common/src/lib/utils";
 import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
+import { over } from "stompjs";
 
 export interface ReturnRecord {
     spTree: SPTree<Edge<string, FlowEdge>>;
@@ -175,11 +176,16 @@ export function getHeatLossOfPipeMomentWATT_M(context: CalculationContext, pipe:
         const rayleighNumber            = ga * expansionCoefficient_1_K * Math.abs(surfaceTempC - ambientTemperatureC) * (totalOutsideDiameter / 1000) ** 3 / (kinematicViscosityM2_S * alphaM2_S);
 
 
+
         // Air film resistance
-        const radiationW_M2K            = 0.00000005670373 * SURFACE_EMMISIVITY[flowSystem.insulationMaterial] * ((surfaceTempC + 273.15) ** 4 - (ambientTemperatureC + 273.15));
+        const radiationW_M2K            = 0.00000005670373 * SURFACE_EMMISIVITY[flowSystem.insulationMaterial] * ((surfaceTempC + 273.15) ** 4 - (ambientTemperatureC + 273.15) ** 4) / ((surfaceTempC + 273.15) - (ambientTemperatureC + 273.15));
+
 
         const nu_forced                 = 0.3 + (0.62*Math.sqrt(reynoldsNumber) * Math.pow(prandtlNumber, 1/3)) * (1 + (reynoldsNumber / 282000) ** (5/8)) ** (4/5) / (1 + (0.4 / prandtlNumber) ** (2/3)) ** (1/4);
         const forcedConvectionW_M2K     = nu_forced * thermalConductivityW_MK / (totalOutsideDiameter / 1000);
+
+
+
 
         const nu_free                   = (0.6 + 0.387 * rayleighNumber ** (1/6) / (1 + (0.559 / prandtlNumber) ** (9 / 16)) ** (8 / 27)) ** 2;
         const freeConvectionW_M2K       = nu_free * thermalConductivityW_MK / (totalOutsideDiameter / 1000);
@@ -206,8 +212,50 @@ export function getHeatLossOfPipeMomentWATT_M(context: CalculationContext, pipe:
 
         surfaceTempC                    = interfaceTempC - heatFlowW_M2 * insulationResistanceM2K_W;
 
+        /*
+        if (I need to debug this) {
+            console.log(filled.material);
+            console.log(JSON.stringify(THERMAL_CONDUCTIVITY[filled.material!]));
+            console.log(typeof tempC);
+            console.log(tempC + 273.15);
+            console.log('special guys:');
+            console.log('averageFilmTemperatureC: ' + averageFilmTemperatureC);
+            console.log('averageFilmTemperatureK: ' + averageFilmTemperatureK);
+            console.log('thermalConductivityW_MK: ' + thermalConductivityW_MK);
+            console.log('viscosity_N_SM2: ' + viscosity_N_SM2);
+            console.log('prandtlNumber: ' + prandtlNumber);
+            console.log('expansionCoefficient_1_K: ' + expansionCoefficient_1_K);
+            console.log('airDensity_KG_M3: ' + airDensity_KG_M3);
+            console.log('kinematicViscosityM2_S: ' + kinematicViscosityM2_S);
+            console.log('specificHeatKJ_KGK: ' + specificHeatKJ_KGK);
+            console.log('alphaM2_S: ' + alphaM2_S);
+            console.log('reynoldsNumber: ' + reynoldsNumber);
+            console.log('rayleighNumber: ' + rayleighNumber);
+                console.log('radiationW_M2K: ' + radiationW_M2K);
+            console.log('nu_forced: ' + nu_forced);
+            console.log('forcedConvectionW_M2K: ' + forcedConvectionW_M2K);
+            console.log('nu_free: ' + nu_free);
+            console.log('freeConvectionW_M2K: ' + freeConvectionW_M2K);
+            console.log('nu_combined: ' + nu_combined);
+            console.log('combinedConvectionW_M2K: ' + combinedConvectionW_M2K);
+            console.log('overallAirSideHtcW_M2K: ' + overallAirSideHtcW_M2K);
+                console.log('pipeThermalConductivityW_MK: ' + pipeThermalConductivityW_MK);
+            console.log('pipeWallResistanceM2K_W: ' + pipeWallResistanceM2K_W);
+                console.log('averageInsulationTempK: ' + averageInsulationTempK);
+            console.log('insulationThermalConductivityW_MK: ' + insulationThermalConductivityW_MK);
+            console.log('insulationResistanceM2K_W: ' + insulationResistanceM2K_W);
+                console.log('overallResistanceM2_KW: ' + overallResistanceM2_KW);
+            console.log('heatFlowW_M2: ' + heatFlowW_M2);
+            console.log('interfaceTempC: ' + interfaceTempC);
+            console.log('surfaceTempC: ' + surfaceTempC);
+
+        }*/
+
         const heatLossPerUnitLengthW_M  = heatFlowW_M2 * Math.PI * (totalOutsideDiameter / 1000);
-        if (Math.abs(oldHeatLoss - heatLossPerUnitLengthW_M) < MAX_ITER_CHANGE) {
+        if (Math.abs(oldHeatLoss - heatLossPerUnitLengthW_M) < MAX_ITER_CHANGE && iters > 5) {
+
+
+
             return heatLossPerUnitLengthW_M;
         }
         oldHeatLoss = heatLossPerUnitLengthW_M;
@@ -217,10 +265,11 @@ export function getHeatLossOfPipeMomentWATT_M(context: CalculationContext, pipe:
 
 export function getHeatLossOfPipeWATT(context: CalculationContext, pipe: Pipe, tempC: number) {
     const filled = fillPipeDefaultFields(context.drawing, pipe.computedLengthM, pipe.entity);
-    const moment = getHeatLossOfPipeMomentWATT_M(context, pipe, tempC, 0);
+    const moment = getHeatLossOfPipeMomentWATT_M(context, pipe, tempC, Number(context.drawing.metadata.calculationParams.windSpeedForHeatLossMS));
     if (moment === null || filled.lengthM === null) {
         return null;
     }
+
     return moment * filled.lengthM;
 }
 
@@ -345,6 +394,7 @@ function setFlowRatesNode(
                     [peakFlowRate, filled.maximumVelocityMS!],
                     [pCalc.rawReturnFlowRateLS, filledReturn.returnVelocityMS!],
                 ]);
+
                 if (pCalc.realNominalPipeDiameterMM === null || origSize === null) {
                     res = null;
                 } else {
@@ -430,7 +480,6 @@ function warnMissingBalancingValvesRecursive(engine: CalculationEngine, node: SP
                 leafSeries = leafSeries && res.leafSeries;
 
                 if (!res.balanced && (node.siblings.length > 1) && res.leafSeries) {
-                    console.log('setting node balancing ' + JSON.stringify(res) + ' ' + node.siblings.length);
                     setWarnMissingBalancingValve(engine, c);
                 }
             }
@@ -475,7 +524,6 @@ function warnMissingBalancingValvesRecursive(engine: CalculationEngine, node: SP
 
 export function warnMissingBalancingValves(engine: CalculationEngine, record: ReturnRecord): boolean {
     const res = warnMissingBalancingValvesRecursive(engine, record.spTree);
-    console.log('result from return system: ' + JSON.stringify(res));
     if (!res.balanced && res.leafSeries) {
         setWarnMissingBalancingValve(engine, record.spTree);
     }
@@ -493,8 +541,6 @@ export function returnFlowRatesAndBalancingValves(engine: CalculationEngine, ret
             if (!diff) {
                 break;
             }
-
-            console.log('resized a return by ' + diff + ' iter ' + i);
         }
 
         // Identify segments that don't have balancing valves
@@ -582,8 +628,6 @@ export function findValveImbalances(
                 pressures.push(p === undefined ? null : p);
             }
 
-            console.log('leaf pipe pressures: ' + JSON.stringify(pressures));
-
             // prefer null over numbers, to ensure that if we make a min or max exist, it is because every dependent
             // value was defined.
             minPressure = null;
@@ -597,8 +641,6 @@ export function findValveImbalances(
         default:
             assertUnreachable(node);
     }
-
-    console.log('Node pressure: ' + node.edge + ' ' + maxPressure + ' ' + minPressure);
     if (maxPressure !== null && minPressure !== null) {
         pressureDropKPA.set(node.edge, maxPressure - minPressure);
     } else {
@@ -618,7 +660,6 @@ function setValveBalances(engine: CalculationEngine,
                           node: SPNode<Edge<string, FlowEdge>>,
                           pressureDropDifferentialKPA: number,
 ) {
-    console.log('setting valve balances ' + pressureDropDifferentialKPA);
     switch (node.type) {
         case "parallel":
             let highestPressureDrop: number | null = -Infinity;
@@ -634,7 +675,6 @@ function setValveBalances(engine: CalculationEngine,
             if (highestPressureDrop !== null) {
                 for (const c of node.siblings) {
                     const val = pressureDropKPA.get(c.edge)!;
-                    console.log('highest: ' + highestPressureDrop + ' val: ' + val);
                     setValveBalances(engine, leafValveUid, pressureDropKPA, isLeafSeries, c, pressureDropDifferentialKPA + highestPressureDrop - val);
                 }
             }
@@ -678,7 +718,6 @@ export function returnBalanceValves(engine: CalculationEngine, nodePressureKPA: 
         const isLeafSeries = new Map<string, boolean>();
         const valveUids = new Map<string, string | null>();
         findValveImbalances(engine, nodePressureKPA, valveUids, pressureDropKPA, isLeafSeries, ret.spTree);
-        console.log(pressureDropKPA);
         setValveBalances(engine, valveUids, pressureDropKPA, isLeafSeries, ret.spTree, 0);
     }
 }

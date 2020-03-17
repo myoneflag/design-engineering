@@ -55,8 +55,6 @@ export function isSeriesParallel<N, E>(graph: Graph<N, E>, source: N, sink: N): 
     const sourceS = graph.sn(source);
     const sinkS = graph.sn(sink);
 
-    console.log('checking series parallel for a graph with ' + graph.edgeList.size + ' edges');
-
     // Here we store when a node compresses its two edges into one.
     const compressions: Compression[] = [];
     const leafs: Array<[string, Edge<N, E>]> = [];
@@ -64,7 +62,6 @@ export function isSeriesParallel<N, E>(graph: Graph<N, E>, source: N, sink: N): 
     for (const [eid, edge] of graph.edgeList) {
         const fromS = graph.sn(edge.from);
         const toS = graph.sn(edge.to);
-        console.log('caching edge ' + fromS + ' ' + toS);
         if (!adjList.has(fromS)) {
             adjList.set(fromS, []);
         }
@@ -86,14 +83,12 @@ export function isSeriesParallel<N, E>(graph: Graph<N, E>, source: N, sink: N): 
 
     for (const [node, l] of adjList) {
         if (l.length === 2 && node !== sourceS && node !== sinkS) {
-            console.log('node ' + node  + ' is a candidate');
             nodesQ.push(node);
         }
     }
 
     for (const [conns, n] of edgesByEndpoints) {
         for (let i = 1; i < n; i++) {
-            console.log('edge ' + conns  + ' is a candidate');
             edgesQ.push(conns);
         }
     }
@@ -106,7 +101,6 @@ export function isSeriesParallel<N, E>(graph: Graph<N, E>, source: N, sink: N): 
             if (adjList.has(n)) {
                 if (adjList.get(n)!.length === 2 && n !== sourceS && n !== sinkS) {
                     const [a, b] = adjList.get(n)!;
-                    console.log(' deleting node ' + n + ' conn to ' + a  + ' ' + b);
                     // remove the two edges adjacent
                     adjList.get(a)!.splice(adjList.get(a)!.indexOf(n), 1, b);
                     adjList.get(b)!.splice(adjList.get(b)!.indexOf(n), 1, a);
@@ -117,7 +111,6 @@ export function isSeriesParallel<N, E>(graph: Graph<N, E>, source: N, sink: N): 
                     edgesByEndpoints.set(eb, edgesByEndpoints.get(eb)! - 1);
                     edgesByEndpoints.set(eab, (edgesByEndpoints.get(eab) || 0) + 1);
                     if (edgesByEndpoints.get(eab)! > 1) {
-                        console.log('edge ' + eab + ' is now a candidate');
                         edgesQ.push(eab);
                     }
 
@@ -135,7 +128,6 @@ export function isSeriesParallel<N, E>(graph: Graph<N, E>, source: N, sink: N): 
             if (edgesByEndpoints.has(e) && edgesByEndpoints.get(e)! > 1) {
                 // remove coinciding edge
                 const [a, b] = dse(e);
-                console.log('deleting edge ' + a + ' ' + b);
 
                 adjList.get(a)!.splice(adjList.get(a)!.indexOf(b), 1);
                 adjList.get(b)!.splice(adjList.get(b)!.indexOf(a), 1);
@@ -160,9 +152,6 @@ export function isSeriesParallel<N, E>(graph: Graph<N, E>, source: N, sink: N): 
         }
     }
 
-
-    console.log('deleted ' + edgesRemoved + ' in the process');
-
     // check that the graph is degenerate
     if (edgesRemoved === graph.edgeList.size - 1) {
 
@@ -180,14 +169,12 @@ export function isSeriesParallel<N, E>(graph: Graph<N, E>, source: N, sink: N): 
         // table of node orders.
         const orders = new Map<string, string>();
         orders.set(se(sourceS, sinkS), sourceS);
-        console.log(se(sourceS, sinkS));
 
         for (const compression of compressions.reverse()) {
             switch (compression.type) {
                 case "series": {
                     const [ea, eb] = compression.oldEdges;
                     const eab = compression.newEdge;
-                    console.log('deducing, ' + ea + ' ' + eb + ' ' + eab);
                     const src = orders.get(eab)!;
                     const [aba, abb] = dse(eab);
                     const dst = aba === src ? abb : aba;

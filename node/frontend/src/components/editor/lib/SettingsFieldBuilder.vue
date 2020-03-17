@@ -25,7 +25,7 @@
                             <b-col cols="8">
                                 <b-form-input
                                     :value="getReactiveData(field[0])"
-                                    @input="setReactiveData(field[0], $event)"
+                                    @input="setReactiveData(field[0], Number($event))"
                                     :id="'input-' + field[0]"
                                     :min="field[3]"
                                     :max="field[4]"
@@ -37,7 +37,7 @@
                             <b-col cols="4">
                                 <b-form-input
                                     :value="getReactiveData(field[0])"
-                                    @input="setReactiveData(field[0], $event)"
+                                    @input="setReactiveData(field[0], Number($event))"
                                     :id="'input-' + field[0]"
                                     type="number"
                                     :step="field[5] ? field[5] : 1"
@@ -46,6 +46,14 @@
                             </b-col>
                         </b-row>
 
+                        <b-form-input
+                                v-else-if="field[2] === 'number'"
+                                :value="getReactiveData(field[0])"
+                                @input="setReactiveData(field[0], Number($event))"
+                                :id="'input-' + field[0]"
+                                type="number"
+                                :placeholder="'Enter ' + field[1]"
+                        />
                         <b-dropdown
                             v-else-if="field[2] === 'choice'"
                             class="float-left"

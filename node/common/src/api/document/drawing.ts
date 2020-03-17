@@ -129,6 +129,7 @@ export interface CalculationParameters {
 
     ceilingPipeHeightM: number;
     roomTemperatureC: number;
+    windSpeedForHeatLossMS: number;
     gravitationalAcceleration: number;
 }
 
@@ -248,6 +249,7 @@ export const initialDrawing: DrawingState = {
 
             ceilingPipeHeightM: 3.0,
             roomTemperatureC: 20,
+            windSpeedForHeatLossMS: 0,
             gravitationalAcceleration: 9.80665
         },
         availableFixtures: ["basin", "bath", "shower", "kitchenSink", "wc", "washingMachine", "laundryTrough"]

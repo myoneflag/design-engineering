@@ -24,6 +24,7 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity):
             property: "pressureDropKPA",
             title: "Pressure Drop",
             short: "Drop",
+            defaultEnabled: true,
             units: Units.KiloPascals,
             category: FieldCategory.Pressure
         },

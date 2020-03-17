@@ -147,7 +147,7 @@ export function fillPipeDefaultFields(drawing: DrawingState, computedLengthM: nu
 
     if (system) {
         if (result.maximumVelocityMS == null) {
-            result.maximumVelocityMS = system.networks[result.network].velocityMS;
+            result.maximumVelocityMS = Number(system.networks[result.network].velocityMS);
         }
         if (result.material == null) {
             result.material = system.networks[result.network].material;
