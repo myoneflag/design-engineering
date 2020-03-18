@@ -1,6 +1,6 @@
 <template>
     <b-container>
-        <div style="overflow-y: auto; overflow-x: hidden; height: calc(100vh - 270px); margin-bottom: 20px">
+        <div style="overflow-y: auto; overflow-x: hidden; height: calc(100vh - 270px); margin-bottom: 20px" id="settingsFieldTop">
             <slot> </slot>
             <b-row>
                 <b-col>
@@ -62,7 +62,6 @@
                             :text="choiceName(getReactiveData(field[0]), field[3])"
                             variant="outline-secondary"
                             style="padding-bottom: 20px"
-                            boundary="viewport"
                         >
                             <b-dropdown-item
                                 v-for="(choice, index) in field[3]"
@@ -226,4 +225,9 @@ export default class SettingsFieldBuilder extends Vue {
 }
 </script>
 
-<style lang="less"></style>
+<style lang="less">
+    .dropdown-menu {
+        max-height: 400px;
+        overflow-y:auto;
+    }
+</style>
