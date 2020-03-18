@@ -19,6 +19,8 @@ import { interpolateTable } from "../../../common/src/lib/utils";
 import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
 
+export const MINIMUM_BALANCING_VALVE_PRESSURE_DROP_KPA = 10;
+
 export interface ReturnRecord {
     spTree: SPTree<Edge<string, FlowEdge>>;
     plant: PlantEntity;
@@ -732,6 +734,6 @@ export function returnBalanceValves(engine: CalculationEngine, returns: ReturnRe
         const valveUids = new Map<string, string | null>();
 
         findValveImbalances(engine, pressuresInStaticReturnKPA, valveUids, pressureDropKPA, isLeafSeries, ret.spTree);
-        setValveBalances(engine, valveUids, pressureDropKPA, isLeafSeries, ret.spTree, 0);
+        setValveBalances(engine, valveUids, pressureDropKPA, isLeafSeries, ret.spTree, MINIMUM_BALANCING_VALVE_PRESSURE_DROP_KPA);
     }
 }

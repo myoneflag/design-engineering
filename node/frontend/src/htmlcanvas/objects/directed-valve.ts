@@ -143,7 +143,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 this.drawStrainer(context);
                 break;
             case ValveType.BALANCING:
-                this.drawIsolationValve(context);
+                this.drawBalancingValve(context);
                 break;
             default:
                 assertUnreachable(this.entity.valve);
@@ -181,6 +181,29 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             ctx.lineTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM);
             ctx.stroke();
         }
+    }
+
+    drawBalancingValve(context: DrawingContext) {
+        const ctx = context.ctx;
+        ctx.beginPath();
+        ctx.moveTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM);
+        ctx.lineTo(VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
+        ctx.lineTo(VALVE_SIZE_MM, VALVE_HEIGHT_MM);
+        ctx.lineTo(-VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
+
+        ctx.lineTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(-VALVE_SIZE_MM / 2, -VALVE_HEIGHT_MM / 2);
+        ctx.lineTo(-VALVE_SIZE_MM / 2, -VALVE_HEIGHT_MM * 5 / 4);
+        ctx.lineTo(-VALVE_SIZE_MM / 4, -VALVE_HEIGHT_MM * 5 / 4);
+
+        ctx.moveTo(VALVE_SIZE_MM / 2, -VALVE_HEIGHT_MM / 2);
+        ctx.lineTo(VALVE_SIZE_MM / 2, -VALVE_HEIGHT_MM * 5 / 4);
+        ctx.lineTo(VALVE_SIZE_MM * 3 / 4, -VALVE_HEIGHT_MM * 5 / 4);
+
+        ctx.stroke();
     }
 
     drawReturnPump(context: DrawingContext) {
