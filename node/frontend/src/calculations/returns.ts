@@ -419,6 +419,9 @@ export function setFlowRatesForReturn(context: CalculationEngine, record: Return
     const node2heatLoss = new Map<string, number>();
     const totalHeatLoss = getNodeHeatLossWATT(context, record.spTree, filled.outletTemperatureC!, node2heatLoss);
 
+    const pCalc = context.globalStore.getOrCreateCalculation(record.plant);
+    pCalc.heatLossKW = totalHeatLoss === null ? null : totalHeatLoss / 1000;
+
     const system = context.drawing.metadata.flowSystems.find((fs) => fs.uid === record.plant.outletSystemUid);
     if (!system) {
         throw new Error('Flow system not found');
@@ -431,7 +434,8 @@ export function setFlowRatesForReturn(context: CalculationEngine, record: Return
         return null;
     }
 
-    const flowRateLS = totalHeatLoss/1000 / (specificHeat * (filled.outletTemperatureC! - filled.plant.returnMinimumTemperatureC!));
+    const flowRateLS = totalHeatLoss / 1000 / (specificHeat * (filled.outletTemperatureC! - filled.plant.returnMinimumTemperatureC!));
+    pCalc.systemDutyFlowRateLS = flowRateLS;
 
     return setFlowRatesNode(context, filled.plant, record.spTree, flowRateLS, node2heatLoss);
 }
