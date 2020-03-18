@@ -4,8 +4,8 @@ import Graph, { Edge } from "./graph";
 import { assertUnreachable } from "../../../common/src/api/config";
 import PipeEntity, { fillPipeDefaultFields } from "../../../common/src/api/document/entities/pipe-entity";
 import { Configuration, NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
-import CalculationEngine, { EdgeType, FlowEdge } from "./calculation-engine";
-import { CalculationContext } from "./types";
+import CalculationEngine, { EdgeType, FlowEdge, FlowNode } from "./calculation-engine";
+import { CalculationContext, PressurePushMode } from "./types";
 import Pipe from "../htmlcanvas/objects/pipe";
 import {
     AIR_PROPERTIES,
@@ -18,7 +18,6 @@ import PlantEntity, { fillPlantDefaults } from "../../../common/src/api/document
 import { interpolateTable } from "../../../common/src/lib/utils";
 import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
-import { over } from "stompjs";
 
 export interface ReturnRecord {
     spTree: SPTree<Edge<string, FlowEdge>>;
@@ -712,12 +711,23 @@ function setValveBalances(engine: CalculationEngine,
     }
 }
 
-export function returnBalanceValves(engine: CalculationEngine, nodePressureKPA: Map<string, number | null>, returns: ReturnRecord[]) {
+export function returnBalanceValves(engine: CalculationEngine, returns: ReturnRecord[]) {
     for (const ret of returns) {
+        // calculate pressures through the return based on return rates only.
+        const flowOut: FlowNode = {
+            connectable: ret.plant.outletUid,
+            connection: ret.plant.uid,
+        };
+        const pressureAtOutlet = engine.nodePressureKPA.get(engine.serializeNode(flowOut)) || 0;
+        const pressuresInStaticReturnKPA = new Map<string, number | null>();
+
+        engine.pushPressureThroughNetwork(flowOut, pressureAtOutlet, new Map<string, number|null>(), pressuresInStaticReturnKPA, PressurePushMode.CirculationFlowOnly);
+
         const pressureDropKPA = new Map<string, number>();
         const isLeafSeries = new Map<string, boolean>();
         const valveUids = new Map<string, string | null>();
-        findValveImbalances(engine, nodePressureKPA, valveUids, pressureDropKPA, isLeafSeries, ret.spTree);
+
+        findValveImbalances(engine, pressuresInStaticReturnKPA, valveUids, pressureDropKPA, isLeafSeries, ret.spTree);
         setValveBalances(engine, valveUids, pressureDropKPA, isLeafSeries, ret.spTree, 0);
     }
 }

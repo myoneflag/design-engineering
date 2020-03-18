@@ -16,7 +16,7 @@ import FixtureEntity, {
     fillFixtureFields,
     makeFixtureFields
 } from "../../../common/src/api/document/entities/fixtures/fixture-entity";
-import { DemandType } from "../../src/calculations/types";
+import { DemandType, PressurePushMode } from "../../src/calculations/types";
 import Graph, { Edge } from "../../src/calculations/graph";
 import EquationEngine from "../../src/calculations/equation-engine";
 import BaseBackedObject from "../../src/htmlcanvas/lib/base-backed-object";
@@ -310,7 +310,7 @@ export default class CalculationEngine {
 
                 this.calculateAllPointPressures();
 
-                returnBalanceValves(this, this.nodePressureKPA, returns);
+                returnBalanceValves(this, returns);
 
                 this.fillPressureDropFields();
                 this.createWarnings();
@@ -619,6 +619,280 @@ export default class CalculationEngine {
         return highPressure == null ? -1 : highPressure;
     }
 
+    pushPressureThroughNetwork(start: FlowNode, pressureKPA: number, entityMaxPressuresKPA: Map<string, number | null>, nodePressureKPA: Map<string, number | null>, pressurePushMode: PressurePushMode) {
+        // Dijkstra to all objects, recording the max pressure that's arrived there.
+        this.flowGraph.dijkstra(
+            start,
+            (edge, weight) => {
+                const obj = this.globalStore.get(edge.value.uid)!;
+                const flowFrom = edge.from;
+                const flowTo = edge.to;
+
+                let finalPressureKPA: number | null;
+                if (weight > -Infinity) {
+                    finalPressureKPA = pressureKPA! - weight;
+                } else {
+                    finalPressureKPA = null;
+                }
+
+                switch (edge.value.type) {
+                    case EdgeType.PIPE:
+                        if (obj instanceof Pipe) {
+                            const calculation = this.globalStore.getOrCreateCalculation(obj.entity);
+
+                            // recalculate with height
+                            if (!calculation) {
+                                return -Infinity; // The following values are unknown, because this pressure
+                                // drop is unknown.
+                            }
+
+                            let flowRate: number;
+                            switch (pressurePushMode) {
+                                case PressurePushMode.PSD:
+                                    if (calculation.totalPeakFlowRateLS === null) {
+                                        return -Infinity;
+                                    }
+                                    flowRate = calculation.totalPeakFlowRateLS;
+                                    break;
+                                case PressurePushMode.CirculationFlowOnly:
+                                    if (calculation.rawReturnFlowRateLS === null) {
+                                        return -Infinity;
+                                    }
+                                    flowRate = calculation.rawReturnFlowRateLS;
+                                    break;
+                                default:
+                                    flowRate = 0; // typechecker
+                                    assertUnreachable(pressurePushMode);
+                            }
+
+                            const headLoss = getObjectFrictionHeadLoss(
+                                this,
+                                obj,
+                                flowRate,
+                                edge.from,
+                                edge.to,
+                                true,
+                                finalPressureKPA
+                            );
+                            if (headLoss === null) {
+                                return -Infinity;
+                            }
+
+                            return head2kpa(
+                                headLoss,
+                                getFluidDensityOfSystem(obj.entity.systemUid, this.doc, this.catalog)!,
+                                this.ga
+                            );
+                        } else {
+                            throw new Error("misconfigured flow graph");
+                        }
+                    case EdgeType.BIG_VALVE_HOT_HOT:
+                    case EdgeType.BIG_VALVE_HOT_WARM:
+                    case EdgeType.BIG_VALVE_COLD_WARM:
+                    case EdgeType.BIG_VALVE_COLD_COLD: {
+                        if (obj instanceof BigValve) {
+                            const calculation = this.globalStore.getOrCreateCalculation(obj.entity);
+                            if (!calculation) {
+                                return Infinity;
+                            }
+
+                            let fr: number | null = null;
+
+                            let systemUid: string = "";
+
+                            if (
+                                edge.value.type === EdgeType.BIG_VALVE_COLD_COLD &&
+                                flowFrom.connectable === obj.entity.coldRoughInUid
+                            ) {
+                                fr = calculation.coldPeakFlowRate;
+                                systemUid = (this.globalStore.get(obj.entity.coldRoughInUid)!
+                                    .entity as SystemNodeEntity).systemUid;
+                            } else if (
+                                (edge.value.type === EdgeType.BIG_VALVE_HOT_WARM ||
+                                    edge.value.type === EdgeType.BIG_VALVE_HOT_HOT) &&
+                                flowFrom.connectable === obj.entity.hotRoughInUid
+                            ) {
+                                fr = calculation.hotPeakFlowRate;
+                                systemUid = (this.globalStore.get(obj.entity.hotRoughInUid)!
+                                    .entity as SystemNodeEntity).systemUid;
+                            } else {
+                                throw new Error("Misused TMV");
+                            }
+
+                            switch (pressurePushMode) {
+                                case PressurePushMode.PSD:
+                                    break;
+                                case PressurePushMode.CirculationFlowOnly:
+                                    fr = 0;
+                                    break;
+                                default:
+                                    assertUnreachable(pressurePushMode);
+                            }
+
+                            if (fr === null) {
+                                return Infinity;
+                            }
+
+                            const hl = getObjectFrictionHeadLoss(
+                                this,
+                                obj,
+                                fr,
+                                flowFrom,
+                                flowTo,
+                                true,
+                                finalPressureKPA
+                            );
+                            return hl === null
+                                ? -Infinity
+                                : head2kpa(
+                                    hl,
+                                    getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
+                                    this.ga
+                                );
+                        } else {
+                            throw new Error("misconfigured flow graph");
+                        }
+                    }
+                    case EdgeType.FITTING_FLOW:
+                    case EdgeType.CHECK_THROUGH:
+                    case EdgeType.RETURN_PUMP:
+                    case EdgeType.ISOLATION_THROUGH: {
+                        const sourcePipe = this.globalStore.get(flowFrom.connection);
+                        const destPipe = this.globalStore.get(flowTo.connection);
+                        let srcDist: number | null = null;
+                        let destDist: number | null = null;
+                        let dist: number | null = null;
+
+                        if (sourcePipe instanceof Pipe) {
+                            const srcCalc = this.globalStore.getOrCreateCalculation(sourcePipe.entity);
+
+                            switch (pressurePushMode) {
+                                case PressurePushMode.PSD:
+                                    srcDist = srcCalc.totalPeakFlowRateLS || 0;
+                                    break;
+                                case PressurePushMode.CirculationFlowOnly:
+                                    srcDist = srcCalc.rawReturnFlowRateLS || 0;
+                                    break;
+                                default:
+                                    assertUnreachable(pressurePushMode);
+                            }
+                        }
+
+                        if (destPipe instanceof Pipe) {
+                            const destCalc = this.globalStore.getOrCreateCalculation(destPipe.entity);
+
+                            switch (pressurePushMode) {
+                                case PressurePushMode.PSD:
+                                    destDist = destCalc.totalPeakFlowRateLS || 0;
+                                    break;
+                                case PressurePushMode.CirculationFlowOnly:
+                                    destDist = destCalc.rawReturnFlowRateLS || 0;
+                                    break;
+                                default:
+                                    assertUnreachable(pressurePushMode);
+                            }
+                        }
+
+                        if (srcDist != null && destDist != null) {
+                            dist = Math.min(srcDist, destDist);
+                        } else if (srcDist != null) {
+                            dist = srcDist;
+                        } else {
+                            dist = destDist;
+                        }
+
+                        const systemUid = determineConnectableSystemUid(
+                            this.globalStore,
+                            obj.entity as DirectedValveEntity
+                        )!;
+
+                        if (dist !== null) {
+                            const hl = getObjectFrictionHeadLoss(
+                                this,
+                                obj,
+                                dist,
+                                flowFrom,
+                                flowTo,
+                                true,
+                                finalPressureKPA
+                            );
+                            return hl === null
+                                ? -Infinity
+                                : head2kpa(
+                                    hl,
+                                    getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
+                                    this.ga
+                                );
+                        } else {
+                            return 1000000;
+                        }
+                    }
+                    case EdgeType.PLANT_THROUGH: {
+                        const plant = obj as Plant;
+
+                        const conns = this.globalStore.getConnections(plant.entity.inletUid);
+                        let flowLS: number | null = 0;
+                        if (conns.length === 1) {
+                            const calc = this.globalStore.getOrCreateCalculation(
+                                this.globalStore.get(conns[0])!.entity as PipeEntity
+                            );
+
+                            switch (pressurePushMode) {
+                                case PressurePushMode.PSD:
+                                    flowLS = calc.totalPeakFlowRateLS || 0;
+                                    break;
+                                case PressurePushMode.CirculationFlowOnly:
+                                    flowLS = calc.rawReturnFlowRateLS || 0;
+                                    break;
+                                default:
+                                    assertUnreachable(pressurePushMode);
+                            }
+                        }
+
+                        const hl = getObjectFrictionHeadLoss(
+                            this,
+                            obj,
+                            flowLS!,
+                            flowFrom,
+                            flowTo,
+                            true,
+                            finalPressureKPA
+                        );
+                        return hl === null
+                            ? -Infinity
+                            : head2kpa(
+                                hl,
+                                getFluidDensityOfSystem(plant.entity.inletSystemUid, this.doc, this.catalog)!,
+                                this.ga
+                            );
+                    }
+                    case EdgeType.BALANCING_THROUGH:
+                        return 0; // TODO: balancing valve drops
+                    case EdgeType.FLOW_SOURCE_EDGE:
+                        throw new Error("oopsies");
+                }
+            },
+            (dijk) => {
+                // xTODO: Bellman Ford
+                let finalPressureKPA: number | null;
+                if (dijk.weight > -Infinity) {
+                    finalPressureKPA = pressureKPA! - dijk.weight;
+                } else {
+                    finalPressureKPA = null;
+                }
+                if (entityMaxPressuresKPA.has(dijk.node.connectable)) {
+                    const existing = entityMaxPressuresKPA.get(dijk.node.connectable)!;
+                    if (existing !== null && (finalPressureKPA === null || existing < finalPressureKPA)) {
+                        // throw new Error('new size is larger than us ' + existing + ' ' + finalPressureKPA);
+                    }
+                } else {
+                    entityMaxPressuresKPA.set(dijk.node.connectable, finalPressureKPA);
+                }
+                nodePressureKPA.set(this.serializeNode(dijk.node), finalPressureKPA);
+            }
+        );
+    }
+
     /**
      * In a peak flow graph, flow paths don't represent a valid network flow state, and sometimes, don't
      * even have a direction for each pipe.
@@ -628,217 +902,8 @@ export default class CalculationEngine {
     precomputePeakKPAPoints() {
         this.networkObjects().forEach((o) => {
             if (o.entity.type === EntityType.FLOW_SOURCE) {
-                const e = o.entity;
-                // Dijkstra to all objects, recording the max pressure that's arrived there.
-                this.flowGraph.dijkstra(
-                    { connectable: o.uid, connection: FLOW_SOURCE_EDGE },
-                    (edge, weight) => {
-                        const obj = this.globalStore.get(edge.value.uid)!;
-                        const flowFrom = edge.from;
-                        const flowTo = edge.to;
-
-                        let finalPressureKPA: number | null;
-                        if (weight > -Infinity) {
-                            finalPressureKPA = e.pressureKPA! - weight;
-                        } else {
-                            finalPressureKPA = null;
-                        }
-
-                        switch (edge.value.type) {
-                            case EdgeType.PIPE:
-                                if (obj instanceof Pipe) {
-                                    const calculation = this.globalStore.getOrCreateCalculation(obj.entity);
-
-                                    // recalculate with height
-                                    if (!calculation || calculation.totalPeakFlowRateLS === null) {
-                                        return -Infinity; // The following values are unknown, because this pressure
-                                        // drop is unknown.
-                                    }
-                                    const headLoss = getObjectFrictionHeadLoss(
-                                        this,
-                                        obj,
-                                        calculation.totalPeakFlowRateLS,
-                                        edge.from,
-                                        edge.to,
-                                        true,
-                                        finalPressureKPA
-                                    );
-                                    if (headLoss === null) {
-                                        return -Infinity;
-                                    }
-
-                                    return head2kpa(
-                                        headLoss,
-                                        getFluidDensityOfSystem(obj.entity.systemUid, this.doc, this.catalog)!,
-                                        this.ga
-                                    );
-                                } else {
-                                    throw new Error("misconfigured flow graph");
-                                }
-                            case EdgeType.BIG_VALVE_HOT_HOT:
-                            case EdgeType.BIG_VALVE_HOT_WARM:
-                            case EdgeType.BIG_VALVE_COLD_WARM:
-                            case EdgeType.BIG_VALVE_COLD_COLD: {
-                                if (obj instanceof BigValve) {
-                                    const calculation = this.globalStore.getOrCreateCalculation(obj.entity);
-                                    if (!calculation) {
-                                        return Infinity;
-                                    }
-
-                                    let fr: number | null = null;
-
-                                    let systemUid: string = "";
-
-                                    if (
-                                        edge.value.type === EdgeType.BIG_VALVE_COLD_COLD &&
-                                        flowFrom.connectable === obj.entity.coldRoughInUid
-                                    ) {
-                                        fr = calculation.coldPeakFlowRate;
-                                        systemUid = (this.globalStore.get(obj.entity.coldRoughInUid)!
-                                            .entity as SystemNodeEntity).systemUid;
-                                    } else if (
-                                        (edge.value.type === EdgeType.BIG_VALVE_HOT_WARM ||
-                                            edge.value.type === EdgeType.BIG_VALVE_HOT_HOT) &&
-                                        flowFrom.connectable === obj.entity.hotRoughInUid
-                                    ) {
-                                        fr = calculation.hotPeakFlowRate;
-                                        systemUid = (this.globalStore.get(obj.entity.hotRoughInUid)!
-                                            .entity as SystemNodeEntity).systemUid;
-                                    } else {
-                                        throw new Error("Misused TMV");
-                                    }
-
-                                    if (fr === null) {
-                                        return Infinity;
-                                    }
-
-                                    const hl = getObjectFrictionHeadLoss(
-                                        this,
-                                        obj,
-                                        fr,
-                                        flowFrom,
-                                        flowTo,
-                                        true,
-                                        finalPressureKPA
-                                    );
-                                    return hl === null
-                                        ? -Infinity
-                                        : head2kpa(
-                                              hl,
-                                              getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
-                                              this.ga
-                                          );
-                                } else {
-                                    throw new Error("misconfigured flow graph");
-                                }
-                            }
-                            case EdgeType.FITTING_FLOW:
-                            case EdgeType.CHECK_THROUGH:
-                            case EdgeType.RETURN_PUMP:
-                            case EdgeType.ISOLATION_THROUGH: {
-                                const sourcePipe = this.globalStore.get(flowFrom.connection);
-                                const destPipe = this.globalStore.get(flowTo.connection);
-                                let srcDist: number | null = null;
-                                let destDist: number | null = null;
-                                let dist: number | null = null;
-
-                                if (sourcePipe instanceof Pipe) {
-                                    const srcCalc = this.globalStore.getOrCreateCalculation(sourcePipe.entity);
-                                    srcDist = srcCalc.totalPeakFlowRateLS || 0;
-                                }
-
-                                if (destPipe instanceof Pipe) {
-                                    const destCalc = this.globalStore.getOrCreateCalculation(destPipe.entity);
-                                    destDist = destCalc.totalPeakFlowRateLS || 0;
-                                }
-
-                                if (srcDist != null && destDist != null) {
-                                    dist = Math.min(srcDist, destDist);
-                                } else if (srcDist != null) {
-                                    dist = srcDist;
-                                } else {
-                                    dist = destDist;
-                                }
-
-                                const systemUid = determineConnectableSystemUid(
-                                    this.globalStore,
-                                    obj.entity as DirectedValveEntity
-                                )!;
-
-                                if (dist !== null) {
-                                    const hl = getObjectFrictionHeadLoss(
-                                        this,
-                                        obj,
-                                        dist,
-                                        flowFrom,
-                                        flowTo,
-                                        true,
-                                        finalPressureKPA
-                                    );
-                                    return hl === null
-                                        ? -Infinity
-                                        : head2kpa(
-                                              hl,
-                                              getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
-                                              this.ga
-                                          );
-                                } else {
-                                    return 1000000;
-                                }
-                            }
-                            case EdgeType.PLANT_THROUGH: {
-                                const plant = obj as Plant;
-
-                                const conns = this.globalStore.getConnections(plant.entity.inletUid);
-                                let flowLS: number | null = 0;
-                                if (conns.length === 1) {
-                                    flowLS = this.globalStore.getOrCreateCalculation(
-                                        this.globalStore.get(conns[0])!.entity as PipeEntity
-                                    ).totalPeakFlowRateLS;
-                                }
-
-                                const hl = getObjectFrictionHeadLoss(
-                                    this,
-                                    obj,
-                                    flowLS!,
-                                    flowFrom,
-                                    flowTo,
-                                    true,
-                                    finalPressureKPA
-                                );
-                                return hl === null
-                                    ? -Infinity
-                                    : head2kpa(
-                                          hl,
-                                          getFluidDensityOfSystem(plant.entity.inletSystemUid, this.doc, this.catalog)!,
-                                          this.ga
-                                      );
-                            }
-                            case EdgeType.BALANCING_THROUGH:
-                                return 0; // TODO: balancing valve drops
-                            case EdgeType.FLOW_SOURCE_EDGE:
-                                throw new Error("oopsies");
-                        }
-                    },
-                    (dijk) => {
-                        // xTODO: Bellman Ford
-                        let finalPressureKPA: number | null;
-                        if (dijk.weight > -Infinity) {
-                            finalPressureKPA = e.pressureKPA! - dijk.weight;
-                        } else {
-                            finalPressureKPA = null;
-                        }
-                        if (this.entityMaxPressuresKPA.has(dijk.node.connectable)) {
-                            const existing = this.entityMaxPressuresKPA.get(dijk.node.connectable)!;
-                            if (existing !== null && (finalPressureKPA === null || existing < finalPressureKPA)) {
-                                // throw new Error('new size is larger than us ' + existing + ' ' + finalPressureKPA);
-                            }
-                        } else {
-                            this.entityMaxPressuresKPA.set(dijk.node.connectable, finalPressureKPA);
-                        }
-                        this.nodePressureKPA.set(this.serializeNode(dijk.node), finalPressureKPA);
-                    }
-                );
+                const n = { connectable: o.uid, connection: FLOW_SOURCE_EDGE };
+                this.pushPressureThroughNetwork(n, o.entity.pressureKPA!, this.entityMaxPressuresKPA, this.nodePressureKPA, PressurePushMode.PSD);
             }
         });
     }
