@@ -221,11 +221,11 @@ export function getRpzdHeadLoss(
     return kpa2head(plKPA, density, context.doc.drawing.metadata.calculationParams.gravitationalAcceleration);
 }
 
-export const VALVE_HEIGHT_MM = 100;
+export const VALVE_HEIGHT_MM = 70;
 
 export const VALVE_LINE_WIDTH_MM = 10;
 
-export const VALVE_SIZE_MM = 140;
+export const VALVE_SIZE_MM = 98;
 
 export function drawRpzdDouble(context: DrawingContext, colors: [string, string], selected: boolean = false) {
     const s = context.vp.currToSurfaceScale(context.ctx);
