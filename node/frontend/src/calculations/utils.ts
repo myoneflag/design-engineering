@@ -24,6 +24,7 @@ import { assertUnreachable, isGermanStandard, SupportedPsdStandards } from "../.
 import { Catalog } from "../../../common/src/api/catalog/types";
 import { determineConnectableNetwork, determineConnectableSystemUid } from "../store/document/entities/lib";
 import {
+    cloneSimple,
     interpolateTable,
     lowerBoundTable,
     parseCatalogNumberExact,
@@ -52,13 +53,25 @@ export interface PsdUnitsByFlowSystem {
     [key: string]: FinalPsdCountEntry;
 }
 
+export function addPsdUnitsByFlowSystem(a: PsdUnitsByFlowSystem, b: PsdUnitsByFlowSystem): PsdUnitsByFlowSystem {
+    const res: PsdUnitsByFlowSystem = cloneSimple(a);
+    for (const s of Object.keys(b)) {
+        if (res.hasOwnProperty(s)) {
+            res[s] = addFinalPsdCounts(res[s], b[s]);
+        } else {
+            res[s] = b[s];
+        }
+    }
+    return res;
+}
+
 export function countPsdUnits(
     entities: DrawableEntityConcrete[],
     doc: DocumentState,
     catalog: Catalog,
     objectStore: ObjectStore
-): PsdUnitsByFlowSystem | null {
-    let result: PsdUnitsByFlowSystem | null = null;
+): PsdUnitsByFlowSystem {
+    let result: PsdUnitsByFlowSystem = {};
     entities.forEach((e) => {
         switch (e.type) {
             case EntityType.FIXTURE:

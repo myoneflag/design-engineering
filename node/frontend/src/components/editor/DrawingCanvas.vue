@@ -151,7 +151,7 @@ import * as _ from "lodash";
 import { AutoConnector } from "../../../src/htmlcanvas/lib/black-magic/auto-connect";
 import insertDirectedValve from "../../../src/htmlcanvas/tools/insert-directed-valve";
 import { ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
-import { countPsdUnits } from "../../../src/calculations/utils";
+import { addPsdUnitsByFlowSystem, countPsdUnits, PsdUnitsByFlowSystem } from "../../../src/calculations/utils";
 import CalculationsSidebar from "../../../src/components/editor/CalculationsSidebar.vue";
 import DrawingNavBar from "../DrawingNavBar.vue";
 import LevelSelector from "./LevelSelector.vue";
@@ -452,6 +452,34 @@ export default class DrawingCanvas extends Vue {
         return this.interactive ? this.interactive.map((o) => o.uid) : [];
     }
 
+    projectLUs(): PsdUnitsByFlowSystem | null {
+        let result: PsdUnitsByFlowSystem | null = {};
+
+        for (const luid of Object.keys(this.document.drawing.levels)) {
+            if (this.changedLevelsSinceLastPLUCalc.has(luid)) {
+                const entities = Array.from(this.globalStore.entitiesInLevel.get(luid) || new Set<string>()).map((uid) => this.globalStore.get(uid)!.entity);
+                this.levelLUCache.set(luid, countPsdUnits(
+                    entities,
+                    this.document,
+                    this.effectiveCatalog,
+                    this.globalStore,
+                ));
+            }
+
+            if (result === null || this.levelLUCache.get(luid) == null) {
+                result = null;
+            } else {
+                result = addPsdUnitsByFlowSystem(result, this.levelLUCache.get(luid)!);
+            }
+        }
+
+        this.changedLevelsSinceLastPLUCalc.clear();
+        return result;
+    }
+
+    levelLUCache = new Map<string, PsdUnitsByFlowSystem | null>();
+    changedLevelsSinceLastPLUCalc = new Set<string>();
+
     ctx: CanvasRenderingContext2D | null = null;
 
     grabbedPoint: Coord | null = null;
@@ -562,6 +590,9 @@ export default class DrawingCanvas extends Vue {
 
         this.calculationEngine = new CalculationEngine();
 
+        for (const luid of Object.keys(this.document.drawing.levels)) {
+            this.changedLevelsSinceLastPLUCalc.add(luid);
+        }
         // setInterval(this.drawLoop, 20);
         this.initialized = true;
     }
@@ -754,6 +785,9 @@ export default class DrawingCanvas extends Vue {
     }
 
     onCurrentLevelChanged() {
+        if (this.currentLevel) {
+            this.changedLevelsSinceLastPLUCalc.add(this.currentLevel.uid);
+        }
         this.scheduleDraw();
     }
 
@@ -801,17 +835,27 @@ export default class DrawingCanvas extends Vue {
 
     onUpdateEntity(uid: string) {
         //
+        if (this.globalStore.levelOfEntity.get(uid)) {
+            this.changedLevelsSinceLastPLUCalc.add(this.globalStore.levelOfEntity.get(uid)!);
+        }
     }
 
     onAddEntity({ entity, levelUid }: EntityParam) {
         // Layers are responsible for this.
         //this.scheduleDraw();
+        if (levelUid) {
+            this.changedLevelsSinceLastPLUCalc.add(levelUid);
+        }
     }
 
     onDeleteEntity({ entity, levelUid }: EntityParam) {
         // Layers are responsible for this.
         if (this.document.uiState.selectedUids.includes(entity.uid)) {
             this.document.uiState.selectedUids.splice(this.document.uiState.selectedUids.indexOf(entity.uid), 1);
+        }
+
+        if (levelUid) {
+            this.changedLevelsSinceLastPLUCalc.add(levelUid);
         }
         //this.scheduleDraw();
     }
@@ -833,6 +877,7 @@ export default class DrawingCanvas extends Vue {
 
     onAddLevel(level: Level) {
         //
+        this.changedLevelsSinceLastPLUCalc.add(level.uid);
     }
 
     onDeleteLevel(level: Level) {
@@ -840,6 +885,7 @@ export default class DrawingCanvas extends Vue {
         if (level.uid === this.document.uiState.levelUid) {
             this.selectGroundFloor();
         }
+        this.changedLevelsSinceLastPLUCalc.add(level.uid);
     }
 
     disableContextMenu(e: Event) {
@@ -1286,6 +1332,7 @@ export default class DrawingCanvas extends Vue {
                     context,
                     this.effectiveCatalog,
                     countPsdUnits(this.selectedEntities, this.document, this.effectiveCatalog, this.globalStore),
+                    this.projectLUs(),
                     true
                 );
             } else {
@@ -1304,7 +1351,8 @@ export default class DrawingCanvas extends Vue {
                         this.document,
                         this.effectiveCatalog,
                         this.globalStore
-                    )
+                    ),
+                    this.projectLUs()
                 );
             }
         }

@@ -1,7 +1,7 @@
 // https://medium.com/js-dojo/vuejs-pwa-cache-busting-8d09edd22a31
 workbox.core.setCacheNameDetails({ prefix: 'd4' })
 //Change this value every time before you build
-const LATEST_VERSION = "v1.4.10";
+const LATEST_VERSION = "v1.4.11";
 
 console.log('running service-worker.js');
 

@@ -252,21 +252,30 @@ export function drawGridLines(context: DrawingContext) {
 export function drawLoadingUnits(
     context: DrawingContext,
     catalog: Catalog,
-    units: PsdUnitsByFlowSystem | null,
+    focusedUnits: PsdUnitsByFlowSystem | null,
+    projectUnits: PsdUnitsByFlowSystem | null,
     selection: boolean = false
 ) {
-    if (units == null) {
-        units = {
+    if (focusedUnits == null) {
+        focusedUnits = {
             /**/
         };
     }
+    if (projectUnits == null) {
+        projectUnits = {
+
+        };
+    }
+
     for (const sys of [
         StandardFlowSystemUids.ColdWater,
         StandardFlowSystemUids.WarmWater,
         StandardFlowSystemUids.HotWater
     ]) {
-        if (!units.hasOwnProperty(sys)) {
-            units[sys] = zeroFinalPsdCounts();
+        for (const units of [focusedUnits, projectUnits]) {
+            if (!units.hasOwnProperty(sys)) {
+                units[sys] = zeroFinalPsdCounts();
+            }
         }
     }
     const ctx = context.ctx;
@@ -282,66 +291,72 @@ export function drawLoadingUnits(
 
     // Fill for selection
     if (selection) {
-        ctx.fillText("(In Selection)", 20, y - 20);
+        ctx.fillText("PSD:    Selection      Project", 40, y - 20);
     } else {
-        ctx.fillText("Total PSD:", 80, y - 20);
-    }
-    let coldFR: number | null | undefined;
-    let hotFR: number | null | undefined;
-    try {
-        const res = lookupFlowRate(
-            units[StandardFlowSystemUids.ColdWater],
-            context.doc,
-            catalog,
-            StandardFlowSystemUids.ColdWater,
-            true
-        );
-        coldFR = res ? res.flowRateLS : null;
-    } catch (e) {}
-    try {
-        const res = lookupFlowRate(
-            addFinalPsdCounts(units[StandardFlowSystemUids.HotWater], units[StandardFlowSystemUids.WarmWater]),
-            context.doc,
-            catalog,
-            StandardFlowSystemUids.HotWater,
-            true
-        );
-        hotFR = res ? res.flowRateLS : null;
-    } catch (e) {
-        /**/
+        ctx.fillText("PSD:    Level            Project", 40, y - 20);
     }
 
-    let coldSpareText: string = "error";
-    let hotSpareText: string = "error";
-    let coldText: string = "error";
-    let hotText: string = "error";
-    if (coldFR != null) {
-        const coldFRSpare =
-            coldFR *
-            (1 +
-                0.01 *
+    let x = 80;
+    for (const units of [focusedUnits, projectUnits]) {
+        let coldFR: number | null | undefined;
+        let hotFR: number | null | undefined;
+        try {
+            const res = lookupFlowRate(
+                units[StandardFlowSystemUids.ColdWater],
+                context.doc,
+                catalog,
+                StandardFlowSystemUids.ColdWater,
+                true
+            );
+            coldFR = res ? res.flowRateLS : null;
+        } catch (e) {
+        }
+        try {
+            const res = lookupFlowRate(
+                addFinalPsdCounts(units[StandardFlowSystemUids.HotWater], units[StandardFlowSystemUids.WarmWater]),
+                context.doc,
+                catalog,
+                StandardFlowSystemUids.HotWater,
+                true
+            );
+            hotFR = res ? res.flowRateLS : null;
+        } catch (e) {
+            /**/
+        }
+
+        let coldSpareText: string = "error";
+        let hotSpareText: string = "error";
+        let coldText: string = "error";
+        let hotText: string = "error";
+        if (coldFR != null) {
+            const coldFRSpare =
+                coldFR *
+                (1 +
+                    0.01 *
                     context.doc.drawing.metadata.flowSystems.find((s) => s.uid === StandardFlowSystemUids.ColdWater)!
                         .networks[NetworkType.RETICULATIONS].spareCapacityPCT);
-        coldSpareText = coldFRSpare.toPrecision(3);
-        coldText = coldFR.toPrecision(3);
-    }
-    if (hotFR != null) {
-        const hotFRSpare =
-            hotFR *
-            (1 +
-                0.01 *
+            coldSpareText = coldFRSpare.toPrecision(3);
+            coldText = coldFR.toPrecision(3);
+        }
+        if (hotFR != null) {
+            const hotFRSpare =
+                hotFR *
+                (1 +
+                    0.01 *
                     context.doc.drawing.metadata.flowSystems.find((s) => s.uid === StandardFlowSystemUids.WarmWater)!
                         .networks[NetworkType.RETICULATIONS].spareCapacityPCT);
-        hotSpareText = hotFRSpare.toPrecision(3);
-        hotText = hotFR.toPrecision(3);
+            hotSpareText = hotFRSpare.toPrecision(3);
+            hotText = hotFR.toPrecision(3);
+        }
+        ctx.fillText(coldSpareText + " L/s ", x, y);
+
+        ctx.fillText(hotSpareText + " L/s ", x, y + 20);
+
+        x += 70;
     }
 
     ctx.fillText("Cold: ", 20, y);
-    ctx.fillText(coldSpareText + " L/s ", 80, y);
-
     ctx.fillText("Hot: ", 20, y + 20);
-    ctx.fillText(hotSpareText + " L/s ", 80, y + 20);
-
     ctx.font = "10px " + DEFAULT_FONT_NAME;
     let psdMethodName = catalog.psdStandards[context.doc.drawing.metadata.calculationParams.psdMethod].name;
     if (context.doc.drawing.metadata.calculationParams.dwellingMethod) {
