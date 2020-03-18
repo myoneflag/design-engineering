@@ -82,7 +82,13 @@ import { getPropertyByString } from "../lib/utils";
 import { getPlantPressureLossKPA } from "../htmlcanvas/lib/utils";
 import { RingMainCalculator } from "./ring-main-calculator";
 import { Configuration, NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
-import { identifyReturns, returnBalanceValves, returnFlowRatesAndBalancingValves } from "./returns";
+import {
+    identifyReturns,
+    MINIMUM_BALANCING_VALVE_PRESSURE_DROP_KPA,
+    returnBalanceValves,
+    returnFlowRatesAndBalancingValves
+} from "./returns";
+import DirectedValve from "../htmlcanvas/objects/directed-valve";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -307,10 +313,10 @@ export default class CalculationEngine {
                 this.sizeRingMains();
 
                 returnFlowRatesAndBalancingValves(this, returns);
+                returnBalanceValves(this, returns);  // balance valves before calculating point pressures so that balancing valve pressure drops are accounted for.
 
                 this.calculateAllPointPressures();
 
-                returnBalanceValves(this, returns);
 
                 this.fillPressureDropFields();
                 this.createWarnings();
@@ -623,7 +629,7 @@ export default class CalculationEngine {
         // Dijkstra to all objects, recording the max pressure that's arrived there.
         this.flowGraph.dijkstra(
             start,
-            (edge, weight) => {
+            (edge, weight): number => {
                 const obj = this.globalStore.get(edge.value.uid)!;
                 const flowFrom = edge.from;
                 const flowTo = edge.to;
@@ -655,6 +661,11 @@ export default class CalculationEngine {
                                     flowRate = calculation.totalPeakFlowRateLS;
                                     break;
                                 case PressurePushMode.CirculationFlowOnly:
+                                    // also take care of direction
+                                    if (calculation.flowFrom !== flowFrom.connectable) {
+                                        return (1e10 + (calculation.totalPeakFlowRateLS || 0));
+                                    }
+
                                     if (calculation.rawReturnFlowRateLS === null) {
                                         return -Infinity;
                                     }
@@ -867,10 +878,33 @@ export default class CalculationEngine {
                             );
                     }
                     case EdgeType.BALANCING_THROUGH:
-                        return 0; // TODO: balancing valve drops
+                        switch (pressurePushMode) {
+                            case PressurePushMode.PSD:
+                                const afterPipe = this.globalStore.get(flowTo.connection) as Pipe;
+                                const afterPCalc = this.globalStore.getOrCreateCalculation(afterPipe.entity);
+                                if (afterPCalc.flowFrom !== edge.value.uid) {
+                                    // opposite direction
+                                    return (1e10 + (afterPCalc.totalPeakFlowRateLS || 0));
+                                }
+
+                                const vCalc = this.globalStore.getOrCreateCalculation(
+                                    (this.globalStore.get(edge.value.uid) as DirectedValve).entity,
+                                );
+                                if (vCalc.pressureDropKPA === null) {
+                                    return -Infinity;
+                                } else {
+                                    return vCalc.pressureDropKPA;
+                                }
+                            case PressurePushMode.CirculationFlowOnly:
+                                // direction is always correct - assuming balancing valves were placed correctly.
+                                return MINIMUM_BALANCING_VALVE_PRESSURE_DROP_KPA;
+                            default:
+                                assertUnreachable(pressurePushMode);
+                        }
                     case EdgeType.FLOW_SOURCE_EDGE:
                         throw new Error("oopsies");
                 }
+                assertUnreachable(edge.value.type);
             },
             (dijk) => {
                 // xTODO: Bellman Ford

@@ -39,6 +39,7 @@ import { fillDirectedValveFields } from "../../store/document/entities/fillDirec
 import { determineConnectableSystemUid } from "../../store/document/entities/lib";
 import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
 
+
 @CalculatedObject
 @SelectableObject
 @CenterDraggableObject
@@ -453,7 +454,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             case ValveType.PRV_SINGLE:
             case ValveType.PRV_DOUBLE:
             case ValveType.PRV_TRIPLE:
+            case ValveType.BALANCING:
                 break;
+            default:
+                assertUnreachable(this.entity.valve);
         }
 
         // 2. Pressure Loss Method
@@ -538,6 +542,23 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 } else {
                     return null;
                 }
+            case ValveType.BALANCING:
+                // Pressure for balancing valve is to be set beforehand.
+                const sysUid = determineConnectableSystemUid(context.globalStore, this.entity);
+                if (!sysUid) {
+                    return null;
+                }
+                const vCalc = context.globalStore.getOrCreateCalculation(this.entity);
+                if (vCalc.pressureDropKPA === null) {
+                    return null;
+                }
+                return kpa2head(
+                    vCalc.pressureDropKPA,
+                    getFluidDensityOfSystem(sysUid, context.doc, context.catalog)!,
+                    context.doc.drawing.metadata.calculationParams.gravitationalAcceleration,
+                );
+            default:
+                assertUnreachable(this.entity.valve);
         }
 
         const volLM = (this.largestPipeSizeInternal(context)! ** 2 * Math.PI) / 4 / 1000;

@@ -19,8 +19,6 @@ import { interpolateTable } from "../../../common/src/lib/utils";
 import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
 
-export const MINIMUM_BALANCING_VALVE_PRESSURE_DROP_KPA = 10;
-
 export interface ReturnRecord {
     spTree: SPTree<Edge<string, FlowEdge>>;
     plant: PlantEntity;
@@ -437,7 +435,7 @@ export function setFlowRatesForReturn(context: CalculationEngine, record: Return
     }
 
     const flowRateLS = totalHeatLoss / 1000 / (specificHeat * (filled.outletTemperatureC! - filled.plant.returnMinimumTemperatureC!));
-    pCalc.systemDutyFlowRateLS = flowRateLS;
+    pCalc.circulationFlowRateLS = flowRateLS;
 
     return setFlowRatesNode(context, filled.plant, record.spTree, flowRateLS, node2heatLoss);
 }
@@ -709,7 +707,9 @@ function setValveBalances(engine: CalculationEngine,
                 }
 
                 const vCalc = engine.globalStore.getOrCreateCalculation(o.entity);
-                vCalc.pressureDropKPA = pressureDropDifferentialKPA;
+                // pressureDropDifferentialKPA is the missing pressure in this leg ASSUMING that the balancing valves were
+                // ALREADY at min_ba... so that's why we add MINIMUM_... here.
+                vCalc.pressureDropKPA = pressureDropDifferentialKPA + MINIMUM_BALANCING_VALVE_PRESSURE_DROP_KPA;
             } else {
                 // Nada.
             }
@@ -724,7 +724,7 @@ export function returnBalanceValves(engine: CalculationEngine, returns: ReturnRe
             connectable: ret.plant.outletUid,
             connection: ret.plant.uid,
         };
-        const pressureAtOutlet = engine.nodePressureKPA.get(engine.serializeNode(flowOut)) || 0;
+        const pressureAtOutlet = 0; // for purposes of just determining pressure differences, it's OK to start with an unknown initial pressure.
         const pressuresInStaticReturnKPA = new Map<string, number | null>();
 
         engine.pushPressureThroughNetwork(flowOut, pressureAtOutlet, new Map<string, number|null>(), pressuresInStaticReturnKPA, PressurePushMode.CirculationFlowOnly);
@@ -734,6 +734,11 @@ export function returnBalanceValves(engine: CalculationEngine, returns: ReturnRe
         const valveUids = new Map<string, string | null>();
 
         findValveImbalances(engine, pressuresInStaticReturnKPA, valveUids, pressureDropKPA, isLeafSeries, ret.spTree);
-        setValveBalances(engine, valveUids, pressureDropKPA, isLeafSeries, ret.spTree, MINIMUM_BALANCING_VALVE_PRESSURE_DROP_KPA);
+        setValveBalances(engine, valveUids, pressureDropKPA, isLeafSeries, ret.spTree, 0);
+
+        const pCalc = engine.globalStore.getOrCreateCalculation(ret.plant);
+        pCalc.circulationPressureLoss = pressureDropKPA.get(ret.spTree.edge)!;
     }
 }
+
+export const MINIMUM_BALANCING_VALVE_PRESSURE_DROP_KPA = 10;
