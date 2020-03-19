@@ -4,7 +4,7 @@ import Vue from "vue";
 import { DocumentState } from "../../store/document/types";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
-import BackedConnectable from "./BackedConnectable";
+import BackedConnectable, { BaseBackedConnectable } from "./BackedConnectable";
 import { ConnectableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 
 export class ObjectStore extends Map<string, BaseBackedObject> {
@@ -186,6 +186,13 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
             if (ix === -1) {
                 throw new Error("connections are in an invalid state");
             }
+
+
+            const co = this.get(oldVal) as BaseBackedConnectable;
+            if (co) {
+                co.disconnect(uid);
+            }
+
             arr.splice(ix, 1);
         });
         this.oldEndpoints.delete(uid);

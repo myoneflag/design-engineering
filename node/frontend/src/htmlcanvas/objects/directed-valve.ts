@@ -38,6 +38,7 @@ import { cloneSimple, lowerBoundTable, parseCatalogNumberExact } from "../../../
 import { fillDirectedValveFields } from "../../store/document/entities/fillDirectedValveFields";
 import { determineConnectableSystemUid } from "../../store/document/entities/lib";
 import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
+import { EndErrorLine } from "tslint/lib/verify/lines";
 
 
 @CalculatedObject
@@ -595,7 +596,11 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         assertUnreachable(this.entity.valve);
     }
 
+
+    sourceHeirs: string[] = [];
     connect(uid: string) {
+        console.log('directed valve ' + this.uid + ' connect ' + uid);
+        console.log(this.globalStore.getConnections(this.entity.uid).length);
         if (this.globalStore.getConnections(this.entity.uid).length === 0) {
             // this.entity.sourceUid = uid;
         } else if (this.globalStore.getConnections(this.entity.uid).length === 1) {
@@ -606,6 +611,22 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             // The following error is disabled to allow intermittent connecting / disconnecting.
             // throw new Error('shouldn\'t be extending here. connections: ' +
             // JSON.stringify(this.objectStore.getConnections(this.entity.uid)) + ' connecting ' + uid);
+            this.sourceHeirs.push(uid);
+        }
+    }
+
+    disconnect(uid: string) {
+        console.log('directed valve ' + this.uid + ' disconnecting ' + uid);
+        const conns = this.globalStore.getConnections(this.entity.uid);
+        if (conns.length > 2) {
+            this.sourceHeirs = this.sourceHeirs.filter((tuid) => tuid !== uid);
+
+            if (uid === this.entity.sourceUid) {
+                if (this.sourceHeirs.length === 0) {
+                    throw new Error('No source heirs left');
+                }
+                this.entity.sourceUid = this.sourceHeirs.splice(0, 1)[0];
+            }
         }
     }
 

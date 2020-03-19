@@ -7,6 +7,9 @@ import { registerUser } from "./controllers/login";
 import { AccessLevel, User } from "../../common/src/models/User";
 import { Document } from "../../common/src/models/Document";
 import { upgradeDocument } from "./upgrade-drawing";
+import pLimit from 'p-limit';
+
+const limit = pLimit(4);
 
 const PORT = CONFIG.PORT;
 Error.stackTraceLimit = Infinity;
@@ -21,9 +24,7 @@ async function initializeDatabase() {
 
     // migrate old documents
     const docs = await Document.find();
-    for (const doc of docs) {
-        await upgradeDocument(doc);
-    }
+    await Promise.all(docs.map((doc) => limit(() => upgradeDocument(doc))));
 }
 
 createConnection().then(async (connection) => {
