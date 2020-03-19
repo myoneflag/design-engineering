@@ -6,7 +6,7 @@ import { EPS } from "../../../../frontend/src/calculations/pressure-drops";
 // Returns the diff object. If no diff, returns undefined.
 export function diffObject(before: any, after: any, filter: any): any {
     if (before === undefined || after === undefined) {
-        throw new Error("Parent caller shouldn't have recursed");
+        throw new Error("Parent caller shouldn't have recursed. Objs are: " + JSON.stringify(before) + ' ' + JSON.stringify(after) + ' filter: ' + JSON.stringify(filter));
     }
 
     if (_.isArray(before)) {
