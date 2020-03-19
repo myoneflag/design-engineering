@@ -6,11 +6,7 @@ import { OPERATION_NAMES } from "../../common/src/api/document/operation-transfo
 import { applyDiffNative } from "../../common/src/api/document/state-ot-apply";
 import {
     CURRENT_VERSION,
-    upgrade0to1,
-    upgrade1to2,
-    upgrade2to3,
-    upgrade3to4,
-    upgrade4to5, upgrade5to6, upgrade6to7, upgrade7to8
+    upgrade4to5, upgrade5to6, upgrade6to7, upgrade7to8, upgrade8to9
 } from "../../common/src/api/upgrade";
 import { diffState } from "../../common/src/api/document/state-differ";
 import stringify from 'json-stable-stringify';
@@ -30,8 +26,9 @@ export async function upgradeDocument(doc: Document) {
         .orderBy('operation.orderIndex', "ASC")
         .getMany();
 
-    console.log('Upgrading a doc with version ' + doc.version + ' and ops ' + ops.length + ' ' + doc.metadata.title);
+    console.log("Upgrading document (" + doc.id + ") " + doc.metadata.title + " from version "  + doc.version + '. Has ops ' + ops.length + ' ');
 
+    let opsUpgraded = 0;
     for (const op of ops) {
         switch (op.operation.type) {
             case OPERATION_NAMES.DIFF_OPERATION:
@@ -44,11 +41,7 @@ export async function upgradeDocument(doc: Document) {
                     case 1:
                     case 2:
                     case 3:
-                        // Because of some problem before, we have to re-upgrade :/
-                        upgrade0to1(newUpgraded);
-                        upgrade1to2(newUpgraded);
-                        upgrade2to3(newUpgraded);
-                        updated = upgrade3to4(newUpgraded) || updated;
+                        throw new Error('Version too old');
                     // noinspection FallThroughInSwitchStatementJS
                     case 4:
                         upgrade4to5(newUpgraded);
@@ -63,6 +56,9 @@ export async function upgradeDocument(doc: Document) {
                     case 7:
                         upgrade7to8(newUpgraded);
                     // noinspection FallThroughInSwitchStatementJS
+                    case 8:
+                        upgrade8to9(newUpgraded);
+                        break;
                     case CURRENT_VERSION:
                         break;
                 }
@@ -72,6 +68,7 @@ export async function upgradeDocument(doc: Document) {
                 if (upgradedOps.length) {
                     if (upgradedOps[0].type === OPERATION_NAMES.DIFF_OPERATION) {
                         if (stringify(op.operation) !== stringify(upgradedOps[0]) ) {
+                            opsUpgraded ++;
                             op.operation = upgradedOps[0];
                             await op.save();
                         }
@@ -87,6 +84,12 @@ export async function upgradeDocument(doc: Document) {
         }
     }
 
+    if (opsUpgraded) {
+        console.log("upgraded " + opsUpgraded + " operations");
+    } else {
+        console.log("All good, no changes made");
+    }
+
     // upgrade
     doc.version = CURRENT_VERSION;
 
@@ -95,23 +98,5 @@ export async function upgradeDocument(doc: Document) {
 }
 
 export function getInitialDrawing(doc?: Document) {
-    if (!doc) {
-        // latest
-        return cloneSimple(initialDrawing);
-    }
-
-    switch (doc.version) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-        case CURRENT_VERSION:
-            return cloneSimple(initialDrawing);
-        default:
-            throw new Error('invalid state');
-    }
+    return cloneSimple(initialDrawing);
 }

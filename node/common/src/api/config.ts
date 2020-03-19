@@ -169,6 +169,15 @@ export function getPsdMethods(catalog: Catalog): Choice[] {
     return methods;
 }
 
+
+export enum InsulationMaterials {
+    calciumSilicate = 'calciumSilicate',
+}
+
+export const INSULATION_MATERIAL_CHOICES: Choice[] = [
+    { key: InsulationMaterials.calciumSilicate, name: 'Calcium Silicate' },
+];
+
 export enum SupportedDwellingStandards {
     as35002018Dwellings = "as35002018Dwellings",
     barriesBookDwellings = "barriesBookDwellings"

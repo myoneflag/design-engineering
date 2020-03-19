@@ -198,8 +198,16 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                             primaryName: "Temperature (°C)",
                             columns: [[null, "Dynamic Viscosity"]]
                         }
+                    },
+                    specificHeatByTemperatureKJ_KGK: {
+                        order: 4,
+                        name: "Specific Heat by Temperature (KJ/Kg*K)",
+                        table: {
+                            primaryName: "Temperature (°C)",
+                            columns: [[null, "Specific Heat (KJ/Kg*K)"]]
+                        }
                     }
-                }
+                },
             }
         },
         pipes: {
@@ -222,6 +230,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                             primaryName: "Nominal Diameter (mm)",
                             columns: [
                                 ["diameterInternalMM", "Internal Diameter (mm)"],
+                                ["diameterOutsideMM", "Outside Diameter (mm)"],
                                 ["colebrookWhiteCoefficient", "Colebrook White Coefficient"],
                                 ["safeWorkingPressureKPA", "Safe Working Pressure (kPa)"]
                             ]

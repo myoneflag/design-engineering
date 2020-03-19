@@ -45,6 +45,7 @@ import FlowSystemPicker from "../../../src/components/editor/FlowSystemPicker.vu
 import * as _ from "lodash";
 import { initialDrawing } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
+import { INSULATION_MATERIAL_CHOICES, InsulationMaterials } from "../../../../common/src/api/config";
 
 @Component({
     components: { SettingsFieldBuilder, FlowSystemPicker },
@@ -65,8 +66,26 @@ export default class FlowSystems extends Vue {
             ["fluid", "Fluid:", "choice", this.$store.getters["catalog/defaultFluidChoices"]],
             ["temperature", "Entry temperature: (°C)", "range", 10, 100],
             ["color", "Colour:", "color"],
-            ["", "Network Properties", "title3"]
+            ["hasReturnSystem", "Has Return System:", "yesno"],
         ];
+
+        if (this.selectedSystem.hasReturnSystem) {
+            fields.push(
+                ['returnIsInsulated', "Return Is Insulated", "yesno"],
+            );
+
+            if (this.selectedSystem.returnIsInsulated) {
+                fields.push(
+                    ['insulationMaterial', "Insulation Material", "choice", INSULATION_MATERIAL_CHOICES],
+                    ['returnMaxVelocityMS', "Max. Velocity of Return (m/s)", "number"],
+                    ['insulationThicknessMM', "Insulation Thickness (mm)", "number"],
+                );
+            }
+        }
+
+        fields.push(
+            ["", "Network Properties", "title3"]
+        );
 
         for (const netKey of Object.keys(this.selectedSystem.networks)) {
             fields.push(
@@ -128,7 +147,12 @@ export default class FlowSystems extends Vue {
                 color: { hex: "#FCDC00" },
                 uid: uuid(),
                 fluid: "water",
-                networks: cloneSimple(initialDrawing.metadata.flowSystems[0].networks)
+                networks: cloneSimple(initialDrawing.metadata.flowSystems[0].networks),
+                hasReturnSystem: false,
+                returnIsInsulated: false,
+                returnMaxVelocityMS: 1,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationThicknessMM: 25,
             });
             this.$store.dispatch("document/commit").then(() => {
                 this.selectedSystemId = this.document.drawing.metadata.flowSystems.length - 1;

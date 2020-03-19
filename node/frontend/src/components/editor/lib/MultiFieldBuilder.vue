@@ -52,7 +52,7 @@ import {
     fillFlowSourceDefaults,
     makeFlowSourceFields
 } from "../../../../../common/src/api/document/entities/flow-source-entity";
-import { fillPlantDefaults, makePlantEntityFields } from "../../../../../common/src/api/document/entities/plant-entity";
+import { fillPlantDefaults, makePlantEntityFields } from "../../../../../common/src/api/document/entities/plants/plant-entity";
 import { assertUnreachable } from "../../../../../common/src/api/config";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
 import { cloneSimple } from "../../../../../common/src/lib/utils";
@@ -176,7 +176,7 @@ export default class MultiFieldBuilder extends Vue {
             case EntityType.LOAD_NODE:
                 return fillDefaultLoadNodeFields(this.document, obj.globalStore, obj.entity);
             case EntityType.PLANT:
-                return fillPlantDefaults(obj.entity);
+                return fillPlantDefaults(obj.entity, this.document.drawing);
             case EntityType.FLOW_SOURCE:
                 return fillFlowSourceDefaults(this.document.drawing, obj.entity);
         }

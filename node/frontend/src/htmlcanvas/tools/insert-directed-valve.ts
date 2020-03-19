@@ -11,9 +11,9 @@ import {
     ValveType
 } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
 import uuid from "uuid";
-import { cooperativeYield, KeyCode } from "../../../src/htmlcanvas/utils";
+import { KeyCode } from "../../../src/htmlcanvas/utils";
 import DirectedValve from "../../../src/htmlcanvas/objects/directed-valve";
-import { ConnectableEntity, Coord, FlowSystemParameters } from "../../../../common/src/api/document/drawing";
+import { Coord, FlowSystemParameters } from "../../../../common/src/api/document/drawing";
 import {
     ConnectableEntityConcrete,
     isConnectableEntity
@@ -21,6 +21,7 @@ import {
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import BackedDrawableObject from "../lib/backed-drawable-object";
 import { BaseBackedConnectable } from "../lib/BackedConnectable";
+import { assertUnreachable } from "../../../../common/src/api/config";
 
 export default function insertDirectedValve(
     context: CanvasContext,
@@ -86,7 +87,7 @@ export default function insertDirectedValve(
                     valveType,
                     catalogId,
                     cloneSimple(wc),
-                    null
+                    null,
                 );
                 await context.$store.dispatch("document/addEntity", valveEntity);
 
@@ -226,5 +227,11 @@ function createBareValve(type: ValveType, catalogId: string): DirectedValveConcr
                 sizeMM: null,
                 isolateOneWhenCalculatingHeadLoss: true
             };
+        case ValveType.BALANCING:
+            return {
+                type,
+                catalogId: catalogId as any,
+            };
     }
+    assertUnreachable(type);
 }

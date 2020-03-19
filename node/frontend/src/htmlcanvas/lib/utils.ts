@@ -15,16 +15,12 @@ import RiserEntity from "../../../../common/src/api/document/entities/riser-enti
 import { CalculationContext } from "../../calculations/types";
 import { ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
 import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
-import { matrixScale } from "../utils";
 import { GlobalStore } from "./global-store";
-import { ObjectStore } from "./object-store";
 import { assertUnreachable, LEVEL_HEIGHT_DIFF_M } from "../../../../common/src/api/config";
-import { Coord, DrawableEntity, Level } from "../../../../common/src/api/document/drawing";
+import { Coord, DrawableEntity, DrawingState, Level } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, interpolateTable, upperBoundTable } from "../../../../common/src/lib/utils";
-import PlantEntity, {
-    fillPlantDefaults,
-    PressureMethod
-} from "../../../../common/src/api/document/entities/plant-entity";
+import PlantEntity, { fillPlantDefaults } from "../../../../common/src/api/document/entities/plants/plant-entity";
+import { PlantType, PressureMethod } from "../../../../common/src/api/document/entities/plants/plant-types";
 
 export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
     const floor = context.backgroundLayer.getBackgroundAt(wc);
@@ -261,20 +257,22 @@ export function drawRpzdDouble(context: DrawingContext, colors: [string, string]
     }
 }
 
-export function getPlantPressureLossKPA(entity: PlantEntity, pressureKPA: number | null) {
-    const filled = fillPlantDefaults(entity);
+export function getPlantPressureLossKPA(entity: PlantEntity, drawing: DrawingState, pressureKPA: number | null) {
+    const filled = fillPlantDefaults(entity, drawing);
 
-    switch (filled.pressureMethod) {
-        case PressureMethod.PUMP_DUTY:
-            return -filled.pumpPressureKPA!;
-        case PressureMethod.FIXED_PRESSURE_LOSS:
-            return filled.pressureLossKPA!;
-        case PressureMethod.STATIC_PRESSURE:
-            if (pressureKPA !== null) {
-                return (pressureKPA - filled.staticPressureKPA!)!;
-            } else {
-                return null;
-            }
+    if (filled.plant.type !== PlantType.RETURN_SYSTEM) {
+        switch (filled.plant.pressureLoss.pressureMethod) {
+            case PressureMethod.PUMP_DUTY:
+                return -filled.plant.pressureLoss.pumpPressureKPA!;
+            case PressureMethod.FIXED_PRESSURE_LOSS:
+                return filled.plant.pressureLoss.pressureLossKPA!;
+            case PressureMethod.STATIC_PRESSURE:
+                if (pressureKPA !== null) {
+                    return (pressureKPA - filled.plant.pressureLoss.staticPressureKPA!)!;
+                } else {
+                    return null;
+                }
+        }
     }
 
     return 0;

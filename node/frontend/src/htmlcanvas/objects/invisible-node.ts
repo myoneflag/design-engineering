@@ -22,7 +22,7 @@ export abstract class InvisibleNode<T extends InvisibleNodeEntityConcrete> exten
         // TA-DA!
     }
 
-    prepareDelete(): BaseBackedObject[] {
+    prepareDelete(context: CanvasContext): BaseBackedObject[] {
         return [];
     }
 

@@ -1,73 +1,20 @@
-import { DrawingState, initialDrawing } from "./document/drawing";
+import { DrawingState, FlowSystemParameters, FlowSystemParametersV8, initialDrawing } from "./document/drawing";
 import { EntityType } from "./document/entities/types";
-import { PlantEntityV3, plantV3toCurrent } from "./document/entities/plant-entity";
 import { NodeType } from "./document/entities/load-node-entity";
+import { InsulationMaterials } from "./config";
+import { StandardFlowSystemUids } from "../../../frontend/src/store/catalog";
+import PlantEntity, { PlantEntityV8 } from "./document/entities/plants/plant-entity";
+import { PlantConcrete, PlantType, PressureMethod } from "./document/entities/plants/plant-types";
+import { DrawableEntityConcrete } from "./document/entities/concrete-entity";
+import { FlowConfiguration } from "./document/entities/big-valve/big-valve-entity";
+import uuid from "uuid";
 
 // This file is for managing upgrades between versions.
 // Remember to copy this directory before developing a major change, and bump the api version number, then
 // implement the upgrade method below.
 // Remember to also add this function to the upgrade function in default.
 
-export const CURRENT_VERSION = 8;
-
-export function upgrade0to1(original: DrawingState) {
-    // We have to fix one problem. Kitchen Sinks are broken.
-    for (const level of Object.values(original.levels)) {
-        const entities = level.entities;
-        for (const e of Object.values(entities)) {
-            if (e.type === EntityType.FIXTURE) {
-                if (e.name === "kitchenSink") {
-                    if (e.roughInsInOrder[1] === "hot-water") {
-                        e.name = "kitchenSinkHot";
-                    }
-                }
-            }
-        }
-    }
-}
-
-export function upgrade1to2(original: DrawingState) {
-    // We have to fix one problem. Kitchen Sinks are broken.
-    for (const level of Object.values(original.levels)) {
-        const entities = level.entities;
-        for (const e of Object.values(entities)) {
-            if (e.type === EntityType.PLANT) {
-                if (e.rightToLeft === undefined) {
-                    e.rightToLeft = false;
-                }
-            }
-        }
-    }
-}
-
-export function upgrade2to3(original: DrawingState) {
-    // Load nodes should have thingoes.
-    for (const level of Object.values(original.levels)) {
-        const entities = level.entities;
-        for (const e of Object.values(entities)) {
-            if (e.type === EntityType.LOAD_NODE) {
-                if (e.linkedToUid === undefined) {
-                    e.linkedToUid = null;
-                }
-            }
-        }
-    }
-}
-
-export function upgrade3to4(original: DrawingState) {
-    let updated = false;
-    // Plants entity was updated
-    for (const level of Object.values(original.levels)) {
-        const entities = level.entities;
-        for (const euid of Object.keys(entities)) {
-            if (entities[euid].type === EntityType.PLANT) {
-                updated = true;
-                entities[euid] = plantV3toCurrent((entities[euid] as any) as PlantEntityV3);
-            }
-        }
-    }
-    return updated;
-}
+export const CURRENT_VERSION = 9;
 
 export function upgrade4to5(original: DrawingState) {
     // Plants entity was updated
@@ -123,3 +70,127 @@ export function upgrade7to8(original: DrawingState) {
         }
     }
 }
+
+// return circulations
+export function upgrade8to9(original: DrawingState) {
+    for (const fs of original.metadata.flowSystems) {
+        if (fs.hasReturnSystem === undefined) {
+            const old = fs as FlowSystemParametersV8;
+            const upgraded: FlowSystemParameters = {
+                color: old.color,
+                fluid: old.fluid,
+                name: old.name,
+                networks: old.networks,
+                temperature: old.temperature,
+                uid: old.uid,
+
+
+                hasReturnSystem: old.uid === StandardFlowSystemUids.HotWater,
+                returnIsInsulated: old.uid === StandardFlowSystemUids.HotWater,
+                returnMaxVelocityMS: 1,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationThicknessMM: 25,
+            };
+            Object.assign(fs, upgraded);
+        }
+    }
+
+    if (original.metadata.calculationParams.windSpeedForHeatLossMS === undefined) {
+        original.metadata.calculationParams.windSpeedForHeatLossMS = 0;
+    }
+
+    for (const level of Object.values(original.levels)) {
+        const entitiesToAdd: DrawableEntityConcrete[] = [];
+
+        for (const e of Object.values(level.entities)) {
+            if (e.type === EntityType.PLANT) {
+                if (e.plant === undefined) {
+                    console.log('pl ');
+                    const old = e as unknown as PlantEntityV8;
+
+                    let plant: PlantConcrete;
+                    if (old.outletSystemUid === StandardFlowSystemUids.HotWater && old.inletSystemUid === StandardFlowSystemUids.ColdWater) {
+                        console.log('hw ');
+                        const returnUid = uuid();
+                        entitiesToAdd.push({
+                            center: {
+                                x: (old.widthMM / 2) * (old.rightToLeft ? -1 : 1),
+                                y: (old.heightMM / 4)
+                            },
+                            parentUid: old.uid,
+                            type: EntityType.SYSTEM_NODE,
+                            calculationHeightM: null,
+                            systemUid: e.outletSystemUid,
+                            uid: returnUid,
+                            allowAllSystems: false,
+                            configuration: FlowConfiguration.INPUT
+                        });
+
+                        plant = {
+                            type: PlantType.RETURN_SYSTEM,
+                            returnMinimumTemperatureC: null,
+                            returnUid,
+                            returnVelocityMS: null,
+                            addReturnToPSDFlowRate: true,
+                        };
+                    } else if (old.pressureMethod === PressureMethod.PUMP_DUTY) {
+                        plant = {
+                            type: PlantType.PUMP,
+                            pressureLoss: {
+                                pressureMethod: PressureMethod.PUMP_DUTY,
+                                pumpPressureKPA: old.pumpPressureKPA,
+                            },
+                        };
+                    } else if (old.pressureMethod === PressureMethod.STATIC_PRESSURE) {
+                        plant = {
+                            type: PlantType.TANK,
+                            pressureLoss: {
+                                pressureMethod: PressureMethod.STATIC_PRESSURE,
+                                staticPressureKPA: old.staticPressureKPA,
+                            }
+                        };
+                    } else {
+                        plant = {
+                            type: PlantType.CUSTOM,
+                            pressureLoss: {
+                                pressureMethod: old.pressureMethod,
+                                pumpPressureKPA: old.pumpPressureKPA,
+                                pressureLossKPA: old.pressureLossKPA,
+                                staticPressureKPA: old.staticPressureKPA,
+                            }
+                        };
+                    }
+
+                    const upgraded: PlantEntity = {
+                        center: old.center,
+                        heightAboveFloorM: old.heightAboveFloorM,
+                        heightMM: old.heightMM,
+                        inletSystemUid: old.inletSystemUid,
+                        inletUid: old.inletUid,
+                        name: old.name,
+                        outletSystemUid: old.outletSystemUid,
+                        outletTemperatureC: null,
+                        outletUid: old.outletUid,
+                        parentUid: old.parentUid,
+                        plant,
+                        rightToLeft: old.rightToLeft,
+                        rotation: old.rotation,
+                        type: old.type,
+                        uid: old.uid,
+                        widthMM: old.widthMM,
+                    };
+
+                    Object.assign(old, upgraded);
+                }
+            }
+        }
+
+        for (const e of entitiesToAdd) {
+            level.entities[e.uid] = e;
+        }
+    }
+}
+
+// upgrade 8 to 9
+// new version of plant
+// new version of flow system parameters

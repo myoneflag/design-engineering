@@ -5,6 +5,13 @@ import TinyQueue from "tinyqueue";
 import stringify from "json-stable-stringify";
 import { cloneSimple } from "../../../common/src/lib/utils";
 
+enum SPEventType {
+    REMOVE_NODE,
+    REMOVE_EDGE,
+}
+
+type SPEvent<N> = {type: SPEventType.REMOVE_NODE, node: N}
+
 export default class Graph<N, E> {
     adjacencyList: Map<string, Array<Edge<N, E>>> = new Map<string, Array<Edge<N, E>>>();
     edgeList: Map<string, Edge<N, E>> = new Map<string, Edge<N, E>>();
@@ -18,6 +25,24 @@ export default class Graph<N, E> {
 
     constructor(sn: (node: N) => string) {
         this.sn = sn;
+    }
+
+    static fromSubgraph<N, E>(sub: SubGraph<N, E>, sn: (node: N) => string) {
+        const result = new Graph<N, E>(sn);
+        const [nodes, edges] = sub;
+        for (const n of nodes) {
+            result.addNode(n);
+        }
+        for (const e of edges) {
+            result.addDirectedEdge(
+                e.from,
+                e.to,
+                e.value,
+                e.uid,
+                e.isDirected
+            );
+        }
+        return result;
     }
 
     addNode(node: N) {
@@ -479,25 +504,41 @@ export default class Graph<N, E> {
         const seen: Set<string> = new Set<string>();
 
         this.adjacencyList.forEach((adj, node) => {
-            const subGraph: SubGraph<N, E> = [[], []];
-            if (!seen.has(node)) {
-                this.dfs(
-                    this.id2Node.get(node)!,
-                    (n) => {
-                        subGraph[0].push(n);
-                    },
-                    undefined,
-                    (e) => {
-                        subGraph[1].push(e);
-                    },
-                    undefined,
-                    seen
-                );
-                components.push(subGraph);
-            }
+            components.push(this.getConnectedComponent(node, seen));
         });
 
         return components;
+    }
+
+    getConnectedComponent(node: N | string, seen?: Set<string>): SubGraph<N, E> {
+        if (!seen) {
+            seen = new Set<string>();
+        }
+
+        let nodeS: string;
+        if (typeof node === 'string') {
+            nodeS = node;
+        } else {
+            nodeS = this.sn(node);
+        }
+
+        const subGraph: SubGraph<N, E> = [[], []];
+        if (!seen.has(nodeS)) {
+            this.dfs(
+                this.id2Node.get(nodeS)!,
+                (n) => {
+                    subGraph[0].push(n);
+                },
+                undefined,
+                (e) => {
+                    subGraph[1].push(e);
+                },
+                undefined,
+                seen
+            );
+        }
+
+        return subGraph;
     }
 
     anyPath(
@@ -734,6 +775,8 @@ export default class Graph<N, E> {
             }
         );
     }
+
+
 }
 
 export type SubGraph<N, E> = [N[], Array<Edge<N, E>>];

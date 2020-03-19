@@ -339,6 +339,9 @@ export default class PropertiesFieldBuilder extends Vue {
         if (this.readonly) {
             return true;
         }
+        if (field.readonly) {
+            return true;
+        }
         if (field.requiresInput) {
             return false;
         }

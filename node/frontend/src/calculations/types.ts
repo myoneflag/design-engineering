@@ -15,3 +15,8 @@ export interface CalculationContext {
     globalStore: GlobalStore;
     doc: DocumentState;
 }
+
+export enum PressurePushMode {
+    PSD,
+    CirculationFlowOnly,
+}

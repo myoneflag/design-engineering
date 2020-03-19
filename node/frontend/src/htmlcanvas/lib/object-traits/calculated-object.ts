@@ -15,6 +15,7 @@ import { CalculationContext } from "../../../calculations/types";
 import { EntityType } from "../../../../../common/src/api/document/entities/types";
 import { CalculationConcrete } from "../../../store/document/calculations/calculation-concrete";
 import { NoFlowAvailableReason } from "../../../store/document/calculations/pipe-calculation";
+import { assertUnreachable } from "../../../../../common/src/api/config";
 
 export interface Calculated {
     drawCalculationBox(
@@ -279,7 +280,7 @@ export function CalculatedObject<
 
             if (this.entity.type === EntityType.PIPE) {
                 const pCalc = context.globalStore.getCalculation(this.entity);
-                if (pCalc && pCalc.peakFlowRate === null) {
+                if (pCalc && pCalc.totalPeakFlowRateLS === null) {
                     let ambiguousMessage = "NOT CALCULATED";
                     if (pCalc.noFlowAvailableReason) {
                         switch (pCalc.noFlowAvailableReason) {
@@ -304,6 +305,11 @@ export function CalculatedObject<
                             case NoFlowAvailableReason.NO_SUITABLE_PIPE_SIZE:
                                 ambiguousMessage = "NO SUITABLE PIPE SIZE";
                                 break;
+                            case NoFlowAvailableReason.INVALID_RETURN_NETWORK:
+                                ambiguousMessage = 'INVALID RETURN NETWORK';
+                                break;
+                            default:
+                                assertUnreachable(pCalc.noFlowAvailableReason);
                         }
                     }
                     return [

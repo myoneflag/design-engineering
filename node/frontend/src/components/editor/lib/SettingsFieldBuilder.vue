@@ -1,6 +1,6 @@
 <template>
     <b-container>
-        <div style="overflow-y: auto; overflow-x: hidden; height: calc(100vh - 270px); margin-bottom: 20px">
+        <div style="overflow-y: auto; overflow-x: hidden; height: calc(100vh - 270px); margin-bottom: 20px" id="settingsFieldTop">
             <slot> </slot>
             <b-row>
                 <b-col>
@@ -25,7 +25,7 @@
                             <b-col cols="8">
                                 <b-form-input
                                     :value="getReactiveData(field[0])"
-                                    @input="setReactiveData(field[0], $event)"
+                                    @input="setReactiveData(field[0], Number($event))"
                                     :id="'input-' + field[0]"
                                     :min="field[3]"
                                     :max="field[4]"
@@ -37,7 +37,7 @@
                             <b-col cols="4">
                                 <b-form-input
                                     :value="getReactiveData(field[0])"
-                                    @input="setReactiveData(field[0], $event)"
+                                    @input="setReactiveData(field[0], Number($event))"
                                     :id="'input-' + field[0]"
                                     type="number"
                                     :step="field[5] ? field[5] : 1"
@@ -46,6 +46,14 @@
                             </b-col>
                         </b-row>
 
+                        <b-form-input
+                                v-else-if="field[2] === 'number'"
+                                :value="getReactiveData(field[0])"
+                                @input="setReactiveData(field[0], Number($event))"
+                                :id="'input-' + field[0]"
+                                type="number"
+                                :placeholder="'Enter ' + field[1]"
+                        />
                         <b-dropdown
                             v-else-if="field[2] === 'choice'"
                             class="float-left"
@@ -54,7 +62,6 @@
                             :text="choiceName(getReactiveData(field[0]), field[3])"
                             variant="outline-secondary"
                             style="padding-bottom: 20px"
-                            boundary="viewport"
                         >
                             <b-dropdown-item
                                 v-for="(choice, index) in field[3]"
@@ -85,6 +92,28 @@
                         <h5 v-else-if="field[2] === 'title5'">
                             {{ field[1] }}
                         </h5>
+
+
+                        <b-dropdown
+                                v-else-if="field[2] === 'yesno'"
+                                class="float-left"
+                                size="md"
+                                id="dropdown-1"
+                                :text="getReactiveData(field[0]) ? 'Yes' : 'No'"
+                                variant="outline-secondary"
+                                style="padding-bottom: 20px"
+                        >
+                            <b-dropdown-item
+                                    @click="reactiveData[field[0]] = true"
+                            >
+                                Yes
+                            </b-dropdown-item>
+                            <b-dropdown-item
+                                    @click="reactiveData[field[0]] = false"
+                            >
+                                No
+                            </b-dropdown-item>
+                        </b-dropdown>
 
                         <b-form-input
                             v-else
@@ -196,4 +225,9 @@ export default class SettingsFieldBuilder extends Vue {
 }
 </script>
 
-<style lang="less"></style>
+<style lang="less">
+    .dropdown-menu {
+        max-height: 400px;
+        overflow-y:auto;
+    }
+</style>

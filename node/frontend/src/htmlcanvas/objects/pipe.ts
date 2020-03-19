@@ -7,7 +7,6 @@ import PipeEntity, {
 import * as TM from "transformation-matrix";
 import { Matrix } from "transformation-matrix";
 import { CalculationFilters, DocumentState } from "../../../src/store/document/types";
-import { matrixScale } from "../../../src/htmlcanvas/utils";
 import Flatten from "@flatten-js/core";
 import { Draggable, DraggableObject } from "../../../src/htmlcanvas/lib/object-traits/draggable-object";
 import * as _ from "lodash";
@@ -34,7 +33,10 @@ import { SIGNIFICANT_FLOW_THRESHOLD } from "../../../src/htmlcanvas/layers/calcu
 import { FlowNode } from "../../../src/calculations/calculation-engine";
 import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
-import PipeCalculation, { NoFlowAvailableReason } from "../../../src/store/document/calculations/pipe-calculation";
+import PipeCalculation, {
+    Configuration,
+    NoFlowAvailableReason
+} from "../../../src/store/document/calculations/pipe-calculation";
 import {
     Calculated,
     CalculatedObject,
@@ -225,14 +227,50 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             }
             if (
                 calculation &&
-                calculation.peakFlowRate !== null &&
-                calculation.peakFlowRate < SIGNIFICANT_FLOW_THRESHOLD
+                calculation.totalPeakFlowRateLS !== null &&
+                calculation.totalPeakFlowRateLS < SIGNIFICANT_FLOW_THRESHOLD
             ) {
                 if (calculation.noFlowAvailableReason !== NoFlowAvailableReason.NO_LOADS_CONNECTED) {
                     baseColor = "#aaaaaa";
                 }
             }
-            if (!calculation || calculation.peakFlowRate === null) {
+
+            ctx.strokeStyle = baseColor;
+            ctx.fillStyle = baseColor;
+            // Direction arrows
+            if (calculation && calculation.configuration === Configuration.RETURN) {
+                if (calculation.flowFrom) {
+                    const endpoints = [this.toObjectCoord(aw), this.toObjectCoord(bw)];
+                    if (calculation.flowFrom.includes(this.entity.endpointUid[1])) {
+                        const tmp = endpoints[1];
+                        endpoints[1] = endpoints[0];
+                        endpoints[0] = tmp;
+                    }
+
+                    const gap = baseWidth * 10;
+                    const vec = Flatten.vector([endpoints[1].x - endpoints[0].x, endpoints[1].y - endpoints[0].y]).normalize();
+                    const orth = vec.rotate90CCW();
+
+                    for (let dist = gap; dist < this.computedLengthM * 1000; dist += gap) {
+                        const base = {x: endpoints[0].x, y: endpoints[0].y};
+                        base.x += vec.x * dist;
+                        base.y += vec.y * dist;
+
+                        ctx.beginPath();
+                        ctx.moveTo(base.x, base.y);
+                        ctx.lineTo(base.x + orth.x * baseWidth * 1.5, base.y + orth.y * baseWidth * 1.5);
+                        ctx.lineTo(base.x + vec.x * baseWidth * 2.5, base.y + vec.y * baseWidth * 2.5);
+                        ctx.lineTo(base.x - orth.x * baseWidth * 1.5, base.y - orth.y * baseWidth * 1.5);
+                        ctx.fill();
+                    }
+                }
+            }
+
+            if (!calculation || (calculation.rawReturnFlowRateLS === null && calculation.configuration === Configuration.RETURN)) {
+                ctx.setLineDash([baseWidth * 1, baseWidth * 2]);
+            }
+
+            if (!calculation || calculation.PSDFlowRateLS === null) {
                 ctx.setLineDash([baseWidth * 3, baseWidth * 3]);
             }
         }
@@ -745,7 +783,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             );
 
         const calc = context.globalStore.getOrCreateCalculation(this.entity);
-        if (calc.isRingMain) {
+        if (calc.configuration === Configuration.RING_MAIN) {
             retval *= RING_MAIN_HEAD_LOSS_CONSTANT;
         }
 

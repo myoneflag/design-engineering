@@ -10,7 +10,7 @@ import { adjustPathHardyCross } from "./flow-solver";
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
 import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import { assertUnreachable, RingMainCalculationMethod } from "../../../common/src/api/config";
-import { NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
+import { Configuration, NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
 
 export class RingMainCalculator {
     engine: CalculationEngine;
@@ -30,12 +30,16 @@ export class RingMainCalculator {
                 const pCalc = this.engine.globalStore.getOrCreateCalculation(
                     (this.engine.globalStore.get(e.value.uid) as Pipe).entity
                 );
-                if (pCalc.peakFlowRate === null) {
+                if (pCalc.totalPeakFlowRateLS === null) {
                     const ret = this.engine.flowGraph.getCycleCovering(visitedEdges, e, true, (e) => {
                         switch (e.value.type) {
                             case EdgeType.PIPE:
+                                // don't size something that's already sized as a return. Ring mains can't be on returns.
+                                const c = this.engine.globalStore.getOrCreateCalculation(this.engine.globalStore.get(e.value.uid)!.entity as PipeEntity);
+                                return (c.configuration === null || c.configuration === Configuration.NORMAL) && c.totalPeakFlowRateLS === null;
                             case EdgeType.FITTING_FLOW:
                             case EdgeType.ISOLATION_THROUGH:
+                            case EdgeType.BALANCING_THROUGH:
                                 return true; // because undirected
                             case EdgeType.BIG_VALVE_HOT_HOT:
                             case EdgeType.BIG_VALVE_HOT_WARM:
@@ -44,8 +48,10 @@ export class RingMainCalculator {
                             case EdgeType.FLOW_SOURCE_EDGE:
                             case EdgeType.CHECK_THROUGH:
                             case EdgeType.PLANT_THROUGH:
+                            case EdgeType.RETURN_PUMP:
                                 return false; // because directed, and can't form ring main
                         }
+                        assertUnreachable(e.value.type)
                     });
                     if (ret) {
                         res.push(ret);
@@ -98,14 +104,14 @@ export class RingMainCalculator {
                     const ccalc = this.engine.globalStore.getOrCreateCalculation(
                         this.engine.globalStore.get(cuid)!.entity as PipeEntity
                     );
-                    if (ccalc.peakFlowRate === null) {
+                    if (ccalc.totalPeakFlowRateLS === null) {
                         console.log("in/out pipe " + cuid + " connected to " + nuid + " has no defined demand");
                         this.setNoFlowReasonForRing(ring, NoFlowAvailableReason.UNUSUAL_CONFIGURATION);
                         return null;
                     }
 
                     if (ccalc.flowFrom === null) {
-                        if (ccalc.peakFlowRate !== 0) {
+                        if (ccalc.totalPeakFlowRateLS !== 0) {
                             throw new Error("missing flow from attribute");
                         }
                     }
@@ -200,6 +206,7 @@ export class RingMainCalculator {
                 }
                 pcalc.realNominalPipeDiameterMM = parseCatalogNumberExact(initialSize.diameterNominalMM);
                 pcalc.realInternalDiameterMM = parseCatalogNumberExact(initialSize.diameterInternalMM);
+                pcalc.realOutsideDiameterMM = parseCatalogNumberExact(initialSize.diameterOutsideMM);
             }
         }
 
@@ -228,13 +235,13 @@ export class RingMainCalculator {
                         const pipeObject = this.engine.globalStore.get(r.value.uid) as Pipe;
                         const pcalc = this.engine.globalStore.getOrCreateCalculation(pipeObject.entity);
                         if (peakFlowFromIsolation.has(r.value.uid)) {
-                            this.engine.sizePipeForFlowRate(
+                            this.engine.setPipePSDFlowRate(
                                 pipeObject.entity,
                                 Math.abs(peakFlowFromIsolation.getFlow(r.value.uid))
                             );
                         }
-                        pcalc.isRingMain = true;
                         pcalc.psdUnits = psdAssignmentFromIsolation.get(pipeObject.uid) || null;
+                        pcalc.configuration = Configuration.RING_MAIN;
                     }
                 }
                 return peakFlowFromIsolation;
@@ -258,14 +265,14 @@ export class RingMainCalculator {
                 if (r.value.type === EdgeType.PIPE) {
                     const pipeObject = this.engine.globalStore.get(r.value.uid) as Pipe;
                     const pcalc = this.engine.globalStore.getOrCreateCalculation(pipeObject.entity);
-                    this.engine.sizePipeForFlowRate(
+                    this.engine.setPipePSDFlowRate(
                         pipeObject.entity,
                         Math.max(
                             Math.abs(peakFlowFromIsolation.getFlow(r.value.uid)),
                             Math.abs(assignment.getFlow(r.uid))
                         )
                     );
-                    pcalc.isRingMain = true;
+                    pcalc.configuration = Configuration.RING_MAIN;
                 }
             }
 

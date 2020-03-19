@@ -1041,6 +1041,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.3",
                     diameterInternalMM: "102",
                     diameterNominalMM: "100",
+                    diameterOutsideMM: "142",
                     pipeUid: "castIronCoated",
                     safeWorkingPressureKPA: "3500"
                 },
@@ -1048,6 +1049,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.3",
                     diameterInternalMM: "157",
                     diameterNominalMM: "150",
+                    diameterOutsideMM: "197",
                     pipeUid: "castIronCoated",
                     safeWorkingPressureKPA: "3500"
                 },
@@ -1055,6 +1057,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.3",
                     diameterInternalMM: "212",
                     diameterNominalMM: "200",
+                    diameterOutsideMM: "252",
                     pipeUid: "castIronCoated",
                     safeWorkingPressureKPA: "3500"
                 },
@@ -1062,6 +1065,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.3",
                     diameterInternalMM: "238.6",
                     diameterNominalMM: "225",
+                    diameterOutsideMM: "278.6",
                     pipeUid: "castIronCoated",
                     safeWorkingPressureKPA: "3500"
                 },
@@ -1069,6 +1073,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.3",
                     diameterInternalMM: "264.8",
                     diameterNominalMM: "250",
+                    diameterOutsideMM: "304.8",
                     pipeUid: "castIronCoated",
                     safeWorkingPressureKPA: "3500"
                 },
@@ -1076,6 +1081,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.3",
                     diameterInternalMM: "322.4",
                     diameterNominalMM: "300",
+                    diameterOutsideMM: "362.4",
                     pipeUid: "castIronCoated",
                     safeWorkingPressureKPA: "3500"
                 }
@@ -1090,6 +1096,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "98.2",
                     diameterNominalMM: "100",
+                    diameterOutsideMM: "101.6",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "1200"
                 },
@@ -1097,6 +1104,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "10.81",
                     diameterNominalMM: "15",
+                    diameterOutsideMM: "12.7",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "5290"
                 },
@@ -1104,6 +1112,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "148.2",
                     diameterNominalMM: "150",
+                    diameterOutsideMM: "152.4",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "1000"
                 },
@@ -1111,6 +1120,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "16.9",
                     diameterNominalMM: "20",
+                    diameterOutsideMM: "19.05",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "3970"
                 },
@@ -1118,6 +1128,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "198.9",
                     diameterNominalMM: "200",
+                    diameterOutsideMM: "203.2",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "720"
                 },
@@ -1125,6 +1136,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "22.8",
                     diameterNominalMM: "25",
+                    diameterOutsideMM: "25.4",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "3500"
                 },
@@ -1132,6 +1144,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "29.1",
                     diameterNominalMM: "32",
+                    diameterOutsideMM: "31.75",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "2780"
                 },
@@ -1139,6 +1152,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "35.4",
                     diameterNominalMM: "40",
+                    diameterOutsideMM: "38.1",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "2300"
                 },
@@ -1146,6 +1160,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "48.3",
                     diameterNominalMM: "50",
+                    diameterOutsideMM: "50.8",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "1710"
                 },
@@ -1153,6 +1168,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "61",
                     diameterNominalMM: "65",
+                    diameterOutsideMM: "63.5",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "1370"
                 },
@@ -1160,6 +1176,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "72.9",
                     diameterNominalMM: "80",
+                    diameterOutsideMM: "76.2",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "1520"
                 }
@@ -1174,6 +1191,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.15",
                     diameterInternalMM: "105",
                     diameterNominalMM: "100",
+                    diameterOutsideMM: "114",
                     pipeUid: "gmsMedium",
                     safeWorkingPressureKPA: "5680"
                 },
@@ -1181,6 +1199,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.15",
                     diameterInternalMM: "155",
                     diameterNominalMM: "150",
+                    diameterOutsideMM: "165",
                     pipeUid: "gmsMedium",
                     safeWorkingPressureKPA: "4330"
                 },
@@ -1188,6 +1207,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.15",
                     diameterInternalMM: "80.7",
                     diameterNominalMM: "80",
+                    diameterOutsideMM: "88.7",
                     pipeUid: "gmsMedium",
                     safeWorkingPressureKPA: "6530"
                 }
@@ -1202,6 +1222,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "89.4",
                     diameterNominalMM: "110",
+                    diameterOutsideMM: "110",
                     pipeUid: "hdpeSdr11",
                     safeWorkingPressureKPA: "1600"
                 },
@@ -1209,6 +1230,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "12.65",
                     diameterNominalMM: "16",
+                    diameterOutsideMM: "16",
                     pipeUid: "hdpeSdr11",
                     safeWorkingPressureKPA: "1600"
                 },
@@ -1216,6 +1238,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "130",
                     diameterNominalMM: "160",
+                    diameterOutsideMM: "160",
                     pipeUid: "hdpeSdr11",
                     safeWorkingPressureKPA: "1600"
                 },
@@ -1223,6 +1246,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "16.05",
                     diameterNominalMM: "20",
+                    diameterOutsideMM: "20",
                     pipeUid: "hdpeSdr11",
                     safeWorkingPressureKPA: "1600"
                 },
@@ -1230,6 +1254,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "162.5",
                     diameterNominalMM: "200",
+                    diameterOutsideMM: "200",
                     pipeUid: "hdpeSdr11",
                     safeWorkingPressureKPA: "1600"
                 },
@@ -1237,6 +1262,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "182.9",
                     diameterNominalMM: "225",
+                    diameterOutsideMM: "225",
                     pipeUid: "hdpeSdr11",
                     safeWorkingPressureKPA: "1600"
                 },
@@ -1244,6 +1270,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "20.15",
                     diameterNominalMM: "25",
+                    diameterOutsideMM: "25",
                     pipeUid: "hdpeSdr11",
                     safeWorkingPressureKPA: "1600"
                 },
@@ -1251,6 +1278,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "256.3",
                     diameterNominalMM: "315",
+                    diameterOutsideMM: "315",
                     pipeUid: "hdpeSdr11",
                     safeWorkingPressureKPA: "1600"
                 },
@@ -1258,6 +1286,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "25.95",
                     diameterNominalMM: "32",
+                    diameterOutsideMM: "32",
                     pipeUid: "hdpeSdr11",
                     safeWorkingPressureKPA: "1600"
                 },
@@ -1265,6 +1294,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "32.3",
                     diameterNominalMM: "40",
+                    diameterOutsideMM: "40",
                     pipeUid: "hdpeSdr11",
                     safeWorkingPressureKPA: "1600"
                 },
@@ -1272,6 +1302,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "40.4",
                     diameterNominalMM: "50",
+                    diameterOutsideMM: "50",
                     pipeUid: "hdpeSdr11",
                     safeWorkingPressureKPA: "1600"
                 },
@@ -1279,6 +1310,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "51",
                     diameterNominalMM: "63",
+                    diameterOutsideMM: "63",
                     pipeUid: "hdpeSdr11",
                     safeWorkingPressureKPA: "1600"
                 },
@@ -1286,6 +1318,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "61",
                     diameterNominalMM: "75",
+                    diameterOutsideMM: "75",
                     pipeUid: "hdpeSdr11",
                     safeWorkingPressureKPA: "1600"
                 }
@@ -1300,6 +1333,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "78.6",
                     diameterNominalMM: "110",
+                    diameterOutsideMM: "110",
                     pipeUid: "pexSdr74",
                     safeWorkingPressureKPA: "2500"
                 },
@@ -1307,6 +1341,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "11.35",
                     diameterNominalMM: "16",
+                    diameterOutsideMM: "16",
                     pipeUid: "pexSdr74",
                     safeWorkingPressureKPA: "2500"
                 },
@@ -1314,6 +1349,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "114.7",
                     diameterNominalMM: "160",
+                    diameterOutsideMM: "160",
                     pipeUid: "pexSdr74",
                     safeWorkingPressureKPA: "2500"
                 },
@@ -1321,6 +1357,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "14.15",
                     diameterNominalMM: "20",
+                    diameterOutsideMM: "20",
                     pipeUid: "pexSdr74",
                     safeWorkingPressureKPA: "2500"
                 },
@@ -1328,6 +1365,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "17.65",
                     diameterNominalMM: "25",
+                    diameterOutsideMM: "25",
                     pipeUid: "pexSdr74",
                     safeWorkingPressureKPA: "2500"
                 },
@@ -1335,6 +1373,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "22.75",
                     diameterNominalMM: "32",
+                    diameterOutsideMM: "32",
                     pipeUid: "pexSdr74",
                     safeWorkingPressureKPA: "2500"
                 },
@@ -1342,6 +1381,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "28.5",
                     diameterNominalMM: "40",
+                    diameterOutsideMM: "40",
                     pipeUid: "pexSdr74",
                     safeWorkingPressureKPA: "2500"
                 },
@@ -1349,6 +1389,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "35.7",
                     diameterNominalMM: "50",
+                    diameterOutsideMM: "50",
                     pipeUid: "pexSdr74",
                     safeWorkingPressureKPA: "2500"
                 },
@@ -1356,6 +1397,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "45.1",
                     diameterNominalMM: "63",
+                    diameterOutsideMM: "63",
                     pipeUid: "pexSdr74",
                     safeWorkingPressureKPA: "2500"
                 },
@@ -1363,6 +1405,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "53.6",
                     diameterNominalMM: "75",
+                    diameterOutsideMM: "75",
                     pipeUid: "pexSdr74",
                     safeWorkingPressureKPA: "2500"
                 }
@@ -1377,6 +1420,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "104",
                     diameterNominalMM: "100",
+                    diameterOutsideMM: "108",
                     pipeUid: "stainlessSteel",
                     safeWorkingPressureKPA: "4500"
                 },
@@ -1384,13 +1428,15 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "13",
                     diameterNominalMM: "15",
+                    diameterOutsideMM: "15",
                     pipeUid: "stainlessSteel",
                     safeWorkingPressureKPA: "20000"
                 },
                 150: {
                     colebrookWhiteCoefficient: "0.0015",
-                    diameterInternalMM: "158",
+                    diameterInternalMM: "162",
                     diameterNominalMM: "150",
+                    diameterOutsideMM: "166",
                     pipeUid: "stainlessSteel",
                     safeWorkingPressureKPA: "4000"
                 },
@@ -1398,6 +1444,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "19.6",
                     diameterNominalMM: "20",
+                    diameterOutsideMM: "22",
                     pipeUid: "stainlessSteel",
                     safeWorkingPressureKPA: "15800"
                 },
@@ -1405,6 +1452,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "25.6",
                     diameterNominalMM: "25",
+                    diameterOutsideMM: "28",
                     pipeUid: "stainlessSteel",
                     safeWorkingPressureKPA: "12500"
                 },
@@ -1412,6 +1460,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "32",
                     diameterNominalMM: "32",
+                    diameterOutsideMM: "35",
                     pipeUid: "stainlessSteel",
                     safeWorkingPressureKPA: "9800"
                 },
@@ -1419,6 +1468,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "39",
                     diameterNominalMM: "40",
+                    diameterOutsideMM: "42",
                     pipeUid: "stainlessSteel",
                     safeWorkingPressureKPA: "8500"
                 },
@@ -1426,20 +1476,23 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "51",
                     diameterNominalMM: "50",
+                    diameterOutsideMM: "54",
                     pipeUid: "stainlessSteel",
                     safeWorkingPressureKPA: "6800"
                 },
                 65: {
                     colebrookWhiteCoefficient: "0.0015",
-                    diameterInternalMM: "72.1",
+                    diameterInternalMM: "67",
                     diameterNominalMM: "65",
+                    diameterOutsideMM: "71",
                     pipeUid: "stainlessSteel",
                     safeWorkingPressureKPA: "7200"
                 },
                 80: {
                     colebrookWhiteCoefficient: "0.0015",
-                    diameterInternalMM: "87.6",
+                    diameterInternalMM: "72.1",
                     diameterNominalMM: "80",
+                    diameterOutsideMM: "76.1",
                     pipeUid: "stainlessSteel",
                     safeWorkingPressureKPA: "5900"
                 }
@@ -2810,6 +2863,34 @@ export const initialCatalog: Catalog = {
                 60: "0.0004656",
                 65: "0.000432",
                 70: "0.0004024"
+            },
+            specificHeatByTemperatureKJ_KGK: {
+                0.01: "4.2174",
+                10: "4.191",
+                20: "4.157",
+                25: "4.1379",
+                30: "4.1175",
+                40: "4.0737",
+                50: "4.0264",
+                60: "3.9767",
+                70: "3.9252",
+                80: "3.8729",
+                90: "3.8204",
+                100: "3.7682",
+                110: "3.7167",
+                120: "3.6662",
+                140: "3.5694",
+                160: "3.4788",
+                180: "3.3949",
+                200: "3.3179",
+                220: "3.2479",
+                240: "3.185",
+                260: "3.1301",
+                280: "3.0849",
+                300: "3.053",
+                320: "3.0428",
+                340: "3.0781",
+                360: "3.2972",
             }
         }
     },

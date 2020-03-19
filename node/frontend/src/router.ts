@@ -264,7 +264,7 @@ router.beforeEach((to, from, next) => {
                             ) {
                                 router.push("/login");
                             } else {
-                                router.push(to);
+                                next();
                             }
                         });
                     } else {

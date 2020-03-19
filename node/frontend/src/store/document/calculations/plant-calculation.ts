@@ -6,6 +6,9 @@ import { DocumentState } from "../types";
 
 export default interface PlantCalculation extends Calculation {
     pressureDropKPA: number | null;
+    circulationFlowRateLS: number | null;
+    circulationPressureLoss: number | null;
+    heatLossKW: number | null;
 }
 
 export function makePlantCalculationFields(): CalculationField[] {
@@ -16,13 +19,39 @@ export function makePlantCalculationFields(): CalculationField[] {
             short: "",
             units: Units.KiloPascals,
             category: FieldCategory.Pressure
-        }
+        },
+
+        {
+            property: "circulationFlowRateLS",
+            title: "Return System Duty Flow Rate",
+            short: "(rtn)",
+            units: Units.LitersPerSecond,
+            category: FieldCategory.FlowRate
+        },
+        {
+            property: "circulationPressureLoss",
+            title: "Return System Pressure Loss",
+            short: "(rtn drop)",
+            units: Units.KiloPascals,
+            category: FieldCategory.Pressure
+        },
+
+        {
+            property: "heatLossKW",
+            title: "Return Heat Loss",
+            short: "",
+            units: Units.KiloWatts,
+            category: FieldCategory.HeatLoss
+        },
     ];
 }
 
 export function emptyPlantCalculation(): PlantCalculation {
     return {
         pressureDropKPA: null,
-        warning: null
+        circulationFlowRateLS: null,
+        circulationPressureLoss: null,
+        heatLossKW: null,
+        warning: null,
     };
 }

@@ -24,14 +24,11 @@ import {
     VALVE_SIZE_MM
 } from "../../../src/htmlcanvas/lib/utils";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
-import { matrixScale } from "../../../src/htmlcanvas/utils";
 import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
 import PipeEntity, { MutablePipe } from "../../../../common/src/api/document/entities/pipe-entity";
-import DirectedValveCalculation, {
-    emptyDirectedValveCalculation
-} from "../../store/document/calculations/directed-valve-calculation";
+import DirectedValveCalculation, { emptyDirectedValveCalculation } from "../../store/document/calculations/directed-valve-calculation";
 import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import uuid from "uuid";
 import { assertUnreachable, ComponentPressureLossMethod } from "../../../../common/src/api/config";
@@ -41,6 +38,7 @@ import { cloneSimple, lowerBoundTable, parseCatalogNumberExact } from "../../../
 import { fillDirectedValveFields } from "../../store/document/entities/fillDirectedValveFields";
 import { determineConnectableSystemUid } from "../../store/document/entities/lib";
 import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
+
 
 @CalculatedObject
 @SelectableObject
@@ -145,6 +143,9 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             case ValveType.STRAINER:
                 this.drawStrainer(context);
                 break;
+            case ValveType.BALANCING:
+                this.drawBalancingValve(context);
+                break;
             default:
                 assertUnreachable(this.entity.valve);
         }
@@ -181,6 +182,42 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             ctx.lineTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM);
             ctx.stroke();
         }
+    }
+
+    drawBalancingValve(context: DrawingContext) {
+        const ctx = context.ctx;
+        ctx.beginPath();
+        ctx.moveTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM);
+        ctx.lineTo(VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
+        ctx.lineTo(VALVE_SIZE_MM, VALVE_HEIGHT_MM);
+        ctx.lineTo(-VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
+
+        ctx.lineTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(-VALVE_SIZE_MM / 2, -VALVE_HEIGHT_MM / 2);
+        ctx.lineTo(-VALVE_SIZE_MM / 2, -VALVE_HEIGHT_MM * 5 / 4);
+        ctx.lineTo(-VALVE_SIZE_MM / 4, -VALVE_HEIGHT_MM * 5 / 4);
+
+        ctx.moveTo(VALVE_SIZE_MM / 2, -VALVE_HEIGHT_MM / 2);
+        ctx.lineTo(VALVE_SIZE_MM / 2, -VALVE_HEIGHT_MM * 5 / 4);
+        ctx.lineTo(VALVE_SIZE_MM * 3 / 4, -VALVE_HEIGHT_MM * 5 / 4);
+
+        ctx.stroke();
+    }
+
+    drawReturnPump(context: DrawingContext) {
+        const ctx = context.ctx;
+        ctx.beginPath();
+        ctx.moveTo(VALVE_HEIGHT_MM * Math.cos(Math.PI * 3 / 4), VALVE_HEIGHT_MM * Math.sin(Math.PI * 3 / 4));
+        ctx.lineTo(VALVE_HEIGHT_MM * Math.cos(- Math.PI * 3 / 4), VALVE_HEIGHT_MM * Math.sin(- Math.PI * 3 / 4));
+        ctx.lineTo(VALVE_HEIGHT_MM, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(0, 0, VALVE_HEIGHT_MM, 0, Math.PI * 2);
+        ctx.stroke();
     }
 
     drawPrvN(context: DrawingContext, n: number) {
@@ -417,7 +454,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             case ValveType.PRV_SINGLE:
             case ValveType.PRV_DOUBLE:
             case ValveType.PRV_TRIPLE:
+            case ValveType.BALANCING:
                 break;
+            default:
+                assertUnreachable(this.entity.valve);
         }
 
         // 2. Pressure Loss Method
@@ -502,6 +542,23 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 } else {
                     return null;
                 }
+            case ValveType.BALANCING:
+                // Pressure for balancing valve is to be set beforehand.
+                const sysUid = determineConnectableSystemUid(context.globalStore, this.entity);
+                if (!sysUid) {
+                    return null;
+                }
+                const vCalc = context.globalStore.getOrCreateCalculation(this.entity);
+                if (vCalc.pressureDropKPA === null) {
+                    return null;
+                }
+                return kpa2head(
+                    vCalc.pressureDropKPA,
+                    getFluidDensityOfSystem(sysUid, context.doc, context.catalog)!,
+                    context.doc.drawing.metadata.calculationParams.gravitationalAcceleration,
+                );
+            default:
+                assertUnreachable(this.entity.valve);
         }
 
         const volLM = (this.largestPipeSizeInternal(context)! ** 2 * Math.PI) / 4 / 1000;
@@ -532,6 +589,8 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 return "PRV Double (50% Load Each)";
             case ValveType.PRV_TRIPLE:
                 return "PRV Triple (33.3% Load Each)";
+            case ValveType.BALANCING:
+                return "Balancing Valve";
         }
         assertUnreachable(this.entity.valve);
     }

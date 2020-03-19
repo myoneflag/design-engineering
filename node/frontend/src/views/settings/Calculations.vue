@@ -86,6 +86,7 @@ export default class Calculations extends Vue {
             ["ringMainCalculationMethod", "Ring Main Calculation Method:", "choice", RING_MAIN_CALCULATION_METHODS],
             ["ceilingPipeHeightM", "Default Pipe Height Above Floor (m):", "number"],
             ["roomTemperatureC", "Room Temperature (°C):", "range", 10, 40],
+            ["windSpeedForHeatLossMS", "Wind Speed for Heat Loss (m/s):", "number"],
             ["gravitationalAcceleration", "Gravitational Acceleration (m/s^2):", "range", 9.77, 9.84, 0.001]
         );
 

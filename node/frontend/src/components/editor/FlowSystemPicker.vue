@@ -1,3 +1,4 @@
+import { InsulationMaterials } from "../../../../common/src/api/config";
 <template>
     <b-dropdown
         size="md"
@@ -26,12 +27,13 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
-import { lighten } from "../../../src/lib/utils";
-import { FlowSystemParameters } from "../../../../common/src/api/document/drawing";
+    import Vue from "vue";
+    import Component from "vue-class-component";
+    import { lighten } from "../../../src/lib/utils";
+    import { FlowSystemParameters } from "../../../../common/src/api/document/drawing";
+    import { InsulationMaterials } from "../../../../common/src/api/config";
 
-@Component({
+    @Component({
     props: {
         disabled: Boolean,
         flowSystems: Array,
@@ -60,6 +62,11 @@ export default class FlowSystemPicker extends Vue {
             name: this.$props.selectedSystemUid,
             temperature: 0,
             uid: this.$props.selectedSystemUid,
+            hasReturnSystem: false,
+            returnIsInsulated: false,
+            insulationMaterial: InsulationMaterials.calciumSilicate,
+            insulationThicknessMM: 0,
+            returnMaxVelocityMS: 0,
             networks: {
                 RISERS: {
                     velocityMS: 0,
