@@ -99,18 +99,19 @@ export function upgrade8to9(original: DrawingState) {
         original.metadata.calculationParams.windSpeedForHeatLossMS = 0;
     }
 
+    let hotPlants = 0;
+    let plants = 0;
     for (const level of Object.values(original.levels)) {
         const entitiesToAdd: DrawableEntityConcrete[] = [];
 
         for (const e of Object.values(level.entities)) {
             if (e.type === EntityType.PLANT) {
+                plants ++;
                 if (e.plant === undefined) {
-                    console.log('pl ');
                     const old = e as unknown as PlantEntityV8;
 
                     let plant: PlantConcrete;
                     if (old.outletSystemUid === StandardFlowSystemUids.HotWater && old.inletSystemUid === StandardFlowSystemUids.ColdWater) {
-                        console.log('hw ');
                         const returnUid = uuid();
                         entitiesToAdd.push({
                             center: {
