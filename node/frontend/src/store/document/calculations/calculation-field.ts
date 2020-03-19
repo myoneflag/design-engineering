@@ -21,6 +21,7 @@ export enum Units {
     MetersPerSecond = "m/s",
     Celsius = "\u00B0C",
     KiloWatts = 'kW',
+    Kv = 'Kv',
 }
 
 export interface CalculationField {

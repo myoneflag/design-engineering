@@ -6,7 +6,7 @@ import { OPERATION_NAMES } from "../../common/src/api/document/operation-transfo
 import { applyDiffNative } from "../../common/src/api/document/state-ot-apply";
 import {
     CURRENT_VERSION,
-    upgrade4to5, upgrade5to6, upgrade6to7, upgrade7to8
+    upgrade4to5, upgrade5to6, upgrade6to7, upgrade7to8, upgrade8to9
 } from "../../common/src/api/upgrade";
 import { diffState } from "../../common/src/api/document/state-differ";
 import stringify from 'json-stable-stringify';
@@ -26,8 +26,9 @@ export async function upgradeDocument(doc: Document) {
         .orderBy('operation.orderIndex', "ASC")
         .getMany();
 
-    console.log('Upgrading a doc with version ' + doc.version + ' and ops ' + ops.length + ' ' + doc.metadata.title);
+    console.log("Upgrading document (" + doc.id + ") " + doc.metadata.title + " from version "  + doc.version + '. Has ops ' + ops.length + ' ');
 
+    let opsUpgraded = 0;
     for (const op of ops) {
         switch (op.operation.type) {
             case OPERATION_NAMES.DIFF_OPERATION:
@@ -56,7 +57,8 @@ export async function upgradeDocument(doc: Document) {
                         upgrade7to8(newUpgraded);
                     // noinspection FallThroughInSwitchStatementJS
                     case 8:
-
+                        upgrade8to9(newUpgraded);
+                        break;
                     case CURRENT_VERSION:
                         break;
                 }
@@ -66,6 +68,7 @@ export async function upgradeDocument(doc: Document) {
                 if (upgradedOps.length) {
                     if (upgradedOps[0].type === OPERATION_NAMES.DIFF_OPERATION) {
                         if (stringify(op.operation) !== stringify(upgradedOps[0]) ) {
+                            opsUpgraded ++;
                             op.operation = upgradedOps[0];
                             await op.save();
                         }
@@ -79,6 +82,12 @@ export async function upgradeDocument(doc: Document) {
             case OPERATION_NAMES.COMMITTED_OPERATION:
                 break;
         }
+    }
+
+    if (opsUpgraded) {
+        console.log("upgraded " + opsUpgraded + " operations");
+    } else {
+        console.log("All good, no changes made");
     }
 
     // upgrade

@@ -35,7 +35,7 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity):
             title: "Kv Value",
             short: "",
             defaultEnabled: true,
-            units: Units.None,
+            units: Units.Kv,
             category: FieldCategory.Pressure
         },
 

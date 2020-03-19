@@ -14,7 +14,7 @@ import uuid from "uuid";
 // implement the upgrade method below.
 // Remember to also add this function to the upgrade function in default.
 
-export const CURRENT_VERSION = 8;
+export const CURRENT_VERSION = 9;
 
 export function upgrade4to5(original: DrawingState) {
     // Plants entity was updated
@@ -105,10 +105,12 @@ export function upgrade8to9(original: DrawingState) {
         for (const e of Object.values(level.entities)) {
             if (e.type === EntityType.PLANT) {
                 if (e.plant === undefined) {
-                    const old = e as PlantEntityV8;
+                    console.log('pl ');
+                    const old = e as unknown as PlantEntityV8;
 
                     let plant: PlantConcrete;
                     if (old.outletSystemUid === StandardFlowSystemUids.HotWater && old.inletSystemUid === StandardFlowSystemUids.ColdWater) {
+                        console.log('hw ');
                         const returnUid = uuid();
                         entitiesToAdd.push({
                             center: {
@@ -184,7 +186,7 @@ export function upgrade8to9(original: DrawingState) {
         }
 
         for (const e of entitiesToAdd) {
-            level.entities[e] = e;
+            level.entities[e.uid] = e;
         }
     }
 }
