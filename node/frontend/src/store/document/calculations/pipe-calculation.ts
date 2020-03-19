@@ -6,6 +6,8 @@ import set = Reflect.set;
 import { isGermanStandard } from "../../../../../common/src/api/config";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
 import { DrawingState } from "../../../../../common/src/api/document/drawing";
+import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
+import { globalStore } from "../mutations";
 
 export enum NoFlowAvailableReason {
     NO_SOURCE = "NO_SOURCE",
@@ -52,7 +54,8 @@ export default interface PipeCalculation extends PsdCalculation, Calculation {
 export function makePipeCalculationFields(
     entity: PipeEntity,
     settings: DrawingState,
-    catalog?: Catalog
+    catalog: Catalog | undefined,
+    globalStore: GlobalStore,
 ): CalculationField[] {
     const psdUnit = getPsdUnitName(settings.metadata.calculationParams.psdMethod);
 
@@ -62,7 +65,7 @@ export function makePipeCalculationFields(
         materialName = " (" + catalog.pipes[pipe.material!].abbreviation + ")";
     }
 
-    const result = [
+    const result: CalculationField[] = [
         {
             property: "PSDFlowRateLS",
             title: "Flow Rate + Spare",
@@ -71,17 +74,26 @@ export function makePipeCalculationFields(
             category: FieldCategory.FlowRate,
             systemUid: entity.systemUid,
             defaultEnabled: true
-        },
-        {
-            property: "rawReturnFlowRateLS",
-            title: "Return Flow Rate (Raw)",
-            short: "(rtn)",
-            units: Units.LitersPerSecond,
-            category: FieldCategory.FlowRate,
-            systemUid: entity.systemUid,
-            defaultEnabled: true,
-            // format: (v: number | null) => "(" + (v === null ? "??" : v.toFixed(2)) + ")"
-        },
+        }
+    ];
+
+    const pCalc = globalStore.getOrCreateCalculation(entity);
+    if (pCalc.configuration === Configuration.RETURN) {
+        result.push(
+            {
+                property: "rawReturnFlowRateLS",
+                title: "Return Flow Rate",
+                short: "(rtn)",
+                units: Units.LitersPerSecond,
+                category: FieldCategory.FlowRate,
+                systemUid: entity.systemUid,
+                defaultEnabled: true,
+                // format: (v: number | null) => "(" + (v === null ? "??" : v.toFixed(2)) + ")"
+            },
+        );
+    }
+
+    result.push(
         {
             property: "realNominalPipeDiameterMM",
             title: "Pipe Diameter",
@@ -145,7 +157,7 @@ export function makePipeCalculationFields(
             category: FieldCategory.LoadingUnits,
             systemUid: entity.systemUid
         }*/
-    ];
+    );
 
     if (settings.metadata.calculationParams.psdMethod !== null) {
         result.push({

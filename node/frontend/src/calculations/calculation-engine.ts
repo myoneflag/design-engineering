@@ -86,7 +86,7 @@ import {
     identifyReturns,
     MINIMUM_BALANCING_VALVE_PRESSURE_DROP_KPA,
     returnBalanceValves,
-    returnFlowRatesAndBalancingValves
+    returnFlowRates
 } from "./returns";
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
 
@@ -312,7 +312,7 @@ export default class CalculationEngine {
                 this.configureComponentsWithExactPSD();
                 this.sizeRingMains();
 
-                returnFlowRatesAndBalancingValves(this, returns);
+                returnFlowRates(this, returns);
                 returnBalanceValves(this, returns);  // balance valves before calculating point pressures so that balancing valve pressure drops are accounted for.
 
                 this.calculateAllPointPressures();

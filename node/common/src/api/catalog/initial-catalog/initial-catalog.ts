@@ -1128,7 +1128,7 @@ export const initialCatalog: Catalog = {
                     colebrookWhiteCoefficient: "0.0015",
                     diameterInternalMM: "198.9",
                     diameterNominalMM: "200",
-                    diameterOutsideMM: null,
+                    diameterOutsideMM: "203.2",
                     pipeUid: "copperTypeB",
                     safeWorkingPressureKPA: "720"
                 },

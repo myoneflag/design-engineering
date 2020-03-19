@@ -18,6 +18,7 @@ import PlantEntity, { fillPlantDefaults } from "../../../common/src/api/document
 import { interpolateTable } from "../../../common/src/lib/utils";
 import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
+import { getFluidDensityOfSystem, kpa2head } from "./pressure-drops";
 
 export interface ReturnRecord {
     spTree: SPTree<Edge<string, FlowEdge>>;
@@ -535,7 +536,7 @@ export function warnMissingBalancingValves(engine: CalculationEngine, record: Re
 
 const RETURNS_RESIZE_MAX_ITER = 10;
 
-export function returnFlowRatesAndBalancingValves(engine: CalculationEngine, returns: ReturnRecord[]) {
+export function returnFlowRates(engine: CalculationEngine, returns: ReturnRecord[]) {
     for (const ret of returns) {
         // Set flow rates of returns, then resize the pipes if necessary.
         for (let i = 0; i < RETURNS_RESIZE_MAX_ITER; i++) {
@@ -678,7 +679,7 @@ function setValveBalances(engine: CalculationEngine,
             if (highestPressureDrop !== null) {
                 for (const c of node.siblings) {
                     const val = pressureDropKPA.get(c.edge)!;
-                    setValveBalances(engine, leafValveUid, pressureDropKPA, isLeafSeries, c, pressureDropDifferentialKPA + highestPressureDrop - val);
+                    setValveBalances(engine, leafValveUid, pressureDropKPA, isLeafSeries, c,pressureDropDifferentialKPA + highestPressureDrop - val);
                 }
             }
             break;
@@ -710,6 +711,18 @@ function setValveBalances(engine: CalculationEngine,
                 // pressureDropDifferentialKPA is the missing pressure in this leg ASSUMING that the balancing valves were
                 // ALREADY at min_ba... so that's why we add MINIMUM_... here.
                 vCalc.pressureDropKPA = pressureDropDifferentialKPA + MINIMUM_BALANCING_VALVE_PRESSURE_DROP_KPA;
+                // hl = (kValue * velocityMS ** 2)) / (2 * ga);
+                // hl * 2 ga / vms**2 = kValue
+
+
+
+                const bar = vCalc.pressureDropKPA / 100;
+                const conns = engine.globalStore.getConnections(o.uid);
+                const pCalc = engine.globalStore.getOrCreateCalculation((engine.globalStore.get(conns[0]) as Pipe).entity);
+                const flowLS = pCalc.rawReturnFlowRateLS!;
+                const flowM3H = flowLS / 1000 * 60 * 60;
+
+                vCalc.kvValue = flowM3H * Math.sqrt(1 / bar);
             } else {
                 // Nada.
             }
