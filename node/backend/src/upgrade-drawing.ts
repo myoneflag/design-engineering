@@ -55,6 +55,8 @@ export async function upgradeDocument(doc: Document) {
                     case 7:
                         upgrade7to8(newUpgraded);
                     // noinspection FallThroughInSwitchStatementJS
+                    case 8:
+
                     case CURRENT_VERSION:
                         break;
                 }
@@ -87,23 +89,5 @@ export async function upgradeDocument(doc: Document) {
 }
 
 export function getInitialDrawing(doc?: Document) {
-    if (!doc) {
-        // latest
-        return cloneSimple(initialDrawing);
-    }
-
-    switch (doc.version) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-        case CURRENT_VERSION:
-            return cloneSimple(initialDrawing);
-        default:
-            throw new Error('invalid state');
-    }
+    return cloneSimple(initialDrawing);
 }
