@@ -6,6 +6,8 @@ import set = Reflect.set;
 import { isGermanStandard } from "../../../../../common/src/api/config";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
 import { DrawingState } from "../../../../../common/src/api/document/drawing";
+import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
+import { globalStore } from "../mutations";
 
 export enum NoFlowAvailableReason {
     NO_SOURCE = "NO_SOURCE",
@@ -14,23 +16,35 @@ export enum NoFlowAvailableReason {
     UNUSUAL_CONFIGURATION = "UNUSUAL_CONFIGURATION",
     NO_ISOLATION_VALVES_ON_MAIN = "NO_ISOLATION_VALVES_ON_MAIN",
     LOADING_UNITS_OUT_OF_BOUNDS = "LOADING_UNITS_OUT_OF_BOUNDS",
-    NO_SUITABLE_PIPE_SIZE = "NO_SUITABLE_PIPE_SIZE"
+    NO_SUITABLE_PIPE_SIZE = "NO_SUITABLE_PIPE_SIZE",
+    INVALID_RETURN_NETWORK = "INVALID_RETURN_NETWORK",
+    NONE = '',
+}
+
+export enum Configuration {
+    NORMAL = 'NORMAL',
+    RING_MAIN = 'RING_MAIN',
+    RETURN = 'RETURN',
 }
 
 export default interface PipeCalculation extends PsdCalculation, Calculation {
-    peakFlowRate: number | null;
+    totalPeakFlowRateLS: number | null;
+    PSDFlowRateLS: number | null;
+
     noFlowAvailableReason: NoFlowAvailableReason | null;
 
-    rawPeakFlowRate: number | null;
+    rawPSDFlowRateLS: number | null;
+    rawReturnFlowRateLS: number | null;
     optimalInnerPipeDiameterMM: number | null;
     realNominalPipeDiameterMM: number | null;
     realInternalDiameterMM: number | null;
-    pressureDropKpa: number | null;
+    realOutsideDiameterMM: number | null;
+    pressureDropKPA: number | null;
     lengthM: number | null;
     flowFrom: string | null;
 
     psdProfile: PsdProfile | null;
-    isRingMain: boolean | null;
+    configuration: Configuration | null;
 
     velocityRealMS: number | null;
 
@@ -40,7 +54,8 @@ export default interface PipeCalculation extends PsdCalculation, Calculation {
 export function makePipeCalculationFields(
     entity: PipeEntity,
     settings: DrawingState,
-    catalog?: Catalog
+    catalog: Catalog | undefined,
+    globalStore: GlobalStore,
 ): CalculationField[] {
     const psdUnit = getPsdUnitName(settings.metadata.calculationParams.psdMethod);
 
@@ -50,26 +65,35 @@ export function makePipeCalculationFields(
         materialName = " (" + catalog.pipes[pipe.material!].abbreviation + ")";
     }
 
-    const result = [
+    const result: CalculationField[] = [
         {
-            property: "peakFlowRate",
+            property: "PSDFlowRateLS",
             title: "Flow Rate + Spare",
             short: "",
             units: Units.LitersPerSecond,
             category: FieldCategory.FlowRate,
             systemUid: entity.systemUid,
             defaultEnabled: true
-        } /*
-        {
-            property: "rawPeakFlowRate",
-            title: "Flow Rate (Raw)",
-            short: "(Raw)",
-            units: Units.LitersPerSecond,
-            category: FieldCategory.FlowRate,
-            systemUid: entity.systemUid,
-            defaultEnabled: false,
-            // format: (v: number | null) => "(" + (v === null ? "??" : v.toFixed(2)) + ")"
-        },*/,
+        }
+    ];
+
+    const pCalc = globalStore.getOrCreateCalculation(entity);
+    if (pCalc.configuration === Configuration.RETURN) {
+        result.push(
+            {
+                property: "rawReturnFlowRateLS",
+                title: "Return Flow Rate",
+                short: "(rtn)",
+                units: Units.LitersPerSecond,
+                category: FieldCategory.FlowRate,
+                systemUid: entity.systemUid,
+                defaultEnabled: true,
+                // format: (v: number | null) => "(" + (v === null ? "??" : v.toFixed(2)) + ")"
+            },
+        );
+    }
+
+    result.push(
         {
             property: "realNominalPipeDiameterMM",
             title: "Pipe Diameter",
@@ -91,7 +115,7 @@ export function makePipeCalculationFields(
             systemUid: entity.systemUid
         },
         {
-            property: "pressureDropKpa",
+            property: "pressureDropKPA",
             title: "Pressure Drop",
             short: "Drop",
             units: Units.KiloPascals,
@@ -133,7 +157,7 @@ export function makePipeCalculationFields(
             category: FieldCategory.LoadingUnits,
             systemUid: entity.systemUid
         }*/
-    ];
+    );
 
     if (settings.metadata.calculationParams.psdMethod !== null) {
         result.push({
@@ -162,17 +186,20 @@ export function makePipeCalculationFields(
 
 export function emptyPipeCalculation(): PipeCalculation {
     return {
-        peakFlowRate: null,
+        totalPeakFlowRateLS: null,
+        PSDFlowRateLS: null,
         noFlowAvailableReason: null,
-        rawPeakFlowRate: null,
+        rawPSDFlowRateLS: null,
+        rawReturnFlowRateLS: null,
         psdUnits: null,
         optimalInnerPipeDiameterMM: null,
         realInternalDiameterMM: null,
-        pressureDropKpa: null,
+        pressureDropKPA: null,
         realNominalPipeDiameterMM: null,
+        realOutsideDiameterMM: null,
         lengthM: null,
         temperatureRange: null,
-        isRingMain: null,
+        configuration: null,
         velocityRealMS: null,
         warning: null,
         psdProfile: null,

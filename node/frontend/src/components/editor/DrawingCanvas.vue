@@ -1,3 +1,4 @@
+import { PlantType } from "../../../../common/src/api/document/entities/plants/plant-types";
 <template>
     <drop @drop="onDrop">
         <!--Anything that needs scrolling needs to be up here, outside of canvasFrame.-->
@@ -179,6 +180,7 @@ import insertDwellingHotCold from "../../htmlcanvas/tools/insert-dwelling-hot-co
 import PDFSnapshotTopBar from "../PDFSnapshotTopBar.vue";
 import CanvasContext from "../../htmlcanvas/lib/canvas-context";
 import { getEffectiveFilter } from "../../lib/utils";
+import { PlantType } from '../../../../common/src/api/document/entities/plants/plant-types';
 
 @Component({
     components: {
@@ -289,6 +291,9 @@ export default class DrawingCanvas extends Vue {
             { type: ValveType.ISOLATION_VALVE, catalogId: "gateValve", name: "" },
             { type: ValveType.ISOLATION_VALVE, catalogId: "ballValve", name: "" },
             { type: ValveType.ISOLATION_VALVE, catalogId: "butterflyValve", name: "" },
+
+            { type: ValveType.BALANCING, catalogId: "balancing", name: "Balancing Valve"},
+
             { type: ValveType.CHECK_VALVE, catalogId: "checkValve", name: "" },
             { type: ValveType.WATER_METER, catalogId: "waterMeter", name: "" },
             { type: ValveType.STRAINER, catalogId: "strainer", name: "" },
@@ -1219,8 +1224,12 @@ export default class DrawingCanvas extends Vue {
         valveName: string;
         networkType: NetworkType;
         variant: string;
+        plantType: PlantType;
+        inletSystemUid: string;
+        outletSystemUid: string;
+        title: string;
     }) {
-        const { entityName, system, catalogId, valveType, nodeType, valveName, networkType, bigValveType } = params;
+        const { entityName, system, catalogId, valveType, nodeType, valveName, networkType, bigValveType, plantType, inletSystemUid, outletSystemUid, title} = params;
         this.select([], SelectMode.Replace);
 
         if (entityName === EntityType.RISER) {
@@ -1237,11 +1246,13 @@ export default class DrawingCanvas extends Vue {
             this.document.uiState.lastUsedFixtureUid = catalogId;
             insertFixture(this, catalogId, 0);
         } else if (entityName === EntityType.DIRECTED_VALVE) {
-            this.document.uiState.lastUsedValveVid = {
-                catalogId,
-                name: valveName,
-                type: valveType
-            };
+            if (valveName) {
+                this.document.uiState.lastUsedValveVid = {
+                    catalogId,
+                    name: valveName,
+                    type: valveType
+                };
+            }
             insertDirectedValve(this, valveType, catalogId, system);
         } else if (entityName === EntityType.LOAD_NODE) {
             if (params.variant === "hot-cold-dwelling") {
@@ -1252,7 +1263,7 @@ export default class DrawingCanvas extends Vue {
         } else if (entityName === EntityType.FLOW_SOURCE) {
             insertFlowSource(this, system);
         } else if (entityName === EntityType.PLANT) {
-            insertPlant(this, 0);
+            insertPlant(this, 0, plantType, inletSystemUid, outletSystemUid, title, false);
         }
     }
 

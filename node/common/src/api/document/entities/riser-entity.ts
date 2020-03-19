@@ -133,7 +133,7 @@ export function fillRiserDefaults(drawing: DrawingState, value: RiserEntity) {
 
     if (system) {
         if (result.maximumVelocityMS == null) {
-            result.maximumVelocityMS = system.networks[NetworkType.RISERS].velocityMS;
+            result.maximumVelocityMS = Number(system.networks[NetworkType.RISERS].velocityMS);
         }
         if (result.material == null) {
             result.material = system.networks[NetworkType.RISERS].material;

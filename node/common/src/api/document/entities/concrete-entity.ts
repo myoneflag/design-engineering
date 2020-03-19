@@ -7,7 +7,7 @@ import BigValveEntity, { SystemNodeEntity } from "./big-valve/big-valve-entity";
 import DirectedValveEntity from "./directed-valves/directed-valve-entity";
 import LoadNodeEntity from "./load-node-entity";
 import FlowSourceEntity from "./flow-source-entity";
-import PlantEntity from "./plant-entity";
+import PlantEntity from "./plants/plant-entity";
 import { EntityType } from "./types";
 import { assertUnreachable } from "../../config";
 

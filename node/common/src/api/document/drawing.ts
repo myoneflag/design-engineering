@@ -1,6 +1,6 @@
 import { DrawableEntityConcrete } from "./entities/concrete-entity";
 import {
-    ComponentPressureLossMethod,
+    ComponentPressureLossMethod, InsulationMaterials,
     PIPE_SIZING_METHODS,
     RingMainCalculationMethod,
     SupportedDwellingStandards,
@@ -94,11 +94,27 @@ export interface NetworkParams {
     material: string;
 }
 
+export interface FlowSystemParametersV8 extends WithID {
+    name: string;
+    temperature: number;
+    color: Color;
+    fluid: string;
+
+    networks: { [key in keyof typeof NetworkType]: NetworkParams };
+}
+
 export interface FlowSystemParameters extends WithID {
     name: string;
     temperature: number;
     color: Color;
     fluid: string;
+
+    hasReturnSystem: boolean;
+    returnIsInsulated: boolean;
+    returnMaxVelocityMS: number;
+    insulationMaterial: InsulationMaterials;
+    insulationThicknessMM: number;
+
 
     networks: { [key in keyof typeof NetworkType]: NetworkParams };
 }
@@ -113,6 +129,7 @@ export interface CalculationParameters {
 
     ceilingPipeHeightM: number;
     roomTemperatureC: number;
+    windSpeedForHeatLossMS: number;
     gravitationalAcceleration: number;
 }
 
@@ -137,6 +154,12 @@ export const initialDrawing: DrawingState = {
                 color: { hex: "#009CE0" },
                 uid: "cold-water",
                 fluid: "water",
+                hasReturnSystem: false,
+                returnIsInsulated: false,
+                returnMaxVelocityMS: 1,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationThicknessMM: 25,
+
                 networks: {
                     RISERS: {
                         spareCapacityPCT: 0,
@@ -161,6 +184,12 @@ export const initialDrawing: DrawingState = {
                 color: { hex: "#F44E3B" },
                 uid: "hot-water",
                 fluid: "water",
+                hasReturnSystem: true,
+                returnIsInsulated: true,
+                returnMaxVelocityMS: 1,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationThicknessMM: 25,
+
                 networks: {
                     RISERS: {
                         spareCapacityPCT: 0,
@@ -185,6 +214,12 @@ export const initialDrawing: DrawingState = {
                 color: { hex: "#F49000" },
                 uid: "warm-water",
                 fluid: "water",
+                hasReturnSystem: false,
+                returnIsInsulated: false,
+                returnMaxVelocityMS: 1,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationThicknessMM: 25,
+
                 networks: {
                     RISERS: {
                         spareCapacityPCT: 0,
@@ -214,6 +249,7 @@ export const initialDrawing: DrawingState = {
 
             ceilingPipeHeightM: 3.0,
             roomTemperatureC: 20,
+            windSpeedForHeatLossMS: 0,
             gravitationalAcceleration: 9.80665
         },
         availableFixtures: ["basin", "bath", "shower", "kitchenSink", "wc", "washingMachine", "laundryTrough"]

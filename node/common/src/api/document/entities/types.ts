@@ -1,6 +1,7 @@
 import { DrawableEntityConcrete } from "./concrete-entity";
 import { assertUnreachable } from "../../config";
 import { BigValveType } from "./big-valve/big-valve-entity";
+import { PlantType } from "./plants/plant-types";
 
 export enum EntityType {
     BACKGROUND_IMAGE = "BACKGROUND_IMAGE",
@@ -99,6 +100,19 @@ export function getReferences(entity: DrawableEntityConcrete): string[] {
             break;
         case EntityType.PLANT:
             refs.push(entity.inletUid, entity.outletUid);
+            switch (entity.plant.type) {
+                case PlantType.RETURN_SYSTEM:
+                    refs.push(entity.plant.returnUid);
+                    break;
+                case PlantType.TANK:
+                    break;
+                case PlantType.CUSTOM:
+                    break;
+                case PlantType.PUMP:
+                    break;
+                default:
+                    assertUnreachable(entity.plant);
+            }
             break;
         default:
             assertUnreachable(entity);

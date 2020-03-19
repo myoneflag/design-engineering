@@ -40,7 +40,7 @@ import FlowSourceEntity from "../../../../common/src/api/document/entities/flow-
 import FlowSourceCalculation, {
     emptyFlowSourceCalculation
 } from "../../store/document/calculations/flow-source-calculation";
-import PlantEntity from "../../../../common/src/api/document/entities/plant-entity";
+import PlantEntity from "../../../../common/src/api/document/entities/plants/plant-entity";
 import PlantCalculation, { emptyPlantCalculation } from "../../store/document/calculations/plant-calculation";
 import { assertUnreachable } from "../../../../common/src/api/config";
 import { cloneSimple } from "../../../../common/src/lib/utils";

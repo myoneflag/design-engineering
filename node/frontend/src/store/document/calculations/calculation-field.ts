@@ -8,7 +8,8 @@ export enum FieldCategory {
     Temperature,
     LoadingUnits,
     FixtureUnits,
-    Height
+    Height,
+    HeatLoss,
 }
 
 export enum Units {
@@ -18,7 +19,9 @@ export enum Units {
     Meters = "m",
     KiloPascals = "kPa",
     MetersPerSecond = "m/s",
-    Celsius = "\u00B0C"
+    Celsius = "\u00B0C",
+    KiloWatts = 'kW',
+    Kv = 'Kv',
 }
 
 export interface CalculationField {

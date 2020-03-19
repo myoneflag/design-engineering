@@ -120,6 +120,7 @@ export interface PipeSpec {
     pipeUid: string;
     diameterNominalMM: Diameter | null;
     diameterInternalMM: Diameter | null;
+    diameterOutsideMM: Diameter | null;
     colebrookWhiteCoefficient: string | null;
     safeWorkingPressureKPA: string | null;
 }
@@ -138,4 +139,5 @@ export interface FluidsSpec {
     name: string;
     densityKGM3: string;
     dynamicViscosityByTemperature: { [key: string]: string };
+    specificHeatByTemperatureKJ_KGK: { [key: string]: string };
 }

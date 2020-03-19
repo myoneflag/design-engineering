@@ -8,6 +8,7 @@ export default interface DirectedValveCalculation extends Calculation {
     flowRateLS: number | null;
     pressureDropKPA: number | null;
     pressureKPA: number | null;
+    kvValue: number | null;
     sizeMM: number | null;
 }
 
@@ -24,9 +25,20 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity):
             property: "pressureDropKPA",
             title: "Pressure Drop",
             short: "Drop",
+            defaultEnabled: true,
             units: Units.KiloPascals,
             category: FieldCategory.Pressure
         },
+
+        {
+            property: "kvValue",
+            title: "Kv Value",
+            short: "",
+            defaultEnabled: true,
+            units: Units.Kv,
+            category: FieldCategory.Pressure
+        },
+
         {
             property: "pressureKPA",
             title: "Pressure",
@@ -47,6 +59,7 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity):
         case ValveType.ISOLATION_VALVE:
         case ValveType.WATER_METER:
         case ValveType.STRAINER:
+        case ValveType.BALANCING:
             break;
         case ValveType.RPZD_SINGLE:
         case ValveType.RPZD_DOUBLE_SHARED:
@@ -73,6 +86,7 @@ export function emptyDirectedValveCalculation(): DirectedValveCalculation {
     return {
         flowRateLS: null,
         pressureDropKPA: null,
+        kvValue: null,
         pressureKPA: null,
         warning: null,
         sizeMM: null

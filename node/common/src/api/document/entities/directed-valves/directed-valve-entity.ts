@@ -22,7 +22,9 @@ export function makeDirectedValveFields(
     catalog: Catalog,
     drawing: DrawingState
 ): PropertyField[] {
-    const fields: PropertyField[] = [
+    const fields: PropertyField[] = [];
+
+    fields.push(
         {
             property: "systemUidOption",
             title: "Flow System",
@@ -32,7 +34,8 @@ export function makeDirectedValveFields(
             params: { systems: drawing.metadata.flowSystems },
             multiFieldId: "systemUid"
         },
-
+    );
+    fields.push(
         {
             property: "color",
             title: "Color:",
@@ -42,7 +45,7 @@ export function makeDirectedValveFields(
             params: null,
             multiFieldId: "color"
         }
-    ];
+    );
 
     switch (entity.valve.type) {
         case ValveType.CHECK_VALVE:
@@ -96,6 +99,8 @@ export function makeDirectedValveFields(
             }
             break;
         }
+        case ValveType.BALANCING:
+            break;
         case ValveType.WATER_METER:
             break;
         case ValveType.STRAINER:
@@ -129,7 +134,6 @@ export function makeDirectedValveFields(
                 multiFieldId: "targetPressure",
                 requiresInput: true
             });
-            break;
             if (entity.valve.type === ValveType.PRV_DOUBLE ||
                 entity.valve.type === ValveType.PRV_TRIPLE
             ) {
