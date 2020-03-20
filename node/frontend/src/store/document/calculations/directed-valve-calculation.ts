@@ -29,16 +29,20 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity):
             units: Units.KiloPascals,
             category: FieldCategory.Pressure
         },
+    ];
 
-        {
+    if (entity.valve.type === ValveType.BALANCING) {
+        fields.push({
             property: "kvValue",
             title: "Kv Value",
             short: "",
             defaultEnabled: true,
             units: Units.Kv,
             category: FieldCategory.Pressure
-        },
+        });
+    }
 
+    fields.push(
         {
             property: "pressureKPA",
             title: "Pressure",
@@ -46,7 +50,7 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity):
             units: Units.KiloPascals,
             category: FieldCategory.Pressure
         }
-    ];
+    );
     if (entity.systemUidOption) {
         fields = fields.map((f) => {
             f.systemUid = entity.systemUidOption!;

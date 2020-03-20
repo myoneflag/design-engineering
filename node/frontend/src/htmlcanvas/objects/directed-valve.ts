@@ -599,8 +599,6 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
     sourceHeirs: string[] = [];
     connect(uid: string) {
-        console.log('directed valve ' + this.uid + ' connect ' + uid);
-        console.log(this.globalStore.getConnections(this.entity.uid).length);
         if (this.globalStore.getConnections(this.entity.uid).length === 0) {
             // this.entity.sourceUid = uid;
         } else if (this.globalStore.getConnections(this.entity.uid).length === 1) {
@@ -616,7 +614,6 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     }
 
     disconnect(uid: string) {
-        console.log('directed valve ' + this.uid + ' disconnecting ' + uid);
         const conns = this.globalStore.getConnections(this.entity.uid);
         if (conns.length > 2) {
             this.sourceHeirs = this.sourceHeirs.filter((tuid) => tuid !== uid);

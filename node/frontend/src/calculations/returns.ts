@@ -18,7 +18,6 @@ import PlantEntity, { fillPlantDefaults } from "../../../common/src/api/document
 import { interpolateTable } from "../../../common/src/lib/utils";
 import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
-import { getFluidDensityOfSystem, kpa2head } from "./pressure-drops";
 
 export interface ReturnRecord {
     spTree: SPTree<Edge<string, FlowEdge>>;
@@ -622,16 +621,29 @@ export function findValveImbalances(
             const pressures = [];
 
             for (const uid of [node.edgeConcrete.from, node.edgeConcrete.to]) {
-                const o = engine.globalStore.get(uid)!;
-                if (o.entity.type === EntityType.DIRECTED_VALVE) {
-                    if (o.entity.valve.type === ValveType.BALANCING) {
-                        valveUid = o.entity.uid;
-                    }
-                }
                 const p = nodePressureKPA.get(engine.serializeNode({connectable: uid, connection: node.edgeConcrete.value.uid}));
                 pressures.push(p === undefined ? null : p);
             }
 
+
+            // only account for a valve once
+            if (node.edgeConcrete.value.type === EdgeType.PIPE) {
+                const flowFrom = engine.globalStore.getOrCreateCalculation((engine.globalStore.get(node.edgeConcrete.value.uid) as Pipe).entity).flowFrom;
+
+                if (!flowFrom) {
+                    // cannot balance deez valves since we can't agree on a canonical direction.
+                } else {
+
+                    const o = engine.globalStore.get(flowFrom)!;
+                    if (o.entity.type === EntityType.DIRECTED_VALVE) {
+                        if (o.entity.valve.type === ValveType.BALANCING) {
+                            valveUid = o.entity.uid;
+                        }
+                    }
+
+                }
+
+            }
             // prefer null over numbers, to ensure that if we make a min or max exist, it is because every dependent
             // value was defined.
             minPressure = null;
@@ -657,15 +669,17 @@ export function findValveImbalances(
     return {valveUid, leafSeries, maxPressure, minPressure};
 }
 
+// Returns true if the pressure drop was consumed, for the purposes of only having one segment in a series consume it.
 function setValveBalances(engine: CalculationEngine,
                           leafValveUid: Map<string, string | null>,
                           pressureDropKPA: Map<string, number | null>,
                           isLeafSeries: Map<string, boolean>,
                           node: SPNode<Edge<string, FlowEdge>>,
                           pressureDropDifferentialKPA: number,
-) {
+): boolean {
     switch (node.type) {
-        case "parallel":
+        case "parallel": {
+            let consumed = false;
             let highestPressureDrop: number | null = -Infinity;
             for (const c of node.siblings) {
                 const val = pressureDropKPA.get(c.edge);
@@ -679,25 +693,26 @@ function setValveBalances(engine: CalculationEngine,
             if (highestPressureDrop !== null) {
                 for (const c of node.siblings) {
                     const val = pressureDropKPA.get(c.edge)!;
-                    setValveBalances(engine, leafValveUid, pressureDropKPA, isLeafSeries, c,pressureDropDifferentialKPA + highestPressureDrop - val);
-                }
-            }
-            break;
-        case "series":
-            if (leafValveUid.get(node.edge)) {
-                // this thang has a valve.
-                for (const c of node.children) {
-                    if (leafValveUid.get(c.edge)) {
-                        setValveBalances(engine, leafValveUid, pressureDropKPA, isLeafSeries, c, pressureDropDifferentialKPA);
-                        break;
+                    const seen = setValveBalances(engine, leafValveUid, pressureDropKPA, isLeafSeries, c,pressureDropDifferentialKPA + highestPressureDrop - val);
+                    if (seen) {
+                        consumed = true;
                     }
                 }
-            } else {
-                for (const c of node.children) {
-                    setValveBalances(engine, leafValveUid, pressureDropKPA, isLeafSeries, c, pressureDropDifferentialKPA);
+            }
+
+            return consumed; // assumes that the network was valid in the first place
+        }
+        case "series": {
+            let consumed = false;
+
+            for (const c of node.children) {
+                consumed = setValveBalances(engine, leafValveUid, pressureDropKPA, isLeafSeries, c, pressureDropDifferentialKPA) || consumed;
+                if (consumed) {
+                    pressureDropDifferentialKPA = 0;
                 }
             }
-            break;
+            return consumed;
+        }
         case "leaf":
 
             if (leafValveUid.get(node.edge)) {
@@ -723,11 +738,13 @@ function setValveBalances(engine: CalculationEngine,
                 const flowM3H = flowLS / 1000 * 60 * 60;
 
                 vCalc.kvValue = flowM3H * Math.sqrt(1 / bar);
+                return true;
             } else {
                 // Nada.
+                return false;
             }
-            break;
     }
+    assertUnreachable(node);
 }
 
 export function returnBalanceValves(engine: CalculationEngine, returns: ReturnRecord[]) {
