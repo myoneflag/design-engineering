@@ -6,6 +6,7 @@ import axios from "axios";
 import LoadProfile from "../src/views/LoadProfile.vue";
 import ChangePassword from "../src/views/ChangePassword.vue";
 import ContactUs from "./views/ContactUs.vue";
+import ChangeLogs from "./views/ChangeLogs.vue"
 import { getSession } from "../src/api/logins";
 import { AccessLevel, User as IUser } from "../../common/src/models/User";
 import Organizations from "./views/Organizations.vue";
@@ -241,7 +242,12 @@ const router = new Router({
                 auth: true,
                 needsEula: false
             }
-        }
+        },
+        {
+            path: "/changeLogs",
+            name: "changeLogs",
+            component: ChangeLogs
+        },
     ]
 });
 

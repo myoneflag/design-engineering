@@ -5,6 +5,7 @@ import {documentRouter} from './controllers/document';
 
 import 'express-ws';
 import {contactRouter} from "./controllers/contact";
+import {changeLogMessageRouter} from './controllers/changeLogMessage';
 import {pdfRouter} from "./controllers/pdf";
 import {organizationRouter} from "./controllers/organization";
 import {usersRouter} from "./controllers/users";
@@ -16,6 +17,7 @@ const router: Router = Router();
 router.use('/catalog', catalogRouter);
 router.use('/', loginRouter);
 router.use('/documents', documentRouter);
+router.use('/changeLogMessage', changeLogMessageRouter);
 router.use('/contacts', contactRouter);
 router.use('/uploadPdf', pdfRouter);
 router.use('/organizations', organizationRouter);

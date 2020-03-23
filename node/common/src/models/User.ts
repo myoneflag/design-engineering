@@ -44,6 +44,9 @@ export class User extends BaseEntity {
 
     @Column({ nullable: true })
     lastActivityOn: Date | null;
+
+    @Column({ nullable: true })
+    lastNoticeSeenOn: Date | null;
 }
 
 export function allUserFields(except?: Array<keyof User>) {

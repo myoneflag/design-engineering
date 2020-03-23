@@ -84,3 +84,18 @@ export async function updateUser(
         }
     }
 }
+
+export async function updateLastNoticeSeen(
+): Promise<APIResult<User>> {
+    try {
+        return (
+            await axios.get("/api/changeLogMessage/updateNotice")
+        ).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return { success: false, message: e.response.data.message };
+        } else {
+            return { success: false, message: e.message };
+        }
+    }
+}
