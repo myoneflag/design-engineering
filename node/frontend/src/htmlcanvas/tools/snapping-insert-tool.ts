@@ -31,106 +31,128 @@ export default class SnappingInsertTool extends PointTool {
         lastChainUid?: string,
     ) {
         const newOnMove = (worldCoord: Coord, event: MouseEvent) => {
-            worldCoord = this.snapWorldCoord(worldCoord);
+            if (!event.shiftKey) {
+                worldCoord = this.snapWorldCoord(worldCoord);
+            }
             onMove(worldCoord, event);
         };
         const newOnPointChosen = (worldCoord: Coord, event: MouseEvent) => {
-            worldCoord = this.snapWorldCoord(worldCoord);
+            if (!event.shiftKey) {
+                worldCoord = this.snapWorldCoord(worldCoord);
+            }
             onPointChosen(worldCoord, event);
         };
 
         super(onFinish, newOnMove, newOnPointChosen, clickActionName, keyHandlers, getInfoText);
+        this.clearSnapHovers();
+        this.lastChainUid = lastChainUid;
+
+        this.keyHandlers.push([
+            KeyCode.SHIFT,
+            {
+                name: "+ don't snap",
+                fn: () => {
+                    this.clearSnapHovers.bind(this)();
+                },
+            }
+        ]);
+    }
+
+    lastContext: CanvasContext;
+
+    clearSnapHovers() {
         this.nSnapEvents = 0;
         this.snapTargets = [];
         this.lastSnapHover = null;
         this.snapTargetLocs = [];
         this.pipeSnapTargetLocs = [];
         this.pipeSnapTargets = [];
-        this.lastChainUid = lastChainUid;
     }
-
-    lastContext: CanvasContext;
 
     onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
         this.lastContext = context;
         context.$store.dispatch("document/revert", false);
-        const wc = context.viewPort.toWorldCoord({x: event.clientX, y: event.clientY});
-        const uids = context.visibleObjects.sort((a, b) => context.hydraulicsLayer.entitySortOrder(a.entity) - context.hydraulicsLayer.entitySortOrder(b.entity)).map((o) => o.uid).reverse();
-        const interactiveUids = context.interactive ? context.interactive.map((o) => o.uid) : [];
 
-        uids.push(...interactiveUids);
+        if (!event.shiftKey) {
 
-        let found = false;
+            const wc = context.viewPort.toWorldCoord({x: event.clientX, y: event.clientY});
+            const uids = context.visibleObjects.sort((a, b) => context.hydraulicsLayer.entitySortOrder(a.entity) - context.hydraulicsLayer.entitySortOrder(b.entity)).map((o) => o.uid).reverse();
+            const interactiveUids = context.interactive ? context.interactive.map((o) => o.uid) : [];
 
-        for (const ouid of uids) {
-            const o = context.globalStore.get(ouid)!;
+            uids.push(...interactiveUids);
 
-            if (o.snappable) {
-                const r = o.toObjectLength(context.viewPort.toWorldLength(CONNECTABLE_SNAP_RADIUS_PX));
-                if (interactiveUids.includes(o.uid) || o.inBounds(o.toObjectCoord(wc), r)) {
-                    found = true;
-                    if (o.uid !== this.lastSnapHover) {
-                        this.lastSnapHover = o.uid;
-                        this.nSnapEvents ++;
-                        const thisSnapEvent = this.nSnapEvents;
-                        const ouid = o.uid;
-                        let locs: Coord[];
-                        let loc: Coord;
+            let found = false;
 
-                        if (o.centered) {
-                            loc = o.toWorldCoord();
-                        } else if (o instanceof Pipe) {
-                            locs = o.worldEndpoints().map((c3d) => ({x: c3d.x, y: c3d.y}));
-                        }
+            for (const ouid of uids) {
+                const o = context.globalStore.get(ouid)!;
 
-                        const fn = () => {
-                            if (ouid === this.lastSnapHover && this.nSnapEvents === thisSnapEvent) {
+                if (o.snappable) {
+                    const r = o.toObjectLength(context.viewPort.toWorldLength(CONNECTABLE_SNAP_RADIUS_PX));
+                    if (interactiveUids.includes(o.uid) || o.inBounds(o.toObjectCoord(wc), r)) {
+                        found = true;
+                        if (o.uid !== this.lastSnapHover) {
+                            this.lastSnapHover = o.uid;
+                            this.nSnapEvents ++;
+                            const thisSnapEvent = this.nSnapEvents;
+                            const ouid = o.uid;
+                            let locs: Coord[];
+                            let loc: Coord;
 
-                                if (o.centered) {
-                                    if (!this.snapTargets.includes(ouid)) {
-                                        this.snapTargets.splice(0, 0, ouid);
-                                        this.snapTargetLocs.splice(0, 0, loc);
-
-                                        if (this.snapTargets.length > 2) {
-                                            this.snapTargets.pop();
-                                            this.snapTargetLocs.pop();
-                                        }
-
-                                        context.scheduleDraw();
-                                    }
-                                } else if (o instanceof Pipe) {
-
-                                    if (!this.pipeSnapTargets.includes(ouid)) {
-                                        this.pipeSnapTargets.splice(0, 0, ouid);
-                                        this.pipeSnapTargetLocs.splice(0, 0, locs);
-
-                                        if (this.pipeSnapTargets.length > 1) {
-                                            this.pipeSnapTargets.pop();
-                                            this.pipeSnapTargetLocs.pop();
-                                        }
-
-                                        context.scheduleDraw();
-                                    }
-                                }
-
+                            if (o.centered) {
+                                loc = o.toWorldCoord();
+                            } else if (o instanceof Pipe) {
+                                locs = o.worldEndpoints().map((c3d) => ({x: c3d.x, y: c3d.y}));
                             }
-                        };
 
-                        if (o.snapHoverTimeoutMS) {
-                            setTimeout(() => {
+                            const fn = () => {
+                                if (ouid === this.lastSnapHover && this.nSnapEvents === thisSnapEvent) {
+
+                                    if (o.centered) {
+                                        if (!this.snapTargets.includes(ouid)) {
+                                            this.snapTargets.splice(0, 0, ouid);
+                                            this.snapTargetLocs.splice(0, 0, loc);
+
+                                            if (this.snapTargets.length > 2) {
+                                                this.snapTargets.pop();
+                                                this.snapTargetLocs.pop();
+                                            }
+
+                                            context.scheduleDraw();
+                                        }
+                                    } else if (o instanceof Pipe) {
+
+                                        if (!this.pipeSnapTargets.includes(ouid)) {
+                                            this.pipeSnapTargets.splice(0, 0, ouid);
+                                            this.pipeSnapTargetLocs.splice(0, 0, locs);
+
+                                            if (this.pipeSnapTargets.length > 1) {
+                                                this.pipeSnapTargets.pop();
+                                                this.pipeSnapTargetLocs.pop();
+                                            }
+
+                                            context.scheduleDraw();
+                                        }
+                                    }
+
+                                }
+                            };
+
+                            if (o.snapHoverTimeoutMS) {
+                                setTimeout(() => {
+                                    fn.bind(this)();
+                                }, o.snapHoverTimeoutMS);
+                            } else {
                                 fn.bind(this)();
-                            }, o.snapHoverTimeoutMS);
-                        } else {
-                            fn.bind(this)();
+                            }
                         }
+                        break;
                     }
-                    break;
                 }
             }
-        }
 
-        if (!found) {
-            this.lastSnapHover = null;
+            if (!found) {
+                this.lastSnapHover = null;
+            }
         }
 
         return super.onMouseMove(event, context);
@@ -224,13 +246,7 @@ export default class SnappingInsertTool extends PointTool {
     onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
         console.log('mousedown, btn ' + event.button);
         if (event.button === 2) {
-            this.pipeSnapTargets = [];
-            this.pipeSnapTargetLocs = [];
-            this.lastSnapResult = undefined;
-            this.snapTargets = [];
-            this.snapTargetLocs = [];
-            this.nSnapEvents ++;
-            this.lastSnapHover = null;
+            this.clearSnapHovers();
         }
         return super.onMouseDown(event, context);
     }
