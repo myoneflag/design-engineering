@@ -35,11 +35,11 @@ DocumentStatus } from "../../../common/src/models/Document";
                 </b-row>
                 <b-row>
                     <b-col>
-                        <b-modal id="modal-1" scrollable title="What's New" v-if="compiledChangeLogs.length >= 0">
+                        <b-modal id="modal-1" scrollable title="What's New" v-if="compiledChangeLogs.length >= 0" size="lg">
                             <b-card v-for="log in compiledChangeLogs" :key="log.id">
-                                <b-card-text style="text-align: left">
+                                <b-card-text style="text-align: left;">
                                     <b>Version:</b> {{ log.version }}<br />
-                                    {{ log.message }} <br /><br />
+                                    <span style="white-space: pre-wrap">{{ log.message }}</span> <br /><br />
                                     {{ new Date(log.createdOn).toLocaleString() }}<br />
                                     <b>Submitted by:</b> {{ log.submittedBy.username }}<br />
                                     <b-badge pill variant="primary" v-for="badge in log.tags.split(',')" :key="badge">{{ badge }}</b-badge>

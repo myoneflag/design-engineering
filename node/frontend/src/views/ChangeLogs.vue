@@ -6,7 +6,7 @@
                 <b-row>
                     <b-col>
                         <h1 class="title">
-                            Change Logs: see, add. 
+                            Change Logs: see, add.
                         </h1>
                     </b-col>
                 </b-row>
@@ -19,28 +19,28 @@
                                 label="Version:"
                                 label-for="t1"
                             >
-                                <b-form-input 
+                                <b-form-input
                                 id="t1" size="sm" v-model="version" placeholder="version(s) this update message is relevant to.">
                                 </b-form-input>
                             </b-form-group>
-                            
+
                             <b-form-group
                                 id="input-group-2"
                                 label="Tags:"
                                 label-for="t2"
                             >
-                                <b-form-input 
+                                <b-form-input
                                     id="t2" size="sm" v-model="tags" placeholder="tags of the features relevant for this update message.">
                                 </b-form-input>
                             </b-form-group>
-                            
+
                             <b-form-group
                                 id="input-group-3"
                                 label="Message:"
                                 label-for="t3"
                             >
-                                <b-form-textarea 
-                                    id="t3" v-model="message" placeholder="the message for this update">
+                                <b-form-textarea
+                                    id="t3" v-model="message" placeholder="the message for this update" rows="15">
                                 </b-form-textarea>
                             </b-form-group>
                             <b-button type="submit" variant="primary">Submit</b-button>
