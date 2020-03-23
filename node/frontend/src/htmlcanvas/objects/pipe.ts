@@ -54,6 +54,8 @@ import {
 } from "../../../../common/src/lib/utils";
 import { determineConnectableNetwork } from "../../store/document/entities/lib";
 import { assertUnreachable, ComponentPressureLossMethod } from "../../../../common/src/api/config";
+import { CenteredObject } from "../lib/object-traits/centered-object";
+import { SnappableObject } from "../lib/object-traits/snappable-object";
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 1.5;
@@ -64,6 +66,7 @@ let lastDrawnScale: number = 1;
 @CalculatedObject
 @SelectableObject
 @DraggableObject
+@SnappableObject
 export default class Pipe extends BackedDrawableObject<PipeEntity> implements Draggable, Calculated {
     get position(): Matrix {
         // We don't draw by object location because the object doesn't really have an own location. Instead, its
@@ -93,6 +96,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
     lastDrawnLine!: Flatten.Segment | Flatten.Point;
     lastDrawnWidthInternal!: number;
+    snapHoverTimeoutMS: 0;
 
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
         const { ctx, vp } = context;

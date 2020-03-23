@@ -242,6 +242,10 @@ export abstract class LayerImplementation implements Layer {
         return false;
     }
 
+    snapObjectUid: string | null = null;
+    // keep track of whether a timer is valid when they invoke.
+    snapId: number = 0;
+
     onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
         if (this.draggedObjects) {
             context.$store.dispatch("document/revert", false);
@@ -258,6 +262,35 @@ export abstract class LayerImplementation implements Layer {
                     const object = this.context.globalStore.get(uid)!;
                     const res = object.onMouseMove(event, context);
                     if (res.handled) {
+                        // snap to dat
+                        if (object.snappable) {
+                            if (this.snapObjectUid === object.uid) {
+                                // we are good
+                            } else {
+                                this.snapId ++;
+                                const targetSnapId = this.snapId;
+                                this.snapObjectUid = object.uid;
+                                setTimeout(() => {
+                                    if (this.snapObjectUid === object.uid && targetSnapId === this.snapId) {
+                                        // do da snapdance
+                                        if (context.document.uiState.snapTarget.includes(this.snapObjectUid)) {
+                                            context.document.uiState.snapTarget.splice(
+                                                context.document.uiState.snapTarget.indexOf(this.snapObjectUid),
+                                                1,
+                                            );
+                                        }
+
+                                        context.document.uiState.snapTarget.splice(0, 0, this.snapObjectUid);
+                                        while (context.document.uiState.snapTarget.length > 2) {
+                                            context.document.uiState.snapTarget.pop();
+                                        }
+                                    } else {
+                                        // this snap interaction expired.
+                                    }
+                                }, object.snapHoverTimeoutMS);
+                            }
+                        }
+
                         return res;
                     }
                 } catch (e) {
@@ -268,6 +301,8 @@ export abstract class LayerImplementation implements Layer {
                 }
             }
         }
+
+        this.snapObjectUid = null;
 
         return UNHANDLED;
     }

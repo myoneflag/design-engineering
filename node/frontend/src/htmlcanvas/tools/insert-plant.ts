@@ -18,6 +18,7 @@ import {
     PressureMethod
 } from "../../../../common/src/api/document/entities/plants/plant-types";
 import { assertUnreachable } from "../../../../common/src/api/config";
+import SnappingInsertTool from "./snapping-insert-tool";
 
 export default function insertPlant(context: CanvasContext, angle: number, type: PlantType, inletSystemUid: string, outletSystemUid: string, title: string, rightToLeft: boolean = false) {
     const plantUid = uuid();
@@ -29,7 +30,7 @@ export default function insertPlant(context: CanvasContext, angle: number, type:
 
     MainEventBus.$emit(
         "set-tool-handler",
-        new PointTool(
+        new SnappingInsertTool(
             async (interrupted, displaced) => {
                 if (interrupted) {
                     context.$store.dispatch("document/revert");
@@ -43,9 +44,6 @@ export default function insertPlant(context: CanvasContext, angle: number, type:
             (wc: Coord) => {
                 newEntity = null;
                 // Preview
-                context.$store.dispatch("document/revert", false);
-                const doc = context.document as DocumentState;
-
                 newEntity = {
                     heightAboveFloorM: 0.75,
                     heightMM: 300,

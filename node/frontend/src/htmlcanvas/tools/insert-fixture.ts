@@ -15,6 +15,7 @@ import { KeyCode } from "../../../src/htmlcanvas/utils";
 import { SupportedPsdStandards } from "../../../../common/src/api/config";
 import { Coord } from "../../../../common/src/api/document/drawing";
 import { parseCatalogNumberExact } from "../../../../common/src/lib/utils";
+import SnappingInsertTool from "./snapping-insert-tool";
 
 export default function insertFixture(context: CanvasContext, fixtureName: string, angle: number) {
     const fixtureUid = uuid();
@@ -23,7 +24,7 @@ export default function insertFixture(context: CanvasContext, fixtureName: strin
 
     MainEventBus.$emit(
         "set-tool-handler",
-        new PointTool(
+        new SnappingInsertTool(
             async (interrupted, displaced) => {
                 if (interrupted) {
                     context.$store.dispatch("document/revert");
@@ -37,7 +38,6 @@ export default function insertFixture(context: CanvasContext, fixtureName: strin
             (wc: Coord) => {
                 newEntity = null;
                 // Preview
-                context.$store.dispatch("document/revert", false);
                 const doc = context.document as DocumentState;
 
                 newEntity = {

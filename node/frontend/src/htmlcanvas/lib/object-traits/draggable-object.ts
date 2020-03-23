@@ -42,6 +42,7 @@ export function DraggableObject<T extends new (...args: any[]) => Draggable & Dr
         }
 
         onMouseMove(event: MouseEvent, context: CanvasContext) {
+
             let result = UNHANDLED;
             const world = context.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
             const objectCoord = this.toObjectCoord(world);

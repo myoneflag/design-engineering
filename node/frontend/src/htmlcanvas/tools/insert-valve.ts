@@ -6,13 +6,14 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
 import { addValveAndSplitPipe } from "../../../src/htmlcanvas/lib/black-magic/split-pipe";
 import { FlowSystemParameters } from "../../../../common/src/api/document/drawing";
+import SnappingInsertTool, { CONNECTABLE_SNAP_RADIUS_PX } from "./snapping-insert-tool";
 
 export default function insertValve(context: CanvasContext, system: FlowSystemParameters) {
     let pipe: Pipe | null = null;
 
     MainEventBus.$emit(
         "set-tool-handler",
-        new PointTool(
+        new SnappingInsertTool(
             async (interrupted, displaced) => {
                 MainEventBus.$emit("set-tool-handler", null);
                 if (interrupted) {
@@ -24,15 +25,13 @@ export default function insertValve(context: CanvasContext, system: FlowSystemPa
                 }
             },
             async (wc, event) => {
-                context.$store.dispatch("document/revert", false);
-
                 context.offerInteraction(
                     {
                         type: InteractionType.INSERT,
                         entityType: EntityType.FITTING,
                         worldCoord: wc,
                         systemUid: system.uid,
-                        worldRadius: 30
+                        worldRadius: context.viewPort.toWorldLength(CONNECTABLE_SNAP_RADIUS_PX),
                     },
                     (drawable) => {
                         return drawable[0].type === EntityType.PIPE;

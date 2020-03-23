@@ -38,6 +38,8 @@ export default interface CanvasContext {
 
     lastDrawingContext: DrawingContext | null;
 
+    visibleObjects: BaseBackedObject[];
+
     offerInteraction(
         interaction: Interaction,
         filter?: (objects: DrawableEntityConcrete[]) => boolean,

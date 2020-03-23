@@ -26,12 +26,14 @@ import { Coord } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { fillDefaultLoadNodeFields } from "../../store/document/entities/fillDefaultLoadNodeFields";
 import { ConnectableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
+import { SnappableObject } from "../lib/object-traits/snappable-object";
 
 @SelectableObject
 @CenterDraggableObject
 @CalculatedObject
 @ConnectableObject
 @CenteredObject
+@SnappableObject
 export default class LoadNode extends BackedConnectable<LoadNodeEntity> implements Calculated, Connectable {
     get maximumConnections(): number | null {
         switch (this.entity.node.type) {

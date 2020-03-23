@@ -36,6 +36,7 @@ import { StandardFlowSystemUids } from "../../../store/catalog";
 import { assertUnreachable, ComponentPressureLossMethod } from "../../../../../common/src/api/config";
 import { Coord, coordDist2 } from "../../../../../common/src/api/document/drawing";
 import { cloneSimple, interpolateTable, parseCatalogNumberExact } from "../../../../../common/src/lib/utils";
+import { SnappableObject } from "../../lib/object-traits/snappable-object";
 
 export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 
@@ -43,6 +44,7 @@ export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 @SelectableObject
 @CenterDraggableObject
 @CenteredObject
+@SnappableObject
 export default class BigValve extends BackedDrawableObject<BigValveEntity> implements Calculated {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.BIG_VALVE, BigValve);

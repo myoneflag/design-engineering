@@ -29,12 +29,14 @@ import { EPS } from "../../calculations/pressure-drops";
 import FlowSourceCalculation from "../../store/document/calculations/flow-source-calculation";
 import { Coord, FlowSystemParameters, NetworkType } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
+import { SnappableObject } from "../lib/object-traits/snappable-object";
 
 @CalculatedObject
 @SelectableObject
 @CenterDraggableObject
 @ConnectableObject
 @CenteredObject
+@SnappableObject
 export default class FlowSource extends BackedConnectable<FlowSourceEntity> implements Connectable, Calculated {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.FLOW_SOURCE, FlowSource);
@@ -72,7 +74,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
             // we want to draw a pixel sized dark halo around a selected component
             const haloSize = (Math.max(this.MINIMUM_RADIUS_PX, screenSize) + 5) / scale;
 
-            ctx.fillStyle = lighten(this.color(doc).hex, -90, 1);
+            ctx.fillStyle = lighten(this.color(doc).hex, 0, 0.5);
 
             ctx.beginPath();
             ctx.lineWidth = 0;

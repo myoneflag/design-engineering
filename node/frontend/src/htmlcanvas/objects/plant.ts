@@ -33,6 +33,7 @@ import { Coord, coordDist2 } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { PlantType } from "../../../../common/src/api/document/entities/plants/plant-types";
 import { assertUnreachable } from "../../../../common/src/api/config";
+import { SnappableObject } from "../lib/object-traits/snappable-object";
 
 export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 
@@ -40,6 +41,7 @@ export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 @SelectableObject
 @CenterDraggableObject
 @CenteredObject
+@SnappableObject
 export default class Plant extends BackedDrawableObject<PlantEntity> implements Calculated {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.PLANT, Plant);

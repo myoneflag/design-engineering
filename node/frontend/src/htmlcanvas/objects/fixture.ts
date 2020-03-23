@@ -33,11 +33,13 @@ import Cached from "../lib/cached";
 import { Coord } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import SystemNode from "./big-valve/system-node";
+import { SnappableObject } from "../lib/object-traits/snappable-object";
 
 @CalculatedObject
 @SelectableObject
 @CenterDraggableObject
 @CenteredObject
+@SnappableObject
 export default class Fixture extends BackedDrawableObject<FixtureEntity> implements Calculated {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.FIXTURE, Fixture);

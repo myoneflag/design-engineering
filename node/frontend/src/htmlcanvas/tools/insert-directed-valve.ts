@@ -22,6 +22,7 @@ import { cloneSimple } from "../../../../common/src/lib/utils";
 import BackedDrawableObject from "../lib/backed-drawable-object";
 import { BaseBackedConnectable } from "../lib/BackedConnectable";
 import { assertUnreachable } from "../../../../common/src/api/config";
+import SnappingInsertTool, { CONNECTABLE_SNAP_RADIUS_PX } from "./snapping-insert-tool";
 
 export default function insertDirectedValve(
     context: CanvasContext,
@@ -34,7 +35,7 @@ export default function insertDirectedValve(
 
     MainEventBus.$emit(
         "set-tool-handler",
-        new PointTool(
+        new SnappingInsertTool(
             (interrupted, displaced) => {
                 MainEventBus.$emit("set-tool-handler", null);
                 if (interrupted) {
@@ -46,15 +47,13 @@ export default function insertDirectedValve(
                 }
             },
             async (wc, event) => {
-                await context.$store.dispatch("document/revert", false);
-
                 const interactionA = context.offerInteraction(
                     {
                         type: InteractionType.INSERT,
                         entityType: EntityType.DIRECTED_VALVE,
                         systemUid: null,
                         worldCoord: wc,
-                        worldRadius: 30
+                        worldRadius: context.viewPort.toWorldLength(CONNECTABLE_SNAP_RADIUS_PX),
                     },
                     (drawable) => {
                         return (

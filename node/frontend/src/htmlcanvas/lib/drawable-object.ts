@@ -21,6 +21,8 @@ export default abstract class DrawableObject {
     draggable: boolean = false;
     centered: boolean = false;
     calculated: boolean = false;
+    snappable: boolean = false;
+    snapHoverTimeoutMS: number = 100;
 
     constructor(parent: DrawableObject | null) {
         this.parentInternal = parent;

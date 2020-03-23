@@ -35,12 +35,14 @@ import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity
 import { Coord } from "../../../../common/src/api/document/drawing";
 import { parseCatalogNumberExact } from "../../../../common/src/lib/utils";
 import { assertUnreachable, ComponentPressureLossMethod } from "../../../../common/src/api/config";
+import { SnappableObject } from "../lib/object-traits/snappable-object";
 
 @CalculatedObject
 @SelectableObject
 @CenterDraggableObject
 @ConnectableObject
 @CenteredObject
+@SnappableObject
 export default class Fitting extends BackedConnectable<FittingEntity> implements Connectable, Calculated {
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.FITTING, Fitting);

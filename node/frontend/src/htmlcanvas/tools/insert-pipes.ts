@@ -26,6 +26,7 @@ import {
     FlowSystemParameters,
     NetworkType
 } from "../../../../common/src/api/document/drawing";
+import CoordContextualSnappingTool, { CONNECTABLE_SNAP_RADIUS_PX } from "./snapping-insert-tool";
 
 export default function insertPipes(context: CanvasContext, system: FlowSystemParameters, network: NetworkType) {
     // strategy:
@@ -34,7 +35,7 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
     // 3. clicking creates new pipe with start point the same as endpoint.
     MainEventBus.$emit(
         "set-tool-handler",
-        new PointTool(
+        new CoordContextualSnappingTool(
             (interrupted, displaced) => {
                 if (!displaced) {
                     MainEventBus.$emit("set-tool-handler", null);
@@ -140,7 +141,7 @@ function insertPipeChain(
 
     MainEventBus.$emit(
         "set-tool-handler",
-        new PointTool(
+        new CoordContextualSnappingTool(
             (interrupted, displaced) => {
                 if (interrupted) {
                     // revert changes.
@@ -158,7 +159,6 @@ function insertPipeChain(
             },
             (wc: Coord, event: MouseEvent) => {
                 newPipe = null;
-                context.$store.dispatch("document/revert", false);
 
                 // create pipe
                 // maybe we drew onto an existing node.
@@ -167,9 +167,7 @@ function insertPipeChain(
                     {
                         type: InteractionType.STARTING_PIPE,
                         system,
-                        worldRadius: context.lastDrawingContext
-                            ? Math.max(context.lastDrawingContext.vp.surfaceToWorldLength(3), 50)
-                            : 0,
+                        worldRadius: context.viewPort.toWorldLength(CONNECTABLE_SNAP_RADIUS_PX),
                         worldCoord: wc
                     },
                     // the current pipe is in an invalid state so don't include that.
@@ -202,39 +200,6 @@ function insertPipeChain(
                 } else {
                     // Create an endpoint fitting for it instead
                     context.document.uiState.selectedUids.splice(0);
-                    if (!event.shiftKey) {
-                        // Snap onto a direction.
-
-                        const bases = [Flatten.vector(0, 1)];
-                        const connectable = context.globalStore.get(lastAttachment.uid) as BackedDrawableObject<
-                            ConnectableEntityConcrete
-                        > &
-                            Connectable;
-
-                        const lawc = connectable.fromParentToWorldCoord(lastAttachment.center);
-                        const lawcp = Flatten.point(lawc.x, lawc.y);
-                        const wcp = Flatten.point(wc.x, wc.y);
-                        connectable.getRadials(pipeUid).forEach(([radialWc, obj]) => {
-                            // right now, we don't need a uid check because we are guaranteed that the state was
-                            // reset.
-                            bases.push(Flatten.vector(lawcp, Flatten.point(radialWc.x, radialWc.y)));
-                        });
-
-                        let bestPoint: [number, Flatten.Point] = [Infinity, wcp];
-                        bases.forEach((dirVec) => {
-                            for (let i = 0; i < 4; i++) {
-                                const contextPoint = wcp.projectionOn(Flatten.line(lawcp, dirVec));
-                                const dist = contextPoint.distanceTo(wcp)[0];
-                                if (dist < bestPoint[0]) {
-                                    bestPoint = [dist, contextPoint];
-                                }
-                                dirVec = dirVec.rotate90CCW();
-                            }
-                        });
-
-                        wc.x = bestPoint[1].x;
-                        wc.y = bestPoint[1].y;
-                    }
 
                     // Create 2nd valve
                     nextEntity = {
@@ -323,7 +288,8 @@ function insertPipeChain(
                 } else {
                     return [];
                 }
-            }
+            },
+            lastAttachment.uid,
         )
     );
 }

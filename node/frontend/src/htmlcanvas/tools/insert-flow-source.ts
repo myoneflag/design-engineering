@@ -9,12 +9,13 @@ import { Coord, FlowSystemParameters } from "../../../../common/src/api/document
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { moveOnto } from "../lib/black-magic/move-onto";
 import { BaseBackedConnectable } from "../lib/BackedConnectable";
+import SnappingInsertTool, { CONNECTABLE_SNAP_RADIUS_PX } from "./snapping-insert-tool";
 
 export default function insertFlowSource(context: CanvasContext, system: FlowSystemParameters) {
     const newUid = uuid();
     MainEventBus.$emit(
         "set-tool-handler",
-        new PointTool(
+        new SnappingInsertTool(
             (interrupted, displaced) => {
                 if (interrupted) {
                     context.$store.dispatch("document/revert");
@@ -25,13 +26,12 @@ export default function insertFlowSource(context: CanvasContext, system: FlowSys
             },
             async (wc: Coord) => {
                 // Preview
-                await context.$store.dispatch("document/revert", false);
                 const interactive = context.offerInteraction(
                     {
                         entityType: EntityType.RISER,
                         worldCoord: wc,
                         systemUid: system.uid,
-                        worldRadius: 10,
+                        worldRadius: context.viewPort.toWorldLength(CONNECTABLE_SNAP_RADIUS_PX),
                         type: InteractionType.INSERT
                     },
                     (o) => {

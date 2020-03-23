@@ -245,7 +245,7 @@ export default class DrawingCanvas extends Vue {
         return new ViewPort(TM.transform(TM.translate(0, 0), TM.scale(50)), 5000, 5000);
     }
 
-    get allObjects(): BaseBackedObject[] {
+    get visibleObjects(): BaseBackedObject[] {
         if (!this.initialized || !this.currentLevel) {
             return [];
         }
@@ -311,27 +311,6 @@ export default class DrawingCanvas extends Vue {
             }
             return a;
         });
-    }
-
-    get visibleObjects(): BaseBackedObject[] {
-        if (!this.initialized) {
-            return [];
-        }
-
-        const objects: BaseBackedObject[] = Object.keys(this.document.drawing.shared).map(
-            (e) => this.globalStore.get(e)!
-        );
-        if (this.currentLevel) {
-            objects.push(...Object.keys(this.currentLevel.entities).map((e) => this.globalStore.get(e)!));
-        }
-
-        objects.forEach((o) => {
-            if (o === undefined) {
-                throw new Error("Inconsistent state: an object in the document is not in the store");
-            }
-        });
-
-        return objects;
     }
 
     get activeLayer(): Layer {
@@ -1730,34 +1709,35 @@ export default class DrawingCanvas extends Vue {
 
     onMouseDown(event: MouseEvent): boolean {
         this.mouseClicked = true;
-        if (event.button === 2) {
-            if (event.shiftKey && !event.ctrlKey) {
-                this.selectBoxMode = SelectMode.Exclude;
-            } else if (event.ctrlKey && !event.shiftKey) {
-                this.selectBoxMode = SelectMode.Add;
-            } else if (event.shiftKey && event.ctrlKey) {
-                this.selectBoxMode = SelectMode.Toggle;
-            } else {
-                this.selectBoxMode = SelectMode.Replace;
-            }
-            this.selectBoxStartSelected = _.clone(this.hydraulicsLayer.selectedIds);
-            event.preventDefault();
-
-            // start box thingy
-            this.selectBox = new SelectBox(
-                null,
-                this.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY }),
-                this.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY })
-            );
-
-            return true;
-        }
-
         if (this.toolHandler) {
             if (this.toolHandler.onMouseDown(event, this)) {
                 return true;
             }
         } else {
+            if (event.button === 2) {
+                if (event.shiftKey && !event.ctrlKey) {
+                    this.selectBoxMode = SelectMode.Exclude;
+                } else if (event.ctrlKey && !event.shiftKey) {
+                    this.selectBoxMode = SelectMode.Add;
+                } else if (event.shiftKey && event.ctrlKey) {
+                    this.selectBoxMode = SelectMode.Toggle;
+                } else {
+                    this.selectBoxMode = SelectMode.Replace;
+                }
+                this.selectBoxStartSelected = _.clone(this.hydraulicsLayer.selectedIds);
+                event.preventDefault();
+
+                // start box thingy
+                this.selectBox = new SelectBox(
+                    null,
+                    this.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY }),
+                    this.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY })
+                );
+
+                return true;
+            }
+
+
             // Pass the event down to layers below
             if (this.activeLayer) {
                 if (this.activeLayer.onMouseDown(event, this)) {

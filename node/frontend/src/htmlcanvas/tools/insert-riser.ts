@@ -18,12 +18,13 @@ import { cloneSimple } from "../../../../common/src/lib/utils";
 import { moveOnto } from "../lib/black-magic/move-onto";
 import { BaseBackedConnectable } from "../lib/BackedConnectable";
 import { cooperativeYield } from "../utils";
+import SnappingInsertTool, { CONNECTABLE_SNAP_RADIUS_PX } from "./snapping-insert-tool";
 
 export default function insertRiser(context: CanvasContext, system: FlowSystemParameters) {
     const newUid = uuid();
     MainEventBus.$emit(
         "set-tool-handler",
-        new PointTool(
+        new SnappingInsertTool(
             (interrupted, displaced) => {
                 if (interrupted) {
                     context.$store.dispatch("document/revert");
@@ -34,52 +35,50 @@ export default function insertRiser(context: CanvasContext, system: FlowSystemPa
             },
             (wc: Coord) => {
                 // Preview
-                context.$store.dispatch("document/revert", false).then(() => {
-                    const interactive = context.offerInteraction(
-                        {
-                            entityType: EntityType.RISER,
-                            worldCoord: wc,
-                            systemUid: system.uid,
-                            worldRadius: 10,
-                            type: InteractionType.INSERT
-                        },
-                        (o) => {
-                            return o[0].type === EntityType.FITTING || o[0].type === EntityType.PIPE;
-                        }
-                    );
-
-                    const connections: string[] = [];
-
-                    const newEntity: RiserEntity = {
-                        bottomHeightM: null,
-                        topHeightM: null,
-                        center: cloneSimple(wc),
-                        color: null,
-                        material: null,
-                        maximumVelocityMS: null,
-                        calculationHeightM: null,
-                        parentUid: null,
-                        diameterMM: null,
+                const interactive = context.offerInteraction(
+                    {
+                        entityType: EntityType.RISER,
+                        worldCoord: wc,
                         systemUid: system.uid,
-                        temperatureC: null,
-                        type: EntityType.RISER,
-                        uid: newUid
-                    };
-
-                    context.$store.dispatch("document/addEntity", newEntity);
-
-                    if (interactive) {
-                        moveOnto(
-                            context.globalStore.get(newEntity.uid)! as BaseBackedConnectable,
-                            context.globalStore.get(interactive[0].uid)! as BaseBackedConnectable,
-                            context
-                        );
+                        worldRadius: context.viewPort.toWorldLength(CONNECTABLE_SNAP_RADIUS_PX),
+                        type: InteractionType.INSERT
+                    },
+                    (o) => {
+                        return o[0].type === EntityType.FITTING || o[0].type === EntityType.PIPE;
                     }
+                );
 
-                    // rebaseAll(context);
+                const connections: string[] = [];
 
-                    context.scheduleDraw();
-                });
+                const newEntity: RiserEntity = {
+                    bottomHeightM: null,
+                    topHeightM: null,
+                    center: cloneSimple(wc),
+                    color: null,
+                    material: null,
+                    maximumVelocityMS: null,
+                    calculationHeightM: null,
+                    parentUid: null,
+                    diameterMM: null,
+                    systemUid: system.uid,
+                    temperatureC: null,
+                    type: EntityType.RISER,
+                    uid: newUid
+                };
+
+                context.$store.dispatch("document/addEntity", newEntity);
+
+                if (interactive) {
+                    moveOnto(
+                        context.globalStore.get(newEntity.uid)! as BaseBackedConnectable,
+                        context.globalStore.get(interactive[0].uid)! as BaseBackedConnectable,
+                        context
+                    );
+                }
+
+                // rebaseAll(context);
+
+                context.scheduleDraw();
             },
             () => {
                 context.$store.dispatch("document/validateAndCommit").then(() => {

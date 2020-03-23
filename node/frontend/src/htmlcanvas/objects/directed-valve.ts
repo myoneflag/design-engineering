@@ -39,6 +39,7 @@ import { fillDirectedValveFields } from "../../store/document/entities/fillDirec
 import { determineConnectableSystemUid } from "../../store/document/entities/lib";
 import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
 import { EndErrorLine } from "tslint/lib/verify/lines";
+import { SnappableObject } from "../lib/object-traits/snappable-object";
 
 
 @CalculatedObject
@@ -46,6 +47,7 @@ import { EndErrorLine } from "tslint/lib/verify/lines";
 @CenterDraggableObject
 @ConnectableObject
 @CenteredObject
+@SnappableObject
 export default class DirectedValve extends BackedConnectable<DirectedValveEntity> implements Calculated {
     static register() {
         DrawableObjectFactory.registerEntity(EntityType.DIRECTED_VALVE, this);

@@ -45,6 +45,8 @@ export interface UIState {
     viewOnlyReason: string | null;
     historyIndex: number;
 
+    snapTarget: string[];
+
     pastesByLevel: { [key: string]: number };
 
     exportSettings: ExportUiSettings;
@@ -138,6 +140,7 @@ export const initialUIState: UIState = {
     viewOnlyReason: null,
 
     pastesByLevel: {},
+    snapTarget: [],
 
     exportSettings: {
         paperSize: PAPER_SIZES.A1,

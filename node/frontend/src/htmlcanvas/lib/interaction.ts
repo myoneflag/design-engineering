@@ -49,5 +49,5 @@ export enum InteractionType {
     INSERT,
     EXTEND_NETWORK,
     MOVE_ONTO_RECEIVE,
-    MOVE_ONTO_SEND
+    MOVE_ONTO_SEND,
 }

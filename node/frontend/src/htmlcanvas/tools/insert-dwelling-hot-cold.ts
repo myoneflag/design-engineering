@@ -17,6 +17,7 @@ import { BaseBackedConnectable } from "../lib/BackedConnectable";
 import { KeyCode } from "../utils";
 import { StandardFlowSystemUids } from "../../store/catalog";
 import Flatten from "@flatten-js/core";
+import SnappingInsertTool from "./snapping-insert-tool";
 
 export const DWELLING_PAIR_DEFAULT_DISTANCE_MM = 200;
 
@@ -25,7 +26,7 @@ export default function insertDwellingHotCold(context: CanvasContext, rotationDE
     const hotUid = uuid();
     MainEventBus.$emit(
         "set-tool-handler",
-        new PointTool(
+        new SnappingInsertTool(
             (interrupted, displaced) => {
                 if (interrupted) {
                     context.$store.dispatch("document/revert");
@@ -38,52 +39,50 @@ export default function insertDwellingHotCold(context: CanvasContext, rotationDE
             },
             (wc: Coord) => {
                 // Preview
-                context.$store.dispatch("document/revert", false).then(() => {
-                    const coldLoc = Flatten.vector(DWELLING_PAIR_DEFAULT_DISTANCE_MM, 0)
-                        .rotate((rotationDEG / 180) * Math.PI)
-                        .add(Flatten.vector(wc.x, wc.y));
-                    const hotLoc = Flatten.vector(-DWELLING_PAIR_DEFAULT_DISTANCE_MM, 0)
-                        .rotate((rotationDEG / 180) * Math.PI)
-                        .add(Flatten.vector(wc.x, wc.y));
+                const coldLoc = Flatten.vector(DWELLING_PAIR_DEFAULT_DISTANCE_MM, 0)
+                    .rotate((rotationDEG / 180) * Math.PI)
+                    .add(Flatten.vector(wc.x, wc.y));
+                const hotLoc = Flatten.vector(-DWELLING_PAIR_DEFAULT_DISTANCE_MM, 0)
+                    .rotate((rotationDEG / 180) * Math.PI)
+                    .add(Flatten.vector(wc.x, wc.y));
 
-                    const hotEntity: LoadNodeEntity = {
-                        node: {
-                            type: NodeType.DWELLING,
-                            dwellings: 1,
-                            continuousFlowLS: 0
-                        },
-                        systemUidOption: StandardFlowSystemUids.HotWater,
-                        center: { x: hotLoc.x, y: hotLoc.y },
-                        color: null,
-                        calculationHeightM: null,
-                        parentUid: null,
-                        type: EntityType.LOAD_NODE,
-                        linkedToUid: coldUid,
-                        uid: hotUid
-                    };
+                const hotEntity: LoadNodeEntity = {
+                    node: {
+                        type: NodeType.DWELLING,
+                        dwellings: 1,
+                        continuousFlowLS: 0
+                    },
+                    systemUidOption: StandardFlowSystemUids.HotWater,
+                    center: { x: hotLoc.x, y: hotLoc.y },
+                    color: null,
+                    calculationHeightM: null,
+                    parentUid: null,
+                    type: EntityType.LOAD_NODE,
+                    linkedToUid: coldUid,
+                    uid: hotUid
+                };
 
-                    const coldEntity: LoadNodeEntity = {
-                        node: {
-                            type: NodeType.DWELLING,
-                            dwellings: 1,
-                            continuousFlowLS: 0
-                        },
-                        systemUidOption: StandardFlowSystemUids.ColdWater,
-                        center: { x: coldLoc.x, y: coldLoc.y },
-                        color: null,
-                        calculationHeightM: null,
-                        parentUid: null,
-                        type: EntityType.LOAD_NODE,
-                        linkedToUid: null,
-                        uid: coldUid
-                    };
+                const coldEntity: LoadNodeEntity = {
+                    node: {
+                        type: NodeType.DWELLING,
+                        dwellings: 1,
+                        continuousFlowLS: 0
+                    },
+                    systemUidOption: StandardFlowSystemUids.ColdWater,
+                    center: { x: coldLoc.x, y: coldLoc.y },
+                    color: null,
+                    calculationHeightM: null,
+                    parentUid: null,
+                    type: EntityType.LOAD_NODE,
+                    linkedToUid: null,
+                    uid: coldUid
+                };
 
-                    context.$store.dispatch("document/addEntity", hotEntity);
-                    context.$store.dispatch("document/addEntity", coldEntity);
-                    // rebaseAll(context);
+                context.$store.dispatch("document/addEntity", hotEntity);
+                context.$store.dispatch("document/addEntity", coldEntity);
+                // rebaseAll(context);
 
-                    context.scheduleDraw();
-                });
+                context.scheduleDraw();
             },
             () => {
                 context.$store.dispatch("document/validateAndCommit").then(() => {

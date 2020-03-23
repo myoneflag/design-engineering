@@ -131,10 +131,14 @@ export default class PointTool implements ToolHandler {
         if (this.moved) {
             return false;
         } else {
-            // End event.
-            this.onPointChosen(context.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY }), event);
-            this.finish(false, false);
-            return true;
+            if (event.button === 0) {
+                // End event.
+                this.onPointChosen(context.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY }), event);
+                this.finish(false, false);
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 

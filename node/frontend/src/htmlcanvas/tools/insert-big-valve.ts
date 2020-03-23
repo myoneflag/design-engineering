@@ -18,6 +18,7 @@ import { KeyCode } from "../../../src/htmlcanvas/utils";
 import connectBigValveToSource from "../lib/black-magic/connect-big-valve-to-source";
 import { assertUnreachable } from "../../../../common/src/api/config";
 import { Coord } from "../../../../common/src/api/document/drawing";
+import SnappingInsertTool from "./snapping-insert-tool";
 
 export default function insertBigValve(context: CanvasContext, bigValveType: BigValveType, angle: number) {
     const tmvUid = uuid();
@@ -29,7 +30,7 @@ export default function insertBigValve(context: CanvasContext, bigValveType: Big
 
     MainEventBus.$emit(
         "set-tool-handler",
-        new PointTool(
+        new SnappingInsertTool(
             (interrupted, displaced) => {
                 if (interrupted) {
                     context.$store.dispatch("document/revert");
@@ -43,8 +44,7 @@ export default function insertBigValve(context: CanvasContext, bigValveType: Big
                 }
             },
             (wc: Coord, event) => {
-                context.$store.dispatch("document/revert", false);
-
+                // revert is handled by move.
                 const doc = context.document as DocumentState;
 
                 let outputs: Array<[StandardFlowSystemUids, string]>;
