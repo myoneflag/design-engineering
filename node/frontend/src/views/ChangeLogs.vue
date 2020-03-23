@@ -62,7 +62,7 @@
                                 <b>Date:</b> {{ new Date(log.createdOn).toLocaleString() }}<br />
                                 <b>Version:</b> {{ log.version }}<br />
                                 <b>Submitted by:</b> {{ log.submittedBy }}<br />
-                                <b>Message:</b> {{ log.message }}
+                                <b>Message:</b><p style="white-space: pre-wrap">{{ log.message }}</p>
                             </b-card-text>
                         </b-card>
                     </b-col>
