@@ -19,6 +19,7 @@
             <b-dropdown-divider></b-dropdown-divider>
             <b-dropdown-item to="/contacts">Contact Messages</b-dropdown-item>
             <b-dropdown-item to="/errors">Auto Error Reports</b-dropdown-item>
+            <b-dropdown-item to="/changeLogs">Change Logs</b-dropdown-item>
         </template>
 
         <b-dropdown-divider></b-dropdown-divider>
@@ -52,7 +53,8 @@ export default class ProfileMenuItem extends Vue {
                 passwordHash: "",
                 eulaAccepted: false,
                 eulaAcceptedOn: null,
-                lastActivityOn: null
+                lastActivityOn: null,
+                lastNoticeSeenOn: null
             };
         } else {
             return profile;

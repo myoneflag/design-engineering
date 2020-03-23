@@ -15,6 +15,7 @@ export async function registerUser(username: string, name: string, email: string
     login.subscribed = subscribed;
     login.passwordHash = await bcrypt.hash(password, 10);
     login.accessLevel = access;
+    login.lastNoticeSeenOn = new Date();
     return login.save();
 }
 

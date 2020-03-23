@@ -34,6 +34,21 @@ DocumentStatus } from "../../../common/src/models/Document";
                     </b-col>
                 </b-row>
                 <b-row>
+                    <b-col>
+                        <b-modal id="modal-1" scrollable title="What's New" v-if="compiledChangeLogs.length >= 0">
+                            <b-card v-for="log in compiledChangeLogs" :key="log.id">
+                                <b-card-text style="text-align: left">
+                                    <b>Version:</b> {{ log.version }}<br />
+                                    {{ log.message }} <br /><br />
+                                    {{ new Date(log.createdOn).toLocaleString() }}<br />
+                                    <b>Submitted by:</b> {{ log.submittedBy.username }}<br />
+                                    <b-badge pill variant="primary" v-for="badge in log.tags.split(',')" :key="badge">{{ badge }}</b-badge>
+                                </b-card-text>
+                            </b-card>
+                        </b-modal>
+                    </b-col>
+                </b-row>
+                <b-row>
                     <template v-for="doc in documents">
                         <b-col sm="6" md="4" lg="3" :key="doc.id" v-if="docVisible(doc)">
                             <b-card
@@ -124,9 +139,12 @@ import {
     DocumentStatus
 } from "../../../common/src/models/Document";
 import { cloneDocument, createDocument, deleteDocument, getDocuments, restoreDocument } from "../api/document";
+import { getChangeLogMessages, saveChangeLogMessage } from "../api/change-log"
+import { updateLastNoticeSeen } from "../api/users"
 import { AccessLevel, User } from "../../../common/src/models/User";
 import { assertUnreachable } from "../../../common/src/api/config";
 import Doc = Mocha.reporters.Doc;
+import { ChangeLogMessage } from "../../../common/src/models/ChangeLogMessage";
 
 @Component({
     components: {
@@ -137,9 +155,12 @@ export default class Home extends Vue {
     documents: Document[] = [];
     loaded: boolean = false;
     showDeleted: boolean = false;
+    hasNewChangeLogs: boolean = true;
+    compiledChangeLogs: ChangeLogMessage[] = [];
 
     mounted() {
         this.reloadDocuments();
+        this.getChangeLogs()
     }
 
     get profile(): User {
@@ -280,6 +301,16 @@ export default class Home extends Vue {
                 variant: "danger",
                 title: "Cannot Make Copy"
             });
+        }
+    }
+
+    async getChangeLogs() {
+        const res = await getChangeLogMessages(this.profile.lastNoticeSeenOn);
+        if (res.success && res.data.length > 0){
+            this.hasNewChangeLogs = true;
+            this.compiledChangeLogs = res.data;
+            this.$bvModal.show('modal-1')
+            await updateLastNoticeSeen();
         }
     }
 }
