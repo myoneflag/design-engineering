@@ -35,7 +35,7 @@ DocumentStatus } from "../../../common/src/models/Document";
                 </b-row>
                 <b-row>
                     <b-col>
-                        <b-modal id="modal-1" scrollable title="What's New" v-if="compiledChangeLogs.length >= 0" size="lg">
+                        <b-modal id="modal-1" scrollable title="What's New" v-if="compiledChangeLogs.length >= 0" size="lg" @hidden="changeLogModalHidden">
                             <b-card v-for="log in compiledChangeLogs" :key="log.id">
                                 <b-card-text style="text-align: left;">
                                     <b>Version:</b> {{ log.version }}<br />
@@ -309,9 +309,16 @@ export default class Home extends Vue {
         if (res.success && res.data.length > 0){
             this.hasNewChangeLogs = true;
             this.compiledChangeLogs = res.data;
-            this.$bvModal.show('modal-1')
-            await updateLastNoticeSeen();
+            this.$bvModal.show('modal-1');
+            setTimeout(() => {
+                updateLastNoticeSeen();
+            }, 10000); // wait for client to update before claiming that it was updated.
         }
+    }
+
+    changeLogModalHidden() {
+        console.log('modal hidden');
+        updateLastNoticeSeen();
     }
 }
 </script>
