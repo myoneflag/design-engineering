@@ -6,13 +6,12 @@
                 <b-row>
                     <b-col>
                         <h1 class="title">
-                            Contact Us Messages
+                            Feedback Messages
                         </h1>
                     </b-col>
                 </b-row>
                 <b-row>
                     <b-col>
-                        <p>These are from the <router-link to="/contact">Contact Us</router-link> page</p>
                         <b-button
                             variant="warning"
                             v-if="profile.email == null"
@@ -25,20 +24,19 @@
                 </b-row>
                 <b-row>
                     <b-col>
-                        <b-alert variant="success" v-if="contacts.length === 0 && isLoaded" show
-                            >There are no contact messages right now</b-alert
+                        <b-alert variant="success" v-if="feedbacks.length === 0 && isLoaded" show
+                            >There are no feedbacks right now</b-alert
                         >
                     </b-col>
                 </b-row>
-                <b-row v-for="contact in contacts" :key="contact.id">
+                <b-row v-for="feedback in feedbacks" :key="feedback.id">
                     <b-col>
                         <b-card>
-                            <b-card-title>{{ contact.name }}</b-card-title>
                             <b-card-text style="text-align: left">
-                                <b>Email:</b> {{ contact.email }}<br />
-                                <b>Date:</b> {{ new Date(contact.sentOn).toLocaleString() }}<br />
-                                <b>IP:</b> {{ contact.ip }}<br />
-                                <b>Message:</b> {{ contact.message }}
+                                <b>Category:</b> {{ feedback.category }}<br />
+                                {{ feedback.message }} <br />
+                                <b>By:</b> {{ feedback.submittedBy }}<br />
+                                {{ new Date(feedback.createdOn).toLocaleString() }}<br />
                             </b-card-text>
                         </b-card>
                     </b-col>
@@ -55,8 +53,8 @@ import { User } from "../../../common/src/models/User";
 import { getUsers, updateUser } from "../api/users";
 import MainNavBar from "../../src/components/MainNavBar.vue";
 import DrawingNavBar from "../components/DrawingNavBar.vue";
-import { ContactMessage } from "../../../common/src/models/ContactMessage";
-import { getContactMessages } from "../api/contact-message";
+import { FeedbackMessage } from "../../../common/src/models/FeedbackMessage";
+import { getFeedbacks } from "../api/feedback-message";
 
 @Component({
     components: {
@@ -64,14 +62,14 @@ import { getContactMessages } from "../api/contact-message";
     }
 })
 export default class Contacts extends Vue {
-    contacts: ContactMessage[] = [];
+    feedbacks: FeedbackMessage[] = [];
     isLoaded: boolean = false;
 
     mounted() {
         // fill documents
-        getContactMessages().then((res) => {
+        getFeedbacks().then((res) => {
             if (res.success) {
-                this.contacts.splice(0, this.contacts.length, ...res.data);
+                this.feedbacks.splice(0, this.feedbacks.length, ...res.data);
                 this.isLoaded = true;
             } else {
                 this.$bvToast.toast(res.message, {
