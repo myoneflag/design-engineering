@@ -20,7 +20,7 @@ import { PlantType } from "../../../../common/src/api/document/entities/plants/p
                     initialized &&
                     (!toolHandler || toolHandler.config.calculationSideBar)
             "
-            :objects="allObjects"
+            :objects="visibleObjects"
             :on-change="scheduleDraw"
         >
         </CalculationsSidebar>

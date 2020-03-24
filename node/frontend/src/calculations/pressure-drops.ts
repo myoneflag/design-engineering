@@ -13,7 +13,12 @@ export function getReynoldsNumber(
     dynamicViscosityNSM2: number
 ) {
     const internalDiameterM = pipeInternalDiameterMM / 1000;
-    return (densityKGM3 * velocityMS * internalDiameterM) / dynamicViscosityNSM2;
+    const res = (densityKGM3 * velocityMS * internalDiameterM) / dynamicViscosityNSM2;
+    if (isNaN(res)) {
+        throw new Error('Reynolds number is NaN');
+    } else {
+        return res;
+    }
 }
 
 export function getFrictionFactor(pipeInternalDiameterMM: number, pipeRoughness: number, reynoldsNumber: number) {

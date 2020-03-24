@@ -1504,10 +1504,14 @@ export default class CalculationEngine {
         // http://www.1728.org/flowrate.htm
 
         const calculation = this.globalStore.getOrCreateCalculation(pipe);
-        return (
+        const res = (
             (4000 * calculation.totalPeakFlowRateLS!) /
             (Math.PI * parseCatalogNumberExact(calculation.realInternalDiameterMM)! ** 2)
         );
+        if (isNaN(res)) {
+            throw new Error('velocity is NaN ' + JSON.stringify(calculation));
+        }
+        return res;
     }
 
     getPipeByNominal(pipe: PipeEntity, maxNominalMM: number): PipeSpec | null {
@@ -2385,7 +2389,6 @@ export default class CalculationEngine {
                         // Some pipes may have their flow directions fixed in an earlier step (such as return systems)
                         if (pc.flowFrom) {
                             if (e.from.connectable !== pc.flowFrom) {
-                                console.log('excluding one direction of edge ' + e.value.uid);
                                 //seenEdges.delete(e.uid);
                                 return true;
                             }

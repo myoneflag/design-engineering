@@ -339,6 +339,11 @@ function setFlowRatesNode(
     currFlowRate: number,
     heatLossCache: Map<string, number | null>,
     ): number| null {
+
+    if (isNaN(currFlowRate)) {
+        throw new Error('flow rate is NaN');
+    }
+
     let res: number | null = 0;
     switch (currNode.type) {
         case "parallel":
@@ -351,7 +356,12 @@ function setFlowRatesNode(
                         throw new Error('wat impossible - totalHeatLossWATT would have to be null then');
                     }
 
-                    const tmp = setFlowRatesNode(context, filledReturn, n, currFlowRate * thisHeatLossWATT / totalHeatLossWATT, heatLossCache);
+                    let propHeatLoss = 0;
+                    if (totalHeatLossWATT) {
+                        propHeatLoss = currFlowRate * thisHeatLossWATT / totalHeatLossWATT;
+                    }
+
+                    const tmp = setFlowRatesNode(context, filledReturn, n, propHeatLoss, heatLossCache);
                     if (tmp === null || res === null) {
                         res = null;
                     } else {
