@@ -11,6 +11,7 @@ import {organizationRouter} from "./controllers/organization";
 import {usersRouter} from "./controllers/users";
 import {errorRouter} from "./controllers/error";
 import { accessEvents } from "./controllers/access-events";
+import {feedbackMessageRouter} from './controllers/feedbackMessage';
 
 const router: Router = Router();
 
@@ -24,5 +25,6 @@ router.use('/organizations', organizationRouter);
 router.use('/users', usersRouter);
 router.use('/accessEvents', accessEvents);
 router.use('/errors', errorRouter);
+router.use('/feedback', feedbackMessageRouter);
 
 export default router;
