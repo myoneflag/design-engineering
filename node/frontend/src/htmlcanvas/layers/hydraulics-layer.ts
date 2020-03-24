@@ -61,6 +61,8 @@ export default class HydraulicsLayer extends LayerImplementation {
             case EntityType.FIXTURE:
                 return 0;
             case EntityType.BACKGROUND_IMAGE:
+                return 0;
+            default:
                 throw new Error("shouldn't find this entity here");
         }
     }
