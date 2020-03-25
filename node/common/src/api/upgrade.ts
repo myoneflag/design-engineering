@@ -1,7 +1,7 @@
-import { DrawingState, FlowSystemParameters, FlowSystemParametersV8, initialDrawing } from "./document/drawing";
+import { DrawingState, FlowSystemParametersV8, FlowSystemParametersV9, initialDrawing } from "./document/drawing";
 import { EntityType } from "./document/entities/types";
 import { NodeType } from "./document/entities/load-node-entity";
-import { InsulationMaterials } from "./config";
+import { InsulationJackets, InsulationMaterials } from "./config";
 import { StandardFlowSystemUids } from "../../../frontend/src/store/catalog";
 import PlantEntity, { PlantEntityV8 } from "./document/entities/plants/plant-entity";
 import { PlantConcrete, PlantType, PressureMethod } from "./document/entities/plants/plant-types";
@@ -14,7 +14,7 @@ import uuid from "uuid";
 // implement the upgrade method below.
 // Remember to also add this function to the upgrade function in default.
 
-export const CURRENT_VERSION = 9;
+export const CURRENT_VERSION = 10;
 
 export function upgrade4to5(original: DrawingState) {
     // Plants entity was updated
@@ -76,7 +76,7 @@ export function upgrade8to9(original: DrawingState) {
     for (const fs of original.metadata.flowSystems) {
         if (fs.hasReturnSystem === undefined) {
             const old = fs as FlowSystemParametersV8;
-            const upgraded: FlowSystemParameters = {
+            const upgraded: FlowSystemParametersV9 = {
                 color: old.color,
                 fluid: old.fluid,
                 name: old.name,
@@ -192,6 +192,13 @@ export function upgrade8to9(original: DrawingState) {
     }
 }
 
-// upgrade 8 to 9
-// new version of plant
-// new version of flow system parameters
+// upgrade 9 to 10
+// insulation jackets in flow systems
+
+export function upgrade9to10(original: DrawingState) {
+    for (const fs of original.metadata.flowSystems) {
+        if (fs.insulationJacket === undefined) {
+            fs.insulationJacket = InsulationJackets.allServiceJacket;
+        }
+    }
+}

@@ -1,3 +1,4 @@
+import { InsulationJackets } from "../../../../common/src/api/config";
 import { InsulationMaterials } from "../../../../common/src/api/config";
 <template>
     <b-dropdown
@@ -31,7 +32,7 @@ import { InsulationMaterials } from "../../../../common/src/api/config";
     import Component from "vue-class-component";
     import { lighten } from "../../../src/lib/utils";
     import { FlowSystemParameters } from "../../../../common/src/api/document/drawing";
-    import { InsulationMaterials } from "../../../../common/src/api/config";
+    import { InsulationJackets, InsulationMaterials } from "../../../../common/src/api/config";
 
     @Component({
     props: {
@@ -65,6 +66,7 @@ export default class FlowSystemPicker extends Vue {
             hasReturnSystem: false,
             returnIsInsulated: false,
             insulationMaterial: InsulationMaterials.calciumSilicate,
+            insulationJacket: InsulationJackets.allServiceJacket,
             insulationThicknessMM: 0,
             returnMaxVelocityMS: 0,
             networks: {

@@ -233,8 +233,6 @@ export function snapPoint(context: CanvasContext, snapTargets: string[], pipeSna
 
     if (closestDist !== null && context.viewPort.toScreenLength(closestDist) < CONNECTABLE_SNAP_RADIUS_PX) {
         return resultWithoutObviousReferences(obviousPoints, closestResult);
-    } else {
-        console.log(closestDist);
     }
 
     // no point? Then snap to nearest line
@@ -263,8 +261,6 @@ export function snapPoint(context: CanvasContext, snapTargets: string[], pipeSna
     if (closestDist !== null && context.viewPort.toScreenLength(closestDist) < CONNECTABLE_SNAP_RADIUS_PX) {
         return resultWithoutObviousReferences(obviousPoints, closestResult);
     }
-
-    console.log('forcing it');
 
     // finally, any forced traces
     closestDist = null;

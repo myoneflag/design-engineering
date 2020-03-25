@@ -10,6 +10,8 @@ export enum FieldCategory {
     FixtureUnits,
     Height,
     HeatLoss,
+    Volume,
+    Length,
 }
 
 export enum Units {
@@ -22,6 +24,7 @@ export enum Units {
     Celsius = "\u00B0C",
     KiloWatts = 'kW',
     Kv = 'Kv',
+    Liters = 'L',
 }
 
 export interface CalculationField {
@@ -38,6 +41,7 @@ export interface CalculationField {
     systemUid?: string;
     bold?: boolean;
     format?: (v: any) => string;
+    hideIfNull?: boolean;
 }
 
 export enum CalculationDataType {

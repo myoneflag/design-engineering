@@ -89,6 +89,8 @@ import {
     returnFlowRates
 } from "./returns";
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
+import SystemNode from "../htmlcanvas/objects/big-valve/system-node";
+import Fixture from "../htmlcanvas/objects/fixture";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -315,6 +317,8 @@ export default class CalculationEngine {
                 returnFlowRates(this, returns);
                 returnBalanceValves(this, returns);  // balance valves before calculating point pressures so that balancing valve pressure drops are accounted for.
 
+                this.calculateHotWaterDeadlegs();
+
                 this.calculateAllPointPressures();
 
 
@@ -332,6 +336,128 @@ export default class CalculationEngine {
 
         if (!this.equationEngine.isComplete()) {
             throw new Error("Calculations could not complete \n");
+        }
+    }
+
+    calculateHotWaterDeadlegs() {
+        // complete another Dijkstra around town for this one.
+        for (const o of this.networkObjects()) {
+            let startNode: FlowNode | null = null;
+            if (o.entity.type === EntityType.PLANT) {
+                if (o.entity.outletSystemUid === StandardFlowSystemUids.HotWater) {
+                    startNode = {
+                        connectable: o.entity.outletUid,
+                        connection: o.entity.uid,
+                    };
+                }
+            } else if (o.entity.type === EntityType.FLOW_SOURCE) {
+                if (o.entity.systemUid === StandardFlowSystemUids.HotWater) {
+                    startNode = {
+                        connectable: o.entity.uid,
+                        connection: FLOW_SOURCE_EDGE,
+                    };
+                }
+            }
+
+            if (startNode) {
+                // length
+                this.flowGraph.dijkstra(
+                    startNode,
+                    (e, w) => {
+                        switch (e.value.type) {
+                            case EdgeType.PIPE:
+                                const o = this.globalStore.get(e.value.uid) as Pipe;
+                                const pCalc = this.globalStore.getOrCreateCalculation(o.entity);
+
+                                if (pCalc.configuration === Configuration.RETURN) {
+                                    return 0;
+                                } else {
+                                    const filled = fillPipeDefaultFields(this.drawing, o.computedLengthM, o.entity);
+                                    return filled.lengthM!;
+                                }
+                            case EdgeType.BIG_VALVE_HOT_HOT:
+                            case EdgeType.BIG_VALVE_HOT_WARM:
+                            case EdgeType.FITTING_FLOW:
+                            case EdgeType.CHECK_THROUGH:
+                            case EdgeType.ISOLATION_THROUGH:
+                            case EdgeType.BALANCING_THROUGH:
+                                // ok, pass through
+                                return 0;
+                            case EdgeType.BIG_VALVE_COLD_WARM:
+                            case EdgeType.BIG_VALVE_COLD_COLD:
+                            case EdgeType.FLOW_SOURCE_EDGE:
+                            case EdgeType.RETURN_PUMP:
+                                // yeah nah
+                                throw new Error('unexpected edge');
+                            case EdgeType.PLANT_THROUGH:
+                                // shouldn't continue or be here really
+                                return Infinity;
+                        }
+                        assertUnreachable(e.value.type);
+                    },
+                    (dijk) => {
+                        const o = this.globalStore.get(dijk.node.connectable);
+                        if (o instanceof SystemNode) {
+                            const po = this.globalStore.get(o.entity.parentUid!);
+                            if (po instanceof Fixture) {
+                                const fCalc = this.globalStore.getOrCreateCalculation(po.entity);
+                                fCalc.deadlegs[o.entity.systemUid].lengthM = dijk.weight;
+                            }
+                        }
+                    }
+                );
+
+                // volume
+                this.flowGraph.dijkstra(
+                    startNode,
+                    (e, w) => {
+                        switch (e.value.type) {
+                            case EdgeType.PIPE:
+                                const o = this.globalStore.get(e.value.uid) as Pipe;
+                                const pCalc = this.globalStore.getOrCreateCalculation(o.entity);
+
+                                if (pCalc.configuration === Configuration.RETURN) {
+                                    return 0;
+                                } else {
+                                    if (pCalc.realInternalDiameterMM !== null) {
+                                        const filled = fillPipeDefaultFields(this.drawing, o.computedLengthM, o.entity);
+                                        return (filled.lengthM! * 10) * (pCalc.realInternalDiameterMM / 100) ** 2 * 2 * Math.PI;
+                                    } else {
+                                        return Infinity;
+                                    }
+                                }
+                            case EdgeType.BIG_VALVE_HOT_HOT:
+                            case EdgeType.BIG_VALVE_HOT_WARM:
+                            case EdgeType.FITTING_FLOW:
+                            case EdgeType.CHECK_THROUGH:
+                            case EdgeType.ISOLATION_THROUGH:
+                            case EdgeType.BALANCING_THROUGH:
+                                // ok, pass through
+                                return 0;
+                            case EdgeType.BIG_VALVE_COLD_WARM:
+                            case EdgeType.BIG_VALVE_COLD_COLD:
+                            case EdgeType.FLOW_SOURCE_EDGE:
+                            case EdgeType.RETURN_PUMP:
+                                // yeah nah
+                                throw new Error('unexpected edge');
+                            case EdgeType.PLANT_THROUGH:
+                                // shouldn't continue or be here really
+                                return Infinity;
+                        }
+                        assertUnreachable(e.value.type);
+                    },
+                    (dijk) => {
+                        const o = this.globalStore.get(dijk.node.connectable);
+                        if (o instanceof SystemNode) {
+                            const po = this.globalStore.get(o.entity.parentUid!);
+                            if (po instanceof Fixture) {
+                                const fCalc = this.globalStore.getOrCreateCalculation(po.entity);
+                                fCalc.deadlegs[o.entity.systemUid].volumeL = dijk.weight;
+                            }
+                        }
+                    }
+                );
+            }
         }
     }
 

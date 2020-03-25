@@ -107,6 +107,7 @@ export function CalculatedObject<
             let maxWidth = 0;
             for (let i = data.length - 1; i >= 0; i--) {
                 const datum = data[i];
+
                 if (datum.type === CalculationDataType.VALUE) {
                     ctx.font = (datum.bold ? "bold " : "") + FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
                 } else {
@@ -328,7 +329,8 @@ export function CalculatedObject<
                     (f) =>
                         f.title in filter &&
                         filter[f.title].enabled &&
-                        getPropertyByString(calculation, f.property, true) !== undefined
+                        getPropertyByString(calculation, f.property, true) !== undefined &&
+                        (!f.hideIfNull || getPropertyByString(calculation, f.property, true) !== null)
                 )
                 .map((f) => {
                     const ret: CalculationData = {

@@ -471,7 +471,7 @@ export function getFields(
         case EntityType.BIG_VALVE:
             return makeBigValveCalculationFields(doc, entity);
         case EntityType.FIXTURE:
-            return makeFixtureCalculationFields(doc, entity);
+            return makeFixtureCalculationFields(doc, entity, globalStore);
         case EntityType.DIRECTED_VALVE:
             return makeDirectedValveCalculationFields(entity);
         case EntityType.SYSTEM_NODE:

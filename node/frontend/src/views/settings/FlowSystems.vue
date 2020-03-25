@@ -45,7 +45,11 @@ import FlowSystemPicker from "../../../src/components/editor/FlowSystemPicker.vu
 import * as _ from "lodash";
 import { initialDrawing } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
-import { INSULATION_MATERIAL_CHOICES, InsulationMaterials } from "../../../../common/src/api/config";
+import {
+    INSULATION_JACKET_CHOICES,
+    INSULATION_MATERIAL_CHOICES, InsulationJackets,
+    InsulationMaterials
+} from "../../../../common/src/api/config";
 
 @Component({
     components: { SettingsFieldBuilder, FlowSystemPicker },
@@ -77,6 +81,7 @@ export default class FlowSystems extends Vue {
             if (this.selectedSystem.returnIsInsulated) {
                 fields.push(
                     ['insulationMaterial', "Insulation Material", "choice", INSULATION_MATERIAL_CHOICES],
+                    ['insulationJacket', "Insulation Jacket", "choice", INSULATION_JACKET_CHOICES],
                     ['returnMaxVelocityMS', "Max. Velocity of Return (m/s)", "number"],
                     ['insulationThicknessMM', "Insulation Thickness (mm)", "number"],
                 );
@@ -152,6 +157,7 @@ export default class FlowSystems extends Vue {
                 returnIsInsulated: false,
                 returnMaxVelocityMS: 1,
                 insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationJacket: InsulationJackets.allServiceJacket,
                 insulationThicknessMM: 25,
             });
             this.$store.dispatch("document/commit").then(() => {
