@@ -119,17 +119,17 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             (-Math.PI * 3) / 4,
             Math.PI
         ].map((delta) => {
-            return TM.transform(
+            return [height, Math.max(this.entity.widthMM, this.entity.heightMM)].map((offset) => TM.transform(
                 TM.identity(),
                 TM.translate(wc.x, wc.y),
                 TM.rotate(angle + Math.PI + delta),
-                TM.translate(0, -Math.max(this.entity.widthMM, this.entity.heightMM) * 2),
+                TM.translate(0, -Math.max(this.entity.widthMM, this.entity.heightMM) + offset),
                 TM.scale(scale),
                 TM.translate(0, -height / 2),
                 TM.rotate(-angle - Math.PI - delta)
-            );
+            ));
         });
-        return res;
+        return res.flat();
     }
 
     refreshObjectInternal(obj: BigValveEntity): void {

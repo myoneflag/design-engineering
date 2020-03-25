@@ -172,11 +172,52 @@ export function getPsdMethods(catalog: Catalog): Choice[] {
 
 export enum InsulationMaterials {
     calciumSilicate = 'calciumSilicate',
+    cellularGlass = 'cellularGlass',
+    elastomeric = 'elastomeric',
+    fiberglass = 'fiberglass',
+    mineralWool = 'mineralWool',
+    polyisocyanurate = 'polyisocyanurate',
 }
+
 
 export const INSULATION_MATERIAL_CHOICES: Choice[] = [
     { key: InsulationMaterials.calciumSilicate, name: 'Calcium Silicate' },
+    { key: InsulationMaterials.cellularGlass, name: 'Cellular Glass' },
+    { key: InsulationMaterials.elastomeric, name: 'Elastomeric' },
+    { key: InsulationMaterials.fiberglass, name: 'Fiberglass' },
+    { key: InsulationMaterials.mineralWool, name: 'Mineral Wool' },
+    { key: InsulationMaterials.polyisocyanurate, name: 'Polyisocyanurate' },
 ];
+
+export enum InsulationJackets {
+    noJacket = 'noJacket',
+    pvcJacket = 'pvcJacket',
+    allServiceJacket = 'allServiceJacket',
+    paintedMetal = 'paintedMetal',
+    aluminizedPaint = 'aluminizedPaint',
+    stainlessSteelDull = 'stainlessSteelDull',
+    galvanizedSteelDippedOrDull = 'galvanizedSteelDippedOrDull',
+    stainlessSteelNewCleaned = 'stainlessSteelNewCleaned',
+    galvanizedSteelNewBright = 'galvanizedSteelNewBright',
+    aluminiumOxidedInService = 'aluminiumOxidedInService',
+    aluminiumNewBright = 'aluminiumNewBright',
+}
+
+export const INSULATION_JACKET_CHOICES: Choice[] = [
+    { key: InsulationJackets.noJacket, name: "No Jacket" },
+    { key: InsulationJackets.pvcJacket, name: "PVC Jacket" },
+    { key: InsulationJackets.allServiceJacket, name: "All Service Jacket" },
+    { key: InsulationJackets.paintedMetal, name: "Painted Metal" },
+    { key: InsulationJackets.aluminizedPaint, name: "Aluminized Paint" },
+    { key: InsulationJackets.stainlessSteelDull, name: "Stainless Steel (Dull)" },
+    { key: InsulationJackets.galvanizedSteelDippedOrDull, name: "Galvanized Steel (Dipped / Dull)" },
+    { key: InsulationJackets.stainlessSteelNewCleaned, name: "Stainless Steel (New / Cleaned)" },
+    { key: InsulationJackets.galvanizedSteelNewBright, name: "Galvanized Steel (New / Bright)" },
+    { key: InsulationJackets.aluminiumOxidedInService, name: "Aluminium Oxide (In Service)" },
+    { key: InsulationJackets.aluminiumNewBright, name: "Aluminium Oxide (Bright)" },
+];
+
+
 
 export enum SupportedDwellingStandards {
     as35002018Dwellings = "as35002018Dwellings",

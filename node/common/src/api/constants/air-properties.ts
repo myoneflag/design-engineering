@@ -14,7 +14,6 @@ export const AIR_PROPERTIES = {
 
 export const THERMAL_CONDUCTIVITY: {[key: string]: Polynomial} = {
     plainCarbonSteel:       [79.0, -0.0511, 3.67e-19, 2.08e-09],
-    calciumSilicate:        [0.07333604, -0.000224881, 7.36555e-07, -7.46414e-10, 3.15711e-13],
 
     // from https://www.engineeringtoolbox.com/thermal-conductivity-metals-d_858.html
     // then, 4th order polynomial fitting
@@ -24,8 +23,27 @@ export const THERMAL_CONDUCTIVITY: {[key: string]: Polynomial} = {
     hdpeSdr11: [0.465],
     pexSdr74: [0.465],
     stainlessSteel: [14.4],
+
+    // insulation materials
+    //https://www.engineeringtoolbox.com/thermal-conductivity-d_429.html
+    calciumSilicate: [0.07333604, -0.000224881, 7.36555e-07, -7.46414e-10, 3.15711e-13],
+    cellularGlass: [0.045],
+    elastomeric: [0.035],
+    fiberglass: [0.04],
+    mineralWool: [0.04],
+    polyisocyanurate: [0.028],
 };
 
-export const SURFACE_EMMISIVITY = {
-    calciumSilicate: 0.9,
+export const SURFACE_EMISSIVITY: {[key: string]: number} = {
+    noJacket: 0.9,
+    pvcJacket: 0.9,
+    allServiceJacket: 0.9,
+    paintedMetal: 0.8,
+    aluminizedPaint: 0.5,
+    stainlessSteelDull: 0.3,
+    galvanizedSteelDippedOrDull: 0.28,
+    stainlessSteelNewCleaned: 0.13,
+    galvanizedSteelNewBright: 0.10,
+    aluminiumOxidedInService: 0.10,
+    aluminiumNewBright: 0.04,
 };

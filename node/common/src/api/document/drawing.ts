@@ -1,6 +1,8 @@
 import { DrawableEntityConcrete } from "./entities/concrete-entity";
 import {
-    ComponentPressureLossMethod, InsulationMaterials,
+    ComponentPressureLossMethod,
+    InsulationJackets,
+    InsulationMaterials,
     PIPE_SIZING_METHODS,
     RingMainCalculationMethod,
     SupportedDwellingStandards,
@@ -103,6 +105,22 @@ export interface FlowSystemParametersV8 extends WithID {
     networks: { [key in keyof typeof NetworkType]: NetworkParams };
 }
 
+export interface FlowSystemParametersV9 extends WithID {
+    name: string;
+    temperature: number;
+    color: Color;
+    fluid: string;
+
+    hasReturnSystem: boolean;
+    returnIsInsulated: boolean;
+    returnMaxVelocityMS: number;
+    insulationMaterial: InsulationMaterials;
+    insulationThicknessMM: number;
+
+
+    networks: { [key in keyof typeof NetworkType]: NetworkParams };
+}
+
 export interface FlowSystemParameters extends WithID {
     name: string;
     temperature: number;
@@ -113,6 +131,7 @@ export interface FlowSystemParameters extends WithID {
     returnIsInsulated: boolean;
     returnMaxVelocityMS: number;
     insulationMaterial: InsulationMaterials;
+    insulationJacket: InsulationJackets;
     insulationThicknessMM: number;
 
 
@@ -158,6 +177,7 @@ export const initialDrawing: DrawingState = {
                 returnIsInsulated: false,
                 returnMaxVelocityMS: 1,
                 insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationJacket: InsulationJackets.allServiceJacket,
                 insulationThicknessMM: 25,
 
                 networks: {
@@ -188,6 +208,7 @@ export const initialDrawing: DrawingState = {
                 returnIsInsulated: true,
                 returnMaxVelocityMS: 1,
                 insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationJacket: InsulationJackets.allServiceJacket,
                 insulationThicknessMM: 25,
 
                 networks: {
@@ -218,6 +239,7 @@ export const initialDrawing: DrawingState = {
                 returnIsInsulated: false,
                 returnMaxVelocityMS: 1,
                 insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationJacket: InsulationJackets.allServiceJacket,
                 insulationThicknessMM: 25,
 
                 networks: {
