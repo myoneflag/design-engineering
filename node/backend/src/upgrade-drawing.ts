@@ -6,7 +6,7 @@ import { OPERATION_NAMES } from "../../common/src/api/document/operation-transfo
 import { applyDiffNative } from "../../common/src/api/document/state-ot-apply";
 import {
     CURRENT_VERSION,
-    upgrade4to5, upgrade5to6, upgrade6to7, upgrade7to8, upgrade8to9
+    upgrade4to5, upgrade5to6, upgrade6to7, upgrade7to8, upgrade8to9, upgrade9to10
 } from "../../common/src/api/upgrade";
 import { diffState } from "../../common/src/api/document/state-differ";
 import stringify from 'json-stable-stringify';
@@ -58,6 +58,9 @@ export async function upgradeDocument(doc: Document) {
                     // noinspection FallThroughInSwitchStatementJS
                     case 8:
                         upgrade8to9(newUpgraded);
+                        break;
+                    case 9:
+                        upgrade9to10(newUpgraded);
                         break;
                     case CURRENT_VERSION:
                         break;

@@ -215,8 +215,6 @@ export default class SnappingInsertTool extends PointTool {
             ctx.setLineDash([]);
         }
 
-        console.log(this.lastSnapResult);
-
         if (this.lastSnapResult) {
             // draw dotted line for each reference
             if (this.lastSnapResult.references) {
@@ -244,7 +242,6 @@ export default class SnappingInsertTool extends PointTool {
     }
 
     onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
-        console.log('mousedown, btn ' + event.button);
         if (event.button === 2) {
             this.clearSnapHovers();
         }

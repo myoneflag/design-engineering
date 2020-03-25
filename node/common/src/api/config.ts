@@ -204,17 +204,17 @@ export enum InsulationJackets {
 }
 
 export const INSULATION_JACKET_CHOICES: Choice[] = [
-    { key: InsulationJackets.noJacket, name: "No Jacket" },
-    { key: InsulationJackets.pvcJacket, name: "PVC Jacket" },
-    { key: InsulationJackets.allServiceJacket, name: "All Service Jacket" },
-    { key: InsulationJackets.paintedMetal, name: "Painted Metal" },
-    { key: InsulationJackets.aluminizedPaint, name: "Aluminized Paint" },
-    { key: InsulationJackets.stainlessSteelDull, name: "Stainless Steel (Dull)" },
-    { key: InsulationJackets.galvanizedSteelDippedOrDull, name: "Galvanized Steel (Dipped / Dull)" },
-    { key: InsulationJackets.stainlessSteelNewCleaned, name: "Stainless Steel (New / Cleaned)" },
-    { key: InsulationJackets.galvanizedSteelNewBright, name: "Galvanized Steel (New / Bright)" },
-    { key: InsulationJackets.aluminiumOxidedInService, name: "Aluminium Oxide (In Service)" },
-    { key: InsulationJackets.aluminiumNewBright, name: "Aluminium Oxide (Bright)" },
+    { key: InsulationJackets.noJacket, name: "No Jacket (0.90 \u03b5)" },
+    { key: InsulationJackets.pvcJacket, name: "PVC Jacket (0.90 \u03b5)" },
+    { key: InsulationJackets.allServiceJacket, name: "All Service Jacket (0.90 \u03b5)" },
+    { key: InsulationJackets.paintedMetal, name: "Painted Metal (0.80 \u03b5)" },
+    { key: InsulationJackets.aluminizedPaint, name: "Aluminized Paint (0.50 \u03b5)" },
+    { key: InsulationJackets.stainlessSteelDull, name: "Stainless Steel (Dull, 0.30 \u03b5)" },
+    { key: InsulationJackets.galvanizedSteelDippedOrDull, name: "Galvanized Steel (Dipped / Dull, 0.28 \u03b5)" },
+    { key: InsulationJackets.stainlessSteelNewCleaned, name: "Stainless Steel (New / Cleaned, 0.13 \u03b5)" },
+    { key: InsulationJackets.galvanizedSteelNewBright, name: "Galvanized Steel (New / Bright, 0.10 \u03b5)" },
+    { key: InsulationJackets.aluminiumOxidedInService, name: "Aluminium Oxide (In Service, 0.10 \u03b5)" },
+    { key: InsulationJackets.aluminiumNewBright, name: "Aluminium Oxide (Bright, 0.04 \u03b5)" },
 ];
 
 

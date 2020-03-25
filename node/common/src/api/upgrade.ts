@@ -14,7 +14,7 @@ import uuid from "uuid";
 // implement the upgrade method below.
 // Remember to also add this function to the upgrade function in default.
 
-export const CURRENT_VERSION = 9;
+export const CURRENT_VERSION = 10;
 
 export function upgrade4to5(original: DrawingState) {
     // Plants entity was updated
