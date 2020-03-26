@@ -421,7 +421,7 @@ export default class CalculationEngine {
                                 } else {
                                     if (pCalc.realInternalDiameterMM !== null) {
                                         const filled = fillPipeDefaultFields(this.drawing, o.computedLengthM, o.entity);
-                                        return (filled.lengthM! * 10) * (pCalc.realInternalDiameterMM / 100) ** 2 * 2 * Math.PI;
+                                        return (filled.lengthM! * 10) * (pCalc.realInternalDiameterMM / 100 / 2) ** 2 * Math.PI;
                                     } else {
                                         return Infinity;
                                     }

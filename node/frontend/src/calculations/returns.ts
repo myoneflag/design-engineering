@@ -160,7 +160,7 @@ export function getHeatLossOfPipeMomentWATT_M(context: CalculationContext, pipe:
     let iters = 0;
     while (true) {
         iters += 1;
-        if (iters > 10) return null;
+        if (iters > 30) return null;
         // Calculation for insulated pipe
         const averageFilmTemperatureC   = (surfaceTempC + context.doc.drawing.metadata.calculationParams.roomTemperatureC) / 2;
         const averageFilmTemperatureK   = averageFilmTemperatureC + 273.15;
@@ -212,8 +212,11 @@ export function getHeatLossOfPipeMomentWATT_M(context: CalculationContext, pipe:
 
         surfaceTempC                    = interfaceTempC - heatFlowW_M2 * insulationResistanceM2K_W;
 
-        /*
-        if (I need to debug this) {
+        const heatLossPerUnitLengthW_M  = heatFlowW_M2 * Math.PI * (totalOutsideDiameter / 1000);
+
+
+        if (true) {
+            /*
             console.log(filled.material);
             console.log(JSON.stringify(THERMAL_CONDUCTIVITY[filled.material!]));
             console.log(typeof tempC);
@@ -248,14 +251,11 @@ export function getHeatLossOfPipeMomentWATT_M(context: CalculationContext, pipe:
             console.log('heatFlowW_M2: ' + heatFlowW_M2);
             console.log('interfaceTempC: ' + interfaceTempC);
             console.log('surfaceTempC: ' + surfaceTempC);
+            console.log('heatLossPerUnitLengthW_M: ' + heatLossPerUnitLengthW_M);*/
 
-        }*/
+        }
 
-        const heatLossPerUnitLengthW_M  = heatFlowW_M2 * Math.PI * (totalOutsideDiameter / 1000);
         if (Math.abs(oldHeatLoss - heatLossPerUnitLengthW_M) < MAX_ITER_CHANGE && iters > 5) {
-
-
-
             return heatLossPerUnitLengthW_M;
         }
         oldHeatLoss = heatLossPerUnitLengthW_M;
