@@ -1,5 +1,7 @@
 import { Catalog } from "./catalog/types";
 import { Choice, cloneSimple } from "../lib/utils";
+import { THERMAL_CONDUCTIVITY } from "./constants/air-properties";
+import { evaluatePolynomial } from "../lib/polynomials";
 
 export enum SupportedPsdStandards {
     as35002018LoadingUnits = "as35002018LoadingUnits",
@@ -188,6 +190,12 @@ export const INSULATION_MATERIAL_CHOICES: Choice[] = [
     { key: InsulationMaterials.mineralWool, name: 'Mineral Wool' },
     { key: InsulationMaterials.polyisocyanurate, name: 'Polyisocyanurate' },
 ];
+
+export function getInsulationMaterialChoicesWithThermalConductivity(tempC: number) {
+    return INSULATION_MATERIAL_CHOICES.map((c) => {
+        return {key: c.key, name: c.name + " (" + evaluatePolynomial(THERMAL_CONDUCTIVITY[c.key as string], tempC + 273.15).toFixed(3) + " W/m.K @ " + tempC.toFixed(3) + " °C)"}
+    });
+}
 
 export enum InsulationJackets {
     noJacket = 'noJacket',

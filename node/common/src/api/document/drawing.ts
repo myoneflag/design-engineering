@@ -200,7 +200,7 @@ export const initialDrawing: DrawingState = {
             },
             {
                 name: "Hot Water",
-                temperature: 60,
+                temperature: 65,
                 color: { hex: "#F44E3B" },
                 uid: "hot-water",
                 fluid: "water",

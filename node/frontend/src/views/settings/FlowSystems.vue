@@ -46,6 +46,7 @@ import * as _ from "lodash";
 import { initialDrawing } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import {
+    getInsulationMaterialChoicesWithThermalConductivity,
     INSULATION_JACKET_CHOICES,
     INSULATION_MATERIAL_CHOICES, InsulationJackets,
     InsulationMaterials
@@ -80,7 +81,7 @@ export default class FlowSystems extends Vue {
 
             if (this.selectedSystem.returnIsInsulated) {
                 fields.push(
-                    ['insulationMaterial', "Insulation Material", "choice", INSULATION_MATERIAL_CHOICES],
+                    ['insulationMaterial', "Insulation Material", "choice", getInsulationMaterialChoicesWithThermalConductivity(this.selectedSystem.temperature)],
                     ['insulationJacket', "Insulation Jacket", "choice", INSULATION_JACKET_CHOICES],
                     ['returnMaxVelocityMS', "Max. Velocity of Return (m/s)", "number"],
                     ['insulationThicknessMM', "Insulation Thickness (mm)", "number"],
