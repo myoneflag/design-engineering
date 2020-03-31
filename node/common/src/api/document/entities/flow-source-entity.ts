@@ -2,6 +2,7 @@ import { FieldType, PropertyField } from "./property-field";
 import { EntityType } from "./types";
 import { Color, ConnectableEntity, Coord, DrawingState, FlowSystemParameters } from "../drawing";
 import { Choice, cloneSimple } from "../../../lib/utils";
+import { Units } from "../../../../../frontend/src/store/document/calculations/calculation-field";
 
 export default interface FlowSourceEntity extends ConnectableEntity {
     type: EntityType.FLOW_SOURCE;
@@ -27,29 +28,31 @@ export function makeFlowSourceFields(materials: Choice[], systems: FlowSystemPar
 
         {
             property: "pressureKPA",
-            title: "Pressure (kPA)",
+            title: "Pressure",
             hasDefault: false,
             isCalculated: false,
             requiresInput: true,
             type: FieldType.Number,
             params: { min: 0, max: null },
-            multiFieldId: "pressureKPA"
+            multiFieldId: "pressureKPA",
+            units: Units.KiloPascals,
         },
 
         {
             property: "heightAboveGroundM",
-            title: "AHD (m)",
+            title: "AHD",
             hasDefault: false,
             isCalculated: false,
             requiresInput: true,
             type: FieldType.Number,
             params: { min: null, max: null },
-            multiFieldId: "heightAboveGroundM"
+            multiFieldId: "heightAboveGroundM",
+            units: Units.Meters
         },
 
         {
             property: "color",
-            title: "Color:",
+            title: "Color",
             hasDefault: true,
             isCalculated: false,
             type: FieldType.Color,

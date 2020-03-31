@@ -4,7 +4,9 @@ import { DirectedValveConcrete, ValveType } from "./valve-types";
 import { assertUnreachable } from "../../../config";
 import { Color, ConnectableEntity, Coord, DrawingState } from "../../drawing";
 import { Catalog } from "../../../catalog/types";
-import { Choice, parseCatalogNumberOrMin } from "../../../../lib/utils";
+import { Choice, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../../lib/utils";
+import { Units } from "../../../../../../frontend/src/store/document/calculations/calculation-field";
+import { convertPipeDiameterFromMetric } from "../../../../../../frontend/src/calculations/measurement";
 
 export default interface DirectedValveEntity extends ConnectableEntity {
     type: EntityType.DIRECTED_VALVE;
@@ -38,7 +40,7 @@ export function makeDirectedValveFields(
     fields.push(
         {
             property: "color",
-            title: "Color:",
+            title: "Color",
             hasDefault: true,
             isCalculated: false,
             type: FieldType.Color,
@@ -71,20 +73,22 @@ export function makeDirectedValveFields(
         case ValveType.RPZD_SINGLE: {
 
             const sizes = Object.keys(catalog.backflowValves[entity.valve.catalogId].valvesBySize).map((s) => {
+                const val = convertPipeDiameterFromMetric(drawing.metadata.units, parseCatalogNumberExact(s));
                 const c: Choice = {
-                    disabled: false, key: parseCatalogNumberOrMin(s), name: s + "mm"
+                    disabled: false, key: parseCatalogNumberOrMin(s), name: val[1] + val[0],
                 };
                 return c;
             });
             fields.push({
                 property: "valve.sizeMM",
-                title: "Size (mm):",
+                title: "Size",
                 hasDefault: false,
                 isCalculated: true,
                 type: FieldType.Choice,
                 params: { choices: sizes, initialValue: sizes[0].key },
                 multiFieldId: "diameterMM",
-                requiresInput: false
+                requiresInput: false,
+                units: Units.Millimeters
             });
             if (entity.valve.type === ValveType.RPZD_DOUBLE_ISOLATED) {
                 fields.push({
@@ -109,30 +113,33 @@ export function makeDirectedValveFields(
         case ValveType.PRV_DOUBLE:
         case ValveType.PRV_TRIPLE: {
             const sizes = Object.keys(catalog.prv).map((s) => {
+                const val = convertPipeDiameterFromMetric(drawing.metadata.units, parseCatalogNumberExact(s));
                 const c: Choice = {
-                    disabled: false, key: parseCatalogNumberOrMin(s), name: s + "mm"
+                    disabled: false, key: parseCatalogNumberOrMin(s), name: val[1] + val[0],
                 };
                 return c;
             });
             fields.push({
                 property: "valve.sizeMM",
-                title: "Size (mm):",
+                title: "Size",
                 hasDefault: false,
                 isCalculated: true,
                 type: FieldType.Choice,
                 params: { choices: sizes, initialValue: sizes[0].key },
                 multiFieldId: "diameterMM",
-                requiresInput: false
+                requiresInput: false,
+                units: Units.Millimeters
             });
             fields.push({
                 property: "valve.targetPressureKPA",
-                title: "Target Pressure (KPA):",
+                title: "Target Pressure",
                 hasDefault: false,
                 isCalculated: false,
                 type: FieldType.Number,
                 params: { min: 0, max: null },
                 multiFieldId: "targetPressure",
-                requiresInput: true
+                requiresInput: true,
+                units: Units.KiloPascals,
             });
             if (entity.valve.type === ValveType.PRV_DOUBLE ||
                 entity.valve.type === ValveType.PRV_TRIPLE

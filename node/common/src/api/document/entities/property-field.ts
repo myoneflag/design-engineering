@@ -1,5 +1,6 @@
 import { FlowSystemParameters } from "../drawing";
 import { Choice } from "../../../lib/utils";
+import { Units } from "../../../../../frontend/src/store/document/calculations/calculation-field";
 
 export enum FieldType {
     Text = "text",
@@ -44,6 +45,7 @@ export interface PropertyFieldBase {
     readonly?: boolean;
     multiFieldId: string | null;
     type: FieldType;
+    units?: Units;
 }
 
 export interface NumberField extends PropertyFieldBase {

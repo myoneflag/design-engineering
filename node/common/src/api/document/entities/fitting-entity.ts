@@ -24,7 +24,7 @@ export function makeValveFields(valveTypes: Choice[], systems: FlowSystemParamet
 
         {
             property: "color",
-            title: "Color:",
+            title: "Color",
             hasDefault: true,
             isCalculated: false,
             type: FieldType.Color,

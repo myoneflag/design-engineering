@@ -13,9 +13,9 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                 case VolumeMeasurementSystem.METRIC:
                     return [units, value];
                 case VolumeMeasurementSystem.IMPERIAL:
-                    return [Units.GallonsPerSecond, value / 4.54609];
+                    return [Units.GallonsPerMinute, value / 4.54609 * 60];
                 case VolumeMeasurementSystem.US:
-                    return [Units.USGallonsPerSecond, value / 3.785411784];
+                    return [Units.USGallonsPerMinute, value / 3.785411784 * 60];
             }
             assertUnreachable(unitsPrefs.volumeMeasurementSystem);
             break;
@@ -75,14 +75,14 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
             }
             assertUnreachable(unitsPrefs.volumeMeasurementSystem);
             break;
-        case Units.GallonsPerSecond:
+        case Units.GallonsPerMinute:
             switch (unitsPrefs.volumeMeasurementSystem) {
                 case VolumeMeasurementSystem.METRIC:
-                    return [Units.LitersPerSecond, value * 4.54609];
+                    return [Units.LitersPerSecond, value * 4.54609 / 60];
                 case VolumeMeasurementSystem.IMPERIAL:
-                    return [Units.GallonsPerSecond, value];
+                    return [Units.GallonsPerMinute, value];
                 case VolumeMeasurementSystem.US:
-                    return [Units.USGallonsPerSecond, value / 3.785411784 * 4.54609];
+                    return [Units.USGallonsPerMinute, value / 3.785411784 * 4.54609];
             }
             assertUnreachable(unitsPrefs.volumeMeasurementSystem);
             break;
@@ -98,9 +98,9 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
         case Units.Feet:
             switch (unitsPrefs.lengthMeasurementSystem) {
                 case MeasurementSystem.METRIC:
-                    return [Units.Feet, value];
-                case MeasurementSystem.IMPERIAL:
                     return [Units.Meters, ft2M(value)];
+                case MeasurementSystem.IMPERIAL:
+                    return [Units.Feet, value];
             }
             assertUnreachable(unitsPrefs.lengthMeasurementSystem);
             break;
@@ -153,14 +153,14 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
             }
             assertUnreachable(unitsPrefs.volumeMeasurementSystem);
             break;
-        case Units.USGallonsPerSecond:
+        case Units.USGallonsPerMinute:
             switch (unitsPrefs.volumeMeasurementSystem) {
                 case VolumeMeasurementSystem.METRIC:
-                    return [Units.LitersPerSecond, value * 3.785411784];
+                    return [Units.LitersPerSecond, value * 3.785411784 / 60];
                 case VolumeMeasurementSystem.IMPERIAL:
-                    return [Units.GallonsPerSecond, value / 4.54609 * 3.785411784];
+                    return [Units.GallonsPerMinute, value / 4.54609 * 3.785411784];
                 case VolumeMeasurementSystem.US:
-                    return [Units.USGallonsPerSecond, value];
+                    return [Units.USGallonsPerMinute, value];
             }
             assertUnreachable(unitsPrefs.volumeMeasurementSystem);
             break;
@@ -175,6 +175,20 @@ export function convertMeasurementSystem(unitsPrefs: UnitsParameters, units: Uni
     } else {
         return convertMeasurementSystemNonNull(unitsPrefs, units, value);
     }
+}
+
+// Always store in metric, no matter the document properties.
+export function convertMeasurementToMetric(units: Units, value: number | null) {
+    return convertMeasurementSystem(
+        {
+            lengthMeasurementSystem: MeasurementSystem.METRIC,
+            temperatureMeasurementSystem: MeasurementSystem.METRIC,
+            pressureMeasurementSystem: MeasurementSystem.METRIC,
+            volumeMeasurementSystem: VolumeMeasurementSystem.METRIC,
+        },
+        units,
+        value,
+    );
 }
 
 export function mm2IN(mm: number) {
@@ -207,4 +221,38 @@ export function c2F(celsius: number) {
 
 export function f2C(fahrenheit: number) {
     return (fahrenheit - 32) * 5 / 9;
+}
+
+export function convertPipeDiameterFromMetric(unitPrefs: UnitsParameters, valueMM: number | null): [Units, number | string | null] {
+    if (unitPrefs.lengthMeasurementSystem === MeasurementSystem.METRIC) {
+        return [Units.Millimeters, valueMM];
+    }
+    switch (valueMM) {
+        case 15:
+            return [Units.None, '1/2"'];
+        case 20:
+            return [Units.None, '3/4"'];
+        case 25:
+            return [Units.None, '1"'];
+        case 32:
+            return [Units.None, '1 1/4"'];
+        case 40:
+            return [Units.None, '1 1/2"'];
+        case 50:
+            return [Units.None, '2"'];
+        case 65:
+            return [Units.None, '2 1/2"'];
+        case 80:
+            return [Units.None, '3"'];
+        case 100:
+            return [Units.None, '4"'];
+        case 125:
+            return [Units.None, '5"'];
+        case 150:
+            return [Units.None, '6"'];
+        case 200:
+            return [Units.None, '8"'];
+        default:
+            return [Units.Inches, valueMM === null ? null : mm2IN(valueMM)];
+    }
 }

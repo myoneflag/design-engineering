@@ -1,6 +1,7 @@
 import { FieldType, PropertyField } from "./property-field";
 import { EntityType } from "./types";
 import { CenteredEntity, Color, DrawableEntity, FlowSystemParameters } from "../drawing";
+import { Units } from "../../../../../frontend/src/store/document/calculations/calculation-field";
 
 export enum NodeType {
     LOAD_NODE,
@@ -45,7 +46,7 @@ export function makeLoadNodesFields(systems: FlowSystemParameters[], value: Load
 
         {
             property: "color",
-            title: "Color:",
+            title: "Color",
             hasDefault: true,
             isCalculated: false,
             type: FieldType.Color,
@@ -69,22 +70,24 @@ export function makeLoadNodesFields(systems: FlowSystemParameters[], value: Load
 
                 {
                     property: "node.designFlowRateLS",
-                    title: "Full Flow Rate (L/s)",
+                    title: "Full Flow Rate",
                     hasDefault: false,
                     isCalculated: false,
                     type: FieldType.Number,
                     params: { min: 0, max: null },
-                    multiFieldId: "designFlowRateLS"
+                    multiFieldId: "designFlowRateLS",
+                    units: Units.LitersPerSecond,
                 },
 
                 {
                     property: "node.continuousFlowLS",
-                    title: "Continuous Flow (L/s)",
+                    title: "Continuous Flow",
                     hasDefault: false,
                     isCalculated: false,
                     type: FieldType.Number,
                     params: { min: 0, max: null },
-                    multiFieldId: "continuousFlowLS"
+                    multiFieldId: "continuousFlowLS",
+                    units: Units.LitersPerSecond
                 }
             );
             break;
@@ -102,12 +105,13 @@ export function makeLoadNodesFields(systems: FlowSystemParameters[], value: Load
 
                 {
                     property: "node.continuousFlowLS",
-                    title: "Continuous Flow (L/s)",
+                    title: "Continuous Flow",
                     hasDefault: false,
                     isCalculated: false,
                     type: FieldType.Number,
                     params: { min: 0, max: null },
-                    multiFieldId: "continuousFlowLS"
+                    multiFieldId: "continuousFlowLS",
+                    units: Units.LitersPerSecond,
                 }
             );
             break;

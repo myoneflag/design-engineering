@@ -8,7 +8,7 @@ import { Catalog } from "../../../../../common/src/api/catalog/types";
 import { DrawingState, MeasurementSystem, UnitsParameters } from "../../../../../common/src/api/document/drawing";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import { globalStore } from "../mutations";
-import { mm2IN } from "../../../calculations/measurement";
+import { convertPipeDiameterFromMetric, mm2IN } from "../../../calculations/measurement";
 
 export enum NoFlowAvailableReason {
     NO_SOURCE = "NO_SOURCE",
@@ -115,34 +115,7 @@ export function makePipeCalculationFields(
                     case MeasurementSystem.METRIC:
                         return [Units.None, value === null ? null : value.toFixed(0)];
                     case MeasurementSystem.IMPERIAL:
-                        switch (value) {
-                            case 15:
-                                return [Units.None, '1/2"'];
-                            case 20:
-                                return [Units.None, '3/4"'];
-                            case 25:
-                                return [Units.None, '1"'];
-                            case 32:
-                                return [Units.None, '1 1/4"'];
-                            case 40:
-                                return [Units.None, '1 1/2"'];
-                            case 50:
-                                return [Units.None, '2"'];
-                            case 65:
-                                return [Units.None, '2 1/2"'];
-                            case 80:
-                                return [Units.None, '3"'];
-                            case 100:
-                                return [Units.None, '4"'];
-                            case 125:
-                                return [Units.None, '5"'];
-                            case 150:
-                                return [Units.None, '6"'];
-                            case 200:
-                                return [Units.None, '8"'];
-                            default:
-                                return [Units.Inches, value === null ? null : mm2IN(value)];
-                        }
+                        return convertPipeDiameterFromMetric(unitPrefs, value);
                 }
                 assertUnreachable(unitPrefs.lengthMeasurementSystem);
             }

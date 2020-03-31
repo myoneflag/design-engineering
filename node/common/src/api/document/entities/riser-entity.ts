@@ -1,10 +1,12 @@
 import { FieldType, PropertyField } from "./property-field";
 import { EntityType } from "./types";
 import { Color, ConnectableEntity, Coord, DrawingState, FlowSystemParameters, NetworkType } from "../drawing";
-import { Choice, cloneSimple, parseCatalogNumberOrMin } from "../../../lib/utils";
+import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../lib/utils";
 import { LEVEL_HEIGHT_DIFF_M } from "../../config";
 import { Catalog } from "../../catalog/types";
 import { fillPipeDefaultFields } from "./pipe-entity";
+import { Units } from "../../../../../frontend/src/store/document/calculations/calculation-field";
+import { convertPipeDiameterFromMetric } from "../../../../../frontend/src/calculations/measurement";
 
 export default interface RiserEntity extends ConnectableEntity {
     type: EntityType.RISER;
@@ -32,10 +34,11 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
         return c;
     });
     const diameters = Object.keys(catalog.pipes[result.material!].pipesBySize).map((d) => {
+        const val = convertPipeDiameterFromMetric(drawing.metadata.units, parseCatalogNumberExact(d));
         const c: Choice = {
             disabled: false,
             key: parseCatalogNumberOrMin(d),
-            name: d + "mm"
+            name: val[1] + val[0],
         };
         return c;
     });
@@ -52,32 +55,35 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
 
         {
             property: "bottomHeightM",
-            title: "Bottom Height (M)",
+            title: "Bottom Height",
             hasDefault: true,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: null, max: null },
-            multiFieldId: "bottomHeightM"
+            multiFieldId: "bottomHeightM",
+            units: Units.Meters,
         },
 
         {
             property: "topHeightM",
-            title: "Top Height (M)",
+            title: "Top Height",
             hasDefault: true,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: null, max: null },
-            multiFieldId: "topHeightM"
+            multiFieldId: "topHeightM",
+            units: Units.Meters,
         },
 
         {
             property: "maximumVelocityMS",
-            title: "Maximum Velocity (m/s)",
+            title: "Maximum Velocity",
             hasDefault: true,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: 0, max: null },
-            multiFieldId: "maximumVelocityMS"
+            multiFieldId: "maximumVelocityMS",
+            units: Units.MetersPerSecond,
         },
 
         {

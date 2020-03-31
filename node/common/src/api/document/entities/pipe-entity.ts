@@ -1,9 +1,11 @@
 import { FieldType, PropertyField } from "./property-field";
 import { EntityType } from "./types";
 import { Color, DrawableEntity, DrawingState, FlowSystemParameters, NetworkType } from "../drawing";
-import { Choice, cloneSimple, parseCatalogNumberOrMin } from "../../../lib/utils";
+import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../lib/utils";
 import { catalog } from "../../../../../frontend/src/store/catalog/index";
 import { Catalog } from "../../catalog/types";
+import { Units } from "../../../../../frontend/src/store/document/calculations/calculation-field";
+import { convertPipeDiameterFromMetric } from "../../../../../frontend/src/calculations/measurement";
 
 export default interface PipeEntity extends DrawableEntity {
     type: EntityType.PIPE;
@@ -41,10 +43,11 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
         return c;
     });
     const diameters = Object.keys(catalog.pipes[result.material!].pipesBySize).map((d) => {
+        const val = convertPipeDiameterFromMetric(drawing.metadata.units, parseCatalogNumberExact(d));
         const c: Choice = {
             disabled: false,
             key: parseCatalogNumberOrMin(d),
-            name: d + "mm"
+            name: val[1] + val[0],
         };
         return c;
     });
@@ -86,17 +89,18 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
 
         {
             property: "lengthM",
-            title: "Length (m)",
+            title: "Length",
             hasDefault: false,
             isCalculated: true,
             type: FieldType.Number,
             params: { min: 0, max: null, initialValue: 0 },
-            multiFieldId: null
+            multiFieldId: null,
+            units: Units.Meters
         },
 
         {
             property: "color",
-            title: "Color:",
+            title: "Color",
             hasDefault: true,
             isCalculated: false,
             type: FieldType.Color,
@@ -106,12 +110,13 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
 
         {
             property: "maximumVelocityMS",
-            title: "Maximum Velocity (m/s)",
+            title: "Maximum Velocity",
             hasDefault: true,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: 0, max: null },
-            multiFieldId: "maximumVelocityMS"
+            multiFieldId: "maximumVelocityMS",
+            units: Units.MetersPerSecond
         },
 
         {
@@ -124,17 +129,18 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
                 choices: diameters,
                 initialValue: diameters[0].key
             },
-            multiFieldId: "diameterMM"
+            multiFieldId: "diameterMM",
         },
 
         {
             property: "heightAboveFloorM",
-            title: "Height Above Floor (m)",
+            title: "Height Above Floor",
             hasDefault: false,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: null, max: null },
-            multiFieldId: "heightAboveFloorM"
+            multiFieldId: "heightAboveFloorM",
+            units: Units.Meters
         }
     ];
 }

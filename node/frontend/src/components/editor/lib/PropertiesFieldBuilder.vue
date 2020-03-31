@@ -16,12 +16,33 @@ import { DrawingMode } from "../../../htmlcanvas/types";
                     <div :class="missingRequired(field) ? 'pulse-orange' : ''" :ref="'field-' + field.property">
                         <b-row :style="'margin-top: -10px; margin-bottom: -5px;'">
                             <b-col>
-                                <label
-                                    class="float-left"
-                                    style="text-align: left; font-size: 15px;"
-                                    v-if="field.type !== 'title'"
-                                    >{{ field.title }}</label
-                                >
+                                <template v-if="field.type !== 'title'">
+                                    <table style="width: 100%">
+                                        <tbody>
+                                        <tr>
+                                            <td>
+
+                                                <label
+                                                        class="float-left"
+                                                        style="text-align: left; font-size: 15px;"
+                                                >
+                                                    {{ field.title }}
+                                                </label>
+
+                                            </td>
+                                            <td v-if="field.units">
+
+                                                <label
+                                                        class="float-right"
+                                                        style="text-align: left; font-size: 15px;"
+                                                >
+                                                    {{ convertUnits(field) }}
+                                                </label>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </template>
                                 <hr v-else />
                             </b-col>
                             <b-col cols="2" v-if="field.hasDefault" v-b-tooltip.hover title="Override Default">
@@ -78,11 +99,11 @@ import { DrawingMode } from "../../../htmlcanvas/types";
                             >
                                 <b-col cols="7">
                                     <b-form-input
-                                        :value="renderedData(field.property)"
+                                        :value="displayWithCorrectUnits(field)"
                                         @input="setRenderedDataNumeric(field, $event)"
                                         :id="'input-' + field.property"
-                                        :min="field.params.min"
-                                        :max="field.params.max"
+                                        :min="convertValueToUnits(field.units, field.params.min)"
+                                        :max="convertValueToUnits(field.units, field.params.max)"
                                         size="sm"
                                         type="range"
                                         :disabled="isDisabled(field)"
@@ -91,11 +112,11 @@ import { DrawingMode } from "../../../htmlcanvas/types";
                                 </b-col>
                                 <b-col cols="5">
                                     <b-form-input
-                                        :value="renderedData(field.property)"
+                                        :value="displayWithCorrectUnits(field)"
                                         @input="setRenderedDataNumeric(field, $event)"
                                         :id="'input-' + field.property"
-                                        :min="field.params.min"
-                                        :max="field.params.max"
+                                        :min="convertValueToUnits(field.units, field.params.min)"
+                                        :max="convertValueToUnits(field.units, field.params.max)"
                                         size="sm"
                                         type="number"
                                         :placeholder="'Enter ' + field.title"
@@ -108,12 +129,12 @@ import { DrawingMode } from "../../../htmlcanvas/types";
                             <b-row v-else-if="field.type === 'number'">
                                 <b-col cols="12">
                                     <b-form-input
-                                        :value="renderedData(field.property)"
+                                        :value="displayWithCorrectUnits(field)"
                                         @input="setRenderedDataNumeric(field, $event)"
                                         :id="'input-' + field.property"
                                         size="sm"
-                                        :min="field.params.min == null ? undefined : field.params.min"
-                                        :max="field.params.max == null ? undefined : field.params.max"
+                                        :min="field.params.min == null ? undefined : convertValueToUnits(field.units, field.params.min)"
+                                        :max="field.params.max == null ? undefined : convertValueToUnits(field.units, field.params.max)"
                                         type="number"
                                         :placeholder="'Enter ' + field.title"
                                         :disabled="isDisabled(field)"
@@ -206,6 +227,8 @@ import BooleanPicker from "../../../../src/components/editor/lib/BooleanPicker.v
 import { getPropertyByString, setPropertyByString } from "../../../../src/lib/utils";
 import { Choice } from "../../../../../common/src/lib/utils";
 import { DrawingMode } from "../../../htmlcanvas/types";
+import { convertMeasurementSystem, convertMeasurementToMetric } from "../../../calculations/measurement";
+import { Units } from "../../../store/document/calculations/calculation-field";
 
 @Component({
     props: {
@@ -244,6 +267,52 @@ export default class PropertiesFieldBuilder extends Vue {
         return this.document.uiState.viewOnly || this.document.uiState.drawingMode === DrawingMode.History;
     }
 
+    displayWithCorrectUnits(field: PropertyField): number | null {
+        let result;
+        if (field.units) {
+            const val = convertMeasurementSystem(
+                this.document.drawing.metadata.units,
+                field.units,
+                this.renderedData(field.property),
+            );
+            result =  val[1];
+        } else {
+            result = this.renderedData(field.property);
+        }
+
+        if (!isNaN(result)) {
+            return Number(Number(result).toFixed(5));
+        } else {
+            return result;
+        }
+    }
+
+    convertValueToUnits(curr: Units | undefined, value: number) {
+        if (!curr) {
+            return value;
+        }
+
+        const val = convertMeasurementSystem(
+            this.document.drawing.metadata.units,
+            curr,
+            value,
+        );
+        return val[1];
+    }
+
+    convertUnits(field: PropertyField): Units {
+        if (field.units) {
+            const val = convertMeasurementSystem(
+                this.document.drawing.metadata.units,
+                field.units,
+                this.renderedData(field.property),
+            );
+            return val[0];
+        } else {
+            return this.renderedData(field.property);
+        }
+    }
+
     onCommitInternal() {
         this.numberProxy = {} as any;
         this.$props.onCommit();
@@ -277,6 +346,14 @@ export default class PropertiesFieldBuilder extends Vue {
 
     setRenderedDataNumeric(field: PropertyField, value: any) {
         if (!isNaN(value) && value !== "") {
+            if (field.units) {
+                // get display units
+                const du = this.convertUnits(field);
+                console.log(du);
+                console.log(value);
+                value = convertMeasurementToMetric(du, Number(value))[1];
+                console.log(value);
+            }
             this.setRenderedData(field, Number(value));
         }
         setPropertyByString(this.numberProxy, field.property, value, true);

@@ -1,10 +1,11 @@
 import { EntityType } from "../types";
 import { FieldType, PropertyField } from "../property-field";
 import { isLUStandard, SupportedPsdStandards } from "../../../config";
-import { Catalog, LoadingUnit } from "../../../catalog/types";
+import { Catalog } from "../../../catalog/types";
 import { Coord, DrawableEntity, DrawingState } from "../../drawing";
 import { cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../../lib/utils";
-import { initialCatalog } from "../../../catalog/initial-catalog/initial-catalog";
+import { Units } from "../../../../../../frontend/src/store/document/calculations/calculation-field";
+import { StandardFlowSystemUids } from "../../../../../../frontend/src/store/catalog";
 
 export interface RoughInRecord {
     uid: string;
@@ -49,23 +50,26 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity):
 
         {
             property: "outletAboveFloorM",
-            title: "Height Above Floor (m)",
+            title: "Height Above Floor",
             hasDefault: true,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: null, max: null },
-            multiFieldId: "outletAboveFloorM"
+            multiFieldId: "outletAboveFloorM",
+            units: Units.Meters,
         },
 
+        /*
         {
             property: "warmTempC",
-            title: "Warm Water Temperature (°C)",
+            title: "Warm Water Temperature",
             hasDefault: true,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: 0, max: 100 },
-            multiFieldId: "warmTempC"
-        },
+            multiFieldId: "warmTempC",
+            units: Units.Celsius,
+        },*/
 
         {
             property: "fixtureUnits",
@@ -113,22 +117,24 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity):
 
             {
                 property: "roughIns." + suid + ".designFlowRateLS",
-                title: "Full Flow Rate (L/s)",
+                title: "Full Flow Rate",
                 hasDefault: true,
                 isCalculated: false,
                 type: FieldType.Number,
                 params: { min: 0, max: null },
-                multiFieldId: suid + "-designFlowRateLS"
+                multiFieldId: suid + "-designFlowRateLS",
+                units: Units.LitersPerSecond,
             },
 
             {
                 property: "roughIns." + suid + ".continuousFlowLS",
-                title: "Continuous Flow (L/s)",
+                title: "Continuous Flow",
                 hasDefault: true,
                 isCalculated: false,
                 type: FieldType.Number,
                 params: { min: 0, max: null },
-                multiFieldId: suid + "-continuousFlowLS"
+                multiFieldId: suid + "-continuousFlowLS",
+                units: Units.LitersPerSecond,
             },
             {
                 property: "roughIns." + suid + ".loadingUnits",
@@ -141,21 +147,23 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity):
             },
             {
                 property: "roughIns." + suid + ".minPressureKPA",
-                title: "Min. Inlet Pressure (KPA)",
+                title: "Min. Inlet Pressure",
                 hasDefault: true,
                 isCalculated: false,
                 type: FieldType.Number,
                 params: { min: 0, max: null },
-                multiFieldId: suid + "-minPressureKPA"
+                multiFieldId: suid + "-minPressureKPA",
+                units: Units.KiloPascals,
             },
             {
                 property: "roughIns." + suid + ".maxPressureKPA",
-                title: "Max. Inlet Pressure (KPA)",
+                title: "Max. Inlet Pressure",
                 hasDefault: true,
                 isCalculated: false,
                 type: FieldType.Number,
                 params: { min: 0, max: null },
-                multiFieldId: suid + "-maxPressureKPA"
+                multiFieldId: suid + "-maxPressureKPA",
+                units: Units.KiloPascals,
             }
         );
     }

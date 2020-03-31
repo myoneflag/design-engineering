@@ -29,8 +29,8 @@ export enum Units {
     Liters = 'L',
 
     // Imperial equivalents where applicable
-    GallonsPerSecond = "gal/s",
-    USGallonsPerSecond = "US gal/s", // wtf usa
+    GallonsPerMinute = "gal/min",
+    USGallonsPerMinute = "US gal/min", // wtf usa
     Inches = 'in',
     Feet = 'ft',
     Psi = 'psi',

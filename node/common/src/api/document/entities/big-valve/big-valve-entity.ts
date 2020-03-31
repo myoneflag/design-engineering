@@ -4,6 +4,7 @@ import InvisibleNodeEntity from "../Invisible-node-entity";
 import { Catalog } from "../../../catalog/types";
 import { Coord, DrawableEntity } from "../../drawing";
 import { cloneSimple, parseCatalogNumberOrMin } from "../../../../lib/utils";
+import { Units } from "../../../../../../frontend/src/store/document/calculations/calculation-field";
 
 export enum BigValveType {
     TMV = "TMV",
@@ -75,62 +76,68 @@ export function makeBigValveFields(entity: BigValveEntity): PropertyField[] {
 
         {
             property: "heightAboveFloorM",
-            title: "Height Above Floor (m)",
+            title: "Height Above Floor",
             hasDefault: false,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: null, max: null },
-            multiFieldId: "heightAboveFloorM"
+            multiFieldId: "heightAboveFloorM",
+            units: Units.Meters,
         },
 
         {
             property: "outputTemperatureC",
-            title: "Output Temperature (°C)",
+            title: "Output Temperature",
             hasDefault: false,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: 0, max: 100 },
-            multiFieldId: "outputTemperatureC"
+            multiFieldId: "outputTemperatureC",
+            units: Units.Celsius
         },
 
         {
             property: "minInletPressureKPA",
-            title: "Min. Inlet Pressure (KPA)",
+            title: "Min. Inlet Pressure",
             hasDefault: true,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: 0, max: null },
-            multiFieldId: "minInletPressureKPA"
+            multiFieldId: "minInletPressureKPA",
+            units: Units.KiloPascals
         },
 
         {
             property: "maxInletPressureKPA",
-            title: "Max. Inlet Pressure (KPA)",
+            title: "Max. Inlet Pressure",
             hasDefault: true,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: 0, max: null },
-            multiFieldId: "maxInletPressureKPA"
+            multiFieldId: "maxInletPressureKPA",
+            units: Units.KiloPascals
         },
 
         {
             property: "minFlowRateLS",
-            title: "Min. Flow Rate (L/s)",
+            title: "Min. Flow Rate",
             hasDefault: true,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: 0, max: null },
-            multiFieldId: "minFlowRateLS"
+            multiFieldId: "minFlowRateLS",
+            units: Units.LitersPerSecond
         },
 
         {
             property: "maxFlowRateLS",
-            title: "Max. Flow Rate (L/s)",
+            title: "Max. Flow Rate",
             hasDefault: true,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: 0, max: null },
-            multiFieldId: "maxFlowRateLS"
+            multiFieldId: "maxFlowRateLS",
+            units: Units.LitersPerSecond
         }
     ];
 }

@@ -4,6 +4,7 @@ import { CenteredEntity, Coord, DrawingState, FlowSystemParameters } from "../..
 import { cloneSimple } from "../../../../lib/utils";
 import { PlantConcrete, PlantType, PressureMethod } from "./plant-types";
 import { assertUnreachable } from "../../../config";
+import { Units } from "../../../../../../frontend/src/store/document/calculations/calculation-field";
 
 export interface PlantEntityV8 extends CenteredEntity {
     type: EntityType.PLANT;
@@ -129,12 +130,13 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
     res.push(
         {
             property: "heightAboveFloorM",
-            title: "Height Above Floor (m)",
+            title: "Height Above Floor",
             hasDefault: false,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: null, max: null },
-            multiFieldId: "heightAboveFloorM"
+            multiFieldId: "heightAboveFloorM",
+            units: Units.Meters,
         },
     );
 
@@ -143,12 +145,13 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
             res.push(
                 {
                     property: "plant.returnMinimumTemperatureC",
-                    title: "Minimum Return Temperature (C)",
+                    title: "Minimum Return Temperature",
                     hasDefault: true,
                     isCalculated: false,
                     type: FieldType.Number,
                     params: { min: null, max: entity.outletTemperatureC },
-                    multiFieldId: "returnMinimumTemperatureC"
+                    multiFieldId: "returnMinimumTemperatureC",
+                    units: Units.Celsius,
                 },
             );
 
@@ -160,7 +163,8 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                     isCalculated: false,
                     type: FieldType.Number,
                     params: { min: 0, max: null },
-                    multiFieldId: "returnVelocityMS"
+                    multiFieldId: "returnVelocityMS",
+                    units: Units.MetersPerSecond,
                 },
             );
 
@@ -173,7 +177,7 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                     isCalculated: false,
                     type: FieldType.Boolean,
                     params: null,
-                    multiFieldId: "addReturnToPSDFlowRate"
+                    multiFieldId: "addReturnToPSDFlowRate",
                 },
             );
 
@@ -209,34 +213,37 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
             case PressureMethod.PUMP_DUTY:
                 res.push({
                     property: "plant.pressureLoss.pumpPressureKPA",
-                    title: "Pump Pressure (kPa)",
+                    title: "Pump Pressure",
                     hasDefault: true,
                     isCalculated: false,
                     type: FieldType.Number,
                     params: { min: 0, max: null },
-                    multiFieldId: "pumpPressureKPA"
+                    multiFieldId: "pumpPressureKPA",
+                    units: Units.KiloPascals,
                 });
                 break;
             case PressureMethod.FIXED_PRESSURE_LOSS:
                 res.push({
                     property: "plant.pressureLoss.pressureLossKPA",
-                    title: "Pressure Loss (kPa)",
+                    title: "Pressure Loss",
                     hasDefault: true,
                     isCalculated: false,
                     type: FieldType.Number,
                     params: { min: 0, max: null },
-                    multiFieldId: "pressureLossKPA"
+                    multiFieldId: "pressureLossKPA",
+                    units: Units.KiloPascals,
                 });
                 break;
             case PressureMethod.STATIC_PRESSURE:
                 res.push({
                     property: "plant.pressureLoss.staticPressureKPA",
-                    title: "Static Pressure (kPa)",
+                    title: "Static Pressure",
                     hasDefault: true,
                     isCalculated: false,
                     type: FieldType.Number,
                     params: { min: 0, max: null },
-                    multiFieldId: "staticPressureKPA"
+                    multiFieldId: "staticPressureKPA",
+                    units: Units.KiloPascals,
                 });
                 break;
         }
@@ -245,12 +252,13 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
     res.push(
         {
             property: "outletTemperatureC",
-            title: "Outlet Temperature (C)",
+            title: "Outlet Temperature",
             hasDefault: true,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: null, max: null },
-            multiFieldId: "outletTemperatureC"
+            multiFieldId: "outletTemperatureC",
+            units: Units.Celsius,
         },
 
     );
@@ -258,22 +266,24 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
     res.push(
         {
             property: "widthMM",
-            title: "Width (mm)",
+            title: "Width",
             hasDefault: false,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: 0, max: null },
-            multiFieldId: "widthMM"
+            multiFieldId: "widthMM",
+            units: Units.Millimeters,
         },
 
         {
             property: "heightMM",
-            title: "Height (mm)",
+            title: "Height",
             hasDefault: false,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: 0, max: null },
-            multiFieldId: "heightMM"
+            multiFieldId: "heightMM",
+            units: Units.Millimeters,
         }
     );
 
