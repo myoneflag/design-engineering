@@ -32,15 +32,15 @@ import {
 export default class General extends Vue {
     get fields(): any[] {
         return [
-            ["title", "Project Title:", "text"],
+            ["title", "Project Title", "text"],
             ["projectNumber", "Project No.", "text"],
-            ["projectStage", "Project Stage:", "text"],
-            ["designer", "Designer:", "text"],
-            ["reviewed", "Reviewed by:", "text"],
-            ["approved", "Approved by:", "text"],
-            ["revision", "Revision No.:", "number"],
-            ["client", "Client:", "text"],
-            ["description", "Description:", "textarea"]
+            ["projectStage", "Project Stage", "text"],
+            ["designer", "Designer", "text"],
+            ["reviewed", "Reviewed by", "text"],
+            ["approved", "Approved by", "text"],
+            ["revision", "Revision No.", "number"],
+            ["client", "Client", "text"],
+            ["description", "Description", "textarea"]
         ];
     }
 

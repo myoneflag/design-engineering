@@ -309,7 +309,7 @@ export default class PropertiesFieldBuilder extends Vue {
             );
             return val[0];
         } else {
-            return this.renderedData(field.property);
+            throw new Error('No units to convert');
         }
     }
 

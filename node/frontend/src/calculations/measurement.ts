@@ -55,6 +55,15 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
             }
             assertUnreachable(unitsPrefs.lengthMeasurementSystem);
             break;
+        case Units.MetersPerSecondSquared:
+            switch (unitsPrefs.lengthMeasurementSystem) {
+                case MeasurementSystem.METRIC:
+                    return [units, value];
+                case MeasurementSystem.IMPERIAL:
+                    return [Units.FeetPerSecondSquared, m2FT(value)];
+            }
+            assertUnreachable(unitsPrefs.lengthMeasurementSystem);
+            break;
         case Units.Celsius:
             switch (unitsPrefs.temperatureMeasurementSystem) {
                 case MeasurementSystem.METRIC:
@@ -116,9 +125,18 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
         case Units.FeetPerSecond:
             switch (unitsPrefs.lengthMeasurementSystem) {
                 case MeasurementSystem.METRIC:
-                    return [Units.FeetPerSecond, value];
-                case MeasurementSystem.IMPERIAL:
                     return [Units.MetersPerSecond, ft2M(value)];
+                case MeasurementSystem.IMPERIAL:
+                    return [Units.FeetPerSecond, value];
+            }
+            assertUnreachable(unitsPrefs.lengthMeasurementSystem);
+            break;
+        case Units.FeetPerSecondSquared:
+            switch (unitsPrefs.lengthMeasurementSystem) {
+                case MeasurementSystem.METRIC:
+                    return [Units.MetersPerSecondSquared, ft2M(value)];
+                case MeasurementSystem.IMPERIAL:
+                    return [Units.FeetPerSecondSquared, value];
             }
             assertUnreachable(unitsPrefs.lengthMeasurementSystem);
             break;

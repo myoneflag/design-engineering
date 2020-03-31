@@ -3,16 +3,16 @@ import * as TM from "transformation-matrix";
 import { DrawingContext } from "../../src/htmlcanvas/lib/types";
 import {
     addFinalPsdCounts,
-    addPsdCounts,
     lookupFlowRate,
     PsdUnitsByFlowSystem,
-    zeroFinalPsdCounts,
-    zeroPsdCounts
+    zeroFinalPsdCounts
 } from "../../src/calculations/utils";
 import { StandardFlowSystemUids } from "../../src/store/catalog";
 import { GridLineMode } from "../store/document/types";
 import { Catalog } from "../../../common/src/api/catalog/types";
 import { NetworkType } from "../../../common/src/api/document/drawing";
+import { Units } from "../store/document/calculations/calculation-field";
+import { convertMeasurementSystem } from "../calculations/measurement";
 
 const SENSIBLE_UNITS_MM: number[] = [
     1,
@@ -328,29 +328,36 @@ export function drawLoadingUnits(
         let hotSpareText: string = "error";
         let coldText: string = "error";
         let hotText: string = "error";
+        let coldUnits: Units | string = '';
+        let hotUnits: Units | string = '';
         if (coldFR != null) {
-            const coldFRSpare =
+            let coldFRSpare: number | null =
                 coldFR *
                 (1 +
                     0.01 *
                     context.doc.drawing.metadata.flowSystems.find((s) => s.uid === StandardFlowSystemUids.ColdWater)!
                         .networks[NetworkType.RETICULATIONS].spareCapacityPCT);
-            coldSpareText = coldFRSpare.toPrecision(3);
+
+            [coldUnits, coldFRSpare] =
+                convertMeasurementSystem(context.doc.drawing.metadata.units, Units.LitersPerSecond, coldFRSpare);
+            coldSpareText = coldFRSpare!.toPrecision(3);
             coldText = coldFR.toPrecision(3);
         }
         if (hotFR != null) {
-            const hotFRSpare =
+            let hotFRSpare: number | null =
                 hotFR *
                 (1 +
                     0.01 *
                     context.doc.drawing.metadata.flowSystems.find((s) => s.uid === StandardFlowSystemUids.WarmWater)!
                         .networks[NetworkType.RETICULATIONS].spareCapacityPCT);
-            hotSpareText = hotFRSpare.toPrecision(3);
+            [hotUnits, hotFRSpare] =
+                convertMeasurementSystem(context.doc.drawing.metadata.units, Units.LitersPerSecond, hotFRSpare);
+            hotSpareText = hotFRSpare!.toPrecision(3);
             hotText = hotFR.toPrecision(3);
         }
-        ctx.fillText(coldSpareText + " L/s ", x, y);
+        ctx.fillText(coldSpareText + " " + coldUnits + " ", x, y);
 
-        ctx.fillText(hotSpareText + " L/s ", x, y + 20);
+        ctx.fillText(hotSpareText + " " + hotUnits + " ", x, y + 20);
 
         x += 70;
     }

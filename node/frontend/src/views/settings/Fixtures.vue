@@ -70,9 +70,9 @@ import { Catalog, FixtureSpec } from "../../../../common/src/api/catalog/types";
 export default class Fixtures extends Vue {
     get fields(): any[][] {
         return [
-            ["psdMethod", "PSD Calculation Method:", "choice", getPsdMethods(this.$store.getters["catalog/default"])],
-            ["pipeSizingMethod", "Pipe Sizing Method:", "choice", PIPE_SIZING_METHODS],
-            ["ringMainCalculationMethod", "Ring Main Calculation Method:", "choice", RING_MAIN_CALCULATION_METHODS]
+            ["psdMethod", "PSD Calculation Method", "choice", getPsdMethods(this.$store.getters["catalog/default"])],
+            ["pipeSizingMethod", "Pipe Sizing Method", "choice", PIPE_SIZING_METHODS],
+            ["ringMainCalculationMethod", "Ring Main Calculation Method", "choice", RING_MAIN_CALCULATION_METHODS]
         ];
     }
 

@@ -51,6 +51,7 @@ import {
     INSULATION_MATERIAL_CHOICES, InsulationJackets,
     InsulationMaterials
 } from "../../../../common/src/api/config";
+import { Units } from "../../store/document/calculations/calculation-field";
 
 @Component({
     components: { SettingsFieldBuilder, FlowSystemPicker },
@@ -67,11 +68,11 @@ export default class FlowSystems extends Vue {
 
     get fields(): any[][] {
         const fields = [
-            ["name", "System Name:", "text"],
-            ["fluid", "Fluid:", "choice", this.$store.getters["catalog/defaultFluidChoices"]],
-            ["temperature", "Temperature: (°C)", "range", 10, 100],
-            ["color", "Colour:", "color"],
-            ["hasReturnSystem", "Has Return System:", "yesno"],
+            ["name", "System Name", "text"],
+            ["fluid", "Fluid", "choice", this.$store.getters["catalog/defaultFluidChoices"]],
+            ["temperature", "Temperature", "range", 10, 100, null, Units.Celsius],
+            ["color", "Colour", "color"],
+            ["hasReturnSystem", "Has Return System", "yesno"],
         ];
 
         if (this.selectedSystem.hasReturnSystem) {
@@ -83,8 +84,8 @@ export default class FlowSystems extends Vue {
                 fields.push(
                     ['insulationMaterial', "Insulation Material", "choice", getInsulationMaterialChoicesWithThermalConductivity(this.selectedSystem.temperature)],
                     ['insulationJacket', "Insulation Jacket", "choice", INSULATION_JACKET_CHOICES],
-                    ['returnMaxVelocityMS', "Max. Velocity of Return (m/s)", "number"],
-                    ['insulationThicknessMM', "Insulation Thickness (mm)", "number"],
+                    ['returnMaxVelocityMS', "Max. Velocity of Return", "number", Units.MetersPerSecond],
+                    ['insulationThicknessMM', "Insulation Thickness", "number", Units.Millimeters],
                 );
             }
         }
@@ -96,14 +97,14 @@ export default class FlowSystems extends Vue {
         for (const netKey of Object.keys(this.selectedSystem.networks)) {
             fields.push(
                 [netKey, _.startCase(netKey.toLowerCase()), "title4"],
-                ["networks." + netKey + ".velocityMS", "Velocity: (m/s)", "number"],
+                ["networks." + netKey + ".velocityMS", "Velocity", "number", Units.MetersPerSecond],
                 [
                     "networks." + netKey + ".material",
-                    "Material:",
+                    "Material",
                     "choice",
                     this.$store.getters["catalog/defaultPipeMaterialChoices"]
                 ],
-                ["networks." + netKey + ".spareCapacityPCT", "Spare Capacity: %", "range", 0, 100]
+                ["networks." + netKey + ".spareCapacityPCT", "Spare Capacity (%)", "range", 0, 100]
             );
         }
 

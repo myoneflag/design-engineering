@@ -23,6 +23,7 @@ export enum Units {
     Meters = "m",
     KiloPascals = "kPa",
     MetersPerSecond = "m/s",
+    MetersPerSecondSquared = "m/s\u0178",
     Celsius = "\u00B0C",
     KiloWatts = 'kW',
     Kv = 'Kv',
@@ -33,6 +34,7 @@ export enum Units {
     USGallonsPerMinute = "US gal/min", // wtf usa
     Inches = 'in',
     Feet = 'ft',
+    FeetPerSecondSquared = "ftt/s\u0178",
     Psi = 'psi',
     FeetPerSecond = 'ft/s',
     Fahrenheit = '\u00B0F',

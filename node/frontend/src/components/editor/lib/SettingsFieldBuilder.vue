@@ -24,36 +24,43 @@
                         <b-row v-else-if="field[2] === 'range'">
                             <b-col cols="8">
                                 <b-form-input
-                                    :value="getReactiveData(field[0])"
-                                    @input="setReactiveData(field[0], Number($event))"
+                                    :value="displayWithCorrectUnits(field[6], field[0])"
+                                    @input="setRenderedDataNumeric(field[6], field[0], Number($event))"
                                     :id="'input-' + field[0]"
-                                    :min="field[3]"
-                                    :max="field[4]"
+                                    :min="convertValueToUnits(field[6], field[3])"
+                                    :max="convertValueToUnits(field[6], field[4])"
                                     :type="field[2]"
                                     :step="field[5] ? field[5] : 1"
                                     :placeholder="'Enter ' + field[1]"
                                 />
                             </b-col>
                             <b-col cols="4">
-                                <b-form-input
-                                    :value="getReactiveData(field[0])"
-                                    @input="setReactiveData(field[0], Number($event))"
-                                    :id="'input-' + field[0]"
-                                    type="number"
-                                    :step="field[5] ? field[5] : 1"
-                                    :placeholder="'Enter ' + field[1]"
-                                />
+                                <b-input-group :prepend="field[6] ? convertUnits(field[6]) : undefined">
+                                    <b-form-input
+                                            :value="displayWithCorrectUnits(field[6], field[0])"
+                                            @input="setRenderedDataNumeric(field[6], field[0], Number($event))"
+                                            :id="'input-' + field[0]"
+                                            type="number"
+                                            :step="field[5] ? field[5] : 1"
+                                            :placeholder="'Enter ' + field[1]"
+                                    />
+                                </b-input-group>
                             </b-col>
                         </b-row>
 
-                        <b-form-input
+                        <b-input-group
                                 v-else-if="field[2] === 'number'"
-                                :value="getReactiveData(field[0])"
-                                @input="setReactiveData(field[0], Number($event))"
-                                :id="'input-' + field[0]"
-                                type="number"
-                                :placeholder="'Enter ' + field[1]"
-                        />
+                                :prepend="field[3] ? convertUnits(field[3]) : undefined"
+                        >
+                            <b-form-input
+                                    :value="displayWithCorrectUnits(field[3], field[0])"
+                                    @input="setRenderedDataNumeric(field[3], field[0], Number($event))"
+                                    :id="'input-' + field[0]"
+                                    type="number"
+                                    :placeholder="'Enter ' + field[1]"
+                            />
+                        </b-input-group>
+
                         <b-dropdown
                             v-else-if="field[2] === 'choice'"
                             class="float-left"
@@ -151,6 +158,9 @@ import * as _ from "lodash";
 import { isString } from "lodash";
 import { getPropertyByString, setPropertyByString } from "../../../lib/utils";
 import { Choice, cloneSimple } from "../../../../../common/src/lib/utils";
+import { PropertyField } from "../../../../../common/src/api/document/entities/property-field";
+import { convertMeasurementSystem, convertMeasurementToMetric } from "../../../calculations/measurement";
+import { Units } from "../../../store/document/calculations/calculation-field";
 
 @Component({
     props: {
@@ -200,6 +210,66 @@ export default class SettingsFieldBuilder extends Vue {
                 return false;
             }
         }
+    }
+
+
+    displayWithCorrectUnits(units: Units | null, property: string): number | null {
+        let result;
+        if (units) {
+            const val = convertMeasurementSystem(
+                this.document.drawing.metadata.units,
+                units,
+                this.getReactiveData(property),
+            );
+            result =  val[1];
+        } else {
+            result = this.getReactiveData(property);
+        }
+
+        if (!isNaN(result)) {
+            return Number(Number(result).toFixed(5));
+        } else {
+            return result;
+        }
+    }
+
+    convertValueToUnits(curr: Units | undefined, value: number) {
+        if (!curr) {
+            return value;
+        }
+
+        const val = convertMeasurementSystem(
+            this.document.drawing.metadata.units,
+            curr,
+            value,
+        );
+        return val[1];
+    }
+
+    convertUnits(units: Units): Units {
+        if (units) {
+            const val = convertMeasurementSystem(
+                this.document.drawing.metadata.units,
+                units,
+                1,
+            );
+            return val[0];
+        } else {
+            throw new Error('No units to convert');
+        }
+    }
+
+
+    setRenderedDataNumeric(units: Units, property: string, value: any) {
+        if (!isNaN(value) && value !== "") {
+            if (units) {
+                // get display units
+                const du = this.convertUnits(units);
+                value = convertMeasurementToMetric(du, Number(value))[1];
+            }
+            this.setReactiveData(property, Number(value));
+        }
+        this.setReactiveData(property, value);
     }
 
     cancel() {

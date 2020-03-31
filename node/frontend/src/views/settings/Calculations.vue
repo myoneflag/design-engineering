@@ -27,6 +27,7 @@ import {
     SupportedDwellingStandards,
     SupportedPsdStandards
 } from "../../../../common/src/api/config";
+import { Units } from "../../store/document/calculations/calculation-field";
 
 @Component({
     components: { SettingsFieldBuilder },
@@ -44,7 +45,7 @@ export default class Calculations extends Vue {
 
         result.push([
             "psdDwellingMethod",
-            "Peak Flow Rate Calculation Method:",
+            "Peak Flow Rate Calculation Method",
             "choice",
             [
                 ...getPsdMethods(this.$store.getters["catalog/default"]),
@@ -55,15 +56,15 @@ export default class Calculations extends Vue {
         if (this.calculationParams.dwellingMethod !== null) {
             result.push([
                 "psdMethod",
-                "Peak Flow Rate Inside Dwellings:",
+                "Peak Flow Rate Inside Dwellings",
                 "choice",
                 [...getPsdMethods(this.$store.getters["catalog/default"])]
             ]);
         }
 
         result.push(
-            ["pipeSizingMethod", "Pipe Sizing Method:", "choice", PIPE_SIZING_METHODS],
-            ["componentPressureLossMethod", "Pressure Loss Method:", "choice", COMPONENT_PRESSURE_LOSS_METHODS]
+            ["pipeSizingMethod", "Pipe Sizing Method", "choice", PIPE_SIZING_METHODS],
+            ["componentPressureLossMethod", "Pressure Loss Method", "choice", COMPONENT_PRESSURE_LOSS_METHODS]
         );
 
         switch (this.document.drawing.metadata.calculationParams.componentPressureLossMethod) {
@@ -75,7 +76,9 @@ export default class Calculations extends Vue {
                     "Length on top of Pipe for Pressure Loss Calculations (%)",
                     "range",
                     0,
-                    100
+                    100,
+                    null,
+                    null,
                 ]);
                 break;
             default:
@@ -83,11 +86,11 @@ export default class Calculations extends Vue {
         }
 
         result.push(
-            ["ringMainCalculationMethod", "Ring Main Calculation Method:", "choice", RING_MAIN_CALCULATION_METHODS],
-            ["ceilingPipeHeightM", "Default Pipe Height Above Floor (m):", "number"],
-            ["roomTemperatureC", "Room Temperature (°C):", "range", 10, 40],
-            ["windSpeedForHeatLossMS", "Wind Speed for Heat Loss (m/s):", "number"],
-            ["gravitationalAcceleration", "Gravitational Acceleration (m/s^2):", "range", 9.77, 9.84, 0.001]
+            ["ringMainCalculationMethod", "Ring Main Calculation Method", "choice", RING_MAIN_CALCULATION_METHODS],
+            ["ceilingPipeHeightM", "Default Pipe Height Above Floor", "number", Units.Meters],
+            ["roomTemperatureC", "Room Temperature", "range", 10, 40, null, Units.Celsius],
+            ["windSpeedForHeatLossMS", "Wind Speed for Heat Loss", "number", Units.MetersPerSecond],
+            ["gravitationalAcceleration", "Gravitational Acceleration", "range", 9.77, 9.84, 0.001, Units.MetersPerSecondSquared]
         );
 
         return result;
