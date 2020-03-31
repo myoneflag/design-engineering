@@ -106,8 +106,8 @@ export const TEMPERATURE_MEASUREMENT_CHOICES: Choice[] = [
 
 export const VOLUME_MEASUREMENT_CHOICES: Choice[] = [
     {name: "Metric (L)", key: VolumeMeasurementSystem.METRIC},
-    {name: "Imperial (gal)", key: VolumeMeasurementSystem.IMPERIAL},
-    {name: "US (US gal)", key: VolumeMeasurementSystem.US},
+    {name: "UK Imperial (gal)", key: VolumeMeasurementSystem.IMPERIAL},
+    {name: "US Imperial (US gal)", key: VolumeMeasurementSystem.US},
 ];
 
 
