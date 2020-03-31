@@ -65,6 +65,12 @@ const router = new Router({
                             name: "settings/general",
                             component: () => import(/* webpackChunkName: "general" */ "./views/settings/General.vue")
                         },
+
+                        {
+                            path: "units",
+                            name: "settings/units",
+                            component: () => import(/* webpackChunkName: "units" */ "./views/settings/Units.vue")
+                        },
                         {
                             path: "fixtures",
                             name: "settings/fixtures",

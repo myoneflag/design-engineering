@@ -1,4 +1,4 @@
-import { FlowSystemParameters } from "../../../../../common/src/api/document/drawing";
+import { FlowSystemParameters, UnitsParameters } from "../../../../../common/src/api/document/drawing";
 
 export enum FieldCategory {
     Pressure,
@@ -16,6 +16,8 @@ export enum FieldCategory {
 
 export enum Units {
     None = "",
+
+    // Metric
     LitersPerSecond = "L/s",
     Millimeters = "mm",
     Meters = "m",
@@ -25,6 +27,19 @@ export enum Units {
     KiloWatts = 'kW',
     Kv = 'Kv',
     Liters = 'L',
+
+    // Imperial equivalents where applicable
+    GallonsPerSecond = "gal/s",
+    USGallonsPerSecond = "US gal/s", // wtf usa
+    Inches = 'in',
+    Feet = 'ft',
+    Psi = 'psi',
+    FeetPerSecond = 'ft/s',
+    Fahrenheit = '\u00B0F',
+    // keep it at kilowatts
+    // Kv is unitless
+    Gallons = 'gal',
+    USGallons = 'US gal', // wtf usa
 }
 
 export interface CalculationField {
@@ -42,6 +57,7 @@ export interface CalculationField {
     bold?: boolean;
     format?: (v: any) => string;
     hideIfNull?: boolean;
+    convert?: (unitPrefs: UnitsParameters, units: Units, value: number | null) => [Units, number | string | null];
 }
 
 export enum CalculationDataType {

@@ -16,6 +16,7 @@ import { EntityType } from "../../../../../common/src/api/document/entities/type
 import { CalculationConcrete } from "../../../store/document/calculations/calculation-concrete";
 import { NoFlowAvailableReason } from "../../../store/document/calculations/pipe-calculation";
 import { assertUnreachable } from "../../../../../common/src/api/config";
+import { convertMeasurementSystem } from "../../../calculations/measurement";
 
 export interface Calculated {
     drawCalculationBox(
@@ -47,9 +48,11 @@ export function CalculatedObject<
     return class extends constructor implements CalculatedObject {
         calculated: true = true;
 
-        makeDatumText(datum: CalculationData): string {
+        makeDatumText(context: DrawingContext, datum: CalculationData): string {
             if (datum.type === CalculationDataType.VALUE) {
-                const value = datum.value;
+                const convFun = datum.convert || convertMeasurementSystem;
+                const [units, value] = convFun(context.doc.drawing.metadata.units, datum.units, datum.value);
+
                 if (value === undefined) {
                     throw new Error(
                         "undefined value: " +
@@ -65,9 +68,13 @@ export function CalculatedObject<
                 } else {
                     const fractionDigits = datum.significantDigits === undefined ? 3 : datum.significantDigits;
 
-                    numberText = value === null ? "??" : value.toFixed(fractionDigits);
+                    if (typeof value === 'string') {
+                        numberText = value;
+                    } else {
+                        numberText = value === null ? "??" : value.toFixed(fractionDigits);
+                    }
                 }
-                return numberText + " " + (datum.hideUnits ? "" : datum.units + " ") + datum.short;
+                return numberText + " " + (datum.hideUnits ? "" : units + " ") + datum.short;
             } else {
                 return datum.message;
             }
@@ -114,7 +121,7 @@ export function CalculatedObject<
                     ctx.font = FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
                 }
 
-                const metrics = ctx.measureText(this.makeDatumText(datum));
+                const metrics = ctx.measureText(this.makeDatumText(context, datum));
                 maxWidth = Math.max(maxWidth, metrics.width);
             }
             const calculation = context.globalStore.getCalculation(this.entity);
@@ -202,7 +209,7 @@ export function CalculatedObject<
                         ctx.fillStyle = lighten(col.hex, -20);
                     }
 
-                    ctx.fillText(this.makeDatumText(data[i]), -maxWidth / 2, y);
+                    ctx.fillText(this.makeDatumText(context, data[i]), -maxWidth / 2, y);
                     y -= multiplier * FIELD_HEIGHT;
                 }
 

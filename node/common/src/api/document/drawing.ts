@@ -10,6 +10,7 @@ import {
 } from "../config";
 import RiserEntity from "./entities/riser-entity";
 import { EntityType } from "./entities/types";
+import { Choice } from "../../lib/utils";
 
 export interface Coord {
     x: number;
@@ -59,6 +60,7 @@ export interface Level {
 export interface DrawingState {
     metadata: {
         generalInfo: GeneralInfo;
+        units: UnitsParameters;
         flowSystems: FlowSystemParameters[];
         calculationParams: CalculationParameters;
         availableFixtures: string[];
@@ -67,6 +69,48 @@ export interface DrawingState {
     levels: { [key: string]: Level };
     shared: { [key: string]: RiserEntity };
 }
+
+export interface UnitsParameters {
+    lengthMeasurementSystem: MeasurementSystem;
+    pressureMeasurementSystem: MeasurementSystem;
+    temperatureMeasurementSystem: MeasurementSystem;
+    volumeMeasurementSystem: VolumeMeasurementSystem;
+}
+
+
+export enum MeasurementSystem {
+    METRIC = 'METRIC',
+    IMPERIAL = 'IMPERIAL',
+}
+
+export enum VolumeMeasurementSystem {
+    METRIC = 'METRIC',
+    IMPERIAL = 'IMPERIAL',
+    US = 'US',
+}
+
+export const LENGTH_MEASUREMENT_CHOICES: Choice[] = [
+    {name: "Metric (mm)", key: MeasurementSystem.METRIC},
+    {name: "Imperial (in, ft)", key: MeasurementSystem.IMPERIAL},
+];
+
+export const PRESSURE_MEASUREMENT_CHOICES: Choice[] = [
+    {name: "Metric (kpa)", key: MeasurementSystem.METRIC},
+    {name: "Imperial (psi)", key: MeasurementSystem.IMPERIAL},
+];
+
+export const TEMPERATURE_MEASUREMENT_CHOICES: Choice[] = [
+    {name: "Metric (\u00B0C)", key: MeasurementSystem.METRIC},
+    {name: "Imperial (\u00B0F)", key: MeasurementSystem.IMPERIAL},
+];
+
+export const VOLUME_MEASUREMENT_CHOICES: Choice[] = [
+    {name: "Metric (L)", key: VolumeMeasurementSystem.METRIC},
+    {name: "Imperial (gal)", key: VolumeMeasurementSystem.IMPERIAL},
+    {name: "US (US gal)", key: VolumeMeasurementSystem.US},
+];
+
+
 
 export interface GeneralInfo {
     title: string;
@@ -163,7 +207,13 @@ export const initialDrawing: DrawingState = {
             approved: "",
             revision: 1,
             client: "",
-            description: ""
+            description: "",
+        },
+        units: {
+            lengthMeasurementSystem: MeasurementSystem.METRIC,
+            volumeMeasurementSystem: VolumeMeasurementSystem.METRIC,
+            pressureMeasurementSystem: MeasurementSystem.METRIC,
+            temperatureMeasurementSystem: MeasurementSystem.METRIC,
         },
         flowSystems: [
             // TODO: these values should get got from the database.

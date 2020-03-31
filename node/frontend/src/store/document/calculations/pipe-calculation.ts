@@ -3,11 +3,12 @@ import { Calculation, PsdCalculation } from "../../../../src/store/document/calc
 import PipeEntity, { fillPipeDefaultFields } from "../../../../../common/src/api/document/entities/pipe-entity";
 import { getPsdUnitName, PsdProfile } from "../../../calculations/utils";
 import set = Reflect.set;
-import { isGermanStandard } from "../../../../../common/src/api/config";
+import { assertUnreachable, isGermanStandard } from "../../../../../common/src/api/config";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
-import { DrawingState } from "../../../../../common/src/api/document/drawing";
+import { DrawingState, MeasurementSystem, UnitsParameters } from "../../../../../common/src/api/document/drawing";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import { globalStore } from "../mutations";
+import { mm2IN } from "../../../calculations/measurement";
 
 export enum NoFlowAvailableReason {
     NO_SOURCE = "NO_SOURCE",
@@ -101,10 +102,50 @@ export function makePipeCalculationFields(
             hideUnits: true,
             units: Units.Millimeters,
             category: FieldCategory.Size,
-            significantDigits: 0,
             bold: true,
             systemUid: entity.systemUid,
-            defaultEnabled: true
+            defaultEnabled: true,
+            convert: (unitPrefs: UnitsParameters, unit: Units, value: number | null) => {
+                if (unit !== Units.Millimeters) {
+                    throw new Error('wat');
+                }
+
+                // we need cool names.
+                switch (unitPrefs.lengthMeasurementSystem) {
+                    case MeasurementSystem.METRIC:
+                        return [Units.None, value === null ? null : value.toFixed(0)];
+                    case MeasurementSystem.IMPERIAL:
+                        switch (value) {
+                            case 15:
+                                return [Units.None, '1/2"'];
+                            case 20:
+                                return [Units.None, '3/4"'];
+                            case 25:
+                                return [Units.None, '1"'];
+                            case 32:
+                                return [Units.None, '1 1/4"'];
+                            case 40:
+                                return [Units.None, '1 1/2"'];
+                            case 50:
+                                return [Units.None, '2"'];
+                            case 65:
+                                return [Units.None, '2 1/2"'];
+                            case 80:
+                                return [Units.None, '3"'];
+                            case 100:
+                                return [Units.None, '4"'];
+                            case 125:
+                                return [Units.None, '5"'];
+                            case 150:
+                                return [Units.None, '6"'];
+                            case 200:
+                                return [Units.None, '8"'];
+                            default:
+                                return [Units.Inches, value === null ? null : mm2IN(value)];
+                        }
+                }
+                assertUnreachable(unitPrefs.lengthMeasurementSystem);
+            }
         },
         {
             property: "realInternalDiameterMM",

@@ -114,3 +114,5 @@ export async function upgradeDocument(doc: Document) {
 export function getInitialDrawing(doc?: Document) {
     return cloneSimple(initialDrawing);
 }
+
+// 10 to 11. Move them to the thing.

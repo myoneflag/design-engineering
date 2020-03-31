@@ -11,6 +11,7 @@
                 <b-col cols="2">
                     <b-nav vertical pills style="top: 0;">
                         <b-nav-item :to="{ name: 'settings/general' }" active-class="active">General</b-nav-item>
+                        <b-nav-item :to="{ name: 'settings/units' }" active-class="active">Units</b-nav-item>
                         <b-nav-item :to="{ name: 'settings/catalog' }" active-class="active">Catalog</b-nav-item>
                         <b-nav-item :to="{ name: 'settings/fixtures' }" active-class="active">Fixtures</b-nav-item>
                         <b-nav-item :to="{ name: 'settings/flow-systems' }" active-class="active"
