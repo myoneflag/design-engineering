@@ -8,13 +8,14 @@ import { PlantConcrete, PlantType, PressureMethod } from "./document/entities/pl
 import { DrawableEntityConcrete } from "./document/entities/concrete-entity";
 import { FlowConfiguration } from "./document/entities/big-valve/big-valve-entity";
 import uuid from "uuid";
+import { cloneSimple } from "../lib/utils";
 
 // This file is for managing upgrades between versions.
 // Remember to copy this directory before developing a major change, and bump the api version number, then
 // implement the upgrade method below.
 // Remember to also add this function to the upgrade function in default.
 
-export const CURRENT_VERSION = 10;
+export const CURRENT_VERSION = 11;
 
 export function upgrade4to5(original: DrawingState) {
     // Plants entity was updated
@@ -200,5 +201,11 @@ export function upgrade9to10(original: DrawingState) {
         if (fs.insulationJacket === undefined) {
             fs.insulationJacket = InsulationJackets.allServiceJacket;
         }
+    }
+}
+
+export function upgrade10to11(original: DrawingState) {
+    if (original.metadata.units === undefined) {
+        original.metadata.units = cloneSimple(initialDrawing.metadata.units);
     }
 }

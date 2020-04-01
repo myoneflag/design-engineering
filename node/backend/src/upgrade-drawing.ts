@@ -5,7 +5,7 @@ import { Operation } from "../../common/src/models/Operation";
 import { OPERATION_NAMES } from "../../common/src/api/document/operation-transforms";
 import { applyDiffNative } from "../../common/src/api/document/state-ot-apply";
 import {
-    CURRENT_VERSION,
+    CURRENT_VERSION, upgrade10to11,
     upgrade4to5,
     upgrade5to6,
     upgrade6to7,
@@ -73,6 +73,9 @@ export async function upgradeDocument(doc: Document) {
                     case 9:
                         upgrade9to10(newUpgraded);
                         break;
+                    case 10:
+                        upgrade10to11(newUpgraded);
+                        break;
                     case CURRENT_VERSION:
                         break;
                 }
@@ -115,4 +118,4 @@ export function getInitialDrawing(doc?: Document) {
     return cloneSimple(initialDrawing);
 }
 
-// 10 to 11. Move them to the thing.
+
