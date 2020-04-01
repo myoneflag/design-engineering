@@ -44,6 +44,9 @@ export enum Units {
     USGallons = 'US gal', // wtf usa
 
     PipeDiameterMM = 'pmm',
+
+    // April Fools
+    FurlongsPerFortnight = 'fur/fortn',
 }
 
 export interface CalculationField {

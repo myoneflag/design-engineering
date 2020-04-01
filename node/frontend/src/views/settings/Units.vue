@@ -17,7 +17,7 @@
     import {
         LENGTH_MEASUREMENT_CHOICES,
         PRESSURE_MEASUREMENT_CHOICES,
-        TEMPERATURE_MEASUREMENT_CHOICES, VOLUME_MEASUREMENT_CHOICES
+        TEMPERATURE_MEASUREMENT_CHOICES, VELOCITY_MEASUREMENT_CHOICES, VOLUME_MEASUREMENT_CHOICES
     } from "../../../../common/src/api/document/drawing";
     @Component({
         components: { SettingsFieldBuilder },
@@ -34,6 +34,7 @@
             return [
                 ['lengthMeasurementSystem', 'Length Measurement System', 'choice', LENGTH_MEASUREMENT_CHOICES],
                 ['pressureMeasurementSystem', 'Pressure Measurement System', 'choice', PRESSURE_MEASUREMENT_CHOICES],
+                ['velocityMeasurementSystem', 'Velocity Measurement System', 'choice', VELOCITY_MEASUREMENT_CHOICES],
                 ['temperatureMeasurementSystem', 'Temperature Measurement System', 'choice', TEMPERATURE_MEASUREMENT_CHOICES],
                 ['volumeMeasurementSystem', 'Volume Measurement System', 'choice', VOLUME_MEASUREMENT_CHOICES],
             ];

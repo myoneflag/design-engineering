@@ -73,6 +73,7 @@ export interface DrawingState {
 export interface UnitsParameters {
     lengthMeasurementSystem: MeasurementSystem;
     pressureMeasurementSystem: MeasurementSystem;
+    velocityMeasurementSystem: VelocityMeasurementSystem;
     temperatureMeasurementSystem: MeasurementSystem;
     volumeMeasurementSystem: VolumeMeasurementSystem;
 }
@@ -89,6 +90,13 @@ export enum VolumeMeasurementSystem {
     US = 'US',
 }
 
+
+export enum VelocityMeasurementSystem {
+    METRIC = 'METRIC',
+    IMPERIAL = 'IMPERIAL',
+    ALTERNATIVE_IMPERIAL = 'ALTERNATIVE_IMPERIAL',
+}
+
 export const LENGTH_MEASUREMENT_CHOICES: Choice[] = [
     {name: "Metric (mm)", key: MeasurementSystem.METRIC},
     {name: "Imperial (in, ft)", key: MeasurementSystem.IMPERIAL},
@@ -102,6 +110,12 @@ export const PRESSURE_MEASUREMENT_CHOICES: Choice[] = [
 export const TEMPERATURE_MEASUREMENT_CHOICES: Choice[] = [
     {name: "Metric (\u00B0C)", key: MeasurementSystem.METRIC},
     {name: "Imperial (\u00B0F)", key: MeasurementSystem.IMPERIAL},
+];
+
+export const VELOCITY_MEASUREMENT_CHOICES: Choice[] = [
+    {name: 'Metric (m/s)', key: VelocityMeasurementSystem.METRIC},
+    {name: 'Imperial (furlongs/fortnight)', key: VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL},
+    {name: 'Alt. Imperial (ft/s)', key: VelocityMeasurementSystem.IMPERIAL},
 ];
 
 export const VOLUME_MEASUREMENT_CHOICES: Choice[] = [
@@ -212,6 +226,7 @@ export const initialDrawing: DrawingState = {
         units: {
             lengthMeasurementSystem: MeasurementSystem.METRIC,
             volumeMeasurementSystem: VolumeMeasurementSystem.METRIC,
+            velocityMeasurementSystem: VelocityMeasurementSystem.METRIC,
             pressureMeasurementSystem: MeasurementSystem.METRIC,
             temperatureMeasurementSystem: MeasurementSystem.METRIC,
         },

@@ -1,4 +1,9 @@
-import { MeasurementSystem, UnitsParameters, VolumeMeasurementSystem } from "../../../common/src/api/document/drawing";
+import {
+    MeasurementSystem,
+    UnitsParameters,
+    VelocityMeasurementSystem,
+    VolumeMeasurementSystem
+} from "../../../common/src/api/document/drawing";
 import { Units } from "../store/document/calculations/calculation-field";
 import { assertUnreachable } from "../../../common/src/api/config";
 
@@ -47,13 +52,15 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
             assertUnreachable(unitsPrefs.pressureMeasurementSystem);
             break;
         case Units.MetersPerSecond:
-            switch (unitsPrefs.lengthMeasurementSystem) {
-                case MeasurementSystem.METRIC:
+            switch (unitsPrefs.velocityMeasurementSystem) {
+                case VelocityMeasurementSystem.METRIC:
                     return [units, value];
-                case MeasurementSystem.IMPERIAL:
+                case VelocityMeasurementSystem.IMPERIAL:
                     return [Units.FeetPerSecond, m2FT(value)];
+                case VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL:
+                    return [Units.FurlongsPerFortnight, value * 6012.87];
             }
-            assertUnreachable(unitsPrefs.lengthMeasurementSystem);
+            assertUnreachable(unitsPrefs.velocityMeasurementSystem);
             break;
         case Units.MetersPerSecondSquared:
             switch (unitsPrefs.lengthMeasurementSystem) {
@@ -123,13 +130,15 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
             assertUnreachable(unitsPrefs.pressureMeasurementSystem);
             break;
         case Units.FeetPerSecond:
-            switch (unitsPrefs.lengthMeasurementSystem) {
-                case MeasurementSystem.METRIC:
+            switch (unitsPrefs.velocityMeasurementSystem) {
+                case VelocityMeasurementSystem.METRIC:
                     return [Units.MetersPerSecond, ft2M(value)];
-                case MeasurementSystem.IMPERIAL:
+                case VelocityMeasurementSystem.IMPERIAL:
                     return [Units.FeetPerSecond, value];
+                case VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL:
+                    return [Units.FurlongsPerFortnight, ft2M(value) * 6012.87];
             }
-            assertUnreachable(unitsPrefs.lengthMeasurementSystem);
+            assertUnreachable(unitsPrefs.velocityMeasurementSystem);
             break;
         case Units.FeetPerSecondSquared:
             switch (unitsPrefs.lengthMeasurementSystem) {
@@ -184,6 +193,16 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
             break;
         case Units.PipeDiameterMM:
             return convertPipeDiameterFromMetric(unitsPrefs, value);
+        case Units.FurlongsPerFortnight:
+            switch (unitsPrefs.velocityMeasurementSystem) {
+                case VelocityMeasurementSystem.METRIC:
+                    return [Units.MetersPerSecond, value / 6012.87];
+                case VelocityMeasurementSystem.IMPERIAL:
+                    return [Units.FeetPerSecond, m2FT(value / 6012.87)];
+                case VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL:
+                    return [Units.FurlongsPerFortnight, value];
+            }
+            assertUnreachable(unitsPrefs.velocityMeasurementSystem);
     }
     assertUnreachable(units);
 }
@@ -203,6 +222,7 @@ export function convertMeasurementToMetric(units: Units, value: number | null) {
         {
             lengthMeasurementSystem: MeasurementSystem.METRIC,
             temperatureMeasurementSystem: MeasurementSystem.METRIC,
+            velocityMeasurementSystem: VelocityMeasurementSystem.METRIC,
             pressureMeasurementSystem: MeasurementSystem.METRIC,
             volumeMeasurementSystem: VolumeMeasurementSystem.METRIC,
         },
