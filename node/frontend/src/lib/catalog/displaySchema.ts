@@ -11,6 +11,7 @@ import {
     PSDSpec,
     ValveSpec
 } from "../../../../common/src/api/catalog/types";
+import { Units } from "../../store/document/calculations/calculation-field";
 
 type AllKeysOf<T> = {
     [P in keyof T]: any;
@@ -21,13 +22,15 @@ export type Page<V> = {
         order: number | null;
         name: string;
         displayField?: keyof V[K];
+        units?: Units;
         table?: Table<V[K][keyof V[K]]>;
     } | null;
 };
 
 export interface Table<TV> {
     primaryName: string | null;
-    columns: Array<[keyof TV | null, string]>;
+    primaryUnits?: Units;
+    columns: Array<[keyof TV | null, string, Units] | [keyof TV | null, string]>;
     link?: Page<TV> | null;
     twoDimensional?: boolean;
 }
@@ -43,15 +46,14 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                 primaryName: null,
                 columns: [
                     ["name", "Name"],
-                    ["abbreviation", "Abbreaviation"],
-
-                    ["maxInletPressureKPA", "Max. Inlet Pressure (kPa)"],
-                    ["minInletPressureKPA", "Min. Inlet Pressure (kPa)"],
-                    ["outletAboveFloorM", "Outlet Height (M)"]
+                    ["abbreviation", "Abbreviation"],
+                    ["maxInletPressureKPA", "Max. Inlet Pressure", Units.KiloPascals],
+                    ["minInletPressureKPA", "Min. Inlet Pressure", Units.KiloPascals],
+                    ["outletAboveFloorM", "Outlet Height", Units.Meters]
                 ],
                 link: {
                     name: { order: 1, name: "Fixture Name" },
-                    abbreviation: { order: 2, name: "Abbreaviation" },
+                    abbreviation: { order: 2, name: "Abbreviation" },
                     uid: null,
                     fixtureUnits: { order: 3, name: "Fixture Units" },
                     loadingUnits: {
@@ -68,10 +70,10 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                     },
                     qLS: {
                         order: 5,
-                        name: "Full Flow Rate (L/s)",
+                        name: "Full Flow Rate",
                         table: {
                             primaryName: " ",
-                            columns: [[null, "Flow Rate (L/s)"]]
+                            columns: [[null, "Flow Rate", Units.LitersPerSecond]]
                         }
                     },
                     roughIns: null,
@@ -80,15 +82,15 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                         name: "Continuous Flow Rate",
                         table: {
                             primaryName: " ",
-                            columns: [[null, "Flow Rate (L/s)"]]
+                            columns: [[null, "Flow Rate", Units.LitersPerSecond]]
                         }
                     },
 
-                    maxInletPressureKPA: { order: 7, name: "Max. Inlet Pressure (kPa)" },
-                    minInletPressureKPA: { order: 8, name: "Min. Inlet Pressure (kPa)" },
+                    maxInletPressureKPA: { order: 7, name: "Max. Inlet Pressure", units: Units.KiloPascals },
+                    minInletPressureKPA: { order: 8, name: "Min. Inlet Pressure", units: Units.KiloPascals },
                     probabilityOfUsagePCT: { order: 9, name: "Probability of Usage (%)" },
-                    outletAboveFloorM: { order: 10, name: "Outlet Above Floor (M)" },
-                    warmTempC: { order: 11, name: "Warm Temperature (°C)" }
+                    outletAboveFloorM: { order: 10, name: "Outlet Above Floor", units: Units.Meters },
+                    warmTempC: { order: 11, name: "Warm Temperature", units: Units.Celsius }
                 }
             }
         },
@@ -118,7 +120,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                         name: "Loading Unit Table",
                         table: {
                             primaryName: "Loading Units",
-                            columns: [[null, "Flow Rate (L/S)"]]
+                            columns: [[null, "Flow Rate", Units.LitersPerSecond]]
                         }
                     },
                     maxLuTable: {
@@ -136,8 +138,8 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                         table: {
                             primaryName: "Loading Units",
                             columns: [
-                                ["cold", "Cold Flow Rate (L/s)"],
-                                ["hot", "Hot Flow Rate (L/s)"]
+                                ["cold", "Cold Flow Rate", Units.LitersPerSecond],
+                                ["hot", "Hot Flow Rate", Units.LitersPerSecond]
                             ]
                         }
                     }
@@ -162,8 +164,8 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                         table: {
                             primaryName: "Dwellings",
                             columns: [
-                                ["hot", "Hot Flow Rate (L/s)"],
-                                ["cold", "Cold Flow Rate (L/s)"]
+                                ["hot", "Hot Flow Rate", Units.LitersPerSecond],
+                                ["cold", "Cold Flow Rate", Units.LitersPerSecond]
                             ]
                         }
                     },
@@ -227,12 +229,13 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                         order: 3,
                         name: "Pipe Sizes",
                         table: {
-                            primaryName: "Nominal Diameter (mm)",
+                            primaryName: "Nominal Diameter",
+                            primaryUnits: Units.PipeDiameterMM,
                             columns: [
-                                ["diameterInternalMM", "Internal Diameter (mm)"],
-                                ["diameterOutsideMM", "Outside Diameter (mm)"],
+                                ["diameterInternalMM", "Internal Diameter", Units.Millimeters],
+                                ["diameterOutsideMM", "Outside Diameter", Units.Millimeters],
                                 ["colebrookWhiteCoefficient", "Colebrook White Coefficient"],
-                                ["safeWorkingPressureKPA", "Safe Working Pressure (kPa)"]
+                                ["safeWorkingPressureKPA", "Safe Working Pressure", Units.KiloPascals]
                             ]
                         }
                     }
@@ -256,7 +259,8 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                         order: 3,
                         name: "K values By Size",
                         table: {
-                            primaryName: "Nominal Diameter (mm)",
+                            primaryName: "Nominal Diameter",
+                            primaryUnits: Units.PipeDiameterMM,
                             columns: [
                                 ["symbol", "Symbol"],
                                 ["kValue", "K Value"]
@@ -273,24 +277,25 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                 primaryName: null,
                 columns: [
                     ["name", "Name"],
-                    ["minInletPressureKPA", "Min. Inlet Pressure (kPa)"],
-                    ["maxInletPressureKPA", "Max. Inlet Pressure (kPa)"],
-                    ["minFlowRateLS", "Min. Flow Rate (L/s)"],
-                    ["maxFlowRateLS", "Max. Flow Rate (L/s)"]
+                    ["minInletPressureKPA", "Min. Inlet Pressure", Units.KiloPascals],
+                    ["maxInletPressureKPA", "Max. Inlet Pressure", Units.KiloPascals],
+                    ["minFlowRateLS", "Min. Flow Rate", Units.LitersPerSecond],
+                    ["maxFlowRateLS", "Max. Flow Rate", Units.LitersPerSecond]
                 ],
                 link: {
                     name: { order: 1, name: "Name" },
                     uid: null,
-                    minInletPressureKPA: { order: 2, name: "Min. Inlet Pressure (kPa)" },
-                    maxInletPressureKPA: { order: 3, name: "Max. Inlet Pressure (kPa)" },
-                    minFlowRateLS: { order: 5, name: "Min. Flow Rate (L/s)" },
-                    maxFlowRateLS: { order: 6, name: "Max. Flow Rate (L/s)" },
+                    minInletPressureKPA: { order: 2, name: "Min. Inlet Pressure", units: Units.KiloPascals },
+                    maxInletPressureKPA: { order: 3, name: "Max. Inlet Pressure", units: Units.KiloPascals },
+                    minFlowRateLS: { order: 5, name: "Min. Flow Rate", units: Units.LitersPerSecond },
+                    maxFlowRateLS: { order: 6, name: "Max. Flow Rate", units: Units.LitersPerSecond },
                     pressureLossKPAbyFlowRateLS: {
                         order: 7,
-                        name: "Pressure Loss By Flow Rate (KPA x L/s)",
+                        name: "Pressure Loss By Flow Rate",
                         table: {
-                            primaryName: "Flow Rate (L/s)",
-                            columns: [[null, "Pressure Loss (kPa)"]]
+                            primaryName: "Flow Rate",
+                            primaryUnits: Units.LitersPerSecond,
+                            columns: [[null, "Pressure Loss", Units.KiloPascals]]
                         }
                     }
                 }
@@ -300,20 +305,21 @@ export function getCatalogDisplaySchema(): CatalogSchema {
             order: 8,
             name: "Pressure Reducing Valves",
             table: {
-                primaryName: "Nominal Diameter (mm)",
+                primaryName: "Nominal Diameter",
+                primaryUnits: Units.PipeDiameterMM,
                 columns: [
-                    ["minInletPressureKPA", "Min. Inlet Pressure (kPA)"],
-                    ["maxInletPressureKPA", "Max. Inlet Pressure (kPA)"],
-                    ["minFlowRateLS", "Min. Flow Rate (L/s)"],
-                    ["maxFlowRateLS", "Max. Flow Rate (L/s)"]
+                    ["minInletPressureKPA", "Min. Inlet Pressure", Units.KiloPascals],
+                    ["maxInletPressureKPA", "Max. Inlet Pressure", Units.KiloPascals],
+                    ["minFlowRateLS", "Min. Flow Rate", Units.LitersPerSecond],
+                    ["maxFlowRateLS", "Max. Flow Rate", Units.LitersPerSecond]
                 ],
                 link: {
-                    diameterNominalMM: { order: 1, name: "Nominal Diameter (mm)" },
-                    minInletPressureKPA: { order: 2, name: "Min. Inlet Pressure (kPA)" },
-                    maxInletPressureKPA: { order: 3, name: "Max. Inlet Pressure (kPA)" },
+                    diameterNominalMM: { order: 1, name: "Nominal Diameter", units: Units.PipeDiameterMM },
+                    minInletPressureKPA: { order: 2, name: "Min. Inlet Pressure", units: Units.KiloPascals },
+                    maxInletPressureKPA: { order: 3, name: "Max. Inlet Pressure", units: Units.KiloPascals },
                     maxPressureDropRatio: { order: 4, name: "Max. Pressure Drop Ratio" },
-                    minFlowRateLS: { order: 5, name: "Min. Flow Rate (L/s)" },
-                    maxFlowRateLS: { order: 6, name: "Max. Flow Rate (L/s)" }
+                    minFlowRateLS: { order: 5, name: "Min. Flow Rate", units: Units.LitersPerSecond },
+                    maxFlowRateLS: { order: 6, name: "Max. Flow Rate", units: Units.LitersPerSecond }
                 }
             }
         },
@@ -329,25 +335,27 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                         order: 1,
                         name: "Valves By Size",
                         table: {
-                            primaryName: "Diameter (m)",
+                            primaryName: "Diameter",
+                            primaryUnits: Units.Millimeters,
                             columns: [
-                                ["minInletPressureKPA", "Min. Inlet Pressure (kPa)"],
-                                ["maxInletPressureKPA", "Max. Inlet Pressure (kPa)"],
-                                ["minFlowRateLS", "Min. Flow Rate (L/s)"],
-                                ["maxFlowRateLS", "Max. Flow Rate (L/s)"]
+                                ["minInletPressureKPA", "Min. Inlet Pressure", Units.KiloPascals],
+                                ["maxInletPressureKPA", "Max. Inlet Pressure", Units.KiloPascals],
+                                ["minFlowRateLS", "Min. Flow Rate", Units.LitersPerSecond],
+                                ["maxFlowRateLS", "Max. Flow Rate", Units.LitersPerSecond]
                             ],
                             link: {
-                                sizeMM: { order: 1, name: "Size (mm)" },
-                                minInletPressureKPA: { order: 2, name: "Min. Inlet Pressure (kPa)" },
-                                maxInletPressureKPA: { order: 3, name: "Max. Inlet Pressure (kPa)" },
-                                minFlowRateLS: { order: 4, name: "Min. Flow Rate (L/s)" },
-                                maxFlowRateLS: { order: 5, name: "Max. Flow Rate (L/s)" },
+                                sizeMM: { order: 1, name: "Size", units: Units.Millimeters },
+                                minInletPressureKPA: { order: 2, name: "Min. Inlet Pressure", units: Units.KiloPascals },
+                                maxInletPressureKPA: { order: 3, name: "Max. Inlet Pressure", units: Units.KiloPascals },
+                                minFlowRateLS: { order: 4, name: "Min. Flow Rate", units: Units.LitersPerSecond },
+                                maxFlowRateLS: { order: 5, name: "Max. Flow Rate", units: Units.LitersPerSecond },
                                 pressureLossKPAByFlowRateLS: {
                                     order: 1,
-                                    name: "Pressure Loss (kPa) by Flow Rate (L/s)",
+                                    name: "Pressure Loss by Flow Rate",
                                     table: {
-                                        primaryName: "Flow Rate (L/s)",
-                                        columns: [[null, "Pressure Loss (kPa)"]]
+                                        primaryName: "Flow Rate",
+                                        primaryUnits: Units.LitersPerSecond,
+                                        columns: [[null, "Pressure Loss", Units.KiloPascals ]]
                                     }
                                 }
                             }

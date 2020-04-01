@@ -2,7 +2,7 @@ import { MeasurementSystem, UnitsParameters, VolumeMeasurementSystem } from "../
 import { Units } from "../store/document/calculations/calculation-field";
 import { assertUnreachable } from "../../../common/src/api/config";
 
-export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, units: Units, value: number): [Units, number] {
+export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, units: Units, value: number): [Units, number | string | null] {
     switch (units) {
         case Units.None:
         case Units.Kv:
@@ -182,11 +182,13 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
             }
             assertUnreachable(unitsPrefs.volumeMeasurementSystem);
             break;
+        case Units.PipeDiameterMM:
+            return convertPipeDiameterFromMetric(unitsPrefs, value);
     }
     assertUnreachable(units);
 }
 
-export function convertMeasurementSystem(unitsPrefs: UnitsParameters, units: Units, value: number | null): [Units, number | null] {
+export function convertMeasurementSystem(unitsPrefs: UnitsParameters, units: Units, value: number | null): [Units, number | null | string] {
     if (value === null) {
         const [newUnits] = convertMeasurementSystemNonNull(unitsPrefs, units, 1);
         return [newUnits, null];
@@ -241,36 +243,55 @@ export function f2C(fahrenheit: number) {
     return (fahrenheit - 32) * 5 / 9;
 }
 
+const validConverts: {[key: number]: string} = {
+    0.25: '1/4',
+    0.5: '1/2',
+    0.75: '3/4',
+    1: '1',
+    1.25: '1 1/4',
+    1.5: '1 1/2',
+    2: '2',
+    2.5: '2 1/2',
+    3: '3',
+    3.5: '3 1/2',
+    4: '4',
+    4.5: '4 1/2',
+    5: '5',
+    5.5: '5.5',
+    6: '6',
+    7: '7',
+    8: '8',
+    9: '9',
+    10: '10',
+    11: '11',
+    12: '12',
+    13: '13',
+    14: '14',
+    15: '15',
+    16: '16',
+    17: '17',
+    18: '18',
+};
+
 export function convertPipeDiameterFromMetric(unitPrefs: UnitsParameters, valueMM: number | null): [Units, number | string | null] {
-    if (unitPrefs.lengthMeasurementSystem === MeasurementSystem.METRIC) {
-        return [Units.Millimeters, valueMM];
+    switch (unitPrefs.lengthMeasurementSystem) {
+        case MeasurementSystem.METRIC:
+            return [Units.Millimeters, valueMM];
+        case MeasurementSystem.IMPERIAL:
+            if (valueMM === null) {
+                return [Units.Inches, valueMM];
+            }
+            let closestDist = Infinity;
+            let value: string | number | null = mm2IN(valueMM);
+
+            const inches = mm2IN(valueMM);
+            for (const [num, val] of Object.entries(validConverts)) {
+                if (Math.abs(Number(num) - inches) < closestDist) {
+                    closestDist = Math.abs(Number(num) - inches);
+                    value = val;
+                }
+            }
+            return [Units.Inches, value];
     }
-    switch (valueMM) {
-        case 15:
-            return [Units.None, '1/2"'];
-        case 20:
-            return [Units.None, '3/4"'];
-        case 25:
-            return [Units.None, '1"'];
-        case 32:
-            return [Units.None, '1 1/4"'];
-        case 40:
-            return [Units.None, '1 1/2"'];
-        case 50:
-            return [Units.None, '2"'];
-        case 65:
-            return [Units.None, '2 1/2"'];
-        case 80:
-            return [Units.None, '3"'];
-        case 100:
-            return [Units.None, '4"'];
-        case 125:
-            return [Units.None, '5"'];
-        case 150:
-            return [Units.None, '6"'];
-        case 200:
-            return [Units.None, '8"'];
-        default:
-            return [Units.Inches, valueMM === null ? null : mm2IN(valueMM)];
-    }
+    assertUnreachable(unitPrefs.lengthMeasurementSystem);
 }

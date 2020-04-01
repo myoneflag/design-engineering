@@ -42,6 +42,8 @@ export enum Units {
     // Kv is unitless
     Gallons = 'gal',
     USGallons = 'US gal', // wtf usa
+
+    PipeDiameterMM = 'pmm',
 }
 
 export interface CalculationField {

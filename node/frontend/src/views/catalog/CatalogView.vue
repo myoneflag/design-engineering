@@ -57,13 +57,13 @@
                     </b-row>
                 </template>
                 <template v-else-if="val.displayField">
-                    <b-form-group :label-cols="3" :label="val.name + ';'" :disabled="true">
-                        <b-form-input :disabled="true" :value="currCatalog[prop][val.displayField]"></b-form-input>
+                    <b-form-group :label-cols="3" :label="val.name + displayUnitsString(val.units)" :disabled="true">
+                        <b-form-input :disabled="true" :value="display(val.units, currCatalog[prop][val.displayField])"></b-form-input>
                     </b-form-group>
                 </template>
                 <template v-else>
-                    <b-form-group :label-cols="3" :label="val.name" :disabled="true">
-                        <b-form-input :disabled="true" :value="currCatalog[prop]"></b-form-input>
+                    <b-form-group :label-cols="3" :label="val.name + displayUnitsString(val.units)" :disabled="true">
+                        <b-form-input :disabled="true" :value="display(val.units, currCatalog[prop])"></b-form-input>
                     </b-form-group>
                 </template>
             </template>
@@ -78,6 +78,10 @@ import { CatalogSchema, getCatalogDisplaySchema, Page, Table } from "../../lib/c
 import { getPropertyByString } from "../../lib/utils";
 import { RawLocation } from "vue-router";
 import { Catalog } from "../../../../common/src/api/catalog/types";
+import { DocumentState } from "../../store/document/types";
+import { convertMeasurementSystem } from "../../calculations/measurement";
+import { Units } from "../../store/document/calculations/calculation-field";
+import { cloneSimple } from "../../../../common/src/lib/utils";
 @Component({
     components: { MainNavBar },
     props: {
@@ -145,6 +149,28 @@ export default class CatalogView extends Vue {
         return val;
     }
 
+    display(units: Units | undefined, value: number | string) {
+        if (units && !isNaN(Number(value))) {
+            return convertMeasurementSystem(this.document.drawing.metadata.units, units, Number(value))[1];
+        } else {
+            return value;
+        }
+    }
+
+    displayUnitsString(units: Units | undefined) {
+        if (units) {
+            return ' (' +
+                    convertMeasurementSystem(
+                        this.document.drawing.metadata.units,
+                        units,
+                        1
+                    )[0]
+                    + ')';
+        } else {
+            return "";
+        }
+    }
+
     navigateLink(prop: string) {
         let currPath = this.$route.params.prop || "";
 
@@ -171,7 +197,11 @@ export default class CatalogView extends Vue {
         const table = schema[prop]!.table!;
         if (!table.twoDimensional) {
 
-            const cols = table.columns;
+            const cols = cloneSimple(table.columns);
+
+            for (const col of cols) {
+                col[1] += this.displayUnitsString(col[2]);
+            }
 
             const items = [];
             const entries = this.currCatalog[prop];
@@ -179,16 +209,39 @@ export default class CatalogView extends Vue {
             for (const [key, value] of Object.entries(entries)) {
                 const item: any = {};
                 if (table.primaryName) {
-                    item[table.primaryName] = key;
+                    if (table.primaryUnits && !isNaN(Number(key))) {
+                        item[table.primaryName] = convertMeasurementSystem(
+                            this.document.drawing.metadata.units,
+                            table.primaryUnits,
+                            Number(key),
+                        )[1];
+                        if (!isNaN(item[table.primaryName])) {
+                            item[table.primaryName] = parseFloat(Number(item[table.primaryName]).toFixed(5));
+                        }
+                    } else {
+                        item[table.primaryName] = Number(key);
+                    }
                 }
 
                 item._key = key;
 
                 for (const col of cols) {
-                    if (col[0] === null) {
-                        item[col[1]] = value;
+                    let display = value;
+                    if (col[0] !== null) {
+                        display = (value as any)[col[0]];
+                    }
+
+                    if (col[2]) {
+                        item[col[1]] = convertMeasurementSystem(
+                            this.document.drawing.metadata.units,
+                            col[2],
+                            Number(display),
+                        )[1];
+                        if (!isNaN(item[col[1]])) {
+                            item[col[1]] = parseFloat(Number(item[col[1]]).toFixed(5));
+                        }
                     } else {
-                        item[col[1]] = (value as any)[col[0]];
+                        item[col[1]] = display;
                     }
                 }
 
@@ -203,7 +256,11 @@ export default class CatalogView extends Vue {
             return { items, fields };
         } else {
 
-            const cols = table.columns;
+            const cols = cloneSimple(table.columns);
+
+            for (const col of cols) {
+                col[1] += this.displayUnitsString(col[2]);
+            }
 
             const newFieldNames = new Set<any>();
 
@@ -214,17 +271,41 @@ export default class CatalogView extends Vue {
                 const item: any = {};
 
                 if (table.primaryName) {
-                    item[table.primaryName] = key;
+                    if (table.primaryUnits && !isNaN(Number(key))) {
+                        item[table.primaryName] = convertMeasurementSystem(
+                            this.document.drawing.metadata.units,
+                            table.primaryUnits,
+                            Number(key),
+                        )[1];
+                        if (!isNaN(item[table.primaryName])) {
+                            item[table.primaryName] = parseFloat(Number(item[table.primaryName]).toFixed(5));
+                        }
+                    } else {
+                        item[table.primaryName] = Number(key);
+                    }
                 }
 
                 item._key = key;
 
                 for (const col of cols) {
-                    if (col[0] === null) {
-                        item[col[1]] = value;
-                    } else {
-                        item[col[1]] = (value as any)[col[0]];
+                    let display = value;
+                    if (col[0] !== null) {
+                        display = (value as any)[col[0]];
                     }
+
+                    if (col[2]) {
+                        item[col[1]] = convertMeasurementSystem(
+                            this.document.drawing.metadata.units,
+                            col[2],
+                            Number(display),
+                        )[1];
+                        if (!isNaN(item[col[1]])) {
+                            item[col[1]] = parseFloat(Number(item[col[1]]).toFixed(5));
+                        }
+                    } else {
+                        item[col[1]] = display;
+                    }
+
                 }
 
                 Object.assign(item, value);
@@ -273,6 +354,10 @@ export default class CatalogView extends Vue {
             throw new Error("Link not defined for this path");
         }
         return curr;
+    }
+
+    get document(): DocumentState {
+        return this.$store.getters['document/document'];
     }
 
     get onlyOneTable() {

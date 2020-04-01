@@ -291,9 +291,9 @@ export function drawLoadingUnits(
 
     // Fill for selection
     if (selection) {
-        ctx.fillText("PSD:    Selection      Project", 40, y - 20);
+        ctx.fillText("PSD:    Selection            Project", 40, y - 20);
     } else {
-        ctx.fillText("PSD:    Level            Project", 40, y - 20);
+        ctx.fillText("PSD:    Level                  Project", 40, y - 20);
     }
 
     let x = 80;
@@ -331,7 +331,7 @@ export function drawLoadingUnits(
         let coldUnits: Units | string = '';
         let hotUnits: Units | string = '';
         if (coldFR != null) {
-            let coldFRSpare: number | null =
+            let coldFRSpare: number | string | null =
                 coldFR *
                 (1 +
                     0.01 *
@@ -340,11 +340,11 @@ export function drawLoadingUnits(
 
             [coldUnits, coldFRSpare] =
                 convertMeasurementSystem(context.doc.drawing.metadata.units, Units.LitersPerSecond, coldFRSpare);
-            coldSpareText = coldFRSpare!.toPrecision(3);
+            coldSpareText = Number(coldFRSpare).toPrecision(3);
             coldText = coldFR.toPrecision(3);
         }
         if (hotFR != null) {
-            let hotFRSpare: number | null =
+            let hotFRSpare: number | string | null =
                 hotFR *
                 (1 +
                     0.01 *
@@ -352,14 +352,14 @@ export function drawLoadingUnits(
                         .networks[NetworkType.RETICULATIONS].spareCapacityPCT);
             [hotUnits, hotFRSpare] =
                 convertMeasurementSystem(context.doc.drawing.metadata.units, Units.LitersPerSecond, hotFRSpare);
-            hotSpareText = hotFRSpare!.toPrecision(3);
+            hotSpareText = Number(hotFRSpare).toPrecision(3);
             hotText = hotFR.toPrecision(3);
         }
         ctx.fillText(coldSpareText + " " + coldUnits + " ", x, y);
 
         ctx.fillText(hotSpareText + " " + hotUnits + " ", x, y + 20);
 
-        x += 70;
+        x += 90;
     }
 
     ctx.fillText("Cold: ", 20, y);
