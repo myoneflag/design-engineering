@@ -1,5 +1,5 @@
 <template>
-    <b-nav-item-dropdown right>
+    <b-nav-item-dropdown right :disabled="disabled">
         <template slot="button-content">
             <v-icon name="user" style="margin-top: -3px"></v-icon>
             {{ profile.name + " " }}
@@ -46,7 +46,13 @@ import { logout } from "../../src/api/logins";
 import { AccessLevel, User } from "../../../common/src/models/User";
 import {submitFeedback} from "../api/feedback-message"
 
-@Component
+@Component(
+    {
+        props: {
+            disabled: Boolean,
+        }
+    }
+)
 export default class ProfileMenuItem extends Vue {
     showAlert: boolean = false;
     selected: string = '';
@@ -112,7 +118,7 @@ export default class ProfileMenuItem extends Vue {
 
     renderFeedback() {
         this.$bvModal.show('modal-2');
-        
+
     }
 
     onSubmitFeedback(bvModalEvt: any) {

@@ -28,7 +28,7 @@ import { PlantType } from "../../../../common/src/api/document/entities/plants/p
         <LevelSelector v-if="levelSelectorVisible && initialized" :object-store="globalStore"> </LevelSelector>
 
         <div ref="canvasFrame" class="fullFrame" v-bind:class="{ disableMouseEvents: shouldDisableUIMouseEvents }">
-            <DrawingNavBar :loading="isLoading" />
+            <DrawingNavBar :loading="isLoading" :disabled="!!toolHandler" />
 
             <canvas
                 ref="drawingCanvas"

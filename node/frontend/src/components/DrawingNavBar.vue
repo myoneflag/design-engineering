@@ -3,11 +3,11 @@ DrawingMode } from "../htmlcanvas/types";
 <template>
     <b-navbar type="light">
         <b-navbar-nav>
-            <b-nav-item :to="{ name: 'home' }" active-class="active" exact>Home</b-nav-item>
+            <b-nav-item :to="{ name: 'home' }" active-class="active" exact :disabled="disabled">Home</b-nav-item>
         </b-navbar-nav>
 
         <b-navbar-nav style="padding-left: 20px">
-            <span v-if="titleEditing && !loading">
+            <span v-if="titleEditing && !loading && !disabled">
                 <b-input
                     v-model="document.drawing.metadata.generalInfo.title"
                     v-autowidth="{ maxWidth: '960px', minWidth: '20px', comfortZone: 0 }"
@@ -21,7 +21,8 @@ DrawingMode } from "../htmlcanvas/types";
             <b-navbar-brand
                 :to="{ name: 'drawing' }"
                 v-else
-                @dblclick="titleEditing = true"
+                @dblclick="titleEditing = !disabled"
+                :disabled="disabled"
                 v-b-tooltip.hover
                 :title="document.drawing.metadata.generalInfo.title"
             >
@@ -31,14 +32,14 @@ DrawingMode } from "../htmlcanvas/types";
                 - {{ currentLevel.name }}
             </b-navbar-brand>
 
-            <b-nav-item :to="{ name: 'settings/general' }" active-class="active" exact :disabled="loading">
+            <b-nav-item :to="{ name: 'settings/general' }" active-class="active" exact :disabled="loading || disabled">
                 <span>
                     <v-icon name="cog"></v-icon>
                 </span>
                 Settings
             </b-nav-item>
 
-            <b-nav-item :to="{ name: 'calculation-overview' }" active-class="active" exact :disabled="loading">
+            <b-nav-item :to="{ name: 'calculation-overview' }" active-class="active" exact :disabled="loading || disabled">
                 <span>
                     <v-icon name="info"></v-icon>
                 </span>
@@ -50,7 +51,7 @@ DrawingMode } from "../htmlcanvas/types";
             <b-button
                 :variant="document.uiState.drawingMode === DrawingMode.History ? 'light' : 'light'"
                 :pressed="document.uiState.drawingMode === DrawingMode.History"
-                :disabled="historyLoading"
+                :disabled="historyLoading || disabled"
                 size="sm"
                 class="my-2 my-sm-0"
                 @click="historyClick"
@@ -86,7 +87,7 @@ DrawingMode } from "../htmlcanvas/types";
                 &nbsp; &nbsp; &nbsp;
             </b-nav-text>
 
-            <ProfileMenuItem />
+            <ProfileMenuItem :disabled="disabled"/>
         </b-navbar-nav>
     </b-navbar>
 </template>
@@ -106,7 +107,8 @@ import { Operation } from "../../../common/src/models/Operation";
 @Component({
     components: { ProfileMenuItem },
     props: {
-        loading: Boolean
+        loading: Boolean,
+        disabled: Boolean,
     }
 })
 export default class DrawingNavBar extends Vue {
