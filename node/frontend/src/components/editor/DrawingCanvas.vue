@@ -135,7 +135,7 @@ import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
 import insertRiser from "../../htmlcanvas/tools/insert-riser";
 import insertPipes from "../../../src/htmlcanvas/tools/insert-pipes";
 import insertValve from "../../../src/htmlcanvas/tools/insert-valve";
-import { DrawingContext, SelectionTarget, ValveId } from "../../../src/htmlcanvas/lib/types";
+import { DrawingContext, SelectionTarget, ValidationResult, ValveId } from "../../../src/htmlcanvas/lib/types";
 import { BackgroundEntity } from "../../../../common/src/api/document/entities/background-entity";
 import insertBigValve from "../../htmlcanvas/tools/insert-big-valve";
 import insertFixture from "../../../src/htmlcanvas/tools/insert-fixture";
@@ -898,6 +898,9 @@ export default class DrawingCanvas extends Vue {
         const res = this.validate(tryToFix);
         if (res.success) {
             this.$store.dispatch("document/commit", logUndo);
+        } else if (res.modified) {
+            this.onValidateAndCommit(logUndo, tryToFix);
+            this.$bvModal.msgBoxOk(res.message);
         } else {
             this.$store.dispatch("document/revert");
             this.$bvModal.msgBoxOk(res.message);
@@ -977,17 +980,19 @@ export default class DrawingCanvas extends Vue {
         }
     }
 
-    validate(tryToFix: boolean): APIResult<void> {
+    validate(tryToFix: boolean): ValidationResult {
+        let result: ValidationResult | null = null;
         for (const o of this.globalStore.values()) {
             const res = o.validate(this, tryToFix);
-            if (!res.success) {
+            if (!res.success && res.modified) {
+                // should only cause one unsuccessful validation. Any edits after that would cause a restart.
+                this.$store.dispatch('document/commit'); // commit without validation first
                 return res;
+            } else if (!res.success) {
+                result = res;
             }
         }
-        return {
-            success: true,
-            data: undefined
-        };
+        return result || { success: true };
     }
 
     deleteEntity(object: BaseBackedObject): Set<string> {

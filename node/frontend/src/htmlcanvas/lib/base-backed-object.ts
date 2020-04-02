@@ -1,6 +1,6 @@
 import DrawableObject from "../../../src/htmlcanvas/lib/drawable-object";
 import { CalculationFilters, DocumentState } from "../../../src/store/document/types";
-import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
+import { DrawingContext, ValidationResult } from "../../../src/htmlcanvas/lib/types";
 import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import {
@@ -176,7 +176,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
         /**/
     }
 
-    validate(context: CanvasContext, tryToFix: boolean): APIResult<void> {
-        return { success: true, data: undefined };
+    validate(context: CanvasContext, tryToFix: boolean): ValidationResult {
+        return { success: true };
     }
 }

@@ -28,3 +28,5 @@ export interface ValveId {
     name: string;
     catalogId: string;
 }
+
+export type ValidationResult = {success: true} | {success: false, message: string, modified: boolean};

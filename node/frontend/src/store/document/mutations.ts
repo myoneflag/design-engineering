@@ -229,7 +229,7 @@ function applyDiff(state: DocumentState, diff: any) {
         changes.forEach(([e, v]) => {
             MainEventBus.$emit(e, v);
         });
-    } catch (e) {
+    } finally {
         globalStore.suppressSideEffects = false;
     }
 }

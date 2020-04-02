@@ -620,6 +620,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     }
 
     disconnect(uid: string) {
+        console.log('disconnecting ' + this.globalStore.suppressSideEffects);
         if (!this.globalStore.suppressSideEffects) {
             const conns = this.globalStore.getConnections(this.entity.uid);
             if (conns.length > 2) {
@@ -627,9 +628,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
                 if (uid === this.entity.sourceUid) {
                     if (this.sourceHeirs.length === 0) {
-                        throw new Error('No source heirs left');
+                        this.entity.sourceUid = conns[0];
+                    } else {
+                        this.entity.sourceUid = this.sourceHeirs.splice(0, 1)[0];
                     }
-                    this.entity.sourceUid = this.sourceHeirs.splice(0, 1)[0];
                 }
             }
         } else {

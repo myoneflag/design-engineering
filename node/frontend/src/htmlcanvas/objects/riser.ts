@@ -6,7 +6,7 @@ import { matrixScale } from "../../../src/htmlcanvas/utils";
 import { lighten } from "../../../src/lib/utils";
 import Connectable, { ConnectableObject } from "../../../src/htmlcanvas/lib/object-traits/connectable";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
-import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
+import { DrawingContext, ValidationResult } from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import BackedConnectable from "../../../src/htmlcanvas/lib/BackedConnectable";
@@ -188,7 +188,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         return super.offerInteraction(interaction);
     }
 
-    validate(context: CanvasContext, tryToFix: boolean): APIResult<void> {
+    validate(context: CanvasContext, tryToFix: boolean): ValidationResult {
         const pres = super.validate(context, tryToFix);
         if (pres && !pres.success) {
             return pres;
@@ -211,7 +211,8 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                             this.entity.topHeightM +
                             ", " +
                             this.minPipeHeight(context) +
-                            ")"
+                            ")",
+                        modified: false,
                     };
                 }
             }
@@ -232,14 +233,14 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                             this.entity.topHeightM +
                             ", " +
                             this.maxPipeHeight(context) +
-                            ")"
+                            ")",
+                        modified: false,
                     };
                 }
             }
         }
         return {
             success: true,
-            data: undefined
         };
     }
 

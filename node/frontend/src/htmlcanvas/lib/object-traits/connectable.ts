@@ -8,7 +8,7 @@ import {
     EdgeLikeEntity
 } from "../../../../../common/src/api/document/entities/concrete-entity";
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
-import { DrawingContext } from "../../../../src/htmlcanvas/lib/types";
+import { DrawingContext, ValidationResult } from "../../../../src/htmlcanvas/lib/types";
 import Flatten from "@flatten-js/core";
 import { PIPE_HEIGHT_GRAPHIC_EPS_MM } from "../../../../src/config";
 import { CalculationContext } from "../../../../src/calculations/types";
@@ -245,7 +245,7 @@ export function ConnectableObject<T extends new (...args: any[]) => Connectable 
             return result;
         }
 
-        validate(context: CanvasContext, tryToFix: boolean): APIResult<void> {
+        validate(context: CanvasContext, tryToFix: boolean): ValidationResult {
             const pres = super.validate(context, tryToFix);
             if (pres && !pres.success) {
                 return pres;
@@ -254,22 +254,39 @@ export function ConnectableObject<T extends new (...args: any[]) => Connectable 
             const conns = context.globalStore.getConnections(this.uid);
 
             if (this.maximumConnections !== null && conns.length > this.maximumConnections) {
-                return {
-                    success: false,
-                    message: "Too many connections coming out of a " + this.type
-                };
+                if (tryToFix) {
+                    // Try to fix by deleting a neighbouring pipe.
+                    const victim = conns[0];
+                    const level = context.document.drawing.levels[context.globalStore.levelOfEntity.get(victim)!].name;
+                    const type = context.globalStore.get(victim)!.type;
+
+                    context.deleteEntity(context.globalStore.get(victim)!);
+
+                    return {
+                        success: false,
+                        message: "Too many connections coming out of a " + this.type + ', deleted ' + type +
+                            '(' + victim + ") on level " + level + " to try to fix. Please review",
+                        modified: true,
+                    };
+                } else {
+                    return {
+                        success: false,
+                        message: "Too many connections coming out of a " + this.type,
+                        modified: false,
+                    };
+                }
             }
 
             if (this.minimumConnections !== null && conns.length < this.minimumConnections) {
                 return {
                     success: false,
-                    message: "Too few connections coming out of a " + this.type
+                    message: "Too few connections coming out of a " + this.type,
+                    modified: false,
                 };
             }
 
             return {
-                success: true,
-                data: undefined
+                success: true
             };
         }
 
