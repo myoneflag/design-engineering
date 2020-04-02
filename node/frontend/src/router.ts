@@ -265,6 +265,7 @@ router.beforeEach((to, from, next) => {
             const levels = to.matched.filter((r) => "minAccessLevel" in r.meta).map((r) => r.meta.minAccessLevel);
             const requiredAccess = Math.min(...levels);
 
+
             if (store.getters["profile/profile"] === null) {
                 getSession().then((res) => {
                     if (res.success === true) {
@@ -276,7 +277,7 @@ router.beforeEach((to, from, next) => {
                             ) {
                                 router.push("/login");
                             } else {
-                                next();
+                                router.push(to); // use push.to to go through navigation guards again.
                             }
                         });
                     } else {
