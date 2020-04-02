@@ -21,7 +21,7 @@ DocumentStatus } from "../../../common/src/models/Document";
                         >
                     </b-col>
                     <b-col>
-                        <b-checkbox v-if="profile.accessLevel <= AccessLevel.MANAGER" @change="toggleShowDeleted">
+                        <b-checkbox v-if="(profile ? profile.accessLevel <= AccessLevel.MANAGER : false)" @change="toggleShowDeleted">
                             Show Deleted
                         </b-checkbox>
                     </b-col>
@@ -312,13 +312,14 @@ export default class Home extends Vue {
             this.$bvModal.show('modal-1');
             setTimeout(() => {
                 updateLastNoticeSeen();
+                this.profile.lastNoticeSeenOn = new Date();
             }, 10000); // wait for client to update before claiming that it was updated.
         }
     }
 
     changeLogModalHidden() {
-        console.log('modal hidden');
         updateLastNoticeSeen();
+        this.profile.lastNoticeSeenOn = new Date();
     }
 }
 </script>
