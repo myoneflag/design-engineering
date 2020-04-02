@@ -601,31 +601,39 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
     sourceHeirs: string[] = [];
     connect(uid: string) {
-        if (this.globalStore.getConnections(this.entity.uid).length === 0) {
-            // this.entity.sourceUid = uid;
-        } else if (this.globalStore.getConnections(this.entity.uid).length === 1) {
-            if (this.entity.sourceUid !== this.globalStore.getConnections(this.entity.uid)[0]) {
-                this.entity.sourceUid = uid;
+        if (!this.globalStore.suppressSideEffects) {
+            if (this.globalStore.getConnections(this.entity.uid).length === 0) {
+                // this.entity.sourceUid = uid;
+            } else if (this.globalStore.getConnections(this.entity.uid).length === 1) {
+                if (this.entity.sourceUid !== this.globalStore.getConnections(this.entity.uid)[0]) {
+                    this.entity.sourceUid = uid;
+                }
+            } else {
+                // The following error is disabled to allow intermittent connecting / disconnecting.
+                // throw new Error('shouldn\'t be extending here. connections: ' +
+                // JSON.stringify(this.objectStore.getConnections(this.entity.uid)) + ' connecting ' + uid);
+                this.sourceHeirs.push(uid);
             }
         } else {
-            // The following error is disabled to allow intermittent connecting / disconnecting.
-            // throw new Error('shouldn\'t be extending here. connections: ' +
-            // JSON.stringify(this.objectStore.getConnections(this.entity.uid)) + ' connecting ' + uid);
-            this.sourceHeirs.push(uid);
+            this.sourceHeirs.splice(0);
         }
     }
 
     disconnect(uid: string) {
-        const conns = this.globalStore.getConnections(this.entity.uid);
-        if (conns.length > 2) {
-            this.sourceHeirs = this.sourceHeirs.filter((tuid) => tuid !== uid);
+        if (!this.globalStore.suppressSideEffects) {
+            const conns = this.globalStore.getConnections(this.entity.uid);
+            if (conns.length > 2) {
+                this.sourceHeirs = this.sourceHeirs.filter((tuid) => tuid !== uid);
 
-            if (uid === this.entity.sourceUid) {
-                if (this.sourceHeirs.length === 0) {
-                    throw new Error('No source heirs left');
+                if (uid === this.entity.sourceUid) {
+                    if (this.sourceHeirs.length === 0) {
+                        throw new Error('No source heirs left');
+                    }
+                    this.entity.sourceUid = this.sourceHeirs.splice(0, 1)[0];
                 }
-                this.entity.sourceUid = this.sourceHeirs.splice(0, 1)[0];
             }
+        } else {
+            this.sourceHeirs.splice(0);
         }
     }
 

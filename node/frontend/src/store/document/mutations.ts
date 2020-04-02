@@ -195,8 +195,31 @@ function changeDrawing(state: DocumentState, newDrawing: DrawingState, filter: a
 }
 
 function applyDiffs(state: DocumentState, diffs: any[]) {
-    const prevDrawing = cloneSimple(state.drawing);
-    for (const diff of diffs) {
+    try {
+        globalStore.suppressSideEffects = true;
+        const prevDrawing = cloneSimple(state.drawing);
+        for (const diff of diffs) {
+            applyDiffVue(state.drawing, diff);
+            const changes = marshalChanges(prevDrawing, state.drawing, diff, true);
+            proxyUpFromStateDiff(state, diff);
+            changes.forEach(([e, v]) => {
+                beforeEvent(e, v, state);
+            });
+            changes.forEach(([e, v]) => {
+                MainEventBus.$emit(e, v);
+            });
+
+            applyDiffNative(prevDrawing, cloneSimple(diff));
+        }
+    } finally {
+        globalStore.suppressSideEffects = false;
+    }
+}
+
+function applyDiff(state: DocumentState, diff: any) {
+    try {
+        globalStore.suppressSideEffects = true;
+        const prevDrawing = cloneSimple(state.drawing);
         applyDiffVue(state.drawing, diff);
         const changes = marshalChanges(prevDrawing, state.drawing, diff, true);
         proxyUpFromStateDiff(state, diff);
@@ -206,22 +229,9 @@ function applyDiffs(state: DocumentState, diffs: any[]) {
         changes.forEach(([e, v]) => {
             MainEventBus.$emit(e, v);
         });
-
-        applyDiffNative(prevDrawing, cloneSimple(diff));
+    } catch (e) {
+        globalStore.suppressSideEffects = false;
     }
-}
-
-function applyDiff(state: DocumentState, diff: any) {
-    const prevDrawing = cloneSimple(state.drawing);
-    applyDiffVue(state.drawing, diff);
-    const changes = marshalChanges(prevDrawing, state.drawing, diff, true);
-    proxyUpFromStateDiff(state, diff);
-    changes.forEach(([e, v]) => {
-        beforeEvent(e, v, state);
-    });
-    changes.forEach(([e, v]) => {
-        MainEventBus.$emit(e, v);
-    });
 }
 
 export const mutations: MutationTree<DocumentState> = {
@@ -285,16 +295,21 @@ export const mutations: MutationTree<DocumentState> = {
                 switch (toApply.type) {
                     case OT.OPERATION_NAMES.DIFF_OPERATION: {
                         if (state.uiState.drawingMode !== DrawingMode.History) {
-                            applyOpOntoStateVue(state.drawing, toApply);
-                            proxyUpFromStateDiff(state, toApply.diff);
-                            const changes = marshalChanges(state.committedDrawing, state.drawing, toApply.diff);
-                            applyOpOntoStateVue(state.committedDrawing, cloneSimple(toApply));
-                            changes.forEach(([e, v]) => {
-                                beforeEvent(e, v, state);
-                            });
-                            changes.forEach(([e, v]) => {
-                                MainEventBus.$emit(e, v);
-                            });
+                            try {
+                                globalStore.suppressSideEffects = true;
+                                applyOpOntoStateVue(state.drawing, toApply);
+                                proxyUpFromStateDiff(state, toApply.diff);
+                                const changes = marshalChanges(state.committedDrawing, state.drawing, toApply.diff);
+                                applyOpOntoStateVue(state.committedDrawing, cloneSimple(toApply));
+                                changes.forEach(([e, v]) => {
+                                    beforeEvent(e, v, state);
+                                });
+                                changes.forEach(([e, v]) => {
+                                    MainEventBus.$emit(e, v);
+                                });
+                            } finally {
+                                globalStore.suppressSideEffects = false;
+                            }
                         } else {
                             applyOpOntoStateVue(state.committedDrawing, cloneSimple(toApply));
                         }
@@ -436,8 +451,10 @@ function entityHandler(state: DocumentState, levelUid: string | null, entityUid:
                     target[key] = value;
                 }
 
-                beforeEvent("update-entity", entityUid, state);
-                MainEventBus.$emit("update-entity", entityUid);
+                if (!globalStore.suppressSideEffects) {
+                    beforeEvent("update-entity", entityUid, state);
+                    MainEventBus.$emit("update-entity", entityUid);
+                }
             }
             return true;
         }

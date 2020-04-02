@@ -15,6 +15,12 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
     protected graveyard = new Map<string, BaseBackedObject>();
     protected preserveList = new Set<string>();
 
+    // A flag that, if set true, allows the document mutator to apply state directly to entities
+    // without triggering side effects that change the state. For example, the directed valve object
+    // maintains the sourceUid value in the properties, but must be disabled for the mutator to apply
+    // diffs sensibly.
+    suppressSideEffects: boolean = false;
+
     constructor() {
         super();
     }

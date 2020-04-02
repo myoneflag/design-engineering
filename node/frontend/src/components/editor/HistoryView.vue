@@ -81,6 +81,7 @@ import { OPERATION_NAMES } from "../../../../common/src/api/document/operation-t
 import { Operation } from "../../../../common/src/models/Operation";
 import { DrawingMode } from "../../htmlcanvas/types";
 import { MainEventBus } from "../../store/main-event-bus";
+import { cloneSimple } from "../../../../common/src/lib/utils";
 
 @Component({
     components: {},
@@ -131,7 +132,7 @@ export default class HistoryView extends Vue {
                     }
                 }
 
-                this.$store.dispatch("document/applyDiffs", diffs);
+                this.$store.dispatch("document/applyDiffs", cloneSimple(diffs));
                 MainEventBus.$emit("redraw");
             }
         );
