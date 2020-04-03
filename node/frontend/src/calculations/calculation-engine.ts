@@ -320,6 +320,7 @@ export default class CalculationEngine {
                 this.calculateHotWaterDeadlegs();
 
                 this.calculateAllPointPressures();
+                this.calculateStaticPressures();
 
 
                 this.fillPressureDropFields();
@@ -401,7 +402,7 @@ export default class CalculationEngine {
                             const po = this.globalStore.get(o.entity.parentUid!);
                             if (po instanceof Fixture) {
                                 const fCalc = this.globalStore.getOrCreateCalculation(po.entity);
-                                fCalc.deadlegs[o.entity.systemUid].lengthM = dijk.weight;
+                                fCalc.inlets[o.entity.systemUid].deadlegLengthM = dijk.weight;
                             }
                         }
                     }
@@ -452,7 +453,7 @@ export default class CalculationEngine {
                             const po = this.globalStore.get(o.entity.parentUid!);
                             if (po instanceof Fixture) {
                                 const fCalc = this.globalStore.getOrCreateCalculation(po.entity);
-                                fCalc.deadlegs[o.entity.systemUid].volumeL = dijk.weight;
+                                fCalc.inlets[o.entity.systemUid].deadlegVolumeL = dijk.weight;
                             }
                         }
                     }
@@ -594,7 +595,7 @@ export default class CalculationEngine {
                     const calculation = this.globalStore.getOrCreateCalculation(entity);
 
                     for (const suid of entity.roughInsInOrder) {
-                        calculation.pressures[suid] = this.getAbsolutePressurePoint({
+                        calculation.inlets[suid].pressureKPA = this.getAbsolutePressurePoint({
                             connectable: entity.roughIns[suid].uid,
                             connection: entity.uid
                         });
@@ -662,9 +663,80 @@ export default class CalculationEngine {
         });
     }
 
-    getAbsolutePressurePoint(node: FlowNode) {
+    calculateStaticPressures() {
+        const entityStaticPressureKPA = new Map<string, number | null>();
+        const nodeStaticPressureKPA = new Map<string, number | null>();
+        this.networkObjects().forEach((o) => {
+            if (o.entity.type === EntityType.FLOW_SOURCE) {
+                const n = { connectable: o.uid, connection: FLOW_SOURCE_EDGE };
+                this.pushPressureThroughNetwork(n, o.entity.pressureKPA!, entityStaticPressureKPA, nodeStaticPressureKPA, PressurePushMode.Static);
+            }
+        });
+
+        this.networkObjects().forEach((obj) => {
+            const entity = obj.entity;
+            switch (entity.type) {
+                case EntityType.FIXTURE: {
+                    const calculation = this.globalStore.getOrCreateCalculation(entity);
+
+                    for (const suid of entity.roughInsInOrder) {
+                        calculation.inlets[suid].staticPressureKPA = this.getAbsolutePressurePoint({
+                            connectable: entity.roughIns[suid].uid,
+                            connection: entity.uid
+                        }, nodeStaticPressureKPA);
+                    }
+                    break;
+                }
+                case EntityType.BIG_VALVE: {
+                    break;
+                }
+                case EntityType.FLOW_SOURCE:
+                case EntityType.DIRECTED_VALVE:
+                case EntityType.FITTING:
+                case EntityType.SYSTEM_NODE:
+                case EntityType.LOAD_NODE: {
+                    const calculation = this.globalStore.getOrCreateCalculation(entity) as
+                        | FlowSourceCalculation
+                        | DirectedValveCalculation
+                        | FittingCalculation
+                        | SystemNodeCalculation;
+                    const candidates = cloneSimple(this.globalStore.getConnections(entity.uid));
+                    if (entity.type === EntityType.FLOW_SOURCE) {
+                        candidates.push(FLOW_SOURCE_EDGE);
+                    } else if (entity.type === EntityType.SYSTEM_NODE) {
+                        candidates.push(entity.parentUid!);
+                    }
+                    let maxPressure: number | null = null;
+                    let minPressure: number | null = null;
+                    candidates.forEach((cuid) => {
+                        const thisPressure = this.getAbsolutePressurePoint({
+                            connectable: entity.uid,
+                            connection: cuid
+                        }, nodeStaticPressureKPA);
+                        if (thisPressure != null && (maxPressure === null || thisPressure > maxPressure)) {
+                            maxPressure = thisPressure;
+                        }
+                        if (minPressure === null || (thisPressure !== null && thisPressure < minPressure)) {
+                            minPressure = thisPressure;
+                        }
+                    });
+                    calculation.staticPressureKPA = maxPressure;
+                    break;
+                }
+                case EntityType.BACKGROUND_IMAGE:
+                case EntityType.PIPE:
+                case EntityType.PLANT:
+                case EntityType.RISER:
+                    break;
+                default:
+                    assertUnreachable(entity);
+            }
+        });
+    }
+
+    getAbsolutePressurePoint(node: FlowNode, nodePressureKPA?: Map<string, number | null>) {
         if (this.demandType === DemandType.PSD) {
-            const num = this.nodePressureKPA.get(this.serializeNode(node));
+            const num = (nodePressureKPA || this.nodePressureKPA).get(this.serializeNode(node));
             return num === undefined ? null : num;
         } else {
             const obj = this.globalStore.get(node.connectable)!;
@@ -797,6 +869,9 @@ export default class CalculationEngine {
                                     }
                                     flowRate = calculation.rawReturnFlowRateLS;
                                     break;
+                                case PressurePushMode.Static:
+                                    flowRate = 0;
+                                    break;
                                 default:
                                     flowRate = 0; // typechecker
                                     assertUnreachable(pressurePushMode);
@@ -860,6 +935,7 @@ export default class CalculationEngine {
                                 case PressurePushMode.PSD:
                                     break;
                                 case PressurePushMode.CirculationFlowOnly:
+                                case PressurePushMode.Static:
                                     fr = 0;
                                     break;
                                 default:
@@ -873,13 +949,12 @@ export default class CalculationEngine {
                             const hl = getObjectFrictionHeadLoss(
                                 this,
                                 obj,
-                                fr + 1,
+                                fr,
                                 flowFrom,
                                 flowTo,
                                 true,
                                 finalPressureKPA
                             );
-                            console.log('big valve head loss: ' + hl + ' type: ' + obj.entity.valve.type + ' ' + fr + ' ' + finalPressureKPA + ' ' + JSON.stringify(flowFrom));
                             return hl === null
                                 ? -Infinity
                                 : head2kpa(
@@ -911,6 +986,9 @@ export default class CalculationEngine {
                                 case PressurePushMode.CirculationFlowOnly:
                                     srcDist = srcCalc.rawReturnFlowRateLS || 0;
                                     break;
+                                case PressurePushMode.Static:
+                                    srcDist = 0;
+                                    break;
                                 default:
                                     assertUnreachable(pressurePushMode);
                             }
@@ -925,6 +1003,9 @@ export default class CalculationEngine {
                                     break;
                                 case PressurePushMode.CirculationFlowOnly:
                                     destDist = destCalc.rawReturnFlowRateLS || 0;
+                                    break;
+                                case PressurePushMode.Static:
+                                    destDist = 0;
                                     break;
                                 default:
                                     assertUnreachable(pressurePushMode);
@@ -982,6 +1063,9 @@ export default class CalculationEngine {
                                 case PressurePushMode.CirculationFlowOnly:
                                     flowLS = calc.rawReturnFlowRateLS || 0;
                                     break;
+                                case PressurePushMode.Static:
+                                    flowLS = 0;
+                                    break;
                                 default:
                                     assertUnreachable(pressurePushMode);
                             }
@@ -1025,6 +1109,8 @@ export default class CalculationEngine {
                             case PressurePushMode.CirculationFlowOnly:
                                 // direction is always correct - assuming balancing valves were placed correctly.
                                 return MINIMUM_BALANCING_VALVE_PRESSURE_DROP_KPA;
+                            case PressurePushMode.Static:
+                                return 0;
                             default:
                                 assertUnreachable(pressurePushMode);
                         }
@@ -2295,11 +2381,11 @@ export default class CalculationEngine {
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity);
 
                     for (const suid of e.roughInsInOrder) {
-                        if (calculation.pressures[suid] === null) {
+                        if (calculation.inlets[suid].pressureKPA === null) {
                             if (!calculation.warning) {
                                 calculation.warning = " ";
                             }
-                        } else if ((calculation.pressures[suid] || 0) < e.roughIns[suid].minPressureKPA!) {
+                        } else if ((calculation.inlets[suid].pressureKPA || 0) < e.roughIns[suid].minPressureKPA!) {
                             const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === suid)!;
 
                             calculation.warning =
@@ -2308,7 +2394,7 @@ export default class CalculationEngine {
                                 " pressure. Required: " +
                                 e.roughIns[suid].minPressureKPA!.toFixed(0) +
                                 " kPa";
-                        } else if ((calculation.pressures[suid] || 0) > e.roughIns[suid].maxPressureKPA!) {
+                        } else if ((calculation.inlets[suid].staticPressureKPA || 0) > e.roughIns[suid].maxPressureKPA!) {
                             const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === suid)!;
                             calculation.warning =
                                 system.name +

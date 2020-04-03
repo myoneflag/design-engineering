@@ -2905,7 +2905,8 @@ export const initialCatalog: Catalog = {
                     minFlowRateLS: "0",
                     maxFlowRateLS: "0.48",
                     pressureLossKPAByFlowRateLS: {
-                        0.00: "60",
+                        0.00: "0",
+                        0.01: "60",
                         0.17: "90",
                         0.37: "85",
                         0.48: "80"

@@ -316,6 +316,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             pressureKPA: calc.pressureKPA,
             warning: calc.warning,
             pressureByEndpointKPA: {},
+            staticPressureKPA: calc.staticPressureKPA,
         };
 
         const tower = this.getCalculationTower(context);

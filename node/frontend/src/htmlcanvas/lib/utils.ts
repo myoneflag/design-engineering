@@ -14,7 +14,7 @@ import Flatten from "@flatten-js/core";
 import RiserEntity from "../../../../common/src/api/document/entities/riser-entity";
 import { CalculationContext } from "../../calculations/types";
 import { ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
-import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
+import { EPS, getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
 import { GlobalStore } from "./global-store";
 import { assertUnreachable, LEVEL_HEIGHT_DIFF_M } from "../../../../common/src/api/config";
 import { Coord, DrawableEntity, DrawingState, Level } from "../../../../common/src/api/document/drawing";
@@ -203,7 +203,9 @@ export function getRpzdHeadLoss(
 
     const plKPA = interpolateTable(rpzdEntry.pressureLossKPAByFlowRateLS, flowLS, true);
     if (plKPA === null) {
-        console.log('flow rate not found on pressure loss table: ' + flowLS + ' ' + size);
+        if (Math.abs(flowLS) < EPS) {
+            return 0;
+        }
         return null;
     }
 

@@ -1,5 +1,10 @@
 import { CalculationField, FieldCategory, Units } from "../../../../src/store/document/calculations/calculation-field";
-import { Calculation } from "../../../../src/store/document/calculations/types";
+import {
+    addPressureCalculationFields,
+    Calculation,
+    PressureCalculation,
+    PsdCalculation
+} from "../../../../src/store/document/calculations/types";
 import { DocumentState } from "../../../../src/store/document/types";
 import RiserEntity from "../../../../../common/src/api/document/entities/riser-entity";
 import { getPsdUnitName, PsdCountEntry } from "../../../calculations/utils";
@@ -9,11 +14,9 @@ import { DrawingState } from "../../../../../common/src/api/document/drawing";
 export default interface RiserCalculation extends Calculation {
     heights: {
         [levelUid: string]: {
-            pressureKPA: number | null;
             flowRateLS: number | null;
             heightAboveGround: number | null;
-            psdUnits: PsdCountEntry | null;
-        };
+        } & PressureCalculation & PsdCalculation;
     };
 }
 
@@ -25,16 +28,9 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
 
     const lvlUid = doc.uiState.levelUid;
 
+    addPressureCalculationFields(result, entity.systemUid, "heights." + lvlUid + ".", {defaultEnabled: true}, {defaultEnabled: true});
+
     result.push(
-        {
-            property: "heights." + lvlUid + ".pressureKPA",
-            title: "Pressure At Floor",
-            short: "",
-            units: Units.KiloPascals,
-            systemUid: entity.systemUid,
-            category: FieldCategory.Pressure,
-            defaultEnabled: true
-        },
         {
             property: "heights." + lvlUid + ".flowRateLS",
             title: "Flow Rate At Floor",

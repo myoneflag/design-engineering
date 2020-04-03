@@ -1,19 +1,20 @@
 import { FieldCategory, CalculationField, Units } from "../../../../src/store/document/calculations/calculation-field";
 import { StandardFlowSystemUids } from "../../../../src/store/catalog";
-import { Calculation } from "../../../../src/store/document/calculations/types";
+import {
+    addPressureCalculationFields,
+    Calculation,
+    PressureCalculation
+} from "../../../../src/store/document/calculations/types";
 import FixtureEntity from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
 import { DocumentState } from "../types";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 
 export default interface FixtureCalculation extends Calculation {
-    pressures: {
-        [key: string]: number | null;
-    };
-    deadlegs: {
+    inlets: {
         [key: string]: {
-            volumeL: number | null;
-            lengthM: number | null;
-        }
+            deadlegVolumeL: number | null;
+            deadlegLengthM: number | null;
+        } & PressureCalculation;
     };
 }
 
@@ -25,21 +26,12 @@ export function makeFixtureCalculationFields(doc: DocumentState, entity: Fixture
             throw new Error("System not found");
         }
 
-        const ret: CalculationField[] = [
-            {
-                property: "pressures." + suid,
-                title: system.name + " Pressure",
-                short: system.name.split(" ")[0].toLowerCase(),
-                systemUid: suid,
-                units: Units.KiloPascals,
-                category: FieldCategory.Pressure,
-                defaultEnabled: true,
-            }
-        ];
+        const ret: CalculationField[] = [];
+        addPressureCalculationFields(ret, suid, "inlets." + suid + ".", {defaultEnabled: true}, {defaultEnabled: true});
 
-        if (fCalc.deadlegs[suid] && fCalc.deadlegs[suid].volumeL !== null) {
+        if (fCalc.inlets[suid] && fCalc.inlets[suid].deadlegVolumeL !== null) {
             ret.push({
-                property: "deadlegs." + suid + ".volumeL",
+                property: "inlets." + suid + ".deadlegVolumeL",
                 title: system.name + " Deadleg Volume",
                 short: "deadleg",
                 systemUid: suid,
@@ -49,9 +41,9 @@ export function makeFixtureCalculationFields(doc: DocumentState, entity: Fixture
             });
         }
 
-        if (fCalc.deadlegs[suid] && fCalc.deadlegs[suid].lengthM !== null) {
+        if (fCalc.inlets[suid] && fCalc.inlets[suid].deadlegLengthM !== null) {
             ret.push({
-                property: "deadlegs." + suid + ".lengthM",
+                property: "inlets." + suid + ".deadlegLengthM",
                 title: system.name + " Deadleg Length",
                 short: "deadleg",
                 systemUid: suid,
@@ -66,27 +58,12 @@ export function makeFixtureCalculationFields(doc: DocumentState, entity: Fixture
 }
 
 export function emptyFixtureCalculation(entity: FixtureEntity): FixtureCalculation {
-    const pressures: {
-        [key: string]: number | null;
-    } = {};
-    const deadlegs: {
-        [key: string]: {
-            volumeL: number | null;
-            lengthM: number | null;
-        }
-    } = {};
-
+    const result: FixtureCalculation = {inlets: {}, warning: null};
     for (const suid of entity.roughInsInOrder) {
-        pressures[suid] = null;
-        deadlegs[suid] = {
-            volumeL: null,
-            lengthM: null,
+        result.inlets[suid] = {
+            deadlegLengthM: null, deadlegVolumeL: null, pressureKPA: null, staticPressureKPA: null
         };
     }
 
-    return {
-        pressures,
-        deadlegs,
-        warning: null
-    };
+    return result;
 }

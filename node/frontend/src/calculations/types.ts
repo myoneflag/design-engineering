@@ -19,4 +19,5 @@ export interface CalculationContext {
 export enum PressurePushMode {
     PSD,
     CirculationFlowOnly,
+    Static,
 }
