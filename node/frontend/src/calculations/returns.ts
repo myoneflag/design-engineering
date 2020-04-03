@@ -18,7 +18,6 @@ import PlantEntity, { fillPlantDefaults } from "../../../common/src/api/document
 import { interpolateTable } from "../../../common/src/lib/utils";
 import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
-import { warn } from "vue-class-component/lib/util";
 
 export interface ReturnRecord {
     spTree: SPTree<Edge<string, FlowEdge>>;
@@ -520,56 +519,65 @@ function warnMissingBalancingValvesRecursive(engine: CalculationEngine, node: SP
             return { balanced, leafSeries, warning };
         }
         case "leaf":
-            let connectedToBalancingValve = false;
-            let warning: string | null = null;
-            const po = engine.globalStore.get(node.edgeConcrete.value.uid) as Pipe;
-            const pCalc = engine.globalStore.getOrCreateCalculation(po.entity);
+            if (node.edgeConcrete.value.type === EdgeType.PIPE) {
+                let connectedToBalancingValve = false;
+                let warning: string | null = null;
+                const po = engine.globalStore.get(node.edgeConcrete.value.uid) as Pipe;
+                const pCalc = engine.globalStore.getOrCreateCalculation(po.entity);
 
-            if (!pCalc.flowFrom) {
-                throw new Error('expected flow from');
-            }
+                if (!pCalc.flowFrom) {
+                    throw new Error('expected flow from');
+                }
 
-            let uid =  pCalc.flowFrom;
-            const o = engine.globalStore.get(uid)!;
-            if (o.entity.type === EntityType.DIRECTED_VALVE) {
-                switch (o.entity.valve.type) {
-                    case ValveType.ISOLATION_VALVE:
-                    case ValveType.WATER_METER:
-                    case ValveType.STRAINER:
-                        // whatevs, not directed
-                        break;
-                    case ValveType.CHECK_VALVE:
-                    case ValveType.RPZD_SINGLE:
-                    case ValveType.RPZD_DOUBLE_SHARED:
-                    case ValveType.RPZD_DOUBLE_ISOLATED:
-                        if (node.edgeConcrete.value.uid === o.entity.sourceUid) {
+                let uid =  pCalc.flowFrom;
+                const o = engine.globalStore.get(uid)!;
+                if (o.entity.type === EntityType.DIRECTED_VALVE) {
+                    switch (o.entity.valve.type) {
+                        case ValveType.ISOLATION_VALVE:
+                        case ValveType.WATER_METER:
+                        case ValveType.STRAINER:
+                            // whatevs, not directed
+                            break;
+                        case ValveType.CHECK_VALVE:
+                        case ValveType.RPZD_SINGLE:
+                        case ValveType.RPZD_DOUBLE_SHARED:
+                        case ValveType.RPZD_DOUBLE_ISOLATED:
+                            if (node.edgeConcrete.value.uid === o.entity.sourceUid) {
+                                const calc = engine.globalStore.getOrCreateCalculation(o.entity);
+                                calc.warning = 'Valve in wrong direction';
+                                warning = calc.warning;
+                            }
+                            break;
+                        case ValveType.PRV_SINGLE:
+                        case ValveType.PRV_DOUBLE:
+                        case ValveType.PRV_TRIPLE:
                             const calc = engine.globalStore.getOrCreateCalculation(o.entity);
-                            calc.warning = 'Valve in wrong direction';
+                            calc.warning = 'PRVs are forbidden here';
                             warning = calc.warning;
-                        }
-                        break;
-                    case ValveType.PRV_SINGLE:
-                    case ValveType.PRV_DOUBLE:
-                    case ValveType.PRV_TRIPLE:
-                        const calc = engine.globalStore.getOrCreateCalculation(o.entity);
-                        calc.warning = 'PRVs are forbidden here';
-                        warning = calc.warning;
-                        break;
-                    case ValveType.BALANCING:
-                        connectedToBalancingValve = true;
-                        break;
-                    default:
-                        assertUnreachable(o.entity.valve);
+                            break;
+                        case ValveType.BALANCING:
+                            connectedToBalancingValve = true;
+                            break;
+                        default:
+                            assertUnreachable(o.entity.valve);
+                    }
+                    if (o.entity.valve.type === ValveType.BALANCING) {
+                    }
                 }
-                if (o.entity.valve.type === ValveType.BALANCING) {
+
+                return {
+                    warning,
+                    balanced: connectedToBalancingValve,
+                    leafSeries: true,
+                };
+            } else {
+                // Big valve
+                return {
+                    warning: null,
+                    balanced: false, // always connected to system node directly
+                    leafSeries: true,
                 }
             }
-
-            return {
-                warning,
-                balanced: connectedToBalancingValve,
-                leafSeries: true,
-            };
     }
     assertUnreachable(node);
 }
