@@ -1,18 +1,23 @@
 import { CalculationField, FieldCategory, Units } from "../../../../src/store/document/calculations/calculation-field";
 import DirectedValveEntity from "../../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
-import { Calculation } from "../../../../src/store/document/calculations/types";
+import {
+    addPressureCalculationFields,
+    Calculation,
+    PressureCalculation
+} from "../../../../src/store/document/calculations/types";
 import { ValveType } from "../../../../../common/src/api/document/entities/directed-valves/valve-types";
 import { assertUnreachable } from "../../../../../common/src/api/config";
+import { determineConnectableSystemUid } from "../entities/lib";
+import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 
-export default interface DirectedValveCalculation extends Calculation {
+export default interface DirectedValveCalculation extends Calculation, PressureCalculation {
     flowRateLS: number | null;
     pressureDropKPA: number | null;
-    pressureKPA: number | null;
     kvValue: number | null;
     sizeMM: number | null;
 }
 
-export function makeDirectedValveCalculationFields(entity: DirectedValveEntity): CalculationField[] {
+export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, globalStore: GlobalStore): CalculationField[] {
     let fields: CalculationField[] = [
         {
             property: "flowRateLS",
@@ -20,14 +25,6 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity):
             short: "",
             units: Units.LitersPerSecond,
             category: FieldCategory.FlowRate
-        },
-        {
-            property: "pressureDropKPA",
-            title: "Pressure Drop",
-            short: "Drop",
-            defaultEnabled: true,
-            units: Units.KiloPascals,
-            category: FieldCategory.Pressure
         },
     ];
 
@@ -42,15 +39,8 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity):
         });
     }
 
-    fields.push(
-        {
-            property: "pressureKPA",
-            title: "Pressure",
-            short: "In",
-            units: Units.KiloPascals,
-            category: FieldCategory.Pressure
-        }
-    );
+    addPressureCalculationFields(fields, determineConnectableSystemUid(globalStore, entity), "", {short: "In", defaultEnabled: true});
+
     if (entity.systemUidOption) {
         fields = fields.map((f) => {
             f.systemUid = entity.systemUidOption!;
@@ -90,6 +80,7 @@ export function emptyDirectedValveCalculation(): DirectedValveCalculation {
     return {
         flowRateLS: null,
         pressureDropKPA: null,
+        staticPressureKPA: null,
         kvValue: null,
         pressureKPA: null,
         warning: null,

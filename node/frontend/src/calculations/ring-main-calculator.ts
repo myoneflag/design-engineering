@@ -387,7 +387,6 @@ export class RingMainCalculator {
 
     calculateAllRings() {
         const rings = this.findUnsizedRingMains();
-        console.log("rings: " + rings.length + " " + JSON.stringify(rings.map((rs) => rs.length)));
         for (const r of rings) {
             this.sizeSingleRing(r);
         }

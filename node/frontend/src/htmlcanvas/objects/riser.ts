@@ -313,7 +313,8 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                 flowRateLS: null,
                 heightAboveGround: null,
                 psdUnits: null,
-                pressureKPA: null
+                pressureKPA: null,
+                staticPressureKPA: null,
             };
 
             // iterate pipe if need be. Note, we don't want to go over.
@@ -344,21 +345,23 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                     const partialLength = levels[lvlUid].floorHeightM - tower[topOfPipe - 1][0].calculationHeightM!;
                     const partialHL = totalHL * (partialLength / totalLength);
 
-                    const bottomPressure = context.globalStore.getOrCreateCalculation(tower[topOfPipe - 1][0])
-                        .pressureKPA;
+                    const bottomPipeCalc = context.globalStore.getOrCreateCalculation(tower[topOfPipe - 1][0]);
+                    const bottomPressure = bottomPipeCalc.pressureKPA;
+                    const bottomStaticPressure = bottomPipeCalc.staticPressureKPA;
+
+                    const risenSegmentPressureLossKPA = head2kpa(
+                        partialHL,
+                        getFluidDensityOfSystem(pipe.entity.systemUid, context.doc, context.catalog)!,
+                        context.doc.drawing.metadata.calculationParams.gravitationalAcceleration
+                        );
 
                     if (bottomPressure) {
                         res.heights[lvlUid] = {
                             flowRateLS: calc.totalPeakFlowRateLS,
                             heightAboveGround: levels[lvlUid].floorHeightM,
                             psdUnits: calc.psdUnits,
-                            pressureKPA:
-                                bottomPressure -
-                                head2kpa(
-                                    partialHL,
-                                    getFluidDensityOfSystem(pipe.entity.systemUid, context.doc, context.catalog)!,
-                                    context.doc.drawing.metadata.calculationParams.gravitationalAcceleration
-                                )
+                            pressureKPA: bottomPressure - risenSegmentPressureLossKPA,
+                            staticPressureKPA: bottomStaticPressure === null ? null : bottomStaticPressure - risenSegmentPressureLossKPA,
                         };
                     }
                 }

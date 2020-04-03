@@ -1,12 +1,19 @@
 import { FieldCategory, CalculationField, Units } from "../../../../src/store/document/calculations/calculation-field";
-import { Calculation, PsdCalculation } from "../../../../src/store/document/calculations/types";
+import {
+    addPressureCalculationFields,
+    Calculation,
+    PressureCalculation,
+    PsdCalculation
+} from "../../../../src/store/document/calculations/types";
 import FittingEntity from "../../../../../common/src/api/document/entities/fitting-entity";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 
-export default interface FittingCalculation extends Calculation {
+export default interface FittingCalculation extends
+    Calculation,
+    PressureCalculation
+{
     flowRateLS: number | null;
     pressureDropKPA: number | [number, number] | null;
-    pressureKPA: number | null;
     pressureByEndpointKPA: {[key: string]: number | null};
 }
 
@@ -14,7 +21,9 @@ export function makeFittingCalculationFields(entity: FittingEntity, globalStore:
     if (globalStore.getConnections(entity.uid).length === 0) {
         return [];
     }
-    return [
+    const result: CalculationField[] = [];
+
+    result.push(
         {
             property: "flowRateLS",
             title: "Flow Rate",
@@ -40,16 +49,11 @@ export function makeFittingCalculationFields(entity: FittingEntity, globalStore:
                 }
             }
         },
-        {
-            property: "pressureKPA",
-            title: "Pressure",
-            short: "",
-            units: Units.KiloPascals,
-            systemUid: entity.systemUid,
-            category: FieldCategory.Pressure,
-            defaultEnabled: true
-        }
-    ];
+    );
+
+    addPressureCalculationFields(result, entity.systemUid);
+
+    return result;
 }
 
 export function emptyFittingCalculation(): FittingCalculation {
@@ -57,6 +61,7 @@ export function emptyFittingCalculation(): FittingCalculation {
         flowRateLS: null,
         pressureDropKPA: null,
         pressureKPA: null,
+        staticPressureKPA: null,
         warning: null,
         pressureByEndpointKPA: {},
     };

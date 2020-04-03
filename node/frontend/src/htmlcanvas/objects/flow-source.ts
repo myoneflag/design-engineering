@@ -323,7 +323,8 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         const res: FlowSourceCalculation = {
             flowRateLS: calc.flowRateLS,
             pressureKPA: calc.pressureKPA, // TODO: differentiate this in different levels
-            warning: calc.warning
+            warning: calc.warning,
+            staticPressureKPA: calc.staticPressureKPA,
         };
 
         const tower = this.getCalculationTower(context);

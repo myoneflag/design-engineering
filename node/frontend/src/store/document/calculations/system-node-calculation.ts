@@ -1,27 +1,30 @@
 import { FieldCategory, CalculationField, Units } from "../../../../src/store/document/calculations/calculation-field";
-import { Calculation, PsdCalculation } from "../../../../src/store/document/calculations/types";
+import {
+    addPressureCalculationFields,
+    Calculation, PressureCalculation,
+    PsdCalculation
+} from "../../../../src/store/document/calculations/types";
 import { SystemNodeEntity } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import { getPsdUnitName } from "../../../calculations/utils";
 import set = Reflect.set;
 import { isGermanStandard } from "../../../../../common/src/api/config";
 import { DrawingState } from "../../../../../common/src/api/document/drawing";
 
-export default interface SystemNodeCalculation extends PsdCalculation, Calculation {
-    pressureKPA: number | null;
+export default interface SystemNodeCalculation extends
+    PsdCalculation,
+    Calculation,
+    PressureCalculation
+{
     flowRateLS: number | null;
 }
 
 export function makeSystemNodeCalculationFields(entity: SystemNodeEntity, settings: DrawingState): CalculationField[] {
     const psdUnit = getPsdUnitName(settings.metadata.calculationParams.psdMethod);
-    const result = [
-        {
-            property: "pressureKPA",
-            title: "Pressure",
-            short: "",
-            units: Units.KiloPascals,
-            systemUid: entity.systemUid,
-            category: FieldCategory.Pressure
-        },
+    const result: CalculationField[] = [];
+
+    addPressureCalculationFields(result, entity.systemUid);
+
+    result.push(
         {
             property: "flowRateLS",
             title: "Flow Rate",
@@ -29,8 +32,8 @@ export function makeSystemNodeCalculationFields(entity: SystemNodeEntity, settin
             units: Units.LitersPerSecond,
             systemUid: entity.systemUid,
             category: FieldCategory.FlowRate
-        }
-    ];
+        },
+    );
 
     if (settings.metadata.calculationParams.psdMethod !== null) {
         result.push({
@@ -62,6 +65,7 @@ export function emptySystemNodeCalculation(): SystemNodeCalculation {
         flowRateLS: null,
         psdUnits: null,
         pressureKPA: null,
+        staticPressureKPA: null,
         warning: null
     };
 }

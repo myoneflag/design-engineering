@@ -388,7 +388,6 @@ function setFlowRatesNode(
         case "leaf":
             // physically set the flow rate for the pipe.
             if (currNode.edgeConcrete.value.type === EdgeType.PIPE) {
-                console.log('setting pipe return flow rate ' + currFlowRate);
                 const pipe = context.globalStore.get(currNode.edgeConcrete.value.uid) as Pipe;
                 const filled = fillPipeDefaultFields(context.drawing, pipe.computedLengthM, pipe.entity);
                 const pCalc = context.globalStore.getOrCreateCalculation(pipe.entity);
@@ -423,7 +422,6 @@ function setFlowRatesNode(
                 const calc = context.globalStore.getOrCreateCalculation(o.entity);
                 if (o.entity.valve.type === BigValveType.RPZD_HOT_COLD) {
                     calc.hotReturnFlowRateLS = currFlowRate;
-                    console.log('setting RPZD return flow rate ' + currFlowRate);
                     if (calc.hotPeakFlowRate !== null) {
                         if (filledReturn.addReturnToPSDFlowRate) {
                             calc.hotTotalFlowRateLS = calc.hotPeakFlowRate + calc.hotReturnFlowRateLS;
