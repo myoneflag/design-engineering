@@ -1,7 +1,6 @@
 import * as Operations from "../../../../common/src/api/document/operation-transforms";
 import { ViewPort } from "../../../src/htmlcanvas/viewport";
 import { DrawingMode } from "../../../src/htmlcanvas/types";
-import { DemandType } from "../../../src/calculations/types";
 import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 import { ValveId } from "../../../src/htmlcanvas/lib/types";
 import { DrawingState, initialDrawing } from "../../../../common/src/api/document/drawing";
@@ -19,14 +18,13 @@ import { PAPER_SIZES, PaperSize, PaperSizeName } from "../../../../common/src/ap
 //    should be combined.
 
 export interface CalculationUiSettings {
-    demandType: DemandType | null;
+
 }
 
 export interface UIState {
     viewPort: ViewPort | null;
     loaded: boolean;
     drawingMode: DrawingMode;
-    demandType: DemandType;
 
     gridLines: GridLineMode;
 
@@ -116,7 +114,6 @@ export interface DiffFilter {
 }
 
 export const initialUIState: UIState = {
-    demandType: DemandType.PSD,
     drawingMode: DrawingMode.FloorPlan,
     loaded: false,
     viewPort: null,

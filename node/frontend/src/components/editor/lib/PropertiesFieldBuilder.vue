@@ -349,10 +349,7 @@ export default class PropertiesFieldBuilder extends Vue {
             if (field.units) {
                 // get display units
                 const du = this.convertUnits(field);
-                console.log(du);
-                console.log(value);
                 value = convertMeasurementToMetric(du, Number(value))[1];
-                console.log(value);
             }
             this.setRenderedData(field, Number(value));
         }

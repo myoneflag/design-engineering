@@ -16,7 +16,7 @@ import FixtureEntity, {
     fillFixtureFields,
     makeFixtureFields
 } from "../../../common/src/api/document/entities/fixtures/fixture-entity";
-import { DemandType, PressurePushMode } from "../../src/calculations/types";
+import { PressurePushMode } from "../../src/calculations/types";
 import Graph, { Edge } from "../../src/calculations/graph";
 import EquationEngine from "../../src/calculations/equation-engine";
 import BaseBackedObject from "../../src/htmlcanvas/lib/base-backed-object";
@@ -138,7 +138,6 @@ export default class CalculationEngine {
     drawableObjectUids!: string[];
 
     doc!: DocumentState;
-    demandType!: DemandType;
     flowGraph!: Graph<FlowNode, FlowEdge>;
     equationEngine!: EquationEngine;
     catalog!: Catalog;
@@ -169,7 +168,6 @@ export default class CalculationEngine {
         objectStore: GlobalStore,
         doc: DocumentState,
         catalog: Catalog,
-        demandType: DemandType,
         done: (success: boolean) => void
     ) {
         this.networkObjectUids = [];
@@ -205,7 +203,6 @@ export default class CalculationEngine {
         });
         this.doc = doc;
         this.catalog = catalog;
-        this.demandType = demandType;
         this.drawing = this.doc.drawing;
         this.ga = this.doc.drawing.metadata.calculationParams.gravitationalAcceleration;
 
@@ -669,7 +666,7 @@ export default class CalculationEngine {
         this.networkObjects().forEach((o) => {
             if (o.entity.type === EntityType.FLOW_SOURCE) {
                 const n = { connectable: o.uid, connection: FLOW_SOURCE_EDGE };
-                this.pushPressureThroughNetwork(n, o.entity.pressureKPA!, entityStaticPressureKPA, nodeStaticPressureKPA, PressurePushMode.Static);
+                this.pushPressureThroughNetwork(n, o.entity.maxPressureKPA!, entityStaticPressureKPA, nodeStaticPressureKPA, PressurePushMode.Static);
             }
         });
 
@@ -735,92 +732,8 @@ export default class CalculationEngine {
     }
 
     getAbsolutePressurePoint(node: FlowNode, nodePressureKPA?: Map<string, number | null>) {
-        if (this.demandType === DemandType.PSD) {
-            const num = (nodePressureKPA || this.nodePressureKPA).get(this.serializeNode(node));
-            return num === undefined ? null : num;
-        } else {
-            const obj = this.globalStore.get(node.connectable)!;
-            let height: number;
-            switch (obj.entity.type) {
-                case EntityType.SYSTEM_NODE:
-                    if (obj.entity.parentUid) {
-                        const par = this.globalStore.get(obj.entity.parentUid)!;
-                        switch (par.entity.type) {
-                            case EntityType.PIPE:
-                                height = par.entity.heightAboveFloorM;
-                                break;
-                            case EntityType.BIG_VALVE:
-                                height = par.entity.heightAboveFloorM;
-                                break;
-                            case EntityType.FIXTURE:
-                                const filled = fillFixtureFields(this.doc.drawing, this.catalog, par.entity);
-                                height = filled.outletAboveFloorM!;
-                                break;
-                            case EntityType.PLANT:
-                                height = par.entity.heightAboveFloorM;
-                                break;
-                            case EntityType.DIRECTED_VALVE:
-                            case EntityType.FITTING:
-                            case EntityType.BACKGROUND_IMAGE:
-                            case EntityType.RISER:
-                            case EntityType.SYSTEM_NODE:
-                            case EntityType.FLOW_SOURCE:
-                            case EntityType.LOAD_NODE:
-                                throw new Error("don't know how to calculate static pressure for this");
-                            default:
-                                assertUnreachable(par.entity);
-                        }
-                    } else {
-                        throw new Error("don't know how to calculate static pressure for an orphaned node");
-                    }
-                    break;
-                case EntityType.LOAD_NODE:
-                    height = obj.entity.calculationHeightM!;
-                    break;
-                case EntityType.BACKGROUND_IMAGE:
-                case EntityType.RISER:
-                case EntityType.PIPE:
-                case EntityType.PLANT:
-                case EntityType.FITTING:
-                case EntityType.DIRECTED_VALVE:
-                case EntityType.BIG_VALVE:
-                case EntityType.FLOW_SOURCE:
-                case EntityType.FIXTURE:
-                    throw new Error("don't know how to calculate static pressure for that");
-                default:
-                    assertUnreachable(obj.entity);
-            }
-            return this.getStaticPressure(node, height!);
-        }
-    }
-
-    getStaticPressure(node: FlowNode, heightM: number): number {
-        let highPressure: number | null = null;
-        this.flowGraph.dfs(
-            node,
-            (n) => {
-                if (
-                    this.globalStore.has(n.connectable) &&
-                    this.globalStore.get(n.connectable)!.type === EntityType.FLOW_SOURCE
-                ) {
-                    const source = this.globalStore.get(n.connectable) as FlowSource;
-                    const density = getFluidDensityOfSystem(source.entity.systemUid, this.doc, this.catalog)!;
-                    const mh = source.entity.heightAboveGroundM! - heightM;
-                    const thisPressure = Number(source.entity.pressureKPA!) + head2kpa(mh, density, this.ga);
-                    if (highPressure === null || thisPressure > highPressure) {
-                        highPressure = thisPressure;
-                    }
-                }
-            },
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            false,
-            true
-        );
-        return highPressure == null ? -1 : highPressure;
+        const num = (nodePressureKPA || this.nodePressureKPA).get(this.serializeNode(node));
+        return num === undefined ? null : num;
     }
 
     pushPressureThroughNetwork(start: FlowNode, pressureKPA: number, entityMaxPressuresKPA: Map<string, number | null>, nodePressureKPA: Map<string, number | null>, pressurePushMode: PressurePushMode) {
@@ -1150,7 +1063,7 @@ export default class CalculationEngine {
         this.networkObjects().forEach((o) => {
             if (o.entity.type === EntityType.FLOW_SOURCE) {
                 const n = { connectable: o.uid, connection: FLOW_SOURCE_EDGE };
-                this.pushPressureThroughNetwork(n, o.entity.pressureKPA!, this.entityMaxPressuresKPA, this.nodePressureKPA, PressurePushMode.PSD);
+                this.pushPressureThroughNetwork(n, o.entity.minPressureKPA!, this.entityMaxPressuresKPA, this.nodePressureKPA, PressurePushMode.PSD);
             }
         });
     }

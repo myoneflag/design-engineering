@@ -62,14 +62,13 @@ import { PlantType } from "../../../../common/src/api/document/entities/plants/p
             />
 
             <CalculationTopBar
-                v-if="
+                    v-if="
                     document.uiState.drawingMode === 2 &&
                         initialized &&
                         (!toolHandler || toolHandler.config.calculationTopBar)
                 "
-                :demandType.sync="demandType"
-                :is-calculating="isCalculating"
-                :on-re-calculate="considerCalculating"
+                    :is-calculating="isCalculating"
+                    :on-re-calculate="considerCalculating"
             />
 
             <PDFSnapshotTopBar
@@ -141,8 +140,6 @@ import insertBigValve from "../../htmlcanvas/tools/insert-big-valve";
 import insertFixture from "../../../src/htmlcanvas/tools/insert-fixture";
 import FloorPlanInsertPanel from "../../../src/components/editor/FloorPlanInsertPanel.vue";
 import InstructionPage from "../../../src/components/editor/InstructionPage.vue";
-import CalculationTopBar from "../CalculationTopBar.vue";
-import { DemandType } from "../../../src/calculations/types";
 import CalculationEngine from "../../../src/calculations/calculation-engine";
 import CalculationLayer from "../../../src/htmlcanvas/layers/calculation-layer";
 import { getVisibleBoundingBox, levelIncludesRiser } from "../../../src/htmlcanvas/lib/utils";
@@ -181,6 +178,7 @@ import PDFSnapshotTopBar from "../PDFSnapshotTopBar.vue";
 import CanvasContext from "../../htmlcanvas/lib/canvas-context";
 import { getEffectiveFilter } from "../../lib/utils";
 import { PlantType } from '../../../../common/src/api/document/entities/plants/plant-types';
+import CalculationTopBar from "../CalculationTopBar.vue";
 
 @Component({
     components: {
@@ -189,11 +187,11 @@ import { PlantType } from '../../../../common/src/api/document/entities/plants/p
         LevelSelector,
         DrawingNavBar,
         CalculationsSidebar,
-        CalculationTopBar,
         InstructionPage,
         FloorPlanInsertPanel,
         LoadingScreen,
         HydraulicsInsertPanel,
+        CalculationTopBar,
         Overlay: LoadingScreen,
         Toolbar,
         PropertiesWindow,
@@ -390,15 +388,6 @@ export default class DrawingCanvas extends Vue {
         } else {
             return DEFAULT_TOOL;
         }
-    }
-
-    get demandType() {
-        return this.document.uiState.demandType;
-    }
-
-    set demandType(value: DemandType) {
-        this.document.uiState.demandType = value;
-        this.considerCalculating();
     }
 
     get viewPort(): ViewPort {
@@ -1503,7 +1492,7 @@ export default class DrawingCanvas extends Vue {
         if (this.document.uiState.drawingMode === DrawingMode.Calculations) {
             if (!this.$store.getters["document/calculationsUpToDate"]) {
                 if (!this.document.uiState.isCalculating) {
-                    this.calculationLayer.calculate(this, this.demandType, () => {
+                    this.calculationLayer.calculate(this, () => {
                         this.scheduleDraw();
                     });
                 }

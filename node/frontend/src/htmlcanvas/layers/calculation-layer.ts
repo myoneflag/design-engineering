@@ -4,7 +4,6 @@ import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import { MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
 import CalculationEngine from "../../../src/calculations/calculation-engine";
-import { DemandType } from "../../../src/calculations/types";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
@@ -277,7 +276,7 @@ export default class CalculationLayer extends LayerImplementation {
         //
     }
 
-    calculate(context: CanvasContext, demandType: DemandType, done: () => void) {
+    calculate(context: CanvasContext, done: () => void) {
         this.layout.clear();
 
         context.document.uiState.isCalculating = true;
@@ -286,12 +285,11 @@ export default class CalculationLayer extends LayerImplementation {
             context.globalStore,
             context.document,
             context.effectiveCatalog,
-            demandType,
             (success) => {
                 if (success) {
                     context.document.uiState.lastCalculationId = context.document.nextId;
                     context.document.uiState.lastCalculationUiSettings = {
-                        demandType
+
                     };
                 }
                 context.document.uiState.isCalculating = false;

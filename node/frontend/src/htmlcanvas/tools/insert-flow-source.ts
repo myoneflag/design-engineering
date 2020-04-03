@@ -50,7 +50,8 @@ export default function insertFlowSource(context: CanvasContext, system: FlowSys
                     systemUid: system.uid,
                     type: EntityType.FLOW_SOURCE,
                     heightAboveGroundM: null,
-                    pressureKPA: null,
+                    minPressureKPA: null,
+                    maxPressureKPA: null,
                     uid: newUid
                 };
 

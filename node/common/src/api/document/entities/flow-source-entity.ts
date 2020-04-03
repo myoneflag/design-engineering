@@ -4,7 +4,7 @@ import { Color, ConnectableEntity, Coord, DrawingState, FlowSystemParameters } f
 import { Choice, cloneSimple } from "../../../lib/utils";
 import { Units } from "../../../../../frontend/src/store/document/calculations/calculation-field";
 
-export default interface FlowSourceEntity extends ConnectableEntity {
+export interface FlowSourceEntityV11 extends ConnectableEntity {
     type: EntityType.FLOW_SOURCE;
     center: Coord;
     systemUid: string;
@@ -12,6 +12,17 @@ export default interface FlowSourceEntity extends ConnectableEntity {
     heightAboveGroundM: number | null;
     color: Color | null;
     pressureKPA: number | null;
+}
+
+export default interface FlowSourceEntity extends ConnectableEntity {
+    type: EntityType.FLOW_SOURCE;
+    center: Coord;
+    systemUid: string;
+
+    heightAboveGroundM: number | null;
+    color: Color | null;
+    minPressureKPA: number | null;
+    maxPressureKPA: number | null;
 }
 
 export function makeFlowSourceFields(materials: Choice[], systems: FlowSystemParameters[]): PropertyField[] {
@@ -27,14 +38,27 @@ export function makeFlowSourceFields(materials: Choice[], systems: FlowSystemPar
         },
 
         {
-            property: "pressureKPA",
-            title: "Pressure",
+            property: "minPressureKPA",
+            title: "Min. Pressure",
             hasDefault: false,
             isCalculated: false,
             requiresInput: true,
             type: FieldType.Number,
             params: { min: 0, max: null },
-            multiFieldId: "pressureKPA",
+            multiFieldId: "minPressureKPA",
+            units: Units.KiloPascals,
+        },
+
+
+        {
+            property: "maxPressureKPA",
+            title: "Max. Pressure",
+            hasDefault: false,
+            isCalculated: false,
+            requiresInput: true,
+            type: FieldType.Number,
+            params: { min: 0, max: null },
+            multiFieldId: "maxPressureKPA",
             units: Units.KiloPascals,
         },
 

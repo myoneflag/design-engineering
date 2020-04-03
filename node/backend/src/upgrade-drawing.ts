@@ -5,7 +5,7 @@ import { Operation } from "../../common/src/models/Operation";
 import { OPERATION_NAMES } from "../../common/src/api/document/operation-transforms";
 import { applyDiffNative } from "../../common/src/api/document/state-ot-apply";
 import {
-    CURRENT_VERSION, upgrade10to11,
+    CURRENT_VERSION, upgrade10to11, upgrade11to12,
     upgrade4to5,
     upgrade5to6,
     upgrade6to7,
@@ -75,6 +75,9 @@ export async function upgradeDocument(doc: Document) {
                         break;
                     case 10:
                         upgrade10to11(newUpgraded);
+                        break;
+                    case 11:
+                        upgrade11to12(newUpgraded);
                         break;
                     case CURRENT_VERSION:
                         break;
