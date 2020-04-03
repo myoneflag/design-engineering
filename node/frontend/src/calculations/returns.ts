@@ -18,6 +18,9 @@ import PlantEntity, { fillPlantDefaults } from "../../../common/src/api/document
 import { interpolateTable } from "../../../common/src/lib/utils";
 import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
+import BigValve from "../htmlcanvas/objects/big-valve/bigValve";
+import { BigValveType } from "../../../common/src/api/document/entities/big-valve/big-valve-entity";
+import { StandardFlowSystemUids } from "../store/catalog";
 
 export interface ReturnRecord {
     spTree: SPTree<Edge<string, FlowEdge>>;
@@ -359,6 +362,8 @@ function setFlowRatesNode(
                     let propHeatLoss = 0;
                     if (totalHeatLossWATT) {
                         propHeatLoss = currFlowRate * thisHeatLossWATT / totalHeatLossWATT;
+                    } else if (totalHeatLossWATT === 0) {
+                        propHeatLoss = currFlowRate / currNode.siblings.length;
                     }
 
                     const tmp = setFlowRatesNode(context, filledReturn, n, propHeatLoss, heatLossCache);
@@ -383,6 +388,7 @@ function setFlowRatesNode(
         case "leaf":
             // physically set the flow rate for the pipe.
             if (currNode.edgeConcrete.value.type === EdgeType.PIPE) {
+                console.log('setting pipe return flow rate ' + currFlowRate);
                 const pipe = context.globalStore.get(currNode.edgeConcrete.value.uid) as Pipe;
                 const filled = fillPipeDefaultFields(context.drawing, pipe.computedLengthM, pipe.entity);
                 const pCalc = context.globalStore.getOrCreateCalculation(pipe.entity);
@@ -408,6 +414,26 @@ function setFlowRatesNode(
                     res = null;
                 } else {
                     res = Math.abs(pCalc.realNominalPipeDiameterMM - origSize);
+                }
+            } else if ((currNode.edgeConcrete.value.type === EdgeType.BIG_VALVE_HOT_HOT
+                || currNode.edgeConcrete.value.type === EdgeType.BIG_VALVE_HOT_WARM)
+            ) {
+                // Size the RPZDs too
+                const o = context.globalStore.get(currNode.edgeConcrete.value.uid) as BigValve;
+                const calc = context.globalStore.getOrCreateCalculation(o.entity);
+                if (o.entity.valve.type === BigValveType.RPZD_HOT_COLD) {
+                    calc.hotReturnFlowRateLS = currFlowRate;
+                    console.log('setting RPZD return flow rate ' + currFlowRate);
+                    if (calc.hotPeakFlowRate !== null) {
+                        if (filledReturn.addReturnToPSDFlowRate) {
+                            calc.hotTotalFlowRateLS = calc.hotPeakFlowRate + calc.hotReturnFlowRateLS;
+                        }
+                    }
+                    calc.rpzdSizeMM![StandardFlowSystemUids.HotWater] = context.sizeRpzdForFlowRate(
+                        o.entity.valve.catalogId,
+                        ValveType.RPZD_SINGLE,
+                        calc.hotTotalFlowRateLS!,
+                    );
                 }
             }
             break;

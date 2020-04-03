@@ -1495,6 +1495,7 @@ export default class CalculationEngine {
                 ) {
                     calculation.hotPsdUs = psdU;
                     calculation.hotPeakFlowRate = flowRate ? flowRate.flowRateLS : null;
+                    calculation.hotTotalFlowRateLS = calculation.hotPeakFlowRate;
                 } else {
                     throw new Error("invalid edge in TMV");
                 }

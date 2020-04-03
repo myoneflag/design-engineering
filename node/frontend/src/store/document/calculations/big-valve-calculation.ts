@@ -20,6 +20,8 @@ export default interface BigValveCalculation extends Calculation {
     hotRawPeakFlowRate: number | null;
     hotPeakFlowRate: number | null;
     hotPsdUs: PsdCountEntry | null;
+    hotReturnFlowRateLS: number | null;
+    hotTotalFlowRateLS: number | null;
 
     outputs: {
         [key: string]: {
@@ -99,6 +101,8 @@ export function EmptyBigValveCalculations(entity: BigValveEntity): BigValveCalcu
         hotRawPeakFlowRate: null,
         hotPeakFlowRate: null,
         hotPsdUs: null,
+        hotTotalFlowRateLS: null,
+        hotReturnFlowRateLS: null,
 
         outputs: {},
         rpzdSizeMM: {},
