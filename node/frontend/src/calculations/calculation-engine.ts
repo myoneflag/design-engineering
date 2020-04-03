@@ -873,12 +873,13 @@ export default class CalculationEngine {
                             const hl = getObjectFrictionHeadLoss(
                                 this,
                                 obj,
-                                fr,
+                                fr + 1,
                                 flowFrom,
                                 flowTo,
                                 true,
                                 finalPressureKPA
                             );
+                            console.log('big valve head loss: ' + hl + ' type: ' + obj.entity.valve.type + ' ' + fr + ' ' + finalPressureKPA + ' ' + JSON.stringify(flowFrom));
                             return hl === null
                                 ? -Infinity
                                 : head2kpa(

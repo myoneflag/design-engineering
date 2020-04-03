@@ -203,6 +203,7 @@ export function getRpzdHeadLoss(
 
     const plKPA = interpolateTable(rpzdEntry.pressureLossKPAByFlowRateLS, flowLS, true);
     if (plKPA === null) {
+        console.log('flow rate not found on pressure loss table: ' + flowLS + ' ' + size);
         return null;
     }
 
