@@ -9,7 +9,7 @@ import { DrawableEntityConcrete } from "./document/entities/concrete-entity";
 import { FlowConfiguration } from "./document/entities/big-valve/big-valve-entity";
 import uuid from "uuid";
 import { cloneSimple } from "../lib/utils";
-import FlowSourceEntityV11 from "./document/entities/flow-source-entity";
+import { FlowSourceEntityV11 } from "./document/entities/flow-source-entity";
 
 // This file is for managing upgrades between versions.
 // Remember to copy this directory before developing a major change, and bump the api version number, then
@@ -216,9 +216,9 @@ export function upgrade11to12(original: DrawingState) {
         const entities = level.entities;
         for (const e of Object.values(entities)) {
             if (e.type === EntityType.FLOW_SOURCE) {
-                if (e.minPressureKPA === undefined || e.maxPressureKPA === undefined && (e as FlowSourceEntityV11).pressureKPA !== undefined) {
-                    e.minPressureKPA = e.maxPressureKPA = e.pressureKPA;
-                    delete e.pressureKPA;
+                if (e.minPressureKPA === undefined || e.maxPressureKPA === undefined && (e as any as FlowSourceEntityV11).pressureKPA !== undefined) {
+                    e.minPressureKPA = e.maxPressureKPA = (e as any as FlowSourceEntityV11).pressureKPA;
+                    delete (e as any as FlowSourceEntityV11).pressureKPA;
                 }
             }
         }
