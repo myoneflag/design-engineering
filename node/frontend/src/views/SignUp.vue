@@ -28,17 +28,6 @@ import {AccessLevel} from "../../../backend/src/entity/User"; import {AccessLeve
                             <b-form-group :label-cols="2" label="Password">
                                 <b-form-input type="password" v-model="password"></b-form-input>
                             </b-form-group>
-                            <b-button-group>
-                                <b-button
-                                    v-for="a in levels"
-                                    @click="user.accessLevel = a.level"
-                                    :disabled="a.disabled"
-                                    :pressed="a.level === user.accessLevel"
-                                    :variant="a.level === user.accessLevel ? 'primary' : 'info'"
-                                    :key="a.name"
-                                    >{{ a.name }}
-                                </b-button>
-                            </b-button-group>
                         </b-form>
                         <b-button variant="success" style="margin-top:50px" @click="create">Sign Up for Greatness!</b-button>
                     </template>
@@ -54,7 +43,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import MainNavBar from "../components/MainNavBar.vue";
 import { AccessLevel, User as IUser } from "../../../common/src/models/User";
-import { userSignUp } from "../api/users";
+import { signUp } from "../api/users";
 
 @Component({
     components: { MainNavBar }
@@ -80,13 +69,11 @@ export default class CreateUser extends Vue {
     password: string = "";
 
     create() {
-        userSignUp(
+        signUp(
             this.user.username,
             this.user.name,
             this.user.email || undefined,
-            this.user.subscribed,
             this.password,
-            this.user.accessLevel,
             this.organization || undefined
         ).then((res) => {
             if (res.success) {
@@ -102,31 +89,6 @@ export default class CreateUser extends Vue {
 
     get profile(): IUser {
         return this.$store.getters["profile/profile"];
-    }
-
-    get levels() {
-        if (this.profile) {
-            return [
-                {
-                    name: "SUPERUSER",
-                    level: AccessLevel.SUPERUSER,
-                    disabled: this.profile.accessLevel > AccessLevel.SUPERUSER
-                },
-                { name: "ADMIN", level: AccessLevel.ADMIN, disabled: this.profile.accessLevel >= AccessLevel.ADMIN },
-                {
-                    name: "MANAGER",
-                    level: AccessLevel.MANAGER,
-                    disabled: this.profile.accessLevel > AccessLevel.ADMIN
-                },
-                { name: "USER", level: AccessLevel.USER, disabled: this.profile.accessLevel > AccessLevel.ADMIN }
-            ];
-        } else {
-            return [];
-        }
-    }
-
-    get AccessLevel() {
-        return AccessLevel;
     }
 }
 </script>
