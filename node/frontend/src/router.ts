@@ -18,6 +18,7 @@ import User from "./views/User.vue";
 import Contacts from "./views/Contacts.vue";
 import Errors from "./views/Errors.vue";
 import ViewError from "./views/Error.vue";
+import SignUp from "./views/SignUp.vue"
 import ProfileState from "./store/profile/types";
 Vue.use(Router);
 
@@ -217,6 +218,12 @@ const router = new Router({
             path: "/login",
             name: "login",
             component: Login
+        },
+
+        {
+            path: "/signUp",
+            name: "signUp",
+            component: SignUp
         },
 
         {

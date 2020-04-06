@@ -12,7 +12,7 @@ export class UserController {
     @ApiHandleError()
     @AuthRequired(AccessLevel.ADMIN)
     public async create(req: Request, res: Response, next: NextFunction, session: Session) {
-        const {username, name, accessLevel, organization, password, email, subscribed} = req.body;
+        const {username, name, accessLevel, organization, password, email, subscribed, temporaryUser} = req.body;
         const thisUser = await session.user;
         if (accessLevel <= thisUser.accessLevel && thisUser.accessLevel !== AccessLevel.SUPERUSER) {
             res.status(401).send({
@@ -23,7 +23,7 @@ export class UserController {
         }
 
         let associate: Organization;
-        if (organization) {
+        if (organization && !temporaryUser) {
             let success = false;
             await withOrganization(organization, res, session, AccessType.UPDATE, async (org) => {
                 success = true;
@@ -34,7 +34,6 @@ export class UserController {
             }
         }
 
-
         if (await User.findOne({username})) {
             res.status(400).send({
                 success: false,
@@ -44,9 +43,15 @@ export class UserController {
         }
 
         const user = await registerUser(username, name, email, subscribed, password, accessLevel);
-        user.organization = associate;
+        user.temporaryOrganizationName = organization;
+        user.temporaryUser = temporaryUser;
+        if (organization && !temporaryUser){
+            user.organization = associate;
+        }
         await user.save();
-        await associate.save()
+        if (!temporaryUser){
+            await associate.save()
+        }
 
         res.status(200).send({
             success: true,
