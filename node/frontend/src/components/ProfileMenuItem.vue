@@ -82,7 +82,9 @@ export default class ProfileMenuItem extends Vue {
                 eulaAccepted: false,
                 eulaAcceptedOn: null,
                 lastActivityOn: null,
-                lastNoticeSeenOn: null
+                lastNoticeSeenOn: null,
+                temporaryOrganizationName: null,
+                temporaryUser: false,
             };
         } else {
             return profile;

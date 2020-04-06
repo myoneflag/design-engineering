@@ -86,7 +86,9 @@ export default class CreateUser extends Vue {
         eulaAccepted: false,
         eulaAcceptedOn: null,
         lastActivityOn: null,
-        lastNoticeSeenOn: null
+        lastNoticeSeenOn: null,
+        temporaryOrganizationName: null,
+        temporaryUser: false
     };
 
     organization: string = "";
