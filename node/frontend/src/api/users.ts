@@ -35,7 +35,8 @@ export async function createUser(
     subscribed: boolean,
     password: string,
     accessLevel: AccessLevel,
-    organization?: string
+    organization?: string,
+    temporayUser: boolean = false,
 ): Promise<APIResult<User>> {
     try {
         return (
@@ -46,7 +47,8 @@ export async function createUser(
                 password,
                 accessLevel,
                 organization,
-                subscribed
+                subscribed,
+                temporayUser
             })
         ).data;
     } catch (e) {
@@ -57,6 +59,19 @@ export async function createUser(
         }
     }
 }
+
+export async function userSignUp(
+    username: string,
+    name: string,
+    email: string | undefined,
+    subscribed: boolean,
+    password: string,
+    accessLevel: AccessLevel,
+    organization?: string,
+): Promise<APIResult<User>> {
+    return createUser(username, name, email, subscribed, password, accessLevel, organization, true);
+}
+
 
 export async function updateUser(
     username: string,

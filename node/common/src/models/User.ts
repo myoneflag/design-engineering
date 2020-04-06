@@ -47,6 +47,12 @@ export class User extends BaseEntity {
 
     @Column({ nullable: true })
     lastNoticeSeenOn: Date | null;
+
+    @Column({ nullable: true })
+    temporaryOrganizationName: String | null;
+
+    @Column({ default: false })
+    temporaryUser: boolean | null;
 }
 
 export function allUserFields(except?: Array<keyof User>) {
