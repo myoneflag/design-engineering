@@ -1,5 +1,3 @@
-import {AccessLevel} from "../../../backend/src/entity/User"; import {AccessLevel} from
-"../../../backend/src/entity/User"; import {AccessLevel} from "../../../backend/src/entity/User";
 <template>
     <div>
         <MainNavBar></MainNavBar>
@@ -19,6 +17,10 @@ import {AccessLevel} from "../../../backend/src/entity/User"; import {AccessLeve
 
                             <b-form-group :label-cols="2" label="Email">
                                 <b-form-input required="false" type="email" v-model="user.email"></b-form-input>
+                            </b-form-group>
+
+                            <b-form-group :label-cols="2" label="Organization Name or Organization ID">
+                                <b-form-input v-model="organization"></b-form-input>
                             </b-form-group>
 
                             <b-form-group :label-cols="2" label="Password">
