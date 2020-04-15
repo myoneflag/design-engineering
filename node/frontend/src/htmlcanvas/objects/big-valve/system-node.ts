@@ -32,7 +32,7 @@ import { Coord } from "../../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../../common/src/lib/utils";
 
 @CalculatedObject
-@ConnectableObject
+@ConnectableObject()
 @CenteredObjectNoParent
 export default class SystemNode extends InvisibleNode<SystemNodeEntity> implements Centered, Calculated {
     static register(): void {

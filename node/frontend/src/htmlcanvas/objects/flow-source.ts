@@ -34,7 +34,7 @@ import { SnappableObject } from "../lib/object-traits/snappable-object";
 @CalculatedObject
 @SelectableObject
 @CenterDraggableObject
-@ConnectableObject
+@ConnectableObject()
 @CenteredObject
 @SnappableObject
 export default class FlowSource extends BackedConnectable<FlowSourceEntity> implements Connectable, Calculated {

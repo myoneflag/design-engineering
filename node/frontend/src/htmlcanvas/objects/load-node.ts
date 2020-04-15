@@ -31,7 +31,7 @@ import { SnappableObject } from "../lib/object-traits/snappable-object";
 @SelectableObject
 @CenterDraggableObject
 @CalculatedObject
-@ConnectableObject
+@ConnectableObject({customCopyObjects: true})
 @CenteredObject
 @SnappableObject
 export default class LoadNode extends BackedConnectable<LoadNodeEntity> implements Calculated, Connectable {
@@ -206,5 +206,14 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
 
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
         return [];
+    }
+
+
+    getCopiedObjects(): BaseBackedObject[] {
+        const res: BaseBackedObject[] = [this];
+        if (this.entity.linkedToUid) {
+            res.push(this.globalStore.get(this.entity.linkedToUid)!);
+        }
+        return res;
     }
 }
