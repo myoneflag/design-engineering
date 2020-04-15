@@ -348,4 +348,8 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             }
         }
     }
+
+    getCopiedObjects(): BaseBackedObject[] {
+        return [this, ...this.getInletsOutlets()];
+    }
 }

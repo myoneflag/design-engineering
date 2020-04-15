@@ -33,7 +33,7 @@ import { SnappableObject } from "../lib/object-traits/snappable-object";
 @CalculatedObject
 @SelectableObject
 @CenterDraggableObject
-@ConnectableObject
+@ConnectableObject()
 @CenteredObjectNoParent
 @SnappableObject
 export default class Riser extends BackedConnectable<RiserEntity> implements Connectable, Calculated {

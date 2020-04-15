@@ -40,7 +40,7 @@ import { SnappableObject } from "../lib/object-traits/snappable-object";
 @CalculatedObject
 @SelectableObject
 @CenterDraggableObject
-@ConnectableObject
+@ConnectableObject()
 @CenteredObject
 @SnappableObject
 export default class Fitting extends BackedConnectable<FittingEntity> implements Connectable, Calculated {
