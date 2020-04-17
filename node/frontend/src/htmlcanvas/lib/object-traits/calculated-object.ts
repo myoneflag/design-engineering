@@ -16,7 +16,7 @@ import { EntityType } from "../../../../../common/src/api/document/entities/type
 import { CalculationConcrete } from "../../../store/document/calculations/calculation-concrete";
 import { NoFlowAvailableReason } from "../../../store/document/calculations/pipe-calculation";
 import { assertUnreachable } from "../../../../../common/src/api/config";
-import { convertMeasurementSystem } from "../../../calculations/measurement";
+import { convertMeasurementSystem } from "../../../../../common/src/lib/measurements";
 
 export interface Calculated {
     drawCalculationBox(

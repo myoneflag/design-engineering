@@ -12,11 +12,10 @@ import BigValveEntity, {
     TemperingValve,
     TmvValve
 } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
-import { StandardFlowSystemUids } from "../../../src/store/catalog";
 import BigValve from "../objects/big-valve/bigValve";
 import { KeyCode } from "../../../src/htmlcanvas/utils";
 import connectBigValveToSource from "../lib/black-magic/connect-big-valve-to-source";
-import { assertUnreachable } from "../../../../common/src/api/config";
+import { assertUnreachable, StandardFlowSystemUids } from "../../../../common/src/api/config";
 import { Coord } from "../../../../common/src/api/document/drawing";
 import SnappingInsertTool from "./snapping-insert-tool";
 

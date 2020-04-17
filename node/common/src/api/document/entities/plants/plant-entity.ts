@@ -4,7 +4,7 @@ import { CenteredEntity, Coord, DrawingState, FlowSystemParameters } from "../..
 import { cloneSimple } from "../../../../lib/utils";
 import { PlantConcrete, PlantType, PressureMethod } from "./plant-types";
 import { assertUnreachable } from "../../../config";
-import { Units } from "../../../../../../frontend/src/store/document/calculations/calculation-field";
+import { Units } from "../../../../lib/measurements";
 
 export interface PlantEntityV8 extends CenteredEntity {
     type: EntityType.PLANT;

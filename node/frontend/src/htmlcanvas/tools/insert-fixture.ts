@@ -10,9 +10,8 @@ import {
     FlowConfiguration,
     SystemNodeEntity
 } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
-import { StandardFlowSystemUids } from "../../../src/store/catalog";
 import { KeyCode } from "../../../src/htmlcanvas/utils";
-import { SupportedPsdStandards } from "../../../../common/src/api/config";
+import { StandardFlowSystemUids, SupportedPsdStandards } from "../../../../common/src/api/config";
 import { Coord } from "../../../../common/src/api/document/drawing";
 import { parseCatalogNumberExact } from "../../../../common/src/lib/utils";
 import SnappingInsertTool from "./snapping-insert-tool";

@@ -1,5 +1,4 @@
-import { FieldCategory, CalculationField, Units } from "../../../../src/store/document/calculations/calculation-field";
-import { StandardFlowSystemUids } from "../../../../src/store/catalog";
+import { FieldCategory, CalculationField} from "../../../../src/store/document/calculations/calculation-field";
 import {
     addPressureCalculationFields,
     Calculation,
@@ -8,6 +7,8 @@ import {
 import FixtureEntity from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
 import { DocumentState } from "../types";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
+import { Units } from "../../../../../common/src/lib/measurements";
+import { StandardFlowSystemUids } from "../../../../../common/src/api/config";
 
 export default interface FixtureCalculation extends Calculation {
     inlets: {

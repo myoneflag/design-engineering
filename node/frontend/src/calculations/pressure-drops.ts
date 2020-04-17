@@ -1,10 +1,6 @@
-import pipe from "../../src/htmlcanvas/objects/pipe";
 import { DocumentState } from "../../src/store/document/types";
 import { Catalog } from "../../../common/src/api/catalog/types";
-import { parseCatalogNumberExact } from "../../../common/src/lib/utils";
-
-export const EPS = 1e-8;
-export const EPS_ABS = 1e-8;
+import { EPS, EPS_ABS, parseCatalogNumberExact } from "../../../common/src/lib/utils";
 
 export function getReynoldsNumber(
     densityKGM3: number,

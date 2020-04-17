@@ -212,3 +212,6 @@ export function upperBoundTable<T>(
 
     return lowValue;
 }
+
+export const EPS_ABS = 1e-8;
+export const EPS = 1e-8;

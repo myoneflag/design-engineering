@@ -15,9 +15,9 @@ import { cloneSimple } from "../../../../common/src/lib/utils";
 import { moveOnto } from "../lib/black-magic/move-onto";
 import { BaseBackedConnectable } from "../lib/BackedConnectable";
 import { KeyCode } from "../utils";
-import { StandardFlowSystemUids } from "../../store/catalog";
 import Flatten from "@flatten-js/core";
 import SnappingInsertTool from "./snapping-insert-tool";
+import { StandardFlowSystemUids } from "../../../../common/src/api/config";
 
 export const DWELLING_PAIR_DEFAULT_DISTANCE_MM = 200;
 

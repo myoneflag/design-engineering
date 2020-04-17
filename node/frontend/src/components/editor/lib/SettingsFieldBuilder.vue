@@ -159,8 +159,11 @@ import { isString } from "lodash";
 import { getPropertyByString, setPropertyByString } from "../../../lib/utils";
 import { Choice, cloneSimple } from "../../../../../common/src/lib/utils";
 import { PropertyField } from "../../../../../common/src/api/document/entities/property-field";
-import { convertMeasurementSystem, convertMeasurementToMetric } from "../../../calculations/measurement";
-import { Units } from "../../../store/document/calculations/calculation-field";
+import {
+    convertMeasurementSystem,
+    convertMeasurementToMetric,
+    Units
+} from "../../../../../common/src/lib/measurements";
 
 @Component({
     props: {

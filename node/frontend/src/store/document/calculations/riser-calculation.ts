@@ -1,4 +1,4 @@
-import { CalculationField, FieldCategory, Units } from "../../../../src/store/document/calculations/calculation-field";
+import { CalculationField, FieldCategory} from "../../../../src/store/document/calculations/calculation-field";
 import {
     addPressureCalculationFields,
     Calculation,
@@ -10,6 +10,7 @@ import RiserEntity from "../../../../../common/src/api/document/entities/riser-e
 import { getPsdUnitName, PsdCountEntry } from "../../../calculations/utils";
 import { isSupportedDwellingStandard } from "../../../config";
 import { DrawingState } from "../../../../../common/src/api/document/drawing";
+import { Units } from "../../../../../common/src/lib/measurements";
 
 export default interface RiserCalculation extends Calculation {
     heights: {

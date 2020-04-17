@@ -5,11 +5,14 @@
   "main": "src/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "nodemon ./dist/backend/src/index.js --exec babel-node --ignore asdf ./dist/backend/src/index.js",
+    "start": "nodemon ./dist/backend/src/index.js",
     "dev": "nodemon --exec ts-node -- ./src/index.ts",
     "prod": "npm run build && npm run start",
     "clean": "rm -rf node_modules coverage dist .nyc_output",
-    "lint": "tslint -t stylish --project \"tsconfig.json\""
+    "lint": "tslint -t stylish --project \"tsconfig.json\"",
+    "migration:generate": "ts-node ../node_modules/typeorm/cli.js migration:generate -n",
+    "migration:run": "ts-node ../node_modules/typeorm/cli.js migration:run",
+    "migration:revert": "ts-node ../node_modules/typeorm/cli.js migration:revert"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +23,7 @@
     "@babel/node": "^7.0.0",
     "@babel/polyfill": "^7.0.0",
     "@babel/preset-env": "^7.1.0",
+    "@stomp/stompjs": "^5.4.4",
     "@types/aws-sdk": "^2.7.0",
     "@types/bcrypt": "^3.0.0",
     "@types/cookie-parser": "^1.4.2",
@@ -32,6 +36,7 @@
     "@types/morgan": "^1.7.37",
     "@types/nodemailer": "^6.2.2",
     "@types/p-limit": "^2.2.0",
+    "@types/retry": "^0.12.0",
     "@types/uuid": "^3.4.6",
     "aws-sdk": "^2.597.0",
     "bcrypt": "^3.0.7",
@@ -62,9 +67,11 @@
     "pdfreader": "^1.0.6",
     "pg": "^7.3.0",
     "reflect-metadata": "^0.1.10",
+    "retry": "^0.12.0",
     "tslib": "^1.10.0",
     "uuid": "^3.3.3",
-    "webpack": "^4.41.2"
+    "webpack": "^4.41.2",
+    "ws": "^7.2.3"
   },
   "devDependencies": {
     "@types/dotenv": "^4.0.3",

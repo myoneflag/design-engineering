@@ -1,10 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, ManyToOne } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, ManyToOne, Index } from "typeorm";
 import { BaseEntity } from "typeorm";
 import { Document } from "./Document";
 import { OperationTransformConcrete } from "../api/document/operation-transforms";
 import { User } from "./User";
 
 @Entity()
+@Index(['document', 'orderIndex'])
 export class Operation extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;

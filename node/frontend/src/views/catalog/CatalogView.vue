@@ -79,9 +79,8 @@ import { getPropertyByString } from "../../lib/utils";
 import { RawLocation } from "vue-router";
 import { Catalog } from "../../../../common/src/api/catalog/types";
 import { DocumentState } from "../../store/document/types";
-import { convertMeasurementSystem } from "../../calculations/measurement";
-import { Units } from "../../store/document/calculations/calculation-field";
 import { cloneSimple } from "../../../../common/src/lib/utils";
+import { convertMeasurementSystem, Units } from "../../../../common/src/lib/measurements";
 @Component({
     components: { MainNavBar },
     props: {

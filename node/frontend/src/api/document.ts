@@ -1,4 +1,9 @@
-import { APIResult, DocumentWSMessage, DocumentWSMessageType } from "../../../common/src/api/document/types";
+import {
+    APIResult,
+    DocumentClientMessage,
+    DocumentClientMessageSingle,
+    DocumentWSMessageType
+} from "../../../common/src/api/document/types";
 import * as OT from "../../../common/src/api/document/operation-transforms";
 import axios from "axios";
 import { Document } from "../../../common/src/models/Document";
@@ -7,6 +12,7 @@ import { GeneralInfo } from "../../../common/src/api/document/drawing";
 import { OperationTransformConcrete } from "../../../common/src/api/document/operation-transforms";
 import { Operation } from "../../../common/src/models/Operation";
 import { cooperativeYield } from "../htmlcanvas/utils";
+import { assertUnreachable } from "../../../common/src/api/config";
 
 const wss = new Map<number, WebSocket>();
 
@@ -26,7 +32,7 @@ export function openDocument(
 
     ws.onmessage = (wsmsg: MessageEvent) => {
         if (wsmsg.type === "message") {
-            const data: DocumentWSMessage = JSON.parse(wsmsg.data as string);
+            const data: DocumentClientMessage = JSON.parse(wsmsg.data as string);
             data.forEach((msg) => {
                 switch (msg.type) {
                     case DocumentWSMessageType.OPERATION:
@@ -38,6 +44,11 @@ export function openDocument(
                     case DocumentWSMessageType.DOCUMENT_LOADED:
                         onLoaded();
                         break;
+                    case DocumentWSMessageType.DOCUMENT_ERROR:
+                        onError(msg.message);
+                        break;
+                    default:
+                        assertUnreachable(msg);
                 }
             });
         } else {

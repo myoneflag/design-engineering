@@ -1,7 +1,7 @@
 import { FieldType, PropertyField } from "./property-field";
 import { EntityType } from "./types";
 import { CenteredEntity, Color, DrawableEntity, FlowSystemParameters } from "../drawing";
-import { Units } from "../../../../../frontend/src/store/document/calculations/calculation-field";
+import { Units } from "../../../lib/measurements";
 
 export enum NodeType {
     LOAD_NODE,

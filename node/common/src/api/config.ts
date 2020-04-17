@@ -287,3 +287,15 @@ export const COMPONENT_PRESSURE_LOSS_METHODS: Choice[] = [
 ];
 
 export const LEVEL_HEIGHT_DIFF_M = 3;
+export const CURRENT_VERSION = 12;
+
+export enum StandardFlowSystemUids {
+    ColdWater = "cold-water",
+    HotWater = "hot-water",
+    WarmWater = "warm-water"
+}
+
+export enum StandardMaterialUids {
+    Copper = "copperTypeB",
+    Pex = "pexSdr74"
+}

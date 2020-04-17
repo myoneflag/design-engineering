@@ -25,10 +25,9 @@ import {
 } from "../../../../common/src/api/document/entities/concrete-entity";
 import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
 import FlowSourceEntity from "../../../../common/src/api/document/entities/flow-source-entity";
-import { EPS } from "../../calculations/pressure-drops";
 import FlowSourceCalculation from "../../store/document/calculations/flow-source-calculation";
 import { Coord, FlowSystemParameters, NetworkType } from "../../../../common/src/api/document/drawing";
-import { cloneSimple } from "../../../../common/src/lib/utils";
+import { cloneSimple, EPS } from "../../../../common/src/lib/utils";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 
 @CalculatedObject

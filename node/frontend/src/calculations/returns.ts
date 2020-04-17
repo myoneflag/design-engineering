@@ -1,7 +1,7 @@
 import { EntityType } from "../../../common/src/api/document/entities/types";
 import { PlantType, ReturnSystemPlant } from "../../../common/src/api/document/entities/plants/plant-types";
 import Graph, { Edge } from "./graph";
-import { assertUnreachable } from "../../../common/src/api/config";
+import { assertUnreachable, StandardFlowSystemUids } from "../../../common/src/api/config";
 import PipeEntity, { fillPipeDefaultFields } from "../../../common/src/api/document/entities/pipe-entity";
 import { Configuration, NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
 import CalculationEngine, { EdgeType, FlowEdge, FlowNode } from "./calculation-engine";
@@ -20,7 +20,6 @@ import { ValveType } from "../../../common/src/api/document/entities/directed-va
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
 import BigValve from "../htmlcanvas/objects/big-valve/bigValve";
 import { BigValveType } from "../../../common/src/api/document/entities/big-valve/big-valve-entity";
-import { StandardFlowSystemUids } from "../store/catalog";
 
 export interface ReturnRecord {
     spTree: SPTree<Edge<string, FlowEdge>>;

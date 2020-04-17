@@ -1,4 +1,4 @@
-import { FieldCategory, CalculationField, Units } from "../../../../src/store/document/calculations/calculation-field";
+import { FieldCategory, CalculationField} from "../../../../src/store/document/calculations/calculation-field";
 import {
     addPressureCalculationFields,
     Calculation,
@@ -7,6 +7,7 @@ import {
 } from "../../../../src/store/document/calculations/types";
 import FittingEntity from "../../../../../common/src/api/document/entities/fitting-entity";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
+import { Units } from "../../../../../common/src/lib/measurements";
 
 export default interface FittingCalculation extends
     Calculation,

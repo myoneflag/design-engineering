@@ -3,9 +3,43 @@ import {
     UnitsParameters,
     VelocityMeasurementSystem,
     VolumeMeasurementSystem
-} from "../../../common/src/api/document/drawing";
-import { Units } from "../store/document/calculations/calculation-field";
-import { assertUnreachable } from "../../../common/src/api/config";
+} from "../api/document/drawing";
+import { assertUnreachable } from "../api/config";
+
+export enum Units {
+    None = "",
+
+    // Metric
+    LitersPerSecond = "L/s",
+    Millimeters = "mm",
+    Meters = "m",
+    KiloPascals = "kPa",
+    MetersPerSecond = "m/s",
+    MetersPerSecondSquared = "m/s\u0178",
+    Celsius = "\u00B0C",
+    KiloWatts = "kW",
+    Kv = "Kv",
+    Liters = "L",
+
+    // Imperial equivalents where applicable
+    GallonsPerMinute = "gal/min",
+    USGallonsPerMinute = "US gal/min", // wtf usa
+    Inches = "in",
+    Feet = "ft",
+    FeetPerSecondSquared = "ftt/s\u0178",
+    Psi = "psi",
+    FeetPerSecond = "ft/s",
+    Fahrenheit = "\u00B0F",
+    // keep it at kilowatts
+    // Kv is unitless
+    Gallons = "gal",
+    USGallons = "US gal", // wtf usa
+
+    PipeDiameterMM = "pmm",
+
+    // April Fools
+    FurlongsPerFortnight = "fur/fortn",
+}
 
 export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, units: Units, value: number): [Units, number | string | null] {
     switch (units) {
@@ -224,10 +258,10 @@ export function convertMeasurementToMetric(units: Units, value: number | null) {
             temperatureMeasurementSystem: MeasurementSystem.METRIC,
             velocityMeasurementSystem: VelocityMeasurementSystem.METRIC,
             pressureMeasurementSystem: MeasurementSystem.METRIC,
-            volumeMeasurementSystem: VolumeMeasurementSystem.METRIC,
+            volumeMeasurementSystem: VolumeMeasurementSystem.METRIC
         },
         units,
-        value,
+        value
     );
 }
 
@@ -263,34 +297,34 @@ export function f2C(fahrenheit: number) {
     return (fahrenheit - 32) * 5 / 9;
 }
 
-const validConverts: {[key: number]: string} = {
-    0.25: '1/4',
-    0.5: '1/2',
-    0.75: '3/4',
-    1: '1',
-    1.25: '1 1/4',
-    1.5: '1 1/2',
-    2: '2',
-    2.5: '2 1/2',
-    3: '3',
-    3.5: '3 1/2',
-    4: '4',
-    4.5: '4 1/2',
-    5: '5',
-    5.5: '5.5',
-    6: '6',
-    7: '7',
-    8: '8',
-    9: '9',
-    10: '10',
-    11: '11',
-    12: '12',
-    13: '13',
-    14: '14',
-    15: '15',
-    16: '16',
-    17: '17',
-    18: '18',
+const validConverts: { [key: number]: string } = {
+    0.25: "1/4",
+    0.5: "1/2",
+    0.75: "3/4",
+    1: "1",
+    1.25: "1 1/4",
+    1.5: "1 1/2",
+    2: "2",
+    2.5: "2 1/2",
+    3: "3",
+    3.5: "3 1/2",
+    4: "4",
+    4.5: "4 1/2",
+    5: "5",
+    5.5: "5.5",
+    6: "6",
+    7: "7",
+    8: "8",
+    9: "9",
+    10: "10",
+    11: "11",
+    12: "12",
+    13: "13",
+    14: "14",
+    15: "15",
+    16: "16",
+    17: "17",
+    18: "18"
 };
 
 export function convertPipeDiameterFromMetric(unitPrefs: UnitsParameters, valueMM: number | null): [Units, number | string | null] {

@@ -16,7 +16,7 @@ import { AuthRequired } from "../helpers/withAuth";
 import PQueue from "p-queue";
 import { assertUnreachable } from "../../../common/src/api/config";
 import { FloorPlan } from "../../../common/src/models/FloorPlan";
-import { RenderSize } from "../../../common/src/api/document/types";
+import { RENDER_SIZES, RenderSize } from "../../../common/src/api/document/pdf-render-config";
 import { GetObjectRequest } from 'aws-sdk/clients/s3';
 
 async function convertToPng(pdfPath: string, pngHash: string, density: number): Promise<string> {
@@ -132,7 +132,7 @@ function formidablePromise(req: Request): Promise<{ fields: Fields, files: Files
 
 const renderQueue = new PQueue({concurrency: 1});
 
-export async function ensurePdfEventuallyLoaded(pdfPath: string, pngHash: string) {
+export async function configureFloorPlanRenders(pdfPath: string, pngHash: string) {
     const floorPlans = await FloorPlan.findByIds([pngHash]);
     let floorPlan: FloorPlan;
     if (floorPlans.length) {
@@ -148,66 +148,27 @@ export async function ensurePdfEventuallyLoaded(pdfPath: string, pngHash: string
     const width = Number(widthS);
     const height = Number(heightS);
 
-    for (const size of [RenderSize.SMALL, RenderSize.MEDIUM, RenderSize.LARGE]) {
-        if (floorPlan.renders.bySize.hasOwnProperty(size)) {
+    for (const {suffix, density, id} of RENDER_SIZES) {
+        if (floorPlan.renders.bySize.hasOwnProperty(id)) {
             return;
         }
 
         // We can predict the width of the PDF so we should make that available to the frontend before the render
         // finishes.
 
-        let ext: string;
-        let density: number;
-        switch (size) {
-            case RenderSize.SMALL:
-                ext = '-small';
-                density = 20;
-                break;
-            case RenderSize.MEDIUM:
-                ext = '-medium';
-                density = 72;
-                break;
-            case RenderSize.LARGE:
-                ext = '-large';
-                density = 200;
-                break;
-            default:
-                assertUnreachable(size);
-        }
 
-        floorPlan.renders.bySize[size] = {
+        floorPlan.renders.bySize[id] = {
             images: [{
                 topLeft: {x: 0, y: 0},
                 width: width / 72 * density,
                 height: height / 72 * density,
-                key: pngHash + ext + '.png',
+                key: pngHash + suffix + '.png',
             }],
             width: width / 72 * density,
             height: height / 72 * density,
         };
 
         await floorPlan.save();
-
-        renderQueue.add(() => convertToPng(pdfPath, pngHash + ext, density)).then(async (pngPath) => {
-
-            const params: AWS.S3.Types.PutObjectRequest = {
-                Bucket: "h2x-pdf-renders",
-                Body: fs.createReadStream(pngPath).on("error", (err) => {
-                    console.log("File error: ", err);
-                }),
-                Key: path.basename(pngPath),
-            };
-            console.log("uploading png");
-            s3.upload(params, (err, data) => {
-                if (err) {
-                    console.log("Error", err);
-                } else if (data) {
-                    console.log("Upload Success", data);
-                }
-            });
-
-
-        });
     }
 
     await floorPlan.save();
@@ -225,7 +186,7 @@ export class PDFController {
         const pngHash = uuid();
 
         const params2: AWS.S3.Types.PutObjectRequest = {
-            Bucket: "h2x-pdf-renders",
+            Bucket: "h2x-pdf",
             Body: fs.createReadStream(pdfPath).on("error", (err) => {
                 console.log("File error: ", err);
             }),
@@ -242,7 +203,7 @@ export class PDFController {
         });
 
 
-        await ensurePdfEventuallyLoaded(pdfPath, pngHash);
+        await configureFloorPlanRenders(pdfPath, pngHash);
 
         const dims = await getPdfDims(pdfPath);
 
@@ -303,7 +264,6 @@ export class PDFController {
                 });
             });
 
-            await ensurePdfEventuallyLoaded('/tmp/' + pdfFile, key);
             fp = await FloorPlan.findOne({id: key});
 
             if (!fp) {

@@ -1,4 +1,5 @@
-import { FlowSystemParameters, UnitsParameters } from "../../../../../common/src/api/document/drawing";
+import { UnitsParameters } from "../../../../../common/src/api/document/drawing";
+import { Units } from "../../../../../common/src/lib/measurements";
 
 export enum FieldCategory {
     Pressure,
@@ -12,41 +13,6 @@ export enum FieldCategory {
     HeatLoss,
     Volume,
     Length,
-}
-
-export enum Units {
-    None = "",
-
-    // Metric
-    LitersPerSecond = "L/s",
-    Millimeters = "mm",
-    Meters = "m",
-    KiloPascals = "kPa",
-    MetersPerSecond = "m/s",
-    MetersPerSecondSquared = "m/s\u0178",
-    Celsius = "\u00B0C",
-    KiloWatts = 'kW',
-    Kv = 'Kv',
-    Liters = 'L',
-
-    // Imperial equivalents where applicable
-    GallonsPerMinute = "gal/min",
-    USGallonsPerMinute = "US gal/min", // wtf usa
-    Inches = 'in',
-    Feet = 'ft',
-    FeetPerSecondSquared = "ftt/s\u0178",
-    Psi = 'psi',
-    FeetPerSecond = 'ft/s',
-    Fahrenheit = '\u00B0F',
-    // keep it at kilowatts
-    // Kv is unitless
-    Gallons = 'gal',
-    USGallons = 'US gal', // wtf usa
-
-    PipeDiameterMM = 'pmm',
-
-    // April Fools
-    FurlongsPerFortnight = 'fur/fortn',
 }
 
 export interface CalculationField {

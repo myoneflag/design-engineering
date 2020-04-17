@@ -156,14 +156,13 @@ import { AutoConnector } from "../../../../src/htmlcanvas/lib/black-magic/auto-c
 import DirectedValveProperties from "../../../../src/components/editor/property-window/DirectedValveProperties.vue";
 import Fixture from "../../../../src/htmlcanvas/objects/fixture";
 import { countPsdUnits, getPsdUnitName, PsdUnitsByFlowSystem } from "../../../../src/calculations/utils";
-import { StandardFlowSystemUids } from "../../../../src/store/catalog";
 import { DrawableEntityConcrete } from "../../../../../common/src/api/document/entities/concrete-entity";
 import LoadNodeProperties from "./LoadNodeProperties.vue";
 import { isCalculated } from "../../../store/document/calculations";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import FlowSourceProperties from "./FlowSourceProperties.vue";
 import PlantProperties from "./PlantProperties.vue";
-import { isGermanStandard } from "../../../../../common/src/api/config";
+import { isGermanStandard, StandardFlowSystemUids } from "../../../../../common/src/api/config";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
 import { DrawableEntity } from "../../../../../common/src/api/document/drawing";
 import { DrawingMode } from "../../../htmlcanvas/types";

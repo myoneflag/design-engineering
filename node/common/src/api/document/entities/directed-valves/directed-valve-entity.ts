@@ -5,8 +5,7 @@ import { assertUnreachable } from "../../../config";
 import { Color, ConnectableEntity, Coord, DrawingState } from "../../drawing";
 import { Catalog } from "../../../catalog/types";
 import { Choice, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../../lib/utils";
-import { Units } from "../../../../../../frontend/src/store/document/calculations/calculation-field";
-import { convertPipeDiameterFromMetric } from "../../../../../../frontend/src/calculations/measurement";
+import { convertPipeDiameterFromMetric, Units } from "../../../../lib/measurements";
 
 export default interface DirectedValveEntity extends ConnectableEntity {
     type: EntityType.DIRECTED_VALVE;

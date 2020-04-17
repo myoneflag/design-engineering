@@ -8,7 +8,6 @@ import {
     FlowConfiguration,
     SystemNodeEntity
 } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
-import { StandardFlowSystemUids } from "../../../src/store/catalog";
 import { KeyCode } from "../../../src/htmlcanvas/utils";
 import PlantEntity from "../../../../common/src/api/document/entities/plants/plant-entity";
 import { Coord } from "../../../../common/src/api/document/drawing";
@@ -17,7 +16,7 @@ import {
     PlantType,
     PressureMethod
 } from "../../../../common/src/api/document/entities/plants/plant-types";
-import { assertUnreachable } from "../../../../common/src/api/config";
+import { assertUnreachable, StandardFlowSystemUids } from "../../../../common/src/api/config";
 import SnappingInsertTool from "./snapping-insert-tool";
 
 export default function insertPlant(context: CanvasContext, angle: number, type: PlantType, inletSystemUid: string, outletSystemUid: string, title: string, rightToLeft: boolean = false) {

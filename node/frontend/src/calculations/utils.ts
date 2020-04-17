@@ -1,6 +1,5 @@
 import { EntityType } from "../../../common/src/api/document/entities/types";
 import { DocumentState } from "../../src/store/document/types";
-import { StandardFlowSystemUids } from "../../src/store/catalog";
 import { fillFixtureFields } from "../../../common/src/api/document/entities/fixtures/fixture-entity";
 import { DwellingStandardType, PSDStandardType } from "../../../common/src/api/catalog/psd-standard/types";
 import { CalculationField } from "../../src/store/document/calculations/calculation-field";
@@ -12,7 +11,6 @@ import { makeFixtureCalculationFields } from "../../src/store/document/calculati
 import { makeDirectedValveCalculationFields } from "../../src/store/document/calculations/directed-valve-calculation";
 import { DrawableEntityConcrete } from "../../../common/src/api/document/entities/concrete-entity";
 import { makeSystemNodeCalculationFields } from "../../src/store/document/calculations/system-node-calculation";
-import { EPS } from "./pressure-drops";
 import { makeLoadNodeCalculationFields } from "../store/document/calculations/load-node-calculation";
 import { NodeType } from "../../../common/src/api/document/entities/load-node-entity";
 import { makeFlowSourceFields } from "../../../common/src/api/document/entities/flow-source-entity";
@@ -20,11 +18,16 @@ import { makeFlowSourceCalculationFields } from "../store/document/calculations/
 import { ObjectStore } from "../htmlcanvas/lib/object-store";
 import { makePlantCalculationFields } from "../store/document/calculations/plant-calculation";
 import { equal } from "assert";
-import { assertUnreachable, isGermanStandard, SupportedPsdStandards } from "../../../common/src/api/config";
+import {
+    assertUnreachable,
+    isGermanStandard,
+    StandardFlowSystemUids,
+    SupportedPsdStandards
+} from "../../../common/src/api/config";
 import { Catalog } from "../../../common/src/api/catalog/types";
 import { determineConnectableNetwork, determineConnectableSystemUid } from "../store/document/entities/lib";
 import {
-    cloneSimple,
+    cloneSimple, EPS,
     interpolateTable,
     lowerBoundTable,
     parseCatalogNumberExact,

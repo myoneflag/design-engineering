@@ -52,7 +52,6 @@ import {
 import FittingCalculation from "../../src/store/document/calculations/fitting-calculation";
 import DirectedValveCalculation from "../../src/store/document/calculations/directed-valve-calculation";
 import SystemNodeCalculation from "../../src/store/document/calculations/system-node-calculation";
-import { StandardFlowSystemUids } from "../../src/store/catalog";
 import { isCalculated } from "../store/document/calculations";
 import DrawableObjectFactory from "../htmlcanvas/lib/drawable-object-factory";
 import { Calculated } from "../htmlcanvas/lib/object-traits/calculated-object";
@@ -65,7 +64,7 @@ import FlowSourceCalculation from "../store/document/calculations/flow-source-ca
 import FlowSource from "../htmlcanvas/objects/flow-source";
 import { makePlantEntityFields } from "../../../common/src/api/document/entities/plants/plant-entity";
 import Plant from "../htmlcanvas/objects/plant";
-import { assertUnreachable, isGermanStandard } from "../../../common/src/api/config";
+import { assertUnreachable, isGermanStandard, StandardFlowSystemUids } from "../../../common/src/api/config";
 import { Catalog, PipeSpec } from "../../../common/src/api/catalog/types";
 import { DrawingState } from "../../../common/src/api/document/drawing";
 import {

@@ -8,13 +8,14 @@ import { AccessLevel, User } from "../../common/src/models/User";
 import { Document } from "../../common/src/models/Document";
 import { upgradeDocument } from "./upgrade-drawing";
 import pLimit from 'p-limit';
+import { DocumentUpgrader, fixOperationIds } from "./services/DocumentUpgrader";
 
 const limit = pLimit(4);
 
 const PORT = CONFIG.PORT;
 Error.stackTraceLimit = Infinity;
 
-async function initializeDatabase() {
+async function ensureInitialUser() {
     const repo = getRepository(User);
     const logins = await User.count();
     if (logins === 0) {
@@ -24,14 +25,12 @@ async function initializeDatabase() {
 
     // migrate old documents
     const docs = await Document.find();
-    await Promise.all(docs.map((doc) => limit(() => upgradeDocument(doc))));
 }
 
 createConnection().then(async (connection) => {
-    await connection.runMigrations({
-        transaction: "each",
-    });
-    await initializeDatabase();
+    await ensureInitialUser();
+    DocumentUpgrader.initialize();
+    // await fixOperationIds();
 
     app.enable("trust proxy");
 
@@ -40,8 +39,9 @@ createConnection().then(async (connection) => {
             return console.log(err);
         }
 
-        console.log("AWS key: " + process.env.AWS_KEY);
-        initializeDatabase();
+        console.log("AWS key: " + process.env.AWS_ACCESS_KEY);
+        console.log("MQ url: " + process.env.MQ_URL);
+        console.log("MQ username: " + process.env.MQ_USERNAME);
 
         console.log(`Server is listening on ${PORT}`);
     });

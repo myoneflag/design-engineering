@@ -1,7 +1,6 @@
 import * as _ from "lodash";
 import { OPERATION_NAMES, OperationTransformConcrete } from "./operation-transforms";
-import { cloneSimple } from "../../lib/utils";
-import { EPS } from "../../../../frontend/src/calculations/pressure-drops";
+import { cloneSimple, EPS } from "../../lib/utils";
 
 // Returns the diff object. If no diff, returns undefined.
 export function diffObject(before: any, after: any, filter: any): any {

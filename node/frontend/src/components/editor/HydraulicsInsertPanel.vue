@@ -263,11 +263,10 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
 import { DocumentState } from "../../store/document/types";
 import { NodeType } from "../../../../common/src/api/document/entities/load-node-entity";
 import { BigValveType } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
-import { SupportedPsdStandards } from "../../../../common/src/api/config";
+import { StandardFlowSystemUids, SupportedPsdStandards } from "../../../../common/src/api/config";
 import { Catalog, FixtureSpec } from "../../../../common/src/api/catalog/types";
 import { FlowSystemParameters, NetworkType } from "../../../../common/src/api/document/drawing";
 import { ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
-import { StandardFlowSystemUids } from "../../store/catalog";
 import { PlantType } from "../../../../common/src/api/document/entities/plants/plant-types";
 
 @Component({

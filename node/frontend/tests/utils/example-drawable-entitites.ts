@@ -1,7 +1,7 @@
 import PipeEntity from '../../../common/src/api/document/entities/pipe-entity';
 import {EntityType} from '../../../common/src/api/document/entities/types';
-import {StandardFlowSystemUids} from '../../src/store/catalog';
 import {BackgroundEntity} from '../../../common/src/api/document/entities/background-entity';
+import { StandardFlowSystemUids } from "../../../common/src/api/config";
 
 export const examplePipeEntity: PipeEntity = {
     calculation: null,

@@ -1,6 +1,4 @@
 import * as _ from "lodash";
-import { applyOpOntoStateVue } from "../../../../frontend/src/store/document/operation-transforms/state-ot-apply";
-import { OperationTransformConcrete } from "./operation-transforms";
 import { cloneSimple } from "../../lib/utils";
 export function applyDiff(
     target: any,

@@ -22,7 +22,6 @@ import {
     FlowConfiguration
 } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import assert from "assert";
-import { StandardFlowSystemUids, StandardMaterialUids } from "../../../../src/store/catalog";
 import { MainEventBus } from "../../../../src/store/main-event-bus";
 import { EntityParam } from "../../../../src/store/document/types";
 import { rebaseAll } from "../../../../src/htmlcanvas/lib/black-magic/rebase-all";
@@ -30,7 +29,7 @@ import connectBigValveToSource from "./connect-big-valve-to-source";
 import BigValve from "../../objects/big-valve/bigValve";
 import RiserEntity, { fillRiserDefaults } from "../../../../../common/src/api/document/entities/riser-entity";
 import { GroupDistCache } from "./group-dist-cache";
-import { assertUnreachable } from "../../../../../common/src/api/config";
+import { assertUnreachable, StandardFlowSystemUids, StandardMaterialUids } from "../../../../../common/src/api/config";
 import { Coord, NetworkType } from "../../../../../common/src/api/document/drawing";
 import { fillDirectedValveFields } from "../../../store/document/entities/fillDirectedValveFields";
 import { fillDefaultLoadNodeFields } from "../../../store/document/entities/fillDefaultLoadNodeFields";

@@ -5,23 +5,40 @@ import { Coord } from "./drawing";
 export enum DocumentWSMessageType {
     OPERATION = "OPERATION",
     DOCUMENT_DELETED = "DOCUMENT_DELETED",
-    DOCUMENT_LOADED = "DOCUMENT_LOADED"
+    DOCUMENT_LOADED = "DOCUMENT_LOADED",
+    DOCUMENT_ERROR = 'DOCUMENT_ERROR',
 }
 
-export interface OperationMessage {
+export interface DocumentMessage {
+    type: DocumentWSMessageType;
+}
+
+export interface OperationMessage extends DocumentMessage {
     type: DocumentWSMessageType.OPERATION;
     operation: OT.OperationTransformConcrete;
 }
 
-export interface DocumentDeletedMessage {
+export interface DocumentErrorMessage extends DocumentMessage  {
+    type: DocumentWSMessageType.DOCUMENT_ERROR;
+    message: string;
+}
+
+export interface DocumentUpdate {
+    type: 'UPDATE';
+    nextOpId: number;
+}
+
+export interface DocumentDeletedMessage extends DocumentMessage  {
     type: DocumentWSMessageType.DOCUMENT_DELETED;
 }
 
-export interface DocumentLoadedMessage {
+export interface DocumentLoadedMessage extends DocumentMessage {
     type: DocumentWSMessageType.DOCUMENT_LOADED;
 }
 
-export type DocumentWSMessage = Array<OperationMessage | DocumentDeletedMessage | DocumentLoadedMessage>;
+export type DocumentClientMessageSingle = OperationMessage | DocumentDeletedMessage | DocumentLoadedMessage | DocumentErrorMessage;
+export type DocumentClientMessage = Array<DocumentClientMessageSingle>;
+export type DocumentInternalEvent = DocumentUpdate | DocumentDeletedMessage;
 
 export interface Success<T> {
     success: true;
@@ -50,10 +67,4 @@ export interface FloorPlanImage {
     width: number;
     height: number;
     key: string;
-}
-
-export enum RenderSize {
-    SMALL,
-    MEDIUM,
-    LARGE
 }

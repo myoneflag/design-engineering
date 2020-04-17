@@ -14,11 +14,11 @@ import Flatten from "@flatten-js/core";
 import RiserEntity from "../../../../common/src/api/document/entities/riser-entity";
 import { CalculationContext } from "../../calculations/types";
 import { ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
-import { EPS, getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
+import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
 import { GlobalStore } from "./global-store";
 import { assertUnreachable, LEVEL_HEIGHT_DIFF_M } from "../../../../common/src/api/config";
 import { Coord, DrawableEntity, DrawingState, Level } from "../../../../common/src/api/document/drawing";
-import { cloneSimple, interpolateTable, upperBoundTable } from "../../../../common/src/lib/utils";
+import { cloneSimple, EPS, interpolateTable, upperBoundTable } from "../../../../common/src/lib/utils";
 import PlantEntity, { fillPlantDefaults } from "../../../../common/src/api/document/entities/plants/plant-entity";
 import { PlantType, PressureMethod } from "../../../../common/src/api/document/entities/plants/plant-types";
 

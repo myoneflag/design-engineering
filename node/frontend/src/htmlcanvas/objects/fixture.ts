@@ -12,7 +12,6 @@ import BigValveEntity from "../../../../common/src/api/document/entities/big-val
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import FixtureEntity from "../../../../common/src/api/document/entities/fixtures/fixture-entity";
-import { StandardFlowSystemUids } from "../../../src/store/catalog";
 import { DEFAULT_FONT_NAME } from "../../../src/config";
 import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
@@ -34,6 +33,7 @@ import { Coord } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import SystemNode from "./big-valve/system-node";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
+import { StandardFlowSystemUids } from "../../../../common/src/api/config";
 
 @CalculatedObject
 @SelectableObject

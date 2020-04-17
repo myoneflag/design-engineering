@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response, Router } from "express";
-import { DocumentWSMessage, DocumentWSMessageType } from "../../../common/src/api/document/types";
+import { DocumentClientMessage, DocumentWSMessageType } from "../../../common/src/api/document/types";
 import { OPERATION_NAMES, OperationTransformConcrete } from "../../../common/src/api/document/operation-transforms";
 import { Document, DocumentStatus } from "../../../common/src/models/Document";
 import { Operation } from "../../../common/src/models/Operation";
@@ -8,33 +8,20 @@ import { AccessLevel, User } from "../../../common/src/models/User";
 import { ApiHandleError } from "../helpers/apiWrapper";
 import { AuthRequired, withAuth } from "../helpers/withAuth";
 import { AccessType, withDocument, withOrganization } from "../helpers/withResources";
-import { initialDrawing } from "../../../common/src/api/document/drawing";
+import { DrawingState, initialDrawing } from "../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../common/src/lib/utils";
 import { applyDiffNative } from "../../../common/src/api/document/state-ot-apply";
 import { diffState } from "../../../common/src/api/document/state-differ";
-import { CURRENT_VERSION } from "../../../common/src/api/upgrade";
 import { Brackets } from "typeorm";
+import ConcurrentDocument from "../services/concurrentDocument";
+import { assertUnreachable, CURRENT_VERSION } from "../../../common/src/api/config";
 
 export class DocumentController {
     @ApiHandleError()
     @AuthRequired()
     public async reset(req: Request, res: Response, next: NextFunction, session: Session) {
         await withDocument(Number(req.params.id), res, session, AccessType.DELETE, async (doc) => {
-            if (updateHandlers.has(doc.id)) {
-                const allTasks = updateHandlers.get(doc.id)!.map(async (fn) => {
-                    return fn(true);
-                });
-
-                try {
-                    await Promise.all(allTasks);
-                } catch (e) {
-                    console.log('error: exception while deleting all existing sockets ' + e.message);
-                }
-            }
-
-            if (operationQueues.has(doc.id)) {
-                operationQueues.set(doc.id, []);
-            }
+            await ConcurrentDocument.broadcastDelete(Number(req.params.id));
 
             await Promise.all((await doc.operations).map((o) => {
                 return o.remove();
@@ -51,7 +38,7 @@ export class DocumentController {
     @AuthRequired()
     public async create(req: Request, res: Response, next: NextFunction, session: Session) {
         const user = await session.user;
-        const userWithOrg = await User.findOne({username: user.username}, {relations: ['organization']});
+        const userWithOrg = await User.findOne({ username: user.username }, { relations: ["organization"] });
         const org = userWithOrg.organization;
         if (user.accessLevel >= AccessLevel.MANAGER) {
             // We can only create in our own org.
@@ -83,7 +70,7 @@ export class DocumentController {
 
             res.status(200).send({
                 success: true,
-                data: doc,
+                data: doc
             });
         });
     }
@@ -92,29 +79,16 @@ export class DocumentController {
     @AuthRequired()
     public async delete(req: Request, res: Response, next: NextFunction, session: Session) {
         await withDocument(Number(req.params.id), res, session, AccessType.DELETE, async (doc) => {
-            if (updateHandlers.has(doc.id)) {
-                const allTasks = updateHandlers.get(doc.id)!.map(async (fn) => {
-                    return fn(true);
-                });
-
-                try {
-                    await Promise.all(allTasks);
-                } catch (e) {
-                    console.log('error: exception while deleting all existing sockets ' + e.message);
-                }
-
-                updateHandlers.delete(doc.id);
-                operationQueues.delete(doc.id);
-            }
+            await ConcurrentDocument.broadcastDelete(Number(req.params.id));
 
             doc.state = DocumentStatus.DELETED;
             await doc.save();
 
             res.status(200).send({
                 success: true,
-                data: null,
+                data: null
             });
-        })
+        });
     }
 
     @ApiHandleError()
@@ -124,7 +98,7 @@ export class DocumentController {
             if (doc.state !== DocumentStatus.DELETED) {
                 res.status(400).send({
                     success: false,
-                    message: "can't restore a document that isn't deleted",
+                    message: "can't restore a document that isn't deleted"
                 });
             }
             doc.state = DocumentStatus.ACTIVE;
@@ -132,7 +106,7 @@ export class DocumentController {
 
             res.status(200).send({
                 success: true,
-                data: null,
+                data: null
             });
         });
     }
@@ -141,7 +115,7 @@ export class DocumentController {
     @AuthRequired()
     public async update(req: Request, res: Response, next: NextFunction, session: Session) {
         await withDocument(Number(req.params.id), res, session, AccessType.UPDATE, async (doc) => {
-            const {organization, metadata} = req.body;
+            const { organization, metadata } = req.body;
 
             if (organization !== undefined) {
                 let called = false;
@@ -182,26 +156,26 @@ export class DocumentController {
                 results = [];
             } else {
                 results = await Document
-                    .createQueryBuilder('document')
-                    .where('document.organization = :organization', {organization: org.id})
+                    .createQueryBuilder("document")
+                    .where("document.organization = :organization", { organization: org.id })
                     .andWhere(new Brackets((qb) => {
-                        qb.where('document.state = :state', {state: DocumentStatus.ACTIVE});
+                        qb.where("document.state = :state", { state: DocumentStatus.ACTIVE });
 
                         if (session.user.accessLevel <= AccessLevel.MANAGER) {
-                            qb.orWhere('document.state = :state2', {state2: DocumentStatus.DELETED});
+                            qb.orWhere("document.state = :state2", { state2: DocumentStatus.DELETED });
                         }
                     }))
-                    .orderBy('document.createdOn', 'DESC')
+                    .orderBy("document.createdOn", "DESC")
                     .getMany();
             }
             await Promise.all(results.map((r) => r.reload()));
         } else {
-            results = await Document.find( {order: {'createdOn' : 'DESC'}});
+            results = await Document.find({ order: { "createdOn": "DESC" } });
         }
 
         res.status(200).send({
             success: true,
-            data: results,
+            data: results
         });
     }
 
@@ -211,7 +185,7 @@ export class DocumentController {
         await withDocument(Number(req.params.id), res, session, AccessType.READ, async (doc) => {
             res.status(200).send({
                 success: true,
-                data: doc,
+                data: doc
             });
         });
     }
@@ -220,18 +194,18 @@ export class DocumentController {
     @AuthRequired()
     public async findOperations(req: Request, res: Response, next: NextFunction, session: Session) {
         await withDocument(Number(req.params.id), res, session, AccessType.READ, async (doc) => {
-            const after = req.query.after === undefined ? -1 : Number(req.query.after) ;
+            const after = req.query.after === undefined ? -1 : Number(req.query.after);
             const ops = await Operation
-                .createQueryBuilder('operation')
-                .leftJoinAndSelect('operation.blame', 'user')
-                .where('operation.document = :document', {document: doc.id})
-                .andWhere('operation."orderIndex" > :after', {after})
-                .orderBy('"orderIndex"', 'ASC')
+                .createQueryBuilder("operation")
+                .leftJoinAndSelect("operation.blame", "user")
+                .where("operation.document = :document", { document: doc.id })
+                .andWhere("operation.\"orderIndex\" > :after", { after })
+                .orderBy("\"orderIndex\"", "ASC")
                 .getMany();
 
             res.status(200).send({
                 success: true,
-                data: ops,
+                data: ops
             });
         });
     }
@@ -244,14 +218,14 @@ export class DocumentController {
 
         withDocument(targetId, res, session, AccessType.READ, async (target) => {
 
-            const userWithOrg = await User.findOne({username: user.username}, {relations: ['organization']});
+            const userWithOrg = await User.findOne({ username: user.username }, { relations: ["organization"] });
             const org = userWithOrg.organization;
             if (user.accessLevel >= AccessLevel.MANAGER) {
                 // We can only create in our own org.
                 if (org === undefined || req.body.organization !== org.id) {
                     res.status(401).send({
                         success: false,
-                        message: "You can only create documents in your own organization. You are in " + (org ? org.id : "no organization"),
+                        message: "You can only create documents in your own organization. You are in " + (org ? org.id : "no organization")
                     });
                     return;
                 }
@@ -268,16 +242,19 @@ export class DocumentController {
                 doc.createdBy = user;
                 doc.createdOn = new Date();
                 doc.metadata = target.metadata;
-                doc.metadata.title = 'Copy of ' + doc.metadata.title;
+                doc.metadata.title = "Copy of " + doc.metadata.title;
                 doc.state = DocumentStatus.PENDING;
                 doc.version = target.version;
+                doc.lastModifiedOn = target.lastModifiedOn;
+                doc.lastModifiedBy = target.lastModifiedBy;
+                doc.upgradingLockExpires = new Date();
 
                 await doc.save();
 
-                const ops = await Operation.createQueryBuilder('operation')
-                    .leftJoinAndSelect('operation.blame', 'user')
-                    .where('operation.document = :document', {document: target.id})
-                    .orderBy('"orderIndex"', 'ASC')
+                const ops = await Operation.createQueryBuilder("operation")
+                    .leftJoinAndSelect("operation.blame", "user")
+                    .where("operation.document = :document", { document: target.id })
+                    .orderBy("\"orderIndex\"", "ASC")
                     .getMany();
 
                 let lastOrderIndex = 0;
@@ -291,6 +268,7 @@ export class DocumentController {
                     await newOp.save();
                     lastOrderIndex = newOp.orderIndex;
                 }
+                doc.nextOperationIndex = lastOrderIndex + 1;
 
                 const drawing = cloneSimple(initialDrawing);
                 const drawingWithTitle = cloneSimple(initialDrawing);
@@ -313,10 +291,13 @@ export class DocumentController {
                     commitOp.document = Promise.resolve(doc);
                     commitOp.blame = session.user;
                     commitOp.dateTime = new Date();
-                    commitOp.operation = { type: OPERATION_NAMES.COMMITTED_OPERATION, id: lastOrderIndex + 2};
+                    commitOp.operation = { type: OPERATION_NAMES.COMMITTED_OPERATION, id: lastOrderIndex + 2 };
 
                     await titleChangeOp.save();
                     await commitOp.save();
+
+
+                    doc.nextOperationIndex = lastOrderIndex + 3;
                 }
 
                 doc.state = DocumentStatus.ACTIVE;
@@ -332,154 +313,74 @@ export class DocumentController {
     }
 }
 
-const operationQueues = new  Map<number, OperationTransformConcrete[][]>();
-const isLoading = new Set<number>();
-
-export type OperationUpdateHandler = (deleted: boolean) => Promise<any>;
-const updateHandlers = new Map<number, OperationUpdateHandler[]>();
-
-async function ensureDocumentLoaded(id: number) {
-
-    // If another thread is already loading this document, wait in line and return when they finished.
-    if (isLoading.has(id)) {
-        // TODO: this logic is incorrect
-        return;
-    }
-
-    if (!operationQueues.has(id)) {
-
-        isLoading.add(id);
-
-        const operationQueue: OperationTransformConcrete[] = [];
-
-        const operations = await Operation
-            .createQueryBuilder('operation')
-            .leftJoinAndSelect('operation.blame', 'user')
-            .where('operation.document = :document', {document: id})
-            .orderBy('operation.orderIndex', 'ASC')
-            .getMany();
-
-        // form document to get snapshot
-        let lastOpId = 0;
-        const drawing = cloneSimple(initialDrawing);
-        for (const op of operations) {
-            if (op.operation.type === OPERATION_NAMES.DIFF_OPERATION) {
-                applyDiffNative(drawing, op.operation.diff);
-            }
-            lastOpId = op.orderIndex;
-        }
-
-        const doc = (await Document.findByIds([id]))[0];
-        doc.metadata = drawing.metadata.generalInfo;
-        await doc.save();
-
-        const wholeThing = diffState(initialDrawing, drawing, undefined);
-
-        if (operations.length) {
-            if (wholeThing.length) {
-                wholeThing[0].id = lastOpId - 1;
-                operationQueue.push(wholeThing[0]);
-            }
-            operationQueue.push({type: OPERATION_NAMES.COMMITTED_OPERATION, id: lastOpId});
-        }
-
-
-        operationQueues.set(id, [operationQueue]);
-        isLoading.delete(id);
-    }
-}
-
-async function receiveOperations(id: number, ops: OperationTransformConcrete[], user: User) {
-    if (ops.length === 0) {
-        return;
-    }
-    if (!operationQueues.has(id)) {
-        throw new Error('document ' + id + ' has no operation queue, it must be initialized before.');
-    }
-    const oq = operationQueues.get(id)!;
-    let firstId = 0;
-    if (operationQueues.get(id)!.length) {
-        if (oq[oq.length - 1].length) {
-            firstId = oq[oq.length - 1][oq[oq.length - 1].length - 1].id + 1;
-        }
-    }
-    ops.forEach((o) => {
-        o.id = firstId;
-        firstId += 1;
-    });
-    oq.push(ops);
-
-    const doc = await Document.findOne({id});
-
-    await Promise.all(ops.map(async (op) => {
-        const toStore = Operation.create();
-        toStore.document = Promise.resolve(doc);
-        toStore.dateTime = new Date();
-        toStore.blame = user;
-
-        toStore.operation = op;
-        toStore.orderIndex = op.id;
-
-        if (op.id === ops[ops.length - 1].id) {
-            doc.lastModifiedBy = user;
-            doc.lastModifiedOn = toStore.dateTime;
-            await doc.save();
-        }
-
-        await toStore.save();
-    }));
-
-    const uh = updateHandlers.get(id)!;
-    await Promise.all(uh.map((fn) => {
-        try {
-            return fn(false);
-        } catch (e) {
-            // @ts-ignore
-            console.log("error updating operation: " + e.message);
-        }
-    }));
-}
-
-
 const router = Router();
 const controller = new DocumentController();
 
-router.ws('/:id/websocket', (ws, req) => {
+router.ws("/:id/websocket", (ws, req) => {
     withAuth(req, async (session) => {
             withDocument(Number(req.params.id), null, session, AccessType.UPDATE, async (doc) => {
 
-                let upTo = 0;
+                // sanity checks.
+                switch (doc.state) {
+                    case DocumentStatus.ACTIVE:
+                        if (doc.version !== CURRENT_VERSION) {
+                            const msg: DocumentClientMessage = [{
+                                type: DocumentWSMessageType.DOCUMENT_ERROR,
+                                message: 'Cannot open this document - it is out of date.',
+                            }];
+                            ws.send(JSON.stringify(msg));
+                            return;
+                        }
 
-                const onUpdate = async (deleted: boolean) => {
-                    if (deleted) {
-                        const msg1: DocumentWSMessage = [{
-                            type: DocumentWSMessageType.DOCUMENT_DELETED,
+                        // that's ok
+                        break;
+                    case DocumentStatus.DELETED: {
+                        const msg: DocumentClientMessage = [{
+                            type: DocumentWSMessageType.DOCUMENT_ERROR,
+                            message: 'Cannot open this document - it is deleted.',
                         }];
-                        await ws.send(JSON.stringify(msg1));
-                        await ws.close();
+                        ws.send(JSON.stringify(msg));
+                        return ;
+                    }
+                    case DocumentStatus.PENDING: {
+                        const msg: DocumentClientMessage = [{
+                            type: DocumentWSMessageType.DOCUMENT_ERROR,
+                            message: 'Cannot open this document - it is pending. Try again later',
+                        }];
+                        ws.send(JSON.stringify(msg));
                         return;
                     }
-
-                    const oq = operationQueues.get(doc.id)!;
-
-                    const msg: DocumentWSMessage = [];
-                    for (; upTo < oq.length; upTo) {
-                        const toSend = oq[upTo++];
-                        toSend.forEach((op) => {
-                            msg.push({
-                                operation: op, type: DocumentWSMessageType.OPERATION,
-                            });
-                        });
-                    }
-                    await ws.send(JSON.stringify(msg));
-                };
-
-                let uh: OperationUpdateHandler[] = [];
-                if (updateHandlers.has(doc.id)) {
-                    uh = updateHandlers.get(doc.id)!;
-                } else {
-                    updateHandlers.set(doc.id, uh);
+                    default:
+                        assertUnreachable(doc.state);
                 }
+
+
+                const cdoc = new ConcurrentDocument(
+                    Number(req.params.id),
+                    async (nextOpId) => {
+                        operations = await Operation
+                            .createQueryBuilder("operation")
+                            .leftJoinAndSelect("operation.blame", "user")
+                            .where("operation.document = :document", { document: Number(req.params.id) })
+                            .andWhere('operation.orderIndex > :minOrderIndex', {minOrderIndex: lastOpId})
+                            .orderBy("operation.orderIndex", "ASC")
+                            .getMany();
+
+                        for (const op of operations) {
+                            toSend.push({
+                                type: DocumentWSMessageType.OPERATION,
+                                operation: op.operation,
+                            });
+                            lastOpId = op.orderIndex;
+                        }
+                        await sendQueueToWs();
+                    },
+                    async () => {
+                        toSend.push({
+                            type: DocumentWSMessageType.DOCUMENT_DELETED,
+                        });
+                        await sendQueueToWs();
+                    });
 
 
                 const pingPid = setInterval(function timeout() {
@@ -491,65 +392,141 @@ router.ws('/:id/websocket', (ws, req) => {
                 }, 10000);
 
                 const closeHandler = () => {
-                    const toRemove = uh.indexOf(onUpdate);
-                    if (toRemove === -1) {
-                        // console.log("Already removed, maybe ping and close command both wanted to close");
-                    } else {
-                        uh.splice(toRemove, 1);
-                        clearInterval(pingPid);
-
-                        if (uh.length === 0) {
-                            operationQueues.delete(doc.id);
-                        }
-                    }
+                    clearInterval(pingPid);
+                    cdoc.close();
                 };
 
-                ws.on('close', closeHandler);
+                ws.on("close", closeHandler);
 
-                uh.push(onUpdate);
-                await ensureDocumentLoaded(doc.id);
+                ws.on("message", (message) => {
+                    // use a message queue to process each message serially.
+                    messageQueue.push(message as string);
+                    onMessageQueuePush();
+                });
+
+                const messageQueue: string[] = [];
+                let messageQueueWorking = false;
+                async function onMessageQueuePush() {
+                    if (!messageQueueWorking) {
+                        messageQueueWorking = true;
+
+                        while (messageQueue.length) {
+                            const message = messageQueue.splice(0, 1)[0];
+
+                            const ops: OperationTransformConcrete[] = JSON.parse(message as string);
+                            if (ops.length) {
+
+                                let nextOpId = 0;
+                                await cdoc.withDocumentLock(async (tx, docVal) => {
+                                    nextOpId = docVal.nextOperationIndex;
+                                    const now = new Date();
+                                    for (const op of ops) {
+                                        op.id = nextOpId;
+                                        const toStore = Operation.create();
+                                        toStore.document = Promise.resolve(docVal);
+                                        toStore.dateTime = now;
+                                        toStore.blame = session.user;
+
+                                        toStore.operation = op;
+                                        toStore.orderIndex = op.id;
+                                        await tx.save(toStore);
+                                        nextOpId += 1;
+                                        docVal.nextOperationIndex = nextOpId;
+                                    }
+
+                                    docVal.lastModifiedBy = session.user;
+                                    docVal.lastModifiedOn = now;
+                                    await tx.save(docVal);
+                                });
+
+                                await cdoc.notifyUpdate(nextOpId);
+                            }
+                        }
+
+                        messageQueueWorking = false;
+                    }
+                }
 
 
-                // We can afford to move this later (we need it after ensureDocumentLoaded) because users are not
-                // expected to start giving us messages until after the document is loaded.
-                ws.on('message', (message) => {
-                    // received operations
-                    const ops: OperationTransformConcrete[] = JSON.parse(message as string);
-                    receiveOperations(doc.id, ops, session.user);
+                let operations: Operation[] = [];
+                let drawing: DrawingState = cloneSimple(initialDrawing);
+                let lastOpId = -1;
+                // Now that we have hooked update handlers, Load document. Reconstruct the state, and send the
+                // initial document state.
+                await cdoc.withDocumentLock(async (tx, docVal) => {
+
+                    operations = await tx.getRepository(Operation)
+                        .createQueryBuilder("operation")
+                        .leftJoinAndSelect("operation.blame", "user")
+                        .where("operation.document = :document", { document: Number(req.params.id) })
+                        .orderBy("operation.orderIndex", "ASC")
+                        .getMany();
+
+
+                    // form document to get snapshot
+                    drawing = cloneSimple(initialDrawing);
+                    for (const op of operations) {
+                        if (op.operation.type === OPERATION_NAMES.DIFF_OPERATION) {
+                            applyDiffNative(drawing, op.operation.diff);
+                        }
+                        lastOpId = op.orderIndex;
+                    }
+
+                    docVal.metadata = drawing.metadata.generalInfo;
+                    await tx.save(docVal);
                 });
 
 
-                try {
-                    await onUpdate(false);
+                const wholeThing = diffState(initialDrawing, drawing, undefined);
 
-                    const msg: DocumentWSMessage = [{
-                        type: DocumentWSMessageType.DOCUMENT_LOADED,
-                    }];
+                const toSend: DocumentClientMessage = [];
 
-
-                    await ws.send(JSON.stringify(msg));
-                } catch (e) {
-                    console.log('Error sending initial document to user. docid: ' + req.params.id + ' error: ' + e.message);
+                if (operations.length) {
+                    if (wholeThing.length) {
+                        wholeThing[0].id = lastOpId - 1;
+                        toSend.push({ type: DocumentWSMessageType.OPERATION, operation: wholeThing[0] });
+                    }
+                    toSend.push({
+                        type: DocumentWSMessageType.OPERATION,
+                        operation: { type: OPERATION_NAMES.COMMITTED_OPERATION, id: lastOpId },
+                    });
                 }
+
+                toSend.push({
+                    type: DocumentWSMessageType.DOCUMENT_LOADED,
+                });
+
+                let working = false;
+                async function sendQueueToWs() {
+                    if (!working) {
+                        working = true;
+                        while (toSend.length) {
+                            const sendNow = toSend.splice(0);
+                            await ws.send(JSON.stringify(sendNow));
+                        }
+                        working = false;
+                    }
+                }
+
+                await sendQueueToWs();
 
             });
         },
         (msg) => {
-            ws.send('You are not authorised');
+            ws.send("You are not authorised");
             ws.send(msg);
         });
 });
 
-router.post('/:id/reset', controller.reset.bind(controller));
+router.post("/:id/reset", controller.reset.bind(controller));
 
-router.post('/', controller.create.bind(controller));
-router.delete('/:id', controller.delete.bind(controller));
-router.post('/:id/clone', controller.clone.bind(controller));
-router.get('/:id/operations', controller.findOperations.bind(controller));
-router.put('/:id', controller.update.bind(controller));
-router.get('/:id', controller.findOne.bind(controller));
-router.post('/:id/restore', controller.restore.bind(controller));
-router.get('/', controller.find.bind(controller));
+router.post("/", controller.create.bind(controller));
+router.delete("/:id", controller.delete.bind(controller));
+router.post("/:id/clone", controller.clone.bind(controller));
+router.get("/:id/operations", controller.findOperations.bind(controller));
+router.put("/:id", controller.update.bind(controller));
+router.get("/:id", controller.findOne.bind(controller));
+router.post("/:id/restore", controller.restore.bind(controller));
+router.get("/", controller.find.bind(controller));
 
 export const documentRouter = router;
-

@@ -1,5 +1,5 @@
 import assert from "assert";
-import { EPS } from "../../src/calculations/pressure-drops";
+import { EPS } from "../../../common/src/lib/utils";
 
 // Works on concave functions
 export function ternarySearchForGlobalMin(fn: (num: number) => number): number {

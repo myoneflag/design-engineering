@@ -1,8 +1,7 @@
 /* tslint:disable:no-bitwise */
 
-import { EPS } from "../../src/calculations/pressure-drops";
 import { Catalog } from "../../../common/src/api/catalog/types";
-import { cloneSimple, interpolateTable, parseCatalogNumberExact } from "../../../common/src/lib/utils";
+import { cloneSimple, EPS, interpolateTable, parseCatalogNumberExact } from "../../../common/src/lib/utils";
 import BaseBackedObject from "../htmlcanvas/lib/base-backed-object";
 import { CalculationFilters, DocumentState } from "../store/document/types";
 import { getFields } from "../calculations/utils";
