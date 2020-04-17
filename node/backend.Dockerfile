@@ -1,10 +1,5 @@
 from node:12
 
-ARG AWS_KEY
-ENV AWS_KEY ${AWS_KEY}
-ARG AWS_SECRET
-ENV AWS_SECRET ${AWS_SECRET}
-
 run apt-get install imagemagick -y
 run apt-get update
 run apt-get install ghostscript -y
@@ -28,8 +23,8 @@ copy imagemagick-policy.xml /etc/ImageMagick-6/policy.xml
 expose 80
 env PORT 80
 
-# because we run in dev mode because we don't know how to get it 
+# because we run in dev mode because we don't know how to get it
 # to compile in prod :'(
-env H2X_MODE production
+env MODE production
 
 cmd [ "npm", "run", "prod" ]

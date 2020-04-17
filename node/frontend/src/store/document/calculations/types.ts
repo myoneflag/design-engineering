@@ -1,5 +1,6 @@
 import { PsdCountEntry } from "../../../calculations/utils";
-import { CalculationField, FieldCategory, Units } from "./calculation-field";
+import { CalculationField, FieldCategory} from "./calculation-field";
+import { Units } from "../../../../../common/src/lib/measurements";
 
 export interface PsdCalculation {
     psdUnits: PsdCountEntry | null;

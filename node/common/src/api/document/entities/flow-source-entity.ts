@@ -2,7 +2,7 @@ import { FieldType, PropertyField } from "./property-field";
 import { EntityType } from "./types";
 import { Color, ConnectableEntity, Coord, DrawingState, FlowSystemParameters } from "../drawing";
 import { Choice, cloneSimple } from "../../../lib/utils";
-import { Units } from "../../../../../frontend/src/store/document/calculations/calculation-field";
+import { Units } from "../../../lib/measurements";
 
 export interface FlowSourceEntityV11 extends ConnectableEntity {
     type: EntityType.FLOW_SOURCE;

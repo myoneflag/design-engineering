@@ -1,4 +1,4 @@
-import { FieldCategory, CalculationField, Units } from "../../../../src/store/document/calculations/calculation-field";
+import { FieldCategory, CalculationField} from "../../../../src/store/document/calculations/calculation-field";
 import {
     addPressureCalculationFields,
     Calculation, PressureCalculation,
@@ -9,6 +9,7 @@ import { getPsdUnitName } from "../../../calculations/utils";
 import set = Reflect.set;
 import { isGermanStandard } from "../../../../../common/src/api/config";
 import { DrawingState } from "../../../../../common/src/api/document/drawing";
+import { Units } from "../../../../../common/src/lib/measurements";
 
 export default interface SystemNodeCalculation extends
     PsdCalculation,

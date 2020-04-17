@@ -227,8 +227,11 @@ import BooleanPicker from "../../../../src/components/editor/lib/BooleanPicker.v
 import { getPropertyByString, setPropertyByString } from "../../../../src/lib/utils";
 import { Choice } from "../../../../../common/src/lib/utils";
 import { DrawingMode } from "../../../htmlcanvas/types";
-import { convertMeasurementSystem, convertMeasurementToMetric } from "../../../calculations/measurement";
-import { Units } from "../../../store/document/calculations/calculation-field";
+import {
+    convertMeasurementSystem,
+    convertMeasurementToMetric,
+    Units
+} from "../../../../../common/src/lib/measurements";
 
 @Component({
     props: {

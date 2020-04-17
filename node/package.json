@@ -10,7 +10,10 @@
   "license": "ISC",
   "dependencies": {
     "@types/lodash": "^4.14.149",
+    "aws-sdk": "^2.656.0",
+    "child-process": "^1.0.2",
     "lodash": "^4.17.15",
+    "sharp": "^0.25.2",
     "tslint": "^5.20.1",
     "tslint-config-prettier": "^1.18.0",
     "typeorm": "^0.2.22",

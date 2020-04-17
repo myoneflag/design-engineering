@@ -4,7 +4,7 @@ import InvisibleNodeEntity from "../Invisible-node-entity";
 import { Catalog } from "../../../catalog/types";
 import { Coord, DrawableEntity } from "../../drawing";
 import { cloneSimple, parseCatalogNumberOrMin } from "../../../../lib/utils";
-import { Units } from "../../../../../../frontend/src/store/document/calculations/calculation-field";
+import { Units } from "../../../../lib/measurements";
 
 export enum BigValveType {
     TMV = "TMV",

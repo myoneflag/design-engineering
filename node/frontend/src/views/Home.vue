@@ -142,7 +142,7 @@ import { cloneDocument, createDocument, deleteDocument, getDocuments, restoreDoc
 import { getChangeLogMessages, saveChangeLogMessage } from "../api/change-log"
 import { updateLastNoticeSeen } from "../api/users"
 import { AccessLevel, User } from "../../../common/src/models/User";
-import { assertUnreachable } from "../../../common/src/api/config";
+import { assertUnreachable, CURRENT_VERSION } from "../../../common/src/api/config";
 import Doc = Mocha.reporters.Doc;
 import { ChangeLogMessage } from "../../../common/src/models/ChangeLogMessage";
 
@@ -170,7 +170,11 @@ export default class Home extends Vue {
     docIcon(doc: Document) {
         switch (doc.state) {
             case DocumentStatus.ACTIVE:
-                return require("../assets/blueprint-architecture.png");
+                if (doc.version !== CURRENT_VERSION) {
+                    return require("../assets/pending.png");
+                } else {
+                    return require("../assets/blueprint-architecture.png");
+                }
             case DocumentStatus.DELETED:
                 return require("../assets/deleted.png");
             case DocumentStatus.PENDING:

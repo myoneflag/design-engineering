@@ -4,8 +4,7 @@ import { isLUStandard, SupportedPsdStandards } from "../../../config";
 import { Catalog } from "../../../catalog/types";
 import { Coord, DrawableEntity, DrawingState } from "../../drawing";
 import { cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../../lib/utils";
-import { Units } from "../../../../../../frontend/src/store/document/calculations/calculation-field";
-import { StandardFlowSystemUids } from "../../../../../../frontend/src/store/catalog";
+import { Units } from "../../../../lib/measurements";
 
 export interface RoughInRecord {
     uid: string;

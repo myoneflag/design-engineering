@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  pdf-renderer
+
+  Renders PDFs into multiple image resolutions, for users to view in their browsers.
+
+Resources:
+  PdfRendererFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/
+      Handler: app.lambdaHandler
+      Runtime: nodejs12.x
+      Timeout: 200
+      MemorySize: 1024
+      Events:
+        PdfUpload:
+          Type: S3
+          Properties:
+            Bucket: !Ref SrcBucket
+            Events: s3:ObjectCreated:*
+
+  SrcBucket:
+    Type: AWS::S3::Bucket

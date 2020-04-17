@@ -1,8 +1,7 @@
 import { DrawingState, FlowSystemParametersV8, FlowSystemParametersV9, initialDrawing } from "./document/drawing";
 import { EntityType } from "./document/entities/types";
 import { NodeType } from "./document/entities/load-node-entity";
-import { InsulationJackets, InsulationMaterials } from "./config";
-import { StandardFlowSystemUids } from "../../../frontend/src/store/catalog";
+import { InsulationJackets, InsulationMaterials, StandardFlowSystemUids } from "./config";
 import PlantEntity, { PlantEntityV8 } from "./document/entities/plants/plant-entity";
 import { PlantConcrete, PlantType, PressureMethod } from "./document/entities/plants/plant-types";
 import { DrawableEntityConcrete } from "./document/entities/concrete-entity";
@@ -15,8 +14,6 @@ import { FlowSourceEntityV11 } from "./document/entities/flow-source-entity";
 // Remember to copy this directory before developing a major change, and bump the api version number, then
 // implement the upgrade method below.
 // Remember to also add this function to the upgrade function in default.
-
-export const CURRENT_VERSION = 12;
 
 export function upgrade4to5(original: DrawingState) {
     // Plants entity was updated

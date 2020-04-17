@@ -5,8 +5,7 @@ import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin }
 import { LEVEL_HEIGHT_DIFF_M } from "../../config";
 import { Catalog } from "../../catalog/types";
 import { fillPipeDefaultFields } from "./pipe-entity";
-import { Units } from "../../../../../frontend/src/store/document/calculations/calculation-field";
-import { convertPipeDiameterFromMetric } from "../../../../../frontend/src/calculations/measurement";
+import { convertPipeDiameterFromMetric, Units } from "../../../lib/measurements";
 
 export default interface RiserEntity extends ConnectableEntity {
     type: EntityType.RISER;

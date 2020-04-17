@@ -7,12 +7,11 @@ import {
     PsdUnitsByFlowSystem,
     zeroFinalPsdCounts
 } from "../../src/calculations/utils";
-import { StandardFlowSystemUids } from "../../src/store/catalog";
 import { GridLineMode } from "../store/document/types";
 import { Catalog } from "../../../common/src/api/catalog/types";
 import { NetworkType } from "../../../common/src/api/document/drawing";
-import { Units } from "../store/document/calculations/calculation-field";
-import { convertMeasurementSystem } from "../calculations/measurement";
+import { convertMeasurementSystem, Units } from "../../../common/src/lib/measurements";
+import { StandardFlowSystemUids } from "../../../common/src/api/config";
 
 const SENSIBLE_UNITS_MM: number[] = [
     1,

@@ -28,12 +28,11 @@ import { FlowNode, FLOW_SOURCE_EDGE } from "../../../src/calculations/calculatio
 import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
 import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
-import { EPS } from "../../calculations/pressure-drops";
 import FittingCalculation, { emptyFittingCalculation } from "../../store/document/calculations/fitting-calculation";
 import math3d from "math3d";
 import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
 import { Coord } from "../../../../common/src/api/document/drawing";
-import { parseCatalogNumberExact } from "../../../../common/src/lib/utils";
+import { EPS, parseCatalogNumberExact } from "../../../../common/src/lib/utils";
 import { assertUnreachable, ComponentPressureLossMethod } from "../../../../common/src/api/config";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 

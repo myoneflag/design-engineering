@@ -1,4 +1,4 @@
-import { FieldCategory, CalculationField, Units } from "../../../../src/store/document/calculations/calculation-field";
+import { FieldCategory, CalculationField} from "../../../../src/store/document/calculations/calculation-field";
 import { Calculation, PsdCalculation } from "../../../../src/store/document/calculations/types";
 import PipeEntity, { fillPipeDefaultFields } from "../../../../../common/src/api/document/entities/pipe-entity";
 import { getPsdUnitName, PsdProfile } from "../../../calculations/utils";
@@ -8,7 +8,7 @@ import { Catalog } from "../../../../../common/src/api/catalog/types";
 import { DrawingState, MeasurementSystem, UnitsParameters } from "../../../../../common/src/api/document/drawing";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import { globalStore } from "../mutations";
-import { convertPipeDiameterFromMetric, mm2IN } from "../../../calculations/measurement";
+import { convertPipeDiameterFromMetric, mm2IN, Units } from "../../../../../common/src/lib/measurements";
 
 export enum NoFlowAvailableReason {
     NO_SOURCE = "NO_SOURCE",

@@ -1,4 +1,3 @@
-import { StandardFlowSystemUids } from "../../../../src/store/catalog";
 import BigValve from "../../objects/big-valve/bigValve";
 import SystemNode from "../../objects/big-valve/system-node";
 import Flatten from "@flatten-js/core";
@@ -16,6 +15,7 @@ import uuid from "uuid";
 import { InteractionType } from "../../../../src/htmlcanvas/lib/interaction";
 import { FlowConfiguration } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import { ConnectableEntity, Coord, DrawableEntity, NetworkType } from "../../../../../common/src/api/document/drawing";
+import { StandardFlowSystemUids } from "../../../../../common/src/api/config";
 
 export default function connectBigValveToSource(
     context: CanvasContext,

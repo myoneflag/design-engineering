@@ -9,7 +9,7 @@ import { KeyCode, keyCode2Image, matrixScale, parseScale } from "../../../src/ht
 import { DEFAULT_FONT_NAME } from "../../../src/config";
 import { Coord, Rectangle } from "../../../../common/src/api/document/drawing";
 import { PAPER_SIZES } from "../../../../common/src/api/paper-config";
-import { EPS } from "../../calculations/pressure-drops";
+import { EPS } from "../../../../common/src/lib/utils";
 
 export const MARGIN_SIZE_MM = 15;
 export const INFO_BAR_SIZE_MM = 90;

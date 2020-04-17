@@ -30,13 +30,3 @@ export const catalog: Module<CatalogState, RootState> = {
     mutations
 };
 
-export enum StandardFlowSystemUids {
-    ColdWater = "cold-water",
-    HotWater = "hot-water",
-    WarmWater = "warm-water"
-}
-
-export enum StandardMaterialUids {
-    Copper = "copperTypeB",
-    Pex = "pexSdr74"
-}

@@ -32,8 +32,11 @@ import BigValveCalculation from "../../../store/document/calculations/big-valve-
 import Flatten from "@flatten-js/core";
 import Cached from "../../lib/cached";
 import { ValveType } from "../../../../../common/src/api/document/entities/directed-valves/valve-types";
-import { StandardFlowSystemUids } from "../../../store/catalog";
-import { assertUnreachable, ComponentPressureLossMethod } from "../../../../../common/src/api/config";
+import {
+    assertUnreachable,
+    ComponentPressureLossMethod,
+    StandardFlowSystemUids
+} from "../../../../../common/src/api/config";
 import { Coord, coordDist2 } from "../../../../../common/src/api/document/drawing";
 import { cloneSimple, interpolateTable, parseCatalogNumberExact } from "../../../../../common/src/lib/utils";
 import { SnappableObject } from "../../lib/object-traits/snappable-object";

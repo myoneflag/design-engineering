@@ -27,7 +27,7 @@ import {
     SupportedDwellingStandards,
     SupportedPsdStandards
 } from "../../../../common/src/api/config";
-import { Units } from "../../store/document/calculations/calculation-field";
+import { Units } from "../../../../common/src/lib/measurements";
 
 @Component({
     components: { SettingsFieldBuilder },

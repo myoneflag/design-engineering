@@ -1,6 +1,6 @@
 import { FlowSystemParameters } from "../drawing";
 import { Choice } from "../../../lib/utils";
-import { Units } from "../../../../../frontend/src/store/document/calculations/calculation-field";
+import { Units } from "../../../lib/measurements";
 
 export enum FieldType {
     Text = "text",

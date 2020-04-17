@@ -4,7 +4,7 @@ import Flatten from '@flatten-js/core';
 import { Coord } from "../../../../common/src/api/document/drawing";
 import Pipe from "../objects/pipe";
 import { CONNECTABLE_SNAP_RADIUS_PX } from "./snapping-insert-tool";
-import { EPS } from "../../calculations/pressure-drops";
+import { EPS } from "../../../../common/src/lib/utils";
 
 export enum TraceType {
     None,

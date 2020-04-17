@@ -21,14 +21,8 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "baseUrl": "../",
-    "paths": {
-      "@/*": [
-        "../frontend/src/*"
-      ]
-    },
     "skipLibCheck": true // for flatten-js.
   },
   "include": ["../backend/src/**/*.ts"],
-  "exclude": ["../backend/node_modules"]
+  "exclude": ["../backend/node_modules", "../frontend/**/*"]
 }

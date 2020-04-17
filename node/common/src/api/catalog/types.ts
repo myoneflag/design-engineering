@@ -3,7 +3,6 @@ import LoadingUnitTable from "./psd-standard/loading-unit-table";
 import LoadingUnitHotColdTable from "./psd-standard/loading-unit-hot-cold-table";
 import PsdEquation from "./psd-standard/psdEquation";
 import LoadingUnitMaxTable from "./psd-standard/loading-unit-max-table";
-import { PsdProfile } from "../../../../frontend/src/calculations/utils";
 import { SupportedPsdStandards } from "../config";
 
 export interface DwellingUnitHotColdTable {

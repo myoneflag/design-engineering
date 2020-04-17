@@ -1,4 +1,4 @@
-import { CalculationField, FieldCategory, Units } from "../../../../src/store/document/calculations/calculation-field";
+import { CalculationField, FieldCategory} from "../../../../src/store/document/calculations/calculation-field";
 import DirectedValveEntity from "../../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
 import {
     addPressureCalculationFields,
@@ -9,6 +9,7 @@ import { ValveType } from "../../../../../common/src/api/document/entities/direc
 import { assertUnreachable } from "../../../../../common/src/api/config";
 import { determineConnectableSystemUid } from "../entities/lib";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
+import { Units } from "../../../../../common/src/lib/measurements";
 
 export default interface DirectedValveCalculation extends Calculation, PressureCalculation {
     flowRateLS: number | null;

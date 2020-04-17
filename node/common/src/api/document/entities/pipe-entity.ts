@@ -2,10 +2,8 @@ import { FieldType, PropertyField } from "./property-field";
 import { EntityType } from "./types";
 import { Color, DrawableEntity, DrawingState, FlowSystemParameters, NetworkType } from "../drawing";
 import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../lib/utils";
-import { catalog } from "../../../../../frontend/src/store/catalog/index";
 import { Catalog } from "../../catalog/types";
-import { Units } from "../../../../../frontend/src/store/document/calculations/calculation-field";
-import { convertPipeDiameterFromMetric } from "../../../../../frontend/src/calculations/measurement";
+import { convertPipeDiameterFromMetric, Units } from "../../../lib/measurements";
 
 export default interface PipeEntity extends DrawableEntity {
     type: EntityType.PIPE;

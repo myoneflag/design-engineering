@@ -26,6 +26,9 @@ export class Document extends BaseEntity {
     )
     operations: Promise<Operation[]>;
 
+    @Column({default: 0})
+    nextOperationIndex: number;
+
     @ManyToOne(() => Organization, { eager: true })
     organization: Organization;
 
@@ -46,6 +49,16 @@ export class Document extends BaseEntity {
 
     @ManyToOne(() => User, { nullable: true, eager: true })
     lastModifiedBy: User | null;
+
+    /**
+     * This field is for keeping track of upgrade status on a distributed server system. On startup, servers would
+     * send all documents that aren't upgrading (with a 10 minute timeout) to the upgrade priority queue.
+     *
+     * When a job is received for upgrade, we use this field to check whether something else is already upgrading it or
+     * not. If we are upgrading, we update this field regularly.
+      */
+    @Column({ default: 'now' })
+    upgradingLockExpires: Date;
 }
 
 export function canUserDeleteDocument(doc: Document, user: User) {
