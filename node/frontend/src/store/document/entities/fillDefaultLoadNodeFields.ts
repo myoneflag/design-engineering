@@ -22,5 +22,12 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
         }
     }
 
+    if (result.minPressureKPA === null) {
+        result.minPressureKPA = 200;
+    }
+    if (result.maxPressureKPA === null) {
+        result.maxPressureKPA = 500;
+    }
+
     return result;
 }

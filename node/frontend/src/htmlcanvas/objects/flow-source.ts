@@ -3,7 +3,7 @@ import RiserEntity from "../../../../common/src/api/document/entities/riser-enti
 import * as TM from "transformation-matrix";
 import { DocumentState } from "../../../src/store/document/types";
 import { matrixScale } from "../../../src/htmlcanvas/utils";
-import { lighten } from "../../../src/lib/utils";
+import { color2rgb, lighten, rgb2style } from "../../../src/lib/utils";
 import Connectable, { ConnectableObject } from "../../../src/htmlcanvas/lib/object-traits/connectable";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
@@ -15,7 +15,7 @@ import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/sele
 import { CenteredObject, CenteredObjectNoParent } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
 import { CalculationContext } from "../../../src/calculations/types";
 import { FlowNode, FLOW_SOURCE_EDGE } from "../../../src/calculations/calculation-engine";
-import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
+import { DrawingArgs, EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
 import CanvasContext from "../lib/canvas-context";
@@ -29,6 +29,8 @@ import FlowSourceCalculation from "../../store/document/calculations/flow-source
 import { Coord, FlowSystemParameters, NetworkType } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, EPS } from "../../../../common/src/lib/utils";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
+import useColors = Mocha.reporters.Base.useColors;
+import { getHighlightColor } from "../lib/utils";
 
 @CalculatedObject
 @SelectableObject
@@ -55,7 +57,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         return TM.transform(TM.translate(this.entity.center.x, this.entity.center.y), TM.scale(scale, scale));
     }
 
-    drawInternal({ ctx, doc, vp }: DrawingContext, { active, selected }: DrawingArgs): void {
+    drawEntity({ ctx, doc, vp }: DrawingContext, { layerActive, selected, overrideColorList }: EntityDrawingArgs): void {
         this.lastDrawnWorldRadius = 0;
 
         const scale = vp.currToSurfaceScale(ctx);
@@ -69,11 +71,11 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
 
         ctx.lineWidth = 0;
 
-        if (selected) {
+        if (selected || overrideColorList.length) {
             // we want to draw a pixel sized dark halo around a selected component
             const haloSize = (Math.max(this.MINIMUM_RADIUS_PX, screenSize) + 5) / scale;
 
-            ctx.fillStyle = lighten(this.color(doc).hex, 0, 0.5);
+            ctx.fillStyle = rgb2style(getHighlightColor(selected, overrideColorList, this.color(doc)), 0.5);
 
             ctx.beginPath();
             ctx.lineWidth = 0;
@@ -84,7 +86,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
             this.lastDrawnWorldRadius = Math.max(this.lastDrawnWorldRadius, haloSize);
         }
 
-        if (active) {
+        if (layerActive) {
             if (screenSize < this.MINIMUM_RADIUS_PX) {
                 // Flow sources are very important and should be visible, even when zoomed out.
 

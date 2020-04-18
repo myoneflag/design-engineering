@@ -12,7 +12,7 @@ import {
     isAcuteRad,
     isRightAngleRad,
     isStraightRad,
-    lighten
+    lighten, rgb2color, rgb2style
 } from "../../../src/lib/utils";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
@@ -25,7 +25,7 @@ import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/sele
 import { CenteredObject } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
 import { CalculationContext } from "../../../src/calculations/types";
 import { FlowNode, FLOW_SOURCE_EDGE } from "../../../src/calculations/calculation-engine";
-import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
+import { DrawingArgs, EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
 import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import FittingCalculation, { emptyFittingCalculation } from "../../store/document/calculations/fitting-calculation";
@@ -35,6 +35,7 @@ import { Coord } from "../../../../common/src/api/document/drawing";
 import { EPS, parseCatalogNumberExact } from "../../../../common/src/lib/utils";
 import { assertUnreachable, ComponentPressureLossMethod } from "../../../../common/src/api/config";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
+import { getHighlightColor } from "../lib/utils";
 
 @CalculatedObject
 @SelectableObject
@@ -66,7 +67,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to
     // complete the type.
 
-    drawInternal({ ctx, doc, vp }: DrawingContext, { active, selected }: DrawingArgs): void {
+    drawEntity({ ctx, doc, vp }: DrawingContext, { selected, overrideColorList }: EntityDrawingArgs): void {
         try {
             // asdf
             const scale = vp.currToSurfaceScale(ctx);
@@ -102,12 +103,16 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
                     const small = vec
                         .normalize()
                         .multiply(Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM)));
-                    if (active && selected) {
+                    if (selected || overrideColorList.length) {
                         ctx.beginPath();
                         ctx.lineWidth = targetWidth + this.FITTING_DIAMETER_PIXELS * 2;
 
                         this.lastDrawnWidth = defaultWidth + (this.FITTING_DIAMETER_PIXELS * 2) / scale;
-                        ctx.strokeStyle = lighten(this.displayEntity(doc).color!.hex, 50, 0.5);
+                        ctx.strokeStyle = rgb2style(getHighlightColor(
+                            selected,
+                            overrideColorList,
+                            {hex: lighten(this.displayEntity(doc).color!.hex, 50)},
+                        ), 0.5);
                         ctx.moveTo(0, 0);
                         ctx.lineTo(small.x, small.y);
                         ctx.stroke();

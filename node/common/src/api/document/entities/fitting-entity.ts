@@ -1,7 +1,7 @@
 import { FieldType, PropertyField } from "./property-field";
 import { EntityType } from "./types";
 import { Color, ConnectableEntity, Coord, DrawingState, FlowSystemParameters } from "../drawing";
-import { Choice, cloneSimple } from "../../../lib/utils";
+import {  cloneSimple } from "../../../lib/utils";
 
 export default interface FittingEntity extends ConnectableEntity {
     type: EntityType.FITTING;
@@ -10,7 +10,7 @@ export default interface FittingEntity extends ConnectableEntity {
     color: Color | null;
 }
 
-export function makeValveFields(valveTypes: Choice[], systems: FlowSystemParameters[]): PropertyField[] {
+export function makeValveFields(systems: FlowSystemParameters[]): PropertyField[] {
     return [
         {
             property: "systemUid",

@@ -16,17 +16,22 @@ import { DrawableEntityConcrete } from "../../../../../common/src/api/document/e
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
 import { SelectableObject } from "../../../../src/htmlcanvas/lib/object-traits/selectable";
 import { CenteredObject } from "../../../../src/htmlcanvas/lib/object-traits/centered-object";
-import { drawRpzdDouble, getRpzdHeadLoss, VALVE_HEIGHT_MM } from "../../../../src/htmlcanvas/lib/utils";
+import {
+    drawRpzdDouble,
+    getHighlightColor,
+    getRpzdHeadLoss,
+    VALVE_HEIGHT_MM
+} from "../../../../src/htmlcanvas/lib/utils";
 import { CalculationContext } from "../../../../src/calculations/types";
 import { FlowNode } from "../../../../src/calculations/calculation-engine";
-import { DrawingArgs } from "../../../../src/htmlcanvas/lib/drawable-object";
+import { DrawingArgs, EntityDrawingArgs } from "../../../../src/htmlcanvas/lib/drawable-object";
 import {
     Calculated,
     CalculatedObject,
     FIELD_HEIGHT
 } from "../../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import { CalculationData } from "../../../../src/store/document/calculations/calculation-field";
-import { getValveK } from "../../../lib/utils";
+import { getValveK, rgb2color, rgb2style } from "../../../lib/utils";
 import SystemNode from "./system-node";
 import BigValveCalculation from "../../../store/document/calculations/big-valve-calculation";
 import Flatten from "@flatten-js/core";
@@ -37,7 +42,7 @@ import {
     ComponentPressureLossMethod,
     StandardFlowSystemUids
 } from "../../../../../common/src/api/config";
-import { Coord, coordDist2 } from "../../../../../common/src/api/document/drawing";
+import { Color, Coord, coordDist2 } from "../../../../../common/src/api/document/drawing";
 import { cloneSimple, interpolateTable, parseCatalogNumberExact } from "../../../../../common/src/lib/utils";
 import { SnappableObject } from "../../lib/object-traits/snappable-object";
 
@@ -55,7 +60,7 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
 
     lastDrawnWorldRadius: number = 0; // for bounds detection
 
-    drawInternal(context: DrawingContext, args: DrawingArgs): void {
+    drawEntity(context: DrawingContext, args: EntityDrawingArgs): void {
         switch (this.entity.valve.type) {
             case BigValveType.TMV:
                 this.drawTmv(context, args);
@@ -69,7 +74,7 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         }
     }
 
-    drawTmv(context: DrawingContext, { active, selected }: DrawingArgs) {
+    drawTmv(context: DrawingContext, { selected, overrideColorList }: EntityDrawingArgs) {
         const { ctx, vp } = context;
 
         const l = -this.entity.pipeDistanceMM;
@@ -97,8 +102,8 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         ctx.fillRect(l, t, r - l, bm);
         ctx.strokeStyle = "#000";
 
-        if (selected) {
-            ctx.fillStyle = "rgba(100, 100, 255, 0.2)";
+        if (selected || overrideColorList.length) {
+            ctx.fillStyle = rgb2style(getHighlightColor(selected, overrideColorList), 0.4);
             ctx.fillRect(boxl, boxt, boxw, boxh);
         }
 
@@ -116,7 +121,7 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         ctx.stroke();
     }
 
-    drawTemperingValve(context: DrawingContext, { active, selected }: DrawingArgs) {
+    drawTemperingValve(context: DrawingContext, { selected, overrideColorList }: EntityDrawingArgs) {
         const { ctx, vp } = context;
 
         const l = -this.entity.pipeDistanceMM;
@@ -128,8 +133,8 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         ctx.strokeStyle = "#222222";
         ctx.lineCap = "square";
 
-        if (selected) {
-            ctx.fillStyle = "rgba(100, 100, 255, 0.2)";
+        if (selected || overrideColorList.length) {
+            ctx.fillStyle = rgb2style(getHighlightColor(selected, overrideColorList), 0.4);
             ctx.fillRect(l * 1.2, 0 - b * 0.1, (r - l) * 1.2, b * 1.2);
         }
 
@@ -141,7 +146,7 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         ctx.stroke();
     }
 
-    drawHotColdRPZD(context: DrawingContext, { active, selected }: DrawingArgs) {
+    drawHotColdRPZD(context: DrawingContext, { selected, overrideColorList }: EntityDrawingArgs) {
         const { ctx, vp } = context;
         const hotSystem = context.doc.drawing.metadata.flowSystems.find(
             (s) => s.uid === StandardFlowSystemUids.HotWater
@@ -154,14 +159,14 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         const r = this.entity.pipeDistanceMM;
         const b = this.entity.valveLengthMM;
         const t = 0;
-        if (selected) {
-            ctx.fillStyle = "rgba(100, 100, 255, 0.2)";
-            ctx.fillRect(l * 1.2, 0 - b * 0.1, (r - l) * 1.2, b * 1.2);
+        let highlight: Color | undefined = undefined;
+        if (selected || overrideColorList.length) {
+            highlight = rgb2color(getHighlightColor(selected, overrideColorList));
         }
 
         ctx.rotate(Math.PI / 2);
         ctx.translate(VALVE_HEIGHT_MM, 0);
-        drawRpzdDouble(context, [coldSystem.color.hex, hotSystem.color.hex], selected);
+        drawRpzdDouble(context, [coldSystem.color.hex, hotSystem.color.hex], highlight);
         ctx.translate(-VALVE_HEIGHT_MM, 0);
         ctx.rotate(-Math.PI / 2);
     }

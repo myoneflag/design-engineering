@@ -1,7 +1,7 @@
 import { DrawingState, FlowSystemParametersV8, FlowSystemParametersV9, initialDrawing } from "./document/drawing";
 import { EntityType } from "./document/entities/types";
 import { NodeType } from "./document/entities/load-node-entity";
-import { InsulationJackets, InsulationMaterials, StandardFlowSystemUids } from "./config";
+import { InsulationJackets, InsulationMaterials, StandardFlowSystemUids, SupportedPsdStandards } from "./config";
 import PlantEntity, { PlantEntityV8 } from "./document/entities/plants/plant-entity";
 import { PlantConcrete, PlantType, PressureMethod } from "./document/entities/plants/plant-types";
 import { DrawableEntityConcrete } from "./document/entities/concrete-entity";
@@ -216,6 +216,28 @@ export function upgrade11to12(original: DrawingState) {
                 if (e.minPressureKPA === undefined || e.maxPressureKPA === undefined && (e as any as FlowSourceEntityV11).pressureKPA !== undefined) {
                     e.minPressureKPA = e.maxPressureKPA = (e as any as FlowSourceEntityV11).pressureKPA;
                     delete (e as any as FlowSourceEntityV11).pressureKPA;
+                }
+            }
+        }
+    }
+}
+
+// add min and max pressures to load nodes.
+// rename bs6700 to cibse Guide G
+export function upgrade12to13(original: DrawingState) {
+    if (original.metadata.calculationParams.psdMethod === 'bs6700' as any) {
+        original.metadata.calculationParams.psdMethod = SupportedPsdStandards.cibseGuideG;
+    }
+
+    for (const level of Object.values(original.levels)) {
+        const entities = level.entities;
+        for (const e of Object.values(entities)) {
+            if (e.type === EntityType.LOAD_NODE) {
+                if (e.minPressureKPA === undefined) {
+                    e.minPressureKPA = null;
+                }
+                if (e.maxPressureKPA === undefined) {
+                    e.maxPressureKPA = null;
                 }
             }
         }

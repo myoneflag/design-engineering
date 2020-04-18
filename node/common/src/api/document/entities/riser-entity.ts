@@ -1,6 +1,6 @@
 import { FieldType, PropertyField } from "./property-field";
 import { EntityType } from "./types";
-import { Color, ConnectableEntity, Coord, DrawingState, FlowSystemParameters, NetworkType } from "../drawing";
+import { Color, COLORS, ConnectableEntity, Coord, DrawingState, FlowSystemParameters, NetworkType } from "../drawing";
 import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../lib/utils";
 import { LEVEL_HEIGHT_DIFF_M } from "../../config";
 import { Catalog } from "../../catalog/types";
@@ -78,6 +78,7 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
             property: "maximumVelocityMS",
             title: "Maximum Velocity",
             hasDefault: true,
+            highlightOnOverride: COLORS.YELLOW,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: 0, max: null },
@@ -88,6 +89,7 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
         {
             property: "diameterMM",
             title: "Diameter",
+            highlightOnOverride: COLORS.YELLOW,
             hasDefault: false,
             isCalculated: true,
             type: FieldType.Choice,
@@ -102,6 +104,7 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
             property: "material",
             title: "Material",
             hasDefault: true,
+            highlightOnOverride: COLORS.YELLOW,
             isCalculated: false,
             type: FieldType.Choice,
             params: { choices: materials },
@@ -122,6 +125,7 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
             property: "temperatureC",
             title: "Temperature (°C)",
             hasDefault: true,
+            highlightOnOverride: COLORS.YELLOW,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: 0, max: 100 },

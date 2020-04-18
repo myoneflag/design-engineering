@@ -318,7 +318,7 @@ export function getPsdUnitName(psdMethod: SupportedPsdStandards): { name: string
         case SupportedPsdStandards.upc2018Flushometer:
         case SupportedPsdStandards.ipc2018FlushTanks:
         case SupportedPsdStandards.ipc2018Flushometer:
-        case SupportedPsdStandards.bs6700:
+        case SupportedPsdStandards.cibseGuideG:
         case SupportedPsdStandards.bs806:
             return { name: "Loading Units", abbreviation: "LU" };
         case SupportedPsdStandards.din1988300Residential:
@@ -466,7 +466,7 @@ export function getFields(
 ): CalculationField[] {
     switch (entity.type) {
         case EntityType.RISER:
-            return makeRiserCalculationFields(entity, doc);
+            return makeRiserCalculationFields(entity, doc, catalog);
         case EntityType.PIPE:
             return makePipeCalculationFields(entity, doc.drawing, catalog, globalStore);
         case EntityType.FITTING:
@@ -480,7 +480,7 @@ export function getFields(
         case EntityType.SYSTEM_NODE:
             return makeSystemNodeCalculationFields(entity, doc.drawing);
         case EntityType.LOAD_NODE:
-            return makeLoadNodeCalculationFields(entity);
+            return makeLoadNodeCalculationFields(entity, doc.drawing, globalStore);
         case EntityType.FLOW_SOURCE:
             return makeFlowSourceCalculationFields(entity, doc.drawing);
         case EntityType.PLANT:

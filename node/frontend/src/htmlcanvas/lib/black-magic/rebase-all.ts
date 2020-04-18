@@ -10,11 +10,14 @@ import {
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
 
 export function rebaseAll(context: CanvasContext) {
-    context.globalStore.forEach((o) => {
-        if (isCentered(o.entity.type)) {
-            const co = o as BaseBackedObject & Centered;
-            co.debase(context);
-            co.rebase(context);
+    for (const lvl of Object.keys(context.document.diffFilter.levels)) {
+        for (const euid of context.globalStore.entitiesInLevel.get(lvl)!) {
+            const o = context.globalStore.get(euid)!;
+            if (isCentered(o.entity.type)) {
+                const co = o as BaseBackedObject & Centered;
+                co.debase(context);
+                co.rebase(context);
+            }
         }
-    });
+    }
 }

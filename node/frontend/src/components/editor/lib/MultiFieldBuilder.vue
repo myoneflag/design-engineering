@@ -58,6 +58,7 @@ import { Catalog } from "../../../../../common/src/api/catalog/types";
 import { cloneSimple } from "../../../../../common/src/lib/utils";
 import { fillDirectedValveFields } from "../../../store/document/entities/fillDirectedValveFields";
 import { fillDefaultLoadNodeFields } from "../../../store/document/entities/fillDefaultLoadNodeFields";
+import { makeEntityFields } from "../../../htmlcanvas/lib/utils";
 
 @Component({
     components: { PropertiesFieldBuilder },
@@ -110,49 +111,7 @@ export default class MultiFieldBuilder extends Vue {
     }
 
     getEntityFields(entity: DrawableEntityConcrete): PropertyField[] {
-        switch (entity.type) {
-            case EntityType.BACKGROUND_IMAGE:
-                return makeBackgroundFields().filter((p) => p.multiFieldId);
-            case EntityType.FITTING:
-                return makeValveFields(
-                    this.$store.getters["catalog/defaultValveChoices"],
-                    this.document.drawing.metadata.flowSystems
-                ).filter((p) => p.multiFieldId);
-            case EntityType.PIPE:
-                return makePipeFields(entity, this.$store.getters["catalog/default"], this.document.drawing).filter(
-                    (p) => p.multiFieldId
-                );
-            case EntityType.RISER:
-                return makeRiserFields(entity, this.$store.getters["catalog/default"], this.document.drawing).filter(
-                    (p) => p.multiFieldId
-                );
-            case EntityType.BIG_VALVE:
-                return makeBigValveFields(entity)
-                    .filter((p) => p.multiFieldId)
-                    .filter((p) => p.multiFieldId);
-            case EntityType.FIXTURE:
-                return makeFixtureFields(this.document.drawing, entity)
-                    .filter((p) => p.multiFieldId)
-                    .filter((p) => p.multiFieldId);
-            case EntityType.DIRECTED_VALVE:
-                return makeDirectedValveFields(entity, this.$store.getters["catalog/default"], this.document.drawing)
-                    .filter((p) => p.multiFieldId)
-                    .filter((p) => p.multiFieldId);
-            case EntityType.SYSTEM_NODE:
-                throw new Error("Invalid object in multi select");
-            case EntityType.LOAD_NODE:
-                return makeLoadNodesFields(this.document.drawing.metadata.flowSystems, entity).filter(
-                    (p) => p.multiFieldId
-                );
-            case EntityType.FLOW_SOURCE:
-                return makeFlowSourceFields(
-                    this.$store.getters["catalog/defaultPipeMaterialChoices"],
-                    this.document.drawing.metadata.flowSystems
-                ).filter((p) => p.multiFieldId);
-            case EntityType.PLANT:
-                return makePlantEntityFields(entity, this.document.drawing.metadata.flowSystems);
-        }
-        assertUnreachable(entity);
+        return makeEntityFields(entity, this.document, this.$store.getters['catalog/default']);
     }
 
     fillObjectFields(obj: BaseBackedObject): DrawableEntityConcrete {

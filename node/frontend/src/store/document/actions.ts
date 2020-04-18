@@ -69,7 +69,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
 
         // We have to clone to stop reactivity affecting the async post values later.
         // We choose to clone the resulting operations rather than the input for performance.
-        const diff = cloneSimple(diffState(state.committedDrawing, state.drawing, undefined));
+        const diff = cloneSimple(diffState(state.committedDrawing, state.drawing, state.diffFilter));
         diff.forEach((v: OT.OperationTransformConcrete) => {
             if (v.type !== OPERATION_NAMES.DIFF_OPERATION) {
                 throw new Error("diffState gave a weird operation");

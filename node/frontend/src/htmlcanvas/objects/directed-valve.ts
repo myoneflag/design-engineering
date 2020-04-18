@@ -24,7 +24,7 @@ import {
     VALVE_SIZE_MM
 } from "../../../src/htmlcanvas/lib/utils";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
-import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
+import { DrawingArgs, EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
 import PipeEntity, { MutablePipe } from "../../../../common/src/api/document/entities/pipe-entity";
@@ -98,12 +98,12 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         return [];
     }
 
-    drawInternal(context: DrawingContext, { active, selected }: DrawingArgs): void {
+    drawEntity(context: DrawingContext, { selected }: EntityDrawingArgs): void {
         const s = context.vp.currToSurfaceScale(context.ctx);
         context.ctx.rotate(this.rotationRad);
 
         const e = fillDirectedValveFields(context.doc.drawing, this.globalStore, this.entity);
-        if (selected && active) {
+        if (selected) {
             context.ctx.fillStyle = lighten(e.color!.hex, 50, 0.8);
             context.ctx.fillRect(-VALVE_SIZE_MM * 1.2, -VALVE_SIZE_MM * 1.2, VALVE_SIZE_MM * 2.4, VALVE_SIZE_MM * 2.4);
         }

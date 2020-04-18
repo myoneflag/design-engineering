@@ -14,7 +14,7 @@ import { PIPE_HEIGHT_GRAPHIC_EPS_MM } from "../../../../src/config";
 import { CalculationContext } from "../../../../src/calculations/types";
 import { FlowNode } from "../../../../src/calculations/calculation-engine";
 import { angleDiffRad } from "../../../../src/lib/utils";
-import { DrawingArgs } from "../../../../src/htmlcanvas/lib/drawable-object";
+import { DrawingArgs, EntityDrawingArgs } from "../../../../src/htmlcanvas/lib/drawable-object";
 import { CalculationData } from "../../../../src/store/document/calculations/calculation-field";
 import * as TM from "transformation-matrix";
 import PipeEntity from "../../../../../common/src/api/document/entities/pipe-entity";
@@ -42,7 +42,7 @@ export default interface Connectable {
     connect(uid: string): void;
     disconnect(uid: string): void;
 
-    drawInternal(context: DrawingContext, args: DrawingArgs): void;
+    drawEntity(context: DrawingContext, args: EntityDrawingArgs): void;
 
     getCalculationTower(context: CalculationContext): Array<[FittingEntity, PipeEntity] | [FittingEntity]>;
     getCalculationNode(context: CalculationContext, connectionUid: string): ConnectableEntityConcrete;
@@ -72,9 +72,9 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
     return <T extends new (...args: any[]) => Connectable & BaseBackedConnectable>(constructor: T) => {
         // @ts-ignore abstract class expression limitation in the language. In practice this is fine.
         class Generated extends constructor implements Connectable {
-            drawInternal(context: DrawingContext, args: DrawingArgs): void {
-                const { active, selected } = args;
-                super.drawInternal(context, args);
+            drawEntity(context: DrawingContext, args: EntityDrawingArgs): void {
+                const { selected } = args;
+                super.drawEntity(context, args);
 
                 const e = this.entity;
                 switch (e.type) {

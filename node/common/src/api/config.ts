@@ -9,7 +9,7 @@ export enum SupportedPsdStandards {
 
     ipc2018FlushTanks = 'ipc2018FlushTanks',
     ipc2018Flushometer = 'ipc2018Flushometer',
-    bs6700 = 'bs6700',
+    cibseGuideG = 'cibseGuideG',
     upc2018FlushTanks = 'upc2018FlushTanks',
     upc2018Flushometer = 'upc2018Flushometer',
     bs806 = 'bs806',
@@ -29,7 +29,7 @@ export type SupportedLUPsdStandards =
 
     SupportedPsdStandards.ipc2018FlushTanks |
     SupportedPsdStandards.ipc2018Flushometer |
-    SupportedPsdStandards.bs6700 |
+    SupportedPsdStandards.cibseGuideG |
     SupportedPsdStandards.upc2018FlushTanks |
     SupportedPsdStandards.upc2018Flushometer |
     SupportedPsdStandards.bs806;
@@ -58,7 +58,7 @@ export function isGermanStandard(psd: SupportedPsdStandards): psd is SupportedEq
         case SupportedPsdStandards.as35002018LoadingUnits:
         case SupportedPsdStandards.barriesBookLoadingUnits:
         case SupportedPsdStandards.bs806:
-        case SupportedPsdStandards.bs6700:
+        case SupportedPsdStandards.cibseGuideG:
         case SupportedPsdStandards.ipc2018Flushometer:
         case SupportedPsdStandards.ipc2018FlushTanks:
         case SupportedPsdStandards.upc2018Flushometer:
@@ -82,7 +82,7 @@ export function isLUStandard(psd: SupportedPsdStandards): psd is SupportedLUPsdS
         case SupportedPsdStandards.as35002018LoadingUnits:
         case SupportedPsdStandards.barriesBookLoadingUnits:
         case SupportedPsdStandards.bs806:
-        case SupportedPsdStandards.bs6700:
+        case SupportedPsdStandards.cibseGuideG:
         case SupportedPsdStandards.ipc2018Flushometer:
         case SupportedPsdStandards.ipc2018FlushTanks:
         case SupportedPsdStandards.upc2018Flushometer:
@@ -112,10 +112,8 @@ export const DISPLAY_PSD_METHODS: Choice[] = [
         name: "Barrie's Book Loading Units",
         key: SupportedPsdStandards.barriesBookLoadingUnits
     },
-    { name: "BS 6700", key: SupportedPsdStandards.bs6700 },
+    { name: "CIBSE Guide G", key: SupportedPsdStandards.cibseGuideG },
     { name: "BS 806", key: SupportedPsdStandards.bs806 },
-
-    { name: "CIBSE Guide G", disabled: true, key: "CIBSEGuideG" },
 
     {
         name: "DIN 1988-300 - Residential",
@@ -287,7 +285,7 @@ export const COMPONENT_PRESSURE_LOSS_METHODS: Choice[] = [
 ];
 
 export const LEVEL_HEIGHT_DIFF_M = 3;
-export const CURRENT_VERSION = 12;
+export const CURRENT_VERSION = 13;
 
 export enum StandardFlowSystemUids {
     ColdWater = "cold-water",

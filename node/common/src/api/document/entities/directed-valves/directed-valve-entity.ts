@@ -2,7 +2,7 @@ import { EntityType } from "../types";
 import { FieldType, PropertyField } from "../property-field";
 import { DirectedValveConcrete, ValveType } from "./valve-types";
 import { assertUnreachable } from "../../../config";
-import { Color, ConnectableEntity, Coord, DrawingState } from "../../drawing";
+import { Color, COLORS, ConnectableEntity, Coord, DrawingState } from "../../drawing";
 import { Catalog } from "../../../catalog/types";
 import { Choice, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../../lib/utils";
 import { convertPipeDiameterFromMetric, Units } from "../../../../lib/measurements";

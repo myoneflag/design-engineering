@@ -10,6 +10,7 @@ export interface DrawingContext {
     doc: DocumentState;
     catalog: Catalog;
     globalStore: GlobalStore;
+    selectedUids: Set<string>;
 }
 
 // Manages objects, and also keeps track of connections. This basic one is to

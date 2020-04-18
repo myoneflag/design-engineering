@@ -10,7 +10,7 @@ import { CalculationFilters, DocumentState } from "../../../src/store/document/t
 import Flatten from "@flatten-js/core";
 import { Draggable, DraggableObject } from "../../../src/htmlcanvas/lib/object-traits/draggable-object";
 import * as _ from "lodash";
-import { canonizeAngleRad, lighten } from "../../../src/lib/utils";
+import { canonizeAngleRad, lighten, rgb2style } from "../../../src/lib/utils";
 import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
@@ -31,7 +31,7 @@ import { PIPE_STUB_MAX_LENGTH_MM } from "../../../src/htmlcanvas/lib/black-magic
 import { getDarcyWeisbachFlatMH } from "../../../src/calculations/pressure-drops";
 import { SIGNIFICANT_FLOW_THRESHOLD } from "../../../src/htmlcanvas/layers/calculation-layer";
 import { FlowNode } from "../../../src/calculations/calculation-engine";
-import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
+import { DrawingArgs, EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
 import PipeCalculation, {
     Configuration,
@@ -56,6 +56,7 @@ import { determineConnectableNetwork } from "../../store/document/entities/lib";
 import { assertUnreachable, ComponentPressureLossMethod } from "../../../../common/src/api/config";
 import { CenteredObject } from "../lib/object-traits/centered-object";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
+import { getHighlightColor } from "../lib/utils";
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 1.5;
@@ -202,7 +203,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         ctx.setTransform(oTM);
     }
 
-    drawInternal(context: DrawingContext, { active, selected, calculationFilters }: DrawingArgs): void {
+    drawEntity(context: DrawingContext, { selected, withCalculation, overrideColorList }: EntityDrawingArgs): void {
         const { ctx, doc } = context;
         const s = context.vp.currToSurfaceScale(ctx);
         lastDrawnScale = s;
@@ -222,7 +223,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         );
         this.lastDrawnWidthInternal = baseWidth;
 
-        if (calculationFilters) {
+        if (withCalculation) {
             const calculation = context.globalStore.getCalculation(this.entity);
             if (calculation) {
                 if (calculation.realNominalPipeDiameterMM) {
@@ -280,11 +281,15 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
 
         ctx.lineCap = "round";
-        if (active && selected) {
+        if (selected || overrideColorList.length ) {
             ctx.beginPath();
             ctx.lineWidth = baseWidth + 6.0 / s;
             // this.lastDrawnWidth = baseWidth + 6.0 / s;
-            ctx.strokeStyle = lighten(baseColor, 0, 0.5);
+            ctx.strokeStyle = rgb2style(getHighlightColor(
+                selected,
+                overrideColorList,
+                {hex: lighten(baseColor, 0)},
+            ), 0.5);
 
             ctx.moveTo(ao.x, ao.y);
             ctx.lineTo(bo.x, bo.y);

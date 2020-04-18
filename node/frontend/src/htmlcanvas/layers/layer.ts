@@ -163,14 +163,18 @@ export abstract class LayerImplementation implements Layer {
         ).filter((uid) => myMap.has(uid));
         uidsToDraw.sort((a, b) => myMap.get(a)! - myMap.get(b)!);
 
+        const newContext: DrawingContext = {
+            ...context,
+            selectedUids: new Set<string>([...selectedSet, ...uncommitted]),
+        };
+
         uidsToDraw.forEach((uid) => {
             const o = this.context.globalStore.get(uid);
             if (o) {
-                o.draw(context, {
+                o.draw(newContext, {
                     active: true,
-                    selected: selectedSet.has(uid) || uncommittedSet.has(uid),
-                    calculationFilters: null,
-                    forExport: false
+                    withCalculation: false,
+                    forExport: false,
                 });
             }
         });

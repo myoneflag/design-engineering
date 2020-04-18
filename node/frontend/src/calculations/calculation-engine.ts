@@ -61,7 +61,6 @@ import { GlobalStore } from "../htmlcanvas/lib/global-store";
 import { ObjectStore } from "../htmlcanvas/lib/object-store";
 import { makeFlowSourceFields } from "../../../common/src/api/document/entities/flow-source-entity";
 import FlowSourceCalculation from "../store/document/calculations/flow-source-calculation";
-import FlowSource from "../htmlcanvas/objects/flow-source";
 import { makePlantEntityFields } from "../../../common/src/api/document/entities/plants/plant-entity";
 import Plant from "../htmlcanvas/objects/plant";
 import { assertUnreachable, isGermanStandard, StandardFlowSystemUids } from "../../../common/src/api/config";
@@ -90,6 +89,8 @@ import {
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
 import SystemNode from "../htmlcanvas/objects/big-valve/system-node";
 import Fixture from "../htmlcanvas/objects/fixture";
+import LoadNodeCalculation from "../store/document/calculations/load-node-calculation";
+import { fillDefaultLoadNodeFields } from "../store/document/entities/fillDefaultLoadNodeFields";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -145,6 +146,8 @@ export default class CalculationEngine {
 
     entityMaxPressuresKPA = new Map<string, number | null>();
     nodePressureKPA = new Map<string, number | null>();
+    entityStaticPressureKPA = new Map<string, number | null>();
+    nodeStaticPressureKPA = new Map<string, number | null>();
     allBridges = new Map<string, Edge<FlowNode, FlowEdge>>();
     psdAfterBridgeCache = new Map<string, PsdProfile>();
     parentBridgeOfWetEdge = new Map<string, Edge<FlowNode | undefined, FlowEdge | undefined>>();
@@ -241,7 +244,7 @@ export default class CalculationEngine {
                     fields = makePipeFields(obj.entity, this.catalog, this.doc.drawing);
                     break;
                 case EntityType.FITTING:
-                    fields = makeValveFields([], []);
+                    fields = makeValveFields([]);
                     break;
                 case EntityType.BIG_VALVE:
                     fields = makeBigValveFields(obj.entity);
@@ -253,7 +256,7 @@ export default class CalculationEngine {
                     fields = makeDirectedValveFields(obj.entity, this.catalog, this.doc.drawing);
                     break;
                 case EntityType.FLOW_SOURCE:
-                    fields = makeFlowSourceFields([], []);
+                    fields = makeFlowSourceFields([]);
                     break;
                 case EntityType.LOAD_NODE:
                     fields = makeLoadNodesFields([], obj.entity);
@@ -577,6 +580,7 @@ export default class CalculationEngine {
             if (o.entity.type === EntityType.PIPE) {
                 const c = this.globalStore.getOrCreateCalculation(o.entity);
                 c.lengthM = o.entity.lengthM == null ? (o as Pipe).computedLengthM : o.entity.lengthM;
+                c.heightM = o.entity.heightAboveFloorM;
             }
         });
     }
@@ -660,12 +664,10 @@ export default class CalculationEngine {
     }
 
     calculateStaticPressures() {
-        const entityStaticPressureKPA = new Map<string, number | null>();
-        const nodeStaticPressureKPA = new Map<string, number | null>();
         this.networkObjects().forEach((o) => {
             if (o.entity.type === EntityType.FLOW_SOURCE) {
                 const n = { connectable: o.uid, connection: FLOW_SOURCE_EDGE };
-                this.pushPressureThroughNetwork(n, o.entity.maxPressureKPA!, entityStaticPressureKPA, nodeStaticPressureKPA, PressurePushMode.Static);
+                this.pushPressureThroughNetwork(n, o.entity.maxPressureKPA!, this.entityStaticPressureKPA, this.nodeStaticPressureKPA, PressurePushMode.Static);
             }
         });
 
@@ -679,7 +681,7 @@ export default class CalculationEngine {
                         calculation.inlets[suid].staticPressureKPA = this.getAbsolutePressurePoint({
                             connectable: entity.roughIns[suid].uid,
                             connection: entity.uid
-                        }, nodeStaticPressureKPA);
+                        }, this.nodeStaticPressureKPA);
                     }
                     break;
                 }
@@ -708,7 +710,7 @@ export default class CalculationEngine {
                         const thisPressure = this.getAbsolutePressurePoint({
                             connectable: entity.uid,
                             connection: cuid
-                        }, nodeStaticPressureKPA);
+                        }, this.nodeStaticPressureKPA);
                         if (thisPressure != null && (maxPressure === null || thisPressure > maxPressure)) {
                             maxPressure = thisPressure;
                         }
@@ -2246,8 +2248,8 @@ export default class CalculationEngine {
                         }
                     }
 
-                    if (o.entity.type === EntityType.SYSTEM_NODE) {
-                        const sc = calculation as SystemNodeCalculation;
+                    if (o.entity.type === EntityType.SYSTEM_NODE || o.entity.type === EntityType.LOAD_NODE) {
+                        const sc = calculation as SystemNodeCalculation | LoadNodeCalculation;
 
                         sc.psdUnits = this.getTerminalPsdU({
                             connectable: o.entity.uid,
@@ -2280,14 +2282,49 @@ export default class CalculationEngine {
                     break;
                 case EntityType.FITTING:
                     break;
-                case EntityType.PIPE:
+                case EntityType.PIPE: {
+                    const filled = fillPipeDefaultFields(this.doc.drawing, (o as Pipe).computedLengthM, o.entity);
+                    const pipeSpec = (o as Pipe).getCatalogBySizePage(this);
+                    const calc = this.globalStore.getOrCreateCalculation(o.entity);
+                    if (pipeSpec) {
+                        const maxWorking = parseCatalogNumberExact(pipeSpec.safeWorkingPressureKPA);
+                        const ca = this.entityStaticPressureKPA.get(o.entity.endpointUid[0]);
+                        const cb = this.entityStaticPressureKPA.get(o.entity.endpointUid[1]);
+                        const actualPressure = Math.max(ca || 0, cb || 0);
+                        if (maxWorking !== null) {
+                            if (actualPressure > maxWorking) {
+                                calc.warning = 'Max pressure ' + maxWorking + 'kpa exceeded (' + actualPressure + ' kpa)';
+                            }
+                        }
+                    }
                     break;
+                }
                 case EntityType.FLOW_SOURCE:
                     break;
                 case EntityType.SYSTEM_NODE:
                     break;
-                case EntityType.BIG_VALVE:
+                case EntityType.BIG_VALVE: {
+                    let calc = this.globalStore.getOrCreateCalculation(o.entity);
+                    let maxFlowRateLS = null;
+                    switch (o.entity.valve.type) {
+                        case BigValveType.TMV:
+                            maxFlowRateLS = parseCatalogNumberExact(this.catalog.mixingValves.tmv.maxFlowRateLS);
+                            break;
+                        case BigValveType.TEMPERING:
+                            maxFlowRateLS = parseCatalogNumberExact(this.catalog.mixingValves.temperingValve.maxFlowRateLS);
+                            break;
+                        case BigValveType.RPZD_HOT_COLD:
+                            break;
+                        default:
+                            assertUnreachable(o.entity.valve);
+                    }
+                    if (maxFlowRateLS !== null) {
+                        if (calc.hotPeakFlowRate || 0 > maxFlowRateLS || calc.coldPeakFlowRate || 0 > maxFlowRateLS) {
+                            calc.warning = 'Max Flow Rate ' + maxFlowRateLS + ' L/s exceeded';
+                        }
+                    }
                     break;
+                }
                 case EntityType.FIXTURE: {
                     const e = fillFixtureFields(this.doc.drawing, this.catalog, o.entity);
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity);
@@ -2338,8 +2375,17 @@ export default class CalculationEngine {
                             break;
                         case ValveType.PRV_SINGLE:
                         case ValveType.PRV_DOUBLE:
-                        case ValveType.PRV_TRIPLE:
+                        case ValveType.PRV_TRIPLE: {
                             const inPressure = calculation.pressureKPA;
+
+                            if (inPressure !== null && calculation.sizeMM !== null) {
+                                const maxInletPressure =
+                                    parseCatalogNumberExact(this.catalog.prv[calculation.sizeMM].maxInletPressureKPA);
+                                if (maxInletPressure !== null && inPressure > maxInletPressure) {
+                                    calculation.warning = 'Max pressure of ' + maxInletPressure.toFixed(2) + ' kpa exceeded';
+                                }
+                            }
+
                             if (
                                 inPressure !== null &&
                                 o.entity.valve.targetPressureKPA !== null &&
@@ -2359,6 +2405,7 @@ export default class CalculationEngine {
                                 }
                             }
                             break;
+                        }
                         default:
                             assertUnreachable(o.entity.valve);
                     }
@@ -2366,8 +2413,17 @@ export default class CalculationEngine {
                 }
                 case EntityType.RISER:
                 case EntityType.PLANT:
-                case EntityType.LOAD_NODE:
                     break;
+                case EntityType.LOAD_NODE: {
+                    const filled = fillDefaultLoadNodeFields(this.doc, this.globalStore, o.entity);
+                    const calc = this.globalStore.getOrCreateCalculation(filled);
+                    if (calc.pressureKPA !== null && calc.pressureKPA > filled.maxPressureKPA!) {
+                        calc.warning = 'Max pressure exceeded ('
+                            + calc.pressureKPA.toFixed(2) + 'kpa > '
+                            + filled.maxPressureKPA!.toFixed(2) + 'kpa';
+                    }
+                    break;
+                }
                 default:
                     assertUnreachable(o.entity);
             }

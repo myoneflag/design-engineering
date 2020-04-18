@@ -81,7 +81,8 @@
                                                 boundary: 'viewport'
                                             }"
                                             type="number"
-                                            v-model="level.floorHeightM"
+                                            :value="getFloorHeightCached(level)"
+                                            @input="setFloorHeightCached(level, Number($event))"
                                             size="sm"
                                             @blur="commitFloorHeight(level)"
                                         >
@@ -166,6 +167,20 @@ import { LEVEL_HEIGHT_DIFF_M } from "../../../../common/src/api/config";
 })
 export default class LevelSelector extends Vue {
     expanded = false;
+    // we need this cache during input so that typing doesn't reorder the floor heights.
+    floorHeightCache = new Map<string, number>();
+
+    getFloorHeightCached(level: Level): number {
+        if (this.floorHeightCache.has(level.uid)) {
+            return this.floorHeightCache.get(level.uid)!;
+        } else {
+            return level.floorHeightM;
+        }
+    }
+
+    setFloorHeightCached(level: Level, heightM: number) {
+        this.floorHeightCache.set(level.uid, heightM);
+    }
 
     get sortedLevels(): Level[] {
         return this.$store.getters["document/sortedLevels"];
@@ -238,7 +253,7 @@ export default class LevelSelector extends Vue {
     }
 
     commitFloorHeight(level: Level) {
-        level.floorHeightM = Number(level.floorHeightM);
+        level.floorHeightM = Number(this.getFloorHeightCached(level));
         this.commit();
     }
 

@@ -1,4 +1,4 @@
-import { FlowSystemParameters } from "../drawing";
+import { Color, FlowSystemParameters } from "../drawing";
 import { Choice } from "../../../lib/utils";
 import { Units } from "../../../lib/measurements";
 
@@ -41,6 +41,7 @@ export interface PropertyFieldBase {
     title: string;
     hasDefault: boolean;
     isCalculated: boolean;
+    highlightOnOverride?: Color;
     requiresInput?: boolean;
     readonly?: boolean;
     multiFieldId: string | null;

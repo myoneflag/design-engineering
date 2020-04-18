@@ -2,7 +2,7 @@ import { EntityType } from "../types";
 import { FieldType, PropertyField } from "../property-field";
 import { isLUStandard, SupportedPsdStandards } from "../../../config";
 import { Catalog } from "../../../catalog/types";
-import { Coord, DrawableEntity, DrawingState } from "../../drawing";
+import { COLORS, Coord, DrawableEntity, DrawingState } from "../../drawing";
 import { cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../../lib/utils";
 import { Units } from "../../../../lib/measurements";
 
@@ -51,6 +51,7 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity):
             property: "outletAboveFloorM",
             title: "Height Above Floor",
             hasDefault: true,
+            highlightOnOverride: COLORS.YELLOW,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: null, max: null },
@@ -63,6 +64,7 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity):
             property: "warmTempC",
             title: "Warm Water Temperature",
             hasDefault: true,
+            highlightOnOverride: COLORS.YELLOW,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: 0, max: 100 },
@@ -74,6 +76,7 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity):
             property: "fixtureUnits",
             title: "Fixture Units",
             hasDefault: true,
+            highlightOnOverride: COLORS.YELLOW,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: 0, max: null },
@@ -84,6 +87,7 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity):
             property: "probabilityOfUsagePCT",
             title: "Prob. of Usage (%)",
             hasDefault: true,
+            highlightOnOverride: COLORS.YELLOW,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: 0, max: null },
@@ -118,6 +122,7 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity):
                 property: "roughIns." + suid + ".designFlowRateLS",
                 title: "Full Flow Rate",
                 hasDefault: true,
+                highlightOnOverride: COLORS.YELLOW,
                 isCalculated: false,
                 type: FieldType.Number,
                 params: { min: 0, max: null },
@@ -129,6 +134,7 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity):
                 property: "roughIns." + suid + ".continuousFlowLS",
                 title: "Continuous Flow",
                 hasDefault: true,
+                highlightOnOverride: COLORS.YELLOW,
                 isCalculated: false,
                 type: FieldType.Number,
                 params: { min: 0, max: null },
@@ -139,6 +145,7 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity):
                 property: "roughIns." + suid + ".loadingUnits",
                 title: "Loading Units",
                 hasDefault: true,
+                highlightOnOverride: COLORS.YELLOW,
                 isCalculated: false,
                 type: FieldType.Number,
                 params: { min: 0, max: null },
@@ -148,6 +155,7 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity):
                 property: "roughIns." + suid + ".minPressureKPA",
                 title: "Min. Inlet Pressure",
                 hasDefault: true,
+                highlightOnOverride: COLORS.YELLOW,
                 isCalculated: false,
                 type: FieldType.Number,
                 params: { min: 0, max: null },
@@ -158,6 +166,7 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity):
                 property: "roughIns." + suid + ".maxPressureKPA",
                 title: "Max. Inlet Pressure",
                 hasDefault: true,
+                highlightOnOverride: COLORS.YELLOW,
                 isCalculated: false,
                 type: FieldType.Number,
                 params: { min: 0, max: null },

@@ -47,8 +47,7 @@ import {
 export default class FlowSourceProperties extends Vue {
     get fields() {
         return makeFlowSourceFields(
-            this.$store.getters["catalog/defaultPipeMaterialChoices"],
-            this.document.drawing.metadata.flowSystems
+            this.document.drawing.metadata.flowSystems,
         );
     }
 

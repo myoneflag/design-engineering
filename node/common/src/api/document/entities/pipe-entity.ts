@@ -1,6 +1,6 @@
 import { FieldType, PropertyField } from "./property-field";
 import { EntityType } from "./types";
-import { Color, DrawableEntity, DrawingState, FlowSystemParameters, NetworkType } from "../drawing";
+import { Color, COLORS, DrawableEntity, DrawingState, FlowSystemParameters, NetworkType } from "../drawing";
 import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../lib/utils";
 import { Catalog } from "../../catalog/types";
 import { convertPipeDiameterFromMetric, Units } from "../../../lib/measurements";
@@ -79,6 +79,7 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
             property: "material",
             title: "Material",
             hasDefault: true,
+            highlightOnOverride: COLORS.YELLOW,
             isCalculated: false,
             type: FieldType.Choice,
             params: { choices: materials },
@@ -89,6 +90,7 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
             property: "lengthM",
             title: "Length",
             hasDefault: false,
+            highlightOnOverride: COLORS.YELLOW,
             isCalculated: true,
             type: FieldType.Number,
             params: { min: 0, max: null, initialValue: 0 },
@@ -110,6 +112,7 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
             property: "maximumVelocityMS",
             title: "Maximum Velocity",
             hasDefault: true,
+            highlightOnOverride: COLORS.YELLOW,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: 0, max: null },

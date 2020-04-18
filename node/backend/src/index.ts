@@ -6,7 +6,6 @@ import CONFIG from "./config/config";
 import { registerUser } from "./controllers/login";
 import { AccessLevel, User } from "../../common/src/models/User";
 import { Document } from "../../common/src/models/Document";
-import { upgradeDocument } from "./upgrade-drawing";
 import pLimit from 'p-limit';
 import { DocumentUpgrader, fixOperationIds } from "./services/DocumentUpgrader";
 
