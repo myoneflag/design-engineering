@@ -1,6 +1,6 @@
 import { FieldType, PropertyField } from "../property-field";
 import { EntityType } from "../types";
-import { CenteredEntity, Coord, DrawingState, FlowSystemParameters } from "../../drawing";
+import { CenteredEntity, COLORS, Coord, DrawingState, FlowSystemParameters } from "../../drawing";
 import { cloneSimple } from "../../../../lib/utils";
 import { PlantConcrete, PlantType, PressureMethod } from "./plant-types";
 import { assertUnreachable } from "../../../config";
@@ -147,6 +147,7 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                     property: "plant.returnMinimumTemperatureC",
                     title: "Minimum Return Temperature",
                     hasDefault: true,
+                    highlightOnOverride: COLORS.YELLOW,
                     isCalculated: false,
                     type: FieldType.Number,
                     params: { min: null, max: entity.outletTemperatureC },
@@ -160,6 +161,7 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                     property: "plant.returnVelocityMS",
                     title: "Maximum Return Velocity (M/s)",
                     hasDefault: true,
+                    highlightOnOverride: COLORS.YELLOW,
                     isCalculated: false,
                     type: FieldType.Number,
                     params: { min: 0, max: null },
@@ -254,6 +256,7 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
             property: "outletTemperatureC",
             title: "Outlet Temperature",
             hasDefault: true,
+            highlightOnOverride: COLORS.YELLOW,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: null, max: null },

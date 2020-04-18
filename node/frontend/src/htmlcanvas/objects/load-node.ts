@@ -5,7 +5,7 @@ import { Calculated, CalculatedObject } from "../lib/object-traits/calculated-ob
 import Connectable, { ConnectableObject } from "../lib/object-traits/connectable";
 import { CenteredObject } from "../lib/object-traits/centered-object";
 import { DrawingContext } from "../lib/types";
-import { DrawingArgs } from "../lib/drawable-object";
+import { DrawingArgs, EntityDrawingArgs } from "../lib/drawable-object";
 import { CalculationContext } from "../../calculations/types";
 import { FlowNode } from "../../calculations/calculation-engine";
 import CanvasContext from "../lib/canvas-context";
@@ -14,7 +14,7 @@ import { CalculationData } from "../../store/document/calculations/calculation-f
 import * as TM from "transformation-matrix";
 import { getDragPriority } from "../../store/document";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
-import { lighten } from "../../lib/utils";
+import { lighten, rgb2style } from "../../lib/utils";
 import Flatten from "@flatten-js/core";
 import DrawableObjectFactory from "../lib/drawable-object-factory";
 import { SelectableObject } from "../lib/object-traits/selectable";
@@ -27,6 +27,7 @@ import { cloneSimple } from "../../../../common/src/lib/utils";
 import { fillDefaultLoadNodeFields } from "../../store/document/entities/fillDefaultLoadNodeFields";
 import { ConnectableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
+import { getHighlightColor } from "../lib/utils";
 
 @SelectableObject
 @CenterDraggableObject
@@ -63,22 +64,31 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
     dragPriority = getDragPriority(EntityType.LOAD_NODE);
     minimumConnections = 0;
 
-    drawInternal(context: DrawingContext, args: DrawingArgs): void {
+    drawEntity(context: DrawingContext, args: EntityDrawingArgs): void {
         const { ctx, vp } = context;
         const baseRadius = this.baseRadius;
         const radius = Math.max(baseRadius, vp.surfaceToWorldLength(baseRadius / 50));
 
         const filled = fillDefaultLoadNodeFields(context.doc, this.globalStore, this.entity);
 
-        if (args.selected) {
+        if (args.selected || args.overrideColorList.length) {
             const sr = Math.max(baseRadius + 20, vp.surfaceToWorldLength(baseRadius / 50 + 2));
 
-            ctx.fillStyle = lighten(filled.color!.hex, 50);
+            ctx.fillStyle = rgb2style(getHighlightColor(
+                args.selected,
+                args.overrideColorList,
+                {hex: lighten(filled.color!.hex, 50)},
+            ));
+
             if (
                 this.entity.node.type === NodeType.DWELLING &&
                 !context.doc.drawing.metadata.calculationParams.dwellingMethod
             ) {
-                ctx.fillStyle = lighten(filled.color!.hex, 50, 0.5);
+                ctx.fillStyle = rgb2style(getHighlightColor(
+                    args.selected,
+                    args.overrideColorList,
+                    {hex: lighten(filled.color!.hex, 50)},
+                ));
             }
             ctx.beginPath();
             this.strokeShape(context, sr);
@@ -86,7 +96,7 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         }
 
         ctx.fillStyle = filled.color!.hex;
-        if (args.calculationFilters) {
+        if (args.withCalculation) {
             const calculation = this.globalStore.getOrCreateCalculation(this.entity);
             if (!calculation.pressureKPA) {
                 ctx.fillStyle = "#888888";
@@ -183,15 +193,12 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
 
     getCalculationEntities(context: CalculationContext): [LoadNodeEntity, ...Array<PipeEntity | FittingEntity>] | [] {
         const tower = this.getCalculationTower(context);
-        if (tower.length === 0) {
-            return [];
-        }
-        if (this.entity.node.type === NodeType.LOAD_NODE) {
-            if (tower.length !== 1) {
-                throw new Error("Unexpected tower configuration. Expected exactly 1 layer");
-            }
-        }
         const proj = cloneSimple(this.entity);
+        if (tower.length === 0) {
+            proj.uid = proj.uid + '.0';
+            proj.calculationHeightM = 0;
+            return [proj];
+        }
         const res = tower.flat();
         proj.center = (res[0] as FittingEntity).center;
         proj.parentUid = res[0].parentUid;

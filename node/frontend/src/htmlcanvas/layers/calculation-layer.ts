@@ -26,6 +26,7 @@ import {
 import { assertUnreachable } from "../../../../common/src/api/config";
 import LayoutAllocator from "../lib/layout-allocator";
 import stringify from "json-stable-stringify";
+import { getEffectiveFilter } from "../../lib/utils";
 
 const MINIMUM_SIGNIFICANT_PIPE_LENGTH_MM = 500;
 export const SIGNIFICANT_FLOW_THRESHOLD = 1e-5;
@@ -42,18 +43,24 @@ export default class CalculationLayer extends LayerImplementation {
         active: boolean,
         shouldContinueInternal: () => boolean,
         reactive: Set<string>,
-        calculationFilters: CalculationFilters | null,
+        withCalculation: boolean,
         forExport: boolean
     ) {
         // TODO: asyncify
         const { ctx, vp } = context;
-        if (active && calculationFilters) {
+        if (active && withCalculation) {
+            const filters = getEffectiveFilter(
+                this.uidsInOrder.map((uid) => context.globalStore.get(uid)!),
+                context.doc.uiState.calculationFilters,
+                context.doc,
+            );
+
             const resolutionWL = Math.max(vp.surfaceToWorldLength(LABEL_RESOLUTION_PX), MIN_LABEL_RESOLUTION_WL);
             const rexp = Math.ceil(Math.log2(resolutionWL));
             const effRes = Math.pow(2, rexp);
             const scaleWarp = effRes / resolutionWL;
 
-            const layout = await this.getOrCreateLayout(context, effRes, shouldContinueInternal, calculationFilters, forExport);
+            const layout = await this.getOrCreateLayout(context, effRes, shouldContinueInternal, filters, forExport);
 
             if (!layout) {
                 return;
@@ -73,7 +80,6 @@ export default class CalculationLayer extends LayerImplementation {
                         }
                     } else {
                         // actual message
-
                         vp.prepareContext(context.ctx, label[1]);
                         context.ctx.scale(1 / scaleWarp, 1 / scaleWarp);
                         o!.drawCalculationBox(context, label[2], undefined, undefined, forExport);

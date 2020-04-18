@@ -59,7 +59,9 @@ export default function insertDwellingHotCold(context: CanvasContext, rotationDE
                     parentUid: null,
                     type: EntityType.LOAD_NODE,
                     linkedToUid: coldUid,
-                    uid: hotUid
+                    uid: hotUid,
+                    minPressureKPA: null,
+                    maxPressureKPA: null,
                 };
 
                 const coldEntity: LoadNodeEntity = {
@@ -75,7 +77,9 @@ export default function insertDwellingHotCold(context: CanvasContext, rotationDE
                     parentUid: null,
                     type: EntityType.LOAD_NODE,
                     linkedToUid: null,
-                    uid: coldUid
+                    uid: coldUid,
+                    minPressureKPA: null,
+                    maxPressureKPA: null,
                 };
 
                 context.$store.dispatch("document/addEntity", hotEntity);

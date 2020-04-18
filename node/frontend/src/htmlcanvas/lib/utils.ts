@@ -7,20 +7,37 @@ import {
     EdgeLikeEntity
 } from "../../../../common/src/api/document/entities/concrete-entity";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
-import { SystemNodeEntity } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
-import { fillFixtureFields } from "../../../../common/src/api/document/entities/fixtures/fixture-entity";
+import {
+    makeBigValveFields,
+    SystemNodeEntity
+} from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
+import {
+    fillFixtureFields,
+    makeFixtureFields
+} from "../../../../common/src/api/document/entities/fixtures/fixture-entity";
 import * as TM from "transformation-matrix";
 import Flatten from "@flatten-js/core";
-import RiserEntity from "../../../../common/src/api/document/entities/riser-entity";
+import RiserEntity, { makeRiserFields } from "../../../../common/src/api/document/entities/riser-entity";
 import { CalculationContext } from "../../calculations/types";
 import { ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
 import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
 import { GlobalStore } from "./global-store";
 import { assertUnreachable, LEVEL_HEIGHT_DIFF_M } from "../../../../common/src/api/config";
-import { Coord, DrawableEntity, DrawingState, Level } from "../../../../common/src/api/document/drawing";
+import { Color, COLORS, Coord, DrawableEntity, DrawingState, Level } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, EPS, interpolateTable, upperBoundTable } from "../../../../common/src/lib/utils";
-import PlantEntity, { fillPlantDefaults } from "../../../../common/src/api/document/entities/plants/plant-entity";
+import PlantEntity, {
+    fillPlantDefaults,
+    makePlantEntityFields
+} from "../../../../common/src/api/document/entities/plants/plant-entity";
 import { PlantType, PressureMethod } from "../../../../common/src/api/document/entities/plants/plant-types";
+import { makeBackgroundFields } from "../../../../common/src/api/document/entities/background-entity";
+import { makeValveFields } from "../../../../common/src/api/document/entities/fitting-entity";
+import { makePipeFields } from "../../../../common/src/api/document/entities/pipe-entity";
+import { Catalog } from "../../../../common/src/api/catalog/types";
+import { makeDirectedValveFields } from "../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
+import { makeLoadNodesFields } from "../../../../common/src/api/document/entities/load-node-entity";
+import { makeFlowSourceFields } from "../../../../common/src/api/document/entities/flow-source-entity";
+import { color2rgb, lighten, rgb2style } from "../../lib/utils";
 
 export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
     const floor = context.backgroundLayer.getBackgroundAt(wc);
@@ -226,18 +243,21 @@ export const VALVE_LINE_WIDTH_MM = 10;
 
 export const VALVE_SIZE_MM = 98;
 
-export function drawRpzdDouble(context: DrawingContext, colors: [string, string], selected: boolean = false) {
+export function drawRpzdDouble(context: DrawingContext, colors: [string, string], highlightColor?: Color) {
     const s = context.vp.currToSurfaceScale(context.ctx);
     const baseWidth = Math.max(2.0 / s, VALVE_LINE_WIDTH_MM / context.vp.surfaceToWorldLength(1));
     const ctx = context.ctx;
     ctx.lineWidth = baseWidth;
 
     ctx.fillStyle = "#ffffff";
-    if (selected) {
-        ctx.fillStyle = "rgba(100, 100, 255, 0.2)";
-    }
 
     ctx.fillRect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * 2.3, VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * 4.6);
+
+
+    if (highlightColor) {
+        ctx.fillStyle = rgb2style(color2rgb(highlightColor), 0.3);
+        ctx.fillRect(-VALVE_HEIGHT_MM * 1.5, -VALVE_HEIGHT_MM * 2.5, VALVE_HEIGHT_MM * 3, VALVE_HEIGHT_MM * 5);
+    }
 
     if (colors[0] !== colors[1]) {
         ctx.strokeStyle = "#444444";
@@ -279,4 +299,79 @@ export function getPlantPressureLossKPA(entity: PlantEntity, drawing: DrawingSta
     }
 
     return 0;
+}
+
+export function makeEntityFields(entity: DrawableEntityConcrete, document: DocumentState, catalog: Catalog) {
+
+    switch (entity.type) {
+        case EntityType.BACKGROUND_IMAGE:
+            return makeBackgroundFields().filter((p) => p.multiFieldId);
+        case EntityType.FITTING:
+            return makeValveFields(
+                document.drawing.metadata.flowSystems
+            ).filter((p) => p.multiFieldId);
+        case EntityType.PIPE:
+            return makePipeFields(entity, catalog, document.drawing).filter(
+                (p) => p.multiFieldId
+            );
+        case EntityType.RISER:
+            return makeRiserFields(entity, catalog, document.drawing).filter(
+                (p) => p.multiFieldId
+            );
+        case EntityType.BIG_VALVE:
+            return makeBigValveFields(entity)
+                .filter((p) => p.multiFieldId)
+                .filter((p) => p.multiFieldId);
+        case EntityType.FIXTURE:
+            return makeFixtureFields(document.drawing, entity)
+                .filter((p) => p.multiFieldId)
+                .filter((p) => p.multiFieldId);
+        case EntityType.DIRECTED_VALVE:
+            return makeDirectedValveFields(entity, catalog, document.drawing)
+                .filter((p) => p.multiFieldId)
+                .filter((p) => p.multiFieldId);
+        case EntityType.SYSTEM_NODE:
+            throw new Error("Invalid object in multi select");
+        case EntityType.LOAD_NODE:
+            return makeLoadNodesFields(document.drawing.metadata.flowSystems, entity).filter(
+                (p) => p.multiFieldId
+            );
+        case EntityType.FLOW_SOURCE:
+            return makeFlowSourceFields(
+                document.drawing.metadata.flowSystems
+            ).filter((p) => p.multiFieldId);
+        case EntityType.PLANT:
+            return makePlantEntityFields(entity, document.drawing.metadata.flowSystems);
+    }
+    assertUnreachable(entity);
+}
+
+export function getHighlightColor(selected: boolean, overridden: Color[], theme?: Color) {
+
+    const mergeList = Array.from(overridden);
+    if (selected) {
+        if (!theme) {
+            theme = {hex: '#6464ff'};
+        }
+        mergeList.push(theme);
+    }
+
+    if (!mergeList.length) {
+        return {
+            r: 0, g: 0, b: 0,
+        };
+    }
+
+    const tot = {r: 0, g: 0, b: 0};
+    for (const c of mergeList) {
+        const nxt = color2rgb(c);
+        tot.r += nxt.r;
+        tot.g += nxt.g;
+        tot.b += nxt.b;
+    }
+    return {
+        r: tot.r / mergeList.length,
+        g: tot.g / mergeList.length,
+        b: tot.b / mergeList.length,
+    };
 }

@@ -8,7 +8,9 @@ import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import Flatten from "@flatten-js/core";
 import Layer from "../../../src/htmlcanvas/layers/layer";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
-import { Coord, Rectangle } from "../../../../common/src/api/document/drawing";
+import { Color, Coord, Rectangle } from "../../../../common/src/api/document/drawing";
+import { makePipeFields } from "../../../../common/src/api/document/entities/pipe-entity";
+import { makeEntityFields } from "./utils";
 
 export type BoxableShape = Flatten.Segment | Flatten.Point | Flatten.Polygon | Flatten.Circle;
 
@@ -234,8 +236,16 @@ export default abstract class DrawableObject {
 }
 
 export interface DrawingArgs {
-    selected: boolean;
-    active: boolean;
-    calculationFilters: CalculationFilters | null;
     forExport: boolean;
+    active: boolean;
+    withCalculation: boolean;
+    allSelected?: boolean;
+}
+
+export interface EntityDrawingArgs {
+    forExport: boolean;
+    layerActive: boolean;
+    withCalculation: boolean;
+    selected: boolean;
+    overrideColorList: Color[];
 }

@@ -33,9 +33,8 @@ export default class BackgroundLayer extends LayerImplementation {
             if (background && background instanceof BackgroundImage) {
                 if (!this.isSelected(selectId) || !active || !background.hasDragged) {
                     background.draw(context, {
-                        selected: this.isSelected(selectId),
                         active: active && !selectedTool.focusSelectedObject,
-                        calculationFilters: null,
+                        withCalculation: false,
                         forExport
                     });
                 }
@@ -57,9 +56,8 @@ export default class BackgroundLayer extends LayerImplementation {
                     (background.hasDragged || selectedTool.focusSelectedObject)
                 ) {
                     background.draw(context, {
-                        selected: this.isSelected(selectId),
                         active,
-                        calculationFilters: null,
+                        withCalculation: false,
                         forExport
                     });
                 }
@@ -108,7 +106,7 @@ export default class BackgroundLayer extends LayerImplementation {
 
     drawReactiveLayer(context: DrawingContext, interactive: string[]) {
         if (this.resizeBox) {
-            this.resizeBox.draw(context, { active: true, selected: true, calculationFilters: null, forExport: false });
+            this.resizeBox.draw(context, { active: true, forExport: false, withCalculation: false });
         }
     }
 

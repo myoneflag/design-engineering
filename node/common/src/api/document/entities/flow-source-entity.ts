@@ -25,7 +25,7 @@ export default interface FlowSourceEntity extends ConnectableEntity {
     maxPressureKPA: number | null;
 }
 
-export function makeFlowSourceFields(materials: Choice[], systems: FlowSystemParameters[]): PropertyField[] {
+export function makeFlowSourceFields(systems: FlowSystemParameters[]): PropertyField[] {
     return [
         {
             property: "systemUid",

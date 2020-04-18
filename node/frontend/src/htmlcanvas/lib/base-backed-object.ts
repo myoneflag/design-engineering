@@ -1,4 +1,4 @@
-import DrawableObject from "../../../src/htmlcanvas/lib/drawable-object";
+import DrawableObject, { DrawingArgs, EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { CalculationFilters, DocumentState } from "../../../src/store/document/types";
 import { DrawingContext, ValidationResult } from "../../../src/htmlcanvas/lib/types";
 import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
@@ -6,10 +6,8 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
 import {
     ConnectableEntityConcrete,
     DrawableEntityConcrete,
-    EdgeLikeEntity,
-    isConnectableEntity
+    EdgeLikeEntity
 } from "../../../../common/src/api/document/entities/concrete-entity";
-import Layer from "../../../src/htmlcanvas/layers/layer";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { CalculationContext } from "../../../src/calculations/types";
 import { FlowNode } from "../../../src/calculations/calculation-engine";
@@ -18,11 +16,10 @@ import { CalculationData } from "../../../src/store/document/calculations/calcul
 import * as TM from "transformation-matrix";
 import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
-import * as _ from "lodash";
 import { GlobalStore } from "./global-store";
-import { ObjectStore } from "./object-store";
-import { Coord, Coord3D, DrawableEntity } from "../../../../common/src/api/document/drawing";
-import { APIResult } from "../../../../common/src/api/document/types";
+import { Color, Coord, Coord3D } from "../../../../common/src/api/document/drawing";
+import { makeEntityFields } from "./utils";
+import { getPropertyByString } from "../../lib/utils";
 
 export default abstract class BaseBackedObject extends DrawableObject {
     entityBacked: DrawableEntityConcrete;
@@ -74,6 +71,40 @@ export default abstract class BaseBackedObject extends DrawableObject {
         }
     }
 
+    get uid() {
+        return this.entity.uid;
+    }
+
+    get type(): EntityType {
+        return this.entity.type;
+    }
+
+    drawInternal(context: DrawingContext, args: DrawingArgs): void {
+        const fields = makeEntityFields(this.entity, context.doc, context.catalog);
+        const overrideColorList: Color[] = [];
+        for (const f of fields) {
+            if (f.highlightOnOverride) {
+                if (getPropertyByString(this.entity, f.property) != null) {
+                    overrideColorList.push(f.highlightOnOverride);
+                }
+            }
+        }
+
+        let selected = false;
+        if (args.allSelected !== undefined) {
+            selected = args.allSelected;
+        } else {
+            // determine if this item was selected.
+            selected = (context.selectedUids.has(this.entity.uid));
+            if (!args.active) {
+                selected = false;
+            }
+        }
+
+
+        this.drawEntity(context, { ...args, overrideColorList, selected, layerActive: args.active});
+    }
+
     drawCalculationBox(
         context: DrawingContext,
         data: CalculationData[],
@@ -108,6 +139,8 @@ export default abstract class BaseBackedObject extends DrawableObject {
         throw new Error("Method not implemented. Please use @Connectable to implement.");
     }
 
+    abstract drawEntity(context: DrawingContext, args: EntityDrawingArgs): void;
+
     abstract offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null;
 
     // Return list of objects to remove.
@@ -123,14 +156,6 @@ export default abstract class BaseBackedObject extends DrawableObject {
         signed: boolean,
         pressureKPA: number | null
     ): number | null;
-
-    get uid() {
-        return this.entity.uid;
-    }
-
-    get type(): EntityType {
-        return this.entity.type;
-    }
 
     abstract getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[];
 

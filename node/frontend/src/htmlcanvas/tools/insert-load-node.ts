@@ -62,6 +62,8 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType) {
                                 designFlowRateLS: 0,
                                 loadingUnits: 1
                             },
+                            minPressureKPA: null,
+                            maxPressureKPA: null,
                             systemUidOption: null,
                             center: cloneSimple(wc),
                             color: null,
@@ -80,6 +82,8 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType) {
                                 dwellings: 1,
                                 continuousFlowLS: 0
                             },
+                            minPressureKPA: null,
+                            maxPressureKPA: null,
                             systemUidOption: null,
                             center: cloneSimple(wc),
                             color: null,

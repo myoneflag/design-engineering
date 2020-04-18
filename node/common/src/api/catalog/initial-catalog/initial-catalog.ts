@@ -19,7 +19,7 @@ export const initialCatalog: Catalog = {
                     "cold-water": "3",
                     "warm-water": "3",
                 },
-                bs6700: {
+                cibseGuideG: {
                     "cold-water": "3",
                     "warm-water": "3",
                 },
@@ -69,7 +69,7 @@ export const initialCatalog: Catalog = {
                     "cold-water": "2",
                     "warm-water": "2",
                 },
-                bs6700: {
+                cibseGuideG: {
                     "cold-water": "2",
                     "warm-water": "2",
                 },
@@ -119,7 +119,7 @@ export const initialCatalog: Catalog = {
                     "cold-water": "10",
                     "warm-water": "10",
                 },
-                bs6700: {
+                cibseGuideG: {
                     "cold-water": "10",
                     "warm-water": "10",
                 },
@@ -169,7 +169,7 @@ export const initialCatalog: Catalog = {
                     "cold-water": "2",
                     "hot-water": "2",
                 },
-                bs6700: {
+                cibseGuideG: {
                     "cold-water": "2",
                     "hot-water": "2",
                 },
@@ -219,7 +219,7 @@ export const initialCatalog: Catalog = {
                     "cold-water": "3",
                     "warm-water": "3",
                 },
-                bs6700: {
+                cibseGuideG: {
                     "cold-water": "3",
                     "warm-water": "3",
                 },
@@ -269,7 +269,7 @@ export const initialCatalog: Catalog = {
                     "cold-water": "22",
                     "warm-water": "22",
                 },
-                bs6700: {
+                cibseGuideG: {
                     "cold-water": "22",
                     "warm-water": "22",
                 },
@@ -308,18 +308,18 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "1",
             loadingUnits: {
                 as35002018LoadingUnits: {
-                    "cold-water": "2",
-                    "hot-water": "2"
+                    "cold-water": "3",
+                    "hot-water": "3"
                 },
                 barriesBookLoadingUnits: {
-                    "cold-water": "2",
+                    "cold-water": "3",
                     "hot-water": "3"
                 },
                 bs806: {
                     "cold-water": "2",
                     "hot-water": "2",
                 },
-                bs6700: {
+                cibseGuideG: {
                     "cold-water": "2",
                     "hot-water": "2",
                 },
@@ -369,7 +369,7 @@ export const initialCatalog: Catalog = {
                     "cold-water": "3",
                     "hot-water": "3",
                 },
-                bs6700: {
+                cibseGuideG: {
                     "cold-water": "3",
                     "hot-water": "3",
                 },
@@ -416,7 +416,7 @@ export const initialCatalog: Catalog = {
                 bs806: {
                     "cold-water": "1",
                 },
-                bs6700: {
+                cibseGuideG: {
                     "cold-water": "1",
                 },
                 ipc2018Flushometer: {
@@ -460,7 +460,7 @@ export const initialCatalog: Catalog = {
                     "cold-water": "2",
                     "hot-water": "2",
                 },
-                bs6700: {
+                cibseGuideG: {
                     "cold-water": "2",
                     "hot-water": "2",
                 },
@@ -507,7 +507,7 @@ export const initialCatalog: Catalog = {
                 bs806: {
                     "cold-water": "8",
                 },
-                bs6700: {
+                cibseGuideG: {
                     "cold-water": "8",
                 },
                 ipc2018Flushometer: {
@@ -551,7 +551,7 @@ export const initialCatalog: Catalog = {
                     "cold-water": "3",
                     "warm-water": "3",
                 },
-                bs6700: {
+                cibseGuideG: {
                     "cold-water": "3",
                     "warm-water": "3",
                 },
@@ -601,7 +601,7 @@ export const initialCatalog: Catalog = {
                     "cold-water": "3",
                     "hot-water": "3",
                 },
-                bs6700: {
+                cibseGuideG: {
                     "cold-water": "3",
                     "hot-water": "3",
                 },
@@ -651,7 +651,7 @@ export const initialCatalog: Catalog = {
                     "cold-water": "3",
                     "warm-water": "3",
                 },
-                bs6700: {
+                cibseGuideG: {
                     "cold-water": "3",
                     "warm-water": "3",
                 },
@@ -701,7 +701,7 @@ export const initialCatalog: Catalog = {
                     "cold-water": "3",
                     "hot-water": "3",
                 },
-                bs6700: {
+                cibseGuideG: {
                     "cold-water": "3",
                     "hot-water": "3",
                 },
@@ -751,7 +751,7 @@ export const initialCatalog: Catalog = {
                     "cold-water": "3",
                     "warm-water": "3",
                 },
-                bs6700: {
+                cibseGuideG: {
                     "cold-water": "3",
                     "warm-water": "3",
                 },
@@ -798,7 +798,7 @@ export const initialCatalog: Catalog = {
                 bs806: {
                     "cold-water": "1",
                 },
-                bs6700: {
+                cibseGuideG: {
                     "cold-water": "1",
                 },
                 ipc2018Flushometer: {
@@ -842,7 +842,7 @@ export const initialCatalog: Catalog = {
                     "cold-water": "3",
                     "hot-water": "3",
                 },
-                bs6700: {
+                cibseGuideG: {
                     "cold-water": "3",
                     "hot-water": "3",
                 },
@@ -889,7 +889,7 @@ export const initialCatalog: Catalog = {
                 bs806: {
                     "cold-water": "2",
                 },
-                bs6700: {
+                cibseGuideG: {
                     "cold-water": "2",
                 },
                 ipc2018Flushometer: {
@@ -1093,7 +1093,7 @@ export const initialCatalog: Catalog = {
             abbreviation: "CU",
             pipesBySize: {
                 100: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "98.2",
                     diameterNominalMM: "100",
                     diameterOutsideMM: "101.6",
@@ -1101,7 +1101,7 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "1200"
                 },
                 15: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "10.81",
                     diameterNominalMM: "15",
                     diameterOutsideMM: "12.7",
@@ -1109,7 +1109,7 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "5290"
                 },
                 150: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "148.2",
                     diameterNominalMM: "150",
                     diameterOutsideMM: "152.4",
@@ -1117,7 +1117,7 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "1000"
                 },
                 20: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "16.9",
                     diameterNominalMM: "20",
                     diameterOutsideMM: "19.05",
@@ -1125,7 +1125,7 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "3970"
                 },
                 200: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "198.9",
                     diameterNominalMM: "200",
                     diameterOutsideMM: "203.2",
@@ -1133,7 +1133,7 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "720"
                 },
                 25: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "22.8",
                     diameterNominalMM: "25",
                     diameterOutsideMM: "25.4",
@@ -1141,7 +1141,7 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "3500"
                 },
                 32: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "29.1",
                     diameterNominalMM: "32",
                     diameterOutsideMM: "31.75",
@@ -1149,7 +1149,7 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "2780"
                 },
                 40: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "35.4",
                     diameterNominalMM: "40",
                     diameterOutsideMM: "38.1",
@@ -1157,7 +1157,7 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "2300"
                 },
                 50: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "48.3",
                     diameterNominalMM: "50",
                     diameterOutsideMM: "50.8",
@@ -1165,7 +1165,7 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "1710"
                 },
                 65: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "61",
                     diameterNominalMM: "65",
                     diameterOutsideMM: "63.5",
@@ -1173,7 +1173,7 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "1370"
                 },
                 80: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "72.9",
                     diameterNominalMM: "80",
                     diameterOutsideMM: "76.2",
@@ -1417,7 +1417,7 @@ export const initialCatalog: Catalog = {
             abbreviation: "S/S",
             pipesBySize: {
                 100: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "104",
                     diameterNominalMM: "100",
                     diameterOutsideMM: "108",
@@ -1425,7 +1425,7 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "4500"
                 },
                 15: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "13",
                     diameterNominalMM: "15",
                     diameterOutsideMM: "15",
@@ -1433,7 +1433,7 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "20000"
                 },
                 150: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "162",
                     diameterNominalMM: "150",
                     diameterOutsideMM: "166",
@@ -1441,7 +1441,7 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "4000"
                 },
                 20: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "19.6",
                     diameterNominalMM: "20",
                     diameterOutsideMM: "22",
@@ -1449,7 +1449,7 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "15800"
                 },
                 25: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "25.6",
                     diameterNominalMM: "25",
                     diameterOutsideMM: "28",
@@ -1457,7 +1457,7 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "12500"
                 },
                 32: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "32",
                     diameterNominalMM: "32",
                     diameterOutsideMM: "35",
@@ -1465,7 +1465,7 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "9800"
                 },
                 40: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "39",
                     diameterNominalMM: "40",
                     diameterOutsideMM: "42",
@@ -1473,7 +1473,7 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "8500"
                 },
                 50: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "51",
                     diameterNominalMM: "50",
                     diameterOutsideMM: "54",
@@ -1481,7 +1481,7 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "6800"
                 },
                 65: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "67",
                     diameterNominalMM: "65",
                     diameterOutsideMM: "71",
@@ -1489,7 +1489,7 @@ export const initialCatalog: Catalog = {
                     safeWorkingPressureKPA: "7200"
                 },
                 80: {
-                    colebrookWhiteCoefficient: "0.0015",
+                    colebrookWhiteCoefficient: "0.003",
                     diameterInternalMM: "72.1",
                     diameterNominalMM: "80",
                     diameterOutsideMM: "76.1",
@@ -2171,31 +2171,31 @@ export const initialCatalog: Catalog = {
                 73: { cold: "5.5", hot: " 5.48" },
                 74: { cold: "5.55", hot: " 5.55" },
                 75: { cold: "5.6", hot: " 5.63" },
-                76: { cold: "5.65", hot: " 5.7" },
-                77: { cold: "5.7", hot: " 5.78" },
-                78: { cold: "5.75", hot: " 5.85" },
-                79: { cold: "5.8", hot: " 5.93" },
-                80: { cold: "5.85", hot: " 6" },
-                81: { cold: "5.91", hot: " 6.08" },
-                82: { cold: "5.95", hot: " 6.15" },
-                83: { cold: "6", hot: " 6.25" },
-                84: { cold: "6.05", hot: " 6.3" },
-                85: { cold: "6.1", hot: " 6.38" },
-                86: { cold: "6.15", hot: " 6.45" },
-                87: { cold: "6.2", hot: " 6.53" },
-                88: { cold: "6.25", hot: " 6.6" },
-                89: { cold: "6.3", hot: " 6.68" },
-                90: { cold: "6.35", hot: " 6.75" },
-                91: { cold: "6.4", hot: " 6.83" },
-                92: { cold: "6.45", hot: " 6.9" },
-                93: { cold: "6.5", hot: " 6.98" },
-                94: { cold: "6.55", hot: " 7.05" },
-                95: { cold: "6.6", hot: " 7.13" },
-                96: { cold: "6.65", hot: " 7.2" },
-                97: { cold: "6.7", hot: " 7.28" },
-                98: { cold: "6.75", hot: " 7.35" },
-                99: { cold: "6.8", hot: " 7.43" },
-                100: { cold: "6.85", hot: " 7.5" }
+                76: { cold: "5.7", hot: "5.7" },
+                77: { cold: "5.78", hot: "5.78" },
+                78: { cold: "5.85", hot: "5.85" },
+                79: { cold: "5.93", hot: "5.93" },
+                80: { cold: "6", hot: "6" },
+                81: { cold: "6.08", hot: "6.08" },
+                82: { cold: "6.15", hot: "6.15" },
+                83: { cold: "6.25", hot: "6.25" },
+                84: { cold: "6.3", hot: "6.3" },
+                85: { cold: "6.38", hot: "6.38" },
+                86: { cold: "6.45", hot: "6.45" },
+                87: { cold: "6.53", hot: "6.53" },
+                88: { cold: "6.6", hot: "6.6" },
+                89: { cold: "6.68", hot: "6.68" },
+                90: { cold: "6.75", hot: "6.75" },
+                91: { cold: "6.83", hot: "6.83" },
+                92: { cold: "6.9", hot: "6.9" },
+                93: { cold: "6.98", hot: "6.98" },
+                94: { cold: "7.05", hot: "7.05" },
+                95: { cold: "7.13", hot: "7.13" },
+                96: { cold: "7.2", hot: "7.2" },
+                97: { cold: "7.28", hot: "7.28" },
+                98: { cold: "7.35", hot: "7.35" },
+                99: { cold: "7.43", hot: "7.43" },
+                100: { cold: "7.5", hot: "7.5" }
             }
         }
     },
@@ -2563,7 +2563,7 @@ export const initialCatalog: Catalog = {
                 5000: "37.4124886",
             }
         },
-        bs6700: {
+        cibseGuideG: {
             type: PSDStandardType.LU_LOOKUP_TABLE,
             name: "BS 6700",
             table: {

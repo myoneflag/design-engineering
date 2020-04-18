@@ -20,7 +20,7 @@ import {
 import Centered, { CenteredObjectNoParent } from "../../../../src/htmlcanvas/lib/object-traits/centered-object";
 import { CalculationContext } from "../../../../src/calculations/types";
 import { FlowNode } from "../../../../src/calculations/calculation-engine";
-import { DrawingArgs } from "../../../../src/htmlcanvas/lib/drawable-object";
+import { DrawingArgs, EntityDrawingArgs } from "../../../../src/htmlcanvas/lib/drawable-object";
 import { Calculated, CalculatedObject } from "../../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import { CalculationData } from "../../../../src/store/document/calculations/calculation-field";
 import * as TM from "transformation-matrix";
@@ -142,7 +142,7 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
         /* */
     }
 
-    drawInternal(context: DrawingContext, { active, selected }: DrawingArgs): void {
+    drawEntity(context: DrawingContext, { selected }: EntityDrawingArgs): void {
         if (selected) {
             context.ctx.fillStyle = lighten(this.system(context.doc).color.hex, 50, 0.7);
             context.ctx.beginPath();

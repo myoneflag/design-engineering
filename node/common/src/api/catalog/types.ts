@@ -67,7 +67,7 @@ export interface FixtureSpec {
         [SupportedPsdStandards.as35002018LoadingUnits]: LoadingUnit,
         [SupportedPsdStandards.barriesBookLoadingUnits]: LoadingUnit,
         [SupportedPsdStandards.bs806]: LoadingUnit,
-        [SupportedPsdStandards.bs6700]: LoadingUnit,
+        [SupportedPsdStandards.cibseGuideG]: LoadingUnit,
         [SupportedPsdStandards.ipc2018FlushTanks]: LoadingUnit,
         [SupportedPsdStandards.ipc2018Flushometer]: LoadingUnit,
         [SupportedPsdStandards.upc2018FlushTanks]: LoadingUnit,

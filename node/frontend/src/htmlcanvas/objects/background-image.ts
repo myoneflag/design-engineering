@@ -20,7 +20,7 @@ import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/sele
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
 import { CalculationContext } from "../../../src/calculations/types";
 import { FlowNode } from "../../../src/calculations/calculation-engine";
-import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
+import { DrawingArgs, EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { GlobalStore } from "../lib/global-store";
 import ImageLoader from "../lib/image-loader";
 import { Coord, Rectangle } from "../../../../common/src/api/document/drawing";
@@ -343,11 +343,11 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
     }
 
     // Draw without world space concerns
-    drawInternal(context: DrawingContext, { selected, active, forExport }: DrawingArgs) {
+    drawEntity(context: DrawingContext, { selected, layerActive, forExport }: EntityDrawingArgs) {
         const { ctx, vp } = context;
         const image = this.chooseImage(context, forExport);
 
-        if (selected && active && image) {
+        if (selected && image) {
             const imgScaleX = this.width / image.width;
             const imgScaleY = this.height / image.height;
 
@@ -358,7 +358,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
                 this.entity.offset.y / imgScaleY,
                 image.naturalWidth,
                 image.naturalHeight,
-                active,
+                layerActive,
                 forExport
             );
         }
@@ -376,11 +376,11 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
             this.boundary.w,
             this.boundary.h,
             selected,
-            active,
+            layerActive,
             forExport
         );
 
-        if (selected && active && !forExport) {
+        if (selected && layerActive && !forExport) {
             if (this.entity.pointA) {
                 this.drawPoint(context, this.entity.pointA, "A");
             }

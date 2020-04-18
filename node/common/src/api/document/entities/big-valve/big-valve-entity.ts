@@ -2,7 +2,7 @@ import { EntityType } from "../types";
 import { FieldType, PropertyField } from "../property-field";
 import InvisibleNodeEntity from "../Invisible-node-entity";
 import { Catalog } from "../../../catalog/types";
-import { Coord, DrawableEntity } from "../../drawing";
+import { COLORS, Coord, DrawableEntity } from "../../drawing";
 import { cloneSimple, parseCatalogNumberOrMin } from "../../../../lib/utils";
 import { Units } from "../../../../lib/measurements";
 
@@ -101,6 +101,7 @@ export function makeBigValveFields(entity: BigValveEntity): PropertyField[] {
             title: "Min. Inlet Pressure",
             hasDefault: true,
             isCalculated: false,
+            highlightOnOverride: COLORS.YELLOW,
             type: FieldType.Number,
             params: { min: 0, max: null },
             multiFieldId: "minInletPressureKPA",
@@ -111,6 +112,7 @@ export function makeBigValveFields(entity: BigValveEntity): PropertyField[] {
             property: "maxInletPressureKPA",
             title: "Max. Inlet Pressure",
             hasDefault: true,
+            highlightOnOverride: COLORS.YELLOW,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: 0, max: null },
@@ -123,6 +125,7 @@ export function makeBigValveFields(entity: BigValveEntity): PropertyField[] {
             title: "Min. Flow Rate",
             hasDefault: true,
             isCalculated: false,
+            highlightOnOverride: COLORS.YELLOW,
             type: FieldType.Number,
             params: { min: 0, max: null },
             multiFieldId: "minFlowRateLS",
@@ -134,6 +137,7 @@ export function makeBigValveFields(entity: BigValveEntity): PropertyField[] {
             title: "Max. Flow Rate",
             hasDefault: true,
             isCalculated: false,
+            highlightOnOverride: COLORS.YELLOW,
             type: FieldType.Number,
             params: { min: 0, max: null },
             multiFieldId: "maxFlowRateLS",

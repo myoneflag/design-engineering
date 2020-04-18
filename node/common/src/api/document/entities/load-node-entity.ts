@@ -1,7 +1,8 @@
 import { FieldType, PropertyField } from "./property-field";
 import { EntityType } from "./types";
-import { CenteredEntity, Color, DrawableEntity, FlowSystemParameters } from "../drawing";
+import { CenteredEntity, Color, COLORS, DrawableEntity, FlowSystemParameters } from "../drawing";
 import { Units } from "../../../lib/measurements";
+import { cloneSimple } from "../../../lib/utils";
 
 export enum NodeType {
     LOAD_NODE,
@@ -28,6 +29,8 @@ export default interface LoadNodeEntity extends DrawableEntity, CenteredEntity {
     calculationHeightM: number | null;
 
     node: LoadNode | DwellingNode;
+    minPressureKPA: number | null;
+    maxPressureKPA: number | null;
 
     linkedToUid: string | null;
 }
@@ -116,6 +119,31 @@ export function makeLoadNodesFields(systems: FlowSystemParameters[], value: Load
             );
             break;
     }
+
+    fields.push(
+        {
+            property: "minPressureKPA",
+            title: "Min. Pressure",
+            hasDefault: true,
+            highlightOnOverride: COLORS.YELLOW,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: 0, max: null },
+            multiFieldId: "minPressureKPA",
+            units: Units.KiloPascals,
+        },
+        {
+            property: "maxPressureKPA",
+            title: "Max. Pressure",
+            hasDefault: true,
+            highlightOnOverride: COLORS.YELLOW,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: 0, max: null },
+            multiFieldId: "maxPressureKPA",
+            units: Units.KiloPascals,
+        },
+    );
 
     return fields;
 }

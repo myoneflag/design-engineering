@@ -20,7 +20,7 @@ import Flatten from "@flatten-js/core";
 import { CenteredObject } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
 import { CalculationContext } from "../../../src/calculations/types";
 import { FlowNode } from "../../../src/calculations/calculation-engine";
-import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
+import { DrawingArgs, EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import {
     Calculated,
     CalculatedObject,
@@ -34,6 +34,8 @@ import { cloneSimple } from "../../../../common/src/lib/utils";
 import SystemNode from "./big-valve/system-node";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { StandardFlowSystemUids } from "../../../../common/src/api/config";
+import { rgb2style } from "../../lib/utils";
+import { getHighlightColor } from "../lib/utils";
 
 @CalculatedObject
 @SelectableObject
@@ -76,7 +78,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
             .flat();
     }
 
-    drawInternal(context: DrawingContext, { active, selected }: DrawingArgs): void {
+    drawEntity(context: DrawingContext, { selected, overrideColorList }: EntityDrawingArgs): void {
         const scale = context.vp.currToSurfaceScale(context.ctx);
         const ww = Math.max(10 / this.toWorldLength(1), 1 / scale);
 
@@ -118,8 +120,8 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         }
         ctx.stroke();
 
-        if (selected) {
-            ctx.fillStyle = "rgba(150, 200, 150, 1)";
+        if (selected || overrideColorList.length) {
+            ctx.fillStyle = rgb2style(getHighlightColor(selected, overrideColorList, {hex: '#A0C8A0'}), 0.6);
             if (this.entity.roughInsInOrder.length > 1) {
                 ctx.fillRect(xm1, ym1, x9 - xm1, y7 - ym1);
             } else {

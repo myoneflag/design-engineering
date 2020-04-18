@@ -34,6 +34,8 @@ export default interface PipeCalculation extends PsdCalculation, Calculation {
 
     noFlowAvailableReason: NoFlowAvailableReason | null;
 
+    heightM: number | null;
+
     rawPSDFlowRateLS: number | null;
     rawReturnFlowRateLS: number | null;
     optimalInnerPipeDiameterMM: number | null;
@@ -77,6 +79,18 @@ export function makePipeCalculationFields(
             defaultEnabled: true
         }
     ];
+
+    result.push(
+        {
+            property: "heightM",
+            title: "Height Above Floor",
+            short: "height",
+            units: Units.Meters,
+            category: FieldCategory.Location,
+            systemUid: entity.systemUid,
+            defaultEnabled: true,
+        },
+    );
 
     const pCalc = globalStore.getOrCreateCalculation(entity);
     if (pCalc.configuration === Configuration.RETURN) {
@@ -201,6 +215,7 @@ export function makePipeCalculationFields(
 export function emptyPipeCalculation(): PipeCalculation {
     return {
         totalPeakFlowRateLS: null,
+        heightM: null,
         PSDFlowRateLS: null,
         noFlowAvailableReason: null,
         rawPSDFlowRateLS: null,

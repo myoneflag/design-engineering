@@ -48,8 +48,7 @@ import { Catalog, ValveSpec } from "../../../../../common/src/api/catalog/types"
 export default class FittingProperties extends Vue {
     get fields() {
         return makeValveFields(
-            this.$store.getters["catalog/defaultValveChoices"],
-            this.document.drawing.metadata.flowSystems
+            this.document.drawing.metadata.flowSystems,
         );
     }
 

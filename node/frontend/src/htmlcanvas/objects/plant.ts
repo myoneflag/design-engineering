@@ -12,10 +12,10 @@ import { DrawableEntityConcrete } from "../../../../common/src/api/document/enti
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
 import { CenteredObject } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
-import { getPlantPressureLossKPA } from "../../../src/htmlcanvas/lib/utils";
+import { getHighlightColor, getPlantPressureLossKPA } from "../../../src/htmlcanvas/lib/utils";
 import { CalculationContext } from "../../../src/calculations/types";
 import { FlowNode } from "../../../src/calculations/calculation-engine";
-import { DrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
+import { DrawingArgs, EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import {
     Calculated,
     CalculatedObject,
@@ -34,6 +34,7 @@ import { cloneSimple, EPS } from "../../../../common/src/lib/utils";
 import { PlantType } from "../../../../common/src/api/document/entities/plants/plant-types";
 import { assertUnreachable } from "../../../../common/src/api/config";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
+import { rgb2style } from "../../lib/utils";
 
 export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 
@@ -47,7 +48,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         DrawableObjectFactory.registerEntity(EntityType.PLANT, Plant);
     }
 
-    drawInternal(context: DrawingContext, args: DrawingArgs): void {
+    drawEntity(context: DrawingContext, args: EntityDrawingArgs): void {
         const { ctx, vp } = context;
         const { selected } = args;
 
@@ -81,8 +82,8 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             ctx.closePath();
             ctx.fill();
 
-            if (selected) {
-                ctx.fillStyle = "rgba(100, 100, 255, 0.2)";
+            if (selected || args.overrideColorList.length ) {
+                ctx.fillStyle = rgb2style(getHighlightColor(selected, args.overrideColorList), 0.4);
                 ctx.fillRect(boxl, boxt, boxw, boxh);
             }
 
