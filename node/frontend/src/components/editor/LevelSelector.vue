@@ -96,7 +96,7 @@
                                 </b-col>
                                 <b-col cols="1" style="padding: 0">
                                     <label
-                                        v-b-tooltip.hover.top="{ title: 'Storey Height (m)', boundary: 'viewport' }"
+                                        v-b-tooltip.hover.top="{ title: 'Height Datum (m)', boundary: 'viewport' }"
                                         type="number"
                                         size="sm"
                                         >{{

@@ -68,17 +68,23 @@ export function makePipeCalculationFields(
         materialName = " (" + catalog.pipes[pipe.material!].abbreviation + ")";
     }
 
-    const result: CalculationField[] = [
-        {
-            property: "PSDFlowRateLS",
-            title: "Flow Rate + Spare",
-            short: "",
-            units: Units.LitersPerSecond,
-            category: FieldCategory.FlowRate,
-            systemUid: entity.systemUid,
-            defaultEnabled: true
-        }
-    ];
+    const pCalc = globalStore.getOrCreateCalculation(entity);
+
+    const result: CalculationField[] = [];
+
+    if (pCalc.totalPeakFlowRateLS) {
+        result.push(
+            {
+                property: "PSDFlowRateLS",
+                title: "Flow Rate + Spare",
+                short: "",
+                units: Units.LitersPerSecond,
+                category: FieldCategory.FlowRate,
+                systemUid: entity.systemUid,
+                defaultEnabled: true
+            }
+        );
+    }
 
     result.push(
         {
@@ -92,7 +98,6 @@ export function makePipeCalculationFields(
         },
     );
 
-    const pCalc = globalStore.getOrCreateCalculation(entity);
     if (pCalc.configuration === Configuration.RETURN) {
         result.push(
             {
@@ -103,7 +108,7 @@ export function makePipeCalculationFields(
                 category: FieldCategory.FlowRate,
                 systemUid: entity.systemUid,
                 defaultEnabled: true,
-                // format: (v: number | null) => "(" + (v === null ? "??" : v.toFixed(2)) + ")"
+                format: (v: number | null) => "(" + (v === null ? "??" : v.toFixed(2)) + ")"
             },
         );
     }

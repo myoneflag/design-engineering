@@ -19,13 +19,24 @@ export default interface DirectedValveCalculation extends Calculation, PressureC
 }
 
 export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, globalStore: GlobalStore): CalculationField[] {
+    const systemUid = determineConnectableSystemUid(globalStore, entity);
     let fields: CalculationField[] = [
         {
             property: "flowRateLS",
             title: "Flow Rate",
             short: "",
             units: Units.LitersPerSecond,
-            category: FieldCategory.FlowRate
+            category: FieldCategory.FlowRate,
+            systemUid,
+        },
+        {
+            property: "pressureDropKPA",
+            title: "Pressure Drop",
+            short: "Drop",
+            defaultEnabled: true,
+            units: Units.KiloPascals,
+            category: FieldCategory.Pressure,
+            systemUid,
         },
     ];
 
@@ -36,11 +47,12 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
             short: "",
             defaultEnabled: true,
             units: Units.Kv,
-            category: FieldCategory.Pressure
+            category: FieldCategory.Pressure,
+            systemUid,
         });
     }
 
-    addPressureCalculationFields(fields, determineConnectableSystemUid(globalStore, entity), "", {short: "In", defaultEnabled: true});
+    addPressureCalculationFields(fields, systemUid, "", {short: "In", defaultEnabled: true});
 
     if (entity.systemUidOption) {
         fields = fields.map((f) => {

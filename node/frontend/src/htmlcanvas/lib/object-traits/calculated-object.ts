@@ -1,7 +1,11 @@
 import { CalculatableEntityConcrete } from "../../../../../common/src/api/document/entities/concrete-entity";
 import { DrawingContext } from "../../../../src/htmlcanvas/lib/types";
 import { CalculationFilters } from "../../../../src/store/document/types";
-import { CalculationData, CalculationDataType } from "../../../../src/store/document/calculations/calculation-field";
+import {
+    CalculationData,
+    CalculationDataType,
+    CalculationField
+} from "../../../../src/store/document/calculations/calculation-field";
 import Flatten from "@flatten-js/core";
 import BackedDrawableObject from "../../../../src/htmlcanvas/lib/backed-drawable-object";
 import { DEFAULT_FONT_NAME } from "../../../../src/config";
@@ -286,17 +290,19 @@ export function CalculatedObject<
             const filter = filters[this.entity.type].filters;
             const calculation = context.globalStore.getCalculation(this.entity);
 
+            const res: CalculationData[] = [];
+
             if (this.entity.type === EntityType.PIPE) {
                 const pCalc = context.globalStore.getCalculation(this.entity);
-                if (pCalc && pCalc.totalPeakFlowRateLS === null) {
+                if (pCalc && !pCalc.totalPeakFlowRateLS) {
                     let ambiguousMessage = "NOT CALCULATED";
                     if (pCalc.noFlowAvailableReason) {
                         switch (pCalc.noFlowAvailableReason) {
                             case NoFlowAvailableReason.NO_SOURCE:
-                                ambiguousMessage = "NO SOURCE";
+                                ambiguousMessage = "NO FLOW SOURCE";
                                 break;
                             case NoFlowAvailableReason.NO_LOADS_CONNECTED:
-                                ambiguousMessage = "NO LOADS CONNECTED";
+                                ambiguousMessage = "NO FIXTURES CONNECTED";
                                 break;
                             case NoFlowAvailableReason.TOO_MANY_FLOW_SOURCES:
                                 ambiguousMessage = "MULTIPLE FLOW SOURCES";
@@ -320,18 +326,24 @@ export function CalculatedObject<
                                 assertUnreachable(pCalc.noFlowAvailableReason);
                         }
                     }
-                    return [
+                    res.push(
                         {
                             message: ambiguousMessage,
                             attachUid: this.uid,
                             type: CalculationDataType.MESSAGE,
                             systemUid: this.entity.systemUid
                         }
-                    ];
+                    );
+
+                    // There was a problem with the calculation or it is misconfigured and needs adjustment
+                    // before the calculations are useful
+                    if (pCalc.totalPeakFlowRateLS === null) {
+                        return res;
+                    }
                 }
             }
 
-            return getFields(this.entity, context.doc, context.globalStore, context.catalog)
+            res.push(...getFields(this.entity, context.doc, context.globalStore, context.catalog)
                 .filter(
                     (f) =>
                         f.title in filter &&
@@ -347,7 +359,8 @@ export function CalculatedObject<
                         attachUid: f.attachUid || this.entity.uid
                     };
                     return ret;
-                });
+                }));
+            return res;
         }
 
         hasWarning(context: DrawingContext): boolean {

@@ -2291,6 +2291,7 @@ export default class CalculationEngine {
                         const ca = this.entityStaticPressureKPA.get(o.entity.endpointUid[0]);
                         const cb = this.entityStaticPressureKPA.get(o.entity.endpointUid[1]);
                         const actualPressure = Math.max(ca || 0, cb || 0);
+                        console.log('actual pressure: ' + actualPressure);
                         if (maxWorking !== null) {
                             if (actualPressure > maxWorking) {
                                 calc.warning = 'Max pressure ' + maxWorking + 'kpa exceeded (' + actualPressure + ' kpa)';
