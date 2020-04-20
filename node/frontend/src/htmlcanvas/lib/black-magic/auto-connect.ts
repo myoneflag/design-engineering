@@ -993,7 +993,7 @@ export class AutoConnector {
             endpointUid: [a.uid, b.uid],
             heightAboveFloorM: height,
             lengthM: null,
-            material: StandardMaterialUids.Pex,
+            material: null,
             maximumVelocityMS: null,
             parentUid: null,
             systemUid,
