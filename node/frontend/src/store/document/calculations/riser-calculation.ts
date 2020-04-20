@@ -1,4 +1,4 @@
-import { CalculationField, FieldCategory} from "../../../../src/store/document/calculations/calculation-field";
+import { CalculationField, FieldCategory } from "../../../../src/store/document/calculations/calculation-field";
 import {
     addPressureCalculationFields,
     Calculation,
@@ -7,11 +7,8 @@ import {
 } from "../../../../src/store/document/calculations/types";
 import { DocumentState } from "../../../../src/store/document/types";
 import RiserEntity from "../../../../../common/src/api/document/entities/riser-entity";
-import { getPsdUnitName, PsdCountEntry } from "../../../calculations/utils";
-import { isSupportedDwellingStandard } from "../../../config";
-import { DrawingState } from "../../../../../common/src/api/document/drawing";
+import { getPsdUnitName } from "../../../calculations/utils";
 import { Units } from "../../../../../common/src/lib/measurements";
-import { fillPipeDefaultFields } from "../../../../../common/src/api/document/entities/pipe-entity";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
 
 export default interface RiserCalculation extends Calculation {
@@ -38,7 +35,11 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
         lvlAboveUid = sortedLevels[lvlIndex + 1].uid;
     }
 
-    addPressureCalculationFields(result, entity.systemUid, "heights." + lvlUid + ".", {defaultEnabled: true}, {defaultEnabled: true});
+    addPressureCalculationFields(result, entity.systemUid, "heights." + lvlUid + ".", {
+        defaultEnabled: true,
+        title: "Pressure At Floor",
+        short: "at floor",
+    }, { defaultEnabled: true, title: "Static Pressure At Floor", short: "at floor" });
 
     result.push(
         {
@@ -68,7 +69,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             category: FieldCategory.Size,
             defaultEnabled: true,
             hideUnits: true,
-            significantDigits: 0,
+            significantDigits: 0
         }
     );
 
@@ -80,7 +81,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             units: Units.None,
             category: FieldCategory.LoadingUnits,
             systemUid: entity.systemUid,
-            format: (v) => "" + Number(v.toFixed(5)),
+            format: (v) => "" + Number(v.toFixed(5))
         });
     }
 
@@ -106,8 +107,8 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 units: Units.LitersPerSecond,
                 systemUid: entity.systemUid,
                 category: FieldCategory.FlowRate,
-                bold: true,
-            },
+                bold: true
+            }
         );
 
         result.push(
@@ -118,7 +119,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 units: Units.PipeDiameterMM,
                 systemUid: entity.systemUid,
                 category: FieldCategory.Size
-            },
+            }
         );
 
         if (drawing.metadata.calculationParams.psdMethod !== null) {
@@ -128,7 +129,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 short: psdUnit.abbreviation + " to above",
                 units: Units.None,
                 category: FieldCategory.LoadingUnits,
-                systemUid: entity.systemUid,
+                systemUid: entity.systemUid
             });
         }
 
@@ -139,7 +140,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 short: "dwlg to above",
                 units: Units.None,
                 category: FieldCategory.LoadingUnits,
-                systemUid: entity.systemUid,
+                systemUid: entity.systemUid
             });
         }
     }

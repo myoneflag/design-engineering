@@ -77,12 +77,20 @@ export const drawPaperScale = (
     const height = y === undefined ? ctx.canvas.height : y + 50;
 
     // Draw ruler
-    const minSmallWidth = maxWidthPx / 50 / 2;
     let smallestUnit: number = 0;
+    let segments: number = 0;
     for (const units of SENSIBLE_UNITS_MM) {
-        if (units * pxPerMm >= minSmallWidth) {
+        if (units * pxPerMm * 30 <= maxWidthPx) {
             smallestUnit = units;
-            break;
+            segments = 4;
+        }/*
+        if (units * pxPerMm * 40 * 2 <= maxWidthPx) {
+            smallestUnit = units;
+            segments = 5;
+        }*/
+        if (units * pxPerMm * 50 <= maxWidthPx) {
+            smallestUnit = units;
+            segments = 6;
         }
     }
 
@@ -92,7 +100,7 @@ export const drawPaperScale = (
     const scaleHeight = 10;
     const scaleBottomOffset = 30;
 
-    const scaleLeftEdge = x === undefined ? ctx.canvas.width - minSmallWidth * 2 * 50 - 10 : x;
+    const scaleLeftEdge = x === undefined ? ctx.canvas.width - maxWidthPx - 10 : x;
 
     let left: number = scaleLeftEdge;
 
@@ -114,7 +122,7 @@ export const drawPaperScale = (
         ctx.fillRect(left, height - scaleBottomOffset, medW, scaleHeight);
         left += medW;
     }
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < segments - 4; i++) {
         if (i % 2 === 0) {
             ctx.fillStyle = "#000000";
         } else {
@@ -129,7 +137,7 @@ export const drawPaperScale = (
     left = scaleLeftEdge;
     ctx.beginPath();
     ctx.font = "9px " + DEFAULT_FONT_NAME;
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < segments; i++) {
         if (i % 2 === 0) {
             ctx.fillStyle = "#000000";
         } else {
@@ -140,11 +148,17 @@ export const drawPaperScale = (
         ctx.lineTo(left, height - scaleBottomOffset + scaleHeight + 2);
         ctx.fillStyle = "#000000";
 
-        ctx.fillText(((smallestUnit * 10) / unit) * i + uname, left, height - scaleBottomOffset - 5);
+        const digits = ("" + ((smallestUnit * 10) / unit * i)).length;
+
+        if (i === segments - 1 || segments === 4 || (segments === 5 && digits < 3 || (segments === 6 && digits < 2))) {
+            ctx.fillText(((smallestUnit * 10) / unit) * i + ' ' + uname, left, height - scaleBottomOffset - 5);
+        } else {
+            ctx.fillText("" + ((smallestUnit * 10) / unit) * i, left, height - scaleBottomOffset - 5);
+        }
         left += largeW;
     }
 
-    ctx.rect(scaleLeftEdge, height - scaleBottomOffset, smallW * 50, scaleHeight);
+    ctx.rect(scaleLeftEdge, height - scaleBottomOffset, smallW * 10 * (segments - 1), scaleHeight);
     ctx.stroke();
 };
 

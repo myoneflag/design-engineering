@@ -67,8 +67,12 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to
     // complete the type.
 
-    drawEntity({ ctx, doc, vp }: DrawingContext, { selected, overrideColorList }: EntityDrawingArgs): void {
+    drawEntity({ ctx, doc, vp }: DrawingContext, { selected, overrideColorList, forExport }: EntityDrawingArgs): void {
         try {
+            if (forExport) {
+                // Fittings are too bulky and not useful on an export (though they are useful during design)
+                return;
+            }
             // asdf
             const scale = vp.currToSurfaceScale(ctx);
 

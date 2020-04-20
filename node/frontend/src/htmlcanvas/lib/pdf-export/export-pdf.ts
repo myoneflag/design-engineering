@@ -154,7 +154,7 @@ async function drawTitleBar(
 
     // Title
     const titleText = context.document.drawing.metadata.generalInfo.title;
-    pdf.fontSize(Math.round(mm2pt(15)));
+    pdf.fontSize(Math.round(mm2pt(13)));
     const titleHeight = pdf.heightOfString(titleText, { width: mm2pt(INFO_BAR_SIZE_MM - PADDING_MM * 2) });
     titleBarBottom -= pt2mm(titleHeight);
     pdf.text(titleText, mm2pt(titleBarLeft + PADDING_MM), mm2pt(titleBarBottom), {
@@ -163,13 +163,13 @@ async function drawTitleBar(
 
     // Top to Bottom stuff
     // Company Logo
-    pdf.fontSize(Math.round(mm2pt(10)));
+    pdf.fontSize(Math.round(mm2pt(8)));
     pdf.text("Designed By", mm2pt(titleBarLeft + PADDING_MM), mm2pt(titleBarTop), {
         width: mm2pt(INFO_BAR_SIZE_MM - PADDING_MM * 2)
     });
     titleBarTop += pt2mm(35);
 
-    pdf.fontSize(Math.round(mm2pt(15)));
+    pdf.fontSize(Math.round(mm2pt(10)));
     const companyName = ((await getCompanyName(context)) || "").toUpperCase();
     const companyHeight = pdf.heightOfString(companyName, { width: mm2pt(INFO_BAR_SIZE_MM - PADDING_MM * 2) });
     pdf.text(companyName, mm2pt(titleBarLeft + PADDING_MM), mm2pt(titleBarTop), {
@@ -185,7 +185,7 @@ export async function drawScale(doc: PDFKit.PDFDocument, paperSize: PaperSize, s
     const RENDER_WIDTH = 200; // to make text visible, this was adjusted manually.
 
     // In the final SVG on the pdf, how many page mm will it occupy?
-    const PAPER_MM = INFO_BAR_SIZE_MM - PADDING_MM * 2;
+    const PAPER_MM = INFO_BAR_SIZE_MM - PADDING_MM * 2 - 4;
     const PHYSICAL_MM = PAPER_MM / factor;
 
     const pxPerMM = RENDER_WIDTH / PHYSICAL_MM;
