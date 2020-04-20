@@ -114,7 +114,7 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         this.strokeShape(context, radius);
         ctx.fill();
 
-        if (this.entity.linkedToUid) {
+        if (this.entity.linkedToUid && !args.forExport) {
             // draw chain link
             const other = this.globalStore.get(this.entity.linkedToUid);
             if (other) {

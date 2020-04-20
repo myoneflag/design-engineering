@@ -1415,7 +1415,7 @@ import { PlantType } from "../../../../common/src/api/document/entities/plants/p
                 if (!forExport || this.document.uiState.exportSettings.floorPlans) {
                     await this.backgroundLayer.draw(
                         context,
-                        this.document.uiState.drawingMode === DrawingMode.FloorPlan,
+                        this.document.uiState.drawingMode === DrawingMode.FloorPlan && !forExport,
                         shouldContinue,
                         reactive,
                         this.currentTool,
@@ -1430,7 +1430,8 @@ import { PlantType } from "../../../../common/src/api/document/entities/plants/p
                     shouldContinue,
                     reactive,
                     this.document.uiState.drawingMode,
-                    this.document.uiState.drawingMode === DrawingMode.Calculations
+                    this.document.uiState.drawingMode === DrawingMode.Calculations,
+                    forExport,
                 );
                 await cooperativeYield(shouldContinue);
                 await this.calculationLayer.draw(

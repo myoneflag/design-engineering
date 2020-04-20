@@ -22,6 +22,7 @@ export default class HydraulicsLayer extends LayerImplementation {
         exclude: Set<string>,
         mode: DrawingMode,
         withCalculation: boolean,
+        forExport: boolean,
     ) {
         for (let i = 0; i < this.uidsInOrder.length; i++) {
             const v = this.uidsInOrder[i];
@@ -30,7 +31,7 @@ export default class HydraulicsLayer extends LayerImplementation {
                     try {
                         this.context.globalStore
                             .get(v)!
-                            .draw(context, { active, withCalculation, forExport: false });
+                            .draw(context, { active, withCalculation, forExport });
                     } catch (e) {
                         // tslint:disable-next-line:no-console
                     }
