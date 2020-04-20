@@ -43,14 +43,6 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
 
     result.push(
         {
-            property: "heights." + lvlUid + ".heightAboveGround",
-            title: "Height Above Ground",
-            short: "",
-            units: Units.Meters,
-            systemUid: entity.systemUid,
-            category: FieldCategory.Height
-        },
-        {
             property: "heights." + lvlUid + ".flowRateLS",
             title: "Flow Rate To Below",
             short: "to below",
