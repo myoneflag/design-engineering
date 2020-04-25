@@ -29,7 +29,7 @@ export class Document extends BaseEntity {
     @Column({default: 0})
     nextOperationIndex: number;
 
-    @ManyToOne(() => Organization, { eager: true })
+    @ManyToOne(() => Organization, { eager: true, nullable: true })
     organization: Organization;
 
     @Column()

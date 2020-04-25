@@ -170,7 +170,7 @@ export async function getDocument(id: number): Promise<APIResult<Document>> {
     }
 }
 
-export async function createDocument(orgId: string): Promise<APIResult<Document>> {
+export async function createDocument(orgId: string | null): Promise<APIResult<Document>> {
     try {
         return (
             await axios.post("/api/documents/", {
