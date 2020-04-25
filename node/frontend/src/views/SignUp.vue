@@ -21,6 +21,13 @@ import {AccessLevel} from "../../../backend/src/entity/User"; import {AccessLeve
                                 <b-form-input required="false" type="email" v-model="user.email"></b-form-input>
                             </b-form-group>
 
+<<<<<<< HEAD
+=======
+                            <b-form-group :label-cols="2" label="Organization Name or Organization ID">
+                                <b-form-input v-model="organization"></b-form-input>
+                            </b-form-group>
+
+>>>>>>> 359cfa50cdb08b69a9007b864d4223f1e8983a2c
                             <b-form-group :label-cols="2" label="Password">
                                 <b-form-input type="password" v-model="password"></b-form-input>
                             </b-form-group>
@@ -40,7 +47,10 @@ import Component from "vue-class-component";
 import MainNavBar from "../components/MainNavBar.vue";
 import { AccessLevel, User as IUser } from "../../../common/src/models/User";
 import { signUp } from "../api/users";
+<<<<<<< HEAD
 import { login } from "../../src/api/logins";
+=======
+>>>>>>> 359cfa50cdb08b69a9007b864d4223f1e8983a2c
 
 @Component({
     components: { MainNavBar }
@@ -74,6 +84,7 @@ export default class CreateUser extends Vue {
             this.organization || undefined
         ).then((res) => {
             if (res.success) {
+<<<<<<< HEAD
                 login(this.user.username, this.password).then((logres) => {
                     if (logres.success === true) {
                         this.$store.dispatch("profile/setProfile", null);
@@ -92,6 +103,9 @@ export default class CreateUser extends Vue {
                 });
 
                 // this.$router.push("/users");
+=======
+                this.$router.push("/users");
+>>>>>>> 359cfa50cdb08b69a9007b864d4223f1e8983a2c
             } else {
                 this.$bvToast.toast(res.message, {
                     title: "Error creating user",

@@ -18,9 +18,13 @@ import User from "./views/User.vue";
 import Contacts from "./views/Contacts.vue";
 import Errors from "./views/Errors.vue";
 import ViewError from "./views/Error.vue";
+<<<<<<< HEAD
 import SignUp from "./views/SignUp.vue";
 import Guide from "./views/Guide.vue";
 import AddVideo from "./views/AddVideo.vue";
+=======
+import SignUp from "./views/SignUp.vue"
+>>>>>>> 359cfa50cdb08b69a9007b864d4223f1e8983a2c
 import ProfileState from "./store/profile/types";
 Vue.use(Router);
 
