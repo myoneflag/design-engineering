@@ -1,3 +1,4 @@
 aws_creds.sh
 *.swp
 node_modules/
+implement_notes/
