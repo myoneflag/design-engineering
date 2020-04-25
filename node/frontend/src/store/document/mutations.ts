@@ -51,15 +51,15 @@ function logEntityMutation(
 function logLevelMutation(state: DocumentState, levelUid: string) {
     if (!state.diffFilter.levels.hasOwnProperty(levelUid)) {
         Vue.set(state.diffFilter.levels, levelUid, {
+
             /**/
         });
-    } else {
-        Object.keys(state.drawing.levels[levelUid]).forEach((key) => {
-            if (key !== "entities") {
-                Vue.set(state.diffFilter.levels[levelUid], key, false);
-            }
-        });
     }
+    Object.keys(state.drawing.levels[levelUid]).forEach((key) => {
+        if (key !== "entities") {
+            Vue.set(state.diffFilter.levels[levelUid], key, false);
+        }
+    });
 }
 
 function onAddEntity({ entity, levelUid }: EntityParam, state: DocumentState) {

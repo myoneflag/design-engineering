@@ -12,6 +12,7 @@ import { MainEventBus } from "../main-event-bus";
 import { assertUnreachable } from "../../../../common/src/api/config";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { DrawingMode } from "../../htmlcanvas/types";
+import { Operation } from "../../../../common/src/models/Operation";
 
 export const actions: ActionTree<DocumentState, RootState> = {
     applyRemoteOperation({ commit, state }, op) {
@@ -76,6 +77,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
             }
             applyOpOntoStateVue(state.committedDrawing, v);
         });
+
 
         Vue.set(state, "diffFilter", blankDiffFilter());
         if (diff.length === 0) {
