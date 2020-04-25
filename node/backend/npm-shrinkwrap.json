@@ -1445,7 +1445,7 @@
     "async-limiter": {
       "version": "1.0.1",
       "resolved": "https://registry.npmjs.org/async-limiter/-/async-limiter-1.0.1.tgz",
-      "integrity": "sha512-csOlWGAcRFJaI6m+F2WKdnMKr4HhdhFVBk0H/QbJFMCr+uO2kwohwXQPxw/9OCxp05r5ghVBFSyioixx3gfkNQ=="
+      "integrity": "sha1-3TeelPDbgxCwgpH51kwyCXZmF/0="
     },
     "atob": {
       "version": "2.1.2",
@@ -5407,7 +5407,7 @@
     "p-try": {
       "version": "2.2.0",
       "resolved": "https://registry.npmjs.org/p-try/-/p-try-2.2.0.tgz",
-      "integrity": "sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ=="
+      "integrity": "sha1-yyhoVA4xPWHeWPr741zpAE1VQOY="
     },
     "package-json": {
       "version": "4.0.1",
