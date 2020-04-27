@@ -52,7 +52,9 @@ export const actions: ActionTree<DocumentState, RootState> = {
     },
 
     // Call this action to commit the current operation transforms. TODO: make that atomic.
-    commit({ commit, state }, logUndo: boolean = true) {
+    commit({ commit, state }, {skipUndo, diffAll}: {skipUndo?: boolean, diffAll?: boolean} = {skipUndo: false, diffAll: false}) {
+        diffAll = true; // we are disabling diffing until it is correct.
+
         if (state.uiState.drawingMode === DrawingMode.History) {
             return;
         }
@@ -70,7 +72,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
 
         // We have to clone to stop reactivity affecting the async post values later.
         // We choose to clone the resulting operations rather than the input for performance.
-        const diff = cloneSimple(diffState(state.committedDrawing, state.drawing, state.diffFilter));
+        const diff = cloneSimple(diffState(state.committedDrawing, state.drawing, diffAll ? undefined : state.diffFilter));
         diff.forEach((v: OT.OperationTransformConcrete) => {
             if (v.type !== OPERATION_NAMES.DIFF_OPERATION) {
                 throw new Error("diffState gave a weird operation");
@@ -85,7 +87,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
         }
 
         if (diff.length) {
-            if (logUndo) {
+            if (!skipUndo) {
                 state.undoStack.splice(state.undoIndex);
                 state.undoStack.push(cloneSimple(diff));
                 state.undoIndex++;
@@ -152,7 +154,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
             }
         }
 
-        dispatch("commit", false);
+        dispatch("commit", {skipUndo: true});
     },
 
     redo(args) {
@@ -174,7 +176,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
             state.undoIndex++;
         }
 
-        dispatch("commit", false);
+        dispatch("commit", {skipUndo: true});
     },
 
     setId({ commit, state }, payload) {

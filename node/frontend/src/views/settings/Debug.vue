@@ -39,6 +39,7 @@ import { Document as IDocument } from "../../../../common/src/models/Document";
 import { AccessLevel, User } from "../../../../common/src/models/User";
 import { DocumentState } from "../../store/document/types";
 import CatalogState from "../../store/catalog/types";
+import { DrawingState } from "../../../../common/src/api/document/drawing";
 
 @Component({})
 export default class Debug extends Vue {
@@ -61,9 +62,9 @@ export default class Debug extends Vue {
     }
 
     async save() {
-        const newDoc = JSON.parse(this.drawingJson);
+        const newDoc = JSON.parse(this.drawingJson) as DrawingState;
         Object.assign(this.document.drawing, newDoc);
-        await this.$store.dispatch("document/commit");
+        await this.$store.dispatch("document/commit", {skipUndo: true, diffAll: true});
         //window.location.reload();
     }
 

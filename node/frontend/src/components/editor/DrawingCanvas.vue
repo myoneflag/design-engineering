@@ -889,7 +889,7 @@ import { PlantType } from "../../../../common/src/api/document/entities/plants/p
             }
             const res = this.validate(tryToFix);
             if (res.success) {
-                this.$store.dispatch("document/commit", logUndo);
+                this.$store.dispatch("document/commit", {skipUndo: !logUndo});
             } else if (res.modified) {
                 this.onValidateAndCommit(logUndo, tryToFix);
                 this.$bvModal.msgBoxOk(res.message);

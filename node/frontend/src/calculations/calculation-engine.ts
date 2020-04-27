@@ -1370,7 +1370,8 @@ export default class CalculationEngine {
                             }
                         }
                     }
-                    throw new Error("Invalid connection to fixture");
+                    //throw new Error("Invalid connection to fixture");
+                    return zeroContextualPCE(node.entity.uid, node.entity.uid);
                 case EntityType.LOAD_NODE:
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.RISER:
@@ -2320,7 +2321,7 @@ export default class CalculationEngine {
                             assertUnreachable(o.entity.valve);
                     }
                     if (maxFlowRateLS !== null) {
-                        if (calc.hotPeakFlowRate || 0 > maxFlowRateLS || calc.coldPeakFlowRate || 0 > maxFlowRateLS) {
+                        if ((calc.hotPeakFlowRate || 0) > maxFlowRateLS || (calc.coldPeakFlowRate || 0) > maxFlowRateLS) {
                             calc.warning = 'Max Flow Rate ' + maxFlowRateLS + ' L/s exceeded';
                         }
                     }

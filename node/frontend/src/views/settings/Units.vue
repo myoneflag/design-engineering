@@ -53,7 +53,7 @@
         }
 
         save() {
-            this.$store.dispatch("document/commit", false).then(() => {
+            this.$store.dispatch("document/commit", {skipUndo: true}).then(() => {
                 this.$bvToast.toast("Saved successfully!", { variant: "success", title: "Success" });
             });
         }
