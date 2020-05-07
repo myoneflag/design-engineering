@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+import {AccessLevel} from "../../../backend/src/entity/User"; import {AccessLevel} from
+"../../../backend/src/entity/User"; import {AccessLevel} from "../../../backend/src/entity/User";
+>>>>>>> cc2df6691dabc2e527983e8edfd7126f11174862
 <template>
     <div>
         <MainNavBar></MainNavBar>
