@@ -28,10 +28,9 @@ export class Level extends BaseEntity {
     name: LevelName;
 
     @OneToMany(
-        () => Requirement,
-        (rq: Requirement) => rq.level,{
-            cascade: true
-        }
+        type => Requirement,
+        rq => rq.level,
+        { cascade: ["insert", "update"]}
     )
     requirements: Requirement[];
 }

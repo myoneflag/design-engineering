@@ -25,7 +25,7 @@
                                     <template v-else>
                                         <b-nav-item
                                             @click="changeToPlay" 
-                                            v-bind:key="section.id"
+                                            v-bind:key="section.id+'nav'"
                                             v-b-toggle="getToggleId(section.id)" 
                                             :href="'#' + section.id" 
                                             style="font-weight: bold"
@@ -33,7 +33,7 @@
                                             section.title
                                         }}</b-nav-item>
                                         <b-collapse 
-                                            v-bind:key="section.id"
+                                            v-bind:key="section.id+'col'"
                                             :id="getToggleId(section.id)"
                                         >
                                             <b-nav pills vertical small>
@@ -41,7 +41,7 @@
                                                     <template v-if="typeof subsection.content === 'string'">
                                                         <b-nav-item
                                                             @click="changeToPlay"
-                                                            v-bind:key="subsection.id" 
+                                                            v-bind:key="subsection.id+'nav'" 
                                                             class="ml-3 my-1"
                                                             :href="'#' + subsection.id" 
                                                         >
@@ -53,14 +53,14 @@
                                                      <template v-else>
                                                         <b-nav-item 
                                                             @click="changeToPlay"
-                                                            v-bind:key="subsection.id" 
+                                                            v-bind:key="subsection.id+'nav'" 
                                                             v-b-toggle="getToggleId(subsection.id)"
                                                             :href="'#' + subsection.id"
                                                         >
                                                             {{subsection.title}}
                                                         </b-nav-item>
                                                         <b-collapse 
-                                                            v-bind:key="subsection.id" 
+                                                            v-bind:key="subsection.id+'col'" 
                                                             :id="getToggleId(subsection.id)"
                                                         >
                                                              <b-nav-item

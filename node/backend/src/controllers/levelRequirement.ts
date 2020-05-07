@@ -29,8 +29,9 @@ export class LevelRequirementController {
             console.log(levelRequirements.length);
             if (levelRequirements.length===0){
                 for (let i of ConcreteLevels){
-                    let level = Level.create();
-                    level.name = i.name;
+                    let reqs: Requirement[] = [];
+                    // let level = Level.create();
+                    // level.name = i.name;
                     // try{
                     //     level.save();
                     // }
@@ -40,7 +41,7 @@ export class LevelRequirementController {
                     // }
                     if (i.name===LevelName.NOVICE){
                         for (let j of NoviceRequirements){
-                            let r = Requirement.create();
+                            let r = new Requirement();
                             r.numFeedback = j.numFeedback;
                             r.numProjectStarted = j.numProjectStarted;
                             r.type = j.type;
@@ -61,21 +62,25 @@ export class LevelRequirementController {
                             // try{
                             //     console.log('r is');
                             //     console.log(r);
-                            //     await getManager().getRepository(Requirement).save(r);
+                            //     await r.save();
                             // }
                             // catch(e){
                             //     console.log('save requirement error');
+                            //     console.log('r is');
+                            //     console.log(r);
                             //     console.log(e);
                             // }
-                            if (!level.requirements){
-                                level.requirements = [];
-                            }
-                            level.requirements.push(r);
+                            // if (!level.requirements){
+                            //     level.requirements = [];
+                            // }
+                            // level.requirements.push(r);
+                            reqs.push(r);
                         }
                     }
                     else if (i.name===LevelName.BEGINNER){
                         for (let j of BeginnerRequirements){
-                            let r = Requirement.create();
+                            let r = new Requirement();
+                            // let r = Requirement.create();
                             r.numFeedback = j.numFeedback;
                             r.numProjectStarted = j.numProjectStarted;
                             // r.level = level;
@@ -96,30 +101,41 @@ export class LevelRequirementController {
                                 r.video = null;
                             }
                             // try{
-                            //     console.log('r is');
-                            //     await getManager().getRepository(Requirement).save(r);
+                            //     await r.save();
                             // }
                             // catch(e){
                             //     console.log('save requirement error');
+                            //     console.log('r is');
+                            //     console.log(r);
                             //     console.log(e);
                             // }
-                            if (!level.requirements){
-                                level.requirements = [];
-                            }
-                            level.requirements.push(r);
+                            // await r.save();
+                            // if (!level.requirements){
+                            //     level.requirements = [];
+                            // }
+                            // level.requirements.push(r);
+                            reqs.push(r);
                         }
                     }
+                    // console.log(level.requirements);
+                    // console.log('level is');
+                    // console.log(level);
+                    // await getManager().getRepository(Level).save(level);
+                    // await level.save();
+                    const level = new Level();
+                    level.name = i.name;
+                    level.requirements = [...reqs];
                     try{
-                        // console.log(level.requirements);
-                        // console.log('level is');
-                        // console.log(level);
                         await getManager().getRepository(Level).save(level);
-                        // await level.save();
                     }
                     catch(e){
-                        console.log('level saving error');
+                        console.log('first level save fail');
                         console.log(e);
                     }
+                    console.log(reqs);
+                    console.log('reqs are');
+                    console.log(reqs);
+                    console.log('after reqs');
                 }
             }
             levelRequirements = await Level.find();

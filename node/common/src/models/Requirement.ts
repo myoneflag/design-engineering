@@ -20,7 +20,10 @@ export class Requirement extends BaseEntity {
     })
     type: RequirementType;
 
-    @ManyToOne(() => Level, {eager:true, nullable:true })
+    @ManyToOne(
+        type => Level, 
+        level => level.requirements,
+        { eager: true, nullable: true })
     level: Level;
 
     @OneToOne(() => Video, { nullable: true })
