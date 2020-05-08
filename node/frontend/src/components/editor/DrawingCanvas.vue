@@ -883,7 +883,7 @@ import { PlantType } from "../../../../common/src/api/document/entities/plants/p
             }
 
             rebaseAll(this);
-            this.murderOrphans();
+            const modified = this.murderOrphans();
             if (tryToFix) {
                 this.deleteDuplicatePipes();
             }
@@ -923,14 +923,16 @@ import { PlantType } from "../../../../common/src/api/document/entities/plants/p
             }
         }
 
-        murderOrphans() {
-            for (const o of this.globalStore.values()) {
+        murderOrphans(): boolean {
+            let modified = false;
+            for (const o of Array.from(this.globalStore.values())) {
                 switch (o.entity.type) {
                     case EntityType.BACKGROUND_IMAGE:
                         break;
                     case EntityType.FITTING:
                         if (this.globalStore.getConnections(o.entity.uid).length === 0) {
                             // this.deleteEntity(o); this is causing issues with multi editing and drawing pipes, first leg.
+                            modified = true;
                         }
                         break;
                     case EntityType.PIPE:
@@ -949,12 +951,22 @@ import { PlantType } from "../../../../common/src/api/document/entities/plants/p
                                 levelUid: this.globalStore.levelOfEntity.get(o.entity.uid)!
                             };
                             this.$store.dispatch("document/deleteEntityOn", ep);
+                            modified = true;
                         } else {
                         }
                         break;
                     case EntityType.RISER:
                         break;
                     case EntityType.SYSTEM_NODE:
+                        const parentUid = o.entity.parentUid!;
+                        if (!this.globalStore.has(parentUid)) {
+                            const ep: EntityParam = {
+                                entity: o.entity,
+                                levelUid: this.globalStore.levelOfEntity.get(o.entity.uid)!
+                            };
+                            this.$store.dispatch("document/deleteEntityOn", ep);
+                        }
+                        modified = true;
                         break;
                     case EntityType.BIG_VALVE:
                         break;
@@ -970,6 +982,8 @@ import { PlantType } from "../../../../common/src/api/document/entities/plants/p
                         break;
                 }
             }
+
+            return modified;
         }
 
         validate(tryToFix: boolean): ValidationResult {
