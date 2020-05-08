@@ -177,7 +177,17 @@ export function resultWithoutObviousReferences(obviousPoints: Flatten.Point[], r
 }
 
 export function snapPoint(context: CanvasContext, snapTargets: string[], pipeSnapTargets: string[], pointWc: Coord, originUid?: string): SnapResult {
+    // Sometimes, the chain UID disappears when pipes are initially drawn and their first fitting is deleted by a simultaneous
+    // editor.
+    // The cheapest way to fix it is to ignore the error here (originUid will not be a correct object) and put it back
+    // later in the move handler.
+    if (originUid && !context.globalStore.has(originUid)) {
+        originUid = undefined;
+    }
+    
     const {surfaces, obviousPoints} = getSnapSurfaces(context, snapTargets, pipeSnapTargets, originUid);
+
+
 
     const point = Flatten.point(pointWc.x, pointWc.y);
 

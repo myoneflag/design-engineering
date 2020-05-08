@@ -41,7 +41,7 @@ export function CenteredObject<T extends new (...args: any[]) => Centered & Back
             this.entity.parentUid = par;
             this.entity.center = oc;
 
-            
+
             if (par && 'rotation' in this.entity) {
                 const parent = context.globalStore.get(par)!;
                 this.entity.rotation -= parent.toWorldAngleDeg(0);
