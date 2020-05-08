@@ -19,9 +19,15 @@ export function CenteredObject<T extends new (...args: any[]) => Centered & Back
                 return;
             }
             const wc = this.toWorldCoord({ x: 0, y: 0 });
+            const angle = this.toWorldAngleDeg(0);
+
             this.entity.parentUid = null;
             this.entity.center.x = wc.x;
             this.entity.center.y = wc.y;
+
+            if ('rotation' in this.entity) {
+                this.entity.rotation = angle;
+            }
         }
 
         rebase(context: CanvasContext) {
@@ -34,6 +40,13 @@ export function CenteredObject<T extends new (...args: any[]) => Centered & Back
             const [par, oc] = getInsertCoordsAt(context, this.entity.center);
             this.entity.parentUid = par;
             this.entity.center = oc;
+
+            
+            if (par && 'rotation' in this.entity) {
+                const parent = context.globalStore.get(par)!;
+                this.entity.rotation -= parent.toWorldAngleDeg(0);
+            }
+
         }
     };
 }
