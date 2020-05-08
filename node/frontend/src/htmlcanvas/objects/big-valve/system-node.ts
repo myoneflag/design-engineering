@@ -32,7 +32,7 @@ import { Coord } from "../../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../../common/src/lib/utils";
 
 @CalculatedObject
-@ConnectableObject()
+@ConnectableObject({customCopyObjects: true})
 @CenteredObjectNoParent
 export default class SystemNode extends InvisibleNode<SystemNodeEntity> implements Centered, Calculated {
     static register(): void {
@@ -216,6 +216,14 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
                     " parent: " +
                     this.entity.parentUid
             );
+        }
+    }
+
+    getCopiedObjects(): BaseBackedObject[] {
+        if (this.parent) {
+            return [this, this.parent];
+        } else {
+            return [this];
         }
     }
 
