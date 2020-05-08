@@ -67,68 +67,73 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to
     // complete the type.
 
-    drawEntity({ ctx, doc, vp }: DrawingContext, { selected, overrideColorList, forExport }: EntityDrawingArgs): void {
+    drawEntity(context: DrawingContext, { selected, overrideColorList, forExport }: EntityDrawingArgs): void {
+        const { ctx, doc, vp } = context;
         try {
             if (forExport) {
                 // Fittings are too bulky and not useful on an export (though they are useful during design)
                 return;
             }
-            // asdf
-            const scale = vp.currToSurfaceScale(ctx);
 
-            if (this.globalStore.getConnections(this.entity.uid).length === 2) {
-                // TODO: draw an angled arc.
-            } // else {
+            this.withWorldScale(context, {x: 0, y: 0}, () => {
 
-            ctx.lineCap = "round";
+                // asdf
+                const scale = vp.currToSurfaceScale(ctx);
 
-            const minJointLength = this.FITTING_DIAMETER_PIXELS / scale;
+                if (this.globalStore.getConnections(this.entity.uid).length === 2) {
+                    // TODO: draw an angled arc.
+                } // else {
 
-            const defaultWidth = Math.max(this.FITTING_DIAMETER_PIXELS / scale, 25 / this.toWorldLength(1));
-            this.lastDrawnWidth = defaultWidth;
-            this.lastDrawnLength = Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM));
+                ctx.lineCap = "round";
 
-            this.lastRadials = this.getRadials();
-            this.lastRadials.forEach(([wc, pipe]) => {
-                let targetWidth = defaultWidth;
-                if (pipe.entity.type === EntityType.PIPE) {
-                    if ((pipe as Pipe).lastDrawnWidth) {
-                        targetWidth = Math.max(
-                            defaultWidth,
-                            (pipe as Pipe).lastDrawnWidth +
+                const minJointLength = this.FITTING_DIAMETER_PIXELS / scale;
+
+                const defaultWidth = Math.max(this.FITTING_DIAMETER_PIXELS / scale, 25);
+                this.lastDrawnWidth = defaultWidth;
+                this.lastDrawnLength = Math.max(this.toObjectLength(minJointLength), this.toObjectLength(this.TURN_RADIUS_MM));
+
+                this.lastRadials = this.getRadials();
+                this.lastRadials.forEach(([wc, pipe]) => {
+                    let targetWidth = defaultWidth;
+                    if (pipe.entity.type === EntityType.PIPE) {
+                        if ((pipe as Pipe).lastDrawnWidth) {
+                            targetWidth = Math.max(
+                                defaultWidth,
+                                (pipe as Pipe).lastDrawnWidth +
                                 Math.min((pipe as Pipe).lastDrawnWidth, this.FITTING_DIAMETER_PIXELS / scale / 2)
-                        );
+                            );
+                        }
                     }
-                }
-                const oc = this.toObjectCoord(wc);
-                const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
+                    const oc = this.toObjectCoord(wc);
+                    const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
 
-                if (vec.length > EPS) {
-                    const small = vec
-                        .normalize()
-                        .multiply(Math.max(minJointLength, this.toObjectLength(this.TURN_RADIUS_MM)));
-                    if (selected || overrideColorList.length) {
+                    if (vec.length > EPS) {
+                        const small = vec
+                            .normalize()
+                            .multiply(Math.max(minJointLength, this.TURN_RADIUS_MM));
+                        if (selected || overrideColorList.length) {
+                            ctx.beginPath();
+                            ctx.lineWidth = targetWidth + this.FITTING_DIAMETER_PIXELS * 2;
+
+                            this.lastDrawnWidth = defaultWidth + (this.FITTING_DIAMETER_PIXELS * 2) / scale;
+                            ctx.strokeStyle = rgb2style(getHighlightColor(
+                                selected,
+                                overrideColorList,
+                                {hex: lighten(this.displayEntity(doc).color!.hex, 50)},
+                            ), 0.5);
+                            ctx.moveTo(0, 0);
+                            ctx.lineTo(small.x, small.y);
+                            ctx.stroke();
+                        }
+
+                        ctx.strokeStyle = this.displayEntity(doc).color!.hex;
+                        ctx.lineWidth = targetWidth;
                         ctx.beginPath();
-                        ctx.lineWidth = targetWidth + this.FITTING_DIAMETER_PIXELS * 2;
-
-                        this.lastDrawnWidth = defaultWidth + (this.FITTING_DIAMETER_PIXELS * 2) / scale;
-                        ctx.strokeStyle = rgb2style(getHighlightColor(
-                            selected,
-                            overrideColorList,
-                            {hex: lighten(this.displayEntity(doc).color!.hex, 50)},
-                        ), 0.5);
                         ctx.moveTo(0, 0);
                         ctx.lineTo(small.x, small.y);
                         ctx.stroke();
                     }
-
-                    ctx.strokeStyle = this.displayEntity(doc).color!.hex;
-                    ctx.lineWidth = targetWidth;
-                    ctx.beginPath();
-                    ctx.moveTo(0, 0);
-                    ctx.lineTo(small.x, small.y);
-                    ctx.stroke();
-                }
+                });
             });
         } catch (e) {
             ctx.fillStyle = "rgba(255, 100, 100, 0.4)";
