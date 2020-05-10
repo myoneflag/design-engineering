@@ -21,9 +21,9 @@ import { StandardFlowSystemUids } from "../../../../common/src/api/config";
 import connectLoadNodeToSource from "../lib/black-magic/connect-load-node-to-source";
 import LoadNode from "../objects/load-node";
 
-export const DWELLING_PAIR_DEFAULT_DISTANCE_MM = 200;
+export const FIXTURE_PAIR_DEFAULT_DISTANCE_MM = 200;
 
-export default function insertDwellingHotCold(context: CanvasContext, rotationDEG: number) {
+export default function insertFixtureHotCold(context: CanvasContext, rotationDEG: number) {
     const coldUid = uuid();
     const hotUid = uuid();
     MainEventBus.$emit(
@@ -36,22 +36,23 @@ export default function insertDwellingHotCold(context: CanvasContext, rotationDE
                         MainEventBus.$emit("set-tool-handler", null);
                     }
                 } else {
-                    insertDwellingHotCold(context, rotationDEG);
+                    insertFixtureHotCold(context, rotationDEG);
                 }
             },
             (wc: Coord, event) => {
                 // Preview
-                const coldLoc = Flatten.vector(DWELLING_PAIR_DEFAULT_DISTANCE_MM, 0)
+                const coldLoc = Flatten.vector(FIXTURE_PAIR_DEFAULT_DISTANCE_MM, 0)
                     .rotate((rotationDEG / 180) * Math.PI)
                     .add(Flatten.vector(wc.x, wc.y));
-                const hotLoc = Flatten.vector(-DWELLING_PAIR_DEFAULT_DISTANCE_MM, 0)
+                const hotLoc = Flatten.vector(-FIXTURE_PAIR_DEFAULT_DISTANCE_MM, 0)
                     .rotate((rotationDEG / 180) * Math.PI)
                     .add(Flatten.vector(wc.x, wc.y));
 
                 const hotEntity: LoadNodeEntity = {
                     node: {
-                        type: NodeType.DWELLING,
-                        dwellings: 1,
+                        type: NodeType.LOAD_NODE,
+                        loadingUnits: 1,
+                        designFlowRateLS: 0,
                         continuousFlowLS: 0
                     },
                     systemUidOption: StandardFlowSystemUids.HotWater,
@@ -68,8 +69,9 @@ export default function insertDwellingHotCold(context: CanvasContext, rotationDE
 
                 const coldEntity: LoadNodeEntity = {
                     node: {
-                        type: NodeType.DWELLING,
-                        dwellings: 1,
+                        type: NodeType.LOAD_NODE,
+                        loadingUnits: 1,
+                        designFlowRateLS: 0,
                         continuousFlowLS: 0
                     },
                     systemUidOption: StandardFlowSystemUids.ColdWater,
@@ -96,6 +98,9 @@ export default function insertDwellingHotCold(context: CanvasContext, rotationDE
                         context.globalStore.get(hotEntity.uid) as LoadNode,
                     );
                 }
+
+                context.globalStore.get(coldEntity.uid)!.rebase(context);
+                context.globalStore.get(hotEntity.uid)!.rebase(context);
 
 
                 context.scheduleDraw();

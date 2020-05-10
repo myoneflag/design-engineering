@@ -184,7 +184,7 @@ export function snapPoint(context: CanvasContext, snapTargets: string[], pipeSna
     if (originUid && !context.globalStore.has(originUid)) {
         originUid = undefined;
     }
-    
+
     const {surfaces, obviousPoints} = getSnapSurfaces(context, snapTargets, pipeSnapTargets, originUid);
 
 

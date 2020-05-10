@@ -66,7 +66,7 @@ export default function connectBigValveToSource(
     }
 }
 
-function leadPipe(
+export function leadPipe(
     context: CanvasContext,
     wc: Coord,
     connectTo: ConnectableEntity,
@@ -123,9 +123,9 @@ function leadPipe(
     return newPipe;
 }
 
-function getClosestJoinable(
+export function getClosestJoinable(
     context: CanvasContext,
-    systemUid: string,
+    systemUid: string | null,
     wc: Coord,
     radius: number,
     excludeUids: string[]

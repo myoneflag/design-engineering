@@ -182,6 +182,7 @@ import { PlantType } from "../../../../common/src/api/document/entities/plants/p
     import { getEffectiveFilter } from "../../lib/utils";
     import { PlantType } from "../../../../common/src/api/document/entities/plants/plant-types";
     import CalculationTopBar from "../CalculationTopBar.vue";
+    import insertFixtureHotCold from "../../htmlcanvas/tools/insert-fixture-hot-cold";
 
     @Component({
         components: {
@@ -1247,6 +1248,8 @@ import { PlantType } from "../../../../common/src/api/document/entities/plants/p
             } else if (entityName === EntityType.LOAD_NODE) {
                 if (params.variant === "hot-cold-dwelling") {
                     insertDwellingHotCold(this, 0);
+                } else if (params.variant === 'hot-cold-load') {
+                    insertFixtureHotCold(this, 0);
                 } else {
                     insertLoadNode(this, nodeType);
                 }

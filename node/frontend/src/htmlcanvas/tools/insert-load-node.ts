@@ -15,6 +15,9 @@ import { cloneSimple } from "../../../../common/src/lib/utils";
 import { moveOnto } from "../lib/black-magic/move-onto";
 import { BaseBackedConnectable } from "../lib/BackedConnectable";
 import SnappingInsertTool, { CONNECTABLE_SNAP_RADIUS_PX } from "./snapping-insert-tool";
+import connectLoadNodeToSource from "../lib/black-magic/connect-load-node-to-source";
+import LoadNode from "../objects/load-node";
+import { KeyCode } from "../utils";
 
 export default function insertLoadNode(context: CanvasContext, type: NodeType) {
     const newUid = uuid();
@@ -32,7 +35,7 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType) {
                     insertLoadNode(context, type);
                 }
             },
-            (wc: Coord) => {
+            (wc: Coord, event) => {
                 // Preview
                 const interactive = context.offerInteraction(
                     {
@@ -106,6 +109,12 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType) {
                     );
                 }
 
+                if (!event.ctrlKey) {
+                    connectLoadNodeToSource(
+                        context,
+                        context.globalStore.get(newEntity.uid) as LoadNode,
+                    );
+                }
                 // rebaseAll(context);
 
                 context.scheduleDraw();
@@ -115,7 +124,19 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType) {
                     // Notify the user that there's fields to select
                 });
             },
-            "Insert Load Node"
+            "Insert Load Node",
+            [
+
+                [
+                    KeyCode.CONTROL,
+                    {
+                        name: "Don't auto-connect",
+                        fn: () => {
+                            /**/
+                        }
+                    }
+                ]
+            ]
         )
     );
 }

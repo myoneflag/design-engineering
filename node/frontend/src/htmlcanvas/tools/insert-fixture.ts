@@ -15,6 +15,8 @@ import { StandardFlowSystemUids, SupportedPsdStandards } from "../../../../commo
 import { Coord } from "../../../../common/src/api/document/drawing";
 import { parseCatalogNumberExact } from "../../../../common/src/lib/utils";
 import SnappingInsertTool from "./snapping-insert-tool";
+import connectLoadNodeToSource from "../lib/black-magic/connect-load-node-to-source";
+import LoadNode from "../objects/load-node";
 
 export default function insertFixture(context: CanvasContext, fixtureName: string, angle: number) {
     const fixtureUid = uuid();
@@ -34,7 +36,7 @@ export default function insertFixture(context: CanvasContext, fixtureName: strin
                     insertFixture(context, fixtureName, angle);
                 }
             },
-            (wc: Coord) => {
+            (wc: Coord, event) => {
                 newEntity = null;
                 // Preview
                 const doc = context.document as DocumentState;
@@ -96,6 +98,7 @@ export default function insertFixture(context: CanvasContext, fixtureName: strin
                 }
 
                 context.globalStore.get(newEntity.uid)!.rebase(context);
+
                 context.scheduleDraw();
             },
             (wc: Coord) => {
