@@ -19,7 +19,8 @@ import connectLoadNodeToSource from "../lib/black-magic/connect-load-node-to-sou
 import LoadNode from "../objects/load-node";
 import { KeyCode } from "../utils";
 
-export default function insertLoadNode(context: CanvasContext, type: NodeType) {
+export default function insertLoadNode(context: CanvasContext, type: NodeType,
+                                       loadingUnits: number = 1, continuousFlowLS: number = 0, dwellings: number = 1) {
     const newUid = uuid();
     const toReplace: BackedDrawableObject<ConnectableEntityConcrete> | null = null;
     MainEventBus.$emit(
@@ -61,9 +62,9 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType) {
                         newEntity = {
                             node: {
                                 type: NodeType.LOAD_NODE,
-                                continuousFlowLS: 0,
+                                continuousFlowLS,
                                 designFlowRateLS: 0,
-                                loadingUnits: 1
+                                loadingUnits
                             },
                             minPressureKPA: null,
                             maxPressureKPA: null,
@@ -82,8 +83,8 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType) {
                         newEntity = {
                             node: {
                                 type: NodeType.DWELLING,
-                                dwellings: 1,
-                                continuousFlowLS: 0
+                                dwellings,
+                                continuousFlowLS,
                             },
                             minPressureKPA: null,
                             maxPressureKPA: null,

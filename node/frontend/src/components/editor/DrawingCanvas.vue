@@ -1250,6 +1250,9 @@ import { PlantType } from "../../../../common/src/api/document/entities/plants/p
                     insertDwellingHotCold(this, 0);
                 } else if (params.variant === 'hot-cold-load') {
                     insertFixtureHotCold(this, 0);
+                } else if (params.variant === 'continuous') {
+
+                    insertLoadNode(this, nodeType, 0, 1);
                 } else {
                     insertLoadNode(this, nodeType);
                 }

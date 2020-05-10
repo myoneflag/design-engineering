@@ -262,6 +262,15 @@
                     >Dwelling Node</b-dropdown-item
                     >
 
+                    <b-dropdown-item
+                            variant="outline-dark"
+                            class="shower btn-sm"
+                            @click="$emit('insert', { entityName: entityNames.LOAD_NODE, nodeType: NodeType.LOAD_NODE,
+                             variant: 'continuous' })"
+                    >
+                        Continuous Flow Node
+                    </b-dropdown-item>
+
                 </b-dropdown>
             </b-button-group>
         </b-col>
