@@ -1,5 +1,5 @@
 //one row everytime a video is included in a category
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, OneToOne, ManyToOne } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, JoinTable, ManyToOne, JoinColumn, ManyToMany } from "typeorm";
 import { Level } from "./Level";
 import { Video } from "./Video";
 export enum RequirementType {
@@ -11,7 +11,7 @@ export enum RequirementType {
 @Entity()
 export class Requirement extends BaseEntity {
     @PrimaryGeneratedColumn()
-    id: number;
+    requirementId: number;
 
     @Column({
         type: "enum",
@@ -20,13 +20,12 @@ export class Requirement extends BaseEntity {
     })
     type: RequirementType;
 
-    @ManyToOne(
-        type => Level, 
-        level => level.requirements,
-        { eager: true, nullable: true })
+    @ManyToOne(type => Level)
+    @JoinColumn()
     level: Level;
 
-    @OneToOne(() => Video, { nullable: true })
+    @ManyToMany(type => Video)
+    @JoinTable()
     video: Video;
 
     @Column({default: 0})
