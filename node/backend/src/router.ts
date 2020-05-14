@@ -12,6 +12,8 @@ import {usersRouter} from "./controllers/users";
 import {errorRouter} from "./controllers/error";
 import { accessEvents } from "./controllers/access-events";
 import {feedbackMessageRouter} from './controllers/feedbackMessage';
+import {VideoRouter} from './controllers/video';
+import {LevelRequirementRouter} from './controllers/levelRequirement';
 
 const router: Router = Router();
 
@@ -26,5 +28,7 @@ router.use('/users', usersRouter);
 router.use('/accessEvents', accessEvents);
 router.use('/errors', errorRouter);
 router.use('/feedback', feedbackMessageRouter);
+router.use('/video', VideoRouter);
+router.use('/levelRequirement', LevelRequirementRouter);
 
 export default router;

@@ -35,7 +35,7 @@ export async function createUser(
     subscribed: boolean,
     password: string,
     accessLevel: AccessLevel,
-    organization?: string
+    organization?: string,
 ): Promise<APIResult<User>> {
     try {
         return (
@@ -46,7 +46,7 @@ export async function createUser(
                 password,
                 accessLevel,
                 organization,
-                subscribed
+                subscribed,
             })
         ).data;
     } catch (e) {
@@ -57,6 +57,34 @@ export async function createUser(
         }
     }
 }
+
+export async function signUp(
+    username: string,
+    name: string,
+    email: string | undefined,
+    password: string,
+    organization?: string,
+): Promise<APIResult<User>> {
+    try {
+        return (
+            await axios.post("/api/users/signUp", {
+                username,
+                name,
+                email,
+                password,
+                organization,
+            })
+        ).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return { success: false, message: e.response.data.message };
+        } else {
+            return { success: false, message: e.message };
+        }
+    }
+}
+
+
 
 export async function updateUser(
     username: string,

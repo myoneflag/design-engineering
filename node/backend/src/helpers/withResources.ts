@@ -165,7 +165,10 @@ export async function withDocument<T>(
         if (user.accessLevel > AccessLevel.ADMIN) {
             const memberOf = await user.organization;
             const owner = await doc.organization;
-            if (memberOf == null || owner.id !== memberOf.id) {
+            console.log('access type read')
+            console.log(user)
+            console.log(doc.createdBy)
+            if (!(user.temporaryUser && doc.createdBy.username === user.username) && (memberOf == null || owner.id !== memberOf.id)) {
                 if (res) {
                     res.status(401).send({
                         success: false,
@@ -181,7 +184,7 @@ export async function withDocument<T>(
         if (user.accessLevel > AccessLevel.ADMIN) {
             const owner = await doc.organization;
             const memberOf = await user.organization;
-            if (memberOf == null || owner.id !== memberOf.id) {
+            if (!(user.temporaryUser && doc.createdBy.username === user.username) && (memberOf == null || owner.id !== memberOf.id)) {
                 if (res) {
                     res.status(401).send({
                         success: false,
@@ -288,8 +291,14 @@ export async function withUser<T>(
         if (currUser.accessLevel >= AccessLevel.MANAGER) {
             const targetOrg = user.organization;
             const targetAccess = user.accessLevel;
+            console.log('am i here?')
             if (targetAccess >= AccessLevel.MANAGER) {
-                if (targetOrg == null || myOrg == null || targetOrg.id !== myOrg.id) {
+                console.log('checking condition')
+                console.log((user.temporaryUser && currUser.username === user.username));
+                console.log(user);
+                console.log(currUser);
+                if (!(user.temporaryUser && currUser.username === user.username) && (targetOrg == null || myOrg == null || targetOrg.id !== myOrg.id)) {
+                    console.log('rejecting because of here?')
                     res.status(401).send({
                         success: false,
                         message: "You can only see managers and users in your own organization",

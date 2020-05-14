@@ -34,7 +34,6 @@ export class UserController {
             }
         }
 
-
         if (await User.findOne({username})) {
             res.status(400).send({
                 success: false,
@@ -44,9 +43,35 @@ export class UserController {
         }
 
         const user = await registerUser(username, name, email, subscribed, password, accessLevel);
+        user.temporaryOrganizationName = null;
+        user.temporaryUser = false;
         user.organization = associate;
         await user.save();
         await associate.save()
+
+        res.status(200).send({
+            success: true,
+            data: user,
+        });
+    }
+
+    @ApiHandleError()
+    public async signUp(req: Request, res: Response, next: NextFunction, session: Session) {
+        const {username, name, organization, password, email} = req.body;
+
+        if (await User.findOne({username})) {
+            res.status(400).send({
+                success: false,
+                message: "User with that ID already exists",
+            });
+            return;
+        }
+
+        const user = await registerUser(username, name, email, false, password, AccessLevel.USER);
+        user.temporaryOrganizationName = organization;
+        user.temporaryUser = true;
+        user.organization = null;
+        await user.save();
 
         res.status(200).send({
             success: true,
@@ -169,6 +194,7 @@ const controller = new UserController();
 
 // Retrieve all Users
 router.post('/', controller.create.bind(controller));
+router.post('/signUp', controller.signUp.bind(controller));
 router.get('/:id', controller.findOne.bind(controller));
 router.get('/', controller.find.bind(controller));
 router.put('/:id', controller.update.bind(controller));

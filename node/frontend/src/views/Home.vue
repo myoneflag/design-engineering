@@ -236,7 +236,21 @@ export default class Home extends Vue {
                     });
                 }
             });
-        } else {
+        } 
+        else if (this.profile.temporaryUser) {
+            createDocument(null).then((res) => {
+                if (res.success) {
+                    this.$router.push("/document/" + res.data.id);
+                } else {
+                    this.$bvToast.toast(res.message, {
+                        variant: "danger",
+                        title: "Error creating new document"
+                    });
+                }
+            });
+        }
+        else {
+
             this.$bvToast.toast("You need to belong to an organization to create a document", {
                 variant: "danger",
                 title: "Error creating new document"

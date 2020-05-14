@@ -6,6 +6,7 @@
         </template>
         <b-dropdown-item :to="'/users/username/' + profile.username">Profile</b-dropdown-item>
         <b-dropdown-item @click="changePassword">Change Password</b-dropdown-item>
+        <b-dropdown-item @click="renderGuide">Guide</b-dropdown-item>
         <b-dropdown-item @click="renderFeedback">Feedback</b-dropdown-item>
         <b-modal id="modal-2" scrollable title="Give us some feedback!" okTitle="Save" @ok="onSubmitFeedback" @cancel="onCloseFeedback" @close="onCloseFeedback">
             <b-form-textarea
@@ -30,6 +31,7 @@
             <b-dropdown-item to="/contacts">Feedback Messages</b-dropdown-item>
             <b-dropdown-item to="/errors">Auto Error Reports</b-dropdown-item>
             <b-dropdown-item to="/changeLogs">Change Logs</b-dropdown-item>
+            <b-dropdown-item to="/addVideo">Add a Video</b-dropdown-item>
         </template>
 
         <b-dropdown-divider></b-dropdown-divider>
@@ -82,7 +84,9 @@ export default class ProfileMenuItem extends Vue {
                 eulaAccepted: false,
                 eulaAcceptedOn: null,
                 lastActivityOn: null,
-                lastNoticeSeenOn: null
+                lastNoticeSeenOn: null,
+                temporaryOrganizationName: null,
+                temporaryUser: false,
             };
         } else {
             return profile;
@@ -114,6 +118,10 @@ export default class ProfileMenuItem extends Vue {
                 next: this.$router.currentRoute.fullPath
             }
         });
+    }
+
+    renderGuide() {
+        router.push("guide");
     }
 
     renderFeedback() {
