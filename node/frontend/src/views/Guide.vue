@@ -16,23 +16,23 @@
                                     <template v-if="typeof section.content === 'string'">
                                         <b-nav-item
                                             @click="changeToPlay"
-                                            v-bind:key="section.id"  
-                                            :href="'#' + section.id" 
+                                            v-bind:key="section.id"
+                                            :href="'#' + section.id"
                                             style="font-weight: bold">{{
                                             section.title
                                         }}</b-nav-item>
                                     </template>
                                     <template v-else>
                                         <b-nav-item
-                                            @click="changeToPlay" 
+                                            @click="changeToPlay"
                                             v-bind:key="section.id+'nav'"
-                                            v-b-toggle="getToggleId(section.id)" 
-                                            :href="'#' + section.id" 
+                                            v-b-toggle="getToggleId(section.id)"
+                                            :href="'#' + section.id"
                                             style="font-weight: bold"
                                         >{{
                                             section.title
                                         }}</b-nav-item>
-                                        <b-collapse 
+                                        <b-collapse
                                             v-bind:key="section.id+'col'"
                                             :id="getToggleId(section.id)"
                                         >
@@ -41,40 +41,40 @@
                                                     <template v-if="typeof subsection.content === 'string'">
                                                         <b-nav-item
                                                             @click="changeToPlay"
-                                                            v-bind:key="subsection.id+'nav'" 
+                                                            v-bind:key="subsection.id+'nav'"
                                                             class="ml-3 my-1"
-                                                            :href="'#' + subsection.id" 
+                                                            :href="'#' + subsection.id"
                                                         >
                                                             {{subsection.title}}
                                                         </b-nav-item>
                                                     </template>
-                                                    
+
 
                                                      <template v-else>
-                                                        <b-nav-item 
+                                                        <b-nav-item
                                                             @click="changeToPlay"
-                                                            v-bind:key="subsection.id+'nav'" 
+                                                            v-bind:key="subsection.id+'nav'"
                                                             v-b-toggle="getToggleId(subsection.id)"
                                                             :href="'#' + subsection.id"
                                                         >
                                                             {{subsection.title}}
                                                         </b-nav-item>
-                                                        <b-collapse 
-                                                            v-bind:key="subsection.id+'col'" 
+                                                        <b-collapse
+                                                            v-bind:key="subsection.id+'col'"
                                                             :id="getToggleId(subsection.id)"
                                                         >
                                                              <b-nav-item
                                                                 @click="changeToPlay"
-                                                                v-bind:key="subsubsection.id" 
+                                                                v-bind:key="subsubsection.id"
                                                                 v-for="subsubsection in subsection.content"
-                                                                :href="'#' + subsubsection.id" 
+                                                                :href="'#' + subsubsection.id"
                                                             >
                                                                 {{subsubsection.title}}
                                                             </b-nav-item>
                                                         </b-collapse>
                                                     </template>
                                                 </template>
-                                               
+
                                             </b-nav>
                                         </b-collapse>
                                     </template>
@@ -100,7 +100,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import YoutubeVideo from "./YoutubeVideo.vue";
+import YoutubeVideo, { VideoLabels } from "./YoutubeVideo.vue";
 import MainNavBar from "../components/MainNavBar.vue";
 
 @Component({
@@ -109,13 +109,13 @@ import MainNavBar from "../components/MainNavBar.vue";
 export default class Guide extends Vue {
     toPlay: string = "";
     categories: string[] = [
-        'tutorials', 
-        'novice', 
-        'beginner', 
-        'intermediate', 
-        'experienced', 
+        'tutorials',
+        'novice',
+        'beginner',
+        'intermediate',
+        'experienced',
         'expert',
-        'reference',   
+        'reference',
         'pdf-import',
         'project-settings',
         'designing',
@@ -129,7 +129,7 @@ export default class Guide extends Vue {
         console.log(this.toPlay);
     };
 
-    get urlArgument(){
+    get urlArgument(): VideoLabels {
         if(this.categories.includes(this.toPlay)){
             return {'category': this.toPlay, 'title': ''};
         }
@@ -146,91 +146,102 @@ export default class Guide extends Vue {
         return [
 
             {
-                title: "Tutorials",
-                id: "tutorials",
+                shortTitle: "Tutorials",
+                title: "tutorials",
+                id: 'tutorials',
                 content: [
                     {
-                        title: "Novice",
-                        id: "novice",
+                        shortTitle: "Novice",
+                        id: 'novice',
+                        title: "novice",
                         content: [
                             {
-                                title: "Align floor plan",
-                                id: 'H2X Engineering - How to align the floor plans in your multi level project',
+                                shortTitle: "Align floor plan",
+                                title: 'H2X Engineering - How to align the floor plans in your multi level project',
+                                id: 'alignFloorPlan',
                                 content: ""
                             },
                             {
-                                title: "Scale floor plan",
-                                id: 'H2X Engineering - How to scale your floor plan',
+                                shortTitle: "Scale floor plan",
+                                title: 'H2X Engineering - How to scale your floor plan',
+                                id: 'scaleFloorPlan',
                                 content: ""
                             },
                         ]
                     },
                     {
-                        title: "Beginner",
-                        id: "beginner",
+                        shortTitle: "Beginner",
+                        title: "beginner",
+                        id: 'beginner',
                         content: [
                             {
-                                title: "Add hot water plant",
-                                id: 'H2X Engineering - How to add hot water plant',
+                                shortTitle: "Add hot water plant",
+                                title: 'H2X Engineering - How to add hot water plant',
+                                id: 'addHotWaterPlant',
                                 content: ""
                             },
                             {
-                                title: "Add heater water return",
-                                id: 'H2X Engineering - How to complete a heated water return system',
+                                shortTitle: "Add heater water return",
+                                title: 'H2X Engineering - How to complete a heated water return system',
+                                id: 'addHeaterWaterReturn',
                                 content: ""
                             },
                             {
-                                title: "Draw pipes",
-                                id: 'H2X Engineering - How to draw pipes',
+                                shortTitle: "Draw pipes",
+                                title: 'H2X Engineering - How to draw pipes',
+                                id: 'drawPipes',
                                 content: ""
                             },
                             {
-                                title: "Draw pipe between levels",
-                                id: 'H2X Engineering - How to draw a pipe between levels (a riser)',
+                                shortTitle: "Draw pipe between levels",
+                                title: 'H2X Engineering - How to draw a pipe between levels (a riser)',
+                                id: 'drawPipesBetweenLevels',
                                 content: ""
                             },
                             {
-                                title: "Connect fixtures",
-                                id: 'H2X Engineering - How to auto connect fixtures',
+                                shortTitle: "Connect fixtures",
+                                title: 'H2X Engineering - How to auto connect fixtures',
+                                id: 'connectFixtures',
                                 content: ""
                             },
                             {
-                                title: "Locate water source",
-                                id: 'H2X Engineering - How to locate the water source',
+                                shortTitle: "Locate water source",
+                                title: 'H2X Engineering - How to locate the water source',
+                                id: 'locateWaterSource',
                                 content: ""
                             },
                         ]
                     },
                     // {
-                    //     title: "Intermediate",
-                    //     id: "intermediate",
+                    //     shortTitle: "Intermediate",
+                    //     title: "intermediate",
                     //     content: [
                     //         {
-                    //             title: "Intermediate Introduction Video",
-                    //             id: 'intermediate-1',
-                    //             content: "link for intermediate video 1"
+                    //             shortTitle: "Intermediate Introduction Vtitleeo",
+                    //             title: 'intermediate-1',
+                    //             content: "link for intermediate vtitleeo 1"
                     //         },
                     //     ]
                     // },
                     // {
-                    //     title: "Experienced",
-                    //     id: "experienced",
+                    //     shortTitle: "Experienced",
+                    //     title: "experienced",
                     //     content: [
                     //         {
-                    //             title: "Experienced Introduction Video",
-                    //             id: 'experienced-1',
-                    //             content: "link for experienced video 1"
+                    //             shortTitle: "Experienced Introduction Vtitleeo",
+                    //             title: 'experienced-1',
+                    //             content: "link for experienced vtitleeo 1"
                     //         },
                     //     ]
                     // },
                     // {
-                    //     title: "Expert",
-                    //     id: "expert",
+                    //     shortTitle: "Expert",
+                    //     title: "expert",
                     //     content: [
                     //         {
-                    //             title: "Expert Introduction Video",
-                    //             id: 'expert-1',
-                    //             content: "link for expert video 1"
+                    //             shortTitle: "Expert Introduction Vtitleeo",
+                    //             title: 'expert-1',
+                    //             content: "link for expert vtitleeo 1"
                     //         },
                     //     ]
                     // },
@@ -238,50 +249,59 @@ export default class Guide extends Vue {
             },
 
             {
-                title: "Reference",
-                id: "reference",
+                shortTitle: "Reference",
+                title: "reference",
+                id: 'reference',
                 content: [
                     {
-                        title: "PDF import",
-                        id: "pdf-import",
+                        shortTitle: "PDF import",
+                        title: "pdf-import",
+                        id: 'pdfImport',
                         content: [
                             {
-                                title: "PDF import video 1",
-                                id: 'pdf-1',
-                                content: "link for pdf video 1"
+                                shortTitle: "PDF import vtitleeo 1",
+                                title: 'pdf-1',
+                                content: "link for pdf vtitleeo 1",
+                                id: 'pdf1',
                             },
                         ]
                     },
                     {
-                        title: "Project Settings",
-                        id: "project-settings",
+                        shortTitle: "Project Settings",
+                        title: "project-settings",
+                        id: 'projectSettings',
                         content: [
                             {
-                                title: "Project Settings Introduction Video",
-                                id: 'project-1',
+                                shortTitle: "Project Settings Introduction Video",
+                                title: 'project-1',
+                                id: 'projectSettingsIntroduction',
                                 content: "link for project settings video 1"
                             },
                         ]
                     },
                     {
-                        title: "Designing",
-                        id: "designing",
+                        shortTitle: "Designing",
+                        title: "designing",
+                        id: 'designing',
                         content: [
                             {
-                                title: "Designing Introduction Video",
-                                id: 'designing-1',
-                                content: "link for Designing video 1"
+                                shortTitle: "Designing Introduction Vtitleeo",
+                                title: 'designing-1',
+                                id: 'designing1',
+                                content: "link for Designing vtitleeo 1"
                             },
                         ]
                     },
                     {
-                        title: "Results",
-                        id: "results",
+                        shortTitle: "Results",
+                        title: "results",
+                        id: 'results',
                         content: [
                             {
-                                title: "Results Introduction Video",
-                                id: 'results-1',
-                                content: "link for results video 1"
+                                shortTitle: "Results Introduction Vtitleeo",
+                                title: 'results-1',
+                                id: 'Results',
+                                content: "link for results vtitleeo 1"
                             },
                         ]
                     }
@@ -305,14 +325,17 @@ interface Section {
 }
 
 interface NestedSection {
+    shortTitle: string;
     title: string;
     id: string;
     content:
         | Array<{
+            shortTitle: string;
             title: string;
             id: string;
-            content: 
+            content:
                 | Array<{
+                shortTitle: string;
                 title: string;
                 id: string;
                 content: String;

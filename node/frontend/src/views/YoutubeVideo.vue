@@ -15,6 +15,11 @@ import { VideoResult } from "../../../common/src/api/video"
 import { Video } from "../../../common/src/models/Video";
 import { Watch } from "vue-property-decorator";
 
+export interface VideoLabels {
+    category: string;
+    title: string;
+}
+
 @Component({
     props: {
         urlArgs: Object
@@ -33,7 +38,7 @@ export default class YoutubeVideo extends Vue {
                     if (ret.data.video.url){
                         this.url = ret.data.video.url;
                         this.videoResult = ret.data.video;
-                        this.playedTime = ret.data.startOn;
+                        this.playedTime = ret.data.startOn || 0;
                     }
                 }
             }
@@ -61,8 +66,8 @@ export default class YoutubeVideo extends Vue {
 
     pauseHere(){
         console.log('why why?')
-        console.log(this.videoResult.titleId);
-        addVideoViewHistory(this.videoResult.titleId, false, this.player.getCurrentTime())
+        console.log(this.videoResult.title);
+        addVideoViewHistory(this.videoResult.title, false, this.player.getCurrentTime())
         .then((ret)=>{
             console.log(ret);
         })
@@ -75,7 +80,7 @@ export default class YoutubeVideo extends Vue {
     endHere(){
         console.log('end here current');
         console.log(this.player.getCurrentTime());
-        addVideoViewHistory(this.videoResult.titleId, true, this.player.getCurrentTime())
+        addVideoViewHistory(this.videoResult.title, true, this.player.getCurrentTime())
         .catch((e)=>{
             console.log('error is!!!');
             console.log(e);
@@ -83,7 +88,7 @@ export default class YoutubeVideo extends Vue {
     }
 
     @Watch('urlArgs')
-    onPropUrlChanged(value, oldValue) {
+    onPropUrlChanged(value: VideoLabels, oldValue: VideoLabels) {
         console.log('prop');
         console.log(value);
         getVideo(value.category, value.title).then((ret)=>{

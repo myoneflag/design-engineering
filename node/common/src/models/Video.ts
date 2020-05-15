@@ -1,9 +1,12 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryColumn } from "typeorm";
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./User";
 @Entity()
 export class Video extends BaseEntity {
-    @PrimaryColumn()
-    titleId: string;
+    @PrimaryGeneratedColumn()
+    id: number;
+
+    @Column()
+    title: string;
 
     @Column()
     url: string;

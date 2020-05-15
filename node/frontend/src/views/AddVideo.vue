@@ -6,8 +6,8 @@
                 <b-col>
                     <h3>All Videos</h3>
                     <b-list-group>
-                        <b-list-group-item  
-                            v-for="v in allVideos" 
+                        <b-list-group-item
+                            v-for="v in allVideos"
                             :key="v.id"
                         >
                             {{formatVideo(v)}}
@@ -19,8 +19,8 @@
                 <b-col>
                     <h3>Video Category Listings</h3>
                     <b-list-group>
-                        <b-list-group-item  
-                            v-for="v in allVideoListings" 
+                        <b-list-group-item
+                            v-for="v in allVideoListings"
                             :key="v.id"
                         >
                             {{formatVlisting(v)}}
@@ -30,7 +30,7 @@
             </b-row>
             <b-row>
                 <template v-for="field in newVideoForm">
-                   <label :key="field[0]">{{field[0]}}</label> 
+                   <label :key="field[0]">{{field[0]}}</label>
                    <b-form-input :key="field[0]" :id="field[0]" :type="field[1]" :value="videoObj[field[2]]"  @input="videoObj[field[2]] = $event"></b-form-input>
                 </template>
                 <b-button variant="primary" @click="addNewVideo">Add video</b-button>
@@ -81,7 +81,7 @@ export default class AddVideo extends Vue {
     category: String = "";
     order: String = "";
     progressValue: String = "";
-    videoObj: Object = {
+    videoObj = {
         'title': 'new title',
         'url': 'here an url',
         'category': '',
@@ -144,20 +144,20 @@ export default class AddVideo extends Vue {
     }
 
     addNewVideoListing(){
-        addVideoListing(this.videoObj['title'], this.videoObj['category'], this.videoObj['order'], Number(this.videoObj['progressValue']))
+        addVideoListing(this.videoObj['title'], this.videoObj['category'], this.videoObj['order'])
         .then(()=>{
             this.getAndSortVideoListing();
         });
     }
 
     formatVlisting(v:VideoListing){
-        return `category: ${v.category}, title: ${v.video.titleId}, order: ${v.order}, progressValue: ${v.progressValue}`
+        return `category: ${v.category}, title: ${v.video.title}, order: ${v.order}`
     }
 
     formatVideo(v:Video){
-        return `title: ${v.titleId}, Youtube ID: ${v.url}, submitter: ${v.submitter.username}`
+        return `title: ${v.title}, Youtube ID: ${v.url}, submitter: ${v.submitter ? v.submitter.username : "null"}`
     }
-   
+
 }
 </script>
 

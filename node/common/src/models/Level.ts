@@ -1,6 +1,7 @@
 //one row everytime a video is included in a category
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, OneToMany, JoinColumn } from "typeorm";
-import { Requirement } from "./Requirement";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, OneToMany, JoinColumn, ManyToMany } from "typeorm";
+import { Video } from "./Video";
+import { JoinTable } from "../typeorm";
 
 export enum LevelName {
     NOVICE = 0,
@@ -8,12 +9,6 @@ export enum LevelName {
     INTERMEDIATE = 2,
     EXPERIENCED = 3,
     EXPERT = 4,
-}
-
-export interface LevelAndRequirements {
-    currentLevel: LevelName;
-    currentRequirements: Requirement[];
-    tickedRequirements: Requirement[];
 }
 
 @Entity()
@@ -27,11 +22,36 @@ export class Level extends BaseEntity {
     })
     name: LevelName;
 
-    // @OneToMany(
-    //     type => Requirement,
-    //     rq => rq.level,
-    //     { cascade: true}
-    // )
-    // @JoinColumn()
-    // requirements: Requirement[];
+    @ManyToMany(() => Video)
+    @JoinTable()
+    videoRequirements: Video[];
+
+    @Column({default: 0})
+    projectsStartedRequirement: number;
+
+    @Column({default: 0})
+    feedbackSentRequirement: number;
+
+    @Column({type: 'decimal'})
+    order: string;
+}
+
+export interface OnBoardingProgressReport {
+    level: Level;
+    progressElapsed: number;
+    progressTotal: number;
+
+    doneItems: {
+        videos: Video[];
+        projects: number;
+        feedbackItems: number;
+    };
+
+    missingItems: {
+        videos: Video[];
+        projects: number;
+        feedbackItems: number;
+    };
+
+    completed: boolean;
 }
