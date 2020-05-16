@@ -2,11 +2,10 @@ import Vue from "vue";
 import Router from "vue-router";
 import Login from "./views/Login.vue";
 import store from "./store/store";
-import axios from "axios";
 import LoadProfile from "../src/views/LoadProfile.vue";
 import ChangePassword from "../src/views/ChangePassword.vue";
 import ContactUs from "./views/ContactUs.vue";
-import ChangeLogs from "./views/ChangeLogs.vue"
+import ChangeLogs from "./views/ChangeLogs.vue";
 import { getSession } from "../src/api/logins";
 import { AccessLevel, User as IUser } from "../../common/src/models/User";
 import Organizations from "./views/Organizations.vue";
@@ -19,9 +18,7 @@ import Contacts from "./views/Contacts.vue";
 import Errors from "./views/Errors.vue";
 import ViewError from "./views/Error.vue";
 import SignUp from "./views/SignUp.vue";
-import Guide from "./views/Guide.vue";
-import AddVideo from "./views/AddVideo.vue";
-import ProfileState from "./store/profile/types";
+import Tutorials from "./views/Tutorials.vue";
 Vue.use(Router);
 
 const router = new Router({
@@ -121,9 +118,9 @@ const router = new Router({
         },
 
         {
-            path: "/guide",
-            name: "guide",
-            component: Guide,
+            path: "/tutorials",
+            name: "tutorials",
+            component: Tutorials,
         },
 
         {
@@ -193,17 +190,6 @@ const router = new Router({
             path: "/contacts",
             name: "contacts",
             component: Contacts,
-
-            meta: {
-                auth: true,
-                minAccessLevel: AccessLevel.SUPERUSER
-            }
-        },
-
-        {
-            path: "/addVideo",
-            name: "addVideo",
-            component: AddVideo,
 
             meta: {
                 auth: true,

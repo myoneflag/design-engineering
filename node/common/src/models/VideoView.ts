@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, ManyToOne, Double } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
 import { User } from "./User";
 @Entity()
 export class VideoView extends BaseEntity {

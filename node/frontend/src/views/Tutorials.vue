@@ -4,93 +4,41 @@
         <b-container style="margin-top: 50px">
             <b-row>
                 <b-col>
-                    <h3>Guide</h3>
+                    <h3>Tutorials</h3>
                 </b-col>
             </b-row>
             <b-row style="padding-top: 20px">
                 <b-col cols="4">
-                    <div style="position:relative; height: calc(100vh - 180px); overflow-y:auto; text-align: left">
-                        <b-navbar v-b-scrollspy:scrollspy-nested class="flex-column">
-                            <b-nav pills vertical>
-                                <template v-for="section in content">
-                                    <template v-if="typeof section.content === 'string'">
-                                        <b-nav-item
-                                            @click="changeToPlay"
-                                            v-bind:key="section.id"
-                                            :href="'#' + section.id"
-                                            style="font-weight: bold">{{
-                                            section.title
-                                        }}</b-nav-item>
-                                    </template>
-                                    <template v-else>
-                                        <b-nav-item
-                                            @click="changeToPlay"
-                                            v-bind:key="section.id+'nav'"
-                                            v-b-toggle="getToggleId(section.id)"
-                                            :href="'#' + section.id"
-                                            style="font-weight: bold"
-                                        >{{
-                                            section.title
-                                        }}</b-nav-item>
-                                        <b-collapse
-                                            v-bind:key="section.id+'col'"
-                                            :id="getToggleId(section.id)"
-                                        >
-                                            <b-nav pills vertical small>
-                                                <template v-for="subsection in section.content">
-                                                    <template v-if="typeof subsection.content === 'string'">
-                                                        <b-nav-item
-                                                            @click="changeToPlay"
-                                                            v-bind:key="subsection.id+'nav'"
-                                                            class="ml-3 my-1"
-                                                            :href="'#' + subsection.id"
-                                                        >
-                                                            {{subsection.title}}
-                                                        </b-nav-item>
-                                                    </template>
+                    <div role="tablist">
+                        <template v-for="(level, index) in skillLevels">
+                            <b-card
+                                    no-body
+                                    class="mb-1"
+                            >
+                                <b-card-header header-tag="header" class="p-1" role="tab">
+                                    <b-button block v-b-toggle="'menu-accordion-' + index" variant="primary">
+                                        {{level.name + ' Videos'}}
+                                    </b-button>
+                                </b-card-header>
+                                <b-collapse
+                                        :id="'menu-accordion-' + index"
+                                        accordion="menu-accordion"
+                                        role="tabpanel"
+                                >
+                                    <b-card-body>
+                                        <b-nav pills vertical>
+                                            <b-nav-item v-for="videoId in level.videoRequirements">
+                                                {{ VIDEO_INDEX[videoId].id }}
+                                            </b-nav-item>
+                                        </b-nav>
+                                    </b-card-body>
+                                </b-collapse>
+                            </b-card>
+                        </template>
 
-
-                                                     <template v-else>
-                                                        <b-nav-item
-                                                            @click="changeToPlay"
-                                                            v-bind:key="subsection.id+'nav'"
-                                                            v-b-toggle="getToggleId(subsection.id)"
-                                                            :href="'#' + subsection.id"
-                                                        >
-                                                            {{subsection.title}}
-                                                        </b-nav-item>
-                                                        <b-collapse
-                                                            v-bind:key="subsection.id+'col'"
-                                                            :id="getToggleId(subsection.id)"
-                                                        >
-                                                             <b-nav-item
-                                                                @click="changeToPlay"
-                                                                v-bind:key="subsubsection.id"
-                                                                v-for="subsubsection in subsection.content"
-                                                                :href="'#' + subsubsection.id"
-                                                            >
-                                                                {{subsubsection.title}}
-                                                            </b-nav-item>
-                                                        </b-collapse>
-                                                    </template>
-                                                </template>
-
-                                            </b-nav>
-                                        </b-collapse>
-                                    </template>
-                                </template>
-                            </b-nav>
-                        </b-navbar>
                     </div>
                 </b-col>
                 <b-col cols="8">
-                    <div
-                        id="scrollspy-nested"
-                        style="position:relative; height: calc(100vh - 180px); overflow-y:auto; text-align: left"
-                    >
-                        <YoutubeVideo :urlArgs="urlArgument">
-                        </YoutubeVideo>
-                    </div>
                 </b-col>
             </b-row>
         </b-container>
@@ -100,13 +48,14 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import YoutubeVideo, { VideoLabels } from "./YoutubeVideo.vue";
 import MainNavBar from "../components/MainNavBar.vue";
+import { SKILL_LEVELS, SkillLevel } from "../lib/tutorials/skillLevels";
+import { VIDEO_INDEX } from "../lib/tutorials/videos";
 
 @Component({
-    components: { MainNavBar, YoutubeVideo }
+    components: { MainNavBar }
 })
-export default class Guide extends Vue {
+export default class Tutorials extends Vue {
     toPlay: string = "";
     categories: string[] = [
         'tutorials',
@@ -122,21 +71,20 @@ export default class Guide extends Vue {
         'results'
     ];
 
+    get skillLevels(): SkillLevel[] {
+        return SKILL_LEVELS.filter((l) => l.videoRequirements.length);
+    }
+
+    get VIDEO_INDEX() {
+        return VIDEO_INDEX;
+    }
+
     changeToPlay(){
         console.log('changing to play');
         console.log(this.$route.hash);
         this.toPlay = this.$route.hash.slice(1);
         console.log(this.toPlay);
     };
-
-    get urlArgument(): VideoLabels {
-        if(this.categories.includes(this.toPlay)){
-            return {'category': this.toPlay, 'title': ''};
-        }
-        else {
-            return {'category': '', 'title': this.toPlay};
-        }
-    }
 
     getToggleId(id: string){
         return id;

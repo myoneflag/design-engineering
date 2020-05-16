@@ -6,7 +6,7 @@
         </template>
         <b-dropdown-item :to="'/users/username/' + profile.username">Profile</b-dropdown-item>
         <b-dropdown-item @click="changePassword">Change Password</b-dropdown-item>
-        <!--<b-dropdown-item @click="renderGuide">Guide</b-dropdown-item>-->
+        <b-dropdown-item :to="'/tutorials'">Tutorials</b-dropdown-item>
         <b-dropdown-item @click="renderFeedback">Feedback</b-dropdown-item>
         <b-modal id="modal-2" scrollable title="Give us some feedback!" okTitle="Save" @ok="onSubmitFeedback" @cancel="onCloseFeedback" @close="onCloseFeedback">
             <b-form-textarea
@@ -118,10 +118,6 @@ export default class ProfileMenuItem extends Vue {
                 next: this.$router.currentRoute.fullPath
             }
         });
-    }
-
-    renderGuide() {
-        router.push("guide");
     }
 
     renderFeedback() {
