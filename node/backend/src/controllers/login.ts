@@ -6,7 +6,6 @@ import { Session } from "../../../common/src/models/Session";
 import { AccessLevel, User } from "../../../common/src/models/User";
 import { ApiHandleError } from "../helpers/apiWrapper";
 import { AuthRequired } from "../helpers/withAuth";
-import { Level, LevelProgressReport, OnBoardingProgressReport } from "../../../common/src/models/Level";
 import { VideoView } from "../../../common/src/models/VideoView";
 import { Document } from "../../../common/src/models/Document";
 import { FeedbackMessage } from "../../../common/src/models/FeedbackMessage";
@@ -253,7 +252,6 @@ router.all('/session', controller.session.bind(controller));
 router.post('/login/password', controller.changePassword.bind(controller));
 router.post('/acceptEula', controller.acceptEula.bind(controller));
 router.post('/declineEula', controller.declineEula.bind(controller));
-router.post('/onBoardingProgress', controller.getVideoViews.bind(controller));
 
 export const loginRouter = router;
 

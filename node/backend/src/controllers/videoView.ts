@@ -95,14 +95,13 @@ export class VideoViewController {
     @ApiHandleError()
     @AuthRequired(AccessLevel.USER)
     public async viewedVideoIds(req: Request, res: Response, next: NextFunction, session: Session) {
-        const uniqueViews = await VideoView.createQueryBuilder('videoView')
-            .select('DISTINCT ON (videoView.videoId)')
-            .where('videoView.user = :user', { user: session.id })
+        const views = await VideoView.createQueryBuilder('videoView')
+            .where('videoView.user = :user', { user: session.user.username })
             .getMany();
-        const videoIds = uniqueViews.map((uv) => uv.videoId);
+        const videoIds = views.map((uv) => uv.videoId);
         return res.status(200).send({
             success: true,
-            data: videoIds,
+            data: Array.from(new Set(videoIds).values()),
         });
     }
 }
@@ -110,11 +109,11 @@ export class VideoViewController {
 const router = Router();
 const controller = new VideoViewController();
 
-// Retrieve all Users
+router.post('/recordVideoView', controller.recordVideoView.bind(controller));
+router.get('/viewedVideoIds', controller.viewedVideoIds.bind(controller));
+
 router.get('/:id', controller.findOne.bind(controller));
 router.get('/', controller.find.bind(controller));
 router.delete('/:id', controller.delete.bind(controller));
-router.post('/recordVideoView', controller.recordVideoView.bind(controller));
-router.get('/viewedVideoIds', controller.viewedVideoIds.bind(controller));
 
 export const videoViewRouter = router;

@@ -1,4 +1,5 @@
 import { assertUnreachable } from "../../../../common/src/api/config";
+import axios from 'axios';
 
 export enum VideoPlatform {
     YOUTUBE,
@@ -9,7 +10,6 @@ export interface VideoRecord {
     title: string;
     videoUrl: string;
     thumbnailUrl: string;
-    durationS: number;
 }
 
 export interface YoutubeVideoSpec {
@@ -21,17 +21,43 @@ export interface YoutubeVideoSpec {
 
 export type VideoSpec = YoutubeVideoSpec;
 
-export async function videoSpec2Record(spec: VideoSpec) {
-    switch (spec.platform) {
-        case VideoPlatform.YOUTUBE:
-
-            break;
-        default:
-            assertUnreachable(spec.platform);
-    }
+export interface YoutubeOEmbed {
+    title: string;
+    author_url: string;
+    provider_name: string;
+    width: number;
+    thumbnail_url: string;
+    version: string;
+    thumbnail_height: number;
+    provider_url: string;
+    thumbnail_width: number;
+    type: string;
+    height: number;
+    author_name: string;
+    html: string;
 }
 
-export const VIDEO_INDEX = {
+export async function videoSpec2Record(spec: VideoSpec): Promise<VideoRecord> {
+    switch (spec.platform) {
+        case VideoPlatform.YOUTUBE:
+            const youtubeUrl = 'https://www.youtube.com/watch?v=' + spec.videoId;
+            const result = await axios.get('https://noembed.com/embed?url=' + youtubeUrl);
+            if (result.status === 200) {
+                const oembed: YoutubeOEmbed = result.data;
+                return {
+                    id: spec.id,
+                    title: oembed.title,
+                    videoUrl: youtubeUrl,
+                    thumbnailUrl: oembed.thumbnail_url,
+                };
+            } else {
+                throw new Error('could not fetch video metadata for ' + spec.videoId);
+            }
+    }
+    assertUnreachable(spec.platform);
+}
+
+const videoIndexUntyped = {
     'upload-pdf-background': {
         platform: VideoPlatform.YOUTUBE,
         id: 'upload-pdf-background',
@@ -133,3 +159,5 @@ export const VIDEO_INDEX = {
         videoId: '9sEPfc-iXjw',
     },
 };
+
+export const VIDEO_INDEX: typeof videoIndexUntyped & { [key: string]: VideoSpec } = videoIndexUntyped;

@@ -17,6 +17,8 @@
                             >
                                 <b-card-header header-tag="header" class="p-1" role="tab">
                                     <b-button block v-b-toggle="'menu-accordion-' + index" variant="primary">
+                                        <v-icon name="check" v-if="isLevelWatched(level)"/>
+                                        <b-badge v-else variant="danger">{{ numUnwatched(level) }}</b-badge>
                                         {{level.name + ' Videos'}}
                                     </b-button>
                                 </b-card-header>
@@ -27,7 +29,12 @@
                                 >
                                     <b-card-body>
                                         <b-nav pills vertical>
-                                            <b-nav-item v-for="videoId in level.videoRequirements">
+                                            <b-nav-item
+                                                    v-for="videoId in level.videoRequirements"
+                                                    :to="'/tutorials/' + videoId"
+                                                    variant="success"
+                                            >
+                                                <v-icon name="check" v-if="isVideoWatched(videoId)"/>
                                                 {{ VIDEO_INDEX[videoId].id }}
                                             </b-nav-item>
                                         </b-nav>
@@ -39,6 +46,21 @@
                     </div>
                 </b-col>
                 <b-col cols="8">
+                    <b-alert v-if="$route.params.videoId === undefined" variant="success" show>Choose a video from the left</b-alert>
+                    <b-alert v-else-if="VIDEO_INDEX[$route.params.videoId] === undefined" variant="error" alert>The video linked is invalid.</b-alert>
+                    <template v-else>
+                        <template v-if="loadedVideo[$route.params.videoId]">
+                            <h4>{{loadedVideo[$route.params.videoId].title}}</h4>
+                        </template>
+                        <h4 v-else-if="loadVideo($route.params.videoId)">Loading video link...</h4>
+
+                        <youtube :video-id="VIDEO_INDEX[$route.params.videoId].videoId" @ended="videoEnded" @playing="videoPlaying" @paused="videoPaused">
+
+                        </youtube>
+
+                        <b-button v-if="isVideoWatched($route.params.videoId)" disabled variant="success"><v-icon name="check"/> Watched</b-button>
+                        <b-button v-else  @click="markAsWatched" variant="warning">Mark as Watched</b-button>
+                    </template>
                 </b-col>
             </b-row>
         </b-container>
@@ -50,10 +72,12 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import MainNavBar from "../components/MainNavBar.vue";
 import { SKILL_LEVELS, SkillLevel } from "../lib/tutorials/skillLevels";
-import { VIDEO_INDEX } from "../lib/tutorials/videos";
+import { VIDEO_INDEX, VideoRecord, VideoSpec, videoSpec2Record } from "../lib/tutorials/videos";
+import { recordVideoView } from "../api/videos";
+import YoutubeVideo from "./YoutubeVideo.vue";
 
 @Component({
-    components: { MainNavBar }
+    components: { YoutubeVideo, MainNavBar }
 })
 export default class Tutorials extends Vue {
     toPlay: string = "";
@@ -71,6 +95,30 @@ export default class Tutorials extends Vue {
         'results'
     ];
 
+    loadedVideo: {[key: string]: VideoRecord} = {};
+    markAsWatchedVideoId: string = '';
+    currentVideoWatchedDurationMS: number = 0;
+    lastPlayStart: number = (new Date()).getTime();
+    markAsWatchedTimer: NodeJS.Timeout;
+
+    loadVideo(id: string) {
+        this.currentVideoWatchedDurationMS = 0;
+        videoSpec2Record((VIDEO_INDEX[id])).then((res) => {
+            Vue.set(this.loadedVideo, id, res);
+        });
+
+        return true;
+    }
+
+    get watchedVideoSet() {
+        const watchedIds: string[] = this.$store.getters['profile/viewedVideoIds'];
+        const res = new Set<string>();
+        for (const id of watchedIds) {
+            res.add(id);
+        }
+        return res;
+    }
+
     get skillLevels(): SkillLevel[] {
         return SKILL_LEVELS.filter((l) => l.videoRequirements.length);
     }
@@ -79,185 +127,61 @@ export default class Tutorials extends Vue {
         return VIDEO_INDEX;
     }
 
-    changeToPlay(){
-        console.log('changing to play');
-        console.log(this.$route.hash);
-        this.toPlay = this.$route.hash.slice(1);
-        console.log(this.toPlay);
-    };
-
-    getToggleId(id: string){
-        return id;
+    async markAsWatched() {
+        const target = this.$route.params.videoId;
+        const res = await recordVideoView(target);
+        if (res.success) {
+            this.$store.dispatch('profile/recordVideoView', target);
+        } else {
+            this.$bvToast.toast(res.message, {
+                title: 'Could not mark video as watched',
+                variant: 'error',
+            })
+        }
     }
 
-    get content(): NestedSection[] {
-        return [
-
-            {
-                shortTitle: "Tutorials",
-                title: "tutorials",
-                id: 'tutorials',
-                content: [
-                    {
-                        shortTitle: "Novice",
-                        id: 'novice',
-                        title: "novice",
-                        content: [
-                            {
-                                shortTitle: "Align floor plan",
-                                title: 'H2X Engineering - How to align the floor plans in your multi level project',
-                                id: 'alignFloorPlan',
-                                content: ""
-                            },
-                            {
-                                shortTitle: "Scale floor plan",
-                                title: 'H2X Engineering - How to scale your floor plan',
-                                id: 'scaleFloorPlan',
-                                content: ""
-                            },
-                        ]
-                    },
-                    {
-                        shortTitle: "Beginner",
-                        title: "beginner",
-                        id: 'beginner',
-                        content: [
-                            {
-                                shortTitle: "Add hot water plant",
-                                title: 'H2X Engineering - How to add hot water plant',
-                                id: 'addHotWaterPlant',
-                                content: ""
-                            },
-                            {
-                                shortTitle: "Add heater water return",
-                                title: 'H2X Engineering - How to complete a heated water return system',
-                                id: 'addHeaterWaterReturn',
-                                content: ""
-                            },
-                            {
-                                shortTitle: "Draw pipes",
-                                title: 'H2X Engineering - How to draw pipes',
-                                id: 'drawPipes',
-                                content: ""
-                            },
-                            {
-                                shortTitle: "Draw pipe between levels",
-                                title: 'H2X Engineering - How to draw a pipe between levels (a riser)',
-                                id: 'drawPipesBetweenLevels',
-                                content: ""
-                            },
-                            {
-                                shortTitle: "Connect fixtures",
-                                title: 'H2X Engineering - How to auto connect fixtures',
-                                id: 'connectFixtures',
-                                content: ""
-                            },
-                            {
-                                shortTitle: "Locate water source",
-                                title: 'H2X Engineering - How to locate the water source',
-                                id: 'locateWaterSource',
-                                content: ""
-                            },
-                        ]
-                    },
-                    // {
-                    //     shortTitle: "Intermediate",
-                    //     title: "intermediate",
-                    //     content: [
-                    //         {
-                    //             shortTitle: "Intermediate Introduction Vtitleeo",
-                    //             title: 'intermediate-1',
-                    //             content: "link for intermediate vtitleeo 1"
-                    //         },
-                    //     ]
-                    // },
-                    // {
-                    //     shortTitle: "Experienced",
-                    //     title: "experienced",
-                    //     content: [
-                    //         {
-                    //             shortTitle: "Experienced Introduction Vtitleeo",
-                    //             title: 'experienced-1',
-                    //             content: "link for experienced vtitleeo 1"
-                    //         },
-                    //     ]
-                    // },
-                    // {
-                    //     shortTitle: "Expert",
-                    //     title: "expert",
-                    //     content: [
-                    //         {
-                    //             shortTitle: "Expert Introduction Vtitleeo",
-                    //             title: 'expert-1',
-                    //             content: "link for expert vtitleeo 1"
-                    //         },
-                    //     ]
-                    // },
-                ]
-            },
-
-            {
-                shortTitle: "Reference",
-                title: "reference",
-                id: 'reference',
-                content: [
-                    {
-                        shortTitle: "PDF import",
-                        title: "pdf-import",
-                        id: 'pdfImport',
-                        content: [
-                            {
-                                shortTitle: "PDF import vtitleeo 1",
-                                title: 'pdf-1',
-                                content: "link for pdf vtitleeo 1",
-                                id: 'pdf1',
-                            },
-                        ]
-                    },
-                    {
-                        shortTitle: "Project Settings",
-                        title: "project-settings",
-                        id: 'projectSettings',
-                        content: [
-                            {
-                                shortTitle: "Project Settings Introduction Video",
-                                title: 'project-1',
-                                id: 'projectSettingsIntroduction',
-                                content: "link for project settings video 1"
-                            },
-                        ]
-                    },
-                    {
-                        shortTitle: "Designing",
-                        title: "designing",
-                        id: 'designing',
-                        content: [
-                            {
-                                shortTitle: "Designing Introduction Vtitleeo",
-                                title: 'designing-1',
-                                id: 'designing1',
-                                content: "link for Designing vtitleeo 1"
-                            },
-                        ]
-                    },
-                    {
-                        shortTitle: "Results",
-                        title: "results",
-                        id: 'results',
-                        content: [
-                            {
-                                shortTitle: "Results Introduction Vtitleeo",
-                                title: 'results-1',
-                                id: 'Results',
-                                content: "link for results vtitleeo 1"
-                            },
-                        ]
-                    }
-                ]
-            },
-
-        ];
+    videoEnded() {
+        this.markAsWatched();
     }
+
+    videoPlaying() {
+        this.markAsWatchedVideoId = this.$route.params.videoId;
+        this.lastPlayStart = new Date().getTime();
+        this.markAsWatchedTimer = setTimeout(() => {
+            if (this.markAsWatchedVideoId === this.$route.params.videoId) {
+                this.markAsWatched();
+            }
+        }, 10000 - this.currentVideoWatchedDurationMS);
+    }
+
+    videoPaused() {
+        this.currentVideoWatchedDurationMS += (new Date().getTime()) - this.lastPlayStart;
+        clearTimeout(this.markAsWatchedTimer);
+    }
+
+    isVideoWatched(videoId: string) {
+        return this.watchedVideoSet.has(videoId);
+    }
+
+    isLevelWatched(level: SkillLevel) {
+        for (const v of level.videoRequirements) {
+            if (!this.isVideoWatched(v)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    numUnwatched(level: SkillLevel) {
+        let res = 0;
+        for (const v of level.videoRequirements) {
+            if (!this.isVideoWatched(v)) {
+                res += 1;
+            }
+        }
+        return res
+    }
+
 }
 
 interface Section {

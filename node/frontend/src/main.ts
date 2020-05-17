@@ -5,6 +5,8 @@ import store from "./store/store";
 import "./registerServiceWorker";
 import StackTrace from "stacktrace-js";
 
+import VueYouTubeEmbed from "vue-youtube-embed";
+
 // @ts-ignore
 import VueInputAutowidth from "vue-input-autowidth";
 // @ts-ignore
@@ -24,6 +26,7 @@ Vue.use(VueCookies);
 Vue.use(VueInputAutowidth);
 Vue.use(BootstrapVue);
 Vue.use(VueResize);
+Vue.use(VueYouTubeEmbed);
 Vue.component("v-icon", VueAwesome);
 
 const sentErrors = new Set<string>();

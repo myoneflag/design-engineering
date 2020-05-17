@@ -6,7 +6,8 @@ import { mutations } from "../../../src/store/profile/mutations";
 import ProfileState from "../../../src/store/profile/types";
 
 export const state: ProfileState = {
-    profile: null
+    profile: null,
+    viewedVideoIds: [],
 };
 
 const namespaced: boolean = true;

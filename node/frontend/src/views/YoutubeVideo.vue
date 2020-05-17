@@ -1,15 +1,16 @@
 <template>
     <div>
-        <youtube :video-id="url" @ready="ready" @playing="playing" @paused="pauseHere" @ended="endHere">
-        </youtube>
+        <iframe>
+
+            <youtube :video-id="url" @ready="ready" @playing="playing" @paused="pauseHere" @ended="endHere">
+            </youtube>
+        </iframe>
     </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import VueYouTubeEmbed from "vue-youtube-embed";
-Vue.use(VueYouTubeEmbed);
 import { Watch } from "vue-property-decorator";
 
 export interface VideoLabels {

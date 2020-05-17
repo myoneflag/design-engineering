@@ -121,6 +121,18 @@ const router = new Router({
             path: "/tutorials",
             name: "tutorials",
             component: Tutorials,
+            meta: {
+                auth: true,
+            }
+        },
+
+        {
+            path: "/tutorials/:videoId",
+            name: "tutorialsVideo",
+            component: Tutorials,
+            meta: {
+                auth: true,
+            }
         },
 
         {
