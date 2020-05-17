@@ -6,8 +6,7 @@ import { Session } from "../../../common/src/models/Session";
 import { AccessLevel, User } from "../../../common/src/models/User";
 import { ApiHandleError } from "../helpers/apiWrapper";
 import { AuthRequired } from "../helpers/withAuth";
-import { Level, LevelProgressReport, OnBoardingProgressReport } from "../../../common/src/models/Level";
-import { VideoViewedRecord } from "../../../common/src/models/VideoViewedRecord";
+import { VideoView } from "../../../common/src/models/VideoView";
 import { Document } from "../../../common/src/models/Document";
 import { FeedbackMessage } from "../../../common/src/models/FeedbackMessage";
 
@@ -242,67 +241,25 @@ export class LoginController {
         });
     }
 
-
     @ApiHandleError()
-    @AuthRequired(AccessLevel.USER)
-    public async getLevelProgressReport(req: Request, res: Response, next: NextFunction, session: Session) {
-        const levels = await Level.find({order: {order: 'ASC'}});
-        let result: OnBoardingProgressReport | undefined = undefined;
+    @AuthRequired(AccessLevel.USER, false)
+    public async onBoardingStats(req: Request, res: Response, next: NextFunction, session: Session) {
         const user = session.user;
+        const numDrawingsCreated = await Document.count({createdBy: user});
+        const numFeedbackSubmitted = await FeedbackMessage.count({submittedBy: user});
+        const views = await VideoView.createQueryBuilder('videoView')
+            .where('videoView.user = :user', { user: session.user.username })
+            .getMany();
+        const viewedVideoIds = views.map((uv) => uv.videoId);
 
-        const videoRecordsWatched = await VideoViewedRecord.find({watchedBy: user});
-        const videoRecordsCompleted = videoRecordsWatched.filter((vr) => vr.completed);
-
-        const userDocument = await Document.find({ where: { createdBy: session.user.username } });
-        const userFeedback = await FeedbackMessage.find({ where: { submittedBy: session.user.username } });
-
-        for (const l of levels) {
-            // determine progress
-
-            const progressTotal = l.videoRequirements.length + l.feedbackSentRequirement + l.projectsStartedRequirement;
-            const videosWatched = l.videoRequirements.filter((v) =>
-                videoRecordsCompleted.find((vr) => vr.video.id === v.id));
-            const videosNotWatched = l.videoRequirements.filter((v) =>
-                !videoRecordsCompleted.find((vr) => vr.video.id === v.id));
-
-            const projectProgress = Math.min(userDocument.length, l.projectsStartedRequirement);
-            const feedbackProgress = Math.min(userFeedback.length, l.feedbackSentRequirement);
-
-            const progressElapsed = videosWatched.length + projectProgress + feedbackProgress;
-
-            result = {
-                level: l,
-                progressElapsed,
-                progressTotal,
-                doneItems: {
-                    videos: videosWatched,
-                    projects: projectProgress,
-                    feedbackItems: feedbackProgress,
-                },
-                missingItems: {
-                    videos: videosNotWatched,
-                    projects: l.projectsStartedRequirement - projectProgress,
-                    feedbackItems: l.feedbackSentRequirement - feedbackProgress,
-                },
-                completed: projectProgress >= progressTotal,
-            };
-
-            if (projectProgress < progressTotal) {
-                break;
-            }
-        }
-
-        if (result) {
-            return res.status(200).send({
-                success: true,
-                data: result,
-            });
-        } else {
-            return res.status(404).send({
-                success: false,
-                data: 'No levels found',
-            });
-        }
+        return res.status(200).send({
+            success: true,
+            data: {
+                numDrawingsCreated,
+                numFeedbackSubmitted,
+                viewedVideoIds,
+            },
+        });
     }
 }
 const router: Router = Router();
@@ -316,7 +273,7 @@ router.all('/session', controller.session.bind(controller));
 router.post('/login/password', controller.changePassword.bind(controller));
 router.post('/acceptEula', controller.acceptEula.bind(controller));
 router.post('/declineEula', controller.declineEula.bind(controller));
-router.post('/onBoardingProgress', controller.getLevelProgressReport.bind(controller));
+router.get('/onBoardingStats', controller.onBoardingStats.bind(controller));
 
 export const loginRouter = router;
 

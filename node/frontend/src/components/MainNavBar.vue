@@ -21,6 +21,7 @@
             </div>
         </b-popover>
         <b-navbar-nav class="ml-auto">
+            <OnBoardingProgressMenuItem/>
             <ProfileMenuItem />
         </b-navbar-nav>
     </b-navbar>
@@ -30,13 +31,13 @@
 import Component from "vue-class-component";
 import Vue from "vue";
 import ProfileMenuItem from "../../src/components/ProfileMenuItem.vue";
-import { getOnBoardingProgress } from "../api/on-boarding-progress";
-import { LevelName, OnBoardingProgressReport } from "../../../common/src/models/Level";
+import OnBoardingProgressMenuItem from "./OnBoardingProgressMenuItem.vue";
+
 @Component({
-    components: { ProfileMenuItem }
+    components: { OnBoardingProgressMenuItem, ProfileMenuItem }
 })
 export default class MainNavBar extends Vue {
-    onBoardingProgress: OnBoardingProgressReport | null = null;
+    onBoardingProgress: any | null = null;
 
     get options(){
         if (!this.onBoardingProgress) {
@@ -102,17 +103,6 @@ export default class MainNavBar extends Vue {
     }
 
     mounted() {
-        getOnBoardingProgress().then((ret)=>{
-            if (ret.success){
-                console.log('get level success');
-                console.log(ret.data);
-                if (ret.data) {
-                    this.onBoardingProgress = ret.data;
-                } else {
-                    this.onBoardingProgress = null;
-                }
-            }
-        })
     }
 
 }

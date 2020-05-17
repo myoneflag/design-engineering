@@ -2,6 +2,12 @@ import { BaseEntity, Column, Entity, ManyToOne, PrimaryColumn } from "typeorm";
 import { Organization } from "./Organization";
 import { AccessEvents } from "./AccessEvents";
 
+export interface OnBoardingStats {
+    numDrawingsCreated: number;
+    numFeedbackSubmitted: number;
+    viewedVideoIds: string[];
+}
+
 export enum AccessLevel {
     SUPERUSER = 0, // Can access all data on the platform
     ADMIN = 1, // A h2x member - can manage users and companies

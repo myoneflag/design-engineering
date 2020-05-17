@@ -5,5 +5,17 @@ import ProfileState from "../../../src/store/profile/types";
 export const getters: GetterTree<ProfileState, RootState> = {
     profile(state) {
         return state.profile;
+    },
+
+    viewedVideoIds(state) {
+        return state.viewedVideoIds;
+    },
+
+    numDrawingsCreated(state) {
+        return state.numDrawingsCreated;
+    },
+
+    numFeedbackSubmitted(state) {
+        return state.numFeedbackSubmitted;
     }
 };

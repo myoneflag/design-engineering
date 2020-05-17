@@ -1,6 +1,6 @@
 import axios from "axios";
 import { APIResult } from "../../../common/src/api/document/types";
-import { User } from "../../../common/src/models/User";
+import { OnBoardingStats, User } from "../../../common/src/models/User";
 
 export async function changePasswords(currentPassword: string, newPassword: string): Promise<APIResult<string>> {
     try {
@@ -70,6 +70,18 @@ export async function acceptEula(): Promise<APIResult<null>> {
 export async function declineEula(): Promise<APIResult<null>> {
     try {
         return (await axios.post("/api/declineEula")).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return { success: false, message: e.response.data.message };
+        } else {
+            return { success: false, message: e.message };
+        }
+    }
+}
+
+export async function onBoardingStats(): Promise<APIResult<OnBoardingStats>> {
+    try {
+        return (await axios.get("/api/onBoardingStats")).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
