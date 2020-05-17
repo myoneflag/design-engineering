@@ -36,7 +36,7 @@
                                                     :active="videoId === $route.params.videoId"
                                             >
                                                 <v-icon name="check" v-if="isVideoWatched(videoId)" variant="success"/>
-                                                {{ VIDEO_INDEX[videoId].id }}
+                                                {{ VIDEO_INDEX[videoId].shortTitle }}
                                             </b-nav-item>
                                         </b-nav>
                                     </b-card-body>
