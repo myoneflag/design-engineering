@@ -1,6 +1,6 @@
 <template>
     <div>
-        <MainNavBar></MainNavBar>
+        <PublicNavBar></PublicNavBar>
         <b-container>
             <b-row>
                 <b-col>
@@ -43,9 +43,10 @@ import MainNavBar from "../components/MainNavBar.vue";
 import { AccessLevel, User as IUser } from "../../../common/src/models/User";
 import { signUp } from "../api/users";
 import { login } from "../../src/api/logins";
+import PublicNavBar from "../components/PublicNavBar.vue";
 
 @Component({
-    components: { MainNavBar }
+    components: { PublicNavBar, MainNavBar }
 })
 export default class CreateUser extends Vue {
     user: IUser = {
