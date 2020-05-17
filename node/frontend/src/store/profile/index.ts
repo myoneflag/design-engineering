@@ -8,6 +8,8 @@ import ProfileState from "../../../src/store/profile/types";
 export const state: ProfileState = {
     profile: null,
     viewedVideoIds: [],
+    numDrawingsCreated: 0,
+    numFeedbackSubmitted: 0,
 };
 
 const namespaced: boolean = true;

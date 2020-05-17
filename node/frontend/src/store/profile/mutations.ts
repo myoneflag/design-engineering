@@ -8,13 +8,15 @@ export const mutations: MutationTree<ProfileState> = {
         state.profile = profile;
     },
 
-    pushViewedVideoId(state, videoId: string) {
-        if (!state.viewedVideoIds.includes(videoId)) {
-            state.viewedVideoIds.push(videoId);
-        }
-    },
-
     setViewedVideoIds(state, viewedVideoIds: string[]) {
         state.viewedVideoIds.splice(0, state.viewedVideoIds.length, ...viewedVideoIds);
-    }
+    },
+
+    setNumDrawingsCreated(state, num: number) {
+        state.numDrawingsCreated = num;
+    },
+
+    setNumFeedbackSubmitted(state, num: number) {
+        state.numFeedbackSubmitted = num;
+    },
 };

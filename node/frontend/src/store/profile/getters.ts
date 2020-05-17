@@ -9,5 +9,13 @@ export const getters: GetterTree<ProfileState, RootState> = {
 
     viewedVideoIds(state) {
         return state.viewedVideoIds;
+    },
+
+    numDrawingsCreated(state) {
+        return state.numDrawingsCreated;
+    },
+
+    numFeedbackSubmitted(state) {
+        return state.numFeedbackSubmitted;
     }
 };

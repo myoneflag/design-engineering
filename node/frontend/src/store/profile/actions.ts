@@ -2,24 +2,24 @@ import { ActionTree } from "vuex";
 import { RootState } from "../../../src/store/types";
 import ProfileState from "../../../src/store/profile/types";
 import { recordVideoView, viewedVideoIds } from "../../api/videos";
+import { onBoardingStats } from "../../api/logins";
 
 export const actions: ActionTree<ProfileState, RootState> = {
     async setProfile({ commit, state, dispatch }, username) {
         await commit("setProfile", username);
-        return dispatch('refreshViewedVideos');
+        return dispatch('refreshOnBoardingStats');
     },
 
-    async recordVideoView({ commit, state, dispatch }, videoId: string) {
-        await commit('pushViewedVideoId', videoId);
-        return dispatch('refreshViewedVideos');
-    },
-
-    async refreshViewedVideos({ commit, state }) {
-        const res = await viewedVideoIds();
+    async refreshOnBoardingStats({ commit, state }) {
+        const res = await onBoardingStats();
         if (res.success) {
-            return commit('setViewedVideoIds', res.data);
+            await commit('setViewedVideoIds', res.data.viewedVideoIds);
+            await commit('setNumDrawingsCreated', res.data.numDrawingsCreated);
+            await commit('setNumFeedbackSubmitted', res.data.numFeedbackSubmitted);
         } else {
             alert('Could not get viewed video ids: ' + res.message);
         }
     }
+
+
 };

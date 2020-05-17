@@ -240,6 +240,27 @@ export class LoginController {
             data: null,
         });
     }
+
+    @ApiHandleError()
+    @AuthRequired(AccessLevel.USER, false)
+    public async onBoardingStats(req: Request, res: Response, next: NextFunction, session: Session) {
+        const user = session.user;
+        const numDrawingsCreated = await Document.count({createdBy: user});
+        const numFeedbackSubmitted = await FeedbackMessage.count({submittedBy: user});
+        const views = await VideoView.createQueryBuilder('videoView')
+            .where('videoView.user = :user', { user: session.user.username })
+            .getMany();
+        const viewedVideoIds = views.map((uv) => uv.videoId);
+
+        return res.status(200).send({
+            success: true,
+            data: {
+                numDrawingsCreated,
+                numFeedbackSubmitted,
+                viewedVideoIds,
+            },
+        });
+    }
 }
 const router: Router = Router();
 
@@ -252,6 +273,7 @@ router.all('/session', controller.session.bind(controller));
 router.post('/login/password', controller.changePassword.bind(controller));
 router.post('/acceptEula', controller.acceptEula.bind(controller));
 router.post('/declineEula', controller.declineEula.bind(controller));
+router.get('/onBoardingStats', controller.onBoardingStats.bind(controller));
 
 export const loginRouter = router;
 
