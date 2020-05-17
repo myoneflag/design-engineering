@@ -2,7 +2,7 @@
     <b-modal id="feedback-modal" scrollable title="Give us some feedback!" okTitle="Save" @ok="onSubmitFeedback"
              @cancel="onCloseFeedback" @close="onCloseFeedback" v-model="internalShow">
         <b-form-textarea
-                id="t" v-model="message" placeholder="Anything you want to talk about." rows="8">
+                id="t" v-model="message" placeholder="Please help us improve the product." rows="8">
         </b-form-textarea>
         <b-form-select v-model="selected" :options="options"></b-form-select>
         <b-alert variant="danger" :show="showAlert">
@@ -52,6 +52,8 @@
                         this.internalShow = false;
                     })
             }
+
+            this.$store.dispatch('profile/refreshOnBoardingStats');
         }
 
         get internalShow() {

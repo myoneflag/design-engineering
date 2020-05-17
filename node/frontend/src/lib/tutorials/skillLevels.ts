@@ -56,8 +56,8 @@ export const SKILL_LEVELS: SkillLevel[] = [
             VIDEO_INDEX["add-storage-tank"].id,
             VIDEO_INDEX["differing-flow-systems"].id,
         ],
-        requiredDrawingsCreated: 3,
-        requiredFeedbacksSubmitted: 1,
+        requiredDrawingsCreated: 0,
+        requiredFeedbacksSubmitted: 0,
     },
 
     {
@@ -65,7 +65,7 @@ export const SKILL_LEVELS: SkillLevel[] = [
         videoRequirements: [
 
         ],
-        requiredFeedbacksSubmitted: 3,
-        requiredDrawingsCreated: 1,
+        requiredDrawingsCreated: 0,
+        requiredFeedbacksSubmitted: 1,
     }
 ];

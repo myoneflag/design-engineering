@@ -19,4 +19,10 @@ export const mutations: MutationTree<ProfileState> = {
     setNumFeedbackSubmitted(state, num: number) {
         state.numFeedbackSubmitted = num;
     },
+
+    clearOnBoardingStats(state) {
+        state.numDrawingsCreated = 0;
+        state.numFeedbackSubmitted = 0;
+        state.viewedVideoIds.splice(0, state.viewedVideoIds.length);
+    }
 };

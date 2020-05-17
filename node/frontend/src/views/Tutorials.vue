@@ -26,15 +26,16 @@
                                         :id="'menu-accordion-' + index"
                                         accordion="menu-accordion"
                                         role="tabpanel"
+                                        :visible="levelVisible(level)"
                                 >
                                     <b-card-body>
                                         <b-nav pills vertical>
                                             <b-nav-item
                                                     v-for="videoId in level.videoRequirements"
                                                     :to="'/tutorials/' + videoId"
-                                                    variant="success"
+                                                    :active="videoId === $route.params.videoId"
                                             >
-                                                <v-icon name="check" v-if="isVideoWatched(videoId)"/>
+                                                <v-icon name="check" v-if="isVideoWatched(videoId)" variant="success"/>
                                                 {{ VIDEO_INDEX[videoId].id }}
                                             </b-nav-item>
                                         </b-nav>
@@ -131,7 +132,7 @@ export default class Tutorials extends Vue {
         const target = this.$route.params.videoId;
         const res = await recordVideoView(target);
         if (res.success) {
-            this.$store.dispatch('profile/recordVideoView', target);
+            this.$store.dispatch('profile/refreshOnBoardingStats', target);
         } else {
             this.$bvToast.toast(res.message, {
                 title: 'Could not mark video as watched',
@@ -182,6 +183,14 @@ export default class Tutorials extends Vue {
         return res
     }
 
+    levelVisible(level: SkillLevel) {
+        for (const v of level.videoRequirements) {
+            if (this.$route.params.videoId === v) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 interface Section {

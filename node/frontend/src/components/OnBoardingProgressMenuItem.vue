@@ -2,63 +2,70 @@
     <b-nav-item id="on-boarding-progress-popover" @click="nextOnBoardingStep">
         {{ currentProgress.level.name }}
         <b-badge variant="primary"> {{ currentProgress.overallLevelProgress }}%</b-badge>
+        <FeedbackModal v-model="showFeedbackModal"/>
 
-        <b-popover target="on-boarding-progress-popover" triggers="hover" placement="bottom">
-            <table>
-                <tr>
-                    <th>
-                       Requirement
-                    </th>
-                    <th>
-                        Progress
-                    </th>
-                    <th>
-                        Action
-                    </th>
-                </tr>
-                <tr v-if="currentProgress.videosTotal">
-                    <td>
-                        Watch the {{ currentProgress.level.name }} Videos
-                    </td>
-                    <td>
-                        <v-icon name="check" variant="success" v-if="currentProgress.videosComplete"/>
-                        <p v-else>{{ currentProgress.videosWatched }}/{{ currentProgress.videosTotal }}</p>
-                    </td>
-                    <td>
-                        <p v-if="currentProgress.videosComplete">All Good!</p>
-                        <b-button v-else :to="'/tutorials/' + currentProgress.nextVideoToWatch" variant="success">Videos</b-button>
-                    </td>
-                </tr>
-                <tr v-if="currentProgress.drawingsNeeded">
-                    <td>
-                        Create {{ currentProgress.drawingsNeeded }} Drawings
-                    </td>
-                    <td>
-                        <v-icon name="check" variant="success" v-if="currentProgress.drawingsComplete"/>
-                        <p v-else>{{ currentProgress.drawingsCreated }}/{{ currentProgress.drawingsNeeded }}</p>
-                    </td>
-                    <td>
-                        <p v-if="currentProgress.drawingsComplete">All Good!</p>
-                        <b-button v-else :to="'/'" variant="success">Create Drawing</b-button>
-                    </td>
-                </tr>
+        <b-popover target="on-boarding-progress-popover" triggers="hover" placement="bottom"
+                   v-if="!currentProgress.complete" style="max-width: 100%">
+            <b-table-simple>
+                <b-thead>
+                    <b-tr>
+                        <th>
+                            Requirement
+                        </th>
+                        <th>
+                            Progress
+                        </th>
+                        <th>
+                            Action
+                        </th>
+                    </b-tr>
+                </b-thead>
+                <b-tbody>
+                    <b-tr v-if="currentProgress.videosTotal">
+                        <b-td>
+                            Watch the {{ currentProgress.level.name }} Videos
+                        </b-td>
+                        <b-td>
+                            <v-icon name="check" variant="success" v-if="currentProgress.videosComplete"/>
+                            <p v-else>{{ currentProgress.videosWatched }}/{{ currentProgress.videosTotal }}</p>
+                        </b-td>
+                        <b-td>
+                            <p v-if="currentProgress.videosComplete">All Good!</p>
+                            <b-button v-else :to="'/tutorials/' + currentProgress.nextVideoToWatch" variant="success">
+                                Videos
+                            </b-button>
+                        </b-td>
+                    </b-tr>
+                    <b-tr v-if="currentProgress.drawingsNeeded">
+                        <b-td>
+                            Create {{ currentProgress.drawingsNeeded }} Drawings
+                        </b-td>
+                        <b-td>
+                            <v-icon name="check" variant="success" v-if="currentProgress.drawingsComplete"/>
+                            <p v-else>{{ currentProgress.drawingsCreated }}/{{ currentProgress.drawingsNeeded }}</p>
+                        </b-td>
+                        <b-td>
+                            <p v-if="currentProgress.drawingsComplete">All Good!</p>
+                            <b-button v-else :to="'/'" variant="success">Create Drawing</b-button>
+                        </b-td>
+                    </b-tr>
 
-                <tr v-if="currentProgress.feedbackNeeded">
-                    <td>
-                        Submit feedback, eg. a feature request, comment or report a bug!
-                    </td>
-                    <td>
-                        <v-icon name="check" variant="success" v-if="currentProgress.feedbackComplete"/>
-                        <p v-else>{{ currentProgress.feedbackSubmitted }}/{{ currentProgress.feedbackNeeded }}</p>
-                    </td>
-                    <td>
-                        <p v-if="currentProgress.feedbackComplete">All Good!</p>
-                        <b-button v-else @click="feedbackSubmit" variant="success">Submit Feedback</b-button>
-                    </td>
+                    <b-tr v-if="currentProgress.feedbackNeeded">
+                        <b-td>
+                            Submit feedback, eg. a feature request, comment or report a bug!
+                        </b-td>
+                        <b-td>
+                            <v-icon name="check" variant="success" v-if="currentProgress.feedbackComplete"/>
+                            <p v-else>{{ currentProgress.feedbackSubmitted }}/{{ currentProgress.feedbackNeeded }}</p>
+                        </b-td>
+                        <b-td>
+                            <p v-if="currentProgress.feedbackComplete">All Good!</p>
+                            <b-button v-else @click="feedbackSubmit" variant="success">Submit Feedback</b-button>
+                        </b-td>
 
-                    <FeedbackModal v-model="showFeedbackModal"/>
-                </tr>
-            </table>
+                    </b-tr>
+                </b-tbody>
+            </b-table-simple>
         </b-popover>
     </b-nav-item>
 
@@ -92,7 +99,7 @@
 
     @Component({
         components: {
-            FeedbackModal,
+            FeedbackModal
         }
     })
     export default class OnBoardingProgressMenuItem extends Vue {
@@ -126,6 +133,10 @@
                 res.videosTotal = 0;
                 res.videosWatched = 0;
                 res.nextVideoToWatch = null;
+
+                res.drawingsNeeded = lvl.requiredDrawingsCreated;
+                res.feedbackNeeded = lvl.requiredFeedbacksSubmitted;
+
                 for (const v of lvl.videoRequirements) {
                     res.videosTotal++;
                     if (viewedVideoIds.includes(v)) {
@@ -136,36 +147,38 @@
                     }
                 }
 
-                res.drawingsCreated = lvl.requiredDrawingsCreated;
-                res.drawingsComplete = res.drawingsCreated >= lvl.requiredDrawingsCreated;
-                res.feedbackSubmitted = lvl.requiredFeedbacksSubmitted;
-                res.feedbackComplete = res.feedbackSubmitted >= lvl.requiredFeedbacksSubmitted;
+                res.drawingsComplete = res.drawingsCreated >= res.drawingsNeeded;
+                res.feedbackComplete = res.feedbackSubmitted >= res.feedbackNeeded;
 
                 res.level = lvl;
 
                 res.complete = res.videosComplete && res.drawingsComplete && res.feedbackComplete;
                 res.overallLevelProgress =
                     (res.videosWatched
-                    + Math.min(res.drawingsCreated, res.drawingsNeeded)
-                    + Math.min(res.feedbackSubmitted, res.feedbackNeeded)) /
+                        + Math.min(res.drawingsCreated, res.drawingsNeeded)
+                        + Math.min(res.feedbackSubmitted, res.feedbackNeeded)) /
 
                     (res.videosTotal + res.drawingsNeeded + res.feedbackNeeded);
                 res.overallLevelProgress = Math.round(res.overallLevelProgress * 100);
+                if (res.videosTotal + res.drawingsNeeded + res.feedbackNeeded === 0) {
+                    res.overallLevelProgress = 100;
+                }
 
                 if (!res.complete) {
                     break;
                 }
             }
 
+            console.log(res);
             return res;
         }
 
         nextOnBoardingStep() {
             const prog = this.currentProgress;
             if (!prog.videosComplete) {
-                this.$router.push('/tutorials/' + prog.nextVideoToWatch);
+                this.$router.push("/tutorials/" + prog.nextVideoToWatch);
             } else if (!prog.drawingsComplete) {
-                this.$router.push('/');
+                this.$router.push("/");
             } else if (!prog.feedbackComplete) {
                 this.showFeedbackModal = true;
             }
@@ -176,3 +189,9 @@
         }
     }
 </script>
+
+<style lang="less">
+    .popover {
+        max-width: 500px;
+    }
+</style>

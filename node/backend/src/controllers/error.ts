@@ -61,8 +61,9 @@ export class ErrorController {
         });
     }
 
+    // Error stack traces are updated with a follow up call. Restrict USER => MANAGER's to only updating that.
     @ApiHandleError()
-    @AuthRequired(AccessLevel.SUPERUSER)
+    @AuthRequired(AccessLevel.USER)
     public async update(req: Request, res: Response, next: NextFunction, session: Session) {
         const {status, trace} = req.body;
 

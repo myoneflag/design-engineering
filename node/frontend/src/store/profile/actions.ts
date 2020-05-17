@@ -5,9 +5,13 @@ import { recordVideoView, viewedVideoIds } from "../../api/videos";
 import { onBoardingStats } from "../../api/logins";
 
 export const actions: ActionTree<ProfileState, RootState> = {
-    async setProfile({ commit, state, dispatch }, username) {
-        await commit("setProfile", username);
-        return dispatch('refreshOnBoardingStats');
+    async setProfile({ commit, state, dispatch }, profile) {
+        await commit("setProfile", profile);
+        if (profile) {
+            return dispatch('refreshOnBoardingStats');
+        } else {
+            return commit('clearOnBoardingStats');
+        }
     },
 
     async refreshOnBoardingStats({ commit, state }) {

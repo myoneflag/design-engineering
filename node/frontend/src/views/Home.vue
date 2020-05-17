@@ -235,8 +235,11 @@ export default class Home extends Vue {
                         title: "Error creating new document"
                     });
                 }
+
+
+                this.$store.dispatch('profile/refreshOnBoardingStats');
             });
-        } 
+        }
         else if (this.profile.temporaryUser) {
             createDocument(null).then((res) => {
                 if (res.success) {
@@ -247,6 +250,9 @@ export default class Home extends Vue {
                         title: "Error creating new document"
                     });
                 }
+
+
+                this.$store.dispatch('profile/refreshOnBoardingStats');
             });
         }
         else {
