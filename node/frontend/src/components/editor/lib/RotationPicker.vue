@@ -7,7 +7,7 @@
         </b-col>
         <b-col cols="4" class="p-0">
             <b-form-input
-                :value="Math.round(value)"
+                :value="(Math.round(value) % 360 + 360) % 360"
                 @input="$emit('input', Number($event))"
                 size="sm"
                 :min="0"
