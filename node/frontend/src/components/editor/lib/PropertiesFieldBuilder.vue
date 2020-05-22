@@ -1,4 +1,3 @@
-import { DrawingMode } from "../../../htmlcanvas/types";
 <template>
     <b-container>
         <b-row>
