@@ -1035,6 +1035,13 @@ export const initialCatalog: Catalog = {
     pipes: {
         castIronCoated: {
             name: "Cast Iron (Coated)",
+            manufacturer: [
+                {
+                    name: 'Generic',
+                    abbreviation: 'Generic',
+                    uid: 'generic',
+                }
+            ],
             abbreviation: "CICL",
             pipesBySize: {
                 100: {
@@ -1090,6 +1097,18 @@ export const initialCatalog: Catalog = {
         },
         copperTypeB: {
             name: "Copper (Type B)",
+            manufacturer: [
+                {
+                    name: 'Generic',
+                    abbreviation: 'Generic',
+                    uid: 'generic',
+                },
+                {
+                    name: 'Kembla',
+                    abbreviation: 'KEMBLA CU',
+                    uid: 'kemblaCu',
+                }
+            ],
             abbreviation: "CU",
             pipesBySize: {
                 100: {
@@ -1185,6 +1204,13 @@ export const initialCatalog: Catalog = {
         },
         gmsMedium: {
             name: "GMS (Medium)",
+            manufacturer: [
+                {
+                    name: 'Generic',
+                    abbreviation: 'Generic',
+                    uid: 'generic',
+                }
+            ],
             abbreviation: "GMS",
             pipesBySize: {
                 100: {
@@ -1216,6 +1242,13 @@ export const initialCatalog: Catalog = {
         },
         hdpeSdr11: {
             name: "HDPE (SDR11)",
+            manufacturer: [
+                {
+                    name: 'Generic',
+                    abbreviation: 'Generic',
+                    uid: 'generic',
+                }
+            ],
             abbreviation: "HDPE",
             pipesBySize: {
                 110: {
@@ -1327,6 +1360,18 @@ export const initialCatalog: Catalog = {
         },
         pexSdr74: {
             name: "PEX (SDR 7.4)",
+            manufacturer: [
+                {
+                    name: 'Generic',
+                    abbreviation: 'Generic',
+                    uid: 'generic',
+                },
+                {
+                    name: 'Rehau',
+                    abbreviation: 'REHAU PEX',
+                    uid: 'rehauPex',
+                }
+            ],
             abbreviation: "PEX",
             pipesBySize: {
                 110: {
@@ -1414,6 +1459,18 @@ export const initialCatalog: Catalog = {
         },
         stainlessSteel: {
             name: "Stainless Steel",
+            manufacturer: [
+                {
+                    name: 'Generic',
+                    abbreviation: 'Generic',
+                    uid: 'generic',
+                },
+                {
+                    name: 'Kembla',
+                    abbreviation: 'KEMBLA S/S',
+                    uid: 'kemblaS/s',
+                }
+            ],
             abbreviation: "S/S",
             pipesBySize: {
                 100: {

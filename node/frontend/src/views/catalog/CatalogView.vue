@@ -8,8 +8,8 @@
         <template v-for="[prop, val] in Object.entries(getSchema())">
             <template v-if="val && currCatalog.hasOwnProperty(prop)">
                 <template v-if="val.table">
-                    <b-row style="margin-top: 25px; margin-bottom: 25px;">
-                        <b-col>
+                    <b-row :key="prop" style="margin-top: 25px; margin-bottom: 25px;">
+                        <b-col cols="12">
                             <h4 style="text-align: left">
                                 <router-link :to="navigateLink(prop)">
                                     {{ val.name }}
@@ -27,21 +27,27 @@
                                 </span>
                             </h4>
                         </b-col>
-                    </b-row>
-                    <b-row :key="prop">
-                        <b-col>
+                        <b-col cols="12">
                             <b-collapse :id="'collapse' + prop" :visible="onlyOneTable">
                                 <b-table
                                     v-if="val.table.link"
                                     striped
                                     :items="getTable(prop).items"
                                     :fields="getTable(prop).fields"
-                                    style="max-width: 100%; overflow-x: auto"
+                                    style="max-width: 100%; overflow-x: auto; margin-top:25px"
                                     select-mode="single"
                                     :selectable="true"
                                     @row-selected="(d) => onRowClick(prop, d)"
                                     responsive="true"
                                 >
+                                    <template v-slot:cell(manufacturer)="data">
+                                        <b-button 
+                                            variant="primary" size="sm" :class="'manufacturer-item-btn'"
+                                            v-for="manufacturer in data.item.Manufacturer" :key="manufacturer.name"
+                                        >
+                                            {{ manufacturer.name }}
+                                        </b-button> 
+                                    </template>
                                 </b-table>
                                 <b-table
                                     small
@@ -57,12 +63,12 @@
                     </b-row>
                 </template>
                 <template v-else-if="val.displayField">
-                    <b-form-group :label-cols="3" :label="val.name + displayUnitsString(val.units)" :disabled="true">
+                    <b-form-group :key="prop" :label-cols="3" :label="val.name + displayUnitsString(val.units)" :disabled="true">
                         <b-form-input :disabled="true" :value="display(val.units, currCatalog[prop][val.displayField])"></b-form-input>
                     </b-form-group>
                 </template>
                 <template v-else>
-                    <b-form-group :label-cols="3" :label="val.name + displayUnitsString(val.units)" :disabled="true">
+                    <b-form-group :key="prop" :label-cols="3" :label="val.name + displayUnitsString(val.units)" :disabled="true">
                         <b-form-input :disabled="true" :value="display(val.units, currCatalog[prop])"></b-form-input>
                     </b-form-group>
                 </template>
@@ -247,9 +253,17 @@ export default class CatalogView extends Vue {
                 items.push(item);
             }
 
-            const fields = cols.map((c) => c[1]);
+            const fields: Array<string|object> = cols.map((c) => c[1]);
             if (table.primaryName) {
                 fields.splice(0, 0, table.primaryName);
+            }
+
+            if (prop === 'pipes') {
+                fields[1] = {
+                    label: fields[1],
+                    key: 'manufacturer',
+                    tdClass: 'text-left',
+                };
             }
 
             return { items, fields };
@@ -374,3 +388,9 @@ export default class CatalogView extends Vue {
     }
 }
 </script>
+
+<style scoped>
+    .manufacturer-item-btn {
+        margin-right: 8px;
+    }
+</style>

@@ -219,11 +219,13 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                 primaryName: null,
                 columns: [
                     ["name", "Name"],
+                    ["manufacturer", "Manufacturer"],
                     ["abbreviation", "Abbreviation"]
                 ],
                 link: {
                     name: { order: 1, name: "Material" },
-                    abbreviation: { order: 2, name: "Abbreaviation" },
+                    manufacturer: { order: 2, name: "Manufacturer"},
+                    abbreviation: { order: 3, name: "Abbreaviation" },
                     uid: null,
                     pipesBySize: {
                         order: 3,
