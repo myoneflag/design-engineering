@@ -47,8 +47,8 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                "cold-water": "0.15",
-                "warm-water": "0.15"
+                "cold-water": "0.12",
+                "warm-water": "0.12"
             },
             uid: "ablutionTrough",
             warmTempC: "42"
@@ -148,7 +148,7 @@ export const initialCatalog: Catalog = {
             probabilityOfUsagePCT: "1",
             qLS: {
                 "cold-water": "0.3",
-                "warm-water": "0.3"
+                "warm-water": "0.15"
             },
             uid: "bath",
             warmTempC: "42"
@@ -158,12 +158,12 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "6",
             loadingUnits: {
                 as35002018LoadingUnits: {
-                    "cold-water": "2",
-                    "hot-water": "2"
+                    "cold-water": "3",
+                    "hot-water": "3"
                 },
                 barriesBookLoadingUnits: {
-                    "cold-water": "2",
-                    "hot-water": "2"
+                    "cold-water": "3",
+                    "hot-water": "3"
                 },
                 bs806: {
                     "cold-water": "2",
@@ -197,8 +197,8 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                "cold-water": "0.15",
-                "hot-water": "0.15"
+                "cold-water": "0.12",
+                "hot-water": "0.12"
             },
             uid: "bedpanSanitiser",
             warmTempC: null
@@ -212,8 +212,8 @@ export const initialCatalog: Catalog = {
                     "warm-water": "2"
                 },
                 barriesBookLoadingUnits: {
-                    "cold-water": "2",
-                    "warm-water": "2"
+                    "cold-water": "3",
+                    "warm-water": "3"
                 },
                 bs806: {
                     "cold-water": "3",
@@ -263,7 +263,7 @@ export const initialCatalog: Catalog = {
                 },
                 barriesBookLoadingUnits: {
                     "cold-water": "16",
-                    "warm-water": "8"
+                    "warm-water": "16"
                 },
                 bs806: {
                     "cold-water": "22",
@@ -347,8 +347,8 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                "cold-water": "0.15",
-                "hot-water": "0.15"
+                "cold-water": "0.12",
+                "hot-water": "0.12"
             },
             uid: "cleanersSink",
             warmTempC: null
@@ -398,7 +398,7 @@ export const initialCatalog: Catalog = {
             probabilityOfUsagePCT: "0.5",
             qLS: {
                 "cold-water": "0.2",
-                "hot-water": "0.2"
+                "hot-water": "0.1"
             },
             uid: "dishwasher",
             warmTempC: null
@@ -449,12 +449,12 @@ export const initialCatalog: Catalog = {
             fixtureUnits: "6",
             loadingUnits: {
                 as35002018LoadingUnits: {
-                    "cold-water": "2",
-                    "hot-water": "2"
+                    "cold-water": "3",
+                    "hot-water": "3"
                 },
                 barriesBookLoadingUnits: {
-                    "cold-water": "2",
-                    "hot-water": "2"
+                    "cold-water": "3",
+                    "hot-water": "3"
                 },
                 bs806: {
                     "cold-water": "2",
@@ -488,8 +488,8 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                "cold-water": "0.1",
-                "hot-water": "0.1"
+                "cold-water": "0.12",
+                "hot-water": "0.12"
             },
             uid: "flushingRimSink",
             warmTempC: null
@@ -779,8 +779,8 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "1.5",
             probabilityOfUsagePCT: "4.5",
             qLS: {
-                "cold-water": "0.15",
-                "warm-water": "0.15"
+                "cold-water": "0.1",
+                "warm-water": "0.1"
             },
             uid: "shower",
             warmTempC: "42"
@@ -871,7 +871,7 @@ export const initialCatalog: Catalog = {
             probabilityOfUsagePCT: "5.5",
             qLS: {
                 "cold-water": "0.2",
-                "hot-water": "0.2"
+                "hot-water": "0.1"
             },
             uid: "washingMachine",
             warmTempC: null
