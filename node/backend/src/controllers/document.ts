@@ -171,23 +171,7 @@ export class DocumentController {
             const org = user.organization;
             console.log('here in general?')
             console.log(user)
-            if (user.temporaryUser){
-                console.log('here in temporary user?')
-                results = await Document
-                .createQueryBuilder('document')
-                .where('document.createdBy = :author', {author: user.username})
-                .andWhere(new Brackets((qb) => {
-                    qb.where('document.state = :state', {state: DocumentStatus.ACTIVE});
-
-                    if (session.user.accessLevel <= AccessLevel.MANAGER) {
-                        qb.orWhere('document.state = :state2', {state2: DocumentStatus.DELETED});
-                    }
-                }))
-                .orderBy('document.createdOn', 'DESC')
-                .getMany();
-                console.log(results);
-            }
-            else if (org == null) {
+            if (org == null) {
                 results = [];
             } else {
                 results = await Document
@@ -251,94 +235,30 @@ export class DocumentController {
         const user = await session.user;
         const targetId = Number(req.params.id);
 
+        // Do not await - this can be a long process and we want the UI to update asap
         withDocument(targetId, res, session, AccessType.READ, async (target) => {
-            if (!user.temporaryUser){
-                const userWithOrg = await User.findOne({username: user.username}, {relations: ['organization']});
-                const org = userWithOrg.organization;
-                if (user.accessLevel >= AccessLevel.MANAGER) {
-                    // We can only create in our own org.
-                    if (org === undefined || req.body.organization !== org.id) {
-                        res.status(401).send({
-                            success: false,
-                            message: "You can only create documents in your own organization. You are in " + (org ? org.id : "no organization"),
-                        });
-                        return;
-                    }
-                }
 
-                let qorg = req.body.organization;
-                if (!qorg && org) {
-                    qorg = org.id;
-                }
-
-                await withOrganization(qorg, res, session, AccessType.READ, async (org1) => {
-                    const doc = Document.create();
-                    doc.organization = org1;
-                    doc.createdBy = user;
-                    doc.createdOn = new Date();
-                    doc.metadata = target.metadata;
-                    doc.metadata.title = 'Copy of ' + doc.metadata.title;
-                    doc.state = DocumentStatus.PENDING;
-                    doc.version = target.version;
-
-                    await doc.save();
-
-                    const ops = await Operation.createQueryBuilder('operation')
-                        .leftJoinAndSelect('operation.blame', 'user')
-                        .where('operation.document = :document', {document: target.id})
-                        .orderBy('"orderIndex"', 'ASC')
-                        .getMany();
-
-                    let lastOrderIndex = 0;
-                    for (const op of ops) {
-                        const newOp = Operation.create();
-                        newOp.operation = op.operation;
-                        newOp.dateTime = op.dateTime;
-                        newOp.blame = op.blame;
-                        newOp.orderIndex = op.orderIndex;
-                        newOp.document = Promise.resolve(doc);
-                        await newOp.save();
-                        lastOrderIndex = newOp.orderIndex;
-                    }
-
-                    const drawing = cloneSimple(initialDrawing);
-                    const drawingWithTitle = cloneSimple(initialDrawing);
-                    drawingWithTitle.metadata.generalInfo.title = doc.metadata.title;
-
-
-                    const titleChangeDiff = diffState(drawing, drawingWithTitle, undefined);
-
-                    if (titleChangeDiff.length) {
-                        const titleChangeOp = Operation.create();
-                        titleChangeOp.orderIndex = lastOrderIndex + 1;
-                        titleChangeOp.document = Promise.resolve(doc);
-                        titleChangeOp.blame = session.user;
-                        titleChangeOp.dateTime = new Date();
-                        titleChangeOp.operation = titleChangeDiff[0];
-
-
-                        const commitOp = Operation.create();
-                        commitOp.orderIndex = lastOrderIndex + 2;
-                        commitOp.document = Promise.resolve(doc);
-                        commitOp.blame = session.user;
-                        commitOp.dateTime = new Date();
-                        commitOp.operation = { type: OPERATION_NAMES.COMMITTED_OPERATION, id: lastOrderIndex + 2};
-
-                        await titleChangeOp.save();
-                        await commitOp.save();
-                    }
-
-                    doc.state = DocumentStatus.ACTIVE;
-                    await doc.save();
-
-                    res.status(200).send({
-                        success: true,
-                        data: doc,
+            const userWithOrg = await User.findOne({ username: user.username }, { relations: ["organization"] });
+            const org = userWithOrg.organization;
+            if (user.accessLevel >= AccessLevel.MANAGER) {
+                // We can only create in our own org.
+                if (org === undefined || req.body.organization !== org.id) {
+                    res.status(401).send({
+                        success: false,
+                        message: "You can only create documents in your own organization. You are in " + (org ? org.id : "no organization")
                     });
-                });
+                    return;
+                }
             }
-            else{
+
+            let qorg = req.body.organization;
+            if (!qorg && org) {
+                qorg = org.id;
+            }
+
+            await withOrganization(qorg, res, session, AccessType.READ, async (org1) => {
                 const doc = Document.create();
+                doc.organization = org1;
                 doc.createdBy = user;
                 doc.createdOn = new Date();
                 doc.metadata = target.metadata;
@@ -407,7 +327,8 @@ export class DocumentController {
                     success: true,
                     data: doc,
                 });
-            }
+            });
+
         });
     }
 }
