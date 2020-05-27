@@ -191,7 +191,7 @@ export default class PdfSnapshotTool implements ToolHandler {
         return false;
     }
 
-    refresh() {}
+    // refresh() {}
 }
 
 export interface KeyHandler {

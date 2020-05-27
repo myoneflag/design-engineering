@@ -1,7 +1,6 @@
 <template>
     <div>
         <iframe>
-
             <youtube :video-id="url" @ready="ready" @playing="playing" @paused="pauseHere" @ended="endHere">
             </youtube>
         </iframe>
@@ -27,27 +26,10 @@ export default class YoutubeVideo extends Vue {
     player: any;
     playedTime: Number;
 
-    mounted() {
-    }
-
-    ready(event: any){
-    }
-
     playing(){
         console.log('youtube playing');
         console.log('play current time?')
     }
-
-    pauseHere(){
-    }
-
-    endHere(){
-    }
-
-    @Watch('urlArgs')
-    onPropUrlChanged(value: VideoLabels, oldValue: VideoLabels) {
-    }
-
 }
 
 </script>

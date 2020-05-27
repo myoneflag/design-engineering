@@ -187,9 +187,6 @@ export default class SettingsFieldBuilder extends Vue {
         return _.isEqual(this.$props.reactiveData, this.$props.originalData);
     }
 
-    inputChange(value: any) {
-    }
-
     getReactiveData(prop: string) {
         return getPropertyByString(this.$props.reactiveData, prop);
     }
