@@ -101,10 +101,6 @@ export default class MainNavBar extends Vue {
             value: 100 * this.onBoardingProgress.progressElapsed / this.onBoardingProgress.progressTotal,
         }
     }
-
-    mounted() {
-    }
-
 }
 </script>
 

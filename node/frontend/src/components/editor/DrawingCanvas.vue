@@ -953,7 +953,6 @@ import { PlantType } from "../../../../common/src/api/document/entities/plants/p
                             };
                             this.$store.dispatch("document/deleteEntityOn", ep);
                             modified = true;
-                        } else {
                         }
                         break;
                     case EntityType.RISER:

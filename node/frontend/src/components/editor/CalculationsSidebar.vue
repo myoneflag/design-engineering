@@ -102,8 +102,6 @@ export default class CalculationsSidebar extends Vue {
         MainEventBus.$emit("set-tool-handler", new PdfSnapshotTool());
     }
 
-    fullPdfExport() {}
-
     onCheck(eType: string, prop: string, value: boolean, shouldChange: boolean = true) {
         if (!(eType in this.document.uiState.calculationFilters)) {
             Vue.set(this.document.uiState.calculationFilters, eType, {

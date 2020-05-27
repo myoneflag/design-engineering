@@ -323,6 +323,7 @@ export function drawLoadingUnits(
             );
             coldFR = res ? res.flowRateLS : null;
         } catch (e) {
+            // Exception here
         }
         try {
             const res = lookupFlowRate(

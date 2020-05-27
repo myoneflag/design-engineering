@@ -584,8 +584,6 @@ function warnMissingBalancingValvesRecursive(engine: CalculationEngine, node: SP
                         default:
                             assertUnreachable(o.entity.valve);
                     }
-                    if (o.entity.valve.type === ValveType.BALANCING) {
-                    }
                 }
 
                 return {
