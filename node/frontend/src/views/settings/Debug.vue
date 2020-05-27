@@ -67,18 +67,6 @@ export default class Debug extends Vue {
         await this.$store.dispatch("document/commit", {skipUndo: true, diffAll: true});
         //window.location.reload();
     }
-
-    log() {
-        console.log(JSON.parse(JSON.stringify(this.document)));
-    }
-
-    logLive() {
-        console.log(this.document);
-    }
-
-    logCatalog() {
-        console.log(JSON.parse(JSON.stringify(this.catalog)));
-    }
 }
 </script>
 

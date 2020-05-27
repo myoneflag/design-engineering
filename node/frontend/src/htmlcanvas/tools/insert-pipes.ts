@@ -165,7 +165,6 @@ function insertPipeChain(
                     if (!context.globalStore.has(newZeroFitting.uid)) {
                         context.$store.dispatch("document/addEntity", newZeroFitting);
                         context.globalStore.get(newZeroFitting.uid)!.rebase(context);
-                        console.log("Just rescued a zero fitting");
                     }
                 }
 

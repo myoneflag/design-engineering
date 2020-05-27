@@ -77,13 +77,13 @@ export class RingMainCalculator {
         // find source in ring. At the same time, eliminate cases where there are multiple sources,
         // ambiguous pipes leading in/out.
         const pipesInRing = new Set<string>();
-        console.log("considering new ring...");
+
         for (const r of ring) {
             if (r.value.type === EdgeType.PIPE) {
                 pipesInRing.add(r.value.uid);
             }
         }
-        console.log("ok let;s go");
+
         let sourceNode: string | null = null;
         const sinks: Array<[FlowNode, PsdProfile]> = [];
         const totalPsd = new PsdProfile();
@@ -104,7 +104,6 @@ export class RingMainCalculator {
                         this.engine.globalStore.get(cuid)!.entity as PipeEntity
                     );
                     if (ccalc.totalPeakFlowRateLS === null) {
-                        console.log("in/out pipe " + cuid + " connected to " + nuid + " has no defined demand");
                         this.setNoFlowReasonForRing(ring, NoFlowAvailableReason.UNUSUAL_CONFIGURATION);
                         return null;
                     }
@@ -136,7 +135,6 @@ export class RingMainCalculator {
         }
 
         if (sourceNode === null || systemUid === null) {
-            console.log("no source found");
             // TODO: everything zero. But wait, this is kinda impossible since we should be sized already at 0...
             return null;
         }
@@ -161,9 +159,6 @@ export class RingMainCalculator {
         for (const f of sinkFlowsLS.values()) {
             actualTotalFlowLS += f;
         }
-
-        console.log("sinkFlowLS: " + JSON.stringify(Array.from(sinkFlowsLS.entries())));
-        console.log("actual flow rate: " + actualTotalFlowLS);
 
         // initialize any flow from the only source to each of the sinks, along the ring.
         // Fix the flow at the start to zero. Recreate one possible flow scenario.
@@ -276,7 +271,6 @@ export class RingMainCalculator {
             }
 
             if (adjustments < EPS) {
-                console.log("stopping because no more changes");
                 break;
             }
         }

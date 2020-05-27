@@ -1491,12 +1491,11 @@ import { PlantType } from "../../../../common/src/api/document/entities/plants/p
         }
 
         async drawError(e: Error) {
-            console.log(e);
             if (this.ctx) {
                 try {
                     await this.blitBuffer(false);
                 } catch (e) {
-                    console.log(e);
+                    // Throw exception
                 }
 
                 this.ctx.resetTransform();

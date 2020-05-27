@@ -28,7 +28,7 @@ export async function getFeedbacks(
         let dat = (
             await axios.get("/api/feedback")
         ).data;
-        console.log(dat)
+
         return dat
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {

@@ -620,7 +620,6 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     }
 
     disconnect(uid: string) {
-        console.log('disconnecting ' + this.globalStore.suppressSideEffects);
         if (!this.globalStore.suppressSideEffects) {
             const conns = this.globalStore.getConnections(this.entity.uid);
             if (conns.length > 2) {
