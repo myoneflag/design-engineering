@@ -239,8 +239,7 @@ export default class Home extends Vue {
 
                 this.$store.dispatch('profile/refreshOnBoardingStats');
             });
-        }
-        else if (this.profile.temporaryUser) {
+        } else if (this.profile.temporaryUser) {
             createDocument(null).then((res) => {
                 if (res.success) {
                     this.$router.push("/document/" + res.data.id);
@@ -254,8 +253,7 @@ export default class Home extends Vue {
 
                 this.$store.dispatch('profile/refreshOnBoardingStats');
             });
-        }
-        else {
+        } else {
 
             this.$bvToast.toast("You need to belong to an organization to create a document", {
                 variant: "danger",

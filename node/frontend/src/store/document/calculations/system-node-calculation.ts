@@ -14,8 +14,7 @@ import { Units } from "../../../../../common/src/lib/measurements";
 export default interface SystemNodeCalculation extends
     PsdCalculation,
     Calculation,
-    PressureCalculation
-{
+    PressureCalculation {
     flowRateLS: number | null;
 }
 

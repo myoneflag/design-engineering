@@ -11,8 +11,7 @@ import { Units } from "../../../../../common/src/lib/measurements";
 
 export default interface FittingCalculation extends
     Calculation,
-    PressureCalculation
-{
+    PressureCalculation {
     flowRateLS: number | null;
     pressureDropKPA: number | [number, number] | null;
     pressureByEndpointKPA: {[key: string]: number | null};
