@@ -41,12 +41,10 @@
             if (this.selected === ""){
                 this.showAlert = true;
                 this.errorMessage = "Please select a category for the feedback."
-            }
-            else if (this.message === ""){
+            } else if (this.message === ""){
                 this.showAlert = true;
                 this.errorMessage = "Please write a feedback."
-            }
-            else{
+            } else {
                 submitFeedback(this.selected, this.message)
                     .then((res)=>{
                         this.internalShow = false;

@@ -12,8 +12,7 @@ import { Units } from "../../../../../common/src/lib/measurements";
 
 export default interface FlowSourceCalculation extends
     Calculation,
-    PressureCalculation
-{
+    PressureCalculation {
     flowRateLS: number | null;
 }
 
