@@ -689,7 +689,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         if (!material) {
             return null;
         }
-        const tableVal = lowerBoundTable(material.pipesBySize, calculation.realNominalPipeDiameterMM);
+        const tableVal = lowerBoundTable(material.pipesBySize.generic, calculation.realNominalPipeDiameterMM);
         return tableVal;
     }
 

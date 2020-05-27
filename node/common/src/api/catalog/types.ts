@@ -113,7 +113,7 @@ export interface PipeMaterial {
     uid: string;
     abbreviation: string;
     manufacturer: Array<Manufacturer>;
-    pipesBySize: { [key: string]: PipeSpec };
+    pipesBySize: { [key: string]: { [key: string]: PipeSpec } };
 }
 
 export interface Manufacturer {

@@ -55,7 +55,7 @@ const router = new Router({
 
                     children: [
                         {
-                            path: "catalog/:prop?",
+                            path: "catalog/:prop?/:manufacturer?",
                             name: "settings/catalog",
                             component: () => import(/* webpackChunkName: "catalog" */ "./views/catalog/CatalogView.vue")
                         },

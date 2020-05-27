@@ -198,7 +198,7 @@ export class RingMainCalculator {
                     pipeObject.computedLengthM,
                     pipeObject.entity
                 );
-                let initialSize = lowerBoundTable(this.engine.catalog.pipes[filled.material!].pipesBySize, 0)!;
+                let initialSize = lowerBoundTable(this.engine.catalog.pipes[filled.material!].pipesBySize.generic, 0)!;
                 if (pipeObject.entity.diameterMM) {
                     // there is a custom diameter
                     initialSize = this.engine.getPipeByNominal(pipeObject.entity, pipeObject.entity.diameterMM)!;

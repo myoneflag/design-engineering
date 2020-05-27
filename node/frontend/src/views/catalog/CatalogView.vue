@@ -42,8 +42,9 @@
                                 >
                                     <template v-slot:cell(manufacturer)="data">
                                         <b-button 
-                                            variant="primary" size="sm" :class="'manufacturer-item-btn'"
+                                            :variant="pipesManufacturer[data.item._key] === manufacturer.uid && 'primary' || 'outline-primary'" size="sm" :class="'manufacturer-item-btn'"
                                             v-for="manufacturer in data.item.Manufacturer" :key="manufacturer.name"
+                                            @click="(e) => handleManufacturerClick(manufacturer.uid, data.item._key)"
                                         >
                                             {{ manufacturer.name }}
                                         </b-button> 
@@ -55,7 +56,7 @@
                                     striped
                                     :items="getTable(prop).items"
                                     :fields="getTable(prop).fields"
-                                    style="max-width: 100%; overflow-x: auto"
+                                    style="max-width: 100%; overflow-x: auto; margin-top:25px"
                                     responsive="true"
                                 ></b-table>
                             </b-collapse>
@@ -69,7 +70,7 @@
                 </template>
                 <template v-else>
                     <b-form-group :key="prop" :label-cols="3" :label="val.name + displayUnitsString(val.units)" :disabled="true">
-                        <b-form-input :disabled="true" :value="display(val.units, currCatalog[prop])"></b-form-input>
+                        <b-form-input :disabled="true" :value="display(val.units, prop)"></b-form-input>
                     </b-form-group>
                 </template>
             </template>
@@ -83,7 +84,7 @@ import MainNavBar from "../../components/MainNavBar.vue";
 import { CatalogSchema, getCatalogDisplaySchema, Page, Table } from "../../lib/catalog/displaySchema";
 import { getPropertyByString } from "../../lib/utils";
 import { RawLocation } from "vue-router";
-import { Catalog } from "../../../../common/src/api/catalog/types";
+import { Catalog, Manufacturer } from "../../../../common/src/api/catalog/types";
 import { DocumentState } from "../../store/document/types";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { convertMeasurementSystem, Units } from "../../../../common/src/lib/measurements";
@@ -94,19 +95,19 @@ import { convertMeasurementSystem, Units } from "../../../../common/src/lib/meas
     }
 })
 export default class CatalogView extends Vue {
-    mounted() {
-        //
-    }
-
-    destroyed() {
-        //
+    pipesManufacturer: any = {};
+    
+    created() {
+        Object.entries(this.catalog.pipes).forEach(([_key, obj]) => {
+            this.pipesManufacturer[_key] = 'generic';
+        })
     }
 
     onRowClick(prop: string, params: Array<{ _key: string }>) {
         if (params.length === 0) {
             return;
         }
-        this.$router.push(this.navigateLink(prop + "." + params[0]._key));
+        this.$router.push(this.navigateLink(prop, params[0]._key));
     }
 
     get catalog(): Catalog {
@@ -154,7 +155,13 @@ export default class CatalogView extends Vue {
         return val;
     }
 
-    display(units: Units | undefined, value: number | string) {
+    display(units: Units | undefined, prop: string) {
+        let value: number | string | Array<Manufacturer> = this.currCatalog[prop];
+        if (prop === 'manufacturer' && Array.isArray(value)) {
+            let manufacturerIndex = value.findIndex((obj: Manufacturer) => obj.uid === this.manufacturer);
+            value = value[manufacturerIndex].name;
+        }
+
         if (units && !isNaN(Number(value))) {
             return convertMeasurementSystem(this.document.drawing.metadata.units, units, Number(value))[1];
         } else {
@@ -176,7 +183,14 @@ export default class CatalogView extends Vue {
         }
     }
 
-    navigateLink(prop: string) {
+    navigateLink(table: string, row: string|null = null) {
+        let prop;
+        if (row) {
+            prop = table + "." + row;
+        } else {
+            prop = table;
+        }
+
         let currPath = this.$route.params.prop || "";
 
         const pathArr = this.currPath.split(".");
@@ -189,10 +203,17 @@ export default class CatalogView extends Vue {
             currPath += ".";
         }
         currPath += prop;
+
+        let manufacturerParams;
+        if (table === 'pipes' && row) {
+            manufacturerParams = { manufacturer: this.pipesManufacturer[row] };
+        }
+        
         return {
             name: "settings/catalog",
             params: {
-                prop: currPath
+                prop: currPath,
+                ...manufacturerParams,
             }
         };
     }
@@ -209,7 +230,11 @@ export default class CatalogView extends Vue {
             }
 
             const items = [];
-            const entries = this.currCatalog[prop];
+            let entries = this.currCatalog[prop];
+            
+            if (prop === 'pipesBySize') {
+                entries = entries[this.manufacturer];
+            }
 
             for (const [key, value] of Object.entries(entries)) {
                 const item: any = {};
@@ -386,11 +411,26 @@ export default class CatalogView extends Vue {
         }
         return numTables === 1;
     }
+
+    get manufacturer() {
+        return this.$route.params.manufacturer || 'generic';
+    }
+
+    handleManufacturerClick(value: string, key: string) {
+        let newObj: any = {};
+        newObj[key] = value;
+
+        this.pipesManufacturer = {...this.pipesManufacturer, ...newObj};
+    }
 }
 </script>
 
 <style scoped>
     .manufacturer-item-btn {
-        margin-right: 8px;
+        margin-right: 15px;
+    }
+
+    .manufacturer-item-btn:last-child {
+        margin-right: 0px;
     }
 </style>
