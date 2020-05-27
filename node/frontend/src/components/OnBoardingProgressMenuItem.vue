@@ -168,8 +168,7 @@
                     break;
                 }
             }
-
-            console.log(res);
+            
             return res;
         }
 

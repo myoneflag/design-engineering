@@ -25,11 +25,6 @@ export interface VideoLabels {
 export default class YoutubeVideo extends Vue {
     player: any;
     playedTime: Number;
-
-    playing(){
-        console.log('youtube playing');
-        console.log('play current time?')
-    }
 }
 
 </script>

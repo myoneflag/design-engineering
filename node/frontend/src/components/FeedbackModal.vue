@@ -55,7 +55,6 @@
         }
 
         get internalShow() {
-            console.log(this.$props.value);
             return this.$props.value;
         }
 

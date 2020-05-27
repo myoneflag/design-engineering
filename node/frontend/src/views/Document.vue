@@ -64,7 +64,6 @@ export default class Document extends Vue {
                 MainEventBus.$emit("drawing-loaded");
             },
             (msg) => {
-                console.log('document error: ' + msg);
                 if (!this.closeExpected) {
                     this.$bvToast.toast(
                         "The connection to the server was lost, please refresh. " +

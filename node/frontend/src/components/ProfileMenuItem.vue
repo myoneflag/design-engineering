@@ -108,7 +108,6 @@ export default class ProfileMenuItem extends Vue {
     }
 
     renderFeedback() {
-        console.log('show feedback modal');
         this.showFeedbackModal = true;
     }
 }
