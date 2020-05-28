@@ -177,6 +177,7 @@ export enum InsulationMaterials {
     fiberglass = 'fiberglass',
     mineralWool = 'mineralWool',
     polyisocyanurate = 'polyisocyanurate',
+    mmKemblaInsulation = 'mmKemblaInsulation',
 }
 
 
@@ -187,6 +188,7 @@ export const INSULATION_MATERIAL_CHOICES: Choice[] = [
     { key: InsulationMaterials.fiberglass, name: 'Fiberglass' },
     { key: InsulationMaterials.mineralWool, name: 'Mineral Wool' },
     { key: InsulationMaterials.polyisocyanurate, name: 'Polyisocyanurate' },
+    { key: InsulationMaterials.mmKemblaInsulation, name: 'MM Kembla Insulation' },
 ];
 
 export function getInsulationMaterialChoicesWithThermalConductivity(tempC: number) {
