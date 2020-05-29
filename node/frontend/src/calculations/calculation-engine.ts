@@ -1599,12 +1599,12 @@ export default class CalculationEngine {
 
         const calculation = this.globalStore.getOrCreateCalculation(pipe);
         const realPipe = lowerBoundTable(
-            this.catalog.pipes[filled.material!].pipesBySize,
+            this.catalog.pipes[filled.material!].pipesBySize.generic,
             calculation.realNominalPipeDiameterMM!
         )!;
 
-        const roughness = parseCatalogNumberExact(realPipe.generic.colebrookWhiteCoefficient);
-        const realInternalDiameter = parseCatalogNumberExact(realPipe.generic.diameterInternalMM);
+        const roughness = parseCatalogNumberExact(realPipe.colebrookWhiteCoefficient);
+        const realInternalDiameter = parseCatalogNumberExact(realPipe.diameterInternalMM);
 
         const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === pipe.systemUid)!;
 
@@ -1647,18 +1647,18 @@ export default class CalculationEngine {
         const pipeFilled = fillPipeDefaultFields(this.doc.drawing, 0, pipe);
         const table = this.catalog.pipes[pipeFilled.material!];
 
-        const a = upperBoundTable(table.pipesBySize, maxNominalMM, (p, isMax) => {
+        const a = upperBoundTable(table.pipesBySize.generic, maxNominalMM, (p, isMax) => {
             if (isMax) {
-                return parseCatalogNumberOrMax(p.generic.diameterNominalMM)!;
+                return parseCatalogNumberOrMax(p.diameterNominalMM)!;
             } else {
-                return parseCatalogNumberOrMin(p.generic.diameterNominalMM)!;
+                return parseCatalogNumberOrMin(p.diameterNominalMM)!;
             }
         });
         if (!a) {
             // Todo: Warn No pipe big enough
             return null;
         } else {
-            return a.generic;
+            return a;
         }
     }
 
@@ -1671,8 +1671,8 @@ export default class CalculationEngine {
             throw new Error("Material doesn't exist anymore " + JSON.stringify(pipeFilled));
         }
 
-        const a = lowerBoundTable(table.pipesBySize, calculation.optimalInnerPipeDiameterMM!, (p) => {
-            const v = parseCatalogNumberExact(p.generic.diameterInternalMM);
+        const a = lowerBoundTable(table.pipesBySize.generic, calculation.optimalInnerPipeDiameterMM!, (p) => {
+            const v = parseCatalogNumberExact(p.diameterInternalMM);
             if (!v) {
                 throw new Error("no nominal diameter");
             }
@@ -1683,7 +1683,7 @@ export default class CalculationEngine {
             // Todo: Warn No pipe big enough
             return null;
         } else {
-            return a.generic;
+            return a;
         }
     }
 
@@ -1696,8 +1696,8 @@ export default class CalculationEngine {
             throw new Error("Material doesn't exist anymore " + JSON.stringify(pipeFilled));
         }
 
-        const a = upperBoundTable(table.pipesBySize, Infinity, (p) => {
-            const v = parseCatalogNumberExact(p.generic.diameterInternalMM);
+        const a = upperBoundTable(table.pipesBySize.generic, Infinity, (p) => {
+            const v = parseCatalogNumberExact(p.diameterInternalMM);
             if (!v) {
                 throw new Error("no nominal diameter");
             }
@@ -1708,7 +1708,7 @@ export default class CalculationEngine {
             // Todo: Warn no pipe is big enough
             return null;
         } else {
-            return a.generic;
+            return a;
         }
     }
 
