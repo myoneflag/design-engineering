@@ -1,4 +1,3 @@
-import { PlantType } from "../../../../common/src/api/document/entities/plants/plant-types";
 <template>
     <drop @drop="onDrop">
         <!--Anything that needs scrolling needs to be up here, outside of canvasFrame.-->
@@ -932,7 +931,7 @@ import { PlantType } from "../../../../common/src/api/document/entities/plants/p
                         break;
                     case EntityType.FITTING:
                         if (this.globalStore.getConnections(o.entity.uid).length === 0) {
-                            this.deleteEntity(o); //this is causing issues with multi editing and drawing pipes, first leg.
+                            // this.deleteEntity(o); this is causing issues with multi editing and drawing pipes, first leg.
                             modified = true;
                         }
                         break;

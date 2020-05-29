@@ -75,9 +75,6 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                 const doc = context.document as DocumentState;
                 // maybe we drew onto an existing node.
                 let entity: ConnectableEntityConcrete;
-
-                let newZeroFitting = false;
-
                 if (interactive) {
                     const target = interactive[0];
                     if (target.type === EntityType.PIPE) {
@@ -113,13 +110,11 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                     entity = valveEntity;
                     context.$store.dispatch("document/addEntity", valveEntity);
                     context.globalStore.get(valveEntity.uid)!.rebase(context);
-                    newZeroFitting = true;
                 }
 
                 context.$store.dispatch("document/commit").then(() => {
                     context.interactive = null;
-                    insertPipeChain(context, entity, system, network, heightM, 0,
-                        newZeroFitting ? entity as FittingEntity : undefined);
+                    insertPipeChain(context, entity, system, network, heightM, 0);
                 });
             },
             "Start Pipe"
@@ -134,9 +129,6 @@ function insertPipeChain(
     network: NetworkType,
     heightM: number,
     chainNumber: number,
-    newZeroFitting?: FittingEntity // We need to special case this new fitting which would have zero cases and
-    // is prone to getting deleted by simultaneous editors.
-
 ) {
     let nextEntity: ConnectableEntityConcrete | FittingEntity;
     const pipeUid = uuid();
@@ -161,13 +153,6 @@ function insertPipeChain(
                 }
             },
             (wc: Coord, event: MouseEvent) => {
-                if (newZeroFitting) {
-                    if (!context.globalStore.has(newZeroFitting.uid)) {
-                        context.$store.dispatch("document/addEntity", newZeroFitting);
-                        context.globalStore.get(newZeroFitting.uid)!.rebase(context);
-                    }
-                }
-
                 newPipe = null;
 
                 // create pipe
@@ -199,7 +184,6 @@ function insertPipeChain(
                             wc,
                             system.uid,
                             30,
-                            newZeroFitting,
                         ).focus as ConnectableEntityConcrete;
                     } else if (isConnectableEntity(interactive[0])) {
                         nextEntity = interactive[0] as ConnectableEntityConcrete;
