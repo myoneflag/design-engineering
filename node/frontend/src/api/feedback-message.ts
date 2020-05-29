@@ -29,7 +29,7 @@ export async function getFeedbacks(
             await axios.get("/api/feedback")
         ).data;
 
-        return dat
+        return dat;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };

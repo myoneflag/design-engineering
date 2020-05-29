@@ -39,13 +39,13 @@ import OnBoardingProgressMenuItem from "./OnBoardingProgressMenuItem.vue";
 export default class MainNavBar extends Vue {
     onBoardingProgress: any | null = null;
 
-    get options(){
+    get options() {
         if (!this.onBoardingProgress) {
             return [];
         }
 
         let opts = [];
-        for (let vid of this.onBoardingProgress.level.videoRequirements){
+        for (let vid of this.onBoardingProgress.level.videoRequirements) {
             opts.push({
                 text: `Watch ${vid.title}`,
                 value: `video ${vid.id}`,
@@ -66,13 +66,13 @@ export default class MainNavBar extends Vue {
         return opts;
     }
 
-    get selected(){
+    get selected() {
         if (!this.onBoardingProgress) {
             return [];
         }
 
         let opts = [];
-        for (let vid of this.onBoardingProgress.doneItems.videos){
+        for (let vid of this.onBoardingProgress.doneItems.videos) {
             opts.push(`video ${vid.id}`);
         }
         if (this.onBoardingProgress.doneItems.feedbackItems) {
@@ -84,7 +84,7 @@ export default class MainNavBar extends Vue {
         return opts;
     }
 
-    get progressValue(){
+    get progressValue() {
         if (!this.onBoardingProgress) {
             return {
                 rank: '',
@@ -97,7 +97,7 @@ export default class MainNavBar extends Vue {
             rank: this.onBoardingProgress.level.name,
             encouragement: 'Keep going!',
             value: 100 * this.onBoardingProgress.progressElapsed / this.onBoardingProgress.progressTotal,
-        }
+        };
     }
 }
 </script>

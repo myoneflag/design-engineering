@@ -29,8 +29,8 @@ export async function getChangeLogMessages(
 ): Promise<APIResult<ChangeLogMessage[]>> {
     try {
         let dat = (
-            await axios.get("/api/changeLogMessage",{
-                params:{
+            await axios.get("/api/changeLogMessage", {
+                params: {
                     lastNoticeSeen: lastSeen
                 }
             }

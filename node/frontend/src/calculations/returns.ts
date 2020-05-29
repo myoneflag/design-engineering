@@ -182,16 +182,16 @@ export function getHeatLossOfPipeMomentWATT_M(context: CalculationContext, pipe:
         const radiationW_M2K            = 0.00000005670373 * SURFACE_EMISSIVITY[flowSystem.insulationJacket] * ((surfaceTempC + 273.15) ** 4 - (ambientTemperatureC + 273.15) ** 4) / ((surfaceTempC + 273.15) - (ambientTemperatureC + 273.15));
 
 
-        const nu_forced                 = 0.3 + (0.62*Math.sqrt(reynoldsNumber) * Math.pow(prandtlNumber, 1/3)) * (1 + (reynoldsNumber / 282000) ** (5/8)) ** (4/5) / (1 + (0.4 / prandtlNumber) ** (2/3)) ** (1/4);
+        const nu_forced                 = 0.3 + (0.62 * Math.sqrt(reynoldsNumber) * Math.pow(prandtlNumber, 1 / 3)) * (1 + (reynoldsNumber / 282000) ** (5 / 8)) ** (4 / 5) / (1 + (0.4 / prandtlNumber) ** (2 / 3)) ** (1 / 4);
         const forcedConvectionW_M2K     = nu_forced * thermalConductivityW_MK / (totalOutsideDiameter / 1000);
 
 
 
 
-        const nu_free                   = (0.6 + 0.387 * rayleighNumber ** (1/6) / (1 + (0.559 / prandtlNumber) ** (9 / 16)) ** (8 / 27)) ** 2;
+        const nu_free                   = (0.6 + 0.387 * rayleighNumber ** (1 / 6) / (1 + (0.559 / prandtlNumber) ** (9 / 16)) ** (8 / 27)) ** 2;
         const freeConvectionW_M2K       = nu_free * thermalConductivityW_MK / (totalOutsideDiameter / 1000);
 
-        const nu_combined               = (nu_forced ** 4 + nu_free ** 4) ** (1/4);
+        const nu_combined               = (nu_forced ** 4 + nu_free ** 4) ** (1 / 4);
         const combinedConvectionW_M2K   = nu_combined * thermalConductivityW_MK / (totalOutsideDiameter / 1000);
         const overallAirSideHtcW_M2K    = combinedConvectionW_M2K + radiationW_M2K;
 
@@ -597,7 +597,7 @@ function warnMissingBalancingValvesRecursive(engine: CalculationEngine, node: SP
                     warning: null,
                     balanced: false, // always connected to system node directly
                     leafSeries: true,
-                }
+                };
             }
     }
     assertUnreachable(node);
@@ -771,7 +771,7 @@ function setValveBalances(engine: CalculationEngine,
             if (highestPressureDrop !== null) {
                 for (const c of node.siblings) {
                     const val = pressureDropKPA.get(c.edge)!;
-                    const seen = setValveBalances(engine, leafValveUid, pressureDropKPA, isLeafSeries, c,pressureDropDifferentialKPA + highestPressureDrop - val);
+                    const seen = setValveBalances(engine, leafValveUid, pressureDropKPA, isLeafSeries, c, pressureDropDifferentialKPA + highestPressureDrop - val);
                     if (seen) {
                         consumed = true;
                     }

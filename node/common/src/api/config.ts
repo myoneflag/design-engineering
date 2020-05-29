@@ -191,7 +191,7 @@ export const INSULATION_MATERIAL_CHOICES: Choice[] = [
 
 export function getInsulationMaterialChoicesWithThermalConductivity(tempC: number) {
     return INSULATION_MATERIAL_CHOICES.map((c) => {
-        return {key: c.key, name: c.name + " (" + evaluatePolynomial(THERMAL_CONDUCTIVITY[c.key as string], tempC + 273.15).toFixed(3) + " W/m.K @ " + tempC.toFixed(3) + " °C)"}
+        return {key: c.key, name: c.name + " (" + evaluatePolynomial(THERMAL_CONDUCTIVITY[c.key as string], tempC + 273.15).toFixed(3) + " W/m.K @ " + tempC.toFixed(3) + " °C)"};
     });
 }
 
