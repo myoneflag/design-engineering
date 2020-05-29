@@ -30,4 +30,4 @@ export interface ValveId {
     catalogId: string;
 }
 
-export type ValidationResult = {success: true} | {success: false, message: string, modified: boolean};
+export type ValidationResult = {success: boolean, message?: string, modified?: boolean};
