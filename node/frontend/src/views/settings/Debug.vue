@@ -69,14 +69,17 @@ export default class Debug extends Vue {
     }
 
     log() {
-        console.log(JSON.parse(JSON.stringify(this.document)));
+        // tslint:disable-next-line:no-console
+	    console.log(JSON.parse(JSON.stringify(this.document)));
     }
 
     logLive() {
+        // tslint:disable-next-line:no-console
         console.log(this.document);
     }
 
     logCatalog() {
+        // tslint:disable-next-line:no-console
         console.log(JSON.parse(JSON.stringify(this.catalog)));
     }
 }

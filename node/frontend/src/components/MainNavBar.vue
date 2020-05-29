@@ -44,7 +44,6 @@ export default class MainNavBar extends Vue {
             return [];
         }
 
-        console.log(this.onBoardingProgress);
         let opts = [];
         for (let vid of this.onBoardingProgress.level.videoRequirements){
             opts.push({
@@ -72,7 +71,6 @@ export default class MainNavBar extends Vue {
             return [];
         }
 
-        console.log(this.onBoardingProgress);
         let opts = [];
         for (let vid of this.onBoardingProgress.doneItems.videos){
             opts.push(`video ${vid.id}`);
