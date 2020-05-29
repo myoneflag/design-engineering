@@ -139,8 +139,8 @@ import {
     DocumentStatus
 } from "../../../common/src/models/Document";
 import { cloneDocument, createDocument, deleteDocument, getDocuments, restoreDocument } from "../api/document";
-import { getChangeLogMessages, saveChangeLogMessage } from "../api/change-log"
-import { updateLastNoticeSeen } from "../api/users"
+import { getChangeLogMessages, saveChangeLogMessage } from "../api/change-log";
+import { updateLastNoticeSeen } from "../api/users";
 import { AccessLevel, User } from "../../../common/src/models/User";
 import { assertUnreachable, CURRENT_VERSION } from "../../../common/src/api/config";
 import Doc = Mocha.reporters.Doc;
@@ -160,7 +160,7 @@ export default class Home extends Vue {
 
     mounted() {
         this.reloadDocuments();
-        this.getChangeLogs()
+        this.getChangeLogs();
     }
 
     get profile(): User {
@@ -328,7 +328,7 @@ export default class Home extends Vue {
 
     async getChangeLogs() {
         const res = await getChangeLogMessages(this.profile.lastNoticeSeenOn);
-        if (res.success && res.data.length > 0){
+        if (res.success && res.data.length > 0) {
             this.hasNewChangeLogs = true;
             this.compiledChangeLogs = res.data;
             this.$bvModal.show('modal-1');

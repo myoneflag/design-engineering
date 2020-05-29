@@ -137,7 +137,7 @@ export default class Tutorials extends Vue {
             this.$bvToast.toast(res.message, {
                 title: 'Could not mark video as watched',
                 variant: 'error',
-            })
+            });
         }
     }
 
@@ -180,7 +180,7 @@ export default class Tutorials extends Vue {
                 res += 1;
             }
         }
-        return res
+        return res;
     }
 
     levelVisible(level: SkillLevel) {

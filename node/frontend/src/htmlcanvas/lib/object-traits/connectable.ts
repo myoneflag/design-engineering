@@ -790,5 +790,5 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
         }
 
         return Generated;
-    }
+    };
 }

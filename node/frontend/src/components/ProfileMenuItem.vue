@@ -40,7 +40,7 @@ import Vue from "vue";
 import router from "../../src/router";
 import { logout } from "../../src/api/logins";
 import { AccessLevel, User } from "../../../common/src/models/User";
-import {submitFeedback} from "../api/feedback-message"
+import {submitFeedback} from "../api/feedback-message";
 import FeedbackModal from "./FeedbackModal.vue";
 
 @Component(

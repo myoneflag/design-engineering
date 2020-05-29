@@ -50,7 +50,7 @@ export class RingMainCalculator {
                             case EdgeType.RETURN_PUMP:
                                 return false; // because directed, and can't form ring main
                         }
-                        assertUnreachable(e.value.type)
+                        assertUnreachable(e.value.type);
                     });
                     if (ret) {
                         res.push(ret);

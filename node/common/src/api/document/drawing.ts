@@ -144,7 +144,7 @@ export interface Color {
 
 export const COLORS = {
     YELLOW: {hex: "#FFFF00"},
-}
+};
 
 export enum NetworkType {
     RISERS = "RISERS",

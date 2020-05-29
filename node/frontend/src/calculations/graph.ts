@@ -10,7 +10,7 @@ enum SPEventType {
     REMOVE_EDGE,
 }
 
-type SPEvent<N> = {type: SPEventType.REMOVE_NODE, node: N}
+type SPEvent<N> = {type: SPEventType.REMOVE_NODE, node: N};
 
 export default class Graph<N, E> {
     adjacencyList: Map<string, Array<Edge<N, E>>> = new Map<string, Array<Edge<N, E>>>();

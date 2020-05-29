@@ -37,18 +37,18 @@
         message: string = "";
 
         onSubmitFeedback(bvModalEvt: any) {
-            bvModalEvt.preventDefault()
-            if (this.selected === ""){
+            bvModalEvt.preventDefault();
+            if (this.selected === "") {
                 this.showAlert = true;
-                this.errorMessage = "Please select a category for the feedback."
-            } else if (this.message === ""){
+                this.errorMessage = "Please select a category for the feedback.";
+            } else if (this.message === "") {
                 this.showAlert = true;
-                this.errorMessage = "Please write a feedback."
+                this.errorMessage = "Please write a feedback.";
             } else {
                 submitFeedback(this.selected, this.message)
-                    .then((res)=>{
+                    .then((res) => {
                         this.internalShow = false;
-                    })
+                    });
             }
 
             this.$store.dispatch('profile/refreshOnBoardingStats');

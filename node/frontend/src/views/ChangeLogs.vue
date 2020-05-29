@@ -96,7 +96,7 @@ export default class ChangeLogs extends Vue {
     submittedBy: string = "";
     message: string = "";
 
-    onSubmit(){
+    onSubmit() {
         const res = saveChangeLogMessage(this.message, this.tags, this.version);
     }
 
