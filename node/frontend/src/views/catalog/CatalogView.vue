@@ -40,11 +40,11 @@
                                     @row-selected="(d) => onRowClick(prop, d)"
                                     responsive="true"
                                 >
-                                    <template v-slot:cell(manufacturer)="data">
+                                    <template v-if="prop === 'pipes'" v-slot:cell(manufacturer)="data">
                                         <b-button 
-                                            :variant="pipesManufacturer[data.item._key] === manufacturer.uid && 'primary' || 'outline-primary'" size="sm" :class="'manufacturer-item-btn'"
+                                            :variant="isSelectedManufacturer(data.item._key, manufacturer.uid) && 'primary' || 'outline-primary'" size="sm" :class="'manufacturer-item-btn'"
                                             v-for="manufacturer in data.item.Manufacturer" :key="manufacturer.name"
-                                            @click="(e) => handleManufacturerClick(manufacturer.uid, data.item._key)"
+                                            @click="(e) => handleManufacturerClick(data.item._key, manufacturer.uid)"
                                         >
                                             {{ manufacturer.name }}
                                         </b-button> 
@@ -88,6 +88,7 @@ import { Catalog, Manufacturer } from "../../../../common/src/api/catalog/types"
 import { DocumentState } from "../../store/document/types";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { convertMeasurementSystem, Units } from "../../../../common/src/lib/measurements";
+import { Pipe } from "../../../../common/src/api/document/drawing";
 @Component({
     components: { MainNavBar },
     props: {
@@ -95,19 +96,11 @@ import { convertMeasurementSystem, Units } from "../../../../common/src/lib/meas
     }
 })
 export default class CatalogView extends Vue {
-    pipesManufacturer: any = {};
-    
-    created() {
-        Object.entries(this.catalog.pipes).forEach(([_key, obj]) => {
-            this.pipesManufacturer[_key] = 'generic';
-        })
-    }
-
     onRowClick(prop: string, params: Array<{ _key: string }>) {
         if (params.length === 0) {
             return;
         }
-        this.$router.push(this.navigateLink(prop, params[0]._key));
+        this.$router.push(this.navigateLink(prop + "." + params[0]._key));
     }
 
     get catalog(): Catalog {
@@ -155,6 +148,36 @@ export default class CatalogView extends Vue {
         return val;
     }
 
+    get document(): DocumentState {
+        return this.$store.getters['document/document'];
+    }
+
+    get onlyOneTable() {
+        const schema = this.getSchema();
+        const data = this.currCatalog;
+        let numTables = 0;
+        for (const key of Object.keys(schema)) {
+            if (data.hasOwnProperty(key)) {
+                if (schema[key] && schema[key]!.table) {
+                    numTables++;
+                }
+            }
+        }
+        return numTables === 1;
+    }
+
+    get manufacturer() {
+        if (!this.currCatalog.uid) {
+            return null;
+        }
+
+        return this.pipes.find((pipe: Pipe) => pipe.uid === this.currCatalog.uid)?.manufacturer || 'generic';
+    }
+
+    get pipes() {
+        return this.document.drawing.metadata.catalog.pipes;
+    }
+
     display(units: Units | undefined, prop: string) {
         let value: number | string | Array<Manufacturer> = this.currCatalog[prop];
         if (prop === 'manufacturer' && Array.isArray(value)) {
@@ -183,14 +206,7 @@ export default class CatalogView extends Vue {
         }
     }
 
-    navigateLink(table: string, row: string|null = null) {
-        let prop;
-        if (row) {
-            prop = table + "." + row;
-        } else {
-            prop = table;
-        }
-
+    navigateLink(prop: string) {
         let currPath = this.$route.params.prop || "";
 
         const pathArr = this.currPath.split(".");
@@ -203,17 +219,10 @@ export default class CatalogView extends Vue {
             currPath += ".";
         }
         currPath += prop;
-
-        let manufacturerParams;
-        if (table === 'pipes' && row) {
-            manufacturerParams = { manufacturer: this.pipesManufacturer[row] };
-        }
-        
         return {
             name: "settings/catalog",
             params: {
-                prop: currPath,
-                ...manufacturerParams,
+                prop: currPath
             }
         };
     }
@@ -232,7 +241,7 @@ export default class CatalogView extends Vue {
             const items = [];
             let entries = this.currCatalog[prop];
             
-            if (prop === 'pipesBySize') {
+            if (this.manufacturer && prop === 'pipesBySize') {
                 entries = entries[this.manufacturer];
             }
 
@@ -394,33 +403,31 @@ export default class CatalogView extends Vue {
         return curr;
     }
 
-    get document(): DocumentState {
-        return this.$store.getters['document/document'];
-    }
-
-    get onlyOneTable() {
-        const schema = this.getSchema();
-        const data = this.currCatalog;
-        let numTables = 0;
-        for (const key of Object.keys(schema)) {
-            if (data.hasOwnProperty(key)) {
-                if (schema[key] && schema[key]!.table) {
-                    numTables++;
-                }
-            }
+    isSelectedManufacturer(pipe: string, manufacturer: string) {
+        // As default, generic is selected.
+        if (!this.pipes.length || this.pipes.findIndex(obj => obj.uid === pipe) < 0) {
+            return manufacturer === 'generic';
         }
-        return numTables === 1;
+
+        return this.pipes.findIndex(obj => obj.uid === pipe && obj.manufacturer === manufacturer) >= 0;
     }
 
-    get manufacturer() {
-        return this.$route.params.manufacturer || 'generic';
+    handleManufacturerClick(pipe: string, manufacturer: string) {
+        const index = this.pipes.findIndex(obj => obj.uid === pipe);
+        
+        if (!this.pipes.length || index < 0) {
+            this.document.drawing.metadata.catalog.pipes.push({uid: pipe, manufacturer});
+        } else {
+            this.document.drawing.metadata.catalog.pipes.splice(index, 1, {uid: pipe, manufacturer});
+        }
+
+        this.save();
     }
 
-    handleManufacturerClick(value: string, key: string) {
-        let newObj: any = {};
-        newObj[key] = value;
-
-        this.pipesManufacturer = {...this.pipesManufacturer, ...newObj};
+    save() {
+        this.$store.dispatch("document/commit", {skipUndo: true}).then(() => {
+            this.$bvToast.toast("Saved successfully!", { variant: "success", title: "Success" });
+        });
     }
 }
 </script>

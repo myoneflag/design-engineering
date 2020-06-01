@@ -1,3 +1,4 @@
+import { Pipe as PipeObject } from './../../../common/src/api/document/drawing';
 import CalculationEngine, { EdgeType, FlowEdge, FlowNode } from "./calculation-engine";
 import PipeEntity, { fillPipeDefaultFields } from "../../../common/src/api/document/entities/pipe-entity";
 import { Edge } from "./graph";
@@ -198,7 +199,8 @@ export class RingMainCalculator {
                     pipeObject.computedLengthM,
                     pipeObject.entity
                 );
-                let initialSize = lowerBoundTable(this.engine.catalog.pipes[filled.material!].pipesBySize.generic, 0)!;
+                const manufacturer = this.engine.doc.drawing.metadata.catalog.pipes.find((pipe: PipeObject) => pipe.uid === filled.material)?.manufacturer || 'generic';
+                let initialSize = lowerBoundTable(this.engine.catalog.pipes[filled.material!].pipesBySize[manufacturer], 0)!;
                 if (pipeObject.entity.diameterMM) {
                     // there is a custom diameter
                     initialSize = this.engine.getPipeByNominal(pipeObject.entity, pipeObject.entity.diameterMM)!;

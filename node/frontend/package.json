@@ -79,6 +79,7 @@
     "ws": "^7.2.0"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-optional-chaining": "^7.10.1",
     "@types/chai": "^4.1.0",
     "@types/mocha": "^5.2.4",
     "@types/sinon": "^7.5.1",
