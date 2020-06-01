@@ -143,7 +143,9 @@ export async function configureFloorPlanRenders(pdfPath: string, pngHash: string
         floorPlan.renders = { bySize: {} };
     }
 
-    const output = await promisify(cprocess.exec)("identify " + pdfPath);
+    
+
+    const output = await promisify(cprocess.exec)(`${process.platform === 'win32' && 'magick ' || ''}` + "identify " + pdfPath);
     const [widthS, heightS] = output.stdout.split(' ')[2].split('x');
     const width = Number(widthS);
     const height = Number(heightS);
