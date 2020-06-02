@@ -66,8 +66,8 @@ export function makePipeCalculationFields(
     let materialName = "";
     if (catalog) {
         const pipe = fillPipeDefaultFields(settings, 0, entity);
-        const manufacturer = settings.metadata.catalog.pipes.find((pipeObj: PipeObject) => pipeObj.uid === pipe.material)?.manufacturer;
-        const abbreviation = catalog.pipes[pipe.material!].manufacturer.find((manufacturerObj: Manufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation || catalog.pipes[pipe.material!].abbreviation;
+        const manufacturer = settings.metadata.catalog.pipes.find((pipeObj: PipeObject) => pipeObj.uid === pipe.material)?.manufacturer || 'generic';
+        const abbreviation = manufacturer !== 'generic' && catalog.pipes[pipe.material!].manufacturer.find((manufacturerObj: Manufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation || catalog.pipes[pipe.material!].abbreviation;
         materialName = " (" + abbreviation + ")";
     }
 
