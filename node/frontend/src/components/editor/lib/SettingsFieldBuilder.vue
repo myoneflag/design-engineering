@@ -48,32 +48,29 @@
                             </b-col>
                         </b-row>
 
-                        <template v-else-if="field[2] === 'number'">
-                            <b-input-group :prepend="field[3] ? convertUnits(field[3]) : undefined">
-                                <b-form-select
-                                    v-if="field[0] === 'insulationThicknessMM' && getReactiveData('insulationMaterial') === 'mmKemblaInsulation'" 
-                                    :options="[
-                                        { value: 9, text: '9' },
-                                        { value: 13, text: '13' },
-                                        { value: 19, text: '19' },
-                                        { value: 25, text: '25' },
-                                        { value: 32, text: '32' },
-                                        { value: 38, text: '38' },
-                                    ]"
-                                    :value="displayWithCorrectUnits(field[3], field[0])"
-                                    @input="setRenderedDataNumeric(field[3], field[0], $event)"
-                                ></b-form-select>
+                        <b-input-group
+                                v-else-if="field[2] === 'number'"
+                                :prepend="field[3] ? convertUnits(field[3]) : undefined"
+                        >
+                            <b-form-input
+                                :value="displayWithCorrectUnits(field[3], field[0])"
+                                @input="setRenderedDataNumeric(field[3], field[0], Number($event))"
+                                :id="'input-' + field[0]"
+                                type="number"
+                                :placeholder="'Enter ' + field[1]"
+                            />
+                        </b-input-group>
 
-                                <b-form-input
-                                    v-else
-                                    :value="displayWithCorrectUnits(field[3], field[0])"
-                                    @input="setRenderedDataNumeric(field[3], field[0], Number($event))"
-                                    :id="'input-' + field[0]"
-                                    type="number"
-                                    :placeholder="'Enter ' + field[1]"
-                                />
-                            </b-input-group>
-                        </template>
+                        <b-input-group
+                            v-else-if="field[2] === 'select'"
+                            :prepend="field[3] ? convertUnits(field[3]) : undefined"
+                        >
+                            <b-form-select
+                                :value="correctSelectedValue(field, displayWithCorrectUnits(field[3], field[0]))"
+                                @input="setRenderedDataNumeric(field[3], field[0], Number($event))"
+                                :options="field[4]"
+                            ></b-form-select>
+                        </b-input-group>
 
                         <b-dropdown
                             v-else-if="field[2] === 'choice'"
@@ -82,7 +79,6 @@
                             :text="choiceName(getReactiveData(field[0]), field[3])"
                             variant="outline-secondary"
                             style="padding-bottom: 20px"
-                            :disabled="isDisabled(field)"
                         >
                             <b-dropdown-item
                                 v-for="(choice, index) in field[3]"
@@ -113,7 +109,6 @@
                         <h5 v-else-if="field[2] === 'title5'">
                             {{ field[1] }}
                         </h5>
-
 
                         <b-dropdown
                             v-else-if="field[2] === 'yesno'"
@@ -170,7 +165,7 @@ import { Compact } from "vue-color";
 import * as _ from "lodash";
 import { isString } from "lodash";
 import { getPropertyByString, setPropertyByString } from "../../../lib/utils";
-import { Choice, cloneSimple } from "../../../../../common/src/lib/utils";
+import { Choice, cloneSimple, SelectField } from "../../../../../common/src/lib/utils";
 import { PropertyField } from "../../../../../common/src/api/document/entities/property-field";
 import {
     convertMeasurementSystem,
@@ -208,11 +203,6 @@ export default class SettingsFieldBuilder extends Vue {
     }
 
     setReactiveData(prop: string, value: any) {
-        if (prop === 'insulationMaterial' && value === 'mmKemblaInsulation') {
-            setPropertyByString(this.$props.reactiveData, 'insulationJacket', 'noJacket');
-            setPropertyByString(this.$props.reactiveData, 'insulationThicknessMM', '');
-        }
-
         return setPropertyByString(this.$props.reactiveData, prop, value);
     }
 
@@ -314,12 +304,14 @@ export default class SettingsFieldBuilder extends Vue {
         return key + " (not found...)";
     }
 
-    isDisabled(field: Array<any>) {
-        if (field[0] === 'insulationJacket' && this.getReactiveData('insulationMaterial') === 'mmKemblaInsulation') {
-            return true;
+    correctSelectedValue(field: any[], currValue: number | string) {
+        let newVal: number | string = field[4].find((option: SelectField) => option.value == currValue)?.value || field[4][0].value;
+
+        if (currValue != newVal) {
+            this.setRenderedDataNumeric(field[3], field[0], newVal);
         }
         
-        return false;
+        return this.displayWithCorrectUnits(field[3], field[0]);
     }
 }
 </script>

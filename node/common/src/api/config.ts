@@ -1,5 +1,5 @@
 import { Catalog } from "./catalog/types";
-import { Choice, cloneSimple } from "../lib/utils";
+import { Choice, cloneSimple, SelectField } from "../lib/utils";
 import { THERMAL_CONDUCTIVITY } from "./constants/air-properties";
 import { evaluatePolynomial } from "../lib/polynomials";
 
@@ -226,7 +226,6 @@ export const INSULATION_JACKET_CHOICES: Choice[] = [
 ];
 
 
-
 export enum SupportedDwellingStandards {
     as35002018Dwellings = "as35002018Dwellings",
     barriesBookDwellings = "barriesBookDwellings"
@@ -299,3 +298,12 @@ export enum StandardMaterialUids {
     Copper = "copperTypeB",
     Pex = "pexSdr74"
 }
+
+export const INSULATION_THICKNESS_MMKEMBLA: SelectField[] = [
+    { value: 9, text: '9' },
+    { value: 13, text: '13' },
+    { value: 19, text: '19' },
+    { value: 25, text: '25' },
+    { value: 32, text: '32' },
+    { value: 38, text: '38' },
+];

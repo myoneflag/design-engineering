@@ -243,3 +243,9 @@ export function upgrade12to13(original: DrawingState) {
         }
     }
 }
+
+export function upgrade13to14(original: DrawingState) {
+    if (original.metadata.catalog === undefined) {
+        original.metadata.catalog = cloneSimple(initialDrawing.metadata.catalog);
+    }
+}
