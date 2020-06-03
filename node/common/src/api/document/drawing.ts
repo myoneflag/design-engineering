@@ -64,6 +64,7 @@ export interface DrawingState {
         flowSystems: FlowSystemParameters[];
         calculationParams: CalculationParameters;
         availableFixtures: string[];
+        catalog: Catalog;
     };
 
     levels: { [key: string]: Level };
@@ -214,6 +215,22 @@ export interface CalculationParameters {
     gravitationalAcceleration: number;
 }
 
+export interface Rectangle {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+}
+
+export interface Catalog {
+    pipes: Pipe[];
+}
+
+export interface Pipe {
+    uid: string;
+    manufacturer: string;
+}
+
 export const initialDrawing: DrawingState = {
     metadata: {
         generalInfo: {
@@ -343,7 +360,10 @@ export const initialDrawing: DrawingState = {
             windSpeedForHeatLossMS: 0,
             gravitationalAcceleration: 9.80665
         },
-        availableFixtures: ["basin", "bath", "shower", "kitchenSink", "wc", "washingMachine", "laundryTrough"]
+        availableFixtures: ["basin", "bath", "shower", "kitchenSink", "wc", "washingMachine", "laundryTrough"],
+        catalog: {
+            pipes: []
+        }
     },
     levels: {
         ground: {
@@ -356,10 +376,3 @@ export const initialDrawing: DrawingState = {
     },
     shared: {}
 };
-
-export interface Rectangle {
-    x: number;
-    y: number;
-    w: number;
-    h: number;
-}

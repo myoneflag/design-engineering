@@ -49,7 +49,8 @@ import {
     getInsulationMaterialChoicesWithThermalConductivity,
     INSULATION_JACKET_CHOICES,
     INSULATION_MATERIAL_CHOICES, InsulationJackets,
-    InsulationMaterials
+    InsulationMaterials,
+    INSULATION_THICKNESS_MMKEMBLA
 } from "../../../../common/src/api/config";
 import { Units } from "../../../../common/src/lib/measurements";
 
@@ -81,12 +82,19 @@ export default class FlowSystems extends Vue {
             );
 
             if (this.selectedSystem.returnIsInsulated) {
-                fields.push(
-                    ['insulationMaterial', "Insulation Material", "choice", getInsulationMaterialChoicesWithThermalConductivity(this.selectedSystem.temperature)],
-                    ['insulationJacket', "Insulation Jacket", "choice", INSULATION_JACKET_CHOICES],
-                    ['returnMaxVelocityMS', "Max. Velocity of Return", "number", Units.MetersPerSecond],
-                    ['insulationThicknessMM', "Insulation Thickness", "number", Units.Millimeters],
-                );
+               fields.push(['insulationMaterial', "Insulation Material", "choice", getInsulationMaterialChoicesWithThermalConductivity(this.selectedSystem.temperature)]);
+
+                if (this.selectedSystem.insulationMaterial !== 'mmKemblaInsulation') {
+                    fields.push(['insulationJacket', "Insulation Jacket", "choice", INSULATION_JACKET_CHOICES],);
+                }
+
+                fields.push(['returnMaxVelocityMS', "Max. Velocity of Return", "number", Units.MetersPerSecond]);
+
+                if (this.selectedSystem.insulationMaterial === 'mmKemblaInsulation') {
+                    fields.push(['insulationThicknessMM', "Insulation Thickness", "select", Units.Millimeters, INSULATION_THICKNESS_MMKEMBLA]);
+                } else {
+                    fields.push(['insulationThicknessMM', "Insulation Thickness", "number", Units.Millimeters]);
+                }
             }
         }
 

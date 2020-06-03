@@ -1,5 +1,5 @@
 import { Catalog } from "./catalog/types";
-import { Choice, cloneSimple } from "../lib/utils";
+import { Choice, cloneSimple, SelectField } from "../lib/utils";
 import { THERMAL_CONDUCTIVITY } from "./constants/air-properties";
 import { evaluatePolynomial } from "../lib/polynomials";
 
@@ -177,6 +177,7 @@ export enum InsulationMaterials {
     fiberglass = 'fiberglass',
     mineralWool = 'mineralWool',
     polyisocyanurate = 'polyisocyanurate',
+    mmKemblaInsulation = 'mmKemblaInsulation',
 }
 
 
@@ -187,6 +188,7 @@ export const INSULATION_MATERIAL_CHOICES: Choice[] = [
     { key: InsulationMaterials.fiberglass, name: 'Fiberglass' },
     { key: InsulationMaterials.mineralWool, name: 'Mineral Wool' },
     { key: InsulationMaterials.polyisocyanurate, name: 'Polyisocyanurate' },
+    { key: InsulationMaterials.mmKemblaInsulation, name: 'MM Kembla Insulation' },
 ];
 
 export function getInsulationMaterialChoicesWithThermalConductivity(tempC: number) {
@@ -222,7 +224,6 @@ export const INSULATION_JACKET_CHOICES: Choice[] = [
     { key: InsulationJackets.aluminiumOxidedInService, name: "Aluminium Oxide (In Service, 0.10 \u03b5)" },
     { key: InsulationJackets.aluminiumNewBright, name: "Aluminium Oxide (Bright, 0.04 \u03b5)" },
 ];
-
 
 
 export enum SupportedDwellingStandards {
@@ -297,3 +298,12 @@ export enum StandardMaterialUids {
     Copper = "copperTypeB",
     Pex = "pexSdr74"
 }
+
+export const INSULATION_THICKNESS_MMKEMBLA: SelectField[] = [
+    { value: 9, text: '9' },
+    { value: 13, text: '13' },
+    { value: 19, text: '19' },
+    { value: 25, text: '25' },
+    { value: 32, text: '32' },
+    { value: 38, text: '38' },
+];

@@ -2,7 +2,7 @@ import MqClient from "./MqClient";
 import { IMessage, StompSubscription } from "@stomp/stompjs";
 import {
     upgrade10to11,
-    upgrade11to12, upgrade12to13,
+    upgrade11to12, upgrade12to13, upgrade13to14,
     upgrade4to5,
     upgrade5to6,
     upgrade6to7,
@@ -164,6 +164,9 @@ export class DocumentUpgrader {
                             // noinspection FallThroughInSwitchStatementJS
                             case 12:
                                 upgrade12to13(newUpgraded);
+                            // noinspection FallThroughInSwitchStatementJS
+                            case 13:
+                                upgrade13to14(newUpgraded);
                             // noinspection FallThroughInSwitchStatementJS
                             case CURRENT_VERSION:
                                 break;

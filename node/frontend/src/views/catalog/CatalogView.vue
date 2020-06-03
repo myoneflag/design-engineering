@@ -8,8 +8,8 @@
         <template v-for="[prop, val] in Object.entries(getSchema())">
             <template v-if="val && currCatalog.hasOwnProperty(prop)">
                 <template v-if="val.table">
-                    <b-row style="margin-top: 25px; margin-bottom: 25px;">
-                        <b-col>
+                    <b-row :key="prop" style="margin-top: 25px; margin-bottom: 25px;">
+                        <b-col cols="12">
                             <h4 style="text-align: left">
                                 <router-link :to="navigateLink(prop)">
                                     {{ val.name }}
@@ -27,21 +27,28 @@
                                 </span>
                             </h4>
                         </b-col>
-                    </b-row>
-                    <b-row :key="prop">
-                        <b-col>
+                        <b-col cols="12">
                             <b-collapse :id="'collapse' + prop" :visible="onlyOneTable">
                                 <b-table
                                     v-if="val.table.link"
                                     striped
                                     :items="getTable(prop).items"
                                     :fields="getTable(prop).fields"
-                                    style="max-width: 100%; overflow-x: auto"
+                                    style="max-width: 100%; overflow-x: auto; margin-top:25px"
                                     select-mode="single"
                                     :selectable="true"
                                     @row-selected="(d) => onRowClick(prop, d)"
                                     responsive="true"
                                 >
+                                    <template v-if="prop === 'pipes'" v-slot:cell(manufacturer)="data">
+                                        <b-button 
+                                            :variant="isSelectedManufacturer(data.item._key, manufacturer.uid) && 'primary' || 'outline-primary'" size="sm" :class="'manufacturer-item-btn'"
+                                            v-for="manufacturer in data.item.Manufacturer" :key="manufacturer.name"
+                                            @click="(e) => handleManufacturerClick(data.item._key, manufacturer.uid)"
+                                        >
+                                            {{ manufacturer.name }}
+                                        </b-button> 
+                                    </template>
                                 </b-table>
                                 <b-table
                                     small
@@ -49,7 +56,7 @@
                                     striped
                                     :items="getTable(prop).items"
                                     :fields="getTable(prop).fields"
-                                    style="max-width: 100%; overflow-x: auto"
+                                    style="max-width: 100%; overflow-x: auto; margin-top:25px"
                                     responsive="true"
                                 ></b-table>
                             </b-collapse>
@@ -57,13 +64,13 @@
                     </b-row>
                 </template>
                 <template v-else-if="val.displayField">
-                    <b-form-group :label-cols="3" :label="val.name + displayUnitsString(val.units)" :disabled="true">
+                    <b-form-group :key="prop" :label-cols="3" :label="val.name + displayUnitsString(val.units)" :disabled="true">
                         <b-form-input :disabled="true" :value="display(val.units, currCatalog[prop][val.displayField])"></b-form-input>
                     </b-form-group>
                 </template>
                 <template v-else>
-                    <b-form-group :label-cols="3" :label="val.name + displayUnitsString(val.units)" :disabled="true">
-                        <b-form-input :disabled="true" :value="display(val.units, currCatalog[prop])"></b-form-input>
+                    <b-form-group :key="prop" :label-cols="3" :label="val.name + displayUnitsString(val.units)" :disabled="true">
+                        <b-form-input :disabled="true" :value="display(val.units, prop)"></b-form-input>
                     </b-form-group>
                 </template>
             </template>
@@ -77,10 +84,11 @@ import MainNavBar from "../../components/MainNavBar.vue";
 import { CatalogSchema, getCatalogDisplaySchema, Page, Table } from "../../lib/catalog/displaySchema";
 import { getPropertyByString } from "../../lib/utils";
 import { RawLocation } from "vue-router";
-import { Catalog } from "../../../../common/src/api/catalog/types";
+import { Catalog, Manufacturer } from "../../../../common/src/api/catalog/types";
 import { DocumentState } from "../../store/document/types";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { convertMeasurementSystem, Units } from "../../../../common/src/lib/measurements";
+import { Pipe } from "../../../../common/src/api/document/drawing";
 @Component({
     components: { MainNavBar },
     props: {
@@ -88,14 +96,6 @@ import { convertMeasurementSystem, Units } from "../../../../common/src/lib/meas
     }
 })
 export default class CatalogView extends Vue {
-    mounted() {
-        //
-    }
-
-    destroyed() {
-        //
-    }
-
     onRowClick(prop: string, params: Array<{ _key: string }>) {
         if (params.length === 0) {
             return;
@@ -148,7 +148,43 @@ export default class CatalogView extends Vue {
         return val;
     }
 
-    display(units: Units | undefined, value: number | string) {
+    get document(): DocumentState {
+        return this.$store.getters['document/document'];
+    }
+
+    get onlyOneTable() {
+        const schema = this.getSchema();
+        const data = this.currCatalog;
+        let numTables = 0;
+        for (const key of Object.keys(schema)) {
+            if (data.hasOwnProperty(key)) {
+                if (schema[key] && schema[key]!.table) {
+                    numTables++;
+                }
+            }
+        }
+        return numTables === 1;
+    }
+
+    get manufacturer() {
+        if (!this.currCatalog.uid) {
+            return null;
+        }
+
+        return this.pipes.find((pipe: Pipe) => pipe.uid === this.currCatalog.uid)?.manufacturer || 'generic';
+    }
+
+    get pipes() {
+        return this.document.drawing.metadata.catalog.pipes;
+    }
+
+    display(units: Units | undefined, prop: string) {
+        let value: number | string | Array<Manufacturer> = this.currCatalog[prop];
+        if (prop === 'manufacturer' && Array.isArray(value)) {
+            let manufacturerIndex = value.findIndex((obj: Manufacturer) => obj.uid === this.manufacturer);
+            value = value[manufacturerIndex].name;
+        }
+
         if (units && !isNaN(Number(value))) {
             return convertMeasurementSystem(this.document.drawing.metadata.units, units, Number(value))[1];
         } else {
@@ -203,7 +239,11 @@ export default class CatalogView extends Vue {
             }
 
             const items = [];
-            const entries = this.currCatalog[prop];
+            let entries = this.currCatalog[prop];
+            
+            if (this.manufacturer && prop === 'pipesBySize') {
+                entries = entries[this.manufacturer];
+            }
 
             for (const [key, value] of Object.entries(entries)) {
                 const item: any = {};
@@ -247,9 +287,17 @@ export default class CatalogView extends Vue {
                 items.push(item);
             }
 
-            const fields = cols.map((c) => c[1]);
+            const fields: Array<string|object> = cols.map((c) => c[1]);
             if (table.primaryName) {
                 fields.splice(0, 0, table.primaryName);
+            }
+
+            if (prop === 'pipes') {
+                fields[1] = {
+                    label: fields[1],
+                    key: 'manufacturer',
+                    tdClass: 'text-left',
+                };
             }
 
             return { items, fields };
@@ -355,22 +403,41 @@ export default class CatalogView extends Vue {
         return curr;
     }
 
-    get document(): DocumentState {
-        return this.$store.getters['document/document'];
+    isSelectedManufacturer(pipe: string, manufacturer: string) {
+        // As default, generic is selected.
+        if (!this.pipes.length || this.pipes.findIndex(obj => obj.uid === pipe) < 0) {
+            return manufacturer === 'generic';
+        }
+
+        return this.pipes.findIndex(obj => obj.uid === pipe && obj.manufacturer === manufacturer) >= 0;
     }
 
-    get onlyOneTable() {
-        const schema = this.getSchema();
-        const data = this.currCatalog;
-        let numTables = 0;
-        for (const key of Object.keys(schema)) {
-            if (data.hasOwnProperty(key)) {
-                if (schema[key] && schema[key]!.table) {
-                    numTables++;
-                }
-            }
+    handleManufacturerClick(pipe: string, manufacturer: string) {
+        const index = this.pipes.findIndex(obj => obj.uid === pipe);
+        
+        if (!this.pipes.length || index < 0) {
+            this.document.drawing.metadata.catalog.pipes.push({uid: pipe, manufacturer});
+        } else {
+            this.document.drawing.metadata.catalog.pipes.splice(index, 1, {uid: pipe, manufacturer});
         }
-        return numTables === 1;
+
+        this.save();
+    }
+
+    save() {
+        this.$store.dispatch("document/commit", {skipUndo: true}).then(() => {
+            this.$bvToast.toast("Saved successfully!", { variant: "success", title: "Success" });
+        });
     }
 }
 </script>
+
+<style scoped>
+    .manufacturer-item-btn {
+        margin-right: 15px;
+    }
+
+    .manufacturer-item-btn:last-child {
+        margin-right: 0px;
+    }
+</style>

@@ -215,3 +215,8 @@ export function upperBoundTable<T>(
 
 export const EPS_ABS = 1e-8;
 export const EPS = 1e-8;
+
+export interface SelectField {
+    value: number | string; 
+    text: string
+}

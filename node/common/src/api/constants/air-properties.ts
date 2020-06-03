@@ -32,6 +32,7 @@ export const THERMAL_CONDUCTIVITY: {[key: string]: Polynomial} = {
     fiberglass: [0.04],
     mineralWool: [0.04],
     polyisocyanurate: [0.028],
+    mmKemblaInsulation: [0.034],
 };
 
 export const SURFACE_EMISSIVITY: {[key: string]: number} = {
