@@ -1,3 +1,6 @@
+
+import * as bcrypt from "bcrypt";
+import { NodeMailerTransporter } from './../nodemailer';
 import { NextFunction, Request, Response, Router } from "express";
 import { Session } from "../../../common/src/models/Session";
 import { ApiHandleError } from "../helpers/apiWrapper";
@@ -5,7 +8,11 @@ import { AuthRequired } from "../helpers/withAuth";
 import { AccessLevel, User } from "../../../common/src/models/User";
 import { AccessType, withOrganization, withUser } from "../helpers/withResources";
 import { registerUser } from "./login";
+import { SignUpUser } from './../../../frontend/src/api/users';
 import { Organization } from "../../../common/src/models/Organization";
+import VerifyEmail from '../email/VerifyEmail';
+import ForgotPassword from '../email/ForgotPassword';
+import H2xNewMemberEmail from '../email/H2xNewMemberEmail';
 
 export class UserController {
 
@@ -42,7 +49,7 @@ export class UserController {
             return;
         }
 
-        const user = await registerUser(username, name, email, subscribed, password, accessLevel);
+        const user = await registerUser(null, null, username, name, email, subscribed, password, accessLevel);
         user.temporaryOrganizationName = null;
         user.temporaryUser = false;
         user.organization = associate;
@@ -56,24 +63,42 @@ export class UserController {
     }
 
     @ApiHandleError()
-    public async signUp(req: Request, res: Response, next: NextFunction, session: Session) {
-        const {username, name, organization, password, email} = req.body;
+    public async signUp(req: Request, res: Response) {
+        const {firstname, lastname, username, passwordHash, confirmPassword, email}: SignUpUser = req.body;
 
-        if (await User.findOne({username})) {
-            res.status(400).send({
+        if (!firstname || !lastname || !username || !email || !passwordHash ) {
+            return res.send({
+                success: false,
+                message: "All fields are required",
+            });
+        } else if (await User.findOne({username})) {
+            return res.status(400).send({
                 success: false,
                 message: "User with that ID already exists",
             });
-            return;
+        } else if (confirmPassword !== passwordHash) {
+            return res.send({
+                success: false,
+                message: "Password and Confirm Password does not match",
+            });
         }
 
-        const user = await registerUser(username, name, email, false, password, AccessLevel.USER);
-        user.temporaryOrganizationName = organization;
+        const user: User = await registerUser(firstname, lastname, username, "", email, false, passwordHash, AccessLevel.USER);
         user.temporaryUser = true;
         user.organization = null;
         await user.save();
+        
+        const url = req.protocol + '://' + req.get('host') + '/confirm-email?email=' + user.email + '&token=' + user.email_verification_token;
+        await NodeMailerTransporter.sendMail(VerifyEmail({name: user.firstname, to: user.email, url}));
 
-        res.status(200).send({
+        await NodeMailerTransporter.sendMail(H2xNewMemberEmail({
+            firstname: user.firstname,
+            lastname: user.lastname,
+            username: user.username,
+            email: user.email,
+        }));
+        
+        return res.status(200).send({
             success: true,
             data: user,
         });
@@ -187,6 +212,113 @@ export class UserController {
         });
     }
 
+    @ApiHandleError()
+    public async sendEmailVerification(req: Request, res: Response) {
+        const data: {email: string, username: string} = req.body;
+        const user = await User.findOne({ where: {
+            username: data.username,
+            email: data.email,
+        }});
+
+        if (!user) {
+            return res.status(404).send({
+                success: false,
+                message: 'User not found!',
+            });
+        }
+
+        user.email_verification_dt = new Date();
+        user.email_verification_token = await bcrypt.hash(data.email, 10);
+        await user.save();
+
+        const url = req.protocol + '://' + req.get('host') + '/confirm-email?email=' + user.email + '&token=' + user.email_verification_token;
+        await NodeMailerTransporter.sendMail(VerifyEmail({name: user.firstname || user.name, to: user.email, url}));
+
+        return res.send({
+            success: true,
+            message: "Please check your email.",
+        });
+    }
+
+    @ApiHandleError()
+    public async forgotPassword(req: Request, res: Response) {
+        const data: {email: string, username: string} = req.body;
+        const user = await User.findOne({ 
+            where: {
+                username: data.username,
+                email: data.email,
+            }
+        });
+
+        if (!user) {
+            return res.status(404).send({
+                success: false,
+                message: "User not found!",
+            });
+        }
+
+        user.password_reset_dt = new Date();
+        user.password_reset_token = await bcrypt.hash(user.email, 10);
+        await user.save();
+
+        const url = req.protocol + '://' + req.get('host') + '/password-reset?email=' + user.email + '&token=' + user.password_reset_token;
+        await NodeMailerTransporter.sendMail(ForgotPassword({name: user.firstname || user.name, to: user.email, url}));
+
+        return res.send({
+            success: true,
+            message: "We have sent a password reset link in your email.",
+        });
+    }
+
+    @ApiHandleError()
+    public async passwordReset(req: Request, res: Response) {
+        const data: {
+            password: string
+            confirmPassword: string
+            email: string
+            token: string
+        } = req.body;
+        const user = await User.findOne({ 
+            where: {
+                password_reset_token: data.token,
+                email: data.email,
+            }
+        });
+
+        if (data.confirmPassword !== data.password) {
+            return res.send({
+                success: false,
+                message: "New Password and Retype New Password does not match.",
+            });
+        }
+
+        if (!user) {
+            return res.status(404).send({
+                success: false,
+                message: "User not found!",
+            });
+        }
+
+        let now = +new Date();
+
+        const oneday = 60 * 60 * 24 * 1000;
+        if ((now - +new Date(user.password_reset_dt)) > oneday) {
+            return res.send({
+                success: false,
+                message: "Password reset link has expired.",
+                redirect: true,
+            });
+        }
+
+        user.passwordHash = await bcrypt.hash(data.password, 10);
+        user.password_reset_token = null;
+        await user.save();
+
+        return res.send({
+            success: true,
+            message: "Your password has been changed successfully!",
+        });
+    }
 }
 
 const router = Router();
@@ -199,5 +331,8 @@ router.get('/:id', controller.findOne.bind(controller));
 router.get('/', controller.find.bind(controller));
 router.put('/:id', controller.update.bind(controller));
 router.delete('/:id', controller.delete.bind(controller));
+router.post('/send-email-verification', controller.sendEmailVerification.bind(controller));
+router.post('/forgot-password', controller.forgotPassword.bind(controller));
+router.post('/password-reset', controller.passwordReset.bind(controller));
 
 export const usersRouter = router;

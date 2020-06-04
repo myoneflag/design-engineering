@@ -1,5 +1,3 @@
-import {AccessLevel} from "../../../backend/src/entity/User"; import {AccessLevel} from
-"../../../backend/src/entity/User"; import {AccessLevel} from "../../../backend/src/entity/User";
 <template>
     <div>
         <MainNavBar></MainNavBar>
@@ -67,15 +65,15 @@ import {AccessLevel} from "../../../backend/src/entity/User"; import {AccessLeve
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import MainNavBar from "../components/MainNavBar.vue";
 import { AccessLevel, User as IUser } from "../../../common/src/models/User";
 import { createUser } from "../api/users";
+import MainNavBar from "../components/MainNavBar.vue";
 
 @Component({
     components: { MainNavBar }
 })
 export default class CreateUser extends Vue {
-    user: IUser = {
+    user = {
         accessLevel: AccessLevel.USER,
         name: "",
         organization: null,

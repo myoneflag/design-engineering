@@ -91,9 +91,20 @@ export default class FlowSystems extends Vue {
                 fields.push(['returnMaxVelocityMS', "Max. Velocity of Return", "number", Units.MetersPerSecond]);
 
                 if (this.selectedSystem.insulationMaterial === 'mmKemblaInsulation') {
-                    fields.push(['insulationThicknessMM', "Insulation Thickness", "select", Units.Millimeters, INSULATION_THICKNESS_MMKEMBLA]);
+                    fields.push([
+                        'insulationThicknessMM',
+                        "Insulation Thickness",
+                        "select",
+                        Units.Millimeters,
+                        INSULATION_THICKNESS_MMKEMBLA
+                    ]);
                 } else {
-                    fields.push(['insulationThicknessMM', "Insulation Thickness", "number", Units.Millimeters]);
+                    fields.push([
+                        'insulationThicknessMM',
+                        "Insulation Thickness",
+                        "number",
+                        Units.Millimeters
+                    ]);
                 }
             }
         }

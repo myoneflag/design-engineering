@@ -1,7 +1,5 @@
-import { APIResult } from "../../../common/src/api/document/types";
-import { Document } from "../../../common/src/models/Document";
 import axios from "axios";
-import { Organization } from "../../../common/src/models/Organization";
+import { APIResult } from "../../../common/src/api/document/types";
 import { AccessLevel, User } from "../../../common/src/models/User";
 
 export async function getUsers(): Promise<APIResult<User[]>> {
@@ -58,22 +56,19 @@ export async function createUser(
     }
 }
 
-export async function signUp(
-    username: string,
-    name: string,
-    email: string | undefined,
-    password: string,
-    organization?: string,
-): Promise<APIResult<User>> {
+export interface SignUpUser {
+    firstname: string
+    lastname: string
+    username: string
+    email: string
+    passwordHash: string
+    confirmPassword: string
+}
+
+export async function signUp(props: SignUpUser): Promise<APIResult<User>> {
     try {
         return (
-            await axios.post("/api/users/signUp", {
-                username,
-                name,
-                email,
-                password,
-                organization,
-            })
+            await axios.post("/api/users/signUp", props)
         ).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
@@ -83,8 +78,6 @@ export async function signUp(
         }
     }
 }
-
-
 
 export async function updateUser(
     username: string,
@@ -119,6 +112,42 @@ export async function updateLastNoticeSeen(
         return (
             await axios.get("/api/changeLogMessage/updateNotice")
         ).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return { success: false, message: e.response.data.message };
+        } else {
+            return { success: false, message: e.message };
+        }
+    }
+}
+
+export async function sendEmailVerification(email: string, username: string): Promise<APIResult<string>> {
+    try {
+        return (await axios.post("/api/users/send-email-verification", { email, username })).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return { success: false, message: e.response.data.message };
+        } else {
+            return { success: false, message: e.message };
+        }
+    }
+}
+
+export async function forgotPassword(email: string, username: string): Promise<APIResult<string>> {
+    try {
+        return (await axios.post("/api/users/forgot-password", { email, username })).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return { success: false, message: e.response.data.message };
+        } else {
+            return { success: false, message: e.message };
+        }
+    }
+}
+
+export async function resetPassword(password: string, confirmPassword: string, email: string, token: string): Promise<APIResult<string>> {
+    try {
+        return (await axios.post("/api/users/password-reset", { password, confirmPassword, email, token })).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };

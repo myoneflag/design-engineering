@@ -1,35 +1,43 @@
 <template>
     <div>
         <PublicNavBar></PublicNavBar>
-        <b-container>
+        <b-container style="padding-top: 50px; width: 800px">
             <b-row>
                 <b-col>
                     <h2>Sign Up</h2>
                 </b-col>
             </b-row>
+            <br>
             <b-row>
                 <b-col>
-                    <template v-if="user">
-                        <b-form>
-                            <b-form-group :label-cols="2" label="Username">
-                                <b-form-input v-model="user.username"></b-form-input>
-                            </b-form-group>
+                    <b-form>
+                        <b-form-group :label-cols="3" label-align="left" label="First Name">
+                            <b-form-input :required="false" type="text" v-model="user.firstname" :disabled="isLoading"></b-form-input>
+                        </b-form-group>
 
-                            <b-form-group :label-cols="2" label="Email">
-                                <b-form-input required="false" type="email" v-model="user.email"></b-form-input>
-                            </b-form-group>
+                        <b-form-group :label-cols="3" label-align="left" label="Last Name">
+                            <b-form-input :required="false" type="text" v-model="user.lastname" :disabled="isLoading"></b-form-input>
+                        </b-form-group>
 
-                            <b-form-group :label-cols="2" label="Organization Name or Organization ID">
-                                <b-form-input v-model="organization"></b-form-input>
-                            </b-form-group>
+                        <b-form-group :label-cols="3" label-align="left" label="Username">
+                            <b-form-input :required="false" type="text" v-model="user.username" :disabled="isLoading"></b-form-input>
+                        </b-form-group>
 
-                            <b-form-group :label-cols="2" label="Password">
-                                <b-form-input type="password" v-model="password"></b-form-input>
-                            </b-form-group>
-                        </b-form>
-                        <b-button variant="success" style="margin-top:50px" @click="create">Sign Up for Greatness!</b-button>
-                    </template>
-                    <b-alert v-else variant="success" show>Loading...</b-alert>
+                        <b-form-group :label-cols="3" label-align="left" label="Email">
+                            <b-form-input :required="false" type="email" v-model="user.email" :disabled="isLoading"></b-form-input>
+                        </b-form-group>
+
+                        <b-form-group :label-cols="3" label-align="left" label="Password">
+                            <b-form-input :required="false" type="password" v-model="user.passwordHash" :disabled="isLoading"></b-form-input>
+                        </b-form-group>
+
+                        <b-form-group :label-cols="3" label-align="left" label="Confirm Password">
+                            <b-form-input :required="false" type="password" v-model="user.confirmPassword" :disabled="isLoading"></b-form-input>
+                        </b-form-group>
+                    </b-form>
+                    <b-button variant="success" style="margin-top:50px" @click="handleClickCreateAccount" :disabled="isLoading">
+                        {{isRedirecting && 'Logging in...' || 'Create Account'}} <span v-if="isLoading"><b-spinner style="width: 1.0rem; height: 1.0rem;"></b-spinner></span>
+                    </b-button>
                 </b-col>
             </b-row>
         </b-container>
@@ -39,45 +47,33 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import MainNavBar from "../components/MainNavBar.vue";
-import { AccessLevel, User as IUser } from "../../../common/src/models/User";
-import { signUp } from "../api/users";
-import { login } from "../../src/api/logins";
+import { signUp, SignUpUser } from "../api/users";
+import { login } from "../api/logins";
 import PublicNavBar from "../components/PublicNavBar.vue";
 
 @Component({
-    components: { PublicNavBar, MainNavBar }
+    components: { PublicNavBar }
 })
 export default class CreateUser extends Vue {
-    user: IUser = {
-        accessLevel: AccessLevel.USER,
-        name: "",
-        organization: null,
-        passwordHash: "",
+    user: SignUpUser = {
+        firstname: "",
+        lastname: "",
         username: "",
         email: "",
-        subscribed: false,
-        eulaAccepted: false,
-        eulaAcceptedOn: null,
-        lastActivityOn: null,
-        lastNoticeSeenOn: null,
-        temporaryOrganizationName: null,
-        temporaryUser: true,
+        passwordHash: "",
+        confirmPassword: "",
     };
+    isLoading: boolean = false;
+    isRedirecting: boolean = false;
 
-    organization: string = "";
-    password: string = "";
+    handleClickCreateAccount() {
+        this.isLoading = true;
 
-    create() {
-        signUp(
-            this.user.username,
-            this.user.name,
-            this.user.email || undefined,
-            this.password,
-            this.organization || undefined
-        ).then((res) => {
+        signUp(this.user).then((res) => {
             if (res.success) {
-                login(this.user.username, this.password).then((logres) => {
+                this.isRedirecting = true;
+
+                login(this.user.username, this.user.passwordHash).then((logres) => {
                     if (logres.success === true) {
                         this.$store.dispatch("profile/setProfile", null);
                         (this as any).$cookies.set("session-id", logres.data);
@@ -91,21 +87,19 @@ export default class CreateUser extends Vue {
                             title: "Login Error",
                             variant: "danger"
                         });
+
+                        setTimeout(() => this.$router.push('/login'), 3000);
                     }
                 });
-
-                // this.$router.push("/users");
             } else {
                 this.$bvToast.toast(res.message, {
-                    title: "Error creating user",
+                    title: "Unable to register!",
                     variant: "danger"
                 });
+
+                this.isLoading = false;
             }
         });
-    }
-
-    get profile(): IUser {
-        return this.$store.getters["profile/profile"];
     }
 }
 </script>
