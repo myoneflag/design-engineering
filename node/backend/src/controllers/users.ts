@@ -262,7 +262,7 @@ export class UserController {
         await user.save();
 
         const url = req.protocol + '://' + req.get('host') + '/password-reset?email=' + user.email + '&token=' + user.password_reset_token;
-        await NodeMailerTransporter.sendMail(ForgotPassword({name: user.firstname || user.name, to: user.email, url}));
+        await NodeMailerTransporter.sendMail(ForgotPassword({name: user.firstname! || user.name || user.username, to: user.email, url}));
 
         return res.send({
             success: true,
