@@ -9,7 +9,7 @@ import { AuthRequired } from "../helpers/withAuth";
 import { AccessLevel, User } from "../../../common/src/models/User";
 import { AccessType, withOrganization, withUser } from "../helpers/withResources";
 import { registerUser } from "./login";
-import { SignUpUser } from './../../../frontend/src/api/users';
+import { Create } from './../../../frontend/src/api/users';
 import { Organization } from "../../../common/src/models/Organization";
 import VerifyEmail from '../email/VerifyEmail';
 import ForgotPassword from '../email/ForgotPassword';
@@ -71,7 +71,7 @@ export class UserController {
 
     @ApiHandleError()
     public async signUp(req: Request, res: Response) {
-        const {firstname, lastname, username, password, confirmPassword, email}: SignUpUser = req.body;
+        const {firstname, lastname, username, password, confirmPassword, email}: Create = req.body;
 
         if (!firstname || !lastname || !username || !email || !password ) {
             return res.send({
