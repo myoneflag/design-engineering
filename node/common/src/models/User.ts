@@ -76,9 +76,6 @@ export class User extends BaseEntity {
     password_reset_dt: Date;
 
     @Column("varchar", { nullable: true})
-    firstname: string;
-
-    @Column("varchar", { nullable: true})
     lastname: string;
 }
 

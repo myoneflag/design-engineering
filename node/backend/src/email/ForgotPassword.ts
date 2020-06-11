@@ -13,6 +13,10 @@ const ForgotPassword = (props: ForgotPasswordEmail) => {
                 <br><br>
                 It looks like you forgot your password. You can reset it by following this <a target="_blank" href="${props.url}">link</a>
                 <br><br>
+                If the link above does not work, copy this link below:
+                <br>
+                ${props.url}
+                <br><br>
                 Enjoy!
                 <br><br>
                 <font face="tahoma, sans-serif" color="#6fa8dc"><b>The H2X Team</b></font>

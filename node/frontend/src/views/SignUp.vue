@@ -28,7 +28,7 @@
                         </b-form-group>
 
                         <b-form-group :label-cols="3" label-align="left" label="Password">
-                            <b-form-input :required="false" type="password" v-model="user.passwordHash" :disabled="isLoading"></b-form-input>
+                            <b-form-input :required="false" type="password" v-model="user.password" :disabled="isLoading"></b-form-input>
                         </b-form-group>
 
                         <b-form-group :label-cols="3" label-align="left" label="Confirm Password">
@@ -47,7 +47,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { signUp, SignUpUser } from "../api/users";
+import { signUp, Create } from "../api/users";
 import { login } from "../api/logins";
 import PublicNavBar from "../components/PublicNavBar.vue";
 
@@ -55,12 +55,12 @@ import PublicNavBar from "../components/PublicNavBar.vue";
     components: { PublicNavBar }
 })
 export default class CreateUser extends Vue {
-    user: SignUpUser = {
+    user: Create = {
         firstname: "",
         lastname: "",
         username: "",
         email: "",
-        passwordHash: "",
+        password: "",
         confirmPassword: "",
     };
     isLoading: boolean = false;
@@ -73,7 +73,7 @@ export default class CreateUser extends Vue {
             if (res.success) {
                 this.isRedirecting = true;
 
-                login(this.user.username, this.user.passwordHash).then((logres) => {
+                login(this.user.username, this.user.password).then((logres) => {
                     if (logres.success === true) {
                         this.$store.dispatch("profile/setProfile", null);
                         (this as any).$cookies.set("session-id", logres.data);

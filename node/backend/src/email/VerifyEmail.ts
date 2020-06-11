@@ -13,6 +13,10 @@ const VerifyEmail = (props: VerifyEmail) => {
                 <br><br>
                 Welcome to H2X - to verify your email address click this <a target="_blank" href="${props.url}">link</a>.
                 <br><br>
+                If the link above does not work, copy this link below:
+                <br>
+                ${props.url}
+                <br><br>
                 You can access the software here https://app.h2xengineering.com/, make sure to access through Google Chrome as this is what the software is developed to perform best with.
                 <br><br>
                 You will find lots of helpful videos integrated in the site that will help you learn how to effectively use H2X. They can be found in the area shown below:

@@ -1,5 +1,6 @@
 
 import * as bcrypt from "bcrypt";
+import { getRepository } from "typeorm";
 import { NodeMailerTransporter } from './../nodemailer';
 import { NextFunction, Request, Response, Router } from "express";
 import { Session } from "../../../common/src/models/Session";
@@ -19,7 +20,7 @@ export class UserController {
     @ApiHandleError()
     @AuthRequired(AccessLevel.ADMIN)
     public async create(req: Request, res: Response, next: NextFunction, session: Session) {
-        const {username, name, accessLevel, organization, password, email, subscribed} = req.body;
+        const {username, firstname, lastname, accessLevel, organization, password, email, subscribed} = req.body;
         const thisUser = await session.user;
         if (accessLevel <= thisUser.accessLevel && thisUser.accessLevel !== AccessLevel.SUPERUSER) {
             res.status(401).send({
@@ -35,6 +36,7 @@ export class UserController {
             await withOrganization(organization, res, session, AccessType.UPDATE, async (org) => {
                 success = true;
                 associate = org;
+                await associate.save();
             });
             if (!success) {
                 return;
@@ -49,12 +51,17 @@ export class UserController {
             return;
         }
 
-        const user = await registerUser(null, null, username, name, email, subscribed, password, accessLevel);
-        user.temporaryOrganizationName = null;
-        user.temporaryUser = false;
-        user.organization = associate;
-        await user.save();
-        await associate.save()
+        const user: User = await registerUser({
+            username,
+            firstname,
+            lastname,
+            email,
+            subscribed,
+            password,
+            access: accessLevel,
+            temporaryUser: false,
+            organization: associate,
+        });
 
         res.status(200).send({
             success: true,
@@ -64,9 +71,9 @@ export class UserController {
 
     @ApiHandleError()
     public async signUp(req: Request, res: Response) {
-        const {firstname, lastname, username, passwordHash, confirmPassword, email}: SignUpUser = req.body;
+        const {firstname, lastname, username, password, confirmPassword, email}: SignUpUser = req.body;
 
-        if (!firstname || !lastname || !username || !email || !passwordHash ) {
+        if (!firstname || !lastname || !username || !email || !password ) {
             return res.send({
                 success: false,
                 message: "All fields are required",
@@ -76,23 +83,28 @@ export class UserController {
                 success: false,
                 message: "User with that ID already exists",
             });
-        } else if (confirmPassword !== passwordHash) {
+        } else if (confirmPassword !== password) {
             return res.send({
                 success: false,
                 message: "Password and Confirm Password does not match",
             });
         }
 
-        const user: User = await registerUser(firstname, lastname, username, "", email, false, passwordHash, AccessLevel.USER);
-        user.temporaryUser = true;
-        user.organization = null;
-        await user.save();
+        const user: User = await registerUser({
+            email,
+            username,
+            firstname,
+            lastname,
+            subscribed: false,
+            password,
+            access: AccessLevel.USER,
+        });
         
         const url = req.protocol + '://' + req.get('host') + '/confirm-email?email=' + user.email + '&token=' + user.email_verification_token;
-        await NodeMailerTransporter.sendMail(VerifyEmail({name: user.firstname, to: user.email, url}));
+        await NodeMailerTransporter.sendMail(VerifyEmail({name: user.name, to: user.email, url}));
 
         await NodeMailerTransporter.sendMail(H2xNewMemberEmail({
-            firstname: user.firstname,
+            firstname: user.name,
             lastname: user.lastname,
             username: user.username,
             email: user.email,
@@ -213,9 +225,10 @@ export class UserController {
     }
 
     @ApiHandleError()
+    @AuthRequired()
     public async sendEmailVerification(req: Request, res: Response) {
         const data: {email: string, username: string} = req.body;
-        const user = await User.findOne({ where: {
+        const user: User = await User.findOne({ where: {
             username: data.username,
             email: data.email,
         }});
@@ -232,7 +245,7 @@ export class UserController {
         await user.save();
 
         const url = req.protocol + '://' + req.get('host') + '/confirm-email?email=' + user.email + '&token=' + user.email_verification_token;
-        await NodeMailerTransporter.sendMail(VerifyEmail({name: user.firstname || user.name, to: user.email, url}));
+        await NodeMailerTransporter.sendMail(VerifyEmail({name: user.name, to: user.email, url}));
 
         return res.send({
             success: true,
@@ -243,7 +256,7 @@ export class UserController {
     @ApiHandleError()
     public async forgotPassword(req: Request, res: Response) {
         const data: {email: string, username: string} = req.body;
-        const user = await User.findOne({ 
+        const user: User = await User.findOne({ 
             where: {
                 username: data.username,
                 email: data.email,
@@ -262,7 +275,7 @@ export class UserController {
         await user.save();
 
         const url = req.protocol + '://' + req.get('host') + '/password-reset?email=' + user.email + '&token=' + user.password_reset_token;
-        await NodeMailerTransporter.sendMail(ForgotPassword({name: user.firstname! || user.name || user.username, to: user.email, url}));
+        await NodeMailerTransporter.sendMail(ForgotPassword({name: user.name, to: user.email, url}));
 
         return res.send({
             success: true,
@@ -278,12 +291,6 @@ export class UserController {
             email: string
             token: string
         } = req.body;
-        const user = await User.findOne({ 
-            where: {
-                password_reset_token: data.token,
-                email: data.email,
-            }
-        });
 
         if (data.confirmPassword !== data.password) {
             return res.send({
@@ -292,10 +299,17 @@ export class UserController {
             });
         }
 
+        const user: User = await getRepository(User)
+            .createQueryBuilder("user")
+            .where("user.password_reset_token IS NOT NULL")
+            .andWhere("user.password_reset_token = :password_reset_token ", { password_reset_token: data.token })
+            .andWhere("user.email = :email", { email: data.email })
+            .getOne();
+
         if (!user) {
             return res.status(404).send({
                 success: false,
-                message: "User not found!",
+                message: "Email doesn't exist or invalid token!",
             });
         }
 

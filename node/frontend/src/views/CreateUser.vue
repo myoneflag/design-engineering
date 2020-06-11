@@ -20,16 +20,20 @@
                                 <b-form-input v-model="user.username"></b-form-input>
                             </b-form-group>
 
-                            <b-form-group :label-cols="2" label="Full Name">
-                                <b-form-input v-model="user.name"></b-form-input>
+                            <b-form-group :label-cols="2" label="First Name">
+                                <b-form-input v-model="user.firstname"></b-form-input>
+                            </b-form-group>
+
+                            <b-form-group :label-cols="2" label="Last Name">
+                                <b-form-input v-model="user.lastname"></b-form-input>
                             </b-form-group>
 
                             <b-form-group :label-cols="2" label="Email">
-                                <b-form-input required="false" type="email" v-model="user.email"></b-form-input>
+                                <b-form-input type="email" v-model="user.email"></b-form-input>
                             </b-form-group>
 
-                            <b-form-group :label-cols="3" label="Subscribe">
-                                <b-form-checkbox v-model="user.subscribed"
+                            <b-form-group :label-cols="2" label="Subscribe">
+                                <b-form-checkbox class="text-left" v-model="user.subscribed"
                                     >Subscribe to "Contact Us" messages?</b-form-checkbox
                                 >
                             </b-form-group>
@@ -39,7 +43,7 @@
                             </b-form-group>
 
                             <b-form-group :label-cols="2" label="Password">
-                                <b-form-input type="password" v-model="password"></b-form-input>
+                                <b-form-input type="password" v-model="user.password"></b-form-input>
                             </b-form-group>
                             <b-button-group>
                                 <b-button
@@ -75,9 +79,10 @@ import MainNavBar from "../components/MainNavBar.vue";
 export default class CreateUser extends Vue {
     user = {
         accessLevel: AccessLevel.USER,
-        name: "",
+        firstname: "",
+        lastname: "",
         organization: null,
-        passwordHash: "",
+        password: "",
         username: "",
         email: "",
         subscribed: false,
@@ -90,18 +95,18 @@ export default class CreateUser extends Vue {
     };
 
     organization: string = "";
-    password: string = "";
 
     create() {
-        createUser(
-            this.user.username,
-            this.user.name,
-            this.user.email || undefined,
-            this.user.subscribed,
-            this.password,
-            this.user.accessLevel,
-            this.organization || undefined
-        ).then((res) => {
+        createUser({
+            username: this.user.username,
+            firstname: this.user.firstname,
+            lastname: this.user.lastname,
+            email: this.user.email,
+            password: this.user.password,
+            accessLevel: this.user.accessLevel,
+            organization: this.organization || undefined,
+            subscribed: this.user.subscribed,
+        }).then((res) => {
             if (res.success) {
                 this.$router.push("/users");
             } else {

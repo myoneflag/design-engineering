@@ -74,7 +74,7 @@ export default class Users extends Vue {
         return this.users.map((u) => {
             return {
                 username: u.username,
-                fullName: u.firstname ? u.firstname + " " + u.lastname : u.name,
+                fullName: u.name + (u.lastname && ` ${u.lastname}` || ""),
                 accessLevel: ["SUPERUSER", "ADMIN", "MANAGER", "USER"][u.accessLevel],
                 organization: u.organization ? u.organization.name : "",
                 lastActivityOn: u.lastActivityOn ? new Date(u.lastActivityOn).toLocaleString() : ""

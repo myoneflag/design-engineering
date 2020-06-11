@@ -1,37 +1,41 @@
 import * as bcrypt from "bcrypt";
-import { NextFunction, Request, Response, Router } from "express";
 import uuid from "uuid";
+import { getRepository } from 'typeorm';
+import { NextFunction, Request, Response, Router } from "express";
 import { AccessEvents, LoginEventType } from "../../../common/src/models/AccessEvents";
 import { Session } from "../../../common/src/models/Session";
 import { AccessLevel, User } from "../../../common/src/models/User";
-import { ApiHandleError } from "../helpers/apiWrapper";
-import { AuthRequired } from "../helpers/withAuth";
 import { VideoView } from "../../../common/src/models/VideoView";
 import { Document } from "../../../common/src/models/Document";
 import { FeedbackMessage } from "../../../common/src/models/FeedbackMessage";
+import { Organization } from './../../../common/src/models/Organization';
+import { ApiHandleError } from "../helpers/apiWrapper";
+import { AuthRequired } from "../helpers/withAuth";
 
-export async function registerUser(
-    firstname: string, 
-    lastname: string,
-    username: string, 
-    name: string, 
-    email: string | null, 
-    subscribed: boolean, 
-    password: string,
+export async function registerUser(data: {
+    username: string
+    firstname: string
+    lastname?: string
+    email?: string
+    subscribed: boolean 
+    password: string
     access: AccessLevel
-): Promise<User> {
-    const login = User.create();
-    login.username = username;
-    login.firstname = firstname;
-    login.lastname = lastname;
-    login.name = name;
-    login.email = email;
-    login.email_verification_token = await bcrypt.hash(email, 10);
+    temporaryUser?: boolean
+    organization?: Organization
+}): Promise<User> {
+    const login: User = User.create();
+    login.username = data.username;
+    login.name = data.firstname;
+    login.lastname = data.lastname;
+    login.email = data.email;
+    login.email_verification_token = await bcrypt.hash(data.email, 10);
     login.email_verification_dt = new Date();
-    login.subscribed = subscribed;
-    login.passwordHash = await bcrypt.hash(password, 10);
-    login.accessLevel = access;
+    login.subscribed = data.subscribed;
+    login.passwordHash = await bcrypt.hash(data.password, 10);
+    login.accessLevel = data.access;
     login.lastNoticeSeenOn = new Date();
+    login.temporaryUser = data.temporaryUser;
+    login.organization = data.organization;
     return login.save();
 }
 
@@ -272,11 +276,13 @@ export class LoginController {
     @ApiHandleError()
     public async confirmEmail(req: Request, res: Response, next: NextFunction) {
         const params: {email: string, token: string} = req.body;
-        
-        const user = await User.findOne({ where: {
-            email: params.email,
-            email_verification_token:params.token,
-        }});
+
+        const user = await getRepository(User)
+            .createQueryBuilder("user")
+            .where("user.email_verification_token IS NOT NULL")
+            .andWhere("user.email_verification_token = :email_verification_token ", { email_verification_token: params.token })
+            .andWhere("user.email = :email", { email: params.email })
+            .getOne();
 
         if (!!user) {
             let now = +new Date();
@@ -290,6 +296,7 @@ export class LoginController {
             }
 
             user.email_verified_at = new Date();
+            user.email_verification_token = null;
             await user.save();
 
             // Login automatically
