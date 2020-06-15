@@ -16,8 +16,8 @@ export const initialCatalog: Catalog = {
                     "warm-water": "3"
                 },
                 bs806: {
-                    "cold-water": "3",
-                    "warm-water": "3",
+                    "cold-water": "2",
+                    "warm-water": "2",
                 },
                 cibseGuideG: {
                     "cold-water": "3",
@@ -66,8 +66,8 @@ export const initialCatalog: Catalog = {
                     "warm-water": "1"
                 },
                 bs806: {
-                    "cold-water": "2",
-                    "warm-water": "2",
+                    "cold-water": "1",
+                    "warm-water": "1",
                 },
                 cibseGuideG: {
                     "cold-water": "2",
@@ -116,8 +116,8 @@ export const initialCatalog: Catalog = {
                     "warm-water": "8"
                 },
                 bs806: {
-                    "cold-water": "10",
-                    "warm-water": "10",
+                    "cold-water": "4",
+                    "warm-water": "4",
                 },
                 cibseGuideG: {
                     "cold-water": "10",
@@ -170,8 +170,8 @@ export const initialCatalog: Catalog = {
                     "hot-water": "2",
                 },
                 cibseGuideG: {
-                    "cold-water": "2",
-                    "hot-water": "2",
+                    "cold-water": "3",
+                    "hot-water": "3",
                 },
                 ipc2018Flushometer: {
                     "cold-water": "2",
@@ -216,8 +216,8 @@ export const initialCatalog: Catalog = {
                     "warm-water": "3"
                 },
                 bs806: {
-                    "cold-water": "3",
-                    "warm-water": "3",
+                    "cold-water": "2",
+                    "warm-water": "2",
                 },
                 cibseGuideG: {
                     "cold-water": "3",
@@ -266,8 +266,8 @@ export const initialCatalog: Catalog = {
                     "warm-water": "16"
                 },
                 bs806: {
-                    "cold-water": "22",
-                    "warm-water": "22",
+                    "cold-water": "8",
+                    "warm-water": "8",
                 },
                 cibseGuideG: {
                     "cold-water": "22",
@@ -320,8 +320,8 @@ export const initialCatalog: Catalog = {
                     "hot-water": "2",
                 },
                 cibseGuideG: {
-                    "cold-water": "2",
-                    "hot-water": "2",
+                    "cold-water": "3",
+                    "hot-water": "3",
                 },
                 ipc2018Flushometer: {
                     "cold-water": "2",
@@ -366,8 +366,8 @@ export const initialCatalog: Catalog = {
                     "hot-water": "3"
                 },
                 bs806: {
-                    "cold-water": "3",
-                    "hot-water": "3",
+                    "cold-water": "2",
+                    "hot-water": "2",
                 },
                 cibseGuideG: {
                     "cold-water": "3",
@@ -461,8 +461,8 @@ export const initialCatalog: Catalog = {
                     "hot-water": "2",
                 },
                 cibseGuideG: {
-                    "cold-water": "2",
-                    "hot-water": "2",
+                    "cold-water": "3",
+                    "hot-water": "3",
                 },
                 ipc2018Flushometer: {
                     "cold-water": "2",
@@ -505,10 +505,10 @@ export const initialCatalog: Catalog = {
                     "cold-water": "8"
                 },
                 bs806: {
-                    "cold-water": "8",
+                    "cold-water": "5",
                 },
                 cibseGuideG: {
-                    "cold-water": "8",
+                    "cold-water": "5",
                 },
                 ipc2018Flushometer: {
                     "cold-water": "2.5",
@@ -548,8 +548,8 @@ export const initialCatalog: Catalog = {
                     "warm-water": "3"
                 },
                 bs806: {
-                    "cold-water": "3",
-                    "warm-water": "3",
+                    "cold-water": "2",
+                    "warm-water": "2",
                 },
                 cibseGuideG: {
                     "cold-water": "3",
@@ -648,8 +648,8 @@ export const initialCatalog: Catalog = {
                     "warm-water": "3"
                 },
                 bs806: {
-                    "cold-water": "3",
-                    "warm-water": "3",
+                    "cold-water": "2",
+                    "warm-water": "2",
                 },
                 cibseGuideG: {
                     "cold-water": "3",
@@ -748,8 +748,8 @@ export const initialCatalog: Catalog = {
                     "warm-water": "2"
                 },
                 bs806: {
-                    "cold-water": "3",
-                    "warm-water": "3",
+                    "cold-water": "2",
+                    "warm-water": "2",
                 },
                 cibseGuideG: {
                     "cold-water": "3",
@@ -796,7 +796,7 @@ export const initialCatalog: Catalog = {
                     "cold-water": "2"
                 },
                 bs806: {
-                    "cold-water": "1",
+                    "cold-water": "3",
                 },
                 cibseGuideG: {
                     "cold-water": "1",
@@ -839,8 +839,8 @@ export const initialCatalog: Catalog = {
                     "hot-water": "3"
                 },
                 bs806: {
-                    "cold-water": "3",
-                    "hot-water": "3",
+                    "cold-water": "2",
+                    "hot-water": "2",
                 },
                 cibseGuideG: {
                     "cold-water": "3",
@@ -887,7 +887,7 @@ export const initialCatalog: Catalog = {
                     "cold-water": "2"
                 },
                 bs806: {
-                    "cold-water": "2",
+                    "cold-water": "1",
                 },
                 cibseGuideG: {
                     "cold-water": "2",
