@@ -162,7 +162,7 @@ export class GlobalStore extends ObjectStore {
                 this.delete(euid);
             });
         }
-        this.entitiesInLevel.delete(levelUid);
+        this.levelOfEntity.delete(levelUid);
     }
 
     sanityCheck(doc: DocumentState) {
