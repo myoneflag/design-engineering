@@ -1,12 +1,9 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { AccessEvents } from "../../../common/src/models/AccessEvents";
-import { Organization } from "../../../common/src/models/Organization";
 import { Session } from "../../../common/src/models/Session";
-import { AccessLevel, User } from "../../../common/src/models/User";
+import { AccessLevel } from "../../../common/src/models/User";
 import { ApiHandleError } from "../helpers/apiWrapper";
 import { AuthRequired } from "../helpers/withAuth";
-import { AccessType, withOrganization, withUser } from "../helpers/withResources";
-import { registerUser } from "./login";
 
 export class AccessEventsController {
     @ApiHandleError()

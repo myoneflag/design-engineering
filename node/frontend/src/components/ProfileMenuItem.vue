@@ -54,7 +54,7 @@ import FeedbackModal from "./FeedbackModal.vue";
 export default class ProfileMenuItem extends Vue {
     showFeedbackModal = false;
 
-    get profile(): User {
+    get profile() {
         const profile = this.$store.getters["profile/profile"];
         if (!profile) {
             return {

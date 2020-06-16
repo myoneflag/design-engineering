@@ -59,6 +59,24 @@ export class User extends BaseEntity {
 
     @Column({ default: false })
     temporaryUser: boolean | null;
+
+    @Column("timestamp", { nullable: true })
+    email_verified_at: Date | null;
+
+    @Column("varchar", { nullable: true })
+    email_verification_token: string;
+
+    @Column("timestamp", { nullable: true })
+    email_verification_dt: Date;
+
+    @Column("varchar", { nullable: true })
+    password_reset_token: string;
+
+    @Column("timestamp", { nullable: true })
+    password_reset_dt: Date;
+
+    @Column("varchar", { nullable: true})
+    lastname: string;
 }
 
 export function allUserFields(except?: Array<keyof User>) {

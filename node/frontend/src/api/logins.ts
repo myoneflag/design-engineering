@@ -90,3 +90,15 @@ export async function onBoardingStats(): Promise<APIResult<OnBoardingStats>> {
         }
     }
 }
+
+export async function confirmEmail(email: string, token: string): Promise<APIResult<string>> {
+    try {
+        return (await axios.post("/api/confirm-email", { email, token })).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return { success: false, message: e.response.data.message };
+        } else {
+            return { success: false, message: e.message };
+        }
+    }
+}

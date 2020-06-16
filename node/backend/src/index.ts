@@ -1,7 +1,7 @@
 
 import app from "./App";
 import "reflect-metadata";
-import { createConnection, getRepository } from "typeorm";
+import { createConnection } from "typeorm";
 import CONFIG from "./config/config";
 import { registerUser } from "./controllers/login";
 import { AccessLevel, User } from "../../common/src/models/User";
@@ -15,11 +15,15 @@ const PORT = CONFIG.PORT;
 Error.stackTraceLimit = Infinity;
 
 async function ensureInitialUser() {
-    const repo = getRepository(User);
     const logins = await User.count();
     if (logins === 0) {
-
-        const login = await registerUser("admin", "Root User", null, true, "pleasechange", AccessLevel.SUPERUSER);
+        const login = await registerUser({
+            username: "admin",
+            firstname: "Root User",
+            subscribed: true,
+            password: "pleasechange",
+            access:  AccessLevel.SUPERUSER,
+        });
     }
 
     // migrate old documents

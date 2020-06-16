@@ -1,24 +1,41 @@
 import * as bcrypt from "bcrypt";
-import { NextFunction, Request, Response, Router } from "express";
 import uuid from "uuid";
+import { getRepository } from 'typeorm';
+import { NextFunction, Request, Response, Router } from "express";
 import { AccessEvents, LoginEventType } from "../../../common/src/models/AccessEvents";
 import { Session } from "../../../common/src/models/Session";
 import { AccessLevel, User } from "../../../common/src/models/User";
-import { ApiHandleError } from "../helpers/apiWrapper";
-import { AuthRequired } from "../helpers/withAuth";
 import { VideoView } from "../../../common/src/models/VideoView";
 import { Document } from "../../../common/src/models/Document";
 import { FeedbackMessage } from "../../../common/src/models/FeedbackMessage";
+import { Organization } from './../../../common/src/models/Organization';
+import { ApiHandleError } from "../helpers/apiWrapper";
+import { AuthRequired } from "../helpers/withAuth";
 
-export async function registerUser(username: string, name: string, email: string | null, subscribed: boolean, password: string, access: AccessLevel): Promise<User> {
-    const login = User.create();
-    login.username = username;
-    login.name = name;
-    login.email = email;
-    login.subscribed = subscribed;
-    login.passwordHash = await bcrypt.hash(password, 10);
-    login.accessLevel = access;
+export async function registerUser(data: {
+    username: string
+    firstname: string
+    lastname?: string
+    email?: string
+    subscribed: boolean 
+    password: string
+    access: AccessLevel
+    temporaryUser?: boolean
+    organization?: Organization
+}): Promise<User> {
+    const login: User = User.create();
+    login.username = data.username;
+    login.name = data.firstname;
+    login.lastname = data.lastname;
+    login.email = data.email;
+    login.email_verification_token = await bcrypt.hash(data.email, 10);
+    login.email_verification_dt = new Date();
+    login.subscribed = data.subscribed;
+    login.passwordHash = await bcrypt.hash(data.password, 10);
+    login.accessLevel = data.access;
     login.lastNoticeSeenOn = new Date();
+    login.temporaryUser = data.temporaryUser;
+    login.organization = data.organization;
     return login.save();
 }
 
@@ -61,7 +78,6 @@ export class LoginController {
             .createQueryBuilder('session')
             .where('session.user = :user', {user : login.username})
             .getOne();
-
 
         if (!existingSession) {
             existingSession = Session.create();
@@ -115,7 +131,6 @@ export class LoginController {
             success: true,
             data: user,
         });
-
 
         const event = AccessEvents.create();
         event.type = LoginEventType.SESSION_GET;
@@ -181,14 +196,11 @@ export class LoginController {
             data: newSession.id,
         });
 
-
-
         event.success = true;
         await event.save();
 
         return;
     }
-
 
     @ApiHandleError()
     @AuthRequired(AccessLevel.USER, false)
@@ -208,7 +220,6 @@ export class LoginController {
         event.url = req.originalUrl;
         event.success = true;
         await event.save();
-
 
         res.status(200).send({
             success: true,
@@ -261,6 +272,73 @@ export class LoginController {
             },
         });
     }
+
+    @ApiHandleError()
+    public async confirmEmail(req: Request, res: Response, next: NextFunction) {
+        const params: {email: string, token: string} = req.body;
+
+        const user = await getRepository(User)
+            .createQueryBuilder("user")
+            .where("user.email_verification_token IS NOT NULL")
+            .andWhere("user.email_verification_token = :email_verification_token ", { email_verification_token: params.token })
+            .andWhere("user.email = :email", { email: params.email })
+            .getOne();
+
+        if (!!user) {
+            let now = +new Date();
+
+            const oneday = 60 * 60 * 24 * 1000;
+            if ((now - +new Date(user.email_verification_dt)) > oneday) {
+                return res.send({
+                    success: false,
+                    message: "Email verification link has expired. Please enter your email address and we'll send another verification link.",
+                });
+            }
+
+            user.email_verified_at = new Date();
+            user.email_verification_token = null;
+            await user.save();
+
+            // Login automatically
+            const event = AccessEvents.create();
+            event.dateTime = new Date();
+            event.ip = req.ip;
+            event.userAgent = req.get('user-agent') || '';
+            event.username = req.body.username || '';
+            event.type = LoginEventType.LOGIN;
+            event.url = req.originalUrl;
+
+            let existingSession = await Session
+                .createQueryBuilder('session')
+                .where('session.user = :user', {user : user.username})
+                .getOne();
+
+            if (!existingSession) {
+                existingSession = Session.create();
+                existingSession.id = uuid();
+            }
+
+            const dayAfter = new Date();
+            dayAfter.setDate(dayAfter.getDate() + 2);
+            existingSession.expiresOn = dayAfter;
+            existingSession.user = user;
+            await existingSession.save();
+
+            event.success = true;
+            event.user = user;
+            await event.save();
+
+            return res.send({
+                success: true,
+                data: existingSession.id,
+            });
+        } else {
+            return res.send({
+                success: false,
+                redirect: true,
+            });
+        }
+    }
 }
 const router: Router = Router();
 
@@ -274,6 +352,6 @@ router.post('/login/password', controller.changePassword.bind(controller));
 router.post('/acceptEula', controller.acceptEula.bind(controller));
 router.post('/declineEula', controller.declineEula.bind(controller));
 router.get('/onBoardingStats', controller.onBoardingStats.bind(controller));
+router.post('/confirm-email', controller.confirmEmail.bind(controller));
 
 export const loginRouter = router;
-

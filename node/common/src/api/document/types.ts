@@ -43,11 +43,14 @@ export type DocumentInternalEvent = DocumentUpdate | DocumentDeletedMessage;
 export interface Success<T> {
     success: true;
     data: T;
+    message?: string;
+    redirect?: boolean;
 }
 
 export interface Failure {
     success: false;
     message: string;
+    redirect?: boolean;
 }
 
 export type APIResult<T> = Success<T> | Failure;

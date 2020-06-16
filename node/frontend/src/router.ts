@@ -19,6 +19,9 @@ import Errors from "./views/Errors.vue";
 import ViewError from "./views/Error.vue";
 import SignUp from "./views/SignUp.vue";
 import Tutorials from "./views/Tutorials.vue";
+import ConfirmEmail from "./views/ConfirmEmail.vue";
+import ForgotPassword from "./views/ForgotPassword.vue";
+import PasswordReset from "./views/PasswordReset.vue";
 Vue.use(Router);
 
 const router = new Router({
@@ -277,6 +280,21 @@ const router = new Router({
             path: "/changeLogs",
             name: "changeLogs",
             component: ChangeLogs
+        },
+        {
+            path: "/confirm-email",
+            name: "confirmEmail",
+            component: ConfirmEmail
+        },
+        {
+            path: "/forgot-password",
+            name: "forgotPassword",
+            component: ForgotPassword
+        },
+        {
+            path: "/password-reset",
+            name: "passwordReset",
+            component: PasswordReset
         },
     ]
 });

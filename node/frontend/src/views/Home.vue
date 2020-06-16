@@ -1,10 +1,7 @@
-import { AccessLevel } from "../../../common/src/models/User"; import { AccessLevel } from
-"../../../common/src/models/User"; import { DocumentStatus } from "../../../common/src/models/Document"; import {
-DocumentStatus } from "../../../common/src/models/Document";
 <template>
     <div>
-        <MainNavBar></MainNavBar>
-        <div style="overflow-y: auto; overflow-x: hidden; height: calc(100vh - 70px)">
+        <MainNavBar :profile="profile"></MainNavBar>
+        <div style="overflow-y: auto; overflow-x: hidden; height: calc(100vh - 70px)" :class="[ (profile && !profile.email_verified_at) && 'isEmailVerification']">
             <b-container class="home">
                 <b-row>
                     <b-col>
@@ -143,7 +140,6 @@ import { getChangeLogMessages, saveChangeLogMessage } from "../api/change-log";
 import { updateLastNoticeSeen } from "../api/users";
 import { AccessLevel, User } from "../../../common/src/models/User";
 import { assertUnreachable, CURRENT_VERSION } from "../../../common/src/api/config";
-import Doc = Mocha.reporters.Doc;
 import { ChangeLogMessage } from "../../../common/src/models/ChangeLogMessage";
 
 @Component({
@@ -353,5 +349,9 @@ h1 {
 
 .doc-tile img {
     max-height: 150px;
+}
+
+.isEmailVerification {
+    height: calc(100vh - 102px) !important;
 }
 </style>

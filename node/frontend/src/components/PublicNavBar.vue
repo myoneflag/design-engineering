@@ -9,13 +9,15 @@
 
             <b-navbar-nav style="text-align: center; margin-left: auto; margin-right: auto;">
                 <b-nav-item class="public-nav-item" href="https://h2xengineering.com">Home</b-nav-item>
-                <b-nav-item class="public-nav-item" href="https://h2xengineering.com/questions">FAQ</b-nav-item>
-                <b-nav-item class="public-nav-item" href="https://h2xengineering.com/copy-of-questions"
-                    >Tutorials</b-nav-item
-                >
-                <b-nav-item class="public-nav-item" href="https://h2xengineering.com/get-in-touch"
-                    >Get in Touch</b-nav-item
-                >
+                <template v-if="$route.name !== 'signUp'">
+                    <b-nav-item class="public-nav-item" href="https://h2xengineering.com/questions">FAQ</b-nav-item>
+                    <b-nav-item class="public-nav-item" href="https://h2xengineering.com/copy-of-questions"
+                        >Tutorials</b-nav-item
+                    >
+                    <b-nav-item class="public-nav-item" href="https://h2xengineering.com/get-in-touch"
+                        >Get in Touch</b-nav-item
+                    >
+                </template>
             </b-navbar-nav>
 
             <b-navbar-nav class="ml-auto">
