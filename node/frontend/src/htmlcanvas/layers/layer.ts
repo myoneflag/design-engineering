@@ -267,7 +267,7 @@ export abstract class LayerImplementation implements Layer {
                     const res = object.onMouseMove(event, context);
                     if (res.handled) {
                         // snap to dat
-                        if (object.snappable) {
+                        if (object?.snappable) {
                             if (this.snapObjectUid === object.uid) {
                                 // we are good
                             } else {

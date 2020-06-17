@@ -86,7 +86,7 @@ export default class SnappingInsertTool extends PointTool {
             for (const ouid of uids) {
                 const o = context.globalStore.get(ouid)!;
 
-                if (o.snappable) {
+                if (o?.snappable) {
                     const r = o.toObjectLength(context.viewPort.toWorldLength(CONNECTABLE_SNAP_RADIUS_PX));
                     if (interactiveUids.includes(o.uid) || o.inBounds(o.toObjectCoord(wc), r)) {
                         found = true;
