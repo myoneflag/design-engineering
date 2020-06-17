@@ -408,11 +408,11 @@ export const mutations: MutationTree<DocumentState> = {
 
     deleteLevel(state, level: Level) {
         if (level.uid in state.drawing.levels) {
+            logLevelMutation(state, level.uid);
             Vue.delete(state.drawing.levels, level.uid);
         } else {
             throw new Error("Deleted a level that doesn't exist " + JSON.stringify(level));
         }
-        logLevelMutation(state, level.uid);
         beforeEvent("delete-level", level, state);
         MainEventBus.$emit("delete-level", level);
         if (level.uid === state.uiState.levelUid) {
