@@ -598,8 +598,8 @@ export const initialCatalog: Catalog = {
                     "hot-water": "3"
                 },
                 bs806: {
-                    "cold-water": "3",
-                    "hot-water": "3",
+                    "cold-water": "2",
+                    "hot-water": "2",
                 },
                 cibseGuideG: {
                     "cold-water": "3",
@@ -698,8 +698,8 @@ export const initialCatalog: Catalog = {
                     "hot-water": "3"
                 },
                 bs806: {
-                    "cold-water": "3",
-                    "hot-water": "3",
+                    "cold-water": "2",
+                    "hot-water": "2",
                 },
                 cibseGuideG: {
                     "cold-water": "3",
