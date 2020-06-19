@@ -1,6 +1,5 @@
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryColumn } from "typeorm";
 import { Organization } from "./Organization";
-import { AccessEvents } from "./AccessEvents";
 
 export interface OnBoardingStats {
     numDrawingsCreated: number;
@@ -13,6 +12,19 @@ export enum AccessLevel {
     ADMIN = 1, // A h2x member - can manage users and companies
     MANAGER = 2, // Customer managers - can manage company projects and users within their license.
     USER = 3 // Regular user - has access to the product and their projects.
+}
+
+export interface Create {
+    firstname: string
+    lastname: string
+    username: string
+    email?: string
+    password: string
+    confirmPassword?: string
+    subscribed?: boolean
+    organization?: string
+    accessLevel?: AccessLevel
+    temporaryUser?: boolean
 }
 
 @Entity("profile")
