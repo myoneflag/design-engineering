@@ -47,7 +47,8 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { signUp, Create } from "../api/users";
+import { Create } from "../../../common/src/models/User";
+import { signUp } from "../api/users";
 import { login } from "../api/logins";
 import PublicNavBar from "../components/PublicNavBar.vue";
 
