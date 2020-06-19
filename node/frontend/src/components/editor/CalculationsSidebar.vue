@@ -19,6 +19,15 @@
                             >DWG (Coming soon)
                         </b-dropdown-item>
                     </b-dropdown>
+
+                    <b-button
+                        variant="outline-dark"
+                        class="calculationBtn"
+                        @click="handleShareClick"
+                    >
+                        Share
+                        <v-icon name="share-alt" scale="1" />
+                    </b-button>
                 </b-button-group>
             </b-col>
         </b-row>
@@ -45,6 +54,17 @@
                 </div>
             </b-col>
         </b-row>
+        <b-modal id="bv-modal-example" hide-footer>
+            <template v-slot:modal-title>
+                Get link
+            </template>
+            <div class="d-flex">
+                <div class="flex-fill">
+                    <b-form-input ref="shareLinkInput" onClick="this.setSelectionRange(0, this.value.length)" v-model="shareLink" readonly></b-form-input>
+                </div>
+                <b-button @click="handleCopyLink" id="copyLink" class="ml-2" variant="light">Copy link</b-button>
+            </div>
+        </b-modal>
     </b-container>
 </template>
 
@@ -69,6 +89,7 @@ import { getEffectiveFilter } from "../../lib/utils";
 })
 export default class CalculationsSidebar extends Vue {
     filterShown = true;
+    shareLink: string = window.location.origin + "/" + this.document.documentId;
 
     mounted() {
         this.stageNewFilters();
@@ -138,6 +159,24 @@ export default class CalculationsSidebar extends Vue {
             this.$props.onChange();
         }
     }
+
+    handleShareClick() {
+        this.$bvModal.show('bv-modal-example');
+    }
+
+    handleCopyLink() {
+        const shareLinkText = <HTMLInputElement>this.$refs.shareLinkInput;
+
+        shareLinkText.select();
+        shareLinkText.setSelectionRange(0, 99999);
+        
+        document.execCommand("copy");
+
+        this.$bvToast.toast('Link copied', {
+            variant: "primary",
+            headerClass: 'd-none'
+        });
+    }
 }
 </script>
 
@@ -170,5 +209,13 @@ export default class CalculationsSidebar extends Vue {
     overflow-y: auto;
     overflow-x: hidden;
     text-align: left;
+}
+
+#copyLink {
+    color: #1a73e8;
+    
+    &:hover {
+        color: #174ea6;
+    }
 }
 </style>

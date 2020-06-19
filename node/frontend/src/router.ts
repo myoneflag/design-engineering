@@ -22,6 +22,7 @@ import Tutorials from "./views/Tutorials.vue";
 import ConfirmEmail from "./views/ConfirmEmail.vue";
 import ForgotPassword from "./views/ForgotPassword.vue";
 import PasswordReset from "./views/PasswordReset.vue";
+import DocumentShare from "./views/DocumentShare.vue";
 Vue.use(Router);
 
 const router = new Router({
@@ -296,6 +297,11 @@ const router = new Router({
             name: "passwordReset",
             component: PasswordReset
         },
+        {
+            path: "/:documentSharedId",
+            name: "documentShareLink",
+            component: DocumentShare,
+        }
     ]
 });
 

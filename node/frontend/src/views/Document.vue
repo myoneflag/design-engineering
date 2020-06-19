@@ -1,4 +1,3 @@
-import {FileWebsocketMessageType} from "../../src/api/types";
 <template>
     <div>
         <LoadingScreen v-if="isLoading" />
