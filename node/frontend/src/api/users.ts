@@ -1,6 +1,6 @@
 import axios from "axios";
 import { APIResult } from "../../../common/src/api/document/types";
-import { AccessLevel, User } from "../../../common/src/models/User";
+import { AccessLevel, User, Create } from "../../../common/src/models/User";
 
 export async function getUsers(): Promise<APIResult<User[]>> {
     try {
@@ -24,19 +24,6 @@ export async function getUser(username: string): Promise<APIResult<User>> {
             return { success: false, message: e.message };
         }
     }
-}
-
-export interface Create {
-    firstname: string
-    lastname: string
-    username: string
-    email?: string
-    password: string
-    confirmPassword?: string
-    subscribed?: boolean
-    organization?: string
-    accessLevel?: AccessLevel
-    temporaryUser?: boolean
 }
 
 export async function createUser(data: Create): Promise<APIResult<User>> {
