@@ -332,6 +332,21 @@ export class UserController {
             message: "Your password has been changed successfully!",
         });
     }
+
+    @ApiHandleError()
+    @AuthRequired()
+    public async confirmEmail(req: Request, res: Response, next: NextFunction, session: Session) {
+        const user = await session.user;
+        
+        user.email = req.body.email;
+        
+        await user.save();
+
+        return res.send({
+            success: true,
+            data: user,
+        });
+    }
 }
 
 const router = Router();
@@ -347,5 +362,6 @@ router.delete('/:id', controller.delete.bind(controller));
 router.post('/send-email-verification', controller.sendEmailVerification.bind(controller));
 router.post('/forgot-password', controller.forgotPassword.bind(controller));
 router.post('/password-reset', controller.passwordReset.bind(controller));
+router.post('/confirm-email', controller.confirmEmail.bind(controller));
 
 export const usersRouter = router;

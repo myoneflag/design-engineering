@@ -129,3 +129,15 @@ export async function resetPassword(password: string, confirmPassword: string, e
         }
     }
 }
+
+export async function confirmEmail(email: string): Promise<APIResult<User>> {
+    try {
+        return (await axios.post("/api/users/confirm-email", { email })).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return { success: false, message: e.response.data.message };
+        } else {
+            return { success: false, message: e.message };
+        }
+    }
+}
