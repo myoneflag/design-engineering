@@ -22,8 +22,7 @@ class test_loginPage(unittest.TestCase):
         password = "pleasechange"
         self.test.login(username,password)
         time.sleep(2)
-        self.assertTrue(self.driver.find_element_by_id("email-verification"))
-
+        self.assertTrue(self.driver.find_element_by_class_name("title"))
 
 if __name__ == '__main__':
     unittest.main()
