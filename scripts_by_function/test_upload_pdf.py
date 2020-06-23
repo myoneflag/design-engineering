@@ -16,12 +16,18 @@ class test_upload(unittest.TestCase):
         # pass
 
     def tearDown(self):
-        pass
+        time.sleep(2)
+        self.driver.close()
+        # pass
 
     def test_uploadFile(self):
         username = "admin"
         password = "pleasechange"
+
+        # Uncomment line below for valid upload. Also Change path to where pdf.pdf is located
         file = "D:\Work Files\PDFs\pdf.pdf"
+
+        # Uncomment line below for invalid upload. Also Change path to where pdf.txt is located
         # file = "D:\Work Files\PDFs\pdf.txt"
 
         # Login
