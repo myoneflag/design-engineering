@@ -1,20 +1,23 @@
+import { Brackets } from "typeorm";
+import * as bcrypt from "bcrypt";
 import { NextFunction, Request, Response, Router } from "express";
 import { DocumentClientMessage, DocumentWSMessageType } from "../../../common/src/api/document/types";
 import { OPERATION_NAMES, OperationTransformConcrete } from "../../../common/src/api/document/operation-transforms";
+import { DrawingState, initialDrawing } from "../../../common/src/api/document/drawing";
+import { applyDiffNative } from "../../../common/src/api/document/state-ot-apply";
+import { diffState } from "../../../common/src/api/document/state-differ";
+import { assertUnreachable, CURRENT_VERSION } from "../../../common/src/api/config";
 import { Document, DocumentStatus } from "../../../common/src/models/Document";
 import { Operation } from "../../../common/src/models/Operation";
 import { Session } from "../../../common/src/models/Session";
+import { ShareDocument } from './../../../common/src/models/ShareDocument';
 import { AccessLevel, User } from "../../../common/src/models/User";
 import { ApiHandleError } from "../helpers/apiWrapper";
 import { AuthRequired, withAuth } from "../helpers/withAuth";
 import { AccessType, withDocument, withOrganization } from "../helpers/withResources";
-import { DrawingState, initialDrawing } from "../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../common/src/lib/utils";
-import { applyDiffNative } from "../../../common/src/api/document/state-ot-apply";
-import { diffState } from "../../../common/src/api/document/state-differ";
-import { Brackets } from "typeorm";
 import ConcurrentDocument from "../services/concurrentDocument";
-import { assertUnreachable, CURRENT_VERSION } from "../../../common/src/api/config";
+import { trace } from 'console';
 
 export class DocumentController {
     @ApiHandleError()
@@ -66,7 +69,13 @@ export class DocumentController {
                 doc.metadata = cloneSimple(initialDrawing.metadata.generalInfo);
                 doc.version = CURRENT_VERSION;
                 doc.state = DocumentStatus.ACTIVE;
+                await doc.save();
 
+                const sd = ShareDocument.create();
+                sd.token =  await bcrypt.hash(doc.id.toString(), 10);
+                await sd.save();
+
+                doc.shareDocument = sd;
                 await doc.save();
 
                 res.status(200).send({

@@ -43,6 +43,8 @@ export default class Document extends Vue {
 
                 getDocument(Number(this.$route.params.id)).then((res) => {
                     if (res.success) {
+                        res.data.shareDocument?.token  && this.$store.dispatch("document/setShareToken", res.data.shareDocument.token);
+                        
                         if (
                             this.profile &&
                             res.data.createdBy.username !== this.profile.username &&

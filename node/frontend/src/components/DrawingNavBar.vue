@@ -87,7 +87,8 @@ DrawingMode } from "../htmlcanvas/types";
                 &nbsp; &nbsp; &nbsp;
             </b-nav-text>
 
-            <ProfileMenuItem :disabled="disabled"/>
+            <ProfileMenuItem v-if="profile" :disabled="disabled"/>
+            <b-nav-item v-else :to="{ name: 'login' }" id="login">Login</b-nav-item>
         </b-navbar-nav>
     </b-navbar>
 </template>
@@ -145,7 +146,7 @@ export default class DrawingNavBar extends Vue {
     }
 
     viewOnlyClick() {
-        if (this.profile.accessLevel <= AccessLevel.ADMIN) {
+        if (this.profile?.accessLevel <= AccessLevel.ADMIN) {
             if (
                 this.document.uiState.viewOnlyReason ===
                 "Superusers view documents in View Only mode by default (click to edit)"
@@ -157,7 +158,7 @@ export default class DrawingNavBar extends Vue {
     }
 
     get viewOnlyDisabled() {
-        if (this.profile.accessLevel <= AccessLevel.ADMIN) {
+        if (this.profile?.accessLevel <= AccessLevel.ADMIN) {
             if (
                 this.document.uiState.viewOnlyReason ===
                 "Superusers view documents in View Only mode by default (click to edit)"
@@ -223,5 +224,9 @@ export default class DrawingNavBar extends Vue {
     padding: 10px;
     background-color: #ffffff;
     border-bottom: 1px solid lightgray;
+}
+
+#login a {
+    color: #007bff;
 }
 </style>

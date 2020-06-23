@@ -105,6 +105,7 @@ export interface DocumentState {
     uiState: UIState;
 
     documentId: number;
+    shareToken: string;
 }
 
 export interface DiffFilter {
@@ -168,7 +169,8 @@ export const initialDocumentState: DocumentState = {
     fullHistory: [],
     nextId: 1,
     uiState: cloneSimple(initialUIState),
-    documentId: -1
+    documentId: -1,
+    shareToken: '',
 };
 
 export interface EntityParam {

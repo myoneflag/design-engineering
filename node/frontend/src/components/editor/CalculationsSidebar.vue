@@ -58,11 +58,17 @@
             <template v-slot:modal-title>
                 Get link
             </template>
-            <div class="d-flex">
+            <div class="d-flex" v-if="document.shareToken">
                 <div class="flex-fill">
-                    <b-form-input ref="shareLinkInput" onClick="this.setSelectionRange(0, this.value.length)" v-model="shareLink" readonly></b-form-input>
+                    <b-form-input ref="shareLinkInput" onClick="this.setSelectionRange(0, this.value.length)" :value="shareLink + document.shareToken" readonly></b-form-input>
                 </div>
                 <b-button @click="handleCopyLink" id="copyLink" class="ml-2" variant="light">Copy link</b-button>
+            </div>
+            <div v-else>
+                <b-button @click="handleGenerateShareLink" variant="success" block>
+                    Generate shareable link 
+                    <b-spinner v-if="generate.isLoading" style="width: 1.0rem; height: 1.0rem;"></b-spinner>    
+                </b-button>
             </div>
         </b-modal>
     </b-container>
@@ -71,11 +77,12 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { CalculationFilters, DocumentState } from "../../../src/store/document/types";
 import { getEntityName } from "../../../../common/src/api/document/entities/types";
+import { cloneSimple } from "../../../../common/src/lib/utils";
+import { generateShareLink } from "../../api/share-document";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import { getFields } from "../../../src/calculations/utils";
-import { cloneSimple } from "../../../../common/src/lib/utils";
+import { CalculationFilters, DocumentState } from "../../store/document/types";
 import { MainEventBus } from "../../store/main-event-bus";
 import PdfSnapshotTool from "../../htmlcanvas/tools/pdf-snapshot-tool";
 import { getEffectiveFilter } from "../../lib/utils";
@@ -89,7 +96,10 @@ import { getEffectiveFilter } from "../../lib/utils";
 })
 export default class CalculationsSidebar extends Vue {
     filterShown = true;
-    shareLink: string = window.location.origin + "/" + this.document.documentId;
+    shareLink: string = window.location.origin + "/";
+    generate: {isLoading: boolean} = {
+        isLoading: false,
+    }
 
     mounted() {
         this.stageNewFilters();
@@ -175,6 +185,23 @@ export default class CalculationsSidebar extends Vue {
         this.$bvToast.toast('Link copied', {
             variant: "primary",
             headerClass: 'd-none'
+        });
+    }
+
+    handleGenerateShareLink() {
+        this.generate.isLoading = true;
+        
+        generateShareLink(this.document.documentId).then(res => {
+            if (res.success) {
+                this.$store.dispatch("document/setShareToken", res.data);
+            } else {
+                this.$bvToast.toast('Generate shareable link failed! Please try again.', {
+                    variant: "danger",
+                    title: 'Error!'
+                });
+            }
+           
+            this.generate.isLoading = false;
         });
     }
 }

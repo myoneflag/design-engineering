@@ -430,7 +430,11 @@ export const mutations: MutationTree<DocumentState> = {
         entity.endpointUid[0] = endpoints[0];
         entity.endpointUid[1] = endpoints[1];
         MainEventBus.$emit("update-pipe-endpoints", { entity, endpoints });
-    }
+    },
+
+    setShareToken(state, token: string) {
+        state.shareToken = token;
+    },
 };
 
 function entityHandler(state: DocumentState, levelUid: string | null, entityUid: string) {
