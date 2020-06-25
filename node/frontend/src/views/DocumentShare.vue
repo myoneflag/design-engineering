@@ -29,39 +29,36 @@ import { Catalog } from "../../../common/src/api/catalog/types";
         MainNavBar,
         LoadingScreen,
         DrawingCanvas,
+    },
+    props: {
+        documentSharedId: {
+            required: true,
+            type: String,
+        }
     }
 })
 export default class DocumentShare extends Vue {
-    closeExpected = false;
-
+    closeExpected: boolean = false;
     uiMouseDisabled: boolean = false;
 
     mounted() {
-        this.$store.dispatch("document/setId", Number(this.$route.params.documentSharedId));
         openDocument(
-            Number(this.$route.params.documentSharedId),
+            this.$props.documentSharedId,
             (op) => {
                 this.$store.dispatch("document/applyRemoteOperation", op);
             },
             () => {
-                this.deleteFile();
+                this.$bvToast.toast('The document has been deleted', {
+                    title: "Error!",
+                    variant: "Danger"
+                });
             },
             () => {
-                this.$store.dispatch("document/loaded", true);
-
-                this.document.uiState.viewOnly = false;
-
-                getDocument(Number(this.$route.params.documentSharedId)).then((res) => {
+                getDocument(this.$props.documentSharedId, true).then(async (res) => {
                     if (res.success) {
-                        if (
-                            this.profile &&
-                            res.data.createdBy.username !== this.profile.username &&
-                            this.profile.accessLevel <= AccessLevel.ADMIN
-                        ) {
-                            this.document.uiState.viewOnly = true;
-                            this.document.uiState.viewOnlyReason =
-                                "Superusers view documents in View Only mode by default (click to edit)";
-                        }
+                        this.$store.dispatch("document/setId", res.data.id);
+                        this.$store.dispatch("document/loaded", true);
+                        MainEventBus.$emit("drawing-loaded");
                     } else {
                         this.$bvToast.toast(res.message, {
                             title: "Error Getting Document Metadata",
@@ -69,30 +66,27 @@ export default class DocumentShare extends Vue {
                         });
                     }
                 });
-
-                MainEventBus.$emit("drawing-loaded");
             },
             (msg) => {
                 if (!this.closeExpected) {
                     this.$bvToast.toast(
                         "The connection to the server was lost, please refresh. " +
-                            "Changes from now will not be saved.\n" +
-                            "reason: " +
-                            msg,
+                        "Changes from now will not be saved.\n" +
+                        "reason: " + msg,
                         {
                             variant: "danger",
                             title: "Connection Error"
                         }
                     );
 
-                    this.document.uiState.viewOnly = true;
                     this.document.uiState.viewOnlyReason = "Lost connection to the server - Please Refresh";
                     this.$store.dispatch("document/revert");
                 }
-            }
+            },
+            true,
         );
 
-        loadCatalog(Number(this.$route.params.documentSharedId)).then((catalog) => {
+        loadCatalog(this.$props.documentSharedId, true).then((catalog) => {
             if (catalog.success) {
                 this.$store.dispatch("catalog/setDefault", catalog.data);
             } else {
@@ -107,27 +101,23 @@ export default class DocumentShare extends Vue {
         MainEventBus.$on("enable-ui-mouse", this.enableUiMouse);
     }
 
+    destroyed() {
+        // kill the socket
+        this.closeExpected = true;
+        closeDocument(this.$props.documentSharedId).then(() => {
+            this.$store.dispatch("document/reset").then(() => this.$store.dispatch("document/loaded", false));
+        });
+
+        MainEventBus.$off("disable-ui-mouse", this.disableUiMouse);
+        MainEventBus.$off("enable-ui-mouse", this.enableUiMouse);
+    }
+
     disableUiMouse() {
         this.uiMouseDisabled = true;
     }
 
     enableUiMouse() {
         this.uiMouseDisabled = false;
-    }
-
-    deleteFile() {
-        window.alert("The document has been deleted");
-    }
-
-    destroyed() {
-        // kill the socket
-        this.closeExpected = true;
-        closeDocument(this.document.documentId).then(() => {
-            this.$store.dispatch("document/reset").then(() => this.$store.dispatch("document/loaded", false));
-        });
-
-        MainEventBus.$off("disable-ui-mouse", this.disableUiMouse);
-        MainEventBus.$off("enable-ui-mouse", this.enableUiMouse);
     }
 
     get document(): DocumentState {
@@ -142,12 +132,8 @@ export default class DocumentShare extends Vue {
         return this.$store.getters["catalog/loaded"];
     }
 
-    get profile(): User {
-        return this.$store.getters["profile/profile"];
-    }
-
     get isLoading() {
-        return !this.catalogLoaded || !this.document.uiState.loaded;
+        return !this.document.uiState.loaded && !this.catalogLoaded;
     }
 }
 </script>

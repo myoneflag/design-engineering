@@ -14,20 +14,22 @@ import { Operation } from "../../../common/src/models/Operation";
 import { cooperativeYield } from "../htmlcanvas/utils";
 import { assertUnreachable } from "../../../common/src/api/config";
 
-const wss = new Map<number, WebSocket>();
+const wss = new Map<number | string, WebSocket>();
 
 export function openDocument(
-    id: number,
+    id: number | string,
     onOperation: (ot: OT.OperationTransformConcrete) => void,
     onDeleted: () => void,
     onLoaded: () => void,
-    onError: (msg: string) => void
+    onError: (msg: string) => void,
+    shareToken: boolean = false,
 ) {
+
     if (wss.has(id)) {
         throw new Error("warning: Document is already open");
     }
     const HOST = location.origin.replace(/^http(s?)/, "ws$1");
-    const ws = new WebSocket(HOST + "/api/documents/" + id + "/websocket");
+    const ws = new WebSocket(HOST + "/api/documents/" + id + "/websocket?shareToken=" + shareToken);
     wss.set(id, ws);
 
     ws.onmessage = (wsmsg: MessageEvent) => {
@@ -88,7 +90,7 @@ export async function updateDocument(
     }
 }
 
-export async function closeDocument(id: number) {
+export async function closeDocument(id: number | string) {
     if (wss.has(id)) {
         const ws = wss.get(id)!;
         queues.delete(id);
@@ -119,7 +121,7 @@ export async function sendOperations(id: number, ops: OT.OperationTransformConcr
     }
 }
 
-const queues = new Map<number, OT.OperationTransformConcrete[][]>();
+const queues = new Map<number | string, OT.OperationTransformConcrete[][]>();
 const submitLoopRunning = new Set<number>();
 
 async function submitLoop(id: number) {
@@ -158,9 +160,9 @@ export async function getDocuments(): Promise<APIResult<Document[]>> {
     }
 }
 
-export async function getDocument(id: number): Promise<APIResult<Document>> {
+export async function getDocument(id: number | string, shareToken: boolean = false): Promise<APIResult<Document>> {
     try {
-        return (await axios.get("/api/documents/" + id)).data;
+        return (await axios.get("/api/documents/" + id, { params: { shareToken } })).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
