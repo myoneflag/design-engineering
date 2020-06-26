@@ -209,24 +209,6 @@ export class DocumentController {
     @ApiHandleError()
     @AuthRequired()
     public async findOne(req: Request, res: Response, next: NextFunction, session: Session) {
-        if (req.query.shareToken == "true") {
-            const token = req.params.id;
-            const sd = await ShareDocument.findOne({token: token});
-            const doc = await Document.findOne({where: {shareDocument: {id: sd.id}}})
-            
-            if (doc) {
-                return res.status(200).send({
-                    success: true,
-                    data: doc
-                });
-            } else {
-                return res.status(401).send({
-                    success: false,
-                    message: "Document not found!",
-                })
-            }
-        }
-
         await withDocument(Number(req.params.id), res, session, AccessType.READ, async (doc) => {
             res.status(200).send({
                 success: true,

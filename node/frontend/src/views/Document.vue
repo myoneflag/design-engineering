@@ -33,7 +33,7 @@ export default class Document extends Vue {
 
     mounted() {
         this.$store.dispatch("document/setId", this.$props.id);
-        
+
         openDocument(
             this.$props.id,
             (op) => {
@@ -49,8 +49,10 @@ export default class Document extends Vue {
 
                 getDocument(this.$props.id).then((res) => {
                     if (res.success) {
-                        res.data.shareDocument?.token  && this.$store.dispatch("document/setShareToken", res.data.shareDocument.token);
-                        
+                        if (res.data.shareDocument?.token !== undefined) {
+                            this.$store.dispatch("document/setShareToken", res.data.shareDocument.token);
+                        }
+
                         if (
                             this.profile &&
                             res.data.createdBy.username !== this.profile.username &&

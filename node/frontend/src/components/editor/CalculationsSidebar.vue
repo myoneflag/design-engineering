@@ -21,6 +21,7 @@
                     </b-dropdown>
 
                     <b-button
+                        v-if="profile"
                         variant="outline-dark"
                         class="calculationBtn"
                         @click="handleShareClick"
@@ -86,6 +87,7 @@ import { CalculationFilters, DocumentState } from "../../store/document/types";
 import { MainEventBus } from "../../store/main-event-bus";
 import PdfSnapshotTool from "../../htmlcanvas/tools/pdf-snapshot-tool";
 import { getEffectiveFilter } from "../../lib/utils";
+import { User } from "../../../../common/src/models/User";
 
 @Component({
     components: {},
@@ -109,6 +111,14 @@ export default class CalculationsSidebar extends Vue {
         return getEffectiveFilter(this.$props.objects, this.document.uiState.calculationFilters, this.document);
     }
 
+    get profile(): User {
+        return this.$store.getters["profile/profile"];
+    }
+
+    get document(): DocumentState {
+        return this.$store.getters["document/document"];
+    }
+
     stageNewFilters() {
         const filters = cloneSimple(this.filters);
         for (const eType in filters) {
@@ -123,10 +133,6 @@ export default class CalculationsSidebar extends Vue {
             }
         }
         this.$props.onChange();
-    }
-
-    get document(): DocumentState {
-        return this.$store.getters["document/document"];
     }
 
     pdfSnapshot() {

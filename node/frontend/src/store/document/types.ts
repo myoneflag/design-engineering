@@ -106,6 +106,7 @@ export interface DocumentState {
 
     documentId: number;
     shareToken: string;
+    isLoading: boolean;
 }
 
 export interface DiffFilter {
@@ -171,6 +172,7 @@ export const initialDocumentState: DocumentState = {
     uiState: cloneSimple(initialUIState),
     documentId: -1,
     shareToken: '',
+    isLoading: false,
 };
 
 export interface EntityParam {

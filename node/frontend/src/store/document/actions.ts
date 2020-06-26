@@ -210,4 +210,8 @@ export const actions: ActionTree<DocumentState, RootState> = {
     setShareToken({ commit }, payload) {
         commit("setShareToken", payload);
     },
+
+    setIsLoading({ commit }, payload) {
+        commit("setIsLoading", payload);
+    }
 };

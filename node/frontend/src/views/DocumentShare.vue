@@ -11,22 +11,17 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component } from "vue-property-decorator";
-import { AccessLevel, User } from "../../../common/src/models/User";
-import { Document } from "../../../common/src/models/Document";
-import { APIResult, Success, Failure } from "../../../common/src/api/document/types";
-import { openDocument, closeDocument, getDocument } from "../api/document";
+import Vue from "vue";
+import Component from "vue-class-component";
+import { openDocument, closeDocument } from "../api/document";
 import { loadCatalog } from "../api/catalog";
 import { MainEventBus } from "../store/main-event-bus";
 import { DocumentState } from "../store/document/types";
-import MainNavBar from "../../src/components/MainNavBar.vue";
-import LoadingScreen from "../../src/views/LoadingScreen.vue";
 import DrawingCanvas from "../../src/components/editor/DrawingCanvas.vue";
-import { Catalog } from "../../../common/src/api/catalog/types";
+import LoadingScreen from "../../src/views/LoadingScreen.vue";
 
 @Component({
     components: {
-        MainNavBar,
         LoadingScreen,
         DrawingCanvas,
     },
@@ -45,27 +40,17 @@ export default class DocumentShare extends Vue {
         openDocument(
             this.$props.documentSharedId,
             (op) => {
-                this.$store.dispatch("document/applyRemoteOperation", op);
+                this.$store.dispatch("document/setIsLoading", true);
+                setTimeout(() => this.$store.dispatch("document/applyRemoteOperation", op), 2000);
             },
             () => {
                 this.$bvToast.toast('The document has been deleted', {
                     title: "Error!",
-                    variant: "Danger"
+                    variant: "danger"
                 });
             },
             () => {
-                getDocument(this.$props.documentSharedId, true).then(async (res) => {
-                    if (res.success) {
-                        this.$store.dispatch("document/setId", res.data.id);
-                        this.$store.dispatch("document/loaded", true);
-                        MainEventBus.$emit("drawing-loaded");
-                    } else {
-                        this.$bvToast.toast(res.message, {
-                            title: "Error Getting Document Metadata",
-                            variant: "Danger"
-                        });
-                    }
-                });
+                MainEventBus.$emit("drawing-loaded");
             },
             (msg) => {
                 if (!this.closeExpected) {
@@ -74,13 +59,10 @@ export default class DocumentShare extends Vue {
                         "Changes from now will not be saved.\n" +
                         "reason: " + msg,
                         {
+                            title: "Connection Error",
                             variant: "danger",
-                            title: "Connection Error"
                         }
                     );
-
-                    this.document.uiState.viewOnlyReason = "Lost connection to the server - Please Refresh";
-                    this.$store.dispatch("document/revert");
                 }
             },
             true,
@@ -92,7 +74,7 @@ export default class DocumentShare extends Vue {
             } else {
                 this.$bvToast.toast(catalog.message, {
                     title: "Error retrieving catalog",
-                    variant: "Danger"
+                    variant: "danger",
                 });
             }
         });
@@ -104,9 +86,7 @@ export default class DocumentShare extends Vue {
     destroyed() {
         // kill the socket
         this.closeExpected = true;
-        closeDocument(this.$props.documentSharedId).then(() => {
-            this.$store.dispatch("document/reset").then(() => this.$store.dispatch("document/loaded", false));
-        });
+        closeDocument(this.$props.documentSharedId);
 
         MainEventBus.$off("disable-ui-mouse", this.disableUiMouse);
         MainEventBus.$off("enable-ui-mouse", this.enableUiMouse);
@@ -120,20 +100,16 @@ export default class DocumentShare extends Vue {
         this.uiMouseDisabled = false;
     }
 
-    get document(): DocumentState {
-        return this.$store.getters["document/document"];
-    }
-
-    get catalog(): Catalog {
-        return this.$store.getters["catalog/default"];
-    }
-
     get catalogLoaded(): boolean {
         return this.$store.getters["catalog/loaded"];
     }
 
-    get isLoading() {
-        return !this.document.uiState.loaded && !this.catalogLoaded;
+    get isLoading(): boolean {
+        return !this.catalogLoaded || this.document.isLoading;
+    }
+
+     get document(): DocumentState {
+        return this.$store.getters["document/document"];
     }
 }
 </script>

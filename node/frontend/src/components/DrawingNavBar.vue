@@ -1,5 +1,3 @@
-import { DrawingMode } from "../htmlcanvas/types"; import { DrawingMode } from "../htmlcanvas/types"; import {
-DrawingMode } from "../htmlcanvas/types";
 <template>
     <b-navbar type="light">
         <b-navbar-nav>
@@ -32,14 +30,14 @@ DrawingMode } from "../htmlcanvas/types";
                 - {{ currentLevel.name }}
             </b-navbar-brand>
 
-            <b-nav-item :to="{ name: 'settings/general' }" active-class="active" exact :disabled="loading || disabled">
+            <b-nav-item :to="{ name: 'settings/general' }" active-class="active" exact :disabled="loading || disabled" v-if="profile">
                 <span>
                     <v-icon name="cog"></v-icon>
                 </span>
                 Settings
             </b-nav-item>
 
-            <b-nav-item :to="{ name: 'calculation-overview' }" active-class="active" exact :disabled="loading || disabled">
+            <b-nav-item :to="{ name: 'calculation-overview' }" active-class="active" exact :disabled="loading || disabled" v-if="profile">
                 <span>
                     <v-icon name="info"></v-icon>
                 </span>
@@ -49,6 +47,7 @@ DrawingMode } from "../htmlcanvas/types";
 
         <b-navbar-nav class="ml-auto" id="view-only-label">
             <b-button
+                v-if="profile"
                 :variant="document.uiState.drawingMode === DrawingMode.History ? 'light' : 'light'"
                 :pressed="document.uiState.drawingMode === DrawingMode.History"
                 :disabled="historyLoading || disabled"

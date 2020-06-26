@@ -337,6 +337,8 @@ export const mutations: MutationTree<DocumentState> = {
         if (newData) {
             MainEventBus.$emit("committed", true);
         } // else, the data is already represented on screen
+
+        state.isLoading = false;
     },
 
     applyDiff,
@@ -434,6 +436,10 @@ export const mutations: MutationTree<DocumentState> = {
 
     setShareToken(state, token: string) {
         state.shareToken = token;
+    },
+
+    setIsLoading(state, isLoading: boolean) {
+        state.isLoading = isLoading;
     },
 };
 

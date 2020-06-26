@@ -160,9 +160,9 @@ export async function getDocuments(): Promise<APIResult<Document[]>> {
     }
 }
 
-export async function getDocument(id: number | string, shareToken: boolean = false): Promise<APIResult<Document>> {
+export async function getDocument(id: number): Promise<APIResult<Document>> {
     try {
-        return (await axios.get("/api/documents/" + id, { params: { shareToken } })).data;
+        return (await axios.get("/api/documents/" + id)).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };

@@ -45,7 +45,10 @@
 
             <HistoryView v-if="showHistoryBar"></HistoryView>
 
-            <FloorPlanInsertPanel @insert-floor-plan="onFloorPlanSelected" v-if="document.uiState.drawingMode === 0"/>
+            <FloorPlanInsertPanel 
+                @insert-floor-plan="onFloorPlanSelected" 
+                v-if="document.uiState.drawingMode === 0 && profile"
+            />
 
             <HydraulicsInsertPanel
                     v-if="document.uiState.drawingMode === 1 && initialized && !document.uiState.viewOnly"
@@ -182,6 +185,7 @@
     import { PlantType } from "../../../../common/src/api/document/entities/plants/plant-types";
     import CalculationTopBar from "../CalculationTopBar.vue";
     import insertFixtureHotCold from "../../htmlcanvas/tools/insert-fixture-hot-cold";
+    import { User } from "../../../../common/src/models/User";
 
     @Component({
         components: {
@@ -426,6 +430,10 @@
 
         get interactiveUids(): string[] {
             return this.interactive ? this.interactive.map((o) => o.uid) : [];
+        }
+
+        get profile(): User {
+            return this.$store.getters["profile/profile"];
         }
 
         projectLUs(): PsdUnitsByFlowSystem | null {
