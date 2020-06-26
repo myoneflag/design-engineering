@@ -11,3 +11,37 @@
 [0624/095146.225:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
 [0624/100557.000:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
 [0624/100638.563:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0624/143348.546:ERROR:process_reader_win.cc(127)] NtOpenThread: {Access Denied} A process has requested access to an object, but has not been granted those access rights. (0xc0000022)
+[0624/143348.552:ERROR:exception_snapshot_win.cc(99)] thread ID 7076 not found in process
+[0624/143348.562:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir5408_1027932596\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.562:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir5408_1027932596\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.562:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir5408_1027932596\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.563:ERROR:file_io_win.cc(170)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir5408_1027932596\Crashpad\reports\c73e7ea6-95ff-497d-9a9d-25128e76c739.dmp: The system cannot find the path specified. (0x3)
+[0624/143348.563:ERROR:crash_report_exception_handler.cc(120)] PrepareNewCrashReport failed
+[0624/143348.594:ERROR:process_reader_win.cc(127)] NtOpenThread: {Access Denied} A process has requested access to an object, but has not been granted those access rights. (0xc0000022)
+[0624/143348.595:ERROR:exception_snapshot_win.cc(99)] thread ID 15144 not found in process
+[0624/143348.604:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir8220_406728223\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.604:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir8220_406728223\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.604:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir8220_406728223\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.604:ERROR:file_io_win.cc(170)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir8220_406728223\Crashpad\reports\51454d55-fd85-4c87-b43a-48ea2fff54d0.dmp: The system cannot find the path specified. (0x3)
+[0624/143348.604:ERROR:crash_report_exception_handler.cc(120)] PrepareNewCrashReport failed
+[0624/143348.635:ERROR:process_reader_win.cc(127)] NtOpenThread: {Access Denied} A process has requested access to an object, but has not been granted those access rights. (0xc0000022)
+[0624/143348.635:ERROR:exception_snapshot_win.cc(99)] thread ID 10852 not found in process
+[0624/143348.645:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir3184_2145310297\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.645:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir3184_2145310297\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.646:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir3184_2145310297\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.646:ERROR:file_io_win.cc(170)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir3184_2145310297\Crashpad\reports\8c7db01d-5adb-4a4e-8acd-3304b30e5a93.dmp: The system cannot find the path specified. (0x3)
+[0624/143348.646:ERROR:crash_report_exception_handler.cc(120)] PrepareNewCrashReport failed
+[0624/143348.678:ERROR:process_reader_win.cc(127)] NtOpenThread: {Access Denied} A process has requested access to an object, but has not been granted those access rights. (0xc0000022)
+[0624/143348.679:ERROR:exception_snapshot_win.cc(99)] thread ID 3352 not found in process
+[0624/143348.688:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir5868_1523822987\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.688:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir5868_1523822987\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.689:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir5868_1523822987\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.689:ERROR:file_io_win.cc(170)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir5868_1523822987\Crashpad\reports\876f91d5-e4eb-49cb-8c0d-6905d1c8a5bc.dmp: The system cannot find the path specified. (0x3)
+[0624/143348.689:ERROR:crash_report_exception_handler.cc(120)] PrepareNewCrashReport failed
+[0626/120109.100:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0626/120337.239:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0626/121954.403:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0626/122034.125:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0626/122226.318:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0626/122304.508:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports

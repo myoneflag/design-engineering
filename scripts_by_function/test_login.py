@@ -18,7 +18,7 @@ class test_loginPage(unittest.TestCase):
         self.driver.close()
         # pass
 
-    def test_login(self):
+    def test_login_by_button_click(self):
         # Change line below for any valid input for username
         username = "admin"
 
@@ -26,7 +26,21 @@ class test_loginPage(unittest.TestCase):
         password = "pleasechange"
 
         # Perform login
-        self.test.login(username, password)
+        self.test.login_by_button_click(username, password)
+
+        # Validate login
+        time.sleep(2)
+        self.assertTrue(self.driver.find_element_by_class_name("title"))
+
+    def test_login_by_enter_key(self):
+        # Change line below for any valid input for username
+        username = "admin"
+
+        # Change line below for any valid input for password
+        password = "pleasechange"
+
+        # Perform login
+        self.test.login_by_enter_key(username, password)
 
         # Validate login
         time.sleep(2)
