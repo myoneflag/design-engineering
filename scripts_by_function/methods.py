@@ -1,6 +1,7 @@
 from selenium import webdriver
 import time
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
 
 
 class methods():
@@ -71,4 +72,6 @@ class methods():
 
         # Click export all button
         self.driver.find_element_by_id("export-all-pdf-btn").click()
+
+
 
