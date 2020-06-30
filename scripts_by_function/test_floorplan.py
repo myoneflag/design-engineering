@@ -1,13 +1,12 @@
 import unittest
 import time
-from lib2to3.pgen2 import driver
-from selenium.webdriver.support.wait import WebDriverWait
+
 from methods import methods
 
 
 # This script tests uploading a pdf file
 
-class test_upload(unittest.TestCase):
+class test_floorplan(unittest.TestCase):
     test = methods()
 
     def setUp(self):
@@ -31,7 +30,7 @@ class test_upload(unittest.TestCase):
         # file = "D:\Work Files\PDFs\pdf.txt"
 
         # Login
-        self.test.login(username, password)
+        self.test.login_by_button_click(username, password)
 
         # Test file upload
         time.sleep(3)
