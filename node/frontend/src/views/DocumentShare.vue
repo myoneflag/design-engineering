@@ -13,8 +13,8 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { openDocument, closeDocument } from "../api/document";
-import { loadCatalog } from "../api/catalog";
+import { closeDocument, openDocumentShare } from "../api/document";
+import { loadCatalogShare } from "../api/catalog";
 import { MainEventBus } from "../store/main-event-bus";
 import { DocumentState } from "../store/document/types";
 import DrawingCanvas from "../../src/components/editor/DrawingCanvas.vue";
@@ -37,7 +37,7 @@ export default class DocumentShare extends Vue {
     uiMouseDisabled: boolean = false;
 
     mounted() {
-        openDocument(
+        openDocumentShare(
             this.$props.documentSharedId,
             (op) => {
                 this.$store.dispatch("document/setIsLoading", true);
@@ -65,10 +65,9 @@ export default class DocumentShare extends Vue {
                     );
                 }
             },
-            true,
         );
 
-        loadCatalog(this.$props.documentSharedId, true).then((catalog) => {
+        loadCatalogShare(this.$props.documentSharedId).then((catalog) => {
             if (catalog.success) {
                 this.$store.dispatch("catalog/setDefault", catalog.data);
             } else {

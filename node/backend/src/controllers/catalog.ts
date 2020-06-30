@@ -9,30 +9,38 @@ import { Document } from '../../../common/src/models/Document';
 export class CatalogController {
     @AuthRequired()
     public async getCatalog(req: Request, res: Response, next: NextFunction, session: Session) {
-        if (req.query.shareToken == "true") {
-            const token = req.params.id;
-            const sd = await ShareDocument.findOne({token: token});
-            const doc = await Document.findOne({where: {shareDocument: {id: sd.id}}})
-            
-            if (doc) {
-                return res.status(200).send({
-                    success: true,
-                    data: initialCatalog
-                });
-            } else {
-                return res.status(401).send({
-                    success: false,
-                    message: "Document not found!",
-                });
-            }
-        }
-
         await withDocument(Number(req.params.id), res, session, AccessType.READ, async (doc) => {
             return res.status(200).send({
                 success: true,
                 data: initialCatalog,
             });
         });
+    }
+
+    public async getCatalogShare(req: Request, res: Response) {
+        const token = req.params.id;
+        const sd = await ShareDocument.findOne({token: token});
+
+        if (!sd) {
+            return res.status(401).send({
+                success: false,
+                message: "Invalid link!",
+            });
+        }
+
+        const doc = await Document.findOne({where: {shareDocument: {id: sd.id}}})
+        
+        if (doc) {
+            return res.status(200).send({
+                success: true,
+                data: initialCatalog
+            });
+        } else {
+            return res.status(401).send({
+                success: false,
+                message: "Document not found!",
+            });
+        }
     }
 }
 
@@ -41,5 +49,6 @@ const controller = new CatalogController();
 
 // Retrieve all Users
 router.get('/:id', controller.getCatalog.bind(controller));
+router.get('/share/:id', controller.getCatalogShare.bind(controller));
 
 export const catalogRouter = router;

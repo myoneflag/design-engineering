@@ -3,7 +3,6 @@ import { NextFunction, Request, Response } from "express";
 import { AccessEvents, LoginEventType } from "../../../common/src/models/AccessEvents";
 import { Session } from "../../../common/src/models/Session";
 import { AccessLevel } from "../../../common/src/models/User";
-import { ShareDocument } from '../../../common/src/models/ShareDocument';
 
 export function AuthRequired(minAccessLevel?: AccessLevel, eulaNeeded: boolean = true) {
     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
@@ -22,16 +21,6 @@ export function AuthRequired(minAccessLevel?: AccessLevel, eulaNeeded: boolean =
                 },
                 minAccessLevel,
                 eulaNeeded,
-                (sd) => {
-                    if (sd) {
-                        return original(req, res);
-                    } else {
-                        res.status(401).send({
-                            success: false,
-                            message: "Invalid link!",
-                        });
-                    }
-                }
             );
         }
     };
@@ -43,8 +32,12 @@ export async function withAuth<T>(
     onFail: (msg: string) => any,
     minAccessLevel?: AccessLevel,
     eulaNeeded: boolean = true,
-    byPass?: (sd: ShareDocument) => Promise<T>,
     ): Promise<T> {
+    if (!req.cookies) {
+        onFail("Authorization required, but session-id cookie is missing");
+        return;
+    }
+    
     const event = AccessEvents.create();
     event.dateTime = new Date();
     event.ip = req.ip;
@@ -52,19 +45,9 @@ export async function withAuth<T>(
     event.success = true;
     event.url = req.originalUrl;
     
-    if (req.query.shareToken == "true") {
-        const token = req.params.id;
-        const sd = await ShareDocument.findOne({token: token});
-
-        return byPass(sd);
-    }
-
-    if (!req.cookies) {
-        onFail("Authorization required, but session-id cookie is missing");
-        return;
-    }
     const sessionId = req.cookies['session-id'];
     const s =  await Session.findOne({id: sessionId});
+
     if (s) {
         await s.reload();
         event.username = (await s.user).username;
