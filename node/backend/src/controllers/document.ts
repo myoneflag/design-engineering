@@ -81,7 +81,7 @@ export class DocumentController {
             });
         } else {
             const sd = ShareDocument.create();
-            sd.token =  random(10);
+            sd.token = random(10);
             await sd.save();
 
             const doc = Document.create();
