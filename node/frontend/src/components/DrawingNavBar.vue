@@ -1,5 +1,3 @@
-import { DrawingMode } from "../htmlcanvas/types"; import { DrawingMode } from "../htmlcanvas/types"; import {
-DrawingMode } from "../htmlcanvas/types";
 <template>
     <b-navbar type="light">
         <b-navbar-nav>
@@ -32,14 +30,14 @@ DrawingMode } from "../htmlcanvas/types";
                 - {{ currentLevel.name }}
             </b-navbar-brand>
 
-            <b-nav-item :to="{ name: 'settings/general' }" active-class="active" exact :disabled="loading || disabled">
+            <b-nav-item :to="{ name: 'settings/general' }" active-class="active" exact :disabled="loading || disabled" v-if="profile">
                 <span>
                     <v-icon name="cog"></v-icon>
                 </span>
                 Settings
             </b-nav-item>
 
-            <b-nav-item :to="{ name: 'calculation-overview' }" active-class="active" exact :disabled="loading || disabled">
+            <b-nav-item :to="{ name: 'calculation-overview' }" active-class="active" exact :disabled="loading || disabled" v-if="profile">
                 <span>
                     <v-icon name="info"></v-icon>
                 </span>
@@ -49,6 +47,7 @@ DrawingMode } from "../htmlcanvas/types";
 
         <b-navbar-nav class="ml-auto" id="view-only-label">
             <b-button
+                v-if="profile"
                 :variant="document.uiState.drawingMode === DrawingMode.History ? 'light' : 'light'"
                 :pressed="document.uiState.drawingMode === DrawingMode.History"
                 :disabled="historyLoading || disabled"
@@ -87,7 +86,8 @@ DrawingMode } from "../htmlcanvas/types";
                 &nbsp; &nbsp; &nbsp;
             </b-nav-text>
 
-            <ProfileMenuItem :disabled="disabled"/>
+            <ProfileMenuItem v-if="profile" :disabled="disabled"/>
+            <b-nav-item v-else :to="{ name: 'login' }" id="login">Login</b-nav-item>
         </b-navbar-nav>
     </b-navbar>
 </template>
@@ -145,7 +145,7 @@ export default class DrawingNavBar extends Vue {
     }
 
     viewOnlyClick() {
-        if (this.profile.accessLevel <= AccessLevel.ADMIN) {
+        if (this.profile?.accessLevel <= AccessLevel.ADMIN) {
             if (
                 this.document.uiState.viewOnlyReason ===
                 "Superusers view documents in View Only mode by default (click to edit)"
@@ -157,7 +157,7 @@ export default class DrawingNavBar extends Vue {
     }
 
     get viewOnlyDisabled() {
-        if (this.profile.accessLevel <= AccessLevel.ADMIN) {
+        if (this.profile?.accessLevel <= AccessLevel.ADMIN) {
             if (
                 this.document.uiState.viewOnlyReason ===
                 "Superusers view documents in View Only mode by default (click to edit)"
@@ -223,5 +223,9 @@ export default class DrawingNavBar extends Vue {
     padding: 10px;
     background-color: #ffffff;
     border-bottom: 1px solid lightgray;
+}
+
+#login a {
+    color: #007bff;
 }
 </style>

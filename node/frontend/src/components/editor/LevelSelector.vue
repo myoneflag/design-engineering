@@ -25,6 +25,7 @@
                 </b-list-group-item>
 
                 <b-list-group-item
+                    v-if="profile"
                     button
                     size="sm"
                     class="levelBtn"
@@ -59,7 +60,7 @@
                                         v-model="level.abbreviation"
                                         size="sm"
                                         @blur="commit"
-                                        col
+                                        :readOnly="!profile"
                                     ></b-form-input>
                                 </b-col>
                                 <b-col cols="3">
@@ -69,6 +70,7 @@
                                         v-model="level.name"
                                         size="sm"
                                         @blur="commit"
+                                        :readOnly="!profile"
                                     ></b-form-input>
                                 </b-col>
                                 <b-col cols="2">
@@ -85,6 +87,7 @@
                                             @input="setFloorHeightCached(level, Number($event))"
                                             size="sm"
                                             @blur="commitFloorHeight(level)"
+                                            :readOnly="!profile"
                                         >
                                         </b-form-input>
                                         <b-input-group-append>
@@ -114,13 +117,15 @@
                                         type="number"
                                         size="sm"
                                     >
-                                        <span v-for="psd in getLevelPsdFormatted(level)" :style="{ color: psd.hex }"
-                                            >{{ psd.text }}&nbsp;</span
-                                        >
+                                        <span
+                                            v-for="(psd, id) in getLevelPsdFormatted(level)"
+                                            :key="idx + '-' + id + psd.text"
+                                            :style="{ color: psd.hex }"
+                                        >{{ psd.text }}&nbsp;</span>
                                     </label>
                                 </b-col>
 
-                                <b-col cols="1" style="padding: 0">
+                                <b-col cols="1" style="padding: 0" v-if="profile">
                                     <b-button
                                         @click="
                                             $event.stopPropagation();
@@ -136,6 +141,7 @@
                     </b-list-group-item>
                 </div>
                 <b-list-group-item
+                    v-if="profile"
                     button
                     class="levelBtn"
                     variant="outline-dark"
@@ -159,6 +165,7 @@ import { GROUND_FLOOR_MIN_HEIGHT_M } from "../../lib/types";
 import { Catalog } from "../../../../common/src/api/catalog/types";
 import { Level } from "../../../../common/src/api/document/drawing";
 import { LEVEL_HEIGHT_DIFF_M } from "../../../../common/src/api/config";
+import { User } from "../../../../common/src/models/User";
 
 @Component({
     props: {
@@ -200,6 +207,10 @@ export default class LevelSelector extends Vue {
 
     get currentLevelUid(): string | null {
         return this.document.uiState.levelUid;
+    }
+
+    get profile(): User {
+        return this.$store.getters["profile/profile"];
     }
 
     selectLevel(levelUid: string) {

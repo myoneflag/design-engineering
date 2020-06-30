@@ -205,5 +205,13 @@ export const actions: ActionTree<DocumentState, RootState> = {
 
     updatePipeEndpoints({ commit, state }, params) {
         commit("updatePipeEndpoints", params);
+    },
+
+    setShareToken({ commit }, payload) {
+        commit("setShareToken", payload);
+    },
+
+    setIsLoading({ commit }, payload) {
+        commit("setIsLoading", payload);
     }
 };

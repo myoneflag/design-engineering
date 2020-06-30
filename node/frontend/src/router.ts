@@ -22,6 +22,7 @@ import Tutorials from "./views/Tutorials.vue";
 import ConfirmEmail from "./views/ConfirmEmail.vue";
 import ForgotPassword from "./views/ForgotPassword.vue";
 import PasswordReset from "./views/PasswordReset.vue";
+import DocumentShare from "./views/DocumentShare.vue";
 Vue.use(Router);
 
 const router = new Router({
@@ -36,39 +37,35 @@ const router = new Router({
                 auth: true
             }
         },
-
         {
             path: "/document/:id",
-
+            // props: true,
+            props(route) {
+                const id = Number.parseInt(route.params.id, 10) || 0;
+                return { id };
+            },
             component: () => import(/* webpackChunkName: "document" */ "./views/Document.vue"),
-
             children: [
                 {
                     path: "",
                     name: "drawing",
-
                     component: () => import(/* webpackChunkName: "drawing" */ "./views/Canvas.vue")
                 },
-
                 {
                     path: "settings",
                     name: "settings",
-
                     component: () => import(/* webpackChunkName: "settings" */ "./views/settings/ProjectSettings.vue"),
-
                     children: [
                         {
                             path: "catalog/:prop?",
                             name: "settings/catalog",
                             component: () => import(/* webpackChunkName: "catalog" */ "./views/catalog/CatalogView.vue")
                         },
-
                         {
                             path: "general",
                             name: "settings/general",
                             component: () => import(/* webpackChunkName: "general" */ "./views/settings/General.vue")
                         },
-
                         {
                             path: "units",
                             name: "settings/units",
@@ -102,12 +99,10 @@ const router = new Router({
                             component: () => import(/* webpackChunkName: "debug" */ "./views/settings/Debug.vue")
                         }
                     ],
-
                     meta: {
                         auth: true
                     }
                 },
-
                 {
                     path: "calculation-overview",
                     name: "calculation-overview",
@@ -119,7 +114,6 @@ const router = new Router({
                 auth: true
             }
         },
-
         {
             path: "/tutorials",
             name: "tutorials",
@@ -128,7 +122,6 @@ const router = new Router({
                 auth: true,
             }
         },
-
         {
             path: "/tutorials/:videoId",
             name: "tutorialsVideo",
@@ -137,7 +130,6 @@ const router = new Router({
                 auth: true,
             }
         },
-
         {
             path: "/organizations",
             name: "organizations",
@@ -148,7 +140,6 @@ const router = new Router({
                 minAccessLevel: AccessLevel.ADMIN
             }
         },
-
         {
             path: "/organizations/create",
             name: "createOrganization",
@@ -159,7 +150,6 @@ const router = new Router({
                 minAccessLevel: AccessLevel.ADMIN
             }
         },
-
         {
             path: "/organizations/id/:id",
             name: "organization",
@@ -169,7 +159,6 @@ const router = new Router({
                 auth: true
             }
         },
-
         {
             path: "/users",
             name: "users",
@@ -194,64 +183,53 @@ const router = new Router({
             path: "/users/username/:id",
             name: "user",
             component: User,
-
             meta: {
                 auth: true,
                 minAccessLevel: AccessLevel.USER
             }
         },
-
         {
             path: "/contacts",
             name: "contacts",
             component: Contacts,
-
             meta: {
                 auth: true,
                 minAccessLevel: AccessLevel.SUPERUSER
             }
         },
-
         {
             path: "/errors",
             name: "errors",
             component: Errors,
-
             meta: {
                 auth: true,
                 minAccessLevel: AccessLevel.SUPERUSER
             }
         },
-
         {
             path: "/errors/id/:id",
             name: "error",
             component: ViewError,
-
             meta: {
                 auth: true,
                 minAccessLevel: AccessLevel.SUPERUSER
             }
         },
-
         {
             path: "/login",
             name: "login",
             component: Login
         },
-
         {
             path: "/signUp",
             name: "signUp",
             component: SignUp
         },
-
         {
             path: "/login/complete",
             name: "loginComplete",
             component: LoadProfile
         },
-
         {
             path: "/changePassword",
             name: "changePassword",
@@ -261,7 +239,6 @@ const router = new Router({
                 needsEula: false
             }
         },
-
         {
             path: "/contact",
             name: "contact",
@@ -296,6 +273,12 @@ const router = new Router({
             name: "passwordReset",
             component: PasswordReset
         },
+        {
+            path: "/:documentSharedId",
+            name: "documentShareLink",
+            props: true,
+            component: DocumentShare,
+        }
     ]
 });
 

@@ -3,7 +3,7 @@ import { GridLineMode } from "../../store/document/types";
     <div class="toolbar">
         <div class="container">
             <b-row>
-                <b-col>
+                <b-col v-if="profile">
                     <b-button-group>
                         <b-button
                             variant="outline-dark"
@@ -26,7 +26,7 @@ import { GridLineMode } from "../../store/document/types";
                     </b-button-group>
                 </b-col>
 
-                <b-col>
+                <b-col v-if="profile">
                     <b-button-group>
                         <b-button
                             variant="outline-dark"
@@ -51,6 +51,7 @@ import { GridLineMode } from "../../store/document/types";
                     <b-button-group>
                         <template v-for="tool in TOOLBAR_BUTTONS" v-text="tool.tooltip">
                             <b-button
+                                :key="tool.name"
                                 class="toolBtn"
                                 :id="tool.name + '_btn'"
                                 size="large"
@@ -64,7 +65,10 @@ import { GridLineMode } from "../../store/document/types";
                     </b-button-group>
 
                     <template v-for="tool in TOOLBAR_BUTTONS" v-text="tool.tooltip">
-                        <b-tooltip :target="tool.name + '_btn'" :title="tool.tooltip"></b-tooltip>
+                        <b-tooltip 
+                            :key="tool.name"
+                            :target="tool.name + '_btn'" :title="tool.tooltip"
+                        ></b-tooltip>
                     </template>
                 </b-col>
                 <b-col>
@@ -100,6 +104,7 @@ import { DEFAULT_TOOL } from "../../htmlcanvas/lib/tool";
 import { ToolConfig } from "../../../src/store/tools/types";
 import { DocumentState, GridLineMode } from "../../store/document/types";
 import { assertUnreachable } from "../../../../common/src/api/config";
+import { User } from "../../../../common/src/models/User";
 
 @Component({
     props: {
@@ -145,6 +150,10 @@ export default class Toolbar extends Vue {
 
     get document(): DocumentState {
         return this.$store.getters["document/document"];
+    }
+
+    get profile(): User {
+        return this.$store.getters["profile/profile"];
     }
 }
 </script>

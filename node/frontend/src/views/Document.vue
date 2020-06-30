@@ -1,4 +1,3 @@
-import {FileWebsocketMessageType} from "../../src/api/types";
 <template>
     <div>
         <LoadingScreen v-if="isLoading" />
@@ -20,17 +19,23 @@ import { AccessLevel, User } from "../../../common/src/models/User";
 import { Catalog } from "../../../common/src/api/catalog/types";
 
 @Component({
-    components: { LoadingScreen, DrawingCanvas, DrawingNavBar }
+    components: { LoadingScreen, DrawingCanvas, DrawingNavBar },
+    props: {
+        id: {
+            required: true,
+            type: Number,
+        }
+    }
 })
 export default class Document extends Vue {
     closeExpected = false;
-
     uiMouseDisabled: boolean = false;
 
     mounted() {
-        this.$store.dispatch("document/setId", Number(this.$route.params.id));
+        this.$store.dispatch("document/setId", this.$props.id);
+
         openDocument(
-            Number(this.$route.params.id),
+            this.$props.id,
             (op) => {
                 this.$store.dispatch("document/applyRemoteOperation", op);
             },
@@ -42,8 +47,12 @@ export default class Document extends Vue {
 
                 this.document.uiState.viewOnly = false;
 
-                getDocument(Number(this.$route.params.id)).then((res) => {
+                getDocument(this.$props.id).then((res) => {
                     if (res.success) {
+                        if (res.data.shareDocument?.token !== undefined) {
+                            this.$store.dispatch("document/setShareToken", res.data.shareDocument.token);
+                        }
+
                         if (
                             this.profile &&
                             res.data.createdBy.username !== this.profile.username &&
@@ -83,7 +92,7 @@ export default class Document extends Vue {
             }
         );
 
-        loadCatalog(Number(this.$route.params.id)).then((catalog) => {
+        loadCatalog(this.$props.id).then((catalog) => {
             if (catalog.success) {
                 this.$store.dispatch("catalog/setDefault", catalog.data);
             } else {

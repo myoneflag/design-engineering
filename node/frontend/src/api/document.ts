@@ -1,33 +1,81 @@
 import {
     APIResult,
     DocumentClientMessage,
-    DocumentClientMessageSingle,
     DocumentWSMessageType
 } from "../../../common/src/api/document/types";
 import * as OT from "../../../common/src/api/document/operation-transforms";
 import axios from "axios";
 import { Document } from "../../../common/src/models/Document";
-import { Organization } from "../../../common/src/models/Organization";
 import { GeneralInfo } from "../../../common/src/api/document/drawing";
-import { OperationTransformConcrete } from "../../../common/src/api/document/operation-transforms";
 import { Operation } from "../../../common/src/models/Operation";
-import { cooperativeYield } from "../htmlcanvas/utils";
 import { assertUnreachable } from "../../../common/src/api/config";
 
-const wss = new Map<number, WebSocket>();
+const wss = new Map<number | string, WebSocket>();
 
 export function openDocument(
     id: number,
     onOperation: (ot: OT.OperationTransformConcrete) => void,
     onDeleted: () => void,
     onLoaded: () => void,
-    onError: (msg: string) => void
+    onError: (msg: string) => void,
 ) {
+
     if (wss.has(id)) {
         throw new Error("warning: Document is already open");
     }
     const HOST = location.origin.replace(/^http(s?)/, "ws$1");
     const ws = new WebSocket(HOST + "/api/documents/" + id + "/websocket");
+    wss.set(id, ws);
+
+    ws.onmessage = (wsmsg: MessageEvent) => {
+        if (wsmsg.type === "message") {
+            const data: DocumentClientMessage = JSON.parse(wsmsg.data as string);
+            data.forEach((msg) => {
+                switch (msg.type) {
+                    case DocumentWSMessageType.OPERATION:
+                        onOperation(msg.operation);
+                        break;
+                    case DocumentWSMessageType.DOCUMENT_DELETED:
+                        onDeleted();
+                        break;
+                    case DocumentWSMessageType.DOCUMENT_LOADED:
+                        onLoaded();
+                        break;
+                    case DocumentWSMessageType.DOCUMENT_ERROR:
+                        onError(msg.message);
+                        break;
+                    default:
+                        assertUnreachable(msg);
+                }
+            });
+        } else {
+            throw new Error(
+                "unknown websocket message type " + JSON.stringify(wsmsg.type) + " " + JSON.stringify(wsmsg)
+            );
+        }
+    };
+
+    queues.set(id, []);
+
+    ws.onclose = (ev: CloseEvent) => {
+        if (ev.code !== 1000) {
+            onError(ev.code + " " + ev.reason);
+        }
+    };
+}
+
+export function openDocumentShare(
+    id: string,
+    onOperation: (ot: OT.OperationTransformConcrete) => void,
+    onDeleted: () => void,
+    onLoaded: () => void,
+    onError: (msg: string) => void,
+) {
+    if (wss.has(id)) {
+        throw new Error("warning: Document is already open");
+    }
+    const HOST = location.origin.replace(/^http(s?)/, "ws$1");
+    const ws = new WebSocket(HOST + "/api/documents/share/" + id + "/websocket");
     wss.set(id, ws);
 
     ws.onmessage = (wsmsg: MessageEvent) => {
@@ -88,7 +136,7 @@ export async function updateDocument(
     }
 }
 
-export async function closeDocument(id: number) {
+export async function closeDocument(id: number | string) {
     if (wss.has(id)) {
         const ws = wss.get(id)!;
         queues.delete(id);
@@ -119,7 +167,7 @@ export async function sendOperations(id: number, ops: OT.OperationTransformConcr
     }
 }
 
-const queues = new Map<number, OT.OperationTransformConcrete[][]>();
+const queues = new Map<number | string, OT.OperationTransformConcrete[][]>();
 const submitLoopRunning = new Set<number>();
 
 async function submitLoop(id: number) {

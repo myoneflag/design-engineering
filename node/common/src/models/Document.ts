@@ -1,8 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne } from "typeorm";
-import { BaseEntity } from "typeorm";
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne, OneToOne, JoinColumn } from "typeorm";
 import { Operation } from "./Operation";
 import { Organization } from "./Organization";
 import { AccessLevel, User } from "./User";
+import { ShareDocument } from './ShareDocument';
 import { GeneralInfo } from "../api/document/drawing";
 
 export enum DocumentStatus {
@@ -59,6 +59,10 @@ export class Document extends BaseEntity {
       */
     @Column({ default: 'now' })
     upgradingLockExpires: Date;
+
+    @OneToOne(() => ShareDocument, { eager: true })
+    @JoinColumn()
+    shareDocument: ShareDocument;
 }
 
 export function canUserDeleteDocument(doc: Document, user: User) {
