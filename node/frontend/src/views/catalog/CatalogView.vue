@@ -40,11 +40,13 @@
                                     @row-selected="(d) => onRowClick(prop, d)"
                                     responsive="true"
                                 >
-                                    <template v-if="prop === 'pipes'" v-slot:cell(manufacturer)="data">
+                                    <template v-if="prop === 'pipes' || prop === 'backflowValves'" v-slot:cell(manufacturer)="data">
                                         <b-button 
-                                            :variant="isSelectedManufacturer(data.item._key, manufacturer.uid) && 'primary' || 'outline-primary'" size="sm" :class="'manufacturer-item-btn'"
+                                            :variant="isSelectedManufacturer(prop, data.item._key, manufacturer.uid) && 'primary' || 'outline-primary'" 
+                                            size="sm" 
+                                            :class="'manufacturer-item-btn'"
                                             v-for="manufacturer in data.item.Manufacturer" :key="manufacturer.name"
-                                            @click="(e) => handleManufacturerClick(data.item._key, manufacturer.uid)"
+                                            @click="(e) => handleManufacturerClick(prop, data.item._key, manufacturer.uid)"
                                         >
                                             {{ manufacturer.name }}
                                         </b-button> 
@@ -85,10 +87,11 @@ import { CatalogSchema, getCatalogDisplaySchema, Page, Table } from "../../lib/c
 import { getPropertyByString } from "../../lib/utils";
 import { RawLocation } from "vue-router";
 import { Catalog, Manufacturer } from "../../../../common/src/api/catalog/types";
+import { Catalog as DawingCatalog} from "../../../../common/src/api/document/drawing";
 import { DocumentState } from "../../store/document/types";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { convertMeasurementSystem, Units } from "../../../../common/src/lib/measurements";
-import { Pipe } from "../../../../common/src/api/document/drawing";
+import { SelectedMaterialManufacturer } from "../../../../common/src/api/document/drawing";
 @Component({
     components: { MainNavBar },
     props: {
@@ -100,6 +103,7 @@ export default class CatalogView extends Vue {
         if (params.length === 0) {
             return;
         }
+
         this.$router.push(this.navigateLink(prop + "." + params[0]._key));
     }
 
@@ -140,10 +144,15 @@ export default class CatalogView extends Vue {
             pathArr.splice(pathArr.length - 1, 1);
         }
 
+        if (pathArr[0] === 'backflowValves' && pathArr.length === 4) {
+            pathArr.splice(3, 0, this.manufacturer);
+        }
+
         if (pathArr.join(".") === "") {
             return this.catalog;
         }
-
+        
+        console.log(pathArr.join("."));
         const val = getPropertyByString(this.catalog, pathArr.join("."));
         return val;
     }
@@ -166,23 +175,22 @@ export default class CatalogView extends Vue {
         return numTables === 1;
     }
 
-    get manufacturer() {
-        if (!this.currCatalog.uid) {
-            return null;
+    get manufacturer(): string {
+        if (this.paths.length <= 2) {
+            return '';
         }
 
-        return this.pipes.find((pipe: Pipe) => pipe.uid === this.currCatalog.uid)?.manufacturer || 'generic';
-    }
+        const selectedCatalog = this.paths[1].text;
+        const materialObj = this.catalog[selectedCatalog][this.paths[2].text];
+        const selMtlMftr = this.selMtlMftr(selectedCatalog);
 
-    get pipes() {
-        return this.document.drawing.metadata.catalog.pipes;
+        return selMtlMftr?.find((mtl: SelectedMaterialManufacturer) => mtl.uid === materialObj.uid)?.manufacturer || 'generic';
     }
 
     display(units: Units | undefined, prop: string) {
-        let value: number | string | Array<Manufacturer> = this.currCatalog[prop];
+        let value: number | string | undefined = this.currCatalog[prop];
         if (prop === 'manufacturer' && Array.isArray(value)) {
-            let manufacturerIndex = value.findIndex((obj: Manufacturer) => obj.uid === this.manufacturer);
-            value = value[manufacturerIndex].name;
+            value = value.find((obj: Manufacturer) => obj.uid === this.manufacturer).name;
         }
 
         if (units && !isNaN(Number(value))) {
@@ -241,8 +249,8 @@ export default class CatalogView extends Vue {
             const items = [];
             let entries = this.currCatalog[prop];
             
-            if (this.manufacturer && prop === 'pipesBySize') {
-                entries = entries[this.manufacturer];
+            if (this.manufacturer && (prop === 'pipesBySize' || prop === 'valvesBySize')) {
+               entries = entries[this.manufacturer] || entries;
             }
 
             for (const [key, value] of Object.entries(entries)) {
@@ -293,6 +301,12 @@ export default class CatalogView extends Vue {
             }
 
             if (prop === 'pipes') {
+                fields[1] = {
+                    label: fields[1],
+                    key: 'manufacturer',
+                    tdClass: 'text-left',
+                };
+            } else if (prop === 'backflowValves') {
                 fields[1] = {
                     label: fields[1],
                     key: 'manufacturer',
@@ -403,22 +417,26 @@ export default class CatalogView extends Vue {
         return curr;
     }
 
-    isSelectedManufacturer(pipe: string, manufacturer: string) {
+    selMtlMftr(catalog: string): SelectedMaterialManufacturer[] | [] {
+        return this.document.drawing.metadata.catalog[catalog] || [];
+    }
+
+    isSelectedManufacturer(catalog: string, key: string, manufacturer: string) {
         // As default, generic is selected.
-        if (!this.pipes.length || this.pipes.findIndex(obj => obj.uid === pipe) < 0) {
+        if (!this.selMtlMftr(catalog).length || this.selMtlMftr(catalog).findIndex((obj: SelectedMaterialManufacturer)  => obj.uid === key) < 0) {
             return manufacturer === 'generic';
         }
 
-        return this.pipes.findIndex(obj => obj.uid === pipe && obj.manufacturer === manufacturer) >= 0;
+        return this.selMtlMftr(catalog).findIndex((obj: SelectedMaterialManufacturer) => obj.uid === key && obj.manufacturer === manufacturer) >= 0;
     }
 
-    handleManufacturerClick(pipe: string, manufacturer: string) {
-        const index = this.pipes.findIndex(obj => obj.uid === pipe);
+    handleManufacturerClick(catalog: string, key: string, manufacturer: string) {
+        const index = this.selMtlMftr(catalog).findIndex((obj: SelectedMaterialManufacturer) => obj.uid === key);
         
-        if (!this.pipes.length || index < 0) {
-            this.document.drawing.metadata.catalog.pipes.push({uid: pipe, manufacturer});
+        if (!this.selMtlMftr(catalog).length || index < 0) {
+            this.document.drawing.metadata.catalog[catalog].push({uid: key, manufacturer});
         } else {
-            this.document.drawing.metadata.catalog.pipes.splice(index, 1, {uid: pipe, manufacturer});
+            this.document.drawing.metadata.catalog[catalog].splice(index, 1, {uid: key, manufacturer});
         }
 
         this.save();

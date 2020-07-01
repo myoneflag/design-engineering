@@ -1,4 +1,4 @@
-import { Pipe as PipeObject } from './../../../common/src/api/document/drawing';
+import { SelectedMaterialManufacturer } from './../../../common/src/api/document/drawing';
 import { DocumentState } from "../../src/store/document/types";
 import { SelectionTarget } from "../../src/htmlcanvas/lib/types";
 import { EntityType } from "../../../common/src/api/document/entities/types";
@@ -1599,7 +1599,7 @@ export default class CalculationEngine {
         const filled = fillPipeDefaultFields(this.doc.drawing, obj.computedLengthM, pipe);
 
         const calculation = this.globalStore.getOrCreateCalculation(pipe);
-        const manufacturer = this.doc.drawing.metadata.catalog.pipes.find((pipe: PipeObject) => pipe.uid === filled.material)?.manufacturer || 'generic';
+        const manufacturer = this.doc.drawing.metadata.catalog.pipes.find((pipe: SelectedMaterialManufacturer) => pipe.uid === filled.material)?.manufacturer || 'generic';
         const realPipe = lowerBoundTable(
             this.catalog.pipes[filled.material!].pipesBySize[manufacturer],
             calculation.realNominalPipeDiameterMM!
@@ -1648,7 +1648,7 @@ export default class CalculationEngine {
     getPipeByNominal(pipe: PipeEntity, maxNominalMM: number): PipeSpec | null {
         const pipeFilled = fillPipeDefaultFields(this.doc.drawing, 0, pipe);
         const table = this.catalog.pipes[pipeFilled.material!];
-        const manufacturer = this.doc.drawing.metadata.catalog.pipes.find((pipe: PipeObject) => pipe.uid === pipeFilled.material)?.manufacturer || 'generic';
+        const manufacturer = this.doc.drawing.metadata.catalog.pipes.find((pipe: SelectedMaterialManufacturer) => pipe.uid === pipeFilled.material)?.manufacturer || 'generic';
         const a = upperBoundTable(table.pipesBySize[manufacturer], maxNominalMM, (p, isMax) => {
             if (isMax) {
                 return parseCatalogNumberOrMax(p.diameterNominalMM)!;
@@ -1673,7 +1673,7 @@ export default class CalculationEngine {
             throw new Error("Material doesn't exist anymore " + JSON.stringify(pipeFilled));
         }
 
-        const manufacturer = this.doc.drawing.metadata.catalog.pipes.find((pipe: PipeObject) => pipe.uid === pipeFilled.material)?.manufacturer || 'generic';
+        const manufacturer = this.doc.drawing.metadata.catalog.pipes.find((pipe: SelectedMaterialManufacturer) => pipe.uid === pipeFilled.material)?.manufacturer || 'generic';
         const a = lowerBoundTable(table.pipesBySize[manufacturer], calculation.optimalInnerPipeDiameterMM!, (p) => {
             const v = parseCatalogNumberExact(p.diameterInternalMM);
             if (!v) {
@@ -1699,7 +1699,7 @@ export default class CalculationEngine {
             throw new Error("Material doesn't exist anymore " + JSON.stringify(pipeFilled));
         }
         
-        const manufacturer = this.doc.drawing.metadata.catalog.pipes.find((pipe: PipeObject) => pipe.uid === pipeFilled.material)?.manufacturer || 'generic';
+        const manufacturer = this.doc.drawing.metadata.catalog.pipes.find((pipe: SelectedMaterialManufacturer) => pipe.uid === pipeFilled.material)?.manufacturer || 'generic';
         const a = upperBoundTable(table.pipesBySize[manufacturer], Infinity, (p) => {
             const v = parseCatalogNumberExact(p.diameterInternalMM);
             if (!v) {
@@ -1884,8 +1884,9 @@ export default class CalculationEngine {
         if (type === ValveType.RPZD_DOUBLE_SHARED) {
             fr = fr / 2;
         }
+        const manufacturer = this.doc.drawing.metadata.catalog.backflowValves.find((material: SelectedMaterialManufacturer) => material.uid === catalogId)?.manufacturer || 'generic';
         const entry = lowerBoundTable(
-            this.catalog.backflowValves[catalogId].valvesBySize,
+            this.catalog.backflowValves[catalogId].valvesBySize[manufacturer],
             fr,
             (t, m) => parseCatalogNumberExact(m ? t.maxFlowRateLS : t.minFlowRateLS)!
         );

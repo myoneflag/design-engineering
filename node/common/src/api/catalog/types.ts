@@ -33,7 +33,11 @@ export interface BackflowValveSize {
 
 export interface BackflowValveSpec {
     name: string;
-    valvesBySize: { [key: string]: BackflowValveSize };
+    uid: string;
+    abbreviation: string;
+    manufacturer: Manufacturer[];
+    // valvesBySize: { [key: string]: BackflowValveSize };
+    valvesBySize: { [key: string]: { [key: string]: BackflowValveSize } };
 }
 
 export interface Catalog {

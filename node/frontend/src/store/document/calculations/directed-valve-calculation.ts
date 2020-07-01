@@ -10,6 +10,8 @@ import { assertUnreachable } from "../../../../../common/src/api/config";
 import { determineConnectableSystemUid } from "../entities/lib";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import { Units } from "../../../../../common/src/lib/measurements";
+import { DrawingState, SelectedMaterialManufacturer } from '../../../../../common/src/api/document/drawing';
+import { Catalog, Manufacturer } from '../../../../../common/src/api/catalog/types';
 
 export default interface DirectedValveCalculation extends Calculation, PressureCalculation {
     flowRateLS: number | null;
@@ -18,7 +20,7 @@ export default interface DirectedValveCalculation extends Calculation, PressureC
     sizeMM: number | null;
 }
 
-export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, globalStore: GlobalStore): CalculationField[] {
+export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, globalStore: GlobalStore, drawing: DrawingState, catalog: Catalog | undefined,): CalculationField[] {
     const systemUid = determineConnectableSystemUid(globalStore, entity);
     let fields: CalculationField[] = [
         {
@@ -61,6 +63,11 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
         });
     }
 
+    const manufacturer = drawing.metadata.catalog.backflowValves.find((material: SelectedMaterialManufacturer) => material.uid === entity.valve.catalogId)?.manufacturer || 'generic';
+    const abbreviation = manufacturer !== 'generic' 
+        && catalog?.backflowValves[entity.valve.catalogId].manufacturer.find((manufacturerObj: Manufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation 
+        || '';
+
     switch (entity.valve.type) {
         case ValveType.CHECK_VALVE:
         case ValveType.ISOLATION_VALVE:
@@ -77,7 +84,7 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
             fields.push({
                 property: "sizeMM",
                 title: "Size (mm)",
-                short: "",
+                short: abbreviation,
                 units: Units.Millimeters,
                 category: FieldCategory.Size
             });

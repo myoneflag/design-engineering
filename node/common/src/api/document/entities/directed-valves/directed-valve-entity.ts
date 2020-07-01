@@ -2,7 +2,7 @@ import { EntityType } from "../types";
 import { FieldType, PropertyField } from "../property-field";
 import { DirectedValveConcrete, ValveType } from "./valve-types";
 import { assertUnreachable } from "../../../config";
-import { Color, COLORS, ConnectableEntity, Coord, DrawingState } from "../../drawing";
+import { Color, COLORS, ConnectableEntity, Coord, DrawingState, SelectedMaterialManufacturer } from "../../drawing";
 import { Catalog } from "../../../catalog/types";
 import { Choice, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../../lib/utils";
 import { convertPipeDiameterFromMetric, Units } from "../../../../lib/measurements";
@@ -70,8 +70,8 @@ export function makeDirectedValveFields(
         case ValveType.RPZD_DOUBLE_ISOLATED:
         case ValveType.RPZD_DOUBLE_SHARED:
         case ValveType.RPZD_SINGLE: {
-
-            const sizes = Object.keys(catalog.backflowValves[entity.valve.catalogId].valvesBySize).map((s) => {
+            const manufacturer = drawing.metadata.catalog.backflowValves.find((material: SelectedMaterialManufacturer) => material.uid === entity.valve.catalogId)?.manufacturer || 'generic';
+            const sizes = Object.keys(catalog.backflowValves[entity.valve.catalogId].valvesBySize[manufacturer]).map((s) => {
                 const val = convertPipeDiameterFromMetric(drawing.metadata.units, parseCatalogNumberExact(s));
                 const c: Choice = {
                     disabled: false, key: parseCatalogNumberOrMin(s), name: val[1] + val[0],

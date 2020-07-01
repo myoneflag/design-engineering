@@ -3180,142 +3180,288 @@ export const initialCatalog: Catalog = {
     backflowValves: {
         RPZD: {
             name: "RPZD",
+            manufacturer: [
+                {
+                    name: 'Generic',
+                    abbreviation: 'Generic',
+                    uid: 'generic',
+                },
+                {
+                    name: 'Apollo',
+                    abbreviation: 'Apollo',
+                    uid: 'apolloRpzd',
+                }
+            ],
             valvesBySize: {
-                15: {
-                    sizeMM: "15",
-                    minInletPressureKPA: "200",
-                    maxInletPressureKPA: "2000",
-                    minFlowRateLS: "0",
-                    maxFlowRateLS: "0.48",
-                    pressureLossKPAByFlowRateLS: {
-                        0.00: "0",
-                        0.01: "60",
-                        0.17: "90",
-                        0.37: "85",
-                        0.48: "80"
+                generic: {
+                    15: {
+                        sizeMM: "15",
+                        minInletPressureKPA: "200",
+                        maxInletPressureKPA: "2000",
+                        minFlowRateLS: "0",
+                        maxFlowRateLS: "0.48",
+                        pressureLossKPAByFlowRateLS: {
+                            0.00: "0",
+                            0.01: "60",
+                            0.17: "90",
+                            0.37: "85",
+                            0.48: "80"
+                        }
+                    },
+                    20: {
+                        sizeMM: "20",
+                        minInletPressureKPA: "200",
+                        maxInletPressureKPA: "2000",
+                        minFlowRateLS: "0.48",
+                        maxFlowRateLS: "0.83",
+                        pressureLossKPAByFlowRateLS: {
+                            0.48: "75",
+                            0.6: "70",
+                            0.7: "73",
+                            0.83: "74"
+                        }
+                    },
+                    25: {
+                        sizeMM: "25",
+                        minInletPressureKPA: "200",
+                        maxInletPressureKPA: "2000",
+                        minFlowRateLS: "0.83",
+                        maxFlowRateLS: "1.36",
+                        pressureLossKPAByFlowRateLS: {
+                            0.83: "67",
+                            1: "65",
+                            1.2: "64",
+                            1.36: "65"
+                        }
+                    },
+                    32: {
+                        sizeMM: "32",
+                        minInletPressureKPA: "200",
+                        maxInletPressureKPA: "2000",
+                        minFlowRateLS: "1.36",
+                        maxFlowRateLS: "2.3",
+                        pressureLossKPAByFlowRateLS: {
+                            1.36: "82",
+                            1.7: "75",
+                            2: "70",
+                            2.3: "68"
+                        }
+                    },
+                    40: {
+                        sizeMM: "40",
+                        minInletPressureKPA: "200",
+                        maxInletPressureKPA: "2000",
+                        minFlowRateLS: "2.3",
+                        maxFlowRateLS: "3.25",
+                        pressureLossKPAByFlowRateLS: {
+                            2.30: "87",
+                            2.6: "85",
+                            2.9: "85",
+                            3.25: "85"
+                        }
+                    },
+                    50: {
+                        sizeMM: "50",
+                        minInletPressureKPA: "200",
+                        maxInletPressureKPA: "2000",
+                        minFlowRateLS: "3.25",
+                        maxFlowRateLS: "5.15",
+                        pressureLossKPAByFlowRateLS: {
+                            3.25: "87",
+                            4: "85",
+                            4.5: "85",
+                            5.15: "85"
+                        }
+                    },
+                    65: {
+                        sizeMM: "65",
+                        minInletPressureKPA: "200",
+                        maxInletPressureKPA: "2000",
+                        minFlowRateLS: "5.15",
+                        maxFlowRateLS: "7.5",
+                        pressureLossKPAByFlowRateLS: {
+                            5.15: "97",
+                            6: "97",
+                            7: "98",
+                            7.5: "97"
+                        }
+                    },
+                    80: {
+                        sizeMM: "80",
+                        minInletPressureKPA: "200",
+                        maxInletPressureKPA: "2000",
+                        minFlowRateLS: "7.5",
+                        maxFlowRateLS: "12",
+                        pressureLossKPAByFlowRateLS: {
+                            7.55: "85",
+                            9: "85",
+                            11: "87",
+                            12: "88"
+                        }
+                    },
+                    100: {
+                        sizeMM: "100",
+                        minInletPressureKPA: "200",
+                        maxInletPressureKPA: "2000",
+                        minFlowRateLS: "12",
+                        maxFlowRateLS: "20",
+                        pressureLossKPAByFlowRateLS: {
+                            12: "67",
+                            15: "65",
+                            18: "65",
+                            20: "65"
+                        }
+                    },
+                    150: {
+                        sizeMM: "150",
+                        minInletPressureKPA: "200",
+                        maxInletPressureKPA: "2000",
+                        minFlowRateLS: "20",
+                        maxFlowRateLS: "45",
+                        pressureLossKPAByFlowRateLS: {
+                            20.01: "74",
+                            28: "74",
+                            36: "74",
+                            45: "75"
+                        }
                     }
                 },
-
-                20: {
-                    sizeMM: "20",
-                    minInletPressureKPA: "200",
-                    maxInletPressureKPA: "2000",
-                    minFlowRateLS: "0.48",
-                    maxFlowRateLS: "0.83",
-                    pressureLossKPAByFlowRateLS: {
-                        0.48: "75",
-                        0.6: "70",
-                        0.7: "73",
-                        0.83: "74"
-                    }
-                },
-
-                25: {
-                    sizeMM: "25",
-                    minInletPressureKPA: "200",
-                    maxInletPressureKPA: "2000",
-                    minFlowRateLS: "0.83",
-                    maxFlowRateLS: "1.36",
-                    pressureLossKPAByFlowRateLS: {
-                        0.83: "67",
-                        1: "65",
-                        1.2: "64",
-                        1.36: "65"
-                    }
-                },
-
-                32: {
-                    sizeMM: "32",
-                    minInletPressureKPA: "200",
-                    maxInletPressureKPA: "2000",
-                    minFlowRateLS: "1.36",
-                    maxFlowRateLS: "2.3",
-                    pressureLossKPAByFlowRateLS: {
-                        1.36: "82",
-                        1.7: "75",
-                        2: "70",
-                        2.3: "68"
-                    }
-                },
-                40: {
-                    sizeMM: "40",
-                    minInletPressureKPA: "200",
-                    maxInletPressureKPA: "2000",
-                    minFlowRateLS: "2.3",
-                    maxFlowRateLS: "3.25",
-                    pressureLossKPAByFlowRateLS: {
-                        2.30: "87",
-                        2.6: "85",
-                        2.9: "85",
-                        3.25: "85"
-                    }
-                },
-                50: {
-                    sizeMM: "50",
-                    minInletPressureKPA: "200",
-                    maxInletPressureKPA: "2000",
-                    minFlowRateLS: "3.25",
-                    maxFlowRateLS: "5.15",
-                    pressureLossKPAByFlowRateLS: {
-                        3.25: "87",
-                        4: "85",
-                        4.5: "85",
-                        5.15: "85"
-                    }
-                },
-                65: {
-                    sizeMM: "65",
-                    minInletPressureKPA: "200",
-                    maxInletPressureKPA: "2000",
-                    minFlowRateLS: "5.15",
-                    maxFlowRateLS: "7.5",
-                    pressureLossKPAByFlowRateLS: {
-                        5.15: "97",
-                        6: "97",
-                        7: "98",
-                        7.5: "97"
-                    }
-                },
-                80: {
-                    sizeMM: "80",
-                    minInletPressureKPA: "200",
-                    maxInletPressureKPA: "2000",
-                    minFlowRateLS: "7.5",
-                    maxFlowRateLS: "12",
-                    pressureLossKPAByFlowRateLS: {
-                        7.55: "85",
-                        9: "85",
-                        11: "87",
-                        12: "88"
-                    }
-                },
-                100: {
-                    sizeMM: "100",
-                    minInletPressureKPA: "200",
-                    maxInletPressureKPA: "2000",
-                    minFlowRateLS: "12",
-                    maxFlowRateLS: "20",
-                    pressureLossKPAByFlowRateLS: {
-                        12: "67",
-                        15: "65",
-                        18: "65",
-                        20: "65"
-                    }
-                },
-                150: {
-                    sizeMM: "150",
-                    minInletPressureKPA: "200",
-                    maxInletPressureKPA: "2000",
-                    minFlowRateLS: "20",
-                    maxFlowRateLS: "45",
-                    pressureLossKPAByFlowRateLS: {
-                        20.01: "74",
-                        28: "74",
-                        36: "74",
-                        45: "75"
+                apolloRpzd: {
+                    15: {
+                        sizeMM: "15",
+                        minInletPressureKPA: "150",
+                        maxInletPressureKPA: "2000",
+                        minFlowRateLS: "0",
+                        maxFlowRateLS: "0.48",
+                        pressureLossKPAByFlowRateLS: {
+                            0.00: "0",
+                            0.01: "60",
+                            0.17: "90",
+                            0.37: "85",
+                            0.48: "80"
+                        }
+                    },
+                    20: {
+                        sizeMM: "20",
+                        minInletPressureKPA: "150",
+                        maxInletPressureKPA: "2000",
+                        minFlowRateLS: "0.48",
+                        maxFlowRateLS: "0.83",
+                        pressureLossKPAByFlowRateLS: {
+                            0.48: "75",
+                            0.6: "70",
+                            0.7: "73",
+                            0.83: "74"
+                        }
+                    },
+                    25: {
+                        sizeMM: "25",
+                        minInletPressureKPA: "150",
+                        maxInletPressureKPA: "2000",
+                        minFlowRateLS: "0.83",
+                        maxFlowRateLS: "1.36",
+                        pressureLossKPAByFlowRateLS: {
+                            0.83: "67",
+                            1: "65",
+                            1.2: "64",
+                            1.36: "65"
+                        }
+                    },
+                    32: {
+                        sizeMM: "32",
+                        minInletPressureKPA: "150",
+                        maxInletPressureKPA: "2000",
+                        minFlowRateLS: "1.36",
+                        maxFlowRateLS: "2.3",
+                        pressureLossKPAByFlowRateLS: {
+                            1.36: "82",
+                            1.7: "75",
+                            2: "70",
+                            2.3: "68"
+                        }
+                    },
+                    40: {
+                        sizeMM: "40",
+                        minInletPressureKPA: "150",
+                        maxInletPressureKPA: "2000",
+                        minFlowRateLS: "2.3",
+                        maxFlowRateLS: "3.25",
+                        pressureLossKPAByFlowRateLS: {
+                            2.30: "87",
+                            2.6: "85",
+                            2.9: "85",
+                            3.25: "85"
+                        }
+                    },
+                    50: {
+                        sizeMM: "50",
+                        minInletPressureKPA: "150",
+                        maxInletPressureKPA: "2000",
+                        minFlowRateLS: "3.25",
+                        maxFlowRateLS: "5.15",
+                        pressureLossKPAByFlowRateLS: {
+                            3.25: "87",
+                            4: "85",
+                            4.5: "85",
+                            5.15: "85"
+                        }
+                    },
+                    65: {
+                        sizeMM: "65",
+                        minInletPressureKPA: "150",
+                        maxInletPressureKPA: "2000",
+                        minFlowRateLS: "5.15",
+                        maxFlowRateLS: "7.5",
+                        pressureLossKPAByFlowRateLS: {
+                            5.15: "97",
+                            6: "97",
+                            7: "98",
+                            7.5: "97"
+                        }
+                    },
+                    80: {
+                        sizeMM: "80",
+                        minInletPressureKPA: "150",
+                        maxInletPressureKPA: "2000",
+                        minFlowRateLS: "7.5",
+                        maxFlowRateLS: "12",
+                        pressureLossKPAByFlowRateLS: {
+                            7.55: "85",
+                            9: "85",
+                            11: "87",
+                            12: "88"
+                        }
+                    },
+                    100: {
+                        sizeMM: "100",
+                        minInletPressureKPA: "150",
+                        maxInletPressureKPA: "2000",
+                        minFlowRateLS: "12",
+                        maxFlowRateLS: "20",
+                        pressureLossKPAByFlowRateLS: {
+                            12: "67",
+                            15: "65",
+                            18: "65",
+                            20: "65"
+                        }
+                    },
+                    150: {
+                        sizeMM: "150",
+                        minInletPressureKPA: "150",
+                        maxInletPressureKPA: "2000",
+                        minFlowRateLS: "20",
+                        maxFlowRateLS: "45",
+                        pressureLossKPAByFlowRateLS: {
+                            20.01: "74",
+                            28: "74",
+                            36: "74",
+                            45: "75"
+                        }
                     }
                 }
-            }
+            },
+            abbreviation: "RPZD",
+            uid: "RPZD",
         }
     }
 };

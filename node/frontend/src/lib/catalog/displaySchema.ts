@@ -228,7 +228,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                     abbreviation: { order: 3, name: "Abbreaviation" },
                     uid: null,
                     pipesBySize: {
-                        order: 3,
+                        order: 4,
                         name: "Pipe Sizes",
                         table: {
                             primaryName: "Nominal Diameter",
@@ -330,11 +330,17 @@ export function getCatalogDisplaySchema(): CatalogSchema {
             name: "Backflow Valves",
             table: {
                 primaryName: null,
-                columns: [["name", "Name"]],
+                columns: [
+                    ["name", "Name"],
+                    ["manufacturer", "Manufacturer"],
+                ],
                 link: {
                     name: { order: 1, name: "Name" },
+                    manufacturer: { order: 2, name: "Manufacturer"},
+                    abbreviation: { order: 3, name: "Abbreaviation" },
+                    uid: null,
                     valvesBySize: {
-                        order: 1,
+                        order: 4,
                         name: "Valves By Size",
                         table: {
                             primaryName: "Diameter",

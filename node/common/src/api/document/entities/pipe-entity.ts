@@ -1,6 +1,6 @@
 import { FieldType, PropertyField } from "./property-field";
 import { EntityType } from "./types";
-import { Color, COLORS, DrawableEntity, DrawingState, NetworkType, Pipe } from "../drawing";
+import { Color, COLORS, DrawableEntity, DrawingState, NetworkType, SelectedMaterialManufacturer } from "../drawing";
 import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../lib/utils";
 import { Catalog } from "../../catalog/types";
 import { convertPipeDiameterFromMetric, Units } from "../../../lib/measurements";
@@ -40,7 +40,7 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
         };
         return c;
     });
-    const manufacturer = drawing.metadata.catalog.pipes.find((pipe: Pipe) => pipe.uid === result.material)?.manufacturer || 'generic';
+    const manufacturer = drawing.metadata.catalog.pipes.find((pipe: SelectedMaterialManufacturer) => pipe.uid === result.material)?.manufacturer || 'generic';
     const diameters = Object.keys(catalog.pipes[result.material!].pipesBySize[manufacturer]).map((d) => {
         const val = convertPipeDiameterFromMetric(drawing.metadata.units, parseCatalogNumberExact(d));
         const c: Choice = {

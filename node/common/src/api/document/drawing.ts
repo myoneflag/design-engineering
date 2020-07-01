@@ -223,10 +223,12 @@ export interface Rectangle {
 }
 
 export interface Catalog {
-    pipes: Pipe[];
+    pipes: SelectedMaterialManufacturer[];
+    backflowValves: SelectedMaterialManufacturer[];
+    [key: string]: SelectedMaterialManufacturer[];
 }
 
-export interface Pipe {
+export interface SelectedMaterialManufacturer {
     uid: string;
     manufacturer: string;
 }
@@ -362,7 +364,8 @@ export const initialDrawing: DrawingState = {
         },
         availableFixtures: ["basin", "bath", "shower", "kitchenSink", "wc", "washingMachine", "laundryTrough"],
         catalog: {
-            pipes: []
+            pipes: [],
+            backflowValves: [],
         }
     },
     levels: {
