@@ -13,6 +13,8 @@
                         <b-nav-item :to="{ name: 'settings/general' }" active-class="active">General</b-nav-item>
                         <b-nav-item :to="{ name: 'settings/units' }" active-class="active">Units</b-nav-item>
                         <b-nav-item :to="{ name: 'settings/catalog' }" active-class="active">Catalog</b-nav-item>
+                        <b-nav-item :to="{ name: 'settings/budget' }" active-class="active">Budget</b-nav-item>
+
                         <b-nav-item :to="{ name: 'settings/fixtures' }" active-class="active">Fixtures</b-nav-item>
                         <b-nav-item :to="{ name: 'settings/flow-systems' }" active-class="active"
                             >Flow Systems</b-nav-item

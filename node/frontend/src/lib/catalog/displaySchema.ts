@@ -1,5 +1,6 @@
 import { Catalog, PRVSize } from "../../../../common/src/api/catalog/types";
 import { Units } from "../../../../common/src/lib/measurements";
+import {PriceTable, Valve} from "../../../../common/src/api/catalog/price-table";
 
 export type Page<V> = {
     [K in keyof V]: {
@@ -18,6 +19,7 @@ export interface Table<TV> {
     link?: Page<TV> | null;
     twoDimensional?: boolean;
 }
+
 
 export type CatalogSchema = Page<Catalog>;
 

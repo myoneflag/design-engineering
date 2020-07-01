@@ -62,6 +62,11 @@ const router = new Router({
                             component: () => import(/* webpackChunkName: "catalog" */ "./views/catalog/CatalogView.vue")
                         },
                         {
+                            path: "budget/:prop?",
+                            name: "settings/budget",
+                            component: () => import(/* webpackChunkName: "document" */ "./views/catalog/PriceTableView.vue")
+                        },
+                        {
                             path: "general",
                             name: "settings/general",
                             component: () => import(/* webpackChunkName: "general" */ "./views/settings/General.vue")
