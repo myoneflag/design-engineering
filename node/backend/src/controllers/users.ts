@@ -93,9 +93,7 @@ export class UserController {
         const allOrganization = await Organization.find({ select: ["id"] });
         
         let orgId: string = '';
-        while (allOrganization.map(obj => obj.id).includes(orgId = random(20, true))) {
-            orgId = orgId;
-        };
+        while (allOrganization.map(obj => obj.id).includes(orgId = random(20, true)));
 
         const org: Organization = Organization.create();
         org.id = orgId;
