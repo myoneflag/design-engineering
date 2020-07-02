@@ -90,8 +90,15 @@ export class UserController {
             });
         }
 
+        const allOrganization = await Organization.find({ select: ["id"] });
+        
+        let orgId: string = '';
+        while (allOrganization.map(obj => obj.id).includes(orgId = random(20, true))) {
+            orgId = orgId;
+        };
+
         const org: Organization = Organization.create();
-        org.id = random(5, true);
+        org.id = orgId;
         org.name = 'Free Account';
         await org.save();
 
