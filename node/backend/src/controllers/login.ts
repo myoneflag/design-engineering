@@ -21,7 +21,7 @@ export async function registerUser(data: {
     password: string
     access: AccessLevel
     temporaryUser?: boolean
-    organization?: Organization
+    organization: Organization
 }): Promise<User> {
     const login: User = User.create();
     login.username = data.username;

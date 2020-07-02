@@ -13,6 +13,7 @@ import { Organization } from "../../../common/src/models/Organization";
 import VerifyEmail from '../email/VerifyEmail';
 import ForgotPassword from '../email/ForgotPassword';
 import H2xNewMemberEmail from '../email/H2xNewMemberEmail';
+import random from '../helpers/random';
 
 export class UserController {
 
@@ -89,6 +90,11 @@ export class UserController {
             });
         }
 
+        const org: Organization = Organization.create();
+        org.id = random(5, true);
+        org.name = 'Free Account';
+        await org.save();
+
         const user: User = await registerUser({
             email,
             username,
@@ -97,6 +103,7 @@ export class UserController {
             subscribed: false,
             password,
             access: AccessLevel.USER,
+            organization: org
         });
         
         const url = req.protocol + '://' + req.get('host') + '/confirm-email?email=' + user.email + '&token=' + user.email_verification_token;
