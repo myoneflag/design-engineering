@@ -18,11 +18,11 @@ class test_floorplan(unittest.TestCase):
         # pass
 
     def tearDown(self):
-        # time.sleep(2)
-        # self.driver.close()
-        pass
+        time.sleep(2)
+        self.driver.close()
+        # pass
 
-    def ztest_uploadFile(self):
+    def test_uploadFile(self):
         username = "admin"
         password = "pleasechange"
 
@@ -60,7 +60,7 @@ class test_floorplan(unittest.TestCase):
         print("File found!")
         print("Upload PDFTest Complete!\n----------------")
 
-    def ztest_replace_pdf(self):
+    def test_replace_pdf(self):
         username = "admin"
         password = "pleasechange"
 
@@ -108,7 +108,7 @@ class test_floorplan(unittest.TestCase):
         print("PDF successfully replaced!")
         print("Replace PDF Test Complete!\n----------------")
 
-    def ztest_addlevel(self):
+    def test_addlevel(self):
         username = "admin"
         password = "pleasechange"
 
@@ -178,7 +178,7 @@ class test_floorplan(unittest.TestCase):
         print("Drawing successfully deleted!")
         print("Adding Level Test Complete!\n----------------")
 
-    def ztest_deletelevel(self):
+    def test_deletelevel(self):
         username = "admin"
         password = "pleasechange"
 
