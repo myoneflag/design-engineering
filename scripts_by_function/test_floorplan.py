@@ -2,6 +2,7 @@ import unittest
 import time
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
+import os
 
 from methods import methods
 
@@ -27,10 +28,10 @@ class test_floorplan(unittest.TestCase):
         password = "pleasechange"
 
         # Uncomment line below for valid upload. Also Change path to where pdf.pdf is located
-        file = "C:/Users/Admin/h2x-mvp/scripts_by_function/pdf.pdf"
+        file = os.getcwd() + "/pdf.pdf"
 
         # Uncomment line below for invalid upload. Also Change path to where pdf.txt is located
-        # file = "C:/Users/Admin/h2x-mvp/scripts_by_function/pdf.txt"
+        # file = os.getcwd() + "/pdf.txt"
 
         # Start
         print("----------------\nStart Upload PDF Test...")
@@ -65,10 +66,10 @@ class test_floorplan(unittest.TestCase):
         password = "pleasechange"
 
         # Uncomment line below for valid upload. Also Change path to where pdf.pdf is located
-        file = "C:/Users/Admin/h2x-mvp/scripts_by_function/pdf.pdf"
+        file = os.getcwd() + "/pdf.pdf"
 
         # Replacement file
-        file_2 = "C:/Users/Admin/h2x-mvp/scripts_by_function/pdf-test.pdf"
+        file_2 = os.getcwd() + "/pdf-test.pdf"
 
         # Start
         print("----------------\nStart Replace PDF Test...")
@@ -123,12 +124,7 @@ class test_floorplan(unittest.TestCase):
 
         # Create New Drawing
         print("Creating new drawing...")
-        self.driver.find_element_by_xpath("//button[@class='btn btn-success btn-lg']").click()
-        time.sleep(3)
-        title = self.driver.find_element_by_xpath("//a[contains(text(),'Untitled')]")
-        self.actions.double_click(title).perform()
-        self.driver.find_element_by_xpath("//input[@class='form-control form-control-md']").click()
-        self.driver.find_element_by_xpath("//input[@class='form-control form-control-md']").send_keys("NEW DRAWING")
+        self.test.create_drawing()
         time.sleep(5)
         print("Create new drawing successful!")
 
@@ -167,14 +163,7 @@ class test_floorplan(unittest.TestCase):
 
         # Delete created drawing
         print("Deleting drawing...")
-        self.driver.find_element_by_xpath("//a[contains(text(),'Home')]").click()
-        time.sleep(3)
-        self.driver.find_element_by_xpath("//div[@class='home container']//div[1]//article[1]"
-                                          "//div[1]//div[1]//button[1]").click()
-        self.driver.find_element_by_xpath("//ul[@class='dropdown-menu show']//a[@class='dropdown-item"
-                                          " text-danger'][contains(text(),'Delete')]").click()
-        time.sleep(2)
-        self.driver.find_element_by_xpath("//button[@class='btn btn-primary']").click()
+        self.test.delete_drawing()
         print("Drawing successfully deleted!")
         print("Adding Level Test Complete!\n----------------")
 
@@ -193,12 +182,7 @@ class test_floorplan(unittest.TestCase):
 
         # Create New Drawing
         print("Creating new drawing...")
-        self.driver.find_element_by_xpath("//button[@class='btn btn-success btn-lg']").click()
-        time.sleep(3)
-        title = self.driver.find_element_by_xpath("//a[contains(text(),'Untitled')]")
-        self.actions.double_click(title).perform()
-        self.driver.find_element_by_xpath("//input[@class='form-control form-control-md']").click()
-        self.driver.find_element_by_xpath("//input[@class='form-control form-control-md']").send_keys("NEW DRAWING")
+        self.test.create_drawing()
         time.sleep(5)
         print("Create new drawing successful!")
 
@@ -278,15 +262,7 @@ class test_floorplan(unittest.TestCase):
 
         # Delete created drawing
         print("Deleting drawing...")
-        self.driver.find_element_by_xpath("//a[contains(text(),'Home')]").click()
-        time.sleep(3)
-        self.driver.find_element_by_xpath("//div[@class='home container']//div[1]//article[1]"
-                                          "//div[1]//div[1]//button[1]").click()
-        self.driver.find_element_by_xpath("//ul[@class='dropdown-menu show']//a[@class='dropdown-item"
-                                          " text-danger'][contains(text(),'Delete')]").click()
-        time.sleep(2)
-        self.driver.find_element_by_xpath("//button[@class='btn btn-primary']").click()
-        print("Drawing successfully deleted!")
+        self.test.delete_drawing()
         print("Deleting Level Test Complete!\n----------------")
 
     def test_changelevelheight(self):
@@ -304,12 +280,7 @@ class test_floorplan(unittest.TestCase):
 
         # Create New Drawing
         print("Creating new drawing...")
-        self.driver.find_element_by_xpath("//button[@class='btn btn-success btn-lg']").click()
-        time.sleep(3)
-        title = self.driver.find_element_by_xpath("//a[contains(text(),'Untitled')]")
-        self.actions.double_click(title).perform()
-        self.driver.find_element_by_xpath("//input[@class='form-control form-control-md']").click()
-        self.driver.find_element_by_xpath("//input[@class='form-control form-control-md']").send_keys("NEW DRAWING")
+        self.test.create_drawing()
         time.sleep(5)
         print("Create new drawing successful!")
 

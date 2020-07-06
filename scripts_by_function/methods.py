@@ -2,15 +2,17 @@ from selenium import webdriver
 import time
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+import os
 
 
 class methods():
 
     def get_driver(self):
         # Drivers listed below. Uncomment which driver you want to use.
-        self.driver = webdriver.Chrome(executable_path="C:/Users/Admin/h2x-mvp/scripts_by_function/chromedriver_win32/chromedriver.exe")
-        # self.driver = webdriver.Firefox(executable_path="C:/Users/Admin/h2x-mvp/scripts_by_function/geckodriver-v0.26.0-win64/geckodriver.exe")
-        # self.driver = webdriver.Edge(executable_path="C:/Users/Admin/h2x-mvp/scripts_by_function/edgedriver_win64/msedgedriver.exe")
+        self.working_directory = os.getcwd()
+        self.driver = webdriver.Chrome(executable_path= self.working_directory + "/chromedriver_win32/chromedriver.exe")
+        # self.driver = webdriver.Firefox(executable_path= self.working_directory + "/geckodriver-v0.26.0-win64/geckodriver.exe")
+        # self.driver = webdriver.Edge(executable_path= self.working_directory + "/edgedriver_win64/msedgedriver.exe")
         self.driver.get("https://deploy.h2xengineering.com/login")
         self.actions = ActionChains(self.driver)
         return self.driver
