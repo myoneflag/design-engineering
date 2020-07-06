@@ -27,10 +27,10 @@ class test_floorplan(unittest.TestCase):
         password = "pleasechange"
 
         # Uncomment line below for valid upload. Also Change path to where pdf.pdf is located
-        file = "C:\Users\Admin\h2x-mvp\scripts_by_function\pdf.pdf"
+        file = "C:/Users/Admin/h2x-mvp/scripts_by_function/pdf.pdf"
 
         # Uncomment line below for invalid upload. Also Change path to where pdf.txt is located
-        # file = "C:\Users\Admin\h2x-mvp\scripts_by_function\pdf.txt"
+        # file = "C:/Users/Admin/h2x-mvp/scripts_by_function/pdf.txt"
 
         # Start
         print("----------------\nStart Upload PDF Test...")
@@ -65,7 +65,7 @@ class test_floorplan(unittest.TestCase):
         password = "pleasechange"
 
         # Uncomment line below for valid upload. Also Change path to where pdf.pdf is located
-        file = "C:\Users\Admin\h2x-mvp\scripts_by_function\pdf.pdf"
+        file = "C:/Users/Admin/h2x-mvp/scripts_by_function/pdf.pdf"
 
         # Replacement file
         file_2 = "C:/Users/Admin/h2x-mvp/scripts_by_function/pdf-test.pdf"
@@ -383,7 +383,7 @@ class test_floorplan(unittest.TestCase):
         time.sleep(2)
         self.driver.find_element_by_xpath("//button[@class='btn btn-primary']").click()
         print("Drawing successfully deleted!")
-        print("DChange Level Height Test Complete!\n----------------")
+        print("Change Level Height Test Complete!\n----------------")
 
 
 if __name__ == '__main__':
