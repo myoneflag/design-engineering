@@ -27,10 +27,10 @@ class test_floorplan(unittest.TestCase):
         password = "pleasechange"
 
         # Uncomment line below for valid upload. Also Change path to where pdf.pdf is located
-        file = "D:\Work Files\PDFs\pdf.pdf"
+        file = "C:\Users\Admin\h2x-mvp\scripts_by_function\pdf.pdf"
 
         # Uncomment line below for invalid upload. Also Change path to where pdf.txt is located
-        # file = "D:\Work Files\PDFs\pdf.txt"
+        # file = "C:\Users\Admin\h2x-mvp\scripts_by_function\pdf.txt"
 
         # Start
         print("----------------\nStart Upload PDF Test...")
@@ -65,10 +65,10 @@ class test_floorplan(unittest.TestCase):
         password = "pleasechange"
 
         # Uncomment line below for valid upload. Also Change path to where pdf.pdf is located
-        file = "D:\Work Files\PDFs\pdf.pdf"
+        file = "C:\Users\Admin\h2x-mvp\scripts_by_function\pdf.pdf"
 
         # Replacement file
-        file_2 = "D:/Work Files/PDFs/pdf-test.pdf"
+        file_2 = "C:/Users/Admin/h2x-mvp/scripts_by_function/pdf-test.pdf"
 
         # Start
         print("----------------\nStart Replace PDF Test...")
