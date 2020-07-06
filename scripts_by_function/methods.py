@@ -12,6 +12,7 @@ class methods():
         # driver = webdriver.Firefox(executable_path="D:\Work Files\Drivers\geckodriver-v0.26.0-win64\geckodriver.exe")
         self.driver = webdriver.Edge(executable_path="D:\Work Files\Drivers\edgedriver_win64\msedgedriver.exe")
         self.driver.get("https://deploy.h2xengineering.com/login")
+        self.actions = ActionChains(self.driver)
         return self.driver
 
     def login_by_button_click(self, username, password):
@@ -72,6 +73,23 @@ class methods():
 
         # Click export all button
         self.driver.find_element_by_id("export-all-pdf-btn").click()
+
+    def create_drawing(self):
+        self.driver.find_element_by_xpath("//button[@class='btn btn-success btn-lg']").click()
+        time.sleep(5)
+        title = self.driver.find_element_by_xpath("//a[contains(text(),'Untitled')]")
+        self.actions.double_click(title).perform()
+        self.driver.find_element_by_xpath("//input[@class='form-control form-control-md']").click()
+        self.driver.find_element_by_xpath("//input[@class='form-control form-control-md']").send_keys("NEW DRAWING")
+
+    def delete_drawing(self):
+        self.driver.find_element_by_xpath("//a[contains(text(),'Home')]").click()
+        time.sleep(5)
+        self.driver.find_element_by_xpath("/html/body/div/div/div/div/div[5]/div[1]/article/div/div/button").click()
+        self.driver.find_element_by_xpath("//ul[@class='dropdown-menu show']//a[@class='dropdown-item"
+                                          " text-danger'][contains(text(),'Delete')]").click()
+        time.sleep(2)
+        self.driver.find_element_by_xpath("//button[@class='btn btn-primary']").click()
 
 
 

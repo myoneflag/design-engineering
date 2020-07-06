@@ -22,11 +22,11 @@ class test_export(unittest.TestCase):
     def test_exportFile(self):
         username = "admin"
         password = "pleasechange"
-        file_to_upload = "D:\Work Files\PDFs\pdf.pdf"
+        file_to_upload = "D:/Work Files/PDFs/pdf.pdf"
         exported_file = "C:/Users/Admin/Downloads/Untitled.pdf"
 
         # Login
-        self.test.login(username, password)
+        self.test.login_by_button_click(username, password)
 
         # File upload
         time.sleep(3)
