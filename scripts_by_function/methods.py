@@ -51,19 +51,18 @@ class methods():
 
         # Upload file
         time.sleep(5)
-        self.driver.find_element_by_xpath("//input[@name='name']").send_keys(file)
+        self.driver.find_element_by_xpath("/html/body/div/div/div/div[2]/div[2]/div/div/input")\
+            .send_keys(file)
 
     def export_all_levels(self):
 
         # Click Results button
         time.sleep(2)
-        self.driver.find_element_by_xpath("//button[@class='btn modebtn results btn-sm btn-outline-dark']"
-                                          "//*[local-name()='svg']").click()
+        self.driver.find_element_by_xpath("/html/body/div/div/div/div[2]/div[1]/div[1]/div/div/button[3]").click()
         time.sleep(1)
 
         # Click Filters button to close it
-        self.driver.find_element_by_css_selector("div.calculationSidePanel.container:nth-child(1) div.row div.col div"
-                                                 ".btn-group > button.btn.calculationBtn.btn-outline-dark").click()
+        self.driver.find_element_by_xpath("/html/body/div/div/div/div[1]/div[1]/div/div/button").click()
 
         # Click Export button
         self.driver.find_element_by_xpath("//button[@class='btn dropdown-toggle btn-outline-dark btn-sm']").click()
