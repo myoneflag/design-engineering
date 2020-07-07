@@ -2,7 +2,7 @@ import { EntityType } from "../types";
 import { FieldType, PropertyField } from "../property-field";
 import InvisibleNodeEntity from "../Invisible-node-entity";
 import { Catalog } from "../../../catalog/types";
-import { COLORS, Coord, DrawableEntity } from "../../drawing";
+import { COLORS, Coord, DrawableEntity, DrawingState, SelectedMaterialManufacturer } from "../../drawing";
 import { cloneSimple, parseCatalogNumberOrMin } from "../../../../lib/utils";
 import { Units } from "../../../../lib/measurements";
 
@@ -146,8 +146,10 @@ export function makeBigValveFields(entity: BigValveEntity): PropertyField[] {
     ];
 }
 
-export function fillDefaultBigValveFields(defaultCatalog: Catalog, value: BigValveEntity) {
+export function fillDefaultBigValveFields(defaultCatalog: Catalog, value: BigValveEntity, drawing: DrawingState) {
     const result = cloneSimple(value);
+    const checkSelectedMaterialManufacturer = drawing.metadata.catalog.mixingValves.find((material: SelectedMaterialManufacturer) => material.uid === 'tmv');
+    const manufacturer = checkSelectedMaterialManufacturer && checkSelectedMaterialManufacturer.manufacturer || 'generic';
 
     const arr: Array<"minInletPressureKPA" | "maxInletPressureKPA" | "minFlowRateLS" | "maxFlowRateLS"> = [
         "minInletPressureKPA",
@@ -158,7 +160,7 @@ export function fillDefaultBigValveFields(defaultCatalog: Catalog, value: BigVal
 
     arr.forEach((field) => {
         if (result[field] === null) {
-            result[field] = parseCatalogNumberOrMin(defaultCatalog.mixingValves.tmv[field]);
+            result[field] = parseCatalogNumberOrMin(defaultCatalog.mixingValves.tmv[field][manufacturer]);
         }
     });
     return result;

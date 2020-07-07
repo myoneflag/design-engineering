@@ -279,6 +279,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                 primaryName: null,
                 columns: [
                     ["name", "Name"],
+                    ["manufacturer", "Manufacturer"],
                     ["minInletPressureKPA", "Min. Inlet Pressure", Units.KiloPascals],
                     ["maxInletPressureKPA", "Max. Inlet Pressure", Units.KiloPascals],
                     ["minFlowRateLS", "Min. Flow Rate", Units.LitersPerSecond],
@@ -286,20 +287,21 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                 ],
                 link: {
                     name: { order: 1, name: "Name" },
+                    manufacturer: {order: 2, name: "Manufacturer"},
                     uid: null,
-                    minInletPressureKPA: { order: 2, name: "Min. Inlet Pressure", units: Units.KiloPascals },
-                    maxInletPressureKPA: { order: 3, name: "Max. Inlet Pressure", units: Units.KiloPascals },
-                    minFlowRateLS: { order: 5, name: "Min. Flow Rate", units: Units.LitersPerSecond },
-                    maxFlowRateLS: { order: 6, name: "Max. Flow Rate", units: Units.LitersPerSecond },
+                    minInletPressureKPA: { order: 4, name: "Min. Inlet Pressure", units: Units.KiloPascals },
+                    maxInletPressureKPA: { order: 5, name: "Max. Inlet Pressure", units: Units.KiloPascals },
+                    minFlowRateLS: { order: 6, name: "Min. Flow Rate", units: Units.LitersPerSecond },
+                    maxFlowRateLS: { order: 7, name: "Max. Flow Rate", units: Units.LitersPerSecond },
                     pressureLossKPAbyFlowRateLS: {
-                        order: 7,
+                        order: 8,
                         name: "Pressure Loss By Flow Rate",
                         table: {
                             primaryName: "Flow Rate",
                             primaryUnits: Units.LitersPerSecond,
                             columns: [[null, "Pressure Loss", Units.KiloPascals]]
                         }
-                    }
+                    },
                 }
             }
         },

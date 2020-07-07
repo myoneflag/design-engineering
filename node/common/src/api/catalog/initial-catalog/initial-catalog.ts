@@ -920,34 +920,109 @@ export const initialCatalog: Catalog = {
     },
     mixingValves: {
         temperingValve: {
-            maxFlowRateLS: "0.6",
-            maxInletPressureKPA: "500",
-            minFlowRateLS: "0.066",
-            minInletPressureKPA: "20",
+            maxFlowRateLS: {
+                generic: "0.6",
+                caleffi: "1.41",
+            },
+            maxInletPressureKPA: {
+                generic: "500",
+                caleffi: "1400",
+            },
+            minFlowRateLS: {
+                generic: "0.066",
+                caleffi: "0.066",
+            },
+            minInletPressureKPA: {
+                generic: "20",
+                caleffi: "20",
+            },
             name: "Tempering Valve",
             uid: "temperingValve",
             pressureLossKPAbyFlowRateLS: {
-                0: "0",
-                0.08: "3",
-                0.16: "12",
-                0.32: "50",
-                0.6: "150"
-            }
+                generic: {
+                    0: "0",
+                    0.08: "3",
+                    0.16: "12",
+                    0.32: "50",
+                    0.6: "150"
+                },
+                caleffi: {
+                    0: "0",
+                    0.08: "3.6",
+                    0.16: "14",
+                    0.32: "55",
+                    0.5: "140",
+                    0.51: "19",
+                    0.7: "33",
+                    0.9: "57",
+                    1.2: "102",
+                    1.4: "140",
+                }
+            },
+            manufacturer: [
+                {
+                    name: 'Generic',
+                    abbreviation: "Generic",
+                    uid: "generic",
+                },
+                {
+                    name: 'Caleffi',
+                    abbreviation: "Caleffi",
+                    uid: "caleffi",
+                }
+            ],
         },
         tmv: {
-            maxFlowRateLS: "0.65",
-            maxInletPressureKPA: "500",
-            minFlowRateLS: "0.066",
-            minInletPressureKPA: "20",
+            maxFlowRateLS: {
+                generic: "0.65",
+                caleffi: "1",
+            },
+            maxInletPressureKPA: {
+                generic: "500",
+                caleffi: "1400",
+            },
+            minFlowRateLS: {
+                generic: "0.066",
+                caleffi: "0.033",
+            },
+            minInletPressureKPA: {
+                generic: "20",
+                caleffi: "20",
+            },
             name: "TMV",
             uid: "tmv",
             pressureLossKPAbyFlowRateLS: {
-                0: "0",
-                0.16: "30",
-                0.32: "80",
-                0.48: "160",
-                0.65: "300"
-            }
+                generic: {
+                    0: "0",
+                    0.16: "30",
+                    0.32: "80",
+                    0.48: "160",
+                    0.65: "300"
+                },
+                caleffi: {
+                    0: "0",
+                    0.16: "14",
+                    0.32: "55",
+                    0.48: "130",
+                    0.49: "37",
+                    0.6: "52",
+                    0.75: "82",
+                    0.83: "100",
+                    1: "150",
+                },
+            },
+            manufacturer: [
+                {
+                    name: 'Generic',
+                    abbreviation: "Generic",
+                    uid: "generic",
+                },
+                {
+                    name: 'Caleffi',
+                    abbreviation: "Caleffi",
+                    uid: "caleffi",
+                }
+            ],
         }
     },
     prv: {

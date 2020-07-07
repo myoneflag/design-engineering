@@ -2313,12 +2313,15 @@ export default class CalculationEngine {
                 case EntityType.BIG_VALVE: {
                     let calc = this.globalStore.getOrCreateCalculation(o.entity);
                     let maxFlowRateLS = null;
+                    let manufacturer = 'generic';
                     switch (o.entity.valve.type) {
                         case BigValveType.TMV:
-                            maxFlowRateLS = parseCatalogNumberExact(this.catalog.mixingValves.tmv.maxFlowRateLS);
+                            manufacturer = this.doc.drawing.metadata.catalog.mixingValves.find((material: SelectedMaterialManufacturer) => material.uid === 'tmv')?.manufacturer || 'generic';
+                            maxFlowRateLS = parseCatalogNumberExact(this.catalog.mixingValves.tmv.maxFlowRateLS[manufacturer]);
                             break;
                         case BigValveType.TEMPERING:
-                            maxFlowRateLS = parseCatalogNumberExact(this.catalog.mixingValves.temperingValve.maxFlowRateLS);
+                            manufacturer = this.doc.drawing.metadata.catalog.mixingValves.find((material: SelectedMaterialManufacturer) => material.uid === 'temperingValve')?.manufacturer || 'generic';
+                            maxFlowRateLS = parseCatalogNumberExact(this.catalog.mixingValves.temperingValve.maxFlowRateLS[manufacturer]);
                             break;
                         case BigValveType.RPZD_HOT_COLD:
                             break;

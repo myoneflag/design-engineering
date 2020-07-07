@@ -76,7 +76,7 @@ export default class BigValveProperties extends Vue {
     }
 
     get defaultData() {
-        return fillDefaultBigValveFields(this.defaultCatalog, this.reactiveData);
+        return fillDefaultBigValveFields(this.defaultCatalog, this.reactiveData, this.document.drawing);
     }
 
     onCommit() {

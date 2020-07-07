@@ -40,7 +40,7 @@
                                     @row-selected="(d) => onRowClick(prop, d)"
                                     responsive="true"
                                 >
-                                    <template v-if="prop === 'pipes' || prop === 'backflowValves'" v-slot:cell(manufacturer)="data">
+                                    <template v-slot:cell(manufacturer)="data">
                                         <b-button 
                                             :variant="isSelectedManufacturer(prop, data.item._key, manufacturer.uid) && 'primary' || 'outline-primary'" 
                                             size="sm" 
@@ -86,7 +86,7 @@ import MainNavBar from "../../components/MainNavBar.vue";
 import { CatalogSchema, getCatalogDisplaySchema, Page, Table } from "../../lib/catalog/displaySchema";
 import { getPropertyByString } from "../../lib/utils";
 import { RawLocation } from "vue-router";
-import { Catalog, Manufacturer } from "../../../../common/src/api/catalog/types";
+import { Catalog, Manufacturer, MixingValveSpec } from "../../../../common/src/api/catalog/types";
 import { Catalog as DawingCatalog} from "../../../../common/src/api/document/drawing";
 import { DocumentState } from "../../store/document/types";
 import { cloneSimple } from "../../../../common/src/lib/utils";
@@ -152,7 +152,6 @@ export default class CatalogView extends Vue {
             return this.catalog;
         }
         
-        console.log(pathArr.join("."));
         const val = getPropertyByString(this.catalog, pathArr.join("."));
         return val;
     }
@@ -193,6 +192,16 @@ export default class CatalogView extends Vue {
             value = value.find((obj: Manufacturer) => obj.uid === this.manufacturer).name;
         }
 
+        if (this.paths[1].text === 'mixingValves') {
+            if (['minInletPressureKPA',
+                'maxInletPressureKPA',
+                'minFlowRateLS',
+                'maxFlowRateLS'].includes(prop))
+            {
+                value = value[this.manufacturer];
+            }
+        }
+       
         if (units && !isNaN(Number(value))) {
             return convertMeasurementSystem(this.document.drawing.metadata.units, units, Number(value))[1];
         } else {
@@ -249,11 +258,20 @@ export default class CatalogView extends Vue {
             const items = [];
             let entries = this.currCatalog[prop];
             
-            if (this.manufacturer && (prop === 'pipesBySize' || prop === 'valvesBySize')) {
+            if (this.manufacturer
+                && (prop === 'pipesBySize'
+                    || prop === 'valvesBySize'
+                    || prop === 'pressureLossKPAbyFlowRateLS'))
+            {
                entries = entries[this.manufacturer] || entries;
             }
 
             for (const [key, value] of Object.entries(entries)) {
+                let manufacturer: string = '';
+                if (this.paths.length <= 2) {
+                    manufacturer = this.document.drawing.metadata.catalog[prop]?.find(obj => obj.uid === value.uid)?.manufacturer || 'generic';
+                }
+
                 const item: any = {};
                 if (table.primaryName) {
                     if (table.primaryUnits && !isNaN(Number(key))) {
@@ -275,7 +293,21 @@ export default class CatalogView extends Vue {
                 for (const col of cols) {
                     let display = value;
                     if (col[0] !== null) {
-                        display = (value as any)[col[0]];
+                        switch(prop) {
+                            case 'mixingValves':
+                                if (manufacturer
+                                    && (col[0] === 'minInletPressureKPA'
+                                        || col[0] === 'maxInletPressureKPA'
+                                        || col[0] === 'minFlowRateLS'
+                                        || col[0] === 'maxFlowRateLS'))
+                                {
+                                    display = (value as any)[col[0]][manufacturer];
+                                    break;
+                                }
+                            default:
+                                display = (value as any)[col[0]];
+                                break;
+                        }
                     }
 
                     if (col[2]) {

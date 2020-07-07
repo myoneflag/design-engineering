@@ -225,6 +225,7 @@ export interface Rectangle {
 export interface Catalog {
     pipes: SelectedMaterialManufacturer[];
     backflowValves: SelectedMaterialManufacturer[];
+    mixingValves: SelectedMaterialManufacturer[];
     [key: string]: SelectedMaterialManufacturer[];
 }
 
@@ -366,6 +367,7 @@ export const initialDrawing: DrawingState = {
         catalog: {
             pipes: [],
             backflowValves: [],
+            mixingValves: []
         }
     },
     levels: {

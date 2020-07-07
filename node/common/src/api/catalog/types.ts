@@ -138,11 +138,32 @@ export interface PipeSpec {
 export interface MixingValveSpec {
     name: string;
     uid: string;
-    minInletPressureKPA: string;
-    maxInletPressureKPA: string;
-    minFlowRateLS: string;
-    maxFlowRateLS: string;
-    pressureLossKPAbyFlowRateLS: { [key: string]: string };
+    minInletPressureKPA: {
+        generic: string;
+        caleffi: string;
+        [key: string]: string;
+    };
+    maxInletPressureKPA: {
+        generic: string;
+        caleffi: string;
+        [key: string]: string;
+    };
+    minFlowRateLS: {
+        generic: string;
+        caleffi: string;
+        [key: string]: string;
+    };
+    maxFlowRateLS: {
+        generic: string;
+        caleffi: string;
+        [key: string]: string;
+    };
+    pressureLossKPAbyFlowRateLS: {
+        generic: { [key: string]: string };
+        caleffi: { [key: string]: string };
+        [key: string]: { [key: string]: string };
+    };
+    manufacturer: Manufacturer[];
 }
 
 export interface FluidsSpec {
