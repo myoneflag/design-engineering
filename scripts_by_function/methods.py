@@ -75,6 +75,27 @@ class methods():
         # Click export all button
         self.driver.find_element_by_id("export-all-pdf-btn").click()
 
+    def export_by_level(self):
+        # Click Results button
+        time.sleep(2)
+        self.driver.find_element_by_xpath("/html/body/div/div/div/div[2]/div[1]/div[1]/div/div/button[3]").click()
+        time.sleep(1)
+
+        # Click Filters button to close it
+        self.driver.find_element_by_xpath("/html/body/div/div/div/div[1]/div[1]/div/div/button").click()
+
+        # Click Export button
+        self.driver.find_element_by_xpath("//button[@class='btn dropdown-toggle btn-outline-dark btn-sm']").click()
+        time.sleep(1)
+
+        # Click PDF button
+        self.driver.find_element_by_partial_link_text("PDF").click()
+        time.sleep(3)
+
+        # Click Export This Level
+        self.driver.find_element_by_xpath("/html/body/div/div/div/div/div[1]/div[5]/div/button[1]").click()
+        time.sleep(1)
+
     def create_drawing(self):
         self.driver.find_element_by_xpath("//button[@class='btn btn-success btn-lg']").click()
         time.sleep(5)
