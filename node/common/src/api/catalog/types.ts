@@ -4,6 +4,7 @@ import LoadingUnitHotColdTable from "./psd-standard/loading-unit-hot-cold-table"
 import PsdEquation from "./psd-standard/psdEquation";
 import LoadingUnitMaxTable from "./psd-standard/loading-unit-max-table";
 import { SupportedPsdStandards } from "../config";
+import {PipesTable} from "./price-table";
 
 export interface DwellingUnitHotColdTable {
     type: DwellingStandardType.DWELLING_HOT_COLD_LOOKUP_TABLE;
@@ -82,6 +83,7 @@ export interface PRVSize {
 
 export interface FixtureSpec {
     name: string;
+    priceTableName: string;
     abbreviation: string;
     uid: string;
 
@@ -142,6 +144,7 @@ export interface PipeMaterial {
 export interface Manufacturer {
     name: string;
     abbreviation: string;
+    priceTableName: keyof PipesTable;
     uid: string;
 }
 

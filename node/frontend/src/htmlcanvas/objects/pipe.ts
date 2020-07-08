@@ -45,7 +45,7 @@ import {
 import Cached from "../lib/cached";
 import { GlobalStore } from "../lib/global-store";
 import { PipeMaterial, PipeSpec } from "../../../../common/src/api/catalog/types";
-import { Coord, Coord3D } from "../../../../common/src/api/document/drawing";
+import {Coord, Coord3D, Pipe as PipeObject} from "../../../../common/src/api/document/drawing";
 import {
     cloneSimple,
     interpolateTable,
@@ -57,6 +57,7 @@ import { assertUnreachable, ComponentPressureLossMethod } from "../../../../comm
 import { CenteredObject } from "../lib/object-traits/centered-object";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { getHighlightColor } from "../lib/utils";
+import {PipesTable} from "../../../../common/src/api/catalog/price-table";
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 1.5;
@@ -841,6 +842,29 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
     protected refreshObjectInternal(obj: PipeEntity): void {
         //
+    }
+
+    cost(context: CalculationContext): number | null {
+        const filled = fillPipeDefaultFields(context.drawing, this.computedLengthM, this.entity);
+        const catalogEntry = this.getCatalogPage(context);
+        if (!catalogEntry) {
+            return null;
+        }
+
+        const manufacturer = context.drawing.metadata.catalog.pipes
+            .find((pipeObj: PipeObject) => pipeObj.uid === filled.material)?.manufacturer || 'generic';
+        const priceTableName = catalogEntry.manufacturer.find((m) => m.uid === manufacturer)?.priceTableName;
+        if (!priceTableName) {
+            return null;
+        }
+
+        const size = context.globalStore.getOrCreateCalculation(this.entity).realNominalPipeDiameterMM!;
+        if (priceTableName in context.priceTable.Pipes) {
+            if (size in context.priceTable.Pipes[priceTableName]) {
+                return context.priceTable.Pipes[priceTableName][size];
+            }
+        }
+        return null;
     }
 }
 

@@ -128,6 +128,7 @@ export function getSystemNodeHeightM(entity: SystemNodeEntity, context: CanvasCo
     return getEdgeLikeHeightAboveFloorM(po.entity as EdgeLikeEntity, {
         drawing: context.document.drawing,
         catalog: context.effectiveCatalog,
+        priceTable: context.effectivePriceTable,
         doc: context.document,
         globalStore: context.globalStore
     });

@@ -110,6 +110,9 @@ export function makeBigValveCalculationFields(doc: DocumentState, entity: BigVal
 
 export function EmptyBigValveCalculations(entity: BigValveEntity): BigValveCalculation {
     const result: BigValveCalculation = {
+        cost: null,
+        expandedEntities: null,
+
         coldPressureKPA: null,
         coldTemperatureC: null,
         coldRawPeakFlowRate: null,

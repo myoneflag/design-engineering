@@ -124,6 +124,9 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
 
 export function emptyDirectedValveCalculation(): DirectedValveCalculation {
     return {
+        cost: null,
+        expandedEntities: null,
+
         flowRateLS: null,
         pressureDropKPA: null,
         staticPressureKPA: null,

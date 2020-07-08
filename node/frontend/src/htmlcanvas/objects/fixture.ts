@@ -339,4 +339,9 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
             }
         }
     }
+
+    cost(context: CalculationContext): number | null {
+        const catalog = context.catalog.fixtures[this.entity.name];
+        return context.priceTable.Fixtures[catalog.priceTableName];
+    }
 }

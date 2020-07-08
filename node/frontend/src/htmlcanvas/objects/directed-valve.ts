@@ -714,4 +714,85 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     protected refreshObjectInternal(obj: DrawableEntity, old?: DrawableEntity): void {
         //
     }
+
+    cost(context: CalculationContext): number | null {
+        const size = this.largestPipeSizeNominalMM(context);
+
+        const calc = context.globalStore.getOrCreateCalculation(this.entity);
+        const ownSize = calc.sizeMM;
+        switch (this.entity.valve.type) {
+            case ValveType.CHECK_VALVE:
+                if (size) {
+                    return context.priceTable.Valves["Check Valve"][size];
+                }
+                break;
+            case ValveType.ISOLATION_VALVE:
+                switch (this.entity.valve.catalogId) {
+                    case "gateValve":
+                        if (size) {
+                            return context.priceTable.Valves["Brass Gate Valve"][size];
+                        }
+                        break;
+                    case "ballValve":
+                        if (size) {
+                            return context.priceTable.Valves["Brass Ball Valve"][size];
+                        }
+                        break;
+                    case "butterflyValve":
+                        if (size) {
+                            return context.priceTable.Valves["Butterfly Valve"][size];
+                        }
+                        break;
+                }
+                break;
+            case ValveType.WATER_METER:
+                if (size) {
+                    return context.priceTable.Valves["Water Meter"][size];
+                }
+                break;
+            case ValveType.STRAINER:
+                if (size) {
+                    return context.priceTable.Valves["Strainer"][size];
+                }
+                break;
+            case ValveType.RPZD_SINGLE:
+                if (ownSize) {
+                    return context.priceTable.Equipment.RPZD[ownSize];
+                }
+                break;
+            case ValveType.RPZD_DOUBLE_SHARED:
+                if (ownSize) {
+                    return context.priceTable.Equipment.RPZD[ownSize] * 2;
+                }
+                break;
+            case ValveType.RPZD_DOUBLE_ISOLATED:
+                if (ownSize) {
+                    return context.priceTable.Equipment.RPZD[ownSize] * 2;
+                }
+                break;
+            case ValveType.PRV_SINGLE:
+                if (ownSize) {
+                    return context.priceTable.Equipment.PRV[ownSize];
+                }
+                break;
+            case ValveType.PRV_DOUBLE:
+                if (ownSize) {
+                    return context.priceTable.Equipment.PRV[ownSize] * 2;
+                }
+                break;
+            case ValveType.PRV_TRIPLE:
+                if (ownSize) {
+                    return context.priceTable.Equipment.PRV[ownSize] * 3;
+                }
+                break;
+            case ValveType.BALANCING:
+                if (size) {
+                    return context.priceTable.Equipment["Balancing Valve"][size];
+                }
+                break;
+            default:
+                assertUnreachable(this.entity.valve);
+        }
+        return null;
+    }
 }

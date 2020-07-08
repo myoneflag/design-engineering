@@ -544,4 +544,8 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
             });
         }
     }
+
+    cost(context: CalculationContext): number | null {
+        return null;
+    }
 }

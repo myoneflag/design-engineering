@@ -223,6 +223,9 @@ export function makePipeCalculationFields(
 
 export function emptyPipeCalculation(): PipeCalculation {
     return {
+        cost: null,
+        expandedEntities: null,
+
         totalPeakFlowRateLS: null,
         heightM: null,
         PSDFlowRateLS: null,

@@ -1,24 +1,24 @@
 <template>
     <div>
-        <template v-for="valve in valves">
+        <template v-for="fitting in fittings">
             <b-row>
                 <b-col>
-                    <h4>{{valve}}</h4>
+                    <h4>{{fitting}}</h4>
                 </b-col>
             </b-row>
             <b-table
                     small
                     striped
-                    :items="items(valve)"
-                    :fields="fields(valve)"
+                    :items="items(fitting)"
+                    :fields="fields(fitting)"
                     style="max-width: 100%; overflow-x: auto; margin-top:25px"
                     responsive="true"
             >
                 <template v-for="material in materials" v-slot:[cellKey(material)]="slot" >
-                    <b-input-group>
+                    <b-input-group size="sm">
                         <b-form-input
                                 type="number"
-                                @input="(e) => onCellInput(valve, material, slot.item['Size (mm)'], e)"
+                                @input="(e) => onCellInput(fitting, material, slot.item['Size (mm)'], e)"
                                 :value="slot.value"
                         ></b-form-input>
                     </b-input-group>
@@ -35,9 +35,8 @@
     import {
         PipesBySize,
         PipesTable as PipesTableType,
-        PlantTable,
+        FittingsTable as FittingsTableType,
         PriceTable,
-        ValvesTable as ValvesTableType
     } from "../../../../common/src/api/catalog/price-table";
     import {defaultPriceTable} from "../../../../common/src/api/catalog/default-price-table";
 
@@ -46,18 +45,18 @@
         props: {
         }
     })
-    export default class ValvesTable extends Vue {
+    export default class FittingsTable extends Vue {
         get priceTable(): PriceTable {
             return defaultPriceTable;
         }
 
-        get valves() {
-            return Object.keys(this.priceTable.Valves);
+        get fittings() {
+            return Object.keys(this.priceTable.Fittings);
         }
 
-        fields(valve: keyof ValvesTableType) {
+        fields(fitting: keyof FittingsTableType) {
             const fields = ["Size (mm)"];
-            for (const material of Object.keys(this.priceTable.Valves[valve])) {
+            for (const material of Object.keys(this.priceTable.Fittings[fitting])) {
                 fields.push(material);
             }
             return fields;
@@ -71,22 +70,22 @@
             return Object.keys(this.priceTable.Pipes);
         }
 
-        onCellInput(valve: 'Tee' | 'Elbow', material: keyof PipesTableType, size: number, value: number) {
-            defaultPriceTable.Valves[valve][material][size] = Number(value);
+        onCellInput(fitting: keyof FittingsTableType, material: keyof PipesTableType, size: number, value: number) {
+            defaultPriceTable.Fittings[fitting][material][size] = Number(value);
         }
 
-        items(valve: keyof ValvesTableType) {
+        items(fitting: keyof FittingsTableType) {
             const itemsBySize: {[key: number]: {[key: string]: any}} = {};
-            for (const [material, val] of Object.entries(this.priceTable.Valves[valve])) {
-                if ()
+            for (const [material, pipesBySize] of Object.entries(this.priceTable.Fittings[fitting])) {
+
                 for (const [size, cost] of Object.entries(pipesBySize as PipesBySize)) {
-                    if (!(cost in itemsBySize)) {
-                        itemsBySize[cost] = {"Size (mm)": size};
+                    if (!(size in itemsBySize)) {
+                        itemsBySize[Number(size)] = {"Size (mm)": size};
                     }
-                    itemsBySize[cost][material] = cost;
+                    itemsBySize[Number(size)][material] = cost;
                 }
             }
-            return Object.keys(itemsBySize).sort().map((size) => itemsBySize[Number(size)]);
+            return Object.keys(itemsBySize).sort((a, b) => Number(a) - Number(b)).map((size) => itemsBySize[Number(size)]);
         }
     }
 </script>

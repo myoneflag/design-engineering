@@ -502,4 +502,25 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
     shape(): Flatten.Segment | Flatten.Point | Flatten.Polygon | Flatten.Circle | null {
         return super.shape();
     }
+
+    cost(context: CalculationContext): number | null {
+        switch (this.entity.valve.type) {
+            case BigValveType.TMV:
+                return context.priceTable.Equipment.TMV;
+            case BigValveType.TEMPERING:
+                return context.priceTable.Equipment["Tempering Valve"];
+            case BigValveType.RPZD_HOT_COLD:
+                const calc = context.globalStore.getOrCreateCalculation(this.entity);
+                if (!calc.rpzdSizeMM) {
+                    return null;
+                }
+                const hotSize = calc.rpzdSizeMM[StandardFlowSystemUids.HotWater];
+                const coldSize = calc.rpzdSizeMM[StandardFlowSystemUids.ColdWater];
+                return context.priceTable.Equipment.RPZD[hotSize!] +
+                    context.priceTable.Equipment.RPZD[coldSize!];
+            default:
+                assertUnreachable(this.entity.valve);
+        }
+        return null;
+    }
 }

@@ -9,7 +9,7 @@
     >
         <template v-slot:[cellKey]="slot">
             <b-input-group prepend="$">
-                <b-form-input type="number" @input="(e) => onCellInput(slot.item['Fixture'], e)" :value="slot.value"></b-form-input>
+                <b-form-input type="number" @input="(e) => onCellInput(slot.item['Node'], e)" :value="slot.value"></b-form-input>
             </b-input-group>
         </template>
     </b-table>
@@ -25,17 +25,17 @@
         props: {
         }
     })
-    export default class FixturesTable extends Vue {
+    export default class NodesTable extends Vue {
         get priceTable(): PriceTable {
             return defaultPriceTable;
         }
 
         get fields() {
-            return ["Fixture", "Unit Cost - Supply and Install"];
+            return ["Node", "Unit cost"];
         }
 
         get cellKey() {
-            return 'cell(Unit Cost - Supply and Install)';
+            return 'cell(Unit cost)';
         }
 
         onCellInput(id: string, value: number) {
@@ -43,10 +43,10 @@
         }
 
         get items() {
-            return Object.entries(this.priceTable.Fixtures).sort().map(([fixture, cost]) => {
+            return Object.entries(this.priceTable.Node).map(([node, cost]) => {
                 return {
-                    "Fixture": fixture,
-                    "Unit Cost - Supply and Install": cost,
+                    "Node": node,
+                    "Unit cost": cost,
                 }
             });
         }

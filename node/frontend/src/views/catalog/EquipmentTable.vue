@@ -3,7 +3,7 @@
         <template v-for="component in components">
             <b-row>
                 <b-col>
-                    <h4>{{valve}}</h4>
+                    <h4>{{component}}</h4>
                 </b-col>
             </b-row>
             <b-table
@@ -35,6 +35,7 @@
     import Vue from "vue";
     import {
         PipesBySize,
+        EquipmentTable as EquipmentTableType,
         PipesTable as PipesTableType,
         ValvesTable as ValvesTableType,
         PriceTable,
@@ -46,13 +47,13 @@
         props: {
         }
     })
-    export default class ValvesTable extends Vue {
+    export default class EquipmentTable extends Vue {
         get priceTable(): PriceTable {
             return defaultPriceTable;
         }
 
         get components() {
-            return Object.keys(this.priceTable.Components);
+            return Object.keys(this.priceTable.Equipment);
         }
 
         get fields() {
@@ -67,16 +68,26 @@
             return Object.keys(this.priceTable.Pipes);
         }
 
-        onCellInput(valve: keyof ValvesTableType, size: number, value: number) {
-            defaultPriceTable.Valves[valve][size] = Number(value);
+        onCellInput(equipment: keyof EquipmentTableType, size: number | 'All', value: number) {
+            if (equipment === 'TMV' || equipment === 'Tempering Valve') {
+                defaultPriceTable.Equipment[equipment] = Number(value);
+            } else {
+                defaultPriceTable.Equipment[equipment][Number(size)] = Number(value);
+            }
         }
 
-        items(valve: keyof ValvesTableType) {
-            const itemsBySize: {[key: number]: any} = {};
-            for (const [size, cost] of Object.entries(this.priceTable.Valves[valve])) {
-                itemsBySize[Number(size)] = {"Size (mm)": size, "Unit cost": cost};
+        items(equipment: keyof EquipmentTableType) {
+            if (equipment === 'TMV' || equipment === 'Tempering Valve') {
+                // Single 'all'
+                return [{"Size (mm)": "All", "Unit cost": this.priceTable.Equipment[equipment]}];
+            } else {
+                // all other components have keys
+                const itemsBySize: {[key: number]: any} = {};
+                for (const [size, cost] of Object.entries(this.priceTable.Equipment[equipment])) {
+                    itemsBySize[Number(size)] = {"Size (mm)": size, "Unit cost": cost};
+                }
+                return Object.keys(itemsBySize).sort((a, b) => Number(a) - Number(b)).map((size) => itemsBySize[Number(size)]);
             }
-            return Object.keys(itemsBySize).sort((a, b) => Number(a) - Number(b)).map((size) => itemsBySize[Number(size)]);
         }
     }
 </script>

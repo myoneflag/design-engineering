@@ -32,7 +32,7 @@ import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-d
 import { Coord, coordDist2 } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, EPS } from "../../../../common/src/lib/utils";
 import { PlantType } from "../../../../common/src/api/document/entities/plants/plant-types";
-import { assertUnreachable } from "../../../../common/src/api/config";
+import {assertUnreachable, StandardFlowSystemUids} from "../../../../common/src/api/config";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { rgb2style } from "../../lib/utils";
 
@@ -352,5 +352,26 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
 
     getCopiedObjects(): BaseBackedObject[] {
         return [this, ...this.getInletsOutlets()];
+    }
+
+    cost(context: CalculationContext) {
+        // determine type of plant
+        switch (this.entity.plant.type) {
+            case PlantType.RETURN_SYSTEM:
+                if (this.entity.inletSystemUid === StandardFlowSystemUids.HotWater &&
+                    this.entity.outletSystemUid === StandardFlowSystemUids.HotWater
+                ) {
+                    return context.priceTable.Plants["Hot Water Plant"];
+                } else {
+                    return context.priceTable.Plants.Custom;
+                }
+            case PlantType.TANK:
+                return context.priceTable.Plants["Storage Tank"];
+            case PlantType.CUSTOM:
+                return context.priceTable.Plants.Custom;
+            case PlantType.PUMP:
+                return context.priceTable.Plants.Pump;
+        }
+        assertUnreachable(this.entity.plant);
     }
 }

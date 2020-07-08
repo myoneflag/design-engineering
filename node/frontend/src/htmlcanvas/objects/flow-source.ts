@@ -322,6 +322,9 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
 
         // explicitly create this to help with refactors
         const res: FlowSourceCalculation = {
+            cost: null,
+            expandedEntities: null,
+
             flowRateLS: calc.flowRateLS,
             pressureKPA: calc.pressureKPA, // TODO: differentiate this in different levels
             warning: calc.warning,
@@ -335,5 +338,9 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         });
 
         return res;
+    }
+
+    cost(context: CalculationContext): number | null {
+        return null;
     }
 }

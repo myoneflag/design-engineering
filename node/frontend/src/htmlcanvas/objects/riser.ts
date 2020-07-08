@@ -261,6 +261,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
             ...conns.map((uid) =>
                 getEdgeLikeHeightAboveGroundM(gs.get(uid)!.entity as EdgeLikeEntity, {
                     doc: context.document,
+                    priceTable: context.effectivePriceTable,
                     catalog: context.effectiveCatalog,
                     globalStore: context.globalStore,
                     drawing: context.document.drawing
@@ -282,6 +283,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
             ...conns.map((uid) =>
                 getEdgeLikeHeightAboveGroundM(gs.get(uid)!.entity as EdgeLikeEntity, {
                     doc: context.document,
+                    priceTable: context.effectivePriceTable,
                     catalog: context.effectiveCatalog,
                     globalStore: context.globalStore,
                     drawing: context.document.drawing
@@ -300,6 +302,9 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
     collectCalculations(context: CalculationContext): RiserCalculation {
         // explicitly create this to help with refactors
         const res: RiserCalculation = {
+            cost: null,
+            expandedEntities: null,
+
             heights: {},
             warning: null
         };
@@ -376,5 +381,10 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
 
         // TODO:
         return res;
+    }
+
+    cost(context: CalculationContext) {
+        // TODO: Riser cost for a level.
+        return 0;
     }
 }

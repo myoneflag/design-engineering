@@ -60,6 +60,9 @@ export function makeLoadNodeCalculationFields(entity: LoadNodeEntity, settings: 
 
 export function emptyFixtureCalculation(): LoadNodeCalculation {
     return {
+        cost: null,
+        expandedEntities: null,
+
         pressureKPA: null,
         psdUnits: null,
         staticPressureKPA: null,

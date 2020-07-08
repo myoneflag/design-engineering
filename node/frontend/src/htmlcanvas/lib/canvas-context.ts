@@ -16,6 +16,7 @@ import { ObjectStore } from "./object-store";
 import { Catalog } from "../../../../common/src/api/catalog/types";
 import { DrawableEntity } from "../../../../common/src/api/document/drawing";
 import Layer from "../layers/layer";
+import {PriceTable} from "../../../../common/src/api/catalog/price-table";
 
 // Expose the members of CanvasContext (a vue object) to other classes and methods
 // (regular javascript objects). For some reason, extended methods and members are
@@ -29,6 +30,7 @@ export default interface CanvasContext {
     globalStore: GlobalStore;
     document: DocumentState;
     effectiveCatalog: Catalog;
+    effectivePriceTable: PriceTable;
     isLayerDragging: boolean;
 
     $store: Store<RootState>;

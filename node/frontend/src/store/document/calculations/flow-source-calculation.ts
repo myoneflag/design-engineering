@@ -37,6 +37,9 @@ export function makeFlowSourceCalculationFields(entity: FlowSourceEntity, settin
 
 export function emptyFlowSourceCalculation(): FlowSourceCalculation {
     return {
+        cost: null,
+        expandedEntities: null,
+
         flowRateLS: null,
         pressureKPA: null,
         staticPressureKPA: null,

@@ -234,6 +234,9 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
 
         // explicitly create this to help with refactors
         const res: SystemNodeCalculation = {
+            cost: null,
+            expandedEntities: null,
+
             psdUnits: calc.psdUnits,
             flowRateLS: calc.flowRateLS,
             pressureKPA: calc.pressureKPA, // TODO: differentiate this in different levels
@@ -256,5 +259,9 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
         });
 
         return res;
+    }
+
+    cost(context: CalculationContext): number | null {
+        return null;
     }
 }

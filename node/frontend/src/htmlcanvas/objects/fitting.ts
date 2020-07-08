@@ -30,12 +30,13 @@ import { CalculationData } from "../../../src/store/document/calculations/calcul
 import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import FittingCalculation, { emptyFittingCalculation } from "../../store/document/calculations/fitting-calculation";
 import math3d from "math3d";
-import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
+import PipeEntity, {fillPipeDefaultFields} from "../../../../common/src/api/document/entities/pipe-entity";
 import { Coord } from "../../../../common/src/api/document/drawing";
 import { EPS, parseCatalogNumberExact } from "../../../../common/src/lib/utils";
 import { assertUnreachable, ComponentPressureLossMethod } from "../../../../common/src/api/config";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { getHighlightColor } from "../lib/utils";
+import {PipesTable} from "../../../../common/src/api/catalog/price-table";
 
 @CalculatedObject
 @SelectableObject
@@ -324,6 +325,9 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
         // explicitly create this to help with refactors
         const res: FittingCalculation = {
+            cost: null,
+            expandedEntities: null,
+
             flowRateLS: calc.flowRateLS,
             pressureDropKPA: calc.pressureDropKPA,
             pressureKPA: calc.pressureKPA,
@@ -386,5 +390,74 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
     protected refreshObjectInternal(obj: FittingEntity): void {
         //
+    }
+
+    cost(context: CalculationContext): number | null {
+        const angles = this.getSortedAngles();
+        if (angles.length === 0) {
+            return null;
+        }
+
+        const materials: [keyof PipesTable, number][] = [];
+        for (const puid of context.globalStore.getConnections(this.entity.uid)) {
+            const pipe = context.globalStore.get(puid) as Pipe;
+            if (!pipe) {
+                // bleh
+            } else {
+                const filled = fillPipeDefaultFields(context.drawing, 0, pipe.entity);
+                const manufacturer = context.drawing.metadata.catalog.pipes
+                    .find((po) => po.uid === filled.material)?.manufacturer || 'generic';
+
+                const manufacturerCatalog = context.catalog.pipes[filled.material!].manufacturer
+                    .find((mo) => mo.uid === manufacturer);
+
+                const size = context.globalStore.getOrCreateCalculation(pipe.entity).realNominalPipeDiameterMM;
+
+                if (size) {
+                    materials.push([manufacturerCatalog!.priceTableName, size]);
+                }
+            }
+        }
+        if (materials.length === 0) {
+            return null;
+        }
+
+        if (angles.length === 3) {
+            // can only be tee
+            let mostExpensive = 0;
+            for (const [mat, siz] of materials) {
+                mostExpensive = Math.max(mostExpensive, context.priceTable.Fittings.Tee[mat][siz]);
+            }
+            return mostExpensive;
+        }
+        if (angles.length === 2) {
+            // assume is bend :O TODO: input different size for straights
+            let mostExpensive = 0;
+            if (isRightAngleRad(angles[0], Math.PI / 3)) {
+                for (const [mat, siz] of materials) {
+                    mostExpensive = Math.max(mostExpensive, context.priceTable.Fittings.Elbow[mat][siz]);
+                }
+            } else {
+                for (const [mat, siz] of materials) {
+                    if (siz in context.priceTable.Fittings.Reducer[mat]) {
+                        mostExpensive = Math.max(mostExpensive, context.priceTable.Fittings.Reducer[mat][siz]);
+                    }
+                }
+            }
+            return mostExpensive;
+        }
+
+        if (angles.length === 1) {
+            // deadleg cap - no worries.
+            return 0;
+        }
+
+        if (angles.length === 0) {
+            // Invalid thingymabob.
+            return 0;
+        }
+
+        // otherwise no info.
+        return null;
     }
 }

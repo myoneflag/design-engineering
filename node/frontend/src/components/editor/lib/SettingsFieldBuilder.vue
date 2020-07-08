@@ -134,7 +134,6 @@
                             v-else
                             :value="getReactiveData(field[0])"
                             @input="setReactiveData(field[0], $event)"
-                            @change="inputChange"
                             :id="'input-' + field[0]"
                             :type="field[2]"
                             :placeholder="'Enter ' + field[1]"

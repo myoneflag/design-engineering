@@ -58,6 +58,9 @@ export function makeFittingCalculationFields(entity: FittingEntity, globalStore:
 
 export function emptyFittingCalculation(): FittingCalculation {
     return {
+        cost: null,
+        expandedEntities: null,
+
         flowRateLS: null,
         pressureDropKPA: null,
         pressureKPA: null,

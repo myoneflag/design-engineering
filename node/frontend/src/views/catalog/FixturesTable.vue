@@ -1,7 +1,6 @@
 <template>
     <b-table
             small
-            v-else
             striped
             :items="items"
             :fields="fields"
@@ -9,7 +8,9 @@
             responsive="true"
     >
         <template v-slot:[cellKey]="slot">
-            <b-form-input type="number" @input="(e) => onCellInput(slot.item['Fixture'], e)" :value="slot.value"></b-form-input>
+            <b-input-group prepend="$">
+                <b-form-input type="number" @input="(e) => onCellInput(slot.item['Fixture'], e)" :value="slot.value"></b-form-input>
+            </b-input-group>
         </template>
     </b-table>
 </template>
@@ -42,7 +43,7 @@
         }
 
         get items() {
-            return Object.entries(this.priceTable.Fixtures).map(([fixture, cost]) => {
+            return Object.entries(this.priceTable.Fixtures).sort().map(([fixture, cost]) => {
                 return {
                     "Fixture": fixture,
                     "Unit Cost - Supply and Install": cost,

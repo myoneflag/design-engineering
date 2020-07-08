@@ -28,6 +28,7 @@ import { fillDefaultLoadNodeFields } from "../../store/document/entities/fillDef
 import { ConnectableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { getHighlightColor } from "../lib/utils";
+import {assertUnreachable, StandardFlowSystemUids} from "../../../../common/src/api/config";
 
 @SelectableObject
 @CenterDraggableObject
@@ -222,5 +223,30 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
             res.push(this.globalStore.get(this.entity.linkedToUid)!);
         }
         return res;
+    }
+
+    cost(context: CalculationContext): number | null {
+        const filled = fillDefaultLoadNodeFields(context.doc, context.globalStore, this.entity);
+        switch (filled.node.type) {
+            case NodeType.LOAD_NODE:
+                switch (filled.systemUidOption) {
+                    case StandardFlowSystemUids.HotWater:
+                        return context.priceTable.Node["Load Node - Hot"];
+                    case StandardFlowSystemUids.ColdWater:
+                        return context.priceTable.Node["Load Node - Cold"];
+                    default:
+                        return context.priceTable.Node["Load Node - Other"];
+                }
+            case NodeType.DWELLING:
+                switch (filled.systemUidOption) {
+                    case StandardFlowSystemUids.HotWater:
+                        return context.priceTable.Node["Dwelling Node - Hot"];
+                    case StandardFlowSystemUids.ColdWater:
+                        return context.priceTable.Node["Dwelling Node - Cold"];
+                    default:
+                        return context.priceTable.Node["Dwelling Node - Other"];
+                }
+        }
+        assertUnreachable(filled.node);
     }
 }

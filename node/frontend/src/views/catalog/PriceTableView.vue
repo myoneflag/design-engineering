@@ -31,9 +31,16 @@
 import Component from "vue-class-component";
 import Vue from "vue";
 import FixturesTable from "./FixturesTable.vue";
+import InsulationTable from "./InsulationTable.vue";
+import PlantsTable from "./PlantsTable.vue";
+import PipesTable from "./PipesTable.vue";
+import FittingsTable from "./FittingsTable.vue";
+import ValvesTable from "./ValvesTable.vue";
+import NodesTable from "./NodesTable.vue";
+import EquipmentTable from "./EquipmentTable.vue";
 
 @Component({
-    components: { FixturesTable},
+    components: { FixturesTable, InsulationTable, PlantsTable, PipesTable, FittingsTable, ValvesTable, NodesTable, EquipmentTable},
     props: {
         schema: Object
     }
@@ -41,7 +48,14 @@ import FixturesTable from "./FixturesTable.vue";
 export default class CatalogView extends Vue {
     get sections() {
         return [
+            ["Pipes", "PipesTable"],
             ["Fixtures", "FixturesTable"],
+            ["Fittings", "FittingsTable"],
+            ["Valves", "ValvesTable"],
+            ["Equipment", "EquipmentTable"],
+            ["Insulation", "InsulationTable"],
+            ["Plants", "PlantsTable"],
+            ["Nodes", "NodesTable"],
         ]
     }
 }
