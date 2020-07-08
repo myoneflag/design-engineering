@@ -263,6 +263,7 @@ class test_floorplan(unittest.TestCase):
         # Delete created drawing
         print("Deleting drawing...")
         self.test.delete_drawing()
+        print("Drawing successfully deleted!")
         print("Deleting Level Test Complete!\n----------------")
 
     def test_changelevelheight(self):
@@ -345,14 +346,8 @@ class test_floorplan(unittest.TestCase):
 
         # Delete created drawing
         print("Deleting drawing...")
-        self.driver.find_element_by_xpath("//a[contains(text(),'Home')]").click()
-        time.sleep(3)
-        self.driver.find_element_by_xpath("//div[@class='home container']//div[1]//article[1]"
-                                          "//div[1]//div[1]//button[1]").click()
-        self.driver.find_element_by_xpath("//ul[@class='dropdown-menu show']//a[@class='dropdown-item"
-                                          " text-danger'][contains(text(),'Delete')]").click()
-        time.sleep(2)
-        self.driver.find_element_by_xpath("//button[@class='btn btn-primary']").click()
+        self.test.delete_drawing()
+        print(5)
         print("Drawing successfully deleted!")
         print("Change Level Height Test Complete!\n----------------")
 

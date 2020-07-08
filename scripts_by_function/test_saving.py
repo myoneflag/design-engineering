@@ -2,7 +2,6 @@ import unittest
 from methods import methods
 from selenium.webdriver.common.action_chains import ActionChains
 import time
-import os
 
 class test_saving(unittest.TestCase):
 
@@ -65,3 +64,5 @@ class test_saving(unittest.TestCase):
         # End
         print("Saving Test Complete!\n----------------")
 
+if __name__ == '__main__':
+    unittest.main()
