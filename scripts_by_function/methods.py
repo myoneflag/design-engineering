@@ -23,13 +23,13 @@ class methods():
         elif self.plt == "Linux":
             print("Your system is Linux")
             self.driver = webdriver.Chrome(
-                executable_path=self.working_directory + "/chromedriver_linux64/chromedriver.exe")
+                executable_path=self.working_directory + "/chromedriver_linux64/chromedriver")
             # self.driver = webdriver.Firefox(executable_path= self.working_directory + "/geckodriver-v0.26.0-win64/geckodriver.exe")
             # self.driver = webdriver.Edge(executable_path= self.working_directory + "/edgedriver_win64/msedgedriver.exe")
         elif self.plt == "Darwin":
             print("Your system is MacOS")
             self.driver = webdriver.Chrome(
-                executable_path=self.working_directory + "/chromedriver_mac64/chromedriver.exe")
+                executable_path=self.working_directory + "/chromedriver_mac64/chromedriver")
             # self.driver = webdriver.Firefox(executable_path= self.working_directory + "/geckodriver-v0.26.0-win64/geckodriver.exe")
             # self.driver = webdriver.Edge(executable_path= self.working_directory + "/edgedriver_win64/msedgedriver.exe")
         else:
@@ -134,6 +134,46 @@ class methods():
                                           " text-danger'][contains(text(),'Delete')]").click()
         time.sleep(2)
         self.driver.find_element_by_xpath("//button[@class='btn btn-primary']").click()
+
+    def signup_with_username(self, username):
+
+        self.username = username
+
+        # Click signup button
+        self.driver.find_element_by_xpath("/html/body/div/div/div/div/div/div/div/form/fieldset[4]/div/button").click()
+        time.sleep(5)
+
+        # Input First Name
+        self.driver.find_element_by_xpath("/html/body/div/div/div/div[2]/div/form/fieldset[1]/div/div/input")\
+            .send_keys("Test")
+
+        # Input Last Name
+        self.driver.find_element_by_xpath("/html/body/div/div/div/div[2]/div/form/fieldset[2]/div/div/input")\
+            .send_keys("User")
+
+        # Input Username
+        self.driver.find_element_by_xpath("/html/body/div/div/div/div[2]/div/form/fieldset[3]/div/div/input")\
+            .send_keys(username)
+
+        # Input Email
+        self.driver.find_element_by_xpath("/html/body/div/div/div/div[2]/div/form/fieldset[4]/div/div/input")\
+            .send_keys("test@email.com")
+
+        # Input Password
+        self.driver.find_element_by_xpath("/html/body/div/div/div/div[2]/div/form/fieldset[5]/div/div/input")\
+            .send_keys("password")
+
+        # Confirm Password
+        self.driver.find_element_by_xpath("/html/body/div/div/div/div[2]/div/form/fieldset[6]/div/div/input") \
+            .send_keys("password")
+
+        # Click Create Account
+        self.driver.find_element_by_xpath("/html/body/div[1]/div/div/div[2]/div/button").click()
+
+    def logout(self):
+        self.driver.find_element_by_xpath("/html/body/div/div/span/nav/ul[3]/li[2]/a").click()
+        self.driver.find_element_by_xpath("/html/body/div/div/span/nav/ul[3]/li[2]/ul/li[7]/a").click()
+
 
 
 
