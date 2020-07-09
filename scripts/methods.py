@@ -32,6 +32,7 @@ class methods():
         else:
             print("Unidentified system")
 
+        self.driver.maximize_window()
         self.driver.get("https://deploy.h2xengineering.com/login")
         self.actions = ActionChains(self.driver)
         return self.driver
@@ -70,14 +71,14 @@ class methods():
 
         # Upload file
         time.sleep(5)
-        self.driver.find_element_by_xpath("/html/body/div/div/div/div[2]/div[2]/div/div/input")\
+        self.driver.find_element_by_xpath("//input[@name='name']")\
             .send_keys(file)
 
     def export_all_levels(self):
 
         # Click Results button
         time.sleep(2)
-        self.driver.find_element_by_xpath("/html/body/div/div/div/div[2]/div[1]/div[1]/div/div/button[3]").click()
+        self.driver.find_element_by_xpath("//button[@class='btn modebtn results btn-sm btn-outline-dark']").click()
         time.sleep(1)
 
         # Click Filters button to close it
@@ -97,7 +98,7 @@ class methods():
     def export_by_level(self):
         # Click Results button
         time.sleep(2)
-        self.driver.find_element_by_xpath("/html/body/div/div/div/div[2]/div[1]/div[1]/div/div/button[3]").click()
+        self.driver.find_element_by_xpath("//button[@class='btn modebtn results btn-sm btn-outline-dark']").click()
         time.sleep(1)
 
         # Click Filters button to close it
@@ -118,7 +119,7 @@ class methods():
     def create_drawing(self):
         self.driver.find_element_by_xpath("//button[@class='btn btn-success btn-lg']").click()
         time.sleep(10)
-        title = self.driver.find_element_by_xpath("/html/body/div[1]/div/div/div[2]/nav/ul[2]/a[1]")
+        title = self.driver.find_element_by_xpath("/html/body/div/div/div/div[3]/nav/ul[2]/a[1]")
         self.actions.double_click(title).perform()
         self.driver.find_element_by_xpath("//input[@class='form-control form-control-md']").click()
         self.driver.find_element_by_xpath("//input[@class='form-control form-control-md']").send_keys("NEW DRAWING")
@@ -163,7 +164,7 @@ class methods():
             .send_keys("password")
 
         # Click Create Account
-        self.driver.find_element_by_xpath("/html/body/div[1]/div/div/div[2]/div/button").click()
+        self.driver.find_element_by_xpath("//button[@class='btn btn-success']").click()
 
     def logout(self):
         self.driver.find_element_by_xpath("/html/body/div/div/span/nav/ul[3]/li[2]/a").click()

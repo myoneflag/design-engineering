@@ -82,3 +82,7 @@
 [0702/072419.353:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
 [0703/233316.045:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
 [0703/233452.291:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0709/141431.572:ERROR:process_reader_win.cc(123)] NtOpenThread: {Access Denied} A process has requested access to an object, but has not been granted those access rights. (0xc0000022)
+[0709/141431.598:ERROR:exception_snapshot_win.cc(98)] thread ID 18760 not found in process
+[0709/141431.626:ERROR:process_reader_win.cc(123)] NtOpenThread: {Access Denied} A process has requested access to an object, but has not been granted those access rights. (0xc0000022)
+[0709/141431.627:ERROR:exception_snapshot_win.cc(98)] thread ID 19932 not found in process

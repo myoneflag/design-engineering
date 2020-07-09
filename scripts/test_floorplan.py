@@ -61,7 +61,7 @@ class test_floorplan(unittest.TestCase):
         print("File found!")
 
         # Go to Home page
-        self.driver.find_element_by_xpath("/html/body/div[1]/div/div/div[2]/nav/ul[1]/li/a").click()
+        self.driver.find_element_by_xpath("//a[contains(text(),'Home')]").click()
         time.sleep(7)
 
         # Delete drawing after validation
@@ -183,7 +183,7 @@ class test_floorplan(unittest.TestCase):
         self.assertTrue(found_basement)
 
         # Go to Home page
-        self.driver.find_element_by_xpath("/html/body/div[1]/div/div/div[2]/nav/ul[1]/li/a").click()
+        self.driver.find_element_by_xpath("//a[contains(text(),'Home')]").click()
         time.sleep(7)
 
         # Delete created drawing
@@ -224,7 +224,7 @@ class test_floorplan(unittest.TestCase):
         # Go to home page to save changes
         print("Going back to home page...")
         # Go to Home page
-        self.driver.find_element_by_xpath("/html/body/div[1]/div/div/div[2]/nav/ul[1]/li/a").click()
+        self.driver.find_element_by_xpath("//a[contains(text(),'Home')]").click()
         time.sleep(7)
         print("Go to homepage successful!")
 
@@ -287,7 +287,7 @@ class test_floorplan(unittest.TestCase):
         self.assertFalse(found_basement)
 
         # Go to Home page
-        self.driver.find_element_by_xpath("/html/body/div[1]/div/div/div[2]/nav/ul[1]/li/a").click()
+        self.driver.find_element_by_xpath("//a[contains(text(),'Home')]").click()
         time.sleep(7)
 
         # Delete created drawing
@@ -375,7 +375,7 @@ class test_floorplan(unittest.TestCase):
         print("Closing level drawer successful")
 
         # Go to Home page
-        self.driver.find_element_by_xpath("/html/body/div[1]/div/div/div[2]/nav/ul[1]/li/a").click()
+        self.driver.find_element_by_xpath("//a[contains(text(),'Home')]").click()
         time.sleep(7)
 
         # Delete created drawing
