@@ -472,7 +472,7 @@ export function getFields(
         case EntityType.FITTING:
             return makeFittingCalculationFields(entity, globalStore);
         case EntityType.BIG_VALVE:
-            return makeBigValveCalculationFields(doc, entity);
+            return makeBigValveCalculationFields(doc, entity, catalog);
         case EntityType.FIXTURE:
             return makeFixtureCalculationFields(doc, entity, globalStore);
         case EntityType.DIRECTED_VALVE:

@@ -1470,6 +1470,14 @@ export default class CalculationEngine {
                         : StandardFlowSystemUids.HotWater;
                 const flowRate = lookupFlowRate(psdU, this.doc, this.catalog, systemUid);
 
+                switch (entity.valve.type) {
+                    case BigValveType.TEMPERING:
+                        calculation.outputs[StandardFlowSystemUids.WarmWater].sizeMM = this.sizeTemperingValveForFlowRate(flowRate?.flowRateLS || 0);
+                        break;
+                    default:
+                        break;
+                }
+
                 if (entity.valve.type === BigValveType.RPZD_HOT_COLD && flowRate !== null) {
                     if (flowEdge.type === EdgeType.BIG_VALVE_HOT_HOT) {
                         calculation.rpzdSizeMM![StandardFlowSystemUids.HotWater] = this.sizeRpzdForFlowRate(
@@ -2602,5 +2610,13 @@ export default class CalculationEngine {
         }
 
         return psdUs;
+    }
+
+    sizeTemperingValveForFlowRate(fr: number): number {
+        if (fr > 0.5 ) {
+            return 25;
+        }
+
+        return 15;
     }
 }

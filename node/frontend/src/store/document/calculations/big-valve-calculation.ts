@@ -7,6 +7,8 @@ import { PsdCountEntry } from "../../../calculations/utils";
 import { DocumentState } from "../types";
 import { assertUnreachable, StandardFlowSystemUids } from "../../../../../common/src/api/config";
 import { Units } from "../../../../../common/src/lib/measurements";
+import { SelectedMaterialManufacturer } from '../../../../../common/src/api/document/drawing';
+import { Manufacturer, Catalog } from '../../../../../common/src/api/catalog/types';
 
 export default interface BigValveCalculation extends Calculation {
     coldTemperatureC: number | null;
@@ -27,6 +29,7 @@ export default interface BigValveCalculation extends Calculation {
         [key: string]: {
             temperatureC: number | null;
             pressureDropKPA: number | null;
+            sizeMM: number | null;
         };
     };
 
@@ -35,7 +38,7 @@ export default interface BigValveCalculation extends Calculation {
     } | null;
 }
 
-export function makeBigValveCalculationFields(doc: DocumentState, entity: BigValveEntity): CalculationField[] {
+export function makeBigValveCalculationFields(doc: DocumentState, entity: BigValveEntity, catalog: Catalog | undefined): CalculationField[] {
     const result: CalculationField[] = [];
 
     const suids: string[] = [];
@@ -82,6 +85,23 @@ export function makeBigValveCalculationFields(doc: DocumentState, entity: BigVal
             units: Units.KiloPascals,
             category: FieldCategory.Pressure,
             defaultEnabled: true
+        });
+    }
+
+    if (entity.valve.type === BigValveType.TEMPERING) {
+        const manufacturer = doc.drawing.metadata.catalog.mixingValves.find((material: SelectedMaterialManufacturer) => material.uid === entity.valve.catalogId)?.manufacturer || 'generic';  
+        const abbreviation = manufacturer !== 'generic' 
+            && catalog?.mixingValves[entity.valve.catalogId].manufacturer.find((manufacturerObj: Manufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation 
+            || '';
+
+        result.push({
+            property: "outputs." + StandardFlowSystemUids.WarmWater + ".sizeMM",
+            title: "Size",
+            attachUid: entity.valve.warmOutputUid,
+            systemUid: StandardFlowSystemUids.WarmWater,
+            short: abbreviation,
+            units: Units.Millimeters,
+            category: FieldCategory.Size
         });
     }
 
@@ -133,7 +153,8 @@ export function EmptyBigValveCalculations(entity: BigValveEntity): BigValveCalcu
     for (const suid of suids) {
         result.outputs[suid] = {
             temperatureC: null,
-            pressureDropKPA: null
+            pressureDropKPA: null,
+            sizeMM: null,
         };
     }
 
