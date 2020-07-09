@@ -2,7 +2,7 @@
     <span>
         <div id="email-verification" v-if="profile && !emailVerifiedAt" ref="emailVerification">
             <p>
-                <template v-if="emailVerificationSent || (new Date() - +new Date(profile.email_verification_dt)) <= (60 * 60 * 24 * 1000)">
+                <template v-if="emailVerificationSent || (new Date() - +new Date(profile.email_verification_dt)) <= (60 * 60 * 24 * 1000) && profile.email">
                     Email verification link was sent to your registered email. <a href="#" @click="handleClickVerificationEmail">Send email verification link again.</a>
                 </template>
                 <template v-else>
@@ -10,6 +10,29 @@
                 </template>
                 <span v-if="isLoading" class="ml-1"><b-spinner style="width: 1.0rem; height: 1.0rem;"></b-spinner></span>
             </p>
+            <b-modal id="confirm-email" hide-footer>
+                <template v-slot:modal-title>
+                    Confirm your email
+                </template>
+                <div class="d-block text-center">
+                    <b-input 
+                        :disabled="form.isLoading" 
+                        type="text" 
+                        class="mb-3" 
+                        v-model="form.confirmEmail" 
+                        placeholder="Enter your email..."
+                    ></b-input>
+                    <b-button 
+                        variant="primary" 
+                        block 
+                        @click="handleUpdateEmail"
+                        :disabled="form.isLoading"
+                    >
+                        Confirm 
+                        <b-spinner v-if="form.isLoading" style="width: 1.0rem; height: 1.0rem;"></b-spinner>
+                    </b-button>
+                </div>
+            </b-modal>
         </div>
         <b-navbar type="light">
             <b-navbar-nav>
@@ -38,14 +61,12 @@
             </b-navbar-nav>
         </b-navbar>
     </span>
-    
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { APIResult } from "../../../common/src/api/document/types";
-import { sendEmailVerification } from "../api/users";
+import { sendEmailVerification, confirmEmail } from "../api/users";
 import ProfileMenuItem from "../../src/components/ProfileMenuItem.vue";
 import OnBoardingProgressMenuItem from "./OnBoardingProgressMenuItem.vue";
 
@@ -62,6 +83,13 @@ export default class MainNavBar extends Vue {
     onBoardingProgress: any | null = null;
     emailVerificationSent: boolean = false;
     isLoading: boolean = false;
+    form: {
+        confirmEmail: string
+        isLoading: boolean
+    } = {
+        confirmEmail: "",
+        isLoading: false,
+    }
 
     get options() {
         if (!this.onBoardingProgress) {
@@ -125,8 +153,14 @@ export default class MainNavBar extends Vue {
     }
 
     handleClickVerificationEmail() {
+        if (!this.$props.profile.email && !this.form.confirmEmail) {
+            this.$bvModal.show('confirm-email');
+            return;
+        }
+
         this.isLoading = true;
-        sendEmailVerification(this.$props.profile.email, this.$props.profile.username).then((res: APIResult<string>) => {
+
+        sendEmailVerification(this.$props.profile.email || this.form.confirmEmail, this.$props.profile.username).then(res => {
             if (res.success) {
                 this.emailVerificationSent = res.success;
                 this.$bvToast.toast(res.message || "", {
@@ -146,6 +180,25 @@ export default class MainNavBar extends Vue {
 
     get emailVerifiedAt(): boolean {
         return this.$props.profile?.email_verified_at || false;
+    }
+
+    handleUpdateEmail() {
+        this.form.isLoading = true;
+
+        confirmEmail(this.form.confirmEmail).then(res => {
+            if (res.success) {
+                this.$store.dispatch("profile/setProfile", res.data);
+                this.$bvModal.hide('confirm-email');
+                this.handleClickVerificationEmail();
+            } else {
+                this.$bvToast.toast("Something went wrong. Please try again later.", {
+                    title: "Email Confirmation Failed",
+                    variant: "danger"
+                });
+            }
+
+            this.form.isLoading = false;
+        });
     }
 }
 </script>

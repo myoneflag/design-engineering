@@ -117,7 +117,7 @@ export async function withDocument<T>(
         if (res) {
             res.status(404).send({
                 success: false,
-                message: "Document with id " + id + " cannot be found",
+                message: "Document cannot be found",
             });
         }
         return;
@@ -127,7 +127,7 @@ export async function withDocument<T>(
         if (user.accessLevel > AccessLevel.MANAGER) {
             res.status(404).send({
                 success: false,
-                message: "Document with id " + id + " cannot be found",
+                message: "Document cannot be found",
             });
         }
     }

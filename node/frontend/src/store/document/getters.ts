@@ -2,7 +2,7 @@ import { GetterTree } from "vuex";
 import { DocumentState, initialDocumentState } from "./types";
 import { RootState } from "../types";
 import { Level } from "../../../../common/src/api/document/drawing";
-import { OPERATION_NAMES, OperationTransformConcrete } from "../../../../common/src/api/document/operation-transforms";
+import { OPERATION_NAMES } from "../../../../common/src/api/document/operation-transforms";
 import { Operation } from "../../../../common/src/models/Operation";
 import { assertUnreachable } from "../../../../common/src/api/config";
 

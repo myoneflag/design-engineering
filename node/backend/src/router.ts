@@ -1,9 +1,9 @@
+import 'express-ws';
 import { Router } from 'express';
+import { shareDocumentRouter } from './controllers/shareDocument';
 import {catalogRouter} from './controllers/catalog';
 import {loginRouter} from './controllers/login';
 import {documentRouter} from './controllers/document';
-
-import 'express-ws';
 import {contactRouter} from "./controllers/contact";
 import {changeLogMessageRouter} from './controllers/changeLogMessage';
 import {pdfRouter} from "./controllers/pdf";
@@ -28,5 +28,6 @@ router.use('/accessEvents', accessEvents);
 router.use('/errors', errorRouter);
 router.use('/feedback', feedbackMessageRouter);
 router.use('/videoView', videoViewRouter);
+router.use('/shareDocument', shareDocumentRouter);
 
 export default router;

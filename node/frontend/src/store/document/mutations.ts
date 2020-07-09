@@ -337,6 +337,8 @@ export const mutations: MutationTree<DocumentState> = {
         if (newData) {
             MainEventBus.$emit("committed", true);
         } // else, the data is already represented on screen
+
+        state.isLoading = false;
     },
 
     applyDiff,
@@ -430,7 +432,15 @@ export const mutations: MutationTree<DocumentState> = {
         entity.endpointUid[0] = endpoints[0];
         entity.endpointUid[1] = endpoints[1];
         MainEventBus.$emit("update-pipe-endpoints", { entity, endpoints });
-    }
+    },
+
+    setShareToken(state, token: string) {
+        state.shareToken = token;
+    },
+
+    setIsLoading(state, isLoading: boolean) {
+        state.isLoading = isLoading;
+    },
 };
 
 function entityHandler(state: DocumentState, levelUid: string | null, entityUid: string) {

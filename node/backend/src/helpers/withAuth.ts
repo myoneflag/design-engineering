@@ -1,3 +1,4 @@
+
 import { NextFunction, Request, Response } from "express";
 import { AccessEvents, LoginEventType } from "../../../common/src/models/AccessEvents";
 import { Session } from "../../../common/src/models/Session";
@@ -32,21 +33,21 @@ export async function withAuth<T>(
     minAccessLevel?: AccessLevel,
     eulaNeeded: boolean = true,
     ): Promise<T> {
-
-
+    if (!req.cookies) {
+        onFail("Authorization required, but session-id cookie is missing");
+        return;
+    }
+    
     const event = AccessEvents.create();
     event.dateTime = new Date();
     event.ip = req.ip;
     event.userAgent = req.get('user-agent') || '';
     event.success = true;
     event.url = req.originalUrl;
-
-    if (!req.cookies) {
-        onFail("Authorization required, but session-id cookie is missing");
-        return;
-    }
+    
     const sessionId = req.cookies['session-id'];
     const s =  await Session.findOne({id: sessionId});
+
     if (s) {
         await s.reload();
         event.username = (await s.user).username;
@@ -78,7 +79,6 @@ export async function withAuth<T>(
             event.type = LoginEventType.SESSION_REFRESH;
             await event.save();
         }
-
 
         event.type = LoginEventType.AUTHORISED_ACCESS;
         await event.save();
