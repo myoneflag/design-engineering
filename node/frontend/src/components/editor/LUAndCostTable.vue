@@ -1,30 +1,49 @@
 <template>
-    <div  class="lu-cost-table">
+    <div  class="lu-cost-table"
+          :style="collapsed ? 'margin-bottom: 35px' : ''"
+          @mouseenter="onMouseEnter"
+          @mouseleave="onMouseLeave"
+    >
         <table>
             <tbody>
                 <tr>
-                    <td  valign="top">
-                        <b-table :fields="luFields" :items="luItems" small class="result-table"
-                                 v-b-tooltip.hover title="Inc. Continuous Flow and Reticulation Spare Capacity">
-                        </b-table>
-                        <i class="small-label">{{psdMethodName}}</i>
-                    </td>
-                    <td style="width: 10px"/>
-                    <td  valign="top">
-                        <b-table :fields="costFields" :items="costItems" small class="result-table"
-                                 v-b-tooltip.hover title="Est. Since last calculation. Excluding Riser.">
-                        </b-table>
-                        <b-badge
-                                v-if="!hasCalculated()"
-                                variant="warning"
-                                v-b-tooltip.hover title='Click "Results" to Calculate. Cost estimates will show here.'
-                        >Calculate to show</b-badge>
-                        <b-badge
-                                v-else-if="!calculationsUpToDate()"
-                                variant="warning"
-                                v-b-tooltip.hover title="Calculate to update"
-                        >Outdated</b-badge>
-                    </td>
+                    <template v-if="!collapsed">
+
+                        <td  valign="top">
+                            <b-table :fields="luFields" :items="luItems" small class="result-table"
+                                     v-b-tooltip.hover title="Inc. Continuous Flow and Reticulation Spare Capacity">
+                            </b-table>
+                            <i class="small-label">{{psdMethodName}}</i>
+                        </td>
+                        <td style="width: 10px"/>
+                        <td  valign="top">
+                            <b-table :fields="costFields" :items="costItems" small class="result-table"
+                                     v-b-tooltip.hover title="Est. Since last calculation. Excluding Riser.">
+                            </b-table>
+                            <b-badge
+                                    v-if="!hasCalculated()"
+                                    variant="warning"
+                                    v-b-tooltip.hover title='Click "Results" to Calculate. Cost estimates will show here.'
+                            >Calculate to show</b-badge>
+                            <b-badge
+                                    v-else-if="!calculationsUpToDate()"
+                                    variant="warning"
+                                    v-b-tooltip.hover title="Calculate to update"
+                            >Outdated</b-badge>
+                        </td>
+                        <td>
+                            <b-button @click="onCollapseClicked" variant="outline-dark" size="sm">
+                                <v-icon name="chevron-left"></v-icon>
+                            </b-button>
+                        </td>
+                    </template>
+                    <template v-else>
+                        <td>
+                            <b-button @click="onUncollapseClicked" variant="outline-dark">
+                                <v-icon name="chevron-right"></v-icon><v-icon name="chevron-right"></v-icon>
+                            </b-button>
+                        </td>
+                    </template>
                 </tr>
             </tbody>
         </table>
@@ -66,6 +85,9 @@
         }
     })
     export default class LUAndCostTable extends Vue {
+        collapsed = false;
+        mouseEntered = false;
+
         get luFields() {
             return ["PSD", this.$props.focusName, "Project"];
         }
@@ -214,6 +236,22 @@
 
         hasCalculated() {
             return this.document.uiState.lastCalculationId > 0;
+        }
+
+        onCollapseClicked() {
+            this.collapsed = true;
+        }
+
+        onUncollapseClicked() {
+            this.collapsed = false;
+        }
+
+        onMouseEnter() {
+            this.mouseEntered = true;
+        }
+
+        onMouseLeave() {
+            this.mouseEntered = false;
         }
     }
 </script>

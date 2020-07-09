@@ -1384,46 +1384,6 @@ import {DrawingMode} from "../../htmlcanvas/types";
                 }
             }
 
-            // Draw on screen HUD
-            drawGridLines(context);
-            this.ctx!.setTransform(TM.identity());
-            drawPaperScale(this.ctx!, 1 / matrixScale(this.viewPort.screen2worldMatrix));
-
-            if (drawReactive && this.propertiesVisible) {
-                if (
-                    this.selectedEntities &&
-                    this.selectedEntities.length > 0 &&
-                    this.document.uiState.drawingMode === DrawingMode.Hydraulics
-                ) {
-                    drawLoadingUnits(
-                        context,
-                        this.effectiveCatalog,
-                        countPsdUnits(this.selectedEntities, this.document, this.effectiveCatalog, this.globalStore),
-                        this.projectLUs,
-                        true
-                    );
-                } else {
-                    drawLoadingUnits(
-                        context,
-                        this.effectiveCatalog,
-                        countPsdUnits(
-                            Array.from(
-                                (this.globalStore.entitiesInLevel.get(this.document.uiState.levelUid) || new Set()).values()
-                            ).map((u) => {
-                                if (!this.globalStore.has(u)) {
-                                    throw new Error("can't find uid " + u);
-                                }
-                                return this.globalStore.get(u)!.entity;
-                            }),
-                            this.document,
-                            this.effectiveCatalog,
-                            this.globalStore
-                        ),
-                        this.projectLUs
-                    );
-                }
-            }
-
             // draw gridlines
 
             // draw selection box

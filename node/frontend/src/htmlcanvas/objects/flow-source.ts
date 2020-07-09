@@ -341,6 +341,6 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
     }
 
     cost(context: CalculationContext): number | null {
-        return null;
+        return 0;
     }
 }
