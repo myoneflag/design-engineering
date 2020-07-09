@@ -39,6 +39,8 @@
         PriceTable,
     } from "../../../../common/src/api/catalog/price-table";
     import {defaultPriceTable} from "../../../../common/src/api/catalog/default-price-table";
+    import {setPropertyByStringVue} from "../../lib/utils";
+    import {DocumentState} from "../../store/document/types";
 
     @Component({
         components: { },
@@ -47,7 +49,11 @@
     })
     export default class FittingsTable extends Vue {
         get priceTable(): PriceTable {
-            return defaultPriceTable;
+            return this.$store.getters['document/priceTable'];
+        }
+
+        get document(): DocumentState {
+            return this.$store.getters['document/document'];
         }
 
         get fittings() {
@@ -71,7 +77,11 @@
         }
 
         onCellInput(fitting: keyof FittingsTableType, material: keyof PipesTableType, size: number, value: number) {
-            defaultPriceTable.Fittings[fitting][material][size] = Number(value);
+            setPropertyByStringVue(
+                this.document.drawing.metadata.priceTable,
+                'Fittings.' + fitting + '.' + material + '.' + size,
+                Number(value),
+            );
         }
 
         items(fitting: keyof FittingsTableType) {

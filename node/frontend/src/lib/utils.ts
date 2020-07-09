@@ -142,6 +142,26 @@ export function setPropertyByString(obj: any, s: string, val: any, existential: 
     }
 }
 
+export function setPropertyByStringVue(obj: any, s: string, val: any) {
+    s = s.replace(/\[(\w+)\]/g, ".$1"); // convert indexes to properties
+    s = s.replace(/^\./, ""); // strip a leading dot
+    const a = s.split(".");
+    for (let i = 0, n = a.length; i < n; ++i) {
+        const k = a[i];
+        if (i === a.length - 1) {
+            Vue.set(obj, k, val);
+        } else {
+            let newObj = obj[k];
+            if (newObj == null) {
+                newObj = {};
+                Vue.set(obj, k, newObj);
+            }
+            obj = newObj;
+        }
+    }
+}
+
+
 export function getValveK(catalogId: string, catalog: Catalog, pipeDiameterMM: number): number | null {
     const table = catalog.valves[catalogId].valvesBySize;
     return interpolateTable(table, pipeDiameterMM, false, (v) => parseCatalogNumberExact(v.kValue));

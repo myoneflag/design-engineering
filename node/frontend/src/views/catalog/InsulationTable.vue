@@ -19,6 +19,8 @@
     import Vue from "vue";
     import {PlantTable, PriceTable} from "../../../../common/src/api/catalog/price-table";
     import {defaultPriceTable} from "../../../../common/src/api/catalog/default-price-table";
+    import {DocumentState} from "../../store/document/types";
+    import {setPropertyByStringVue} from "../../lib/utils";
 
     @Component({
         components: { },
@@ -27,7 +29,11 @@
     })
     export default class InsulationTable extends Vue {
         get priceTable(): PriceTable {
-            return defaultPriceTable;
+            return this.$store.getters['document/priceTable'];
+        }
+
+        get document(): DocumentState {
+            return this.$store.getters['document/document'];
         }
 
         get fields() {
@@ -38,8 +44,12 @@
             return 'cell(Cost per meter)';
         }
 
-        onCellInput(id: keyof PlantTable, value: number) {
-            defaultPriceTable.Plants[id] = Number(value);
+        onCellInput(id: number, value: number) {
+            setPropertyByStringVue(
+                this.document.drawing.metadata.priceTable,
+                'Insulation.' + id,
+                Number(value),
+            );
         }
 
         get items() {

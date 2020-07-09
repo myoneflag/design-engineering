@@ -40,6 +40,8 @@
         PriceTable,
     } from "../../../../common/src/api/catalog/price-table";
     import {defaultPriceTable} from "../../../../common/src/api/catalog/default-price-table";
+    import {DocumentState} from "../../store/document/types";
+    import {setPropertyByStringVue} from "../../lib/utils";
 
     @Component({
         components: { },
@@ -48,7 +50,11 @@
     })
     export default class ValvesTable extends Vue {
         get priceTable(): PriceTable {
-            return defaultPriceTable;
+            return this.$store.getters['document/priceTable'];
+        }
+
+        get document(): DocumentState {
+            return this.$store.getters['document/document'];
         }
 
         get valves() {
@@ -68,7 +74,11 @@
         }
 
         onCellInput(valve: keyof ValvesTableType, size: number, value: number) {
-            defaultPriceTable.Valves[valve][size] = Number(value);
+            setPropertyByStringVue(
+                this.document.drawing.metadata.priceTable,
+                'Valves.' + valve + '.' + size,
+                Number(value),
+            );
         }
 
         items(valve: keyof ValvesTableType) {

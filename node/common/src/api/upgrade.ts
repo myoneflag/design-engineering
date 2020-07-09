@@ -249,3 +249,9 @@ export function upgrade13to14(original: DrawingState) {
         original.metadata.catalog = cloneSimple(initialDrawing.metadata.catalog);
     }
 }
+
+export function upgrade14to15(original: DrawingState) {
+    if (original.metadata.priceTable === undefined) {
+        original.metadata.priceTable = cloneSimple(initialDrawing.metadata.priceTable);
+    }
+}

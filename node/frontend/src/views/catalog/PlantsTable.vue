@@ -20,6 +20,8 @@
     import Vue from "vue";
     import {PlantTable, PriceTable} from "../../../../common/src/api/catalog/price-table";
     import {defaultPriceTable} from "../../../../common/src/api/catalog/default-price-table";
+    import {DocumentState} from "../../store/document/types";
+    import {setPropertyByStringVue} from "../../lib/utils";
 
     @Component({
         components: { },
@@ -28,7 +30,11 @@
     })
     export default class PlantsTable extends Vue {
         get priceTable(): PriceTable {
-            return defaultPriceTable;
+            return this.$store.getters['document/priceTable'];
+        }
+
+        get document(): DocumentState {
+            return this.$store.getters['document/document'];
         }
 
         get fields() {
@@ -40,7 +46,11 @@
         }
 
         onCellInput(id: keyof PlantTable, value: number) {
-            defaultPriceTable.Plants[id] = Number(value);
+            setPropertyByStringVue(
+                this.document.drawing.metadata.priceTable,
+                'Plants.' + id,
+                Number(value),
+            );
         }
 
         get items() {

@@ -19,6 +19,8 @@
     import Vue from "vue";
     import {PriceTable} from "../../../../common/src/api/catalog/price-table";
     import {defaultPriceTable} from "../../../../common/src/api/catalog/default-price-table";
+    import {DocumentState} from "../../store/document/types";
+    import {setPropertyByStringVue} from "../../lib/utils";
 
     @Component({
         components: { },
@@ -27,7 +29,11 @@
     })
     export default class NodesTable extends Vue {
         get priceTable(): PriceTable {
-            return defaultPriceTable;
+            return this.$store.getters['document/priceTable'];
+        }
+
+        get document(): DocumentState {
+            return this.$store.getters['document/document'];
         }
 
         get fields() {
@@ -39,7 +45,11 @@
         }
 
         onCellInput(id: string, value: number) {
-            defaultPriceTable.Fixtures[id] = Number(value);
+            setPropertyByStringVue(
+                this.document.drawing.metadata.priceTable,
+                'Fixtures.' + id,
+                Number(value),
+            );
         }
 
         get items() {

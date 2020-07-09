@@ -19,7 +19,7 @@
                         <b-form-input
                                 size="sm"
                                 type="number"
-                                @input="(e) => onCellInput(valve, slot.item['Size (mm)'], e)"
+                                @input="(e) => onCellInput(component, slot.item['Size (mm)'], e)"
                                 :value="slot.value"
                         ></b-form-input>
                     </b-input-group>
@@ -41,6 +41,8 @@
         PriceTable,
     } from "../../../../common/src/api/catalog/price-table";
     import {defaultPriceTable} from "../../../../common/src/api/catalog/default-price-table";
+    import {DocumentState} from "../../store/document/types";
+    import {setPropertyByString, setPropertyByStringVue} from "../../lib/utils";
 
     @Component({
         components: { },
@@ -49,7 +51,11 @@
     })
     export default class EquipmentTable extends Vue {
         get priceTable(): PriceTable {
-            return defaultPriceTable;
+            return this.$store.getters['document/priceTable'];
+        }
+
+        get document(): DocumentState {
+            return this.$store.getters['document/document'];
         }
 
         get components() {
@@ -69,11 +75,14 @@
         }
 
         onCellInput(equipment: keyof EquipmentTableType, size: number | 'All', value: number) {
+            const priceTable = this.document.drawing.metadata.priceTable;
+            console.log(JSON.stringify(priceTable, null, 2));
             if (equipment === 'TMV' || equipment === 'Tempering Valve') {
-                defaultPriceTable.Equipment[equipment] = Number(value);
+                setPropertyByStringVue(priceTable, 'Equipment.' + equipment, Number(value));
             } else {
-                defaultPriceTable.Equipment[equipment][Number(size)] = Number(value);
+                setPropertyByStringVue(priceTable, 'Equipment.' + equipment + '.' + Number(size), Number(value));
             }
+            console.log(JSON.stringify(priceTable, null, 2));
         }
 
         items(equipment: keyof EquipmentTableType) {

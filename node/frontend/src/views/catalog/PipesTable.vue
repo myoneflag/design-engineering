@@ -30,6 +30,8 @@
     import Vue from "vue";
     import {PipesBySize, PipesTable as PipesTableType, PlantTable, PriceTable} from "../../../../common/src/api/catalog/price-table";
     import {defaultPriceTable} from "../../../../common/src/api/catalog/default-price-table";
+    import {DocumentState} from "../../store/document/types";
+    import {setPropertyByStringVue} from "../../lib/utils";
 
     @Component({
         components: { },
@@ -38,7 +40,11 @@
     })
     export default class PipesTable extends Vue {
         get priceTable(): PriceTable {
-            return defaultPriceTable;
+            return this.$store.getters['document/priceTable'];
+        }
+
+        get document(): DocumentState {
+            return this.$store.getters['document/document'];
         }
 
         get fields() {
@@ -58,7 +64,11 @@
         }
 
         onCellInput(material: keyof PipesTableType, size: number, value: number) {
-            defaultPriceTable.Pipes[material][size] = Number(value);
+            setPropertyByStringVue(
+                this.document.drawing.metadata.priceTable,
+                'Pipes.' + material + '.' + size,
+                Number(value),
+            );
         }
 
         get items() {

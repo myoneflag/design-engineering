@@ -308,8 +308,7 @@ import {DrawingMode} from "../../htmlcanvas/types";
         }
 
         get effectivePriceTable(): PriceTable {
-            // TODO: editable. From document store, we should have the changes on the price table object.
-            return defaultPriceTable;
+            return this.$store.getters['document/priceTable'];
         }
 
         get availableFixtures(): string[] {
