@@ -92,8 +92,6 @@ export const getters: GetterTree<DocumentState, RootState> = {
         const initialPriceTable = cloneSimple(defaultPriceTable);
 
         const newPriceTable = applyDiffNative(initialPriceTable, state.drawing.metadata.priceTable);
-        console.log(JSON.stringify(state.drawing.metadata.priceTable));
-        console.log(JSON.stringify(newPriceTable));
         return newPriceTable;
     }
 };
