@@ -33,7 +33,7 @@ class methods():
             print("Unidentified system")
 
         self.driver.maximize_window()
-        self.driver.get("https://deploy.h2xengineering.com/login")
+        self.driver.get("localhost:8000/login")
         self.actions = ActionChains(self.driver)
         return self.driver
 
@@ -119,15 +119,15 @@ class methods():
     def create_drawing(self):
         self.driver.find_element_by_xpath("//button[@class='btn btn-success btn-lg']").click()
         time.sleep(10)
-        title = self.driver.find_element_by_xpath("/html/body/div/div/div/div[3]/nav/ul[2]/a[1]")
+        title = self.driver.find_element_by_xpath("//a[contains(text(),'Untitled')]")
         self.actions.double_click(title).perform()
         self.driver.find_element_by_xpath("//input[@class='form-control form-control-md']").click()
         self.driver.find_element_by_xpath("//input[@class='form-control form-control-md']").send_keys("NEW DRAWING")
 
     def delete_drawing(self):
-        self.driver.find_element_by_xpath("/html/body/div/div/div/div/div[5]/div[1]/article/div/div/button").click()
-        self.driver.find_element_by_xpath("//ul[@class='dropdown-menu show']//a[@class='dropdown-item"
-                                          " text-danger'][contains(text(),'Delete')]").click()
+        self.driver.find_element_by_xpath("/html/body/div/div/div/div/div[5]/div[1]/article/div/div/button")\
+            .click()
+        self.driver.find_element_by_xpath("/html/body/div/div/div/div/div[5]/div[1]/article/div/div/ul/li[2]/a").click()
         time.sleep(2)
         self.driver.find_element_by_xpath("//button[@class='btn btn-primary']").click()
 

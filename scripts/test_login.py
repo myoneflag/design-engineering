@@ -195,7 +195,7 @@ class test_loginPage(unittest.TestCase):
         for i in range (1, org_counter + 1):
             org_checker = self.driver.find_element_by_xpath(f"//*[@id='app']/div/div/div/div[5]/div[{i}]/article/div"
                                                             f"/p/table/tr[3]/td[2]").text
-            self.assertEqual(org_checker, "Test Orgnaization")
+            self.assertEqual(org_checker, "test")
         print("All drawings belong to user organization!")
 
         # End
