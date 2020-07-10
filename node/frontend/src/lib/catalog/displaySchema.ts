@@ -339,7 +339,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                 link: {
                     name: { order: 1, name: "Name" },
                     manufacturer: { order: 2, name: "Manufacturer"},
-                    abbreviation: { order: 3, name: "Abbreaviation" },
+                    abbreviation: null,
                     uid: null,
                     valvesBySize: {
                         order: 4,

@@ -1470,12 +1470,8 @@ export default class CalculationEngine {
                         : StandardFlowSystemUids.HotWater;
                 const flowRate = lookupFlowRate(psdU, this.doc, this.catalog, systemUid);
 
-                switch (entity.valve.type) {
-                    case BigValveType.TEMPERING:
-                        calculation.outputs[StandardFlowSystemUids.WarmWater].sizeMM = this.sizeTemperingValveForFlowRate(flowRate?.flowRateLS || 0);
-                        break;
-                    default:
-                        break;
+                if (entity.valve.type !== BigValveType.RPZD_HOT_COLD) {
+                    calculation.mixingValveSizeMM = this.sizeMixingValveForFlowRate(flowRate?.flowRateLS || 0);
                 }
 
                 if (entity.valve.type === BigValveType.RPZD_HOT_COLD && flowRate !== null) {
@@ -2612,7 +2608,7 @@ export default class CalculationEngine {
         return psdUs;
     }
 
-    sizeTemperingValveForFlowRate(fr: number): number {
+    sizeMixingValveForFlowRate(fr: number): number {
         if (fr > 0.5 ) {
             return 25;
         }

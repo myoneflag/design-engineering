@@ -29,13 +29,14 @@ export default interface BigValveCalculation extends Calculation {
         [key: string]: {
             temperatureC: number | null;
             pressureDropKPA: number | null;
-            sizeMM: number | null;
         };
     };
 
     rpzdSizeMM: {
         [key: string]: number | null;
     } | null;
+
+    mixingValveSizeMM: number | null; 
 }
 
 export function makeBigValveCalculationFields(doc: DocumentState, entity: BigValveEntity, catalog: Catalog | undefined): CalculationField[] {
@@ -88,17 +89,16 @@ export function makeBigValveCalculationFields(doc: DocumentState, entity: BigVal
         });
     }
 
-    if (entity.valve.type === BigValveType.TEMPERING) {
+    if (entity.valve.type !== BigValveType.RPZD_HOT_COLD) {
         const manufacturer = doc.drawing.metadata.catalog.mixingValves.find((material: SelectedMaterialManufacturer) => material.uid === entity.valve.catalogId)?.manufacturer || 'generic';  
         const abbreviation = manufacturer !== 'generic' 
             && catalog?.mixingValves[entity.valve.catalogId].manufacturer.find((manufacturerObj: Manufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation 
             || '';
 
         result.push({
-            property: "outputs." + StandardFlowSystemUids.WarmWater + ".sizeMM",
+            property: "mixingValveSizeMM",
             title: "Size",
-            attachUid: entity.valve.warmOutputUid,
-            systemUid: StandardFlowSystemUids.WarmWater,
+            attachUid: entity.uid,
             short: abbreviation,
             units: Units.Millimeters,
             category: FieldCategory.Size
@@ -126,6 +126,7 @@ export function EmptyBigValveCalculations(entity: BigValveEntity): BigValveCalcu
 
         outputs: {},
         rpzdSizeMM: {},
+        mixingValveSizeMM: null,
 
         warning: null
     };
