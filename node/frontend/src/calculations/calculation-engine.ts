@@ -1918,8 +1918,9 @@ export default class CalculationEngine {
                 assertUnreachable(type);
         }
 
+        const manufacturer = this.doc.drawing.metadata.catalog.prv[0]?.manufacturer || 'generic';
         const entry = lowerBoundTable(
-            this.catalog.prv,
+            this.catalog.prv.size[manufacturer],
             fr,
             (t, m) => parseCatalogNumberExact(m ? t.maxFlowRateLS : t.minFlowRateLS)!
         );
@@ -2390,11 +2391,12 @@ export default class CalculationEngine {
                         case ValveType.PRV_SINGLE:
                         case ValveType.PRV_DOUBLE:
                         case ValveType.PRV_TRIPLE: {
+                            const manufacturer = this.doc.drawing.metadata.catalog.prv[0]?.manufacturer || 'generic';
                             const inPressure = calculation.pressureKPA;
 
                             if (inPressure !== null && calculation.sizeMM !== null) {
                                 const maxInletPressure =
-                                    parseCatalogNumberExact(this.catalog.prv[calculation.sizeMM].maxInletPressureKPA);
+                                    parseCatalogNumberExact(this.catalog.prv.size[manufacturer][calculation.sizeMM].maxInletPressureKPA);
                                 if (maxInletPressure !== null && inPressure > maxInletPressure) {
                                     calculation.warning = 'Max pressure of ' + maxInletPressure.toFixed(2) + ' kpa exceeded';
                                 }
@@ -2406,7 +2408,7 @@ export default class CalculationEngine {
                                 calculation.sizeMM !== null
                             ) {
                                 const ratio = parseCatalogNumberExact(
-                                    this.catalog.prv[calculation.sizeMM].maxPressureDropRatio
+                                    this.catalog.prv.size[manufacturer][calculation.sizeMM].maxPressureDropRatio
                                 );
                                 if (ratio !== null && inPressure > o.entity.valve.targetPressureKPA * ratio) {
                                     calculation.warning =

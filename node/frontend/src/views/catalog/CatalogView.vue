@@ -5,6 +5,22 @@
                 <b-breadcrumb :items="paths"> </b-breadcrumb>
             </b-col>
         </b-row>
+        <b-form-group 
+            v-if="paths[1] && paths[1].text === 'prv'" 
+            :label-cols="3" 
+            label="Manufacturer"
+            class="manufacturer-field"
+        >
+            <b-button 
+                :variant="isSelectedManufacturer(paths[1].text, paths[1].text, manufacturer.uid) && 'primary' || 'outline-primary'" 
+                size="sm" 
+                :class="'manufacturer-item-btn'"
+                v-for="manufacturer in catalog[paths[1].text].manufacturer" :key="manufacturer.name"
+                @click="(e) => handleManufacturerClick(paths[1].text, paths[1].text, manufacturer.uid)"
+            >
+                {{ manufacturer.name }}
+            </b-button> 
+        </b-form-group>
         <template v-for="[prop, val] in Object.entries(getSchema())">
             <template v-if="val && currCatalog.hasOwnProperty(prop)">
                 <template v-if="val.table">
@@ -148,6 +164,11 @@ export default class CatalogView extends Vue {
             pathArr.splice(3, 0, this.manufacturer);
         }
 
+        if (pathArr[0] === 'prv' && pathArr.length === 2) {
+            pathArr.splice(1, 0, 'size');
+            pathArr.splice(2, 0, this.manufacturer);
+        }
+
         if (pathArr.join(".") === "") {
             return this.catalog;
         }
@@ -175,7 +196,9 @@ export default class CatalogView extends Vue {
     }
 
     get manufacturer(): string {
-        if (this.paths.length <= 2) {
+        if (this.paths[1] && this.paths[1].text === 'prv') {
+            return this.selMtlMftr(this.paths[1].text)[0]?.manufacturer || 'generic';
+        } else if (this.paths.length <= 2) {
             return '';
         }
 
@@ -264,6 +287,9 @@ export default class CatalogView extends Vue {
                     || prop === 'pressureLossKPAbyFlowRateLS'))
             {
                entries = entries[this.manufacturer] || entries;
+            } else if (prop === 'prv') {
+                const manufacturer = this.document.drawing.metadata.catalog.prv[0].manufacturer;
+                entries = entries.size[manufacturer];
             }
 
             for (const [key, value] of Object.entries(entries)) {
@@ -482,12 +508,16 @@ export default class CatalogView extends Vue {
 }
 </script>
 
-<style scoped>
+<style>
     .manufacturer-item-btn {
         margin-right: 15px;
     }
 
     .manufacturer-item-btn:last-child {
         margin-right: 0px;
+    }
+
+    .manufacturer-field .col {
+        text-align: left;
     }
 </style>

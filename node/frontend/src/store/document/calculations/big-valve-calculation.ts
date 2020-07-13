@@ -155,7 +155,6 @@ export function EmptyBigValveCalculations(entity: BigValveEntity): BigValveCalcu
         result.outputs[suid] = {
             temperatureC: null,
             pressureDropKPA: null,
-            sizeMM: null,
         };
     }
 

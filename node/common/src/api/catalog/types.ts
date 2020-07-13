@@ -36,7 +36,6 @@ export interface BackflowValveSpec {
     uid: string;
     abbreviation: string;
     manufacturer: Manufacturer[];
-    // valvesBySize: { [key: string]: BackflowValveSize };
     valvesBySize: { [key: string]: { [key: string]: BackflowValveSize } };
 }
 
@@ -49,7 +48,12 @@ export interface Catalog {
     psdStandards: { [key: string]: PSDSpec };
     dwellingStandards: { [key: string]: DwellingSpec };
     fluids: { [key: string]: FluidsSpec };
-    prv: { [key: string]: PRVSize };
+    prv: PRVSpec;
+}
+
+export interface PRVSpec {
+    manufacturer: Manufacturer[];
+    size: { [key: string]: { [key: string]: PRVSize } };
 }
 
 export interface PRVSize {

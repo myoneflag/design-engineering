@@ -63,10 +63,7 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
         });
     }
 
-    const manufacturer = drawing.metadata.catalog.backflowValves.find((material: SelectedMaterialManufacturer) => material.uid === entity.valve.catalogId)?.manufacturer || 'generic';
-    const abbreviation = manufacturer !== 'generic' 
-        && catalog?.backflowValves[entity.valve.catalogId].manufacturer.find((manufacturerObj: Manufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation 
-        || '';
+    
 
     switch (entity.valve.type) {
         case ValveType.CHECK_VALVE:
@@ -78,9 +75,26 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
         case ValveType.RPZD_SINGLE:
         case ValveType.RPZD_DOUBLE_SHARED:
         case ValveType.RPZD_DOUBLE_ISOLATED:
+            var manufacturer = drawing.metadata.catalog.backflowValves.find((material: SelectedMaterialManufacturer) => material.uid === entity.valve.catalogId)?.manufacturer || 'generic';
+            var abbreviation = manufacturer !== 'generic' 
+                && catalog?.backflowValves[entity.valve.catalogId].manufacturer.find((manufacturerObj: Manufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation 
+                || '';
+
+            fields.push({
+                property: "sizeMM",
+                title: "Size (mm)",
+                short: abbreviation,
+                units: Units.Millimeters,
+                category: FieldCategory.Size
+            });
+            break;
         case ValveType.PRV_SINGLE:
         case ValveType.PRV_DOUBLE:
         case ValveType.PRV_TRIPLE:
+            var manufacturer = drawing.metadata.catalog.prv[0]?.manufacturer || 'generic';
+            var abbreviation = manufacturer !== 'generic' 
+                && catalog?.prv.manufacturer.find((manufacturerObj: Manufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation 
+                || '';
             fields.push({
                 property: "sizeMM",
                 title: "Size (mm)",
