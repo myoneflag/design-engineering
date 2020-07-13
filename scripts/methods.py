@@ -118,7 +118,7 @@ class methods():
 
     def create_drawing(self):
         self.driver.find_element_by_xpath("//button[@class='btn btn-success btn-lg']").click()
-        time.sleep(10)
+        time.sleep(5)
         title = self.driver.find_element_by_xpath("//a[contains(text(),'Untitled')]")
         self.actions.double_click(title).perform()
         self.driver.find_element_by_xpath("//input[@class='form-control form-control-md']").click()
@@ -127,6 +127,7 @@ class methods():
     def delete_drawing(self):
         self.driver.find_element_by_xpath("/html/body/div/div/div/div/div[5]/div[1]/article/div/div/button")\
             .click()
+        time.sleep(1)
         self.driver.find_element_by_xpath("/html/body/div/div/div/div/div[5]/div[1]/article/div/div/ul/li[2]/a").click()
         time.sleep(2)
         self.driver.find_element_by_xpath("//button[@class='btn btn-primary']").click()
@@ -170,6 +171,12 @@ class methods():
         self.driver.find_element_by_xpath("/html/body/div/div/span/nav/ul[3]/li[2]/a").click()
         self.driver.find_element_by_xpath("/html/body/div/div/span/nav/ul[3]/li[2]/ul/li[7]/a").click()
 
+    def add_tmv_element(self):
+        self.driver.find_element_by_xpath("//button[@class='btn modebtn pipes btn-sm btn-outline-dark']").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath("//button[@class='btn insertBtn tmv btn-sm btn-outline-dark']").click()
+        self.driver.find_element_by_xpath("//div[@class='fullFrame']//canvas").click()
+        webdriver.ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
 
 
 

@@ -197,7 +197,7 @@ class test_floorplan(unittest.TestCase):
         password = "pleasechange"
 
         # Start
-        print("----------------\nStart Add Level Test...")
+        print("----------------\nStart Delete Level Test...")
 
         # Perform login
         print("Logging in...")

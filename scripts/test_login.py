@@ -154,6 +154,10 @@ class test_loginPage(unittest.TestCase):
             print("Duplicate not found!")
         self.assertTrue(is_true)
 
+        # Refresh page
+        self.driver.refresh()
+        time.sleep(3)
+
         # Delete copy after checking
         print("Deleting original drawing...")
         self.test.delete_drawing()
