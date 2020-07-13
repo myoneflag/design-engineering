@@ -5,22 +5,6 @@
                 <b-breadcrumb :items="paths"> </b-breadcrumb>
             </b-col>
         </b-row>
-        <b-form-group 
-            v-if="paths[1] && paths[1].text === 'prv'" 
-            :label-cols="3" 
-            label="Manufacturer"
-            class="manufacturer-field"
-        >
-            <b-button 
-                :variant="isSelectedManufacturer(paths[1].text, paths[1].text, manufacturer.uid) && 'primary' || 'outline-primary'" 
-                size="sm" 
-                :class="'manufacturer-item-btn'"
-                v-for="manufacturer in catalog[paths[1].text].manufacturer" :key="manufacturer.name"
-                @click="(e) => handleManufacturerClick(paths[1].text, paths[1].text, manufacturer.uid)"
-            >
-                {{ manufacturer.name }}
-            </b-button> 
-        </b-form-group>
         <template v-for="[prop, val] in Object.entries(getSchema())">
             <template v-if="val && currCatalog.hasOwnProperty(prop)">
                 <template v-if="val.table">
@@ -45,6 +29,22 @@
                         </b-col>
                         <b-col cols="12">
                             <b-collapse :id="'collapse' + prop" :visible="onlyOneTable">
+                                <b-form-group 
+                                    v-if="paths.length <= 2 && prop === 'prv'" 
+                                    :label-cols="3" 
+                                    label="Manufacturer"
+                                    class="manufacturer-field mt-4"
+                                >
+                                    <b-button 
+                                        v-for="manufacturer in catalog.prv.manufacturer" :key="manufacturer.name"
+                                        size="sm" 
+                                        :class="'manufacturer-item-btn'"
+                                        :variant="isSelectedManufacturer('prv', 'prv', manufacturer.uid) && 'primary' || 'outline-primary'" 
+                                        @click="(e) => handleManufacturerClick('prv', 'prv', manufacturer.uid)"
+                                    >
+                                        {{ manufacturer.name }}
+                                    </b-button> 
+                                </b-form-group>
                                 <b-table
                                     v-if="val.table.link"
                                     striped
@@ -77,6 +77,48 @@
                                     style="max-width: 100%; overflow-x: auto; margin-top:25px"
                                     responsive="true"
                                 ></b-table>
+                            </b-collapse>
+                        </b-col>
+                    </b-row>
+                </template>
+                <template v-else-if="prop === 'balancingValves'">
+                    <b-row :key="prop" style="margin-top: 25px; margin-bottom: 25px;">
+                        <b-col cols="12">
+                            <h4 style="text-align: left">
+                                <router-link :to="navigateLink(prop)">
+                                    {{ val.name }}
+                                </router-link>
+                                <span>
+                                    <b-button
+                                        v-b-toggle="'collapse' + prop"
+                                        coll
+                                        class="float-right"
+                                        size="sm"
+                                        variant="primary"
+                                    >
+                                        Show / Hide
+                                    </b-button>
+                                </span>
+                            </h4>
+                        </b-col>
+                        <b-col cols="12">
+                            <b-collapse :id="'collapse' + prop" :visible="onlyOneTable">
+                                <b-form-group 
+                                    v-if="paths.length <= 2 && prop === 'balancingValves'" 
+                                    :label-cols="3" 
+                                    label="Manufacturer"
+                                    class="manufacturer-field mt-4"
+                                >
+                                    <b-button 
+                                        v-for="manufacturer in catalog.balancingValves.manufacturer" :key="manufacturer.name"
+                                        size="sm" 
+                                        :class="'manufacturer-item-btn'"
+                                        :variant="isSelectedManufacturer('balancingValves', 'balancingValves', manufacturer.uid) && 'primary' || 'outline-primary'" 
+                                        @click="(e) => handleManufacturerClick('balancingValves', 'balancingValves', manufacturer.uid)"
+                                    >
+                                        {{ manufacturer.name }}
+                                    </b-button> 
+                                </b-form-group>
                             </b-collapse>
                         </b-col>
                     </b-row>

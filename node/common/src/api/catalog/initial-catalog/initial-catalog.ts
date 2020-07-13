@@ -3636,5 +3636,11 @@ export const initialCatalog: Catalog = {
             abbreviation: "RPZD",
             uid: "RPZD",
         }
+    },
+    balancingValves: {
+        manufacturer: [
+            { name: "Generic", abbreviation: "Generic", uid: "generic", },
+            { name: "Cimberio", abbreviation: "Cimberio", uid: "cimberio", }
+        ],
     }
 };

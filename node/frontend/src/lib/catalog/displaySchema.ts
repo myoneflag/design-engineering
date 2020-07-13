@@ -1,21 +1,5 @@
-import CatalogState from "../../store/catalog/types";
-import {
-    Catalog,
-    Diameter,
-    DwellingSpec,
-    FixtureSpec,
-    FluidsSpec,
-    LoadingUnit,
-    MixingValveSpec,
-    PipeMaterial,
-    PSDSpec,
-    ValveSpec
-} from "../../../../common/src/api/catalog/types";
+import { Catalog } from "../../../../common/src/api/catalog/types";
 import { Units } from "../../../../common/src/lib/measurements";
-
-type AllKeysOf<T> = {
-    [P in keyof T]: any;
-};
 
 export type Page<V> = {
     [K in keyof V]: {
@@ -373,6 +357,10 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                     }
                 }
             }
+        },
+        balancingValves: {
+            order: 10,
+            name: "Balancing Valves",
         }
     };
 }

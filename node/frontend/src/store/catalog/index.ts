@@ -18,7 +18,10 @@ export const state: CatalogState = {
         prv: {
             manufacturer: [],
             size: {},
-        }
+        },
+        balancingValves: {
+            manufacturer: [],
+        },
     },
     loaded: false
 };

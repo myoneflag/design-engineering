@@ -227,6 +227,7 @@ export interface Catalog {
     backflowValves: SelectedMaterialManufacturer[];
     mixingValves: SelectedMaterialManufacturer[];
     prv: SelectedMaterialManufacturer[];
+    balancingValves: SelectedMaterialManufacturer[];
     [key: string]: SelectedMaterialManufacturer[];
 }
 
@@ -370,6 +371,7 @@ export const initialDrawing: DrawingState = {
             backflowValves: [],
             mixingValves: [],
             prv: [],
+            balancingValves: [],
         }
     },
     levels: {

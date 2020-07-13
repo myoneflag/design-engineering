@@ -49,6 +49,11 @@ export interface Catalog {
     dwellingStandards: { [key: string]: DwellingSpec };
     fluids: { [key: string]: FluidsSpec };
     prv: PRVSpec;
+    balancingValves: BalancingValveSpec;
+}
+
+export interface BalancingValveSpec {
+    manufacturer: Manufacturer[];
 }
 
 export interface PRVSpec {

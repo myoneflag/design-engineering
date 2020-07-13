@@ -71,6 +71,18 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
         case ValveType.WATER_METER:
         case ValveType.STRAINER:
         case ValveType.BALANCING:
+            var manufacturer = drawing.metadata.catalog.balancingValves[0]?.manufacturer || 'generic';
+            var abbreviation = manufacturer !== 'generic' 
+                && catalog?.balancingValves.manufacturer.find((manufacturerObj: Manufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation 
+                || '';
+
+            fields.push({
+                property: "sizeMM",
+                title: "Size (mm)",
+                short: abbreviation,
+                units: Units.Millimeters,
+                category: FieldCategory.Size
+            });
             break;
         case ValveType.RPZD_SINGLE:
         case ValveType.RPZD_DOUBLE_SHARED:
