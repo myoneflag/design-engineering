@@ -1,4 +1,4 @@
-import { Catalog } from "../../../../common/src/api/catalog/types";
+import { Catalog, PRVSize } from "../../../../common/src/api/catalog/types";
 import { Units } from "../../../../common/src/lib/measurements";
 
 export type Page<V> = {
@@ -14,7 +14,7 @@ export type Page<V> = {
 export interface Table<TV> {
     primaryName: string | null;
     primaryUnits?: Units;
-    columns: Array<[keyof TV | null, string, Units] | [keyof TV | null, string]>;
+    columns: Array<[keyof TV | null, string, Units] | [keyof TV | null, string] | [keyof PRVSize, string, Units]>;
     link?: Page<TV> | null;
     twoDimensional?: boolean;
 }

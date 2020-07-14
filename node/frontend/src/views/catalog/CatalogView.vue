@@ -245,14 +245,14 @@ export default class CatalogView extends Vue {
         }
 
         const selectedCatalog = this.paths[1].text;
-        const materialObj = this.catalog[selectedCatalog][this.paths[2].text];
+        const materialObj = (this.catalog as any)[selectedCatalog][this.paths[2].text];
         const selMtlMftr = this.selMtlMftr(selectedCatalog);
 
         return selMtlMftr?.find((mtl: SelectedMaterialManufacturer) => mtl.uid === materialObj.uid)?.manufacturer || 'generic';
     }
 
     display(units: Units | undefined, prop: string) {
-        let value: number | string | undefined = this.currCatalog[prop];
+        let value = this.currCatalog[prop];
         if (prop === 'manufacturer' && Array.isArray(value)) {
             value = value.find((obj: Manufacturer) => obj.uid === this.manufacturer).name;
         }
@@ -337,7 +337,7 @@ export default class CatalogView extends Vue {
             for (const [key, value] of Object.entries(entries)) {
                 let manufacturer: string = '';
                 if (this.paths.length <= 2) {
-                    manufacturer = this.document.drawing.metadata.catalog[prop]?.find(obj => obj.uid === value.uid)?.manufacturer || 'generic';
+                    manufacturer = this.document.drawing.metadata.catalog[prop]?.find(obj => obj.uid === (value as any).uid)?.manufacturer || 'generic';
                 }
 
                 const item: any = {};
