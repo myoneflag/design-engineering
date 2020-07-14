@@ -23,6 +23,7 @@ async function ensureInitialUser() {
             subscribed: true,
             password: "pleasechange",
             access:  AccessLevel.SUPERUSER,
+            email: CONFIG.INIT_SUPERUSER_EMAIL,
         });
     }
 

@@ -1,21 +1,5 @@
-import CatalogState from "../../store/catalog/types";
-import {
-    Catalog,
-    Diameter,
-    DwellingSpec,
-    FixtureSpec,
-    FluidsSpec,
-    LoadingUnit,
-    MixingValveSpec,
-    PipeMaterial,
-    PSDSpec,
-    ValveSpec
-} from "../../../../common/src/api/catalog/types";
+import { Catalog } from "../../../../common/src/api/catalog/types";
 import { Units } from "../../../../common/src/lib/measurements";
-
-type AllKeysOf<T> = {
-    [P in keyof T]: any;
-};
 
 export type Page<V> = {
     [K in keyof V]: {
@@ -228,7 +212,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                     abbreviation: { order: 3, name: "Abbreaviation" },
                     uid: null,
                     pipesBySize: {
-                        order: 3,
+                        order: 4,
                         name: "Pipe Sizes",
                         table: {
                             primaryName: "Nominal Diameter",
@@ -279,6 +263,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                 primaryName: null,
                 columns: [
                     ["name", "Name"],
+                    ["manufacturer", "Manufacturer"],
                     ["minInletPressureKPA", "Min. Inlet Pressure", Units.KiloPascals],
                     ["maxInletPressureKPA", "Max. Inlet Pressure", Units.KiloPascals],
                     ["minFlowRateLS", "Min. Flow Rate", Units.LitersPerSecond],
@@ -286,20 +271,21 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                 ],
                 link: {
                     name: { order: 1, name: "Name" },
+                    manufacturer: {order: 2, name: "Manufacturer"},
                     uid: null,
-                    minInletPressureKPA: { order: 2, name: "Min. Inlet Pressure", units: Units.KiloPascals },
-                    maxInletPressureKPA: { order: 3, name: "Max. Inlet Pressure", units: Units.KiloPascals },
-                    minFlowRateLS: { order: 5, name: "Min. Flow Rate", units: Units.LitersPerSecond },
-                    maxFlowRateLS: { order: 6, name: "Max. Flow Rate", units: Units.LitersPerSecond },
+                    minInletPressureKPA: { order: 4, name: "Min. Inlet Pressure", units: Units.KiloPascals },
+                    maxInletPressureKPA: { order: 5, name: "Max. Inlet Pressure", units: Units.KiloPascals },
+                    minFlowRateLS: { order: 6, name: "Min. Flow Rate", units: Units.LitersPerSecond },
+                    maxFlowRateLS: { order: 7, name: "Max. Flow Rate", units: Units.LitersPerSecond },
                     pressureLossKPAbyFlowRateLS: {
-                        order: 7,
+                        order: 8,
                         name: "Pressure Loss By Flow Rate",
                         table: {
                             primaryName: "Flow Rate",
                             primaryUnits: Units.LitersPerSecond,
                             columns: [[null, "Pressure Loss", Units.KiloPascals]]
                         }
-                    }
+                    },
                 }
             }
         },
@@ -330,11 +316,17 @@ export function getCatalogDisplaySchema(): CatalogSchema {
             name: "Backflow Valves",
             table: {
                 primaryName: null,
-                columns: [["name", "Name"]],
+                columns: [
+                    ["name", "Name"],
+                    ["manufacturer", "Manufacturer"],
+                ],
                 link: {
                     name: { order: 1, name: "Name" },
+                    manufacturer: { order: 2, name: "Manufacturer"},
+                    abbreviation: null,
+                    uid: null,
                     valvesBySize: {
-                        order: 1,
+                        order: 4,
                         name: "Valves By Size",
                         table: {
                             primaryName: "Diameter",
@@ -365,6 +357,10 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                     }
                 }
             }
+        },
+        balancingValves: {
+            order: 10,
+            name: "Balancing Valves",
         }
     };
 }

@@ -127,7 +127,7 @@ export default class MultiFieldBuilder extends Vue {
             case EntityType.SYSTEM_NODE:
                 return obj.entity;
             case EntityType.BIG_VALVE:
-                return fillDefaultBigValveFields(this.defaultCatalog, obj.entity);
+                return fillDefaultBigValveFields(this.defaultCatalog, obj.entity, this.document.drawing);
             case EntityType.FIXTURE:
                 return fillFixtureFields(this.document.drawing, this.defaultCatalog, obj.entity);
             case EntityType.DIRECTED_VALVE:

@@ -33,7 +33,10 @@ export interface BackflowValveSize {
 
 export interface BackflowValveSpec {
     name: string;
-    valvesBySize: { [key: string]: BackflowValveSize };
+    uid: string;
+    abbreviation: string;
+    manufacturer: Manufacturer[];
+    valvesBySize: { [key: string]: { [key: string]: BackflowValveSize } };
 }
 
 export interface Catalog {
@@ -45,7 +48,17 @@ export interface Catalog {
     psdStandards: { [key: string]: PSDSpec };
     dwellingStandards: { [key: string]: DwellingSpec };
     fluids: { [key: string]: FluidsSpec };
-    prv: { [key: string]: PRVSize };
+    prv: PRVSpec;
+    balancingValves: BalancingValveSpec;
+}
+
+export interface BalancingValveSpec {
+    manufacturer: Manufacturer[];
+}
+
+export interface PRVSpec {
+    manufacturer: Manufacturer[];
+    size: { [key: string]: { [key: string]: PRVSize } };
 }
 
 export interface PRVSize {
@@ -134,11 +147,32 @@ export interface PipeSpec {
 export interface MixingValveSpec {
     name: string;
     uid: string;
-    minInletPressureKPA: string;
-    maxInletPressureKPA: string;
-    minFlowRateLS: string;
-    maxFlowRateLS: string;
-    pressureLossKPAbyFlowRateLS: { [key: string]: string };
+    minInletPressureKPA: {
+        generic: string;
+        caleffi: string;
+        [key: string]: string;
+    };
+    maxInletPressureKPA: {
+        generic: string;
+        caleffi: string;
+        [key: string]: string;
+    };
+    minFlowRateLS: {
+        generic: string;
+        caleffi: string;
+        [key: string]: string;
+    };
+    maxFlowRateLS: {
+        generic: string;
+        caleffi: string;
+        [key: string]: string;
+    };
+    pressureLossKPAbyFlowRateLS: {
+        generic: { [key: string]: string };
+        caleffi: { [key: string]: string };
+        [key: string]: { [key: string]: string };
+    };
+    manufacturer: Manufacturer[];
 }
 
 export interface FluidsSpec {

@@ -23,7 +23,7 @@ import { ValveType } from "../../../../common/src/api/document/entities/directed
 import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
 import { GlobalStore } from "./global-store";
 import { assertUnreachable, LEVEL_HEIGHT_DIFF_M } from "../../../../common/src/api/config";
-import { Color, COLORS, Coord, DrawableEntity, DrawingState, Level } from "../../../../common/src/api/document/drawing";
+import { Color, COLORS, Coord, DrawableEntity, DrawingState, Level, SelectedMaterialManufacturer } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, EPS, interpolateTable, upperBoundTable } from "../../../../common/src/lib/utils";
 import PlantEntity, {
     fillPlantDefaults,
@@ -207,7 +207,8 @@ export function getRpzdHeadLoss(
     type: ValveType.RPZD_SINGLE | ValveType.RPZD_DOUBLE_SHARED | ValveType.RPZD_DOUBLE_ISOLATED,
     isolateOneWhenCalculatingHeadLoss: boolean = false
 ) {
-    const rpzdEntry = upperBoundTable(context.catalog.backflowValves[catalogId].valvesBySize, size);
+    const manufacturer = context.drawing.metadata.catalog.backflowValves.find((material: SelectedMaterialManufacturer) => material.uid === catalogId)?.manufacturer || 'generic';
+    const rpzdEntry = upperBoundTable(context.catalog.backflowValves[catalogId].valvesBySize[manufacturer], size);
     if (!rpzdEntry) {
         return null;
     }

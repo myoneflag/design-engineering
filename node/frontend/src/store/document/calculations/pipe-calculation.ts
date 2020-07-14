@@ -1,4 +1,4 @@
-import { Pipe as PipeObject } from './../../../../../common/src/api/document/drawing';
+import { SelectedMaterialManufacturer } from './../../../../../common/src/api/document/drawing';
 import { FieldCategory, CalculationField} from "../../../../src/store/document/calculations/calculation-field";
 import { Calculation, PsdCalculation } from "../../../../src/store/document/calculations/types";
 import PipeEntity, { fillPipeDefaultFields } from "../../../../../common/src/api/document/entities/pipe-entity";
@@ -8,7 +8,6 @@ import { assertUnreachable, isGermanStandard } from "../../../../../common/src/a
 import { Catalog, Manufacturer } from "../../../../../common/src/api/catalog/types";
 import { DrawingState, MeasurementSystem, UnitsParameters } from "../../../../../common/src/api/document/drawing";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
-import { globalStore } from "../mutations";
 import { convertPipeDiameterFromMetric, mm2IN, Units } from "../../../../../common/src/lib/measurements";
 
 export enum NoFlowAvailableReason {
@@ -66,8 +65,10 @@ export function makePipeCalculationFields(
     let materialName = "";
     if (catalog) {
         const pipe = fillPipeDefaultFields(settings, 0, entity);
-        const manufacturer = settings.metadata.catalog.pipes.find((pipeObj: PipeObject) => pipeObj.uid === pipe.material)?.manufacturer || 'generic';
-        const abbreviation = manufacturer !== 'generic' && catalog.pipes[pipe.material!].manufacturer.find((manufacturerObj: Manufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation || catalog.pipes[pipe.material!].abbreviation;
+        const manufacturer = settings.metadata.catalog.pipes.find((pipeObj: SelectedMaterialManufacturer) => pipeObj.uid === pipe.material)?.manufacturer || 'generic';
+        const abbreviation = manufacturer !== 'generic' 
+            && catalog.pipes[pipe.material!].manufacturer.find((manufacturerObj: Manufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation 
+            || catalog.pipes[pipe.material!].abbreviation;
         materialName = " (" + abbreviation + ")";
     }
 

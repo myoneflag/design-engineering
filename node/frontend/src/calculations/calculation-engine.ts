@@ -1,4 +1,4 @@
-import { Pipe as PipeObject } from './../../../common/src/api/document/drawing';
+import { SelectedMaterialManufacturer } from './../../../common/src/api/document/drawing';
 import { DocumentState } from "../../src/store/document/types";
 import { SelectionTarget } from "../../src/htmlcanvas/lib/types";
 import { EntityType } from "../../../common/src/api/document/entities/types";
@@ -1470,6 +1470,10 @@ export default class CalculationEngine {
                         : StandardFlowSystemUids.HotWater;
                 const flowRate = lookupFlowRate(psdU, this.doc, this.catalog, systemUid);
 
+                if (entity.valve.type !== BigValveType.RPZD_HOT_COLD) {
+                    calculation.mixingValveSizeMM = this.sizeMixingValveForFlowRate(flowRate?.flowRateLS || 0);
+                }
+
                 if (entity.valve.type === BigValveType.RPZD_HOT_COLD && flowRate !== null) {
                     if (flowEdge.type === EdgeType.BIG_VALVE_HOT_HOT) {
                         calculation.rpzdSizeMM![StandardFlowSystemUids.HotWater] = this.sizeRpzdForFlowRate(
@@ -1599,7 +1603,7 @@ export default class CalculationEngine {
         const filled = fillPipeDefaultFields(this.doc.drawing, obj.computedLengthM, pipe);
 
         const calculation = this.globalStore.getOrCreateCalculation(pipe);
-        const manufacturer = this.doc.drawing.metadata.catalog.pipes.find((pipe: PipeObject) => pipe.uid === filled.material)?.manufacturer || 'generic';
+        const manufacturer = this.doc.drawing.metadata.catalog.pipes.find((pipe: SelectedMaterialManufacturer) => pipe.uid === filled.material)?.manufacturer || 'generic';
         const realPipe = lowerBoundTable(
             this.catalog.pipes[filled.material!].pipesBySize[manufacturer],
             calculation.realNominalPipeDiameterMM!
@@ -1648,7 +1652,7 @@ export default class CalculationEngine {
     getPipeByNominal(pipe: PipeEntity, maxNominalMM: number): PipeSpec | null {
         const pipeFilled = fillPipeDefaultFields(this.doc.drawing, 0, pipe);
         const table = this.catalog.pipes[pipeFilled.material!];
-        const manufacturer = this.doc.drawing.metadata.catalog.pipes.find((pipe: PipeObject) => pipe.uid === pipeFilled.material)?.manufacturer || 'generic';
+        const manufacturer = this.doc.drawing.metadata.catalog.pipes.find((pipe: SelectedMaterialManufacturer) => pipe.uid === pipeFilled.material)?.manufacturer || 'generic';
         const a = upperBoundTable(table.pipesBySize[manufacturer], maxNominalMM, (p, isMax) => {
             if (isMax) {
                 return parseCatalogNumberOrMax(p.diameterNominalMM)!;
@@ -1673,7 +1677,7 @@ export default class CalculationEngine {
             throw new Error("Material doesn't exist anymore " + JSON.stringify(pipeFilled));
         }
 
-        const manufacturer = this.doc.drawing.metadata.catalog.pipes.find((pipe: PipeObject) => pipe.uid === pipeFilled.material)?.manufacturer || 'generic';
+        const manufacturer = this.doc.drawing.metadata.catalog.pipes.find((pipe: SelectedMaterialManufacturer) => pipe.uid === pipeFilled.material)?.manufacturer || 'generic';
         const a = lowerBoundTable(table.pipesBySize[manufacturer], calculation.optimalInnerPipeDiameterMM!, (p) => {
             const v = parseCatalogNumberExact(p.diameterInternalMM);
             if (!v) {
@@ -1699,7 +1703,7 @@ export default class CalculationEngine {
             throw new Error("Material doesn't exist anymore " + JSON.stringify(pipeFilled));
         }
         
-        const manufacturer = this.doc.drawing.metadata.catalog.pipes.find((pipe: PipeObject) => pipe.uid === pipeFilled.material)?.manufacturer || 'generic';
+        const manufacturer = this.doc.drawing.metadata.catalog.pipes.find((pipe: SelectedMaterialManufacturer) => pipe.uid === pipeFilled.material)?.manufacturer || 'generic';
         const a = upperBoundTable(table.pipesBySize[manufacturer], Infinity, (p) => {
             const v = parseCatalogNumberExact(p.diameterInternalMM);
             if (!v) {
@@ -1884,8 +1888,9 @@ export default class CalculationEngine {
         if (type === ValveType.RPZD_DOUBLE_SHARED) {
             fr = fr / 2;
         }
+        const manufacturer = this.doc.drawing.metadata.catalog.backflowValves.find((material: SelectedMaterialManufacturer) => material.uid === catalogId)?.manufacturer || 'generic';
         const entry = lowerBoundTable(
-            this.catalog.backflowValves[catalogId].valvesBySize,
+            this.catalog.backflowValves[catalogId].valvesBySize[manufacturer],
             fr,
             (t, m) => parseCatalogNumberExact(m ? t.maxFlowRateLS : t.minFlowRateLS)!
         );
@@ -1913,8 +1918,9 @@ export default class CalculationEngine {
                 assertUnreachable(type);
         }
 
+        const manufacturer = this.doc.drawing.metadata.catalog.prv[0]?.manufacturer || 'generic';
         const entry = lowerBoundTable(
-            this.catalog.prv,
+            this.catalog.prv.size[manufacturer],
             fr,
             (t, m) => parseCatalogNumberExact(m ? t.maxFlowRateLS : t.minFlowRateLS)!
         );
@@ -2312,12 +2318,15 @@ export default class CalculationEngine {
                 case EntityType.BIG_VALVE: {
                     let calc = this.globalStore.getOrCreateCalculation(o.entity);
                     let maxFlowRateLS = null;
+                    let manufacturer = 'generic';
                     switch (o.entity.valve.type) {
                         case BigValveType.TMV:
-                            maxFlowRateLS = parseCatalogNumberExact(this.catalog.mixingValves.tmv.maxFlowRateLS);
+                            manufacturer = this.doc.drawing.metadata.catalog.mixingValves.find((material: SelectedMaterialManufacturer) => material.uid === 'tmv')?.manufacturer || 'generic';
+                            maxFlowRateLS = parseCatalogNumberExact(this.catalog.mixingValves.tmv.maxFlowRateLS[manufacturer]);
                             break;
                         case BigValveType.TEMPERING:
-                            maxFlowRateLS = parseCatalogNumberExact(this.catalog.mixingValves.temperingValve.maxFlowRateLS);
+                            manufacturer = this.doc.drawing.metadata.catalog.mixingValves.find((material: SelectedMaterialManufacturer) => material.uid === 'temperingValve')?.manufacturer || 'generic';
+                            maxFlowRateLS = parseCatalogNumberExact(this.catalog.mixingValves.temperingValve.maxFlowRateLS[manufacturer]);
                             break;
                         case BigValveType.RPZD_HOT_COLD:
                             break;
@@ -2382,11 +2391,12 @@ export default class CalculationEngine {
                         case ValveType.PRV_SINGLE:
                         case ValveType.PRV_DOUBLE:
                         case ValveType.PRV_TRIPLE: {
+                            const manufacturer = this.doc.drawing.metadata.catalog.prv[0]?.manufacturer || 'generic';
                             const inPressure = calculation.pressureKPA;
 
                             if (inPressure !== null && calculation.sizeMM !== null) {
                                 const maxInletPressure =
-                                    parseCatalogNumberExact(this.catalog.prv[calculation.sizeMM].maxInletPressureKPA);
+                                    parseCatalogNumberExact(this.catalog.prv.size[manufacturer][calculation.sizeMM].maxInletPressureKPA);
                                 if (maxInletPressure !== null && inPressure > maxInletPressure) {
                                     calculation.warning = 'Max pressure of ' + maxInletPressure.toFixed(2) + ' kpa exceeded';
                                 }
@@ -2398,7 +2408,7 @@ export default class CalculationEngine {
                                 calculation.sizeMM !== null
                             ) {
                                 const ratio = parseCatalogNumberExact(
-                                    this.catalog.prv[calculation.sizeMM].maxPressureDropRatio
+                                    this.catalog.prv.size[manufacturer][calculation.sizeMM].maxPressureDropRatio
                                 );
                                 if (ratio !== null && inPressure > o.entity.valve.targetPressureKPA * ratio) {
                                     calculation.warning =
@@ -2598,5 +2608,13 @@ export default class CalculationEngine {
         }
 
         return psdUs;
+    }
+
+    sizeMixingValveForFlowRate(fr: number): number {
+        if (fr > 0.5 ) {
+            return 25;
+        }
+
+        return 15;
     }
 }

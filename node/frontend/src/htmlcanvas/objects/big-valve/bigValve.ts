@@ -42,7 +42,7 @@ import {
     ComponentPressureLossMethod,
     StandardFlowSystemUids
 } from "../../../../../common/src/api/config";
-import { Color, Coord, coordDist2 } from "../../../../../common/src/api/document/drawing";
+import { Color, Coord, coordDist2, SelectedMaterialManufacturer } from "../../../../../common/src/api/document/drawing";
 import { cloneSimple, interpolateTable, parseCatalogNumberExact } from "../../../../../common/src/lib/utils";
 import { SnappableObject } from "../../lib/object-traits/snappable-object";
 
@@ -452,13 +452,15 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         } else {
             switch (entity.valve.type) {
                 case BigValveType.TMV: {
-                    const pdKPAfield = interpolateTable(catalog.mixingValves.tmv.pressureLossKPAbyFlowRateLS, flowLS);
+                    const manufacturer = drawing.metadata.catalog.mixingValves.find((material: SelectedMaterialManufacturer) => material.uid === 'tmv')?.manufacturer || 'generic';
+                    const pdKPAfield = interpolateTable(catalog.mixingValves.tmv.pressureLossKPAbyFlowRateLS[manufacturer], flowLS);
                     pdKPA = parseCatalogNumberExact(pdKPAfield);
                     break;
                 }
                 case BigValveType.TEMPERING: {
+                    const manufacturer = drawing.metadata.catalog.mixingValves.find((material: SelectedMaterialManufacturer) => material.uid === 'temperingValve')?.manufacturer || 'generic';
                     const pdKPAfield = interpolateTable(
-                        catalog.mixingValves.temperingValve.pressureLossKPAbyFlowRateLS,
+                        catalog.mixingValves.temperingValve.pressureLossKPAbyFlowRateLS[manufacturer],
                         flowLS
                     );
                     pdKPA = parseCatalogNumberExact(pdKPAfield);

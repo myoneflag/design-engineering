@@ -10,6 +10,8 @@ import { assertUnreachable } from "../../../../../common/src/api/config";
 import { determineConnectableSystemUid } from "../entities/lib";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import { Units } from "../../../../../common/src/lib/measurements";
+import { DrawingState, SelectedMaterialManufacturer } from '../../../../../common/src/api/document/drawing';
+import { Catalog, Manufacturer } from '../../../../../common/src/api/catalog/types';
 
 export default interface DirectedValveCalculation extends Calculation, PressureCalculation {
     flowRateLS: number | null;
@@ -18,7 +20,7 @@ export default interface DirectedValveCalculation extends Calculation, PressureC
     sizeMM: number | null;
 }
 
-export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, globalStore: GlobalStore): CalculationField[] {
+export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, globalStore: GlobalStore, drawing: DrawingState, catalog: Catalog | undefined,): CalculationField[] {
     const systemUid = determineConnectableSystemUid(globalStore, entity);
     let fields: CalculationField[] = [
         {
@@ -61,23 +63,54 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
         });
     }
 
+    
+
     switch (entity.valve.type) {
         case ValveType.CHECK_VALVE:
         case ValveType.ISOLATION_VALVE:
         case ValveType.WATER_METER:
         case ValveType.STRAINER:
         case ValveType.BALANCING:
+            var manufacturer = drawing.metadata.catalog.balancingValves[0]?.manufacturer || 'generic';
+            var abbreviation = manufacturer !== 'generic' 
+                && catalog?.balancingValves.manufacturer.find((manufacturerObj: Manufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation 
+                || '';
+
+            fields.push({
+                property: "sizeMM",
+                title: "Size (mm)",
+                short: abbreviation,
+                units: Units.Millimeters,
+                category: FieldCategory.Size
+            });
             break;
         case ValveType.RPZD_SINGLE:
         case ValveType.RPZD_DOUBLE_SHARED:
         case ValveType.RPZD_DOUBLE_ISOLATED:
-        case ValveType.PRV_SINGLE:
-        case ValveType.PRV_DOUBLE:
-        case ValveType.PRV_TRIPLE:
+            var manufacturer = drawing.metadata.catalog.backflowValves.find((material: SelectedMaterialManufacturer) => material.uid === entity.valve.catalogId)?.manufacturer || 'generic';
+            var abbreviation = manufacturer !== 'generic' 
+                && catalog?.backflowValves[entity.valve.catalogId].manufacturer.find((manufacturerObj: Manufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation 
+                || '';
+
             fields.push({
                 property: "sizeMM",
                 title: "Size (mm)",
-                short: "",
+                short: abbreviation,
+                units: Units.Millimeters,
+                category: FieldCategory.Size
+            });
+            break;
+        case ValveType.PRV_SINGLE:
+        case ValveType.PRV_DOUBLE:
+        case ValveType.PRV_TRIPLE:
+            var manufacturer = drawing.metadata.catalog.prv[0]?.manufacturer || 'generic';
+            var abbreviation = manufacturer !== 'generic' 
+                && catalog?.prv.manufacturer.find((manufacturerObj: Manufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation 
+                || '';
+            fields.push({
+                property: "sizeMM",
+                title: "Size (mm)",
+                short: abbreviation,
                 units: Units.Millimeters,
                 category: FieldCategory.Size
             });
