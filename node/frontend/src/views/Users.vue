@@ -1,41 +1,43 @@
 <template>
-    <div>
+    <div style="height: 100%">
         <MainNavBar></MainNavBar>
-        <b-container class="home">
-            <b-row>
-                <b-col>
-                    <h1 class="title">
-                        Users
-                    </h1>
-                </b-col>
-            </b-row>
-            <b-row>
-                <b-col>
-                    <b-alert variant="success" v-if="users.length === 0 && isLoaded" show>
-                        There are no organizations right now. Wait what? Then WHO ARE YOU.
-                    </b-alert>
-                </b-col>
-            </b-row>
-            <b-row>
-                <b-col>
-                    <b-table
-                        style="background-color: white"
-                        :items="usersRendered"
-                        :fields="fields"
-                        @row-clicked="userRowClicked"
-                        selectable
-                    ></b-table>
-                </b-col>
-            </b-row>
-            <b-row style="margin-top: 30px" v-if="profile && profile.accessLevel <= AccessLevel.ADMIN">
-                <b-col>
-                    <b-button size="lg" variant="success" to="/users/create"
-                        ><v-icon name="plus"></v-icon>
-                        Create User
-                    </b-button>
-                </b-col>
-            </b-row>
-        </b-container>
+        <div style="overflow: auto; max-height: calc(100% - 61px);">
+            <b-container class="home">
+                <b-row>
+                    <b-col>
+                        <h1 class="title">
+                            Users
+                        </h1>
+                    </b-col>
+                </b-row>
+                <b-row>
+                    <b-col>
+                        <b-alert variant="success" v-if="users.length === 0 && isLoaded" show>
+                            There are no organizations right now. Wait what? Then WHO ARE YOU.
+                        </b-alert>
+                    </b-col>
+                </b-row>
+                <b-row>
+                    <b-col>
+                        <b-table
+                            style="background-color: white"
+                            :items="usersRendered"
+                            :fields="fields"
+                            @row-clicked="userRowClicked"
+                            selectable
+                        ></b-table>
+                    </b-col>
+                </b-row>
+                <b-row style="margin-top: 30px; margin-bottom: 30px;" v-if="profile && profile.accessLevel <= AccessLevel.ADMIN">
+                    <b-col>
+                        <b-button size="lg" variant="success" to="/users/create"
+                            ><v-icon name="plus"></v-icon>
+                            Create User
+                        </b-button>
+                    </b-col>
+                </b-row>
+            </b-container>
+        </div>
     </div>
 </template>
 

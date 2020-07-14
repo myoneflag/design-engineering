@@ -1,45 +1,47 @@
 <template>
-    <div>
+    <div style="height: 100%">
         <MainNavBar></MainNavBar>
-        <b-container class="home">
-            <b-row>
-                <b-col>
-                    <h1 class="title">
-                        Organizations
-                    </h1>
-                </b-col>
-            </b-row>
-            <b-row>
-                <b-col>
-                    <b-alert variant="success" v-if="organizations.length === 0 && isLoaded" show
-                        >There are no organizations right now.</b-alert
-                    >
-                </b-col>
-            </b-row>
-            <b-row>
-                <b-col>
-                    <b-list-group>
-                        <b-list-group-item
-                            v-for="org in organizations"
-                            :to="'/organizations/id/' + org.id"
-                            :key="org.id"
+        <div style="overflow: auto; max-height: calc(100% - 61px);">
+            <b-container class="home">
+                <b-row>
+                    <b-col>
+                        <h1 class="title">
+                            Organizations
+                        </h1>
+                    </b-col>
+                </b-row>
+                <b-row>
+                    <b-col>
+                        <b-alert variant="success" v-if="organizations.length === 0 && isLoaded" show
+                            >There are no organizations right now.</b-alert
                         >
-                            <b-row>
-                                <b-col cols="4">{{ org.id }}</b-col>
-                                <b-col cols="8">{{ org.name }}</b-col>
-                            </b-row>
-                        </b-list-group-item>
-                    </b-list-group>
-                </b-col>
-            </b-row>
-            <b-row style="margin-top: 30px">
-                <b-col>
-                    <b-button size="lg" variant="success" to="/organizations/create"
-                        ><v-icon name="plus"></v-icon> Create Organization</b-button
-                    >
-                </b-col>
-            </b-row>
-        </b-container>
+                    </b-col>
+                </b-row>
+                <b-row>
+                    <b-col>
+                        <b-list-group>
+                            <b-list-group-item
+                                v-for="org in organizations"
+                                :to="'/organizations/id/' + org.id"
+                                :key="org.id"
+                            >
+                                <b-row>
+                                    <b-col cols="4">{{ org.id }}</b-col>
+                                    <b-col cols="8">{{ org.name }}</b-col>
+                                </b-row>
+                            </b-list-group-item>
+                        </b-list-group>
+                    </b-col>
+                </b-row>
+                <b-row style="margin-top: 30px; margin-bottom: 30px;">
+                    <b-col>
+                        <b-button size="lg" variant="success" to="/organizations/create"
+                            ><v-icon name="plus"></v-icon> Create Organization</b-button
+                        >
+                    </b-col>
+                </b-row>
+            </b-container>
+        </div>
     </div>
 </template>
 
