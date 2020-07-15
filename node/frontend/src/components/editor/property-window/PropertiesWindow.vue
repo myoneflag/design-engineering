@@ -1,4 +1,3 @@
-import {EntityType} from "../../../../src/store/document/entities/types";
 <template>
     <div class="propertiesWindow">
         <template v-if="selectedObjects.length === 1">
