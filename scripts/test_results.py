@@ -245,7 +245,7 @@ class test_results(unittest.TestCase):
 
         # Go to Home page
         self.driver.find_element_by_xpath("//a[contains(text(),'Home')]").click()
-        time.sleep(3)
+        time.sleep(6)
 
         # Delete drawing after checking
         print("Deleting drawing...")

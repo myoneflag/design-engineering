@@ -51,7 +51,7 @@ class test_signup(unittest.TestCase):
         con = psycopg2.connect(database="h2x",
                                user="postgres",
                                password="postgres",
-                               host="localhost",
+                               host="deploy.h2xengineering.com",
                                port="5432")
         print("Connection successful!")
 

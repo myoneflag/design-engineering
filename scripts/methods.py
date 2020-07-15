@@ -33,7 +33,7 @@ class methods():
             print("Unidentified system")
 
         self.driver.maximize_window()
-        self.driver.get("localhost:8000/login")
+        self.driver.get("https://deploy.h2xengineering.com/login")
         self.actions = ActionChains(self.driver)
         return self.driver
 
