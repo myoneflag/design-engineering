@@ -132,7 +132,7 @@ function formidablePromise(req: Request): Promise<{ fields: Fields, files: Files
 
 const renderQueue = new PQueue({concurrency: 1});
 
-export async function configureFloorPlanRenders(pdfPath: string, pngHash: string) {
+export async function configureFloorPlanRenders(pdfPath: string, pngHash: string, res: Response) {
     const floorPlans = await FloorPlan.findByIds([pngHash]);
     let floorPlan: FloorPlan;
     if (floorPlans.length) {
@@ -143,9 +143,19 @@ export async function configureFloorPlanRenders(pdfPath: string, pngHash: string
         floorPlan.renders = { bySize: {} };
     }
 
-    
-
-    const output = await promisify(cprocess.exec)(`${process.platform === 'win32' && 'magick ' || ''}` + "identify " + pdfPath);
+    let output;
+    try {
+        output = await promisify(cprocess.exec)("identify " + pdfPath);
+    } catch(e) {
+        try {
+            output = await promisify(cprocess.exec)("magick identify " + pdfPath);
+        } catch(e) {
+            return res.status(404).send({
+                success: false,
+                message: e.message,
+            });
+        }
+    }
     const [widthS, heightS] = output.stdout.split(' ')[2].split('x');
     const width = Number(widthS);
     const height = Number(heightS);
@@ -205,7 +215,7 @@ export class PDFController {
         });
 
 
-        await configureFloorPlanRenders(pdfPath, pngHash);
+        await configureFloorPlanRenders(pdfPath, pngHash, res);
 
         const dims = await getPdfDims(pdfPath);
 
