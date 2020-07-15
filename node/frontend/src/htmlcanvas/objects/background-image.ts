@@ -536,6 +536,12 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
     onUpdate() {
         if (this.entity && this.entity.key !== this.oldKey) {
             this.oldKey = this.entity.key;
+            getFloorPlanRenders(this.entity.key).then((res) => {
+                if (res.success) {
+                    this.renderIndex = res.data;
+                    this.onRedrawNeeded();
+                }
+            });
         }
     }
 }
