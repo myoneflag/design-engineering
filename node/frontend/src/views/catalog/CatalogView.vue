@@ -330,7 +330,7 @@ export default class CatalogView extends Vue {
             {
                entries = entries[this.manufacturer] || entries;
             } else if (prop === 'prv') {
-                const manufacturer = this.document.drawing.metadata.catalog.prv[0].manufacturer;
+                const manufacturer = this.document.drawing.metadata.catalog.prv[0]?.manufacturer || 'generic';
                 entries = entries.size[manufacturer];
             }
 
