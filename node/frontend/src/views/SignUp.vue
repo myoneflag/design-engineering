@@ -1,46 +1,48 @@
 <template>
-    <div>
+    <div style="height: 100%;">
         <PublicNavBar></PublicNavBar>
-        <b-container style="padding-top: 50px; width: 800px">
-            <b-row>
-                <b-col>
-                    <h2>Sign Up</h2>
-                </b-col>
-            </b-row>
-            <br>
-            <b-row>
-                <b-col>
-                    <b-form>
-                        <b-form-group :label-cols="3" label-align="left" label="First Name">
-                            <b-form-input :required="false" type="text" v-model="user.firstname" :disabled="isLoading"></b-form-input>
-                        </b-form-group>
+        <div style="overflow: auto; max-height: calc(100% - 101px);">
+            <b-container style="padding-top: 50px; padding-bottom: 50px; width: 800px;">
+                <b-row>
+                    <b-col>
+                        <h2>Sign Up</h2>
+                    </b-col>
+                </b-row>
+                <br>
+                <b-row>
+                    <b-col>
+                        <b-form>
+                            <b-form-group :label-cols="3" label-align="left" label="First Name">
+                                <b-form-input :required="false" type="text" v-model="user.firstname" :disabled="isLoading"></b-form-input>
+                            </b-form-group>
 
-                        <b-form-group :label-cols="3" label-align="left" label="Last Name">
-                            <b-form-input :required="false" type="text" v-model="user.lastname" :disabled="isLoading"></b-form-input>
-                        </b-form-group>
+                            <b-form-group :label-cols="3" label-align="left" label="Last Name">
+                                <b-form-input :required="false" type="text" v-model="user.lastname" :disabled="isLoading"></b-form-input>
+                            </b-form-group>
 
-                        <b-form-group :label-cols="3" label-align="left" label="Username">
-                            <b-form-input :required="false" type="text" v-model="user.username" :disabled="isLoading"></b-form-input>
-                        </b-form-group>
+                            <b-form-group :label-cols="3" label-align="left" label="Username">
+                                <b-form-input :required="false" type="text" v-model="user.username" :disabled="isLoading"></b-form-input>
+                            </b-form-group>
 
-                        <b-form-group :label-cols="3" label-align="left" label="Email">
-                            <b-form-input :required="false" type="email" v-model="user.email" :disabled="isLoading"></b-form-input>
-                        </b-form-group>
+                            <b-form-group :label-cols="3" label-align="left" label="Email">
+                                <b-form-input :required="false" type="email" v-model="user.email" :disabled="isLoading"></b-form-input>
+                            </b-form-group>
 
-                        <b-form-group :label-cols="3" label-align="left" label="Password">
-                            <b-form-input :required="false" type="password" v-model="user.password" :disabled="isLoading"></b-form-input>
-                        </b-form-group>
+                            <b-form-group :label-cols="3" label-align="left" label="Password">
+                                <b-form-input :required="false" type="password" v-model="user.password" :disabled="isLoading"></b-form-input>
+                            </b-form-group>
 
-                        <b-form-group :label-cols="3" label-align="left" label="Confirm Password">
-                            <b-form-input :required="false" type="password" v-model="user.confirmPassword" :disabled="isLoading"></b-form-input>
-                        </b-form-group>
-                    </b-form>
-                    <b-button variant="success" style="margin-top:50px" @click="handleClickCreateAccount" :disabled="isLoading">
-                        {{isRedirecting && 'Logging in...' || 'Create Account'}} <span v-if="isLoading"><b-spinner style="width: 1.0rem; height: 1.0rem;"></b-spinner></span>
-                    </b-button>
-                </b-col>
-            </b-row>
-        </b-container>
+                            <b-form-group :label-cols="3" label-align="left" label="Confirm Password">
+                                <b-form-input :required="false" type="password" v-model="user.confirmPassword" :disabled="isLoading"></b-form-input>
+                            </b-form-group>
+                        </b-form>
+                        <b-button variant="success" style="margin-top:50px" @click="handleClickCreateAccount" :disabled="isLoading">
+                            {{isRedirecting && 'Logging in...' || 'Create Account'}} <span v-if="isLoading"><b-spinner style="width: 1.0rem; height: 1.0rem;"></b-spinner></span>
+                        </b-button>
+                    </b-col>
+                </b-row>
+            </b-container>
+        </div>
     </div>
 </template>
 
