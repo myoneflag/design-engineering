@@ -21,9 +21,28 @@ export class UserController {
     @AuthRequired(AccessLevel.ADMIN)
     public async create(req: Request, res: Response, next: NextFunction, session: Session) {
         const {username, firstname, lastname, accessLevel, organization, password, email, subscribed} = req.body;
+        const emailRegEx = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()\.,;\s@\"]+\.{0,1})+[^<>()\.,;:\s@\"]{2,})$/;
+
+        if (!firstname || !lastname || !username || !email || !password ) {
+            return res.status(400).send({
+                success: false,
+                message: "All fields are required",
+            });
+        } else if (await User.findOne({username})) {
+            return res.status(400).send({
+                success: false,
+                message: "User with that ID already exists",
+            });
+        } else if (!(emailRegEx.test(email))) {
+            return res.status(400).send({
+                success: false,
+                message: "Invalid email address",
+            });
+        }
+        
         const thisUser = await session.user;
         if (accessLevel <= thisUser.accessLevel && thisUser.accessLevel !== AccessLevel.SUPERUSER) {
-            res.status(401).send({
+            res.status(400).send({
                 success: false,
                 message: "You can only create users less powerful than you.",
             });
@@ -72,9 +91,10 @@ export class UserController {
     @ApiHandleError()
     public async signUp(req: Request, res: Response) {
         const {firstname, lastname, username, password, confirmPassword, email}: Create = req.body;
-
+        const emailRegEx = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()\.,;\s@\"]+\.{0,1})+[^<>()\.,;:\s@\"]{2,})$/;
+        
         if (!firstname || !lastname || !username || !email || !password ) {
-            return res.send({
+            return res.status(400).send({
                 success: false,
                 message: "All fields are required",
             });
@@ -84,9 +104,14 @@ export class UserController {
                 message: "User with that ID already exists",
             });
         } else if (confirmPassword !== password) {
-            return res.send({
+            return res.status(400).send({
                 success: false,
                 message: "Password and Confirm Password does not match",
+            });
+        } else if (!(emailRegEx.test(email))) {
+            return res.status(400).send({
+                success: false,
+                message: "Invalid email address",
             });
         }
 
