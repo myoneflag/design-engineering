@@ -1,0 +1,88 @@
+[0622/150112.897:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0622/155006.429:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0622/155015.218:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0622/155413.180:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0622/155931.885:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0622/160259.550:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0622/160553.498:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0622/161009.785:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0622/161232.762:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0624/095107.270:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0624/095146.225:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0624/100557.000:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0624/100638.563:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0624/143348.546:ERROR:process_reader_win.cc(127)] NtOpenThread: {Access Denied} A process has requested access to an object, but has not been granted those access rights. (0xc0000022)
+[0624/143348.552:ERROR:exception_snapshot_win.cc(99)] thread ID 7076 not found in process
+[0624/143348.562:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir5408_1027932596\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.562:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir5408_1027932596\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.562:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir5408_1027932596\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.563:ERROR:file_io_win.cc(170)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir5408_1027932596\Crashpad\reports\c73e7ea6-95ff-497d-9a9d-25128e76c739.dmp: The system cannot find the path specified. (0x3)
+[0624/143348.563:ERROR:crash_report_exception_handler.cc(120)] PrepareNewCrashReport failed
+[0624/143348.594:ERROR:process_reader_win.cc(127)] NtOpenThread: {Access Denied} A process has requested access to an object, but has not been granted those access rights. (0xc0000022)
+[0624/143348.595:ERROR:exception_snapshot_win.cc(99)] thread ID 15144 not found in process
+[0624/143348.604:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir8220_406728223\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.604:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir8220_406728223\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.604:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir8220_406728223\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.604:ERROR:file_io_win.cc(170)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir8220_406728223\Crashpad\reports\51454d55-fd85-4c87-b43a-48ea2fff54d0.dmp: The system cannot find the path specified. (0x3)
+[0624/143348.604:ERROR:crash_report_exception_handler.cc(120)] PrepareNewCrashReport failed
+[0624/143348.635:ERROR:process_reader_win.cc(127)] NtOpenThread: {Access Denied} A process has requested access to an object, but has not been granted those access rights. (0xc0000022)
+[0624/143348.635:ERROR:exception_snapshot_win.cc(99)] thread ID 10852 not found in process
+[0624/143348.645:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir3184_2145310297\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.645:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir3184_2145310297\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.646:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir3184_2145310297\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.646:ERROR:file_io_win.cc(170)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir3184_2145310297\Crashpad\reports\8c7db01d-5adb-4a4e-8acd-3304b30e5a93.dmp: The system cannot find the path specified. (0x3)
+[0624/143348.646:ERROR:crash_report_exception_handler.cc(120)] PrepareNewCrashReport failed
+[0624/143348.678:ERROR:process_reader_win.cc(127)] NtOpenThread: {Access Denied} A process has requested access to an object, but has not been granted those access rights. (0xc0000022)
+[0624/143348.679:ERROR:exception_snapshot_win.cc(99)] thread ID 3352 not found in process
+[0624/143348.688:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir5868_1523822987\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.688:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir5868_1523822987\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.689:ERROR:file_io_win.cc(161)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir5868_1523822987\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0624/143348.689:ERROR:file_io_win.cc(170)] CreateFile C:\Users\Admin\AppData\Local\Temp\scoped_dir5868_1523822987\Crashpad\reports\876f91d5-e4eb-49cb-8c0d-6905d1c8a5bc.dmp: The system cannot find the path specified. (0x3)
+[0624/143348.689:ERROR:crash_report_exception_handler.cc(120)] PrepareNewCrashReport failed
+[0626/120109.100:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0626/120337.239:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0626/121954.403:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0626/122034.125:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0626/122226.318:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0626/122304.508:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0629/100817.329:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0629/100852.427:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0629/101110.017:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0629/101237.792:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0629/101433.884:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0629/101652.748:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0630/105824.962:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0630/110002.257:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0630/111057.204:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0630/111647.428:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0630/113056.487:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0630/113414.995:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0630/114604.228:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0630/115135.337:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0630/115336.776:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0630/115616.748:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0630/115655.442:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0630/120104.765:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0701/075326.881:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0701/075621.739:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0701/081616.104:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0701/195159.709:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0701/195337.004:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0701/200431.951:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0701/201022.246:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0701/202431.234:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0701/202749.741:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0701/203938.975:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0701/204510.083:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0701/204711.622:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0701/204951.494:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0701/205030.189:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0701/205439.512:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0702/072243.105:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0702/072419.353:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0703/233316.045:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0703/233452.291:ERROR:prune_crash_reports.cc(35)] PruneCrashReportDatabase: Failed to get pending reports
+[0709/141431.572:ERROR:process_reader_win.cc(123)] NtOpenThread: {Access Denied} A process has requested access to an object, but has not been granted those access rights. (0xc0000022)
+[0709/141431.598:ERROR:exception_snapshot_win.cc(98)] thread ID 18760 not found in process
+[0709/141431.626:ERROR:process_reader_win.cc(123)] NtOpenThread: {Access Denied} A process has requested access to an object, but has not been granted those access rights. (0xc0000022)
+[0709/141431.627:ERROR:exception_snapshot_win.cc(98)] thread ID 19932 not found in process
