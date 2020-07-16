@@ -2,6 +2,9 @@ import unittest
 from methods import methods
 from selenium.webdriver.common.action_chains import ActionChains
 import time
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 class test_settings(unittest.TestCase):
     test = methods()
@@ -49,49 +52,59 @@ class test_settings(unittest.TestCase):
         print("Opening General Settings...")
         self.driver.find_element_by_xpath("//a[contains(text(),'General')]").click()
         print("General Settings Opened!")
+        time.sleep(2)
 
         # Check Settings
         print("Checking settings...")
-        project_title = self.driver.find_element_by_xpath("//input[@placeholder='Enter Project Title']")
+        project_title = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Project Title']")))
         self.assertTrue(project_title.is_enabled(), "ERROR: Project title field cannot be edited!")
         print("Project Title Enabled...")
-        project_no = self.driver.find_element_by_xpath("//input[@placeholder='Enter Project No.']")
+        project_no = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Project No.']")))
         self.assertTrue(project_no.is_enabled(), "ERROR: Project No. field cannot be edited!")
         print("Project Number Enabled...")
         # self.assertEqual(project_no.get_attribute("type"),"number","ERROR: Project Number should only accept number inputs!")
         print("Project Number Accepts Number Inputs...")
-        project_stage = self.driver.find_element_by_xpath("//input[@placeholder='Enter Project Stage']")
+        project_stage = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Project Stage']")))
         self.assertTrue(project_stage.is_enabled(),"ERROR: Project stage field cannot be edited!")
         print("Project Stage Enabled...")
-        designer = self.driver.find_element_by_xpath("//input[@placeholder='Enter Designer']")
+        designer = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Designer']")))
         self.assertTrue(designer.is_enabled(), "ERROR: Designer field cannot be edited!")
         print("Designer Enabled...")
-        reviewer = self.driver.find_element_by_xpath("//input[@placeholder='Enter Reviewed by']")
+        reviewer = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Reviewed by']")))
         self.assertTrue(reviewer.is_enabled(),"ERROR: Reviewer field cannot be edited!")
         print("Reviewer Enabled...")
-        approver = self.driver.find_element_by_xpath("//input[@placeholder='Enter Approved by']")
+        approver = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Approved by']")))
         self.assertTrue(approver.is_enabled(), "ERROR: Approver field cannot be edited!")
         print("Approver Enabled...")
-        revision_no = self.driver.find_element_by_xpath("//input[@placeholder='Enter Revision No.']")
+        revision_no = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Revision No.']")))
         self.assertTrue(revision_no.is_enabled(), "ERROR: Revision No. field cannot be edited!")
         print("Revision Number Enabled...")
         self.assertEqual(revision_no.get_attribute("type"), "number", "ERROR: Revision Number should only accept number inputs!")
         print("Revision Number Accepts Number Inputs...")
-        client = self.driver.find_element_by_xpath("//input[@placeholder='Enter Client']")
+        client = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Client']")))
         self.assertTrue(client.is_enabled(), "ERROR: Client field cannot be edited!")
         print("Client Enabled...")
-        description = self.driver.find_element_by_xpath("//textarea[@placeholder='Enter Description']")
+        description = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//textarea[@placeholder='Enter Description']")))
         self.assertTrue(description.is_enabled(), "ERROR: Description field cannot be edited!")
         print("Description Enabled...")
 
         # Check inputs
         print("Changing values in general settings...")
-        print("Chaning Project title...")
+        print("Changing Project title...")
         project_title.clear()
         project_title.send_keys("TITLE CHANGE")
         print("Changing Project number...")
         project_no.send_keys("99")
-        print("Chaning Project Stage...")
+        print("Changing Project Stage...")
         project_stage.send_keys("TEST STAGE")
         print("Changing Designer...")
         designer.send_keys("TEST DESIGNER")
@@ -117,7 +130,92 @@ class test_settings(unittest.TestCase):
         print("Inputs successfully saved!")
 
         # Checking of reverting values here
+        # Click Back to Drawing
+        print("Going back to drawing...")
+        self.driver.find_element_by_xpath("//button[@class='btn btn-secondary']").click()
+        time.sleep(3)
 
+        # Checking if settings are saved
+        # Click Settings button
+        print("Going to settings page...")
+        self.driver.find_element_by_xpath("//a[contains(text(),'Settings')]").click()
+        print("Settings page opened!")
+        time.sleep(5)
+
+        # Click General Settings
+        print("Opening General Settings...")
+        self.driver.find_element_by_xpath("//a[contains(text(),'General')]").click()
+        print("General Settings Opened!")
+
+        print("Checking revert values function...")
+
+        project_title = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Project Title']")))
+        project_no = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Project No.']")))
+        project_stage = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Project Stage']")))
+        designer = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Designer']")))
+        reviewer = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Reviewed by']")))
+        approver = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Approved by']")))
+        self.assertTrue(approver.is_enabled(), "ERROR: Approver field cannot be edited!")
+        revision_no = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Revision No.']")))
+        client = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Client']")))
+        description = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//textarea[@placeholder='Enter Description']")))
+
+        prev_values = [project_title.get_attribute('value'), project_no.get_attribute('value'),
+                       project_stage.get_attribute('value'), designer.get_attribute('value'),
+                       reviewer.get_attribute('value'), approver.get_attribute('value'),
+                       revision_no.get_attribute('value'), client.get_attribute('value'),
+                       description.get_attribute('value')]
+        print("Changing values...")
+        project_title.send_keys("test")
+        project_no.send_keys("test")
+        project_stage.send_keys("test")
+        designer.send_keys("test")
+        reviewer.send_keys("test")
+        approver.send_keys("test")
+        revision_no.send_keys("test")
+        client.send_keys("test")
+        description.send_keys("test")
+        print("Reverting values back...")
+        self.driver.find_element_by_xpath("//button[@class='btn btn-secondary']").click()
+
+        project_title = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Project Title']")))
+        project_no = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Project No.']")))
+        project_stage = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Project Stage']")))
+        designer = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Designer']")))
+        reviewer = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Reviewed by']")))
+        approver = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Approved by']")))
+        self.assertTrue(approver.is_enabled(), "ERROR: Approver field cannot be edited!")
+        revision_no = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Revision No.']")))
+        client = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter Client']")))
+        description = WebDriverWait(self.driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, "//textarea[@placeholder='Enter Description']")))
+
+        current_values = [project_title.get_attribute('value'), project_no.get_attribute('value'),
+                       project_stage.get_attribute('value'), designer.get_attribute('value'),
+                       reviewer.get_attribute('value'), approver.get_attribute('value'),
+                       revision_no.get_attribute('value'), client.get_attribute('value'),
+                       description.get_attribute('value')]
+
+        print("Checking if values have reverted...")
+        self.assertEqual(prev_values,current_values, "ERROR: Values have not reverted!")
+        print("Values have reverted successfully!")
 
         # Go to Home Page
         self.driver.find_element_by_xpath("//a[contains(text(),'Home')]").click()

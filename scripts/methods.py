@@ -89,7 +89,8 @@ class methods():
         time.sleep(2)
 
         # Click PDF button
-        self.driver.find_element_by_partial_link_text("PDF").click()
+        # self.driver.find_element_by_partial_link_text("PDF").click()
+        self.driver.find_element_by_xpath("//a[@class='dropdown-item text-outline-dark']").click()
         time.sleep(3)
 
         # Click export all button
@@ -109,7 +110,7 @@ class methods():
         time.sleep(2)
 
         # Click PDF button
-        self.driver.find_element_by_partial_link_text("PDF").click()
+        self.driver.find_element_by_xpath("//a[@class='dropdown-item text-outline-dark']").click()
         time.sleep(3)
 
         # Click Export This Level
