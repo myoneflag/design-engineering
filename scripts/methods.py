@@ -126,10 +126,10 @@ class methods():
         self.driver.find_element_by_xpath("//input[@class='form-control form-control-md']").send_keys("NEW DRAWING")
 
     def delete_drawing(self):
-        self.driver.find_element_by_xpath("/html/body/div/div/div/div/div[5]/div[1]/article/div/div/button")\
+        self.driver.find_element_by_xpath("//div[@class='home container']//div[1]//article[1]//div[1]//div[1]//button[1]")\
             .click()
         time.sleep(1)
-        self.driver.find_element_by_xpath("/html/body/div/div/div/div/div[5]/div[1]/article/div/div/ul/li[2]/a").click()
+        self.driver.find_element_by_xpath("//ul[@class='dropdown-menu show']//a[@class='dropdown-item text-danger'][contains(text(),'Delete')]").click()
         time.sleep(2)
         self.driver.find_element_by_xpath("//button[@class='btn btn-primary']").click()
 
