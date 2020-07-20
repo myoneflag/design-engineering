@@ -70,7 +70,7 @@ class methods():
         self.driver.find_element_by_xpath("//button[@class='btn btn-success btn-lg']").click()
 
         # Upload file
-        time.sleep(5)
+        time.sleep(7)
         self.driver.find_element_by_xpath("//input[@name='name']")\
             .send_keys(file)
 
@@ -139,30 +139,30 @@ class methods():
 
         # Click signup button
         self.driver.find_element_by_xpath("/html/body/div/div/div/div/div/div/div/form/fieldset[4]/div/button").click()
-        time.sleep(5)
+        time.sleep(7)
 
         # Input First Name
-        self.driver.find_element_by_xpath("/html/body/div/div/div/div[2]/div/form/fieldset[1]/div/div/input")\
+        self.driver.find_element_by_xpath("//fieldset[1]//div[1]//div[1]//input[1]")\
             .send_keys("Test")
 
         # Input Last Name
-        self.driver.find_element_by_xpath("/html/body/div/div/div/div[2]/div/form/fieldset[2]/div/div/input")\
+        self.driver.find_element_by_xpath("//fieldset[2]//div[1]//div[1]//input[1]")\
             .send_keys("User")
 
         # Input Username
-        self.driver.find_element_by_xpath("/html/body/div/div/div/div[2]/div/form/fieldset[3]/div/div/input")\
+        self.driver.find_element_by_xpath("//fieldset[3]//div[1]//div[1]//input[1]")\
             .send_keys(username)
 
         # Input Email
-        self.driver.find_element_by_xpath("/html/body/div/div/div/div[2]/div/form/fieldset[4]/div/div/input")\
+        self.driver.find_element_by_xpath("//fieldset[4]//div[1]//div[1]//input[1]")\
             .send_keys("test@email.com")
 
         # Input Password
-        self.driver.find_element_by_xpath("/html/body/div/div/div/div[2]/div/form/fieldset[5]/div/div/input")\
+        self.driver.find_element_by_xpath("//fieldset[5]//div[1]//div[1]//input[1]")\
             .send_keys("password")
 
         # Confirm Password
-        self.driver.find_element_by_xpath("/html/body/div/div/div/div[2]/div/form/fieldset[6]/div/div/input") \
+        self.driver.find_element_by_xpath("//fieldset[6]//div[1]//div[1]//input[1]") \
             .send_keys("password")
 
         # Click Create Account

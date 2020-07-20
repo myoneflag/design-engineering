@@ -230,5 +230,189 @@ class test_settings(unittest.TestCase):
         # End
         print("General Settings Test Complete!\n----------------")
 
+    def test_unitsPage(self):
+        # Test Unit Page Settings
+
+        # Start
+        print("----------------\nStart General Settings Test...")
+
+        username = "admin"
+        password = "pleasechange"
+
+        # Login
+        print("Logging in...")
+        self.test.login_by_button_click(username, password)
+        print("Login Successful!")
+        time.sleep(5)
+
+        # Create New Drawing
+        print("Creating new drawing...")
+        self.test.create_drawing()
+        print("Create new drawing successful!")
+        time.sleep(5)
+
+        # Click Settings button
+        print("Going to settings page...")
+        self.driver.find_element_by_xpath("//a[contains(text(),'Settings')]").click()
+        print("Settings page opened!")
+        time.sleep(5)
+
+        # Click Units Page
+        print("Going to units page...")
+        self.driver.find_element_by_xpath("//a[contains(text(),'Units')]").click()
+        print("Units page opened!")
+        time.sleep(3)
+
+        # Check if dropdown buttons are enabled
+        print("Checking dropdown buttons...")
+        print("Checking Length Measurement System...")
+        self.assertTrue(self.driver.find_element_by_xpath("//button[contains(text(),'Metric (mm)')]").is_enabled(),
+                        "ERROR: Length measurement system not clickable!")
+        print("Checking Pressure Measurement System...")
+        self.assertTrue(self.driver.find_element_by_xpath("//button[contains(text(),'Metric (kpa)')]").is_enabled(),
+                        "ERROR: Pressure Measurement System not clickable!")
+        print("Checking Velocity Measurement System...")
+        self.assertTrue(self.driver.find_element_by_xpath("//div[3]//div[1]//div[1]//button[1]").is_enabled(),
+                        "ERROR: Velocity Measurement System not clickable!")
+        print("Checking Temperature Measurement System...")
+        self.assertTrue(self.driver.find_element_by_xpath("//button[contains(text(),'Metric (°C)')]").is_enabled(),
+                        "ERROR: Temperature Measurement System not clickable!")
+        print("Checking Volume Measurement System...")
+        self.assertTrue(self.driver.find_element_by_xpath("//button[contains(text(),'Metric (L)')]").is_enabled(),
+                        "ERROR: Volume Measurement System not clickable!")
+        print("Dropdown buttons are all enabled!")
+
+        # Check if settings can be changed
+        print("Changing settings...")
+
+        print("Changing Length Measurement System Settings...")
+        # Change to Imperial
+        print("Changing to Imperial setting...")
+        self.driver.find_element_by_xpath("//button[contains(text(),'Metric (mm)')]").click()
+        self.driver.find_element_by_xpath("//a[contains(text(),'Imperial (in, ft)')]").click()
+        self.driver.find_element_by_xpath("//button[@class='btn btn-success']").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[@class='mr-2']").is_displayed(),
+                        "ERROR: Setting not saved!")
+        print("Changed to imperial setting!")
+        # Change to Metric
+        print("Changing to Metric setting...")
+        self.driver.find_element_by_xpath("//button[contains(text(),'Imperial (in, ft)')]").click()
+        self.driver.find_element_by_xpath("//a[contains(text(),'Metric (mm)')]").click()
+        self.driver.find_element_by_xpath("//button[@class='btn btn-success']").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[@class='mr-2']").is_displayed(),
+                        "ERROR: Setting not saved!")
+        print("Changed to metric setting!")
+        print("Changing of Length Measurement System Values successful!")
+
+        print("Changing Pressure Measurement System settings...")
+        # Change to Imperial
+        self.driver.find_element_by_xpath("//button[contains(text(),'Metric (kpa)')]").click()
+        self.driver.find_element_by_xpath("//a[contains(text(),'Imperial (psi)')]").click()
+        self.driver.find_element_by_xpath("//button[@class='btn btn-success']").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[@class='mr-2']").is_displayed(),
+                        "ERROR: Setting not saved!")
+        print("Changed to imperial setting!")
+        # Change to Metric
+        self.driver.find_element_by_xpath("//button[contains(text(),'Imperial (psi)')]").click()
+        self.driver.find_element_by_xpath("//a[contains(text(),'Metric (kpa)')]").click()
+        self.driver.find_element_by_xpath("//button[@class='btn btn-success']").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[@class='mr-2']").is_displayed(),
+                        "ERROR: Setting not saved!")
+        print("Changed to metric setting!")
+        print("Changing of Pressure Measurement System Values successful!")
+
+        print("Changing Velocity Measurement System Settings...")
+        # Change to Imperial
+        self.driver.find_element_by_xpath("//div[3]//div[1]//div[1]//button[1]").click()
+        self.driver.find_element_by_xpath("//a[contains(text(),'Imperial (furlongs')]").click()
+        self.driver.find_element_by_xpath("//button[@class='btn btn-success']").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[@class='mr-2']").is_displayed(),
+                        "ERROR: Setting not saved!")
+        print("Changed to imperial setting!")
+        # Change to Alt Imperial
+        self.driver.find_element_by_xpath("//button[contains(text(),'Imperial (furlongs')]").click()
+        self.driver.find_element_by_xpath("//a[contains(text(),'Alt. Imperial (ft')]").click()
+        self.driver.find_element_by_xpath("//button[@class='btn btn-success']").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[@class='mr-2']").is_displayed(),
+                        "ERROR: Setting not saved!")
+        print("Changed to alt. imperial setting!")
+        # Change to Metric
+        self.driver.find_element_by_xpath("//button[contains(text(),'Alt. Imperial (ft')]").click()
+        self.driver.find_element_by_xpath("//a[contains(text(),'Metric (m/s')]").click()
+        self.driver.find_element_by_xpath("//button[@class='btn btn-success']").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[@class='mr-2']").is_displayed(),
+                        "ERROR: Setting not saved!")
+        print("Changed to metric setting!")
+        print("Changing of Velocity Measurement System Values successful!")
+
+        print("Changing Temperature Measurement System Settings...")
+        # Change to Imperial
+        self.driver.find_element_by_xpath("//button[contains(text(),'Metric (°C)')]").click()
+        self.driver.find_element_by_xpath("//a[contains(text(),'Imperial (°F)')]").click()
+        self.driver.find_element_by_xpath("//button[@class='btn btn-success']").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[@class='mr-2']").is_displayed(),
+                        "ERROR: Setting not saved!")
+        print("Changed to imperial setting!")
+        # Change to Metric
+        self.driver.find_element_by_xpath("//button[contains(text(),'Imperial (°F)')]").click()
+        self.driver.find_element_by_xpath("//a[contains(text(),'Metric (°C)')]").click()
+        self.driver.find_element_by_xpath("//button[@class='btn btn-success']").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[@class='mr-2']").is_displayed(),
+                        "ERROR: Setting not saved!")
+        print("Changed to metric setting!")
+        print("Changing of Temperature Measurement System Values successful!")
+
+        print("Changing Volume Measurement System Settings...")
+        # Change to UK Imperial
+        self.driver.find_element_by_xpath("//button[contains(text(),'Metric (L)')]").click()
+        self.driver.find_element_by_xpath("//a[contains(text(),'UK Imperial (gal)')]").click()
+        self.driver.find_element_by_xpath("//button[@class='btn btn-success']").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[@class='mr-2']").is_displayed(),
+                        "ERROR: Setting not saved!")
+        print("Changed to UK imperial setting!")
+        # Change to US Imperial
+        self.driver.find_element_by_xpath("//button[contains(text(),'UK Imperial (gal)')]").click()
+        self.driver.find_element_by_xpath("//a[contains(text(),'US Imperial (US gal)')]").click()
+        self.driver.find_element_by_xpath("//button[@class='btn btn-success']").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[@class='mr-2']").is_displayed(),
+                        "ERROR: Setting not saved!")
+        print("Changed to US imperial setting!")
+        # Change to Metric
+        self.driver.find_element_by_xpath("//button[contains(text(),'US Imperial (US gal)')]").click()
+        self.driver.find_element_by_xpath("//a[contains(text(),'Metric (L)')]").click()
+        self.driver.find_element_by_xpath("//button[@class='btn btn-success']").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[@class='mr-2']").is_displayed(),
+                        "ERROR: Setting not saved!")
+        print("Changed to metric setting!")
+        print("Changing of Volume Measurement System Values successful!")
+
+        print("Changing of measurement value settings successful!")
+
+
+        # Go to Home Page
+        self.driver.find_element_by_xpath("//a[contains(text(),'Home')]").click()
+        time.sleep(6)
+
+        # Delete drawing after checking
+        print("Deleting drawing...")
+        self.test.delete_drawing()
+        print("Drawing deleted!")
+        time.sleep(3)
+
+        # End
+        print("Units Page Test Complete!\n----------------")
+
 if __name__ == '__main__':
     unittest.main()
