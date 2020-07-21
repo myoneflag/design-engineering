@@ -42,7 +42,7 @@ class test_saving(unittest.TestCase):
         # Check drawing name if saved
         print("Opening created drawing...")
         self.driver.find_element_by_xpath("//a[contains(text(),'Home')]").click()
-        time.sleep(5)
+        time.sleep(10)
         self.driver.find_element_by_xpath("//body/div/div/div[@class='isEmailVerification']/div[@class='home container']"
                                           "/div[@class='row']/div[1]/article[1]/div[1]/div[1]/a[1]").click()
         time.sleep(3)

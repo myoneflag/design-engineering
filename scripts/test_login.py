@@ -90,7 +90,7 @@ class test_loginPage(unittest.TestCase):
         # Check Drawing
         print("Checking drawing...")
         self.driver.find_element_by_xpath("//a[contains(text(),'Home')]").click()
-        time.sleep(6)
+        time.sleep(10)
         checker = self.driver.find_element_by_xpath("//div[@class='home container']//div[1]//article[1]//div[1]//h4[1]")\
             .text
         if checker == "NEW DRAWING":
@@ -156,7 +156,7 @@ class test_loginPage(unittest.TestCase):
 
         # Refresh page
         self.driver.refresh()
-        time.sleep(3)
+        time.sleep(10)
 
         # Delete copy after checking
         print("Deleting original drawing...")

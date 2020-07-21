@@ -50,7 +50,7 @@ class test_signup(unittest.TestCase):
         print("Accessing database to delete created user...")
         con = psycopg2.connect(database="h2x",
                                user="postgres",
-                               password="postgres",
+                               password="postgresh2xx2h",
                                host="deploy.h2xengineering.com",
                                port="5432")
         print("Connection successful!")
