@@ -281,7 +281,7 @@ export function drawRpzdDouble(context: DrawingContext, colors: [string, string]
     }
 }
 
-export function getPlantPressureLossKPA(entity: PlantEntity, drawing: DrawingState, pressureKPA: number | null) {
+export function getPlantPressureLossKPA(entity: PlantEntity, drawing: DrawingState, pressureKPA: number | null, flowLs?: number) {
     const filled = fillPlantDefaults(entity, drawing);
 
     if (filled.plant.type !== PlantType.RETURN_SYSTEM) {
@@ -289,6 +289,11 @@ export function getPlantPressureLossKPA(entity: PlantEntity, drawing: DrawingSta
             case PressureMethod.PUMP_DUTY:
                 return -filled.plant.pressureLoss.pumpPressureKPA!;
             case PressureMethod.FIXED_PRESSURE_LOSS:
+                if (typeof flowLs !== 'undefined') {
+                    if (flowLs === 0) {
+                        return 0; 
+                    }
+                }
                 return filled.plant.pressureLoss.pressureLossKPA!;
             case PressureMethod.STATIC_PRESSURE:
                 if (pressureKPA !== null) {
