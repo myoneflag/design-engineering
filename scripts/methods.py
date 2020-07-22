@@ -129,7 +129,7 @@ class methods():
         self.driver.find_element_by_xpath("//div[@class='home container']//div[1]//article[1]//div[1]//div[1]//button[1]")\
             .click()
         time.sleep(1)
-        self.driver.find_element_by_xpath("//ul[@class='dropdown-menu show']//a[@class='dropdown-item text-danger'][contains(text(),'Delete')]").click()
+        self.driver.find_element_by_xpath("//a[contains(text(),'Delete')]").click()
         time.sleep(2)
         self.driver.find_element_by_xpath("//button[@class='btn btn-primary']").click()
 
