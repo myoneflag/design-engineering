@@ -6,6 +6,7 @@ import {Readable} from "stream";
 import {PipesBySize, ValveByPipe} from "../../../../../common/src/api/catalog/price-table";
 import {isNumeric} from "tslint";
 import {defaultPriceTable} from "../../../../../common/src/api/catalog/default-price-table";
+import {isCalculated} from "../../../store/document/calculations";
 
 
 export async function exportBudgetReport(context: CanvasContext) {
@@ -89,7 +90,7 @@ function createCompanyHeader(context: CanvasContext, sheet: Worksheet) {
     }
 }
 
-function createLevelPages(context: CanvasContext, workbook: Excel.Workbook, mappings: Map<string, string>) {
+function createLevelPages(context: CanvasContext, workbook: Excel.Workbook, mappings: Map<string, [string, number]>) {
     for (const [levelUid, level] of Object.entries(context.document.drawing.levels)) {
         createLevelPage(context, workbook, mappings, levelUid);
     }
@@ -109,19 +110,44 @@ function stylizeTitle(cell: Excel.Cell | Excel.Row) {
     cell.alignment = {horizontal: "center"};
 }
 
-function getPriceQuantities(context: CanvasContext) {
+function getPriceQuantities(context: CanvasContext, levelUid: string | null) {
+    const result = new Map<string, number>();
+    const entities = levelUid ? context.document.drawing.levels[levelUid].entities :
+        context.document.drawing.shared;
 
+    for (const entity of Object.values(entities)) {
+        if (isCalculated(entity)) {
+            const o = context.globalStore.getOrCreateCalculation(entity);
+            if (o.costBreakdown) {
+                for (const {qty, path} of o.costBreakdown) {
+                    if (!result.has(path)) {
+                        result.set(path, 0);
+                    }
+                    result.set(path, result.get(path)! + qty);
+                }
+            }
+        }
+    }
+
+    return result;
 }
 
-function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappings: Map<string, string>, levelUid: string) {
-    const level = context.document.drawing.levels[levelUid];
-    const sheet = workbook.addWorksheet(level.name);
+function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappings: Map<string, [string, number]>, levelUid: string | null) {
+    const quantities = getPriceQuantities(context, levelUid);
+
+    let levelFullTitle = 'Inter-level components';
+    let levelTitle = 'Inter-level';
+    if (levelUid) {
+        const level = context.document.drawing.levels[levelUid];
+        levelTitle = level.name + " (" + level.abbreviation + ")";
+    }
+    const sheet = workbook.addWorksheet(levelTitle);
     createCompanyHeader(context, sheet);
 
-    sheet.getColumn('A').width = 20;
+    sheet.getColumn('A').width = 15;
     sheet.getColumn('B').width = 100;
-    sheet.getColumn('E').width = 20;
-    sheet.getColumn('F').width = 30;
+    sheet.getColumn('E').width = 15;
+    sheet.getColumn('F').width = 15;
 
     sheet.getCell('A6').value = 'Export Date';
     sheet.getCell('A6').font = {bold: true};
@@ -129,7 +155,7 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
 
     sheet.getCell('A7').value = 'Floor';
     sheet.getCell('A7').font = {bold: true};
-    sheet.getCell('B7').value = level.name + " (" + level.abbreviation + ")";
+    sheet.getCell('B7').value = levelFullTitle;
 
     for (let col = 1; col <= 6; col++) {
         sheet.mergeCells([9, col, 11, col]);
@@ -144,7 +170,9 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
     sheet.getCell('B' + row).value = 'HYDRAULICS SERVICES';
 
     row += 2;
-    stylizeMinorSection(sheet.getRow(row));
+    for (let col = 1; col <= 6; col++) {
+        stylizeMinorSection(sheet.getCell(row, col));
+    }
     let majorItem = 101;
     sheet.getCell('A' + row).value = '' + majorItem;
     sheet.getCell('B' + row).value = 'SANITARY FITMENTS';
@@ -155,12 +183,24 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
     sheet.getCell('B' + row).value = "SUPPLY AND INSTALL";
     row += 2;
 
+    // FIXTURES
     let minorItem = 1;
     for (const fixture of Object.keys(defaultPriceTable.Fixtures)) {
-        sheet.getCell('A' + row).value = '' + majorItem + '.' + minorItem;
-        sheet.getCell('B' + row).value = fixture;
+        if (quantities.has(`Fixtures.${fixture}`)) {
+            const quantity = quantities.get(`Fixtures.${fixture}`)!;
+            sheet.getCell('A' + row).value = '' + majorItem + '.' + minorItem;
+            sheet.getCell('B' + row).value = fixture;
+            sheet.getCell('C' + row).value = 'No';
+            sheet.getCell('D' + row).value = quantity;
+            const [loc, cost] = mappings.get(`Fixtures.${fixture}`)!;
+            sheet.getCell('E' + row).value = {formula: `'Master Rates'!${loc}`, result: cost, date1904: true};
+            sheet.getCell('F' + row).value = {formula: `D${row} * E${row}`, result: cost * quantity, date1904: true};
+            row ++;
+        }
+        minorItem ++;
     }
 
+    // Water supplies
 
     // Lingering styles
     sheet.getColumn('B').width = 40;
@@ -189,9 +229,9 @@ function stylizeTable(rowFrom: number, rowTo: number, colFrom: string, colTo: st
 }
 
 // Returns the reference cells for every entry in the price catalog.
-function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map<string, string> {
+function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map<string, [string, number]> {
     const sheet = workbook.addWorksheet("Master Rates");
-    const mapping = new Map<string, string>();
+    const mapping = new Map<string, [string, number]>();
     let row = 1;
 
     sheet.mergeCells('A' + row + ":E" + row);
@@ -226,18 +266,18 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
             sheet.getCell('A' + row).value = Number(size);
 
             sheet.getCell('B' + row).value = entry;
-            mapping.set(`Pipes.${material}.${size}`, "B" + row);
+            mapping.set(`Pipes.${material}.${size}`, ["$B$" + row, entry]);
 
             sheet.getCell('C' + row).value = context.effectivePriceTable.Fittings.Elbow
                 [material as keyof ValveByPipe][Number(size)];
-            mapping.set(`Fittings.Elbow.${material}.${size}`, "C" + row);
+            mapping.set(`Fittings.Elbow.${material}.${size}`, ["$C$" + row, entry]);
 
             sheet.getCell('D' + row).value = context.effectivePriceTable.Fittings.Tee
                 [material as keyof ValveByPipe][Number(size)];
-            mapping.set(`Fittings.Tee.${material}.${size}`, "C" + row);
+            mapping.set(`Fittings.Tee.${material}.${size}`, ["$C$" + row, entry]);
             sheet.getCell('E' + row).value = context.effectivePriceTable.Fittings.Reducer
                 [material as keyof ValveByPipe][Number(size)];
-            mapping.set(`Fittings.Reducer.${material}.${size}`, "C" + row);
+            mapping.set(`Fittings.Reducer.${material}.${size}`, ["$C$" + row, entry]);
             row ++;
         }
         stylizeTable(startRow, row - 1, 'A', 'E', sheet);
@@ -270,7 +310,7 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
             sheet.getCell('G' + row).value = Number(size);
 
             sheet.getCell('H' + row).value = entry;
-            mapping.set(`Valves.${valveName}.${size}`, "H" + row);
+            mapping.set(`Valves.${valveName}.${size}`, ["$H$" + row, entry]);
             row ++;
         }
         stylizeTable(startRow, row - 1, 'G', 'H', sheet);
@@ -301,7 +341,7 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
         for (const [fixture, cost] of Object.entries(context.effectivePriceTable.Fixtures)) {
             sheet.getCell('J' + row).value = fixture;
             sheet.getCell('K' + row).value = cost;
-            mapping.set(`Fixtures.${fixture}`, 'K' + row);
+            mapping.set(`Fixtures.${fixture}`, ['$K$' + row, cost]);
             row++;
         }
         stylizeTable(startRow, row - 1, 'J', 'K', sheet);
@@ -332,7 +372,7 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
             sheet.getCell('M' + row).value = 'All';
             sheet.getCell('N' + row).value = table;
 
-            mapping.set(`Equipment.${equipment}`, 'N' + row);
+            mapping.set(`Equipment.${equipment}`, ['$N$' + row, table]);
 
             row ++;
         } else {
@@ -351,7 +391,7 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
             for (const [size, entry] of Object.entries(table)) {
                 sheet.getCell('M' + row).value = Number(size);
                 sheet.getCell('N' + row).value = entry as string;
-                mapping.set(`Equipment.${equipment}.${size}`, 'N' + row);
+                mapping.set(`Equipment.${equipment}.${size}`, ['$N$' + row, Number(entry)]);
                 row++;
             }
         }
@@ -383,7 +423,7 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
         for (const [node, cost] of Object.entries(context.effectivePriceTable.Node)) {
             sheet.getCell('P' + row).value = node;
             sheet.getCell('Q' + row).value = cost;
-            mapping.set(`Node.${node}`, 'Q' + row);
+            mapping.set(`Node.${node}`, ['$Q$' + row, cost]);
             row ++;
         }
         stylizeTable(startRow, row - 1, 'P', 'Q', sheet);
@@ -411,7 +451,7 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
         for (const [plant, cost] of Object.entries(context.effectivePriceTable.Plants)) {
             sheet.getCell('S' + row).value = plant;
             sheet.getCell('T' + row).value = cost;
-            mapping.set(`Plants.${plant}`, 'S' + row);
+            mapping.set(`Plants.${plant}`, ['$S$' + row, cost]);
             row ++;
         }
         stylizeTable(startRow, row - 1, 'S', 'T', sheet);
@@ -440,7 +480,7 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
         for (const [size, cost] of Object.entries(context.effectivePriceTable.Insulation)) {
             sheet.getCell('V' + row).value = Number(size);
             sheet.getCell('W' + row).value = cost;
-            mapping.set(`Insulation.${size}`, 'W' + row);
+            mapping.set(`Insulation.${size}`, ['$W$' + row, cost]);
             row ++;
         }
         stylizeTable(startRow, row - 1, 'V', 'W', sheet);
