@@ -27,7 +27,7 @@ export class AccessEventsController {
         } else {
             result = await AccessEvents
                 .createQueryBuilder('access_events')
-                .orderBy('"dateTime"', "DESC")
+                .orderBy('"dateTimep"', "DESC")
                 .skip(from)
                 .take(count)
                 .getMany();

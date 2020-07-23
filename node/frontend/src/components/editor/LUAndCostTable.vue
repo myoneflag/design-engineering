@@ -18,7 +18,7 @@
                         <td style="width: 10px"/>
                         <td  valign="top">
                             <b-table :fields="costFields" :items="costItems" small class="result-table"
-                                     v-b-tooltip.hover title="Est. Since last calculation. Excluding Riser.">
+                                     v-b-tooltip.hover title="Est. Since last calculation. Level est. excludes risers.">
                             </b-table>
                             <b-badge
                                     v-if="!hasCalculated()"

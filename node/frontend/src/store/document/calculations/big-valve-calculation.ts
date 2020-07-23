@@ -63,7 +63,6 @@ export function makeBigValveCalculationFields(doc: DocumentState, entity: BigVal
                     property: "rpzdSizeMM." + suids[i],
                     title: system.name + " RPZD Size",
                     short: "",
-                    attachUid: attachments[i] as string,
                     systemUid: suids[i],
                     units: Units.Millimeters,
                     category: FieldCategory.Size

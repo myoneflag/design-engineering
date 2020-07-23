@@ -22,6 +22,7 @@ import {DrawingMode} from "../../htmlcanvas/types";
             "
                 :objects="visibleObjects"
                 :on-change="scheduleDraw"
+                :canvas-context="this"
         >
         </CalculationsSidebar>
 
