@@ -110,9 +110,9 @@
 
         cost2str(cost: Cost) {
             if (cost.exact) {
-                return cost.value + '';
+                return Number(cost.value).toFixed(2) + '';
             } else {
-                return cost.value + "+";
+                return Number(cost.value).toFixed(2) + "+";
             }
         }
 

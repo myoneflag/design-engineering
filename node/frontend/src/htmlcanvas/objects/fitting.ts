@@ -3,7 +3,7 @@ import FittingEntity, { fillValveDefaultFields } from "../../../../common/src/ap
 import * as TM from "transformation-matrix";
 import { Matrix } from "transformation-matrix";
 import { DocumentState } from "../../../src/store/document/types";
-import { matrixScale } from "../../../src/htmlcanvas/utils";
+import {lowerBoundNumberTable, matrixScale} from "../../../src/htmlcanvas/utils";
 import Flatten from "@flatten-js/core";
 import Connectable, { ConnectableObject } from "../../../src/htmlcanvas/lib/object-traits/connectable";
 import {
@@ -428,9 +428,10 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             let mostExpensive = 0;
             let mostExpensivePath = '';
             for (const [mat, siz] of materials) {
-                if (context.priceTable.Fittings.Tee[mat][siz] > mostExpensive) {
-                    mostExpensive = context.priceTable.Fittings.Tee[mat][siz];
-                    mostExpensivePath = `Fittings.Tee.${mat}.${siz}`;
+                const thisSiz = lowerBoundNumberTable(context.priceTable.Fittings.Tee[mat], siz);
+                if (thisSiz && context.priceTable.Fittings.Tee[mat][thisSiz] > mostExpensive) {
+                    mostExpensive = context.priceTable.Fittings.Tee[mat][thisSiz];
+                    mostExpensivePath = `Fittings.Tee.${mat}.${thisSiz}`;
                 }
             }
             return {
@@ -447,17 +448,23 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             let mostExpensivePath = '';
             if (isRightAngleRad(angles[0], Math.PI / 3)) {
                 for (const [mat, siz] of materials) {
-                    if (context.priceTable.Fittings.Elbow[mat][siz] > mostExpensive) {
-                        mostExpensive = context.priceTable.Fittings.Elbow[mat][siz];
-                        mostExpensivePath = `Fittings.Elbow.${mat}.${siz}`;
+                    const thisSiz = lowerBoundNumberTable(context.priceTable.Fittings.Elbow[mat], siz);
+                    if (thisSiz) {
+                        if (context.priceTable.Fittings.Elbow[mat][thisSiz] > mostExpensive) {
+                            mostExpensive = context.priceTable.Fittings.Elbow[mat][thisSiz];
+                            mostExpensivePath = `Fittings.Elbow.${mat}.${thisSiz}`;
+                        }
                     }
                 }
             } else {
                 for (const [mat, siz] of materials) {
-                    if (siz in context.priceTable.Fittings.Reducer[mat]) {
-                        if (context.priceTable.Fittings.Reducer[mat][siz] > mostExpensive) {
-                            mostExpensive = context.priceTable.Fittings.Reducer[mat][siz];
-                            mostExpensivePath = `Fittings.Reducer.${mat}.${siz}`;
+                    const thisSiz = lowerBoundNumberTable(context.priceTable.Fittings.Reducer[mat], siz);
+                    if (thisSiz) {
+                        if (siz in context.priceTable.Fittings.Reducer[mat]) {
+                            if (context.priceTable.Fittings.Reducer[mat][thisSiz] > mostExpensive) {
+                                mostExpensive = context.priceTable.Fittings.Reducer[mat][thisSiz];
+                                mostExpensivePath = `Fittings.Reducer.${mat}.${thisSiz}`;
+                            }
                         }
                     }
                 }

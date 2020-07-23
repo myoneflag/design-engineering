@@ -40,6 +40,7 @@ import { determineConnectableSystemUid } from "../../store/document/entities/lib
 import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
 import { EndErrorLine } from "tslint/lib/verify/lines";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
+import {lowerBoundNumberTable} from "../utils";
 
 
 @CalculatedObject
@@ -716,12 +717,13 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     }
 
     costBreakdown(context: CalculationContext): CostBreakdown | null {
-        const size = this.largestPipeSizeNominalMM(context);
+        let size = this.largestPipeSizeNominalMM(context);
 
         const calc = context.globalStore.getOrCreateCalculation(this.entity);
-        const ownSize = calc.sizeMM;
+        let ownSize = calc.sizeMM;
         switch (this.entity.valve.type) {
             case ValveType.CHECK_VALVE:
+                size = lowerBoundNumberTable(context.priceTable.Valves["Check Valve"], size);
                 if (size) {
                     return {
                         cost: context.priceTable.Valves["Check Valve"][size],
@@ -735,6 +737,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             case ValveType.ISOLATION_VALVE:
                 switch (this.entity.valve.catalogId) {
                     case "gateValve":
+                        size = lowerBoundNumberTable(context.priceTable.Valves["Brass Gate Valve"], size);
                         if (size) {
                             return {
                                 cost: context.priceTable.Valves["Brass Gate Valve"][size],
@@ -746,6 +749,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                         }
                         break;
                     case "ballValve":
+                        size = lowerBoundNumberTable(context.priceTable.Valves["Brass Ball Valve"], size);
                         if (size) {
                             return {
                                 cost: context.priceTable.Valves["Brass Ball Valve"][size],
@@ -757,6 +761,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                         }
                         break;
                     case "butterflyValve":
+                        size = lowerBoundNumberTable(context.priceTable.Valves["Butterfly Valve"], size);
                         if (size) {
                             return {
                                 cost: context.priceTable.Valves["Butterfly Valve"][size],
@@ -770,6 +775,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 }
                 break;
             case ValveType.WATER_METER:
+                size = lowerBoundNumberTable(context.priceTable.Valves["Water Meter"], size);
                 if (size) {
                     return {
                         cost: context.priceTable.Valves["Water Meter"][size],
@@ -781,6 +787,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 }
                 break;
             case ValveType.STRAINER:
+                size = lowerBoundNumberTable(context.priceTable.Valves.Strainer, size);
                 if (size) {
                     return {
                         cost: context.priceTable.Valves["Strainer"][size],
@@ -792,6 +799,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 }
                 break;
             case ValveType.RPZD_SINGLE:
+                ownSize = lowerBoundNumberTable(context.priceTable.Equipment.RPZD, ownSize);
                 if (ownSize) {
                     return {
                         cost: context.priceTable.Equipment.RPZD[ownSize],
@@ -803,6 +811,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 }
                 break;
             case ValveType.RPZD_DOUBLE_SHARED:
+                ownSize = lowerBoundNumberTable(context.priceTable.Equipment.RPZD, ownSize);
                 if (ownSize) {
                     return {
                         cost: context.priceTable.Equipment.RPZD[ownSize] * 2,
@@ -814,6 +823,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 }
                 break;
             case ValveType.RPZD_DOUBLE_ISOLATED:
+                ownSize = lowerBoundNumberTable(context.priceTable.Equipment.RPZD, ownSize);
                 if (ownSize) {
                     return {
                         cost: context.priceTable.Equipment.RPZD[ownSize] * 2,
@@ -825,6 +835,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 }
                 break;
             case ValveType.PRV_SINGLE:
+                ownSize = lowerBoundNumberTable(context.priceTable.Equipment.PRV, ownSize);
                 if (ownSize) {
                     return {
                         cost: context.priceTable.Equipment.PRV[ownSize],
@@ -836,6 +847,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 }
                 break;
             case ValveType.PRV_DOUBLE:
+                ownSize = lowerBoundNumberTable(context.priceTable.Equipment.PRV, ownSize);
                 if (ownSize) {
                     return {
                         cost: context.priceTable.Equipment.PRV[ownSize] * 2,
@@ -847,6 +859,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 }
                 break;
             case ValveType.PRV_TRIPLE:
+                ownSize = lowerBoundNumberTable(context.priceTable.Equipment.PRV, ownSize);
                 if (ownSize) {
                     return {
                         cost: context.priceTable.Equipment.PRV[ownSize] * 2,
@@ -858,6 +871,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 }
                 break;
             case ValveType.BALANCING:
+                size = lowerBoundNumberTable(context.priceTable.Equipment["Balancing Valve"], size);
                 if (size) {
                     return {
                         cost: context.priceTable.Equipment["Balancing Valve"][size],

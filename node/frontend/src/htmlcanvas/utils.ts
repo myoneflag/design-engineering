@@ -466,3 +466,12 @@ export function cooperativeYield(shouldContinue?: () => boolean, time?: number) 
         setTimeout(resolve, time);
     });
 }
+
+export function lowerBoundNumberTable(table: {[key: number]: any}, key: number | null): number | null {
+    if (key === null) {
+        return undefined;
+    }
+    const candidates = Object.keys(table).map(Number).sort((a, b) => a - b);
+    const result = candidates.find((c) => c >= key);
+    return result === undefined ? null : result;
+}

@@ -2,7 +2,7 @@ import BackedDrawableObject from "../../../../src/htmlcanvas/lib/backed-drawable
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
 import * as TM from "transformation-matrix";
 import { Matrix } from "transformation-matrix";
-import { matrixScale } from "../../../../src/htmlcanvas/utils";
+import {lowerBoundNumberTable, matrixScale} from "../../../../src/htmlcanvas/utils";
 import CenterDraggableObject from "../../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
 import { Interaction, InteractionType } from "../../../../src/htmlcanvas/lib/interaction";
 import {CostBreakdown, DrawingContext} from "../../../../src/htmlcanvas/lib/types";
@@ -529,19 +529,27 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
                 const hotSize = calc.rpzdSizeMM[StandardFlowSystemUids.HotWater];
                 const coldSize = calc.rpzdSizeMM[StandardFlowSystemUids.ColdWater];
 
-                return {
-                    cost: context.priceTable.Equipment.RPZD[hotSize!] + context.priceTable.Equipment.RPZD[coldSize!],
-                    breakdown: [
-                        {
-                            qty: 1,
-                            path: `Equipment.RPZD.${hotSize}`,
-                        },
-                        {
-                            qty: 1,
-                            path: `Equipment.RPZD.${coldSize}`,
-                        },
-                    ],
-                };
+                const realHotSize = lowerBoundNumberTable(calc.rpzdSizeMM, hotSize);
+                const realColdSize = lowerBoundNumberTable(calc.rpzdSizeMM, coldSize);
+
+                if (realHotSize !== null && realColdSize !== null) {
+                    return {
+                        cost: context.priceTable.Equipment.RPZD[realHotSize!] + context.priceTable.Equipment.RPZD[realColdSize!],
+                        breakdown: [
+                            {
+                                qty: 1,
+                                path: `Equipment.RPZD.${realHotSize}`,
+                            },
+                            {
+                                qty: 1,
+                                path: `Equipment.RPZD.${realColdSize}`,
+                            },
+                        ],
+                    };
+                } else {
+                    return {cost: 0, breakdown: []};
+                }
+
             default:
                 assertUnreachable(this.entity.valve);
         }

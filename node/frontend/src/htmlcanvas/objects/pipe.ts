@@ -860,13 +860,18 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
         const size = context.globalStore.getOrCreateCalculation(this.entity).realNominalPipeDiameterMM!;
         if (priceTableName in context.priceTable.Pipes) {
+            const availableSizes = Object.keys(context.priceTable.Pipes[priceTableName]).map((a) => Number(a)).sort((a, b) => a-b);
+            if (this.entity.uid.includes('8c8d9e22-2e8e-4584-aeba-a15e23f1c737')) {
+                console.log(availableSizes);
+            }
+            const bestSize = availableSizes.find((s) => s >= size);
 
-            if (size in context.priceTable.Pipes[priceTableName]) {
+            if (bestSize !== undefined && bestSize in context.priceTable.Pipes[priceTableName]) {
                 return {
-                    cost: context.priceTable.Pipes[priceTableName][size],
+                    cost: context.priceTable.Pipes[priceTableName][bestSize] * filled.lengthM!,
                     breakdown: [{
                         qty: filled.lengthM!,
-                        path: `Pipes.${priceTableName}.${size}`,
+                        path: `Pipes.${priceTableName}.${bestSize}`,
                     }],
                 };
             }

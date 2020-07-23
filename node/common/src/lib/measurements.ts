@@ -238,8 +238,10 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
             }
             assertUnreachable(unitsPrefs.velocityMeasurementSystem);
             break;
+        default:
+            assertUnreachable(units);
     }
-    assertUnreachable(units);
+    throw new Error('Not supposed to get here');
 }
 
 export function convertMeasurementSystem(unitsPrefs: UnitsParameters, units: Units, value: number | null): [Units, number | null | string] {
