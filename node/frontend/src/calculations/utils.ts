@@ -367,22 +367,16 @@ export function lookupFlowRate(
             break;
         }
         case PSDStandardType.EQUATION: {
-            if (standard.equation !== "a*(sum(Q,q))^b-c") {
-                throw new Error("Only the german equation a*(sum(Q,q))^b-c is currently supported");
-            }
-
-            if (psdU.units < 0) {
-                throw new Error("PSD units must be positive");
-            } else if (psdU.units <= 0.2) {
-                fromLoading = psdU.units;
-            } else if (psdU.units > 500) {
-                throw new Error("Too much flow - PSD cannot be determined from this standard");
-            } else {
-                const a = parseCatalogNumberExact(standard.variables.a)!;
-                const b = parseCatalogNumberExact(standard.variables.b)!;
-                const c = parseCatalogNumberExact(standard.variables.c)!;
-
-                fromLoading = a * psdU.units ** b - c;
+            if (standard.equation === "a*(sum(Q,q))^b-c") {
+                if (psdU.units <= 0.2) {
+                    fromLoading = psdU.units;
+                } else if (psdU.units <= 500) {
+                    const a = parseCatalogNumberExact(standard.variables.a)!;
+                    const b = parseCatalogNumberExact(standard.variables.b)!;
+                    const c = parseCatalogNumberExact(standard.variables.c)!;
+    
+                    fromLoading = a * psdU.units ** b - c;
+                }
             }
             break;
         }
