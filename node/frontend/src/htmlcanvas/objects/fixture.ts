@@ -7,7 +7,7 @@ import { MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
 import Connectable from "../../../src/htmlcanvas/lib/object-traits/connectable";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
 import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
-import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
+import {CostBreakdown, DrawingContext} from "../../../src/htmlcanvas/lib/types";
 import BigValveEntity from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
@@ -340,8 +340,14 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         }
     }
 
-    cost(context: CalculationContext): number | null {
+    costBreakdown(context: CalculationContext): CostBreakdown | null {
         const catalog = context.catalog.fixtures[this.entity.name];
-        return context.priceTable.Fixtures[catalog.priceTableName];
+        return {
+            cost: context.priceTable.Fixtures[catalog.priceTableName],
+            breakdown: [{
+                qty: 1,
+                path: `Fixtures.${catalog.priceTableName}`,
+            }],
+        };
     }
 }

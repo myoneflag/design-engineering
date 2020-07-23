@@ -5,7 +5,7 @@ import { Matrix } from "transformation-matrix";
 import { matrixScale } from "../../../../src/htmlcanvas/utils";
 import CenterDraggableObject from "../../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
 import { Interaction, InteractionType } from "../../../../src/htmlcanvas/lib/interaction";
-import { DrawingContext } from "../../../../src/htmlcanvas/lib/types";
+import {CostBreakdown, DrawingContext} from "../../../../src/htmlcanvas/lib/types";
 import BigValveEntity, {
     BigValveType,
     SystemNodeEntity
@@ -503,12 +503,24 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         return super.shape();
     }
 
-    cost(context: CalculationContext): number | null {
+    costBreakdown(context: CalculationContext): CostBreakdown | null {
         switch (this.entity.valve.type) {
             case BigValveType.TMV:
-                return context.priceTable.Equipment.TMV;
+                return {
+                    cost: context.priceTable.Equipment.TMV,
+                    breakdown: [{
+                        qty: 1,
+                        path: `Equipment.TMV`,
+                    }],
+                };
             case BigValveType.TEMPERING:
-                return context.priceTable.Equipment["Tempering Valve"];
+                return {
+                    cost: context.priceTable.Equipment["Tempering Valve"],
+                    breakdown: [{
+                        qty: 1,
+                        path: `Equipment.Tempering Valve`,
+                    }],
+                };
             case BigValveType.RPZD_HOT_COLD:
                 const calc = context.globalStore.getOrCreateCalculation(this.entity);
                 if (!calc.rpzdSizeMM) {
@@ -516,8 +528,20 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
                 }
                 const hotSize = calc.rpzdSizeMM[StandardFlowSystemUids.HotWater];
                 const coldSize = calc.rpzdSizeMM[StandardFlowSystemUids.ColdWater];
-                return context.priceTable.Equipment.RPZD[hotSize!] +
-                    context.priceTable.Equipment.RPZD[coldSize!];
+
+                return {
+                    cost: context.priceTable.Equipment.RPZD[hotSize!] + context.priceTable.Equipment.RPZD[coldSize!],
+                    breakdown: [
+                        {
+                            qty: 1,
+                            path: `Equipment.RPZD.${hotSize}`,
+                        },
+                        {
+                            qty: 1,
+                            path: `Equipment.RPZD.${coldSize}`,
+                        },
+                    ],
+                };
             default:
                 assertUnreachable(this.entity.valve);
         }

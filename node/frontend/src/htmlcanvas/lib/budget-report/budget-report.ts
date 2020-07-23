@@ -89,7 +89,7 @@ function createCompanyHeader(context: CanvasContext, sheet: Worksheet) {
     }
 }
 
-function createLevelPages(context: CanvasContext, workbook: Excel.Workbook, mappings: Map<string, number>) {
+function createLevelPages(context: CanvasContext, workbook: Excel.Workbook, mappings: Map<string, string>) {
     for (const [levelUid, level] of Object.entries(context.document.drawing.levels)) {
         createLevelPage(context, workbook, mappings, levelUid);
     }
@@ -113,7 +113,7 @@ function getPriceQuantities(context: CanvasContext) {
 
 }
 
-function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappings: Map<string, number>, levelUid: string) {
+function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappings: Map<string, string>, levelUid: string) {
     const level = context.document.drawing.levels[levelUid];
     const sheet = workbook.addWorksheet(level.name);
     createCompanyHeader(context, sheet);

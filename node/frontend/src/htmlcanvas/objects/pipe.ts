@@ -863,8 +863,10 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             if (size in context.priceTable.Pipes[priceTableName]) {
                 return {
                     cost: context.priceTable.Pipes[priceTableName][size],
-                    qty: filled.lengthM!,
-                    path: `Pipes.${priceTableName}.${size}`,
+                    breakdown: [{
+                        qty: filled.lengthM!,
+                        path: `Pipes.${priceTableName}.${size}`,
+                    }],
                 };
             }
         }

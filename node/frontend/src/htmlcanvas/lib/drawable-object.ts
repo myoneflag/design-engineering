@@ -42,7 +42,7 @@ export default abstract class DrawableObject {
         if (this.parent == null) {
             return this.fromParentToObjectCoord(world);
         }
-        return this.fromParentToObjectCoord(this.parent.toObjectCoord(world)p);
+        return this.fromParentToObjectCoord(this.parent.toObjectCoord(world));
     }
 
     fromParentToObjectLength(parentLength: number): number {

@@ -325,6 +325,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
         // explicitly create this to help with refactors
         const res: FittingCalculation = {
+            costBreakdown: null,
             cost: null,
             expandedEntities: null,
 
@@ -434,8 +435,10 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             }
             return {
                 cost: mostExpensive,
-                qty: 1,
-                path: mostExpensivePath,
+                breakdown: [{
+                    qty: 1,
+                    path: mostExpensivePath,
+                }],
             };
         }
         if (angles.length === 2) {
@@ -461,19 +464,21 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             }
             return {
                 cost: mostExpensive,
-                qty: 1,
-                path: mostExpensivePath,
+                breakdown: [{
+                    qty: 1,
+                    path: mostExpensivePath,
+                }],
             };
         }
 
         if (angles.length === 1) {
             // deadleg cap - no worries.
-            return {cost: 0, qty: 0, path: ''};
+            return {cost: 0, breakdown: [{qty: 0, path: ''}]};
         }
 
         if (angles.length === 0) {
             // Invalid thingymabob.
-            return {cost: 0, qty: 0, path: ''};
+            return {cost: 0, breakdown: [{qty: 0, path: ''}]};
         }
 
         // otherwise no info.

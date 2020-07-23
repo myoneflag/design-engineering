@@ -58,6 +58,7 @@ export function makeFittingCalculationFields(entity: FittingEntity, globalStore:
 
 export function emptyFittingCalculation(): FittingCalculation {
     return {
+        costBreakdown: null,
         cost: null,
         expandedEntities: null,
 

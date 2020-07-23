@@ -51,6 +51,7 @@ export function makePlantCalculationFields(): CalculationField[] {
 export function emptyPlantCalculation(): PlantCalculation {
     return {
         cost: null,
+        costBreakdown: null,
         expandedEntities: null,
 
         pressureDropKPA: null,

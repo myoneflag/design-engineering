@@ -60,6 +60,7 @@ export function makeFixtureCalculationFields(doc: DocumentState, entity: Fixture
 
 export function emptyFixtureCalculation(entity: FixtureEntity): FixtureCalculation {
     const result: FixtureCalculation = {
+        costBreakdown: null,
         cost: null,
         expandedEntities: null,
 

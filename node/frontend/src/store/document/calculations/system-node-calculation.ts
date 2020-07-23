@@ -63,6 +63,7 @@ export function makeSystemNodeCalculationFields(entity: SystemNodeEntity, settin
 export function emptySystemNodeCalculation(): SystemNodeCalculation {
     return {
         cost: null,
+        costBreakdown: null,
         expandedEntities: null,
 
         flowRateLS: null,

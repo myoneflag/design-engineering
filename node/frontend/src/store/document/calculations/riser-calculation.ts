@@ -143,6 +143,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
 export function emptyRiserCalculations(): RiserCalculation {
     return {
         cost: null,
+        costBreakdown: null,
         expandedEntities: null,
 
         warning: null,

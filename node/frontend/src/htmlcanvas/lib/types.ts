@@ -36,6 +36,8 @@ export type ValidationResult = {success: true} | {success: false, message: strin
 
 export interface CostBreakdown {
     cost: number;
-    qty: number;
-    path: string;
+    breakdown: Array<{
+        qty: number;
+        path: string;
+    }>,
 }

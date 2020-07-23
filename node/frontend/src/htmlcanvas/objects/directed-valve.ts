@@ -725,8 +725,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 if (size) {
                     return {
                         cost: context.priceTable.Valves["Check Valve"][size],
-                        qty: 1,
-                        path: `Valves.Check Valve.${size}`,
+                        breakdown: [{
+                            qty: 1,
+                            path: `Valves.Check Valve.${size}`,
+                        }],
                     };
                 }
                 break;
@@ -736,8 +738,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                         if (size) {
                             return {
                                 cost: context.priceTable.Valves["Brass Gate Valve"][size],
-                                qty: 1,
-                                path: `Valves.Brass Gate Valve.${size}`,
+                                breakdown: [{
+                                    qty: 1,
+                                    path: `Valves.Brass Gate Valve.${size}`,
+                                }],
                             };
                         }
                         break;
@@ -745,8 +749,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                         if (size) {
                             return {
                                 cost: context.priceTable.Valves["Brass Ball Valve"][size],
-                                qty: 1,
-                                path: `Valves.Brass Ball Valve.${size}`,
+                                breakdown: [{
+                                    qty: 1,
+                                    path: `Valves.Brass Ball Valve.${size}`,
+                                }],
                             };
                         }
                         break;
@@ -754,8 +760,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                         if (size) {
                             return {
                                 cost: context.priceTable.Valves["Butterfly Valve"][size],
-                                qty: 1,
-                                path: `Valves.Butterfly Valve.${size}`,
+                                breakdown: [{
+                                    qty: 1,
+                                    path: `Valves.Butterfly Valve.${size}`,
+                                }],
                             };
                         }
                         break;
@@ -765,8 +773,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 if (size) {
                     return {
                         cost: context.priceTable.Valves["Water Meter"][size],
-                        qty: 1,
-                        path: `Valves.Water Meter.${size}`,
+                        breakdown: [{
+                            qty: 1,
+                            path: `Valves.Water Meter.${size}`,
+                        }],
                     };
                 }
                 break;
@@ -774,8 +784,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 if (size) {
                     return {
                         cost: context.priceTable.Valves["Strainer"][size],
-                        qty: 1,
-                        path: `Valves.Strainer.${size}`,
+                        breakdown: [{
+                            qty: 1,
+                            path: `Valves.Strainer.${size}`,
+                        }],
                     };
                 }
                 break;
@@ -783,8 +795,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 if (ownSize) {
                     return {
                         cost: context.priceTable.Equipment.RPZD[ownSize],
-                        qty: 1,
-                        path: `Equipment.RPZD.${ownSize}`,
+                        breakdown: [{
+                            qty: 1,
+                            path: `Equipment.RPZD.${ownSize}`,
+                        }],
                     };
                 }
                 break;
@@ -792,8 +806,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 if (ownSize) {
                     return {
                         cost: context.priceTable.Equipment.RPZD[ownSize] * 2,
-                        qty: 2,
-                        path: `Equipment.RPZD.${ownSize}`,
+                        breakdown: [{
+                            qty: 2,
+                            path: `Equipment.RPZD.${ownSize}`,
+                        }],
                     };
                 }
                 break;
@@ -801,8 +817,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 if (ownSize) {
                     return {
                         cost: context.priceTable.Equipment.RPZD[ownSize] * 2,
-                        qty: 2,
-                        path: `Equipment.RPZD.${ownSize}`,
+                        breakdown: [{
+                            qty: 2,
+                            path: `Equipment.RPZD.${ownSize}`,
+                        }],
                     };
                 }
                 break;
@@ -810,8 +828,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 if (ownSize) {
                     return {
                         cost: context.priceTable.Equipment.PRV[ownSize],
-                        qty: 1,
-                        path: `Equipment.PRV.${ownSize}`,
+                        breakdown: [{
+                            qty: 1,
+                            path: `Equipment.PRV.${ownSize}`,
+                        }],
                     };
                 }
                 break;
@@ -819,8 +839,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 if (ownSize) {
                     return {
                         cost: context.priceTable.Equipment.PRV[ownSize] * 2,
-                        qty: 2,
-                        path: `Equipment.PRV.${ownSize}`,
+                        breakdown: [{
+                            qty: 2,
+                            path: `Equipment.PRV.${ownSize}`,
+                        }],
                     };
                 }
                 break;
@@ -828,8 +850,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 if (ownSize) {
                     return {
                         cost: context.priceTable.Equipment.PRV[ownSize] * 2,
-                        qty: 2,
-                        path: `Equipment.PRV.${ownSize}`,
+                        breakdown: [{
+                            qty: 2,
+                            path: `Equipment.PRV.${ownSize}`,
+                        }],
                     };
                 }
                 break;
@@ -837,8 +861,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 if (size) {
                     return {
                         cost: context.priceTable.Equipment["Balancing Valve"][size],
-                        qty: 1,
-                        path: `Equipment.Balancing Valve.${size}`,
+                        breakdown: [{
+                            qty: 1,
+                            path: `Equipment.Balancing Valve.${size}`,
+                        }],
                     };
                 }
                 break;

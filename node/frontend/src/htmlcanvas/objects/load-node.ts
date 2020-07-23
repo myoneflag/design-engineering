@@ -4,7 +4,7 @@ import LoadNodeEntity, { NodeType } from "../../../../common/src/api/document/en
 import { Calculated, CalculatedObject } from "../lib/object-traits/calculated-object";
 import Connectable, { ConnectableObject } from "../lib/object-traits/connectable";
 import { CenteredObject } from "../lib/object-traits/centered-object";
-import { DrawingContext } from "../lib/types";
+import {CostBreakdown, DrawingContext} from "../lib/types";
 import { DrawingArgs, EntityDrawingArgs } from "../lib/drawable-object";
 import { CalculationContext } from "../../calculations/types";
 import { FlowNode } from "../../calculations/calculation-engine";
@@ -225,26 +225,62 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         return res;
     }
 
-    cost(context: CalculationContext): number | null {
+    costBreakdown(context: CalculationContext): CostBreakdown | null {
         const filled = fillDefaultLoadNodeFields(context.doc, context.globalStore, this.entity);
         switch (filled.node.type) {
             case NodeType.LOAD_NODE:
                 switch (filled.systemUidOption) {
                     case StandardFlowSystemUids.HotWater:
-                        return context.priceTable.Node["Load Node - Hot"];
+                        return {
+                            cost: context.priceTable.Node["Load Node - Hot"],
+                            breakdown: [{
+                                qty: 1,
+                                path: `Node.Load Node - Hot`,
+                            }],
+                        };
                     case StandardFlowSystemUids.ColdWater:
-                        return context.priceTable.Node["Load Node - Cold"];
+                        return {
+                            cost: context.priceTable.Node["Load Node - Cold"],
+                            breakdown: [{
+                                qty: 1,
+                                path: `Node.Load Node - Cold`,
+                            }],
+                        };
                     default:
-                        return context.priceTable.Node["Load Node - Other"];
+                        return {
+                            cost: context.priceTable.Node["Load Node - Other"],
+                            breakdown: [{
+                                qty: 1,
+                                path: `Node.Load Node - Other`,
+                            }],
+                        };
                 }
             case NodeType.DWELLING:
                 switch (filled.systemUidOption) {
                     case StandardFlowSystemUids.HotWater:
-                        return context.priceTable.Node["Dwelling Node - Hot"];
+                        return {
+                            cost: context.priceTable.Node["Dwelling Node - Hot"],
+                            breakdown: [{
+                                qty: 1,
+                                path: `Node.Dwelling Node - Hot`,
+                            }],
+                        };
                     case StandardFlowSystemUids.ColdWater:
-                        return context.priceTable.Node["Dwelling Node - Cold"];
+                        return {
+                            cost: context.priceTable.Node["Dwelling Node - Cold"],
+                            breakdown: [{
+                                qty: 1,
+                                path: `Node.Dwelling Node - Cold`,
+                            }],
+                        };
                     default:
-                        return context.priceTable.Node["Dwelling Node - Other"];
+                        return {
+                            cost: context.priceTable.Node["Dwelling Node - Other"],
+                            breakdown: [{
+                                qty: 1,
+                                path: `Node.Dwelling Node - Other`,
+                            }],
+                        };
                 }
         }
         assertUnreachable(filled.node);

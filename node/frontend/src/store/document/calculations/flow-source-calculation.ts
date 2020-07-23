@@ -38,6 +38,7 @@ export function makeFlowSourceCalculationFields(entity: FlowSourceEntity, settin
 export function emptyFlowSourceCalculation(): FlowSourceCalculation {
     return {
         cost: null,
+        costBreakdown: null,
         expandedEntities: null,
 
         flowRateLS: null,

@@ -124,6 +124,7 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
 
 export function emptyDirectedValveCalculation(): DirectedValveCalculation {
     return {
+        costBreakdown: null,
         cost: null,
         expandedEntities: null,
 

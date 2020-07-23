@@ -6,7 +6,7 @@ import { matrixScale } from "../../../src/htmlcanvas/utils";
 import { lighten, rgb2style } from "../../../src/lib/utils";
 import Connectable, { ConnectableObject } from "../../../src/htmlcanvas/lib/object-traits/connectable";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
-import { DrawingContext, ValidationResult } from "../../../src/htmlcanvas/lib/types";
+import {CostBreakdown, DrawingContext, ValidationResult} from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import BackedConnectable from "../../../src/htmlcanvas/lib/BackedConnectable";
@@ -302,6 +302,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
     collectCalculations(context: CalculationContext): RiserCalculation {
         // explicitly create this to help with refactors
         const res: RiserCalculation = {
+            costBreakdown: null,
             cost: null,
             expandedEntities: null,
 
@@ -383,8 +384,9 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         return res;
     }
 
-    cost(context: CalculationContext) {
+    // Here, risers are turned into normal pipes for calculations, and so this function shouldn't be called.
+    costBreakdown(context: CalculationContext): CostBreakdown | null {
         // TODO: Riser cost for a level.
-        return 0;
+        return {cost: 0, breakdown: []};
     }
 }
