@@ -15,7 +15,7 @@ import {
     lighten, rgb2color, rgb2style
 } from "../../../src/lib/utils";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
-import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
+import {CostBreakdown, DrawingContext} from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import BackedConnectable from "../../../src/htmlcanvas/lib/BackedConnectable";
@@ -392,7 +392,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         //
     }
 
-    cost(context: CalculationContext): number | null {
+    costBreakdown(context: CalculationContext): CostBreakdown | null {
         const angles = this.getSortedAngles();
         if (angles.length === 0) {
             return null;
@@ -425,36 +425,55 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         if (angles.length === 3) {
             // can only be tee
             let mostExpensive = 0;
+            let mostExpensivePath = '';
             for (const [mat, siz] of materials) {
-                mostExpensive = Math.max(mostExpensive, context.priceTable.Fittings.Tee[mat][siz]);
+                if (context.priceTable.Fittings.Tee[mat][siz] > mostExpensive) {
+                    mostExpensive = context.priceTable.Fittings.Tee[mat][siz];
+                    mostExpensivePath = `Fittings.Tee.${mat}.${siz}`;
+                }
             }
-            return mostExpensive;
+            return {
+                cost: mostExpensive,
+                qty: 1,
+                path: mostExpensivePath,
+            };
         }
         if (angles.length === 2) {
             // assume is bend :O TODO: input different size for straights
             let mostExpensive = 0;
+            let mostExpensivePath = '';
             if (isRightAngleRad(angles[0], Math.PI / 3)) {
                 for (const [mat, siz] of materials) {
-                    mostExpensive = Math.max(mostExpensive, context.priceTable.Fittings.Elbow[mat][siz]);
+                    if (context.priceTable.Fittings.Elbow[mat][siz] > mostExpensive) {
+                        mostExpensive = context.priceTable.Fittings.Elbow[mat][siz];
+                        mostExpensivePath = `Fittings.Elbow.${mat}.${siz}`;
+                    }
                 }
             } else {
                 for (const [mat, siz] of materials) {
                     if (siz in context.priceTable.Fittings.Reducer[mat]) {
-                        mostExpensive = Math.max(mostExpensive, context.priceTable.Fittings.Reducer[mat][siz]);
+                        if (context.priceTable.Fittings.Reducer[mat][siz] > mostExpensive) {
+                            mostExpensive = context.priceTable.Fittings.Reducer[mat][siz];
+                            mostExpensivePath = `Fittings.Reducer.${mat}.${siz}`;
+                        }
                     }
                 }
             }
-            return mostExpensive;
+            return {
+                cost: mostExpensive,
+                qty: 1,
+                path: mostExpensivePath,
+            };
         }
 
         if (angles.length === 1) {
             // deadleg cap - no worries.
-            return 0;
+            return {cost: 0, qty: 0, path: ''};
         }
 
         if (angles.length === 0) {
             // Invalid thingymabob.
-            return 0;
+            return {cost: 0, qty: 0, path: ''};
         }
 
         // otherwise no info.

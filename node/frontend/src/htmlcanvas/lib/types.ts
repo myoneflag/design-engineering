@@ -33,3 +33,9 @@ export interface ValveId {
 }
 
 export type ValidationResult = {success: true} | {success: false, message: string, modified: boolean};
+
+export interface CostBreakdown {
+    cost: number;
+    qty: number;
+    path: string;
+}

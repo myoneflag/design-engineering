@@ -1,6 +1,6 @@
 import DrawableObject, { DrawingArgs, EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { CalculationFilters, DocumentState } from "../../../src/store/document/types";
-import { DrawingContext, ValidationResult } from "../../../src/htmlcanvas/lib/types";
+import {CostBreakdown, DrawingContext, ValidationResult} from "../../../src/htmlcanvas/lib/types";
 import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import {
@@ -139,8 +139,8 @@ export default abstract class BaseBackedObject extends DrawableObject {
         throw new Error("Method not implemented. Please use @Connectable to implement.");
     }
 
-    // Dollar cost of this item.
-    abstract cost(context: CalculationContext): number | null;
+    // Quantity, and string into index.
+    abstract costBreakdown(context: CalculationContext): CostBreakdown | null;
 
     abstract drawEntity(context: DrawingContext, args: EntityDrawingArgs): void;
 

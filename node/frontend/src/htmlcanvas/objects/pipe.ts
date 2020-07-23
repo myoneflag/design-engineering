@@ -12,7 +12,7 @@ import { Draggable, DraggableObject } from "../../../src/htmlcanvas/lib/object-t
 import * as _ from "lodash";
 import { canonizeAngleRad, lighten, rgb2style } from "../../../src/lib/utils";
 import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
-import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
+import {CostBreakdown, DrawingContext} from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import BackedConnectable, { BaseBackedConnectable } from "../../../src/htmlcanvas/lib/BackedConnectable";
@@ -844,7 +844,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         //
     }
 
-    cost(context: CalculationContext): number | null {
+    costBreakdown(context: CalculationContext): CostBreakdown | null {
         const filled = fillPipeDefaultFields(context.drawing, this.computedLengthM, this.entity);
         const catalogEntry = this.getCatalogPage(context);
         if (!catalogEntry) {
@@ -861,7 +861,11 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         const size = context.globalStore.getOrCreateCalculation(this.entity).realNominalPipeDiameterMM!;
         if (priceTableName in context.priceTable.Pipes) {
             if (size in context.priceTable.Pipes[priceTableName]) {
-                return context.priceTable.Pipes[priceTableName][size];
+                return {
+                    cost: context.priceTable.Pipes[priceTableName][size],
+                    qty: filled.lengthM!,
+                    path: `Pipes.${priceTableName}.${size}`,
+                };
             }
         }
         return null;

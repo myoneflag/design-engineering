@@ -1,7 +1,7 @@
 import BackedConnectable from "../../../src/htmlcanvas/lib/BackedConnectable";
 // tslint:disable-next-line:max-line-length
 import DirectedValveEntity from "../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
-import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
+import {CostBreakdown, DrawingContext} from "../../../src/htmlcanvas/lib/types";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
@@ -715,7 +715,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         //
     }
 
-    cost(context: CalculationContext): number | null {
+    costBreakdown(context: CalculationContext): CostBreakdown | null {
         const size = this.largestPipeSizeNominalMM(context);
 
         const calc = context.globalStore.getOrCreateCalculation(this.entity);
@@ -723,71 +723,123 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         switch (this.entity.valve.type) {
             case ValveType.CHECK_VALVE:
                 if (size) {
-                    return context.priceTable.Valves["Check Valve"][size];
+                    return {
+                        cost: context.priceTable.Valves["Check Valve"][size],
+                        qty: 1,
+                        path: `Valves.Check Valve.${size}`,
+                    };
                 }
                 break;
             case ValveType.ISOLATION_VALVE:
                 switch (this.entity.valve.catalogId) {
                     case "gateValve":
                         if (size) {
-                            return context.priceTable.Valves["Brass Gate Valve"][size];
+                            return {
+                                cost: context.priceTable.Valves["Brass Gate Valve"][size],
+                                qty: 1,
+                                path: `Valves.Brass Gate Valve.${size}`,
+                            };
                         }
                         break;
                     case "ballValve":
                         if (size) {
-                            return context.priceTable.Valves["Brass Ball Valve"][size];
+                            return {
+                                cost: context.priceTable.Valves["Brass Ball Valve"][size],
+                                qty: 1,
+                                path: `Valves.Brass Ball Valve.${size}`,
+                            };
                         }
                         break;
                     case "butterflyValve":
                         if (size) {
-                            return context.priceTable.Valves["Butterfly Valve"][size];
+                            return {
+                                cost: context.priceTable.Valves["Butterfly Valve"][size],
+                                qty: 1,
+                                path: `Valves.Butterfly Valve.${size}`,
+                            };
                         }
                         break;
                 }
                 break;
             case ValveType.WATER_METER:
                 if (size) {
-                    return context.priceTable.Valves["Water Meter"][size];
+                    return {
+                        cost: context.priceTable.Valves["Water Meter"][size],
+                        qty: 1,
+                        path: `Valves.Water Meter.${size}`,
+                    };
                 }
                 break;
             case ValveType.STRAINER:
                 if (size) {
-                    return context.priceTable.Valves["Strainer"][size];
+                    return {
+                        cost: context.priceTable.Valves["Strainer"][size],
+                        qty: 1,
+                        path: `Valves.Strainer.${size}`,
+                    };
                 }
                 break;
             case ValveType.RPZD_SINGLE:
                 if (ownSize) {
-                    return context.priceTable.Equipment.RPZD[ownSize];
+                    return {
+                        cost: context.priceTable.Equipment.RPZD[ownSize],
+                        qty: 1,
+                        path: `Equipment.RPZD.${ownSize}`,
+                    };
                 }
                 break;
             case ValveType.RPZD_DOUBLE_SHARED:
                 if (ownSize) {
-                    return context.priceTable.Equipment.RPZD[ownSize] * 2;
+                    return {
+                        cost: context.priceTable.Equipment.RPZD[ownSize] * 2,
+                        qty: 2,
+                        path: `Equipment.RPZD.${ownSize}`,
+                    };
                 }
                 break;
             case ValveType.RPZD_DOUBLE_ISOLATED:
                 if (ownSize) {
-                    return context.priceTable.Equipment.RPZD[ownSize] * 2;
+                    return {
+                        cost: context.priceTable.Equipment.RPZD[ownSize] * 2,
+                        qty: 2,
+                        path: `Equipment.RPZD.${ownSize}`,
+                    };
                 }
                 break;
             case ValveType.PRV_SINGLE:
                 if (ownSize) {
-                    return context.priceTable.Equipment.PRV[ownSize];
+                    return {
+                        cost: context.priceTable.Equipment.PRV[ownSize],
+                        qty: 1,
+                        path: `Equipment.PRV.${ownSize}`,
+                    };
                 }
                 break;
             case ValveType.PRV_DOUBLE:
                 if (ownSize) {
-                    return context.priceTable.Equipment.PRV[ownSize] * 2;
+                    return {
+                        cost: context.priceTable.Equipment.PRV[ownSize] * 2,
+                        qty: 2,
+                        path: `Equipment.PRV.${ownSize}`,
+                    };
                 }
                 break;
             case ValveType.PRV_TRIPLE:
                 if (ownSize) {
-                    return context.priceTable.Equipment.PRV[ownSize] * 3;
+                    return {
+                        cost: context.priceTable.Equipment.PRV[ownSize] * 2,
+                        qty: 2,
+                        path: `Equipment.PRV.${ownSize}`,
+                    };
                 }
                 break;
             case ValveType.BALANCING:
                 if (size) {
-                    return context.priceTable.Equipment["Balancing Valve"][size];
+                    return {
+                        cost: context.priceTable.Equipment["Balancing Valve"][size],
+                        qty: 1,
+                        path: `Equipment.Balancing Valve.${size}`,
+                    };
                 }
                 break;
             default:

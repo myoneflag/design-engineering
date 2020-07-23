@@ -5,6 +5,7 @@ import blobstream from "blob-stream";
 import {Readable} from "stream";
 import {PipesBySize, ValveByPipe} from "../../../../../common/src/api/catalog/price-table";
 import {isNumeric} from "tslint";
+import {defaultPriceTable} from "../../../../../common/src/api/catalog/default-price-table";
 
 
 export async function exportBudgetReport(context: CanvasContext) {
@@ -13,8 +14,8 @@ export async function exportBudgetReport(context: CanvasContext) {
     initWorkbook(context, workbook);
     createCoverPage(context, workbook);
 
-    const locations = createMasterPage(context, workbook);
-    createLevelPages(context, workbook);
+    const mappings = createMasterPage(context, workbook);
+    createLevelPages(context, workbook, mappings);
 
     downloadWorkbook(context, workbook);
 
@@ -88,13 +89,31 @@ function createCompanyHeader(context: CanvasContext, sheet: Worksheet) {
     }
 }
 
-function createLevelPages(context: CanvasContext, workbook: Excel.Workbook) {
+function createLevelPages(context: CanvasContext, workbook: Excel.Workbook, mappings: Map<string, number>) {
     for (const [levelUid, level] of Object.entries(context.document.drawing.levels)) {
-        createLevelPage(context, workbook, levelUid);
+        createLevelPage(context, workbook, mappings, levelUid);
     }
 }
 
-function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, levelUid: string) {
+function stylizeMajorSection(cell: Excel.Cell) {
+    cell.font = {color: {argb: "FF2F75B5"}, bold: true};
+}
+
+function stylizeMinorSection(cell: Excel.Cell | Excel.Row) {
+    cell.fill = {type: "pattern", pattern: "solid", fgColor: {argb: "FF4A86E8"}};
+    cell.font = {color: {argb: "FFFFFFFF"}, bold: true};
+    cell.alignment = {horizontal: "center"};
+}
+function stylizeTitle(cell: Excel.Cell | Excel.Row) {
+    cell.font = {bold: true};
+    cell.alignment = {horizontal: "center"};
+}
+
+function getPriceQuantities(context: CanvasContext) {
+
+}
+
+function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappings: Map<string, number>, levelUid: string) {
     const level = context.document.drawing.levels[levelUid];
     const sheet = workbook.addWorksheet(level.name);
     createCompanyHeader(context, sheet);
@@ -110,7 +129,42 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, level
 
     sheet.getCell('A7').value = 'Floor';
     sheet.getCell('A7').font = {bold: true};
-    sheet.getCell('A7').value = level.name + " (" + level.abbreviation + ")";
+    sheet.getCell('B7').value = level.name + " (" + level.abbreviation + ")";
+
+    for (let col = 1; col <= 6; col++) {
+        sheet.mergeCells([9, col, 11, col]);
+        stylizeHeader(sheet.getCell(9, col));
+    }
+    stylizeTable(9, 11, 'A', 'F', sheet);
+
+    let row = 13;
+    stylizeMajorSection(sheet.getCell('A' + row));
+    stylizeMajorSection(sheet.getCell('B' + row));
+    sheet.getCell('A' + row).value = '100';
+    sheet.getCell('B' + row).value = 'HYDRAULICS SERVICES';
+
+    row += 2;
+    stylizeMinorSection(sheet.getRow(row));
+    let majorItem = 101;
+    sheet.getCell('A' + row).value = '' + majorItem;
+    sheet.getCell('B' + row).value = 'SANITARY FITMENTS';
+    let sectionHeaderRow = row;
+
+    row += 2;
+    stylizeTitle(sheet.getCell('B' + row));
+    sheet.getCell('B' + row).value = "SUPPLY AND INSTALL";
+    row += 2;
+
+    let minorItem = 1;
+    for (const fixture of Object.keys(defaultPriceTable.Fixtures)) {
+        sheet.getCell('A' + row).value = '' + majorItem + '.' + minorItem;
+        sheet.getCell('B' + row).value = fixture;
+    }
+
+
+    // Lingering styles
+    sheet.getColumn('B').width = 40;
+
 }
 
 function stylizeHeader(cell: Excel.Cell) {
@@ -398,7 +452,6 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
     sheet.getColumn('P').width = 25;
     sheet.getColumn('S').width = 25;
 
-    console.log(mapping);
     return mapping;
 }
 
