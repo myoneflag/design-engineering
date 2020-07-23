@@ -860,6 +860,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
         const size = context.globalStore.getOrCreateCalculation(this.entity).realNominalPipeDiameterMM!;
         if (priceTableName in context.priceTable.Pipes) {
+
             if (size in context.priceTable.Pipes[priceTableName]) {
                 return {
                     cost: context.priceTable.Pipes[priceTableName][size],

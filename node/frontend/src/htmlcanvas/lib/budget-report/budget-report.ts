@@ -141,6 +141,7 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
         const level = context.document.drawing.levels[levelUid];
         levelTitle = level.name + " (" + level.abbreviation + ")";
     }
+
     const sheet = workbook.addWorksheet(levelTitle);
     createCompanyHeader(context, sheet);
 

@@ -237,6 +237,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.FurlongsPerFortnight, value];
             }
             assertUnreachable(unitsPrefs.velocityMeasurementSystem);
+            break;
     }
     assertUnreachable(units);
 }
