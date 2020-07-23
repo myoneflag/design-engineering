@@ -113,6 +113,27 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, level
     sheet.getCell('A7').value = level.name + " (" + level.abbreviation + ")";
 }
 
+function stylizeHeader(cell: Excel.Cell) {
+    cell.fill = {type: "pattern", pattern: "solid", fgColor: {argb: "FF4A86E8"}};
+    cell.font = {color: {argb: "FFFFFFFF"}, bold: true};
+}
+
+function stylizeTable(rowFrom: number, rowTo: number, colFrom: string, colTo: string, sheet: Excel.Worksheet) {
+    const colNumFrom = colFrom.charCodeAt(0) - 'A'.charCodeAt(0) + 1;
+    const colNumTo = colTo.charCodeAt(0) - 'A'.charCodeAt(0) + 1;
+
+    for (let row = rowFrom; row <= rowTo; row++) {
+        for (let col = colNumFrom; col <= colNumTo; col++) {
+            sheet.getCell(row, col).border = {
+                top: {style: 'thin'},
+                left: {style: 'thin'},
+                right: {style: 'thin'},
+                bottom: {style: 'thin'},
+            };
+        }
+    }
+}
+
 // Returns the reference cells for every entry in the price catalog.
 function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map<string, string> {
     const sheet = workbook.addWorksheet("Master Rates");
@@ -128,10 +149,11 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
     const topRow = row;
     row += 2;
     for (const [material, pipe] of Object.entries(context.effectivePriceTable.Pipes)) {
+        const startRow = row;
+
         sheet.mergeCells('A' + row + ":E" + row);
         sheet.getCell('A' + row).value = material + " - $";
-        sheet.getCell('A' + row).fill = {type: "pattern", pattern: "none", bgColor: {theme: 1}, fgColor: {theme: 2}};
-
+        stylizeHeader(sheet.getCell('A' + row));
 
         row ++;
         sheet.getCell('A' + row).value = 'Size';
@@ -164,19 +186,23 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
             mapping.set(`Fittings.Reducer.${material}.${size}`, "C" + row);
             row ++;
         }
+        stylizeTable(startRow, row - 1, 'A', 'E', sheet);
+
         row ++;
+
     }
 
+    // Valves
     sheet.mergeCells('G1:H1');
     sheet.getCell('G1').font = {bold: true};
     sheet.getCell('G1').value = 'VALVES';
 
-    // Valves
     row = topRow + 2;
     for (const [valveName, valve] of Object.entries(context.effectivePriceTable.Valves)) {
+        const startRow = row;
         sheet.mergeCells('G' + row + ":H" + row);
         sheet.getCell('G' + row).value = valveName + " - $";
-        sheet.getCell('G' + row).fill = {type: "pattern", pattern: "none", bgColor: {theme: 0}, fgColor: {theme: 1}};
+        stylizeHeader(sheet.getCell('G' + row));
 
 
         row ++;
@@ -193,6 +219,7 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
             mapping.set(`Valves.${valveName}.${size}`, "H" + row);
             row ++;
         }
+        stylizeTable(startRow, row - 1, 'G', 'H', sheet);
         row++;
     }
 
@@ -203,23 +230,28 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
     sheet.getCell('J1').value = 'FIXTURES';
 
     row = topRow + 2;
+    {
+        const startRow = row;
 
-    sheet.mergeCells('J' + row + ":K" + row);
-    sheet.getCell('J' + row).value = "Fixtures" + " - $";
-    sheet.getCell('J' + row).fill = {type: "pattern", pattern: "none", bgColor: {theme: 0}, fgColor: {theme: 1}};
+        sheet.mergeCells('J' + row + ":K" + row);
+        sheet.getCell('J' + row).value = "Fixtures" + " - $";
+        stylizeHeader(sheet.getCell('J' + row));
 
-    row ++;
-    sheet.getCell('J' + row).value = 'Type';
-    sheet.getCell('J' + row).font = {bold: true};
-    sheet.getCell('K' + row).value = '$/Unit';
-    sheet.getCell('K' + row).font = {bold: true};
+        row++;
+        sheet.getCell('J' + row).value = 'Type';
+        sheet.getCell('J' + row).font = {bold: true};
+        sheet.getCell('K' + row).value = '$/Unit';
+        sheet.getCell('K' + row).font = {bold: true};
 
-    row ++;
-    for (const [fixture, cost] of Object.entries(context.effectivePriceTable.Fixtures)) {
-        sheet.getCell('J' + row).value = fixture;
-        sheet.getCell('K' + row).value = cost;
-        mapping.set(`Fixtures.${fixture}`, 'K' + row);
-        row ++;
+        row++;
+        for (const [fixture, cost] of Object.entries(context.effectivePriceTable.Fixtures)) {
+            sheet.getCell('J' + row).value = fixture;
+            sheet.getCell('K' + row).value = cost;
+            mapping.set(`Fixtures.${fixture}`, 'K' + row);
+            row++;
+        }
+        stylizeTable(startRow, row - 1, 'J', 'K', sheet);
+
     }
 
     // EQUIPMENT
@@ -227,14 +259,14 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
     sheet.mergeCells('M1:N1');
     sheet.getCell('M1').font = {bold: true};
     sheet.getCell('M1').value = 'EQUIPMENT';
-
     row = topRow + 2;
     for (const [equipment, table] of Object.entries(context.effectivePriceTable.Equipment)) {
+        const startRow = row;
         if (isNumeric(table)) {
             // single
             sheet.mergeCells('M' + row + ":N" + row);
             sheet.getCell('M' + row).value = equipment + " - $";
-            sheet.getCell('M' + row).fill = {type: "pattern", pattern: "none", bgColor: {theme: 0}, fgColor: {theme: 1}};
+            stylizeHeader(sheet.getCell('M' + row));
 
             row ++;
             sheet.getCell('M' + row).value = 'Size';
@@ -253,7 +285,7 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
             // by price
             sheet.mergeCells('M' + row + ":N" + row);
             sheet.getCell('M' + row).value = equipment + " - $";
-            sheet.getCell('M' + row).fill = {type: "pattern", pattern: "none", bgColor: {theme: 0}, fgColor: {theme: 1}};
+            stylizeHeader(sheet.getCell('M' + row));
 
             row ++;
             sheet.getCell('M' + row).value = 'Size';
@@ -269,6 +301,7 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
                 row++;
             }
         }
+        stylizeTable(startRow, row - 1, 'M', 'N', sheet);
         row ++;
     }
 
@@ -279,22 +312,27 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
 
     row = topRow + 2;
 
-    sheet.mergeCells('P' + row + ":Q" + row);
-    sheet.getCell('P' + row).value = "Nodes" + " - $";
-    sheet.getCell('P' + row).fill = {type: "pattern", pattern: "none", bgColor: {theme: 0}, fgColor: {theme: 1}};
+    {
+        const startRow = row;
 
-    row ++;
-    sheet.getCell('P' + row).value = 'Type';
-    sheet.getCell('P' + row).font = {bold: true};
-    sheet.getCell('Q' + row).value = '$/Unit';
-    sheet.getCell('Q' + row).font = {bold: true};
+        sheet.mergeCells('P' + row + ":Q" + row);
+        sheet.getCell('P' + row).value = "Nodes" + " - $";
+        stylizeHeader(sheet.getCell('P' + row));
 
-    row ++;
-    for (const [node, cost] of Object.entries(context.effectivePriceTable.Node)) {
-        sheet.getCell('P' + row).value = node;
-        sheet.getCell('Q' + row).value = cost;
-        mapping.set(`Node.${node}`, 'Q' + row);
         row ++;
+        sheet.getCell('P' + row).value = 'Type';
+        sheet.getCell('P' + row).font = {bold: true};
+        sheet.getCell('Q' + row).value = '$/Unit';
+        sheet.getCell('Q' + row).font = {bold: true};
+
+        row ++;
+        for (const [node, cost] of Object.entries(context.effectivePriceTable.Node)) {
+            sheet.getCell('P' + row).value = node;
+            sheet.getCell('Q' + row).value = cost;
+            mapping.set(`Node.${node}`, 'Q' + row);
+            row ++;
+        }
+        stylizeTable(startRow, row - 1, 'P', 'Q', sheet);
     }
 
     // Plants
@@ -303,23 +341,26 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
     sheet.getCell('S1').value = 'PLANTS';
 
     row = topRow + 2;
+    {
+        const startRow = row;
+        sheet.mergeCells('S' + row + ":T" + row);
+        sheet.getCell('S' + row).value = "Plants" + " - $";
+        stylizeHeader(sheet.getCell('S' + row));
 
-    sheet.mergeCells('S' + row + ":T" + row);
-    sheet.getCell('S' + row).value = "Plants" + " - $";
-    sheet.getCell('S' + row).fill = {type: "pattern", pattern: "none", bgColor: {theme: 0}, fgColor: {theme: 1}};
-
-    row ++;
-    sheet.getCell('S' + row).value = 'Type';
-    sheet.getCell('S' + row).font = {bold: true};
-    sheet.getCell('T' + row).value = '$/Unit';
-    sheet.getCell('T' + row).font = {bold: true};
-
-    row ++;
-    for (const [plant, cost] of Object.entries(context.effectivePriceTable.Plants)) {
-        sheet.getCell('S' + row).value = plant;
-        sheet.getCell('T' + row).value = cost;
-        mapping.set(`Plants.${plant}`, 'S' + row);
         row ++;
+        sheet.getCell('S' + row).value = 'Type';
+        sheet.getCell('S' + row).font = {bold: true};
+        sheet.getCell('T' + row).value = '$/Unit';
+        sheet.getCell('T' + row).font = {bold: true};
+
+        row ++;
+        for (const [plant, cost] of Object.entries(context.effectivePriceTable.Plants)) {
+            sheet.getCell('S' + row).value = plant;
+            sheet.getCell('T' + row).value = cost;
+            mapping.set(`Plants.${plant}`, 'S' + row);
+            row ++;
+        }
+        stylizeTable(startRow, row - 1, 'S', 'T', sheet);
     }
 
     // Insulation
@@ -329,29 +370,35 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
 
     row = topRow + 2;
 
-    sheet.mergeCells('V' + row + ":W" + row);
-    sheet.getCell('V' + row).value = "Insulation" + " - $";
-    sheet.getCell('V' + row).fill = {type: "pattern", pattern: "none", bgColor: {theme: 0}, fgColor: {theme: 1}};
+    {
+        const startRow = row;
+        sheet.mergeCells('V' + row + ":W" + row);
+        sheet.getCell('V' + row).value = "Insulation" + " - $";
+        stylizeHeader(sheet.getCell('V' + row));
 
-    row ++;
-    sheet.getCell('V' + row).value = 'Size';
-    sheet.getCell('V' + row).font = {bold: true};
-    sheet.getCell('W' + row).value = '$/m';
-    sheet.getCell('W' + row).font = {bold: true};
-
-    row ++;
-    for (const [size, cost] of Object.entries(context.effectivePriceTable.Insulation)) {
-        sheet.getCell('V' + row).value = Number(size);
-        sheet.getCell('W' + row).value = cost;
-        mapping.set(`Insulation.${size}`, 'W' + row);
         row ++;
+        sheet.getCell('V' + row).value = 'Size';
+        sheet.getCell('V' + row).font = {bold: true};
+        sheet.getCell('W' + row).value = '$/m';
+        sheet.getCell('W' + row).font = {bold: true};
+
+        row ++;
+        for (const [size, cost] of Object.entries(context.effectivePriceTable.Insulation)) {
+            sheet.getCell('V' + row).value = Number(size);
+            sheet.getCell('W' + row).value = cost;
+            mapping.set(`Insulation.${size}`, 'W' + row);
+            row ++;
+        }
+        stylizeTable(startRow, row - 1, 'V', 'W', sheet);
     }
+
 
     // Lingering formatting
     sheet.getColumn('J').width = 25;
     sheet.getColumn('P').width = 25;
     sheet.getColumn('S').width = 25;
 
+    console.log(mapping);
     return mapping;
 }
 
