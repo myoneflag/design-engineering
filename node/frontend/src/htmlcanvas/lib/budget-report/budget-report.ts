@@ -1,12 +1,22 @@
 import CanvasContext from "../canvas-context";
 import Excel, {Worksheet} from 'exceljs';
 import {User} from "../../../../../common/src/models/User";
-import blobstream from "blob-stream";
-import {Readable} from "stream";
-import {PipesBySize, ValveByPipe} from "../../../../../common/src/api/catalog/price-table";
+import {
+    EquipmentTable,
+    FittingsTable, getEquimentFullName,
+    PipesBySize,
+    PipesTable,
+    ValveByPipe,
+    ValvesTable
+} from "../../../../../common/src/api/catalog/price-table";
 import {isNumeric} from "tslint";
 import {defaultPriceTable} from "../../../../../common/src/api/catalog/default-price-table";
 import {isCalculated} from "../../../store/document/calculations";
+import {EntityType} from "../../../../../common/src/api/document/entities/types";
+import {assertUnreachable, StandardFlowSystemUids} from "../../../../../common/src/api/config";
+import {determineConnectableSystemUid} from "../../../store/document/entities/lib";
+import {lowerCase} from "../../../../../common/src/lib/utils";
+import {BigValveType} from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 
 
 export async function exportBudgetReport(context: CanvasContext) {
@@ -105,10 +115,24 @@ function stylizeMinorSection(cell: Excel.Cell | Excel.Row) {
     cell.font = {color: {argb: "FFFFFFFF"}, bold: true};
     cell.alignment = {horizontal: "center"};
 }
+
+function stylizeSubsection(cell: Excel.Cell | Excel.Row) {
+    cell.fill = {type: "pattern", pattern: "solid", fgColor: {argb: "FF333333"}};
+    cell.font = {color: {argb: "FFFFFFFF"}, bold: true};
+    cell.alignment = {horizontal: "center"};
+}
+
 function stylizeTitle(cell: Excel.Cell | Excel.Row) {
     cell.font = {bold: true};
     cell.alignment = {horizontal: "center"};
 }
+
+function stylizeCaption(cell: Excel.Cell | Excel.Row) {
+    cell.font = {bold: true, italic: true};
+    cell.alignment = {horizontal: "center"};
+}
+
+
 
 function getPriceQuantities(context: CanvasContext, levelUid: string | null) {
     const result = new Map<string, number>();
@@ -118,7 +142,75 @@ function getPriceQuantities(context: CanvasContext, levelUid: string | null) {
     for (const entity of Object.values(entities)) {
         if (isCalculated(entity)) {
             const o = context.globalStore.getOrCreateCalculation(entity);
+
             if (o.costBreakdown) {
+                for (const {qty, path} of o.costBreakdown) {
+                    if (!result.has(path)) {
+                        result.set(path, 0);
+                    }
+                    result.set(path, result.get(path)! + qty);
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+function getPriceQuantitiesForSystem(context: CanvasContext, levelUid: string | null, systemUid: string): Map<string, number> {
+    const result = new Map<string, number>();
+    const entities = levelUid ? context.document.drawing.levels[levelUid].entities :
+        context.document.drawing.shared;
+
+    for (const entity of Object.values(entities)) {
+        if (isCalculated(entity)) {
+            const o = context.globalStore.getOrCreateCalculation(entity);
+            let thisSystemUid: string | null = null;
+            switch (entity.type) {
+                case EntityType.FITTING:
+                case EntityType.PIPE:
+                    thisSystemUid = entity.systemUid;
+                    break;
+                case EntityType.BIG_VALVE:
+                    if (entity.valve.type === BigValveType.RPZD_HOT_COLD) {
+                        // Special case. There's a cold and hot RPZD here. Handle it specifically here and then skip the
+                        // general handler.
+                        if (systemUid === StandardFlowSystemUids.ColdWater && o.costBreakdown) {
+                            const {qty, path} = o.costBreakdown[0];
+                            if (!result.has(path)) {
+                                result.set(path, 0);
+                            }
+                            result.set(path, result.get(path)! + qty);
+                        } else if (systemUid === StandardFlowSystemUids.HotWater && o.costBreakdown) {
+
+                            const {qty, path} = o.costBreakdown[1];
+                            if (!result.has(path)) {
+                                result.set(path, 0);
+                            }
+                            result.set(path, result.get(path)! + qty);
+                        }
+                    } else {
+                        systemUid = StandardFlowSystemUids.WarmWater;
+                    }
+                    break;
+                case EntityType.DIRECTED_VALVE:
+                    thisSystemUid = determineConnectableSystemUid(context.globalStore, entity) || null;
+                    break;
+                case EntityType.PLANT:
+                    thisSystemUid = entity.outletSystemUid;
+                    break;
+                case EntityType.RISER:
+                // N/A here.
+                case EntityType.SYSTEM_NODE:
+                case EntityType.FIXTURE:
+                case EntityType.LOAD_NODE:
+                case EntityType.FLOW_SOURCE:
+                    break;
+                default:
+                    assertUnreachable(entity);
+            }
+
+            if (o.costBreakdown && thisSystemUid === systemUid) {
                 for (const {qty, path} of o.costBreakdown) {
                     if (!result.has(path)) {
                         result.set(path, 0);
@@ -134,6 +226,10 @@ function getPriceQuantities(context: CanvasContext, levelUid: string | null) {
 
 function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappings: Map<string, [string, number]>, levelUid: string | null) {
     const quantities = getPriceQuantities(context, levelUid);
+    let roofHeight = 0;
+    if (levelUid) {
+        roofHeight = context.document.drawing.levels[levelUid].floorHeightM + 3;
+    }
 
     let levelFullTitle = 'Inter-level components';
     let levelTitle = 'Inter-level';
@@ -146,7 +242,7 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
     createCompanyHeader(context, sheet);
 
     sheet.getColumn('A').width = 15;
-    sheet.getColumn('B').width = 100;
+    sheet.getColumn('B').width = 50;
     sheet.getColumn('E').width = 15;
     sheet.getColumn('F').width = 15;
 
@@ -202,9 +298,287 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
     }
 
     // Water supplies
+    for (const flowSystem of context.document.drawing.metadata.flowSystems) {
+        const systemUid = flowSystem.uid;
+        const items = getPriceQuantitiesForSystem(context, levelUid, systemUid);
 
+        if (items.size === 0) {
+            continue;
+        }
+
+        majorItem++;
+        minorItem = 1;
+        let patch = 1;
+        row += 2;
+
+        sheet.getCell('A' + row).value = majorItem;
+        sheet.getCell('B' + row).value = flowSystem.name.toUpperCase() + " SUPPLY";
+        for (let i = 1; i <= 6; i++) {
+            stylizeHeader(sheet.getCell( row, i));
+        }
+
+        row += 2;
+
+        // Pipe material specific entities =============== (pipes, fittings)
+        for (const [material, pipe] of Object.entries(context.effectivePriceTable.Pipes)) {
+            // check for existence first
+            let pipeExists = false;
+
+            let elbowExists = false;
+            let teeExists = false;
+            let reducersExist = false;
+            for (const [size, cost] of Object.entries(pipe)) {
+                if (items.has(`Pipes.${material}.${size}`)) {
+                    pipeExists = true;
+                }
+            }
+            for (const [size, cost] of Object.entries(context.effectivePriceTable.Fittings.Tee[material as keyof ValveByPipe])) {
+                if (items.has(`Fittings.Tee.${material}.${size}`)) {
+                    teeExists = true;
+                }
+            }
+            for (const [size, cost] of Object.entries(context.effectivePriceTable.Fittings.Elbow[material as keyof ValveByPipe])) {
+                if (items.has(`Fittings.Elbow.${material}.${size}`)) {
+                    elbowExists = true;
+                }
+            }
+            for (const [size, cost] of Object.entries(context.effectivePriceTable.Fittings.Reducer[material as keyof ValveByPipe])) {
+                if (items.has(`Fittings.Reducer.${material}.${size}`)) {
+                    reducersExist = true;
+                }
+            }
+
+            if (pipeExists || elbowExists || teeExists || reducersExist) {
+                row ++;
+                sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
+                sheet.getCell('B' + row).value = material;
+                stylizeSubsection(sheet.getCell('A' + row));
+                stylizeSubsection(sheet.getCell('B' + row));
+                row ++;
+                sheet.getCell('B' + row).value = 'Supply and Install';
+                stylizeCaption(sheet.getCell('B' + row));
+                row += 2;
+            }
+
+            if (pipeExists) {
+                sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
+                sheet.getCell('B' + row).value = 'Pipework';
+                stylizeTitle(sheet.getCell('A' + row));
+                stylizeTitle(sheet.getCell('B' + row));
+                row += 2;
+            }
+            for (const [size, _] of Object.entries(context.effectivePriceTable.Pipes[material as keyof PipesTable])) {
+                if (items.has(`Pipes.${material}.${size}`)) {
+                    sheet.getCell('A' + row).value = `${majorItem}.${minorItem}.${patch}`;
+                    if (roofHeight >= 0) {
+                        sheet.getCell('B' + row).value = `${size}mm diameter - Above ground ${lowerCase(material)} pipework including joints and supports as specification`;
+                    } else {
+                        sheet.getCell('B' + row).value = `${size}mm diameter - Below ground ${lowerCase(material)} pipework including joints and supports as specification`;
+                    }
+                    sheet.getCell('C' + row).value = 'm';
+                    const quantity = items.get(`Pipes.${material}.${size}`)!;
+                    sheet.getCell('D' + row).value = quantity;
+                    const [loc, cost] = mappings.get(`Pipes.${material}.${size}`)!;
+                    sheet.getCell('E' + row).value = {formula: `'Master Rates'!${loc}`, result: cost, date1904: true};
+                    sheet.getCell('F' + row).value = {formula: `D${row} * E${row}`, result: cost * quantity, date1904: true};
+                    sheet.getRow(row).height = 30;
+                    sheet.getCell('B' + row).style = {alignment: {wrapText: true}};
+
+                    row++;
+                }
+                patch ++;
+            }
+            if (pipeExists) {
+                row ++;
+            }
+
+            for (const [fitting, exists] of [['Tee', teeExists], ['Elbow', elbowExists], ['Reducer', reducersExist]]) {
+                if (exists) {
+                    sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
+                    sheet.getCell('B' + row).value = fitting.toString() + "s";
+                    stylizeTitle(sheet.getCell('A' + row));
+                    stylizeTitle(sheet.getCell('B' + row));
+                    row += 2;
+                }
+                for (const [size, _] of Object.entries(context.effectivePriceTable.Fittings
+                    [fitting as keyof FittingsTable][material as keyof ValveByPipe]))
+                {
+                    if (items.has(`Fittings.${fitting}.${material}.${size}`)) {
+                        sheet.getCell('A' + row).value = `${majorItem}.${minorItem}.${patch}`;
+                        sheet.getCell('B' + row).value = `${size}mm ${lowerCase(material)} ${fitting}`;
+
+                        sheet.getCell('C' + row).value = 'No';
+                        const quantity = items.get(`Fittings.${fitting}.${material}.${size}`)!;
+                        sheet.getCell('D' + row).value = quantity;
+                        const [loc, cost] = mappings.get(`Fittings.${fitting}.${material}.${size}`)!;
+                        sheet.getCell('E' + row).value = {formula: `'Master Rates'!${loc}`, result: cost, date1904: true};
+                        sheet.getCell('F' + row).value = {formula: `D${row} * E${row}`, result: cost * quantity, date1904: true};
+                        row++;
+                    } else {
+                        console.log("couldn't find", `Fittings.${fitting}.${material}.${size}`);
+                    }
+                    patch ++;
+                }
+                if (exists) {
+                    row ++;
+                }
+            }
+
+            minorItem ++;
+            patch = 1;
+
+
+        }
+
+        {
+            // Not material-specific, but still flow system specific, entities =============== (valves)
+            const exists = new Set<keyof ValvesTable>();
+            for (const [valveType, valve] of Object.entries(context.effectivePriceTable.Valves)) {
+                for (const [size, cost] of Object.entries(valve)) {
+                    if (items.has(`Valves.${valveType}.${size}`)) {
+                        exists.add(valveType as keyof ValvesTable);
+                    }
+                }
+            }
+
+            if (exists.size > 0) {
+                row++;
+                sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
+                sheet.getCell('B' + row).value = "VALVES AND ANCILLARIES";
+                stylizeSubsection(sheet.getCell('A' + row));
+                stylizeSubsection(sheet.getCell('B' + row));
+                row += 2;
+            }
+
+            for (const [valveType, valve] of Object.entries(context.effectivePriceTable.Valves)) {
+                if (exists.has(valveType as keyof ValvesTable)) {
+                    sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
+                    sheet.getCell('B' + row).value = valveType.toString() + "s";
+                    stylizeTitle(sheet.getCell('A' + row));
+                    stylizeTitle(sheet.getCell('B' + row));
+                    row += 2;
+                }
+                for (const [size, cost] of Object.entries(valve)) {
+                    if (items.has(`Valves.${valveType}.${size}`)) {
+                        sheet.getCell('A' + row).value = `${majorItem}.${minorItem}.${patch}`;
+                        sheet.getCell('B' + row).value = `${size}mm ${valveType}`;
+
+                        sheet.getCell('C' + row).value = 'No';
+                        const quantity = items.get(`Valves.${valveType}.${size}`)!;
+                        sheet.getCell('D' + row).value = quantity;
+                        const [loc, cost] = mappings.get(`Valves.${valveType}.${size}`)!;
+                        sheet.getCell('E' + row).value = {
+                            formula: `'Master Rates'!${loc}`,
+                            result: cost,
+                            date1904: true
+                        };
+                        sheet.getCell('F' + row).value = {
+                            formula: `D${row} * E${row}`,
+                            result: cost * quantity,
+                            date1904: true
+                        };
+                        row++;
+                    }
+                }
+                if (exists.has(valveType as keyof ValvesTable)) {
+                    row++;
+                }
+            }
+        }
+
+        {
+            const exists = new Set<keyof EquipmentTable>();
+            for (const [equipmentName, equipment] of Object.entries(context.effectivePriceTable.Equipment)) {
+                if (typeof equipment === 'object') {
+                    for (const [size, cost] of Object.entries(equipment)) {
+                        if (items.has(`Equipment.${equipmentName}.${size}`)) {
+                            exists.add(equipmentName as keyof EquipmentTable);
+                        }
+                    }
+                } else {
+                    if (items.has(`Equipment.${equipmentName}`)) {
+                        exists.add(equipmentName as keyof EquipmentTable);
+                    }
+                }
+            }
+
+            if (exists.size > 0) {
+                row++;
+                sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
+                sheet.getCell('B' + row).value = "PLANTS AND EQUIPMENT";
+                stylizeSubsection(sheet.getCell('A' + row));
+                stylizeSubsection(sheet.getCell('B' + row));
+                row += 2;
+            }
+
+            for (const [equipmentName, equipment] of Object.entries(context.effectivePriceTable.Equipment)) {
+                if (exists.has(equipmentName as keyof EquipmentTable)) {
+                    sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
+                    sheet.getCell('B' + row).value = getEquimentFullName(equipmentName as keyof EquipmentTable);
+                    stylizeTitle(sheet.getCell('A' + row));
+                    stylizeTitle(sheet.getCell('B' + row));
+                    row += 2;
+
+                }
+
+                if (typeof equipment !== 'object') {
+                    if (items.has(`Equipment.${equipmentName}`)) {
+                        sheet.getCell('A' + row).value = `${majorItem}.${minorItem}.${patch}`;
+                        sheet.getCell('B' + row).value = `${equipmentName} - All sizes`;
+
+                        sheet.getCell('C' + row).value = 'No';
+                        const quantity = items.get(`Equipment.${equipmentName}`)!;
+                        sheet.getCell('D' + row).value = quantity;
+                        const [loc, cost] = mappings.get(`Equipment.${equipmentName}`)!;
+                        sheet.getCell('E' + row).value = {
+                            formula: `'Master Rates'!${loc}`,
+                            result: cost,
+                            date1904: true
+                        };
+                        sheet.getCell('F' + row).value = {
+                            formula: `D${row} * E${row}`,
+                            result: cost * quantity,
+                            date1904: true
+                        };
+                        row++;
+                    }
+                    patch++;
+                } else {
+                    for (const [size, cost] of Object.entries(equipment)) {
+                        if (items.has(`Equipment.${equipmentName}.${size}`)) {
+                            sheet.getCell('A' + row).value = `${majorItem}.${minorItem}.${patch}`;
+                            sheet.getCell('B' + row).value = `${size}mm diameter ${equipmentName}`;
+
+                            sheet.getCell('C' + row).value = 'No';
+                            const quantity = items.get(`Equipment.${equipmentName}.${size}`)!;
+                            sheet.getCell('D' + row).value = quantity;
+                            const [loc, cost] = mappings.get(`Equipment.${equipmentName}.${size}`)!;
+                            sheet.getCell('E' + row).value = {
+                                formula: `'Master Rates'!${loc}`,
+                                result: cost,
+                                date1904: true
+                            };
+                            sheet.getCell('F' + row).value = {
+                                formula: `D${row} * E${row}`,
+                                result: cost * quantity,
+                                date1904: true
+                            };
+                            row++;
+                        }
+                        patch++;
+                    }
+                }
+                if (exists.has(equipmentName as keyof EquipmentTable)) {
+                    row++;
+                }
+                minorItem ++;
+                patch = 1;
+            }
+        }
+    }
+
+    // Non flow-specifc entities, like plants, compound valves.
     // Lingering styles
-    sheet.getColumn('B').width = 40;
 
 }
 

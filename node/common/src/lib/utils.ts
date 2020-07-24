@@ -228,3 +228,11 @@ export type DeepPartial<T> = {
             ? ReadonlyArray<DeepPartial<U>>
             : DeepPartial<T[P]>
 };
+
+export function lowerCase(str: string) {
+    if (str.toUpperCase() === str) {
+        return str;
+    } else {
+        return str.toLowerCase();
+    }
+}

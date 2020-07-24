@@ -1,3 +1,5 @@
+import {assertUnreachable} from "../config";
+
 export interface PriceTable {
   'Insulation': {[key: number]: number};
   'Pipes': PipesTable;
@@ -67,4 +69,20 @@ export interface EquipmentTable {
     'RPZD': {[key: number]: number};
     'Tempering Valve': number;
     'Balancing Valve': {[key: number]: number};
+}
+
+export function getEquimentFullName(name: keyof EquipmentTable): string {
+    switch (name) {
+        case "PRV":
+            return "PRV - Pressure Reduction Valves";
+        case "TMV":
+            return "TMV - Thermostatic Mixing Valves";
+        case "RPZD":
+            return "RPZD - Reduced Pressure Zone Device";
+        case "Tempering Valve":
+            return "Tempering Valves";
+        case "Balancing Valve":
+            return "Balancing Valves";
+    }
+    assertUnreachable(name);
 }

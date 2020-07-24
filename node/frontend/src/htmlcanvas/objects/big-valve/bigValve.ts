@@ -538,11 +538,11 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
                         breakdown: [
                             {
                                 qty: 1,
-                                path: `Equipment.RPZD.${realHotSize}`,
+                                path: `Equipment.RPZD.${realColdSize}`,
                             },
                             {
                                 qty: 1,
-                                path: `Equipment.RPZD.${realColdSize}`,
+                                path: `Equipment.RPZD.${realHotSize}`,
                             },
                         ],
                     };

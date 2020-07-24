@@ -263,6 +263,6 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
     }
 
     costBreakdown(context: CalculationContext): CostBreakdown | null {
-        return null;
+        return {cost: 0, breakdown: []};
     }
 }

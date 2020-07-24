@@ -469,7 +469,7 @@ export function cooperativeYield(shouldContinue?: () => boolean, time?: number) 
 
 export function lowerBoundNumberTable(table: {[key: number]: any}, key: number | null): number | null {
     if (key === null) {
-        return undefined;
+        return null;
     }
     const candidates = Object.keys(table).map(Number).sort((a, b) => a - b);
     const result = candidates.find((c) => c >= key);
