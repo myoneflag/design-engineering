@@ -5,7 +5,7 @@ import {
     EquipmentTable,
     FittingsTable, getEquimentFullName,
     PipesBySize,
-    PipesTable,
+    PipesTable, PlantTable,
     ValveByPipe,
     ValvesTable
 } from "../../../../../common/src/api/catalog/price-table";
@@ -431,7 +431,7 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
         }
 
         {
-            // Not material-specific, but still flow system specific, entities =============== (valves)
+            // Valves
             const exists = new Set<keyof ValvesTable>();
             for (const [valveType, valve] of Object.entries(context.effectivePriceTable.Valves)) {
                 for (const [size, cost] of Object.entries(valve)) {
@@ -483,11 +483,16 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                 if (exists.has(valveType as keyof ValvesTable)) {
                     row++;
                 }
+                patch ++;
             }
+
+            minorItem ++;
+            patch = 1;
         }
 
         {
-            const exists = new Set<keyof EquipmentTable>();
+            const exists = new Set<keyof (EquipmentTable & PlantTable & {'Insulation': any})>();
+            let plantsExist = false;
             for (const [equipmentName, equipment] of Object.entries(context.effectivePriceTable.Equipment)) {
                 if (typeof equipment === 'object') {
                     for (const [size, cost] of Object.entries(equipment)) {
@@ -499,6 +504,17 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                     if (items.has(`Equipment.${equipmentName}`)) {
                         exists.add(equipmentName as keyof EquipmentTable);
                     }
+                }
+            }
+            for (const [plantName, plant] of Object.entries(context.effectivePriceTable.Plants)) {
+                if (items.has(`Plants.${plantName}`)) {
+                    exists.add(plantName as keyof PlantTable);
+                    plantsExist = true;
+                }
+            }
+            for (const [size, cost] of Object.entries(context.effectivePriceTable.Insulation)) {
+                if (items.has(`Insulation.${size}`)) {
+                    exists.add(`Insulation`);
                 }
             }
 
@@ -574,6 +590,81 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                 minorItem ++;
                 patch = 1;
             }
+
+
+            // Insulation
+            if (exists.has('Insulation')) {
+                sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
+                sheet.getCell('B' + row).value = 'Pipework Insulation';
+                stylizeTitle(sheet.getCell('A' + row));
+                stylizeTitle(sheet.getCell('B' + row));
+                row += 2;
+            }
+            for (const [size, cost] of Object.entries(context.effectivePriceTable.Insulation)) {
+                if (items.has(`Insulation.${size}`)) {
+                    sheet.getCell('A' + row).value = `${majorItem}.${minorItem}.${patch}`;
+                    sheet.getCell('B' + row).value = `${size}mm diameter - Pipework Insulation`;
+
+                    sheet.getCell('C' + row).value = 'm';
+                    const quantity = items.get(`Insulation.${size}`)!;
+                    sheet.getCell('D' + row).value = quantity;
+                    const [loc, cost] = mappings.get(`Insulation.${size}`)!;
+                    sheet.getCell('E' + row).value = {
+                        formula: `'Master Rates'!${loc}`,
+                        result: cost,
+                        date1904: true
+                    };
+                    sheet.getCell('F' + row).value = {
+                        formula: `D${row} * E${row}`,
+                        result: cost * quantity,
+                        date1904: true
+                    };
+                    row++;
+                }
+                patch++;
+            }
+            minorItem++;
+            patch = 1;
+            if (exists.has('Insulation')) {
+                row ++;
+            }
+
+            // PLANTS ==========
+            if (plantsExist) {
+                sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
+                sheet.getCell('B' + row).value = 'Plants';
+                stylizeTitle(sheet.getCell('A' + row));
+                stylizeTitle(sheet.getCell('B' + row));
+                row += 2;
+            }
+            for (const [plantName, plant] of Object.entries(context.effectivePriceTable.Plants)) {
+                if (items.has(`Plants.${plantName}`)) {
+                    sheet.getCell('A' + row).value = `${majorItem}.${minorItem}.${patch}`;
+                    sheet.getCell('B' + row).value = `${plantName}`;
+
+                    sheet.getCell('C' + row).value = 'No';
+                    const quantity = items.get(`Plants.${plantName}`)!;
+                    sheet.getCell('D' + row).value = quantity;
+                    const [loc, cost] = mappings.get(`Plants.${plantName}`)!;
+                    sheet.getCell('E' + row).value = {
+                        formula: `'Master Rates'!${loc}`,
+                        result: cost,
+                        date1904: true
+                    };
+                    sheet.getCell('F' + row).value = {
+                        formula: `D${row} * E${row}`,
+                        result: cost * quantity,
+                        date1904: true
+                    };
+                    row++;
+                }
+                patch ++;
+            }
+
+            if (exists.size > 0) {
+                row += 2;
+            }
+
         }
     }
 

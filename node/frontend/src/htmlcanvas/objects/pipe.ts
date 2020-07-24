@@ -1,50 +1,43 @@
 import BackedDrawableObject from "../../../src/htmlcanvas/lib/backed-drawable-object";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
-import PipeEntity, {
-    fillPipeDefaultFields,
-    MutablePipe
-} from "../../../../common/src/api/document/entities/pipe-entity";
+import PipeEntity, {fillPipeDefaultFields, MutablePipe} from "../../../../common/src/api/document/entities/pipe-entity";
 import * as TM from "transformation-matrix";
-import { Matrix } from "transformation-matrix";
-import { CalculationFilters, DocumentState } from "../../../src/store/document/types";
+import {Matrix} from "transformation-matrix";
+import {CalculationFilters, DocumentState} from "../../../src/store/document/types";
 import Flatten from "@flatten-js/core";
-import { Draggable, DraggableObject } from "../../../src/htmlcanvas/lib/object-traits/draggable-object";
+import {Draggable, DraggableObject} from "../../../src/htmlcanvas/lib/object-traits/draggable-object";
 import * as _ from "lodash";
-import { canonizeAngleRad, lighten, rgb2style } from "../../../src/lib/utils";
-import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
+import {canonizeAngleRad, lighten, rgb2style} from "../../../src/lib/utils";
+import {Interaction, InteractionType} from "../../../src/htmlcanvas/lib/interaction";
 import {CostBreakdown, DrawingContext} from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
-import { EntityType } from "../../../../common/src/api/document/entities/types";
-import BackedConnectable, { BaseBackedConnectable } from "../../../src/htmlcanvas/lib/BackedConnectable";
-import { CalculationContext } from "../../../src/calculations/types";
+import {EntityType} from "../../../../common/src/api/document/entities/types";
+import BackedConnectable, {BaseBackedConnectable} from "../../../src/htmlcanvas/lib/BackedConnectable";
+import {CalculationContext} from "../../../src/calculations/types";
 import {
     ConnectableEntityConcrete,
     DrawableEntityConcrete,
     isConnectableEntity
 } from "../../../../common/src/api/document/entities/concrete-entity";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
-import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
+import {SelectableObject} from "../../../src/htmlcanvas/lib/object-traits/selectable";
 import uuid from "uuid";
 import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import assert from "assert";
-import { PIPE_STUB_MAX_LENGTH_MM } from "../../../src/htmlcanvas/lib/black-magic/auto-connect";
-import { getDarcyWeisbachFlatMH } from "../../../src/calculations/pressure-drops";
-import { SIGNIFICANT_FLOW_THRESHOLD } from "../../../src/htmlcanvas/layers/calculation-layer";
-import { FlowNode } from "../../../src/calculations/calculation-engine";
-import { DrawingArgs, EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
-import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
+import {PIPE_STUB_MAX_LENGTH_MM} from "../../../src/htmlcanvas/lib/black-magic/auto-connect";
+import {getDarcyWeisbachFlatMH} from "../../../src/calculations/pressure-drops";
+import {SIGNIFICANT_FLOW_THRESHOLD} from "../../../src/htmlcanvas/layers/calculation-layer";
+import {FlowNode} from "../../../src/calculations/calculation-engine";
+import {EntityDrawingArgs} from "../../../src/htmlcanvas/lib/drawable-object";
+import {CalculationData} from "../../../src/store/document/calculations/calculation-field";
 import PipeCalculation, {
     Configuration,
     NoFlowAvailableReason
 } from "../../../src/store/document/calculations/pipe-calculation";
-import {
-    Calculated,
-    CalculatedObject,
-    FIELD_HEIGHT
-} from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
+import {Calculated, CalculatedObject, FIELD_HEIGHT} from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import Cached from "../lib/cached";
-import { GlobalStore } from "../lib/global-store";
-import { PipeMaterial, PipeSpec } from "../../../../common/src/api/catalog/types";
+import {GlobalStore} from "../lib/global-store";
+import {PipeMaterial, PipeSpec} from "../../../../common/src/api/catalog/types";
 import {Coord, Coord3D, Pipe as PipeObject} from "../../../../common/src/api/document/drawing";
 import {
     cloneSimple,
@@ -52,12 +45,14 @@ import {
     lowerBoundTable,
     parseCatalogNumberExact
 } from "../../../../common/src/lib/utils";
-import { determineConnectableNetwork } from "../../store/document/entities/lib";
-import { assertUnreachable, ComponentPressureLossMethod } from "../../../../common/src/api/config";
-import { CenteredObject } from "../lib/object-traits/centered-object";
-import { SnappableObject } from "../lib/object-traits/snappable-object";
-import { getHighlightColor } from "../lib/utils";
-import {PipesTable} from "../../../../common/src/api/catalog/price-table";
+import {determineConnectableNetwork} from "../../store/document/entities/lib";
+import {
+    assertUnreachable,
+    ComponentPressureLossMethod,
+    StandardFlowSystemUids
+} from "../../../../common/src/api/config";
+import {SnappableObject} from "../lib/object-traits/snappable-object";
+import {getHighlightColor} from "../lib/utils";
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 1.5;
@@ -860,20 +855,37 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
         const size = context.globalStore.getOrCreateCalculation(this.entity).realNominalPipeDiameterMM!;
         if (priceTableName in context.priceTable.Pipes) {
-            const availableSizes = Object.keys(context.priceTable.Pipes[priceTableName]).map((a) => Number(a)).sort((a, b) => a-b);
+            const availableSizes = Object.keys(context.priceTable.Pipes[priceTableName])
+                .map((a) => Number(a)).sort((a, b) => a - b);
             if (this.entity.uid.includes('8c8d9e22-2e8e-4584-aeba-a15e23f1c737')) {
                 console.log(availableSizes);
             }
             const bestSize = availableSizes.find((s) => s >= size);
 
             if (bestSize !== undefined && bestSize in context.priceTable.Pipes[priceTableName]) {
-                return {
+                const res: CostBreakdown = {
                     cost: context.priceTable.Pipes[priceTableName][bestSize] * filled.lengthM!,
                     breakdown: [{
                         qty: filled.lengthM!,
                         path: `Pipes.${priceTableName}.${bestSize}`,
                     }],
                 };
+                if (filled.systemUid === StandardFlowSystemUids.HotWater
+                    && context.globalStore.getOrCreateCalculation(filled).configuration === Configuration.RETURN) {
+                    // needs insulation
+                    const availableInsulationSizes = Object.keys(context.priceTable.Insulation)
+                        .map((a) => Number(a)).sort((a, b) => a - b);
+                    const bestInsulationSize = availableInsulationSizes.find((s) => s >= bestSize);
+
+                    if (bestInsulationSize) {
+                        res.breakdown.push({
+                            qty: filled.lengthM!,
+                            path: `Insulation.${bestInsulationSize}`
+                        });
+                        res.cost += context.priceTable.Insulation[bestInsulationSize] * filled.lengthM!;
+                    }
+                }
+                return res;
             }
         }
         return null;

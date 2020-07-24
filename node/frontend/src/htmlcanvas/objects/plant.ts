@@ -358,7 +358,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         // determine type of plant
         switch (this.entity.plant.type) {
             case PlantType.RETURN_SYSTEM:
-                if (this.entity.inletSystemUid === StandardFlowSystemUids.HotWater &&
+                if (this.entity.inletSystemUid === StandardFlowSystemUids.ColdWater &&
                     this.entity.outletSystemUid === StandardFlowSystemUids.HotWater
                 ) {
                     return {
