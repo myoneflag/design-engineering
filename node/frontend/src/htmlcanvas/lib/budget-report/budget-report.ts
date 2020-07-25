@@ -26,7 +26,12 @@ export async function exportBudgetReport(context: CanvasContext) {
     createCoverPage(context, workbook);
 
     const mappings = createMasterPage(context, workbook);
-    createLevelPages(context, workbook, mappings);
+    createLevelPages(context, workbook, mappings)
+    createLevelPage(context, workbook, mappings, null);
+
+    // "Move" the master page to the end
+    workbook.removeWorksheet(2);
+    createMasterPage(context, workbook);
 
     downloadWorkbook(context, workbook);
 
@@ -110,21 +115,28 @@ function stylizeMajorSection(cell: Excel.Cell) {
     cell.font = {color: {argb: "FF2F75B5"}, bold: true};
 }
 
-function stylizeMinorSection(cell: Excel.Cell | Excel.Row) {
+function stylizeMinorSection(cell: Excel.Cell) {
     cell.fill = {type: "pattern", pattern: "solid", fgColor: {argb: "FF4A86E8"}};
     cell.font = {color: {argb: "FFFFFFFF"}, bold: true};
     cell.alignment = {horizontal: "center"};
 }
 
 function stylizeSubsection(cell: Excel.Cell | Excel.Row) {
-    cell.fill = {type: "pattern", pattern: "solid", fgColor: {argb: "FF333333"}};
+    cell.fill = {type: "pattern", pattern: "solid", fgColor: {argb: "FF666666"}};
     cell.font = {color: {argb: "FFFFFFFF"}, bold: true};
     cell.alignment = {horizontal: "center"};
 }
 
-function stylizeTitle(cell: Excel.Cell | Excel.Row) {
-    cell.font = {bold: true};
+function stylizeSubsectionRow(row: Excel.Row) {
+    row.font = {bold: true};
+    for (let i = 1; i <= 6; i++) {
+        row.getCell(i).fill = {type: "pattern", pattern: "solid", fgColor: {argb: "FFBBBBBB"}};
+    }
+}
+
+function stylizeTitle(cell: Excel.Cell) {
     cell.alignment = {horizontal: "center"};
+    cell.worksheet.getRow(Number(cell.row)).font = {bold: true}
 }
 
 function stylizeCaption(cell: Excel.Cell | Excel.Row) {
@@ -154,6 +166,9 @@ function getPriceQuantities(context: CanvasContext, levelUid: string | null) {
         }
     }
 
+    if (!levelUid) {
+        console.log(result);
+    }
     return result;
 }
 
@@ -190,7 +205,7 @@ function getPriceQuantitiesForSystem(context: CanvasContext, levelUid: string | 
                             result.set(path, result.get(path)! + qty);
                         }
                     } else {
-                        systemUid = StandardFlowSystemUids.WarmWater;
+                        thisSystemUid = StandardFlowSystemUids.WarmWater;
                     }
                     break;
                 case EntityType.DIRECTED_VALVE:
@@ -200,7 +215,8 @@ function getPriceQuantitiesForSystem(context: CanvasContext, levelUid: string | 
                     thisSystemUid = entity.outletSystemUid;
                     break;
                 case EntityType.RISER:
-                // N/A here.
+                    thisSystemUid = entity.systemUid;
+                    break;
                 case EntityType.SYSTEM_NODE:
                 case EntityType.FIXTURE:
                 case EntityType.LOAD_NODE:
@@ -221,11 +237,15 @@ function getPriceQuantitiesForSystem(context: CanvasContext, levelUid: string | 
         }
     }
 
+    if (!levelUid) {
+        console.log(result);
+    }
     return result;
 }
 
 function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappings: Map<string, [string, number]>, levelUid: string | null) {
     const quantities = getPriceQuantities(context, levelUid);
+    let totalCost = 0;
     let roofHeight = 0;
     if (levelUid) {
         roofHeight = context.document.drawing.levels[levelUid].floorHeightM + 3;
@@ -235,10 +255,11 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
     let levelTitle = 'Inter-level';
     if (levelUid) {
         const level = context.document.drawing.levels[levelUid];
-        levelTitle = level.name + " (" + level.abbreviation + ")";
+        levelFullTitle = level.name + " (" + level.abbreviation + ")";
+        levelTitle = level.name;
     }
 
-    const sheet = workbook.addWorksheet(levelTitle);
+    const sheet = workbook.addWorksheet(levelTitle, {});
     createCompanyHeader(context, sheet);
 
     sheet.getColumn('A').width = 15;
@@ -254,10 +275,19 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
     sheet.getCell('A7').font = {bold: true};
     sheet.getCell('B7').value = levelFullTitle;
 
+    sheet.getColumn('F').numFmt = '0.00';
+
     for (let col = 1; col <= 6; col++) {
         sheet.mergeCells([9, col, 11, col]);
         stylizeHeader(sheet.getCell(9, col));
     }
+    sheet.getCell('A9').value = 'Code';
+    sheet.getCell('B9').value = 'Item Description';
+    sheet.getCell('C9').value = 'Unit';
+    sheet.getCell('D9').value = 'Qty';
+    sheet.getCell('E9').value = 'Rate $';
+    sheet.getCell('F9').value = 'Cost $';
+
     stylizeTable(9, 11, 'A', 'F', sheet);
 
     let row = 13;
@@ -267,17 +297,23 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
     sheet.getCell('B' + row).value = 'HYDRAULICS SERVICES';
 
     row += 2;
-    for (let col = 1; col <= 6; col++) {
-        stylizeMinorSection(sheet.getCell(row, col));
+    for (let i = 1; i <= 6; i++) {
+        stylizeHeader(sheet.getCell( row, i));
     }
     let majorItem = 101;
     sheet.getCell('A' + row).value = '' + majorItem;
     sheet.getCell('B' + row).value = 'SANITARY FITMENTS';
-    let sectionHeaderRow = row;
+    let lastMinorBump = row;
+    let lastMajorBump = row;
+    let lastSectionBump = row;
 
-    row += 2;
-    stylizeTitle(sheet.getCell('B' + row));
+    let minorSum = 0;
+    let majorSum = 0;
+    let sectionSum = 0;
+
+    row ++;
     sheet.getCell('B' + row).value = "SUPPLY AND INSTALL";
+    stylizeCaption(sheet.getCell('B' + row));
     row += 2;
 
     // FIXTURES
@@ -290,6 +326,10 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
             sheet.getCell('C' + row).value = 'No';
             sheet.getCell('D' + row).value = quantity;
             const [loc, cost] = mappings.get(`Fixtures.${fixture}`)!;
+            totalCost += cost * quantity;
+            minorSum += cost * quantity;
+            majorSum += cost * quantity;
+            sectionSum += cost * quantity;
             sheet.getCell('E' + row).value = {formula: `'Master Rates'!${loc}`, result: cost, date1904: true};
             sheet.getCell('F' + row).value = {formula: `D${row} * E${row}`, result: cost * quantity, date1904: true};
             row ++;
@@ -297,6 +337,9 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
         minorItem ++;
     }
 
+    sheet.getCell(`F${lastMinorBump}`).value = {formula: `F${lastMajorBump + 1}:F${row}`, result: majorSum, date1904: false};
+
+    let patch = 1;
     // Water supplies
     for (const flowSystem of context.document.drawing.metadata.flowSystems) {
         const systemUid = flowSystem.uid;
@@ -308,9 +351,14 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
 
         majorItem++;
         minorItem = 1;
-        let patch = 1;
         row += 2;
 
+        majorSum = 0;
+        minorSum = 0;
+        sectionSum = 0;
+        lastMinorBump = row;
+        lastMajorBump = row;
+        lastSectionBump = row;
         sheet.getCell('A' + row).value = majorItem;
         sheet.getCell('B' + row).value = flowSystem.name.toUpperCase() + " SUPPLY";
         for (let i = 1; i <= 6; i++) {
@@ -352,8 +400,10 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                 row ++;
                 sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
                 sheet.getCell('B' + row).value = material;
-                stylizeSubsection(sheet.getCell('A' + row));
-                stylizeSubsection(sheet.getCell('B' + row));
+                stylizeSubsectionRow(sheet.getRow(row));
+                stylizeSubsection(sheet.getCell(row, 2));
+                majorSum = minorSum = 0;
+                lastMajorBump = row;
                 row ++;
                 sheet.getCell('B' + row).value = 'Supply and Install';
                 stylizeCaption(sheet.getCell('B' + row));
@@ -365,6 +415,7 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                 sheet.getCell('B' + row).value = 'Pipework';
                 stylizeTitle(sheet.getCell('A' + row));
                 stylizeTitle(sheet.getCell('B' + row));
+                lastMinorBump = row;
                 row += 2;
             }
             for (const [size, _] of Object.entries(context.effectivePriceTable.Pipes[material as keyof PipesTable])) {
@@ -379,6 +430,10 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                     const quantity = items.get(`Pipes.${material}.${size}`)!;
                     sheet.getCell('D' + row).value = quantity;
                     const [loc, cost] = mappings.get(`Pipes.${material}.${size}`)!;
+                    totalCost += cost * quantity;
+                    minorSum += cost * quantity;
+                    majorSum += cost * quantity;
+                    sectionSum += cost * quantity;
                     sheet.getCell('E' + row).value = {formula: `'Master Rates'!${loc}`, result: cost, date1904: true};
                     sheet.getCell('F' + row).value = {formula: `D${row} * E${row}`, result: cost * quantity, date1904: true};
                     sheet.getRow(row).height = 30;
@@ -389,6 +444,7 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                 patch ++;
             }
             if (pipeExists) {
+                sheet.getCell(`F${lastMinorBump}`).value = {formula: `SUBTOTAL(9, F${lastMinorBump + 1}:F${row})`, result: minorSum, date1904: true};
                 row ++;
             }
 
@@ -398,6 +454,8 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                     sheet.getCell('B' + row).value = fitting.toString() + "s";
                     stylizeTitle(sheet.getCell('A' + row));
                     stylizeTitle(sheet.getCell('B' + row));
+                    minorSum = 0;
+                    lastMinorBump = row;
                     row += 2;
                 }
                 for (const [size, _] of Object.entries(context.effectivePriceTable.Fittings
@@ -411,6 +469,10 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                         const quantity = items.get(`Fittings.${fitting}.${material}.${size}`)!;
                         sheet.getCell('D' + row).value = quantity;
                         const [loc, cost] = mappings.get(`Fittings.${fitting}.${material}.${size}`)!;
+                        totalCost += cost * quantity;
+                        minorSum += cost * quantity;
+                        majorSum += cost * quantity;
+                        sectionSum += cost * quantity;
                         sheet.getCell('E' + row).value = {formula: `'Master Rates'!${loc}`, result: cost, date1904: true};
                         sheet.getCell('F' + row).value = {formula: `D${row} * E${row}`, result: cost * quantity, date1904: true};
                         row++;
@@ -420,14 +482,16 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                     patch ++;
                 }
                 if (exists) {
+                    sheet.getCell(`F${lastMinorBump}`).value = {formula: `SUBTOTAL(9, F${lastMinorBump + 1}:F${row})`, result: minorSum, date1904: true};
                     row ++;
                 }
             }
 
             minorItem ++;
             patch = 1;
-
-
+            if (pipeExists || elbowExists || teeExists || reducersExist) {
+                sheet.getCell(`F${lastMajorBump}`).value = {formula: `SUBTOTAL(9, F${lastMajorBump + 1}:F${row})`, result: majorSum, date1904: true};
+            }
         }
 
         {
@@ -445,8 +509,11 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                 row++;
                 sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
                 sheet.getCell('B' + row).value = "VALVES AND ANCILLARIES";
-                stylizeSubsection(sheet.getCell('A' + row));
-                stylizeSubsection(sheet.getCell('B' + row));
+                lastMajorBump = row;
+                majorSum = minorSum = 0;
+                stylizeSubsectionRow(sheet.getRow(row));
+                stylizeSubsection(sheet.getCell(row, 2));
+
                 row += 2;
             }
 
@@ -454,6 +521,7 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                 if (exists.has(valveType as keyof ValvesTable)) {
                     sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
                     sheet.getCell('B' + row).value = valveType.toString() + "s";
+                    lastMinorBump = row;
                     stylizeTitle(sheet.getCell('A' + row));
                     stylizeTitle(sheet.getCell('B' + row));
                     row += 2;
@@ -467,6 +535,10 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                         const quantity = items.get(`Valves.${valveType}.${size}`)!;
                         sheet.getCell('D' + row).value = quantity;
                         const [loc, cost] = mappings.get(`Valves.${valveType}.${size}`)!;
+                        totalCost += cost * quantity;
+                        minorSum += cost * quantity;
+                        majorSum += cost * quantity;
+                        sectionSum += cost * quantity;
                         sheet.getCell('E' + row).value = {
                             formula: `'Master Rates'!${loc}`,
                             result: cost,
@@ -481,9 +553,14 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                     }
                 }
                 if (exists.has(valveType as keyof ValvesTable)) {
+                    sheet.getCell(`F${lastMinorBump}`).value = {formula: `SUBTOTAL(9, F${lastMinorBump + 1}:F${row})`, result: minorSum, date1904: true};
                     row++;
                 }
                 patch ++;
+            }
+
+            if (exists.size > 0) {
+                sheet.getCell(`F${lastMajorBump}`).value = {formula: `SUBTOTAL(9, F${lastMajorBump + 1}:F${row})`, result: majorSum, date1904: true};
             }
 
             minorItem ++;
@@ -522,8 +599,10 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                 row++;
                 sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
                 sheet.getCell('B' + row).value = "PLANTS AND EQUIPMENT";
-                stylizeSubsection(sheet.getCell('A' + row));
-                stylizeSubsection(sheet.getCell('B' + row));
+                lastMajorBump = row;
+                majorSum = 0;
+                stylizeSubsectionRow(sheet.getRow(row));
+                stylizeSubsection(sheet.getCell(row, 2));
                 row += 2;
             }
 
@@ -531,6 +610,8 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                 if (exists.has(equipmentName as keyof EquipmentTable)) {
                     sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
                     sheet.getCell('B' + row).value = getEquimentFullName(equipmentName as keyof EquipmentTable);
+                    lastMinorBump = row;
+                    minorSum = 0;
                     stylizeTitle(sheet.getCell('A' + row));
                     stylizeTitle(sheet.getCell('B' + row));
                     row += 2;
@@ -546,6 +627,10 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                         const quantity = items.get(`Equipment.${equipmentName}`)!;
                         sheet.getCell('D' + row).value = quantity;
                         const [loc, cost] = mappings.get(`Equipment.${equipmentName}`)!;
+                        totalCost += cost * quantity;
+                        minorSum += cost * quantity;
+                        majorSum += cost * quantity;
+                        sectionSum += cost * quantity;
                         sheet.getCell('E' + row).value = {
                             formula: `'Master Rates'!${loc}`,
                             result: cost,
@@ -569,6 +654,10 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                             const quantity = items.get(`Equipment.${equipmentName}.${size}`)!;
                             sheet.getCell('D' + row).value = quantity;
                             const [loc, cost] = mappings.get(`Equipment.${equipmentName}.${size}`)!;
+                            totalCost += cost * quantity;
+                            minorSum += cost * quantity;
+                            majorSum += cost * quantity;
+                            sectionSum += cost * quantity;
                             sheet.getCell('E' + row).value = {
                                 formula: `'Master Rates'!${loc}`,
                                 result: cost,
@@ -585,10 +674,15 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                     }
                 }
                 if (exists.has(equipmentName as keyof EquipmentTable)) {
+                    sheet.getCell(`F${lastMinorBump}`).value = {formula: `SUBTOTAL(9, F${lastMinorBump + 1}:F${row})`, result: minorSum, date1904: true};
                     row++;
                 }
                 minorItem ++;
                 patch = 1;
+            }
+
+            if (exists.size > 0) {
+                sheet.getCell(`F${lastMajorBump}`).value = {formula: `SUBTOTAL(9, F${lastMajorBump + 1}:F${row})`, result: majorSum, date1904: true};
             }
 
 
@@ -596,6 +690,8 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
             if (exists.has('Insulation')) {
                 sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
                 sheet.getCell('B' + row).value = 'Pipework Insulation';
+                lastMinorBump = row;
+                minorSum = 0;
                 stylizeTitle(sheet.getCell('A' + row));
                 stylizeTitle(sheet.getCell('B' + row));
                 row += 2;
@@ -609,6 +705,10 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                     const quantity = items.get(`Insulation.${size}`)!;
                     sheet.getCell('D' + row).value = quantity;
                     const [loc, cost] = mappings.get(`Insulation.${size}`)!;
+                    totalCost += cost * quantity;
+                    minorSum += cost * quantity;
+                    majorSum += cost * quantity;
+                    sectionSum += cost * quantity;
                     sheet.getCell('E' + row).value = {
                         formula: `'Master Rates'!${loc}`,
                         result: cost,
@@ -626,6 +726,7 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
             minorItem++;
             patch = 1;
             if (exists.has('Insulation')) {
+                sheet.getCell(`F${lastMinorBump}`).value = {formula: `SUBTOTAL(9, F${lastMinorBump + 1}:F${row})`, result: minorSum, date1904: true};
                 row ++;
             }
 
@@ -633,6 +734,8 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
             if (plantsExist) {
                 sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
                 sheet.getCell('B' + row).value = 'Plants';
+                lastMinorBump = row;
+                minorSum = 0;
                 stylizeTitle(sheet.getCell('A' + row));
                 stylizeTitle(sheet.getCell('B' + row));
                 row += 2;
@@ -646,6 +749,10 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                     const quantity = items.get(`Plants.${plantName}`)!;
                     sheet.getCell('D' + row).value = quantity;
                     const [loc, cost] = mappings.get(`Plants.${plantName}`)!;
+                    totalCost += cost * quantity;
+                    minorSum += cost * quantity;
+                    majorSum += cost * quantity;
+                    sectionSum += cost * quantity;
                     sheet.getCell('E' + row).value = {
                         formula: `'Master Rates'!${loc}`,
                         result: cost,
@@ -662,20 +769,128 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
             }
 
             if (exists.size > 0) {
+                sheet.getCell(`F${lastMinorBump}`).value = {formula: `SUBTOTAL(9, F${lastMinorBump + 1}:F${row})`, result: minorSum, date1904: true};
                 row += 2;
             }
 
         }
+
+        sheet.getCell(`F${lastSectionBump}`).value = {formula: `SUBTOTAL(9, F${lastSectionBump + 1}:F${row})`, result: sectionSum, date1904: true};
     }
 
-    // Non flow-specifc entities, like plants, compound valves.
+    majorItem ++;
+    minorItem = 1;
+    patch = 1;
+
+    // Load Nodes
+    let hasLoadNode = false;
+    for (const [nodeName, cost] of Object.entries(context.effectivePriceTable.Node)) {
+        if (quantities.has(`Node.${nodeName}`)) {
+            hasLoadNode = true;
+        }
+    }
+    if (hasLoadNode) {
+
+        sheet.getCell('A' + row).value = majorItem;
+        sheet.getCell('B' + row).value = "OTHER";
+        lastMajorBump = row;
+        majorSum = minorSum = 0;
+        for (let i = 1; i <= 6; i++) {
+            stylizeHeader(sheet.getCell( row, i));
+        }
+        row++;
+        row++;
+
+        sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
+        sheet.getCell('B' + row).value = "NODES";
+        lastMinorBump = row;
+        minorSum = 0;
+        stylizeSubsectionRow(sheet.getRow(row));
+        stylizeSubsection(sheet.getCell(row, 2));
+        row += 2;
+    }
+    for (const [nodeName, cost] of Object.entries(context.effectivePriceTable.Node)) {
+        if (quantities.has(`Node.${nodeName}`)) {
+            sheet.getCell('A' + row).value = `${majorItem}.${minorItem}.${patch}`;
+            sheet.getCell('B' + row).value = `${nodeName}`;
+
+            sheet.getCell('C' + row).value = 'No';
+            const quantity = quantities.get(`Node.${nodeName}`)!;
+            sheet.getCell('D' + row).value = quantity;
+            const [loc, cost] = mappings.get(`Node.${nodeName}`)!;
+            totalCost += cost * quantity;
+            minorSum += cost * quantity;
+            majorSum += cost * quantity;
+            sectionSum += cost * quantity;
+            sheet.getCell('E' + row).value = {
+                formula: `'Master Rates'!${loc}`,
+                result: cost,
+                date1904: true
+            };
+            sheet.getCell('F' + row).value = {
+                formula: `D${row} * E${row}`,
+                result: cost * quantity,
+                date1904: true
+            };
+            row++;
+        }
+        patch ++;
+    }
+
+    if (hasLoadNode) {
+        sheet.getCell(`F${lastMinorBump}`).value = {formula: `SUBTOTAL(9, F${lastMinorBump + 1}:F${row})`, result: minorSum, date1904: true};
+        row += 2;
+    }
+    sheet.getCell(`F${lastMajorBump}`).value = {formula: `SUBTOTAL(9, F${lastMajorBump + 1}:F${row})`, result: majorSum, date1904: true};
+
+    // Preliminaries
+    majorItem ++;
+    minorItem = patch = 1;
+    sheet.getCell('A' + row).value = majorItem;
+    sheet.getCell('B' + row).value = "PRELIMINARIES & MARGIN";
+    lastMajorBump = row;
+    majorSum = minorSum = 0;
+    for (let i = 1; i <= 6; i++) {
+        stylizeHeader(sheet.getCell( row, i));
+    }
+    row++;
+    row++;
+
+    sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
+    sheet.getCell('B' + row).value = `Preliminaries, Overheads & Profit`;
+
+    sheet.getCell('C' + row).value = 'No';
+    sheet.getCell('D' + row).value = '.15';
+    sheet.getCell('D' + row).numFmt = "0.00%";
+    sheet.getCell('E' + row).value = {formula: `SUBTOTAL(9, F$${1}:F${row})`, result: totalCost, date1904: true};
+    majorSum += .15 * totalCost;
+    minorSum += .15 * totalCost;
+    sectionSum += .15 * totalCost;
+    sheet.getCell('F' + row).value = {
+        formula: `D${row} * E${row - 1}`,
+        result: .15 * totalCost,
+        date1904: true
+    };
+    row += 2;
+
+    for (let i = 1; i <= 6; i++) {
+        stylizeTotal(sheet.getCell( row, i));
+    }
+    sheet.getCell(`A${row}`).value = "TOTAL";
+    sheet.getCell(`F${row}`).value = {formula: `SUBTOTAL(9, F$${1}:F${row - 1})`, result: totalCost * 1.15, date1904: true};
     // Lingering styles
 
 }
 
 function stylizeHeader(cell: Excel.Cell) {
+    cell.worksheet.getRow(Number(cell.row)).height = 16;
     cell.fill = {type: "pattern", pattern: "solid", fgColor: {argb: "FF4A86E8"}};
-    cell.font = {color: {argb: "FFFFFFFF"}, bold: true};
+    cell.font = {color: {argb: "FFFFFFFF"}, bold: true, size: 12};
+}
+
+function stylizeTotal(cell: Excel.Cell) {
+    cell.fill = {type: "pattern", pattern: "solid", fgColor: {argb: "FFCCCCCC"}};
+    cell.font = {color: {argb: "FF000000"}, bold: true};
 }
 
 function stylizeTable(rowFrom: number, rowTo: number, colFrom: string, colTo: string, sheet: Excel.Worksheet) {
@@ -819,10 +1034,11 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
     sheet.mergeCells('M1:N1');
     sheet.getCell('M1').font = {bold: true};
     sheet.getCell('M1').value = 'EQUIPMENT';
+    sheet.getColumn('M').width = 20;
     row = topRow + 2;
     for (const [equipment, table] of Object.entries(context.effectivePriceTable.Equipment)) {
         const startRow = row;
-        if (isNumeric(table)) {
+        if (typeof table !== 'object') {
             // single
             sheet.mergeCells('M' + row + ":N" + row);
             sheet.getCell('M' + row).value = equipment + " - $";
