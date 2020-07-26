@@ -26,6 +26,7 @@ export async function exportBudgetReport(context: CanvasContext) {
     createCoverPage(context, workbook);
 
     const mappings = createMasterPage(context, workbook);
+    console.log(mappings);
     createLevelPages(context, workbook, mappings)
     createLevelPage(context, workbook, mappings, null);
 
@@ -165,10 +166,6 @@ function getPriceQuantities(context: CanvasContext, levelUid: string | null) {
             }
         }
     }
-
-    if (!levelUid) {
-        console.log(result);
-    }
     return result;
 }
 
@@ -235,10 +232,6 @@ function getPriceQuantitiesForSystem(context: CanvasContext, levelUid: string | 
                 }
             }
         }
-    }
-
-    if (!levelUid) {
-        console.log(result);
     }
     return result;
 }
@@ -337,7 +330,7 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
         minorItem ++;
     }
 
-    sheet.getCell(`F${lastMinorBump}`).value = {formula: `F${lastMajorBump + 1}:F${row}`, result: majorSum, date1904: false};
+    sheet.getCell(`F${lastMinorBump}`).value = {formula: `SUBTOTAL(9, F${lastMajorBump + 1}:F${row})`, result: majorSum, date1904: false};
 
     let patch = 1;
     // Water supplies
@@ -476,8 +469,6 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                         sheet.getCell('E' + row).value = {formula: `'Master Rates'!${loc}`, result: cost, date1904: true};
                         sheet.getCell('F' + row).value = {formula: `D${row} * E${row}`, result: cost * quantity, date1904: true};
                         row++;
-                    } else {
-                        console.log("couldn't find", `Fittings.${fitting}.${material}.${size}`);
                     }
                     patch ++;
                 }
@@ -862,12 +853,12 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
     sheet.getCell('C' + row).value = 'No';
     sheet.getCell('D' + row).value = '.15';
     sheet.getCell('D' + row).numFmt = "0.00%";
-    sheet.getCell('E' + row).value = {formula: `SUBTOTAL(9, F$${1}:F${row})`, result: totalCost, date1904: true};
+    sheet.getCell('E' + row).value = {formula: `SUBTOTAL(9, F$${1}:F${row-1})`, result: totalCost, date1904: true};
     majorSum += .15 * totalCost;
     minorSum += .15 * totalCost;
     sectionSum += .15 * totalCost;
     sheet.getCell('F' + row).value = {
-        formula: `D${row} * E${row - 1}`,
+        formula: `D${row} * E${row}`,
         result: .15 * totalCost,
         date1904: true
     };
@@ -943,22 +934,34 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
         sheet.getCell('E' + row).font = {bold: true};
 
         row ++;
-        for (const [size, entry] of Object.entries(pipe as PipesBySize)) {
+        const keys = [
+            ...Object.keys(pipe),
+            ...Object.keys(context.effectivePriceTable.Fittings.Elbow[material as keyof ValveByPipe]),
+            ...Object.keys(context.effectivePriceTable.Fittings.Tee[material as keyof ValveByPipe]),
+            ...Object.keys(context.effectivePriceTable.Fittings.Reducer[material as keyof ValveByPipe]),
+        ].sort((a, b) => Number(a) - Number(b)).filter((v, i, a) => v !== a[i + 1]);
+
+        for (const size of keys) {
+            let entry = pipe[size];
             sheet.getCell('A' + row).value = Number(size);
 
-            sheet.getCell('B' + row).value = entry;
+            sheet.getCell('B' + row).value = entry || '';
             mapping.set(`Pipes.${material}.${size}`, ["$B$" + row, entry]);
 
-            sheet.getCell('C' + row).value = context.effectivePriceTable.Fittings.Elbow
-                [material as keyof ValveByPipe][Number(size)];
+            entry = context.effectivePriceTable.Fittings.Elbow
+                [material as keyof ValveByPipe][Number(size)] || '';
+            sheet.getCell('C' + row).value = entry || '';
             mapping.set(`Fittings.Elbow.${material}.${size}`, ["$C$" + row, entry]);
 
-            sheet.getCell('D' + row).value = context.effectivePriceTable.Fittings.Tee
-                [material as keyof ValveByPipe][Number(size)];
-            mapping.set(`Fittings.Tee.${material}.${size}`, ["$C$" + row, entry]);
-            sheet.getCell('E' + row).value = context.effectivePriceTable.Fittings.Reducer
-                [material as keyof ValveByPipe][Number(size)];
-            mapping.set(`Fittings.Reducer.${material}.${size}`, ["$C$" + row, entry]);
+            entry = context.effectivePriceTable.Fittings.Tee
+                [material as keyof ValveByPipe][Number(size)] || '';
+            sheet.getCell('D' + row).value = entry;
+
+            entry =  context.effectivePriceTable.Fittings.Reducer
+                [material as keyof ValveByPipe][Number(size)] || '';
+            mapping.set(`Fittings.Tee.${material}.${size}`, ["$D$" + row, entry]);
+            sheet.getCell('E' + row).value = entry;
+            mapping.set(`Fittings.Reducer.${material}.${size}`, ["$E$" + row, entry]);
             row ++;
         }
         stylizeTable(startRow, row - 1, 'A', 'E', sheet);
@@ -1133,7 +1136,7 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
         for (const [plant, cost] of Object.entries(context.effectivePriceTable.Plants)) {
             sheet.getCell('S' + row).value = plant;
             sheet.getCell('T' + row).value = cost;
-            mapping.set(`Plants.${plant}`, ['$S$' + row, cost]);
+            mapping.set(`Plants.${plant}`, ['$T$' + row, cost]);
             row ++;
         }
         stylizeTable(startRow, row - 1, 'S', 'T', sheet);
