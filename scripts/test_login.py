@@ -174,7 +174,6 @@ class test_loginPage(unittest.TestCase):
         # End
         print("Create Drawing Test Complete!\n----------------")
 
-
     def test_org_checker(self):
         # Checks all drawings if it belongs to user organization
 

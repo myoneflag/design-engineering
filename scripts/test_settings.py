@@ -220,7 +220,7 @@ class test_settings(unittest.TestCase):
 
         # Go to Home Page
         self.driver.find_element_by_xpath("//a[contains(text(),'Home')]").click()
-        time.sleep(6)
+        time.sleep(10)
 
         # Delete drawing after checking
         print("Deleting drawing...")
@@ -404,7 +404,7 @@ class test_settings(unittest.TestCase):
 
         # Go to Home Page
         self.driver.find_element_by_xpath("//a[contains(text(),'Home')]").click()
-        time.sleep(10)
+        time.sleep(12)
 
         # Delete drawing after checking
         print("Deleting drawing...")
@@ -906,6 +906,269 @@ class test_settings(unittest.TestCase):
 
         # End
         print("Flow Systems Test Complete!\n----------------")
+
+    def test_calculations(self):
+        # Test Calculations Page Settings
+
+        # Start
+        print("----------------\nStart Calculations Settings Test...")
+
+        username = "admin"
+        password = "pleasechange"
+
+        # Login
+        print("Logging in...")
+        self.test.login_by_button_click(username, password)
+        print("Login Successful!")
+        time.sleep(5)
+
+        # Create New Drawing
+        print("Creating new drawing...")
+        self.test.create_drawing()
+        print("Create new drawing successful!")
+        time.sleep(5)
+
+        # Click Settings button
+        print("Going to settings page...")
+        self.driver.find_element_by_xpath("//a[contains(text(),'Settings')]").click()
+        print("Settings page opened!")
+        time.sleep(5)
+
+        # Click Calculations button
+        print("Going to Calculations page...")
+        self.driver.find_element_by_xpath("//a[contains(text(),'Calculations')]").click()
+        print("Calculations page opened!")
+        time.sleep(5)
+
+        # Check if settings are enabled
+        print("Checking settings if enabled...")
+        self.assertTrue(self.driver.find_element_by_xpath("//button[contains(text(),'AS3500 2018 Loading Units')]")
+                        .is_enabled())
+        self.assertTrue(self.driver.find_element_by_xpath(
+            "//button[contains(text(),'Keep maximum velocity within bounds')]").is_enabled())
+        self.assertTrue(self.driver.find_element_by_xpath(
+            "//button[contains(text(),'Based on all system component')]").is_enabled())
+        self.assertTrue(self.driver.find_element_by_xpath(
+            "//button[contains(text(),'Isolation Cases by Closing any Isolation Valve')]").is_enabled())
+        self.assertTrue(self.driver.find_element_by_xpath(
+            "//input[@placeholder='Enter Default Pipe Height Above Floor']").is_enabled())
+        self.assertTrue(self.driver.find_element_by_xpath(
+            "//div[@class='col-8']//input[@placeholder='Enter Room Temperature']").is_enabled())
+        self.assertTrue(self.driver.find_element_by_xpath(
+            "//div[@class='input-group']//input[@placeholder='Enter Room Temperature']").is_enabled())
+        self.assertTrue(self.driver.find_element_by_xpath("//input[@placeholder='Enter Wind Speed for Heat Loss']")
+                        .is_enabled())
+        self.assertTrue(self.driver.find_element_by_xpath(
+            "//div[@class='col-8']//input[@placeholder='Enter Gravitational Acceleration']").is_enabled())
+        self.assertTrue(self.driver.find_element_by_xpath(
+            "//div[@class='input-group']//input[@placeholder='Enter Gravitational Acceleration']").is_enabled())
+        print("Settings enabled...")
+
+        # Change Peak Flow Rate Calculation Method settings
+        print("Checking Peak Flow Rate Calculation Method settings...")
+        self.driver.find_element_by_xpath("//button[contains(text(),'AS3500 2018 Loading Units')]").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath("//a[contains(text(),\"Barrie\'s Book Loading Units\")]").click()
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        self.driver.find_element_by_xpath("//button[contains(text(),\"Barrie\'s Book Loading Units\")]").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath("//a[contains(text(),'CIBSE Guide G')]").click()
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        self.driver.find_element_by_xpath("//button[contains(text(),'CIBSE Guide G')]").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath("//a[contains(text(),'BS 806')]").click()
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        self.driver.find_element_by_xpath("//button[contains(text(),'BS 806')]").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath("//a[contains(text(),'DIN 1988-300 - Residential')]").click()
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        self.driver.find_element_by_xpath("//button[contains(text(),'DIN 1988-300 - Residential')]").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath("//a[contains(text(),'DIN 1988-300 - Hospital')]").click()
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        self.driver.find_element_by_xpath("//button[contains(text(),'DIN 1988-300 - Hospital')]").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath("//a[contains(text(),'DIN 1988-300 - Hotel')]").click()
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        self.driver.find_element_by_xpath("//button[contains(text(),'DIN 1988-300 - Hotel')]").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath("//a[contains(text(),'DIN 1988-300 - School')]").click()
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        self.driver.find_element_by_xpath("//button[contains(text(),'DIN 1988-300 - School')]").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath("//a[contains(text(),'DIN 1988-300 - Office')]").click()
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        self.driver.find_element_by_xpath("//button[contains(text(),'DIN 1988-300 - Office')]").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath("//a[contains(text(),'DIN 1988-300 - Assisted Living')]").click()
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        self.driver.find_element_by_xpath("//button[contains(text(),'DIN 1988-300 - Assisted Living')]").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath("//a[contains(text(),'DIN 1988-300 - Nursing Home')]").click()
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        self.driver.find_element_by_xpath("//button[contains(text(),'DIN 1988-300 - Nursing Home')]").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath("//a[contains(text(),'International Plumbing Code 2018 Flushometer')]").click()
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        self.driver.find_element_by_xpath("//button[contains(text(),'International Plumbing Code 2018 Flushometer')]").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath(
+            "//a[contains(text(),'International Plumbing Code 2018 Flush Tanks')]").click()
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        self.driver.find_element_by_xpath(
+            "//button[contains(text(),'International Plumbing Code 2018 Flush Tanks')]").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath(
+            "//a[contains(text(),'Uniform Plumbing Code 2018 Flushometer')]").click()
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        self.driver.find_element_by_xpath(
+            "//button[contains(text(),'Uniform Plumbing Code 2018 Flushometer')]").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath(
+            "//a[contains(text(),'Uniform Plumbing Code 2018 Flush Tanks')]").click()
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        self.driver.find_element_by_xpath(
+            "//button[contains(text(),'Uniform Plumbing Code 2018 Flush Tanks')]").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath(
+            "//a[contains(text(),'AS3500 2018 Dwellings')]").click()
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        self.driver.find_element_by_xpath("//button[contains(text(),'AS3500 2018 Dwellings')]").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath("//a[contains(text(),\"Barrie\'s Book Dwellings\")]").click()
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        # self.driver.find_element_by_xpath("//button[contains(text(),\"Barrie\'s Book Dwellings\")]").click()
+        # time.sleep(1)
+        # self.driver.find_element_by_xpath("//a[contains(text(),'None')]").click()
+        # self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        # time.sleep(1)
+        # self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        self.driver.find_element_by_xpath("//button[contains(text(),\"Barrie\'s Book Dwellings\")]").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath("//a[contains(text(),'AS3500 2018 Loading Units')]").click()
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        print("Peak Flow Rate Calculation Method settings changed successfully...")
+
+        print("Checking Pressure Loss Method...")
+        self.driver.find_element_by_xpath(
+            "//button[contains(text(),'Based on all system component')]").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath("//a[contains(text(),'Percentage on top')]").click()
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        self.driver.find_element_by_xpath(
+            "//button[contains(text(),'Percentage on top')]").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath("//a[contains(text(),'Based on all system component')]").click()
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        print("Pressure Loss Method checked...")
+
+        print("Checking Default Pipe Height Above Floor...")
+        self.driver.find_element_by_xpath("//input[@placeholder='Enter Default Pipe Height Above Floor']").clear()
+        self.driver.find_element_by_xpath("//input[@placeholder='Enter Default Pipe Height Above Floor']")\
+            .send_keys("100")
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        print("Default Pipe Height Above Floor checked...")
+
+        print("Checking Room Temperature...")
+        self.driver.find_element_by_xpath("//div[@class='input-group']//input[@placeholder='Enter Room Temperature']")\
+            .clear()
+        self.driver.find_element_by_xpath("//div[@class='input-group']//input[@placeholder='Enter Room Temperature']")\
+            .send_keys("10")
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        self.driver.find_element_by_xpath("//div[@class='input-group']//input[@placeholder='Enter Room Temperature']")\
+            .clear()
+        self.driver.find_element_by_xpath("//div[@class='input-group']//input[@placeholder='Enter Room Temperature']")\
+            .send_keys("40")
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        # Can insert negative checking here
+        print("Room Temperature checked...")
+
+        print("Checking Wind Speed for Heat Loss...")
+        self.driver.find_element_by_xpath("//input[@placeholder='Enter Wind Speed for Heat Loss']").clear()
+        self.driver.find_element_by_xpath("//input[@placeholder='Enter Wind Speed for Heat Loss']").send_keys("100")
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        print("Wind Speed for Heat Loss checked...")
+
+        print("Checking Gravitational Acceleration...")
+        self.driver.find_element_by_xpath(
+            "//div[@class='input-group']//input[@placeholder='Enter Gravitational Acceleration']") \
+            .clear()
+        self.driver.find_element_by_xpath(
+            "//div[@class='input-group']//input[@placeholder='Enter Gravitational Acceleration']") \
+            .send_keys("9.77")
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        self.driver.find_element_by_xpath(
+            "//div[@class='input-group']//input[@placeholder='Enter Gravitational Acceleration']") \
+            .clear()
+        self.driver.find_element_by_xpath(
+            "//div[@class='input-group']//input[@placeholder='Enter Gravitational Acceleration']") \
+            .send_keys("9.84")
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath("//strong[contains(text(),'Success')]").is_displayed())
+        # Can insert negative checking here
+        print("Gravitational Acceleration checked...")
+
+        # Go to Home Page
+        self.driver.find_element_by_xpath("//a[contains(text(),'Home')]").click()
+        time.sleep(10)
+
+        # Delete drawing after checking
+        print("Deleting drawing...")
+        self.test.delete_drawing()
+        print("Drawing deleted!")
+        time.sleep(3)
+
+        # End
+        print("Calculations Settings Test Complete!\n----------------")
 
 if __name__ == '__main__':
     unittest.main()
