@@ -3,6 +3,7 @@
         <div style="top: 50%; position: absolute; transform: translateY(-50%) translateX(-50%); left: 50%">
             <b-spinner style="width: 5rem; height: 5rem;"></b-spinner>
             <h2>Loading</h2>
+            <h4>Please ensure you are using Google Chrome</h4>
         </div>
     </div>
 </template>
