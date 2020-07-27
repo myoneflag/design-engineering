@@ -126,6 +126,7 @@ class methods():
         self.driver.find_element_by_xpath("//input[@class='form-control form-control-md']").send_keys("NEW DRAWING")
 
     def delete_drawing(self):
+        time.sleep(5)
         self.driver.find_element_by_xpath("//div[@class='home container']//div[1]//article[1]//div[1]//div[1]//button[1]")\
             .click()
         time.sleep(1)
@@ -166,7 +167,7 @@ class methods():
             .send_keys("password")
 
         # Click Create Account
-        self.driver.find_element_by_xpath("//button[@class='btn btn-success']").click()
+        self.driver.find_element_by_xpath("//button[contains(text(),'Create Account')]").click()
 
     def logout(self):
         self.driver.find_element_by_xpath("/html/body/div/div/span/nav/ul[3]/li[2]/a").click()
