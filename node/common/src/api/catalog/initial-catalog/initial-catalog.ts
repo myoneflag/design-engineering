@@ -1962,20 +1962,20 @@ export const initialCatalog: Catalog = {
             name: "45 Elbow",
             uid: "45Elbow",
             valvesBySize: {
-                "100": {
-                    diameterNominalMM: "100",
+                "100-110": {
+                    diameterNominalMM: "100-110",
                     kValue: "0.27",
                     symbol: null,
                     valveUid: "45Elbow"
                 },
-                "15": {
-                    diameterNominalMM: "15",
+                "15-16": {
+                    diameterNominalMM: "15-16",
                     kValue: "0.43",
                     symbol: null,
                     valveUid: "45Elbow"
                 },
-                "150": {
-                    diameterNominalMM: "150",
+                "150-160": {
+                    diameterNominalMM: "150-160",
                     kValue: "0.24",
                     symbol: null,
                     valveUid: "45Elbow"
@@ -2035,20 +2035,20 @@ export const initialCatalog: Catalog = {
             name: "90 Elbow",
             uid: "90Elbow",
             valvesBySize: {
-                "100": {
-                    diameterNominalMM: "100",
+                "100-110": {
+                    diameterNominalMM: "100-110",
                     kValue: "0.51",
                     symbol: null,
                     valveUid: "90Elbow"
                 },
-                "15": {
-                    diameterNominalMM: "15",
+                "15-16": {
+                    diameterNominalMM: "15-16",
                     kValue: "0.81",
                     symbol: null,
                     valveUid: "90Elbow"
                 },
-                "150": {
-                    diameterNominalMM: "150",
+                "150-160": {
+                    diameterNominalMM: "150-160",
                     kValue: "0.45",
                     symbol: null,
                     valveUid: "90Elbow"
@@ -2108,20 +2108,20 @@ export const initialCatalog: Catalog = {
             name: "Ball Valve",
             uid: "ballValve",
             valvesBySize: {
-                "100": {
-                    diameterNominalMM: "100",
+                "100-110": {
+                    diameterNominalMM: "100-110",
                     kValue: "0.05",
                     symbol: null,
                     valveUid: "ballValve"
                 },
-                "15": {
-                    diameterNominalMM: "15",
+                "15-16": {
+                    diameterNominalMM: "15-16",
                     kValue: "0.08",
                     symbol: null,
                     valveUid: "ballValve"
                 },
-                "150": {
-                    diameterNominalMM: "150",
+                "150-160": {
+                    diameterNominalMM: "150-160",
                     kValue: "0.05",
                     symbol: null,
                     valveUid: "ballValve"
@@ -2181,14 +2181,14 @@ export const initialCatalog: Catalog = {
             name: "Butterfly Valve",
             uid: "butterflyValve",
             valvesBySize: {
-                "100": {
-                    diameterNominalMM: "100",
+                "100-110": {
+                    diameterNominalMM: "100-110",
                     kValue: "0.77",
                     symbol: null,
                     valveUid: "butterflyValve"
                 },
-                "150": {
-                    diameterNominalMM: "150",
+                "150-160": {
+                    diameterNominalMM: "150-160",
                     kValue: "0.68",
                     symbol: null,
                     valveUid: "butterflyValve"
@@ -2205,8 +2205,8 @@ export const initialCatalog: Catalog = {
                     symbol: null,
                     valveUid: "butterflyValve"
                 },
-                "50": {
-                    diameterNominalMM: "50",
+                "15-50": {
+                    diameterNominalMM: "15-50",
                     kValue: "0.86",
                     symbol: null,
                     valveUid: "butterflyValve"
@@ -2224,20 +2224,20 @@ export const initialCatalog: Catalog = {
             name: "Check Valve",
             uid: "checkValve",
             valvesBySize: {
-                "100": {
-                    diameterNominalMM: "100",
+                "100-110": {
+                    diameterNominalMM: "100-110",
                     kValue: "1.7",
                     symbol: null,
                     valveUid: "checkValve"
                 },
-                "15": {
-                    diameterNominalMM: "15",
+                "15-16": {
+                    diameterNominalMM: "15-16",
                     kValue: "2.7",
                     symbol: null,
                     valveUid: "checkValve"
                 },
-                "150": {
-                    diameterNominalMM: "150",
+                "150-160": {
+                    diameterNominalMM: "150-160",
                     kValue: "1.5",
                     symbol: null,
                     valveUid: "checkValve"
@@ -2297,20 +2297,20 @@ export const initialCatalog: Catalog = {
             name: "Gate Valve",
             uid: "gateValve",
             valvesBySize: {
-                "100": {
-                    diameterNominalMM: "100",
+                "100-110": {
+                    diameterNominalMM: "100-110",
                     kValue: "0.14",
                     symbol: null,
                     valveUid: "gateValve"
                 },
-                "15": {
-                    diameterNominalMM: "15",
+                "15-16": {
+                    diameterNominalMM: "15-16",
                     kValue: "0.22",
                     symbol: null,
                     valveUid: "gateValve"
                 },
-                "150": {
-                    diameterNominalMM: "150",
+                "150-160": {
+                    diameterNominalMM: "150-160",
                     kValue: "0.12",
                     symbol: null,
                     valveUid: "gateValve"
@@ -2383,20 +2383,20 @@ export const initialCatalog: Catalog = {
             name: "T - Thru Branch",
             uid: "tThruBranch",
             valvesBySize: {
-                "100": {
-                    diameterNominalMM: "100",
+                "100-110": {
+                    diameterNominalMM: "100-110",
                     kValue: "1.02",
                     symbol: null,
                     valveUid: "tThruBranch"
                 },
-                "15": {
-                    diameterNominalMM: "15",
+                "15-16": {
+                    diameterNominalMM: "15-16",
                     kValue: "1.62",
                     symbol: null,
                     valveUid: "tThruBranch"
                 },
-                "150": {
-                    diameterNominalMM: "150",
+                "150-160": {
+                    diameterNominalMM: "150-160",
                     kValue: "0.9",
                     symbol: null,
                     valveUid: "tThruBranch"
@@ -2456,20 +2456,20 @@ export const initialCatalog: Catalog = {
             name: "T - Thru Flow",
             uid: "tThruFlow",
             valvesBySize: {
-                "100": {
-                    diameterNominalMM: "100",
+                "100-110": {
+                    diameterNominalMM: "100-110",
                     kValue: "0.34",
                     symbol: null,
                     valveUid: "tThruFlow"
                 },
-                "15": {
-                    diameterNominalMM: "15",
+                "15-16": {
+                    diameterNominalMM: "15-16",
                     kValue: "0.54",
                     symbol: null,
                     valveUid: "tThruFlow"
                 },
-                "150": {
-                    diameterNominalMM: "150",
+                "150-160": {
+                    diameterNominalMM: "150-160",
                     kValue: "0.3",
                     symbol: null,
                     valveUid: "tThruFlow"

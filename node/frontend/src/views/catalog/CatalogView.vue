@@ -352,7 +352,7 @@ export default class CatalogView extends Vue {
                             item[table.primaryName] = parseFloat(Number(item[table.primaryName]).toFixed(5));
                         }
                     } else {
-                        item[table.primaryName] = Number(key);
+                        item[table.primaryName] = key;
                     }
                 }
 

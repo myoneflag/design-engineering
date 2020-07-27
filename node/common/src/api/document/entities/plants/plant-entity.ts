@@ -199,7 +199,7 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                     params: {
                         choices: [
                             { name: "Pump Duty", key: PressureMethod.PUMP_DUTY, disabled: false },
-                            { name: "Constant Pressure Loss", key: PressureMethod.FIXED_PRESSURE_LOSS, disabled: false },
+                            { name: "Dynamic Pressure Loss", key: PressureMethod.FIXED_PRESSURE_LOSS, disabled: false },
                         ]
                     },
                     multiFieldId: "pressureMethod"

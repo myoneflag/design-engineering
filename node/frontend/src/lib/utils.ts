@@ -99,7 +99,7 @@ export function isRightAngleRad(a: number, tolerance: number = EPS) {
 }
 
 export function isStraightRad(a: number, tolerance: number = EPS) {
-    return angleDiffRad(canonizeAngleRad(a), Math.PI) <= tolerance;
+    return angleDiffRad(Math.PI, canonizeAngleRad(a)) <= tolerance;
 }
 
 export function isAcuteRad(a: number, tolerance: number = EPS) {
