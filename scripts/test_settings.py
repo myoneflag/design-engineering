@@ -22,7 +22,7 @@ class test_settings(unittest.TestCase):
         self.driver.close()
         # pass
 
-    def ztest_general(self):
+    def test_general(self):
 
         # Tests general settings
 
@@ -232,7 +232,7 @@ class test_settings(unittest.TestCase):
         # End
         print("General Settings Test Complete!\n----------------")
 
-    def ztest_unitsPage(self):
+    def test_unitsPage(self):
         # Test Unit Page Settings
 
         # Start
@@ -416,7 +416,7 @@ class test_settings(unittest.TestCase):
         # End
         print("Units Page Test Complete!\n----------------")
 
-    def ztest_fixturesPage(self):
+    def test_fixturesPage(self):
         # Test Fixtures Page Settings
 
         # Start
@@ -649,7 +649,7 @@ class test_settings(unittest.TestCase):
         # End
         print("Fixtures Page Test Complete!\n----------------")
 
-    def ztest_flowSystems(self):
+    def test_flowSystems(self):
         # Test Flow Systems Page Settings
 
         # Start
@@ -908,7 +908,7 @@ class test_settings(unittest.TestCase):
         # End
         print("Flow Systems Test Complete!\n----------------")
 
-    def ztest_calculations(self):
+    def test_calculations(self):
         # Test Calculations Page Settings
 
         # Start
