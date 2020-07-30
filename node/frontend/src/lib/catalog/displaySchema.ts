@@ -361,6 +361,24 @@ export function getCatalogDisplaySchema(): CatalogSchema {
         balancingValves: {
             order: 10,
             name: "Balancing Valves",
+        },
+        hotWaterPlant: {
+            order: 11,
+            name: "Heated Water Circulating Pumps",
+            table: {
+                primaryName: "Grundfos Settings",
+                columns: [],
+                link: {
+                    grundfosPressureDrop: {
+                        order: 1,
+                        name: "Pressure Loss by Flow Rate",
+                        table: {
+                            primaryName: 'Q (l/s)',
+                            columns: [[null, "H (kPa)"]]
+                        }
+                    }
+                }
+            }
         }
     };
 }

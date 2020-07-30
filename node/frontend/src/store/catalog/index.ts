@@ -22,6 +22,10 @@ export const state: CatalogState = {
         balancingValves: {
             manufacturer: [],
         },
+        hotWaterPlant: {
+            manufacturer: [],
+            grundfosPressureDrop: {},
+        }
     },
     loaded: false
 };
