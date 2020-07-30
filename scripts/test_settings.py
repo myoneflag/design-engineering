@@ -13,6 +13,7 @@ class test_settings(unittest.TestCase):
     def setUp(self):
         self.driver = self.test.get_driver()
         self.actions = ActionChains(self.driver)
+        self.actions2 = ActionChains(self.driver)
         time.sleep(25)
         # pass
 
@@ -1169,6 +1170,131 @@ class test_settings(unittest.TestCase):
 
         # End
         print("Calculations Settings Test Complete!\n----------------")
+
+    def test_debug(self):
+        # Test Debug Page Settings
+
+        # Start
+        print("----------------\nStart Debug Settings Test...")
+
+        username = "admin"
+        password = "pleasechange"
+
+        # Login
+        print("Logging in...")
+        self.test.login_by_button_click(username, password)
+        print("Login Successful!")
+        time.sleep(5)
+
+        # Create New Drawing
+        print("Creating new drawing...")
+        self.test.create_drawing()
+        print("Create new drawing successful!")
+        time.sleep(5)
+
+        # Change title
+        print("Changing drawing title...")
+        self.driver.find_element_by_xpath("//div[@class='fullFrame']//canvas").click()
+        title = self.driver.find_element_by_xpath("//a[contains(text(),'NEW DRAWING')]")
+        self.actions.double_click(title).perform()
+        self.driver.find_element_by_xpath("//input[@class='form-control form-control-md']").click()
+        self.driver.find_element_by_xpath("//input[@class='form-control form-control-md']").send_keys("TEST DEBUG")
+        print("Drawing title changed...")
+
+        # Click Settings button
+        print("Going to settings page...")
+        self.driver.find_element_by_xpath("//a[contains(text(),'Settings')]").click()
+        print("Settings page opened!")
+        time.sleep(5)
+
+        # Click Debug button
+        print("Going to debug page...")
+        self.driver.find_element_by_xpath("//a[contains(text(),'Debug')]").click()
+        print("Debug page opened...")
+        time.sleep(3)
+
+        # Getting project settings
+        print("Fetching project settings...")
+        debug_settings = self.driver.find_element_by_xpath("//textarea[@class='form-control']").get_attribute('value')
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        # print(debug_settings)
+        print("Project settings copied...")
+
+        # Go to Home Page
+        self.driver.find_element_by_xpath("//a[contains(text(),'Home')]").click()
+        time.sleep(10)
+
+        # Create Second Drawing
+        print("Creating second drawing...")
+        self.driver.find_element_by_xpath("//button[@class='btn btn-success btn-lg']").click()
+        element = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//a[contains(text(),'Untitled')]")))
+        self.actions2.double_click(element).perform()
+        self.driver.find_element_by_xpath("//input[@class='form-control form-control-md']").click()
+        self.driver.find_element_by_xpath("//input[@class='form-control form-control-md']").send_keys("NEW DRAWING")
+        print("Second drawing created...")
+        time.sleep(5)
+
+        # Click Settings button
+        print("Going to second settings page...")
+        self.driver.find_element_by_xpath("//a[contains(text(),'Settings')]").click()
+        print("Second Settings page opened!")
+        time.sleep(5)
+
+        # Click Debug button
+        print("Going to second debug page...")
+        self.driver.find_element_by_xpath("//a[contains(text(),'Debug')]").click()
+        print("Second Debug page opened...")
+        time.sleep(3)
+
+        # Pasting first project settings
+        print("Pasting first project settings...")
+        self.driver.find_element_by_xpath("//textarea[@class='form-control']").clear()
+        self.driver.find_element_by_xpath("//textarea[@class='form-control']").send_keys(debug_settings)
+        self.driver.find_element_by_xpath("//button[contains(text(),'Save')]").click()
+        time.sleep(1)
+        # print(debug_settings)
+        print("Project settings saved...")
+
+        # Click Settings button
+        print("Going to second settings page...")
+        self.driver.find_element_by_xpath("//a[contains(text(),'Settings')]").click()
+        print("Second Settings page opened!")
+        time.sleep(5)
+
+        # Going back to drawing
+        print("Going back to drawing...")
+        self.driver.find_element_by_xpath("//button[contains(text(),'Back to Drawing')]").click()
+        print("Drawing opened...")
+        time.sleep(5)
+
+        # Assert here
+        print("Checking settings...")
+        self.assertEqual(self.driver.find_element_by_xpath("//a[@title='TEST DEBUG']").get_attribute('title')
+                         ,"TEST DEBUG")
+        print("Settings successfully copied...")
+
+        # Go to Home Page
+        self.driver.find_element_by_xpath("//a[contains(text(),'Home')]").click()
+        time.sleep(8)
+
+        # Delete drawing after checking
+        print("Deleting duplicate drawing...")
+        self.test.delete_drawing()
+        print("Duplicate Drawing deleted!")
+        # time.sleep(3)
+
+        self.driver.refresh()
+
+        # Delete drawing after checking
+        print("Deleting first drawing...")
+        self.test.delete_drawing()
+        print("First Drawing deleted!")
+        time.sleep(3)
+
+        # End
+        print("Debug Settings Test Complete!\n----------------")
 
 if __name__ == '__main__':
     unittest.main()
