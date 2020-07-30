@@ -1,4 +1,4 @@
-import { DwellingStandardType, PSDStandardType } from "./psd-standard/types";
+import { DwellingStandardType } from "./psd-standard/types";
 import LoadingUnitTable from "./psd-standard/loading-unit-table";
 import LoadingUnitHotColdTable from "./psd-standard/loading-unit-hot-cold-table";
 import PsdEquation from "./psd-standard/psdEquation";
@@ -50,10 +50,20 @@ export interface Catalog {
     fluids: { [key: string]: FluidsSpec };
     prv: PRVSpec;
     balancingValves: BalancingValveSpec;
+    hotWaterPlant: HotWaterPlant;
 }
 
 export interface BalancingValveSpec {
     manufacturer: Manufacturer[];
+}
+
+export interface HotWaterPlant {
+    manufacturer: Manufacturer[];
+    grundfosPressureDrop: { 
+        [key: string]: { 
+            [key: string]: string
+        }
+    }
 }
 
 export interface PRVSpec {

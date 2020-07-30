@@ -78,7 +78,11 @@ export function CalculatedObject<
                         numberText = value === null ? "??" : value.toFixed(fractionDigits);
                     }
                 }
-                return numberText + " " + (datum.hideUnits ? "" : units + " ") + datum.short;
+                
+                const calc = context.globalStore.getCalculation(this.entity);
+                const manufacturer = calc && 'manufacturer' in calc && calc.manufacturer && ` ${calc.manufacturer}` || ''; 
+
+                return numberText + " " + (datum.hideUnits ? "" : units + " ") + datum.short + (datum.property === "circulationPressureLoss" && manufacturer || '');
             } else {
                 return datum.message;
             }

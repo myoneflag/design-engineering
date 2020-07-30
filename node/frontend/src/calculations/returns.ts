@@ -1,3 +1,6 @@
+import { HotWaterPlantGrundfosSettingsName } from './../../../common/src/api/document/entities/plants/plant-types';
+import { Catalog } from '../../../common/src/api/catalog/types';
+import { DrawingState } from '../../../common/src/api/document/drawing';
 import { EntityType } from "../../../common/src/api/document/entities/types";
 import { PlantType, ReturnSystemPlant } from "../../../common/src/api/document/entities/plants/plant-types";
 import Graph, { Edge } from "./graph";
@@ -20,6 +23,7 @@ import { ValveType } from "../../../common/src/api/document/entities/directed-va
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
 import BigValve from "../htmlcanvas/objects/big-valve/bigValve";
 import { BigValveType } from "../../../common/src/api/document/entities/big-valve/big-valve-entity";
+import PlantCalculation from 'src/store/document/calculations/plant-calculation';
 
 export interface ReturnRecord {
     spTree: SPTree<Edge<string, FlowEdge>>;
@@ -754,6 +758,7 @@ function setValveBalances(engine: CalculationEngine,
                           isLeafSeries: Map<string, boolean>,
                           node: SPNode<Edge<string, FlowEdge>>,
                           pressureDropDifferentialKPA: number,
+                          adjustPressureDropByManufacturer: number,
 ): boolean {
     switch (node.type) {
         case "parallel": {
@@ -771,7 +776,7 @@ function setValveBalances(engine: CalculationEngine,
             if (highestPressureDrop !== null) {
                 for (const c of node.siblings) {
                     const val = pressureDropKPA.get(c.edge)!;
-                    const seen = setValveBalances(engine, leafValveUid, pressureDropKPA, isLeafSeries, c, pressureDropDifferentialKPA + highestPressureDrop - val);
+                    const seen = setValveBalances(engine, leafValveUid, pressureDropKPA, isLeafSeries, c, pressureDropDifferentialKPA + highestPressureDrop - val, adjustPressureDropByManufacturer);
                     if (seen) {
                         consumed = true;
                     }
@@ -784,7 +789,7 @@ function setValveBalances(engine: CalculationEngine,
             let consumed = false;
 
             for (const c of node.children) {
-                consumed = setValveBalances(engine, leafValveUid, pressureDropKPA, isLeafSeries, c, pressureDropDifferentialKPA) || consumed;
+                consumed = setValveBalances(engine, leafValveUid, pressureDropKPA, isLeafSeries, c, pressureDropDifferentialKPA, adjustPressureDropByManufacturer) || consumed;
                 if (consumed) {
                     pressureDropDifferentialKPA = 0;
                 }
@@ -803,7 +808,7 @@ function setValveBalances(engine: CalculationEngine,
                 const vCalc = engine.globalStore.getOrCreateCalculation(o.entity);
                 // pressureDropDifferentialKPA is the missing pressure in this leg ASSUMING that the balancing valves were
                 // ALREADY at min_ba... so that's why we add MINIMUM_... here.
-                vCalc.pressureDropKPA = pressureDropDifferentialKPA + MINIMUM_BALANCING_VALVE_PRESSURE_DROP_KPA;
+                vCalc.pressureDropKPA = pressureDropDifferentialKPA + MINIMUM_BALANCING_VALVE_PRESSURE_DROP_KPA + adjustPressureDropByManufacturer;
                 // hl = (kValue * velocityMS ** 2)) / (2 * ga);
                 // hl * 2 ga / vms**2 = kValue
 
@@ -825,6 +830,57 @@ function setValveBalances(engine: CalculationEngine,
     assertUnreachable(node);
 }
 
+function adjustPlantPressureDropByManufacturer(props: {
+    ret: ReturnRecord,
+    pCalc: PlantCalculation,
+    catalog: Catalog,
+    drawing: DrawingState,
+    pressureDrop: number,
+}): {total: number, manufacturer: string} {
+    const returnFlow = props.pCalc.circulationFlowRateLS;
+    let totalIncease = 0
+    let settingManufacturerName = '';
+
+    if (props.ret.plant.plant.type === PlantType.RETURN_SYSTEM && returnFlow !== null) {
+        const manufacturer = props.drawing.metadata.catalog.hotWaterPlant[0]?.manufacturer;
+        const catalogHotWaterPlant = props.catalog.hotWaterPlant;
+
+        if (manufacturer === 'grundfos') {
+            let stop = false;
+            for (let [settings, data] of Object.entries(catalogHotWaterPlant.grundfosPressureDrop)) {
+                settingManufacturerName = (HotWaterPlantGrundfosSettingsName as {[key: string]: string})[settings];
+                let settingsData =  Object.entries(data); 
+                
+                settingsData.find(([Q, H], i) => {
+                    if (Number(Q) > returnFlow) {
+                        const pressure1 = Number(settingsData[i-1][1]);
+                        const pressure2 = Number(H);
+
+                        // check if pressureLoss is below the current settings pressure
+                        // so that we can adjust the pressuLoss up until it meets the current settings pressure
+                        if (pressure1 > props.pressureDrop &&  pressure2 > props.pressureDrop) {
+                            totalIncease = ((pressure1 + pressure2) / 2) - props.pressureDrop;
+                            stop = true;
+                        }
+                        
+                        return true;
+                    }
+                });
+
+                if (stop) {
+                    break;
+                }
+            }
+            
+        }
+    }
+
+    return {
+        total: totalIncease,
+        manufacturer: settingManufacturerName,
+    };
+}
+
 export function returnBalanceValves(engine: CalculationEngine, returns: ReturnRecord[]) {
     for (const ret of returns) {
         // calculate pressures through the return based on return rates only.
@@ -842,10 +898,21 @@ export function returnBalanceValves(engine: CalculationEngine, returns: ReturnRe
         const valveUids = new Map<string, string | null>();
 
         findValveImbalances(engine, pressuresInStaticReturnKPA, valveUids, pressureDropKPA, isLeafSeries, ret.spTree);
-        setValveBalances(engine, valveUids, pressureDropKPA, isLeafSeries, ret.spTree, 0);
-
+        
         const pCalc = engine.globalStore.getOrCreateCalculation(ret.plant);
-        pCalc.circulationPressureLoss = pressureDropKPA.get(ret.spTree.edge)!;
+        const circulationPressureLoss = pressureDropKPA.get(ret.spTree.edge)!;
+        const checkAdjustment = adjustPlantPressureDropByManufacturer({
+            ret,
+            pCalc,
+            catalog: engine.catalog,
+            drawing: engine.drawing,
+            pressureDrop: circulationPressureLoss,
+        });
+
+        pCalc.circulationPressureLoss = circulationPressureLoss + checkAdjustment.total;
+        pCalc.manufacturer = checkAdjustment.manufacturer;
+
+        setValveBalances(engine, valveUids, pressureDropKPA, isLeafSeries, ret.spTree, 0, checkAdjustment.total);
     }
 }
 

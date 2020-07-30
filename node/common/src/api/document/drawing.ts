@@ -228,6 +228,7 @@ export interface Catalog {
     mixingValves: SelectedMaterialManufacturer[];
     prv: SelectedMaterialManufacturer[];
     balancingValves: SelectedMaterialManufacturer[];
+    hotWaterPlant: SelectedMaterialManufacturer[];
     [key: string]: SelectedMaterialManufacturer[];
 }
 
@@ -372,6 +373,7 @@ export const initialDrawing: DrawingState = {
             mixingValves: [],
             prv: [],
             balancingValves: [],
+            hotWaterPlant: [],
         }
     },
     levels: {

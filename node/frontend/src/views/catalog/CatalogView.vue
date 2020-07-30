@@ -2,7 +2,16 @@
     <b-container>
         <b-row style="margin-bottom: 50px;">
             <b-col>
-                <b-breadcrumb :items="paths"> </b-breadcrumb>
+                <b-breadcrumb> 
+                    <b-breadcrumb-item 
+                        v-for="item in paths"
+                        :key="item.text"
+                        :to="item.to"
+                        :active="item.text === paths[paths.length-1].text"
+                    >
+                        {{ getBreadcrumbText(item) }}
+                    </b-breadcrumb-item>
+                </b-breadcrumb>
             </b-col>
         </b-row>
         <template v-for="[prop, val] in Object.entries(getSchema())">
@@ -30,17 +39,17 @@
                         <b-col cols="12">
                             <b-collapse :id="'collapse' + prop" :visible="onlyOneTable">
                                 <b-form-group 
-                                    v-if="paths.length <= 2 && prop === 'prv'" 
+                                    v-if="paths.length <= 2 && prop === 'prv' || prop === 'hotWaterPlant'" 
                                     :label-cols="3" 
                                     label="Manufacturer"
                                     class="manufacturer-field mt-4"
                                 >
                                     <b-button 
-                                        v-for="manufacturer in catalog.prv.manufacturer" :key="manufacturer.name"
+                                        v-for="manufacturer in catalog[prop].manufacturer" :key="manufacturer.name"
                                         size="sm" 
                                         :class="'manufacturer-item-btn'"
-                                        :variant="isSelectedManufacturer('prv', 'prv', manufacturer.uid) && 'primary' || 'outline-primary'" 
-                                        @click="(e) => handleManufacturerClick('prv', 'prv', manufacturer.uid)"
+                                        :variant="isSelectedManufacturer(prop, prop, manufacturer.uid) && 'primary' || 'outline-primary'" 
+                                        @click="(e) => handleManufacturerClick(prop, prop, manufacturer.uid)"
                                     >
                                         {{ manufacturer.name }}
                                     </b-button> 
@@ -104,17 +113,17 @@
                         <b-col cols="12">
                             <b-collapse :id="'collapse' + prop" :visible="onlyOneTable">
                                 <b-form-group 
-                                    v-if="paths.length <= 2 && prop === 'balancingValves'" 
+                                    v-if="paths.length <= 2" 
                                     :label-cols="3" 
                                     label="Manufacturer"
                                     class="manufacturer-field mt-4"
                                 >
                                     <b-button 
-                                        v-for="manufacturer in catalog.balancingValves.manufacturer" :key="manufacturer.name"
+                                        v-for="manufacturer in catalog[prop].manufacturer" :key="manufacturer.name"
                                         size="sm" 
                                         :class="'manufacturer-item-btn'"
-                                        :variant="isSelectedManufacturer('balancingValves', 'balancingValves', manufacturer.uid) && 'primary' || 'outline-primary'" 
-                                        @click="(e) => handleManufacturerClick('balancingValves', 'balancingValves', manufacturer.uid)"
+                                        :variant="isSelectedManufacturer(prop, prop, manufacturer.uid) && 'primary' || 'outline-primary'" 
+                                        @click="(e) => handleManufacturerClick(prop, prop, manufacturer.uid)"
                                     >
                                         {{ manufacturer.name }}
                                     </b-button> 
@@ -150,6 +159,7 @@ import { DocumentState } from "../../store/document/types";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { convertMeasurementSystem, Units } from "../../../../common/src/lib/measurements";
 import { SelectedMaterialManufacturer } from "../../../../common/src/api/document/drawing";
+import { HotWaterPlantGrundfosSettingsName } from "../../../../common/src/api/document/entities/plants/plant-types";
 @Component({
     components: { MainNavBar },
     props: {
@@ -211,6 +221,10 @@ export default class CatalogView extends Vue {
             pathArr.splice(2, 0, this.manufacturer);
         }
 
+        if (pathArr[0] === 'hotWaterPlant' && pathArr.length === 2) {
+            pathArr.splice(pathArr.length - 1, 1);
+        }
+
         if (pathArr.join(".") === "") {
             return this.catalog;
         }
@@ -229,7 +243,9 @@ export default class CatalogView extends Vue {
         let numTables = 0;
         for (const key of Object.keys(schema)) {
             if (data.hasOwnProperty(key)) {
-                if (schema[key] && schema[key]!.table) {
+                if (schema[key] && schema[key]!.table 
+                    || key === 'balancingValves'
+                    || key === 'hotWaterPlant') {
                     numTables++;
                 }
             }
@@ -239,6 +255,8 @@ export default class CatalogView extends Vue {
 
     get manufacturer(): string {
         if (this.paths[1] && this.paths[1].text === 'prv') {
+            return this.selMtlMftr(this.paths[1].text)[0]?.manufacturer || 'generic';
+        } else if (this.paths[1] && this.paths[1].text === 'hotWaterPlant') {
             return this.selMtlMftr(this.paths[1].text)[0]?.manufacturer || 'generic';
         } else if (this.paths.length <= 2) {
             return '';
@@ -257,7 +275,7 @@ export default class CatalogView extends Vue {
             value = value.find((obj: Manufacturer) => obj.uid === this.manufacturer).name;
         }
 
-        if (this.paths[1].text === 'mixingValves') {
+        if (this.paths[1]?.text === 'mixingValves') {
             if (['minInletPressureKPA',
                 'maxInletPressureKPA',
                 'minFlowRateLS',
@@ -332,6 +350,16 @@ export default class CatalogView extends Vue {
             } else if (prop === 'prv') {
                 const manufacturer = this.document.drawing.metadata.catalog.prv[0]?.manufacturer || 'generic';
                 entries = entries.size[manufacturer];
+            } else if (prop === 'hotWaterPlant') {
+                const manufacturer = this.document.drawing.metadata.catalog.hotWaterPlant[0]?.manufacturer || 'generic';
+                
+                if (manufacturer === 'grundfos') {
+                    entries = entries.grundfosPressureDrop;
+                } else {
+                    return { items: [], fields: [] }
+                }
+            } else if (prop === 'grundfosPressureDrop') {
+                entries = entries[this.paths[2].text];
             }
 
             for (const [key, value] of Object.entries(entries)) {
@@ -442,7 +470,11 @@ export default class CatalogView extends Vue {
                             item[table.primaryName] = parseFloat(Number(item[table.primaryName]).toFixed(5));
                         }
                     } else {
-                        item[table.primaryName] = Number(key);
+                        if (prop === 'hotWaterPlant') {
+                            item[table.primaryName] = (HotWaterPlantGrundfosSettingsName as {[key: string]: string})[key];
+                        } else {
+                            item[table.primaryName] = key;
+                        }
                     }
                 }
 
@@ -546,6 +578,14 @@ export default class CatalogView extends Vue {
         this.$store.dispatch("document/commit", {skipUndo: true}).then(() => {
             this.$bvToast.toast("Saved successfully!", { variant: "success", title: "Success" });
         });
+    }
+
+    getBreadcrumbText(item: { text: string; to: RawLocation }) {
+        if (typeof (HotWaterPlantGrundfosSettingsName as {[key:string]: string})[item.text] !== 'undefined') {
+            return (HotWaterPlantGrundfosSettingsName as {[key:string]: string})[item.text];
+        } else {
+            return item.text;
+        }
     }
 }
 </script>

@@ -121,7 +121,7 @@
                         })
                     "
                     >
-                        Hot Water Plant w/Return <b-badge size="sm" class="beta-tag version-tag">BETA</b-badge>
+                        Hot Water Plant w/Return
                     </b-dropdown-item>
 
                     <b-dropdown-item

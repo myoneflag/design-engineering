@@ -10,6 +10,7 @@ export default interface PlantCalculation extends Calculation {
     circulationFlowRateLS: number | null;
     circulationPressureLoss: number | null;
     heatLossKW: number | null;
+    manufacturer: string;
 }
 
 export function makePlantCalculationFields(): CalculationField[] {
@@ -53,6 +54,7 @@ export function emptyPlantCalculation(): PlantCalculation {
         circulationFlowRateLS: null,
         circulationPressureLoss: null,
         heatLossKW: null,
+        manufacturer: '',
         warning: null,
     };
 }
