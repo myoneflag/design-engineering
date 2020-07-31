@@ -3366,6 +3366,16 @@ export const initialCatalog: Catalog = {
                 340: "3.0781",
                 360: "3.2972",
             }
+        },
+        naturalGasLPG: {
+            name: "Natural Gas LPG",
+            densityKGM3: "0.8",
+            dynamicViscosityByTemperature: {
+                0: "0",
+            },
+            specificHeatByTemperatureKJ_KGK: {
+                0: "0",
+            }
         }
     },
     backflowValves: {

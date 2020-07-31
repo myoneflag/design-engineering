@@ -4,7 +4,7 @@ import {
     InsulationJackets,
     InsulationMaterials,
     PIPE_SIZING_METHODS,
-    RingMainCalculationMethod,
+    RingMainCalculationMethod, StandardFlowSystemUids,
     SupportedDwellingStandards,
     SupportedPsdStandards
 } from "../config";
@@ -330,6 +330,37 @@ export const initialDrawing: DrawingState = {
                 color: { hex: "#F49000" },
                 uid: "warm-water",
                 fluid: "water",
+                hasReturnSystem: false,
+                returnIsInsulated: false,
+                returnMaxVelocityMS: 1,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationJacket: InsulationJackets.allServiceJacket,
+                insulationThicknessMM: 25,
+
+                networks: {
+                    RISERS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 1.2,
+                        material: "copperTypeB"
+                    },
+                    RETICULATIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 1.2,
+                        material: "copperTypeB"
+                    },
+                    CONNECTIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 3,
+                        material: "pexSdr74"
+                    }
+                }
+            },
+            {
+                name: "Natural Gas LPG",
+                temperature: 20,
+                color: { hex: "#F49000" },
+                uid: StandardFlowSystemUids.NaturalGasLPG,
+                fluid: "gas",
                 hasReturnSystem: false,
                 returnIsInsulated: false,
                 returnMaxVelocityMS: 1,

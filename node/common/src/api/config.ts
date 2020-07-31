@@ -291,7 +291,8 @@ export const CURRENT_VERSION = 15;
 export enum StandardFlowSystemUids {
     ColdWater = "cold-water",
     HotWater = "hot-water",
-    WarmWater = "warm-water"
+    WarmWater = "warm-water",
+    NaturalGasLPG = 'natural-gas-lpg',
 }
 
 export enum StandardMaterialUids {
