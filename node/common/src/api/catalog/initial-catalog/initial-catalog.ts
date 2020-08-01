@@ -3681,8 +3681,8 @@ export const initialCatalog: Catalog = {
     },
     hotWaterPlant: {
         manufacturer: [
-            { name: "Generic", abbreviation: "Generic", uid: "generic", },
-            { name: "Grundfos", abbreviation: "Grundfos", uid: "grundfos", }
+            { name: "Generic", abbreviation: "Generic", uid: "generic", priceTableName: "Hot Water Plant"},
+            { name: "Grundfos", abbreviation: "Grundfos", uid: "grundfos", priceTableName: "Hot Water Plant"}
         ],
         grundfosPressureDrop: {
             "20-60-1": {
