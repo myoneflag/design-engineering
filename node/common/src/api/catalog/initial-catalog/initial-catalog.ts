@@ -983,11 +983,13 @@ export const initialCatalog: Catalog = {
                     name: 'Generic',
                     abbreviation: "Generic",
                     uid: "generic",
+                    priceTableName: "Tempering Valve",
                 },
                 {
                     name: 'Caleffi',
                     abbreviation: "Caleffi",
                     uid: "caleffi",
+                    priceTableName: "Tempering Valve",
                 }
             ],
         },
@@ -1035,11 +1037,13 @@ export const initialCatalog: Catalog = {
                     name: 'Generic',
                     abbreviation: "Generic",
                     uid: "generic",
+                    priceTableName: "TMV",
                 },
                 {
                     name: 'Caleffi',
                     abbreviation: "Caleffi",
                     uid: "caleffi",
+                    priceTableName: "TMV",
                 }
             ],
         }
@@ -1050,11 +1054,13 @@ export const initialCatalog: Catalog = {
                 name: 'Generic',
                 abbreviation: 'Generic',
                 uid: 'generic',
+                priceTableName: "PRV",
             },
             {
                 name: 'Caleffi',
                 abbreviation: 'Caleffi',
                 uid: 'caleffi',
+                priceTableName: "PRV",
             }
         ],
         size: {
@@ -3383,6 +3389,7 @@ export const initialCatalog: Catalog = {
             name: "RPZD",
             manufacturer: [
                 {
+                    priceTableName: 'RPZD',
                     name: 'Generic',
                     abbreviation: 'Generic',
                     uid: 'generic',
@@ -3391,6 +3398,7 @@ export const initialCatalog: Catalog = {
                     name: 'Apollo',
                     abbreviation: 'Apollo',
                     uid: 'apolloRpzd',
+                    priceTableName: "RPZD",
                 }
             ],
             valvesBySize: {
@@ -3667,8 +3675,8 @@ export const initialCatalog: Catalog = {
     },
     balancingValves: {
         manufacturer: [
-            { name: "Generic", abbreviation: "Generic", uid: "generic", },
-            { name: "Cimberio", abbreviation: "Cimberio", uid: "cimberio", }
+            { name: "Generic", abbreviation: "Generic", uid: "generic", priceTableName: 'Balancing Valve'},
+            { name: "Cimberio", abbreviation: "Cimberio", uid: "cimberio", priceTableName: 'Balancing Valve'}
         ],
     },
     hotWaterPlant: {

@@ -36,7 +36,7 @@ export interface BackflowValveSpec {
     name: string;
     uid: string;
     abbreviation: string;
-    manufacturer: Manufacturer[];
+    manufacturer: Array<Manufacturer<'RPZD'>>;
     valvesBySize: { [key: string]: { [key: string]: BackflowValveSize } };
 }
 
@@ -55,7 +55,7 @@ export interface Catalog {
 }
 
 export interface BalancingValveSpec {
-    manufacturer: Manufacturer[];
+    manufacturer: Array<Manufacturer<'Balancing Valve'>>;
 }
 
 export interface HotWaterPlant {
@@ -68,7 +68,7 @@ export interface HotWaterPlant {
 }
 
 export interface PRVSpec {
-    manufacturer: Manufacturer[];
+    manufacturer: Array<Manufacturer<'PRV'>>;
     size: { [key: string]: { [key: string]: PRVSize } };
 }
 
@@ -137,14 +137,14 @@ export interface PipeMaterial {
     name: string;
     uid: string;
     abbreviation: string;
-    manufacturer: Manufacturer[];
+    manufacturer: Array<Manufacturer<keyof PipesTable>>;
     pipesBySize: { [key: string]: { [key: string]: PipeSpec } };
 }
 
-export interface Manufacturer {
+export interface Manufacturer<ManufacturerEntryNames> {
     name: string;
     abbreviation: string;
-    priceTableName: keyof PipesTable;
+    priceTableName: ManufacturerEntryNames;
     uid: string;
 }
 
@@ -185,7 +185,7 @@ export interface MixingValveSpec {
         caleffi: { [key: string]: string };
         [key: string]: { [key: string]: string };
     };
-    manufacturer: Manufacturer[];
+    manufacturer: Array<Manufacturer<'Tempering Valve' | 'TMV'>>;
 }
 
 export interface FluidsSpec {

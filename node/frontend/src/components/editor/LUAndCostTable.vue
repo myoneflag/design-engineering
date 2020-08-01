@@ -110,9 +110,9 @@
 
         cost2str(cost: Cost) {
             if (cost.exact) {
-                return Number(cost.value).toFixed(2) + '';
+                return Number(cost.value).toLocaleString(undefined, {style: 'currency', currency: 'AUD'}) + '';
             } else {
-                return Number(cost.value).toFixed(2) + "+";
+                return Number(cost.value).toLocaleString(undefined, {style: 'currency', currency: 'AUD'}) + "+";
             }
         }
 
