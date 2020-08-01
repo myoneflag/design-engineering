@@ -1436,6 +1436,9 @@ import {DrawingMode} from "../../htmlcanvas/types";
                     return this.globalStore.get(u)!.entity;
                 });
             }
+            if (this.document.uiState.isCalculating) {
+                // Trigger vue to recalculate this field upon new calculations
+            }
             for (const e of entities) {
                 if (isCalculated(e)) {
                     const calc = this.globalStore.getOrCreateCalculation(e);

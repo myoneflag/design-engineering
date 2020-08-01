@@ -7,7 +7,7 @@
         <table>
             <tbody>
                 <tr>
-                    <template v-if="!collapsed">
+                    <template v-if="document.uiState.costAndLUTableOpen">
 
                         <td  valign="top">
                             <b-table :fields="luFields" :items="luItems" small class="result-table"
@@ -85,7 +85,6 @@
         }
     })
     export default class LUAndCostTable extends Vue {
-        collapsed = false;
         mouseEntered = false;
 
         get luFields() {
@@ -239,11 +238,11 @@
         }
 
         onCollapseClicked() {
-            this.collapsed = true;
+            this.document.uiState.costAndLUTableOpen = false;
         }
 
         onUncollapseClicked() {
-            this.collapsed = false;
+            this.document.uiState.costAndLUTableOpen = true;
         }
 
         onMouseEnter() {

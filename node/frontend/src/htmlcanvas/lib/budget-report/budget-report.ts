@@ -18,6 +18,7 @@ import {determineConnectableSystemUid} from "../../../store/document/entities/li
 import {lowerCase} from "../../../../../common/src/lib/utils";
 import {BigValveType} from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 
+export const MONEY_FMT = '$#,##0.00;-#,##0.00';
 
 export async function exportBudgetReport(context: CanvasContext) {
     const workbook = new Excel.Workbook();
@@ -268,7 +269,8 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
     sheet.getCell('A7').font = {bold: true};
     sheet.getCell('B7').value = levelFullTitle;
 
-    sheet.getColumn('F').numFmt = '0.00';
+    sheet.getColumn('E').numFmt = MONEY_FMT;
+    sheet.getColumn('F').numFmt = MONEY_FMT;
 
     for (let col = 1; col <= 6; col++) {
         sheet.mergeCells([9, col, 11, col]);
@@ -932,6 +934,14 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
         sheet.getCell('D' + row).font = {bold: true};
         sheet.getCell('E' + row).value = 'Reducer/No.';
         sheet.getCell('E' + row).font = {bold: true};
+        sheet.getColumn('B').numFmt = MONEY_FMT;
+        sheet.getColumn('C').numFmt = MONEY_FMT;
+        sheet.getColumn('D').numFmt = MONEY_FMT;
+        sheet.getColumn('E').numFmt = MONEY_FMT;
+        sheet.getColumn('B').width = 12;
+        sheet.getColumn('C').width = 12;
+        sheet.getColumn('D').width = 12;
+        sheet.getColumn('E').width = 12;
 
         row ++;
         const keys = [
@@ -988,6 +998,8 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
         sheet.getCell('G' + row).font = {bold: true};
         sheet.getCell('H' + row).value = '$/Unit';
         sheet.getCell('H' + row).font = {bold: true};
+        sheet.getColumn('H').numFmt = MONEY_FMT;
+        sheet.getColumn('H').width = 12;
 
         row ++;
         for (const [size, entry] of Object.entries(valve as {[key: number]: number})) {
@@ -1020,6 +1032,8 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
         sheet.getCell('J' + row).font = {bold: true};
         sheet.getCell('K' + row).value = '$/Unit';
         sheet.getCell('K' + row).font = {bold: true};
+        sheet.getColumn('K').numFmt = MONEY_FMT;
+        sheet.getColumn('K').width = 12;
 
         row++;
         for (const [fixture, cost] of Object.entries(context.effectivePriceTable.Fixtures)) {
@@ -1052,6 +1066,8 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
             sheet.getCell('M' + row).font = {bold: true};
             sheet.getCell('N' + row).value = '$/Unit';
             sheet.getCell('N' + row).font = {bold: true};
+            sheet.getColumn('N').numFmt = MONEY_FMT;
+            sheet.getColumn('N').width = 12;
 
             row ++;
             sheet.getCell('M' + row).value = 'All';
@@ -1071,6 +1087,8 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
             sheet.getCell('M' + row).font = {bold: true};
             sheet.getCell('N' + row).value = '$/Unit';
             sheet.getCell('N' + row).font = {bold: true};
+            sheet.getColumn('N').numFmt = MONEY_FMT;
+            sheet.getColumn('N').width = 12;
 
             row ++;
             for (const [size, entry] of Object.entries(table)) {
@@ -1103,6 +1121,8 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
         sheet.getCell('P' + row).font = {bold: true};
         sheet.getCell('Q' + row).value = '$/Unit';
         sheet.getCell('Q' + row).font = {bold: true};
+        sheet.getColumn('Q').numFmt = MONEY_FMT;
+        sheet.getColumn('Q').width = 12;
 
         row ++;
         for (const [node, cost] of Object.entries(context.effectivePriceTable.Node)) {
@@ -1131,6 +1151,8 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
         sheet.getCell('S' + row).font = {bold: true};
         sheet.getCell('T' + row).value = '$/Unit';
         sheet.getCell('T' + row).font = {bold: true};
+        sheet.getColumn('T').numFmt = MONEY_FMT;
+        sheet.getColumn('T').width = 12;
 
         row ++;
         for (const [plant, cost] of Object.entries(context.effectivePriceTable.Plants)) {
@@ -1160,6 +1182,8 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
         sheet.getCell('V' + row).font = {bold: true};
         sheet.getCell('W' + row).value = '$/m';
         sheet.getCell('W' + row).font = {bold: true};
+        sheet.getColumn('W').numFmt = MONEY_FMT;
+        sheet.getColumn('W').width = 12;
 
         row ++;
         for (const [size, cost] of Object.entries(context.effectivePriceTable.Insulation)) {
@@ -1189,6 +1213,6 @@ async function downloadWorkbook(context: CanvasContext, workbook: Excel.Workbook
     const objUrl = URL.createObjectURL(dataBlob);
     link2.href = objUrl;
     link2.innerHTML = "With createObjectURL";
-    link2.download = context.document.drawing.metadata.generalInfo.title + " - Schedule of Components.xlsx";
+    link2.download = context.document.drawing.metadata.generalInfo.title + " - Bill of Materials.xlsx";
     link2.click();
 }
