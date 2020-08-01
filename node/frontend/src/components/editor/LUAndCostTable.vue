@@ -122,8 +122,8 @@
             }
             return [{
                 "Cost": "Est.",
-                [this.$props.focusName]: '$' + this.cost2str(this.$props.focusCost),
-                "Project": '$' + this.cost2str(this.$props.projectCost),
+                [this.$props.focusName]: this.cost2str(this.$props.focusCost),
+                "Project": this.cost2str(this.$props.projectCost),
             }]
         }
 

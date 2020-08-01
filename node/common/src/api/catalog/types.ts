@@ -32,11 +32,13 @@ export interface BackflowValveSize {
     pressureLossKPAByFlowRateLS: { [key: string]: string };
 }
 
+export type BackflowValveManufacturer = Manufacturer<'RPZD'>;
+
 export interface BackflowValveSpec {
     name: string;
     uid: string;
     abbreviation: string;
-    manufacturer: Array<Manufacturer<'RPZD'>>;
+    manufacturer: BackflowValveManufacturer[];
     valvesBySize: { [key: string]: { [key: string]: BackflowValveSize } };
 }
 
@@ -54,21 +56,26 @@ export interface Catalog {
     hotWaterPlant: HotWaterPlant;
 }
 
+export type BalancingValveManufacturer = Manufacturer<'Balancing Valve'>;
+
 export interface BalancingValveSpec {
-    manufacturer: Array<Manufacturer<'Balancing Valve'>>;
+    manufacturer: BalancingValveManufacturer[];
 }
 
+export type HotWaterPlantManufacturer = Manufacturer<'Hot Water Plant'>;
+
 export interface HotWaterPlant {
-    manufacturer: Manufacturer[];
+    manufacturer: HotWaterPlantManufacturer[];
     grundfosPressureDrop: { 
         [key: string]: { 
             [key: string]: string
         }
     }
 }
+export type PRVManufacturer = Manufacturer<'PRV'>;
 
 export interface PRVSpec {
-    manufacturer: Array<Manufacturer<'PRV'>>;
+    manufacturer: PRVManufacturer[];
     size: { [key: string]: { [key: string]: PRVSize } };
 }
 
@@ -133,11 +140,13 @@ export interface ValveSize {
     kValue: string | null;
 }
 
+export type PipeManufacturer = Manufacturer<keyof PipesTable>;
+
 export interface PipeMaterial {
     name: string;
     uid: string;
     abbreviation: string;
-    manufacturer: Array<Manufacturer<keyof PipesTable>>;
+    manufacturer: PipeManufacturer[];
     pipesBySize: { [key: string]: { [key: string]: PipeSpec } };
 }
 
@@ -156,6 +165,8 @@ export interface PipeSpec {
     colebrookWhiteCoefficient: string | null;
     safeWorkingPressureKPA: string | null;
 }
+
+export type MixingValveManufacturer = Manufacturer<'Tempering Valve' | 'TMV'>;
 
 export interface MixingValveSpec {
     name: string;
@@ -185,7 +196,7 @@ export interface MixingValveSpec {
         caleffi: { [key: string]: string };
         [key: string]: { [key: string]: string };
     };
-    manufacturer: Array<Manufacturer<'Tempering Valve' | 'TMV'>>;
+    manufacturer: MixingValveManufacturer[];
 }
 
 export interface FluidsSpec {

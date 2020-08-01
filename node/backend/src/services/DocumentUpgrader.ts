@@ -34,7 +34,7 @@ export const HEARTBEAT_INTERVAL_SEC = 5; // It doesn't seem like connections are
 export class DocumentUpgrader {
 
     static sub: StompSubscription;
-    static upgradeQueueName = "/queye/documentUpgrade";
+    static upgradeQueueName = "/queue/documentUpgrade";
 
     static async initialize() {
         this.sub = MqClient.subscribe(

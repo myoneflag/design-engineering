@@ -272,7 +272,7 @@ export default class CatalogView extends Vue {
     display(units: Units | undefined, prop: string) {
         let value = this.currCatalog[prop];
         if (prop === 'manufacturer' && Array.isArray(value)) {
-            value = value.find((obj: Manufacturer) => obj.uid === this.manufacturer).name;
+            value = value.find((obj: Manufacturer<any>) => obj.uid === this.manufacturer).name;
         }
 
         if (this.paths[1]?.text === 'mixingValves') {

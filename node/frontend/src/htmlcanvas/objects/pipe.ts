@@ -38,7 +38,7 @@ import {Calculated, CalculatedObject, FIELD_HEIGHT} from "../../../src/htmlcanva
 import Cached from "../lib/cached";
 import {GlobalStore} from "../lib/global-store";
 import {PipeMaterial, PipeSpec} from "../../../../common/src/api/catalog/types";
-import {Coord, Coord3D, Pipe as PipeObject} from "../../../../common/src/api/document/drawing";
+import {Coord, Coord3D} from "../../../../common/src/api/document/drawing";
 import {
     cloneSimple,
     interpolateTable,
@@ -847,7 +847,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
 
         const manufacturer = context.drawing.metadata.catalog.pipes
-            .find((pipeObj: PipeObject) => pipeObj.uid === filled.material)?.manufacturer || 'generic';
+            .find((pipeObj) => pipeObj.uid === filled.material)?.manufacturer || 'generic';
         const priceTableName = catalogEntry.manufacturer.find((m) => m.uid === manufacturer)?.priceTableName;
         if (!priceTableName) {
             return null;
