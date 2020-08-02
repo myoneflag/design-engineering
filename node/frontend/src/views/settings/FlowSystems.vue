@@ -72,7 +72,7 @@ export default class FlowSystems extends Vue {
             ["name", "System Name", "text"],
             ["fluid", "Fluid", "choice", this.$store.getters["catalog/defaultFluidChoices"]],
         ];
-        if (this.selectedSystem.uid !== StandardFlowSystemUids.NaturalGasLPG) {
+        if (this.selectedSystem.uid !== StandardFlowSystemUids.Gas) {
             fields.push(
                 ["temperature", "Temperature", "range", 10, 100, null, Units.Celsius],
             );

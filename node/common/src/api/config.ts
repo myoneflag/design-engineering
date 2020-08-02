@@ -292,7 +292,7 @@ export enum StandardFlowSystemUids {
     ColdWater = "cold-water",
     HotWater = "hot-water",
     WarmWater = "warm-water",
-    NaturalGasLPG = 'natural-gas-lpg',
+    Gas = 'gas',
 }
 
 export enum StandardMaterialUids {

@@ -3367,8 +3367,18 @@ export const initialCatalog: Catalog = {
                 360: "3.2972",
             }
         },
-        naturalGasLPG: {
-            name: "Natural Gas LPG",
+        LPG: {
+            name: "LPG Gas",
+            densityKGM3: "1.898",
+            dynamicViscosityByTemperature: {
+                0: "0",
+            },
+            specificHeatByTemperatureKJ_KGK: {
+                0: "0",
+            }
+        },
+        naturalGas: {
+            name: "Nautral Gas",
             densityKGM3: "0.8",
             dynamicViscosityByTemperature: {
                 0: "0",

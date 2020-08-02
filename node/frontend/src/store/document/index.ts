@@ -34,6 +34,7 @@ export function getDragPriority(type: EntityType): number {
         case EntityType.RETURN:
             return 10;
         case EntityType.FITTING:
+        case EntityType.GAS_APPLIANCE:
             return 5;
         case EntityType.BIG_VALVE:
         case EntityType.FIXTURE:

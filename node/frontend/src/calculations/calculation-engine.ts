@@ -94,6 +94,7 @@ import Fixture from "../htmlcanvas/objects/fixture";
 import LoadNodeCalculation from "../store/document/calculations/load-node-calculation";
 import { fillDefaultLoadNodeFields } from "../store/document/entities/fillDefaultLoadNodeFields";
 import {PriceTable} from "../../../common/src/api/catalog/price-table";
+import {makeGasApplianceFields} from "../../../common/src/api/document/entities/gas-appliance";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -252,6 +253,9 @@ export default class CalculationEngine implements CalculationContext {
                     break;
                 case EntityType.FITTING:
                     fields = makeValveFields([]);
+                    break;
+                case EntityType.GAS_APPLIANCE:
+                    fields = makeGasApplianceFields(this.doc.drawing, obj.entity);
                     break;
                 case EntityType.BIG_VALVE:
                     fields = makeBigValveFields(obj.entity);
@@ -679,6 +683,7 @@ export default class CalculationEngine implements CalculationContext {
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.PIPE:
                 case EntityType.PLANT:
+                case EntityType.GAS_APPLIANCE:
                 case EntityType.RISER:
                     break;
                 default:
@@ -748,6 +753,7 @@ export default class CalculationEngine implements CalculationContext {
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.PIPE:
                 case EntityType.PLANT:
+                case EntityType.GAS_APPLIANCE:
                 case EntityType.RISER:
                     break;
                 default:
@@ -1241,6 +1247,7 @@ export default class CalculationEngine implements CalculationContext {
                     break;
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.FIXTURE:
+                case EntityType.GAS_APPLIANCE:
                 case EntityType.RISER:
                     break;
                 default:
@@ -1398,6 +1405,8 @@ export default class CalculationEngine implements CalculationContext {
                     }
                     //throw new Error("Invalid connection to fixture");
                     return zeroContextualPCE(node.entity.uid, node.entity.uid);
+                case EntityType.GAS_APPLIANCE:
+                    // TODO: for gas calculation BIG TODO
                 case EntityType.LOAD_NODE:
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.RISER:
@@ -1542,6 +1551,7 @@ export default class CalculationEngine implements CalculationContext {
             case EntityType.DIRECTED_VALVE:
             case EntityType.SYSTEM_NODE:
             case EntityType.FIXTURE:
+            case EntityType.GAS_APPLIANCE:
                 throw new Error("Cannot configure this entity to accept loading units");
             default:
                 assertUnreachable(entity);
@@ -1824,6 +1834,7 @@ export default class CalculationEngine implements CalculationContext {
                 case EntityType.RISER:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.FIXTURE:
+                case EntityType.GAS_APPLIANCE:
                     break;
                 default:
                     assertUnreachable(object.entity);
@@ -2304,6 +2315,7 @@ export default class CalculationEngine implements CalculationContext {
                     break;
                 }
                 case EntityType.FIXTURE:
+                case EntityType.GAS_APPLIANCE:
                 case EntityType.RISER:
                 case EntityType.BACKGROUND_IMAGE:
                     break;
@@ -2462,6 +2474,9 @@ export default class CalculationEngine implements CalculationContext {
                     }
                     break;
                 }
+                case EntityType.GAS_APPLIANCE:
+                    // TODO: Gas applicance warnings - like not enough gas pressure.
+                    break;
                 default:
                     assertUnreachable(o.entity);
             }

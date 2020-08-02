@@ -32,7 +32,9 @@ import {
     parseCatalogNumberExact,
     upperBoundTable
 } from "../../../common/src/lib/utils";
-import {GlobalStore} from "../htmlcanvas/lib/global-store";
+import { GlobalStore } from "../htmlcanvas/lib/global-store";
+import {makeGasApplianceFields} from "../../../common/src/api/document/entities/gas-appliance";
+import {makeGasApplianceCalculationFields} from "../store/document/calculations/gas-appliance-calculation";
 
 export interface PsdCountEntry {
     units: number;
@@ -125,6 +127,7 @@ export function countPsdUnits(
                     }
                 }
                 break;
+            case EntityType.GAS_APPLIANCE:
             case EntityType.BACKGROUND_IMAGE:
             case EntityType.FITTING:
             case EntityType.PIPE:
@@ -483,6 +486,8 @@ export function getFields(
             return makeBigValveCalculationFields(doc, entity, catalog);
         case EntityType.FIXTURE:
             return makeFixtureCalculationFields(doc, entity, globalStore);
+        case EntityType.GAS_APPLIANCE:
+            return makeGasApplianceCalculationFields(entity);
         case EntityType.DIRECTED_VALVE:
             return makeDirectedValveCalculationFields(entity, globalStore, doc.drawing, catalog);
         case EntityType.SYSTEM_NODE:

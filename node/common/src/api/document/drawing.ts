@@ -356,11 +356,11 @@ export const initialDrawing: DrawingState = {
                 }
             },
             {
-                name: "Natural Gas LPG",
+                name: "Gas",
                 temperature: 20,
                 color: { hex: "#FCDC00" },
-                uid: StandardFlowSystemUids.NaturalGasLPG,
-                fluid: "naturalGasLPG",
+                uid: StandardFlowSystemUids.Gas,
+                fluid: "LPG",
                 hasReturnSystem: false,
                 returnIsInsulated: false,
                 returnMaxVelocityMS: 1,

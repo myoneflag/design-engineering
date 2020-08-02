@@ -19,7 +19,8 @@ export enum EntityType {
     LOAD_NODE = "LOAD_NODE",
     PLANT = "PLANT",
 
-    FLOW_SOURCE = "FLOW_SOURCE"
+    FLOW_SOURCE = "FLOW_SOURCE",
+    GAS_APPLIANCE = "GAS_APPLIANCE",
 }
 
 export function getEntityName(type: EntityType): string {
@@ -48,6 +49,8 @@ export function getEntityName(type: EntityType): string {
             return "Load Node";
         case EntityType.FLOW_SOURCE:
             return "Flow Source";
+        case EntityType.GAS_APPLIANCE:
+            return "Gas Appliance";
     }
     assertUnreachable(type);
 }
@@ -94,6 +97,9 @@ export function getReferences(entity: DrawableEntityConcrete): string[] {
             break;
         case EntityType.FIXTURE:
             refs.push(...entity.roughInsInOrder.map((r) => entity.roughIns[r].uid));
+            break;
+        case EntityType.GAS_APPLIANCE:
+            refs.push(entity.inletUid);
             break;
         case EntityType.DIRECTED_VALVE:
             refs.push(entity.sourceUid);

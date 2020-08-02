@@ -39,6 +39,9 @@ export enum Units {
 
     // April Fools
     FurlongsPerFortnight = "fur/fortn",
+
+    // Gas demands
+    MegajoulesPerHour = 'MJ/hr',
 }
 
 export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, units: Units, value: number): [Units, number | string | null] {
@@ -244,6 +247,8 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
             }
             assertUnreachable(unitsPrefs.velocityMeasurementSystem);
             return [Units.None, 0];
+        case Units.MegajoulesPerHour:
+            return [Units.MegajoulesPerHour, value];
         default:
             assertUnreachable(units);
     }

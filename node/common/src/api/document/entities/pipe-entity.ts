@@ -72,7 +72,7 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
                 choices: [
                     { name: "Riser", key: NetworkType.RISERS, disabled: true },
                     { name: "Reticulation", key: NetworkType.RETICULATIONS, disabled: false },
-                    { name: "Connection", key: NetworkType.CONNECTIONS, disabled: result.systemUid !== StandardFlowSystemUids.NaturalGasLPG }
+                    { name: "Connection", key: NetworkType.CONNECTIONS, disabled: result.systemUid !== StandardFlowSystemUids.Gas }
                 ]
             }
         },

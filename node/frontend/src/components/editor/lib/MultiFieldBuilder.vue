@@ -59,6 +59,7 @@ import { cloneSimple } from "../../../../../common/src/lib/utils";
 import { fillDirectedValveFields } from "../../../store/document/entities/fillDirectedValveFields";
 import { fillDefaultLoadNodeFields } from "../../../store/document/entities/fillDefaultLoadNodeFields";
 import { makeEntityFields } from "../../../htmlcanvas/lib/utils";
+import {fillGasApplianceFields} from "../../../../../common/src/api/document/entities/gas-appliance";
 
 @Component({
     components: { PropertiesFieldBuilder },
@@ -138,6 +139,8 @@ export default class MultiFieldBuilder extends Vue {
                 return fillPlantDefaults(obj.entity, this.document.drawing);
             case EntityType.FLOW_SOURCE:
                 return fillFlowSourceDefaults(this.document.drawing, obj.entity);
+            case EntityType.GAS_APPLIANCE:
+                return fillGasApplianceFields(obj.entity);
         }
         assertUnreachable(obj.entity);
     }

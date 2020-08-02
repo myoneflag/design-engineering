@@ -38,6 +38,7 @@ import { makeDirectedValveFields } from "../../../../common/src/api/document/ent
 import { makeLoadNodesFields } from "../../../../common/src/api/document/entities/load-node-entity";
 import { makeFlowSourceFields } from "../../../../common/src/api/document/entities/flow-source-entity";
 import { color2rgb, lighten, rgb2style } from "../../lib/utils";
+import {makeGasApplianceFields} from "../../../../common/src/api/document/entities/gas-appliance";
 
 export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
     const floor = context.backgroundLayer.getBackgroundAt(wc);
@@ -100,6 +101,8 @@ export function getEdgeLikeHeightAboveFloorM(entity: EdgeLikeEntity, context: Ca
         case EntityType.FIXTURE:
             const fe = fillFixtureFields(context.drawing, context.catalog, entity);
             return fe.outletAboveFloorM!;
+        case EntityType.GAS_APPLIANCE:
+            return entity.outletAboveFloorM;
         case EntityType.PLANT:
         case EntityType.BIG_VALVE:
         case EntityType.PIPE:
@@ -317,6 +320,8 @@ export function makeEntityFields(entity: DrawableEntityConcrete, document: Docum
             return makeValveFields(
                 document.drawing.metadata.flowSystems
             ).filter((p) => p.multiFieldId);
+        case EntityType.GAS_APPLIANCE:
+            return makeGasApplianceFields(document.drawing, entity);
         case EntityType.PIPE:
             return makePipeFields(entity, catalog, document.drawing).filter(
                 (p) => p.multiFieldId

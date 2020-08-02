@@ -81,6 +81,7 @@ export default class HydraulicsLayer extends LayerImplementation {
             case EntityType.SYSTEM_NODE:
             case EntityType.BIG_VALVE:
             case EntityType.FIXTURE:
+            case EntityType.GAS_APPLIANCE:
             case EntityType.DIRECTED_VALVE:
             case EntityType.LOAD_NODE:
             case EntityType.PLANT:

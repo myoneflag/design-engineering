@@ -38,7 +38,7 @@
                     }}</b-button
                 >
                 <b-button
-                    v-if="selectedSystem.uid !== StandardFlowSystemUids.NaturalGasLPG"
+                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
                     variant="outline-dark"
                     class="insertBtn pipes btn-sm"
                     @click="toggleConnectionPipe"
@@ -55,7 +55,7 @@
         <b-col>
             <b-button-group>
                 <b-button
-                        v-if="selectedSystem.uid === StandardFlowSystemUids.NaturalGasLPG"
+                        v-if="selectedSystem.uid === StandardFlowSystemUids.Gas"
                         variant="outline-dark"
                         class="insertBtn gas-regulator btn-sm"
                         @click="
@@ -71,7 +71,7 @@
                         title="Gas Regulator"
                 ></b-button>
                 <b-button
-                        v-if="selectedSystem.uid === StandardFlowSystemUids.NaturalGasLPG"
+                        v-if="selectedSystem.uid === StandardFlowSystemUids.Gas"
                         variant="outline-dark"
                         class="insertBtn meter btn-sm"
                         @click="
@@ -87,7 +87,7 @@
                         title="Meter"
                 ></b-button>
                 <b-button
-                        v-if="selectedSystem.uid === StandardFlowSystemUids.NaturalGasLPG"
+                        v-if="selectedSystem.uid === StandardFlowSystemUids.Gas"
                         variant="outline-dark"
                         class="insertBtn filter btn-sm"
                         @click="
@@ -104,7 +104,7 @@
                 ></b-button>
 
                 <b-button
-                    v-if="selectedSystem.uid !== StandardFlowSystemUids.NaturalGasLPG"
+                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
                     variant="outline-dark"
                     class="insertBtn rpzd-hot-cold btn-sm"
                     @click="toggleRPZD"
@@ -113,7 +113,7 @@
                     title="RPZD (Hot + Cold)"
                 ></b-button>
                 <b-button
-                    v-if="selectedSystem.uid !== StandardFlowSystemUids.NaturalGasLPG"
+                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
                     variant="outline-dark"
                     class="insertBtn tmv btn-sm"
                     @click="toggleTMV"
@@ -122,7 +122,7 @@
                     title="TMV (Warm + Cold)"
                 ></b-button>
                 <b-button
-                    v-if="selectedSystem.uid !== StandardFlowSystemUids.NaturalGasLPG"
+                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
                     variant="outline-dark"
                     class="insertBtn tempering-valve btn-sm"
                     @click="toggleTemperingValve"

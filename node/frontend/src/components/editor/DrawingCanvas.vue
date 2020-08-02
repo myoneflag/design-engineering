@@ -338,7 +338,7 @@ import {DrawingMode} from "../../htmlcanvas/types";
 
                 { type: ValveType.PRV_SINGLE, catalogId: "prv", name: "Pressure Reducing Valve" },
                 { type: ValveType.PRV_DOUBLE, catalogId: "prv", name: "PRV Dual - 50% Load Each" },
-                { type: ValveType.PRV_TRIPLE, catalogId: "prv", name: "PRV Trio - 33% Load Each" }
+                { type: ValveType.PRV_TRIPLE, catalogId: "prv", name: "PRV Trio - 33% Load Each" },
             ].map((a) => {
                 if (a.name === "") {
                     a.name = this.effectiveCatalog.valves[a.catalogId].name;
