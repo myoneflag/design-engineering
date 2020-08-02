@@ -9,7 +9,9 @@ export type DirectedValveConcrete =
     | PressureReliefValveSingle
     | PressureReliefValveDouble
     | PressureReliefValveTriple
-    | Balancing;
+    | Balancing
+    | GasRegulator
+    | Filter;
 
 export interface DirectedValve {
     type: ValveType;
@@ -86,6 +88,16 @@ export interface Balancing extends DirectedValve {
 }
 
 
+export interface GasRegulator extends DirectedValve {
+    type: ValveType.GAS_REGULATOR;
+    outletPressureKPA: number | null;
+}
+
+export interface Filter extends DirectedValve {
+    type: ValveType.FILTER;
+    pressureDropKPA: number | null;
+}
+
 export enum ValveType {
     CHECK_VALVE = "CHECK_VALVE",
     ISOLATION_VALVE = "ISOLATION_VALVE",
@@ -100,4 +112,6 @@ export enum ValveType {
     PRV_TRIPLE = "PRV_TRIPLE",
 
     BALANCING = 'BALANCING',
+    GAS_REGULATOR = 'GAS_REGULATOR',
+    FILTER = 'FILTER',
 }

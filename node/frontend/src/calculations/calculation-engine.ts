@@ -1264,6 +1264,10 @@ export default class CalculationEngine implements CalculationContext {
                 case ValveType.RPZD_SINGLE:
                 case ValveType.RPZD_DOUBLE_ISOLATED:
                 case ValveType.RPZD_DOUBLE_SHARED:
+                case ValveType.PRV_SINGLE:
+                case ValveType.PRV_DOUBLE:
+                case ValveType.PRV_TRIPLE:
+                case ValveType.GAS_REGULATOR:
                 case ValveType.CHECK_VALVE:
                     // from start to finish only
                     this.flowGraph.addDirectedEdge(
@@ -1318,10 +1322,8 @@ export default class CalculationEngine implements CalculationContext {
                     );
                     break;
 
-                case ValveType.PRV_SINGLE:
-                case ValveType.PRV_DOUBLE:
-                case ValveType.PRV_TRIPLE:
                 case ValveType.WATER_METER:
+                case ValveType.FILTER:
                 case ValveType.STRAINER:
                     this.flowGraph.addEdge(
                         {
@@ -1884,6 +1886,8 @@ export default class CalculationEngine implements CalculationContext {
                         case ValveType.ISOLATION_VALVE:
                         case ValveType.WATER_METER:
                         case ValveType.STRAINER:
+                        case ValveType.GAS_REGULATOR:
+                        case ValveType.FILTER:
                         case ValveType.BALANCING:
                             break;
                         default:
@@ -2396,20 +2400,15 @@ export default class CalculationEngine implements CalculationContext {
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity);
                     switch (o.entity.valve.type) {
                         case ValveType.CHECK_VALVE:
-                            break;
                         case ValveType.ISOLATION_VALVE:
-                            break;
                         case ValveType.WATER_METER:
-                            break;
                         case ValveType.STRAINER:
-                            break;
                         case ValveType.RPZD_SINGLE:
-                            break;
                         case ValveType.RPZD_DOUBLE_SHARED:
-                            break;
                         case ValveType.RPZD_DOUBLE_ISOLATED:
-                            break;
                         case ValveType.BALANCING:
+                        case ValveType.GAS_REGULATOR:
+                        case ValveType.FILTER:
                             break;
                         case ValveType.PRV_SINGLE:
                         case ValveType.PRV_DOUBLE:

@@ -2544,7 +2544,7 @@ export const initialCatalog: Catalog = {
         },
         waterMeter: {
             abbreviation: "WM",
-            name: "Water Meter",
+            name: "Meter",
             uid: "waterMeter",
             valvesBySize: {
                 "0-1000000000": {

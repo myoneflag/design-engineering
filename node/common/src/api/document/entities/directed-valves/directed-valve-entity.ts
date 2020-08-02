@@ -155,6 +155,34 @@ export function makeDirectedValveFields(
             }
             break;
         }
+        case ValveType.GAS_REGULATOR: {
+            fields.push({
+                property: "valve.outletPressureKPA",
+                title: "Outlet Pressure",
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: "outletPressureKPA",
+                requiresInput: true,
+                units: Units.KiloPascals,
+            });
+            break;
+        }
+        case ValveType.FILTER: {
+            fields.push({
+                property: "valve.pressureDropKPA",
+                title: "Pressure Drop",
+                hasDefault: true,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: "pressureDrop",
+                requiresInput: true,
+                units: Units.KiloPascals,
+            });
+            break;
+        }
         default:
             assertUnreachable(entity.valve);
     }

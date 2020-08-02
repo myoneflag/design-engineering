@@ -50,7 +50,7 @@ import {
     INSULATION_JACKET_CHOICES,
     INSULATION_MATERIAL_CHOICES, InsulationJackets,
     InsulationMaterials,
-    INSULATION_THICKNESS_MMKEMBLA
+    INSULATION_THICKNESS_MMKEMBLA, StandardFlowSystemUids
 } from "../../../../common/src/api/config";
 import { Units } from "../../../../common/src/lib/measurements";
 
@@ -71,10 +71,16 @@ export default class FlowSystems extends Vue {
         const fields = [
             ["name", "System Name", "text"],
             ["fluid", "Fluid", "choice", this.$store.getters["catalog/defaultFluidChoices"]],
-            ["temperature", "Temperature", "range", 10, 100, null, Units.Celsius],
+        ];
+        if (this.selectedSystem.uid !== StandardFlowSystemUids.NaturalGasLPG) {
+            fields.push(
+                ["temperature", "Temperature", "range", 10, 100, null, Units.Celsius],
+            );
+        }
+        fields.push(
             ["color", "Colour", "color"],
             ["hasReturnSystem", "Has Return System", "yesno"],
-        ];
+        );
 
         if (this.selectedSystem.hasReturnSystem) {
             fields.push(

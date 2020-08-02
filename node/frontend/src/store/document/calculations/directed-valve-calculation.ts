@@ -76,6 +76,9 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
         case ValveType.ISOLATION_VALVE:
         case ValveType.WATER_METER:
         case ValveType.STRAINER:
+        case ValveType.FILTER:
+        case ValveType.GAS_REGULATOR:
+            break;
         case ValveType.BALANCING: {
             const manufacturer = drawing.metadata.catalog.balancingValves[0]?.manufacturer || 'generic';
             const abbreviation = manufacturer !== 'generic'

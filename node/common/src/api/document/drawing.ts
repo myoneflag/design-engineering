@@ -201,7 +201,7 @@ export interface FlowSystemParameters extends WithID {
     insulationThicknessMM: number;
 
 
-    networks: { [key in keyof typeof NetworkType]: NetworkParams };
+    networks: { [key in keyof typeof NetworkType]: NetworkParams};
 }
 
 export interface CalculationParameters {
@@ -358,9 +358,9 @@ export const initialDrawing: DrawingState = {
             {
                 name: "Natural Gas LPG",
                 temperature: 20,
-                color: { hex: "#F49000" },
+                color: { hex: "#FCDC00" },
                 uid: StandardFlowSystemUids.NaturalGasLPG,
-                fluid: "gas",
+                fluid: "naturalGasLPG",
                 hasReturnSystem: false,
                 returnIsInsulated: false,
                 returnMaxVelocityMS: 1,
