@@ -52,7 +52,7 @@ export function CalculatedObject<
     return class extends constructor implements CalculatedObject {
         calculated: true = true;
 
-        makeDatumText(context: DrawingContext, datum: CalculationData): string {
+        makeDatumText(context: DrawingContext, datum: CalculationData): string | Array<string> {
             if (datum.type === CalculationDataType.VALUE) {
                 const convFun = datum.convert || convertMeasurementSystem;
                 const [units, value] = convFun(context.doc.drawing.metadata.units, datum.units, datum.value);
@@ -80,9 +80,17 @@ export function CalculatedObject<
                 }
                 
                 const calc = context.globalStore.getCalculation(this.entity);
-                const manufacturer = calc && 'manufacturer' in calc && calc.manufacturer && ` ${calc.manufacturer}` || ''; 
+                const text = numberText + " " + (datum.hideUnits ? "" : units + " ") + datum.short;
 
-                return numberText + " " + (datum.hideUnits ? "" : units + " ") + datum.short + (datum.property === "circulationPressureLoss" && manufacturer || '');
+                const manufacturer = calc && 'manufacturer' in calc && calc.manufacturer && `${calc.manufacturer}` || ''; 
+                if (datum.property === "circulationPressureLoss" && manufacturer) {
+                    return [
+                        manufacturer,
+                        text,
+                    ];
+                }
+
+                return text;
             } else {
                 return datum.message;
             }
@@ -118,34 +126,39 @@ export function CalculatedObject<
             const { ctx, vp } = context;
 
             // ctx.fillText(this.entity.calculation!.realNominalPipeDiameterMM!.toPrecision(2), 0, 0);
-
+            
+            let height = 0;
             let maxWidth = 0;
             for (let i = data.length - 1; i >= 0; i--) {
                 const datum = data[i];
 
                 if (datum.type === CalculationDataType.VALUE) {
                     ctx.font = (datum.bold ? "bold " : "") + FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
+                    height += (datum.fontMultiplier === undefined ? 1 : datum.fontMultiplier) * FIELD_FONT_SIZE;
                 } else {
                     ctx.font = FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
+                    height += FIELD_FONT_SIZE;
                 }
 
-                const metrics = ctx.measureText(this.makeDatumText(context, datum));
-                maxWidth = Math.max(maxWidth, metrics.width);
+                const text = this.makeDatumText(context, datum);
+                if (Array.isArray(text)) {
+                    for (let i2 = 0; i2 < text.length; i2++) {
+                        const metrics = ctx.measureText(text[i2]);
+                        maxWidth = Math.max(maxWidth, metrics.width);
+                    }
+
+                    height += (FIELD_FONT_SIZE * (text.length - 1));
+                } else {
+                    const metrics = ctx.measureText(text);
+                    maxWidth = Math.max(maxWidth, metrics.width);
+                }
             }
+
             const calculation = context.globalStore.getCalculation(this.entity);
             if (this.hasWarning(context) && !forExport) {
                 const warnWidth = ctx.measureText(calculation!.warning!);
                 maxWidth = Math.max(maxWidth, Math.min(WARNING_HINT_WIDTH, warnWidth.width));
             }
-
-            let height = 0;
-            data.forEach((d) => {
-                if (d.type === CalculationDataType.VALUE) {
-                    height += (d.fontMultiplier === undefined ? 1 : d.fontMultiplier) * FIELD_FONT_SIZE;
-                } else {
-                    height += FIELD_FONT_SIZE;
-                }
-            });
 
             let warnHeight = 0;
             if (this.hasWarning(context) && !forExport) {
@@ -217,8 +230,16 @@ export function CalculatedObject<
                         ctx.fillStyle = lighten(col.hex, -20);
                     }
 
-                    ctx.fillText(this.makeDatumText(context, data[i]), -maxWidth / 2, y);
-                    y -= multiplier * FIELD_HEIGHT;
+                    const text = this.makeDatumText(context, data[i]);
+                    if (Array.isArray(text)) {
+                        for (let i2 = 0; i2 < text.length; i2++) {
+                            ctx.fillText(text[i2], -maxWidth / 2, y);
+                            y -= multiplier * FIELD_HEIGHT;
+                        }
+                    } else {
+                        ctx.fillText(text, -maxWidth / 2, y);
+                        y -= multiplier * FIELD_HEIGHT;
+                    }
                 }
 
                 // line to
