@@ -1,7 +1,7 @@
 import BackedConnectable from "../../../src/htmlcanvas/lib/BackedConnectable";
 // tslint:disable-next-line:max-line-length
 import DirectedValveEntity from "../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
-import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
+import {CostBreakdown, DrawingContext} from "../../../src/htmlcanvas/lib/types";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
@@ -40,6 +40,7 @@ import { determineConnectableSystemUid } from "../../store/document/entities/lib
 import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
 import { EndErrorLine } from "tslint/lib/verify/lines";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
+import {lowerBoundNumberTable} from "../utils";
 
 
 @CalculatedObject
@@ -713,5 +714,177 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
     protected refreshObjectInternal(obj: DrawableEntity, old?: DrawableEntity): void {
         //
+    }
+
+    costBreakdown(context: CalculationContext): CostBreakdown | null {
+        let size = this.largestPipeSizeNominalMM(context);
+
+        const calc = context.globalStore.getOrCreateCalculation(this.entity);
+        let ownSize = calc.sizeMM;
+        switch (this.entity.valve.type) {
+            case ValveType.CHECK_VALVE:
+                size = lowerBoundNumberTable(context.priceTable.Valves["Check Valve"], size);
+                if (size) {
+                    return {
+                        cost: context.priceTable.Valves["Check Valve"][size],
+                        breakdown: [{
+                            qty: 1,
+                            path: `Valves.Check Valve.${size}`,
+                        }],
+                    };
+                }
+                break;
+            case ValveType.ISOLATION_VALVE:
+                switch (this.entity.valve.catalogId) {
+                    case "gateValve":
+                        size = lowerBoundNumberTable(context.priceTable.Valves["Brass Gate Valve"], size);
+                        if (size) {
+                            return {
+                                cost: context.priceTable.Valves["Brass Gate Valve"][size],
+                                breakdown: [{
+                                    qty: 1,
+                                    path: `Valves.Brass Gate Valve.${size}`,
+                                }],
+                            };
+                        }
+                        break;
+                    case "ballValve":
+                        size = lowerBoundNumberTable(context.priceTable.Valves["Brass Ball Valve"], size);
+                        if (size) {
+                            return {
+                                cost: context.priceTable.Valves["Brass Ball Valve"][size],
+                                breakdown: [{
+                                    qty: 1,
+                                    path: `Valves.Brass Ball Valve.${size}`,
+                                }],
+                            };
+                        }
+                        break;
+                    case "butterflyValve":
+                        size = lowerBoundNumberTable(context.priceTable.Valves["Butterfly Valve"], size);
+                        if (size) {
+                            return {
+                                cost: context.priceTable.Valves["Butterfly Valve"][size],
+                                breakdown: [{
+                                    qty: 1,
+                                    path: `Valves.Butterfly Valve.${size}`,
+                                }],
+                            };
+                        }
+                        break;
+                }
+                break;
+            case ValveType.WATER_METER:
+                size = lowerBoundNumberTable(context.priceTable.Valves["Water Meter"], size);
+                if (size) {
+                    return {
+                        cost: context.priceTable.Valves["Water Meter"][size],
+                        breakdown: [{
+                            qty: 1,
+                            path: `Valves.Water Meter.${size}`,
+                        }],
+                    };
+                }
+                break;
+            case ValveType.STRAINER:
+                size = lowerBoundNumberTable(context.priceTable.Valves.Strainer, size);
+                if (size) {
+                    return {
+                        cost: context.priceTable.Valves["Strainer"][size],
+                        breakdown: [{
+                            qty: 1,
+                            path: `Valves.Strainer.${size}`,
+                        }],
+                    };
+                }
+                break;
+            case ValveType.RPZD_SINGLE:
+                ownSize = lowerBoundNumberTable(context.priceTable.Equipment.RPZD, ownSize);
+                if (ownSize) {
+                    return {
+                        cost: context.priceTable.Equipment.RPZD[ownSize],
+                        breakdown: [{
+                            qty: 1,
+                            path: `Equipment.RPZD.${ownSize}`,
+                        }],
+                    };
+                }
+                break;
+            case ValveType.RPZD_DOUBLE_SHARED:
+                ownSize = lowerBoundNumberTable(context.priceTable.Equipment.RPZD, ownSize);
+                if (ownSize) {
+                    return {
+                        cost: context.priceTable.Equipment.RPZD[ownSize] * 2,
+                        breakdown: [{
+                            qty: 2,
+                            path: `Equipment.RPZD.${ownSize}`,
+                        }],
+                    };
+                }
+                break;
+            case ValveType.RPZD_DOUBLE_ISOLATED:
+                ownSize = lowerBoundNumberTable(context.priceTable.Equipment.RPZD, ownSize);
+                if (ownSize) {
+                    return {
+                        cost: context.priceTable.Equipment.RPZD[ownSize] * 2,
+                        breakdown: [{
+                            qty: 2,
+                            path: `Equipment.RPZD.${ownSize}`,
+                        }],
+                    };
+                }
+                break;
+            case ValveType.PRV_SINGLE:
+                ownSize = lowerBoundNumberTable(context.priceTable.Equipment.PRV, ownSize);
+                if (ownSize) {
+                    return {
+                        cost: context.priceTable.Equipment.PRV[ownSize],
+                        breakdown: [{
+                            qty: 1,
+                            path: `Equipment.PRV.${ownSize}`,
+                        }],
+                    };
+                }
+                break;
+            case ValveType.PRV_DOUBLE:
+                ownSize = lowerBoundNumberTable(context.priceTable.Equipment.PRV, ownSize);
+                if (ownSize) {
+                    return {
+                        cost: context.priceTable.Equipment.PRV[ownSize] * 2,
+                        breakdown: [{
+                            qty: 2,
+                            path: `Equipment.PRV.${ownSize}`,
+                        }],
+                    };
+                }
+                break;
+            case ValveType.PRV_TRIPLE:
+                ownSize = lowerBoundNumberTable(context.priceTable.Equipment.PRV, ownSize);
+                if (ownSize) {
+                    return {
+                        cost: context.priceTable.Equipment.PRV[ownSize] * 2,
+                        breakdown: [{
+                            qty: 2,
+                            path: `Equipment.PRV.${ownSize}`,
+                        }],
+                    };
+                }
+                break;
+            case ValveType.BALANCING:
+                size = lowerBoundNumberTable(context.priceTable.Equipment["Balancing Valve"], size);
+                if (size) {
+                    return {
+                        cost: context.priceTable.Equipment["Balancing Valve"][size],
+                        breakdown: [{
+                            qty: 1,
+                            path: `Equipment.Balancing Valve.${size}`,
+                        }],
+                    };
+                }
+                break;
+            default:
+                assertUnreachable(this.entity.valve);
+        }
+        return null;
     }
 }

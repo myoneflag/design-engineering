@@ -4,7 +4,7 @@ import * as TM from "transformation-matrix";
 import { Matrix } from "transformation-matrix";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
 import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
-import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
+import {CostBreakdown, DrawingContext} from "../../../src/htmlcanvas/lib/types";
 import BigValveEntity from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
@@ -32,7 +32,7 @@ import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-d
 import { Coord, coordDist2 } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, EPS } from "../../../../common/src/lib/utils";
 import { PlantType } from "../../../../common/src/api/document/entities/plants/plant-types";
-import { assertUnreachable } from "../../../../common/src/api/config";
+import {assertUnreachable, StandardFlowSystemUids} from "../../../../common/src/api/config";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { rgb2style } from "../../lib/utils";
 
@@ -352,5 +352,56 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
 
     getCopiedObjects(): BaseBackedObject[] {
         return [this, ...this.getInletsOutlets()];
+    }
+
+    costBreakdown(context: CalculationContext): CostBreakdown | null {
+        // determine type of plant
+        switch (this.entity.plant.type) {
+            case PlantType.RETURN_SYSTEM:
+                if (this.entity.inletSystemUid === StandardFlowSystemUids.ColdWater &&
+                    this.entity.outletSystemUid === StandardFlowSystemUids.HotWater
+                ) {
+                    return {
+                        cost: context.priceTable.Plants["Hot Water Plant"],
+                        breakdown: [{
+                            qty: 1,
+                            path: `Plants.Hot Water Plant`,
+                        }],
+                    };
+                } else {
+                    return {
+                        cost: context.priceTable.Plants.Custom,
+                        breakdown: [{
+                            qty: 1,
+                            path: `Plants.Custom`,
+                        }],
+                    };
+                }
+            case PlantType.TANK:
+                return {
+                    cost: context.priceTable.Plants["Storage Tank"],
+                    breakdown: [{
+                        qty: 1,
+                        path: `Plants.Storage Tank`,
+                    }],
+                };
+            case PlantType.CUSTOM:
+                return {
+                    cost: context.priceTable.Plants.Custom,
+                    breakdown: [{
+                        qty: 1,
+                        path: `Plants.Custom`,
+                    }],
+                };
+            case PlantType.PUMP:
+                return {
+                    cost: context.priceTable.Plants.Pump,
+                    breakdown: [{
+                        qty: 1,
+                        path: `Plants.Pump`,
+                    }],
+                };
+        }
+        assertUnreachable(this.entity.plant);
     }
 }

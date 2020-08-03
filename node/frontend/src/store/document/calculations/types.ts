@@ -1,6 +1,8 @@
-import { PsdCountEntry } from "../../../calculations/utils";
-import { CalculationField, FieldCategory} from "./calculation-field";
-import { Units } from "../../../../../common/src/lib/measurements";
+import {Cost, PsdCountEntry} from "../../../calculations/utils";
+import {CalculationField, FieldCategory} from "./calculation-field";
+import {Units} from "../../../../../common/src/lib/measurements";
+import {DrawableEntityConcrete} from "../../../../../common/src/api/document/entities/concrete-entity";
+import {CostBreakdown} from "../../../htmlcanvas/lib/types";
 
 export interface PsdCalculation {
     psdUnits: PsdCountEntry | null;
@@ -8,6 +10,9 @@ export interface PsdCalculation {
 
 export interface Calculation {
     warning: string | null;
+    cost: Cost | null;
+    costBreakdown: Array<{qty: number, path: string}> | null;
+    expandedEntities: DrawableEntityConcrete[] | null;
 }
 
 export interface PressureCalculation {

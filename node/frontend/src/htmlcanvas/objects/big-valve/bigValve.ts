@@ -2,10 +2,10 @@ import BackedDrawableObject from "../../../../src/htmlcanvas/lib/backed-drawable
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
 import * as TM from "transformation-matrix";
 import { Matrix } from "transformation-matrix";
-import { matrixScale } from "../../../../src/htmlcanvas/utils";
+import {lowerBoundNumberTable, matrixScale} from "../../../../src/htmlcanvas/utils";
 import CenterDraggableObject from "../../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
 import { Interaction, InteractionType } from "../../../../src/htmlcanvas/lib/interaction";
-import { DrawingContext } from "../../../../src/htmlcanvas/lib/types";
+import {CostBreakdown, DrawingContext} from "../../../../src/htmlcanvas/lib/types";
 import BigValveEntity, {
     BigValveType,
     SystemNodeEntity
@@ -501,5 +501,58 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
     @Cached((kek) => new Set(kek.getParentChain().map((o) => o.uid)))
     shape(): Flatten.Segment | Flatten.Point | Flatten.Polygon | Flatten.Circle | null {
         return super.shape();
+    }
+
+    costBreakdown(context: CalculationContext): CostBreakdown | null {
+        switch (this.entity.valve.type) {
+            case BigValveType.TMV:
+                return {
+                    cost: context.priceTable.Equipment.TMV,
+                    breakdown: [{
+                        qty: 1,
+                        path: `Equipment.TMV`,
+                    }],
+                };
+            case BigValveType.TEMPERING:
+                return {
+                    cost: context.priceTable.Equipment["Tempering Valve"],
+                    breakdown: [{
+                        qty: 1,
+                        path: `Equipment.Tempering Valve`,
+                    }],
+                };
+            case BigValveType.RPZD_HOT_COLD:
+                const calc = context.globalStore.getOrCreateCalculation(this.entity);
+                if (!calc.rpzdSizeMM) {
+                    return null;
+                }
+                const hotSize = calc.rpzdSizeMM[StandardFlowSystemUids.HotWater];
+                const coldSize = calc.rpzdSizeMM[StandardFlowSystemUids.ColdWater];
+
+                const realHotSize = lowerBoundNumberTable(calc.rpzdSizeMM, hotSize);
+                const realColdSize = lowerBoundNumberTable(calc.rpzdSizeMM, coldSize);
+
+                if (realHotSize !== null && realColdSize !== null) {
+                    return {
+                        cost: context.priceTable.Equipment.RPZD[realHotSize!] + context.priceTable.Equipment.RPZD[realColdSize!],
+                        breakdown: [
+                            {
+                                qty: 1,
+                                path: `Equipment.RPZD.${realColdSize}`,
+                            },
+                            {
+                                qty: 1,
+                                path: `Equipment.RPZD.${realHotSize}`,
+                            },
+                        ],
+                    };
+                } else {
+                    return {cost: 0, breakdown: []};
+                }
+
+            default:
+                assertUnreachable(this.entity.valve);
+        }
+        return null;
     }
 }

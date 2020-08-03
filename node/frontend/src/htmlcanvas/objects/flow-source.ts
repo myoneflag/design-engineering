@@ -6,7 +6,7 @@ import { matrixScale } from "../../../src/htmlcanvas/utils";
 import { color2rgb, lighten, rgb2style } from "../../../src/lib/utils";
 import Connectable, { ConnectableObject } from "../../../src/htmlcanvas/lib/object-traits/connectable";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
-import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
+import {CostBreakdown, DrawingContext} from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import BackedConnectable from "../../../src/htmlcanvas/lib/BackedConnectable";
@@ -322,6 +322,10 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
 
         // explicitly create this to help with refactors
         const res: FlowSourceCalculation = {
+            costBreakdown: null,
+            cost: null,
+            expandedEntities: null,
+
             flowRateLS: calc.flowRateLS,
             pressureKPA: calc.pressureKPA, // TODO: differentiate this in different levels
             warning: calc.warning,
@@ -335,5 +339,9 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         });
 
         return res;
+    }
+
+    costBreakdown(context: CalculationContext): CostBreakdown | null {
+        return {cost: 0, breakdown: []};
     }
 }

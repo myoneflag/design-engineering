@@ -1,6 +1,6 @@
 import DrawableObject, { DrawingArgs, EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { CalculationFilters, DocumentState } from "../../../src/store/document/types";
-import { DrawingContext, ValidationResult } from "../../../src/htmlcanvas/lib/types";
+import {CostBreakdown, DrawingContext, ValidationResult} from "../../../src/htmlcanvas/lib/types";
 import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import {
@@ -139,6 +139,9 @@ export default abstract class BaseBackedObject extends DrawableObject {
         throw new Error("Method not implemented. Please use @Connectable to implement.");
     }
 
+    // Quantity, and string into index.
+    abstract costBreakdown(context: CalculationContext): CostBreakdown | null;
+
     abstract drawEntity(context: DrawingContext, args: EntityDrawingArgs): void;
 
     abstract offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null;
@@ -157,6 +160,13 @@ export default abstract class BaseBackedObject extends DrawableObject {
         pressureKPA: number | null
     ): number | null;
 
+    /**
+     * Generates the actual physical hydraulics components represented by the drawing.
+     * For example, while a riser might appear as just a riser, it is in fact made of many vertical pipes.
+     * A dip is represented in drawing as two pipes connected by a fitting, but in fact contains a vertical pipe
+     * and extra joint in the "joint" part.
+     * @param context
+     */
     abstract getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[];
 
     getCalculationTower(context: CalculationContext): Array<[FittingEntity, PipeEntity] | [FittingEntity]> {

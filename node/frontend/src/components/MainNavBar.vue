@@ -72,10 +72,7 @@ import OnBoardingProgressMenuItem from "./OnBoardingProgressMenuItem.vue";
 
 @Component({
     props: {
-        profile: {
-            type: Object,
-            require: false,
-        },
+        profile: Object,
     },
     components: { OnBoardingProgressMenuItem, ProfileMenuItem }
 })

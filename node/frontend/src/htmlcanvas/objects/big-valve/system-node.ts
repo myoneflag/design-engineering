@@ -6,7 +6,7 @@ import { DocumentState } from "../../../../src/store/document/types";
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
 import { InvisibleNode } from "../../../../src/htmlcanvas/objects/invisible-node";
 import Flatten from "@flatten-js/core";
-import { DrawingContext } from "../../../../src/htmlcanvas/lib/types";
+import {CostBreakdown, DrawingContext} from "../../../../src/htmlcanvas/lib/types";
 import { lighten } from "../../../../src/lib/utils";
 import {
     FlowConfiguration,
@@ -234,6 +234,10 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
 
         // explicitly create this to help with refactors
         const res: SystemNodeCalculation = {
+            costBreakdown: null,
+            cost: null,
+            expandedEntities: null,
+
             psdUnits: calc.psdUnits,
             flowRateLS: calc.flowRateLS,
             pressureKPA: calc.pressureKPA, // TODO: differentiate this in different levels
@@ -256,5 +260,9 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
         });
 
         return res;
+    }
+
+    costBreakdown(context: CalculationContext): CostBreakdown | null {
+        return {cost: 0, breakdown: []};
     }
 }

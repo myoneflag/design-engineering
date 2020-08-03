@@ -1,39 +1,38 @@
-import { EntityType } from "../../../common/src/api/document/entities/types";
-import { DocumentState } from "../../src/store/document/types";
-import { fillFixtureFields } from "../../../common/src/api/document/entities/fixtures/fixture-entity";
-import { DwellingStandardType, PSDStandardType } from "../../../common/src/api/catalog/psd-standard/types";
-import { CalculationField } from "../../src/store/document/calculations/calculation-field";
-import { makeRiserCalculationFields } from "../store/document/calculations/riser-calculation";
-import { makePipeCalculationFields } from "../../src/store/document/calculations/pipe-calculation";
-import { makeFittingCalculationFields } from "../../src/store/document/calculations/fitting-calculation";
-import { makeBigValveCalculationFields } from "../store/document/calculations/big-valve-calculation";
-import { makeFixtureCalculationFields } from "../../src/store/document/calculations/fixture-calculation";
-import { makeDirectedValveCalculationFields } from "../../src/store/document/calculations/directed-valve-calculation";
-import { DrawableEntityConcrete } from "../../../common/src/api/document/entities/concrete-entity";
-import { makeSystemNodeCalculationFields } from "../../src/store/document/calculations/system-node-calculation";
-import { makeLoadNodeCalculationFields } from "../store/document/calculations/load-node-calculation";
-import { NodeType } from "../../../common/src/api/document/entities/load-node-entity";
-import { makeFlowSourceFields } from "../../../common/src/api/document/entities/flow-source-entity";
-import { makeFlowSourceCalculationFields } from "../store/document/calculations/flow-source-calculation";
-import { ObjectStore } from "../htmlcanvas/lib/object-store";
-import { makePlantCalculationFields } from "../store/document/calculations/plant-calculation";
-import { equal } from "assert";
+import {EntityType} from "../../../common/src/api/document/entities/types";
+import {DocumentState} from "../../src/store/document/types";
+import {fillFixtureFields} from "../../../common/src/api/document/entities/fixtures/fixture-entity";
+import {DwellingStandardType, PSDStandardType} from "../../../common/src/api/catalog/psd-standard/types";
+import {CalculationField} from "../../src/store/document/calculations/calculation-field";
+import {makeRiserCalculationFields} from "../store/document/calculations/riser-calculation";
+import {makePipeCalculationFields} from "../../src/store/document/calculations/pipe-calculation";
+import {makeFittingCalculationFields} from "../../src/store/document/calculations/fitting-calculation";
+import {makeBigValveCalculationFields} from "../store/document/calculations/big-valve-calculation";
+import {makeFixtureCalculationFields} from "../../src/store/document/calculations/fixture-calculation";
+import {makeDirectedValveCalculationFields} from "../../src/store/document/calculations/directed-valve-calculation";
+import {DrawableEntityConcrete} from "../../../common/src/api/document/entities/concrete-entity";
+import {makeSystemNodeCalculationFields} from "../../src/store/document/calculations/system-node-calculation";
+import {makeLoadNodeCalculationFields} from "../store/document/calculations/load-node-calculation";
+import {NodeType} from "../../../common/src/api/document/entities/load-node-entity";
+import {makeFlowSourceCalculationFields} from "../store/document/calculations/flow-source-calculation";
+import {ObjectStore} from "../htmlcanvas/lib/object-store";
+import {makePlantCalculationFields} from "../store/document/calculations/plant-calculation";
 import {
     assertUnreachable,
     isGermanStandard,
     StandardFlowSystemUids,
     SupportedPsdStandards
 } from "../../../common/src/api/config";
-import { Catalog } from "../../../common/src/api/catalog/types";
-import { determineConnectableNetwork, determineConnectableSystemUid } from "../store/document/entities/lib";
+import {Catalog} from "../../../common/src/api/catalog/types";
+import {determineConnectableSystemUid} from "../store/document/entities/lib";
 import {
-    cloneSimple, EPS,
+    cloneSimple,
+    EPS,
     interpolateTable,
     lowerBoundTable,
     parseCatalogNumberExact,
     upperBoundTable
 } from "../../../common/src/lib/utils";
-import { GlobalStore } from "../htmlcanvas/lib/global-store";
+import {GlobalStore} from "../htmlcanvas/lib/global-store";
 
 export interface PsdCountEntry {
     units: number;
@@ -494,4 +493,22 @@ export function getFields(
         case EntityType.BACKGROUND_IMAGE:
             return [];
     }
+}
+
+export interface Cost {
+    value: number;
+    exact: boolean;
+}
+
+export function zeroCost(): Cost {
+    return {
+        value: 0,
+        exact: true,
+    }
+}
+
+export function addCosts(a: Cost | null, b: Cost | null): Cost {
+    const value = (a ? a.value : 0) + (b ? b.value : 0);
+    const exact = a !== null && a.exact && b !== null && b.exact;
+    return {value, exact};
 }

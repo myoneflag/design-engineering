@@ -220,3 +220,19 @@ export interface SelectField {
     value: number | string; 
     text: string
 }
+
+export type DeepPartial<T> = {
+    [P in keyof T]?: T[P] extends Array<infer U>
+        ? Array<DeepPartial<U>>
+        : T[P] extends ReadonlyArray<infer U>
+            ? ReadonlyArray<DeepPartial<U>>
+            : DeepPartial<T[P]>
+};
+
+export function lowerCase(str: string) {
+    if (str.toUpperCase() === str) {
+        return str;
+    } else {
+        return str.toLowerCase();
+    }
+}

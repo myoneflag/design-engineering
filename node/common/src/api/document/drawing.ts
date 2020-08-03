@@ -10,7 +10,8 @@ import {
 } from "../config";
 import RiserEntity from "./entities/riser-entity";
 import { EntityType } from "./entities/types";
-import { Choice } from "../../lib/utils";
+import {Choice, DeepPartial} from "../../lib/utils";
+import {PriceTable} from "../catalog/price-table";
 
 export interface Coord {
     x: number;
@@ -65,6 +66,8 @@ export interface DrawingState {
         calculationParams: CalculationParameters;
         availableFixtures: string[];
         catalog: Catalog;
+
+        priceTable: DeepPartial<PriceTable>;
     };
 
     levels: { [key: string]: Level };
@@ -374,7 +377,8 @@ export const initialDrawing: DrawingState = {
             prv: [],
             balancingValves: [],
             hotWaterPlant: [],
-        }
+        },
+        priceTable: {},
     },
     levels: {
         ground: {

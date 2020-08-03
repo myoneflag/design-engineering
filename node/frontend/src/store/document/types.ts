@@ -7,6 +7,7 @@ import { DrawingState, initialDrawing } from "../../../../common/src/api/documen
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { Operation } from "../../../../common/src/models/Operation";
 import { PAPER_SIZES, PaperSize, PaperSizeName } from "../../../../common/src/api/paper-config";
+import {bool} from "aws-sdk/clients/signer";
 
 // Because of how the diffing engine works, there are restrictions on the data structure for the document state.
 // Rules are:
@@ -48,6 +49,7 @@ export interface UIState {
     pastesByLevel: { [key: string]: number };
 
     exportSettings: ExportUiSettings;
+    costAndLUTableOpen: boolean;
 }
 
 export interface ExportUiSettings {
@@ -147,7 +149,9 @@ export const initialUIState: UIState = {
         detail: -8,
         coverSheet: true,
         floorPlans: true
-    }
+    },
+
+    costAndLUTableOpen: true,
 };
 
 export function blankDiffFilter() {

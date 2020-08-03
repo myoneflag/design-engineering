@@ -8,7 +8,7 @@ import BackedDrawableObject from "../../../src/htmlcanvas/lib/backed-drawable-ob
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
-import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
+import {CostBreakdown, DrawingContext} from "../../../src/htmlcanvas/lib/types";
 import { BackgroundEntity } from "../../../../common/src/api/document/entities/background-entity";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
@@ -543,5 +543,9 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
                 }
             });
         }
+    }
+
+    costBreakdown(context: CalculationContext): CostBreakdown | null {
+        return null;
     }
 }

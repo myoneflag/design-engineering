@@ -304,7 +304,8 @@ export default class CalculationLayer extends LayerImplementation {
                 // Create new messages
 
                 done();
-            }
+            },
+            context.effectivePriceTable,
         );
     }
 

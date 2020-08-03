@@ -17,7 +17,7 @@ import FixtureEntity, {
     fillFixtureFields,
     makeFixtureFields
 } from "../../../common/src/api/document/entities/fixtures/fixture-entity";
-import { PressurePushMode } from "../../src/calculations/types";
+import {CalculationContext, PressurePushMode} from "../../src/calculations/types";
 import Graph, { Edge } from "../../src/calculations/graph";
 import EquationEngine from "../../src/calculations/equation-engine";
 import BaseBackedObject from "../../src/htmlcanvas/lib/base-backed-object";
@@ -38,6 +38,7 @@ import BigValve from "../htmlcanvas/objects/big-valve/bigValve";
 import DirectedValveEntity, { makeDirectedValveFields } from "../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
 import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import {
+    addCosts,
     comparePsdCounts,
     ContextualPCE,
     countPsdProfile,
@@ -47,7 +48,7 @@ import {
     lookupFlowRate,
     PsdProfile,
     subtractPsdProfiles,
-    zeroContextualPCE,
+    zeroContextualPCE, zeroCost,
     zeroFinalPsdCounts
 } from "../../src/calculations/utils";
 import FittingCalculation from "../../src/store/document/calculations/fitting-calculation";
@@ -92,6 +93,7 @@ import SystemNode from "../htmlcanvas/objects/big-valve/system-node";
 import Fixture from "../htmlcanvas/objects/fixture";
 import LoadNodeCalculation from "../store/document/calculations/load-node-calculation";
 import { fillDefaultLoadNodeFields } from "../store/document/entities/fillDefaultLoadNodeFields";
+import {PriceTable} from "../../../common/src/api/catalog/price-table";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -133,7 +135,7 @@ export interface FlowNode {
     connectable: string;
 }
 
-export default class CalculationEngine {
+export default class CalculationEngine implements CalculationContext {
     globalStore!: GlobalStore;
     networkObjectUids!: string[];
     drawableObjectUids!: string[];
@@ -159,6 +161,8 @@ export default class CalculationEngine {
     psdProfileWithinGroup = new Map<string, PsdProfile>();
     childBridges = new Map<string, Array<Edge<FlowNode, FlowEdge>>>();
 
+    priceTable: PriceTable;
+
     networkObjects(): BaseBackedObject[] {
         return this.networkObjectUids.map((u) => this.globalStore.get(u)!);
     }
@@ -171,11 +175,13 @@ export default class CalculationEngine {
         objectStore: GlobalStore,
         doc: DocumentState,
         catalog: Catalog,
-        done: (success: boolean) => void
+        done: (success: boolean) => void,
+        priceTable: PriceTable,
     ) {
         this.networkObjectUids = [];
         this.drawableObjectUids = [];
         this.globalStore = objectStore;
+        this.priceTable = priceTable;
         this.globalStore.forEach((o) => this.globalStore.bustDependencies(o.uid));
         if (this.globalStore.dependedBy.size) {
             throw new Error(
@@ -533,7 +539,24 @@ export default class CalculationEngine {
     collectResults() {
         this.drawableObjects().forEach((o) => {
             if (isCalculated(o.entity)) {
-                this.globalStore.setCalculation(o.uid, ((o as unknown) as Calculated).collectCalculations(this));
+                const calc = ((o as unknown) as Calculated).collectCalculations(this);
+                const childEntities = o.getCalculationEntities(this);
+                calc.cost = zeroCost();
+                calc.expandedEntities = childEntities;
+                for (const e of childEntities) {
+                    const thisCost = this.globalStore.get(e.uid)!.costBreakdown(this);
+                    if (thisCost !== null) {
+                        calc.cost = addCosts(calc.cost, {value: thisCost.cost, exact: true});
+                        if (calc.costBreakdown === null) {
+                            calc.costBreakdown = [];
+                        }
+                        calc.costBreakdown.push(...thisCost.breakdown);
+                    } else {
+                        calc.cost = addCosts(calc.cost, null);
+                    }
+                }
+
+                this.globalStore.setCalculation(o.uid, calc);
             }
         });
     }

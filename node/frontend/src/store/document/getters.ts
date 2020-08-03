@@ -5,6 +5,9 @@ import { Level } from "../../../../common/src/api/document/drawing";
 import { OPERATION_NAMES } from "../../../../common/src/api/document/operation-transforms";
 import { Operation } from "../../../../common/src/models/Operation";
 import { assertUnreachable } from "../../../../common/src/api/config";
+import {cloneSimple} from "../../../../common/src/lib/utils";
+import {defaultPriceTable} from "../../../../common/src/api/catalog/default-price-table";
+import {applyDiffNative} from "../../../../common/src/api/document/state-ot-apply";
 
 export const getters: GetterTree<DocumentState, RootState> = {
     title(state): string {
@@ -83,5 +86,12 @@ export const getters: GetterTree<DocumentState, RootState> = {
             return false;
         }
         return true;
+    },
+
+    priceTable(state): boolean {
+        const initialPriceTable = cloneSimple(defaultPriceTable);
+
+        const newPriceTable = applyDiffNative(initialPriceTable, state.drawing.metadata.priceTable);
+        return newPriceTable;
     }
 };

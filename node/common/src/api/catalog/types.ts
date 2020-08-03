@@ -4,6 +4,7 @@ import LoadingUnitHotColdTable from "./psd-standard/loading-unit-hot-cold-table"
 import PsdEquation from "./psd-standard/psdEquation";
 import LoadingUnitMaxTable from "./psd-standard/loading-unit-max-table";
 import { SupportedPsdStandards } from "../config";
+import {PipesTable} from "./price-table";
 
 export interface DwellingUnitHotColdTable {
     type: DwellingStandardType.DWELLING_HOT_COLD_LOOKUP_TABLE;
@@ -31,11 +32,13 @@ export interface BackflowValveSize {
     pressureLossKPAByFlowRateLS: { [key: string]: string };
 }
 
+export type BackflowValveManufacturer = Manufacturer<'RPZD'>;
+
 export interface BackflowValveSpec {
     name: string;
     uid: string;
     abbreviation: string;
-    manufacturer: Manufacturer[];
+    manufacturer: BackflowValveManufacturer[];
     valvesBySize: { [key: string]: { [key: string]: BackflowValveSize } };
 }
 
@@ -53,21 +56,26 @@ export interface Catalog {
     hotWaterPlant: HotWaterPlant;
 }
 
+export type BalancingValveManufacturer = Manufacturer<'Balancing Valve'>;
+
 export interface BalancingValveSpec {
-    manufacturer: Manufacturer[];
+    manufacturer: BalancingValveManufacturer[];
 }
 
+export type HotWaterPlantManufacturer = Manufacturer<'Hot Water Plant'>;
+
 export interface HotWaterPlant {
-    manufacturer: Manufacturer[];
+    manufacturer: HotWaterPlantManufacturer[];
     grundfosPressureDrop: { 
         [key: string]: { 
             [key: string]: string
         }
     }
 }
+export type PRVManufacturer = Manufacturer<'PRV'>;
 
 export interface PRVSpec {
-    manufacturer: Manufacturer[];
+    manufacturer: PRVManufacturer[];
     size: { [key: string]: { [key: string]: PRVSize } };
 }
 
@@ -82,6 +90,7 @@ export interface PRVSize {
 
 export interface FixtureSpec {
     name: string;
+    priceTableName: string;
     abbreviation: string;
     uid: string;
 
@@ -131,17 +140,20 @@ export interface ValveSize {
     kValue: string | null;
 }
 
+export type PipeManufacturer = Manufacturer<keyof PipesTable>;
+
 export interface PipeMaterial {
     name: string;
     uid: string;
     abbreviation: string;
-    manufacturer: Manufacturer[];
+    manufacturer: PipeManufacturer[];
     pipesBySize: { [key: string]: { [key: string]: PipeSpec } };
 }
 
-export interface Manufacturer {
+export interface Manufacturer<ManufacturerEntryNames> {
     name: string;
     abbreviation: string;
+    priceTableName: ManufacturerEntryNames;
     uid: string;
 }
 
@@ -153,6 +165,8 @@ export interface PipeSpec {
     colebrookWhiteCoefficient: string | null;
     safeWorkingPressureKPA: string | null;
 }
+
+export type MixingValveManufacturer = Manufacturer<'Tempering Valve' | 'TMV'>;
 
 export interface MixingValveSpec {
     name: string;
@@ -182,7 +196,7 @@ export interface MixingValveSpec {
         caleffi: { [key: string]: string };
         [key: string]: { [key: string]: string };
     };
-    manufacturer: Manufacturer[];
+    manufacturer: MixingValveManufacturer[];
 }
 
 export interface FluidsSpec {

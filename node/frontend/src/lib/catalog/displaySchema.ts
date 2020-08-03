@@ -1,5 +1,6 @@
 import { Catalog, PRVSize } from "../../../../common/src/api/catalog/types";
 import { Units } from "../../../../common/src/lib/measurements";
+import {PriceTable, ValveByPipe} from "../../../../common/src/api/catalog/price-table";
 
 export type Page<V> = {
     [K in keyof V]: {
@@ -18,6 +19,7 @@ export interface Table<TV> {
     link?: Page<TV> | null;
     twoDimensional?: boolean;
 }
+
 
 export type CatalogSchema = Page<Catalog>;
 
@@ -74,7 +76,8 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                     minInletPressureKPA: { order: 8, name: "Min. Inlet Pressure", units: Units.KiloPascals },
                     probabilityOfUsagePCT: { order: 9, name: "Probability of Usage (%)" },
                     outletAboveFloorM: { order: 10, name: "Outlet Above Floor", units: Units.Meters },
-                    warmTempC: { order: 11, name: "Warm Temperature", units: Units.Celsius }
+                    warmTempC: { order: 11, name: "Warm Temperature", units: Units.Celsius },
+                    priceTableName: null,
                 }
             }
         },

@@ -5,7 +5,7 @@ import PipeEntity, { fillPipeDefaultFields } from "../../../../../common/src/api
 import { getPsdUnitName, PsdProfile } from "../../../calculations/utils";
 import set = Reflect.set;
 import { assertUnreachable, isGermanStandard } from "../../../../../common/src/api/config";
-import { Catalog, Manufacturer } from "../../../../../common/src/api/catalog/types";
+import {Catalog, Manufacturer, PipeManufacturer} from "../../../../../common/src/api/catalog/types";
 import { DrawingState, MeasurementSystem, UnitsParameters } from "../../../../../common/src/api/document/drawing";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import { convertPipeDiameterFromMetric, mm2IN, Units } from "../../../../../common/src/lib/measurements";
@@ -67,7 +67,7 @@ export function makePipeCalculationFields(
         const pipe = fillPipeDefaultFields(settings, 0, entity);
         const manufacturer = settings.metadata.catalog.pipes.find((pipeObj: SelectedMaterialManufacturer) => pipeObj.uid === pipe.material)?.manufacturer || 'generic';
         const abbreviation = manufacturer !== 'generic' 
-            && catalog.pipes[pipe.material!].manufacturer.find((manufacturerObj: Manufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation 
+            && catalog.pipes[pipe.material!].manufacturer.find((manufacturerObj: PipeManufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation
             || catalog.pipes[pipe.material!].abbreviation;
         materialName = " (" + abbreviation + ")";
     }
@@ -223,6 +223,10 @@ export function makePipeCalculationFields(
 
 export function emptyPipeCalculation(): PipeCalculation {
     return {
+        cost: null,
+        costBreakdown: null,
+        expandedEntities: null,
+
         totalPeakFlowRateLS: null,
         heightM: null,
         PSDFlowRateLS: null,

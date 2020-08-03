@@ -59,7 +59,14 @@ export function makeFixtureCalculationFields(doc: DocumentState, entity: Fixture
 }
 
 export function emptyFixtureCalculation(entity: FixtureEntity): FixtureCalculation {
-    const result: FixtureCalculation = {inlets: {}, warning: null};
+    const result: FixtureCalculation = {
+        costBreakdown: null,
+        cost: null,
+        expandedEntities: null,
+
+        inlets: {},
+        warning: null,
+    };
     for (const suid of entity.roughInsInOrder) {
         result.inlets[suid] = {
             deadlegLengthM: null, deadlegVolumeL: null, pressureKPA: null, staticPressureKPA: null

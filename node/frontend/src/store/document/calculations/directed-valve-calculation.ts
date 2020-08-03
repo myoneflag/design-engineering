@@ -11,7 +11,13 @@ import { determineConnectableSystemUid } from "../entities/lib";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import { Units } from "../../../../../common/src/lib/measurements";
 import { DrawingState, SelectedMaterialManufacturer } from '../../../../../common/src/api/document/drawing';
-import { Catalog, Manufacturer } from '../../../../../common/src/api/catalog/types';
+import {
+    BackflowValveManufacturer,
+    BalancingValveManufacturer,
+    Catalog,
+    Manufacturer,
+    PRVManufacturer
+} from '../../../../../common/src/api/catalog/types';
 
 export default interface DirectedValveCalculation extends Calculation, PressureCalculation {
     flowRateLS: number | null;
@@ -70,10 +76,10 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
         case ValveType.ISOLATION_VALVE:
         case ValveType.WATER_METER:
         case ValveType.STRAINER:
-        case ValveType.BALANCING:
-            var manufacturer = drawing.metadata.catalog.balancingValves[0]?.manufacturer || 'generic';
-            var abbreviation = manufacturer !== 'generic' 
-                && catalog?.balancingValves.manufacturer.find((manufacturerObj: Manufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation 
+        case ValveType.BALANCING: {
+            const manufacturer = drawing.metadata.catalog.balancingValves[0]?.manufacturer || 'generic';
+            const abbreviation = manufacturer !== 'generic'
+                && catalog?.balancingValves.manufacturer.find((manufacturerObj: BalancingValveManufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation
                 || '';
 
             fields.push({
@@ -84,12 +90,13 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
                 category: FieldCategory.Size
             });
             break;
+        }
         case ValveType.RPZD_SINGLE:
         case ValveType.RPZD_DOUBLE_SHARED:
-        case ValveType.RPZD_DOUBLE_ISOLATED:
-            var manufacturer = drawing.metadata.catalog.backflowValves.find((material: SelectedMaterialManufacturer) => material.uid === entity.valve.catalogId)?.manufacturer || 'generic';
-            var abbreviation = manufacturer !== 'generic' 
-                && catalog?.backflowValves[entity.valve.catalogId].manufacturer.find((manufacturerObj: Manufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation 
+        case ValveType.RPZD_DOUBLE_ISOLATED: {
+            const manufacturer = drawing.metadata.catalog.backflowValves.find((material: SelectedMaterialManufacturer) => material.uid === entity.valve.catalogId)?.manufacturer || 'generic';
+            const abbreviation = manufacturer !== 'generic'
+                && catalog?.backflowValves[entity.valve.catalogId].manufacturer.find((manufacturerObj: BackflowValveManufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation
                 || '';
 
             fields.push({
@@ -100,12 +107,13 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
                 category: FieldCategory.Size
             });
             break;
+        }
         case ValveType.PRV_SINGLE:
         case ValveType.PRV_DOUBLE:
-        case ValveType.PRV_TRIPLE:
-            var manufacturer = drawing.metadata.catalog.prv[0]?.manufacturer || 'generic';
-            var abbreviation = manufacturer !== 'generic' 
-                && catalog?.prv.manufacturer.find((manufacturerObj: Manufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation 
+        case ValveType.PRV_TRIPLE: {
+            const manufacturer = drawing.metadata.catalog.prv[0]?.manufacturer || 'generic';
+            const abbreviation = manufacturer !== 'generic'
+                && catalog?.prv.manufacturer.find((manufacturerObj: PRVManufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation
                 || '';
             fields.push({
                 property: "sizeMM",
@@ -115,6 +123,7 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
                 category: FieldCategory.Size
             });
             break;
+        }
         default:
             assertUnreachable(entity.valve);
     }
@@ -124,6 +133,10 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
 
 export function emptyDirectedValveCalculation(): DirectedValveCalculation {
     return {
+        costBreakdown: null,
+        cost: null,
+        expandedEntities: null,
+
         flowRateLS: null,
         pressureDropKPA: null,
         staticPressureKPA: null,

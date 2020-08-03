@@ -4,6 +4,7 @@ import { Catalog } from "../types";
 export const initialCatalog: Catalog = {
     fixtures: {
         ablutionTrough: {
+            priceTableName: "Ablution Trough",
             abbreviation: "AT",
             fixtureUnits: "3",
             loadingUnits: {
@@ -54,6 +55,7 @@ export const initialCatalog: Catalog = {
             warmTempC: "42"
         },
         basin: {
+            priceTableName: "Basin",
             abbreviation: "B",
             fixtureUnits: "1",
             loadingUnits: {
@@ -104,6 +106,7 @@ export const initialCatalog: Catalog = {
             warmTempC: "42"
         },
         bath: {
+            priceTableName: "Bath",
             abbreviation: "BT",
             fixtureUnits: "4",
             loadingUnits: {
@@ -154,6 +157,7 @@ export const initialCatalog: Catalog = {
             warmTempC: "42"
         },
         bedpanSanitiser: {
+            priceTableName: "Bedpan Sanitiser",
             abbreviation: "BPST",
             fixtureUnits: "6",
             loadingUnits: {
@@ -204,6 +208,7 @@ export const initialCatalog: Catalog = {
             warmTempC: null
         },
         beverageBay: {
+            priceTableName: "Beverage Bay",
             abbreviation: "BB",
             fixtureUnits: "1",
             loadingUnits: {
@@ -254,6 +259,7 @@ export const initialCatalog: Catalog = {
             warmTempC: "42"
         },
         birthingPool: {
+            priceTableName: "Birthing Pool",
             abbreviation: "BP",
             fixtureUnits: "8",
             loadingUnits: {
@@ -304,6 +310,7 @@ export const initialCatalog: Catalog = {
             warmTempC: "38"
         },
         cleanersSink: {
+            priceTableName: "Cleaners Sink",
             abbreviation: "CS",
             fixtureUnits: "1",
             loadingUnits: {
@@ -354,6 +361,7 @@ export const initialCatalog: Catalog = {
             warmTempC: null
         },
         dishwasher: {
+            priceTableName: "Dishwasher",
             abbreviation: "D",
             fixtureUnits: "3",
             loadingUnits: {
@@ -404,6 +412,7 @@ export const initialCatalog: Catalog = {
             warmTempC: null
         },
         drinkingFountain: {
+            priceTableName: "Drinking Fountain",
             abbreviation: "DF",
             fixtureUnits: "1",
             loadingUnits: {
@@ -445,6 +454,7 @@ export const initialCatalog: Catalog = {
             warmTempC: null
         },
         flushingRimSink: {
+            priceTableName: "Flushing Rim Sink",
             abbreviation: "FRS",
             fixtureUnits: "6",
             loadingUnits: {
@@ -495,6 +505,7 @@ export const initialCatalog: Catalog = {
             warmTempC: null
         },
         hoseTap: {
+            priceTableName: "Hose Tap",
             abbreviation: "H",
             fixtureUnits: "0",
             loadingUnits: {
@@ -536,6 +547,7 @@ export const initialCatalog: Catalog = {
             warmTempC: null
         },
         kitchenSink: {
+            priceTableName: "Kitchen Sink",
             abbreviation: "KS",
             fixtureUnits: "3",
             loadingUnits: {
@@ -586,6 +598,7 @@ export const initialCatalog: Catalog = {
             warmTempC: null
         },
         kitchenSinkHot: {
+            priceTableName: "Kitchen Sink",
             abbreviation: "KS",
             fixtureUnits: "3",
             loadingUnits: {
@@ -636,6 +649,7 @@ export const initialCatalog: Catalog = {
             warmTempC: null
         },
         laundryTrough: {
+            priceTableName: "Laundry Trough",
             abbreviation: "T",
             fixtureUnits: "5",
             loadingUnits: {
@@ -686,6 +700,7 @@ export const initialCatalog: Catalog = {
             warmTempC: null
         },
         laundryTroughHot: {
+            priceTableName: "Laundry Trough",
             abbreviation: "T",
             fixtureUnits: "5",
             loadingUnits: {
@@ -736,6 +751,7 @@ export const initialCatalog: Catalog = {
             warmTempC: null
         },
         shower: {
+            priceTableName: "Shower",
             abbreviation: "SHR",
             fixtureUnits: "2",
             loadingUnits: {
@@ -786,6 +802,7 @@ export const initialCatalog: Catalog = {
             warmTempC: "42"
         },
         urinal: {
+            priceTableName: "Urinal",
             abbreviation: "U",
             fixtureUnits: "1",
             loadingUnits: {
@@ -827,6 +844,7 @@ export const initialCatalog: Catalog = {
             warmTempC: null
         },
         washingMachine: {
+            priceTableName: "Washing Machine",
             abbreviation: "WM",
             fixtureUnits: "5",
             loadingUnits: {
@@ -877,6 +895,7 @@ export const initialCatalog: Catalog = {
             warmTempC: null
         },
         wc: {
+            priceTableName: "WC",
             abbreviation: "WC",
             fixtureUnits: "4",
             loadingUnits: {
@@ -964,11 +983,13 @@ export const initialCatalog: Catalog = {
                     name: 'Generic',
                     abbreviation: "Generic",
                     uid: "generic",
+                    priceTableName: "Tempering Valve",
                 },
                 {
                     name: 'Caleffi',
                     abbreviation: "Caleffi",
                     uid: "caleffi",
+                    priceTableName: "Tempering Valve",
                 }
             ],
         },
@@ -1016,11 +1037,13 @@ export const initialCatalog: Catalog = {
                     name: 'Generic',
                     abbreviation: "Generic",
                     uid: "generic",
+                    priceTableName: "TMV",
                 },
                 {
                     name: 'Caleffi',
                     abbreviation: "Caleffi",
                     uid: "caleffi",
+                    priceTableName: "TMV",
                 }
             ],
         }
@@ -1031,11 +1054,13 @@ export const initialCatalog: Catalog = {
                 name: 'Generic',
                 abbreviation: 'Generic',
                 uid: 'generic',
+                priceTableName: "PRV",
             },
             {
                 name: 'Caleffi',
                 abbreviation: 'Caleffi',
                 uid: 'caleffi',
+                priceTableName: "PRV",
             }
         ],
         size: {
@@ -1212,6 +1237,7 @@ export const initialCatalog: Catalog = {
                 {
                     name: 'Generic',
                     abbreviation: 'Generic',
+                    priceTableName: "Cast Iron",
                     uid: 'generic',
                 }
             ],
@@ -1276,11 +1302,13 @@ export const initialCatalog: Catalog = {
                 {
                     name: 'Generic',
                     abbreviation: 'Generic',
+                    priceTableName: "Copper",
                     uid: 'generic',
                 },
                 {
                     name: 'Kembla',
                     abbreviation: 'KEMBLA CU',
+                    priceTableName: "Copper",
                     uid: 'kemblaCu',
                 }
             ],
@@ -1475,6 +1503,7 @@ export const initialCatalog: Catalog = {
                 {
                     name: 'Generic',
                     abbreviation: 'Generic',
+                    priceTableName: "GMS",
                     uid: 'generic',
                 }
             ],
@@ -1515,6 +1544,7 @@ export const initialCatalog: Catalog = {
                 {
                     name: 'Generic',
                     abbreviation: 'Generic',
+                    priceTableName: "HDPE",
                     uid: 'generic',
                 }
             ],
@@ -1635,11 +1665,13 @@ export const initialCatalog: Catalog = {
                 {
                     name: 'Generic',
                     abbreviation: 'Generic',
+                    priceTableName: "PEX",
                     uid: 'generic',
                 },
                 {
                     name: 'Rehau',
                     abbreviation: 'REHAU PEX',
+                    priceTableName: "PEX",
                     uid: 'rehauPex',
                 }
             ],
@@ -1794,11 +1826,13 @@ export const initialCatalog: Catalog = {
                 {
                     name: 'Generic',
                     abbreviation: 'Generic',
+                    priceTableName: "Stainless Steel",
                     uid: 'generic',
                 },
                 {
                     name: 'Kembla',
                     abbreviation: 'KEMBLA S/S',
+                    priceTableName: "Stainless Steel",
                     uid: 'kemblaS/s',
                 }
             ],
@@ -3355,6 +3389,7 @@ export const initialCatalog: Catalog = {
             name: "RPZD",
             manufacturer: [
                 {
+                    priceTableName: 'RPZD',
                     name: 'Generic',
                     abbreviation: 'Generic',
                     uid: 'generic',
@@ -3363,6 +3398,7 @@ export const initialCatalog: Catalog = {
                     name: 'Apollo',
                     abbreviation: 'Apollo',
                     uid: 'apolloRpzd',
+                    priceTableName: "RPZD",
                 }
             ],
             valvesBySize: {
@@ -3639,14 +3675,14 @@ export const initialCatalog: Catalog = {
     },
     balancingValves: {
         manufacturer: [
-            { name: "Generic", abbreviation: "Generic", uid: "generic", },
-            { name: "Cimberio", abbreviation: "Cimberio", uid: "cimberio", }
+            { name: "Generic", abbreviation: "Generic", uid: "generic", priceTableName: 'Balancing Valve'},
+            { name: "Cimberio", abbreviation: "Cimberio", uid: "cimberio", priceTableName: 'Balancing Valve'}
         ],
     },
     hotWaterPlant: {
         manufacturer: [
-            { name: "Generic", abbreviation: "Generic", uid: "generic", },
-            { name: "Grundfos", abbreviation: "Grundfos", uid: "grundfos", }
+            { name: "Generic", abbreviation: "Generic", uid: "generic", priceTableName: "Hot Water Plant"},
+            { name: "Grundfos", abbreviation: "Grundfos", uid: "grundfos", priceTableName: "Hot Water Plant"}
         ],
         grundfosPressureDrop: {
             "20-60-1": {

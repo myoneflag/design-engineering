@@ -3,7 +3,7 @@ import FittingEntity, { fillValveDefaultFields } from "../../../../common/src/ap
 import * as TM from "transformation-matrix";
 import { Matrix } from "transformation-matrix";
 import { DocumentState } from "../../../src/store/document/types";
-import { matrixScale } from "../../../src/htmlcanvas/utils";
+import {lowerBoundNumberTable, matrixScale} from "../../../src/htmlcanvas/utils";
 import Flatten from "@flatten-js/core";
 import Connectable, { ConnectableObject } from "../../../src/htmlcanvas/lib/object-traits/connectable";
 import {
@@ -15,7 +15,7 @@ import {
     lighten, rgb2color, rgb2style
 } from "../../../src/lib/utils";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
-import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
+import {CostBreakdown, DrawingContext} from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import BackedConnectable from "../../../src/htmlcanvas/lib/BackedConnectable";
@@ -30,12 +30,13 @@ import { CalculationData } from "../../../src/store/document/calculations/calcul
 import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import FittingCalculation, { emptyFittingCalculation } from "../../store/document/calculations/fitting-calculation";
 import math3d from "math3d";
-import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
+import PipeEntity, {fillPipeDefaultFields} from "../../../../common/src/api/document/entities/pipe-entity";
 import { Coord } from "../../../../common/src/api/document/drawing";
 import { EPS, parseCatalogNumberExact } from "../../../../common/src/lib/utils";
 import { assertUnreachable, ComponentPressureLossMethod } from "../../../../common/src/api/config";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { getHighlightColor } from "../lib/utils";
+import {PipesTable} from "../../../../common/src/api/catalog/price-table";
 
 @CalculatedObject
 @SelectableObject
@@ -324,6 +325,10 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
         // explicitly create this to help with refactors
         const res: FittingCalculation = {
+            costBreakdown: null,
+            cost: null,
+            expandedEntities: null,
+
             flowRateLS: calc.flowRateLS,
             pressureDropKPA: calc.pressureDropKPA,
             pressureKPA: calc.pressureKPA,
@@ -386,5 +391,104 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
     protected refreshObjectInternal(obj: FittingEntity): void {
         //
+    }
+
+    costBreakdown(context: CalculationContext): CostBreakdown | null {
+        const angles = this.getSortedAngles();
+        if (angles.length === 0) {
+            return null;
+        }
+
+        const materials: [keyof PipesTable, number][] = [];
+        for (const puid of context.globalStore.getConnections(this.entity.uid)) {
+            const pipe = context.globalStore.get(puid) as Pipe;
+            if (!pipe) {
+                // bleh
+            } else {
+                const filled = fillPipeDefaultFields(context.drawing, 0, pipe.entity);
+                const manufacturer = context.drawing.metadata.catalog.pipes
+                    .find((po) => po.uid === filled.material)?.manufacturer || 'generic';
+
+                const manufacturerCatalog = context.catalog.pipes[filled.material!].manufacturer
+                    .find((mo) => mo.uid === manufacturer);
+
+                const size = context.globalStore.getOrCreateCalculation(pipe.entity).realNominalPipeDiameterMM;
+
+                if (size) {
+                    materials.push([manufacturerCatalog!.priceTableName, size]);
+                }
+            }
+        }
+        if (materials.length === 0) {
+            return null;
+        }
+
+        if (angles.length === 3) {
+            // can only be tee
+            let mostExpensive = 0;
+            let mostExpensivePath = '';
+            for (const [mat, siz] of materials) {
+                const thisSiz = lowerBoundNumberTable(context.priceTable.Fittings.Tee[mat], siz);
+                if (thisSiz && context.priceTable.Fittings.Tee[mat][thisSiz] > mostExpensive) {
+                    mostExpensive = context.priceTable.Fittings.Tee[mat][thisSiz];
+                    mostExpensivePath = `Fittings.Tee.${mat}.${thisSiz}`;
+                }
+            }
+            return {
+                cost: mostExpensive,
+                breakdown: [{
+                    qty: 1,
+                    path: mostExpensivePath,
+                }],
+            };
+        }
+        if (angles.length === 2) {
+            // assume is bend :O TODO: input different size for straights
+            let mostExpensive = 0;
+            let mostExpensivePath = '';
+            if (isRightAngleRad(angles[0], Math.PI / 3)) {
+                for (const [mat, siz] of materials) {
+                    const thisSiz = lowerBoundNumberTable(context.priceTable.Fittings.Elbow[mat], siz);
+                    if (thisSiz) {
+                        if (context.priceTable.Fittings.Elbow[mat][thisSiz] > mostExpensive) {
+                            mostExpensive = context.priceTable.Fittings.Elbow[mat][thisSiz];
+                            mostExpensivePath = `Fittings.Elbow.${mat}.${thisSiz}`;
+                        }
+                    }
+                }
+            } else {
+                for (const [mat, siz] of materials) {
+                    const thisSiz = lowerBoundNumberTable(context.priceTable.Fittings.Reducer[mat], siz);
+                    if (thisSiz) {
+                        if (siz in context.priceTable.Fittings.Reducer[mat]) {
+                            if (context.priceTable.Fittings.Reducer[mat][thisSiz] > mostExpensive) {
+                                mostExpensive = context.priceTable.Fittings.Reducer[mat][thisSiz];
+                                mostExpensivePath = `Fittings.Reducer.${mat}.${thisSiz}`;
+                            }
+                        }
+                    }
+                }
+            }
+            return {
+                cost: mostExpensive,
+                breakdown: [{
+                    qty: 1,
+                    path: mostExpensivePath,
+                }],
+            };
+        }
+
+        if (angles.length === 1) {
+            // deadleg cap - no worries.
+            return {cost: 0, breakdown: [{qty: 0, path: ''}]};
+        }
+
+        if (angles.length === 0) {
+            // Invalid thingymabob.
+            return {cost: 0, breakdown: [{qty: 0, path: ''}]};
+        }
+
+        // otherwise no info.
+        return null;
     }
 }

@@ -8,7 +8,7 @@ import { DocumentState } from "../types";
 import { assertUnreachable, StandardFlowSystemUids } from "../../../../../common/src/api/config";
 import { Units } from "../../../../../common/src/lib/measurements";
 import { SelectedMaterialManufacturer } from '../../../../../common/src/api/document/drawing';
-import { Manufacturer, Catalog } from '../../../../../common/src/api/catalog/types';
+import {Manufacturer, Catalog, MixingValveManufacturer} from '../../../../../common/src/api/catalog/types';
 
 export default interface BigValveCalculation extends Calculation {
     coldTemperatureC: number | null;
@@ -63,7 +63,6 @@ export function makeBigValveCalculationFields(doc: DocumentState, entity: BigVal
                     property: "rpzdSizeMM." + suids[i],
                     title: system.name + " RPZD Size",
                     short: "",
-                    attachUid: attachments[i] as string,
                     systemUid: suids[i],
                     units: Units.Millimeters,
                     category: FieldCategory.Size
@@ -92,7 +91,7 @@ export function makeBigValveCalculationFields(doc: DocumentState, entity: BigVal
     if (entity.valve.type !== BigValveType.RPZD_HOT_COLD) {
         const manufacturer = doc.drawing.metadata.catalog.mixingValves.find((material: SelectedMaterialManufacturer) => material.uid === entity.valve.catalogId)?.manufacturer || 'generic';  
         const abbreviation = manufacturer !== 'generic' 
-            && catalog?.mixingValves[entity.valve.catalogId].manufacturer.find((manufacturerObj: Manufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation 
+            && catalog?.mixingValves[entity.valve.catalogId].manufacturer.find((manufacturerObj: MixingValveManufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation
             || '';
 
         result.push({
@@ -110,6 +109,10 @@ export function makeBigValveCalculationFields(doc: DocumentState, entity: BigVal
 
 export function EmptyBigValveCalculations(entity: BigValveEntity): BigValveCalculation {
     const result: BigValveCalculation = {
+        cost: null,
+        costBreakdown: null,
+        expandedEntities: null,
+
         coldPressureKPA: null,
         coldTemperatureC: null,
         coldRawPeakFlowRate: null,

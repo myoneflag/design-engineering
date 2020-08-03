@@ -1,3 +1,4 @@
+import {DrawingMode} from "../../htmlcanvas/types";
 <template>
     <drop @drop="onDrop">
         <!--Anything that needs scrolling needs to be up here, outside of canvasFrame.-->
@@ -21,10 +22,20 @@
             "
                 :objects="visibleObjects"
                 :on-change="scheduleDraw"
+                :canvas-context="this"
         >
         </CalculationsSidebar>
 
         <LevelSelector v-if="levelSelectorVisible && initialized" :object-store="globalStore"></LevelSelector>
+        <LUAndCostTable v-if="LUAndCostTableVisible && initialized"
+                        :global-store="globalStore" :selected-entities="selectedEntities"
+                        :projectLUs="projectLUs"
+                        :focus-l-us="focusLUs"
+                        :focus-name="focusName"
+
+                        :focus-cost="focusCost"
+                        :project-cost="projectCost()"
+        />
 
         <div ref="canvasFrame" class="fullFrame" v-bind:class="{ disableMouseEvents: shouldDisableUIMouseEvents }">
             <DrawingNavBar :loading="isLoading" :disabled="!!toolHandler"/>
@@ -106,12 +117,12 @@
 <script lang="ts">
     import Vue from "vue";
     import Component from "vue-class-component";
-    import { ViewPort } from "../../../src/htmlcanvas/viewport";
-    import { DocumentState, EntityParam } from "../../../src/store/document/types";
-    import { drawGridLines, drawLoadingUnits, drawPaperScale } from "../../../src/htmlcanvas/on-screen-items";
+    import {ViewPort} from "../../../src/htmlcanvas/viewport";
+    import {DocumentState, EntityParam} from "../../../src/store/document/types";
+    import {drawGridLines, drawLoadingUnits, drawPaperScale} from "../../../src/htmlcanvas/on-screen-items";
     import ModeButtons from "../../../src/components/editor/ModeButtons.vue";
     import PropertiesWindow from "../../../src/components/editor/property-window/PropertiesWindow.vue";
-    import { DrawingMode, MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
+    import {DrawingMode, MouseMoveResult, UNHANDLED} from "../../../src/htmlcanvas/types";
     import BackgroundLayer from "../../../src/htmlcanvas/layers/background-layer";
     import * as TM from "transformation-matrix";
     import {
@@ -123,72 +134,82 @@
     } from "../../../src/htmlcanvas/utils";
     import Toolbar from "../../../src/components/editor/Toolbar.vue";
     import LoadingScreen from "../../../src/views/LoadingScreen.vue";
-    import { MainEventBus } from "../../../src/store/main-event-bus";
-    import { ToolConfig } from "../../../src/store/tools/types";
-    import { DEFAULT_TOOL, ToolHandler } from "../../../src/htmlcanvas/lib/tool";
+    import {MainEventBus} from "../../../src/store/main-event-bus";
+    import {ToolConfig} from "../../../src/store/tools/types";
+    import {DEFAULT_TOOL, ToolHandler} from "../../../src/htmlcanvas/lib/tool";
     import uuid from "uuid";
-    import { renderPdf } from "../../../src/api/pdf";
+    import {renderPdf} from "../../../src/api/pdf";
     import HydraulicsLayer from "../../../src/htmlcanvas/layers/hydraulics-layer";
-    import Layer, { SelectMode } from "../../../src/htmlcanvas/layers/layer";
+    import Layer, {SelectMode} from "../../../src/htmlcanvas/layers/layer";
     import HydraulicsInsertPanel from "../../../src/components/editor/HydraulicsInsertPanel.vue";
     import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
-    import { EntityType, getReferences } from "../../../../common/src/api/document/entities/types";
-    import { Interaction } from "../../../src/htmlcanvas/lib/interaction";
+    import {EntityType, getReferences} from "../../../../common/src/api/document/entities/types";
+    import {Interaction} from "../../../src/htmlcanvas/lib/interaction";
     import insertRiser from "../../htmlcanvas/tools/insert-riser";
     import insertPipes from "../../../src/htmlcanvas/tools/insert-pipes";
     import insertValve from "../../../src/htmlcanvas/tools/insert-valve";
-    import { DrawingContext, SelectionTarget, ValidationResult, ValveId } from "../../../src/htmlcanvas/lib/types";
-    import { BackgroundEntity } from "../../../../common/src/api/document/entities/background-entity";
+    import {DrawingContext, SelectionTarget, ValidationResult, ValveId} from "../../../src/htmlcanvas/lib/types";
+    import {BackgroundEntity} from "../../../../common/src/api/document/entities/background-entity";
     import insertBigValve from "../../htmlcanvas/tools/insert-big-valve";
     import insertFixture from "../../../src/htmlcanvas/tools/insert-fixture";
     import FloorPlanInsertPanel from "../../../src/components/editor/FloorPlanInsertPanel.vue";
     import InstructionPage from "../../../src/components/editor/InstructionPage.vue";
-    import CalculationEngine from "../../../src/calculations/calculation-engine";
     import CalculationLayer from "../../../src/htmlcanvas/layers/calculation-layer";
-    import { getVisibleBoundingBox, levelIncludesRiser } from "../../../src/htmlcanvas/lib/utils";
+    import {getVisibleBoundingBox, levelIncludesRiser} from "../../../src/htmlcanvas/lib/utils";
     import {
         DrawableEntityConcrete,
         isCenteredEntity
     } from "../../../../common/src/api/document/entities/concrete-entity";
     import SelectBox from "../../../src/htmlcanvas/objects/select-box";
     import * as _ from "lodash";
-    import { AutoConnector } from "../../../src/htmlcanvas/lib/black-magic/auto-connect";
+    import {AutoConnector} from "../../../src/htmlcanvas/lib/black-magic/auto-connect";
     import insertDirectedValve from "../../../src/htmlcanvas/tools/insert-directed-valve";
-    import { ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
-    import { addPsdUnitsByFlowSystem, countPsdUnits, PsdUnitsByFlowSystem } from "../../../src/calculations/utils";
+    import {ValveType} from "../../../../common/src/api/document/entities/directed-valves/valve-types";
+    import {
+        addCosts,
+        addPsdUnitsByFlowSystem,
+        Cost,
+        countPsdUnits,
+        PsdUnitsByFlowSystem,
+        zeroCost
+    } from "../../../src/calculations/utils";
     import CalculationsSidebar from "../../../src/components/editor/CalculationsSidebar.vue";
     import DrawingNavBar from "../DrawingNavBar.vue";
     import LevelSelector from "./LevelSelector.vue";
     import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
     import util from "util";
     import insertLoadNode from "../../htmlcanvas/tools/insert-load-node";
-    import { NodeType } from "../../../../common/src/api/document/entities/load-node-entity";
-    import { BigValveType } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
-    import { Buffer } from "./RenderBuffer";
-    import { GlobalStore } from "../../htmlcanvas/lib/global-store";
+    import {NodeType} from "../../../../common/src/api/document/entities/load-node-entity";
+    import {BigValveType} from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
+    import {Buffer} from "./RenderBuffer";
+    import {GlobalStore} from "../../htmlcanvas/lib/global-store";
     import insertFlowSource from "../../htmlcanvas/tools/insert-flow-source";
     import insertPlant from "../../htmlcanvas/tools/insert-plant";
-    import { assertUnreachable } from "../../../../common/src/api/config";
-    import { Catalog } from "../../../../common/src/api/catalog/types";
-    import { Coord, FlowSystemParameters, Level, NetworkType } from "../../../../common/src/api/document/drawing";
-    import { rebaseAll } from "../../htmlcanvas/lib/black-magic/rebase-all";
-    import { globalStore } from "../../store/document/mutations";
+    import {assertUnreachable} from "../../../../common/src/api/config";
+    import {Catalog} from "../../../../common/src/api/catalog/types";
+    import {Coord, FlowSystemParameters, Level, NetworkType} from "../../../../common/src/api/document/drawing";
+    import {rebaseAll} from "../../htmlcanvas/lib/black-magic/rebase-all";
+    import {globalStore} from "../../store/document/mutations";
     import HistoryView from "./HistoryView.vue";
-    import { DEFAULT_FONT_NAME } from "../../config";
-    import { cloneSimple } from "../../../../common/src/lib/utils";
+    import {DEFAULT_FONT_NAME} from "../../config";
+    import {cloneSimple} from "../../../../common/src/lib/utils";
     import Riser from "../../htmlcanvas/objects/riser";
     import stringify from "json-stable-stringify";
     import insertDwellingHotCold from "../../htmlcanvas/tools/insert-dwelling-hot-cold";
     import PDFSnapshotTopBar from "../PDFSnapshotTopBar.vue";
     import CanvasContext from "../../htmlcanvas/lib/canvas-context";
-    import { getEffectiveFilter } from "../../lib/utils";
-    import { PlantType } from "../../../../common/src/api/document/entities/plants/plant-types";
+    import {PlantType} from "../../../../common/src/api/document/entities/plants/plant-types";
     import CalculationTopBar from "../CalculationTopBar.vue";
     import insertFixtureHotCold from "../../htmlcanvas/tools/insert-fixture-hot-cold";
-    import { User } from "../../../../common/src/models/User";
+    import {User} from "../../../../common/src/models/User";
+    import {PriceTable} from "../../../../common/src/api/catalog/price-table";
+    import {defaultPriceTable} from "../../../../common/src/api/catalog/default-price-table";
+    import LUAndCostTable from "./LUAndCostTable.vue";
+    import {isCalculated} from "../../store/document/calculations";
 
     @Component({
         components: {
+            LUAndCostTable,
             PDFSnapshotTopBar,
             HistoryView,
             LevelSelector,
@@ -287,6 +308,10 @@
             return this.$store.getters["catalog/default"];
         }
 
+        get effectivePriceTable(): PriceTable {
+            return this.$store.getters['document/priceTable'];
+        }
+
         get availableFixtures(): string[] {
             return this.document.drawing.metadata.availableFixtures;
         }
@@ -366,6 +391,24 @@
             return true;
         }
 
+        get LUAndCostTableVisible() {
+            if (!this.currentTool.propertiesVisible) {
+                return false;
+            }
+
+
+            if (this.hasDragged || this.isLayerDragging) {
+                return false;
+            }
+
+
+            if (this.selectBox) {
+                return false;
+            }
+
+            return true;
+        }
+
         get attributesVisible() {
             if (this.selectedObjects && this.selectedObjects.length > 0) {
                 return false;
@@ -436,7 +479,7 @@
             return this.$store.getters["profile/profile"];
         }
 
-        projectLUs(): PsdUnitsByFlowSystem | null {
+        get projectLUs(): PsdUnitsByFlowSystem | null {
             let result: PsdUnitsByFlowSystem | null = {};
 
             for (const luid of Object.keys(this.document.drawing.levels)) {
@@ -460,6 +503,18 @@
             this.changedLevelsSinceLastPLUCalc.clear();
             return result;
         }
+
+        projectCost(): Cost {
+            let result: Cost = zeroCost();
+            for (const o of this.globalStore.values()) {
+                if (isCalculated(o.entity)) {
+                    const calc = this.globalStore.getOrCreateCalculation(o.entity);
+                    result = addCosts(result, calc.cost);
+                }
+            }
+            return result;
+        }
+
 
         levelLUCache = new Map<string, PsdUnitsByFlowSystem | null>();
         changedLevelsSinceLastPLUCalc = new Set<string>();
@@ -490,7 +545,6 @@
 
         lastDrawingContext: DrawingContext | null = null;
 
-        calculationEngine!: CalculationEngine;
         targetProperty: string | null = null;
         isLayerDragging: boolean = false;
 
@@ -571,8 +625,6 @@
 
             // set view on groundiest floor
             this.selectGroundFloor();
-
-            this.calculationEngine = new CalculationEngine();
 
             for (const luid of Object.keys(this.document.drawing.levels)) {
                 this.changedLevelsSinceLastPLUCalc.add(luid);
@@ -1310,6 +1362,7 @@
                 ctx: this.ctx!,
                 vp: this.viewPort,
                 doc: this.document,
+                priceTable: this.effectivePriceTable,
                 catalog: this.effectiveCatalog,
                 globalStore: this.globalStore,
                 selectedUids: new Set<string>(), // this is set in the draw reactive layer,
@@ -1331,46 +1384,6 @@
                 }
             }
 
-            // Draw on screen HUD
-            drawGridLines(context);
-            this.ctx!.setTransform(TM.identity());
-            drawPaperScale(this.ctx!, 1 / matrixScale(this.viewPort.screen2worldMatrix));
-
-            if (drawReactive && this.propertiesVisible) {
-                if (
-                    this.selectedEntities &&
-                    this.selectedEntities.length > 0 &&
-                    this.document.uiState.drawingMode === DrawingMode.Hydraulics
-                ) {
-                    drawLoadingUnits(
-                        context,
-                        this.effectiveCatalog,
-                        countPsdUnits(this.selectedEntities, this.document, this.effectiveCatalog, this.globalStore),
-                        this.projectLUs(),
-                        true
-                    );
-                } else {
-                    drawLoadingUnits(
-                        context,
-                        this.effectiveCatalog,
-                        countPsdUnits(
-                            Array.from(
-                                (this.globalStore.entitiesInLevel.get(this.document.uiState.levelUid) || new Set()).values()
-                            ).map((u) => {
-                                if (!this.globalStore.has(u)) {
-                                    throw new Error("can't find uid " + u);
-                                }
-                                return this.globalStore.get(u)!.entity;
-                            }),
-                            this.document,
-                            this.effectiveCatalog,
-                            this.globalStore
-                        ),
-                        this.projectLUs()
-                    );
-                }
-            }
-
             // draw gridlines
 
             // draw selection box
@@ -1385,6 +1398,61 @@
             if (this.toolHandler) {
                 context.ctx.setTransform(TM.identity());
                 this.toolHandler.draw(context);
+            }
+        }
+
+        get focusLUs() {
+            if (this.selectedEntities.length && this.document.uiState.drawingMode === DrawingMode.Hydraulics) {
+                return countPsdUnits(this.selectedEntities, this.document, this.effectiveCatalog, this.globalStore);
+            } else {
+                return countPsdUnits(
+                    Array.from(
+                        (this.globalStore.entitiesInLevel.get(this.document.uiState.levelUid) || new Set()).values()
+                    ).map((u) => {
+                        if (!this.globalStore.has(u)) {
+                            throw new Error("can't find uid " + u);
+                        }
+                        return this.globalStore.get(u)!.entity;
+                    }),
+                    this.document,
+                    this.effectiveCatalog,
+                    this.globalStore
+                );
+            }
+        }
+
+        get focusCost(): Cost {
+            let result: Cost = zeroCost();
+            let entities: DrawableEntityConcrete[] = [];
+            if (this.selectedEntities.length && this.document.uiState.drawingMode === DrawingMode.Hydraulics) {
+                entities = this.selectedEntities;
+            } else {
+                entities = Array.from(
+                    (this.globalStore.entitiesInLevel.get(this.document.uiState.levelUid) || new Set()).values()
+                ).map((u) => {
+                    if (!this.globalStore.has(u)) {
+                        throw new Error("can't find uid " + u);
+                    }
+                    return this.globalStore.get(u)!.entity;
+                });
+            }
+            if (this.document.uiState.isCalculating) {
+                // Trigger vue to recalculate this field upon new calculations
+            }
+            for (const e of entities) {
+                if (isCalculated(e)) {
+                    const calc = this.globalStore.getOrCreateCalculation(e);
+                    result = addCosts(result, calc.cost);
+                }
+            }
+            return result;
+        }
+
+        get focusName() {
+            if (this.selectedEntities.length && this.document.uiState.drawingMode === DrawingMode.Hydraulics) {
+                return "Selection";
+            } else {
+                return "Level";
             }
         }
 
@@ -1420,6 +1488,7 @@
                 const context: DrawingContext = {
                     ctx: altCtx || buffer.ctx,
                     vp: altVp || this.viewPort.copy(),
+                    priceTable: this.effectivePriceTable,
                     doc: this.document,
                     catalog: this.effectiveCatalog,
                     globalStore: this.globalStore,

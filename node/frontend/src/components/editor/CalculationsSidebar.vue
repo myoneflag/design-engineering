@@ -15,6 +15,7 @@
 
                     <b-dropdown variant="outline-dark" size="sm" class="calculationBtn" text="Export">
                         <b-dropdown-item @click="pdfSnapshot" variant="outline-dark" size="sm"> PDF </b-dropdown-item>
+                        <b-dropdown-item @click="budgetReport" variant="outline-dark" size="sm"> Bill of Materials (.xlsx) </b-dropdown-item>
                         <b-dropdown-item variant="outline-dark" size="sm" :disabled="true"
                             >DWG (Coming soon)
                         </b-dropdown-item>
@@ -88,12 +89,14 @@ import { MainEventBus } from "../../store/main-event-bus";
 import PdfSnapshotTool from "../../htmlcanvas/tools/pdf-snapshot-tool";
 import { getEffectiveFilter } from "../../lib/utils";
 import { User } from "../../../../common/src/models/User";
+import {exportBudgetReport} from "../../htmlcanvas/lib/budget-report/budget-report";
 
 @Component({
     components: {},
     props: {
         objects: Array,
-        onChange: Function
+        onChange: Function,
+        canvasContext: Object,
     }
 })
 export default class CalculationsSidebar extends Vue {
@@ -101,7 +104,7 @@ export default class CalculationsSidebar extends Vue {
     shareLink: string = window.location.origin + "/";
     generate: {isLoading: boolean} = {
         isLoading: false,
-    }
+    };
 
     mounted() {
         this.stageNewFilters();
@@ -137,6 +140,10 @@ export default class CalculationsSidebar extends Vue {
 
     pdfSnapshot() {
         MainEventBus.$emit("set-tool-handler", new PdfSnapshotTool());
+    }
+
+    budgetReport() {
+        exportBudgetReport(this.$props.canvasContext);
     }
 
     onCheck(eType: string, prop: string, value: boolean, shouldChange: boolean = true) {
