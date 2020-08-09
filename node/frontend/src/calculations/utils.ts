@@ -236,13 +236,16 @@ export function countPsdProfile(profile: PsdProfile): FinalPsdCountEntry {
 
     profile.forEach((contextual) => {
         if (byCorrelated.has(contextual.correlationGroup)) {
-            const cmp = comparePsdCounts(contextual, byCorrelated.get(contextual.correlationGroup)!);
-            if (cmp === null) {
-                throw new Error("could not determine max PSD");
-            }
-            if (cmp > 0) {
-                byCorrelated.set(contextual.correlationGroup, contextual);
-            }
+            const a = contextual;
+            const b = byCorrelated.get(contextual.correlationGroup)!;
+
+            const max: PsdCountEntry = {
+                dwellings: Math.max(a.dwellings, b.dwellings),
+                units: Math.max(a.units, b.units),
+                continuousFlowLS: Math.max(a.continuousFlowLS, b.continuousFlowLS),
+            };
+
+            byCorrelated.set(contextual.correlationGroup, max);
         } else {
             byCorrelated.set(contextual.correlationGroup, contextual);
         }
