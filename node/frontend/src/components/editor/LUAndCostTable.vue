@@ -1,6 +1,6 @@
 <template>
     <div  class="lu-cost-table"
-          :style="collapsed ? 'margin-bottom: 35px' : ''"
+          :style="document.uiState.costAndLUTableOpen ? 'margin-bottom: 35px' : ''"
           @mouseenter="onMouseEnter"
           @mouseleave="onMouseLeave"
     >
@@ -54,7 +54,6 @@
     import Vue from "vue";
     import Component from "vue-class-component";
     import { DocumentState } from "../../store/document/types";
-    import uuid from "uuid";
     import {
         addFinalPsdCounts, Cost,
         countPsdUnits,
