@@ -215,6 +215,7 @@ function getPriceQuantitiesForSystem(context: CanvasContext, levelUid: string | 
                 case EntityType.RISER:
                     thisSystemUid = entity.systemUid;
                     break;
+                case EntityType.GAS_APPLIANCE:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.FIXTURE:
                 case EntityType.LOAD_NODE:

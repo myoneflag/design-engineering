@@ -253,6 +253,7 @@ export function countPsdProfile(profile: PsdProfile): FinalPsdCountEntry {
                 dwellings: Math.max(a.dwellings, b.dwellings),
                 units: Math.max(a.units, b.units),
                 continuousFlowLS: Math.max(a.continuousFlowLS, b.continuousFlowLS),
+                gasMJH: Math.max(a.gasMJH, b.gasMJH),
             };
 
             byCorrelated.set(contextual.correlationGroup, max);
