@@ -6,12 +6,12 @@ export enum PlantType {
 }
 
 export enum HotWaterPlantGrundfosSettingsName {
-    "20-60-1" = 'UPS 20-60 N Setting 1',
-    "20-60-2" = 'UPS 20-60 N Setting 2',
-    "20-60-3" = 'UPS 20-60 N Setting 3',
-    "32-80-1" = 'UPS 32-80 N Setting 1',
-    "32-80-2" = "UPS 32-80 N Setting 2",
-    "32-80-3" = "UPS 32-80 N Setting 3",
+    "20-60-1" = 'Grundfos UPS 20-60 N Setting 1',
+    "20-60-2" = 'Grundfos UPS 20-60 N Setting 2',
+    "20-60-3" = 'Grundfos UPS 20-60 N Setting 3',
+    "32-80-1" = 'Grundfos UPS 32-80 N Setting 1',
+    "32-80-2" = "Grundfos UPS 32-80 N Setting 2",
+    "32-80-3" = "Grundfos UPS 32-80 N Setting 3",
 }
 
 export interface Plant {
