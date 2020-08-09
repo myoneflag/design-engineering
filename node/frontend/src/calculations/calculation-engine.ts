@@ -94,7 +94,7 @@ import Fixture from "../htmlcanvas/objects/fixture";
 import LoadNodeCalculation from "../store/document/calculations/load-node-calculation";
 import { fillDefaultLoadNodeFields } from "../store/document/entities/fillDefaultLoadNodeFields";
 import {PriceTable} from "../../../common/src/api/catalog/price-table";
-import {makeGasApplianceFields} from "../../../common/src/api/document/entities/gas-appliance";
+import GasApplianceEntity, {makeGasApplianceFields} from "../../../common/src/api/document/entities/gas-appliance";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -1378,7 +1378,7 @@ export default class CalculationEngine implements CalculationContext {
                 return null;
             }
             switch (parent.type) {
-                case EntityType.FIXTURE:
+                case EntityType.FIXTURE: {
                     const fixture = parent.entity as FixtureEntity;
                     const mainFixture = fillFixtureFields(this.doc.drawing, this.catalog, fixture);
 
@@ -1390,7 +1390,8 @@ export default class CalculationEngine implements CalculationContext {
                                     continuousFlowLS: mainFixture.roughIns[suid].continuousFlowLS!,
                                     dwellings: 0,
                                     entity: node.entity.uid,
-                                    correlationGroup: fixture.uid
+                                    correlationGroup: fixture.uid,
+                                    gasMJH: 0,
                                 };
                             } else {
                                 return {
@@ -1398,6 +1399,7 @@ export default class CalculationEngine implements CalculationContext {
                                     continuousFlowLS: mainFixture.roughIns[suid].continuousFlowLS!,
                                     dwellings: 0,
                                     entity: node.entity.uid,
+                                    gasMJH: 0,
                                     correlationGroup: fixture.uid
                                 };
                             }
@@ -1405,8 +1407,19 @@ export default class CalculationEngine implements CalculationContext {
                     }
                     //throw new Error("Invalid connection to fixture");
                     return zeroContextualPCE(node.entity.uid, node.entity.uid);
-                case EntityType.GAS_APPLIANCE:
+                }
+                case EntityType.GAS_APPLIANCE: {
+                    const appliance = parent.entity as GasApplianceEntity;
                     // TODO: for gas calculation BIG TODO
+                    return {
+                        units: 0,
+                        continuousFlowLS: 0,
+                        dwellings: 0,
+                        entity: node.entity.uid,
+                        correlationGroup: appliance.uid,
+                        gasMJH: appliance.flowRateMJH!,
+                    };
+                }
                 case EntityType.LOAD_NODE:
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.RISER:
@@ -1434,6 +1447,7 @@ export default class CalculationEngine implements CalculationContext {
                             continuousFlowLS: node.entity.node.continuousFlowLS,
                             dwellings: 0,
                             entity: node.entity.uid,
+                            gasMJH: node.entity.node.gasFlowRateMJH,
                             correlationGroup
                         };
                     } else {
@@ -1442,6 +1456,7 @@ export default class CalculationEngine implements CalculationContext {
                             continuousFlowLS: node.entity.node.continuousFlowLS,
                             dwellings: 0,
                             entity: node.entity.uid,
+                            gasMJH: node.entity.node.gasFlowRateMJH,
                             correlationGroup
                         };
                     }
@@ -1451,6 +1466,7 @@ export default class CalculationEngine implements CalculationContext {
                         continuousFlowLS: node.entity.node.continuousFlowLS,
                         dwellings: node.entity.node.dwellings,
                         entity: node.entity.uid,
+                        gasMJH: 0,
                         correlationGroup
                     };
                 default:
@@ -1472,6 +1488,7 @@ export default class CalculationEngine implements CalculationContext {
     ) {
         switch (entity.type) {
             case EntityType.PIPE: {
+
                 const calculation = this.globalStore.getOrCreateCalculation(entity);
                 calculation.psdUnits = psdU;
                 calculation.psdProfile = profile;
@@ -1480,17 +1497,23 @@ export default class CalculationEngine implements CalculationContext {
                 }
                 calculation.noFlowAvailableReason = noFlowReason;
 
-                const flowRate = lookupFlowRate(psdU, this.doc, this.catalog, entity.systemUid);
-
-                if (flowRate === null) {
-                    // Warn for no PSD
-                    if (isZeroPsdCounts(psdU)) {
-                        this.setPipePSDFlowRate(entity, 0);
-                    } else {
-                        calculation.noFlowAvailableReason = NoFlowAvailableReason.LOADING_UNITS_OUT_OF_BOUNDS;
-                    }
+                const isGas = entity.systemUid === StandardFlowSystemUids.Gas;
+                if (isGas) {
+                    // TODO: Gas calculation
                 } else {
-                    this.setPipePSDFlowRate(entity, flowRate.flowRateLS);
+
+                    const flowRate = lookupFlowRate(psdU, this.doc, this.catalog, entity.systemUid);
+
+                    if (flowRate === null) {
+                        // Warn for no PSD
+                        if (isZeroPsdCounts(psdU)) {
+                            this.setPipePSDFlowRate(entity, 0);
+                        } else {
+                            calculation.noFlowAvailableReason = NoFlowAvailableReason.LOADING_UNITS_OUT_OF_BOUNDS;
+                        }
+                    } else {
+                        this.setPipePSDFlowRate(entity, flowRate.flowRateLS);
+                    }
                 }
 
                 return;

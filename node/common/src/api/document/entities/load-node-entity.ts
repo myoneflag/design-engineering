@@ -14,6 +14,7 @@ export interface LoadNode {
     loadingUnits: number;
     designFlowRateLS: number;
     continuousFlowLS: number;
+    gasFlowRateMJH: number;
 }
 
 export interface DwellingNode {
@@ -91,6 +92,17 @@ export function makeLoadNodesFields(systems: FlowSystemParameters[], value: Load
                     params: { min: 0, max: null },
                     multiFieldId: "continuousFlowLS",
                     units: Units.LitersPerSecond
+                },
+
+                {
+                    property: "node.gasFlowRateMJH",
+                    title: "Gas Demand",
+                    hasDefault: false,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    params: { min: 0, max: null },
+                    multiFieldId: "gasFlowRateMJH",
+                    units: Units.MegajoulesPerHour
                 }
             );
             break;

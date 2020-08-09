@@ -45,14 +45,14 @@ import {
     lowerBoundTable,
     parseCatalogNumberExact
 } from "../../../../common/src/lib/utils";
-import {determineConnectableNetwork} from "../../store/document/entities/lib";
+import { determineConnectableNetwork } from "../../store/document/entities/lib";
 import {
     assertUnreachable,
     ComponentPressureLossMethod,
     StandardFlowSystemUids
 } from "../../../../common/src/api/config";
-import {SnappableObject} from "../lib/object-traits/snappable-object";
-import {getHighlightColor} from "../lib/utils";
+import { SnappableObject } from "../lib/object-traits/snappable-object";
+import { getHighlightColor } from "../lib/utils";
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 1.5;
@@ -743,6 +743,8 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             }
         }
 
+        const isGas = this.entity.systemUid === StandardFlowSystemUids.Gas;
+
         const system = drawing.metadata.flowSystems.find((s) => s.uid === entity.systemUid)!;
         const fluid = catalog.fluids[system.fluid];
 
@@ -776,8 +778,13 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 assertUnreachable(context.drawing.metadata.calculationParams.componentPressureLossMethod);
         }
 
-        let retval =
-            sign *
+        let retval = 0;
+        if (isGas) {
+            // TODO: Calculate gas.
+
+        } else {
+
+            retval = sign *
             getDarcyWeisbachFlatMH(
                 parseCatalogNumberExact(page.diameterInternalMM)!,
                 parseCatalogNumberExact(page.colebrookWhiteCoefficient)!,
@@ -787,6 +794,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 velocityMS,
                 ga
             );
+        }
 
         const calc = context.globalStore.getOrCreateCalculation(this.entity);
         if (calc.configuration === Configuration.RING_MAIN) {
