@@ -657,7 +657,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             const pipe = tower[1][1]!;
             const p1 = cloneSimple(pipe);
             const p2 = cloneSimple(pipe);
-            p2.uid = uuid();
+            p2.uid = p1.uid + ".segment.2";
             (p1 as MutablePipe).endpointUid = [p1.endpointUid[0], this.uid + ".calculation"];
             (p2 as MutablePipe).endpointUid = [this.uid + ".calculation", p2.endpointUid[1]];
             let lower: string;

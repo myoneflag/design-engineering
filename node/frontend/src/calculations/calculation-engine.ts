@@ -544,11 +544,6 @@ export default class CalculationEngine implements CalculationContext {
                 calc.cost = zeroCost();
                 calc.expandedEntities = childEntities;
                 for (const e of childEntities) {
-                    if (!this.globalStore.get(e.uid)) {
-                        console.log(e);
-                        console.log(o);
-                        console.log(childEntities);
-                    }
                     const thisCost = this.globalStore.get(e.uid)!.costBreakdown(this);
                     if (thisCost !== null) {
                         calc.cost = addCosts(calc.cost, {value: thisCost.cost, exact: true});
