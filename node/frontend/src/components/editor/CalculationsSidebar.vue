@@ -13,9 +13,9 @@
                         <v-icon name="caret-down" scale="1" />
                     </b-button>
 
-                    <b-dropdown variant="outline-dark" size="sm" class="calculationBtn" text="Export">
-                        <b-dropdown-item @click="pdfSnapshot" variant="outline-dark" size="sm"> PDF </b-dropdown-item>
-                        <b-dropdown-item @click="budgetReport" variant="outline-dark" size="sm"> Bill of Materials (.xlsx) </b-dropdown-item>
+                    <b-dropdown variant="outline-dark" size="sm" class="calculationBtn" text="Export (*)">
+                        <b-dropdown-item @click="pdfSnapshot" variant="outline-dark" size="sm"> PDF</b-dropdown-item>
+                        <b-dropdown-item @click="budgetReport" variant="outline-dark" size="sm"> Bill of Materials (.xlsx) <b-badge>New</b-badge> </b-dropdown-item>
                         <b-dropdown-item variant="outline-dark" size="sm" :disabled="true"
                             >DWG (Coming soon)
                         </b-dropdown-item>

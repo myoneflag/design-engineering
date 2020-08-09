@@ -1,6 +1,6 @@
 <template>
     <div  class="lu-cost-table"
-          :style="document.uiState.costAndLUTableOpen ? 'margin-bottom: 35px' : ''"
+          :style="document.uiState.costAndLUTableOpen ? '' : 'margin-bottom: 35px'"
           @mouseenter="onMouseEnter"
           @mouseleave="onMouseLeave"
     >
