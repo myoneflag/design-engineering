@@ -1008,6 +1008,13 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                     };
                 }
                 break;
+            case ValveType.FILTER:
+            case ValveType.GAS_REGULATOR:
+                // TODO: Gas Regulator cost
+                return {
+                    cost: 0,
+                    breakdown: [],
+                };
             default:
                 assertUnreachable(this.entity.valve);
         }
