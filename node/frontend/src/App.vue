@@ -21,7 +21,7 @@ import {GasType} from "./calculations/gas";
     import VersionNumber from "../src/components/VersionNumber.vue";
     import {MainEventBus} from "../src/store/main-event-bus";
     import {registerObjectBuilders} from "../src/htmlcanvas/objects";
-    import {GasType, sizeGasPipe} from "./calculations/gas";
+    import {GasType, sizeGasPipeInside} from "./calculations/gas";
 
     registerObjectBuilders();
 

@@ -95,6 +95,7 @@ import LoadNodeCalculation from "../store/document/calculations/load-node-calcul
 import { fillDefaultLoadNodeFields } from "../store/document/entities/fillDefaultLoadNodeFields";
 import {PriceTable} from "../../../common/src/api/catalog/price-table";
 import GasApplianceEntity, {makeGasApplianceFields} from "../../../common/src/api/document/entities/gas-appliance";
+import {calculateGas} from "./gas";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -328,6 +329,8 @@ export default class CalculationEngine implements CalculationContext {
                 returnBalanceValves(this, returns);  // balance valves before calculating point pressures so that balancing valve pressure drops are accounted for.
 
                 this.calculateHotWaterDeadlegs();
+
+                calculateGas(this);
 
                 this.calculateAllPointPressures();
                 this.calculateStaticPressures();

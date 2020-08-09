@@ -233,8 +233,6 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         // Umbrella
         const currAngle = canonizeAngleRad(decomposeMatrix(context.vp.currToSurfaceTransform(ctx)).a);
         const upsideDown = currAngle > Math.PI / 2 || currAngle < -Math.PI / 2;
-        console.log(currAngle);
-        console.log(upsideDown);
 
         if (upsideDown) {
             ctx.moveTo(0, 0);

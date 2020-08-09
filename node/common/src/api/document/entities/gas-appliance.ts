@@ -35,7 +35,6 @@ export function makeGasApplianceFields(drawing: DrawingState, entity: GasApplian
             multiFieldId: "name",
         },
 
-
         {
             property: "abbreviation",
             title: "Abbreviation",

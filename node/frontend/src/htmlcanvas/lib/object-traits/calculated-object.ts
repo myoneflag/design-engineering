@@ -319,7 +319,7 @@ export function CalculatedObject<
 
             if (this.entity.type === EntityType.PIPE) {
                 const pCalc = context.globalStore.getCalculation(this.entity);
-                if (pCalc && !pCalc.totalPeakFlowRateLS) {
+                if (pCalc && !pCalc.totalPeakFlowRateLS && pCalc.realNominalPipeDiameterMM === null) {
                     let ambiguousMessage = "NOT CALCULATED";
                     if (pCalc.noFlowAvailableReason) {
                         switch (pCalc.noFlowAvailableReason) {
@@ -346,6 +346,9 @@ export function CalculatedObject<
                                 break;
                             case NoFlowAvailableReason.INVALID_RETURN_NETWORK:
                                 ambiguousMessage = 'INVALID RETURN NETWORK';
+                                break;
+                            case NoFlowAvailableReason.GAS_SUPPLY_PRESSURE_TOO_LOW:
+                                ambiguousMessage = 'GAS SUPPLY PRESSURE TOO LOW';
                                 break;
                             default:
                                 assertUnreachable(pCalc.noFlowAvailableReason);
