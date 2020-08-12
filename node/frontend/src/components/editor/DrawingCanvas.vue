@@ -285,6 +285,12 @@
                 .map((e) => this.globalStore.get(e.uid)!);
             if (this.currentLevel) {
                 objects.push(...Object.keys(this.currentLevel.entities).map((e) => this.globalStore.get(e)!));
+                for (const e of Object.keys(this.currentLevel.entities)) {
+                    if (!this.globalStore.get(e)) {
+                        console.log(e);
+                        console.log(this.currentLevel.entities[e]);
+                    }
+                }
             }
 
             objects.forEach((o) => {

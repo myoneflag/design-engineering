@@ -63,7 +63,7 @@ import { GlobalStore } from "../htmlcanvas/lib/global-store";
 import { ObjectStore } from "../htmlcanvas/lib/object-store";
 import { makeFlowSourceFields } from "../../../common/src/api/document/entities/flow-source-entity";
 import FlowSourceCalculation from "../store/document/calculations/flow-source-calculation";
-import { makePlantEntityFields } from "../../../common/src/api/document/entities/plants/plant-entity";
+import {fillPlantDefaults, makePlantEntityFields} from "../../../common/src/api/document/entities/plants/plant-entity";
 import Plant from "../htmlcanvas/objects/plant";
 import { assertUnreachable, isGermanStandard, StandardFlowSystemUids } from "../../../common/src/api/config";
 import { Catalog, PipeSpec } from "../../../common/src/api/catalog/types";
@@ -96,7 +96,8 @@ import { fillDefaultLoadNodeFields } from "../store/document/entities/fillDefaul
 import {PriceTable} from "../../../common/src/api/catalog/price-table";
 import GasApplianceEntity, {makeGasApplianceFields} from "../../../common/src/api/document/entities/gas-appliance";
 import {calculateGas} from "./gas";
-import {PlantType} from "../../../common/src/api/document/entities/plants/plant-types";
+import {PlantType, ReturnSystemPlant} from "../../../common/src/api/document/entities/plants/plant-types";
+import {Return} from "aws-sdk/clients/cloudsearchdomain";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -1381,9 +1382,10 @@ export default class CalculationEngine implements CalculationContext {
             if (parent.uid !== flowNode.connection) {
                 return null;
             }
-            switch (parent.entity.type) {
+            const parentEntity = parent.entity;
+            switch (parentEntity.type) {
                 case EntityType.FIXTURE: {
-                    const fixture = parent.entity as FixtureEntity;
+                    const fixture = parentEntity as FixtureEntity;
                     const mainFixture = fillFixtureFields(this.doc.drawing, this.catalog, fixture);
 
                     for (const suid of fixture.roughInsInOrder) {
@@ -1413,28 +1415,28 @@ export default class CalculationEngine implements CalculationContext {
                     return zeroContextualPCE(node.entity.uid, node.entity.uid);
                 }
                 case EntityType.GAS_APPLIANCE: {
-                    const appliance = parent.entity as GasApplianceEntity;
                     // TODO: for gas calculation BIG TODO
                     return {
                         units: 0,
                         continuousFlowLS: 0,
                         dwellings: 0,
-                        entity: node.entity.uid,
-                        correlationGroup: appliance.uid,
-                        gasMJH: appliance.flowRateMJH!,
+                        entity: parentEntity.uid,
+                        correlationGroup: parentEntity.uid,
+                        gasMJH: parentEntity.flowRateMJH!,
                     };
                 }
                 case EntityType.PLANT: {
-                    switch (parent.entity.plant.type) {
+                    switch (parentEntity.plant.type) {
                         case PlantType.RETURN_SYSTEM:
-                            if (parent.entity.plant.gasConsumptionMJH !== null) {
+                            const filled = fillPlantDefaults(parentEntity, this.drawing).plant as ReturnSystemPlant;
+                            if (filled.gasConsumptionMJH !== null) {
                                 return {
                                     units: 0,
                                     continuousFlowLS: 0,
                                     dwellings: 0,
                                     entity: node.entity.uid,
-                                    correlationGroup: parent.entity.uid,
-                                    gasMJH: parent.entity.plant.gasConsumptionMJH,
+                                    correlationGroup: parentEntity.uid,
+                                    gasMJH: filled.gasConsumptionMJH,
                                 };
                             }
                             break;
@@ -1445,9 +1447,9 @@ export default class CalculationEngine implements CalculationContext {
                         case PlantType.PUMP:
                             break;
                         default:
-                            assertUnreachable(parent.entity.plant);
+                            assertUnreachable(parentEntity.plant);
                     }
-                    break;
+                    return zeroContextualPCE(node.entity.uid, node.entity.uid);
                 }
                 case EntityType.LOAD_NODE:
                 case EntityType.BACKGROUND_IMAGE:
@@ -1460,8 +1462,9 @@ export default class CalculationEngine implements CalculationContext {
                 case EntityType.DIRECTED_VALVE:
                     return zeroContextualPCE(node.entity.uid, node.entity.uid);
                 default:
+                    assertUnreachable(parentEntity);
             }
-            assertUnreachable(parent.type);
+            assertUnreachable(parentEntity);
             // Sadly, typescript type checking for return value was not smart enough to avoid these two lines.
             throw new Error("parent type is not a correct value");
         } else if (node.entity.type === EntityType.LOAD_NODE) {

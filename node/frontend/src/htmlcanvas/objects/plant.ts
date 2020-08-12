@@ -160,6 +160,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         switch (this.entity.plant.type) {
             case PlantType.RETURN_SYSTEM:
                 result.push(this.entity.plant.returnUid);
+                result.push(this.entity.plant.gasNodeUid);
                 break;
             case PlantType.TANK:
                 break;
@@ -216,6 +217,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         switch (e.plant.type) {
             case PlantType.RETURN_SYSTEM:
                 e.plant.returnUid = (this.globalStore.get(e.plant.returnUid) as SystemNode).getCalculationNode(context, this.uid).uid;
+                e.plant.gasNodeUid = (this.globalStore.get(e.plant.gasNodeUid) as SystemNode).getCalculationNode(context, this.uid).uid;
                 break;
             case PlantType.TANK:
                 break;

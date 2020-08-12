@@ -5,6 +5,7 @@ import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin }
 import { Catalog } from "../../catalog/types";
 import { convertPipeDiameterFromMetric, Units } from "../../../lib/measurements";
 import {StandardFlowSystemUids} from "../../config";
+import {PlantType} from "./plants/plant-types";
 
 export default interface PipeEntity extends DrawableEntity {
     type: EntityType.PIPE;

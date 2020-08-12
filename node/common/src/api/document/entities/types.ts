@@ -109,6 +109,7 @@ export function getReferences(entity: DrawableEntityConcrete): string[] {
             switch (entity.plant.type) {
                 case PlantType.RETURN_SYSTEM:
                     refs.push(entity.plant.returnUid);
+                    refs.push(entity.plant.gasNodeUid);
                     break;
                 case PlantType.TANK:
                     break;

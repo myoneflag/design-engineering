@@ -183,6 +183,16 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                 },
             );
 
+            res.push({
+                property: "plant.gasConsumptionMJH",
+                title: "Gas Consumption",
+                hasDefault: true,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: "gasConsumptionMJH",
+                units: Units.MegajoulesPerHour,
+            });
             break;
         case PlantType.TANK:
             break;
@@ -251,17 +261,6 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
             default:
                 assertUnreachable(entity.plant.pressureLoss);
         }
-
-        res.push({
-            property: "plant.gasConsumptionMJH",
-            title: "Gas Consumption",
-            hasDefault: true,
-            isCalculated: false,
-            type: FieldType.Number,
-            params: { min: 0, max: null },
-            multiFieldId: "gasConsumptionMJH",
-            units: Units.MegajoulesPerHour,
-        });
     }
 
     res.push(
@@ -346,7 +345,7 @@ export function fillPlantDefaults(value: PlantEntity, drawing: DrawingState) {
                 result.plant.returnVelocityMS = Number(outSystem.returnMaxVelocityMS);
             }
             if (result.plant.gasConsumptionMJH === null) {
-                result.plant.gasConsumptionMJH = 0;
+                result.plant.gasConsumptionMJH = 500;
             }
             break;
         case PlantType.TANK:
