@@ -31,7 +31,7 @@ import PipeEntity, { MutablePipe } from "../../../../common/src/api/document/ent
 import DirectedValveCalculation, { emptyDirectedValveCalculation } from "../../store/document/calculations/directed-valve-calculation";
 import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import uuid from "uuid";
-import { assertUnreachable, ComponentPressureLossMethod } from "../../../../common/src/api/config";
+import {assertUnreachable, ComponentPressureLossMethod, isGas} from "../../../../common/src/api/config";
 import { Catalog } from "../../../../common/src/api/catalog/types";
 import { Coord, DrawableEntity } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, lowerBoundTable, parseCatalogNumberExact } from "../../../../common/src/lib/utils";
@@ -900,18 +900,32 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                         break;
                 }
                 break;
-            case ValveType.WATER_METER:
-                size = lowerBoundNumberTable(context.priceTable.Valves["Water Meter"], size);
-                if (size) {
+            case ValveType.WATER_METER: {
+                const system = determineConnectableSystemUid(context.globalStore, this.entity);
+                if (system && isGas(context.doc.drawing.metadata.flowSystems.find((f) => f.uid === system)?.fluid!, context.catalog)) {
                     return {
-                        cost: context.priceTable.Valves["Water Meter"][size],
+                        cost: context.priceTable.Equipment["Gas Meter"],
                         breakdown: [{
                             qty: 1,
-                            path: `Valves.Water Meter.${size}`,
+                            path: `Equipment.Gas Meter`,
                         }],
                     };
+                } else {
+
+                    size = lowerBoundNumberTable(context.priceTable.Valves["Water Meter"], size);
+                    if (size) {
+                        return {
+                            cost: context.priceTable.Valves["Water Meter"][size],
+                            breakdown: [{
+                                qty: 1,
+                                path: `Valves.Water Meter.${size}`,
+                            }],
+                        };
+                    }
                 }
+
                 break;
+            }
             case ValveType.STRAINER:
                 size = lowerBoundNumberTable(context.priceTable.Valves.Strainer, size);
                 if (size) {
@@ -1009,11 +1023,20 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 }
                 break;
             case ValveType.FILTER:
-            case ValveType.GAS_REGULATOR:
-                // TODO: Gas Regulator cost
                 return {
-                    cost: 0,
-                    breakdown: [],
+                    cost: context.priceTable.Equipment["Gas Filter"],
+                    breakdown: [{
+                        qty: 1,
+                        path: `Equipment.Gas Filter`,
+                    }],
+                };
+            case ValveType.GAS_REGULATOR:
+                return {
+                    cost: context.priceTable.Equipment["Gas Regulator"],
+                    breakdown: [{
+                        qty: 1,
+                        path: `Equipment.Gas Regulator`,
+                    }],
                 };
             default:
                 assertUnreachable(this.entity.valve);

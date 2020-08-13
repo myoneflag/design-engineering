@@ -31,7 +31,7 @@ export default function insertDirectedValve(
     system: FlowSystemParameters
 ) {
     let pipe: Pipe | null = null;
-    let flipped = false;
+    let flipped = true;
 
     MainEventBus.$emit(
         "set-tool-handler",
