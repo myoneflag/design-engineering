@@ -199,9 +199,15 @@ export interface MixingValveSpec {
     manufacturer: MixingValveManufacturer[];
 }
 
+export enum State {
+    GAS = 'gas',
+    LIQUID = 'liquid',
+}
+
 export interface FluidsSpec {
     name: string;
     densityKGM3: string;
+    state: State;
     dynamicViscosityByTemperature: { [key: string]: string };
     specificHeatByTemperatureKJ_KGK: { [key: string]: string };
 }

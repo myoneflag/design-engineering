@@ -23,7 +23,7 @@ import { ValveType } from "../../../common/src/api/document/entities/directed-va
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
 import BigValve from "../htmlcanvas/objects/big-valve/bigValve";
 import { BigValveType } from "../../../common/src/api/document/entities/big-valve/big-valve-entity";
-import PlantCalculation from 'src/store/document/calculations/plant-calculation';
+import PlantCalculation from "../store/document/calculations/plant-calculation";
 
 export interface ReturnRecord {
     spTree: SPTree<Edge<string, FlowEdge>>;

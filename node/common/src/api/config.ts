@@ -1,7 +1,7 @@
-import { Catalog } from "./catalog/types";
-import { Choice, cloneSimple, SelectField } from "../lib/utils";
-import { THERMAL_CONDUCTIVITY } from "./constants/air-properties";
-import { evaluatePolynomial } from "../lib/polynomials";
+import {Catalog, State} from "./catalog/types";
+import {Choice, cloneSimple, SelectField} from "../lib/utils";
+import {THERMAL_CONDUCTIVITY} from "./constants/air-properties";
+import {evaluatePolynomial} from "../lib/polynomials";
 
 export enum SupportedPsdStandards {
     as35002018LoadingUnits = "as35002018LoadingUnits",
@@ -101,6 +101,10 @@ export function isLUStandard(psd: SupportedPsdStandards): psd is SupportedLUPsdS
     return false;
 }
 
+export function isGas(fluidId: string, catalog: Catalog) {
+    const fluid = catalog.fluids[fluidId];
+    return fluid.state === State.GAS;
+}
 
 //
 export const DISPLAY_PSD_METHODS: Choice[] = [

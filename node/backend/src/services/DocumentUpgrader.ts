@@ -3,11 +3,6 @@ import { IMessage, StompSubscription } from "@stomp/stompjs";
 import {
     upgrade10to11,
     upgrade11to12, upgrade12to13, upgrade13to14, upgrade14to15,
-    upgrade4to5,
-    upgrade5to6,
-    upgrade6to7,
-    upgrade7to8,
-    upgrade8to9,
     upgrade9to10
 } from "../../../common/src/api/upgrade";
 import { Operation } from "../../../common/src/models/Operation";
@@ -135,24 +130,12 @@ export class DocumentUpgrader {
                             case 1:
                             case 2:
                             case 3:
-                                throw new Error("Version too old");
-                            // noinspection FallThroughInSwitchStatementJS
                             case 4:
-                                upgrade4to5(newUpgraded);
-                            // noinspection FallThroughInSwitchStatementJS
                             case 5:
-                                upgrade5to6(newUpgraded);
-                            // noinspection FallThroughInSwitchStatementJS
                             case 6:
-                                // noinspection FallThroughInSwitchStatementJS
-                                upgrade6to7(newUpgraded);
-                            // noinspection FallThroughInSwitchStatementJS
                             case 7:
-                                upgrade7to8(newUpgraded);
-                            // noinspection FallThroughInSwitchStatementJS
                             case 8:
-                                upgrade8to9(newUpgraded);
-                            // noinspection FallThroughInSwitchStatementJS
+                                throw new Error("Version too old");
                             case 9:
                                 upgrade9to10(newUpgraded);
                             // noinspection FallThroughInSwitchStatementJS

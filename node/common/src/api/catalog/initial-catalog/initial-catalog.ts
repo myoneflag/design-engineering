@@ -1,5 +1,5 @@
 import { DwellingStandardType, PSDStandardType } from "../psd-standard/types";
-import { Catalog } from "../types";
+import {Catalog, State} from "../types";
 
 export const initialCatalog: Catalog = {
     fixtures: {
@@ -3336,8 +3336,9 @@ export const initialCatalog: Catalog = {
                 50: "0.0005474",
                 60: "0.0004656",
                 65: "0.000432",
-                70: "0.0004024"
+                70: "0.0004024",
             },
+            state: State.LIQUID,
             specificHeatByTemperatureKJ_KGK: {
                 0.01: "4.2174",
                 10: "4.191",
@@ -3375,7 +3376,8 @@ export const initialCatalog: Catalog = {
             },
             specificHeatByTemperatureKJ_KGK: {
                 0: "0",
-            }
+            },
+            state: State.GAS,
         },
         naturalGas: {
             name: "Nautral Gas",
@@ -3385,8 +3387,9 @@ export const initialCatalog: Catalog = {
             },
             specificHeatByTemperatureKJ_KGK: {
                 0: "0",
-            }
-        }
+            },
+            state: State.GAS,
+        },
     },
     backflowValves: {
         RPZD: {

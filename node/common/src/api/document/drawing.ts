@@ -360,7 +360,7 @@ export const initialDrawing: DrawingState = {
                 temperature: 20,
                 color: { hex: "#FCDC00" },
                 uid: StandardFlowSystemUids.Gas,
-                fluid: "LPG",
+                fluid: "naturalGas",
                 hasReturnSystem: false,
                 returnIsInsulated: false,
                 returnMaxVelocityMS: 1,
@@ -371,12 +371,12 @@ export const initialDrawing: DrawingState = {
                 networks: {
                     RISERS: {
                         spareCapacityPCT: 0,
-                        velocityMS: 1.2,
+                        velocityMS: 20,
                         material: "copperTypeB"
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
-                        velocityMS: 1.2,
+                        velocityMS: 20,
                         material: "copperTypeB"
                     },
                     CONNECTIONS: {

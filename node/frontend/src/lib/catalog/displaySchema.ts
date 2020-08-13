@@ -175,13 +175,15 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                 primaryName: null,
                 columns: [
                     ["name", "Name"],
+                    ["state", "State"],
                     ["densityKGM3", "Density (kg/m^3)"]
                 ],
                 link: {
                     name: { order: 1, name: "Name" },
-                    densityKGM3: { order: 2, name: "Density (kg/m^3)" },
+                    state: { order: 2, name: "State"},
+                    densityKGM3: { order: 3, name: "Density (kg/m^3)" },
                     dynamicViscosityByTemperature: {
-                        order: 3,
+                        order: 4,
                         name: "Dynamic Viscosity By Temperature",
                         table: {
                             primaryName: "Temperature (°C)",
@@ -189,7 +191,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                         }
                     },
                     specificHeatByTemperatureKJ_KGK: {
-                        order: 4,
+                        order: 5,
                         name: "Specific Heat by Temperature (KJ/Kg*K)",
                         table: {
                             primaryName: "Temperature (°C)",
