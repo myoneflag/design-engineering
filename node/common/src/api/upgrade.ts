@@ -1,14 +1,12 @@
-import { DrawingState, FlowSystemParametersV8, FlowSystemParametersV9, initialDrawing } from "./document/drawing";
-import { EntityType } from "./document/entities/types";
-import { NodeType } from "./document/entities/load-node-entity";
-import { InsulationJackets, InsulationMaterials, StandardFlowSystemUids, SupportedPsdStandards } from "./config";
-import PlantEntity, { PlantEntityV8 } from "./document/entities/plants/plant-entity";
-import { PlantConcrete, PlantType, PressureMethod } from "./document/entities/plants/plant-types";
-import { DrawableEntityConcrete } from "./document/entities/concrete-entity";
-import { FlowConfiguration } from "./document/entities/big-valve/big-valve-entity";
-import uuid from "uuid";
-import { cloneSimple } from "../lib/utils";
-import { FlowSourceEntityV11 } from "./document/entities/flow-source-entity";
+import {DrawingState, initialDrawing} from "./document/drawing";
+import {EntityType} from "./document/entities/types";
+import {InsulationJackets, InsulationMaterials, StandardFlowSystemUids, SupportedPsdStandards} from "./config";
+import {PlantType} from "./document/entities/plants/plant-types";
+import {cloneSimple} from "../lib/utils";
+import {FlowSourceEntityV11} from "./document/entities/flow-source-entity";
+import uuid from 'uuid';
+import {FlowConfiguration, SystemNodeEntity} from "./document/entities/big-valve/big-valve-entity";
+import {ValveType} from "./document/entities/directed-valves/valve-types";
 
 // This file is for managing upgrades between versions.
 // Remember to copy this directory before developing a major change, and bump the api version number, then
@@ -77,5 +75,81 @@ export function upgrade13to14(original: DrawingState) {
 export function upgrade14to15(original: DrawingState) {
     if (original.metadata.priceTable === undefined) {
         original.metadata.priceTable = cloneSimple(initialDrawing.metadata.priceTable);
+    }
+}
+
+export function upgrade15to16(original: DrawingState) {
+    if (!original.metadata.flowSystems.find((f) => f.uid === StandardFlowSystemUids.Gas)) {
+        original.metadata.flowSystems.push(
+            {
+                name: "Gas",
+                temperature: 20,
+                color: { hex: "#FCDC00" },
+                uid: StandardFlowSystemUids.Gas,
+                fluid: "naturalGas",
+                hasReturnSystem: false,
+                returnIsInsulated: false,
+                returnMaxVelocityMS: 1,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationJacket: InsulationJackets.allServiceJacket,
+                insulationThicknessMM: 25,
+
+                networks: {
+                    RISERS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 20,
+                        material: "copperTypeB"
+                    },
+                    RETICULATIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 20,
+                        material: "copperTypeB"
+                    },
+                    CONNECTIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 3,
+                        material: "pexSdr74"
+                    }
+                }
+            }
+        );
+    }
+
+    for (const level of Object.values(original.levels)) {
+        const entities = level.entities;
+        for (const e of Object.values(entities)) {
+            if (e.type === EntityType.PLANT) {
+                if (e.plant.type === PlantType.RETURN_SYSTEM) {
+                    // Add the missing gas entity
+                    if (!e.plant.gasNodeUid) {
+                        const newUid = uuid();
+                        e.plant.gasNodeUid = newUid;
+                        e.plant.gasConsumptionMJH = null;
+
+                        const newEntity: SystemNodeEntity = {
+                            center: {
+                                x: (-e.widthMM / 2) * (e.rightToLeft ? -1 : 1),
+                                y: (e.heightMM / 4)
+                            },
+                            parentUid: e.uid,
+                            type: EntityType.SYSTEM_NODE,
+                            calculationHeightM: null,
+                            systemUid: StandardFlowSystemUids.Gas,
+                            uid: newUid,
+                            allowAllSystems: false,
+                            configuration: FlowConfiguration.INPUT
+                        };
+
+                        level.entities[newUid] = newEntity;
+                    }
+                }
+            } else if (e.type === EntityType.DIRECTED_VALVE) {
+                if (e.valve.type === ValveType.WATER_METER) {
+                    if (e.valve.pressureDropKPA === undefined) {
+                        e.valve.pressureDropKPA = null;
+                    }
+                }
+            }
+        }
     }
 }

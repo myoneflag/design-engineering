@@ -48,7 +48,7 @@ import {
 import { determineConnectableNetwork } from "../../store/document/entities/lib";
 import {
     assertUnreachable,
-    ComponentPressureLossMethod,
+    ComponentPressureLossMethod, isGas,
     StandardFlowSystemUids
 } from "../../../../common/src/api/config";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
@@ -751,7 +751,8 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             }
         }
 
-        const isGas = this.entity.systemUid === StandardFlowSystemUids.Gas;
+        const pipeIsGas = isGas(context.doc.drawing.metadata.flowSystems
+            .find((f) => f.uid === this.entity.systemUid)?.fluid!, context.catalog);
 
         const system = drawing.metadata.flowSystems.find((s) => s.uid === entity.systemUid)!;
         const fluid = catalog.fluids[system.fluid];
@@ -787,7 +788,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
 
         let retval = 0;
-        if (isGas) {
+        if (pipeIsGas) {
             // TODO: Calculate gas.
 
         } else {

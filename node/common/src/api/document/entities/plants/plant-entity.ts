@@ -6,32 +6,6 @@ import { PlantConcrete, PlantType, PressureMethod } from "./plant-types";
 import { assertUnreachable } from "../../../config";
 import { Units } from "../../../../lib/measurements";
 
-export interface PlantEntityV8 extends CenteredEntity {
-    type: EntityType.PLANT;
-    center: Coord;
-    inletSystemUid: string;
-    outletSystemUid: string;
-
-    name: string;
-
-    rotation: number;
-    rightToLeft: boolean;
-
-    heightAboveFloorM: number;
-
-    widthMM: number;
-    heightMM: number;
-
-    pressureMethod: PressureMethod;
-    pumpPressureKPA: number | null;
-    pressureLossKPA: number | null;
-    staticPressureKPA: number | null;
-
-    inletUid: string;
-    outletUid: string;
-}
-
-
 export default interface PlantEntity extends CenteredEntity {
     type: EntityType.PLANT;
     center: Coord;
