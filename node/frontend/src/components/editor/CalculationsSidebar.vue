@@ -90,6 +90,7 @@ import PdfSnapshotTool from "../../htmlcanvas/tools/pdf-snapshot-tool";
 import { getEffectiveFilter } from "../../lib/utils";
 import { User } from "../../../../common/src/models/User";
 import {exportBudgetReport} from "../../htmlcanvas/lib/budget-report/budget-report";
+import {Catalog} from "../../../../common/src/api/catalog/types";
 
 @Component({
     components: {},
@@ -111,7 +112,11 @@ export default class CalculationsSidebar extends Vue {
     }
 
     get filters(): CalculationFilters {
-        return getEffectiveFilter(this.$props.objects, this.document.uiState.calculationFilters, this.document);
+        return getEffectiveFilter(this.$props.objects, this.document.uiState.calculationFilters, this.document, this.catalog);
+    }
+
+    get catalog(): Catalog {
+        return this.$store.getters["catalog/default"];
     }
 
     get profile(): User {

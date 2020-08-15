@@ -53,6 +53,7 @@ export default class CalculationLayer extends LayerImplementation {
                 this.uidsInOrder.map((uid) => context.globalStore.get(uid)!),
                 context.doc.uiState.calculationFilters,
                 context.doc,
+                context.catalog,
             );
 
             const resolutionWL = Math.max(vp.surfaceToWorldLength(LABEL_RESOLUTION_PX), MIN_LABEL_RESOLUTION_WL);

@@ -20,6 +20,7 @@ export enum Units {
     KiloWatts = "kW",
     Kv = "Kv",
     Liters = "L",
+    MetersCubedPerHour = "m^3/hr",
 
     // Imperial equivalents where applicable
     GallonsPerMinute = "gal/min",
@@ -36,6 +37,7 @@ export enum Units {
     USGallons = "US gal", // wtf usa
 
     PipeDiameterMM = "pmm",
+    CubicFeetPerHour = "ft^3/hr",
 
     // April Fools
     FurlongsPerFortnight = "fur/fortn",
@@ -249,6 +251,28 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
             return [Units.None, 0];
         case Units.MegajoulesPerHour:
             return [Units.MegajoulesPerHour, value];
+        case Units.MetersCubedPerHour:
+            switch (unitsPrefs.velocityMeasurementSystem) {
+                case VelocityMeasurementSystem.METRIC:
+                    return [Units.MetersCubedPerHour, value];
+                case VelocityMeasurementSystem.IMPERIAL:
+                case VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL:
+                    return [Units.CubicFeetPerHour, value * 3.28084 * 3.28084 * 3.28084];
+                default:
+                    assertUnreachable(unitsPrefs.velocityMeasurementSystem);
+            }
+            return [Units.None, 0];
+        case Units.CubicFeetPerHour:
+            switch (unitsPrefs.velocityMeasurementSystem) {
+                case VelocityMeasurementSystem.METRIC:
+                    return [Units.MetersCubedPerHour, value / (3.28084 * 3.28084 * 3.28084)];
+                case VelocityMeasurementSystem.IMPERIAL:
+                case VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL:
+                    return [Units.CubicFeetPerHour, value];
+                default:
+                    assertUnreachable(unitsPrefs.velocityMeasurementSystem);
+            }
+            return [Units.None, 0];
         default:
             assertUnreachable(units);
     }

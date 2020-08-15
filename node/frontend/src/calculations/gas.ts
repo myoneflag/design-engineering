@@ -5,8 +5,8 @@ import {assertUnreachable, StandardFlowSystemUids} from "../../../common/src/api
 import {ValveType} from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import {determineConnectableSystemUid} from "../store/document/entities/lib";
 import Pipe from "../htmlcanvas/objects/pipe";
-import {fillPipeDefaultFields} from "../../../common/src/api/document/entities/pipe-entity";
-import {lowerBoundTable, parseCatalogNumberOrMin} from "../../../common/src/lib/utils";
+import PipeEntity, {fillPipeDefaultFields} from "../../../common/src/api/document/entities/pipe-entity";
+import {lowerBoundTable, parseCatalogNumberExact, parseCatalogNumberOrMin} from "../../../common/src/lib/utils";
 import {NoFlowAvailableReason} from "../store/document/calculations/pipe-calculation";
 
 export interface GasComponent {
@@ -19,7 +19,6 @@ export interface GasComponent {
 // Assume that regulators dictate the pressure, even if the source doens't provide enough pressure.
 export function calculateGas(engine: CalculationEngine) {
     const components = getGasComponents(engine);
-    console.log(components);
     for (const component of components) {
         for (const puid of component.pipes) {
             const pipe = engine.globalStore.get(puid) as Pipe;
@@ -50,8 +49,11 @@ export function calculateGas(engine: CalculationEngine) {
                             pCalc.noFlowAvailableReason = NoFlowAvailableReason.NO_SUITABLE_PIPE_SIZE;
                         }
                     }
-                }
 
+                    const velocity = getGasVelocityRealMs(engine, pipe.entity, gasType);
+                    pCalc.velocityRealMS = velocity ? velocity.ms : null;
+                    pCalc.gasM3H = velocity ? velocity.m3h : null;
+                }
             }
         }
     }
@@ -253,5 +255,43 @@ export function sizeGasPipeInside(inputRateMJH: number, pipeLengthM: number, sta
         return getBestInsideDiameterLarge(inputRateCFH, pipeLengthFT, upstreamPSI, downstreamPSI, type) * 2.54 * 10;
     } else {
         return getBestInsideDiameterSmall(inputRateCFH, pipeLengthFT, headLossIN, type) * 2.54 * 10;
+    }
+}
+
+
+function getGasVelocityRealMs(context: CalculationEngine, pipe: PipeEntity, type: GasType): {m3h: number, ms: number} | undefined {
+    const calculation = context.globalStore.getOrCreateCalculation(pipe);
+    if (calculation.psdUnits) {
+        if (calculation.psdUnits.gasMJH) {
+            let m3h = 0;
+            switch (type) {
+                case GasType.NATURAL_GAS: {
+                    // http://agnatural.pt/documentos/ver/natural-gas-conversion-guide_cb4f0ccd80ccaf88ca5ec336a38600867db5aaf1.pdf
+                    m3h = calculation.psdUnits.gasMJH / 38.7;
+                    break;
+                }
+                case GasType.LPG: {
+                    // https://www.elgas.com.au/blog/389-lpg-conversions-kg-litres-mj-kwh-and-m3
+
+                    const liters = calculation.psdUnits.gasMJH * 0.042;
+                    const m3 = liters / 3.70;
+                    m3h = m3;
+                    break;
+                }
+                default:
+                    assertUnreachable(type);
+            }
+
+            const LS = m3h * 0.2777777777777777;
+
+            const res = (
+                (4000 * LS) /
+                (Math.PI * parseCatalogNumberExact(calculation.realInternalDiameterMM)! ** 2)
+            );
+
+            return {
+                m3h, ms: res,
+            };
+        }
     }
 }

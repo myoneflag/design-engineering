@@ -1737,6 +1737,7 @@ export default class CalculationEngine implements CalculationContext {
         return res;
     }
 
+
     getPipeByNominal(pipe: PipeEntity, maxNominalMM: number): PipeSpec | null {
         const pipeFilled = fillPipeDefaultFields(this.doc.drawing, 0, pipe);
         const table = this.catalog.pipes[pipeFilled.material!];
