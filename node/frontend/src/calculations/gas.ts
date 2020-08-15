@@ -8,9 +8,11 @@ import Pipe from "../htmlcanvas/objects/pipe";
 import PipeEntity, {fillPipeDefaultFields} from "../../../common/src/api/document/entities/pipe-entity";
 import {lowerBoundTable, parseCatalogNumberExact, parseCatalogNumberOrMin} from "../../../common/src/lib/utils";
 import {NoFlowAvailableReason} from "../store/document/calculations/pipe-calculation";
+import DirectedValve from "../htmlcanvas/objects/directed-valve";
 
 export interface GasComponent {
     pipes: Set<string>;
+    regulatorUid?: string;
     mainRunLengthM: number;
     supplyPressureKPA: number;
     maxPressureRequiredKPA: number;
@@ -20,6 +22,16 @@ export interface GasComponent {
 export function calculateGas(engine: CalculationEngine) {
     const components = getGasComponents(engine);
     for (const component of components) {
+        if (component.regulatorUid) {
+            console.log('regulator: ' + component.regulatorUid);
+            const regulator = engine.globalStore.get(component.regulatorUid) as DirectedValve;
+            if (regulator.entity.valve.type === ValveType.GAS_REGULATOR) {
+                console.log('setting to ' + regulator.entity.valve.outletPressureKPA);
+                const rCalc = engine.globalStore.getOrCreateCalculation(regulator.entity);
+                rCalc.pressureKPA = regulator.entity.valve.outletPressureKPA;
+            }
+        }
+
         for (const puid of component.pipes) {
             const pipe = engine.globalStore.get(puid) as Pipe;
             const pCalc = engine.globalStore.getOrCreateCalculation(pipe.entity);
@@ -67,6 +79,7 @@ export function getGasComponents(engine: CalculationEngine) {
     let block = new Set<string>();
     for (const o of engine.networkObjects()) {
         let isRoot = false;
+        let regulatorUid: string | undefined = undefined;
         let connection = '';
         let pressureKPA = 0;
 
@@ -89,6 +102,7 @@ export function getGasComponents(engine: CalculationEngine) {
                     const p1Calc = engine.globalStore.getOrCreateCalculation(p1.entity);
 
                     isRoot = true;
+                    regulatorUid = o.entity.uid;
                     pressureKPA = o.entity.valve.outletPressureKPA!;
                     if (p0Calc.flowFrom === o.entity.uid) {
                         connection = p0.uid;
@@ -99,7 +113,6 @@ export function getGasComponents(engine: CalculationEngine) {
                     } else {
                         isRoot = false;
                     }
-
                 }
                 break;
             case EntityType.SYSTEM_NODE:
@@ -209,7 +222,7 @@ export function getGasComponents(engine: CalculationEngine) {
                 block,
             );
 
-            result.push({pipes, mainRunLengthM, supplyPressureKPA, maxPressureRequiredKPA});
+            result.push({pipes, mainRunLengthM, supplyPressureKPA, maxPressureRequiredKPA, regulatorUid});
         }
     }
     return result;

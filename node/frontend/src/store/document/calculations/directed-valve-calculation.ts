@@ -6,7 +6,7 @@ import {
     PressureCalculation
 } from "../../../../src/store/document/calculations/types";
 import { ValveType } from "../../../../../common/src/api/document/entities/directed-valves/valve-types";
-import { assertUnreachable } from "../../../../../common/src/api/config";
+import {assertUnreachable, isGas} from "../../../../../common/src/api/config";
 import { determineConnectableSystemUid } from "../entities/lib";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import { Units } from "../../../../../common/src/lib/measurements";
@@ -28,6 +28,11 @@ export default interface DirectedValveCalculation extends Calculation, PressureC
 
 export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, globalStore: GlobalStore, drawing: DrawingState, catalog: Catalog | undefined,): CalculationField[] {
     const systemUid = determineConnectableSystemUid(globalStore, entity);
+
+    const valveIsGas = catalog && isGas(drawing.metadata.flowSystems
+        .find((f) => f.uid === systemUid)!.fluid, catalog);
+
+
     let fields: CalculationField[] = [
         {
             property: "flowRateLS",
@@ -37,16 +42,21 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
             category: FieldCategory.FlowRate,
             systemUid,
         },
-        {
-            property: "pressureDropKPA",
-            title: "Pressure Drop",
-            short: "Drop",
-            defaultEnabled: true,
-            units: Units.KiloPascals,
-            category: FieldCategory.Pressure,
-            systemUid,
-        },
     ];
+
+    if (!valveIsGas) {
+        fields.push(
+            {
+                property: "pressureDropKPA",
+                title: "Pressure Drop",
+                short: "Drop",
+                defaultEnabled: true,
+                units: Units.KiloPascals,
+                category: FieldCategory.Pressure,
+                systemUid,
+            },
+        );
+    }
 
     if (entity.valve.type === ValveType.BALANCING) {
         fields.push({
@@ -60,7 +70,9 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
         });
     }
 
-    addPressureCalculationFields(fields, systemUid, "", {short: "In", defaultEnabled: true});
+    if (!valveIsGas) {
+        addPressureCalculationFields(fields, systemUid, "", {short: "In", defaultEnabled: true});
+    }
 
     if (entity.systemUidOption) {
         fields = fields.map((f) => {
@@ -72,12 +84,26 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
     
 
     switch (entity.valve.type) {
+        case ValveType.GAS_REGULATOR:
+            if (valveIsGas) {
+                fields.push(
+                    {
+                        property: "pressureKPA",
+                        title: "Pressure",
+                        short: "Out",
+                        units: Units.KiloPascals,
+                        systemUid,
+                        category: FieldCategory.Pressure,
+                        defaultEnabled: true,
+                    },
+                );
+            }
+            break;
         case ValveType.CHECK_VALVE:
         case ValveType.ISOLATION_VALVE:
         case ValveType.WATER_METER:
         case ValveType.STRAINER:
         case ValveType.FILTER:
-        case ValveType.GAS_REGULATOR:
             break;
         case ValveType.BALANCING: {
             const manufacturer = drawing.metadata.catalog.balancingValves[0]?.manufacturer || 'generic';

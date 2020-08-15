@@ -526,7 +526,7 @@ export function getFields(
         case EntityType.PIPE:
             return makePipeCalculationFields(entity, doc.drawing, catalog, globalStore);
         case EntityType.FITTING:
-            return makeFittingCalculationFields(entity, globalStore);
+            return makeFittingCalculationFields(entity, globalStore, doc, catalog);
         case EntityType.BIG_VALVE:
             return makeBigValveCalculationFields(doc, entity, catalog);
         case EntityType.FIXTURE:

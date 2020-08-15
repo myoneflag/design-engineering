@@ -66,8 +66,6 @@ export function makePipeCalculationFields(
     const psdUnit = getPsdUnitName(settings.metadata.calculationParams.psdMethod);
 
     const pipeIsGas = catalog && isGas(settings.metadata.flowSystems.find((f) => f.uid === entity.systemUid)!.fluid, catalog);
-    console.log(!!catalog);
-    console.log('is gas: ' + pipeIsGas);
 
     let materialName = "";
     if (catalog) {

@@ -332,11 +332,11 @@ export default class CalculationEngine implements CalculationContext {
 
                 this.calculateHotWaterDeadlegs();
 
-                calculateGas(this);
 
                 this.calculateAllPointPressures();
                 this.calculateStaticPressures();
 
+                calculateGas(this);
 
                 this.fillPressureDropFields();
                 this.createWarnings();
