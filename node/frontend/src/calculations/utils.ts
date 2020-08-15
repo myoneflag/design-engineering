@@ -518,7 +518,7 @@ export function getFields(
     entity: DrawableEntityConcrete,
     doc: DocumentState,
     globalStore: GlobalStore,
-    catalog?: Catalog
+    catalog: Catalog
 ): CalculationField[] {
     switch (entity.type) {
         case EntityType.RISER:
