@@ -6,7 +6,12 @@ import {ValveType} from "../../../common/src/api/document/entities/directed-valv
 import {determineConnectableSystemUid} from "../store/document/entities/lib";
 import Pipe from "../htmlcanvas/objects/pipe";
 import PipeEntity, {fillPipeDefaultFields} from "../../../common/src/api/document/entities/pipe-entity";
-import {lowerBoundTable, parseCatalogNumberExact, parseCatalogNumberOrMin} from "../../../common/src/lib/utils";
+import {
+    lowerBoundTable,
+    parseCatalogNumberExact,
+    parseCatalogNumberOrMin,
+    upperBoundTable
+} from "../../../common/src/lib/utils";
 import {NoFlowAvailableReason} from "../store/document/calculations/pipe-calculation";
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
 
@@ -37,34 +42,57 @@ export function calculateGas(engine: CalculationEngine) {
             const pCalc = engine.globalStore.getOrCreateCalculation(pipe.entity);
 
             if (pCalc.psdUnits) {
-                const gasType = system2Gas(engine.drawing.metadata.flowSystems.find((s) => s.uid === pipe.entity.systemUid)!);
+                const system = engine.drawing.metadata.flowSystems.find((s) => s.uid === pipe.entity.systemUid)!;
+                const gasType = system2Gas(system);
                 if (gasType) {
                     if (component.supplyPressureKPA <= component.maxPressureRequiredKPA) {
                         pCalc.noFlowAvailableReason = NoFlowAvailableReason.GAS_SUPPLY_PRESSURE_TOO_LOW;
                     } else {
 
-                        const inside = sizeGasPipeInside(
+                        let inside = sizeGasPipeInside(
                             pCalc.psdUnits.gasMJH,
                             component.mainRunLengthM,
                             component.supplyPressureKPA,
                             component.maxPressureRequiredKPA,
                             gasType,
                         );
-                        const p = lowerBoundTable(pipe.getManufacturerCatalogPage(engine)!, inside, (t) => parseCatalogNumberOrMin(t.diameterInternalMM)!);
-                        if (p) {
-                            pCalc.optimalInnerPipeDiameterMM = inside;
-                            pCalc.realNominalPipeDiameterMM = parseCatalogNumberOrMin(p.diameterNominalMM);
-                            pCalc.realInternalDiameterMM = parseCatalogNumberOrMin(p.diameterInternalMM);
-                            pCalc.realOutsideDiameterMM = parseCatalogNumberOrMin(p.diameterOutsideMM);
-                        } else {
-                            pCalc.optimalInnerPipeDiameterMM = inside;
-                            pCalc.noFlowAvailableReason = NoFlowAvailableReason.NO_SUITABLE_PIPE_SIZE;
+                        let p = lowerBoundTable(pipe.getManufacturerCatalogPage(engine)!, inside, (t) => parseCatalogNumberOrMin(t.diameterInternalMM)!);
+
+                        while (true) {
+                            if (p) {
+                                pCalc.optimalInnerPipeDiameterMM = inside;
+                                pCalc.realNominalPipeDiameterMM = parseCatalogNumberOrMin(p.diameterNominalMM);
+                                pCalc.realInternalDiameterMM = parseCatalogNumberOrMin(p.diameterInternalMM);
+                                pCalc.realOutsideDiameterMM = parseCatalogNumberOrMin(p.diameterOutsideMM);
+
+                                // Is the flow rate OK?
+                                const network = pipe.entity.network;
+                                const maxSpeed = system.networks[network].velocityMS;
+
+                                const velocity = getGasVelocityRealMs(engine, pipe.entity, gasType);
+                                pCalc.velocityRealMS = velocity ? velocity.ms : null;
+                                pCalc.gasMJH = velocity ? velocity.mjh : null;
+
+                                if (!pCalc.velocityRealMS || pCalc.velocityRealMS <= maxSpeed) {
+                                    break;
+                                }
+
+                                console.log(p.diameterInternalMM);
+                                // increase pipe size.
+                                p = lowerBoundTable(
+                                    pipe.getManufacturerCatalogPage(engine)!,
+                                    parseCatalogNumberExact(p.diameterInternalMM)! + 0.1,
+                                    (t) => parseCatalogNumberOrMin(t.diameterInternalMM)!,
+                                );
+
+                            } else {
+                                pCalc.optimalInnerPipeDiameterMM = inside;
+                                pCalc.noFlowAvailableReason = NoFlowAvailableReason.NO_SUITABLE_PIPE_SIZE;
+                                break;
+                            }
                         }
                     }
 
-                    const velocity = getGasVelocityRealMs(engine, pipe.entity, gasType);
-                    pCalc.velocityRealMS = velocity ? velocity.ms : null;
-                    pCalc.gasM3H = velocity ? velocity.m3h : null;
                 }
             }
         }
@@ -272,7 +300,7 @@ export function sizeGasPipeInside(inputRateMJH: number, pipeLengthM: number, sta
 }
 
 
-function getGasVelocityRealMs(context: CalculationEngine, pipe: PipeEntity, type: GasType): {m3h: number, ms: number} | undefined {
+function getGasVelocityRealMs(context: CalculationEngine, pipe: PipeEntity, type: GasType): {mjh: number, ms: number} | undefined {
     const calculation = context.globalStore.getOrCreateCalculation(pipe);
     if (calculation.psdUnits) {
         if (calculation.psdUnits.gasMJH) {
@@ -303,7 +331,7 @@ function getGasVelocityRealMs(context: CalculationEngine, pipe: PipeEntity, type
             );
 
             return {
-                m3h, ms: res,
+                mjh: calculation.psdUnits.gasMJH, ms: res,
             };
         }
     }

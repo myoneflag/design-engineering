@@ -12,13 +12,27 @@ import { StandardFlowSystemUids } from "../../../../../common/src/api/config";
 import GasApplianceEntity from "../../../../../common/src/api/document/entities/gas-appliance";
 
 export default interface GasApplianceCalculation extends Calculation {
-    // Nada
+    demandMJH: number | null;
 }
 
 export function makeGasApplianceCalculationFields(entity: GasApplianceEntity): CalculationField[] {
-    return [];
+    return [
+        {
+            property: "demandMJH",
+            title: "Gas Demand",
+            short: "",
+            units: Units.MegajoulesPerHour,
+            category: FieldCategory.FlowRate,
+            systemUid: StandardFlowSystemUids.Gas,
+        },
+    ];
 }
 
 export function emptyGasApplianceCalculation(): GasApplianceCalculation {
-    return {warning: null, costBreakdown: null, cost: null, expandedEntities: null};
+    return {
+        warning: null,
+        costBreakdown: null,
+        cost: null, expandedEntities: null,
+        demandMJH: null,
+    };
 }

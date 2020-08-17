@@ -614,6 +614,9 @@ export default class CalculationEngine implements CalculationContext {
                 const c = this.globalStore.getOrCreateCalculation(o.entity);
                 c.lengthM = o.entity.lengthM == null ? (o as Pipe).computedLengthM : o.entity.lengthM;
                 c.heightM = o.entity.heightAboveFloorM;
+            } else if (o.entity.type === EntityType.GAS_APPLIANCE) {
+                const c = this.globalStore.getOrCreateCalculation(o.entity);
+                c.demandMJH = o.entity.flowRateMJH;
             }
         });
     }

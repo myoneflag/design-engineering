@@ -54,7 +54,7 @@ export default interface PipeCalculation extends PsdCalculation, Calculation {
 
     temperatureRange: string | null;
 
-    gasM3H: number | null;
+    gasMJH: number | null;
 }
 
 export function makePipeCalculationFields(
@@ -163,10 +163,10 @@ export function makePipeCalculationFields(
     if (pipeIsGas) {
         result.push(
             {
-                property: "gasM3H",
+                property: "gasMJH",
                 title: "Flow Rate + Spare",
                 short: "",
-                units: Units.MetersCubedPerHour,
+                units: Units.MegajoulesPerHour,
                 category: FieldCategory.FlowRate,
                 systemUid: entity.systemUid
             },
@@ -256,7 +256,7 @@ export function emptyPipeCalculation(): PipeCalculation {
         costBreakdown: null,
         expandedEntities: null,
 
-        gasM3H: null,
+        gasMJH: null,
 
         totalPeakFlowRateLS: null,
         heightM: null,
