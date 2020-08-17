@@ -1,7 +1,7 @@
 const H2xNewMemberEmail = (props: H2xNewMemberEmail) => {
     return {
         from: process.env.EMAIL_ADDRESS,
-        to: process.env.EMAIL_ADDRESS_H2X,
+        to: `${process.env.EMAIL_ADDRESS_H2X}, jordan@h2xengineering.com`,
         subject: 'H2X - New Member',
         html: `<!doctype html>
         <html ⚡4email>
