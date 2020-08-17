@@ -380,11 +380,7 @@ export default class CatalogView extends Vue {
                             item[table.primaryName] = parseFloat(Number(item[table.primaryName]).toFixed(5));
                         }
                     } else {
-                        if (prop === 'hotWaterPlant') {
-                            item[table.primaryName] = (HotWaterPlantGrundfosSettingsName as {[key: string]: string})[key];
-                        } else {
-                            item[table.primaryName] = key;
-                        }
+                        item[table.primaryName] = key;
                     }
                 }
 
@@ -474,7 +470,11 @@ export default class CatalogView extends Vue {
                             item[table.primaryName] = parseFloat(Number(item[table.primaryName]).toFixed(5));
                         }
                     } else {
-                        item[table.primaryName] = key;
+                        if (prop === 'hotWaterPlant') {
+                            item[table.primaryName] = (HotWaterPlantGrundfosSettingsName as {[key: string]: string})[key];
+                        } else {
+                            item[table.primaryName] = key;
+                        }
                     }
                 }
 

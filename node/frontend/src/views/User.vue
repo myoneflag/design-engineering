@@ -1,5 +1,3 @@
-import {AccessLevel} from "../../../backend/src/entity/User"; import {AccessLevel} from
-"../../../backend/src/entity/User";
 <template>
     <div>
         <MainNavBar></MainNavBar>

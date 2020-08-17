@@ -1,12 +1,13 @@
-// types.ts
+
 import Vue from "vue";
 import Vuex, { StoreOptions } from "vuex";
 import { RootState } from "./types";
-import { document } from "./document/index";
+import { document } from "./document";
 import { profile } from "./profile";
-import { tools } from "../../src/store/tools";
-import { catalog } from "../../src/store/catalog";
-import { getters } from "../../src/store/getters";
+import { tools } from "./tools";
+import { catalog } from "./catalog";
+import { hotKey } from './hot-key';
+import { getters } from "./getters";
 
 Vue.use(Vuex);
 
@@ -20,7 +21,8 @@ export const store: StoreOptions<RootState> = {
         document,
         profile,
         tools,
-        catalog
+        catalog,
+        hotKey,
     }
 };
 

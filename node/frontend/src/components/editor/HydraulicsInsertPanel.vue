@@ -11,14 +11,14 @@
                 <b-button
                     variant="outline-dark"
                     class="insertBtn flowsource btn-sm"
-                    @click="$emit('insert', { entityName: entityNames.FLOW_SOURCE, system: selectedSystem })"
+                    @click="toggleWaterSource"
                     v-b-tooltip.hover
                     title="Flow Source"
                 ></b-button>
                 <b-button
                     variant="outline-dark"
                     class="insertBtn riser btn-sm"
-                    @click="$emit('insert', { entityName: entityNames.RISER, system: selectedSystem })"
+                    @click="toggleRiser"
                     v-b-tooltip.hover
                     title="Riser"
                     ><v-icon name="arrow-up" scale="1.2"
@@ -26,13 +26,7 @@
                 <b-button
                     variant="outline-dark"
                     class="insertBtn pipes btn-sm"
-                    @click="
-                        $emit('insert', {
-                            entityName: entityNames.PIPE,
-                            system: selectedSystem,
-                            networkType: NetworkType.RETICULATIONS
-                        })
-                    "
+                    @click="toggleReticulationPipe"
                     v-b-tooltip.hover
                     title="Reticulation Pipe"
                     ><v-icon name="wave-square" scale="1.2" />{{
@@ -42,13 +36,7 @@
                 <b-button
                     variant="outline-dark"
                     class="insertBtn pipes btn-sm"
-                    @click="
-                        $emit('insert', {
-                            entityName: entityNames.PIPE,
-                            system: selectedSystem,
-                            networkType: NetworkType.CONNECTIONS
-                        })
-                    "
+                    @click="toggleConnectionPipe"
                     v-b-tooltip.hover
                     title="Connection Pipe"
                     ><v-icon name="wave-square" scale="1.2" />{{
@@ -62,42 +50,21 @@
                 <b-button
                     variant="outline-dark"
                     class="insertBtn rpzd-hot-cold btn-sm"
-                    @click="
-                        $emit('insert', {
-                            entityName: entityNames.BIG_VALVE,
-                            system: selectedSystem,
-                            tmvHasCold: true,
-                            bigValveType: BigValveType.RPZD_HOT_COLD
-                        })
-                    "
+                    @click="toggleRPZD"
                     v-b-tooltip.hover
                     title="RPZD (Hot + Cold)"
                 ></b-button>
                 <b-button
                     variant="outline-dark"
                     class="insertBtn tmv btn-sm"
-                    @click="
-                        $emit('insert', {
-                            entityName: entityNames.BIG_VALVE,
-                            system: selectedSystem,
-                            tmvHasCold: true,
-                            bigValveType: BigValveType.TMV
-                        })
-                    "
+                    @click="toggleTMV"
                     v-b-tooltip.hover
                     title="TMV (Warm + Cold)"
                 ></b-button>
                 <b-button
                     variant="outline-dark"
                     class="insertBtn tempering-valve btn-sm"
-                    @click="
-                        $emit('insert', {
-                            entityName: entityNames.BIG_VALVE,
-                            system: selectedSystem,
-                            tmvHasCold: true,
-                            bigValveType: BigValveType.TEMPERING
-                        })
-                    "
+                    @click="toggleTemperingValve"
                     v-b-tooltip.hover
                     title="Tempering Valve (Warm)"
                 ></b-button>
@@ -109,17 +76,9 @@
             <b-button-group>
                 <b-dropdown text="Plants" class="insertEntityBtn" variant="outline-dark">
                     <b-dropdown-item
-                            variant="outline-dark"
-                            class="hot-water-plant btn-sm"
-                            @click="
-                        $emit('insert', {
-                            entityName: entityNames.PLANT,
-                            inletSystemUid: StandardFlowSystemUids.ColdWater,
-                            outletSystemUid: StandardFlowSystemUids.HotWater,
-                            plantType: PlantType.RETURN_SYSTEM,
-                            title: 'Hot Water Plant',
-                        })
-                    "
+                        variant="outline-dark"
+                        class="hot-water-plant btn-sm"
+                        @click="toggleHotWaterPlant"
                     >
                         Hot Water Plant w/Return
                     </b-dropdown-item>
@@ -142,34 +101,18 @@
                     </b-dropdown-item>
 
                     <b-dropdown-item
-                            variant="outline-dark"
-                            class="hot-water-plant btn-sm"
-                            @click="
-                        $emit('insert', {
-                            entityName: entityNames.PLANT,
-                            inletSystemUid: selectedSystem.uid,
-                            outletSystemUid: selectedSystem.uid,
-                            plantType: PlantType.TANK,
-                            title: 'Tank',
-                        })
-                    "
+                        variant="outline-dark"
+                        class="hot-water-plant btn-sm"
+                        @click="toggleTank"
                     >
                         {{ selectedSystem.name + ' Tank' }}
                     </b-dropdown-item>
 
 
                     <b-dropdown-item
-                            variant="outline-dark"
-                            class="hot-water-plant btn-sm"
-                            @click="
-                        $emit('insert', {
-                            entityName: entityNames.PLANT,
-                            inletSystemUid: selectedSystem.uid,
-                            outletSystemUid: selectedSystem.uid,
-                            plantType: PlantType.PUMP,
-                            title: 'Pump',
-                        })
-                    "
+                        variant="outline-dark"
+                        class="hot-water-plant btn-sm"
+                        @click="togglePump"
                     >
                         {{ selectedSystem.name + ' Pump' }}
                     </b-dropdown-item>
@@ -231,9 +174,9 @@
 
 
                     <b-dropdown-item
-                            variant="outline-dark"
-                            class="shower btn-sm"
-                            @click="$emit('insert', { entityName: entityNames.LOAD_NODE, variant: 'hot-cold-load' })"
+                        variant="outline-dark"
+                        class="shower btn-sm"
+                        @click="toggleNodePair"
                     >
                         Hot/Cold Fixture Node Pair
                     </b-dropdown-item>
@@ -280,6 +223,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
+import Mousetrap from 'mousetrap';
 import FlowSystemPicker from "../../../src/components/editor/FlowSystemPicker.vue";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import { DocumentState } from "../../store/document/types";
@@ -304,6 +248,71 @@ import { PlantType } from "../../../../common/src/api/document/entities/plants/p
     }
 })
 export default class HydraulicsInsertPanel extends Vue {
+    mounted() {
+        const { 
+            coldWater,
+            hotWater,
+            warmWater,
+            waterSource,
+            riser,
+            reticulationPipe,
+            connectionPipe,
+            rpzd,
+            tmv,
+            temperingValve,
+            hotWaterPlant,
+            tank,
+            pump,
+            prv,
+            ballValve,
+            gateValve,
+            butterflyValve,
+            balancingValve,
+            strainer,
+            waterMeter,
+            checkValve,
+            nodePair,
+            continuousFlowNode,
+            dwellingNodePair,
+        } = this.hotKeySetting;
+        
+        Mousetrap.bind(coldWater, this.toggleCold);
+        Mousetrap.bind(hotWater, this.toggleHot);
+        Mousetrap.bind(warmWater, this.toggleWarm);
+        Mousetrap.bind(waterSource, this.toggleWaterSource);
+        Mousetrap.bind(riser, this.toggleRiser);
+        Mousetrap.bind(reticulationPipe, this.toggleReticulationPipe);
+        Mousetrap.bind(connectionPipe, this.toggleConnectionPipe);
+        Mousetrap.bind(rpzd, this.toggleRPZD);
+        Mousetrap.bind(tmv, this.toggleTMV);
+        Mousetrap.bind(temperingValve, this.toggleTemperingValve);
+        Mousetrap.bind(hotWaterPlant, this.toggleHotWaterPlant);
+        Mousetrap.bind(tank, this.toggleTank);
+        Mousetrap.bind(pump, this.togglePump);
+        Mousetrap.bind(nodePair, this.toggleNodePair);
+        Mousetrap.bind(continuousFlowNode, this.toggleContinuousFlowNode);
+        
+        this.document.drawing.metadata.calculationParams.dwellingMethod !== null && Mousetrap.bind(dwellingNodePair, this.toggleDwellingNodePair);
+
+        this.availableFixtureList.map((fixture) => {
+            this.hotKeySetting[fixture.uid] && Mousetrap.bind(this.hotKeySetting[fixture.uid], () => this.toggleFixture(fixture.uid));
+        });
+
+        this.$props.availableValves.filter((vProps: {catalogId: string, type: string, name: string}) => {
+            if (vProps.catalogId === 'prv' && vProps.type !== 'PRV_SINGLE') {
+                return false;
+            }
+
+            return true;
+        }).map((vProps: {catalogId: string, type: string, name: string}) => {
+            this.hotKeySetting[vProps.catalogId] && Mousetrap.bind(this.hotKeySetting[vProps.catalogId], () => this.toggleValve(vProps));
+        });
+    }
+
+    get hotKeySetting(): { [key: string]: string } {
+        return this.$store.getters["hotKey/setting"];
+    }
+
     get NetworkType() {
         return NetworkType;
     }
@@ -373,6 +382,139 @@ export default class HydraulicsInsertPanel extends Vue {
 
     get currentSystemHasReturn() {
         return this.selectedSystem.hasReturnSystem;
+    }
+
+    toggleCold() {
+        this.selectedSystemId = 0;
+    }
+
+    toggleHot() {
+        this.selectedSystemId = 1;
+    }
+
+    toggleWarm() {
+        this.selectedSystemId = 2;
+    }
+
+    toggleWaterSource() {
+        this.$emit('insert', { entityName: this.entityNames.FLOW_SOURCE, system: this.selectedSystem });
+    }
+
+    toggleRiser() {
+        this.$emit('insert', { entityName: this.entityNames.RISER, system: this.selectedSystem });
+    }
+
+    toggleReticulationPipe() {
+        this.$emit('insert', { 
+            entityName: this.entityNames.PIPE,
+            system: this.selectedSystem,
+            networkType: NetworkType.RETICULATIONS
+        });
+    }
+
+    toggleConnectionPipe() {
+        this.$emit('insert', { 
+            entityName: this.entityNames.PIPE,
+            system: this.selectedSystem,
+            networkType: NetworkType.CONNECTIONS
+        });
+    }
+
+    toggleRPZD() {
+        this.$emit('insert', {
+            entityName: this.entityNames.BIG_VALVE,
+            system: this.selectedSystem,
+            tmvHasCold: true,
+            bigValveType: BigValveType.RPZD_HOT_COLD
+        });
+    }
+
+    toggleTMV() {
+        this.$emit('insert', {
+            entityName: this.entityNames.BIG_VALVE,
+            system: this.selectedSystem,
+            tmvHasCold: true,
+            bigValveType: BigValveType.TMV
+        });
+    }
+
+    toggleTemperingValve() {
+        this.$emit('insert', {
+            entityName: this.entityNames.BIG_VALVE,
+            system: this.selectedSystem,
+            tmvHasCold: true,
+            bigValveType: BigValveType.TEMPERING
+        });
+    }
+
+    toggleHotWaterPlant() {
+         this.$emit('insert', {
+            entityName: this.entityNames.PLANT,
+            inletSystemUid: StandardFlowSystemUids.ColdWater,
+            outletSystemUid: StandardFlowSystemUids.HotWater,
+            plantType: PlantType.RETURN_SYSTEM,
+            title: 'Hot Water Plant',
+        });
+    }
+
+    toggleTank() {
+        this.$emit('insert', {
+            entityName: this.entityNames.PLANT,
+            inletSystemUid: this.selectedSystem.uid,
+            outletSystemUid: this.selectedSystem.uid,
+            plantType: PlantType.TANK,
+            title: 'Tank',
+        });
+    }
+
+    togglePump() {
+        this.$emit('insert', {
+            entityName: this.entityNames.PLANT,
+            inletSystemUid: this.selectedSystem.uid,
+            outletSystemUid: this.selectedSystem.uid,
+            plantType: PlantType.PUMP,
+            title: 'Pump',
+        });
+    }
+
+    toggleFixture(uid: string) {
+        this.$emit('insert', {
+            entityName: this.entityNames.FIXTURE,
+            system: this.selectedSystem,
+            catalogId: uid,
+        });
+    }
+
+    toggleValve(valve: {catalogId: string, type: string, name: string}) {
+        this.$emit('insert', {
+            entityName: this.entityNames.DIRECTED_VALVE,
+            system: this.selectedSystem,
+            catalogId: valve.catalogId,
+            valveType: valve.type,
+            valveName: valve.name,
+        });
+    }
+
+    toggleNodePair() {
+       this.$emit('insert', { 
+           entityName: this.entityNames.LOAD_NODE, 
+           variant: 'hot-cold-load' 
+        });
+    }
+
+    toggleContinuousFlowNode() {
+        this.$emit('insert', { 
+            entityName: this.entityNames.LOAD_NODE,
+            nodeType: NodeType.LOAD_NODE,
+            variant: 'continuous'
+        });
+    }
+
+    toggleDwellingNodePair() {
+        this.$emit('insert', { 
+            entityName: this.entityNames.LOAD_NODE, 
+            variant: 'hot-cold-dwelling' 
+        });
     }
 }
 </script>

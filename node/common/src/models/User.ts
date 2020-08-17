@@ -1,5 +1,14 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryColumn } from "typeorm";
+import { 
+    BaseEntity,
+    Column,
+    Entity,
+    ManyToOne,
+    PrimaryColumn,
+    OneToOne,
+    JoinColumn 
+} from "typeorm";
 import { Organization } from "./Organization";
+import { HotKey } from './HotKey';
 
 export interface OnBoardingStats {
     numDrawingsCreated: number;
@@ -89,6 +98,10 @@ export class User extends BaseEntity {
 
     @Column("varchar", { nullable: true})
     lastname: string;
+
+    @OneToOne(() => HotKey, { nullable: true, eager: true })
+    @JoinColumn()
+    hot_key: HotKey
 }
 
 export function allUserFields(except?: Array<keyof User>) {

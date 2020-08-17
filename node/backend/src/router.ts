@@ -13,6 +13,7 @@ import {errorRouter} from "./controllers/error";
 import { accessEvents } from "./controllers/access-events";
 import {feedbackMessageRouter} from './controllers/feedbackMessage';
 import { videoViewRouter } from "./controllers/videoView";
+import { hotKeyRouter } from './controllers/hotKey';
 
 const router: Router = Router();
 
@@ -29,5 +30,6 @@ router.use('/errors', errorRouter);
 router.use('/feedback', feedbackMessageRouter);
 router.use('/videoView', videoViewRouter);
 router.use('/shareDocument', shareDocumentRouter);
+router.use('/hotKey', hotKeyRouter);
 
 export default router;

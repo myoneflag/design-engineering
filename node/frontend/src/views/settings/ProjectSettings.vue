@@ -23,6 +23,7 @@
                             >Calculations</b-nav-item
                         >
                         <b-nav-item :to="{ name: 'settings/document' }" active-class="active">Document</b-nav-item>
+                        <b-nav-item :to="{ name: 'settings/hot-keys' }" active-class="active">Hot Keys</b-nav-item>
                         <b-nav-item :to="{ name: 'settings/debug' }" active-class="active" style="opacity: 0.1"
                             >Debug</b-nav-item
                         >
@@ -47,7 +48,4 @@ import DrawingNavBar from "../../components/DrawingNavBar.vue";
     components: { DrawingNavBar }
 })
 export default class ProjectSettings extends Vue {}
-/*
-
-     */
 </script>

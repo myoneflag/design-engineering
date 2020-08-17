@@ -8,15 +8,16 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import DrawingNavBar from "../components/DrawingNavBar.vue";
-import DrawingCanvas from "../../src/components/editor/DrawingCanvas.vue";
-import { loadCatalog } from "../../src/api/catalog";
-import LoadingScreen from "../../src/views/LoadingScreen.vue";
-import { DocumentState } from "../../src/store/document/types";
-import { closeDocument, getDocument, openDocument } from "../../src/api/document";
-import { MainEventBus } from "../store/main-event-bus";
 import { AccessLevel, User } from "../../../common/src/models/User";
 import { Catalog } from "../../../common/src/api/catalog/types";
+import { DocumentState } from "../store/document/types";
+import { MainEventBus } from "../store/main-event-bus";
+import { closeDocument, getDocument, openDocument } from "../api/document";
+import { loadCatalog } from "../api/catalog";
+import { hotKeySetting } from "../api/hot-keys";
+import DrawingNavBar from "../components/DrawingNavBar.vue";
+import DrawingCanvas from "../components/editor/DrawingCanvas.vue";
+import LoadingScreen from "../views/LoadingScreen.vue";
 
 @Component({
     components: { LoadingScreen, DrawingCanvas, DrawingNavBar },
@@ -103,6 +104,17 @@ export default class Document extends Vue {
             }
         });
 
+        hotKeySetting(this.profile.hot_key?.id || 0).then(res => {
+            if (res.success) {
+                this.$store.dispatch("hotKey/setSetting", res.data);
+            } else {
+                this.$bvToast.toast(res.message, {
+                    title: "Error retrieving hot key",
+                    variant: "Danger"
+                });
+            }
+        });
+        
         MainEventBus.$on("disable-ui-mouse", this.disableUiMouse);
         MainEventBus.$on("enable-ui-mouse", this.enableUiMouse);
     }
@@ -142,12 +154,16 @@ export default class Document extends Vue {
         return this.$store.getters["catalog/loaded"];
     }
 
+    get hotKeySettingLoaded(): boolean {
+        return this.$store.getters["hotKey/loaded"];
+    }
+
     get profile(): User {
         return this.$store.getters["profile/profile"];
     }
 
     get isLoading() {
-        return !this.catalogLoaded || !this.document.uiState.loaded;
+        return !this.catalogLoaded || !this.document.uiState.loaded || !this.hotKeySettingLoaded;
     }
 }
 /*
