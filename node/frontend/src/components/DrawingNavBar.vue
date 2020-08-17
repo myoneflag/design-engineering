@@ -94,6 +94,7 @@
 
 <script lang="ts">
 import { Vue } from "vue-property-decorator";
+import Mousetrap from 'mousetrap';
 import { DocumentState } from "../store/document/types";
 import { State } from "vuex-class";
 import Component from "vue-class-component";
@@ -116,6 +117,16 @@ export default class DrawingNavBar extends Vue {
 
     titleEditing = false;
     historyLoading = false;
+
+    mounted() {
+        const { settings } = this.hotKeySetting;
+
+        Mousetrap.bind(settings, this.toggleSettings);
+    }
+
+    get hotKeySetting(): { [key: string]: string } {
+        return this.$store.getters["hotKey/setting"];
+    }
 
     get profile(): User {
         return this.$store.getters["profile/profile"];
@@ -214,6 +225,10 @@ export default class DrawingNavBar extends Vue {
 
     get DrawingMode() {
         return DrawingMode;
+    }
+
+    toggleSettings() {
+        this.$router.push({ name: 'settings/general'});
     }
 }
 </script>

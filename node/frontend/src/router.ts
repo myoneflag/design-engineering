@@ -99,6 +99,11 @@ const router = new Router({
                             component: () => import(/* webpackChunkName: "document" */ "./views/settings/Document.vue")
                         },
                         {
+                            path: "hot-keys",
+                            name: "settings/hot-keys",
+                            component: () => import(/* webpackChunkName: "hotkeys" */ "./views/settings/HotKeys.vue")
+                        },
+                        {
                             path: "debug",
                             name: "settings/debug",
                             component: () => import(/* webpackChunkName: "debug" */ "./views/settings/Debug.vue")
