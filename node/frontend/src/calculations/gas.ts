@@ -14,6 +14,7 @@ import {
 } from "../../../common/src/lib/utils";
 import {NoFlowAvailableReason} from "../store/document/calculations/pipe-calculation";
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
+import {NodeType} from "../../../common/src/api/document/entities/load-node-entity";
 
 export interface GasComponent {
     pipes: Set<string>;
@@ -301,17 +302,39 @@ function getGasVelocityRealMs(context: CalculationEngine, pipe: PipeEntity, type
     const calculation = context.globalStore.getOrCreateCalculation(pipe);
     if (calculation.psdUnits) {
         if (calculation.psdUnits.gasMJH) {
+
+            let nDwellings = 0;
+            let dwellingMJH = 0;
+            if (calculation.psdProfile) {
+                for (const c of calculation.psdProfile.keys()) {
+                    const e = context.globalStore.get(c)!;
+                    if (e.entity.type === EntityType.LOAD_NODE) {
+                        if (e.entity.node.type === NodeType.DWELLING) {
+                            nDwellings ++;
+                            dwellingMJH += calculation.psdProfile.get(c)!.gasMJH;
+                        }
+                    }
+                }
+            }
+
+            const continuousMJH = calculation.psdUnits.gasMJH - dwellingMJH;
+            const diversification = lowerBoundTable(context.catalog.gasDiversification, nDwellings)
+                || upperBoundTable(context.catalog.gasDiversification, nDwellings) || 0;
+            const diversifiedMJH = continuousMJH + diversification * dwellingMJH;
+
+            console.log('diversified: ' + diversifiedMJH);
+
             let m3h = 0;
             switch (type) {
                 case GasType.NATURAL_GAS: {
                     // http://agnatural.pt/documentos/ver/natural-gas-conversion-guide_cb4f0ccd80ccaf88ca5ec336a38600867db5aaf1.pdf
-                    m3h = calculation.psdUnits.gasMJH / 38.7;
+                    m3h = diversifiedMJH / 38.7;
                     break;
                 }
                 case GasType.LPG: {
                     // https://www.elgas.com.au/blog/389-lpg-conversions-kg-litres-mj-kwh-and-m3
 
-                    const liters = calculation.psdUnits.gasMJH * 0.042;
+                    const liters = diversifiedMJH * 0.042;
                     const m3 = liters / 3.70;
                     m3h = m3;
                     break;
@@ -328,7 +351,7 @@ function getGasVelocityRealMs(context: CalculationEngine, pipe: PipeEntity, type
             );
 
             return {
-                mjh: calculation.psdUnits.gasMJH, ms: res,
+                mjh: diversifiedMJH, ms: res,
             };
         }
     }

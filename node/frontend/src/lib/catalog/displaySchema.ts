@@ -1,6 +1,5 @@
-import { Catalog, PRVSize } from "../../../../common/src/api/catalog/types";
-import { Units } from "../../../../common/src/lib/measurements";
-import {PriceTable, ValveByPipe} from "../../../../common/src/api/catalog/price-table";
+import {Catalog, PRVSize} from "../../../../common/src/api/catalog/types";
+import {Units} from "../../../../common/src/lib/measurements";
 
 export type Page<V> = {
     [K in keyof V]: {
@@ -168,8 +167,18 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                 }
             }
         },
-        fluids: {
+        gasDiversification: {
             order: 4,
+            name: "Gas Diversification",
+            table: {
+                primaryName: "Dwelling Units",
+                columns: [
+                    [null, "Flow Rate", Units.LitersPerSecond],
+                ],
+            }
+        },
+        fluids: {
+            order: 5,
             name: "Fluids",
             table: {
                 primaryName: null,
@@ -202,7 +211,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
             }
         },
         pipes: {
-            order: 5,
+            order: 6,
             name: "Pipes",
             table: {
                 primaryName: null,
@@ -234,7 +243,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
             }
         },
         valves: {
-            order: 6,
+            order: 7,
             name: "Valves",
             table: {
                 primaryName: null,
@@ -262,7 +271,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
             }
         },
         mixingValves: {
-            order: 7,
+            order: 8,
             name: "Mixing Valves",
             table: {
                 primaryName: null,
@@ -295,7 +304,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
             }
         },
         prv: {
-            order: 8,
+            order: 9,
             name: "Pressure Reducing Valves",
             table: {
                 primaryName: "Nominal Diameter",
@@ -317,7 +326,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
             }
         },
         backflowValves: {
-            order: 9,
+            order: 10,
             name: "Backflow Valves",
             table: {
                 primaryName: null,
@@ -364,11 +373,11 @@ export function getCatalogDisplaySchema(): CatalogSchema {
             }
         },
         balancingValves: {
-            order: 10,
+            order: 11,
             name: "Balancing Valves",
         },
         hotWaterPlant: {
-            order: 11,
+            order: 12,
             name: "Heated Water Circulating Pumps",
             table: {
                 primaryName: "Grundfos Settings",

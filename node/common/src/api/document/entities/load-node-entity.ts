@@ -1,12 +1,10 @@
-import { FieldType, PropertyField } from "./property-field";
-import { EntityType } from "./types";
-import {CenteredEntity, Color, COLORS, DrawableEntity, DrawingState, FlowSystemParameters} from "../drawing";
-import { Units } from "../../../lib/measurements";
-import { cloneSimple } from "../../../lib/utils";
-import {fillDefaultLoadNodeFields} from "../../../../../frontend/src/store/document/entities/fillDefaultLoadNodeFields";
+import {FieldType, PropertyField} from "./property-field";
+import {EntityType} from "./types";
+import {CenteredEntity, Color, COLORS, DrawableEntity} from "../drawing";
+import {Units} from "../../../lib/measurements";
 import {DocumentState} from "../../../../../frontend/src/store/document/types";
-import {ObjectStore} from "../../../../../frontend/src/htmlcanvas/lib/object-store";
-import {StandardFlowSystemUids} from "../../config";
+import {isGas} from "../../config";
+import {Catalog} from "../../catalog/types";
 
 export enum NodeType {
     LOAD_NODE,
@@ -25,6 +23,7 @@ export interface DwellingNode {
     type: NodeType.DWELLING;
     dwellings: number;
     continuousFlowLS: number;
+    gasFlowRateMJH: number;
 }
 
 export default interface LoadNodeEntity extends DrawableEntity, CenteredEntity {
@@ -40,7 +39,7 @@ export default interface LoadNodeEntity extends DrawableEntity, CenteredEntity {
     linkedToUid: string | null;
 }
 
-export function makeLoadNodesFields(doc: DocumentState, value: LoadNodeEntity): PropertyField[] {
+export function makeLoadNodesFields(doc: DocumentState, value: LoadNodeEntity, catalog: Catalog): PropertyField[] {
     const fields: PropertyField[] = [
         {
             property: "systemUidOption",
@@ -63,9 +62,13 @@ export function makeLoadNodesFields(doc: DocumentState, value: LoadNodeEntity): 
         }
     ];
 
+    const system = doc.drawing.metadata.flowSystems.find((f) => f.uid === value.systemUidOption);
+
+    const nodeIsGas = isGas(system?.fluid || 'water', catalog);
+
     switch (value.node.type) {
         case NodeType.LOAD_NODE:
-            if (value.systemUidOption === StandardFlowSystemUids.Gas || value.systemUidOption === null) {
+            if (nodeIsGas || value.systemUidOption === null) {
                 fields.push(
                     {
                         property: "node.gasFlowRateMJH",
@@ -80,7 +83,7 @@ export function makeLoadNodesFields(doc: DocumentState, value: LoadNodeEntity): 
                 );
             }
 
-            if (value.systemUidOption !== StandardFlowSystemUids.Gas || value.systemUidOption === null) {
+            if (!nodeIsGas || value.systemUidOption === null) {
                 fields.push(
                     {
                         property: "node.loadingUnits",
@@ -117,28 +120,45 @@ export function makeLoadNodesFields(doc: DocumentState, value: LoadNodeEntity): 
             }
             break;
         case NodeType.DWELLING:
-            fields.push(
-                {
-                    property: "node.dwellings",
-                    title: "Dwelling Units",
-                    hasDefault: false,
-                    isCalculated: false,
-                    type: FieldType.Number,
-                    params: { min: 0, max: null },
-                    multiFieldId: "dwellings"
-                },
+            if (nodeIsGas || value.systemUidOption === null) {
+                fields.push(
+                    {
+                        property: "node.gasFlowRateMJH",
+                        title: "Gas Demand",
+                        hasDefault: false,
+                        isCalculated: false,
+                        type: FieldType.Number,
+                        units: Units.MegajoulesPerHour,
+                        params: { min: 0, max: null },
+                        multiFieldId: "gasFlowRateMJH"
+                    },
+                );
+            }
 
-                {
-                    property: "node.continuousFlowLS",
-                    title: "Continuous Flow",
-                    hasDefault: false,
-                    isCalculated: false,
-                    type: FieldType.Number,
-                    params: { min: 0, max: null },
-                    multiFieldId: "continuousFlowLS",
-                    units: Units.LitersPerSecond,
-                }
-            );
+            if (!nodeIsGas || value.systemUidOption === null) {
+                fields.push(
+                    {
+                        property: "node.dwellings",
+                        title: "Dwelling Units",
+                        hasDefault: false,
+                        isCalculated: false,
+                        type: FieldType.Number,
+                        params: { min: 0, max: null },
+                        multiFieldId: "dwellings"
+                    },
+
+                    {
+                        property: "node.continuousFlowLS",
+                        title: "Continuous Flow",
+                        hasDefault: false,
+                        isCalculated: false,
+                        type: FieldType.Number,
+                        params: { min: 0, max: null },
+                        multiFieldId: "continuousFlowLS",
+                        units: Units.LitersPerSecond,
+                    }
+                );
+            }
             break;
     }
 

@@ -151,9 +151,6 @@ import {Units} from "../../../../common/src/lib/measurements";
                 }
             }
 
-            console.log(focusedUnits);
-            console.log(projectUnits);
-
             let x = 80;
             const res: any[] = [{"PSD": "Cold"}, {"PSD": "Hot"}, {"PSD": "Gas"}];
             for (const [units, fieldName] of [[focusedUnits, this.$props.focusName], [projectUnits, "Project"]]) {

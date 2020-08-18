@@ -38,6 +38,7 @@ import LoadNodeEntity, {
 } from "../../../../../common/src/api/document/entities/load-node-entity";
 import LoadNode from "../../../htmlcanvas/objects/load-node";
 import { fillDefaultLoadNodeFields } from "../../../store/document/entities/fillDefaultLoadNodeFields";
+import {Catalog} from "../../../../../common/src/api/catalog/types";
 
 @Component({
     components: { PropertiesFieldBuilder },
@@ -51,7 +52,7 @@ import { fillDefaultLoadNodeFields } from "../../../store/document/entities/fill
 })
 export default class LoadNodeProperties extends Vue {
     get fields() {
-        return makeLoadNodesFields(this.document, this.$props.selectedEntity);
+        return makeLoadNodesFields(this.document, this.$props.selectedEntity, this.catalog);
     }
 
     get reactiveData(): LoadNodeEntity {
@@ -60,6 +61,10 @@ export default class LoadNodeProperties extends Vue {
 
     get document(): DocumentState {
         return this.$store.getters["document/document"];
+    }
+
+    get catalog(): Catalog {
+        return this.$store.getters["catalog/default"];
     }
 
     get defaultData(): LoadNodeEntity {

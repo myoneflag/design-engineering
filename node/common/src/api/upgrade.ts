@@ -7,6 +7,7 @@ import {FlowSourceEntityV11} from "./document/entities/flow-source-entity";
 import uuid from 'uuid';
 import {FlowConfiguration, SystemNodeEntity} from "./document/entities/big-valve/big-valve-entity";
 import {ValveType} from "./document/entities/directed-valves/valve-types";
+import {NodeType} from "./document/entities/load-node-entity";
 
 // This file is for managing upgrades between versions.
 // Remember to copy this directory before developing a major change, and bump the api version number, then
@@ -147,6 +148,12 @@ export function upgrade15to16(original: DrawingState) {
                 if (e.valve.type === ValveType.WATER_METER) {
                     if (e.valve.pressureDropKPA === undefined) {
                         e.valve.pressureDropKPA = null;
+                    }
+                }
+            } else if (e.type === EntityType.LOAD_NODE) {
+                if (e.node.type === NodeType.DWELLING) {
+                    if (e.node.gasFlowRateMJH === undefined) {
+                        e.node.gasFlowRateMJH = 0;
                     }
                 }
             }

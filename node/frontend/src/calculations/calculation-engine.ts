@@ -273,7 +273,7 @@ export default class CalculationEngine implements CalculationContext {
                     fields = makeFlowSourceFields([], obj.entity);
                     break;
                 case EntityType.LOAD_NODE:
-                    fields = makeLoadNodesFields(this.doc, obj.entity);
+                    fields = makeLoadNodesFields(this.doc, obj.entity, this.catalog);
                     break;
                 case EntityType.PLANT:
                     fields = makePlantEntityFields(obj.entity, []);
@@ -1499,7 +1499,7 @@ export default class CalculationEngine implements CalculationContext {
                         continuousFlowLS: node.entity.node.continuousFlowLS,
                         dwellings: node.entity.node.dwellings,
                         entity: node.entity.uid,
-                        gasMJH: 0,
+                        gasMJH: node.entity.node.gasFlowRateMJH,
                         correlationGroup
                     };
                 default:
