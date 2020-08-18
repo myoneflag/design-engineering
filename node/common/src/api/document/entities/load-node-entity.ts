@@ -64,7 +64,7 @@ export function makeLoadNodesFields(doc: DocumentState, value: LoadNodeEntity, c
 
     const system = doc.drawing.metadata.flowSystems.find((f) => f.uid === value.systemUidOption);
 
-    const nodeIsGas = isGas(system?.fluid || 'water', catalog);
+    const nodeIsGas = isGas(system ? system.fluid : 'water', catalog);
 
     switch (value.node.type) {
         case NodeType.LOAD_NODE:
