@@ -3380,7 +3380,7 @@ export const initialCatalog: Catalog = {
             state: State.GAS,
         },
         naturalGas: {
-            name: "Nautral Gas",
+            name: "Natural Gas",
             densityKGM3: "0.8",
             dynamicViscosityByTemperature: {
                 0: "0",

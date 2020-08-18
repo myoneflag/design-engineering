@@ -29,8 +29,8 @@ export default interface DirectedValveCalculation extends Calculation, PressureC
 export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, globalStore: GlobalStore, drawing: DrawingState, catalog: Catalog | undefined,): CalculationField[] {
     const systemUid = determineConnectableSystemUid(globalStore, entity);
 
-    const valveIsGas = catalog && isGas(drawing.metadata.flowSystems
-        .find((f) => f.uid === systemUid)!.fluid, catalog);
+    const valveIsGas = catalog && systemUid && isGas(drawing.metadata.flowSystems
+        .find((f) => f.uid === systemUid)?.fluid || 'water', catalog);
 
 
     let fields: CalculationField[] = [

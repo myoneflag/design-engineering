@@ -28,10 +28,8 @@ export function calculateGas(engine: CalculationEngine) {
     const components = getGasComponents(engine);
     for (const component of components) {
         if (component.regulatorUid) {
-            console.log('regulator: ' + component.regulatorUid);
             const regulator = engine.globalStore.get(component.regulatorUid) as DirectedValve;
             if (regulator.entity.valve.type === ValveType.GAS_REGULATOR) {
-                console.log('setting to ' + regulator.entity.valve.outletPressureKPA);
                 const rCalc = engine.globalStore.getOrCreateCalculation(regulator.entity);
                 rCalc.pressureKPA = regulator.entity.valve.outletPressureKPA;
             }
@@ -77,7 +75,6 @@ export function calculateGas(engine: CalculationEngine) {
                                     break;
                                 }
 
-                                console.log(p.diameterInternalMM);
                                 // increase pipe size.
                                 p = lowerBoundTable(
                                     pipe.getManufacturerCatalogPage(engine)!,

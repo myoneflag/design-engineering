@@ -105,6 +105,22 @@
                 <b-button
                         v-if="selectedSystem.uid === StandardFlowSystemUids.Gas"
                         variant="outline-dark"
+                        class="insertBtn isolation btn-sm"
+                        @click="
+                        $emit('insert', {
+                            entityName: entityNames.DIRECTED_VALVE,
+                            system: selectedSystem,
+                            catalogId: 'gateValve',
+                            valveType: ValveType.ISOLATION_VALVE,
+                            valveName: 'Isolation',
+                        })
+                    "
+                        v-b-tooltip.hover
+                        title="Isolation Valve"
+                ></b-button>
+                <b-button
+                        v-if="selectedSystem.uid === StandardFlowSystemUids.Gas"
+                        variant="outline-dark"
                         class="insertBtn gas-appliance btn-sm"
                         @click="
                             $emit('insert', {
@@ -695,6 +711,14 @@ export default class HydraulicsInsertPanel extends Vue {
 
 .insertBtn.gas-appliance {
     background-image: url("../../../src/assets/object-icons/items/gas-appliance.png");
+    background-size: 25px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+
+.insertBtn.isolation {
+    background-image: url("../../../src/assets/object-icons/valves/isolation.png");
     background-size: 25px;
     background-repeat: no-repeat;
     background-position: center;

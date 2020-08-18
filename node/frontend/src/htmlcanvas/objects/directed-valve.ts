@@ -698,8 +698,14 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
     friendlyTypeName(catalog: Catalog): string {
         switch (this.entity.valve.type) {
-            case ValveType.CHECK_VALVE:
             case ValveType.ISOLATION_VALVE:
+                const systemUid = determineConnectableSystemUid(this.globalStore, this.entity);
+                const fluid = this.document.drawing.metadata.flowSystems.find((f) => f.uid === systemUid)?.fluid;
+                if (fluid && isGas(fluid, catalog)) {
+                    return 'Isolation Valve';
+                }
+            // noinspection FallThroughInSwitchStatementJS
+            case ValveType.CHECK_VALVE:
             case ValveType.WATER_METER:
             case ValveType.STRAINER:
                 return catalog.valves[this.entity.valve.catalogId].name;

@@ -223,7 +223,7 @@ import {Units} from "../../../../common/src/lib/measurements";
                 let gasMJHText: string = 'error';
                 if (gasMJH != null) {
                     [gasUnits, gasMJHSpare] = convertMeasurementSystem(this.document.drawing.metadata.units, Units.MegajoulesPerHour, gasMJH);
-                    gasMJHText = Number(gasMJHSpare).toPrecision(3);
+                    gasMJHText = Number(gasMJHSpare).toFixed(1);
                 }
 
                 res[0][fieldName] = coldSpareText + " " + coldUnits;
