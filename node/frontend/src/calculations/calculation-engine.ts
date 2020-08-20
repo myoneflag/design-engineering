@@ -1494,7 +1494,7 @@ export default class CalculationEngine implements CalculationContext {
                 const flowRate = lookupFlowRate(psdU, this.doc, this.catalog, systemUid);
 
                 if (entity.valve.type !== BigValveType.RPZD_HOT_COLD) {
-                    calculation.mixingValveSizeMM = this.sizeMixingValveForFlowRate(flowRate?.flowRateLS || 0);
+                    calculation.mixingValveSizeMM = calculation.mixingValveSizeMM || this.sizeMixingValveForFlowRate(flowRate?.flowRateLS || 0);
                 }
 
                 if (entity.valve.type === BigValveType.RPZD_HOT_COLD && flowRate !== null) {
@@ -2634,7 +2634,7 @@ export default class CalculationEngine implements CalculationContext {
     }
 
     sizeMixingValveForFlowRate(fr: number): number {
-        if (fr > 0.5 ) {
+        if (fr >= 0.49 ) {
             return 25;
         }
 

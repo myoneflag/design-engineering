@@ -1151,82 +1151,66 @@ export const initialCatalog: Catalog = {
                     minInletPressureKPA: "200",
                     maxInletPressureKPA: "2000",
                     minFlowRateLS: "0.25",
-                    maxFlowRateLS: "0.50",
+                    maxFlowRateLS: "0.40",
                     maxPressureDropRatio: "2",
                     diameterNominalMM: 15
                 },
                 20: {
                     minInletPressureKPA: "200",
                     maxInletPressureKPA: "2000",
-                    minFlowRateLS: "0.50",
-                    maxFlowRateLS: "0.83",
+                    minFlowRateLS: "0.41",
+                    maxFlowRateLS: "0.70",
                     maxPressureDropRatio: "2",
                     diameterNominalMM: 20
                 },
                 25: {
                     minInletPressureKPA: "200",
                     maxInletPressureKPA: "2000",
-                    minFlowRateLS: "0.83",
-                    maxFlowRateLS: "1.33",
+                    minFlowRateLS: "0.71",
+                    maxFlowRateLS: "1.20",
                     maxPressureDropRatio: "2",
                     diameterNominalMM: 25
                 },
-                32: {
+                "32+15": {
                     minInletPressureKPA: "200",
                     maxInletPressureKPA: "2000",
-                    minFlowRateLS: "1.33",
-                    maxFlowRateLS: "2.33",
+                    minFlowRateLS: "1.21",
+                    maxFlowRateLS: "1.80",
                     maxPressureDropRatio: "2",
-                    diameterNominalMM: 32
+                    diameterNominalMM: 47,
                 },
-                40: {
+                "40+20": {
                     minInletPressureKPA: "200",
                     maxInletPressureKPA: "2000",
-                    minFlowRateLS: "2.33",
-                    maxFlowRateLS: "3",
+                    minFlowRateLS: "1.81",
+                    maxFlowRateLS: "2.60",
                     maxPressureDropRatio: "2",
-                    diameterNominalMM: 40
+                    diameterNominalMM: 60,
                 },
-                50: {
+                "50+25": {
                     minInletPressureKPA: "200",
                     maxInletPressureKPA: "2000",
-                    minFlowRateLS: "3",
-                    maxFlowRateLS: "4",
+                    minFlowRateLS: "2.61",
+                    maxFlowRateLS: "3.80",
                     maxPressureDropRatio: "2",
-                    diameterNominalMM: 50
+                    diameterNominalMM: 75,
                 },
-                65: {
+                "2x40+25": {
                     minInletPressureKPA: "200",
                     maxInletPressureKPA: "2000",
-                    minFlowRateLS: "4",
-                    maxFlowRateLS: "5.7",
+                    minFlowRateLS: "3.81",
+                    maxFlowRateLS: "6.4",
                     maxPressureDropRatio: "2",
-                    diameterNominalMM: 65
+                    diameterNominalMM: 105,
                 },
-                80: {
+                "2x50+25": {
                     minInletPressureKPA: "200",
                     maxInletPressureKPA: "2000",
-                    minFlowRateLS: "5.7",
-                    maxFlowRateLS: "8.5",
+                    minFlowRateLS: "6.41",
+                    maxFlowRateLS: "8.8",
                     maxPressureDropRatio: "2",
-                    diameterNominalMM: 80
+                    diameterNominalMM: 125,
                 },
-                100: {
-                    minInletPressureKPA: "200",
-                    maxInletPressureKPA: "2000",
-                    minFlowRateLS: "8.5",
-                    maxFlowRateLS: "15",
-                    maxPressureDropRatio: "2",
-                    diameterNominalMM: 100
-                },
-                150: {
-                    minInletPressureKPA: "200",
-                    maxInletPressureKPA: null,
-                    minFlowRateLS: "15",
-                    maxFlowRateLS: "34",
-                    maxPressureDropRatio: "2",
-                    diameterNominalMM: 150
-                }
             },
         },
     },
