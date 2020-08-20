@@ -1,11 +1,11 @@
 export const initialHotKey = {
     floorPlan: {
         name: "Floor Plan",
-        default: "ctrl+shift+f",
+        default: "alt+f",
     },
     plumbing: {
         name: "Plumbing",
-        default: "ctrl+shift+p",
+        default: "alt+p",
     },
     results: {
         name: "Results",
@@ -13,7 +13,7 @@ export const initialHotKey = {
     },
     settings: {
         name: "Settings",
-        default: "ctrl+shift+s",
+        default: "alt+s",
     },
     coldWater: {
         name: "Cold Water",
@@ -57,15 +57,15 @@ export const initialHotKey = {
     },
     hotWaterPlant: {
         name: "Hot Water Plant",
-        default: "ctrl+h",
+        default: "alt+h",
     },
     tank: {
         name: "Tank",
-        default: "ctrl+t",
+        default: "alt+t",
     },
     pump: {
         name: "Pump",
-        default: "ctrl+u",
+        default: "alt+u",
     },
     basin: {
         name: "Basin",
@@ -81,7 +81,7 @@ export const initialHotKey = {
     },
     wc: {
         name: "WC",
-        default: "shift+c",
+        default: "alt+c",
     },
     laundryTrough: {
         name: "Laundry Trough Warm",
@@ -113,7 +113,7 @@ export const initialHotKey = {
     },
     hoseTap: {
         name: "Hose Tap",
-        default: "ctrl+shift+h",
+        default: "shift+x",
     },
     birthingPool: {
         name: "Birthing Pool",
@@ -137,7 +137,7 @@ export const initialHotKey = {
     },
     prv: {
         name: "PRV",
-        default: "ctrl+alt+r",
+        default: "shift+v",
     },
     ballValve: {
         name: "Ball Valve",
@@ -161,7 +161,7 @@ export const initialHotKey = {
     },
     waterMeter: {
         name: "Water Meter",
-        default: "ctrl+w",
+        default: "alt+w",
     },
     checkValve: {
         name: "Check Valve",
