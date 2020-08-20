@@ -39,6 +39,7 @@ import { makeLoadNodesFields } from "../../../../common/src/api/document/entitie
 import { makeFlowSourceFields } from "../../../../common/src/api/document/entities/flow-source-entity";
 import { color2rgb, lighten, rgb2style } from "../../lib/utils";
 import {makeGasApplianceFields} from "../../../../common/src/api/document/entities/gas-appliance";
+import {determineConnectableSystemUid} from "../../store/document/entities/lib";
 
 export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
     const floor = context.backgroundLayer.getBackgroundAt(wc);
@@ -311,7 +312,7 @@ export function getPlantPressureLossKPA(entity: PlantEntity, drawing: DrawingSta
     return 0;
 }
 
-export function makeEntityFields(entity: DrawableEntityConcrete, document: DocumentState, catalog: Catalog) {
+export function makeEntityFields(entity: DrawableEntityConcrete, document: DocumentState, catalog: Catalog, store: GlobalStore) {
 
     switch (entity.type) {
         case EntityType.BACKGROUND_IMAGE:
@@ -345,7 +346,8 @@ export function makeEntityFields(entity: DrawableEntityConcrete, document: Docum
         case EntityType.SYSTEM_NODE:
             throw new Error("Invalid object in multi select");
         case EntityType.LOAD_NODE:
-            return makeLoadNodesFields(document,  entity, catalog).filter(
+            const systemUid = determineConnectableSystemUid(store, entity);
+            return makeLoadNodesFields(document,  entity, catalog, systemUid || null).filter(
                 (p) => p.multiFieldId
             );
         case EntityType.FLOW_SOURCE:

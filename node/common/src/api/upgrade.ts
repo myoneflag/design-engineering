@@ -151,10 +151,11 @@ export function upgrade15to16(original: DrawingState) {
                     }
                 }
             } else if (e.type === EntityType.LOAD_NODE) {
-                if (e.node.type === NodeType.DWELLING) {
-                    if (e.node.gasFlowRateMJH === undefined) {
-                        e.node.gasFlowRateMJH = 0;
-                    }
+                if (e.node.gasFlowRateMJH === undefined) {
+                    e.node.gasFlowRateMJH = 0;
+                }
+                if (e.node.gasPressureKPA === undefined) {
+                    e.node.gasPressureKPA = 0;
                 }
             }
         }

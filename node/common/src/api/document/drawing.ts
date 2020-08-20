@@ -80,8 +80,13 @@ export interface UnitsParameters {
     velocityMeasurementSystem: VelocityMeasurementSystem;
     temperatureMeasurementSystem: MeasurementSystem;
     volumeMeasurementSystem: VolumeMeasurementSystem;
+    energyMeasurementSystem: EnergyMeasurementSystem;
 }
 
+export enum EnergyMeasurementSystem {
+    METRIC = 'METRIC',
+    IMPERIAL = 'IMPERIAL',
+}
 
 export enum MeasurementSystem {
     METRIC = 'METRIC',
@@ -126,6 +131,12 @@ export const VOLUME_MEASUREMENT_CHOICES: Choice[] = [
     {name: "Metric (L)", key: VolumeMeasurementSystem.METRIC},
     {name: "UK Imperial (gal)", key: VolumeMeasurementSystem.IMPERIAL},
     {name: "US Imperial (US gal)", key: VolumeMeasurementSystem.US},
+];
+
+
+export const ENERGY_MEASUREMENT_CHOICES: Choice[] = [
+    {name: "Megajoules (mj)", key: EnergyMeasurementSystem.METRIC},
+    {name: "Therms (thm)", key: EnergyMeasurementSystem.IMPERIAL},
 ];
 
 
@@ -259,6 +270,7 @@ export const initialDrawing: DrawingState = {
             velocityMeasurementSystem: VelocityMeasurementSystem.METRIC,
             pressureMeasurementSystem: MeasurementSystem.METRIC,
             temperatureMeasurementSystem: MeasurementSystem.METRIC,
+            energyMeasurementSystem: EnergyMeasurementSystem.METRIC,
         },
         flowSystems: [
             // TODO: these values should get got from the database.

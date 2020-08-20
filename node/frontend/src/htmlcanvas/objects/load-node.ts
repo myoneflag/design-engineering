@@ -28,7 +28,7 @@ import { fillDefaultLoadNodeFields } from "../../store/document/entities/fillDef
 import { ConnectableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { getHighlightColor } from "../lib/utils";
-import {assertUnreachable, StandardFlowSystemUids} from "../../../../common/src/api/config";
+import {assertUnreachable, isGas, StandardFlowSystemUids} from "../../../../common/src/api/config";
 
 @SelectableObject
 @CenterDraggableObject
@@ -72,6 +72,9 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
 
         const filled = fillDefaultLoadNodeFields(context.doc, this.globalStore, this.entity);
 
+        const system = context.doc.drawing.metadata.flowSystems.find((f) => f.uid === filled.systemUidOption);
+        const thisIsGas = isGas(system ? system.fluid : 'water', context.catalog);
+
         if (args.selected || args.overrideColorList.length) {
             const sr = Math.max(baseRadius + 20, vp.surfaceToWorldLength(baseRadius / 50 + 2));
 
@@ -99,7 +102,7 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         ctx.fillStyle = filled.color!.hex;
         if (args.withCalculation) {
             const calculation = this.globalStore.getOrCreateCalculation(this.entity);
-            if (!calculation.pressureKPA) {
+            if (!calculation.pressureKPA && !thisIsGas) {
                 ctx.fillStyle = "#888888";
             }
         }

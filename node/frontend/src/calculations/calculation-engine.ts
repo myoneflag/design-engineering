@@ -273,7 +273,8 @@ export default class CalculationEngine implements CalculationContext {
                     fields = makeFlowSourceFields([], obj.entity);
                     break;
                 case EntityType.LOAD_NODE:
-                    fields = makeLoadNodesFields(this.doc, obj.entity, this.catalog);
+                    const systemUid = determineConnectableSystemUid(obj.globalStore, obj.entity);
+                    fields = makeLoadNodesFields(this.doc, obj.entity, this.catalog, systemUid || null);
                     break;
                 case EntityType.PLANT:
                     fields = makePlantEntityFields(obj.entity, []);

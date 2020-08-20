@@ -1,7 +1,7 @@
 import CalculationEngine, {EdgeType, FLOW_SOURCE_EDGE, FLOW_SOURCE_ROOT_NODE} from "./calculation-engine";
 import {FlowSystemParameters} from "../../../common/src/api/document/drawing";
 import {EntityType} from "../../../common/src/api/document/entities/types";
-import {assertUnreachable, StandardFlowSystemUids} from "../../../common/src/api/config";
+import {assertUnreachable, isGas, StandardFlowSystemUids} from "../../../common/src/api/config";
 import {ValveType} from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import {determineConnectableSystemUid} from "../store/document/entities/lib";
 import Pipe from "../htmlcanvas/objects/pipe";
@@ -186,6 +186,15 @@ export function getGasComponents(engine: CalculationEngine) {
                             mainRunLengthM = Math.max(mainRunLengthM, (prevDist || 0));
                             maxPressureRequiredKPA = Math.max(maxPressureRequiredKPA, parent.entity.inletPressureKPA!);
                         }
+                    } else if (no.entity.type === EntityType.LOAD_NODE) {
+                        const systemUid = determineConnectableSystemUid(engine.globalStore, no.entity);
+                        const system = engine.doc.drawing.metadata.flowSystems.find((f) => f.uid === systemUid);
+                        const nodeIsGas = isGas(system ? system.fluid : 'water', engine.catalog);
+
+                        if (nodeIsGas) {
+                            mainRunLengthM = Math.max(mainRunLengthM, (prevDist || 0));
+                            maxPressureRequiredKPA = Math.max(maxPressureRequiredKPA, no.entity.node.gasPressureKPA);
+                        }
                     }
 
                     if (no.entity.type === EntityType.FLOW_SOURCE && no.entity.uid !== o.entity.uid) {
@@ -310,7 +319,7 @@ function getGasVelocityRealMs(context: CalculationEngine, pipe: PipeEntity, type
                     const e = context.globalStore.get(c)!;
                     if (e.entity.type === EntityType.LOAD_NODE) {
                         if (e.entity.node.type === NodeType.DWELLING) {
-                            nDwellings ++;
+                            nDwellings += e.entity.node.dwellings;
                             dwellingMJH += calculation.psdProfile.get(c)!.gasMJH;
                         }
                     }

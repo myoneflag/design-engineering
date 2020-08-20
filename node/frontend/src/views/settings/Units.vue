@@ -15,6 +15,7 @@
     import { DocumentState } from "../../../src/store/document/types";
     import SettingsFieldBuilder from "../../../src/components/editor/lib/SettingsFieldBuilder.vue";
     import {
+        ENERGY_MEASUREMENT_CHOICES,
         LENGTH_MEASUREMENT_CHOICES,
         PRESSURE_MEASUREMENT_CHOICES,
         TEMPERATURE_MEASUREMENT_CHOICES, VELOCITY_MEASUREMENT_CHOICES, VOLUME_MEASUREMENT_CHOICES
@@ -37,6 +38,7 @@
                 ['velocityMeasurementSystem', 'Velocity Measurement System', 'choice', VELOCITY_MEASUREMENT_CHOICES],
                 ['temperatureMeasurementSystem', 'Temperature Measurement System', 'choice', TEMPERATURE_MEASUREMENT_CHOICES],
                 ['volumeMeasurementSystem', 'Volume Measurement System', 'choice', VOLUME_MEASUREMENT_CHOICES],
+                ['energyMeasurementSystem', 'Energy Measurement System', 'choice', ENERGY_MEASUREMENT_CHOICES],
             ];
         }
 

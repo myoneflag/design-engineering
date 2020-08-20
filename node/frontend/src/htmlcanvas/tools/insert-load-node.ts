@@ -65,6 +65,7 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType, s
                                 continuousFlowLS,
                                 designFlowRateLS: 0,
                                 gasFlowRateMJH: 0,
+                                gasPressureKPA: 0,
                                 loadingUnits
                             },
                             minPressureKPA: null,
@@ -87,6 +88,7 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType, s
                                 dwellings,
                                 continuousFlowLS,
                                 gasFlowRateMJH: 0,
+                                gasPressureKPA: 0,
                             },
                             minPressureKPA: null,
                             maxPressureKPA: null,

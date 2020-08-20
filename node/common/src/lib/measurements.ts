@@ -1,10 +1,11 @@
 import {
+    EnergyMeasurementSystem,
     MeasurementSystem,
     UnitsParameters,
     VelocityMeasurementSystem,
     VolumeMeasurementSystem
 } from "../api/document/drawing";
-import { assertUnreachable } from "../api/config";
+import {assertUnreachable} from "../api/config";
 
 export enum Units {
     None = "",
@@ -21,6 +22,8 @@ export enum Units {
     Kv = "Kv",
     Liters = "L",
     MetersCubedPerHour = "m^3/hr",
+    // Gas demands
+    MegajoulesPerHour = 'MJ/hr',
 
     // Imperial equivalents where applicable
     GallonsPerMinute = "gal/min",
@@ -35,6 +38,8 @@ export enum Units {
     // Kv is unitless
     Gallons = "gal",
     USGallons = "US gal", // wtf usa
+    // Gas demands
+    ThermsPerHour = 'thm/hr',
 
     PipeDiameterMM = "pmm",
     CubicFeetPerHour = "ft^3/hr",
@@ -42,8 +47,7 @@ export enum Units {
     // April Fools
     FurlongsPerFortnight = "fur/fortn",
 
-    // Gas demands
-    MegajoulesPerHour = 'MJ/hr',
+
 }
 
 export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, units: Units, value: number): [Units, number | string | null] {
@@ -250,7 +254,13 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
             assertUnreachable(unitsPrefs.velocityMeasurementSystem);
             return [Units.None, 0];
         case Units.MegajoulesPerHour:
-            return [Units.MegajoulesPerHour, value];
+            switch (unitsPrefs.energyMeasurementSystem) {
+                case EnergyMeasurementSystem.METRIC:
+                    return [Units.MegajoulesPerHour, value];
+                case EnergyMeasurementSystem.IMPERIAL:
+                    return [Units.ThermsPerHour, value / 105.48];
+            }
+            return [Units.None, 0];
         case Units.MetersCubedPerHour:
             switch (unitsPrefs.velocityMeasurementSystem) {
                 case VelocityMeasurementSystem.METRIC:
@@ -271,6 +281,14 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.CubicFeetPerHour, value];
                 default:
                     assertUnreachable(unitsPrefs.velocityMeasurementSystem);
+            }
+            return [Units.None, 0];
+        case Units.ThermsPerHour:
+            switch (unitsPrefs.energyMeasurementSystem) {
+                case EnergyMeasurementSystem.METRIC:
+                    return [Units.MegajoulesPerHour, value * 105.48];
+                case EnergyMeasurementSystem.IMPERIAL:
+                    return [Units.ThermsPerHour, value];
             }
             return [Units.None, 0];
         default:
@@ -297,7 +315,8 @@ export function convertMeasurementToMetric(units: Units, value: number | null) {
             temperatureMeasurementSystem: MeasurementSystem.METRIC,
             velocityMeasurementSystem: VelocityMeasurementSystem.METRIC,
             pressureMeasurementSystem: MeasurementSystem.METRIC,
-            volumeMeasurementSystem: VolumeMeasurementSystem.METRIC
+            volumeMeasurementSystem: VolumeMeasurementSystem.METRIC,
+            energyMeasurementSystem: EnergyMeasurementSystem.METRIC,
         },
         units,
         value

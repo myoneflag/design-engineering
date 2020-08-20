@@ -293,7 +293,6 @@
                     </b-dropdown-item>
 
                     <b-dropdown-item
-                            :disabled="document.drawing.metadata.calculationParams.dwellingMethod === null"
                             variant="outline-dark"
                             class="shower btn-sm"
                             @click="$emit('insert', { entityName: entityNames.LOAD_NODE, variant: 'hot-cold-dwelling' })"
@@ -310,7 +309,6 @@
                     >Fixture Node</b-dropdown-item
                     >
                     <b-dropdown-item
-                            :disabled="document.drawing.metadata.calculationParams.dwellingMethod === null"
                             variant="outline-dark"
                             class="shower btn-sm"
                             @click="$emit('insert', { entityName: entityNames.LOAD_NODE, nodeType: NodeType.DWELLING })"

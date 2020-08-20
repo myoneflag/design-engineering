@@ -80,7 +80,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
     }
 
     drawInternal(context: DrawingContext, args: DrawingArgs): void {
-        const fields = makeEntityFields(this.entity, context.doc, context.catalog);
+        const fields = makeEntityFields(this.entity, context.doc, context.catalog, context.globalStore);
         const overrideColorList: Color[] = [];
         for (const f of fields) {
             if (f.highlightOnOverride) {

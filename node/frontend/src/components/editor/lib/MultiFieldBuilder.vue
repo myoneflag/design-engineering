@@ -112,7 +112,8 @@ export default class MultiFieldBuilder extends Vue {
     }
 
     getEntityFields(entity: DrawableEntityConcrete): PropertyField[] {
-        return makeEntityFields(entity, this.document, this.$store.getters['catalog/default']);
+        const store = this.$props.selectedObjects[0].globalStore;
+        return makeEntityFields(entity, this.document, this.$store.getters['catalog/default'], store);
     }
 
     fillObjectFields(obj: BaseBackedObject): DrawableEntityConcrete {
