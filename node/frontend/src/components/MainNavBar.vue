@@ -56,7 +56,7 @@
                 </div>
             </b-popover>
             <b-navbar-nav class="ml-auto">
-                <OnBoardingProgressMenuItem/>
+                <OnBoardingProgressMenuItem :class="{ onboarding: onboarding.currentStep === 1 }"/>
                 <ProfileMenuItem />
             </b-navbar-nav>
         </b-navbar>
@@ -69,6 +69,7 @@ import Component from "vue-class-component";
 import { sendEmailVerification, confirmEmail } from "../api/users";
 import ProfileMenuItem from "../../src/components/ProfileMenuItem.vue";
 import OnBoardingProgressMenuItem from "./OnBoardingProgressMenuItem.vue";
+import OnboardingState from "../store/onboarding/types";
 
 @Component({
     props: {
@@ -86,6 +87,10 @@ export default class MainNavBar extends Vue {
     } = {
         confirmEmail: "",
         isLoading: false,
+    }
+
+    get onboarding(): OnboardingState {
+        return this.$store.getters["onboarding/onboarding"];
     }
 
     get options() {

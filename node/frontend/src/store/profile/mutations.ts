@@ -2,6 +2,7 @@ import { MutationTree } from "vuex";
 import ProfileState from "../../../src/store/profile/types";
 import { User } from "../../../../common/src/models/User";
 import { viewedVideoIds } from "../../api/videos";
+import { Onboarding } from '../../../../common/src/models/Onboarding';
 
 export const mutations: MutationTree<ProfileState> = {
     setProfile(state, profile: User | null) {
@@ -24,5 +25,9 @@ export const mutations: MutationTree<ProfileState> = {
         state.numDrawingsCreated = 0;
         state.numFeedbackSubmitted = 0;
         state.viewedVideoIds.splice(0, state.viewedVideoIds.length);
+    },
+
+    setOnboarding(state, payload: Onboarding) {
+        state.profile!.onboarding = payload;
     }
 };

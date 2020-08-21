@@ -1,5 +1,5 @@
 <template>
-    <b-row style="position:fixed; left:300px; top:80px;">
+    <b-row style="position:absolute; left:300px; top:80px;">
         <b-col>
             <b-button-group>
                 <FlowSystemPicker
@@ -7,11 +7,13 @@
                     :flow-systems="flowSystems"
                     @selectSystem="selectSystem"
                     :disabled="isDrawing"
+                    :class="{onboarding: checkOnboardingClass(1)}"
                 />
                 <b-button
                     variant="outline-dark"
                     class="insertBtn flowsource btn-sm"
                     @click="toggleWaterSource"
+                    :class="{onboarding: checkOnboardingClass(2)}"
                     v-b-tooltip.hover
                     title="Flow Source"
                 ></b-button>
@@ -19,6 +21,7 @@
                     variant="outline-dark"
                     class="insertBtn riser btn-sm"
                     @click="toggleRiser"
+                    :class="{onboarding: checkOnboardingClass(3)}"
                     v-b-tooltip.hover
                     title="Riser"
                     ><v-icon name="arrow-up" scale="1.2"
@@ -27,6 +30,7 @@
                     variant="outline-dark"
                     class="insertBtn pipes btn-sm"
                     @click="toggleReticulationPipe"
+                    :class="{onboarding: checkOnboardingClass(4)}"
                     v-b-tooltip.hover
                     title="Reticulation Pipe"
                     ><v-icon name="wave-square" scale="1.2" />{{
@@ -37,6 +41,7 @@
                     variant="outline-dark"
                     class="insertBtn pipes btn-sm"
                     @click="toggleConnectionPipe"
+                    :class="{onboarding: checkOnboardingClass(5)}"
                     v-b-tooltip.hover
                     title="Connection Pipe"
                     ><v-icon name="wave-square" scale="1.2" />{{
@@ -51,6 +56,7 @@
                     variant="outline-dark"
                     class="insertBtn rpzd-hot-cold btn-sm"
                     @click="toggleRPZD"
+                    :class="{onboarding: checkOnboardingClass(6)}"
                     v-b-tooltip.hover
                     title="RPZD (Hot + Cold)"
                 ></b-button>
@@ -58,6 +64,7 @@
                     variant="outline-dark"
                     class="insertBtn tmv btn-sm"
                     @click="toggleTMV"
+                    :class="{onboarding: checkOnboardingClass(6)}"
                     v-b-tooltip.hover
                     title="TMV (Warm + Cold)"
                 ></b-button>
@@ -65,16 +72,21 @@
                     variant="outline-dark"
                     class="insertBtn tempering-valve btn-sm"
                     @click="toggleTemperingValve"
+                    :class="{onboarding: checkOnboardingClass(6)}"
                     v-b-tooltip.hover
                     title="Tempering Valve (Warm)"
                 ></b-button>
             </b-button-group>
         </b-col>
 
-
         <b-col>
             <b-button-group>
-                <b-dropdown text="Plants" class="insertEntityBtn" variant="outline-dark">
+                <b-dropdown 
+                    text="Plants" 
+                    class="insertEntityBtn"
+                    :class="{onboarding: checkOnboardingClass(7)}"
+                    variant="outline-dark"
+                >
                     <b-dropdown-item
                         variant="outline-dark"
                         class="hot-water-plant btn-sm"
@@ -135,7 +147,12 @@
 
                 </b-dropdown>
 
-                <b-dropdown text="Fixtures" class="insertEntityBtn" variant="outline-dark">
+                <b-dropdown
+                    text="Fixtures"
+                    class="insertEntityBtn"
+                    :class="{onboarding: checkOnboardingClass(8)}"
+                    variant="outline-dark"
+                >
                     <b-dropdown-item
                             v-for="fixture in availableFixtureList"
                             :key="fixture.uid"
@@ -152,7 +169,12 @@
                     >
                     <b-dropdown-item variant="info" @click="addRemoveFixturesClick">+/- Fixtures</b-dropdown-item>
                 </b-dropdown>
-                <b-dropdown text="Valves" class="insertEntityBtn" variant="outline-dark">
+                <b-dropdown
+                    text="Valves"
+                    class="insertEntityBtn"
+                    :class="{onboarding: checkOnboardingClass(9)}"
+                    variant="outline-dark"
+                >
                     <b-dropdown-item
                             v-for="valve in availableValves"
                             :key="valve.name"
@@ -170,9 +192,12 @@
                     >{{ valve.name }}</b-dropdown-item
                     >
                 </b-dropdown>
-                <b-dropdown text="Nodes" class="insertEntityBtn" variant="outline-dark">
-
-
+                <b-dropdown
+                    text="Nodes"
+                    class="insertEntityBtn"
+                    :class="{onboarding: checkOnboardingClass(10)}"
+                    variant="outline-dark"
+                >
                     <b-dropdown-item
                         variant="outline-dark"
                         class="shower btn-sm"
@@ -234,6 +259,7 @@ import { Catalog, FixtureSpec } from "../../../../common/src/api/catalog/types";
 import { FlowSystemParameters, NetworkType } from "../../../../common/src/api/document/drawing";
 import { ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
 import { PlantType } from "../../../../common/src/api/document/entities/plants/plant-types";
+import OnboardingState, { ONBOARDING_SCREEN } from "../../store/onboarding/types";
 
 @Component({
     components: { FlowSystemPicker },
@@ -511,10 +537,18 @@ export default class HydraulicsInsertPanel extends Vue {
     }
 
     toggleDwellingNodePair() {
-        this.$emit('insert', { 
-            entityName: this.entityNames.LOAD_NODE, 
-            variant: 'hot-cold-dwelling' 
+        this.$emit('insert', {
+            entityName: this.entityNames.LOAD_NODE,
+            variant: 'hot-cold-dwelling'
         });
+    }
+
+    get onboarding(): OnboardingState {
+        return this.$store.getters["onboarding/onboarding"];
+    }
+
+    checkOnboardingClass(step: number) {
+        return step === this.onboarding.currentStep && this.onboarding.screen === ONBOARDING_SCREEN.DOCUMENT_PLUMBING;
     }
 }
 </script>
