@@ -1,3 +1,5 @@
+import {StandardFlowSystemUids} from "../../../../common/src/api/config";
+import {Units} from "../../../../common/src/lib/measurements";
 <template>
     <div  class="lu-cost-table"
           :style="document.uiState.costAndLUTableOpen ? '' : 'margin-bottom: 35px'"
@@ -53,21 +55,18 @@
 <script lang="ts">
     import Vue from "vue";
     import Component from "vue-class-component";
-    import { DocumentState } from "../../store/document/types";
+    import {DocumentState} from "../../store/document/types";
     import {
-        addFinalPsdCounts, Cost,
+        addFinalPsdCounts,
+        Cost,
         countPsdUnits,
-        getPsdUnitName,
         lookupFlowRate,
         PsdUnitsByFlowSystem,
         zeroFinalPsdCounts
     } from "../../calculations/utils";
-    import { lighten } from "../../lib/utils";
-    import { GROUND_FLOOR_MIN_HEIGHT_M } from "../../lib/types";
-    import { Catalog } from "../../../../common/src/api/catalog/types";
-    import {Level, NetworkType} from "../../../../common/src/api/document/drawing";
-    import {LEVEL_HEIGHT_DIFF_M, StandardFlowSystemUids} from "../../../../common/src/api/config";
-    import { User } from "../../../../common/src/models/User";
+    import {Catalog} from "../../../../common/src/api/catalog/types";
+    import {NetworkType} from "../../../../common/src/api/document/drawing";
+    import {StandardFlowSystemUids} from "../../../../common/src/api/config";
     import {convertMeasurementSystem, Units} from "../../../../common/src/lib/measurements";
 
     @Component({
@@ -126,7 +125,7 @@
         }
 
         get luItems() {
-            let focusedUnits = this.$props.focusLUs;
+            let focusedUnits: PsdUnitsByFlowSystem = this.$props.focusLUs;
             let projectUnits: PsdUnitsByFlowSystem | null = this.$props.projectLUs;
             if (focusedUnits == null) {
                 focusedUnits = {
@@ -142,7 +141,8 @@
             for (const sys of [
                 StandardFlowSystemUids.ColdWater,
                 StandardFlowSystemUids.WarmWater,
-                StandardFlowSystemUids.HotWater
+                StandardFlowSystemUids.HotWater,
+                StandardFlowSystemUids.Gas,
             ]) {
                 for (const units of [focusedUnits, projectUnits]) {
                     if (!units.hasOwnProperty(sys)) {
@@ -151,11 +151,15 @@
                 }
             }
 
+            console.log(focusedUnits);
+            console.log(projectUnits);
+
             let x = 80;
-            const res: any[] = [{"PSD": "Cold"}, {"PSD": "Hot"}];
+            const res: any[] = [{"PSD": "Cold"}, {"PSD": "Hot"}, {"PSD": "Gas"}];
             for (const [units, fieldName] of [[focusedUnits, this.$props.focusName], [projectUnits, "Project"]]) {
                 let coldFR: number | null | undefined;
                 let hotFR: number | null | undefined;
+                let gasMJH: number | null | undefined;
                 try {
                     const res = lookupFlowRate(
                         units[StandardFlowSystemUids.ColdWater],
@@ -180,6 +184,7 @@
                 } catch (e) {
                     /**/
                 }
+                gasMJH = units[StandardFlowSystemUids.Gas].gasMJH;
 
                 let coldSpareText: string = "error";
                 let hotSpareText: string = "error";
@@ -187,6 +192,7 @@
                 let hotText: string = "error";
                 let coldUnits: Units | string = '';
                 let hotUnits: Units | string = '';
+                let gasUnits: Units | string = '';
                 if (coldFR != null) {
                     let coldFRSpare: number | string | null =
                         coldFR *
@@ -213,9 +219,19 @@
                     hotText = hotFR.toPrecision(3);
                 }
 
+                let gasMJHSpare: string | number | null = '';
+                let gasMJHText: string = 'error';
+                if (gasMJH != null) {
+                    [gasUnits, gasMJHSpare] = convertMeasurementSystem(this.document.drawing.metadata.units, Units.MegajoulesPerHour, gasMJH);
+                    gasMJHText = Number(gasMJHSpare).toPrecision(3);
+                }
+
                 res[0][fieldName] = coldSpareText + " " + coldUnits;
                 res[1][fieldName] = hotSpareText + " " + hotUnits;
+                res[2][fieldName] = gasMJHText + " " + gasUnits;
             }
+
+
 
             return res;
         }

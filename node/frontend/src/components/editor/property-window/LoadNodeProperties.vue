@@ -51,7 +51,7 @@ import { fillDefaultLoadNodeFields } from "../../../store/document/entities/fill
 })
 export default class LoadNodeProperties extends Vue {
     get fields() {
-        return makeLoadNodesFields(this.document.drawing.metadata.flowSystems, this.$props.selectedEntity);
+        return makeLoadNodesFields(this.document, this.$props.selectedEntity);
     }
 
     get reactiveData(): LoadNodeEntity {

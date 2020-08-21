@@ -153,6 +153,7 @@
                     class="insertEntityBtn"
                     :class="{onboarding: checkOnboardingClass(7)}"
                     variant="outline-dark"
+                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
                 >
                     <b-dropdown-item
                         variant="outline-dark"
@@ -219,6 +220,7 @@
                     class="insertEntityBtn"
                     :class="{onboarding: checkOnboardingClass(8)}"
                     variant="outline-dark"
+                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
                 >
                     <b-dropdown-item
                             v-for="fixture in availableFixtureList"
@@ -241,6 +243,7 @@
                     class="insertEntityBtn"
                     :class="{onboarding: checkOnboardingClass(9)}"
                     variant="outline-dark"
+                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
                 >
                     <b-dropdown-item
                             v-for="valve in availableValves"
@@ -286,7 +289,8 @@
                     <b-dropdown-item
                             variant="outline-dark"
                             class="shower btn-sm"
-                            @click="$emit('insert', { entityName: entityNames.LOAD_NODE, nodeType: NodeType.LOAD_NODE })"
+                            @click="$emit('insert', { entityName: entityNames.LOAD_NODE, nodeType: NodeType.LOAD_NODE,
+                                system: selectedSystem.uid === 'gas' ? selectedSystem : null})"
                     >Fixture Node</b-dropdown-item
                     >
                     <b-dropdown-item
@@ -689,4 +693,10 @@ export default class HydraulicsInsertPanel extends Vue {
       background-position: center;
   }
 
+.insertBtn.gas-appliance {
+    background-image: url("../../../src/assets/object-icons/items/gas-appliance.png");
+    background-size: 25px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
 </style>

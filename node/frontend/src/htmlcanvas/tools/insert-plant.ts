@@ -187,6 +187,7 @@ function createPlant(type: PlantType, outletSystemUid: string, returnUid: string
             return {
                 type,
                 returnMinimumTemperatureC: null,
+                gasConsumptionMJH: null,
                 returnUid: returnUid!,
                 returnVelocityMS: null,
                 addReturnToPSDFlowRate: true,

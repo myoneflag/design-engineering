@@ -104,8 +104,6 @@ export function makeDirectedValveFields(
         }
         case ValveType.BALANCING:
             break;
-        case ValveType.WATER_METER:
-            break;
         case ValveType.STRAINER:
             break;
         case ValveType.PRV_SINGLE:
@@ -169,11 +167,12 @@ export function makeDirectedValveFields(
             });
             break;
         }
+        case ValveType.WATER_METER:
         case ValveType.FILTER: {
             fields.push({
                 property: "valve.pressureDropKPA",
                 title: "Pressure Drop",
-                hasDefault: true,
+                hasDefault: false,
                 isCalculated: false,
                 type: FieldType.Number,
                 params: { min: 0, max: null },

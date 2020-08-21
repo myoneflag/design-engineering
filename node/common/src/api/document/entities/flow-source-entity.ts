@@ -3,6 +3,7 @@ import { EntityType } from "./types";
 import { Color, ConnectableEntity, Coord, DrawingState, FlowSystemParameters } from "../drawing";
 import { Choice, cloneSimple } from "../../../lib/utils";
 import { Units } from "../../../lib/measurements";
+import {StandardFlowSystemUids} from "../../config";
 
 export interface FlowSourceEntityV11 extends ConnectableEntity {
     type: EntityType.FLOW_SOURCE;
@@ -25,8 +26,8 @@ export default interface FlowSourceEntity extends ConnectableEntity {
     maxPressureKPA: number | null;
 }
 
-export function makeFlowSourceFields(systems: FlowSystemParameters[]): PropertyField[] {
-    return [
+export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: FlowSourceEntity): PropertyField[] {
+    const res: PropertyField[] = [
         {
             property: "systemUid",
             title: "Flow System",
@@ -36,32 +37,52 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[]): PropertyF
             params: { systems },
             multiFieldId: "systemUid"
         },
+    ];
 
-        {
-            property: "minPressureKPA",
-            title: "Min. Pressure",
-            hasDefault: false,
-            isCalculated: false,
-            requiresInput: true,
-            type: FieldType.Number,
-            params: { min: 0, max: null },
-            multiFieldId: "minPressureKPA",
-            units: Units.KiloPascals,
-        },
+    if (entity.systemUid === StandardFlowSystemUids.Gas) {
+        res.push(
+            {
+                property: "minPressureKPA",
+                title: "Pressure",
+                hasDefault: false,
+                isCalculated: false,
+                requiresInput: true,
+                type: FieldType.Number,
+                params: {min: 0, max: null},
+                multiFieldId: "minPressureKPA",
+                units: Units.KiloPascals,
+            },
+        );
+    } else {
+        res.push(
+            {
+                property: "minPressureKPA",
+                title: "Min. Pressure",
+                hasDefault: false,
+                isCalculated: false,
+                requiresInput: true,
+                type: FieldType.Number,
+                params: {min: 0, max: null},
+                multiFieldId: "minPressureKPA",
+                units: Units.KiloPascals,
+            },
 
 
-        {
-            property: "maxPressureKPA",
-            title: "Max. Pressure",
-            hasDefault: false,
-            isCalculated: false,
-            requiresInput: true,
-            type: FieldType.Number,
-            params: { min: 0, max: null },
-            multiFieldId: "maxPressureKPA",
-            units: Units.KiloPascals,
-        },
+            {
+                property: "maxPressureKPA",
+                title: "Max. Pressure",
+                hasDefault: false,
+                isCalculated: false,
+                requiresInput: true,
+                type: FieldType.Number,
+                params: {min: 0, max: null},
+                multiFieldId: "maxPressureKPA",
+                units: Units.KiloPascals,
+            },
+        );
+    }
 
+    res.push(
         {
             property: "heightAboveGroundM",
             title: "AHD",
@@ -83,7 +104,8 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[]): PropertyF
             params: null,
             multiFieldId: "color"
         }
-    ];
+    );
+    return res;
 }
 
 export function fillFlowSourceDefaults(drawing: DrawingState, value: FlowSourceEntity) {

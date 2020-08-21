@@ -19,7 +19,7 @@ import connectLoadNodeToSource from "../lib/black-magic/connect-load-node-to-sou
 import LoadNode from "../objects/load-node";
 import { KeyCode } from "../utils";
 
-export default function insertLoadNode(context: CanvasContext, type: NodeType,
+export default function insertLoadNode(context: CanvasContext, type: NodeType, systemUid: string | null,
                                        loadingUnits: number = 1, continuousFlowLS: number = 0, dwellings: number = 1) {
     const newUid = uuid();
     const toReplace: BackedDrawableObject<ConnectableEntityConcrete> | null = null;
@@ -33,7 +33,7 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType,
                         MainEventBus.$emit("set-tool-handler", null);
                     }
                 } else {
-                    insertLoadNode(context, type);
+                    insertLoadNode(context, type, systemUid);
                 }
             },
             (wc: Coord, event) => {
@@ -42,7 +42,7 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType,
                     {
                         entityType: EntityType.LOAD_NODE,
                         worldCoord: wc,
-                        systemUid: null,
+                        systemUid: systemUid,
                         worldRadius: context.viewPort.toWorldLength(CONNECTABLE_SNAP_RADIUS_PX),
                         type: InteractionType.INSERT
                     },
@@ -69,7 +69,7 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType,
                             },
                             minPressureKPA: null,
                             maxPressureKPA: null,
-                            systemUidOption: null,
+                            systemUidOption: systemUid,
                             center: cloneSimple(wc),
                             color: null,
                             calculationHeightM: null,

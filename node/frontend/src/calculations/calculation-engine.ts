@@ -96,6 +96,7 @@ import { fillDefaultLoadNodeFields } from "../store/document/entities/fillDefaul
 import {PriceTable} from "../../../common/src/api/catalog/price-table";
 import GasApplianceEntity, {makeGasApplianceFields} from "../../../common/src/api/document/entities/gas-appliance";
 import {calculateGas} from "./gas";
+import {PlantType} from "../../../common/src/api/document/entities/plants/plant-types";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -268,10 +269,10 @@ export default class CalculationEngine implements CalculationContext {
                     fields = makeDirectedValveFields(obj.entity, this.catalog, this.doc.drawing);
                     break;
                 case EntityType.FLOW_SOURCE:
-                    fields = makeFlowSourceFields([]);
+                    fields = makeFlowSourceFields([], obj.entity);
                     break;
                 case EntityType.LOAD_NODE:
-                    fields = makeLoadNodesFields([], obj.entity);
+                    fields = makeLoadNodesFields(this.doc, obj.entity);
                     break;
                 case EntityType.PLANT:
                     fields = makePlantEntityFields(obj.entity, []);
@@ -1380,7 +1381,7 @@ export default class CalculationEngine implements CalculationContext {
             if (parent.uid !== flowNode.connection) {
                 return null;
             }
-            switch (parent.type) {
+            switch (parent.entity.type) {
                 case EntityType.FIXTURE: {
                     const fixture = parent.entity as FixtureEntity;
                     const mainFixture = fillFixtureFields(this.doc.drawing, this.catalog, fixture);
@@ -1423,14 +1424,37 @@ export default class CalculationEngine implements CalculationContext {
                         gasMJH: appliance.flowRateMJH!,
                     };
                 }
+                case EntityType.PLANT: {
+                    switch (parent.entity.plant.type) {
+                        case PlantType.RETURN_SYSTEM:
+                            if (parent.entity.plant.gasConsumptionMJH !== null) {
+                                return {
+                                    units: 0,
+                                    continuousFlowLS: 0,
+                                    dwellings: 0,
+                                    entity: node.entity.uid,
+                                    correlationGroup: parent.entity.uid,
+                                    gasMJH: parent.entity.plant.gasConsumptionMJH,
+                                };
+                            }
+                            break;
+                        case PlantType.TANK:
+                            break;
+                        case PlantType.CUSTOM:
+                            break;
+                        case PlantType.PUMP:
+                            break;
+                        default:
+                            assertUnreachable(parent.entity.plant);
+                    }
+                    break;
+                }
                 case EntityType.LOAD_NODE:
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.RISER:
                 case EntityType.FLOW_SOURCE:
-                case EntityType.RETURN:
                 case EntityType.PIPE:
                 case EntityType.FITTING:
-                case EntityType.PLANT:
                 case EntityType.BIG_VALVE:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.DIRECTED_VALVE:

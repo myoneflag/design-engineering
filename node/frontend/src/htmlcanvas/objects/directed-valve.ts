@@ -565,7 +565,6 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         switch (this.entity.valve.type) {
             case ValveType.CHECK_VALVE:
             case ValveType.ISOLATION_VALVE:
-            case ValveType.WATER_METER:
             case ValveType.STRAINER: {
                 const table = context.catalog.valves[this.entity.valve.catalogId];
                 const size = this.largestPipeSizeNominalMM(context);
@@ -671,6 +670,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                     return null;
                 }
             }
+            case ValveType.WATER_METER:
             case ValveType.FILTER: {
                 const systemUid = determineConnectableSystemUid(context.globalStore, this.entity);
                 if (systemUid === undefined) {

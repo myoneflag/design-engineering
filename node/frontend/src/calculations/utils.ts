@@ -35,6 +35,7 @@ import {
 import { GlobalStore } from "../htmlcanvas/lib/global-store";
 import {makeGasApplianceFields} from "../../../common/src/api/document/entities/gas-appliance";
 import {makeGasApplianceCalculationFields} from "../store/document/calculations/gas-appliance-calculation";
+import {PlantType} from "../../../common/src/api/document/entities/plants/plant-types";
 
 export interface PsdCountEntry {
     units: number;
@@ -102,7 +103,7 @@ export function countPsdUnits(
                 }
 
                 break;
-            case EntityType.LOAD_NODE:
+            case EntityType.LOAD_NODE: {
                 const suid = determineConnectableSystemUid(objectStore, e);
                 if (suid) {
                     if (result === null) {
@@ -128,14 +129,45 @@ export function countPsdUnits(
                     }
                 }
                 break;
-            case EntityType.GAS_APPLIANCE:
+            }
+            case EntityType.GAS_APPLIANCE: {
+                const suid = StandardFlowSystemUids.Gas;
+                if (!result.hasOwnProperty(suid)) {
+                    result[suid] = zeroFinalPsdCounts();
+                }
+                if (e.flowRateMJH) {
+                    result[suid].gasMJH += e.flowRateMJH;
+                }
+                break;
+            }
+            case EntityType.PLANT: {
+                switch (e.plant.type) {
+                    case PlantType.RETURN_SYSTEM:
+                        const suid = StandardFlowSystemUids.Gas;
+                        if (!result.hasOwnProperty(suid)) {
+                            result[suid] = zeroFinalPsdCounts();
+                        }
+                        if (e.plant.gasConsumptionMJH) {
+                            result[suid].gasMJH += e.plant.gasConsumptionMJH;
+                        }
+                        break;
+                    case PlantType.TANK:
+                        break;
+                    case PlantType.CUSTOM:
+                        break;
+                    case PlantType.PUMP:
+                        break;
+                    default:
+                        assertUnreachable(e.plant);
+                }
+                break;
+            }
             case EntityType.BACKGROUND_IMAGE:
             case EntityType.FITTING:
             case EntityType.PIPE:
             case EntityType.RISER:
             case EntityType.FLOW_SOURCE:
             case EntityType.SYSTEM_NODE:
-            case EntityType.PLANT:
             case EntityType.BIG_VALVE:
             case EntityType.DIRECTED_VALVE:
                 break;

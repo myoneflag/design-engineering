@@ -1328,9 +1328,9 @@
                     insertFixtureHotCold(this, 0);
                 } else if (params.variant === 'continuous') {
 
-                    insertLoadNode(this, nodeType, 0, 1);
+                    insertLoadNode(this, nodeType, system?.uid || null, 0, 1);
                 } else {
-                    insertLoadNode(this, nodeType);
+                    insertLoadNode(this, nodeType, system?.uid || null);
                 }
             } else if (entityName === EntityType.FLOW_SOURCE) {
                 insertFlowSource(this, system);
@@ -1592,6 +1592,7 @@
                     await this.blitBuffer(false);
                 } catch (e) {
                     // Throw exception
+                    console.log(e);
                 }
 
                 this.ctx.resetTransform();

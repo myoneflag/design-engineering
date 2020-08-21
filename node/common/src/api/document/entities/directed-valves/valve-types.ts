@@ -32,6 +32,7 @@ export interface IsolationValve extends DirectedValve {
 
 export interface WaterMeter extends DirectedValve {
     type: ValveType.WATER_METER;
+    pressureDropKPA: number | null;
     catalogId: "waterMeter";
 }
 

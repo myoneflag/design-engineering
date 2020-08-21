@@ -186,11 +186,19 @@ function createBareValveEntity(
 
 function createBareValve(type: ValveType, catalogId: string): DirectedValveConcrete {
     switch (type) {
-        case ValveType.CHECK_VALVE:
         case ValveType.WATER_METER:
+            return {
+                pressureDropKPA: 0,
+                catalogId: catalogId as any,
+                type
+            };
+        case ValveType.CHECK_VALVE:
+            return {
+                catalogId: catalogId as any,
+                type
+            };
         case ValveType.STRAINER:
             return {
-                isClosed: false,
                 catalogId: catalogId as any,
                 type
             };
@@ -241,7 +249,7 @@ function createBareValve(type: ValveType, catalogId: string): DirectedValveConcr
             return {
                 type,
                 catalogId: 'filter',
-                pressureDropKPA: null,
+                pressureDropKPA: 0,
             };
     }
     assertUnreachable(type);

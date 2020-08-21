@@ -345,12 +345,13 @@ export function makeEntityFields(entity: DrawableEntityConcrete, document: Docum
         case EntityType.SYSTEM_NODE:
             throw new Error("Invalid object in multi select");
         case EntityType.LOAD_NODE:
-            return makeLoadNodesFields(document.drawing.metadata.flowSystems, entity).filter(
+            return makeLoadNodesFields(document,  entity).filter(
                 (p) => p.multiFieldId
             );
         case EntityType.FLOW_SOURCE:
             return makeFlowSourceFields(
-                document.drawing.metadata.flowSystems
+                document.drawing.metadata.flowSystems,
+                entity,
             ).filter((p) => p.multiFieldId);
         case EntityType.PLANT:
             return makePlantEntityFields(entity, document.drawing.metadata.flowSystems);

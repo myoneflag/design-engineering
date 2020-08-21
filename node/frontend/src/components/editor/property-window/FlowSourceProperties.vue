@@ -48,6 +48,7 @@ export default class FlowSourceProperties extends Vue {
     get fields() {
         return makeFlowSourceFields(
             this.document.drawing.metadata.flowSystems,
+            this.$props.selectedEntity,
         );
     }
 
