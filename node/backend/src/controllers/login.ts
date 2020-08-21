@@ -9,6 +9,7 @@ import { VideoView } from "../../../common/src/models/VideoView";
 import { Document } from "../../../common/src/models/Document";
 import { FeedbackMessage } from "../../../common/src/models/FeedbackMessage";
 import { Organization } from './../../../common/src/models/Organization';
+import { Onboarding } from '../../../common/src/models/Onboarding';
 import { ApiHandleError } from "../helpers/apiWrapper";
 import { AuthRequired } from "../helpers/withAuth";
 
@@ -23,6 +24,7 @@ export async function registerUser(data: {
     temporaryUser?: boolean
     organization?: Organization
 }): Promise<User> {
+    const onboarding: Onboarding = Onboarding.create();
     const login: User = User.create();
     login.username = data.username;
     login.name = data.firstname;
@@ -36,6 +38,7 @@ export async function registerUser(data: {
     login.lastNoticeSeenOn = new Date();
     login.temporaryUser = data.temporaryUser;
     login.organization = data.organization;
+    login.onboarding = await onboarding.save();
     return login.save();
 }
 

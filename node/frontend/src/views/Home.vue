@@ -123,12 +123,12 @@
                 </b-row>
             </b-container>
         </div>
+        <Onboarding :screen="onboardingScreen"></Onboarding>
     </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import MainNavBar from "../../src/components/MainNavBar.vue";
 import {
     canUserDeleteDocument,
     canUserRestoreDocument,
@@ -141,10 +141,13 @@ import { updateLastNoticeSeen } from "../api/users";
 import { AccessLevel, User } from "../../../common/src/models/User";
 import { assertUnreachable, CURRENT_VERSION } from "../../../common/src/api/config";
 import { ChangeLogMessage } from "../../../common/src/models/ChangeLogMessage";
+import { ONBOARDING_SCREEN } from "../store/onboarding/types";
+import MainNavBar from "../../src/components/MainNavBar.vue";
+import Onboarding from "../../src/components/Onboarding.vue";
 
 @Component({
     components: {
-        MainNavBar
+        MainNavBar, Onboarding
     }
 })
 export default class Home extends Vue {
@@ -157,6 +160,10 @@ export default class Home extends Vue {
     mounted() {
         this.reloadDocuments();
         this.getChangeLogs();
+    }
+
+    get onboardingScreen() {
+        return ONBOARDING_SCREEN.HOME;
     }
 
     get profile(): User {

@@ -30,7 +30,14 @@
                 - {{ currentLevel.name }}
             </b-navbar-brand>
 
-            <b-nav-item :to="{ name: 'settings/general' }" active-class="active" exact :disabled="loading || disabled" v-if="profile">
+            <b-nav-item 
+                :to="{ name: 'settings/general' }" 
+                active-class="active" 
+                exact 
+                :disabled="loading || disabled" 
+                v-if="profile"
+                :class="{ onboarding: checkOnboardingClass(6) }"
+            >
                 <span>
                     <v-icon name="cog"></v-icon>
                 </span>
@@ -104,6 +111,7 @@ import { Level } from "../../../common/src/api/document/drawing";
 import { getDocumentOperations } from "../api/document";
 import { DrawingMode } from "../htmlcanvas/types";
 import { Operation } from "../../../common/src/models/Operation";
+import OnboardingState, { ONBOARDING_SCREEN } from "../store/onboarding/types";
 
 @Component({
     components: { ProfileMenuItem },
@@ -183,6 +191,10 @@ export default class DrawingNavBar extends Vue {
         return this.$store.getters["document/discreteHistory"];
     }
 
+    get onboarding(): OnboardingState {
+        return this.$store.getters["onboarding/onboarding"];
+    }
+
     async historyClick() {
         if (this.historyLoading) {
             return;
@@ -228,7 +240,11 @@ export default class DrawingNavBar extends Vue {
     }
 
     toggleSettings() {
-        this.$router.push({ name: 'settings/general'});
+        this.$router.push({name: 'settings/general'});
+    }
+
+    checkOnboardingClass(step: number) {
+        return step === this.onboarding.currentStep && this.onboarding.screen === ONBOARDING_SCREEN.DOCUMENT;
     }
 }
 </script>

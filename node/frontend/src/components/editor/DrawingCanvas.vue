@@ -26,7 +26,11 @@ import {DrawingMode} from "../../htmlcanvas/types";
         >
         </CalculationsSidebar>
 
-        <LevelSelector v-if="levelSelectorVisible && initialized" :object-store="globalStore"></LevelSelector>
+        <LevelSelector
+            v-if="levelSelectorVisible && initialized" 
+            :object-store="globalStore"
+            :class="{ onboarding: checkOnboardingClass(5) }"
+        ></LevelSelector>
         <LUAndCostTable v-if="LUAndCostTableVisible && initialized"
                         :global-store="globalStore" :selected-entities="selectedEntities"
                         :projectLUs="projectLUs"
@@ -103,14 +107,13 @@ import {DrawingMode} from "../../htmlcanvas/types";
                     v-if="initialized"
             ></Toolbar>
 
-            <InstructionPage v-if="documentBrandNew && toolHandler === null"/>
-
             <div v-if="document.uiState.levelUid === null" class="choose-level-instruction">
                 <v-icon name="arrow-left" scale="2"></v-icon>
                 Please Choose a Level
             </div>
             <resize-observer @notify="scheduleDraw"/>
         </div>
+        <Onboarding v-if="onboardingScreen" :screen="onboardingScreen"></Onboarding>
     </drop>
 </template>
 
@@ -119,7 +122,6 @@ import {DrawingMode} from "../../htmlcanvas/types";
     import Component from "vue-class-component";
     import {ViewPort} from "../../../src/htmlcanvas/viewport";
     import {DocumentState, EntityParam} from "../../../src/store/document/types";
-    import {drawGridLines, drawLoadingUnits, drawPaperScale} from "../../../src/htmlcanvas/on-screen-items";
     import ModeButtons from "../../../src/components/editor/ModeButtons.vue";
     import PropertiesWindow from "../../../src/components/editor/property-window/PropertiesWindow.vue";
     import {DrawingMode, MouseMoveResult, UNHANDLED} from "../../../src/htmlcanvas/types";
@@ -203,9 +205,10 @@ import {DrawingMode} from "../../htmlcanvas/types";
     import insertFixtureHotCold from "../../htmlcanvas/tools/insert-fixture-hot-cold";
     import {User} from "../../../../common/src/models/User";
     import {PriceTable} from "../../../../common/src/api/catalog/price-table";
-    import {defaultPriceTable} from "../../../../common/src/api/catalog/default-price-table";
     import LUAndCostTable from "./LUAndCostTable.vue";
     import {isCalculated} from "../../store/document/calculations";
+    import Onboarding from "../Onboarding.vue";
+    import OnboardingState, {ONBOARDING_SCREEN} from "../../store/onboarding/types";
 
     @Component({
         components: {
@@ -223,7 +226,8 @@ import {DrawingMode} from "../../htmlcanvas/types";
             Overlay: LoadingScreen,
             Toolbar,
             PropertiesWindow,
-            ModeButtons
+            ModeButtons,
+            Onboarding,
         }
     })
     export default class DrawingCanvas extends Vue {
@@ -502,6 +506,20 @@ import {DrawingMode} from "../../htmlcanvas/types";
 
             this.changedLevelsSinceLastPLUCalc.clear();
             return result;
+        }
+
+        get onboardingScreen() {
+            if (this.document.uiState.drawingMode === DrawingMode.FloorPlan) {
+                return  ONBOARDING_SCREEN.DOCUMENT;
+            } else if (this.document.uiState.drawingMode === DrawingMode.Hydraulics) {
+                return  ONBOARDING_SCREEN.DOCUMENT_PLUMBING; 
+            }
+
+            return '';
+        }
+
+        get onboarding(): OnboardingState {
+            return this.$store.getters["onboarding/onboarding"];
         }
 
         projectCost(): Cost {
@@ -1982,6 +2000,10 @@ import {DrawingMode} from "../../htmlcanvas/types";
             } else {
                 return this.selectedIds.indexOf(object) !== -1;
             }
+        }
+
+        checkOnboardingClass(step: number) {
+            return step === this.onboarding.currentStep && this.onboarding.screen === ONBOARDING_SCREEN.DOCUMENT;
         }
     }
 </script>

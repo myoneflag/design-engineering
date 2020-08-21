@@ -38,6 +38,21 @@ export class AccessEventsController {
             data: result,
         });
     }
+
+    @ApiHandleError()
+    @AuthRequired()
+    public async getDataByUsername(req: Request, res: Response) {
+        const result = await AccessEvents
+            .createQueryBuilder('access_events')
+            .where('username = :username', {username: req.params.username})
+            .andWhere('type = :type', {type: req.query.type})
+            .getMany();
+
+        res.send({
+            success: true,
+            data: result,
+        });
+    }
 }
 
 const router = Router();
@@ -45,5 +60,6 @@ const controller = new AccessEventsController();
 
 // Retrieve all Users
 router.get('/', controller.find.bind(controller));
+router.get('/:username', controller.getDataByUsername.bind(controller));
 
 export const accessEvents = router;

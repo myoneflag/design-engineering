@@ -8,6 +8,7 @@ import { tools } from "./tools";
 import { catalog } from "./catalog";
 import { hotKey } from './hot-key';
 import { getters } from "./getters";
+import { onboarding } from './onboarding';
 
 Vue.use(Vuex);
 
@@ -23,6 +24,7 @@ export const store: StoreOptions<RootState> = {
         tools,
         catalog,
         hotKey,
+        onboarding,
     }
 };
 
