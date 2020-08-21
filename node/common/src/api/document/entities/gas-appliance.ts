@@ -43,7 +43,7 @@ export function makeGasApplianceFields(drawing: DrawingState, entity: GasApplian
             isCalculated: false,
             type: FieldType.Text,
             params: null,
-            multiFieldId: "name",
+            multiFieldId: "abbreviation",
         },
 
         {

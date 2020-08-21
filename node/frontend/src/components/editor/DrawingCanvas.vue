@@ -1,4 +1,3 @@
-import {DrawingMode} from "../../htmlcanvas/types";
 <template>
     <drop @drop="onDrop">
         <!--Anything that needs scrolling needs to be up here, outside of canvasFrame.-->
@@ -209,6 +208,7 @@ import {DrawingMode} from "../../htmlcanvas/types";
     import {isCalculated} from "../../store/document/calculations";
     import Onboarding from "../Onboarding.vue";
     import OnboardingState, {ONBOARDING_SCREEN} from "../../store/onboarding/types";
+    import insertGasAppliance from "../../htmlcanvas/tools/insert-gas-appliance";
 
     @Component({
         components: {
@@ -1336,6 +1336,8 @@ import {DrawingMode} from "../../htmlcanvas/types";
                 insertFlowSource(this, system);
             } else if (entityName === EntityType.PLANT) {
                 insertPlant(this, 0, plantType, inletSystemUid, outletSystemUid, title, false);
+            } else if (entityName === EntityType.GAS_APPLIANCE) {
+                insertGasAppliance(this, 0);
             }
         }
 

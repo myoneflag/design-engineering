@@ -78,7 +78,7 @@ export default class MultiFieldBuilder extends Vue {
         const types = new Set<EntityType>();
         let first = true;
         this.$props.selectedObjects.forEach((obj: BaseBackedObject) => {
-            const fields = this.getEntityFields(obj.entity);
+            const fields = this.getEntityFields(obj.entity).filter((f) => f.multiFieldId);
             if (first) {
                 fields.forEach((f) => {
                     if (!seen.has(f.multiFieldId!)) {

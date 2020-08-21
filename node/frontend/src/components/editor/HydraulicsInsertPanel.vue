@@ -102,6 +102,19 @@
                         v-b-tooltip.hover
                         title="Filter"
                 ></b-button>
+                <b-button
+                        v-if="selectedSystem.uid === StandardFlowSystemUids.Gas"
+                        variant="outline-dark"
+                        class="insertBtn gas-appliance btn-sm"
+                        @click="
+                            $emit('insert', {
+                                entityName: entityNames.GAS_APPLIANCE,
+                                system: selectedSystem,
+                            })
+                        "
+                        v-b-tooltip.hover
+                        title="Gas Appliance"
+                ></b-button>
 
                 <b-button
                     v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
