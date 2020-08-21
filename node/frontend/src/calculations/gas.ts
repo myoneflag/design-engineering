@@ -1,7 +1,7 @@
 import CalculationEngine, {EdgeType, FLOW_SOURCE_EDGE, FLOW_SOURCE_ROOT_NODE} from "./calculation-engine";
 import {FlowSystemParameters} from "../../../common/src/api/document/drawing";
 import {EntityType} from "../../../common/src/api/document/entities/types";
-import {assertUnreachable, isGas, StandardFlowSystemUids} from "../../../common/src/api/config";
+import {assertUnreachable, isGas} from "../../../common/src/api/config";
 import {ValveType} from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import {determineConnectableSystemUid} from "../store/document/entities/lib";
 import Pipe from "../htmlcanvas/objects/pipe";
@@ -26,7 +26,7 @@ export interface GasComponent {
 
 // Assume that regulators dictate the pressure, even if the source doens't provide enough pressure.
 export function calculateGas(engine: CalculationEngine) {
-    const components = getGasComponents(engine);
+    const components = getAndFillInGasComponent(engine);
     for (const component of components) {
         if (component.regulatorUid) {
             const regulator = engine.globalStore.get(component.regulatorUid) as DirectedValve;
@@ -47,7 +47,6 @@ export function calculateGas(engine: CalculationEngine) {
                     if (component.supplyPressureKPA <= component.maxPressureRequiredKPA) {
                         pCalc.noFlowAvailableReason = NoFlowAvailableReason.GAS_SUPPLY_PRESSURE_TOO_LOW;
                     } else {
-
                         let inside = sizeGasPipeInside(
                             pCalc.psdUnits.gasMJH,
                             component.mainRunLengthM,
@@ -97,7 +96,7 @@ export function calculateGas(engine: CalculationEngine) {
     }
 }
 
-export function getGasComponents(engine: CalculationEngine) {
+export function getAndFillInGasComponent(engine: CalculationEngine) {
     const result: GasComponent[] = [];
 
     const groupOf = new Map<string, string>();
@@ -110,18 +109,25 @@ export function getGasComponents(engine: CalculationEngine) {
         let pressureKPA = 0;
 
         switch (o.entity.type) {
-            case EntityType.FLOW_SOURCE:
-                if (o.entity.systemUid === StandardFlowSystemUids.Gas) {
+            case EntityType.FLOW_SOURCE: {
+                const systemUid = determineConnectableSystemUid(engine.globalStore, o.entity);
+                const system = engine.drawing.metadata.flowSystems.find((f) => f.uid === systemUid);
+                const thisIsGas = isGas(system ? system.fluid : 'water', engine.catalog);
+
+                if (thisIsGas) {
                     isRoot = true;
                     pressureKPA = o.entity.minPressureKPA!;
                     connection = FLOW_SOURCE_EDGE;
                     block.add(engine.serializeNode(FLOW_SOURCE_ROOT_NODE));
                 }
                 break;
-            case EntityType.DIRECTED_VALVE:
+            }
+            case EntityType.DIRECTED_VALVE: {
                 const systemUid = determineConnectableSystemUid(engine.globalStore, o.entity);
                 const connections = engine.globalStore.getConnections(o.entity.uid);
-                if (o.entity.valve.type === ValveType.GAS_REGULATOR && systemUid === StandardFlowSystemUids.Gas && connections.length === 2) {
+                const system = engine.drawing.metadata.flowSystems.find((f) => f.uid === systemUid);
+                const thisIsGas = isGas(system ? system.fluid : 'water', engine.catalog);
+                if (o.entity.valve.type === ValveType.GAS_REGULATOR && thisIsGas && connections.length === 2) {
                     const p0 = engine.globalStore.get(connections[0]) as Pipe;
                     const p0Calc = engine.globalStore.getOrCreateCalculation(p0.entity);
                     const p1 = engine.globalStore.get(connections[1]) as Pipe;
@@ -140,14 +146,62 @@ export function getGasComponents(engine: CalculationEngine) {
                         isRoot = false;
                     }
                 }
+
+                if (thisIsGas) {
+                    switch (o.entity.valve.type) {
+                        case ValveType.CHECK_VALVE:
+                        case ValveType.ISOLATION_VALVE:
+                        case ValveType.STRAINER:
+                        case ValveType.RPZD_SINGLE:
+                        case ValveType.RPZD_DOUBLE_SHARED:
+                        case ValveType.RPZD_DOUBLE_ISOLATED:
+                        case ValveType.PRV_SINGLE:
+                        case ValveType.PRV_DOUBLE:
+                        case ValveType.PRV_TRIPLE:
+                        case ValveType.BALANCING:
+                        case ValveType.GAS_REGULATOR:
+                            break;
+                        case ValveType.FILTER:
+                        case ValveType.WATER_METER:
+                            const calc = engine.globalStore.getOrCreateCalculation(o.entity);
+                            calc.pressureDropKPA = o.entity.valve.pressureDropKPA;
+                            break;
+                        default:
+                            assertUnreachable(o.entity.valve);
+                    }
+                }
+
                 break;
+            }
+            case EntityType.LOAD_NODE: {
+                const systemUid = determineConnectableSystemUid(engine.globalStore, o.entity);
+                const system = engine.drawing.metadata.flowSystems.find((f) => f.uid === systemUid);
+                const thisIsGas = isGas(system ? system.fluid : 'water', engine.catalog);
+
+                if (thisIsGas) {
+                    const calc = engine.globalStore.getOrCreateCalculation(o.entity);
+                    switch (o.entity.node.type) {
+                        case NodeType.LOAD_NODE:
+                            calc.gasFlowRateMJH = o.entity.node.gasFlowRateMJH;
+                            break;
+                        case NodeType.DWELLING:
+                            calc.gasFlowRateMJH = o.entity.node.gasFlowRateMJH * o.entity.node.dwellings;
+                            break;
+                        default:
+                            assertUnreachable(o.entity.node);
+                    }
+                    calc.pressureKPA = o.entity.node.gasPressureKPA;
+                    calc.staticPressureKPA = o.entity.node.gasPressureKPA;
+                }
+
+                break;
+            }
             case EntityType.SYSTEM_NODE:
             case EntityType.FITTING:
             case EntityType.PIPE:
             case EntityType.RISER:
             case EntityType.BIG_VALVE:
             case EntityType.FIXTURE:
-            case EntityType.LOAD_NODE:
             case EntityType.PLANT:
             case EntityType.GAS_APPLIANCE:
             case EntityType.BACKGROUND_IMAGE:
@@ -159,7 +213,9 @@ export function getGasComponents(engine: CalculationEngine) {
         if (isRoot) {
 
             const distTo = new Map<string, number>();
+            const pressureDropTo = new Map<string, number>();
             distTo.set(o.entity.uid, 0);
+            pressureDropTo.set(o.entity.uid, 0);
             let mainRunLengthM = 0;
             const pipes = new Set<string>();
             const supplyPressureKPA = pressureKPA;
@@ -172,6 +228,7 @@ export function getGasComponents(engine: CalculationEngine) {
                 },
                 (node) => {
                     const prevDist = distTo.get(node.connectable);
+                    const prevDrop = pressureDropTo.get(node.connectable);
                     const no = engine.globalStore.get(node.connectable);
                     if (!no) {
                         return true;
@@ -184,7 +241,7 @@ export function getGasComponents(engine: CalculationEngine) {
                         const parent = sno.parent!;
                         if (parent.entity.type === EntityType.GAS_APPLIANCE) {
                             mainRunLengthM = Math.max(mainRunLengthM, (prevDist || 0));
-                            maxPressureRequiredKPA = Math.max(maxPressureRequiredKPA, parent.entity.inletPressureKPA!);
+                            maxPressureRequiredKPA = Math.max(maxPressureRequiredKPA, parent.entity.inletPressureKPA! + prevDrop!);
                         }
                     } else if (no.entity.type === EntityType.LOAD_NODE) {
                         const systemUid = determineConnectableSystemUid(engine.globalStore, no.entity);
@@ -193,7 +250,7 @@ export function getGasComponents(engine: CalculationEngine) {
 
                         if (nodeIsGas) {
                             mainRunLengthM = Math.max(mainRunLengthM, (prevDist || 0));
-                            maxPressureRequiredKPA = Math.max(maxPressureRequiredKPA, no.entity.node.gasPressureKPA);
+                            maxPressureRequiredKPA = Math.max(maxPressureRequiredKPA, no.entity.node.gasPressureKPA + prevDrop!);
                         }
                     }
 
@@ -202,7 +259,7 @@ export function getGasComponents(engine: CalculationEngine) {
                     }
                     if (no.entity.type === EntityType.DIRECTED_VALVE && no.entity.uid !== o.entity.uid) {
                         if (no.entity.valve.type === ValveType.GAS_REGULATOR) {
-                            maxPressureRequiredKPA = Math.max(maxPressureRequiredKPA, no.entity.valve.outletPressureKPA!);
+                            maxPressureRequiredKPA = Math.max(maxPressureRequiredKPA, no.entity.valve.outletPressureKPA! + prevDrop!);
                             return true;
                         }
                     }
@@ -210,6 +267,7 @@ export function getGasComponents(engine: CalculationEngine) {
                 undefined,
                 (e) => {
                     let addedDist = 0;
+                    let addedDrop = 0;
                     switch (e.value.type) {
                         case EdgeType.PIPE: {
                             const o = engine.globalStore.get(e.value.uid) as Pipe;
@@ -226,9 +284,16 @@ export function getGasComponents(engine: CalculationEngine) {
                         }
                         case EdgeType.ISOLATION_THROUGH:
                         case EdgeType.CHECK_THROUGH:
-                        case EdgeType.BALANCING_THROUGH:
+                        case EdgeType.BALANCING_THROUGH: {
+                            if (e.value.type === EdgeType.CHECK_THROUGH) {
+                                const object = engine.globalStore.get(e.value.uid) as DirectedValve;
+                                if (object.entity.valve.type === ValveType.FILTER || object.entity.valve.type === ValveType.WATER_METER) {
+                                    addedDrop += object.entity.valve.pressureDropKPA!;
+                                }
+                            }
                             addedDist = 2;
                             break;
+                        }
                         case EdgeType.FITTING_FLOW:
                             // Ignore - imply one fitting flow for every physical fitting at the end of the path,
                             // we want to avoid this case:       / B
@@ -251,7 +316,9 @@ export function getGasComponents(engine: CalculationEngine) {
                     }
 
                     const prevDist = distTo.get(e.from.connectable);
+                    const prevDrop = pressureDropTo.get(e.from.connectable);
                     distTo.set(e.to.connectable, (prevDist || 0) + addedDist);
+                    pressureDropTo.set(e.to.connectable, (prevDrop || 0) + addedDrop);
                 },
                 undefined,
                 block,

@@ -33,16 +33,20 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
         .find((f) => f.uid === systemUid)?.fluid || 'water', catalog);
 
 
-    let fields: CalculationField[] = [
-        {
-            property: "flowRateLS",
-            title: "Flow Rate",
-            short: "",
-            units: Units.LitersPerSecond,
-            category: FieldCategory.FlowRate,
-            systemUid,
-        },
-    ];
+    let fields: CalculationField[] = [];
+
+    if (!valveIsGas) {
+        fields.push(
+            {
+                property: "flowRateLS",
+                title: "Flow Rate",
+                short: "",
+                units: Units.LitersPerSecond,
+                category: FieldCategory.FlowRate,
+                systemUid,
+            },
+        );
+    }
 
     if (!valveIsGas) {
         fields.push(
@@ -101,9 +105,23 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
             break;
         case ValveType.CHECK_VALVE:
         case ValveType.ISOLATION_VALVE:
-        case ValveType.WATER_METER:
         case ValveType.STRAINER:
+            break;
+        case ValveType.WATER_METER:
         case ValveType.FILTER:
+            if (valveIsGas) {
+                fields.push(
+                    {
+                        property: "pressureDropKPA",
+                        title: "Pressure Drop",
+                        short: "Drop",
+                        defaultEnabled: true,
+                        units: Units.KiloPascals,
+                        category: FieldCategory.Pressure,
+                        systemUid,
+                    },
+                );
+            }
             break;
         case ValveType.BALANCING: {
             const manufacturer = drawing.metadata.catalog.balancingValves[0]?.manufacturer || 'generic';

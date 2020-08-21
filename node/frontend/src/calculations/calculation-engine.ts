@@ -1500,7 +1500,7 @@ export default class CalculationEngine implements CalculationContext {
                         continuousFlowLS: node.entity.node.continuousFlowLS,
                         dwellings: node.entity.node.dwellings,
                         entity: node.entity.uid,
-                        gasMJH: node.entity.node.gasFlowRateMJH,
+                        gasMJH: node.entity.node.gasFlowRateMJH * node.entity.node.dwellings,
                         correlationGroup
                     };
                 default:

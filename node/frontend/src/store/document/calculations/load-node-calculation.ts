@@ -10,38 +10,60 @@ import { DrawingState } from "../../../../../common/src/api/document/drawing";
 import { getPsdUnitName } from "../../../calculations/utils";
 import { determineConnectableSystemUid } from "../entities/lib";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
+import {isGas} from "../../../../../common/src/api/config";
+import {Catalog} from "../../../../../common/src/api/catalog/types";
 
 export default interface LoadNodeCalculation extends Calculation, PressureCalculation, PsdCalculation {
     flowRateLS: number | null;
+    gasFlowRateMJH: number | null;
 }
 
-export function makeLoadNodeCalculationFields(entity: LoadNodeEntity, settings: DrawingState, globalStore: GlobalStore): CalculationField[] {
+export function makeLoadNodeCalculationFields(entity: LoadNodeEntity, settings: DrawingState, catalog: Catalog, globalStore: GlobalStore): CalculationField[] {
     const result: CalculationField[] = [];
 
+    const systemUid =  determineConnectableSystemUid(globalStore, entity);
     addPressureCalculationFields(result, entity.systemUidOption || undefined, "", {defaultEnabled: true});
 
-    result.push(
-        {
-            property: "flowRateLS",
-            title: "Flow Rate",
-            short: "",
-            units: Units.LitersPerSecond,
-            systemUid: determineConnectableSystemUid(globalStore, entity),
-            category: FieldCategory.FlowRate
-        }
-    );
+    const system = settings.metadata.flowSystems.find((f) => f.uid === systemUid);
+    const thisIsGas = isGas(system ? system.fluid : 'water', catalog);
+
+    if (thisIsGas) {
+        result.push(
+            {
+                property: "gasFlowRateMJH",
+                title: "Flow Rate",
+                short: "",
+                units: Units.MegajoulesPerHour,
+                systemUid,
+                category: FieldCategory.FlowRate
+            }
+        );
+    } else {
+        result.push(
+            {
+                property: "flowRateLS",
+                title: "Flow Rate",
+                short: "",
+                units: Units.LitersPerSecond,
+                systemUid,
+                category: FieldCategory.FlowRate
+            }
+        );
+    }
 
     const psdUnit = getPsdUnitName(settings.metadata.calculationParams.psdMethod);
     switch (entity.node.type) {
         case NodeType.LOAD_NODE:
-            result.push({
-                property: "psdUnits.units",
-                title: psdUnit.name,
-                short: psdUnit.abbreviation,
-                units: Units.None,
-                category: FieldCategory.LoadingUnits,
-                systemUid: determineConnectableSystemUid(globalStore, entity),
-            });
+            if (!thisIsGas) {
+                result.push({
+                    property: "psdUnits.units",
+                    title: psdUnit.name,
+                    short: psdUnit.abbreviation,
+                    units: Units.None,
+                    category: FieldCategory.LoadingUnits,
+                    systemUid,
+                });
+            }
             break;
         case NodeType.DWELLING:
             result.push({
@@ -50,7 +72,7 @@ export function makeLoadNodeCalculationFields(entity: LoadNodeEntity, settings: 
                 short: "dwlg",
                 units: Units.None,
                 category: FieldCategory.LoadingUnits,
-                systemUid: determineConnectableSystemUid(globalStore, entity),
+                systemUid,
             });
             break;
     }
@@ -58,7 +80,7 @@ export function makeLoadNodeCalculationFields(entity: LoadNodeEntity, settings: 
     return result;
 }
 
-export function emptyFixtureCalculation(): LoadNodeCalculation {
+export function emptyLoadNodeCalculation(): LoadNodeCalculation {
     return {
         costBreakdown: null,
         cost: null,
@@ -68,6 +90,7 @@ export function emptyFixtureCalculation(): LoadNodeCalculation {
         psdUnits: null,
         staticPressureKPA: null,
         flowRateLS: null,
+        gasFlowRateMJH: null,
         warning: null
     };
 }

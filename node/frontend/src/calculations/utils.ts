@@ -538,7 +538,7 @@ export function getFields(
         case EntityType.SYSTEM_NODE:
             return makeSystemNodeCalculationFields(entity, doc.drawing);
         case EntityType.LOAD_NODE:
-            return makeLoadNodeCalculationFields(entity, doc.drawing, globalStore);
+            return makeLoadNodeCalculationFields(entity, doc.drawing, catalog, globalStore);
         case EntityType.FLOW_SOURCE:
             return makeFlowSourceCalculationFields(entity, doc.drawing);
         case EntityType.PLANT:

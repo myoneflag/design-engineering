@@ -30,7 +30,7 @@ import SystemNodeCalculation, {
     emptySystemNodeCalculation
 } from "../../store/document/calculations/system-node-calculation";
 import LoadNodeEntity from "../../../../common/src/api/document/entities/load-node-entity";
-import LoadNodeCalculation from "../../store/document/calculations/load-node-calculation";
+import LoadNodeCalculation, {emptyLoadNodeCalculation} from "../../store/document/calculations/load-node-calculation";
 import Pipe from "../objects/pipe";
 import { ObjectStore } from "./object-store";
 import FlowSourceEntity from "../../../../common/src/api/document/entities/flow-source-entity";
@@ -117,10 +117,11 @@ export class GlobalStore extends ObjectStore {
                     this.calculationStore.set(entity.uid, cloneSimple(emptySystemNodeCalculation()));
                     break;
                 case EntityType.LOAD_NODE:
-                    this.calculationStore.set(entity.uid, cloneSimple(emptySystemNodeCalculation()));
+                    this.calculationStore.set(entity.uid, cloneSimple(emptyLoadNodeCalculation()));
                     break;
                 case EntityType.FLOW_SOURCE:
                     this.calculationStore.set(entity.uid, cloneSimple(emptyFlowSourceCalculation()));
+                    break;
                 case EntityType.PLANT:
                     this.calculationStore.set(entity.uid, cloneSimple(emptyPlantCalculation()));
                     break;

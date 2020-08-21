@@ -166,18 +166,35 @@ export function makeLoadNodesFields(doc: DocumentState, value: LoadNodeEntity, c
     if (nodeIsGas || systemUid === null) {
 
         if (nodeIsGas || systemUid === null) {
-            fields.push(
-                {
-                    property: "node.gasFlowRateMJH",
-                    title: "Gas Demand",
-                    hasDefault: false,
-                    isCalculated: false,
-                    type: FieldType.Number,
-                    units: Units.MegajoulesPerHour,
-                    params: { min: 0, max: null },
-                    multiFieldId: "gasFlowRateMJH"
-                },
-            );
+            if (value.node.type === NodeType.DWELLING) {
+
+                fields.push(
+                    {
+                        property: "node.gasFlowRateMJH",
+                        title: "Gas Demand (Per Dwelling)",
+                        hasDefault: false,
+                        isCalculated: false,
+                        type: FieldType.Number,
+                        units: Units.MegajoulesPerHour,
+                        params: { min: 0, max: null },
+                        multiFieldId: "gasFlowRateMJH"
+                    },
+                );
+            } else {
+
+                fields.push(
+                    {
+                        property: "node.gasFlowRateMJH",
+                        title: "Gas Demand",
+                        hasDefault: false,
+                        isCalculated: false,
+                        type: FieldType.Number,
+                        units: Units.MegajoulesPerHour,
+                        params: { min: 0, max: null },
+                        multiFieldId: "gasFlowRateMJH"
+                    },
+                );
+            }
 
             fields.push(
                 {
