@@ -54,7 +54,7 @@ export function makePlantCalculationFields(value: PlantEntity): CalculationField
             {
                 property: "gasFlowRateMJH",
                 title: "Gas Demand",
-                short: "",
+                short: "gas",
                 units: Units.MegajoulesPerHour,
                 category: FieldCategory.FlowRate,
             },
@@ -62,7 +62,7 @@ export function makePlantCalculationFields(value: PlantEntity): CalculationField
             {
                 property: "gasPressureKPA",
                 title: "Gas Pressure",
-                short: "",
+                short: "gas",
                 units: Units.KiloPascals,
                 category: FieldCategory.FlowRate,
             },
