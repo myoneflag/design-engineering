@@ -58,6 +58,7 @@ export interface ReturnSystemPlant extends Plant {
     addReturnToPSDFlowRate: boolean;
     returnVelocityMS: number | null;
     gasConsumptionMJH: number | null;
+    gasPressureKPA: number | null;
     gasNodeUid: string;
 }
 

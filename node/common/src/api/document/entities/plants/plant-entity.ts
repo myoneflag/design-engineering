@@ -167,6 +167,18 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                 multiFieldId: "gasConsumptionMJH",
                 units: Units.MegajoulesPerHour,
             });
+
+
+            res.push({
+                property: "plant.gasPressureKPA",
+                title: "Gas Pressure",
+                hasDefault: true,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: "gasPressureKPA",
+                units: Units.KiloPascals,
+            });
             break;
         case PlantType.TANK:
             break;
@@ -320,6 +332,9 @@ export function fillPlantDefaults(value: PlantEntity, drawing: DrawingState) {
             }
             if (result.plant.gasConsumptionMJH === null) {
                 result.plant.gasConsumptionMJH = 500;
+            }
+            if (result.plant.gasPressureKPA === null) {
+                result.plant.gasPressureKPA = 2.75;
             }
             break;
         case PlantType.TANK:

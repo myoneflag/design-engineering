@@ -15,6 +15,8 @@ import {
 import {NoFlowAvailableReason} from "../store/document/calculations/pipe-calculation";
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
 import {NodeType} from "../../../common/src/api/document/entities/load-node-entity";
+import {PlantType, ReturnSystemPlant} from "../../../common/src/api/document/entities/plants/plant-types";
+import {fillPlantDefaults} from "../../../common/src/api/document/entities/plants/plant-entity";
 
 export interface GasComponent {
     pipes: Set<string>;
@@ -196,13 +198,20 @@ export function getAndFillInGasComponent(engine: CalculationEngine) {
 
                 break;
             }
+            case EntityType.PLANT:
+                if (o.entity.plant.type === PlantType.RETURN_SYSTEM) {
+                    const filled = fillPlantDefaults(o.entity, engine.drawing);
+                    const calc = engine.globalStore.getOrCreateCalculation(o.entity);
+                    calc.gasPressureKPA = (filled.plant as ReturnSystemPlant).gasPressureKPA;
+                    calc.gasFlowRateMJH = (filled.plant as ReturnSystemPlant).gasConsumptionMJH;
+                }
+                break;
             case EntityType.SYSTEM_NODE:
             case EntityType.FITTING:
             case EntityType.PIPE:
             case EntityType.RISER:
             case EntityType.BIG_VALVE:
             case EntityType.FIXTURE:
-            case EntityType.PLANT:
             case EntityType.GAS_APPLIANCE:
             case EntityType.BACKGROUND_IMAGE:
                 break;
@@ -242,6 +251,16 @@ export function getAndFillInGasComponent(engine: CalculationEngine) {
                         if (parent.entity.type === EntityType.GAS_APPLIANCE) {
                             mainRunLengthM = Math.max(mainRunLengthM, (prevDist || 0));
                             maxPressureRequiredKPA = Math.max(maxPressureRequiredKPA, parent.entity.inletPressureKPA! + prevDrop!);
+                        } else if (parent.entity.type === EntityType.PLANT) {
+                            console.log('in parent');
+                            if (parent.entity.plant.type === PlantType.RETURN_SYSTEM) {
+                                const filled = fillPlantDefaults(parent.entity, engine.drawing);
+                                mainRunLengthM = Math.max(mainRunLengthM, (prevDist || 0));
+                                maxPressureRequiredKPA = Math.max(
+                                    maxPressureRequiredKPA,
+                                    (filled.plant as ReturnSystemPlant).gasPressureKPA! + prevDrop!,
+                                );
+                            }
                         }
                     } else if (no.entity.type === EntityType.LOAD_NODE) {
                         const systemUid = determineConnectableSystemUid(engine.globalStore, no.entity);

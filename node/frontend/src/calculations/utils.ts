@@ -542,7 +542,7 @@ export function getFields(
         case EntityType.FLOW_SOURCE:
             return makeFlowSourceCalculationFields(entity, doc.drawing);
         case EntityType.PLANT:
-            return makePlantCalculationFields();
+            return makePlantCalculationFields(entity);
         case EntityType.BACKGROUND_IMAGE:
             return [];
     }

@@ -206,6 +206,7 @@ function createPlant(type: PlantType, outletSystemUid: string, returnUid: string
                 gasConsumptionMJH: null,
                 returnUid: returnUid!,
                 gasNodeUid: gasInUid!,
+                gasPressureKPA: null,
                 returnVelocityMS: null,
                 addReturnToPSDFlowRate: true,
             };

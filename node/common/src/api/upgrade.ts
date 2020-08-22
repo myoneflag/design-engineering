@@ -124,8 +124,6 @@ export function upgrade15to16(original: DrawingState) {
                     // Add the missing gas entity
                     if (!e.plant.gasNodeUid) {
                         const newUid = uuid();
-                        e.plant.gasNodeUid = newUid;
-                        e.plant.gasConsumptionMJH = null;
 
                         const newEntity: SystemNodeEntity = {
                             center: {
@@ -142,6 +140,14 @@ export function upgrade15to16(original: DrawingState) {
                         };
 
                         level.entities[newUid] = newEntity;
+                    }
+
+                    if (e.plant.gasConsumptionMJH === undefined) {
+                        e.plant.gasConsumptionMJH = null;
+                    }
+
+                    if (e.plant.gasPressureKPA === undefined) {
+                        e.plant.gasPressureKPA = null;
                     }
                 }
             } else if (e.type === EntityType.DIRECTED_VALVE) {
