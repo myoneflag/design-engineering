@@ -4,7 +4,7 @@ import {
     InsulationJackets,
     InsulationMaterials,
     PIPE_SIZING_METHODS,
-    RingMainCalculationMethod,
+    RingMainCalculationMethod, StandardFlowSystemUids,
     SupportedDwellingStandards,
     SupportedPsdStandards
 } from "../config";
@@ -80,8 +80,13 @@ export interface UnitsParameters {
     velocityMeasurementSystem: VelocityMeasurementSystem;
     temperatureMeasurementSystem: MeasurementSystem;
     volumeMeasurementSystem: VolumeMeasurementSystem;
+    energyMeasurementSystem: EnergyMeasurementSystem;
 }
 
+export enum EnergyMeasurementSystem {
+    METRIC = 'METRIC',
+    IMPERIAL = 'IMPERIAL',
+}
 
 export enum MeasurementSystem {
     METRIC = 'METRIC',
@@ -126,6 +131,12 @@ export const VOLUME_MEASUREMENT_CHOICES: Choice[] = [
     {name: "Metric (L)", key: VolumeMeasurementSystem.METRIC},
     {name: "UK Imperial (gal)", key: VolumeMeasurementSystem.IMPERIAL},
     {name: "US Imperial (US gal)", key: VolumeMeasurementSystem.US},
+];
+
+
+export const ENERGY_MEASUREMENT_CHOICES: Choice[] = [
+    {name: "Megajoules (mj)", key: EnergyMeasurementSystem.METRIC},
+    {name: "Therms (thm)", key: EnergyMeasurementSystem.IMPERIAL},
 ];
 
 
@@ -201,7 +212,7 @@ export interface FlowSystemParameters extends WithID {
     insulationThicknessMM: number;
 
 
-    networks: { [key in keyof typeof NetworkType]: NetworkParams };
+    networks: { [key in keyof typeof NetworkType]: NetworkParams};
 }
 
 export interface CalculationParameters {
@@ -259,6 +270,7 @@ export const initialDrawing: DrawingState = {
             velocityMeasurementSystem: VelocityMeasurementSystem.METRIC,
             pressureMeasurementSystem: MeasurementSystem.METRIC,
             temperatureMeasurementSystem: MeasurementSystem.METRIC,
+            energyMeasurementSystem: EnergyMeasurementSystem.METRIC,
         },
         flowSystems: [
             // TODO: these values should get got from the database.
@@ -346,6 +358,37 @@ export const initialDrawing: DrawingState = {
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 1.2,
+                        material: "copperTypeB"
+                    },
+                    CONNECTIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 3,
+                        material: "pexSdr74"
+                    }
+                }
+            },
+            {
+                name: "Gas",
+                temperature: 20,
+                color: { hex: "#FCDC00" },
+                uid: StandardFlowSystemUids.Gas,
+                fluid: "naturalGas",
+                hasReturnSystem: false,
+                returnIsInsulated: false,
+                returnMaxVelocityMS: 1,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationJacket: InsulationJackets.allServiceJacket,
+                insulationThicknessMM: 25,
+
+                networks: {
+                    RISERS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 20,
+                        material: "copperTypeB"
+                    },
+                    RETICULATIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 20,
                         material: "copperTypeB"
                     },
                     CONNECTIONS: {

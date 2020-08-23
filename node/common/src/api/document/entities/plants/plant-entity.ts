@@ -6,32 +6,6 @@ import { PlantConcrete, PlantType, PressureMethod } from "./plant-types";
 import { assertUnreachable } from "../../../config";
 import { Units } from "../../../../lib/measurements";
 
-export interface PlantEntityV8 extends CenteredEntity {
-    type: EntityType.PLANT;
-    center: Coord;
-    inletSystemUid: string;
-    outletSystemUid: string;
-
-    name: string;
-
-    rotation: number;
-    rightToLeft: boolean;
-
-    heightAboveFloorM: number;
-
-    widthMM: number;
-    heightMM: number;
-
-    pressureMethod: PressureMethod;
-    pumpPressureKPA: number | null;
-    pressureLossKPA: number | null;
-    staticPressureKPA: number | null;
-
-    inletUid: string;
-    outletUid: string;
-}
-
-
 export default interface PlantEntity extends CenteredEntity {
     type: EntityType.PLANT;
     center: Coord;
@@ -183,6 +157,28 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                 },
             );
 
+            res.push({
+                property: "plant.gasConsumptionMJH",
+                title: "Gas Consumption",
+                hasDefault: true,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: "gasConsumptionMJH",
+                units: Units.MegajoulesPerHour,
+            });
+
+
+            res.push({
+                property: "plant.gasPressureKPA",
+                title: "Gas Pressure",
+                hasDefault: true,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: "gasPressureKPA",
+                units: Units.KiloPascals,
+            });
             break;
         case PlantType.TANK:
             break;
@@ -248,6 +244,8 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                     units: Units.KiloPascals,
                 });
                 break;
+            default:
+                assertUnreachable(entity.plant.pressureLoss);
         }
     }
 
@@ -316,7 +314,6 @@ export function fillPlantDefaults(value: PlantEntity, drawing: DrawingState) {
             default:
                 assertUnreachable(value.plant.pressureLoss);
         }
-
     }
 
     if (value.outletTemperatureC === null) {
@@ -332,6 +329,12 @@ export function fillPlantDefaults(value: PlantEntity, drawing: DrawingState) {
             if (result.plant.returnVelocityMS === null) {
                 const outSystem = drawing.metadata.flowSystems.find((s) => s.uid === value.outletSystemUid)!;
                 result.plant.returnVelocityMS = Number(outSystem.returnMaxVelocityMS);
+            }
+            if (result.plant.gasConsumptionMJH === null) {
+                result.plant.gasConsumptionMJH = 500;
+            }
+            if (result.plant.gasPressureKPA === null) {
+                result.plant.gasPressureKPA = 2.75;
             }
             break;
         case PlantType.TANK:

@@ -45,14 +45,14 @@ import {
     lowerBoundTable,
     parseCatalogNumberExact
 } from "../../../../common/src/lib/utils";
-import {determineConnectableNetwork} from "../../store/document/entities/lib";
+import { determineConnectableNetwork } from "../../store/document/entities/lib";
 import {
     assertUnreachable,
-    ComponentPressureLossMethod,
+    ComponentPressureLossMethod, isGas,
     StandardFlowSystemUids
 } from "../../../../common/src/api/config";
-import {SnappableObject} from "../lib/object-traits/snappable-object";
-import {getHighlightColor} from "../lib/utils";
+import { SnappableObject } from "../lib/object-traits/snappable-object";
+import { getHighlightColor } from "../lib/utils";
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 1.5;
@@ -271,7 +271,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 ctx.setLineDash([baseWidth * 1, baseWidth * 2]);
             }
 
-            if (!calculation || calculation.PSDFlowRateLS === null) {
+            if (!calculation || (calculation.PSDFlowRateLS === null && calculation.optimalInnerPipeDiameterMM === null)) {
                 ctx.setLineDash([baseWidth * 3, baseWidth * 3]);
             }
         }
@@ -667,10 +667,18 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             return null;
         }
         const calculation = globalStore.getCalculation(this.entity);
-        if (!calculation || !calculation.realNominalPipeDiameterMM) {
+        return catalog.pipes[computed.material];
+    }
+
+    getManufacturerCatalogPage(context: CalculationContext): { [key: string]: PipeSpec } | null {
+        const { drawing, catalog, globalStore } = context;
+        const computed = fillPipeDefaultFields(drawing, this.computedLengthM, this.entity);
+        if (!computed.material) {
             return null;
         }
-        return catalog.pipes[computed.material];
+        const page = catalog.pipes[computed.material];
+        const manufacturer = drawing.metadata.catalog.pipes.find((m) => m.uid === computed.material)?.manufacturer || 'generic';
+        return page.pipesBySize[manufacturer];
     }
 
     getCatalogBySizePage(context: CalculationContext): PipeSpec | null {
@@ -743,6 +751,9 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             }
         }
 
+        const pipeIsGas = isGas(context.doc.drawing.metadata.flowSystems
+            .find((f) => f.uid === this.entity.systemUid)?.fluid!, context.catalog);
+
         const system = drawing.metadata.flowSystems.find((s) => s.uid === entity.systemUid)!;
         const fluid = catalog.fluids[system.fluid];
 
@@ -776,8 +787,13 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 assertUnreachable(context.drawing.metadata.calculationParams.componentPressureLossMethod);
         }
 
-        let retval =
-            sign *
+        let retval = 0;
+        if (pipeIsGas) {
+            // TODO: Calculate gas.
+
+        } else {
+
+            retval = sign *
             getDarcyWeisbachFlatMH(
                 parseCatalogNumberExact(page.diameterInternalMM)!,
                 parseCatalogNumberExact(page.colebrookWhiteCoefficient)!,
@@ -787,6 +803,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 velocityMS,
                 ga
             );
+        }
 
         const calc = context.globalStore.getOrCreateCalculation(this.entity);
         if (calc.configuration === Configuration.RING_MAIN) {

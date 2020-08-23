@@ -53,7 +53,9 @@ export default function insertFixtureHotCold(context: CanvasContext, rotationDEG
                         type: NodeType.LOAD_NODE,
                         loadingUnits: 1,
                         designFlowRateLS: 0,
-                        continuousFlowLS: 0
+                        continuousFlowLS: 0,
+                        gasFlowRateMJH: 0,
+                        gasPressureKPA: 0,
                     },
                     systemUidOption: StandardFlowSystemUids.HotWater,
                     center: { x: hotLoc.x, y: hotLoc.y },
@@ -72,7 +74,9 @@ export default function insertFixtureHotCold(context: CanvasContext, rotationDEG
                         type: NodeType.LOAD_NODE,
                         loadingUnits: 1,
                         designFlowRateLS: 0,
-                        continuousFlowLS: 0
+                        continuousFlowLS: 0,
+                        gasFlowRateMJH: 0,
+                        gasPressureKPA: 0,
                     },
                     systemUidOption: StandardFlowSystemUids.ColdWater,
                     center: { x: coldLoc.x, y: coldLoc.y },

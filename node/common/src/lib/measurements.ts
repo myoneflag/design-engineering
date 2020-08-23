@@ -1,10 +1,11 @@
 import {
+    EnergyMeasurementSystem,
     MeasurementSystem,
     UnitsParameters,
     VelocityMeasurementSystem,
     VolumeMeasurementSystem
 } from "../api/document/drawing";
-import { assertUnreachable } from "../api/config";
+import {assertUnreachable} from "../api/config";
 
 export enum Units {
     None = "",
@@ -20,6 +21,9 @@ export enum Units {
     KiloWatts = "kW",
     Kv = "Kv",
     Liters = "L",
+    MetersCubedPerHour = "m^3/hr",
+    // Gas demands
+    MegajoulesPerHour = 'MJ/hr',
 
     // Imperial equivalents where applicable
     GallonsPerMinute = "gal/min",
@@ -34,11 +38,16 @@ export enum Units {
     // Kv is unitless
     Gallons = "gal",
     USGallons = "US gal", // wtf usa
+    // Gas demands
+    ThermsPerHour = 'thm/hr',
 
     PipeDiameterMM = "pmm",
+    CubicFeetPerHour = "ft^3/hr",
 
     // April Fools
     FurlongsPerFortnight = "fur/fortn",
+
+
 }
 
 export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, units: Units, value: number): [Units, number | string | null] {
@@ -55,9 +64,13 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.GallonsPerMinute, value / 4.54609 * 60];
                 case VolumeMeasurementSystem.US:
                     return [Units.USGallonsPerMinute, value / 3.785411784 * 60];
+                default:
+                    assertUnreachable(unitsPrefs.volumeMeasurementSystem);
             }
             assertUnreachable(unitsPrefs.volumeMeasurementSystem);
-            break;
+            // Unfortunatly, for some reason vue's ts compiling doesn't manage type inference to `never` the same way
+            // as intellij, so this is needed here.
+            return [Units.None, 0];
         case Units.Millimeters:
             switch (unitsPrefs.lengthMeasurementSystem) {
                 case MeasurementSystem.METRIC:
@@ -66,7 +79,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.Inches, mm2IN(value)];
             }
             assertUnreachable(unitsPrefs.lengthMeasurementSystem);
-            break;
+            return [Units.None, 0];
         case Units.Meters:
             switch (unitsPrefs.lengthMeasurementSystem) {
                 case MeasurementSystem.METRIC:
@@ -75,7 +88,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.Feet, m2FT(value)];
             }
             assertUnreachable(unitsPrefs.lengthMeasurementSystem);
-            break;
+            return [Units.None, 0];
         case Units.KiloPascals:
             switch (unitsPrefs.pressureMeasurementSystem) {
                 case MeasurementSystem.METRIC:
@@ -84,7 +97,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.Psi, kpa2PSI(value)];
             }
             assertUnreachable(unitsPrefs.pressureMeasurementSystem);
-            break;
+            return [Units.None, 0];
         case Units.MetersPerSecond:
             switch (unitsPrefs.velocityMeasurementSystem) {
                 case VelocityMeasurementSystem.METRIC:
@@ -95,7 +108,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.FurlongsPerFortnight, value * 6012.87];
             }
             assertUnreachable(unitsPrefs.velocityMeasurementSystem);
-            break;
+            return [Units.None, 0];
         case Units.MetersPerSecondSquared:
             switch (unitsPrefs.lengthMeasurementSystem) {
                 case MeasurementSystem.METRIC:
@@ -104,7 +117,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.FeetPerSecondSquared, m2FT(value)];
             }
             assertUnreachable(unitsPrefs.lengthMeasurementSystem);
-            break;
+            return [Units.None, 0];
         case Units.Celsius:
             switch (unitsPrefs.temperatureMeasurementSystem) {
                 case MeasurementSystem.METRIC:
@@ -113,7 +126,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.Fahrenheit, c2F(value)];
             }
             assertUnreachable(unitsPrefs.temperatureMeasurementSystem);
-            break;
+            return [Units.None, 0];
         case Units.Liters:
             switch (unitsPrefs.volumeMeasurementSystem) {
                 case VolumeMeasurementSystem.METRIC:
@@ -124,7 +137,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.USGallons, value * 0.2641721];
             }
             assertUnreachable(unitsPrefs.volumeMeasurementSystem);
-            break;
+            return [Units.None, 0];
         case Units.GallonsPerMinute:
             switch (unitsPrefs.volumeMeasurementSystem) {
                 case VolumeMeasurementSystem.METRIC:
@@ -135,7 +148,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.USGallonsPerMinute, value / 3.785411784 * 4.54609];
             }
             assertUnreachable(unitsPrefs.volumeMeasurementSystem);
-            break;
+            return [Units.None, 0];
         case Units.Inches:
             switch (unitsPrefs.lengthMeasurementSystem) {
                 case MeasurementSystem.METRIC:
@@ -144,7 +157,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.Inches, value];
             }
             assertUnreachable(unitsPrefs.lengthMeasurementSystem);
-            break;
+            return [Units.None, 0];
         case Units.Feet:
             switch (unitsPrefs.lengthMeasurementSystem) {
                 case MeasurementSystem.METRIC:
@@ -153,7 +166,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.Feet, value];
             }
             assertUnreachable(unitsPrefs.lengthMeasurementSystem);
-            break;
+            return [Units.None, 0];
         case Units.Psi:
             switch (unitsPrefs.pressureMeasurementSystem) {
                 case MeasurementSystem.METRIC:
@@ -162,7 +175,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.Psi, value];
             }
             assertUnreachable(unitsPrefs.pressureMeasurementSystem);
-            break;
+            return [Units.None, 0];
         case Units.FeetPerSecond:
             switch (unitsPrefs.velocityMeasurementSystem) {
                 case VelocityMeasurementSystem.METRIC:
@@ -173,7 +186,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.FurlongsPerFortnight, ft2M(value) * 6012.87];
             }
             assertUnreachable(unitsPrefs.velocityMeasurementSystem);
-            break;
+            return [Units.None, 0];
         case Units.FeetPerSecondSquared:
             switch (unitsPrefs.lengthMeasurementSystem) {
                 case MeasurementSystem.METRIC:
@@ -182,7 +195,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.FeetPerSecondSquared, value];
             }
             assertUnreachable(unitsPrefs.lengthMeasurementSystem);
-            break;
+            return [Units.None, 0];
         case Units.Fahrenheit:
             switch (unitsPrefs.temperatureMeasurementSystem) {
                 case MeasurementSystem.METRIC:
@@ -191,7 +204,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.Fahrenheit, value];
             }
             assertUnreachable(unitsPrefs.temperatureMeasurementSystem);
-            break;
+            return [Units.None, 0];
         case Units.Gallons:
             switch (unitsPrefs.volumeMeasurementSystem) {
                 case VolumeMeasurementSystem.METRIC:
@@ -202,7 +215,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.USGallons, value / 3.785411784 * 4.54609];
             }
             assertUnreachable(unitsPrefs.volumeMeasurementSystem);
-            break;
+            return [Units.None, 0];
         case Units.USGallons:
             switch (unitsPrefs.volumeMeasurementSystem) {
                 case VolumeMeasurementSystem.METRIC:
@@ -213,7 +226,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.USGallons, value / 3.785411784];
             }
             assertUnreachable(unitsPrefs.volumeMeasurementSystem);
-            break;
+            return [Units.None, 0];
         case Units.USGallonsPerMinute:
             switch (unitsPrefs.volumeMeasurementSystem) {
                 case VolumeMeasurementSystem.METRIC:
@@ -224,7 +237,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.USGallonsPerMinute, value];
             }
             assertUnreachable(unitsPrefs.volumeMeasurementSystem);
-            break;
+            return [Units.None, 0];
         case Units.PipeDiameterMM:
             return convertPipeDiameterFromMetric(unitsPrefs, value);
         case Units.FurlongsPerFortnight:
@@ -235,13 +248,54 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.FeetPerSecond, m2FT(value / 6012.87)];
                 case VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL:
                     return [Units.FurlongsPerFortnight, value];
+                default:
+                    assertUnreachable(unitsPrefs.velocityMeasurementSystem);
             }
             assertUnreachable(unitsPrefs.velocityMeasurementSystem);
-            break;
+            return [Units.None, 0];
+        case Units.MegajoulesPerHour:
+            switch (unitsPrefs.energyMeasurementSystem) {
+                case EnergyMeasurementSystem.METRIC:
+                    return [Units.MegajoulesPerHour, value];
+                case EnergyMeasurementSystem.IMPERIAL:
+                    return [Units.ThermsPerHour, value / 105.48];
+            }
+            return [Units.None, 0];
+        case Units.MetersCubedPerHour:
+            switch (unitsPrefs.velocityMeasurementSystem) {
+                case VelocityMeasurementSystem.METRIC:
+                    return [Units.MetersCubedPerHour, value];
+                case VelocityMeasurementSystem.IMPERIAL:
+                case VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL:
+                    return [Units.CubicFeetPerHour, value * 3.28084 * 3.28084 * 3.28084];
+                default:
+                    assertUnreachable(unitsPrefs.velocityMeasurementSystem);
+            }
+            return [Units.None, 0];
+        case Units.CubicFeetPerHour:
+            switch (unitsPrefs.velocityMeasurementSystem) {
+                case VelocityMeasurementSystem.METRIC:
+                    return [Units.MetersCubedPerHour, value / (3.28084 * 3.28084 * 3.28084)];
+                case VelocityMeasurementSystem.IMPERIAL:
+                case VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL:
+                    return [Units.CubicFeetPerHour, value];
+                default:
+                    assertUnreachable(unitsPrefs.velocityMeasurementSystem);
+            }
+            return [Units.None, 0];
+        case Units.ThermsPerHour:
+            switch (unitsPrefs.energyMeasurementSystem) {
+                case EnergyMeasurementSystem.METRIC:
+                    return [Units.MegajoulesPerHour, value * 105.48];
+                case EnergyMeasurementSystem.IMPERIAL:
+                    return [Units.ThermsPerHour, value];
+            }
+            return [Units.None, 0];
         default:
             assertUnreachable(units);
     }
-    throw new Error('Not supposed to get here');
+    assertUnreachable(units);
+    return [Units.None, 0];
 }
 
 export function convertMeasurementSystem(unitsPrefs: UnitsParameters, units: Units, value: number | null): [Units, number | null | string] {
@@ -261,7 +315,8 @@ export function convertMeasurementToMetric(units: Units, value: number | null) {
             temperatureMeasurementSystem: MeasurementSystem.METRIC,
             velocityMeasurementSystem: VelocityMeasurementSystem.METRIC,
             pressureMeasurementSystem: MeasurementSystem.METRIC,
-            volumeMeasurementSystem: VolumeMeasurementSystem.METRIC
+            volumeMeasurementSystem: VolumeMeasurementSystem.METRIC,
+            energyMeasurementSystem: EnergyMeasurementSystem.METRIC,
         },
         units,
         value

@@ -1,12 +1,9 @@
 // Stores auxillary data and objects for the entire document across all levels.
 import {
     CalculatableEntityConcrete,
-    DrawableEntityConcrete
 } from "../../../../common/src/api/document/entities/concrete-entity";
 import { DocumentState } from "../../store/document/types";
 import BaseBackedObject from "./base-backed-object";
-import Vue from "vue";
-import DrawableObjectFactory from "./drawable-object-factory";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
 import PipeCalculation, { emptyPipeCalculation } from "../../store/document/calculations/pipe-calculation";
@@ -33,7 +30,7 @@ import SystemNodeCalculation, {
     emptySystemNodeCalculation
 } from "../../store/document/calculations/system-node-calculation";
 import LoadNodeEntity from "../../../../common/src/api/document/entities/load-node-entity";
-import LoadNodeCalculation from "../../store/document/calculations/load-node-calculation";
+import LoadNodeCalculation, {emptyLoadNodeCalculation} from "../../store/document/calculations/load-node-calculation";
 import Pipe from "../objects/pipe";
 import { ObjectStore } from "./object-store";
 import FlowSourceEntity from "../../../../common/src/api/document/entities/flow-source-entity";
@@ -45,6 +42,8 @@ import PlantCalculation, { emptyPlantCalculation } from "../../store/document/ca
 import { assertUnreachable } from "../../../../common/src/api/config";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { CalculationConcrete } from "../../store/document/calculations/calculation-concrete";
+import GasApplianceEntity from "../../../../common/src/api/document/entities/gas-appliance";
+import GasApplianceCalculation, {emptyGasApplianceCalculation} from "../../store/document/calculations/gas-appliance-calculation";
 
 export class GlobalStore extends ObjectStore {
     entitiesInLevel = new Map<string | null, Set<string>>();
@@ -90,6 +89,7 @@ export class GlobalStore extends ObjectStore {
     getOrCreateCalculation(entity: LoadNodeEntity): LoadNodeCalculation;
     getOrCreateCalculation(entity: FlowSourceEntity): FlowSourceCalculation;
     getOrCreateCalculation(entity: PlantEntity): PlantCalculation;
+    getOrCreateCalculation(entity: GasApplianceEntity): GasApplianceCalculation;
     getOrCreateCalculation(entity: CalculatableEntityConcrete): CalculationConcrete;
 
     getOrCreateCalculation(entity: CalculatableEntityConcrete): CalculationConcrete {
@@ -117,12 +117,16 @@ export class GlobalStore extends ObjectStore {
                     this.calculationStore.set(entity.uid, cloneSimple(emptySystemNodeCalculation()));
                     break;
                 case EntityType.LOAD_NODE:
-                    this.calculationStore.set(entity.uid, cloneSimple(emptySystemNodeCalculation()));
+                    this.calculationStore.set(entity.uid, cloneSimple(emptyLoadNodeCalculation()));
                     break;
                 case EntityType.FLOW_SOURCE:
                     this.calculationStore.set(entity.uid, cloneSimple(emptyFlowSourceCalculation()));
+                    break;
                 case EntityType.PLANT:
                     this.calculationStore.set(entity.uid, cloneSimple(emptyPlantCalculation()));
+                    break;
+                case EntityType.GAS_APPLIANCE:
+                    this.calculationStore.set(entity.uid, cloneSimple(emptyGasApplianceCalculation()));
                     break;
                 default:
                     assertUnreachable(entity);

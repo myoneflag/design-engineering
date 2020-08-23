@@ -63,7 +63,7 @@ import { GlobalStore } from "../htmlcanvas/lib/global-store";
 import { ObjectStore } from "../htmlcanvas/lib/object-store";
 import { makeFlowSourceFields } from "../../../common/src/api/document/entities/flow-source-entity";
 import FlowSourceCalculation from "../store/document/calculations/flow-source-calculation";
-import { makePlantEntityFields } from "../../../common/src/api/document/entities/plants/plant-entity";
+import {fillPlantDefaults, makePlantEntityFields} from "../../../common/src/api/document/entities/plants/plant-entity";
 import Plant from "../htmlcanvas/objects/plant";
 import { assertUnreachable, isGermanStandard, StandardFlowSystemUids } from "../../../common/src/api/config";
 import { Catalog, PipeSpec } from "../../../common/src/api/catalog/types";
@@ -94,6 +94,10 @@ import Fixture from "../htmlcanvas/objects/fixture";
 import LoadNodeCalculation from "../store/document/calculations/load-node-calculation";
 import { fillDefaultLoadNodeFields } from "../store/document/entities/fillDefaultLoadNodeFields";
 import {PriceTable} from "../../../common/src/api/catalog/price-table";
+import GasApplianceEntity, {makeGasApplianceFields} from "../../../common/src/api/document/entities/gas-appliance";
+import {calculateGas} from "./gas";
+import {PlantType, ReturnSystemPlant} from "../../../common/src/api/document/entities/plants/plant-types";
+import {Return} from "aws-sdk/clients/cloudsearchdomain";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -253,6 +257,9 @@ export default class CalculationEngine implements CalculationContext {
                 case EntityType.FITTING:
                     fields = makeValveFields([]);
                     break;
+                case EntityType.GAS_APPLIANCE:
+                    fields = makeGasApplianceFields(this.doc.drawing, obj.entity);
+                    break;
                 case EntityType.BIG_VALVE:
                     fields = makeBigValveFields(obj.entity);
                     break;
@@ -263,10 +270,11 @@ export default class CalculationEngine implements CalculationContext {
                     fields = makeDirectedValveFields(obj.entity, this.catalog, this.doc.drawing);
                     break;
                 case EntityType.FLOW_SOURCE:
-                    fields = makeFlowSourceFields([]);
+                    fields = makeFlowSourceFields([], obj.entity);
                     break;
                 case EntityType.LOAD_NODE:
-                    fields = makeLoadNodesFields([], obj.entity);
+                    const systemUid = determineConnectableSystemUid(obj.globalStore, obj.entity);
+                    fields = makeLoadNodesFields(this.doc, obj.entity, this.catalog, systemUid || null);
                     break;
                 case EntityType.PLANT:
                     fields = makePlantEntityFields(obj.entity, []);
@@ -325,9 +333,11 @@ export default class CalculationEngine implements CalculationContext {
 
                 this.calculateHotWaterDeadlegs();
 
+
                 this.calculateAllPointPressures();
                 this.calculateStaticPressures();
 
+                calculateGas(this);
 
                 this.fillPressureDropFields();
                 this.createWarnings();
@@ -605,6 +615,9 @@ export default class CalculationEngine implements CalculationContext {
                 const c = this.globalStore.getOrCreateCalculation(o.entity);
                 c.lengthM = o.entity.lengthM == null ? (o as Pipe).computedLengthM : o.entity.lengthM;
                 c.heightM = o.entity.heightAboveFloorM;
+            } else if (o.entity.type === EntityType.GAS_APPLIANCE) {
+                const c = this.globalStore.getOrCreateCalculation(o.entity);
+                c.demandMJH = o.entity.flowRateMJH;
             }
         });
     }
@@ -679,6 +692,7 @@ export default class CalculationEngine implements CalculationContext {
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.PIPE:
                 case EntityType.PLANT:
+                case EntityType.GAS_APPLIANCE:
                 case EntityType.RISER:
                     break;
                 default:
@@ -748,6 +762,7 @@ export default class CalculationEngine implements CalculationContext {
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.PIPE:
                 case EntityType.PLANT:
+                case EntityType.GAS_APPLIANCE:
                 case EntityType.RISER:
                     break;
                 default:
@@ -1241,6 +1256,7 @@ export default class CalculationEngine implements CalculationContext {
                     break;
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.FIXTURE:
+                case EntityType.GAS_APPLIANCE:
                 case EntityType.RISER:
                     break;
                 default:
@@ -1264,6 +1280,10 @@ export default class CalculationEngine implements CalculationContext {
                 case ValveType.RPZD_SINGLE:
                 case ValveType.RPZD_DOUBLE_ISOLATED:
                 case ValveType.RPZD_DOUBLE_SHARED:
+                case ValveType.PRV_SINGLE:
+                case ValveType.PRV_DOUBLE:
+                case ValveType.PRV_TRIPLE:
+                case ValveType.GAS_REGULATOR:
                 case ValveType.CHECK_VALVE:
                     // from start to finish only
                     this.flowGraph.addDirectedEdge(
@@ -1318,10 +1338,8 @@ export default class CalculationEngine implements CalculationContext {
                     );
                     break;
 
-                case ValveType.PRV_SINGLE:
-                case ValveType.PRV_DOUBLE:
-                case ValveType.PRV_TRIPLE:
                 case ValveType.WATER_METER:
+                case ValveType.FILTER:
                 case ValveType.STRAINER:
                     this.flowGraph.addEdge(
                         {
@@ -1368,9 +1386,10 @@ export default class CalculationEngine implements CalculationContext {
             if (parent.uid !== flowNode.connection) {
                 return null;
             }
-            switch (parent.type) {
-                case EntityType.FIXTURE:
-                    const fixture = parent.entity as FixtureEntity;
+            const parentEntity = parent.entity;
+            switch (parentEntity.type) {
+                case EntityType.FIXTURE: {
+                    const fixture = parentEntity as FixtureEntity;
                     const mainFixture = fillFixtureFields(this.doc.drawing, this.catalog, fixture);
 
                     for (const suid of fixture.roughInsInOrder) {
@@ -1381,7 +1400,8 @@ export default class CalculationEngine implements CalculationContext {
                                     continuousFlowLS: mainFixture.roughIns[suid].continuousFlowLS!,
                                     dwellings: 0,
                                     entity: node.entity.uid,
-                                    correlationGroup: fixture.uid
+                                    correlationGroup: fixture.uid,
+                                    gasMJH: 0,
                                 };
                             } else {
                                 return {
@@ -1389,6 +1409,7 @@ export default class CalculationEngine implements CalculationContext {
                                     continuousFlowLS: mainFixture.roughIns[suid].continuousFlowLS!,
                                     dwellings: 0,
                                     entity: node.entity.uid,
+                                    gasMJH: 0,
                                     correlationGroup: fixture.uid
                                 };
                             }
@@ -1396,21 +1417,58 @@ export default class CalculationEngine implements CalculationContext {
                     }
                     //throw new Error("Invalid connection to fixture");
                     return zeroContextualPCE(node.entity.uid, node.entity.uid);
+                }
+                case EntityType.GAS_APPLIANCE: {
+                    // TODO: for gas calculation BIG TODO
+                    return {
+                        units: 0,
+                        continuousFlowLS: 0,
+                        dwellings: 0,
+                        entity: parentEntity.uid,
+                        correlationGroup: parentEntity.uid,
+                        gasMJH: parentEntity.flowRateMJH!,
+                    };
+                }
+                case EntityType.PLANT: {
+                    switch (parentEntity.plant.type) {
+                        case PlantType.RETURN_SYSTEM:
+                            const filled = fillPlantDefaults(parentEntity, this.drawing).plant as ReturnSystemPlant;
+                            if (filled.gasConsumptionMJH !== null) {
+                                return {
+                                    units: 0,
+                                    continuousFlowLS: 0,
+                                    dwellings: 0,
+                                    entity: node.entity.uid,
+                                    correlationGroup: parentEntity.uid,
+                                    gasMJH: filled.gasConsumptionMJH,
+                                };
+                            }
+                            break;
+                        case PlantType.TANK:
+                            break;
+                        case PlantType.CUSTOM:
+                            break;
+                        case PlantType.PUMP:
+                            break;
+                        default:
+                            assertUnreachable(parentEntity.plant);
+                    }
+                    return zeroContextualPCE(node.entity.uid, node.entity.uid);
+                }
                 case EntityType.LOAD_NODE:
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.RISER:
                 case EntityType.FLOW_SOURCE:
-                case EntityType.RETURN:
                 case EntityType.PIPE:
                 case EntityType.FITTING:
-                case EntityType.PLANT:
                 case EntityType.BIG_VALVE:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.DIRECTED_VALVE:
                     return zeroContextualPCE(node.entity.uid, node.entity.uid);
                 default:
+                    assertUnreachable(parentEntity);
             }
-            assertUnreachable(parent.type);
+            assertUnreachable(parentEntity);
             // Sadly, typescript type checking for return value was not smart enough to avoid these two lines.
             throw new Error("parent type is not a correct value");
         } else if (node.entity.type === EntityType.LOAD_NODE) {
@@ -1423,6 +1481,7 @@ export default class CalculationEngine implements CalculationContext {
                             continuousFlowLS: node.entity.node.continuousFlowLS,
                             dwellings: 0,
                             entity: node.entity.uid,
+                            gasMJH: node.entity.node.gasFlowRateMJH,
                             correlationGroup
                         };
                     } else {
@@ -1431,6 +1490,7 @@ export default class CalculationEngine implements CalculationContext {
                             continuousFlowLS: node.entity.node.continuousFlowLS,
                             dwellings: 0,
                             entity: node.entity.uid,
+                            gasMJH: node.entity.node.gasFlowRateMJH,
                             correlationGroup
                         };
                     }
@@ -1440,6 +1500,7 @@ export default class CalculationEngine implements CalculationContext {
                         continuousFlowLS: node.entity.node.continuousFlowLS,
                         dwellings: node.entity.node.dwellings,
                         entity: node.entity.uid,
+                        gasMJH: node.entity.node.gasFlowRateMJH * node.entity.node.dwellings,
                         correlationGroup
                     };
                 default:
@@ -1461,6 +1522,7 @@ export default class CalculationEngine implements CalculationContext {
     ) {
         switch (entity.type) {
             case EntityType.PIPE: {
+
                 const calculation = this.globalStore.getOrCreateCalculation(entity);
                 calculation.psdUnits = psdU;
                 calculation.psdProfile = profile;
@@ -1469,17 +1531,23 @@ export default class CalculationEngine implements CalculationContext {
                 }
                 calculation.noFlowAvailableReason = noFlowReason;
 
-                const flowRate = lookupFlowRate(psdU, this.doc, this.catalog, entity.systemUid);
-
-                if (flowRate === null) {
-                    // Warn for no PSD
-                    if (isZeroPsdCounts(psdU)) {
-                        this.setPipePSDFlowRate(entity, 0);
-                    } else {
-                        calculation.noFlowAvailableReason = NoFlowAvailableReason.LOADING_UNITS_OUT_OF_BOUNDS;
-                    }
+                const isGas = entity.systemUid === StandardFlowSystemUids.Gas;
+                if (isGas) {
+                    // TODO: Gas calculation
                 } else {
-                    this.setPipePSDFlowRate(entity, flowRate.flowRateLS);
+
+                    const flowRate = lookupFlowRate(psdU, this.doc, this.catalog, entity.systemUid);
+
+                    if (flowRate === null) {
+                        // Warn for no PSD
+                        if (isZeroPsdCounts(psdU)) {
+                            this.setPipePSDFlowRate(entity, 0);
+                        } else {
+                            calculation.noFlowAvailableReason = NoFlowAvailableReason.LOADING_UNITS_OUT_OF_BOUNDS;
+                        }
+                    } else {
+                        this.setPipePSDFlowRate(entity, flowRate.flowRateLS);
+                    }
                 }
 
                 return;
@@ -1540,6 +1608,7 @@ export default class CalculationEngine implements CalculationContext {
             case EntityType.DIRECTED_VALVE:
             case EntityType.SYSTEM_NODE:
             case EntityType.FIXTURE:
+            case EntityType.GAS_APPLIANCE:
                 throw new Error("Cannot configure this entity to accept loading units");
             default:
                 assertUnreachable(entity);
@@ -1671,6 +1740,7 @@ export default class CalculationEngine implements CalculationContext {
         }
         return res;
     }
+
 
     getPipeByNominal(pipe: PipeEntity, maxNominalMM: number): PipeSpec | null {
         const pipeFilled = fillPipeDefaultFields(this.doc.drawing, 0, pipe);
@@ -1822,6 +1892,7 @@ export default class CalculationEngine implements CalculationContext {
                 case EntityType.RISER:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.FIXTURE:
+                case EntityType.GAS_APPLIANCE:
                     break;
                 default:
                     assertUnreachable(object.entity);
@@ -1884,6 +1955,8 @@ export default class CalculationEngine implements CalculationContext {
                         case ValveType.ISOLATION_VALVE:
                         case ValveType.WATER_METER:
                         case ValveType.STRAINER:
+                        case ValveType.GAS_REGULATOR:
+                        case ValveType.FILTER:
                         case ValveType.BALANCING:
                             break;
                         default:
@@ -2300,6 +2373,7 @@ export default class CalculationEngine implements CalculationContext {
                     break;
                 }
                 case EntityType.FIXTURE:
+                case EntityType.GAS_APPLIANCE:
                 case EntityType.RISER:
                 case EntityType.BACKGROUND_IMAGE:
                     break;
@@ -2396,20 +2470,15 @@ export default class CalculationEngine implements CalculationContext {
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity);
                     switch (o.entity.valve.type) {
                         case ValveType.CHECK_VALVE:
-                            break;
                         case ValveType.ISOLATION_VALVE:
-                            break;
                         case ValveType.WATER_METER:
-                            break;
                         case ValveType.STRAINER:
-                            break;
                         case ValveType.RPZD_SINGLE:
-                            break;
                         case ValveType.RPZD_DOUBLE_SHARED:
-                            break;
                         case ValveType.RPZD_DOUBLE_ISOLATED:
-                            break;
                         case ValveType.BALANCING:
+                        case ValveType.GAS_REGULATOR:
+                        case ValveType.FILTER:
                             break;
                         case ValveType.PRV_SINGLE:
                         case ValveType.PRV_DOUBLE:
@@ -2463,6 +2532,9 @@ export default class CalculationEngine implements CalculationContext {
                     }
                     break;
                 }
+                case EntityType.GAS_APPLIANCE:
+                    // TODO: Gas applicance warnings - like not enough gas pressure.
+                    break;
                 default:
                     assertUnreachable(o.entity);
             }

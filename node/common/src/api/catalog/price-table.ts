@@ -69,9 +69,12 @@ export interface EquipmentTable {
     'RPZD': {[key: number]: number};
     'Tempering Valve': number;
     'Balancing Valve': {[key: number]: number};
+    'Gas Meter': number;
+    'Gas Regulator': number;
+    'Gas Filter': number;
 }
 
-export function getEquimentFullName(name: keyof EquipmentTable): string {
+export function getEquipmentFullName(name: keyof EquipmentTable): string {
     switch (name) {
         case "PRV":
             return "PRV - Pressure Reduction Valves";
@@ -83,6 +86,12 @@ export function getEquimentFullName(name: keyof EquipmentTable): string {
             return "Tempering Valves";
         case "Balancing Valve":
             return "Balancing Valves";
+        case "Gas Filter":
+            return "Gas Filters";
+        case "Gas Meter":
+            return "Gas Meter";
+        case "Gas Regulator":
+            return "Gas Regulator";
     }
     assertUnreachable(name);
 }

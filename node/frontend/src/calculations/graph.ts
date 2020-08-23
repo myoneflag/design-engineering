@@ -280,7 +280,7 @@ export default class Graph<N, E> {
                     if (leaveNode) {
                         leaveNode(curr);
                     }
-                    return;
+                    continue;
                 }
             }
 

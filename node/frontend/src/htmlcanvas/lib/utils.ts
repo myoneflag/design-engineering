@@ -38,6 +38,8 @@ import { makeDirectedValveFields } from "../../../../common/src/api/document/ent
 import { makeLoadNodesFields } from "../../../../common/src/api/document/entities/load-node-entity";
 import { makeFlowSourceFields } from "../../../../common/src/api/document/entities/flow-source-entity";
 import { color2rgb, lighten, rgb2style } from "../../lib/utils";
+import {makeGasApplianceFields} from "../../../../common/src/api/document/entities/gas-appliance";
+import {determineConnectableSystemUid} from "../../store/document/entities/lib";
 
 export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
     const floor = context.backgroundLayer.getBackgroundAt(wc);
@@ -100,6 +102,8 @@ export function getEdgeLikeHeightAboveFloorM(entity: EdgeLikeEntity, context: Ca
         case EntityType.FIXTURE:
             const fe = fillFixtureFields(context.drawing, context.catalog, entity);
             return fe.outletAboveFloorM!;
+        case EntityType.GAS_APPLIANCE:
+            return entity.outletAboveFloorM;
         case EntityType.PLANT:
         case EntityType.BIG_VALVE:
         case EntityType.PIPE:
@@ -308,7 +312,7 @@ export function getPlantPressureLossKPA(entity: PlantEntity, drawing: DrawingSta
     return 0;
 }
 
-export function makeEntityFields(entity: DrawableEntityConcrete, document: DocumentState, catalog: Catalog) {
+export function makeEntityFields(entity: DrawableEntityConcrete, document: DocumentState, catalog: Catalog, store: GlobalStore) {
 
     switch (entity.type) {
         case EntityType.BACKGROUND_IMAGE:
@@ -317,6 +321,8 @@ export function makeEntityFields(entity: DrawableEntityConcrete, document: Docum
             return makeValveFields(
                 document.drawing.metadata.flowSystems
             ).filter((p) => p.multiFieldId);
+        case EntityType.GAS_APPLIANCE:
+            return makeGasApplianceFields(document.drawing, entity);
         case EntityType.PIPE:
             return makePipeFields(entity, catalog, document.drawing).filter(
                 (p) => p.multiFieldId
@@ -340,12 +346,14 @@ export function makeEntityFields(entity: DrawableEntityConcrete, document: Docum
         case EntityType.SYSTEM_NODE:
             throw new Error("Invalid object in multi select");
         case EntityType.LOAD_NODE:
-            return makeLoadNodesFields(document.drawing.metadata.flowSystems, entity).filter(
+            const systemUid = determineConnectableSystemUid(store, entity);
+            return makeLoadNodesFields(document,  entity, catalog, systemUid || null).filter(
                 (p) => p.multiFieldId
             );
         case EntityType.FLOW_SOURCE:
             return makeFlowSourceFields(
-                document.drawing.metadata.flowSystems
+                document.drawing.metadata.flowSystems,
+                entity,
             ).filter((p) => p.multiFieldId);
         case EntityType.PLANT:
             return makePlantEntityFields(entity, document.drawing.metadata.flowSystems);

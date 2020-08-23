@@ -53,6 +53,7 @@ export default class CalculationLayer extends LayerImplementation {
                 this.uidsInOrder.map((uid) => context.globalStore.get(uid)!),
                 context.doc.uiState.calculationFilters,
                 context.doc,
+                context.catalog,
             );
 
             const resolutionWL = Math.max(vp.surfaceToWorldLength(LABEL_RESOLUTION_PX), MIN_LABEL_RESOLUTION_WL);
@@ -227,6 +228,7 @@ export default class CalculationLayer extends LayerImplementation {
             case EntityType.SYSTEM_NODE:
             case EntityType.BIG_VALVE:
             case EntityType.FIXTURE:
+            case EntityType.GAS_APPLIANCE:
             case EntityType.DIRECTED_VALVE:
             case EntityType.LOAD_NODE:
             case EntityType.PLANT:
@@ -257,6 +259,7 @@ export default class CalculationLayer extends LayerImplementation {
                 return 120;
             case EntityType.LOAD_NODE:
             case EntityType.FIXTURE:
+            case EntityType.GAS_APPLIANCE:
                 return 110;
             case EntityType.BIG_VALVE:
             case EntityType.PLANT:

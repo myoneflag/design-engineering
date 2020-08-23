@@ -23,7 +23,7 @@ import { ValveType } from "../../../common/src/api/document/entities/directed-va
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
 import BigValve from "../htmlcanvas/objects/big-valve/bigValve";
 import { BigValveType } from "../../../common/src/api/document/entities/big-valve/big-valve-entity";
-import PlantCalculation from 'src/store/document/calculations/plant-calculation';
+import PlantCalculation from "../store/document/calculations/plant-calculation";
 
 export interface ReturnRecord {
     spTree: SPTree<Edge<string, FlowEdge>>;
@@ -563,9 +563,11 @@ function warnMissingBalancingValvesRecursive(engine: CalculationEngine, node: SP
                         case ValveType.ISOLATION_VALVE:
                         case ValveType.WATER_METER:
                         case ValveType.STRAINER:
+                        case ValveType.FILTER:
                             // whatevs, not directed
                             break;
                         case ValveType.CHECK_VALVE:
+                        case ValveType.GAS_REGULATOR:
                         case ValveType.RPZD_SINGLE:
                         case ValveType.RPZD_DOUBLE_SHARED:
                         case ValveType.RPZD_DOUBLE_ISOLATED:

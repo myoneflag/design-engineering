@@ -31,7 +31,7 @@ import PipeEntity, { MutablePipe } from "../../../../common/src/api/document/ent
 import DirectedValveCalculation, { emptyDirectedValveCalculation } from "../../store/document/calculations/directed-valve-calculation";
 import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import uuid from "uuid";
-import { assertUnreachable, ComponentPressureLossMethod } from "../../../../common/src/api/config";
+import {assertUnreachable, ComponentPressureLossMethod, isGas} from "../../../../common/src/api/config";
 import { Catalog } from "../../../../common/src/api/catalog/types";
 import { Coord, DrawableEntity } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, lowerBoundTable, parseCatalogNumberExact } from "../../../../common/src/lib/utils";
@@ -41,6 +41,7 @@ import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-d
 import { EndErrorLine } from "tslint/lib/verify/lines";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import {lowerBoundNumberTable} from "../utils";
+import {decomposeMatrix} from "../utils";
 
 
 @CalculatedObject
@@ -150,6 +151,12 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             case ValveType.BALANCING:
                 this.drawBalancingValve(context);
                 break;
+            case ValveType.GAS_REGULATOR:
+                this.drawGasRegulator(context);
+                break;
+            case ValveType.FILTER:
+                this.drawFilter(context);
+                break;
             default:
                 assertUnreachable(this.entity.valve);
         }
@@ -211,6 +218,51 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         ctx.stroke();
     }
 
+    drawGasRegulator(context: DrawingContext) {
+        const ctx = context.ctx;
+
+
+        ctx.beginPath();
+        ctx.moveTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM * 0.7);
+        ctx.lineTo(VALVE_SIZE_MM, -VALVE_HEIGHT_MM * 0.7);
+        ctx.lineTo(VALVE_SIZE_MM, VALVE_HEIGHT_MM * 0.7);
+        ctx.lineTo(-VALVE_SIZE_MM, -VALVE_HEIGHT_MM * 0.7);
+        ctx.lineTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM * 0.7);
+        ctx.stroke();
+
+        // Umbrella
+        const currAngle = canonizeAngleRad(decomposeMatrix(context.vp.currToSurfaceTransform(ctx)).a);
+        const upsideDown = currAngle > Math.PI / 2 || currAngle < -Math.PI / 2;
+
+        if (upsideDown) {
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, VALVE_HEIGHT_MM);
+            ctx.lineTo(-VALVE_SIZE_MM * 0.7, VALVE_HEIGHT_MM);
+            ctx.bezierCurveTo(-VALVE_SIZE_MM * 0.7, VALVE_HEIGHT_MM * 1.5, VALVE_SIZE_MM * 0.7,
+                VALVE_HEIGHT_MM * 1.5, VALVE_SIZE_MM * 0.7, VALVE_HEIGHT_MM);
+            ctx.lineTo(0, VALVE_HEIGHT_MM);
+            ctx.stroke();
+        } else {
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, -VALVE_HEIGHT_MM);
+            ctx.lineTo(-VALVE_SIZE_MM * 0.7, -VALVE_HEIGHT_MM);
+            ctx.bezierCurveTo(-VALVE_SIZE_MM * 0.7, -VALVE_HEIGHT_MM * 1.5, VALVE_SIZE_MM * 0.7,
+                -VALVE_HEIGHT_MM * 1.5, VALVE_SIZE_MM * 0.7, -VALVE_HEIGHT_MM);
+            ctx.lineTo(0, -VALVE_HEIGHT_MM);
+            ctx.stroke();
+        }
+
+        // Arrow right
+        ctx.strokeStyle = 'rgba(50, 50, 200, 0.5)';
+        ctx.fillStyle = 'rgba(50, 50, 200, 0.2)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(-VALVE_SIZE_MM * 0.5, -VALVE_HEIGHT_MM * 0.7);
+        ctx.lineTo(VALVE_SIZE_MM * 0.7, 0);
+        ctx.lineTo(-VALVE_SIZE_MM * 0.5, VALVE_HEIGHT_MM * 0.7);
+        ctx.fill();
+    }
+
     drawReturnPump(context: DrawingContext) {
         const ctx = context.ctx;
         ctx.beginPath();
@@ -221,6 +273,37 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         ctx.fill();
         ctx.beginPath();
         ctx.arc(0, 0, VALVE_HEIGHT_MM, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+
+    drawFilter(context: DrawingContext) {
+        const ctx = context.ctx;
+        ctx.beginPath();
+        const VALVE_HEIGHT_MM = VALVE_SIZE_MM * 6 / 7;
+
+        // outer box
+        ctx.moveTo(VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
+        ctx.lineTo(VALVE_SIZE_MM, VALVE_HEIGHT_MM);
+        ctx.lineTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM);
+        ctx.lineTo(-VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
+        ctx.closePath();
+        ctx.stroke();
+
+        // mesh
+        ctx.beginPath();
+        ctx.moveTo(-VALVE_SIZE_MM * 3 / 7, -VALVE_HEIGHT_MM);
+        ctx.lineTo(-VALVE_SIZE_MM, - VALVE_HEIGHT_MM / 3);
+        ctx.moveTo(VALVE_SIZE_MM * 1 / 7, -VALVE_HEIGHT_MM);
+        ctx.lineTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM / 3);
+        ctx.moveTo(VALVE_SIZE_MM * 5 / 7, -VALVE_HEIGHT_MM);
+        ctx.lineTo(-VALVE_SIZE_MM * 7 / 7, VALVE_HEIGHT_MM);
+
+        ctx.moveTo(VALVE_SIZE_MM, - VALVE_HEIGHT_MM * 2 / 3);
+        ctx.lineTo(-VALVE_SIZE_MM * 3 / 7, VALVE_HEIGHT_MM);
+        ctx.moveTo(VALVE_SIZE_MM, 0);
+        ctx.lineTo(VALVE_SIZE_MM * 1 / 7, VALVE_HEIGHT_MM);
+        ctx.moveTo(VALVE_SIZE_MM, VALVE_HEIGHT_MM * 2 / 3);
+        ctx.lineTo(VALVE_SIZE_MM * 5 / 7, VALVE_HEIGHT_MM);
         ctx.stroke();
     }
 
@@ -455,6 +538,8 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 }
                 break;
             }
+            case ValveType.GAS_REGULATOR:
+            case ValveType.FILTER:
             case ValveType.PRV_SINGLE:
             case ValveType.PRV_DOUBLE:
             case ValveType.PRV_TRIPLE:
@@ -480,7 +565,6 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         switch (this.entity.valve.type) {
             case ValveType.CHECK_VALVE:
             case ValveType.ISOLATION_VALVE:
-            case ValveType.WATER_METER:
             case ValveType.STRAINER: {
                 const table = context.catalog.valves[this.entity.valve.catalogId];
                 const size = this.largestPipeSizeNominalMM(context);
@@ -561,6 +645,44 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                     getFluidDensityOfSystem(sysUid, context.doc, context.catalog)!,
                     context.doc.drawing.metadata.calculationParams.gravitationalAcceleration,
                 );
+            case ValveType.GAS_REGULATOR: {
+                if (from.connection === this.entity.sourceUid) {
+                    const myPressure = pressureKPA;
+                    const systemUid = determineConnectableSystemUid(context.globalStore, this.entity);
+                    if (systemUid === undefined) {
+                        return null;
+                    }
+
+                    if (myPressure !== null) {
+                        if (myPressure > this.entity.valve.outletPressureKPA!) {
+                            return kpa2head(
+                                myPressure - this.entity.valve.outletPressureKPA!,
+                                getFluidDensityOfSystem(systemUid, context.doc, context.catalog)!,
+                                context.doc.drawing.metadata.calculationParams.gravitationalAcceleration
+                            );
+                        } else {
+                            return 0;
+                        }
+                    } else {
+                        return null;
+                    }
+                } else {
+                    return null;
+                }
+            }
+            case ValveType.WATER_METER:
+            case ValveType.FILTER: {
+                const systemUid = determineConnectableSystemUid(context.globalStore, this.entity);
+                if (systemUid === undefined) {
+                    return null;
+                }
+
+                return kpa2head(
+                    this.entity.valve.pressureDropKPA!,
+                    getFluidDensityOfSystem(systemUid, context.doc, context.catalog)!,
+                    context.doc.drawing.metadata.calculationParams.gravitationalAcceleration
+                );
+            }
             default:
                 assertUnreachable(this.entity.valve);
         }
@@ -576,8 +698,14 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
     friendlyTypeName(catalog: Catalog): string {
         switch (this.entity.valve.type) {
-            case ValveType.CHECK_VALVE:
             case ValveType.ISOLATION_VALVE:
+                const systemUid = determineConnectableSystemUid(this.globalStore, this.entity);
+                const fluid = this.document.drawing.metadata.flowSystems.find((f) => f.uid === systemUid)?.fluid;
+                if (fluid && isGas(fluid, catalog)) {
+                    return 'Isolation Valve';
+                }
+            // noinspection FallThroughInSwitchStatementJS
+            case ValveType.CHECK_VALVE:
             case ValveType.WATER_METER:
             case ValveType.STRAINER:
                 return catalog.valves[this.entity.valve.catalogId].name;
@@ -595,6 +723,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 return "PRV Triple (33.3% Load Each)";
             case ValveType.BALANCING:
                 return "Balancing Valve";
+            case ValveType.GAS_REGULATOR:
+                return "Gas Regulator";
+            case ValveType.FILTER:
+                return "Filter";
         }
         assertUnreachable(this.entity.valve);
     }
@@ -774,18 +906,32 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                         break;
                 }
                 break;
-            case ValveType.WATER_METER:
-                size = lowerBoundNumberTable(context.priceTable.Valves["Water Meter"], size);
-                if (size) {
+            case ValveType.WATER_METER: {
+                const system = determineConnectableSystemUid(context.globalStore, this.entity);
+                if (system && isGas(context.doc.drawing.metadata.flowSystems.find((f) => f.uid === system)?.fluid!, context.catalog)) {
                     return {
-                        cost: context.priceTable.Valves["Water Meter"][size],
+                        cost: context.priceTable.Equipment["Gas Meter"],
                         breakdown: [{
                             qty: 1,
-                            path: `Valves.Water Meter.${size}`,
+                            path: `Equipment.Gas Meter`,
                         }],
                     };
+                } else {
+
+                    size = lowerBoundNumberTable(context.priceTable.Valves["Water Meter"], size);
+                    if (size) {
+                        return {
+                            cost: context.priceTable.Valves["Water Meter"][size],
+                            breakdown: [{
+                                qty: 1,
+                                path: `Valves.Water Meter.${size}`,
+                            }],
+                        };
+                    }
                 }
+
                 break;
+            }
             case ValveType.STRAINER:
                 size = lowerBoundNumberTable(context.priceTable.Valves.Strainer, size);
                 if (size) {
@@ -882,6 +1028,22 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                     };
                 }
                 break;
+            case ValveType.FILTER:
+                return {
+                    cost: context.priceTable.Equipment["Gas Filter"],
+                    breakdown: [{
+                        qty: 1,
+                        path: `Equipment.Gas Filter`,
+                    }],
+                };
+            case ValveType.GAS_REGULATOR:
+                return {
+                    cost: context.priceTable.Equipment["Gas Regulator"],
+                    breakdown: [{
+                        qty: 1,
+                        path: `Equipment.Gas Regulator`,
+                    }],
+                };
             default:
                 assertUnreachable(this.entity.valve);
         }

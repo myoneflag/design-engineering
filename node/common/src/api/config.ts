@@ -1,7 +1,7 @@
-import { Catalog } from "./catalog/types";
-import { Choice, cloneSimple, SelectField } from "../lib/utils";
-import { THERMAL_CONDUCTIVITY } from "./constants/air-properties";
-import { evaluatePolynomial } from "../lib/polynomials";
+import {Catalog, State} from "./catalog/types";
+import {Choice, cloneSimple, SelectField} from "../lib/utils";
+import {THERMAL_CONDUCTIVITY} from "./constants/air-properties";
+import {evaluatePolynomial} from "../lib/polynomials";
 
 export enum SupportedPsdStandards {
     as35002018LoadingUnits = "as35002018LoadingUnits",
@@ -101,6 +101,10 @@ export function isLUStandard(psd: SupportedPsdStandards): psd is SupportedLUPsdS
     return false;
 }
 
+export function isGas(fluidId: string, catalog: Catalog) {
+    const fluid = catalog.fluids[fluidId];
+    return fluid.state === State.GAS;
+}
 
 //
 export const DISPLAY_PSD_METHODS: Choice[] = [
@@ -286,12 +290,13 @@ export const COMPONENT_PRESSURE_LOSS_METHODS: Choice[] = [
 ];
 
 export const LEVEL_HEIGHT_DIFF_M = 3;
-export const CURRENT_VERSION = 15;
+export const CURRENT_VERSION = 16;
 
 export enum StandardFlowSystemUids {
     ColdWater = "cold-water",
     HotWater = "hot-water",
-    WarmWater = "warm-water"
+    WarmWater = "warm-water",
+    Gas = 'gas',
 }
 
 export enum StandardMaterialUids {

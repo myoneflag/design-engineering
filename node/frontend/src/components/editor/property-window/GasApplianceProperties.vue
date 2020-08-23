@@ -2,9 +2,10 @@
     <b-container>
         <b-row>
             <b-col>
-                <h3>{{ title }}</h3>
+                <h3>Gas Appliance ({{ reactiveData.name }})</h3>
             </b-col>
         </b-row>
+        <slot> </slot>
         <PropertiesFieldBuilder
             :fields="fields"
             :reactive-data="reactiveData"
@@ -27,19 +28,17 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
+import { fillRiserDefaults, makeRiserFields } from "../../../../../common/src/api/document/entities/riser-entity";
 import { DocumentState } from "../../../../src/store/document/types";
-import PipeEntity, {
-    fillPipeDefaultFields,
-    makePipeFields
-} from "../../../../../common/src/api/document/entities/pipe-entity";
-import LoadNodeEntity, {
-    makeLoadNodesFields,
-    NodeType
-} from "../../../../../common/src/api/document/entities/load-node-entity";
-import LoadNode from "../../../htmlcanvas/objects/load-node";
-import { fillDefaultLoadNodeFields } from "../../../store/document/entities/fillDefaultLoadNodeFields";
-import {Catalog} from "../../../../../common/src/api/catalog/types";
-import {determineConnectableSystemUid} from "../../../store/document/entities/lib";
+import {
+    fillFixtureFields,
+    makeFixtureFields
+} from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
+import { Catalog } from "../../../../../common/src/api/catalog/types";
+import {
+    fillGasApplianceFields,
+    makeGasApplianceFields
+} from "../../../../../common/src/api/document/entities/gas-appliance";
 
 @Component({
     components: { PropertiesFieldBuilder },
@@ -51,13 +50,12 @@ import {determineConnectableSystemUid} from "../../../store/document/entities/li
         onChange: Function
     }
 })
-export default class LoadNodeProperties extends Vue {
+export default class GasApplianceProperties extends Vue {
     get fields() {
-        const systemUid = determineConnectableSystemUid(this.$props.selectedObject.globalStore, this.$props.selectedEntity);
-        return makeLoadNodesFields(this.document, this.$props.selectedEntity, this.catalog, systemUid || null);
+        return makeGasApplianceFields(this.document.drawing, this.$props.selectedEntity);
     }
 
-    get reactiveData(): LoadNodeEntity {
+    get reactiveData() {
         return this.$props.selectedEntity;
     }
 
@@ -65,26 +63,16 @@ export default class LoadNodeProperties extends Vue {
         return this.$store.getters["document/document"];
     }
 
-    get catalog(): Catalog {
+    get defaultCatalog(): Catalog {
         return this.$store.getters["catalog/default"];
     }
 
-    get defaultData(): LoadNodeEntity {
-        return fillDefaultLoadNodeFields(this.document, this.$props.selectedObject.globalStore, this.reactiveData);
+    get defaultData() {
+        return fillGasApplianceFields(this.reactiveData);
     }
 
-    onCommit() {
-        this.$store.dispatch("document/validateAndCommit");
-    }
-
-    get title() {
-        const entity: LoadNodeEntity = this.$props.selectedEntity;
-        switch (entity.node.type) {
-            case NodeType.LOAD_NODE:
-                return "Loading Node";
-            case NodeType.DWELLING:
-                return "Dwelling Node";
-        }
+    async onCommit() {
+        await this.$store.dispatch("document/validateAndCommit");
     }
 }
 </script>

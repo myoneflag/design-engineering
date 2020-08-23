@@ -9,6 +9,7 @@ import DirectedValve from "../../../src/htmlcanvas/objects/directed-valve";
 import LoadNode from "./load-node";
 import FlowSource from "./flow-source";
 import Plant from "./plant";
+import GasAppliance from "./gas-appliance";
 
 export function registerObjectBuilders() {
     SystemNode.register();
@@ -22,4 +23,5 @@ export function registerObjectBuilders() {
     LoadNode.register();
     FlowSource.register();
     Plant.register();
+    GasAppliance.register();
 }

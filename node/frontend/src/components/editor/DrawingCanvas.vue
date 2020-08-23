@@ -1,4 +1,3 @@
-import {DrawingMode} from "../../htmlcanvas/types";
 <template>
     <drop @drop="onDrop">
         <!--Anything that needs scrolling needs to be up here, outside of canvasFrame.-->
@@ -209,6 +208,7 @@ import {DrawingMode} from "../../htmlcanvas/types";
     import {isCalculated} from "../../store/document/calculations";
     import Onboarding from "../Onboarding.vue";
     import OnboardingState, {ONBOARDING_SCREEN} from "../../store/onboarding/types";
+    import insertGasAppliance from "../../htmlcanvas/tools/insert-gas-appliance";
 
     @Component({
         components: {
@@ -285,6 +285,12 @@ import {DrawingMode} from "../../htmlcanvas/types";
                 .map((e) => this.globalStore.get(e.uid)!);
             if (this.currentLevel) {
                 objects.push(...Object.keys(this.currentLevel.entities).map((e) => this.globalStore.get(e)!));
+                for (const e of Object.keys(this.currentLevel.entities)) {
+                    if (!this.globalStore.get(e)) {
+                        console.log(e);
+                        console.log(this.currentLevel.entities[e]);
+                    }
+                }
             }
 
             objects.forEach((o) => {
@@ -338,7 +344,7 @@ import {DrawingMode} from "../../htmlcanvas/types";
 
                 { type: ValveType.PRV_SINGLE, catalogId: "prv", name: "Pressure Reducing Valve" },
                 { type: ValveType.PRV_DOUBLE, catalogId: "prv", name: "PRV Dual - 50% Load Each" },
-                { type: ValveType.PRV_TRIPLE, catalogId: "prv", name: "PRV Trio - 33% Load Each" }
+                { type: ValveType.PRV_TRIPLE, catalogId: "prv", name: "PRV Trio - 33% Load Each" },
             ].map((a) => {
                 if (a.name === "") {
                     a.name = this.effectiveCatalog.valves[a.catalogId].name;
@@ -1328,14 +1334,16 @@ import {DrawingMode} from "../../htmlcanvas/types";
                     insertFixtureHotCold(this, 0);
                 } else if (params.variant === 'continuous') {
 
-                    insertLoadNode(this, nodeType, 0, 1);
+                    insertLoadNode(this, nodeType, system?.uid || null, 0, 1);
                 } else {
-                    insertLoadNode(this, nodeType);
+                    insertLoadNode(this, nodeType, system?.uid || null);
                 }
             } else if (entityName === EntityType.FLOW_SOURCE) {
                 insertFlowSource(this, system);
             } else if (entityName === EntityType.PLANT) {
                 insertPlant(this, 0, plantType, inletSystemUid, outletSystemUid, title, false);
+            } else if (entityName === EntityType.GAS_APPLIANCE) {
+                insertGasAppliance(this, 0);
             }
         }
 
@@ -1590,6 +1598,7 @@ import {DrawingMode} from "../../htmlcanvas/types";
                     await this.blitBuffer(false);
                 } catch (e) {
                     // Throw exception
+                    console.log(e);
                 }
 
                 this.ctx.resetTransform();

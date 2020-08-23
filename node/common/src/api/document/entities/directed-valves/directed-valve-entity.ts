@@ -104,8 +104,6 @@ export function makeDirectedValveFields(
         }
         case ValveType.BALANCING:
             break;
-        case ValveType.WATER_METER:
-            break;
         case ValveType.STRAINER:
             break;
         case ValveType.PRV_SINGLE:
@@ -153,6 +151,35 @@ export function makeDirectedValveFields(
                     multiFieldId: "isolateOneWhenCalculatingHeadLoss"
                 });
             }
+            break;
+        }
+        case ValveType.GAS_REGULATOR: {
+            fields.push({
+                property: "valve.outletPressureKPA",
+                title: "Outlet Pressure",
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: "outletPressureKPA",
+                requiresInput: true,
+                units: Units.KiloPascals,
+            });
+            break;
+        }
+        case ValveType.WATER_METER:
+        case ValveType.FILTER: {
+            fields.push({
+                property: "valve.pressureDropKPA",
+                title: "Pressure Drop",
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: "pressureDrop",
+                requiresInput: true,
+                units: Units.KiloPascals,
+            });
             break;
         }
         default:

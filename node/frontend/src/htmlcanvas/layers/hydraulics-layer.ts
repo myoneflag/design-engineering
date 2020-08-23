@@ -48,6 +48,7 @@ export default class HydraulicsLayer extends LayerImplementation {
             case EntityType.FLOW_SOURCE:
                 return 120;
             case EntityType.FITTING:
+            case EntityType.GAS_APPLIANCE:
             case EntityType.DIRECTED_VALVE:
             case EntityType.LOAD_NODE:
                 return 100;
@@ -81,6 +82,7 @@ export default class HydraulicsLayer extends LayerImplementation {
             case EntityType.SYSTEM_NODE:
             case EntityType.BIG_VALVE:
             case EntityType.FIXTURE:
+            case EntityType.GAS_APPLIANCE:
             case EntityType.DIRECTED_VALVE:
             case EntityType.LOAD_NODE:
             case EntityType.PLANT:

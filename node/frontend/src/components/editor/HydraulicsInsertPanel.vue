@@ -38,6 +38,7 @@
                     }}</b-button
                 >
                 <b-button
+                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
                     variant="outline-dark"
                     class="insertBtn pipes btn-sm"
                     @click="toggleConnectionPipe"
@@ -50,9 +51,89 @@
                 >
             </b-button-group>
         </b-col>
+
         <b-col>
             <b-button-group>
                 <b-button
+                        v-if="selectedSystem.uid === StandardFlowSystemUids.Gas"
+                        variant="outline-dark"
+                        class="insertBtn gas-regulator btn-sm"
+                        @click="
+                        $emit('insert', {
+                            entityName: entityNames.DIRECTED_VALVE,
+                            system: selectedSystem,
+                            catalogId: '',
+                            valveType: ValveType.GAS_REGULATOR,
+                            valveName: 'Gas Regulator',
+                        })
+                    "
+                        v-b-tooltip.hover
+                        title="Gas Regulator"
+                ></b-button>
+                <b-button
+                        v-if="selectedSystem.uid === StandardFlowSystemUids.Gas"
+                        variant="outline-dark"
+                        class="insertBtn meter btn-sm"
+                        @click="
+                        $emit('insert', {
+                            entityName: entityNames.DIRECTED_VALVE,
+                            system: selectedSystem,
+                            catalogId: 'waterMeter',
+                            valveType: ValveType.WATER_METER,
+                            valveName: 'Meter',
+                        })
+                    "
+                        v-b-tooltip.hover
+                        title="Meter"
+                ></b-button>
+                <b-button
+                        v-if="selectedSystem.uid === StandardFlowSystemUids.Gas"
+                        variant="outline-dark"
+                        class="insertBtn filter btn-sm"
+                        @click="
+                        $emit('insert', {
+                            entityName: entityNames.DIRECTED_VALVE,
+                            system: selectedSystem,
+                            catalogId: '',
+                            valveType: ValveType.FILTER,
+                            valveName: 'Filter',
+                        })
+                    "
+                        v-b-tooltip.hover
+                        title="Filter"
+                ></b-button>
+                <b-button
+                        v-if="selectedSystem.uid === StandardFlowSystemUids.Gas"
+                        variant="outline-dark"
+                        class="insertBtn isolation btn-sm"
+                        @click="
+                        $emit('insert', {
+                            entityName: entityNames.DIRECTED_VALVE,
+                            system: selectedSystem,
+                            catalogId: 'gateValve',
+                            valveType: ValveType.ISOLATION_VALVE,
+                            valveName: 'Isolation',
+                        })
+                    "
+                        v-b-tooltip.hover
+                        title="Isolation Valve"
+                ></b-button>
+                <b-button
+                        v-if="selectedSystem.uid === StandardFlowSystemUids.Gas"
+                        variant="outline-dark"
+                        class="insertBtn gas-appliance btn-sm"
+                        @click="
+                            $emit('insert', {
+                                entityName: entityNames.GAS_APPLIANCE,
+                                system: selectedSystem,
+                            })
+                        "
+                        v-b-tooltip.hover
+                        title="Gas Appliance"
+                ></b-button>
+
+                <b-button
+                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
                     variant="outline-dark"
                     class="insertBtn rpzd-hot-cold btn-sm"
                     @click="toggleRPZD"
@@ -61,6 +142,7 @@
                     title="RPZD (Hot + Cold)"
                 ></b-button>
                 <b-button
+                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
                     variant="outline-dark"
                     class="insertBtn tmv btn-sm"
                     @click="toggleTMV"
@@ -69,6 +151,7 @@
                     title="TMV (Warm + Cold)"
                 ></b-button>
                 <b-button
+                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
                     variant="outline-dark"
                     class="insertBtn tempering-valve btn-sm"
                     @click="toggleTemperingValve"
@@ -86,6 +169,7 @@
                     class="insertEntityBtn"
                     :class="{onboarding: checkOnboardingClass(7)}"
                     variant="outline-dark"
+                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
                 >
                     <b-dropdown-item
                         variant="outline-dark"
@@ -152,6 +236,7 @@
                     class="insertEntityBtn"
                     :class="{onboarding: checkOnboardingClass(8)}"
                     variant="outline-dark"
+                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
                 >
                     <b-dropdown-item
                             v-for="fixture in availableFixtureList"
@@ -174,6 +259,7 @@
                     class="insertEntityBtn"
                     :class="{onboarding: checkOnboardingClass(9)}"
                     variant="outline-dark"
+                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
                 >
                     <b-dropdown-item
                             v-for="valve in availableValves"
@@ -207,7 +293,6 @@
                     </b-dropdown-item>
 
                     <b-dropdown-item
-                            :disabled="document.drawing.metadata.calculationParams.dwellingMethod === null"
                             variant="outline-dark"
                             class="shower btn-sm"
                             @click="$emit('insert', { entityName: entityNames.LOAD_NODE, variant: 'hot-cold-dwelling' })"
@@ -219,16 +304,15 @@
                     <b-dropdown-item
                             variant="outline-dark"
                             class="shower btn-sm"
-                            @click="$emit('insert', { entityName: entityNames.LOAD_NODE, nodeType: NodeType.LOAD_NODE })"
+                            @click="$emit('insert', { entityName: entityNames.LOAD_NODE, nodeType: NodeType.LOAD_NODE,
+                                system: selectedSystem.uid === 'gas' ? selectedSystem : null})"
                     >Fixture Node</b-dropdown-item
                     >
                     <b-dropdown-item
-                            :disabled="document.drawing.metadata.calculationParams.dwellingMethod === null"
                             variant="outline-dark"
                             class="shower btn-sm"
                             @click="$emit('insert', { entityName: entityNames.LOAD_NODE, nodeType: NodeType.DWELLING })"
-                    >Dwelling Node</b-dropdown-item
-                    >
+                    >Dwelling Node</b-dropdown-item>
 
                     <b-dropdown-item
                             variant="outline-dark"
@@ -366,6 +450,7 @@ export default class HydraulicsInsertPanel extends Vue {
     get selectedSystem(): FlowSystemParameters {
         return this.$props.flowSystems[this.selectedSystemId];
     }
+
 
     get document(): DocumentState {
         return this.$store.getters["document/document"];
@@ -595,10 +680,45 @@ export default class HydraulicsInsertPanel extends Vue {
     background-position: center;
 }
 
-    .insertBtn.return-pump {
-        background-image: url("../../../src/assets/object-icons/valves/pump.png");
-        background-size: 25px;
-        background-repeat: no-repeat;
-        background-position: center;
-    }
+.insertBtn.return-pump {
+    background-image: url("../../../src/assets/object-icons/valves/pump.png");
+    background-size: 25px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+.insertBtn.gas-regulator {
+    background-image: url("../../../src/assets/object-icons/valves/regulator.png");
+    background-size: 25px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.insertBtn.meter {
+     background-image: url("../../../src/assets/object-icons/valves/meter.png");
+     background-size: 25px;
+     background-repeat: no-repeat;
+     background-position: center;
+ }
+
+.insertBtn.filter {
+      background-image: url("../../../src/assets/object-icons/valves/filter.png");
+      background-size: 25px;
+      background-repeat: no-repeat;
+      background-position: center;
+  }
+
+.insertBtn.gas-appliance {
+    background-image: url("../../../src/assets/object-icons/items/gas-appliance.png");
+    background-size: 25px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+
+.insertBtn.isolation {
+    background-image: url("../../../src/assets/object-icons/valves/isolation.png");
+    background-size: 25px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
 </style>

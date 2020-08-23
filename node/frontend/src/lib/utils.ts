@@ -167,13 +167,13 @@ export function getValveK(catalogId: string, catalog: Catalog, pipeDiameterMM: n
     return interpolateTable(table, pipeDiameterMM, false, (v) => parseCatalogNumberExact(v.kValue));
 }
 
-export function getEffectiveFilter(objects: BaseBackedObject[], calculationFilters: CalculationFilters,  document: DocumentState) {
+export function getEffectiveFilter(objects: BaseBackedObject[], calculationFilters: CalculationFilters, document: DocumentState, catalog: Catalog) {
     const build: CalculationFilters = {};
 
     const existing = cloneSimple(calculationFilters);
 
     objects.forEach((o) => {
-        const fields = getFields(o.entity, document, o.globalStore);
+        const fields = getFields(o.entity, document, o.globalStore, catalog);
         let wasInserted = false;
         if (!(o.entity.type in build)) {
             Vue.set(build, o.entity.type, {

@@ -1,5 +1,5 @@
 import { DwellingStandardType, PSDStandardType } from "../psd-standard/types";
-import { Catalog } from "../types";
+import {Catalog, State} from "../types";
 
 export const initialCatalog: Catalog = {
     fixtures: {
@@ -2544,7 +2544,7 @@ export const initialCatalog: Catalog = {
         },
         waterMeter: {
             abbreviation: "WM",
-            name: "Water Meter",
+            name: "Meter",
             uid: "waterMeter",
             valvesBySize: {
                 "0-1000000000": {
@@ -3319,6 +3319,88 @@ export const initialCatalog: Catalog = {
             }
         }
     },
+    gasDiversification: {
+        1: 1,
+        2: 0.73,
+        3: 0.702,
+        4: 0.674,
+        5: 0.65,
+        6: 0.624,
+        7: 0.602,
+        8: 0.59,
+        9: 0.559,
+        10: 0.54,
+        11: 0.522,
+        12: 0.506,
+        13: 0.482,
+        14: 0.475,
+        15: 0.46,
+        16: 0.447,
+        17: 0.434,
+        18: 0.421,
+        19: 0.409,
+        20: 0.398,
+        21: 0.387,
+        22: 0.377,
+        23: 0.367,
+        24: 0.357,
+        25: 0.348,
+        26: 0.341,
+        27: 0.332,
+        28: 0.326,
+        29: 0.317,
+        30: 0.310,
+        31: 0.303,
+        32: 0.298,
+        33: 0.292,
+        34: 0.286,
+        35: 0.281,
+        36: 0.276,
+        37: 0.272,
+        38: 0.268,
+        39: 0.264,
+        40: 0.26,
+        41: 0.256,
+        42: 0.252,
+        43: 0.248,
+        44: 0.245,
+        45: 0.242,
+        46: 0.239,
+        47: 0.236,
+        48: 0.233,
+        49: 0.231,
+        50: 0.229,
+        51: 0.227,
+        52: 0.225,
+        53: 0.223,
+        54: 0.221,
+        55: 0.219,
+        56: 0.217,
+        57: 0.216,
+        58: 0.214,
+        59: 0.212,
+        60: 0.211,
+        61: 0.209,
+        62: 0.207,
+        63: 0.206,
+        64: 0.205,
+        65: 0.204,
+        66: 0.203,
+        67: 0.203,
+        68: 0.202,
+        69: 0.201,
+        70: 0.2,
+        71: 0.199,
+        72: 0.199,
+        73: 0.198,
+        74: 0.198,
+        75: 0.197,
+        76: 0.197,
+        77: 0.196,
+        78: 0.196,
+        79: 0.196,
+        80: 0.195,
+    },
     fluids: {
         water: {
             name: "Water",
@@ -3336,8 +3418,9 @@ export const initialCatalog: Catalog = {
                 50: "0.0005474",
                 60: "0.0004656",
                 65: "0.000432",
-                70: "0.0004024"
+                70: "0.0004024",
             },
+            state: State.LIQUID,
             specificHeatByTemperatureKJ_KGK: {
                 0.01: "4.2174",
                 10: "4.191",
@@ -3366,7 +3449,29 @@ export const initialCatalog: Catalog = {
                 340: "3.0781",
                 360: "3.2972",
             }
-        }
+        },
+        LPG: {
+            name: "LPG Gas",
+            densityKGM3: "1.898",
+            dynamicViscosityByTemperature: {
+                0: "0",
+            },
+            specificHeatByTemperatureKJ_KGK: {
+                0: "0",
+            },
+            state: State.GAS,
+        },
+        naturalGas: {
+            name: "Natural Gas",
+            densityKGM3: "0.8",
+            dynamicViscosityByTemperature: {
+                0: "0",
+            },
+            specificHeatByTemperatureKJ_KGK: {
+                0: "0",
+            },
+            state: State.GAS,
+        },
     },
     backflowValves: {
         RPZD: {

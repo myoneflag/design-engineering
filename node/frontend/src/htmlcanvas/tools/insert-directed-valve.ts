@@ -31,7 +31,7 @@ export default function insertDirectedValve(
     system: FlowSystemParameters
 ) {
     let pipe: Pipe | null = null;
-    let flipped = false;
+    let flipped = true;
 
     MainEventBus.$emit(
         "set-tool-handler",
@@ -186,11 +186,19 @@ function createBareValveEntity(
 
 function createBareValve(type: ValveType, catalogId: string): DirectedValveConcrete {
     switch (type) {
-        case ValveType.CHECK_VALVE:
         case ValveType.WATER_METER:
+            return {
+                pressureDropKPA: 0,
+                catalogId: catalogId as any,
+                type
+            };
+        case ValveType.CHECK_VALVE:
+            return {
+                catalogId: catalogId as any,
+                type
+            };
         case ValveType.STRAINER:
             return {
-                isClosed: false,
                 catalogId: catalogId as any,
                 type
             };
@@ -230,6 +238,18 @@ function createBareValve(type: ValveType, catalogId: string): DirectedValveConcr
             return {
                 type,
                 catalogId: catalogId as any,
+            };
+        case ValveType.GAS_REGULATOR:
+            return {
+                type,
+                catalogId: "gasRegulator",
+                outletPressureKPA: null,
+            };
+        case ValveType.FILTER:
+            return {
+                type,
+                catalogId: 'filter',
+                pressureDropKPA: 0,
             };
     }
     assertUnreachable(type);

@@ -2,7 +2,7 @@ import { GetterTree } from "vuex";
 import { RootState } from "../../../src/store/types";
 import CatalogState from "../../../src/store/catalog/types";
 import _ from "lodash";
-import { Choice } from "../../../../common/src/lib/utils";
+import {Choice, parseCatalogNumberExact} from "../../../../common/src/lib/utils";
 
 export const getters: GetterTree<CatalogState, RootState> = {
     loaded(state) {
@@ -32,7 +32,7 @@ export const getters: GetterTree<CatalogState, RootState> = {
     defaultFluidChoices(state) {
         const result: Choice[] = [];
         _.forOwn(state.defaultCatalog.fluids, (val, key) => {
-            result.push({ key, name: val.name });
+            result.push({ key, name: `${val.name} (${(parseCatalogNumberExact(val.densityKGM3)! / 1000).toFixed(5) } s.g.)` });
         });
         return result;
     }

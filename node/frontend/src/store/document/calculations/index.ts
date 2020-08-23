@@ -18,6 +18,7 @@ export function isCalculated(e: DrawableEntityConcrete): e is CalculatableEntity
         case EntityType.FIXTURE:
         case EntityType.LOAD_NODE:
         case EntityType.PLANT:
+        case EntityType.GAS_APPLIANCE:
             return true;
         case EntityType.BACKGROUND_IMAGE:
             return false;

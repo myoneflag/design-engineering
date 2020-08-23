@@ -429,6 +429,9 @@ export const defaultPriceTable: PriceTable = {
             40: 525,
             50: 625,
         },
+        "Gas Filter": 3000,
+        "Gas Regulator": 3000,
+        "Gas Meter": 2000,
     },
     'Fixtures': {
         "Basin": 1655,

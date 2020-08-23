@@ -26,6 +26,7 @@ export default function insertPlant(context: CanvasContext, angle: number, type:
     const inletUid = uuid();
     const outletUid = uuid();
     const returnUid = uuid();
+    const gasNodeUid = uuid();
 
     MainEventBus.$emit(
         "set-tool-handler",
@@ -64,7 +65,7 @@ export default function insertPlant(context: CanvasContext, angle: number, type:
                     name: title,
                     rotation: angle,
 
-                    plant: createPlant(type, outletSystemUid, returnUid),
+                    plant: createPlant(type, outletSystemUid, returnUid, gasNodeUid),
                 };
 
                 context.$store.dispatch("document/addEntity", newEntity);
@@ -116,7 +117,22 @@ export default function insertPlant(context: CanvasContext, angle: number, type:
                         configuration: FlowConfiguration.INPUT
                     };
 
+                    const gasOutlet: SystemNodeEntity = {
+                        center: {
+                            x: (-newEntity.widthMM / 2) * (rightToLeft ? -1 : 1),
+                            y: (newEntity.heightMM / 4)
+                        },
+                        parentUid: plantUid,
+                        type: EntityType.SYSTEM_NODE,
+                        calculationHeightM: null,
+                        systemUid: StandardFlowSystemUids.Gas,
+                        uid: gasNodeUid,
+                        allowAllSystems: false,
+                        configuration: FlowConfiguration.INPUT
+                    };
+
                     context.$store.dispatch("document/addEntity", retlet);
+                    context.$store.dispatch("document/addEntity", gasOutlet);
                 }
 
                 context.globalStore.get(newEntity.uid)!.rebase(context);
@@ -181,13 +197,16 @@ export default function insertPlant(context: CanvasContext, angle: number, type:
     );
 }
 
-function createPlant(type: PlantType, outletSystemUid: string, returnUid: string | null): PlantConcrete {
+function createPlant(type: PlantType, outletSystemUid: string, returnUid: string | null, gasInUid: string | null): PlantConcrete {
     switch (type) {
         case PlantType.RETURN_SYSTEM:
             return {
                 type,
                 returnMinimumTemperatureC: null,
+                gasConsumptionMJH: null,
                 returnUid: returnUid!,
+                gasNodeUid: gasInUid!,
+                gasPressureKPA: null,
                 returnVelocityMS: null,
                 addReturnToPSDFlowRate: true,
             };

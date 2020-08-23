@@ -59,6 +59,7 @@ import { cloneSimple } from "../../../../../common/src/lib/utils";
 import { fillDirectedValveFields } from "../../../store/document/entities/fillDirectedValveFields";
 import { fillDefaultLoadNodeFields } from "../../../store/document/entities/fillDefaultLoadNodeFields";
 import { makeEntityFields } from "../../../htmlcanvas/lib/utils";
+import {fillGasApplianceFields} from "../../../../../common/src/api/document/entities/gas-appliance";
 
 @Component({
     components: { PropertiesFieldBuilder },
@@ -77,7 +78,7 @@ export default class MultiFieldBuilder extends Vue {
         const types = new Set<EntityType>();
         let first = true;
         this.$props.selectedObjects.forEach((obj: BaseBackedObject) => {
-            const fields = this.getEntityFields(obj.entity);
+            const fields = this.getEntityFields(obj.entity).filter((f) => f.multiFieldId);
             if (first) {
                 fields.forEach((f) => {
                     if (!seen.has(f.multiFieldId!)) {
@@ -111,7 +112,8 @@ export default class MultiFieldBuilder extends Vue {
     }
 
     getEntityFields(entity: DrawableEntityConcrete): PropertyField[] {
-        return makeEntityFields(entity, this.document, this.$store.getters['catalog/default']);
+        const store = this.$props.selectedObjects[0].globalStore;
+        return makeEntityFields(entity, this.document, this.$store.getters['catalog/default'], store);
     }
 
     fillObjectFields(obj: BaseBackedObject): DrawableEntityConcrete {
@@ -138,6 +140,8 @@ export default class MultiFieldBuilder extends Vue {
                 return fillPlantDefaults(obj.entity, this.document.drawing);
             case EntityType.FLOW_SOURCE:
                 return fillFlowSourceDefaults(this.document.drawing, obj.entity);
+            case EntityType.GAS_APPLIANCE:
+                return fillGasApplianceFields(obj.entity);
         }
         assertUnreachable(obj.entity);
     }

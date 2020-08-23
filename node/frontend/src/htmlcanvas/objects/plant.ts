@@ -160,6 +160,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         switch (this.entity.plant.type) {
             case PlantType.RETURN_SYSTEM:
                 result.push(this.entity.plant.returnUid);
+                result.push(this.entity.plant.gasNodeUid);
                 break;
             case PlantType.TANK:
                 break;
@@ -216,6 +217,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         switch (e.plant.type) {
             case PlantType.RETURN_SYSTEM:
                 e.plant.returnUid = (this.globalStore.get(e.plant.returnUid) as SystemNode).getCalculationNode(context, this.uid).uid;
+                e.plant.gasNodeUid = (this.globalStore.get(e.plant.gasNodeUid) as SystemNode).getCalculationNode(context, this.uid).uid;
                 break;
             case PlantType.TANK:
                 break;
@@ -306,6 +308,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         const outlet = this.globalStore.get(this.entity.outletUid);
         const inlet = this.globalStore.get(this.entity.inletUid);
         const retlet = this.entity.plant.type === PlantType.RETURN_SYSTEM ? this.globalStore.get(this.entity.plant.returnUid) : undefined;
+        const gaslet = this.entity.plant.type === PlantType.RETURN_SYSTEM ? this.globalStore.get(this.entity.plant.gasNodeUid) : undefined;
 
         if (retlet instanceof SystemNode) {
             if (retlet.entity.systemUid !== this.entity.outletSystemUid) {
@@ -346,6 +349,21 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 Math.abs(inlet.entity.center.x - (-this.entity.widthMM / 2) * (this.entity.rightToLeft ? -1 : 1)) > EPS
             ) {
                 inlet.entity.center.x = (-this.entity.widthMM / 2) * (this.entity.rightToLeft ? -1 : 1);
+            }
+        }
+
+        if (gaslet instanceof SystemNode) {
+
+            if (
+                Math.abs(gaslet.entity.center.x - (this.entity.widthMM / 2) * (this.entity.rightToLeft ? 1 : -1)) > EPS
+            ) {
+                gaslet.entity.center.x = (this.entity.widthMM / 2) * (this.entity.rightToLeft ? 1 : -1);
+            }
+
+            if (
+                Math.abs(gaslet.entity.center.y - (this.entity.heightMM / 4)) > EPS
+            ) {
+                gaslet.entity.center.y = (this.entity.heightMM / 4);
             }
         }
     }

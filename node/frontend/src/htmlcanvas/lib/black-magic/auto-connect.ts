@@ -114,6 +114,7 @@ export class AutoConnector {
                     this.unionFind.join(o.entity.endpointUid[1], o.uid);
                     break;
                 case EntityType.FIXTURE:
+                case EntityType.GAS_APPLIANCE:
                 case EntityType.BIG_VALVE: {
                     const subs: string[] = [];
                     switch (o.entity.type) {
@@ -152,6 +153,11 @@ export class AutoConnector {
                                 subs.push(o.entity.roughIns[suid].uid);
                             }
                             break;
+                        case EntityType.GAS_APPLIANCE:
+                            subs.push(o.entity.inletUid);
+                            break;
+                        default:
+                            assertUnreachable(o.entity);
                     }
 
                     subs.forEach((suid) => {
@@ -247,6 +253,8 @@ export class AutoConnector {
                     return [fixture.outletAboveFloorM!, fixture.outletAboveFloorM!];
                 case EntityType.PLANT:
                     return [entity.heightAboveFloorM, entity.heightAboveFloorM];
+                case EntityType.GAS_APPLIANCE:
+                    return [entity.outletAboveFloorM, entity.outletAboveFloorM];
                 case EntityType.BACKGROUND_IMAGE:
                     throw new Error("entity has no height");
             }
@@ -359,23 +367,34 @@ export class AutoConnector {
                     let heightM: number;
                     switch (po.entity.type) {
                         case EntityType.BIG_VALVE:
+                        case EntityType.GAS_APPLIANCE:
                         case EntityType.FIXTURE:
                             vec = Flatten.vector([0, -1]).rotate((po.toWorldAngleDeg(0) / 180) * Math.PI);
-                            if (po.entity.type === EntityType.FIXTURE) {
-                                const fe = fillFixtureFields(
-                                    this.context.document.drawing,
-                                    this.context.effectiveCatalog,
-                                    po.entity
-                                );
-                                if (me.entity.systemUid === StandardFlowSystemUids.ColdWater) {
-                                    vec = vec.multiply(FIXTURE_WALL_DIST_COLD_MM);
-                                } else {
-                                    vec = vec.multiply(FIXTURE_WALL_DIST_MM);
-                                }
-                                heightM = fe.outletAboveFloorM!;
-                            } else {
-                                vec = vec.multiply(BIG_VALVE_WALL_DIST_MM);
-                                heightM = po.entity.heightAboveFloorM;
+                            heightM = -1; // type inference fix
+                            switch (po.entity.type) {
+                                case EntityType.BIG_VALVE:
+                                    vec = vec.multiply(BIG_VALVE_WALL_DIST_MM);
+                                    heightM = po.entity.heightAboveFloorM;
+                                    break;
+                                case EntityType.FIXTURE:
+                                    const fe = fillFixtureFields(
+                                        this.context.document.drawing,
+                                        this.context.effectiveCatalog,
+                                        po.entity
+                                    );
+                                    if (me.entity.systemUid === StandardFlowSystemUids.ColdWater) {
+                                        vec = vec.multiply(FIXTURE_WALL_DIST_COLD_MM);
+                                    } else {
+                                        vec = vec.multiply(FIXTURE_WALL_DIST_MM);
+                                    }
+                                    heightM = fe.outletAboveFloorM!;
+                                    break;
+                                case EntityType.GAS_APPLIANCE:
+                                    vec = vec.multiply(BIG_VALVE_WALL_DIST_MM);
+                                    heightM = po.entity.outletAboveFloorM;
+                                    break;
+                                default:
+                                    assertUnreachable(po.entity);
                             }
                             break;
                         case EntityType.PLANT:
@@ -836,6 +855,7 @@ export class AutoConnector {
             case EntityType.BIG_VALVE:
             case EntityType.PLANT:
             case EntityType.FIXTURE:
+            case EntityType.GAS_APPLIANCE:
                 return null;
         }
         assertUnreachable(entity);

@@ -89,6 +89,7 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
             case EntityType.BIG_VALVE:
             case EntityType.LOAD_NODE:
             case EntityType.FIXTURE:
+            case EntityType.GAS_APPLIANCE:
             case EntityType.DIRECTED_VALVE:
             case EntityType.PLANT:
                 const center = po.toWorldCoord();

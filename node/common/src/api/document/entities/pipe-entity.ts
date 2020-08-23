@@ -4,6 +4,8 @@ import { Color, COLORS, DrawableEntity, DrawingState, NetworkType, SelectedMater
 import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../lib/utils";
 import { Catalog } from "../../catalog/types";
 import { convertPipeDiameterFromMetric, Units } from "../../../lib/measurements";
+import {StandardFlowSystemUids} from "../../config";
+import {PlantType} from "./plants/plant-types";
 
 export default interface PipeEntity extends DrawableEntity {
     type: EntityType.PIPE;
@@ -71,7 +73,7 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
                 choices: [
                     { name: "Riser", key: NetworkType.RISERS, disabled: true },
                     { name: "Reticulation", key: NetworkType.RETICULATIONS, disabled: false },
-                    { name: "Connection", key: NetworkType.CONNECTIONS, disabled: false }
+                    { name: "Connection", key: NetworkType.CONNECTIONS, disabled: result.systemUid !== StandardFlowSystemUids.Gas }
                 ]
             }
         },

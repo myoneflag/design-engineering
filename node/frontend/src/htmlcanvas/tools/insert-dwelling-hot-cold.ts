@@ -52,7 +52,9 @@ export default function insertDwellingHotCold(context: CanvasContext, rotationDE
                     node: {
                         type: NodeType.DWELLING,
                         dwellings: 1,
-                        continuousFlowLS: 0
+                        gasFlowRateMJH: 0,
+                        continuousFlowLS: 0,
+                        gasPressureKPA: 0,
                     },
                     systemUidOption: StandardFlowSystemUids.HotWater,
                     center: { x: hotLoc.x, y: hotLoc.y },
@@ -70,7 +72,9 @@ export default function insertDwellingHotCold(context: CanvasContext, rotationDE
                     node: {
                         type: NodeType.DWELLING,
                         dwellings: 1,
-                        continuousFlowLS: 0
+                        gasFlowRateMJH: 0,
+                        continuousFlowLS: 0,
+                        gasPressureKPA: 0,
                     },
                     systemUidOption: StandardFlowSystemUids.ColdWater,
                     center: { x: coldLoc.x, y: coldLoc.y },

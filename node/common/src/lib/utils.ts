@@ -218,7 +218,7 @@ export const EPS = 1e-8;
 
 export interface SelectField {
     value: number | string; 
-    text: string
+    text: string;
 }
 
 export type DeepPartial<T> = {

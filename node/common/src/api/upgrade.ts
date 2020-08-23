@@ -1,195 +1,18 @@
-import { DrawingState, FlowSystemParametersV8, FlowSystemParametersV9, initialDrawing } from "./document/drawing";
-import { EntityType } from "./document/entities/types";
-import { NodeType } from "./document/entities/load-node-entity";
-import { InsulationJackets, InsulationMaterials, StandardFlowSystemUids, SupportedPsdStandards } from "./config";
-import PlantEntity, { PlantEntityV8 } from "./document/entities/plants/plant-entity";
-import { PlantConcrete, PlantType, PressureMethod } from "./document/entities/plants/plant-types";
-import { DrawableEntityConcrete } from "./document/entities/concrete-entity";
-import { FlowConfiguration } from "./document/entities/big-valve/big-valve-entity";
-import uuid from "uuid";
-import { cloneSimple } from "../lib/utils";
-import { FlowSourceEntityV11 } from "./document/entities/flow-source-entity";
+import {DrawingState, initialDrawing} from "./document/drawing";
+import {EntityType} from "./document/entities/types";
+import {InsulationJackets, InsulationMaterials, StandardFlowSystemUids, SupportedPsdStandards} from "./config";
+import {PlantType} from "./document/entities/plants/plant-types";
+import {cloneSimple} from "../lib/utils";
+import {FlowSourceEntityV11} from "./document/entities/flow-source-entity";
+import uuid from 'uuid';
+import {FlowConfiguration, SystemNodeEntity} from "./document/entities/big-valve/big-valve-entity";
+import {ValveType} from "./document/entities/directed-valves/valve-types";
+import {NodeType} from "./document/entities/load-node-entity";
 
 // This file is for managing upgrades between versions.
 // Remember to copy this directory before developing a major change, and bump the api version number, then
 // implement the upgrade method below.
 // Remember to also add this function to the upgrade function in default.
-
-export function upgrade4to5(original: DrawingState) {
-    // Plants entity was updated
-    for (const level of Object.values(original.levels)) {
-        const entities = level.entities;
-        for (const e of Object.values(entities)) {
-            if (e.type === EntityType.SYSTEM_NODE) {
-                if (e.allowAllSystems === undefined) {
-                    e.allowAllSystems = false;
-                }
-            } else if (e.type === EntityType.FIXTURE) {
-                for (const ri of Object.values(e.roughIns)) {
-                    if (ri.allowAllSystems === undefined) {
-                        ri.allowAllSystems = false;
-                    }
-                }
-            }
-        }
-    }
-}
-
-export function upgrade5to6(original: DrawingState) {
-    // drawing parameters
-    if (original.metadata.calculationParams.componentPressureLossMethod === undefined) {
-        original.metadata.calculationParams.componentPressureLossMethod =
-            initialDrawing.metadata.calculationParams.componentPressureLossMethod;
-    }
-
-    if (original.metadata.calculationParams.pipePressureLossAddOnPCT === undefined) {
-        original.metadata.calculationParams.pipePressureLossAddOnPCT =
-            initialDrawing.metadata.calculationParams.pipePressureLossAddOnPCT;
-    }
-}
-
-export function upgrade6to7(original: DrawingState) {
-    if (original.metadata.calculationParams.ringMainCalculationMethod === undefined) {
-        original.metadata.calculationParams.componentPressureLossMethod =
-            initialDrawing.metadata.calculationParams.componentPressureLossMethod;
-    }
-}
-
-export function upgrade7to8(original: DrawingState) {
-    for (const level of Object.values(original.levels)) {
-        const entities = level.entities;
-        for (const e of Object.values(entities)) {
-            if (e.type === EntityType.LOAD_NODE) {
-                if (e.node.type === NodeType.DWELLING) {
-                    if (e.node.continuousFlowLS === undefined) {
-                        e.node.continuousFlowLS = 0;
-                    }
-                }
-            }
-        }
-    }
-}
-
-// return circulations
-export function upgrade8to9(original: DrawingState) {
-    for (const fs of original.metadata.flowSystems) {
-        if (fs.hasReturnSystem === undefined) {
-            const old = fs as FlowSystemParametersV8;
-            const upgraded: FlowSystemParametersV9 = {
-                color: old.color,
-                fluid: old.fluid,
-                name: old.name,
-                networks: old.networks,
-                temperature: old.temperature,
-                uid: old.uid,
-
-
-                hasReturnSystem: old.uid === StandardFlowSystemUids.HotWater,
-                returnIsInsulated: old.uid === StandardFlowSystemUids.HotWater,
-                returnMaxVelocityMS: 1,
-                insulationMaterial: InsulationMaterials.calciumSilicate,
-                insulationThicknessMM: 25,
-            };
-            Object.assign(fs, upgraded);
-        }
-    }
-
-    if (original.metadata.calculationParams.windSpeedForHeatLossMS === undefined) {
-        original.metadata.calculationParams.windSpeedForHeatLossMS = 0;
-    }
-
-    let hotPlants = 0;
-    let plants = 0;
-    for (const level of Object.values(original.levels)) {
-        const entitiesToAdd: DrawableEntityConcrete[] = [];
-
-        for (const e of Object.values(level.entities)) {
-            if (e.type === EntityType.PLANT) {
-                plants ++;
-                if (e.plant === undefined) {
-                    const old = e as unknown as PlantEntityV8;
-
-                    let plant: PlantConcrete;
-                    if (old.outletSystemUid === StandardFlowSystemUids.HotWater && old.inletSystemUid === StandardFlowSystemUids.ColdWater) {
-                        const returnUid = uuid();
-                        entitiesToAdd.push({
-                            center: {
-                                x: (old.widthMM / 2) * (old.rightToLeft ? -1 : 1),
-                                y: (old.heightMM / 4)
-                            },
-                            parentUid: old.uid,
-                            type: EntityType.SYSTEM_NODE,
-                            calculationHeightM: null,
-                            systemUid: e.outletSystemUid,
-                            uid: returnUid,
-                            allowAllSystems: false,
-                            configuration: FlowConfiguration.INPUT
-                        });
-
-                        plant = {
-                            type: PlantType.RETURN_SYSTEM,
-                            returnMinimumTemperatureC: null,
-                            returnUid,
-                            returnVelocityMS: null,
-                            addReturnToPSDFlowRate: true,
-                        };
-                    } else if (old.pressureMethod === PressureMethod.PUMP_DUTY) {
-                        plant = {
-                            type: PlantType.PUMP,
-                            pressureLoss: {
-                                pressureMethod: PressureMethod.PUMP_DUTY,
-                                pumpPressureKPA: old.pumpPressureKPA,
-                            },
-                        };
-                    } else if (old.pressureMethod === PressureMethod.STATIC_PRESSURE) {
-                        plant = {
-                            type: PlantType.TANK,
-                            pressureLoss: {
-                                pressureMethod: PressureMethod.STATIC_PRESSURE,
-                                staticPressureKPA: old.staticPressureKPA,
-                            }
-                        };
-                    } else {
-                        plant = {
-                            type: PlantType.CUSTOM,
-                            pressureLoss: {
-                                pressureMethod: old.pressureMethod,
-                                pumpPressureKPA: old.pumpPressureKPA,
-                                pressureLossKPA: old.pressureLossKPA,
-                                staticPressureKPA: old.staticPressureKPA,
-                            }
-                        };
-                    }
-
-                    const upgraded: PlantEntity = {
-                        center: old.center,
-                        heightAboveFloorM: old.heightAboveFloorM,
-                        heightMM: old.heightMM,
-                        inletSystemUid: old.inletSystemUid,
-                        inletUid: old.inletUid,
-                        name: old.name,
-                        outletSystemUid: old.outletSystemUid,
-                        outletTemperatureC: null,
-                        outletUid: old.outletUid,
-                        parentUid: old.parentUid,
-                        plant,
-                        rightToLeft: old.rightToLeft,
-                        rotation: old.rotation,
-                        type: old.type,
-                        uid: old.uid,
-                        widthMM: old.widthMM,
-                    };
-
-                    Object.assign(old, upgraded);
-                }
-            }
-        }
-
-        for (const e of entitiesToAdd) {
-            level.entities[e.uid] = e;
-        }
-    }
-}
 
 // upgrade 9 to 10
 // insulation jackets in flow systems
@@ -253,5 +76,94 @@ export function upgrade13to14(original: DrawingState) {
 export function upgrade14to15(original: DrawingState) {
     if (original.metadata.priceTable === undefined) {
         original.metadata.priceTable = cloneSimple(initialDrawing.metadata.priceTable);
+    }
+}
+
+export function upgrade15to16(original: DrawingState) {
+    if (!original.metadata.flowSystems.find((f) => f.uid === StandardFlowSystemUids.Gas)) {
+        original.metadata.flowSystems.push(
+            {
+                name: "Gas",
+                temperature: 20,
+                color: { hex: "#FCDC00" },
+                uid: StandardFlowSystemUids.Gas,
+                fluid: "naturalGas",
+                hasReturnSystem: false,
+                returnIsInsulated: false,
+                returnMaxVelocityMS: 1,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationJacket: InsulationJackets.allServiceJacket,
+                insulationThicknessMM: 25,
+
+                networks: {
+                    RISERS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 20,
+                        material: "copperTypeB"
+                    },
+                    RETICULATIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 20,
+                        material: "copperTypeB"
+                    },
+                    CONNECTIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 3,
+                        material: "pexSdr74"
+                    }
+                }
+            }
+        );
+    }
+
+    for (const level of Object.values(original.levels)) {
+        const entities = level.entities;
+        for (const e of Object.values(entities)) {
+            if (e.type === EntityType.PLANT) {
+                if (e.plant.type === PlantType.RETURN_SYSTEM) {
+                    // Add the missing gas entity
+                    if (!e.plant.gasNodeUid) {
+                        const newUid = uuid();
+
+                        const newEntity: SystemNodeEntity = {
+                            center: {
+                                x: (-e.widthMM / 2) * (e.rightToLeft ? -1 : 1),
+                                y: (e.heightMM / 4)
+                            },
+                            parentUid: e.uid,
+                            type: EntityType.SYSTEM_NODE,
+                            calculationHeightM: null,
+                            systemUid: StandardFlowSystemUids.Gas,
+                            uid: newUid,
+                            allowAllSystems: false,
+                            configuration: FlowConfiguration.INPUT
+                        };
+
+                        level.entities[newUid] = newEntity;
+                    }
+
+                    if (e.plant.gasConsumptionMJH === undefined) {
+                        e.plant.gasConsumptionMJH = null;
+                    }
+
+                    if (e.plant.gasPressureKPA === undefined) {
+                        e.plant.gasPressureKPA = null;
+                    }
+                }
+            } else if (e.type === EntityType.DIRECTED_VALVE) {
+                if (e.valve.type === ValveType.WATER_METER) {
+                    if (e.valve.pressureDropKPA === undefined) {
+                        e.valve.pressureDropKPA = null;
+                    }
+                }
+            } else if (e.type === EntityType.LOAD_NODE) {
+                if (e.node.gasFlowRateMJH === undefined) {
+                    e.node.gasFlowRateMJH = 0;
+                }
+                if (e.node.gasPressureKPA === undefined) {
+                    e.node.gasPressureKPA = 0;
+                }
+            }
+        }
     }
 }

@@ -4,7 +4,7 @@ import { Calculation, PsdCalculation } from "../../../../src/store/document/calc
 import PipeEntity, { fillPipeDefaultFields } from "../../../../../common/src/api/document/entities/pipe-entity";
 import { getPsdUnitName, PsdProfile } from "../../../calculations/utils";
 import set = Reflect.set;
-import { assertUnreachable, isGermanStandard } from "../../../../../common/src/api/config";
+import {assertUnreachable, isGas, isGermanStandard} from "../../../../../common/src/api/config";
 import {Catalog, Manufacturer, PipeManufacturer} from "../../../../../common/src/api/catalog/types";
 import { DrawingState, MeasurementSystem, UnitsParameters } from "../../../../../common/src/api/document/drawing";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
@@ -19,6 +19,7 @@ export enum NoFlowAvailableReason {
     LOADING_UNITS_OUT_OF_BOUNDS = "LOADING_UNITS_OUT_OF_BOUNDS",
     NO_SUITABLE_PIPE_SIZE = "NO_SUITABLE_PIPE_SIZE",
     INVALID_RETURN_NETWORK = "INVALID_RETURN_NETWORK",
+    GAS_SUPPLY_PRESSURE_TOO_LOW = 'GAS_SUPPLY_PRESSURE_TOO_LOW',
     NONE = '',
 }
 
@@ -52,6 +53,8 @@ export default interface PipeCalculation extends PsdCalculation, Calculation {
     velocityRealMS: number | null;
 
     temperatureRange: string | null;
+
+    gasMJH: number | null;
 }
 
 export function makePipeCalculationFields(
@@ -62,11 +65,13 @@ export function makePipeCalculationFields(
 ): CalculationField[] {
     const psdUnit = getPsdUnitName(settings.metadata.calculationParams.psdMethod);
 
+    const pipeIsGas = catalog && isGas(settings.metadata.flowSystems.find((f) => f.uid === entity.systemUid)!.fluid, catalog);
+
     let materialName = "";
     if (catalog) {
         const pipe = fillPipeDefaultFields(settings, 0, entity);
         const manufacturer = settings.metadata.catalog.pipes.find((pipeObj: SelectedMaterialManufacturer) => pipeObj.uid === pipe.material)?.manufacturer || 'generic';
-        const abbreviation = manufacturer !== 'generic' 
+        const abbreviation = manufacturer !== 'generic'
             && catalog.pipes[pipe.material!].manufacturer.find((manufacturerObj: PipeManufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation
             || catalog.pipes[pipe.material!].abbreviation;
         materialName = " (" + abbreviation + ")";
@@ -76,18 +81,20 @@ export function makePipeCalculationFields(
 
     const result: CalculationField[] = [];
 
-    if (pCalc.totalPeakFlowRateLS) {
-        result.push(
-            {
-                property: "PSDFlowRateLS",
-                title: "Flow Rate + Spare",
-                short: "",
-                units: Units.LitersPerSecond,
-                category: FieldCategory.FlowRate,
-                systemUid: entity.systemUid,
-                defaultEnabled: true
-            }
-        );
+    if (!pipeIsGas) {
+        if (pCalc.totalPeakFlowRateLS) {
+            result.push(
+                {
+                    property: "PSDFlowRateLS",
+                    title: "Flow Rate + Spare",
+                    short: "",
+                    units: Units.LitersPerSecond,
+                    category: FieldCategory.FlowRate,
+                    systemUid: entity.systemUid,
+                    defaultEnabled: true
+                }
+            );
+        }
     }
 
     result.push(
@@ -102,7 +109,7 @@ export function makePipeCalculationFields(
         },
     );
 
-    if (pCalc.configuration === Configuration.RETURN) {
+    if (pCalc.configuration === Configuration.RETURN && !pipeIsGas) {
         result.push(
             {
                 property: "rawReturnFlowRateLS",
@@ -151,15 +158,33 @@ export function makePipeCalculationFields(
             category: FieldCategory.Size,
             systemUid: entity.systemUid
         },
-        {
-            property: "pressureDropKPA",
-            title: "Pressure Drop",
-            short: "Drop",
-            units: Units.KiloPascals,
-            category: FieldCategory.Pressure,
-            systemUid: entity.systemUid
-        },
+    );
 
+    if (pipeIsGas) {
+        result.push(
+            {
+                property: "gasMJH",
+                title: "Flow Rate + Spare",
+                short: "",
+                units: Units.MegajoulesPerHour,
+                category: FieldCategory.FlowRate,
+                systemUid: entity.systemUid
+            },
+        );
+    } else {
+        result.push(
+            {
+                property: "pressureDropKPA",
+                title: "Pressure Drop",
+                short: "Drop",
+                units: Units.KiloPascals,
+                category: FieldCategory.Pressure,
+                systemUid: entity.systemUid
+            },
+        );
+    }
+
+    result.push(
         {
             property: "lengthM",
             title: "Length",
@@ -196,26 +221,30 @@ export function makePipeCalculationFields(
         }*/
     );
 
-    if (settings.metadata.calculationParams.psdMethod !== null) {
-        result.push({
-            property: "psdUnits.units",
-            title: psdUnit.name,
-            short: psdUnit.abbreviation,
-            units: Units.None,
-            category: FieldCategory.LoadingUnits,
-            systemUid: entity.systemUid
-        });
-    }
+    if (!pipeIsGas) {
 
-    if (settings.metadata.calculationParams.dwellingMethod !== null) {
-        result.push({
-            property: "psdUnits.dwellings",
-            title: "Dwellings",
-            short: "dwlg",
-            units: Units.None,
-            category: FieldCategory.LoadingUnits,
-            systemUid: entity.systemUid
-        });
+        if (settings.metadata.calculationParams.psdMethod !== null) {
+            result.push({
+                property: "psdUnits.units",
+                title: psdUnit.name,
+                short: psdUnit.abbreviation,
+                units: Units.None,
+                category: FieldCategory.LoadingUnits,
+                systemUid: entity.systemUid
+            });
+        }
+
+        if (settings.metadata.calculationParams.dwellingMethod !== null) {
+            result.push({
+                property: "psdUnits.dwellings",
+                title: "Dwellings",
+                short: "dwlg",
+                units: Units.None,
+                category: FieldCategory.LoadingUnits,
+                systemUid: entity.systemUid
+            });
+        }
+
     }
 
     return result;
@@ -226,6 +255,8 @@ export function emptyPipeCalculation(): PipeCalculation {
         cost: null,
         costBreakdown: null,
         expandedEntities: null,
+
+        gasMJH: null,
 
         totalPeakFlowRateLS: null,
         heightM: null,

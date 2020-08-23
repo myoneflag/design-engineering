@@ -43,16 +43,17 @@ import SettingsFieldBuilder from "../../../src/components/editor/lib/SettingsFie
 import uuid from "uuid";
 import FlowSystemPicker from "../../../src/components/editor/FlowSystemPicker.vue";
 import * as _ from "lodash";
-import { initialDrawing } from "../../../../common/src/api/document/drawing";
+import {initialDrawing, NetworkType} from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import {
     getInsulationMaterialChoicesWithThermalConductivity,
     INSULATION_JACKET_CHOICES,
     INSULATION_MATERIAL_CHOICES, InsulationJackets,
     InsulationMaterials,
-    INSULATION_THICKNESS_MMKEMBLA
+    INSULATION_THICKNESS_MMKEMBLA, StandardFlowSystemUids, isGas
 } from "../../../../common/src/api/config";
 import { Units } from "../../../../common/src/lib/measurements";
+import {Catalog} from "../../../../common/src/api/catalog/types";
 
 @Component({
     components: { SettingsFieldBuilder, FlowSystemPicker },
@@ -68,15 +69,26 @@ export default class FlowSystems extends Vue {
     selectedSystemId: number = 0;
 
     get fields(): any[][] {
+        const selectedIsGas = isGas(this.selectedSystem.fluid, this.catalog);
         const fields = [
             ["name", "System Name", "text"],
             ["fluid", "Fluid", "choice", this.$store.getters["catalog/defaultFluidChoices"]],
-            ["temperature", "Temperature", "range", 10, 100, null, Units.Celsius],
-            ["color", "Colour", "color"],
-            ["hasReturnSystem", "Has Return System", "yesno"],
         ];
+        if (!selectedIsGas) {
+            fields.push(
+                ["temperature", "Temperature", "range", 10, 100, null, Units.Celsius],
+            );
+        }
+        fields.push(
+            ["color", "Colour", "color"],
+        );
 
-        if (this.selectedSystem.hasReturnSystem) {
+        if (!selectedIsGas) {
+            fields.push(
+                ["hasReturnSystem", "Has Return System", "yesno"],
+            )
+        }
+        if (this.selectedSystem.hasReturnSystem && !selectedIsGas) {
             fields.push(
                 ['returnIsInsulated', "Return Is Insulated", "yesno"],
             );
@@ -114,6 +126,10 @@ export default class FlowSystems extends Vue {
         );
 
         for (const netKey of Object.keys(this.selectedSystem.networks)) {
+            if (netKey === NetworkType.CONNECTIONS && selectedIsGas) {
+                continue;
+            }
+
             fields.push(
                 [netKey, _.startCase(netKey.toLowerCase()), "title4"],
                 ["networks." + netKey + ".velocityMS", "Velocity", "number", Units.MetersPerSecond],
@@ -132,6 +148,10 @@ export default class FlowSystems extends Vue {
 
     get document(): DocumentState {
         return this.$store.getters["document/document"];
+    }
+
+    get catalog(): Catalog {
+        return this.$store.getters['catalog/default'];
     }
 
     get flowSystems() {

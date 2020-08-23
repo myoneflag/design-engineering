@@ -360,6 +360,7 @@ export abstract class LayerImplementation implements Layer {
             case EntityType.BACKGROUND_IMAGE:
                 return 0;
             case EntityType.FIXTURE:
+            case EntityType.GAS_APPLIANCE:
             case EntityType.LOAD_NODE:
             case EntityType.PLANT:
             case EntityType.FITTING:
@@ -398,6 +399,7 @@ export abstract class LayerImplementation implements Layer {
                 case EntityType.FITTING:
                 case EntityType.RISER:
                 case EntityType.FIXTURE:
+                case EntityType.GAS_APPLIANCE:
                 case EntityType.LOAD_NODE:
                 case EntityType.FLOW_SOURCE:
                 case EntityType.PLANT:

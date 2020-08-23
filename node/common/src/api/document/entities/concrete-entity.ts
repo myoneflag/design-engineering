@@ -10,6 +10,7 @@ import FlowSourceEntity from "./flow-source-entity";
 import PlantEntity from "./plants/plant-entity";
 import { EntityType } from "./types";
 import { assertUnreachable } from "../../config";
+import GasApplianceEntity from "./gas-appliance";
 
 export type DrawableEntityConcrete =
     | BackgroundEntity
@@ -22,7 +23,8 @@ export type DrawableEntityConcrete =
     | DirectedValveEntity
     | LoadNodeEntity
     | FlowSourceEntity
-    | PlantEntity;
+    | PlantEntity
+    | GasApplianceEntity;
 
 export type ConnectableEntityConcrete =
     | FittingEntity
@@ -44,7 +46,8 @@ export type CenteredEntityConcrete =
     | DirectedValveEntity
     | LoadNodeEntity
     | FlowSourceEntity
-    | PlantEntity;
+    | PlantEntity
+    | GasApplianceEntity;
 
 export type InvisibleNodeEntityConcrete = SystemNodeEntity;
 
@@ -58,9 +61,10 @@ export type CalculatableEntityConcrete =
     | SystemNodeEntity
     | LoadNodeEntity
     | FlowSourceEntity
-    | PlantEntity;
+    | PlantEntity
+    | GasApplianceEntity;
 
-export type EdgeLikeEntity = PipeEntity | FixtureEntity | BigValveEntity | PlantEntity;
+export type EdgeLikeEntity = PipeEntity | FixtureEntity | BigValveEntity | PlantEntity | GasApplianceEntity;
 
 export function isConnectableEntityType(eType: EntityType) {
     switch (eType) {
@@ -74,6 +78,7 @@ export function isConnectableEntityType(eType: EntityType) {
             return true;
         case EntityType.BIG_VALVE:
         case EntityType.FIXTURE:
+        case EntityType.GAS_APPLIANCE:
         case EntityType.PLANT:
         case EntityType.BACKGROUND_IMAGE:
         case EntityType.PIPE:
@@ -93,6 +98,7 @@ export function isConnectableEntity(e: DrawableEntityConcrete): e is Connectable
             return true;
         case EntityType.BIG_VALVE:
         case EntityType.FIXTURE:
+        case EntityType.GAS_APPLIANCE:
         case EntityType.PLANT:
         case EntityType.BACKGROUND_IMAGE:
         case EntityType.PIPE:
@@ -111,6 +117,7 @@ export function isCenteredEntity(e: DrawableEntityConcrete): e is CenteredEntity
         case EntityType.LOAD_NODE:
         case EntityType.BIG_VALVE:
         case EntityType.FIXTURE:
+        case EntityType.GAS_APPLIANCE:
         case EntityType.PLANT:
             return true;
         case EntityType.BACKGROUND_IMAGE:
@@ -132,6 +139,7 @@ export function hasExplicitSystemUid(e: DrawableEntityConcrete): e is HasExplici
         case EntityType.LOAD_NODE:
         case EntityType.BIG_VALVE:
         case EntityType.FIXTURE:
+        case EntityType.GAS_APPLIANCE:
         case EntityType.PLANT:
         case EntityType.BACKGROUND_IMAGE:
             return false;
@@ -146,6 +154,7 @@ export function isCentered(type: EntityType): boolean {
         case EntityType.RETURN:
         case EntityType.BIG_VALVE:
         case EntityType.FIXTURE:
+        case EntityType.GAS_APPLIANCE:
         case EntityType.FLOW_SOURCE:
         case EntityType.PLANT:
         case EntityType.LOAD_NODE:

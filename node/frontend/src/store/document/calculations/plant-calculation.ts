@@ -1,9 +1,8 @@
-import { FieldCategory, CalculationField} from "../../../../src/store/document/calculations/calculation-field";
-import { Calculation } from "../../../../src/store/document/calculations/types";
-import FixtureEntity from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
-import { DocumentState } from "../types";
-import { Units } from "../../../../../common/src/lib/measurements";
-import { StandardFlowSystemUids } from "../../../../../common/src/api/config";
+import {CalculationField, FieldCategory} from "../../../../src/store/document/calculations/calculation-field";
+import {Calculation} from "../../../../src/store/document/calculations/types";
+import {Units} from "../../../../../common/src/lib/measurements";
+import PlantEntity from "../../../../../common/src/api/document/entities/plants/plant-entity";
+import {PlantType} from "../../../../../common/src/api/document/entities/plants/plant-types";
 
 export default interface PlantCalculation extends Calculation {
     pressureDropKPA: number | null;
@@ -11,10 +10,13 @@ export default interface PlantCalculation extends Calculation {
     circulationPressureLoss: number | null;
     heatLossKW: number | null;
     manufacturer: string;
+
+    gasFlowRateMJH: number | null;
+    gasPressureKPA: number | null;
 }
 
-export function makePlantCalculationFields(): CalculationField[] {
-    return [
+export function makePlantCalculationFields(value: PlantEntity): CalculationField[] {
+    const results: CalculationField[] = [
         {
             property: "pressureDropKPA",
             title: "Pressure Drop",
@@ -46,6 +48,29 @@ export function makePlantCalculationFields(): CalculationField[] {
             category: FieldCategory.HeatLoss
         },
     ];
+
+    if (value.plant.type === PlantType.RETURN_SYSTEM) {
+        results.push(
+            {
+                property: "gasFlowRateMJH",
+                title: "Gas Demand",
+                short: "gas",
+                units: Units.MegajoulesPerHour,
+                category: FieldCategory.FlowRate,
+            },
+
+            {
+                property: "gasPressureKPA",
+                title: "Gas Pressure",
+                short: "gas",
+                units: Units.KiloPascals,
+                category: FieldCategory.FlowRate,
+            },
+        );
+    }
+
+
+    return results;
 }
 
 export function emptyPlantCalculation(): PlantCalculation {
@@ -53,6 +78,9 @@ export function emptyPlantCalculation(): PlantCalculation {
         cost: null,
         costBreakdown: null,
         expandedEntities: null,
+
+        gasFlowRateMJH: null,
+        gasPressureKPA: null,
 
         pressureDropKPA: null,
         circulationFlowRateLS: null,

@@ -3,7 +3,7 @@ import Excel, {Worksheet} from 'exceljs';
 import {User} from "../../../../../common/src/models/User";
 import {
     EquipmentTable,
-    FittingsTable, getEquimentFullName,
+    FittingsTable, getEquipmentFullName,
     PipesBySize,
     PipesTable, PlantTable,
     ValveByPipe,
@@ -215,6 +215,7 @@ function getPriceQuantitiesForSystem(context: CanvasContext, levelUid: string | 
                 case EntityType.RISER:
                     thisSystemUid = entity.systemUid;
                     break;
+                case EntityType.GAS_APPLIANCE:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.FIXTURE:
                 case EntityType.LOAD_NODE:
@@ -602,7 +603,7 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
             for (const [equipmentName, equipment] of Object.entries(context.effectivePriceTable.Equipment)) {
                 if (exists.has(equipmentName as keyof EquipmentTable)) {
                     sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
-                    sheet.getCell('B' + row).value = getEquimentFullName(equipmentName as keyof EquipmentTable);
+                    sheet.getCell('B' + row).value = getEquipmentFullName(equipmentName as keyof EquipmentTable);
                     lastMinorBump = row;
                     minorSum = 0;
                     stylizeTitle(sheet.getCell('A' + row));

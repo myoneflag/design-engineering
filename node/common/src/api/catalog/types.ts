@@ -50,11 +50,14 @@ export interface Catalog {
     backflowValves: { [key: string]: BackflowValveSpec };
     psdStandards: { [key: string]: PSDSpec };
     dwellingStandards: { [key: string]: DwellingSpec };
+    gasDiversification: DwellingDiversificationTable;
     fluids: { [key: string]: FluidsSpec };
     prv: PRVSpec;
     balancingValves: BalancingValveSpec;
     hotWaterPlant: HotWaterPlant;
 }
+
+export type DwellingDiversificationTable = {[key: number]: number};
 
 export type BalancingValveManufacturer = Manufacturer<'Balancing Valve'>;
 
@@ -70,7 +73,7 @@ export interface HotWaterPlant {
         [key: string]: { 
             [key: string]: string
         }
-    }
+    };
 }
 export type PRVManufacturer = Manufacturer<'PRV'>;
 
@@ -199,9 +202,15 @@ export interface MixingValveSpec {
     manufacturer: MixingValveManufacturer[];
 }
 
+export enum State {
+    GAS = 'gas',
+    LIQUID = 'liquid',
+}
+
 export interface FluidsSpec {
     name: string;
     densityKGM3: string;
+    state: State;
     dynamicViscosityByTemperature: { [key: string]: string };
     specificHeatByTemperatureKJ_KGK: { [key: string]: string };
 }

@@ -13,6 +13,7 @@ export const state: CatalogState = {
         mixingValves: {},
         psdStandards: {},
         dwellingStandards: {},
+        gasDiversification: {},
         fluids: {},
         backflowValves: {},
         prv: {
