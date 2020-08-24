@@ -347,7 +347,7 @@ export function makeEntityFields(entity: DrawableEntityConcrete, document: Docum
             throw new Error("Invalid object in multi select");
         case EntityType.LOAD_NODE:
             const systemUid = determineConnectableSystemUid(store, entity);
-            return makeLoadNodesFields(document,  entity, catalog, systemUid || null).filter(
+            return makeLoadNodesFields(document.drawing,  entity, catalog, systemUid || null).filter(
                 (p) => p.multiFieldId
             );
         case EntityType.FLOW_SOURCE:

@@ -1,8 +1,7 @@
 import {FieldType, PropertyField} from "./property-field";
 import {EntityType} from "./types";
-import {CenteredEntity, Color, COLORS, DrawableEntity} from "../drawing";
+import {CenteredEntity, Color, COLORS, DrawableEntity, DrawingState} from "../drawing";
 import {Units} from "../../../lib/measurements";
-import {DocumentState} from "../../../../../frontend/src/store/document/types";
 import {isGas} from "../../config";
 import {Catalog} from "../../catalog/types";
 
@@ -41,7 +40,7 @@ export default interface LoadNodeEntity extends DrawableEntity, CenteredEntity {
     linkedToUid: string | null;
 }
 
-export function makeLoadNodesFields(doc: DocumentState, value: LoadNodeEntity, catalog: Catalog, systemUid: string | null): PropertyField[] {
+export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity, catalog: Catalog, systemUid: string | null): PropertyField[] {
     const fields: PropertyField[] = [
         {
             property: "systemUidOption",
@@ -49,7 +48,7 @@ export function makeLoadNodesFields(doc: DocumentState, value: LoadNodeEntity, c
             hasDefault: false,
             isCalculated: false,
             type: FieldType.FlowSystemChoice,
-            params: { systems: doc.drawing.metadata.flowSystems },
+            params: { systems: drawing.metadata.flowSystems },
             multiFieldId: "systemUid"
         },
 
@@ -64,7 +63,7 @@ export function makeLoadNodesFields(doc: DocumentState, value: LoadNodeEntity, c
         }
     ];
 
-    const system = doc.drawing.metadata.flowSystems.find((f) => f.uid === systemUid);
+    const system = drawing.metadata.flowSystems.find((f) => f.uid === systemUid);
 
     const nodeIsGas = isGas(system ? system.fluid : 'water', catalog);
 
