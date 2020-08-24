@@ -274,7 +274,7 @@ export default class CalculationEngine implements CalculationContext {
                     break;
                 case EntityType.LOAD_NODE:
                     const systemUid = determineConnectableSystemUid(obj.globalStore, obj.entity);
-                    fields = makeLoadNodesFields(this.doc, obj.entity, this.catalog, systemUid || null);
+                    fields = makeLoadNodesFields(this.doc.drawing, obj.entity, this.catalog, systemUid || null);
                     break;
                 case EntityType.PLANT:
                     fields = makePlantEntityFields(obj.entity, []);

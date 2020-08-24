@@ -209,6 +209,7 @@
     import Onboarding from "../Onboarding.vue";
     import OnboardingState, {ONBOARDING_SCREEN} from "../../store/onboarding/types";
     import insertGasAppliance from "../../htmlcanvas/tools/insert-gas-appliance";
+    import {drawGridLines} from "../../htmlcanvas/on-screen-items";
 
     @Component({
         components: {
@@ -1411,6 +1412,7 @@
             }
 
             // draw gridlines
+            drawGridLines(context);
 
             // draw selection box
             if (this.selectBox) {
