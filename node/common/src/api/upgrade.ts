@@ -7,7 +7,6 @@ import {FlowSourceEntityV11} from "./document/entities/flow-source-entity";
 import uuid from 'uuid';
 import {FlowConfiguration, SystemNodeEntity} from "./document/entities/big-valve/big-valve-entity";
 import {ValveType} from "./document/entities/directed-valves/valve-types";
-import {NodeType} from "./document/entities/load-node-entity";
 
 // This file is for managing upgrades between versions.
 // Remember to copy this directory before developing a major change, and bump the api version number, then
@@ -162,6 +161,58 @@ export function upgrade15to16(original: DrawingState) {
                 }
                 if (e.node.gasPressureKPA === undefined) {
                     e.node.gasPressureKPA = 0;
+                }
+            }
+        }
+    }
+}
+
+// Fix issue where the gasNodeId was not set for plants that were upgraded.
+export function upgrade16to17(original: DrawingState) {
+    // Step 1. Set the gas id of any orphan gas nodes
+    for (const level of Object.values(original.levels)) {
+        const entities = level.entities;
+        for (const e of Object.values(entities)) {
+            if (e.type === EntityType.SYSTEM_NODE) {
+                if (e.systemUid === StandardFlowSystemUids.Gas) {
+                    const parent = level.entities[e.parentUid];
+                    if (parent && parent.type === EntityType.PLANT) {
+                        if (parent.plant.type === PlantType.RETURN_SYSTEM && !parent.plant.gasNodeUid) {
+                            parent.plant.gasNodeUid = e.uid;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Step 2. Add any remaining plant gas nodes, properly this time.
+    for (const level of Object.values(original.levels)) {
+        const entities = level.entities;
+        for (const e of Object.values(entities)) {
+            if (e.type === EntityType.PLANT) {
+                if (e.plant.type === PlantType.RETURN_SYSTEM) {
+                    // Add the missing gas entity
+                    if (!e.plant.gasNodeUid) {
+                        const newUid = uuid();
+
+                        const newEntity: SystemNodeEntity = {
+                            center: {
+                                x: (-e.widthMM / 2) * (e.rightToLeft ? -1 : 1),
+                                y: (e.heightMM / 4)
+                            },
+                            parentUid: e.uid,
+                            type: EntityType.SYSTEM_NODE,
+                            calculationHeightM: null,
+                            systemUid: StandardFlowSystemUids.Gas,
+                            uid: newUid,
+                            allowAllSystems: false,
+                            configuration: FlowConfiguration.INPUT
+                        };
+
+                        level.entities[newUid] = newEntity;
+                        e.plant.gasNodeUid = newEntity.uid;
+                    }
                 }
             }
         }
