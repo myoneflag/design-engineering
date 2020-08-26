@@ -65,7 +65,7 @@ import { makeFlowSourceFields } from "../../../common/src/api/document/entities/
 import FlowSourceCalculation from "../store/document/calculations/flow-source-calculation";
 import {fillPlantDefaults, makePlantEntityFields} from "../../../common/src/api/document/entities/plants/plant-entity";
 import Plant from "../htmlcanvas/objects/plant";
-import { assertUnreachable, isGermanStandard, StandardFlowSystemUids } from "../../../common/src/api/config";
+import {assertUnreachable, isGas, isGermanStandard, StandardFlowSystemUids} from "../../../common/src/api/config";
 import { Catalog, PipeSpec } from "../../../common/src/api/catalog/types";
 import { DrawingState } from "../../../common/src/api/document/drawing";
 import {
@@ -1378,7 +1378,7 @@ export default class CalculationEngine implements CalculationContext {
 
         const node = this.globalStore.get(flowNode.connectable)!;
 
-        if (node.type === EntityType.SYSTEM_NODE) {
+        if (node.entity.type === EntityType.SYSTEM_NODE) {
             const parent = this.globalStore.get(node.entity.parentUid!);
             if (parent === undefined) {
                 throw new Error("System node is missing parent. " + JSON.stringify(node));
@@ -1433,7 +1433,7 @@ export default class CalculationEngine implements CalculationContext {
                     switch (parentEntity.plant.type) {
                         case PlantType.RETURN_SYSTEM:
                             const filled = fillPlantDefaults(parentEntity, this.drawing).plant as ReturnSystemPlant;
-                            if (filled.gasConsumptionMJH !== null) {
+                            if (filled.gasConsumptionMJH !== null && node.uid === filled.gasNodeUid) {
                                 return {
                                     units: 0,
                                     continuousFlowLS: 0,
