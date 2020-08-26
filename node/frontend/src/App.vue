@@ -1,4 +1,3 @@
-import {GasType} from "./calculations/gas";
 <template>
     <div id="app" style="height: 100%;">
         <template v-if="upToDate">
