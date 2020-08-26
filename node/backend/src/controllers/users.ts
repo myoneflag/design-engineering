@@ -1,4 +1,3 @@
-
 import * as bcrypt from "bcrypt";
 import { getRepository } from "typeorm";
 import { NodeMailerTransporter } from './../nodemailer';
@@ -7,6 +6,7 @@ import { Session } from "../../../common/src/models/Session";
 import { ApiHandleError } from "../helpers/apiWrapper";
 import { AuthRequired } from "../helpers/withAuth";
 import { AccessLevel, User, Create } from "../../../common/src/models/User";
+import { AccessEvents } from '../../../common/src/models/AccessEvents';
 import { AccessType, withOrganization, withUser } from "../helpers/withResources";
 import { registerUser } from "./login";
 import { Organization } from "../../../common/src/models/Organization";
@@ -384,6 +384,26 @@ export class UserController {
             data: user,
         });
     }
+
+    @ApiHandleError()
+    @AuthRequired(AccessLevel.SUPERUSER)
+    public async activeUsers(req: Request, res: Response) {
+        const data = await getRepository(AccessEvents)
+            .createQueryBuilder("access_events")
+            .select("TO_CHAR(access_events.\"dateTime\"::DATE, 'mm-dd-yyyy') AS date")
+            .addSelect("COUNT(DISTINCT username) as total_active")
+            .where("(username <> '') IS TRUE")
+            .andWhere(req.query.activeFrom ? `DATE(access_events.dateTime) >= :activeFrom` : '1=1', { activeFrom: req.query.activeFrom })
+            .andWhere(req.query.activeTo ? `DATE(access_events.dateTime) <= :activeTo` : '1=1', { activeTo: req.query.activeTo })
+            .groupBy("DATE(access_events.dateTime)")
+            .orderBy("DATE(access_events.dateTime)", "ASC")
+            .getRawMany();
+
+        return res.send({
+            success: true, 
+            data
+        });
+    }
 }
 
 const router = Router();
@@ -392,6 +412,7 @@ const controller = new UserController();
 // Retrieve all Users
 router.post('/', controller.create.bind(controller));
 router.post('/signUp', controller.signUp.bind(controller));
+router.get('/active-users', controller.activeUsers.bind(controller));
 router.get('/:id', controller.findOne.bind(controller));
 router.get('/', controller.find.bind(controller));
 router.put('/:id', controller.update.bind(controller));
