@@ -1,3 +1,4 @@
+import {EntityType} from "../../../../common/src/api/document/entities/types";
 <template>
     <drop @drop="onDrop">
         <!--Anything that needs scrolling needs to be up here, outside of canvasFrame.-->
@@ -971,6 +972,7 @@
             const modified = this.murderOrphans();
             if (tryToFix) {
                 this.deleteDuplicatePipes();
+                this.deleteWeirdStuff();
             }
             const res = this.validate(tryToFix);
             if (res.success) {
@@ -1005,6 +1007,38 @@
 
             if (numDeleted) {
                 this.$bvModal.msgBoxOk("Info: Deleted " + numDeleted + " duplicate pipes");
+            }
+        }
+
+        deleteWeirdStuff() {
+            // Sometimes, there are dangling objects that don't have IDs. This is caused by something broken in the software.
+            // DEV-156. I cannot find it. It is cheaper to remove it here, and mask the problem.
+            let numDeleted = 0;
+            for (const [levelUid, level] of Object.entries(this.document.drawing.levels)) {
+                for (const [entityUid, entity] of Object.entries(level.entities)) {
+                    if (entity.uid !== entityUid) {
+                        // we will delete now, but we have to add the uid field artificially.
+                        entity.uid = entityUid;
+                        this.$store.dispatch('document/deleteEntityOn', {entity, levelUid});
+                        numDeleted ++;
+                    }
+                }
+            }
+
+            for (const [entityUid, entity] of Object.entries(this.document.drawing.shared)) {
+                if (entity.uid !== entityUid) {
+                    // we will delete now, but we have to add the uid field artificially.
+                    entity.uid = entityUid;
+                    // Make it a riser, just in case of error checking in delete.
+                    entity.type = EntityType.RISER;
+                    this.$store.dispatch('document/deleteEntityOn', {entity, levelUid: null});
+                    numDeleted ++;
+                }
+            }
+
+            if (numDeleted) {
+                this.$bvModal.msgBoxOk("Info: Deleted " + numDeleted + " extraneous objects. This could have been" +
+                    " caused by a saving /network error.");
             }
         }
 

@@ -73,10 +73,13 @@ export class GlobalStore extends ObjectStore {
     }
 
     delete(key: string): boolean {
-        const lvl = this.levelOfEntity.get(key)!;
-        this.levelOfEntity.delete(key);
-        this.entitiesInLevel.get(lvl)!.delete(key);
-        return super.delete(key);
+        if (this.has(key)) {
+            const lvl = this.levelOfEntity.get(key)!;
+            this.levelOfEntity.delete(key);
+            this.entitiesInLevel.get(lvl)!.delete(key);
+            return super.delete(key);
+        }
+        return false;
     }
 
     getOrCreateCalculation(entity: PipeEntity): PipeCalculation;
