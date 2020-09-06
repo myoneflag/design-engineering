@@ -27,7 +27,7 @@ import {getEdgeLikeHeightAboveGroundM, getHighlightColor} from "../lib/utils";
 import {GlobalStore} from "../lib/global-store";
 import {Interaction, InteractionType} from "../lib/interaction";
 import {SnappableObject} from "../lib/object-traits/snappable-object";
-
+import {isDrainage} from "../../../../common/src/api/config"
 @CalculatedObject
 @SelectableObject
 @CenterDraggableObject
@@ -113,13 +113,25 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
 
         ctx.beginPath();
         ctx.fillStyle = "#000000";
-        // draw triangle
-        ctx.moveTo(0, -this.lastDrawnDiameterW * 0.45);
-        ctx.lineTo(this.lastDrawnDiameterW * 0.38, this.lastDrawnDiameterW * 0.25);
-        ctx.lineTo(0, this.lastDrawnDiameterW * 0.1);
-        ctx.lineTo(-this.lastDrawnDiameterW * 0.38, this.lastDrawnDiameterW * 0.25);
-        ctx.closePath();
-        ctx.fill();
+
+        if (isDrainage(this.entity.systemUid)) {
+            // stack. Draw upside down traingle.
+            ctx.moveTo(0, this.lastDrawnDiameterW * 0.45);
+            ctx.lineTo(this.lastDrawnDiameterW * 0.38, -this.lastDrawnDiameterW * 0.25);
+            ctx.lineTo(0, -this.lastDrawnDiameterW * 0.1);
+            ctx.lineTo(-this.lastDrawnDiameterW * 0.38, -this.lastDrawnDiameterW * 0.25);
+            ctx.closePath();
+            ctx.fill();
+        } else {
+
+            // riser. Draw normal triangle.
+            ctx.moveTo(0, -this.lastDrawnDiameterW * 0.45);
+            ctx.lineTo(this.lastDrawnDiameterW * 0.38, this.lastDrawnDiameterW * 0.25);
+            ctx.lineTo(0, this.lastDrawnDiameterW * 0.1);
+            ctx.lineTo(-this.lastDrawnDiameterW * 0.38, this.lastDrawnDiameterW * 0.25);
+            ctx.closePath();
+            ctx.fill();
+        }
     }
 
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {

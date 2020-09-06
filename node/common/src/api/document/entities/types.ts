@@ -1,5 +1,5 @@
 import { DrawableEntityConcrete } from "./concrete-entity";
-import { assertUnreachable } from "../../config";
+import {assertUnreachable, isDrainage} from "../../config";
 import { BigValveType } from "./big-valve/big-valve-entity";
 import { PlantType } from "./plants/plant-types";
 
@@ -23,14 +23,16 @@ export enum EntityType {
     GAS_APPLIANCE = "GAS_APPLIANCE",
 }
 
-export function getEntityName(type: EntityType): string {
-    switch (type) {
+export function getEntityName(entity: DrawableEntityConcrete): string {
+    switch (entity.type) {
         case EntityType.BACKGROUND_IMAGE:
             return "Background";
         case EntityType.RISER:
-            return "Riser";
-        case EntityType.RETURN:
-            return "Return";
+            if (isDrainage(entity.systemUid)) {
+                return "Stack";
+            } else {
+                return "Riser";
+            }
         case EntityType.PIPE:
             return "Pipe";
         case EntityType.FITTING:
@@ -40,6 +42,17 @@ export function getEntityName(type: EntityType): string {
         case EntityType.SYSTEM_NODE:
             return "Inlet/Outlet";
         case EntityType.PLANT:
+            switch (entity.plant.type) {
+                case PlantType.RETURN_SYSTEM:
+                case PlantType.TANK:
+                case PlantType.CUSTOM:
+                case PlantType.PUMP:
+                    return "Plant";
+                case PlantType.DRAINAGE_PIT:
+                    return "Drainage pit";
+                default:
+                    assertUnreachable(entity.plant);
+            }
             return "Plant";
         case EntityType.FIXTURE:
             return "Fixture";
@@ -48,11 +61,15 @@ export function getEntityName(type: EntityType): string {
         case EntityType.LOAD_NODE:
             return "Load Node";
         case EntityType.FLOW_SOURCE:
-            return "Flow Source";
+            if (isDrainage(entity.systemUid)) {
+                return "Sewer Connection";
+            } else {
+                return "Flow Source";
+            }
         case EntityType.GAS_APPLIANCE:
             return "Gas Appliance";
     }
-    assertUnreachable(type);
+    assertUnreachable(entity);
 }
 
 // for copy paste to replace

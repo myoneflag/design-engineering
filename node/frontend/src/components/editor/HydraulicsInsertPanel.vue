@@ -220,7 +220,7 @@
                 <b-button
                         v-if="systemLayout === 'drainage'"
                         variant="outline-dark"
-                        class="insertBtn insepction-opening btn-sm"
+                        class="insertBtn inspection-opening btn-sm"
                         @click="toggleInspectionOpening"
                         v-b-tooltip.hover
                         title="Inspection Opening"
@@ -716,31 +716,56 @@ export default class HydraulicsInsertPanel extends Vue {
     }
 
     toggleFloorWaste() {
-        // TODO
+        this.$emit('insert', {
+            entityName: this.entityNames.DIRECTED_VALVE,
+            system: this.selectedSystem,
+            valveType: ValveType.FLOOR_WASTE,
+        });
     }
 
     toggleInspectionOpening() {
-
+        this.$emit('insert', {
+            entityName: this.entityNames.DIRECTED_VALVE,
+            system: this.selectedSystem,
+            valveType: ValveType.INSPECTION_OPENING,
+        });
     }
 
     toggleRefluxValve() {
-
+        this.$emit('insert', {
+            entityName: this.entityNames.DIRECTED_VALVE,
+            system: this.selectedSystem,
+            valveType: ValveType.REFLUX_VALVE,
+        });
     }
 
     togglePit() {
-
+        this.$emit('insert', {
+            entityName: this.entityNames.PLANT,
+            inletSystemUid: this.selectedSystem.uid,
+            outletSystemUid: this.selectedSystem.uid,
+            plantType: PlantType.DRAINAGE_PIT,
+            title: 'Pit',
+        });
     }
 
     toggleSewerConnection() {
-
+        this.$emit('insert', {
+            entityName: this.entityNames.FLOW_SOURCE,
+            system: this.selectedSystem,
+        });
     }
 
     toggleStack() {
-
+        this.$emit('insert', { entityName: this.entityNames.RISER, system: this.selectedSystem });
     }
 
     toggleVent() {
-
+        this.$emit('insert', {
+            entityName: this.entityNames.PIPE,
+            system: this.selectedSystem,
+            networkType: NetworkType.CONNECTIONS,
+        });
     }
 
     get onboarding(): OnboardingState {
@@ -840,6 +865,42 @@ export default class HydraulicsInsertPanel extends Vue {
 
 .insertBtn.isolation {
     background-image: url("../../../src/assets/object-icons/valves/isolation.png");
+    background-size: 25px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.insertBtn.sewer-connection {
+    background-image: url("../../../src/assets/object-icons/pipework/flow-source.png");
+    background-size: 25px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.insertBtn.floor-waste {
+    background-image: url("../../../src/assets/object-icons/valves/floor-waste.png");
+    background-size: 25px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+
+.insertBtn.inspection-opening {
+    background-image: url("../../../src/assets/object-icons/valves/inspection-opening.png");
+    background-size: 25px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.insertBtn.reflux-valve {
+    background-image: url("../../../src/assets/object-icons/valves/reflux-valve.png");
+    background-size: 25px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.insertBtn.pit {
+    background-image: url("../../../src/assets/object-icons/valves/pit.png");
     background-size: 25px;
     background-repeat: no-repeat;
     background-position: center;

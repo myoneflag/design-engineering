@@ -2,7 +2,7 @@
     <b-container>
         <b-row>
             <b-col>
-                <h3>Plant ({{ selectedEntity.name }})</h3>
+                <h3>{{name}} ({{ selectedEntity.name }})</h3>
             </b-col>
         </b-row>
         <slot> </slot>
@@ -36,6 +36,7 @@ import {
 } from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
 import { fillPlantDefaults, makePlantEntityFields } from "../../../../../common/src/api/document/entities/plants/plant-entity";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
+import {getEntityName} from "../../../../../common/src/api/document/entities/types";
 
 @Component({
     components: { PropertiesFieldBuilder },
@@ -50,6 +51,10 @@ import { Catalog } from "../../../../../common/src/api/catalog/types";
 export default class PlantProperties extends Vue {
     get fields() {
         return makePlantEntityFields(this.$props.selectedEntity, this.document.drawing.metadata.flowSystems);
+    }
+
+    get name() {
+        return getEntityName(this.$props.selectedEntity);
     }
 
     get reactiveData() {

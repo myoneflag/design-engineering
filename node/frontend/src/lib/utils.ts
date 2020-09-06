@@ -177,7 +177,7 @@ export function getEffectiveFilter(objects: BaseBackedObject[], calculationFilte
         let wasInserted = false;
         if (!(o.entity.type in build)) {
             Vue.set(build, o.entity.type, {
-                name: getEntityName(o.entity.type),
+                name: getEntityName(o.entity),
                 filters: {},
                 enabled: false
             });
