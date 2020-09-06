@@ -181,7 +181,7 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
             });
             break;
         case PlantType.TANK:
-            break;
+        case PlantType.DRAINAGE_PIT:
         case PlantType.PUMP:
             break;
         case PlantType.CUSTOM:
@@ -338,10 +338,9 @@ export function fillPlantDefaults(value: PlantEntity, drawing: DrawingState) {
             }
             break;
         case PlantType.TANK:
-            break;
         case PlantType.CUSTOM:
-            break;
         case PlantType.PUMP:
+        case PlantType.DRAINAGE_PIT:
             break;
         default:
             assertUnreachable(result.plant);

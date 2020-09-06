@@ -106,6 +106,18 @@ export function isGas(fluidId: string, catalog: Catalog) {
     return fluid.state === State.GAS;
 }
 
+export function isDrainage(systemUid: string): systemUid is DrainageSystemUid {
+    switch (systemUid as StandardFlowSystemUids) {
+        case StandardFlowSystemUids.SanitaryPlumbing:
+        case StandardFlowSystemUids.SewerDrainage:
+        case StandardFlowSystemUids.RisingMain:
+        case StandardFlowSystemUids.TradeWaste:
+        case StandardFlowSystemUids.GreaseWaste:
+            return true;
+    }
+    return false;
+}
+
 //
 export const DISPLAY_PSD_METHODS: Choice[] = [
     {
@@ -296,10 +308,23 @@ export enum StandardFlowSystemUids {
     ColdWater = "cold-water",
     HotWater = "hot-water",
     WarmWater = "warm-water",
+
     Gas = 'gas',
     FireHydrant = "fire-hydrant",
     FireHoseReel = "fire-hose-reel",
+    SewerDrainage = 'sewer-drainage',
+    SanitaryPlumbing = 'sanitary-plumbing',
+    GreaseWaste = 'grease-waste',
+    TradeWaste = 'trade-waste',
+    RisingMain = 'rising-main',
 }
+
+export type DrainageSystemUid =
+    StandardFlowSystemUids.SewerDrainage
+    | StandardFlowSystemUids.SanitaryPlumbing
+    | StandardFlowSystemUids.GreaseWaste
+    | StandardFlowSystemUids.TradeWaste
+    | StandardFlowSystemUids.RisingMain;
 
 export enum StandardMaterialUids {
     Copper = "copperTypeB",

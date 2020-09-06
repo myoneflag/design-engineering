@@ -156,10 +156,9 @@ export function countPsdUnits(
                         }
                         break;
                     case PlantType.TANK:
-                        break;
                     case PlantType.CUSTOM:
-                        break;
                     case PlantType.PUMP:
+                    case PlantType.DRAINAGE_PIT:
                         break;
                     default:
                         assertUnreachable(e.plant);

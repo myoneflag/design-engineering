@@ -182,6 +182,11 @@ export function makeDirectedValveFields(
             });
             break;
         }
+        case ValveType.FLOOR_WASTE:
+        case ValveType.INSPECTION_OPENING:
+        case ValveType.REFLUX_VALVE:
+            // No properties
+            break;
         default:
             assertUnreachable(entity.valve);
     }

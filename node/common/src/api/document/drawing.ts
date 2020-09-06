@@ -415,6 +415,7 @@ export const initialDrawing: DrawingState = {
                 }
             },
             {
+
                 name: "Fire Hydrant",
                 temperature: 20,
                 color: { hex: "#9F0500" },
@@ -426,7 +427,6 @@ export const initialDrawing: DrawingState = {
                 insulationMaterial: InsulationMaterials.calciumSilicate,
                 insulationJacket: InsulationJackets.allServiceJacket,
                 insulationThicknessMM: 25,
-
                 networks: {
                     RISERS: {
                         spareCapacityPCT: 0,
@@ -482,6 +482,181 @@ export const initialDrawing: DrawingState = {
                     }
                 }
             },
+
+            {
+                name: "Sewer Drainage",
+                temperature: 20,
+                color: { hex: "#11bb11" },
+                uid: StandardFlowSystemUids.SewerDrainage,
+                fluid: "sewage",
+                hasReturnSystem: false,
+                returnIsInsulated: false,
+                returnMaxVelocityMS: 1,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationJacket: InsulationJackets.allServiceJacket,
+                insulationThicknessMM: 25,
+
+                networks: {
+                    RISERS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 20,
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
+                    },
+                    RETICULATIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 20,
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
+                    },
+                    CONNECTIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 3,
+                        material: "pexSdr74",
+                        minimumPipeSize: 16,
+                    }
+                }
+            },
+
+            {
+                name: "Sanitary Plumbing",
+                temperature: 20,
+                color: { hex: "#11bb11" },
+                uid: StandardFlowSystemUids.SanitaryPlumbing,
+                fluid: "sewage",
+                hasReturnSystem: false,
+                returnIsInsulated: false,
+                returnMaxVelocityMS: 1,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationJacket: InsulationJackets.allServiceJacket,
+                insulationThicknessMM: 25,
+
+                networks: {
+                    RISERS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 20,
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
+                    },
+                    RETICULATIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 20,
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
+                    },
+                    CONNECTIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 3,
+                        material: "pexSdr74",
+                        minimumPipeSize: 16,
+                    }
+                }
+            },
+
+            {
+                name: "Grease Waste",
+                temperature: 20,
+                color: { hex: "#11bb11" },
+                uid: StandardFlowSystemUids.GreaseWaste,
+                fluid: "sewage",
+                hasReturnSystem: false,
+                returnIsInsulated: false,
+                returnMaxVelocityMS: 1,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationJacket: InsulationJackets.allServiceJacket,
+                insulationThicknessMM: 25,
+
+                networks: {
+                    RISERS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 20,
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
+                    },
+                    RETICULATIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 20,
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
+                    },
+                    CONNECTIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 3,
+                        material: "pexSdr74",
+                        minimumPipeSize: 16,
+                    }
+                }
+            },
+
+            {
+                name: "Trade Waste",
+                temperature: 20,
+                color: { hex: "#11bb11" },
+                uid: StandardFlowSystemUids.TradeWaste,
+                fluid: "sewage",
+                hasReturnSystem: false,
+                returnIsInsulated: false,
+                returnMaxVelocityMS: 1,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationJacket: InsulationJackets.allServiceJacket,
+                insulationThicknessMM: 25,
+
+                networks: {
+                    RISERS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 20,
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
+                    },
+                    RETICULATIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 20,
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
+                    },
+                    CONNECTIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 3,
+                        material: "pexSdr74",
+                        minimumPipeSize: 16,
+                    }
+                }
+            },
+
+            {
+                name: "Rising Main",
+                temperature: 20,
+                color: { hex: "#11bb11" },
+                uid: StandardFlowSystemUids.RisingMain,
+                fluid: "sewage",
+                hasReturnSystem: false,
+                returnIsInsulated: false,
+                returnMaxVelocityMS: 1,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationJacket: InsulationJackets.allServiceJacket,
+                insulationThicknessMM: 25,
+
+                networks: {
+                    RISERS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 20,
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
+                    },
+                    RETICULATIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 20,
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
+                    },
+                    CONNECTIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 3,
+                        material: "pexSdr74",
+                        minimumPipeSize: 16,
+                    }
+                }
+            }
         ],
         calculationParams: {
             psdMethod: SupportedPsdStandards.as35002018LoadingUnits,

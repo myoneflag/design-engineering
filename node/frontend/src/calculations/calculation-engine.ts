@@ -1356,6 +1356,9 @@ export default class CalculationEngine implements CalculationContext {
                 case ValveType.WATER_METER:
                 case ValveType.FILTER:
                 case ValveType.STRAINER:
+                case ValveType.FLOOR_WASTE:
+                case ValveType.INSPECTION_OPENING:
+                case ValveType.REFLUX_VALVE:
                     this.flowGraph.addEdge(
                         {
                             connectable: entity.uid,
@@ -1460,10 +1463,9 @@ export default class CalculationEngine implements CalculationContext {
                             }
                             break;
                         case PlantType.TANK:
-                            break;
                         case PlantType.CUSTOM:
-                            break;
                         case PlantType.PUMP:
+                        case PlantType.DRAINAGE_PIT:
                             break;
                         default:
                             assertUnreachable(parentEntity.plant);
@@ -2041,6 +2043,9 @@ export default class CalculationEngine implements CalculationContext {
                         case ValveType.GAS_REGULATOR:
                         case ValveType.FILTER:
                         case ValveType.BALANCING:
+                        case ValveType.FLOOR_WASTE:
+                        case ValveType.INSPECTION_OPENING:
+                        case ValveType.REFLUX_VALVE:
                             break;
                         default:
                             assertUnreachable(obj.entity.valve);
@@ -2589,6 +2594,9 @@ export default class CalculationEngine implements CalculationContext {
                         case ValveType.BALANCING:
                         case ValveType.GAS_REGULATOR:
                         case ValveType.FILTER:
+                        case ValveType.FLOOR_WASTE:
+                        case ValveType.INSPECTION_OPENING:
+                        case ValveType.REFLUX_VALVE:
                             break;
                         case ValveType.PRV_SINGLE:
                         case ValveType.PRV_DOUBLE:

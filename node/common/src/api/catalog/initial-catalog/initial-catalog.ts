@@ -4001,6 +4001,17 @@ export const initialCatalog: Catalog = {
             },
             state: State.GAS,
         },
+        sewage: {
+            name: "Sewage",
+            densityKGM3: "1000",
+            dynamicViscosityByTemperature: {
+                0: "0",
+            },
+            specificHeatByTemperatureKJ_KGK: {
+                0: "0",
+            },
+            state: State.LIQUID,
+        }
     },
     backflowValves: {
         RPZD: {

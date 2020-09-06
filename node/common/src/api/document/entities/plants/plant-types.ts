@@ -2,6 +2,7 @@ export enum PlantType {
     RETURN_SYSTEM = 'RETURN_SYSTEM',
     PUMP = 'PUMP',
     TANK = 'TANK',
+    DRAINAGE_PIT = 'DRAINAGE_PIT',
     CUSTOM = 'CUSTOM',
 }
 
@@ -68,9 +69,14 @@ export interface PumpPlant extends Plant {
     pressureLoss: PumpPressure;
 }
 
+export interface DrainagePit extends Plant {
+    type: PlantType.DRAINAGE_PIT;
+    pressureLoss: StaticPressure;
+}
+
 export interface CustomPlant extends Plant {
     type: PlantType.CUSTOM;
     pressureLoss: AnyPressure;
 }
 
-export type PlantConcrete = ReturnSystemPlant | TankPlant | CustomPlant | PumpPlant;
+export type PlantConcrete = ReturnSystemPlant | TankPlant | CustomPlant | PumpPlant | DrainagePit;

@@ -157,9 +157,53 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             case ValveType.FILTER:
                 this.drawFilter(context);
                 break;
+            case ValveType.FLOOR_WASTE:
+                this.drawFloorWaste(context);
+                break;
+            case ValveType.INSPECTION_OPENING:
+                this.drawInspectionOpening(context);
+                break;
+            case ValveType.REFLUX_VALVE:
+                this.drawRefluxValve(context);
+                break;
             default:
                 assertUnreachable(this.entity.valve);
         }
+    }
+
+    drawFloorWaste(context: DrawingContext) {
+        const ctx = context.ctx;
+        ctx.beginPath();
+        ctx.arc(0, 0, VALVE_SIZE_MM, 0, Math.PI * 2);
+
+        const lineX = VALVE_SIZE_MM / 2;
+        const lineY = ((VALVE_SIZE_MM ** 2) - (lineX ** 2)) ** 0.5;
+
+        ctx.moveTo(0, VALVE_SIZE_MM);
+        ctx.lineTo(0, -VALVE_SIZE_MM);
+        ctx.moveTo(lineX, lineY);
+        ctx.lineTo(lineX, -lineY);
+        ctx.moveTo(-lineX, lineY);
+        ctx.lineTo(-lineX, -lineY);
+
+        ctx.stroke();
+    }
+
+    drawInspectionOpening(context: DrawingContext) {
+        const ctx = context.ctx;
+        ctx.beginPath();
+        ctx.arc(0, 0, VALVE_SIZE_MM, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+
+    drawRefluxValve(context: DrawingContext) {
+        const ctx = context.ctx;
+        ctx.beginPath();
+        ctx.moveTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM);
+        ctx.lineTo(-VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
+        ctx.lineTo(VALVE_SIZE_MM, VALVE_HEIGHT_MM);
+        ctx.lineTo(VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
+        ctx.stroke();
     }
 
     drawCheckValve(context: DrawingContext) {
@@ -544,6 +588,9 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             case ValveType.PRV_DOUBLE:
             case ValveType.PRV_TRIPLE:
             case ValveType.BALANCING:
+            case ValveType.FLOOR_WASTE:
+            case ValveType.INSPECTION_OPENING:
+            case ValveType.REFLUX_VALVE:
                 break;
             default:
                 assertUnreachable(this.entity.valve);
@@ -683,6 +730,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                     context.doc.drawing.metadata.calculationParams.gravitationalAcceleration
                 );
             }
+            case ValveType.FLOOR_WASTE:
+            case ValveType.INSPECTION_OPENING:
+            case ValveType.REFLUX_VALVE:
+                return null;
             default:
                 assertUnreachable(this.entity.valve);
         }
@@ -727,6 +778,12 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 return "Gas Regulator";
             case ValveType.FILTER:
                 return "Filter";
+            case ValveType.FLOOR_WASTE:
+                return "Floor waste";
+            case ValveType.INSPECTION_OPENING:
+                return "Inspection opening";
+            case ValveType.REFLUX_VALVE:
+                return "Reflux valve";
         }
         assertUnreachable(this.entity.valve);
     }
@@ -1043,6 +1100,14 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                         qty: 1,
                         path: `Equipment.Gas Regulator`,
                     }],
+                };
+            case ValveType.FLOOR_WASTE:
+            case ValveType.INSPECTION_OPENING:
+            case ValveType.REFLUX_VALVE:
+                // TODO: costs
+                return {
+                    cost: 0,
+                    breakdown: [],
                 };
             default:
                 assertUnreachable(this.entity.valve);

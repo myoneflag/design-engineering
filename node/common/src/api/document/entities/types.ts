@@ -112,10 +112,9 @@ export function getReferences(entity: DrawableEntityConcrete): string[] {
                     refs.push(entity.plant.gasNodeUid);
                     break;
                 case PlantType.TANK:
-                    break;
                 case PlantType.CUSTOM:
-                    break;
                 case PlantType.PUMP:
+                case PlantType.DRAINAGE_PIT:
                     break;
                 default:
                     assertUnreachable(entity.plant);

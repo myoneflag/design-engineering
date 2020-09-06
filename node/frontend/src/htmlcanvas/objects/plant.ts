@@ -167,6 +167,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             case PlantType.CUSTOM:
                 break;
             case PlantType.PUMP:
+            case PlantType.DRAINAGE_PIT:
                 break;
             default:
                 assertUnreachable(this.entity.plant);
@@ -225,6 +226,10 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 break;
             case PlantType.PUMP:
                 break;
+            case PlantType.DRAINAGE_PIT:
+                break;
+            default:
+                assertUnreachable(e.plant);
         }
 
         return [e];
@@ -418,6 +423,13 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                         qty: 1,
                         path: `Plants.Pump`,
                     }],
+                };
+            case PlantType.DRAINAGE_PIT:
+                // TODO: drainage costs
+
+                return {
+                    cost: 0,
+                    breakdown: [],
                 };
         }
         assertUnreachable(this.entity.plant);
