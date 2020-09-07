@@ -167,7 +167,11 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
                 title: "Size (mm)",
                 short: abbreviation,
                 units: Units.Millimeters,
-                category: FieldCategory.Size
+                category: FieldCategory.Size,
+                format: (sizeMM) => {
+                    const settings = Object.entries(catalog!.prv.size[manufacturer]).find(([key, value]) => value.diameterNominalMM === sizeMM)![0];
+                    return settings;
+                }
             });
             break;
         }

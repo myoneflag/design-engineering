@@ -2487,8 +2487,8 @@ export default class CalculationEngine implements CalculationContext {
                             const inPressure = calculation.pressureKPA;
 
                             if (inPressure !== null && calculation.sizeMM !== null) {
-                                const maxInletPressure =
-                                    parseCatalogNumberExact(this.catalog.prv.size[manufacturer][calculation.sizeMM].maxInletPressureKPA);
+                                const maxInletPressure = parseCatalogNumberExact(lowerBoundTable(this.catalog.prv.size[manufacturer], calculation.sizeMM, (prv) => Number(prv.diameterNominalMM))!.maxInletPressureKPA);
+
                                 if (maxInletPressure !== null && inPressure > maxInletPressure) {
                                     calculation.warning = 'Max pressure of ' + maxInletPressure.toFixed(2) + ' kpa exceeded';
                                 }
@@ -2499,9 +2499,7 @@ export default class CalculationEngine implements CalculationContext {
                                 o.entity.valve.targetPressureKPA !== null &&
                                 calculation.sizeMM !== null
                             ) {
-                                const ratio = parseCatalogNumberExact(
-                                    this.catalog.prv.size[manufacturer][calculation.sizeMM].maxPressureDropRatio
-                                );
+                                const ratio = parseCatalogNumberExact(lowerBoundTable(this.catalog.prv.size[manufacturer], calculation.sizeMM, (prv) => Number(prv.diameterNominalMM))!.maxPressureDropRatio);
                                 if (ratio !== null && inPressure > o.entity.valve.targetPressureKPA * ratio) {
                                     calculation.warning =
                                         "Pressure of " +
