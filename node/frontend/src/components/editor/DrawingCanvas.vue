@@ -1,4 +1,3 @@
-import {EntityType} from "../../../../common/src/api/document/entities/types";
 <template>
     <drop @drop="onDrop">
         <!--Anything that needs scrolling needs to be up here, outside of canvasFrame.-->
@@ -45,16 +44,21 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
             <DrawingNavBar :loading="isLoading" :disabled="!!toolHandler"/>
 
             <canvas
-                    ref="drawingCanvas"
-                    @contextmenu="disableContextMenu"
-                    v-bind:style="{
+                ref="drawingCanvas"
+                @contextmenu="disableContextMenu"
+                v-bind:style="{
                     backgroundColor: 'aliceblue',
                     cursor: currentCursor,
                     pointerEvents: 'auto',
                     marginTop: '-60px'
                 }"
-            >
-            </canvas>
+            ></canvas>
+
+            <div ref="menu" id="menu" v-click-outside="handleCloseMenu">
+                <div>
+                    <button id="pulse-button" @click="handleClickSelectSimilar">Select Similar</button>
+                </div>
+            </div>
 
             <ModeButtons :mode.sync="document.uiState.drawingMode" v-if="shouldDisplayModeButtons"/>
 
@@ -120,6 +124,10 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
 <script lang="ts">
     import Vue from "vue";
     import Component from "vue-class-component";
+
+    // @ts-ignore
+    import ClickOutside from 'vue-click-outside';
+
     import {ViewPort} from "../../../src/htmlcanvas/viewport";
     import {DocumentState, EntityParam} from "../../../src/store/document/types";
     import ModeButtons from "../../../src/components/editor/ModeButtons.vue";
@@ -178,7 +186,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
     import CalculationsSidebar from "../../../src/components/editor/CalculationsSidebar.vue";
     import DrawingNavBar from "../DrawingNavBar.vue";
     import LevelSelector from "./LevelSelector.vue";
-    import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
+    import PipeEntity, { fillPipeDefaultFields } from "../../../../common/src/api/document/entities/pipe-entity";
     import util from "util";
     import insertLoadNode from "../../htmlcanvas/tools/insert-load-node";
     import {NodeType} from "../../../../common/src/api/document/entities/load-node-entity";
@@ -211,6 +219,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
     import OnboardingState, {ONBOARDING_SCREEN} from "../../store/onboarding/types";
     import insertGasAppliance from "../../htmlcanvas/tools/insert-gas-appliance";
     import {drawGridLines} from "../../htmlcanvas/on-screen-items";
+    import FixtureEntity from "../../../../common/src/api/document/entities/fixtures/fixture-entity";
 
     @Component({
         components: {
@@ -230,6 +239,9 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
             PropertiesWindow,
             ModeButtons,
             Onboarding,
+        },
+        directives: {
+            ClickOutside
         }
     })
     export default class DrawingCanvas extends Vue {
@@ -950,8 +962,84 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
             this.changedLevelsSinceLastPLUCalc.add(level.uid);
         }
 
-        disableContextMenu(e: Event) {
-            return e.preventDefault();
+        disableContextMenu(e: MouseEvent) {
+            e.preventDefault();
+
+            if (this.selectedEntities.length !== 1) {
+                return;
+            }
+
+            const { type } = this.selectedEntities[0];
+
+            if (type === EntityType.PIPE || type === EntityType.FIXTURE) {
+                var menuNode = this.$refs.menu as HTMLDivElement;
+                var rect = (this.$refs.drawingCanvas as HTMLCanvasElement).getBoundingClientRect();
+                var x = e.x - rect.left;
+                var y = e.y - rect.top;
+
+                // show menu
+                menuNode!.style.display = 'initial';
+                menuNode!.style.top = y + 4 + 'px';
+                menuNode!.style.left = x + 4 + 'px';
+            }
+        }
+
+        handleClickSelectSimilar() {
+            const selected = this.selectedEntities[0];            
+            const entities = Array.from((this.globalStore.entitiesInLevel.get(this.document.uiState.levelUid) || new Set()).values()).map((u) => this.globalStore.get(u)!.entity);
+
+            for (const entity of entities) {
+                switch (selected.type) {
+                    case EntityType.FIXTURE: {
+                        if (entity.type === selected.type 
+                            && entity.uid !== selected.uid 
+                            && entity.name === selected.name)
+                        {
+                            this.select([entity.uid], SelectMode.Add);
+                        }
+                        break;
+                    }
+                    case EntityType.PIPE: {
+                        const filledPipe = fillPipeDefaultFields(this.document.drawing, 0, selected);
+                        
+                        if (entity.type === filledPipe.type) {
+                            const filledPipeSimilar = fillPipeDefaultFields(this.document.drawing, 0, entity);
+                            
+                            if (filledPipeSimilar.uid !== filledPipe.uid 
+                                && filledPipeSimilar.network === filledPipe.network 
+                                && filledPipeSimilar.systemUid === filledPipe.systemUid
+                                && filledPipeSimilar.material === filledPipe.material)
+                            {
+                                this.select([entity.uid], SelectMode.Add);
+                            }
+                        }
+                        break;
+                    }
+                    case EntityType.BACKGROUND_IMAGE:
+                    case EntityType.FITTING:
+                    case EntityType.RISER:
+                    case EntityType.SYSTEM_NODE:
+                    case EntityType.BIG_VALVE:
+                    case EntityType.DIRECTED_VALVE:
+                    case EntityType.LOAD_NODE:
+                    case EntityType.FLOW_SOURCE:
+                    case EntityType.PLANT:
+                    case EntityType.GAS_APPLIANCE:
+                        break;
+                    default:
+                        assertUnreachable(selected);
+                }
+            }
+
+            this.targetProperty = null;
+            this.scheduleDraw();
+            this.handleCloseMenu();
+        }
+
+        handleCloseMenu() {
+            var menuNode = this.$refs.menu as HTMLDivElement;
+            menuNode!.style.display = 'none';
+            return;
         }
 
         onAutoConnect() {
@@ -2076,5 +2164,26 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
 
         pointer-events: none;
         font-size: 30px;
+    }
+
+    #menu {
+        display: none;
+        position: absolute;
+        width: auto;
+        background-color: white;
+        box-shadow: 0 0 5px grey;
+        border-radius: 3px;
+    }
+
+    #menu button {
+        background-color: white;
+        border: none;
+        margin: 0;
+        padding: 10px;
+        white-space: nowrap;
+    }
+
+    #menu button:hover {
+        background-color: lightgray;
     }
 </style>

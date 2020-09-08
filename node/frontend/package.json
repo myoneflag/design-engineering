@@ -65,6 +65,7 @@
     "vue-awesome": "^3.5.4",
     "vue-chartjs": "^3.5.1",
     "vue-class-component": "^7.0.2",
+    "vue-click-outside": "^1.1.0",
     "vue-color": "^2.7.0",
     "vue-cookies": "^1.5.13",
     "vue-cookies-ts": "^1.5.16",
