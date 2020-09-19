@@ -48,7 +48,7 @@ import {
 import { determineConnectableNetwork } from "../../store/document/entities/lib";
 import {
     assertUnreachable,
-    ComponentPressureLossMethod, isGas,
+    ComponentPressureLossMethod, isDrainage, isGas,
     StandardFlowSystemUids
 } from "../../../../common/src/api/config";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
@@ -199,6 +199,17 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         ctx.setTransform(oTM);
     }
 
+    isActive(): boolean {
+        const systemUid = this.entity.systemUid;
+        switch (this.document.uiState.pressureOrDrainage) {
+            case "pressure":
+                return !isDrainage(systemUid);
+            case "drainage":
+                return isDrainage(systemUid);
+        }
+        assertUnreachable(this.document.uiState.pressureOrDrainage);
+    }
+
     drawEntity(context: DrawingContext, { selected, withCalculation, overrideColorList }: EntityDrawingArgs): void {
         const { ctx, doc } = context;
         const s = context.vp.currToSurfaceScale(ctx);
@@ -211,6 +222,10 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
         let targetWWidth = 15;
         let baseColor = this.displayObject(doc).color!.hex;
+
+        if (!this.isActive()) {
+            baseColor = '#777777';
+        }
 
         const baseWidth = Math.max(
             MIN_PIPE_PIXEL_WIDTH / s,
@@ -361,6 +376,9 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
     }
 
     inBounds(oc: Coord, radius: number = 0): boolean {
+        if (!this.isActive()) {
+            return false;
+        }
         const shape = this.shape();
         let width = this.lastDrawnWidth;
         if (width === undefined) {
@@ -597,6 +615,10 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
     }
 
     offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
+        if (!this.isActive()) {
+            return null;
+        }
+
         switch (interaction.type) {
             case InteractionType.INSERT:
                 if (interaction.systemUid && interaction.systemUid !== this.entity.systemUid) {

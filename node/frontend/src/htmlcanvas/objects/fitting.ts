@@ -33,7 +33,7 @@ import math3d from "math3d";
 import PipeEntity, {fillPipeDefaultFields} from "../../../../common/src/api/document/entities/pipe-entity";
 import { Coord } from "../../../../common/src/api/document/drawing";
 import { EPS, parseCatalogNumberExact } from "../../../../common/src/lib/utils";
-import { assertUnreachable, ComponentPressureLossMethod } from "../../../../common/src/api/config";
+import {assertUnreachable, ComponentPressureLossMethod, isDrainage} from "../../../../common/src/api/config";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { getHighlightColor } from "../lib/utils";
 import {PipesTable} from "../../../../common/src/api/catalog/price-table";
@@ -63,6 +63,17 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
     get position(): Matrix {
         return TM.translate(this.entity.center.x, this.entity.center.y);
+    }
+
+    isActive(): boolean {
+        const systemUid = this.entity.systemUid;
+        switch (this.document.uiState.pressureOrDrainage) {
+            case "pressure":
+                return !isDrainage(systemUid);
+            case "drainage":
+                return isDrainage(systemUid);
+        }
+        assertUnreachable(this.document.uiState.pressureOrDrainage);
     }
 
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to
@@ -128,6 +139,9 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
                         }
 
                         ctx.strokeStyle = this.displayEntity(doc).color!.hex;
+                        if (!this.isActive()) {
+                            ctx.strokeStyle = '#777777';
+                        }
                         ctx.lineWidth = targetWidth;
                         ctx.beginPath();
                         ctx.moveTo(0, 0);
@@ -153,6 +167,9 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
     }
 
     inBounds(moc: Coord, radius: number = 0): boolean {
+        if (!this.isActive()) {
+            return false;
+        }
         if (this.lastRadials && this.lastDrawnLength !== undefined && this.lastDrawnWidth !== undefined) {
             let selected = false;
             this.lastRadials.forEach(([wc]) => {

@@ -71,7 +71,7 @@
 
             <HydraulicsInsertPanel
                     v-if="document.uiState.drawingMode === 1 && initialized && !document.uiState.viewOnly"
-                    :flow-systems="document.drawing.metadata.flowSystems"
+                    :flow-systems="availableFlowSystems"
                     @insert="hydraulicsInsert"
                     :fixtures="effectiveCatalog.fixtures"
                     :valves="effectiveCatalog.valves"
@@ -81,6 +81,10 @@
                     :last-used-valve-vid="document.uiState.lastUsedValveVid"
                     :is-drawing="toolHandler !== null"
             />
+
+            <PressureDrainageSelector>
+
+            </PressureDrainageSelector>
 
             <CalculationTopBar
                     v-if="
@@ -195,7 +199,7 @@
     import {GlobalStore} from "../../htmlcanvas/lib/global-store";
     import insertFlowSource from "../../htmlcanvas/tools/insert-flow-source";
     import insertPlant from "../../htmlcanvas/tools/insert-plant";
-    import {assertUnreachable} from "../../../../common/src/api/config";
+    import {assertUnreachable, isDrainage} from "../../../../common/src/api/config";
     import {Catalog} from "../../../../common/src/api/catalog/types";
     import {Coord, FlowSystemParameters, Level, NetworkType} from "../../../../common/src/api/document/drawing";
     import {rebaseAll} from "../../htmlcanvas/lib/black-magic/rebase-all";
@@ -218,7 +222,10 @@
     import OnboardingState, {ONBOARDING_SCREEN} from "../../store/onboarding/types";
     import insertGasAppliance from "../../htmlcanvas/tools/insert-gas-appliance";
     import {drawGridLines} from "../../htmlcanvas/on-screen-items";
+
     import FixtureEntity from "../../../../common/src/api/document/entities/fixtures/fixture-entity";
+
+    import PressureDrainageSelector from "./PressureDrainageSelector.vue";
 
     @Component({
         components: {
@@ -238,9 +245,10 @@
             PropertiesWindow,
             ModeButtons,
             Onboarding,
+            PressureDrainageSelector,
         },
         directives: {
-            ClickOutside
+            ClickOutside,
         }
     })
     export default class DrawingCanvas extends Vue {
@@ -544,6 +552,16 @@
 
         get nodes() {
             return this.$store.getters["customEntity/nodes"];
+        }
+
+        get availableFlowSystems(): FlowSystemParameters[] {
+            switch (this.document.uiState.pressureOrDrainage) {
+                case "pressure":
+                    return this.document.drawing.metadata.flowSystems.filter((s) => !isDrainage(s.uid));
+                case "drainage":
+                    return this.document.drawing.metadata.flowSystems.filter((s) => isDrainage(s.uid));
+            }
+            assertUnreachable(this.document.uiState.pressureOrDrainage);
         }
 
         projectCost(): Cost {

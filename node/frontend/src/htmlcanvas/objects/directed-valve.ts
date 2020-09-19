@@ -31,7 +31,7 @@ import PipeEntity, { MutablePipe } from "../../../../common/src/api/document/ent
 import DirectedValveCalculation, { emptyDirectedValveCalculation } from "../../store/document/calculations/directed-valve-calculation";
 import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import uuid from "uuid";
-import {assertUnreachable, ComponentPressureLossMethod, isGas} from "../../../../common/src/api/config";
+import {assertUnreachable, ComponentPressureLossMethod, isDrainage, isGas} from "../../../../common/src/api/config";
 import { Catalog } from "../../../../common/src/api/catalog/types";
 import { Coord, DrawableEntity } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, lowerBoundTable, parseCatalogNumberExact } from "../../../../common/src/lib/utils";
@@ -100,6 +100,17 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         return [];
     }
 
+    isActive(): boolean {
+        const systemUid = determineConnectableSystemUid(this.globalStore, this.entity);
+        switch (this.document.uiState.pressureOrDrainage) {
+            case "pressure":
+                return systemUid === undefined || !isDrainage(systemUid);
+            case "drainage":
+                return systemUid === undefined || isDrainage(systemUid);
+        }
+        assertUnreachable(this.document.uiState.pressureOrDrainage);
+    }
+
     drawEntity(context: DrawingContext, { selected }: EntityDrawingArgs): void {
         const s = context.vp.currToSurfaceScale(context.ctx);
         context.ctx.rotate(this.rotationRad);
@@ -109,7 +120,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             context.ctx.fillStyle = lighten(e.color!.hex, 50, 0.8);
             context.ctx.fillRect(-VALVE_SIZE_MM * 1.2, -VALVE_SIZE_MM * 1.2, VALVE_SIZE_MM * 2.4, VALVE_SIZE_MM * 2.4);
         }
-        const color = e.color!;
+        let color = e.color!;
+        if (!this.isActive()) {
+            color = {hex: '#777777'};
+        }
 
         const baseWidth = Math.max(2.0 / s, VALVE_LINE_WIDTH_MM / this.toWorldLength(1));
 
@@ -474,6 +488,9 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     }
 
     inBounds(objectCoord: Coord, objectRadius?: number): boolean {
+        if (!this.isActive()) {
+            return false;
+        }
         const dist = Math.sqrt(objectCoord.x ** 2 + objectCoord.y ** 2);
         return dist < VALVE_SIZE_MM + (objectRadius ? objectRadius : 0);
     }

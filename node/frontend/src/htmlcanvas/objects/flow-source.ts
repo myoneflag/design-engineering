@@ -31,6 +31,7 @@ import { cloneSimple, EPS } from "../../../../common/src/lib/utils";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import useColors = Mocha.reporters.Base.useColors;
 import { getHighlightColor } from "../lib/utils";
+import {assertUnreachable, isDrainage} from "../../../../common/src/api/config";
 
 @CalculatedObject
 @SelectableObject
@@ -57,6 +58,17 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         return TM.transform(TM.translate(this.entity.center.x, this.entity.center.y), TM.scale(scale, scale));
     }
 
+    pressureDrainageActive(): boolean {
+        const systemUid = this.entity.systemUid;
+        switch (this.document.uiState.pressureOrDrainage) {
+            case "pressure":
+                return !isDrainage(systemUid);
+            case "drainage":
+                return isDrainage(systemUid);
+        }
+        assertUnreachable(this.document.uiState.pressureOrDrainage);
+    }
+
     drawEntity({ ctx, doc, vp }: DrawingContext, { layerActive, selected, overrideColorList }: EntityDrawingArgs): void {
         this.lastDrawnWorldRadius = 0;
 
@@ -76,6 +88,9 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
             const haloSize = (Math.max(this.MINIMUM_RADIUS_PX, screenSize) + 5) / scale;
 
             ctx.fillStyle = rgb2style(getHighlightColor(selected, overrideColorList, this.color(doc)), 0.5);
+            if (!this.pressureDrainageActive()) {
+                ctx.fillStyle = '#777777';
+            }
 
             ctx.beginPath();
             ctx.lineWidth = 0;
@@ -167,6 +182,9 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
     }
 
     inBounds(objectCoord: Coord, radius?: number) {
+        if (!this.pressureDrainageActive()) {
+            return false;
+        }
         const dist = Math.sqrt(objectCoord.x ** 2 + objectCoord.y ** 2);
         return dist <= this.toObjectLength(this.lastDrawnDiameterW / 2) + (radius ? radius : 0);
     }

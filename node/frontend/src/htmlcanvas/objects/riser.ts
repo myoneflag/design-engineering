@@ -21,13 +21,15 @@ import CanvasContext from "../lib/canvas-context";
 import {DrawableEntityConcrete, EdgeLikeEntity} from "../../../../common/src/api/document/entities/concrete-entity";
 import RiserCalculation from "../../store/document/calculations/riser-calculation";
 import Pipe from "./pipe";
-import {getFluidDensityOfSystem, head2kpa} from "../../calculations/pressure-drops";
-import {Coord, FlowSystemParameters} from "../../../../common/src/api/document/drawing";
-import {getEdgeLikeHeightAboveGroundM, getHighlightColor} from "../lib/utils";
-import {GlobalStore} from "../lib/global-store";
-import {Interaction, InteractionType} from "../lib/interaction";
-import {SnappableObject} from "../lib/object-traits/snappable-object";
-import {isDrainage} from "../../../../common/src/api/config"
+import { getFluidDensityOfSystem, head2kpa } from "../../calculations/pressure-drops";
+import { Coord, FlowSystemParameters } from "../../../../common/src/api/document/drawing";
+import { getEdgeLikeHeightAboveGroundM, getHighlightColor } from "../lib/utils";
+import { GlobalStore } from "../lib/global-store";
+import { APIResult } from "../../../../common/src/api/document/types";
+import { Interaction, InteractionType } from "../lib/interaction";
+import { SnappableObject } from "../lib/object-traits/snappable-object";
+import {assertUnreachable, isDrainage} from "../../../../common/src/api/config";
+
 @CalculatedObject
 @SelectableObject
 @CenterDraggableObject
@@ -53,6 +55,17 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         return TM.transform(TM.translate(this.entity.center.x, this.entity.center.y), TM.scale(scale, scale));
     }
 
+    isActive(): boolean {
+        const systemUid = this.entity.systemUid;
+        switch (this.document.uiState.pressureOrDrainage) {
+            case "pressure":
+                return !isDrainage(systemUid);
+            case "drainage":
+                return isDrainage(systemUid);
+        }
+        assertUnreachable(this.document.uiState.pressureOrDrainage);
+    }
+
     drawEntity({ ctx, doc, vp }: DrawingContext, { selected, layerActive, overrideColorList }: EntityDrawingArgs): void {
         this.lastDrawnWorldRadius = 0;
 
@@ -76,6 +89,10 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                 overrideColorList,
                 {hex: lighten(this.color(doc).hex, 50)},
             ), 0.5);
+
+            if (!this.isActive()) {
+                ctx.fillStyle = '#777777';
+            }
 
             ctx.beginPath();
             ctx.lineWidth = 0;
