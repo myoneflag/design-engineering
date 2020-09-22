@@ -1,6 +1,3 @@
-import {EntityType} from "../../../../../common/src/api/document/entities/types";
-import {EntityType} from "../../../../../common/src/api/document/entities/types";
-import {EntityType} from "../../../../../common/src/api/document/entities/types";
 <template>
     <div class="propertiesWindow">
         <template v-if="selectedObjects.length === 1">
@@ -215,13 +212,17 @@ export default class PropertiesWindow extends Vue {
         return this.document.uiState.viewOnly || this.document.uiState.drawingMode === DrawingMode.History;
     }
 
+    get nodes() {
+        return this.$store.getters["customEntity/nodes"];
+    }
+
     autoConnect() {
         MainEventBus.$emit("auto-connect");
     }
 
     get psdUnits(): PsdUnitsByFlowSystem | null {
         const selectedEntities: DrawableEntityConcrete[] = this.$props.selectedEntities;
-        return countPsdUnits(selectedEntities, this.document, this.effectiveCatalog, this.$props.objectStore);
+        return countPsdUnits(selectedEntities, this.document, this.effectiveCatalog, this.$props.objectStore, this.nodes);
     }
 
     systemPsdUnitName(suid: string) {

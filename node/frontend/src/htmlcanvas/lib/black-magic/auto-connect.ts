@@ -848,7 +848,7 @@ export class AutoConnector {
                 return res.systemUidOption;
             }
             case EntityType.LOAD_NODE: {
-                const res = fillDefaultLoadNodeFields(this.context.document, this.context.globalStore, entity);
+                const res = fillDefaultLoadNodeFields(this.context.document, this.context.globalStore, entity, this.context.$store.getters["catalog/default"], this.context.$store.getters["customEntity/nodes"]);
                 return res.systemUidOption;
             }
             case EntityType.BACKGROUND_IMAGE:

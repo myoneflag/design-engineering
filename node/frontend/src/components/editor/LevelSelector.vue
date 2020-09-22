@@ -263,6 +263,10 @@ export default class LevelSelector extends Vue {
         return this.$store.getters["catalog/default"];
     }
 
+    get nodes() {
+        return this.$store.getters["customEntity/nodes"];
+    }
+
     commitFloorHeight(level: Level) {
         level.floorHeightM = Number(this.getFloorHeightCached(level));
         this.commit();
@@ -270,7 +274,7 @@ export default class LevelSelector extends Vue {
 
     getLevelPsdFormatted(level: Level): Array<{ hex: string; text: string }> {
         const entities = Object.values(level.entities);
-        const result = countPsdUnits(entities, this.document, this.catalog, this.$props.objectStore);
+        const result = countPsdUnits(entities, this.document, this.catalog, this.$props.objectStore, this.nodes);
         if (result) {
             return Object.keys(result).map((k) => {
                 const system = this.document.drawing.metadata.flowSystems.find((fs) => fs.uid === k);
@@ -329,10 +333,6 @@ export default class LevelSelector extends Vue {
     padding-top: 5px;
     padding-bottom: 5px;
 }
-
-.levels-list {
-}
-
 .level-selector-scroll {
     max-height: -webkit-calc(100vh - 50px);
     overflow-y: auto;

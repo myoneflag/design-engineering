@@ -4,27 +4,37 @@ import {CenteredEntity, Color, COLORS, DrawableEntity, DrawingState} from "../dr
 import {Units} from "../../../lib/measurements";
 import {isGas} from "../../config";
 import {Catalog} from "../../catalog/types";
+import { NodeProps } from "../../../models/CustomEntity";
 
 export enum NodeType {
     LOAD_NODE,
     DWELLING,
 }
 
+export enum NodeVariant {
+    "FIXTURE-GROUP" = "FIXTURE-GROUP",
+    "FIXTURE" = "FIXTURE",
+    "CONTINUOUS" = "CONTINUOUS",
+}
+
 export interface LoadNode {
     type: NodeType.LOAD_NODE;
-    loadingUnits: number;
-    designFlowRateLS: number;
-    continuousFlowLS: number;
+    loadingUnits: number | null;
+    designFlowRateLS: number | null;
+    continuousFlowLS: number | null;
     gasFlowRateMJH: number;
     gasPressureKPA: number;
+    variant?: NodeVariant;
 }
 
 export interface DwellingNode {
     type: NodeType.DWELLING;
     dwellings: number;
-    continuousFlowLS: number;
+    continuousFlowLS: number | null;
     gasFlowRateMJH: number;
     gasPressureKPA: number;
+    loadingUnits: number | null;
+    designFlowRateLS: number | null;
 }
 
 export default interface LoadNodeEntity extends DrawableEntity, CenteredEntity {
@@ -38,6 +48,8 @@ export default interface LoadNodeEntity extends DrawableEntity, CenteredEntity {
     maxPressureKPA: number | null;
 
     linkedToUid: string | null;
+    customNodeId?: number | string;
+    name?: string | null;
 }
 
 export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity, catalog: Catalog, systemUid: string | null): PropertyField[] {
@@ -70,39 +82,74 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
     switch (value.node.type) {
         case NodeType.LOAD_NODE:
             if (!nodeIsGas || systemUid === null) {
-                fields.push(
-                    {
-                        property: "node.loadingUnits",
-                        title: "Loading Units",
-                        hasDefault: false,
-                        isCalculated: false,
-                        type: FieldType.Number,
-                        params: { min: 0, max: null },
-                        multiFieldId: "loadingUnits"
-                    },
-
-                    {
-                        property: "node.designFlowRateLS",
-                        title: "Full Flow Rate",
-                        hasDefault: false,
-                        isCalculated: false,
-                        type: FieldType.Number,
-                        params: { min: 0, max: null },
-                        multiFieldId: "designFlowRateLS",
-                        units: Units.LitersPerSecond,
-                    },
-
-                    {
-                        property: "node.continuousFlowLS",
-                        title: "Continuous Flow",
-                        hasDefault: false,
-                        isCalculated: false,
-                        type: FieldType.Number,
-                        params: { min: 0, max: null },
-                        multiFieldId: "continuousFlowLS",
-                        units: Units.LitersPerSecond
-                    },
-                );
+                if (value.node.variant === NodeVariant.FIXTURE) {
+                    fields.push(
+                        {
+                            property: "node.loadingUnits",
+                            title: "Loading Units",
+                            hasDefault: typeof value.customNodeId === "number",
+                            isCalculated: false,
+                            type: FieldType.Number,
+                            params: { min: 0, max: null },
+                            multiFieldId: "loadingUnits"
+                        },
+                        {
+                            property: "node.designFlowRateLS",
+                            title: "Full Flow Rate",
+                            hasDefault: typeof value.customNodeId === "number",
+                            isCalculated: false,
+                            type: FieldType.Number,
+                            params: { min: 0, max: null },
+                            multiFieldId: "designFlowRateLS",
+                            units: Units.LitersPerSecond,
+                        },
+                    );
+                } else if (value.node.variant === NodeVariant.CONTINUOUS) {
+                    fields.push(
+                        {
+                            property: "node.continuousFlowLS",
+                            title: "Continuous Flow",
+                            hasDefault: typeof value.customNodeId === "number",
+                            isCalculated: false,
+                            type: FieldType.Number,
+                            params: { min: 0, max: null },
+                            multiFieldId: "continuousFlowLS",
+                            units: Units.LitersPerSecond
+                        },
+                    );
+                } else {
+                    fields.push(
+                        {
+                            property: "node.loadingUnits",
+                            title: "Loading Units",
+                            hasDefault: typeof value.customNodeId === "number",
+                            isCalculated: false,
+                            type: FieldType.Number,
+                            params: { min: 0, max: null },
+                            multiFieldId: "loadingUnits"
+                        },
+                        {
+                            property: "node.designFlowRateLS",
+                            title: "Full Flow Rate",
+                            hasDefault: typeof value.customNodeId === "number",
+                            isCalculated: false,
+                            type: FieldType.Number,
+                            params: { min: 0, max: null },
+                            multiFieldId: "designFlowRateLS",
+                            units: Units.LitersPerSecond,
+                        },
+                        {
+                            property: "node.continuousFlowLS",
+                            title: "Continuous Flow",
+                            hasDefault: typeof value.customNodeId === "number",
+                            isCalculated: false,
+                            type: FieldType.Number,
+                            params: { min: 0, max: null },
+                            multiFieldId: "continuousFlowLS",
+                            units: Units.LitersPerSecond
+                        },
+                    );
+                }
             }
             break;
         case NodeType.DWELLING:
@@ -115,6 +162,25 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                     type: FieldType.Number,
                     params: { min: 0, max: null },
                     multiFieldId: "dwellings"
+                },
+                {
+                    property: "node.loadingUnits",
+                    title: "Loading Units",
+                    hasDefault: true,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    params: { min: 0, max: null },
+                    multiFieldId: "loadingUnits"
+                },
+                {
+                    property: "node.designFlowRateLS",
+                    title: "Full Flow Rate",
+                    hasDefault: true,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    params: { min: 0, max: null },
+                    multiFieldId: "designFlowRateLS",
+                    units: Units.LitersPerSecond,
                 },
             );
 

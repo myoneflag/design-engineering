@@ -189,7 +189,7 @@
     import PipeEntity, { fillPipeDefaultFields } from "../../../../common/src/api/document/entities/pipe-entity";
     import util from "util";
     import insertLoadNode from "../../htmlcanvas/tools/insert-load-node";
-    import {NodeType} from "../../../../common/src/api/document/entities/load-node-entity";
+    import {NodeType, NodeVariant} from "../../../../common/src/api/document/entities/load-node-entity";
     import {BigValveType} from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
     import {Buffer} from "./RenderBuffer";
     import {GlobalStore} from "../../htmlcanvas/lib/global-store";
@@ -205,7 +205,6 @@
     import {cloneSimple} from "../../../../common/src/lib/utils";
     import Riser from "../../htmlcanvas/objects/riser";
     import stringify from "json-stable-stringify";
-    import insertDwellingHotCold from "../../htmlcanvas/tools/insert-dwelling-hot-cold";
     import PDFSnapshotTopBar from "../PDFSnapshotTopBar.vue";
     import CanvasContext from "../../htmlcanvas/lib/canvas-context";
     import {PlantType} from "../../../../common/src/api/document/entities/plants/plant-types";
@@ -513,7 +512,8 @@
                         entities,
                         this.document,
                         this.effectiveCatalog,
-                        this.globalStore
+                        this.globalStore,
+                        this.nodes,
                     ));
                 }
 
@@ -540,6 +540,10 @@
 
         get onboarding(): OnboardingState {
             return this.$store.getters["onboarding/onboarding"];
+        }
+
+        get nodes() {
+            return this.$store.getters["customEntity/nodes"];
         }
 
         projectCost(): Cost {
@@ -1424,6 +1428,7 @@
             inletSystemUid: string;
             outletSystemUid: string;
             title: string;
+            customNodeId: number;
         }) {
             const { entityName, system, catalogId, valveType, nodeType, valveName, networkType, bigValveType, plantType, inletSystemUid, outletSystemUid, title } = params;
             this.select([], SelectMode.Replace);
@@ -1451,15 +1456,12 @@
                 }
                 insertDirectedValve(this, valveType, catalogId, system);
             } else if (entityName === EntityType.LOAD_NODE) {
-                if (params.variant === "hot-cold-dwelling") {
-                    insertDwellingHotCold(this, 0);
-                } else if (params.variant === 'hot-cold-load') {
-                    insertFixtureHotCold(this, 0);
+                if (params.variant === 'hot-cold-load') {
+                    insertFixtureHotCold(this, 0, params.customNodeId);
                 } else if (params.variant === 'continuous') {
-
-                    insertLoadNode(this, nodeType, system?.uid || null, 0, 1);
+                    insertLoadNode(this, nodeType, system?.uid || null, 0, 1, 1, NodeVariant.CONTINUOUS);
                 } else {
-                    insertLoadNode(this, nodeType, system?.uid || null);
+                    insertLoadNode(this, nodeType, system?.uid || null, 1, 0, 1, NodeVariant.FIXTURE);
                 }
             } else if (entityName === EntityType.FLOW_SOURCE) {
                 insertFlowSource(this, system);
@@ -1515,6 +1517,7 @@
                 catalog: this.effectiveCatalog,
                 globalStore: this.globalStore,
                 selectedUids: new Set<string>(), // this is set in the draw reactive layer,
+                nodes: this.nodes,
             };
 
             if (drawReactive && this.activeLayer) {
@@ -1553,7 +1556,7 @@
 
         get focusLUs() {
             if (this.selectedEntities.length && this.document.uiState.drawingMode === DrawingMode.Hydraulics) {
-                return countPsdUnits(this.selectedEntities, this.document, this.effectiveCatalog, this.globalStore);
+                return countPsdUnits(this.selectedEntities, this.document, this.effectiveCatalog, this.globalStore, this.nodes);
             } else {
                 return countPsdUnits(
                     Array.from(
@@ -1566,7 +1569,8 @@
                     }),
                     this.document,
                     this.effectiveCatalog,
-                    this.globalStore
+                    this.globalStore,
+                    this.nodes,
                 );
             }
         }
@@ -1643,6 +1647,7 @@
                     catalog: this.effectiveCatalog,
                     globalStore: this.globalStore,
                     selectedUids: new Set<string>(this.selectedIds),
+                    nodes: this.nodes,
                 };
 
                 if (this.toolHandler && !forExport) {

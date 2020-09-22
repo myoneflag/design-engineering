@@ -7,7 +7,7 @@ import { InteractionType } from "../../../src/htmlcanvas/lib/interaction";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
 import BackedDrawableObject from "../../../src/htmlcanvas/lib/backed-drawable-object";
 import { ConnectableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
-import LoadNodeEntity, { NodeType } from "../../../../common/src/api/document/entities/load-node-entity";
+import LoadNodeEntity, { NodeType, NodeVariant } from "../../../../common/src/api/document/entities/load-node-entity";
 import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import Fitting from "../objects/fitting";
 import { Coord } from "../../../../common/src/api/document/drawing";
@@ -20,7 +20,8 @@ import LoadNode from "../objects/load-node";
 import { KeyCode } from "../utils";
 
 export default function insertLoadNode(context: CanvasContext, type: NodeType, systemUid: string | null,
-                                       loadingUnits: number = 1, continuousFlowLS: number = 0, dwellings: number = 1) {
+                                       loadingUnits: number = 1, continuousFlowLS: number = 0, dwellings: number = 1,
+                                       variant: NodeVariant) {
     const newUid = uuid();
     const toReplace: BackedDrawableObject<ConnectableEntityConcrete> | null = null;
     MainEventBus.$emit(
@@ -33,7 +34,7 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType, s
                         MainEventBus.$emit("set-tool-handler", null);
                     }
                 } else {
-                    insertLoadNode(context, type, systemUid);
+                    insertLoadNode(context, type, systemUid, loadingUnits, continuousFlowLS, dwellings, variant);
                 }
             },
             (wc: Coord, event) => {
@@ -54,55 +55,27 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType, s
                     }
                 );
 
-                const connections: string[] = [];
-
-                let newEntity: LoadNodeEntity;
-                switch (type) {
-                    case NodeType.LOAD_NODE:
-                        newEntity = {
-                            node: {
-                                type: NodeType.LOAD_NODE,
-                                continuousFlowLS,
-                                designFlowRateLS: 0,
-                                gasFlowRateMJH: 0,
-                                gasPressureKPA: 0,
-                                loadingUnits
-                            },
-                            minPressureKPA: null,
-                            maxPressureKPA: null,
-                            systemUidOption: systemUid,
-                            center: cloneSimple(wc),
-                            color: null,
-                            calculationHeightM: null,
-                            parentUid: null,
-                            type: EntityType.LOAD_NODE,
-                            linkedToUid: null,
-                            uid: newUid
-                        };
-
-                        break;
-                    case NodeType.DWELLING:
-                        newEntity = {
-                            node: {
-                                type: NodeType.DWELLING,
-                                dwellings,
-                                continuousFlowLS,
-                                gasFlowRateMJH: 0,
-                                gasPressureKPA: 0,
-                            },
-                            minPressureKPA: null,
-                            maxPressureKPA: null,
-                            systemUidOption: null,
-                            center: cloneSimple(wc),
-                            color: null,
-                            calculationHeightM: null,
-                            parentUid: null,
-                            type: EntityType.LOAD_NODE,
-                            linkedToUid: null,
-                            uid: newUid
-                        };
-                        break;
-                }
+                let newEntity: LoadNodeEntity = {
+                    node: {
+                        type: NodeType.LOAD_NODE,
+                        continuousFlowLS,
+                        designFlowRateLS: 0,
+                        gasFlowRateMJH: 0,
+                        gasPressureKPA: 0,
+                        loadingUnits,
+                        variant: variant,
+                    },
+                    minPressureKPA: null,
+                    maxPressureKPA: null,
+                    systemUidOption: systemUid,
+                    center: cloneSimple(wc),
+                    color: null,
+                    calculationHeightM: null,
+                    parentUid: null,
+                    type: EntityType.LOAD_NODE,
+                    linkedToUid: null,
+                    uid: newUid
+                };
 
                 context.$store.dispatch("document/addEntity", newEntity);
 

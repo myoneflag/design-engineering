@@ -134,7 +134,8 @@ export function getSystemNodeHeightM(entity: SystemNodeEntity, context: CanvasCo
         catalog: context.effectiveCatalog,
         priceTable: context.effectivePriceTable,
         doc: context.document,
-        globalStore: context.globalStore
+        globalStore: context.globalStore,
+        nodes: context.$store.getters["customEntity/nodes"],
     });
 }
 

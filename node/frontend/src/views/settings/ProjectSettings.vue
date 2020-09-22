@@ -23,6 +23,7 @@
                         <b-nav-item :to="{ name: 'settings/fixtures' }" active-class="active"
                             :class="{onboarding: onboarding.currentStep === 4}"
                         >Fixtures</b-nav-item>
+                        <b-nav-item :to="{ name: 'settings/nodes' }" active-class="active">Nodes</b-nav-item>
                         <b-nav-item :to="{ name: 'settings/flow-systems' }" active-class="active"
                             :class="{onboarding: onboarding.currentStep === 5}"
                         >Flow Systems</b-nav-item>

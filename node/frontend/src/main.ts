@@ -14,7 +14,8 @@ import VueAwesome from "vue-awesome";
 
 import VueDragDrop from "vue-drag-drop";
 import VueCookies from "vue-cookies";
-import BootstrapVue from "bootstrap-vue";
+import { BootstrapVue, BootstrapVueIcons } from 'bootstrap-vue'
+import { InputGroupPlugin } from 'bootstrap-vue';
 // @ts-ignore
 import VueResize from "vue-resize";
 import { submitErrorReport, updateErrorReport } from "./api/error-report";
@@ -25,6 +26,8 @@ Vue.use(VueCookies);
 
 Vue.use(VueInputAutowidth);
 Vue.use(BootstrapVue);
+Vue.use(BootstrapVueIcons);
+Vue.use(InputGroupPlugin);
 Vue.use(VueResize);
 Vue.use(VueYouTubeEmbed);
 Vue.component("v-icon", VueAwesome);

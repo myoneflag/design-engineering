@@ -1,3 +1,4 @@
+import { NodeProps } from './../../../../common/src/models/CustomEntity';
 import { MainEventBus } from "../../../src/store/main-event-bus";
 import PointTool from "../../../src/htmlcanvas/tools/point-tool";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
@@ -7,7 +8,7 @@ import { InteractionType } from "../../../src/htmlcanvas/lib/interaction";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
 import BackedDrawableObject from "../../../src/htmlcanvas/lib/backed-drawable-object";
 import { ConnectableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
-import LoadNodeEntity, { NodeType } from "../../../../common/src/api/document/entities/load-node-entity";
+import LoadNodeEntity, { NodeType, DwellingNode, LoadNode as LoadNodeType, NodeVariant } from "../../../../common/src/api/document/entities/load-node-entity";
 import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import Fitting from "../objects/fitting";
 import { Coord } from "../../../../common/src/api/document/drawing";
@@ -23,7 +24,7 @@ import LoadNode from "../objects/load-node";
 
 export const FIXTURE_PAIR_DEFAULT_DISTANCE_MM = 200;
 
-export default function insertFixtureHotCold(context: CanvasContext, rotationDEG: number) {
+export default function insertFixtureHotCold(context: CanvasContext, rotationDEG: number, customNodeId: number | string) {
     const coldUid = uuid();
     const hotUid = uuid();
     MainEventBus.$emit(
@@ -36,7 +37,7 @@ export default function insertFixtureHotCold(context: CanvasContext, rotationDEG
                         MainEventBus.$emit("set-tool-handler", null);
                     }
                 } else {
-                    insertFixtureHotCold(context, rotationDEG);
+                    insertFixtureHotCold(context, rotationDEG, customNodeId);
                 }
             },
             (wc: Coord, event) => {
@@ -47,16 +48,34 @@ export default function insertFixtureHotCold(context: CanvasContext, rotationDEG
                 const hotLoc = Flatten.vector(-FIXTURE_PAIR_DEFAULT_DISTANCE_MM, 0)
                     .rotate((rotationDEG / 180) * Math.PI)
                     .add(Flatten.vector(wc.x, wc.y));
+                const nodeGroup: NodeProps = context.$store.getters["customEntity/nodes"].find((node: NodeProps) => node.id === customNodeId || node.uid === customNodeId);
 
-                const hotEntity: LoadNodeEntity = {
-                    node: {
+                let node: LoadNodeType | DwellingNode;
+                if (nodeGroup.dwelling) {
+                    node = {
+                        type: NodeType.DWELLING,
+                        dwellings: 1,
+                        loadingUnits: null,
+                        designFlowRateLS: null,
+                        gasFlowRateMJH: 0,
+                        continuousFlowLS: null,
+                        gasPressureKPA: 0,
+                    };
+                } else {
+                    node = {
                         type: NodeType.LOAD_NODE,
-                        loadingUnits: 1,
-                        designFlowRateLS: 0,
-                        continuousFlowLS: 0,
+                        loadingUnits: null,
+                        designFlowRateLS: null,
+                        continuousFlowLS: null,
                         gasFlowRateMJH: 0,
                         gasPressureKPA: 0,
-                    },
+                        variant: NodeVariant["FIXTURE-GROUP"],
+                    };
+                }
+                
+                const hotEntity: LoadNodeEntity = {
+                    name: null,
+                    node: node,
                     systemUidOption: StandardFlowSystemUids.HotWater,
                     center: { x: hotLoc.x, y: hotLoc.y },
                     color: null,
@@ -67,17 +86,12 @@ export default function insertFixtureHotCold(context: CanvasContext, rotationDEG
                     uid: hotUid,
                     minPressureKPA: null,
                     maxPressureKPA: null,
+                    customNodeId: customNodeId
                 };
 
                 const coldEntity: LoadNodeEntity = {
-                    node: {
-                        type: NodeType.LOAD_NODE,
-                        loadingUnits: 1,
-                        designFlowRateLS: 0,
-                        continuousFlowLS: 0,
-                        gasFlowRateMJH: 0,
-                        gasPressureKPA: 0,
-                    },
+                    name: null,
+                    node: node,
                     systemUidOption: StandardFlowSystemUids.ColdWater,
                     center: { x: coldLoc.x, y: coldLoc.y },
                     color: null,
@@ -88,6 +102,7 @@ export default function insertFixtureHotCold(context: CanvasContext, rotationDEG
                     uid: coldUid,
                     minPressureKPA: null,
                     maxPressureKPA: null,
+                    customNodeId: customNodeId
                 };
 
                 context.$store.dispatch("document/addEntity", hotEntity);

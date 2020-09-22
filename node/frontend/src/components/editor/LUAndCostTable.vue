@@ -1,5 +1,3 @@
-import {StandardFlowSystemUids} from "../../../../common/src/api/config";
-import {Units} from "../../../../common/src/lib/measurements";
 <template>
     <div  class="lu-cost-table"
           :style="document.uiState.costAndLUTableOpen ? '' : 'margin-bottom: 35px'"
@@ -101,8 +99,12 @@ import {Units} from "../../../../common/src/lib/measurements";
             return this.$store.getters["catalog/default"];
         }
 
+        get nodes() {
+            return this.$store.getters["customEntity/nodes"];
+        }
+
         get psdUnits() {
-            return countPsdUnits(this.$props.selectedEntities, this.document, this.catalog, this.$props.globalStore);
+            return countPsdUnits(this.$props.selectedEntities, this.document, this.catalog, this.$props.globalStore, this.nodes);
         }
 
         cost2str(cost: Cost) {

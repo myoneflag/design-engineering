@@ -264,7 +264,8 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                     priceTable: context.effectivePriceTable,
                     catalog: context.effectiveCatalog,
                     globalStore: context.globalStore,
-                    drawing: context.document.drawing
+                    drawing: context.document.drawing,
+                    nodes: context.$store.getters["customEntity/nodes"],
                 })
             )
         );
@@ -286,7 +287,8 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                     priceTable: context.effectivePriceTable,
                     catalog: context.effectiveCatalog,
                     globalStore: context.globalStore,
-                    drawing: context.document.drawing
+                    drawing: context.document.drawing,
+                    nodes: context.$store.getters["customEntity/nodes"],
                 })
             )
         );
