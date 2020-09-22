@@ -4,6 +4,7 @@ import { ValveType } from "../../../../common/src/api/document/entities/directed
 import { GlobalStore } from "./global-store";
 import { Catalog } from "../../../../common/src/api/catalog/types";
 import {PriceTable} from "../../../../common/src/api/catalog/price-table";
+import { NodeProps } from '../../../../common/src/models/CustomEntity';
 
 export interface DrawingContext {
     ctx: CanvasRenderingContext2D;
@@ -13,6 +14,7 @@ export interface DrawingContext {
     priceTable: PriceTable;
     globalStore: GlobalStore;
     selectedUids: Set<string>;
+    nodes: NodeProps[];
 }
 
 // Manages objects, and also keeps track of connections. This basic one is to

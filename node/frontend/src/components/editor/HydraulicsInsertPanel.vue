@@ -285,44 +285,26 @@
                     variant="outline-dark"
                 >
                     <b-dropdown-item
+                        v-for="node in nodes"
+                        :key="node.name"
                         variant="outline-dark"
                         class="shower btn-sm"
-                        @click="toggleNodePair"
-                    >
-                        Hot/Cold Fixture Node Pair
-                    </b-dropdown-item>
-
-                    <b-dropdown-item
-                            variant="outline-dark"
-                            class="shower btn-sm"
-                            @click="$emit('insert', { entityName: entityNames.LOAD_NODE, variant: 'hot-cold-dwelling' })"
-                    >
-                        Hot/Cold Dwelling Node Pair
-                    </b-dropdown-item>
-
+                        @click="toggleCustomNodePair(node.id ? node.id: node.uid)"
+                    >{{ node.name }}</b-dropdown-item>
 
                     <b-dropdown-item
                             variant="outline-dark"
                             class="shower btn-sm"
                             @click="$emit('insert', { entityName: entityNames.LOAD_NODE, nodeType: NodeType.LOAD_NODE,
                                 system: selectedSystem.uid === 'gas' ? selectedSystem : null})"
-                    >Fixture Node</b-dropdown-item
-                    >
-                    <b-dropdown-item
-                            variant="outline-dark"
-                            class="shower btn-sm"
-                            @click="$emit('insert', { entityName: entityNames.LOAD_NODE, nodeType: NodeType.DWELLING })"
-                    >Dwelling Node</b-dropdown-item>
+                    >Fixture Node</b-dropdown-item>
 
                     <b-dropdown-item
                             variant="outline-dark"
                             class="shower btn-sm"
                             @click="$emit('insert', { entityName: entityNames.LOAD_NODE, nodeType: NodeType.LOAD_NODE,
                              variant: 'continuous' })"
-                    >
-                        Continuous Flow Node
-                    </b-dropdown-item>
-
+                    >Continuous Flow Node</b-dropdown-item>
                 </b-dropdown>
             </b-button-group>
         </b-col>
@@ -344,6 +326,7 @@ import { FlowSystemParameters, NetworkType } from "../../../../common/src/api/do
 import { ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
 import { PlantType } from "../../../../common/src/api/document/entities/plants/plant-types";
 import OnboardingState, { ONBOARDING_SCREEN } from "../../store/onboarding/types";
+import { NodeProps } from "../../../../common/src/models/CustomEntity";
 
 @Component({
     components: { FlowSystemPicker },
@@ -477,6 +460,10 @@ export default class HydraulicsInsertPanel extends Vue {
         return this.$store.getters["catalog/default"];
     }
 
+    get nodes(): NodeProps[] {
+        return this.$store.getters["customEntity/nodes"];
+    }
+
     selectedSystemId: number = 0;
 
     addRemoveFixturesClick() {
@@ -607,9 +594,9 @@ export default class HydraulicsInsertPanel extends Vue {
     }
 
     toggleNodePair() {
-       this.$emit('insert', { 
-           entityName: this.entityNames.LOAD_NODE, 
-           variant: 'hot-cold-load' 
+        this.$emit('insert', { 
+            entityName: this.entityNames.LOAD_NODE, 
+            variant: 'hot-cold-load' 
         });
     }
 
@@ -634,6 +621,14 @@ export default class HydraulicsInsertPanel extends Vue {
 
     checkOnboardingClass(step: number) {
         return step === this.onboarding.currentStep && this.onboarding.screen === ONBOARDING_SCREEN.DOCUMENT_PLUMBING;
+    }
+
+    toggleCustomNodePair(customNodeId: number | string) {
+        this.$emit('insert', { 
+            entityName: this.entityNames.LOAD_NODE, 
+            variant: 'hot-cold-load',
+            customNodeId: customNodeId,
+        });
     }
 }
 </script>

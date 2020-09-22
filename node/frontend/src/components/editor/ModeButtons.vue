@@ -80,8 +80,6 @@ export default class ModeButtons extends Vue {
     }
 
     checkOnboardingClass(step: number) {
-        console.log(step);
-        console.log(this.onboarding);
         return step === this.onboarding.currentStep && this.onboarding.screen === ONBOARDING_SCREEN.DOCUMENT;
     }
 }

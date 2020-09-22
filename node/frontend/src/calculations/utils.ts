@@ -36,6 +36,8 @@ import { GlobalStore } from "../htmlcanvas/lib/global-store";
 import {makeGasApplianceFields} from "../../../common/src/api/document/entities/gas-appliance";
 import {makeGasApplianceCalculationFields} from "../store/document/calculations/gas-appliance-calculation";
 import {PlantType} from "../../../common/src/api/document/entities/plants/plant-types";
+import { NodeProps } from '../../../common/src/models/CustomEntity';
+import { fillDefaultLoadNodeFields } from '../store/document/entities/fillDefaultLoadNodeFields';
 
 export interface PsdCountEntry {
     units: number;
@@ -75,7 +77,8 @@ export function countPsdUnits(
     entities: DrawableEntityConcrete[],
     doc: DocumentState,
     catalog: Catalog,
-    objectStore: ObjectStore
+    objectStore: ObjectStore,
+    nodes: NodeProps[],
 ): PsdUnitsByFlowSystem {
     let result: PsdUnitsByFlowSystem = {};
     entities.forEach((e) => {
@@ -104,7 +107,9 @@ export function countPsdUnits(
 
                 break;
             case EntityType.LOAD_NODE: {
-                const suid = determineConnectableSystemUid(objectStore, e);
+                const mainLoadNode = fillDefaultLoadNodeFields(doc, objectStore, e, catalog, nodes);
+                const suid = determineConnectableSystemUid(objectStore, mainLoadNode);
+
                 if (suid) {
                     if (result === null) {
                         result = {};
@@ -113,18 +118,18 @@ export function countPsdUnits(
                         result[suid] = zeroFinalPsdCounts();
                     }
 
-                    switch (e.node.type) {
+                    switch (mainLoadNode.node.type) {
                         case NodeType.LOAD_NODE:
                             if (isGermanStandard(doc.drawing.metadata.calculationParams.psdMethod)) {
-                                result[suid].units += e.node.designFlowRateLS;
+                                result[suid].units += mainLoadNode.node.designFlowRateLS!;
                             } else {
-                                result[suid].units += e.node.loadingUnits;
-                                result[suid].highestLU = Math.max(result[suid].highestLU, e.node.loadingUnits!);
+                                result[suid].units += mainLoadNode.node.loadingUnits!;
+                                result[suid].highestLU = Math.max(result[suid].highestLU, mainLoadNode.node.loadingUnits!);
                             }
-                            result[suid].continuousFlowLS += e.node.continuousFlowLS;
+                            result[suid].continuousFlowLS += mainLoadNode.node.continuousFlowLS!;
                             break;
                         case NodeType.DWELLING:
-                            result[suid].dwellings += e.node.dwellings;
+                            result[suid].dwellings += mainLoadNode.node.dwellings;
                             break;
                     }
                 }

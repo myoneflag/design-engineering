@@ -309,6 +309,7 @@ export default class CalculationLayer extends LayerImplementation {
                 done();
             },
             context.effectivePriceTable,
+            context.$store.getters["customEntity/nodes"]
         );
     }
 

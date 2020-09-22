@@ -9,6 +9,7 @@ import { catalog } from "./catalog";
 import { hotKey } from './hot-key';
 import { getters } from "./getters";
 import { onboarding } from './onboarding';
+import { customEntity } from './custom-entity';
 
 Vue.use(Vuex);
 
@@ -25,6 +26,7 @@ export const store: StoreOptions<RootState> = {
         catalog,
         hotKey,
         onboarding,
+        customEntity,
     }
 };
 

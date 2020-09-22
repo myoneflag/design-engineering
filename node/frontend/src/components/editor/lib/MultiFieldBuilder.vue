@@ -1,5 +1,3 @@
-import { FieldType } from "../../../../../common/src/api/document/entities/property-field"; import {EntityType} from
-"../../../store/document/entities/types";
 <template>
     <b-container>
         <PropertiesFieldBuilder
@@ -135,7 +133,7 @@ export default class MultiFieldBuilder extends Vue {
             case EntityType.DIRECTED_VALVE:
                 return fillDirectedValveFields(this.document.drawing, this.$props.objectStore, obj.entity);
             case EntityType.LOAD_NODE:
-                return fillDefaultLoadNodeFields(this.document, obj.globalStore, obj.entity);
+                return fillDefaultLoadNodeFields(this.document, obj.globalStore, obj.entity, this.defaultCatalog, this.nodes);
             case EntityType.PLANT:
                 return fillPlantDefaults(obj.entity, this.document.drawing);
             case EntityType.FLOW_SOURCE:
@@ -152,6 +150,10 @@ export default class MultiFieldBuilder extends Vue {
 
     get defaultCatalog(): Catalog {
         return this.$store.getters["catalog/default"];
+    }
+
+    get nodes() {
+        return this.$store.getters["customEntity/nodes"];
     }
 
     getEmptyValue(type: FieldType) {

@@ -5,7 +5,8 @@
         hide-header 
         no-close-on-backdrop
         no-close-on-esc
-        :visible="onboarding.show"
+        v-model="onboarding.show"
+        v-if="onboarding.show"
     >
         <template v-if="dialog">
             <div class="d-block">
@@ -201,8 +202,17 @@ export default class Onboarding extends Vue {
         ],
     }
 
-    created() {
+    mounted() {
         this.displayOnboarding();
+    }
+
+    beforeDestroy() {
+        this.$store.dispatch("onboarding/setOnboarding", {
+            screen: "",
+            totalSteps: 0,
+            currentStep: null,
+            show: false,
+        } as OnboardingState);
     }
 
     get profile(): User {

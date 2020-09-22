@@ -15,6 +15,7 @@ import {feedbackMessageRouter} from './controllers/feedbackMessage';
 import { videoViewRouter } from "./controllers/videoView";
 import { hotKeyRouter } from './controllers/hotKey';
 import { onboardingRouter } from './controllers/onboarding';
+import { customEntityRouter } from './controllers/custom-entity';
 
 const router: Router = Router();
 
@@ -33,5 +34,6 @@ router.use('/videoView', videoViewRouter);
 router.use('/shareDocument', shareDocumentRouter);
 router.use('/hotKey', hotKeyRouter);
 router.use('/onboarding', onboardingRouter);
+router.use('/customEntity', customEntityRouter);
 
 export default router;

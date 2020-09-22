@@ -98,6 +98,7 @@ import GasApplianceEntity, {makeGasApplianceFields} from "../../../common/src/ap
 import {calculateGas} from "./gas";
 import {PlantType, ReturnSystemPlant} from "../../../common/src/api/document/entities/plants/plant-types";
 import {Return} from "aws-sdk/clients/cloudsearchdomain";
+import { NodeProps } from '../../../common/src/models/CustomEntity';
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -150,6 +151,7 @@ export default class CalculationEngine implements CalculationContext {
     catalog!: Catalog;
     drawing!: DrawingState;
     ga!: number;
+    nodes!: NodeProps[];
 
     entityMaxPressuresKPA = new Map<string, number | null>();
     nodePressureKPA = new Map<string, number | null>();
@@ -181,6 +183,7 @@ export default class CalculationEngine implements CalculationContext {
         catalog: Catalog,
         done: (success: boolean) => void,
         priceTable: PriceTable,
+        nodes: NodeProps[],
     ) {
         this.networkObjectUids = [];
         this.drawableObjectUids = [];
@@ -218,6 +221,7 @@ export default class CalculationEngine implements CalculationContext {
         this.catalog = catalog;
         this.drawing = this.doc.drawing;
         this.ga = this.doc.drawing.metadata.calculationParams.gravitationalAcceleration;
+        this.nodes = nodes;
 
         const success = this.preValidate();
 
@@ -1473,39 +1477,41 @@ export default class CalculationEngine implements CalculationContext {
             throw new Error("parent type is not a correct value");
         } else if (node.entity.type === EntityType.LOAD_NODE) {
             const correlationGroup = node.entity.linkedToUid || node.entity.uid;
-            switch (node.entity.node.type) {
+            const filled = fillDefaultLoadNodeFields(this.doc, this.globalStore, node.entity, this.catalog, this.nodes);
+            
+            switch (filled.node.type) {
                 case NodeType.LOAD_NODE:
                     if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
                         return {
-                            units: node.entity.node.designFlowRateLS,
-                            continuousFlowLS: node.entity.node.continuousFlowLS,
+                            units: filled.node.designFlowRateLS!,
+                            continuousFlowLS: filled.node.continuousFlowLS!,
                             dwellings: 0,
-                            entity: node.entity.uid,
-                            gasMJH: node.entity.node.gasFlowRateMJH,
+                            entity: filled.uid,
+                            gasMJH: filled.node.gasFlowRateMJH,
                             correlationGroup
                         };
                     } else {
                         return {
-                            units: node.entity.node.loadingUnits,
-                            continuousFlowLS: node.entity.node.continuousFlowLS,
+                            units: filled.node.loadingUnits!,
+                            continuousFlowLS: filled.node.continuousFlowLS!,
                             dwellings: 0,
-                            entity: node.entity.uid,
-                            gasMJH: node.entity.node.gasFlowRateMJH,
+                            entity: filled.uid,
+                            gasMJH: filled.node.gasFlowRateMJH,
                             correlationGroup
                         };
                     }
                 case NodeType.DWELLING:
                     return {
                         units: 0,
-                        continuousFlowLS: node.entity.node.continuousFlowLS,
-                        dwellings: node.entity.node.dwellings,
-                        entity: node.entity.uid,
-                        gasMJH: node.entity.node.gasFlowRateMJH * node.entity.node.dwellings,
+                        continuousFlowLS: filled.node.continuousFlowLS!,
+                        dwellings: filled.node.dwellings,
+                        entity: filled.uid,
+                        gasMJH: filled.node.gasFlowRateMJH * filled.node.dwellings!,
                         correlationGroup
                     };
                 default:
             }
-            assertUnreachable(node.entity.node);
+            assertUnreachable(filled.node);
             throw new Error("invalid node type");
         } else {
             return zeroContextualPCE(node.entity.uid, node.entity.uid);
@@ -2521,7 +2527,7 @@ export default class CalculationEngine implements CalculationContext {
                 case EntityType.PLANT:
                     break;
                 case EntityType.LOAD_NODE: {
-                    const filled = fillDefaultLoadNodeFields(this.doc, this.globalStore, o.entity);
+                    const filled = fillDefaultLoadNodeFields(this.doc, this.globalStore, o.entity, this.catalog, this.nodes);
                     const calc = this.globalStore.getOrCreateCalculation(filled);
                     if (calc.pressureKPA !== null && calc.pressureKPA > filled.maxPressureKPA!) {
                         calc.warning = 'Max pressure exceeded ('

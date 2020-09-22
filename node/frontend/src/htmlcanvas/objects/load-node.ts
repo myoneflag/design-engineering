@@ -29,6 +29,7 @@ import { ConnectableEntityConcrete } from "../../../../common/src/api/document/e
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { getHighlightColor } from "../lib/utils";
 import {assertUnreachable, isGas, StandardFlowSystemUids} from "../../../../common/src/api/config";
+import { DEFAULT_FONT_NAME } from "../../../src/config";
 
 @SelectableObject
 @CenterDraggableObject
@@ -70,7 +71,7 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         const baseRadius = this.baseRadius;
         const radius = Math.max(baseRadius, vp.surfaceToWorldLength(baseRadius / 50));
 
-        const filled = fillDefaultLoadNodeFields(context.doc, this.globalStore, this.entity);
+        const filled = fillDefaultLoadNodeFields(context.doc, this.globalStore, this.entity, context.catalog, context.nodes);
 
         const system = context.doc.drawing.metadata.flowSystems.find((f) => f.uid === filled.systemUidOption);
         const thisIsGas = isGas(system ? system.fluid : 'water', context.catalog);
@@ -132,6 +133,60 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
                 ctx.moveTo(0, 0);
                 ctx.lineTo(otherLoc.x, otherLoc.y);
                 ctx.stroke();
+            }
+        }
+
+        if (typeof this.entity.customNodeId !== "undefined") {
+            const entities = Array.from((this.globalStore.entitiesInLevel.get(this.document.uiState.levelUid) || new Set()).values()).map((u) => this.globalStore.get(u)!.entity);
+            
+            // get the other node
+            let other = null;
+            if (!this.entity.linkedToUid) {
+                for (let i = 0; i < entities.length; i++) {
+                    let e = entities[i];
+                    if (e.type === EntityType.LOAD_NODE && e.linkedToUid === this.entity.uid) {
+                        other = this.globalStore.get(e.uid);
+                    }
+                }
+            } else {
+                other = this.globalStore.get(this.entity.linkedToUid);
+            }
+            
+            if (other) {
+                const otherLoc = this.toObjectCoord(other.toWorldCoord());
+                const name = context.nodes.find(node => node.id === this.entity.customNodeId || node.uid === this.entity.customNodeId)!.name;
+                const currentLoc = this.toObjectCoord(this.globalStore.get(this.entity.uid)!.toWorldCoord());
+                // to get midpoint
+                const midx = (otherLoc.x + currentLoc.x) / 2;
+                const midy = (otherLoc.y + currentLoc.y) / 2;
+
+                const angleAB = Math.atan2(otherLoc.y - currentLoc.y, otherLoc.x - currentLoc.x);
+                // to get the angle of the line from minpoint to a new coordinates, add 90 degrees
+                // in radians, that is Math.PI / 2
+                const angleCD = angleAB + Math.PI / 2;
+                // now we can get the new coordinates
+                // the 210 represents the distance from midpoint to new coordinates
+                let distance = 210;
+                if (!this.entity.linkedToUid) {
+                    distance = -210;
+                }
+
+                const newx = midx + distance * Math.cos(angleCD);
+                const newy = midy + distance * Math.sin(angleCD);
+
+                ctx.save();
+                ctx.font = 70 + "pt " + DEFAULT_FONT_NAME;
+                ctx.textBaseline = "top";
+                const nameWidth = ctx.measureText(name).width;
+                const offsetx = nameWidth / 2;
+                ctx.fillStyle = "#00ff1421";
+                // the 70 represents the height of the font
+                const textHight = 70;
+                const offsetY = textHight / 2;
+                ctx.fillRect(newx - offsetx, newy - offsetY, nameWidth, 70);
+                ctx.fillStyle = "#007b1c";
+                ctx.fillText(name, newx - offsetx, newy - offsetY);
+                ctx.restore();
             }
         }
     }
@@ -229,7 +284,7 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
     }
 
     costBreakdown(context: CalculationContext): CostBreakdown | null {
-        const filled = fillDefaultLoadNodeFields(context.doc, context.globalStore, this.entity);
+        const filled = fillDefaultLoadNodeFields(context.doc, context.globalStore, this.entity, context.catalog, context.nodes);
         switch (filled.node.type) {
             case NodeType.LOAD_NODE:
                 switch (filled.systemUidOption) {

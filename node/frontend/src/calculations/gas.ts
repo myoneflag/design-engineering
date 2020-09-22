@@ -187,7 +187,7 @@ export function getAndFillInGasComponent(engine: CalculationEngine) {
                             calc.gasFlowRateMJH = o.entity.node.gasFlowRateMJH;
                             break;
                         case NodeType.DWELLING:
-                            calc.gasFlowRateMJH = o.entity.node.gasFlowRateMJH * o.entity.node.dwellings;
+                            calc.gasFlowRateMJH = o.entity.node.gasFlowRateMJH * o.entity.node.dwellings!;
                             break;
                         default:
                             assertUnreachable(o.entity.node);
@@ -405,7 +405,7 @@ function getGasVelocityRealMs(context: CalculationEngine, pipe: PipeEntity, type
                     const e = context.globalStore.get(c)!;
                     if (e.entity.type === EntityType.LOAD_NODE) {
                         if (e.entity.node.type === NodeType.DWELLING) {
-                            nDwellings += e.entity.node.dwellings;
+                            nDwellings += e.entity.node.dwellings!;
                             dwellingMJH += calculation.psdProfile.get(c)!.gasMJH;
                         }
                     }

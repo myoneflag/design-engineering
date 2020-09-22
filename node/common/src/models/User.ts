@@ -1,4 +1,3 @@
-
 import { 
     BaseEntity,
     Column,
@@ -11,6 +10,7 @@ import {
 import { Organization } from "./Organization";
 import { HotKey } from './HotKey';
 import { Onboarding } from "./Onboarding";
+import { CustomEntity } from './CustomEntity';
 
 export interface OnBoardingStats {
     numDrawingsCreated: number;

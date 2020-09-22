@@ -18,6 +18,8 @@ import { hotKeySetting } from "../api/hot-keys";
 import DrawingNavBar from "../components/DrawingNavBar.vue";
 import DrawingCanvas from "../components/editor/DrawingCanvas.vue";
 import LoadingScreen from "../views/LoadingScreen.vue";
+import { customEntityData } from "../api/custom-entity";
+import { EntityType } from "../../../common/src/api/document/entities/types";
 
 @Component({
     components: { LoadingScreen, DrawingCanvas, DrawingNavBar },
@@ -114,6 +116,17 @@ export default class Document extends Vue {
                 });
             }
         });
+
+        customEntityData({documentId: this.document.documentId, type: EntityType.LOAD_NODE}).then(res => {
+            if (res.success) {
+                this.$store.dispatch("customEntity/setNodes", res.data);
+            } else {
+                this.$bvToast.toast(res.message, {
+                    title: "Error retrieving nodes",
+                    variant: "Danger"
+                });
+            }
+        });
         
         MainEventBus.$on("disable-ui-mouse", this.disableUiMouse);
         MainEventBus.$on("enable-ui-mouse", this.enableUiMouse);
@@ -158,12 +171,19 @@ export default class Document extends Vue {
         return this.$store.getters["hotKey/loaded"];
     }
 
+    get customEntityLoaded(): boolean {
+        return this.$store.getters["customEntity/loaded"];
+    }
+
     get profile(): User {
         return this.$store.getters["profile/profile"];
     }
 
     get isLoading() {
-        return !this.catalogLoaded || !this.document.uiState.loaded || !this.hotKeySettingLoaded;
+        return !this.catalogLoaded 
+            || !this.document.uiState.loaded 
+            || !this.hotKeySettingLoaded 
+            || !this.customEntityLoaded;
     }
 }
 /*
