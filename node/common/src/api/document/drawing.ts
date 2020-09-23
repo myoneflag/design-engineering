@@ -10,9 +10,10 @@ import {
 } from "../config";
 import RiserEntity from "./entities/riser-entity";
 import { EntityType } from "./entities/types";
-import {Choice, DeepPartial} from "../../lib/utils";
+import {Choice, cloneSimple, DeepPartial} from "../../lib/utils";
 import {PriceTable} from "../catalog/price-table";
 import { OperationTransformConcrete, OPERATION_NAMES } from './operation-transforms';
+import {bool} from "aws-sdk/clients/signer";
 
 export interface Coord {
     x: number;
@@ -200,6 +201,39 @@ export interface FlowSystemParametersV9 extends WithID {
     networks: { [key in keyof typeof NetworkType]: NetworkParams };
 }
 
+export interface HorizontalPipeSizing {
+    minUnits: number;
+    maxUnits: number;
+    sizeMM: number;
+    gradePCT: number;
+}
+
+export interface VentSizing {
+    minUnits: number;
+    maxUnits: number;
+    sizeMM: number;
+}
+
+export interface StackPipeSizing {
+    minUnits: number;
+    maxUnits: number;
+    sizeMM: number;
+    maximumUnitsPerLevel: number;
+}
+
+export interface DrainageProperties {
+    stackSizeDiminish: boolean;
+    stackDedicatedVent: boolean;
+    maxUnventedLengthM: {[key: number]: number};
+    maxUnventedCapacityWCs: {[key: number]: number};
+
+    horizontalPipeSizing: HorizontalPipeSizing[];
+    availablePipeSizes: number[];
+    ventSizing: VentSizing[];
+    stackPipeSizing: StackPipeSizing[];
+    stackVentPipeSizing: VentSizing[];
+}
+
 export interface FlowSystemParameters extends WithID {
     name: string;
     temperature: number;
@@ -213,6 +247,7 @@ export interface FlowSystemParameters extends WithID {
     insulationJacket: InsulationJackets;
     insulationThicknessMM: number;
 
+    drainageProperties: DrainageProperties;
 
     networks: { [key in keyof typeof NetworkType]: NetworkParams};
 }
@@ -254,6 +289,24 @@ export interface SelectedMaterialManufacturer {
     manufacturer: string;
     selected: string | null;
 }
+
+export const initialDrainageProperties: DrainageProperties = {
+    availablePipeSizes: [],
+    horizontalPipeSizing: [
+        {minUnits: 0, maxUnits: 165, sizeMM: 100, gradePCT: 1.65},
+        {minUnits: 166, maxUnits: 855, sizeMM: 150, gradePCT: 1},
+        {minUnits: 856, maxUnits: 1310, sizeMM: 150, gradePCT: 1.65},
+        {minUnits: 1311, maxUnits: 4500, sizeMM: 225, gradePCT: 1},
+        {minUnits: 4501, maxUnits: 11400, sizeMM: 300, gradePCT: 1},
+    ],
+    maxUnventedCapacityWCs: {},
+    maxUnventedLengthM: {},
+    stackDedicatedVent: false,
+    stackPipeSizing: [],
+    stackSizeDiminish: false,
+    stackVentPipeSizing: [],
+    ventSizing: [],
+};
 
 export const initialDrawing: DrawingState = {
     metadata: {
@@ -310,7 +363,9 @@ export const initialDrawing: DrawingState = {
                         material: "pexSdr74",
                         minimumPipeSize: 16,
                     }
-                }
+                },
+
+                drainageProperties: cloneSimple(initialDrainageProperties),
             },
             {
                 name: "Hot Water",
@@ -344,7 +399,9 @@ export const initialDrawing: DrawingState = {
                         material: "pexSdr74",
                         minimumPipeSize: 16,
                     }
-                }
+                },
+
+                drainageProperties: cloneSimple(initialDrainageProperties),
             },
             {
                 name: "Warm Water",
@@ -378,7 +435,9 @@ export const initialDrawing: DrawingState = {
                         material: "pexSdr74",
                         minimumPipeSize: 16,
                     }
-                }
+                },
+
+                drainageProperties: cloneSimple(initialDrainageProperties),
             },
             {
                 name: "Gas",
@@ -412,7 +471,9 @@ export const initialDrawing: DrawingState = {
                         material: "pexSdr74",
                         minimumPipeSize: 16,
                     }
-                }
+                },
+
+                drainageProperties: cloneSimple(initialDrainageProperties),
             },
             {
 
@@ -515,7 +576,9 @@ export const initialDrawing: DrawingState = {
                         material: "pexSdr74",
                         minimumPipeSize: 16,
                     }
-                }
+                },
+
+                drainageProperties: cloneSimple(initialDrainageProperties),
             },
 
             {
@@ -550,7 +613,9 @@ export const initialDrawing: DrawingState = {
                         material: "pexSdr74",
                         minimumPipeSize: 16,
                     }
-                }
+                },
+
+                drainageProperties: cloneSimple(initialDrainageProperties),
             },
 
             {
@@ -585,7 +650,9 @@ export const initialDrawing: DrawingState = {
                         material: "pexSdr74",
                         minimumPipeSize: 16,
                     }
-                }
+                },
+
+                drainageProperties: cloneSimple(initialDrainageProperties),
             },
 
             {
@@ -620,7 +687,9 @@ export const initialDrawing: DrawingState = {
                         material: "pexSdr74",
                         minimumPipeSize: 16,
                     }
-                }
+                },
+
+                drainageProperties: cloneSimple(initialDrainageProperties),
             },
 
             {
@@ -655,7 +724,9 @@ export const initialDrawing: DrawingState = {
                         material: "pexSdr74",
                         minimumPipeSize: 16,
                     }
-                }
+                },
+
+                drainageProperties: cloneSimple(initialDrainageProperties),
             }
         ],
         calculationParams: {

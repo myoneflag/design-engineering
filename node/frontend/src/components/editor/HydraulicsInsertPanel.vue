@@ -79,7 +79,7 @@
                         class="insertBtn pipes btn-sm"
                         @click="toggleReticulationPipe"
                         v-b-tooltip.hover
-                        title="Connection pipe"
+                        title="Reticulation pipe"
                 >
                     <v-icon name="wave-square" scale="1.2" />{{
                       catalog.pipes[selectedSystem.networks[NetworkType.RETICULATIONS].material].abbreviation

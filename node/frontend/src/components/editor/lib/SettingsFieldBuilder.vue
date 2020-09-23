@@ -129,6 +129,23 @@
                             </b-dropdown-item>
                         </b-dropdown>
 
+                        <b-table-simple
+                            v-else-if="field[2] === 'array-table'"
+                            small
+                        >
+                            <b-thead>
+                                <b-tr>
+                                    <b-th v-for="col in field[3]">{{col.name}}</b-th>
+                                </b-tr>
+                            </b-thead>
+                            <b-tbody>
+                                <b-tr v-for="rowVal in getReactiveData(field[0])">
+                                    <b-td v-for="col in field[3]">{{rowVal[col.key]}}</b-td>
+                                </b-tr>
+                            </b-tbody>
+
+                        </b-table-simple>
+
                         <b-form-input
                             v-else
                             :value="getReactiveData(field[0])"
@@ -140,6 +157,7 @@
                     </b-form-group>
                 </b-col>
             </b-row>
+            <slot name="more-fields"/>
         </div>
         <b-row>
             <b-col cols="8"> </b-col>
