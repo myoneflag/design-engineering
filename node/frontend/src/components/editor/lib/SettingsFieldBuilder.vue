@@ -139,9 +139,18 @@
                                 </b-tr>
                             </b-thead>
                             <b-tbody>
-                                <b-tr v-for="rowVal in getReactiveData(field[0])">
+                                <b-tr v-for="(rowVal, rowIndex) in getReactiveData(field[0])">
                                     <b-td v-for="col in field[3]">
-                                        {{rowVal[col.key]}}
+
+                                        <b-input-group :prepend="col.units ? convertUnits(col.units) : undefined" size="sm">
+                                            <b-form-input
+                                                    size="sm"
+                                                    :value="displayWithCorrectUnits(col.units, `${field[0]}.${rowIndex}.${col.key}`)"
+                                                    @input="setRenderedDataNumeric(col.units, `${field[0]}.${rowIndex}.${col.key}`, Number($event))"
+                                                    :id="'input-' + `${field[0]}.${rowIndex}.${col.key}`"
+                                                    type="number"
+                                            />
+                                        </b-input-group>
                                     </b-td>
                                 </b-tr>
                             </b-tbody>
@@ -155,16 +164,27 @@
                             <b-thead>
                                 <b-tr>
                                     <b-th>{{field[4]}}</b-th>
-                                    <b-th></b-th>
+                                    <b-th>{{field[1]}}</b-th>
                                 </b-tr>
                             </b-thead>
                             <b-tbody>
                                 <b-tr v-for="row in field[3]">
                                     <b-td>{{row}}</b-td>
-                                    <b-td>{{getReactiveData(field[0])[row]}}</b-td>
+                                    <b-td>
+                                        <b-input-group :prepend="field[7] ? convertUnits(field[7]) : undefined" size="sm">
+                                        <b-form-input
+                                                size="sm"
+                                                :value="displayWithCorrectUnits(field[7], `${field[0]}.${row}`)"
+                                                @input="setRenderedDataNumeric(field[7], `${field[0]}.${row}`, Number($event))"
+                                                :id="'input-' + `${field[0]}.${row}`"
+                                                type="number"
+                                                :disabled="getReactiveData(field[0])[row] === undefined"
+                                        />
+                                        </b-input-group>
+                                    </b-td>
                                     <b-td>
                                         <b-form-checkbox
-                                                @change="setOptionalTableRow(field[0], row, $event ? undefined : 0)"
+                                                @change="setOptionalTableRow(field[0], row, $event ? undefined : (getOriginalData(`${field[0]}.${row}`) || 0))"
                                                 v-bind:checked="getReactiveData(field[0])[row] === undefined"
                                         >
                                             {{field[5]}}
@@ -242,6 +262,10 @@ export default class SettingsFieldBuilder extends Vue {
 
     getReactiveData(prop: string) {
         return getPropertyByString(this.$props.reactiveData, prop);
+    }
+
+    getOriginalData(prop: string) {
+        return getPropertyByString(this.$props.originalData, prop);
     }
 
     setReactiveData(prop: string, value: any) {

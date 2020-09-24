@@ -1,3 +1,4 @@
+import {Units} from "../../../../common/src/lib/measurements";
 <template>
     <div>
         <SettingsFieldBuilder
@@ -140,19 +141,21 @@ export default class FlowSystems extends Vue {
                     "Horizontal Pipe Sizing",
                     "array-table",
                     [
-                        {name: "Min Units", key: "minUnits"},
-                        {name: "Max Units", key: "maxUnits"},
-                        {name: "Size (mm)", key: "sizeMM"},
-                        {name: "grade %", key: "gradePCT"},
+                        {name: "Min Units", key: "minUnits", units: Units.None},
+                        {name: "Max Units", key: "maxUnits", units: Units.None},
+                        {name: "Size", key: "sizeMM", units: Units.Millimeters},
+                        {name: "grade %", key: "gradePCT", units: Units.None},
                     ],
                 ],
                 [
                     "drainageProperties.maxUnventedLengthM",
-                    "Max. Unvented Length (M)",
+                    "Max. Unvented Length",
                     "optional-numeric-table",
                     this.selectedSystem.drainageProperties.availablePipeSizesMM,
                     "Pipe Size",
                     "Unlimited",
+                    Units.Millimeters,
+                    Units.Meters,
                 ],
 
                 [
@@ -162,6 +165,8 @@ export default class FlowSystems extends Vue {
                     this.selectedSystem.drainageProperties.availablePipeSizesMM,
                     "Pipe Size",
                     "Unlimited",
+                    Units.Millimeters,
+                    Units.None
                 ],
 
                 [
@@ -169,9 +174,9 @@ export default class FlowSystems extends Vue {
                     "Vent Sizing",
                     "array-table",
                     [
-                        {name: "Min Units", key: "minUnits"},
-                        {name: "Max Units", key: "maxUnits"},
-                        {name: "Size (mm)", key: "sizeMM"},
+                        {name: "Min Units", key: "minUnits", units: Units.None},
+                        {name: "Max Units", key: "maxUnits", units: Units.None},
+                        {name: "Size (mm)", key: "sizeMM", units: Units.Millimeters},
                     ],
                 ],
 
@@ -186,10 +191,10 @@ export default class FlowSystems extends Vue {
                     "Stack Pipe Sizing",
                     "array-table",
                     [
-                        {name: "Min Units", key: "minUnits"},
-                        {name: "Max Units", key: "maxUnits"},
-                        {name: "Size (mm)", key: "sizeMM"},
-                        {name: "Maximum Fixture/discharge Units Per Level", key: "maximumUnitsPerLevel"},
+                        {name: "Min Units", key: "minUnits", units: Units.None},
+                        {name: "Max Units", key: "maxUnits", units: Units.None},
+                        {name: "Size (mm)", key: "sizeMM", units: Units.Millimeters},
+                        {name: "Maximum Fixture/discharge Units Per Level", key: "maximumUnitsPerLevel", units: Units.None},
                     ],
                 ],
 
@@ -204,9 +209,9 @@ export default class FlowSystems extends Vue {
                     "Stack Vent Sizing",
                     "array-table",
                     [
-                        {name: "Min Units", key: "minUnits"},
-                        {name: "Max Units", key: "maxUnits"},
-                        {name: "Size (mm)", key: "sizeMM"},
+                        {name: "Min Units", key: "minUnits", units: Units.None},
+                        {name: "Max Units", key: "maxUnits", units: Units.None},
+                        {name: "Size (mm)", key: "sizeMM", Units: Units.Millimeters},
                     ],
                 ],
             );
