@@ -224,11 +224,11 @@ export interface StackPipeSizing {
 export interface DrainageProperties {
     stackSizeDiminish: boolean;
     stackDedicatedVent: boolean;
-    maxUnventedLengthM: {[key: number]: number};
-    maxUnventedCapacityWCs: {[key: number]: number};
+    maxUnventedLengthM: {[key: number]: number | undefined};
+    maxUnventedCapacityWCs: {[key: number]: number | undefined};
 
     horizontalPipeSizing: HorizontalPipeSizing[];
-    availablePipeSizes: number[];
+    availablePipeSizesMM: number[];
     ventSizing: VentSizing[];
     stackPipeSizing: StackPipeSizing[];
     stackVentPipeSizing: VentSizing[];
@@ -291,7 +291,7 @@ export interface SelectedMaterialManufacturer {
 }
 
 export const initialDrainageProperties: DrainageProperties = {
-    availablePipeSizes: [],
+    availablePipeSizesMM: [40, 50, 65, 80, 100, 125, 150, 225, 300, 375],
     horizontalPipeSizing: [
         {minUnits: 0, maxUnits: 165, sizeMM: 100, gradePCT: 1.65},
         {minUnits: 166, maxUnits: 855, sizeMM: 150, gradePCT: 1},
@@ -302,10 +302,28 @@ export const initialDrainageProperties: DrainageProperties = {
     maxUnventedCapacityWCs: {},
     maxUnventedLengthM: {},
     stackDedicatedVent: false,
-    stackPipeSizing: [],
+    stackPipeSizing: [
+        {minUnits: 0, maxUnits: 500, sizeMM: 100, maximumUnitsPerLevel: 125},
+        {minUnits: 501, maxUnits: 1000, sizeMM: 125, maximumUnitsPerLevel: 250},
+        {minUnits: 1001, maxUnits: 2400, sizeMM: 150, maximumUnitsPerLevel: 600},
+        {minUnits: 2401, maxUnits: 7000, sizeMM: 225, maximumUnitsPerLevel: 1750},
+    ],
     stackSizeDiminish: false,
-    stackVentPipeSizing: [],
-    ventSizing: [],
+    stackVentPipeSizing: [
+        {minUnits: 0, maxUnits: 56, sizeMM: 65},
+        {minUnits: 57, maxUnits: 80, sizeMM: 80},
+        {minUnits: 81, maxUnits: 500, sizeMM: 100},
+        {minUnits: 501, maxUnits: 1100, sizeMM: 125},
+        {minUnits: 1101, maxUnits: 2400, sizeMM: 150},
+        {minUnits: 2401, maxUnits: 7000, sizeMM: 225},
+    ],
+    ventSizing: [
+        {minUnits: 0, maxUnits: 10, sizeMM: 40},
+        {minUnits: 11, maxUnits: 30, sizeMM: 50},
+        {minUnits: 31, maxUnits: 175, sizeMM: 65},
+        {minUnits: 176, maxUnits: 400, sizeMM: 80},
+        {minUnits: 401, maxUnits: 600, sizeMM: 100},
+    ],
 };
 
 export const initialDrawing: DrawingState = {

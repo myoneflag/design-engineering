@@ -118,12 +118,12 @@
                             style="padding-bottom: 20px"
                         >
                             <b-dropdown-item
-                                    @click="reactiveData[field[0]] = true"
+                                    @click="setReactiveData(field[0], true)"
                             >
                                 Yes
                             </b-dropdown-item>
                             <b-dropdown-item
-                                    @click="reactiveData[field[0]] = false"
+                                    @click="setReactiveData(field[0], false)"
                             >
                                 No
                             </b-dropdown-item>
@@ -140,7 +140,36 @@
                             </b-thead>
                             <b-tbody>
                                 <b-tr v-for="rowVal in getReactiveData(field[0])">
-                                    <b-td v-for="col in field[3]">{{rowVal[col.key]}}</b-td>
+                                    <b-td v-for="col in field[3]">
+                                        {{rowVal[col.key]}}
+                                    </b-td>
+                                </b-tr>
+                            </b-tbody>
+
+                        </b-table-simple>
+
+                        <b-table-simple
+                                v-else-if="field[2] === 'optional-numeric-table'"
+                                small
+                        >
+                            <b-thead>
+                                <b-tr>
+                                    <b-th>{{field[4]}}</b-th>
+                                    <b-th></b-th>
+                                </b-tr>
+                            </b-thead>
+                            <b-tbody>
+                                <b-tr v-for="row in field[3]">
+                                    <b-td>{{row}}</b-td>
+                                    <b-td>{{getReactiveData(field[0])[row]}}</b-td>
+                                    <b-td>
+                                        <b-form-checkbox
+                                                @change="setOptionalTableRow(field[0], row, $event ? undefined : 0)"
+                                                v-bind:checked="getReactiveData(field[0])[row] === undefined"
+                                        >
+                                            {{field[5]}}
+                                        </b-form-checkbox>
+                                    </b-td>
                                 </b-tr>
                             </b-tbody>
 
@@ -217,6 +246,13 @@ export default class SettingsFieldBuilder extends Vue {
 
     setReactiveData(prop: string, value: any) {
         return setPropertyByString(this.$props.reactiveData, prop, value);
+    }
+
+    setOptionalTableRow(field: string, row: any, value: any) {
+        console.log("setting");
+        console.log(row);
+        console.log(value);
+        Vue.set(this.getReactiveData(field), row, value);
     }
 
     save() {

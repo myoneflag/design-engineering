@@ -31,12 +31,6 @@
                     </b-button>
                 </b-col>
             </b-row>
-
-            <template  v-slot:more-fields>
-                <DrainageFlowSystemProperties v-if="selectedIsDrainage">
-
-                </DrainageFlowSystemProperties>
-            </template>
         </SettingsFieldBuilder>
     </div>
 </template>
@@ -61,12 +55,10 @@ import {
 } from "../../../../common/src/api/config";
 import { Units } from "../../../../common/src/lib/measurements";
 import {Catalog} from "../../../../common/src/api/catalog/types";
-import { valuesIn } from "lodash";
 import { setPropertyByString } from "../../lib/utils";
-import DrainageFlowSystemProperties from "./components/DrainageFlowSystemProperties.vue";
 
 @Component({
-    components: {DrainageFlowSystemProperties, SettingsFieldBuilder, FlowSystemPicker },
+    components: {SettingsFieldBuilder, FlowSystemPicker },
     beforeRouteLeave(to, from, next) {
         if ((this.$refs.fields as any).leave()) {
             next();
@@ -139,6 +131,83 @@ export default class FlowSystems extends Vue {
                     "Material",
                     "choice",
                     this.$store.getters["catalog/defaultPipeMaterialChoices"]
+                ],
+            );
+
+            fields.push(
+                [
+                    "drainageProperties.horizontalPipeSizing",
+                    "Horizontal Pipe Sizing",
+                    "array-table",
+                    [
+                        {name: "Min Units", key: "minUnits"},
+                        {name: "Max Units", key: "maxUnits"},
+                        {name: "Size (mm)", key: "sizeMM"},
+                        {name: "grade %", key: "gradePCT"},
+                    ],
+                ],
+                [
+                    "drainageProperties.maxUnventedLengthM",
+                    "Max. Unvented Length (M)",
+                    "optional-numeric-table",
+                    this.selectedSystem.drainageProperties.availablePipeSizesMM,
+                    "Pipe Size",
+                    "Unlimited",
+                ],
+
+                [
+                    "drainageProperties.maxUnventedCapacityWCs",
+                    "Max. Unvented Capacity (WC's)",
+                    "optional-numeric-table",
+                    this.selectedSystem.drainageProperties.availablePipeSizesMM,
+                    "Pipe Size",
+                    "Unlimited",
+                ],
+
+                [
+                    "drainageProperties.ventSizing",
+                    "Vent Sizing",
+                    "array-table",
+                    [
+                        {name: "Min Units", key: "minUnits"},
+                        {name: "Max Units", key: "maxUnits"},
+                        {name: "Size (mm)", key: "sizeMM"},
+                    ],
+                ],
+
+                [
+                    "drainageProperties.stackSizeDiminish",
+                    "Does the stack diminish in size?",
+                    "yesno",
+                ],
+
+                [
+                    "drainageProperties.stackPipeSizing",
+                    "Stack Pipe Sizing",
+                    "array-table",
+                    [
+                        {name: "Min Units", key: "minUnits"},
+                        {name: "Max Units", key: "maxUnits"},
+                        {name: "Size (mm)", key: "sizeMM"},
+                        {name: "Maximum Fixture/discharge Units Per Level", key: "maximumUnitsPerLevel"},
+                    ],
+                ],
+
+                [
+                    "drainageProperties.stackDedicatedVent",
+                    "Does the stack have a dedicated vent?",
+                    "yesno",
+                ],
+
+                [
+                    "drainageProperties.stackVentPipeSizing",
+                    "Stack Vent Sizing",
+                    "array-table",
+                    [
+                        {name: "Min Units", key: "minUnits"},
+                        {name: "Max Units", key: "maxUnits"},
+                        {name: "Size (mm)", key: "sizeMM"},
+                    ],
                 ],
             );
         } else {
