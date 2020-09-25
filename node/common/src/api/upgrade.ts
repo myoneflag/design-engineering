@@ -114,7 +114,7 @@ export function upgrade15to16(original: DrawingState) {
                         minimumPipeSize: 16,
                     }
                 }
-            }
+            } as any,
         );
     }
 
