@@ -48,8 +48,11 @@ import {
     lookupFlowRate,
     PsdProfile,
     subtractPsdProfiles,
-    zeroContextualPCE, zeroCost,
-    zeroFinalPsdCounts
+    zeroContextualPCE, 
+    zeroCost,
+    zeroFinalPsdCounts,
+    zeroPsdCounts,
+    addPsdCounts,
 } from "../../src/calculations/utils";
 import FittingCalculation from "../../src/store/document/calculations/fitting-calculation";
 import DirectedValveCalculation from "../../src/store/document/calculations/directed-valve-calculation";
@@ -65,7 +68,7 @@ import { makeFlowSourceFields } from "../../../common/src/api/document/entities/
 import FlowSourceCalculation from "../store/document/calculations/flow-source-calculation";
 import {fillPlantDefaults, makePlantEntityFields} from "../../../common/src/api/document/entities/plants/plant-entity";
 import Plant from "../htmlcanvas/objects/plant";
-import {assertUnreachable, isGas, isGermanStandard, StandardFlowSystemUids} from "../../../common/src/api/config";
+import {assertUnreachable, isGas, isGermanStandard, StandardFlowSystemUids, SupportedPsdStandards} from "../../../common/src/api/config";
 import { Catalog, PipeSpec } from "../../../common/src/api/catalog/types";
 import { DrawingState } from "../../../common/src/api/document/drawing";
 import {
@@ -509,9 +512,9 @@ export default class CalculationEngine implements CalculationContext {
                     this.psdProfileWithinGroup.set(bridgeStack[bridgeStack.length - 1].uid, new PsdProfile());
                 }
                 const units = this.getTerminalPsdU(n);
-                if (units) {
-                    insertPsdProfile(this.psdProfileWithinGroup.get(bridgeStack[bridgeStack.length - 1].uid)!, units);
-                    insertPsdProfile(this.globalReachedPsdUs, units);
+                for (var i = 0; i < units.length; i++) {
+                    insertPsdProfile(this.psdProfileWithinGroup.get(bridgeStack[bridgeStack.length - 1].uid)!, units[i]);
+                    insertPsdProfile(this.globalReachedPsdUs, units[i]);
                 }
             },
             undefined,
@@ -1375,9 +1378,9 @@ export default class CalculationEngine implements CalculationContext {
     }
 
     // Returns PSD of node and correlation group ID
-    getTerminalPsdU(flowNode: FlowNode): ContextualPCE | null {
+    getTerminalPsdU(flowNode: FlowNode): ContextualPCE[] {
         if (flowNode.connectable === FLOW_SOURCE_ROOT) {
-            return null;
+            return [];
         }
 
         const node = this.globalStore.get(flowNode.connectable)!;
@@ -1388,7 +1391,7 @@ export default class CalculationEngine implements CalculationContext {
                 throw new Error("System node is missing parent. " + JSON.stringify(node));
             }
             if (parent.uid !== flowNode.connection) {
-                return null;
+                return [];
             }
             const parentEntity = parent.entity;
             switch (parentEntity.type) {
@@ -1399,53 +1402,53 @@ export default class CalculationEngine implements CalculationContext {
                     for (const suid of fixture.roughInsInOrder) {
                         if (node.uid === fixture.roughIns[suid].uid) {
                             if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
-                                return {
+                                return [{
                                     units: Number(mainFixture.roughIns[suid].designFlowRateLS),
                                     continuousFlowLS: mainFixture.roughIns[suid].continuousFlowLS!,
                                     dwellings: 0,
                                     entity: node.entity.uid,
                                     correlationGroup: fixture.uid,
                                     gasMJH: 0,
-                                };
+                                }];
                             } else {
-                                return {
+                                return [{
                                     units: Number(mainFixture.roughIns[suid].loadingUnits),
                                     continuousFlowLS: mainFixture.roughIns[suid].continuousFlowLS!,
                                     dwellings: 0,
                                     entity: node.entity.uid,
                                     gasMJH: 0,
                                     correlationGroup: fixture.uid
-                                };
+                                }];
                             }
                         }
                     }
                     //throw new Error("Invalid connection to fixture");
-                    return zeroContextualPCE(node.entity.uid, node.entity.uid);
+                    return [zeroContextualPCE(node.entity.uid, node.entity.uid)];
                 }
                 case EntityType.GAS_APPLIANCE: {
                     // TODO: for gas calculation BIG TODO
-                    return {
+                    return [{
                         units: 0,
                         continuousFlowLS: 0,
                         dwellings: 0,
                         entity: parentEntity.uid,
                         correlationGroup: parentEntity.uid,
                         gasMJH: parentEntity.flowRateMJH!,
-                    };
+                    }];
                 }
                 case EntityType.PLANT: {
                     switch (parentEntity.plant.type) {
                         case PlantType.RETURN_SYSTEM:
                             const filled = fillPlantDefaults(parentEntity, this.drawing).plant as ReturnSystemPlant;
                             if (filled.gasConsumptionMJH !== null && node.uid === filled.gasNodeUid) {
-                                return {
+                                return [{
                                     units: 0,
                                     continuousFlowLS: 0,
                                     dwellings: 0,
                                     entity: node.entity.uid,
                                     correlationGroup: parentEntity.uid,
                                     gasMJH: filled.gasConsumptionMJH,
-                                };
+                                }];
                             }
                             break;
                         case PlantType.TANK:
@@ -1457,7 +1460,7 @@ export default class CalculationEngine implements CalculationContext {
                         default:
                             assertUnreachable(parentEntity.plant);
                     }
-                    return zeroContextualPCE(node.entity.uid, node.entity.uid);
+                    return [zeroContextualPCE(node.entity.uid, node.entity.uid)];
                 }
                 case EntityType.LOAD_NODE:
                 case EntityType.BACKGROUND_IMAGE:
@@ -1468,7 +1471,7 @@ export default class CalculationEngine implements CalculationContext {
                 case EntityType.BIG_VALVE:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.DIRECTED_VALVE:
-                    return zeroContextualPCE(node.entity.uid, node.entity.uid);
+                    return [zeroContextualPCE(node.entity.uid, node.entity.uid)];
                 default:
                     assertUnreachable(parentEntity);
             }
@@ -1478,43 +1481,104 @@ export default class CalculationEngine implements CalculationContext {
         } else if (node.entity.type === EntityType.LOAD_NODE) {
             const correlationGroup = node.entity.linkedToUid || node.entity.uid;
             const filled = fillDefaultLoadNodeFields(this.doc, this.globalStore, node.entity, this.catalog, this.nodes);
-            
-            switch (filled.node.type) {
-                case NodeType.LOAD_NODE:
-                    if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
-                        return {
-                            units: filled.node.designFlowRateLS!,
-                            continuousFlowLS: filled.node.continuousFlowLS!,
-                            dwellings: 0,
-                            entity: filled.uid,
-                            gasMJH: filled.node.gasFlowRateMJH,
-                            correlationGroup
-                        };
-                    } else {
-                        return {
-                            units: filled.node.loadingUnits!,
-                            continuousFlowLS: filled.node.continuousFlowLS!,
-                            dwellings: 0,
-                            entity: filled.uid,
-                            gasMJH: filled.node.gasFlowRateMJH,
-                            correlationGroup
-                        };
+
+            if (typeof filled.customNodeId !== "undefined" && this.doc.drawing.metadata.calculationParams.psdMethod === SupportedPsdStandards.bs806) {
+                const nodeProp = this.nodes.find((node: NodeProps) => node.id === filled.customNodeId || node.uid === filled.customNodeId);
+
+                if (typeof nodeProp !== "undefined") {
+                    const returnData = [];
+                    for (var i = 0; i < nodeProp.fixtures.length; i++) {
+                        let systemChk = null;
+                        if (!!(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[SupportedPsdStandards.bs806][filled.systemUidOption!])) {
+                            systemChk = filled.systemUidOption;
+                        } else if (filled.systemUidOption === 'hot-water' && !!(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[SupportedPsdStandards.bs806]['warm-water'])) {
+                            systemChk = 'warm-water';
+                        }
+
+                        let loadingUnits = 0;
+                        let designFlowRateLS = 0;
+                        if (systemChk) {
+                            loadingUnits = parseCatalogNumberOrMin(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[SupportedPsdStandards.bs806][systemChk])!;
+                            designFlowRateLS = parseCatalogNumberOrMin(this.catalog.fixtures[nodeProp.fixtures[i]].qLS[systemChk])!;
+                        }
+
+                        switch (filled.node.type) {
+                            case NodeType.LOAD_NODE:
+                                if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
+                                    returnData.push({
+                                        units: designFlowRateLS,
+                                        continuousFlowLS: filled.node.continuousFlowLS!,
+                                        dwellings: 0,
+                                        entity: filled.uid + '-' + i,
+                                        gasMJH: filled.node.gasFlowRateMJH,
+                                        correlationGroup: correlationGroup + '-' + i,
+                                    });
+                                } else {
+                                    returnData.push({
+                                        units: loadingUnits,
+                                        continuousFlowLS: filled.node.continuousFlowLS!,
+                                        dwellings: 0,
+                                        entity: filled.uid + '-' + i,
+                                        gasMJH: filled.node.gasFlowRateMJH,
+                                        correlationGroup: correlationGroup + '-' + i,
+                                    });
+                                }
+                                break;
+                            case NodeType.DWELLING:
+                                returnData.push({
+                                    units: isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod) ? designFlowRateLS: loadingUnits,
+                                    continuousFlowLS: filled.node.continuousFlowLS!,
+                                    dwellings: filled.node.dwellings,
+                                    entity: filled.uid + '-' + i,
+                                    gasMJH: filled.node.gasFlowRateMJH * filled.node.dwellings!,
+                                    correlationGroup: correlationGroup + '-' + i,
+                                });
+                                break;
+                            default:
+                                assertUnreachable(filled.node);
+                        }
                     }
-                case NodeType.DWELLING:
-                    return {
-                        units: 0,
-                        continuousFlowLS: filled.node.continuousFlowLS!,
-                        dwellings: filled.node.dwellings,
-                        entity: filled.uid,
-                        gasMJH: filled.node.gasFlowRateMJH * filled.node.dwellings!,
-                        correlationGroup
-                    };
-                default:
+
+                    return returnData;
+                }
+            } else {
+                switch (filled.node.type) {
+                    case NodeType.LOAD_NODE:
+                        if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
+                            return [{
+                                units: filled.node.designFlowRateLS!,
+                                continuousFlowLS: filled.node.continuousFlowLS!,
+                                dwellings: 0,
+                                entity: filled.uid,
+                                gasMJH: filled.node.gasFlowRateMJH,
+                                correlationGroup
+                            }];
+                        } else {
+                            return [{
+                                units: filled.node.loadingUnits!,
+                                continuousFlowLS: filled.node.continuousFlowLS!,
+                                dwellings: 0,
+                                entity: filled.uid,
+                                gasMJH: filled.node.gasFlowRateMJH,
+                                correlationGroup
+                            }];
+                        }
+                    case NodeType.DWELLING:
+                        return [{
+                            units: isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod) ? filled.node.designFlowRateLS!: filled.node.loadingUnits!,
+                            continuousFlowLS: filled.node.continuousFlowLS!,
+                            dwellings: filled.node.dwellings,
+                            entity: filled.uid,
+                            gasMJH: filled.node.gasFlowRateMJH * filled.node.dwellings!,
+                            correlationGroup
+                        }];
+                    default:
+                        assertUnreachable(filled.node);
+                }
             }
-            assertUnreachable(filled.node);
             throw new Error("invalid node type");
         } else {
-            return zeroContextualPCE(node.entity.uid, node.entity.uid);
+            return [zeroContextualPCE(node.entity.uid, node.entity.uid)];
         }
     }
 
@@ -2363,11 +2427,31 @@ export default class CalculationEngine implements CalculationContext {
 
                     if (o.entity.type === EntityType.SYSTEM_NODE || o.entity.type === EntityType.LOAD_NODE) {
                         const sc = calculation as SystemNodeCalculation | LoadNodeCalculation;
-
-                        sc.psdUnits = this.getTerminalPsdU({
+                        const units = this.getTerminalPsdU({
                             connectable: o.entity.uid,
                             connection: o.entity.parentUid!
                         });
+
+                        let total = zeroPsdCounts();
+                        let highestLU = 0;
+                        units.forEach((contextual) => {
+                            total = addPsdCounts(total, contextual);
+                            highestLU = Math.max(highestLU, contextual.units);
+                        });
+
+                        let newUnits = {
+                            units: total.units,
+                            dwellings: total.dwellings,
+                            continuousFlowLS: total.continuousFlowLS,
+                            gasMJH: total.gasMJH,
+                            highestLU,
+                        };
+
+                        if (units.length) {
+                            sc.psdUnits = newUnits;
+                        } else {
+                            sc.psdUnits = null;
+                        }
                     }
                     break;
                 }
@@ -2565,8 +2649,8 @@ export default class CalculationEngine implements CalculationContext {
                 dst,
                 (node) => {
                     const res = this.getTerminalPsdU(node);
-                    if (res) {
-                        insertPsdProfile(retVal, res);
+                    for (var i = 0; i < res.length; i++) {
+                        insertPsdProfile(retVal, res[i]);
                     }
                 },
                 undefined,
@@ -2611,8 +2695,8 @@ export default class CalculationEngine implements CalculationContext {
                 start.to!,
                 (n) => {
                     const units = this.getTerminalPsdU(n);
-                    if (units) {
-                        insertPsdProfile(inThisGroup, units);
+                    for (var i = 0; i < units.length; i++) {
+                        insertPsdProfile(inThisGroup, units[i]);
                     }
                 },
                 undefined,
@@ -2674,8 +2758,8 @@ export default class CalculationEngine implements CalculationContext {
                 r,
                 (n) => {
                     const thisTerminal = this.getTerminalPsdU(n);
-                    if (thisTerminal) {
-                        insertPsdProfile(psdUs, thisTerminal);
+                    for (var i = 0; i < thisTerminal.length; i++) {
+                        insertPsdProfile(psdUs, thisTerminal[i]);
                     }
                 },
                 undefined,

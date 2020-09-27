@@ -119,6 +119,8 @@ export function countPsdUnits(
                     }
 
                     switch (mainLoadNode.node.type) {
+                        case NodeType.DWELLING:
+                            result[suid].dwellings += mainLoadNode.node.dwellings;
                         case NodeType.LOAD_NODE:
                             if (isGermanStandard(doc.drawing.metadata.calculationParams.psdMethod)) {
                                 result[suid].units += mainLoadNode.node.designFlowRateLS!;
@@ -127,9 +129,6 @@ export function countPsdUnits(
                                 result[suid].highestLU = Math.max(result[suid].highestLU, mainLoadNode.node.loadingUnits!);
                             }
                             result[suid].continuousFlowLS += mainLoadNode.node.continuousFlowLS!;
-                            break;
-                        case NodeType.DWELLING:
-                            result[suid].dwellings += mainLoadNode.node.dwellings;
                             break;
                     }
                 }
