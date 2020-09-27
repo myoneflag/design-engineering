@@ -87,7 +87,7 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                         {
                             property: "node.loadingUnits",
                             title: "Loading Units",
-                            hasDefault: typeof value.customNodeId === "number",
+                            hasDefault: typeof value.customNodeId !== "undefined",
                             isCalculated: false,
                             type: FieldType.Number,
                             params: { min: 0, max: null },
@@ -96,7 +96,7 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                         {
                             property: "node.designFlowRateLS",
                             title: "Full Flow Rate",
-                            hasDefault: typeof value.customNodeId === "number",
+                            hasDefault: typeof value.customNodeId !== "undefined",
                             isCalculated: false,
                             type: FieldType.Number,
                             params: { min: 0, max: null },
@@ -109,7 +109,7 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                         {
                             property: "node.continuousFlowLS",
                             title: "Continuous Flow",
-                            hasDefault: typeof value.customNodeId === "number",
+                            hasDefault: typeof value.customNodeId !== "undefined",
                             isCalculated: false,
                             type: FieldType.Number,
                             params: { min: 0, max: null },
@@ -122,7 +122,7 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                         {
                             property: "node.loadingUnits",
                             title: "Loading Units",
-                            hasDefault: typeof value.customNodeId === "number",
+                            hasDefault: typeof value.customNodeId !== "undefined",
                             isCalculated: false,
                             type: FieldType.Number,
                             params: { min: 0, max: null },
@@ -131,7 +131,7 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                         {
                             property: "node.designFlowRateLS",
                             title: "Full Flow Rate",
-                            hasDefault: typeof value.customNodeId === "number",
+                            hasDefault: typeof value.customNodeId !== "undefined",
                             isCalculated: false,
                             type: FieldType.Number,
                             params: { min: 0, max: null },
@@ -141,7 +141,7 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                         {
                             property: "node.continuousFlowLS",
                             title: "Continuous Flow",
-                            hasDefault: typeof value.customNodeId === "number",
+                            hasDefault: typeof value.customNodeId !== "undefined",
                             isCalculated: false,
                             type: FieldType.Number,
                             params: { min: 0, max: null },
@@ -189,7 +189,7 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                     {
                         property: "node.continuousFlowLS",
                         title: "Continuous Flow",
-                        hasDefault: false,
+                        hasDefault: true,
                         isCalculated: false,
                         type: FieldType.Number,
                         params: { min: 0, max: null },

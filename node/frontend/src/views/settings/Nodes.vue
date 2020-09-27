@@ -145,8 +145,10 @@ export default class Nodes extends Vue {
     }
 
     async handleDelete() {
-        this.$bvModal.msgBoxConfirm('This change will affect the same nodes on all other projects')
-        .then(async value => {
+        this.$bvModal.msgBoxConfirm('Make sure this node is not use in the project or else you will experiencing some errors.', {
+            okVariant: 'warning',
+            okTitle: 'Continue',
+        }).then(async value => {
             if (value) {
                 this.submitting = true;
                 await remove(this.viewNode as number, {documentId: this.document.documentId, entity: this.reactiveForm}).then(res => {
@@ -164,17 +166,6 @@ export default class Nodes extends Vue {
     }
 
     async handleSave() {
-        let confirm: boolean = true;
-
-        if (this.viewNode) {
-            confirm = await this.$bvModal.msgBoxConfirm('This change will affect the same nodes on all other projects')
-                .then(async value => {
-                    return value;
-                });
-        }
-        
-        if (!confirm) return false;
-
         this.submitting = true;
 
         if (typeof this.viewNode === "number") {

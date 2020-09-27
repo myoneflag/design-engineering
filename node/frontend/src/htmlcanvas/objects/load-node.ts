@@ -85,16 +85,6 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
                 {hex: lighten(filled.color!.hex, 50)},
             ));
 
-            if (
-                this.entity.node.type === NodeType.DWELLING &&
-                !context.doc.drawing.metadata.calculationParams.dwellingMethod
-            ) {
-                ctx.fillStyle = rgb2style(getHighlightColor(
-                    args.selected,
-                    args.overrideColorList,
-                    {hex: lighten(filled.color!.hex, 50)},
-                ));
-            }
             ctx.beginPath();
             this.strokeShape(context, sr);
             ctx.fill();
@@ -109,12 +99,6 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         }
 
         ctx.strokeStyle = lighten(filled.color!.hex, -10);
-        if (
-            this.entity.node.type === NodeType.DWELLING &&
-            !context.doc.drawing.metadata.calculationParams.dwellingMethod
-        ) {
-            ctx.fillStyle = lighten(filled.color!.hex, -10, 0.5);
-        }
         ctx.beginPath();
         this.strokeShape(context, radius);
         ctx.fill();
@@ -185,7 +169,7 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
                 const offsetY = textHight / 2;
                 ctx.fillRect(newx - offsetx, newy - offsetY, nameWidth, 70);
                 ctx.fillStyle = "#007b1c";
-                ctx.fillText(name, newx - offsetx, newy - offsetY);
+                ctx.fillText(name, newx - offsetx, newy - offsetY - 4);
                 ctx.restore();
             }
         }
