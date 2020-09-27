@@ -21,7 +21,7 @@ import {SupportedPsdStandards} from "../../config"; import {SupportedPsdStandard
         assertUnreachable,
         COMPONENT_PRESSURE_LOSS_METHODS,
         ComponentPressureLossMethod,
-        DRAINAGE_METHOD_CHOICES, EN_12506_FREQUENCY_FACTOR_CHOICES,
+        DRAINAGE_METHOD_CHOICES, getEN_12506_FREQUENCY_FACTOR_CHOICES,
         getPsdMethods,
         isSupportedPsdStandard,
         PIPE_SIZING_METHODS,
@@ -30,6 +30,8 @@ import {SupportedPsdStandards} from "../../config"; import {SupportedPsdStandard
         SupportedPsdStandards
     } from "../../../../common/src/api/config";
     import {Units} from "../../../../common/src/lib/measurements";
+    import CatalogState from "../../store/catalog/types";
+    import {Catalog} from "../../../../common/src/api/catalog/types";
 
     @Component({
     components: { SettingsFieldBuilder },
@@ -50,8 +52,8 @@ export default class Calculations extends Vue {
             "Peak Flow Rate Calculation Method",
             "choice",
             [
-                ...getPsdMethods(this.$store.getters["catalog/default"]),
-                ...getDwellingMethods(this.$store.getters["catalog/default"])
+                ...getPsdMethods(this.catalog),
+                ...getDwellingMethods(this.catalog)
             ]
         ]);
 
@@ -93,7 +95,7 @@ export default class Calculations extends Vue {
 
         if (this.document.drawing.metadata.calculationParams.drainageMethod === SupportedDrainageMethods.EN1205622000DischargeUnits) {
             result.push(
-                ["en12056FrequencyFactor", "EN 12056-2:2000 Discharge Unit", "choice", EN_12506_FREQUENCY_FACTOR_CHOICES],
+                ["en12056FrequencyFactor", "EN 12056-2:2000 Frequency factor", "choice", getEN_12506_FREQUENCY_FACTOR_CHOICES(this.catalog)],
             );
         }
 
@@ -106,6 +108,10 @@ export default class Calculations extends Vue {
         );
 
         return result;
+    }
+
+    get catalog(): Catalog {
+        return this.$store.getters["catalog/default"];
     }
 
     get document(): DocumentState {

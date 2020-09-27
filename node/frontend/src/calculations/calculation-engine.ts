@@ -1415,6 +1415,9 @@ export default class CalculationEngine implements CalculationContext {
 
                     for (const suid of fixture.roughInsInOrder) {
                         if (node.uid === fixture.roughIns[suid].uid) {
+                            console.log(mainFixture.asnzFixtureUnits!);
+                            console.log(suid);
+                            console.log(isDrainage(suid));
                             if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
                                 return [{
                                     units: Number(mainFixture.roughIns[suid].designFlowRateLS),
@@ -1422,7 +1425,7 @@ export default class CalculationEngine implements CalculationContext {
                                     dwellings: 0,
                                     entity: node.entity.uid,
                                     correlationGroup: fixture.uid,
-                                    drainageUnits: mainFixture.asnzFixtureUnits!,
+                                    drainageUnits: isDrainage(suid) ? mainFixture.asnzFixtureUnits! : 0,
                                     gasMJH: 0,
                                 }];
                             } else {
@@ -1433,7 +1436,7 @@ export default class CalculationEngine implements CalculationContext {
                                     entity: node.entity.uid,
                                     gasMJH: 0,
                                     correlationGroup: fixture.uid,
-                                    drainageUnits: mainFixture.asnzFixtureUnits!,
+                                    drainageUnits: isDrainage(suid) ? mainFixture.asnzFixtureUnits! : 0,
                                 }];
                             }
                         }

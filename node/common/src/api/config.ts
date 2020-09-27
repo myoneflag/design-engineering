@@ -71,24 +71,26 @@ export enum EN12056FrequencyFactor {
     SpecialUse = "SpecialUse",
 }
 
-export const EN_12506_FREQUENCY_FACTOR_CHOICES: Choice[] = [
-    {
-        name: "Intermittent Use",
-        key: EN12056FrequencyFactor.IntermittentUse,
-    },
-    {
-        name: "Frequent Use",
-        key: EN12056FrequencyFactor.FrequentUse,
-    },
-    {
-        name: "Congested Use",
-        key: EN12056FrequencyFactor.CongestedUse,
-    },
-    {
-        name: "Special Use",
-        key: EN12056FrequencyFactor.SpecialUse,
-    },
-];
+export function getEN_12506_FREQUENCY_FACTOR_CHOICES(catalog: Catalog): Choice[] {
+    return [
+        {
+            name: `Intermittent Use (${catalog.en12056FrequencyFactor.IntermittentUse})`,
+            key: EN12056FrequencyFactor.IntermittentUse,
+        },
+        {
+            name: `Frequent Use (${catalog.en12056FrequencyFactor.FrequentUse})`,
+            key: EN12056FrequencyFactor.FrequentUse,
+        },
+        {
+            name: `Congested Use (${catalog.en12056FrequencyFactor.CongestedUse})`,
+            key: EN12056FrequencyFactor.CongestedUse,
+        },
+        {
+            name: `Special Use (${catalog.en12056FrequencyFactor.SpecialUse})`,
+            key: EN12056FrequencyFactor.SpecialUse,
+        },
+    ];
+}
 
 export function isSupportedPsdStandard(arg: any): arg is SupportedPsdStandards {
     return Object.values(SupportedPsdStandards).includes(arg);

@@ -82,20 +82,18 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
         );
     }
 
-    if (!isDrainage(entity.systemUid)) {
-        res.push(
-            {
-                property: "heightAboveGroundM",
-                title: "AHD",
-                hasDefault: false,
-                isCalculated: false,
-                requiresInput: true,
-                type: FieldType.Number,
-                params: { min: null, max: null },
-                multiFieldId: "heightAboveGroundM",
-                units: Units.Meters
-            });
-    }
+    res.push(
+        {
+            property: "heightAboveGroundM",
+            title: "AHD",
+            hasDefault: false,
+            isCalculated: false,
+            requiresInput: true,
+            type: FieldType.Number,
+            params: { min: null, max: null },
+            multiFieldId: "heightAboveGroundM",
+            units: Units.Meters
+        });
 
     res.push(
         {

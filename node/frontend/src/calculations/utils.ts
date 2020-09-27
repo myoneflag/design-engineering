@@ -237,7 +237,11 @@ export function equalPsdCounts(a: PsdCountEntry, b: PsdCountEntry): boolean {
 }
 
 export function isZeroPsdCounts(a: PsdCountEntry): boolean {
-    return Math.abs(a.units) < EPS && Math.abs(a.continuousFlowLS) < EPS && Math.abs(a.dwellings) < EPS && Math.abs(a.gasMJH) < EPS;
+    return Math.abs(a.units) < EPS &&
+    Math.abs(a.continuousFlowLS) < EPS &&
+    Math.abs(a.dwellings) < EPS &&
+    Math.abs(a.gasMJH) < EPS &&
+    Math.abs(a.drainageUnits) < EPS;
 }
 
 export function comparePsdCounts(a: PsdCountEntry, b: PsdCountEntry): number | null {

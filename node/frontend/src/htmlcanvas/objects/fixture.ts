@@ -111,7 +111,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         ctx.fillStyle = "rgba(230, 255, 230, 0.8)";
         ctx.strokeStyle = "#000";
         ctx.beginPath();
-        if (this.entity.roughInsInOrder.length > 1) {
+        if (this.entity.roughInsInOrder.length > 2) {
             ctx.fillRect(xm1, ym1, x9 - xm1, y7 - ym1);
             ctx.rect(xm1, ym1, x9 - xm1, y7 - ym1);
         } else {
@@ -122,7 +122,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
 
         if (selected || overrideColorList.length) {
             ctx.fillStyle = rgb2style(getHighlightColor(selected, overrideColorList, {hex: '#A0C8A0'}), 0.6);
-            if (this.entity.roughInsInOrder.length > 1) {
+            if (this.entity.roughInsInOrder.length > 2) {
                 ctx.fillRect(xm1, ym1, x9 - xm1, y7 - ym1);
             } else {
                 ctx.fillRect(x2, ym1, x6 - x2, y4 - ym1);
@@ -132,7 +132,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         ctx.strokeStyle = "#228800";
 
         ctx.beginPath();
-        if (this.entity.roughInsInOrder.length > 1) {
+        if (this.entity.roughInsInOrder.length > 2) {
             // double (cross)
             ctx.moveTo(x0, y1);
             ctx.lineTo(x8, y1);
@@ -188,7 +188,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
     }
 
     inBounds(objectCoord: Coord) {
-        if (this.entity.roughInsInOrder.length > 1) {
+        if (this.entity.roughInsInOrder.length > 2) {
             // double
             if (objectCoord.x >= -this.entity.pipeDistanceMM && objectCoord.x <= this.entity.pipeDistanceMM) {
                 if (objectCoord.y >= 0 && objectCoord.y <= this.entity.pipeDistanceMM * 2) {
@@ -212,7 +212,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         const p = new Flatten.Polygon();
         // tslint:disable-next-line:one-variable-per-declaration
         let l, t, r, b;
-        if (this.entity.roughInsInOrder.length > 1) {
+        if (this.entity.roughInsInOrder.length > 2) {
             l = (-this.entity.pipeDistanceMM * 5) / 4;
             r = (this.entity.pipeDistanceMM * 5) / 4;
             t = (-this.entity.pipeDistanceMM * 1) / 4;
