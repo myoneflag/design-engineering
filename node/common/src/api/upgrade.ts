@@ -266,7 +266,7 @@ export function upgrade18to19(original: DrawingState) {
                         minimumPipeSize: 100,
                     }
                 }
-            }
+            } as any,
         );
     }
 
@@ -305,9 +305,11 @@ export function upgrade18to19(original: DrawingState) {
                         minimumPipeSize: 25,
                     }
                 }
-            }
+            } as any,
         );
     }
 }
 
-// We have to add the sewage flow systems.
+    // We have to add the sewage flow systems.
+    // Then, we have to add fixtureUnits to load nodes.
+    // Add variant field

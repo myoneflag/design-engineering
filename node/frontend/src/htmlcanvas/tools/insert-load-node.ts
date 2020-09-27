@@ -62,6 +62,7 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType, s
                         designFlowRateLS: 0,
                         gasFlowRateMJH: 0,
                         gasPressureKPA: 0,
+                        fixtureUnits: 0,
                         loadingUnits,
                         variant: variant,
                     },

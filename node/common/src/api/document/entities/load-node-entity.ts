@@ -2,7 +2,7 @@ import {FieldType, PropertyField} from "./property-field";
 import {EntityType} from "./types";
 import {CenteredEntity, Color, COLORS, DrawableEntity, DrawingState} from "../drawing";
 import {Units} from "../../../lib/measurements";
-import {isGas} from "../../config";
+import {assertUnreachable, isGas} from "../../config";
 import {Catalog} from "../../catalog/types";
 import { NodeProps } from "../../../models/CustomEntity";
 
@@ -12,9 +12,9 @@ export enum NodeType {
 }
 
 export enum NodeVariant {
-    "FIXTURE-GROUP" = "FIXTURE-GROUP",
-    "FIXTURE" = "FIXTURE",
-    "CONTINUOUS" = "CONTINUOUS",
+    FIXTURE_GROUP = "FIXTURE-GROUP",
+    FIXTURE = "FIXTURE",
+    CONTINUOUS = "CONTINUOUS",
 }
 
 export interface LoadNode {
@@ -24,7 +24,8 @@ export interface LoadNode {
     continuousFlowLS: number | null;
     gasFlowRateMJH: number;
     gasPressureKPA: number;
-    variant?: NodeVariant;
+    variant: NodeVariant;
+    fixtureUnits: number;
 }
 
 export interface DwellingNode {
@@ -35,6 +36,7 @@ export interface DwellingNode {
     gasPressureKPA: number;
     loadingUnits: number | null;
     designFlowRateLS: number | null;
+    fixtureUnits: number;
 }
 
 export default interface LoadNodeEntity extends DrawableEntity, CenteredEntity {
@@ -82,73 +84,109 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
     switch (value.node.type) {
         case NodeType.LOAD_NODE:
             if (!nodeIsGas || systemUid === null) {
-                if (value.node.variant === NodeVariant.FIXTURE) {
-                    fields.push(
-                        {
-                            property: "node.loadingUnits",
-                            title: "Loading Units",
-                            hasDefault: typeof value.customNodeId !== "undefined",
-                            isCalculated: false,
-                            type: FieldType.Number,
-                            params: { min: 0, max: null },
-                            multiFieldId: "loadingUnits"
-                        },
-                        {
-                            property: "node.designFlowRateLS",
-                            title: "Full Flow Rate",
-                            hasDefault: typeof value.customNodeId !== "undefined",
-                            isCalculated: false,
-                            type: FieldType.Number,
-                            params: { min: 0, max: null },
-                            multiFieldId: "designFlowRateLS",
-                            units: Units.LitersPerSecond,
-                        },
-                    );
-                } else if (value.node.variant === NodeVariant.CONTINUOUS) {
-                    fields.push(
-                        {
-                            property: "node.continuousFlowLS",
-                            title: "Continuous Flow",
-                            hasDefault: typeof value.customNodeId !== "undefined",
-                            isCalculated: false,
-                            type: FieldType.Number,
-                            params: { min: 0, max: null },
-                            multiFieldId: "continuousFlowLS",
-                            units: Units.LitersPerSecond
-                        },
-                    );
-                } else {
-                    fields.push(
-                        {
-                            property: "node.loadingUnits",
-                            title: "Loading Units",
-                            hasDefault: typeof value.customNodeId !== "undefined",
-                            isCalculated: false,
-                            type: FieldType.Number,
-                            params: { min: 0, max: null },
-                            multiFieldId: "loadingUnits"
-                        },
-                        {
-                            property: "node.designFlowRateLS",
-                            title: "Full Flow Rate",
-                            hasDefault: typeof value.customNodeId !== "undefined",
-                            isCalculated: false,
-                            type: FieldType.Number,
-                            params: { min: 0, max: null },
-                            multiFieldId: "designFlowRateLS",
-                            units: Units.LitersPerSecond,
-                        },
-                        {
-                            property: "node.continuousFlowLS",
-                            title: "Continuous Flow",
-                            hasDefault: typeof value.customNodeId !== "undefined",
-                            isCalculated: false,
-                            type: FieldType.Number,
-                            params: { min: 0, max: null },
-                            multiFieldId: "continuousFlowLS",
-                            units: Units.LitersPerSecond
-                        },
-                    );
+                switch (value.node.variant) {
+                    case NodeVariant.FIXTURE:
+                        fields.push(
+                            {
+                                property: "node.loadingUnits",
+                                title: "Loading Units",
+                                hasDefault: typeof value.customNodeId !== "undefined",
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "loadingUnits"
+                            },
+                            {
+                                property: "node.designFlowRateLS",
+                                title: "Full Flow Rate",
+                                hasDefault: typeof value.customNodeId !== "undefined",
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "designFlowRateLS",
+                                units: Units.LitersPerSecond,
+                            },
+                            {
+                                property: "node.fixtureUnits",
+                                title: "Fixture Units",
+                                hasDefault: false,
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "fixtureUnits",
+                                units: Units.None
+                            },
+                        );
+                        break;
+                    case NodeVariant.CONTINUOUS:
+                        fields.push(
+                            {
+                                property: "node.continuousFlowLS",
+                                title: "Continuous Flow",
+                                hasDefault: typeof value.customNodeId !== "undefined",
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "continuousFlowLS",
+                                units: Units.LitersPerSecond
+                            },
+                            {
+                                property: "node.fixtureUnits",
+                                title: "Fixture Units",
+                                hasDefault: false,
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "fixtureUnits",
+                                units: Units.None
+                            },
+                        );
+                        break;
+                    case NodeVariant.FIXTURE_GROUP:
+                        fields.push(
+                            {
+                                property: "node.loadingUnits",
+                                title: "Loading Units",
+                                hasDefault: typeof value.customNodeId !== "undefined",
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "loadingUnits"
+                            },
+                            {
+                                property: "node.designFlowRateLS",
+                                title: "Full Flow Rate",
+                                hasDefault: typeof value.customNodeId !== "undefined",
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "designFlowRateLS",
+                                units: Units.LitersPerSecond,
+                            },
+                            {
+                                property: "node.continuousFlowLS",
+                                title: "Continuous Flow",
+                                hasDefault: typeof value.customNodeId !== "undefined",
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "continuousFlowLS",
+                                units: Units.LitersPerSecond
+                            },
+                            {
+                                property: "node.fixtureUnits",
+                                title: "Fixture Units",
+                                hasDefault: false,
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "fixtureUnits",
+                                units: Units.None
+                            },
+                        );
+                        break;
+                    default:
+                        assertUnreachable(value.node.variant);
                 }
             }
             break;
@@ -195,7 +233,18 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                         params: { min: 0, max: null },
                         multiFieldId: "continuousFlowLS",
                         units: Units.LitersPerSecond,
-                    }
+                    },
+
+                    {
+                        property: "node.fixtureUnits",
+                            title: "Fixture Units",
+                        hasDefault: false,
+                        isCalculated: false,
+                        type: FieldType.Number,
+                        params: { min: 0, max: null },
+                        multiFieldId: "fixtureUnits",
+                        units: Units.None
+                    },
                 );
             }
             break;
@@ -230,50 +279,48 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
 
     if (nodeIsGas || systemUid === null) {
 
-        if (nodeIsGas || systemUid === null) {
-            if (value.node.type === NodeType.DWELLING) {
-
-                fields.push(
-                    {
-                        property: "node.gasFlowRateMJH",
-                        title: "Gas Demand (Per Dwelling)",
-                        hasDefault: false,
-                        isCalculated: false,
-                        type: FieldType.Number,
-                        units: Units.MegajoulesPerHour,
-                        params: { min: 0, max: null },
-                        multiFieldId: "gasFlowRateMJH"
-                    },
-                );
-            } else {
-
-                fields.push(
-                    {
-                        property: "node.gasFlowRateMJH",
-                        title: "Gas Demand",
-                        hasDefault: false,
-                        isCalculated: false,
-                        type: FieldType.Number,
-                        units: Units.MegajoulesPerHour,
-                        params: { min: 0, max: null },
-                        multiFieldId: "gasFlowRateMJH"
-                    },
-                );
-            }
+        if (value.node.type === NodeType.DWELLING) {
 
             fields.push(
                 {
-                    property: "node.gasPressureKPA",
-                    title: "Gas Pressure",
+                    property: "node.gasFlowRateMJH",
+                    title: "Gas Demand (Per Dwelling)",
                     hasDefault: false,
                     isCalculated: false,
                     type: FieldType.Number,
-                    units: Units.KiloPascals,
+                    units: Units.MegajoulesPerHour,
                     params: { min: 0, max: null },
-                    multiFieldId: "gasPressureKPA"
+                    multiFieldId: "gasFlowRateMJH"
+                },
+            );
+        } else {
+
+            fields.push(
+                {
+                    property: "node.gasFlowRateMJH",
+                    title: "Gas Demand",
+                    hasDefault: false,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    units: Units.MegajoulesPerHour,
+                    params: { min: 0, max: null },
+                    multiFieldId: "gasFlowRateMJH"
                 },
             );
         }
+
+        fields.push(
+            {
+                property: "node.gasPressureKPA",
+                title: "Gas Pressure",
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Number,
+                units: Units.KiloPascals,
+                params: { min: 0, max: null },
+                multiFieldId: "gasPressureKPA"
+            },
+        );
 
     }
 

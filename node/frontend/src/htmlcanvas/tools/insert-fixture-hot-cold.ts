@@ -59,6 +59,7 @@ export default function insertFixtureHotCold(context: CanvasContext, rotationDEG
                         designFlowRateLS: null,
                         gasFlowRateMJH: 0,
                         continuousFlowLS: null,
+                        fixtureUnits: 5, // TODO: What is a reasonable fixture unit count?
                         gasPressureKPA: 0,
                     };
                 } else {
@@ -69,7 +70,8 @@ export default function insertFixtureHotCold(context: CanvasContext, rotationDEG
                         continuousFlowLS: null,
                         gasFlowRateMJH: 0,
                         gasPressureKPA: 0,
-                        variant: NodeVariant["FIXTURE-GROUP"],
+                        fixtureUnits: 0,
+                        variant: NodeVariant.FIXTURE_GROUP,
                     };
                 }
                 
