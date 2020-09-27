@@ -48,7 +48,9 @@ export default function insertFixture(context: CanvasContext, fixtureName: strin
                     type: EntityType.FIXTURE,
                     uid: fixtureUid,
 
-                    fixtureUnits: null,
+                    asnzFixtureUnits: null,
+                    enDischargeUnits: null,
+                    upcFixtureUnits: null,
 
                     name: fixtureName,
                     outletAboveFloorM: null,

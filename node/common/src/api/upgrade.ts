@@ -313,3 +313,15 @@ export function upgrade18to19(original: DrawingState) {
     // We have to add the sewage flow systems.
     // Then, we have to add fixtureUnits to load nodes.
     // Add variant field
+
+    /*
+    instead of fixtureUnits, use:
+
+    asnzFixtureUnits: string | null;
+    enDischargeUnits: string | null;
+    upcFixtureUnits: string | null;
+
+    in fixtures, and load nodes
+     */
+
+    // Add drainage rough in to fixtures.

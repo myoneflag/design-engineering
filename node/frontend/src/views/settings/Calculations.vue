@@ -1,3 +1,4 @@
+import {SupportedDrainageMethods} from "../../../../common/src/api/config";
 import {SupportedPsdStandards} from "../../config"; import {SupportedPsdStandards} from "../../config";
 <template>
     <SettingsFieldBuilder
@@ -11,25 +12,26 @@ import {SupportedPsdStandards} from "../../config"; import {SupportedPsdStandard
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
-import { DocumentState } from "../../../src/store/document/types";
-import SettingsFieldBuilder from "../../../src/components/editor/lib/SettingsFieldBuilder.vue";
-import { getDwellingMethods, isSupportedDwellingStandard } from "../../../src/config";
-import {
-    assertUnreachable,
-    COMPONENT_PRESSURE_LOSS_METHODS,
-    ComponentPressureLossMethod,
-    getPsdMethods,
-    isSupportedPsdStandard,
-    PIPE_SIZING_METHODS,
-    RING_MAIN_CALCULATION_METHODS,
-    SupportedDwellingStandards,
-    SupportedPsdStandards
-} from "../../../../common/src/api/config";
-import { Units } from "../../../../common/src/lib/measurements";
+    import Vue from "vue";
+    import Component from "vue-class-component";
+    import {DocumentState} from "../../../src/store/document/types";
+    import SettingsFieldBuilder from "../../../src/components/editor/lib/SettingsFieldBuilder.vue";
+    import {getDwellingMethods, isSupportedDwellingStandard} from "../../../src/config";
+    import {
+        assertUnreachable,
+        COMPONENT_PRESSURE_LOSS_METHODS,
+        ComponentPressureLossMethod,
+        DRAINAGE_METHOD_CHOICES, EN_12506_FREQUENCY_FACTOR_CHOICES,
+        getPsdMethods,
+        isSupportedPsdStandard,
+        PIPE_SIZING_METHODS,
+        RING_MAIN_CALCULATION_METHODS, SupportedDrainageMethods,
+        SupportedDwellingStandards,
+        SupportedPsdStandards
+    } from "../../../../common/src/api/config";
+    import {Units} from "../../../../common/src/lib/measurements";
 
-@Component({
+    @Component({
     components: { SettingsFieldBuilder },
     beforeRouteLeave(to, from, next) {
         if ((this.$refs.fields as any).leave()) {
@@ -83,6 +85,16 @@ export default class Calculations extends Vue {
                 break;
             default:
                 assertUnreachable(this.document.drawing.metadata.calculationParams.componentPressureLossMethod);
+        }
+
+        result.push(
+            ["drainageMethod", "Drainage Method", "choice", DRAINAGE_METHOD_CHOICES],
+        );
+
+        if (this.document.drawing.metadata.calculationParams.drainageMethod === SupportedDrainageMethods.EN1205622000DischargeUnits) {
+            result.push(
+                ["en12056FrequencyFactor", "EN 12056-2:2000 Discharge Unit", "choice", EN_12506_FREQUENCY_FACTOR_CHOICES],
+            );
         }
 
         result.push(

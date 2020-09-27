@@ -31,7 +31,12 @@ export default interface FixtureEntity extends DrawableEntity {
     pipeDistanceMM: number;
     outletAboveFloorM: number | null;
     warmTempC: number | null;
-    fixtureUnits: number | null;
+
+    asnzFixtureUnits: number | null;
+    enDischargeUnits: number | null;
+    upcFixtureUnits: number | null;
+
+
     probabilityOfUsagePCT: number | null;
 }
 
@@ -73,19 +78,41 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity):
         },*/
 
         {
-            property: "fixtureUnits",
-            title: "Fixture Units",
+            property: "asnzFixtureUnits",
+            title: "AS/NZS3500.2:2018 Fixture Unit",
             hasDefault: true,
             highlightOnOverride: COLORS.YELLOW,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: 0, max: null },
-            multiFieldId: "fixtureUnits"
+            multiFieldId: "asnzFixtureUnits"
+        },
+
+        {
+            property: "enDischargeUnits",
+            title: "EN 12056-2:2000 Discharge Unit",
+            hasDefault: true,
+            highlightOnOverride: COLORS.YELLOW,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: 0, max: null },
+            multiFieldId: "enDischargeUnits"
+        },
+
+        {
+            property: "upcFixtureUnits",
+            title: "2018 UPC Drainage Fixture Unit",
+            hasDefault: true,
+            highlightOnOverride: COLORS.YELLOW,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: 0, max: null },
+            multiFieldId: "upcFixtureUnits"
         },
 
         {
             property: "probabilityOfUsagePCT",
-            title: "Prob. of Usage (%)",
+            title: "2018 UPC Drainage Fixture Unit",
             hasDefault: true,
             highlightOnOverride: COLORS.YELLOW,
             isCalculated: false,
@@ -180,17 +207,19 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity):
 }
 
 export function fillFixtureFields(
-    drawing: DrawingState,
+    drawing: DrawingState | undefined,
     defaultCatalog: Catalog,
     value: FixtureEntity
 ): FixtureEntity {
     const result = cloneSimple(value);
 
-    const arr: Array<"warmTempC" | "outletAboveFloorM" | "fixtureUnits" | "probabilityOfUsagePCT"> = [
+    const arr: Array<"warmTempC" | "outletAboveFloorM" | "asnzFixtureUnits" |  "probabilityOfUsagePCT" | "enDischargeUnits" | "upcFixtureUnits"> = [
         "warmTempC",
         "outletAboveFloorM",
-        "fixtureUnits",
-        "probabilityOfUsagePCT"
+        "asnzFixtureUnits",
+        "probabilityOfUsagePCT",
+        "enDischargeUnits",
+        "upcFixtureUnits",
     ];
 
     arr.forEach((field) => {
@@ -227,8 +256,7 @@ export function fillFixtureFields(
         const selectedOption = selectedMaterialManufacturer?.selected || 'default';
 
         if (target.designFlowRateLS === null) {
-            target.designFlowRateLS = parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].qLS[manufacturer][selectedOption][systemUid]);
-        }
+            target.designFlowRateLS = parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].qLS[manufacturer][selectedOption][systemUid]);        }
 
         if (continuousFlowLS) {
             if (target.continuousFlowLS == null) {

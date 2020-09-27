@@ -1,12 +1,15 @@
 import { DwellingStandardType, PSDStandardType } from "../psd-standard/types";
 import {Catalog, State} from "../types";
+import {EN12056FrequencyFactor} from "../../config";
 
 export const initialCatalog: Catalog = {
     fixtures: {
         ablutionTrough: {
             priceTableName: "Ablution Trough",
             abbreviation: "AT",
-            fixtureUnits: "3",
+            asnzFixtureUnits: "3",
+            enDischargeUnits: "0.6",
+            upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "3",
@@ -95,7 +98,9 @@ export const initialCatalog: Catalog = {
         basin: {
             priceTableName: "Basin",
             abbreviation: "B",
-            fixtureUnits: "1",
+            asnzFixtureUnits: "1",
+            enDischargeUnits: "0.3",
+            upcFixtureUnits: "1",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "1",
@@ -196,7 +201,9 @@ export const initialCatalog: Catalog = {
         bath: {
             priceTableName: "Bath",
             abbreviation: "BT",
-            fixtureUnits: "4",
+            asnzFixtureUnits: "4",
+            enDischargeUnits: "0.6",
+            upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "8",
@@ -272,7 +279,9 @@ export const initialCatalog: Catalog = {
         bedpanSanitiser: {
             priceTableName: "Bedpan Sanitiser",
             abbreviation: "BPST",
-            fixtureUnits: "6",
+            asnzFixtureUnits: "6",
+            enDischargeUnits: "0.6",
+            upcFixtureUnits: "4",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "3",
@@ -335,7 +344,9 @@ export const initialCatalog: Catalog = {
         beverageBay: {
             priceTableName: "Beverage Bay",
             abbreviation: "BB",
-            fixtureUnits: "1",
+            asnzFixtureUnits: "1",
+            enDischargeUnits: "0.6",
+            upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "2",
@@ -424,7 +435,9 @@ export const initialCatalog: Catalog = {
         birthingPool: {
             priceTableName: "Birthing Pool",
             abbreviation: "BP",
-            fixtureUnits: "8",
+            asnzFixtureUnits: "8",
+            enDischargeUnits: "1",
+            upcFixtureUnits: "8",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "16",
@@ -499,7 +512,9 @@ export const initialCatalog: Catalog = {
         cleanersSink: {
             priceTableName: "Cleaners Sink",
             abbreviation: "CS",
-            fixtureUnits: "1",
+            asnzFixtureUnits: "1",
+            enDischargeUnits: "0.6",
+            upcFixtureUnits: "3",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "3",
@@ -562,7 +577,9 @@ export const initialCatalog: Catalog = {
         dishwasher: {
             priceTableName: "Dishwasher",
             abbreviation: "D",
-            fixtureUnits: "3",
+            asnzFixtureUnits: "3",
+            enDischargeUnits: "0.6",
+            upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "3",
@@ -625,7 +642,9 @@ export const initialCatalog: Catalog = {
         drinkingFountain: {
             priceTableName: "Drinking Fountain",
             abbreviation: "DF",
-            fixtureUnits: "1",
+            asnzFixtureUnits: "1",
+            enDischargeUnits: "0.3",
+            upcFixtureUnits: "0.5",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "1"
@@ -677,7 +696,9 @@ export const initialCatalog: Catalog = {
         flushingRimSink: {
             priceTableName: "Flushing Rim Sink",
             abbreviation: "FRS",
-            fixtureUnits: "6",
+            asnzFixtureUnits: "6",
+            enDischargeUnits: "1.8",
+            upcFixtureUnits: "6",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "3",
@@ -752,7 +773,9 @@ export const initialCatalog: Catalog = {
         hoseTap: {
             priceTableName: "Hose Tap",
             abbreviation: "H",
-            fixtureUnits: "0",
+            asnzFixtureUnits: "0",
+            enDischargeUnits: "0.0",
+            upcFixtureUnits: "0",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "8"
@@ -802,7 +825,9 @@ export const initialCatalog: Catalog = {
         kitchenSink: {
             priceTableName: "Kitchen Sink",
             abbreviation: "KS",
-            fixtureUnits: "3",
+            asnzFixtureUnits: "3",
+            enDischargeUnits: "0.6",
+            upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "2",
@@ -891,7 +916,9 @@ export const initialCatalog: Catalog = {
         kitchenSinkHot: {
             priceTableName: "Kitchen Sink",
             abbreviation: "KS",
-            fixtureUnits: "3",
+            asnzFixtureUnits: "3",
+            enDischargeUnits: "0.6",
+            upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "2",
@@ -980,7 +1007,9 @@ export const initialCatalog: Catalog = {
         laundryTrough: {
             priceTableName: "Laundry Trough",
             abbreviation: "T",
-            fixtureUnits: "5",
+            asnzFixtureUnits: "5",
+            enDischargeUnits: "0.6",
+            upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "3",
@@ -1069,7 +1098,9 @@ export const initialCatalog: Catalog = {
         laundryTroughHot: {
             priceTableName: "Laundry Trough",
             abbreviation: "T",
-            fixtureUnits: "5",
+            asnzFixtureUnits: "5",
+            enDischargeUnits: "0.6",
+            upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "3",
@@ -1158,7 +1189,9 @@ export const initialCatalog: Catalog = {
         shower: {
             priceTableName: "Shower",
             abbreviation: "SHR",
-            fixtureUnits: "2",
+            asnzFixtureUnits: "2",
+            enDischargeUnits: "0.5",
+            upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "2",
@@ -1251,7 +1284,9 @@ export const initialCatalog: Catalog = {
         urinal: {
             priceTableName: "Urinal",
             abbreviation: "U",
-            fixtureUnits: "1",
+            asnzFixtureUnits: "1",
+            enDischargeUnits: "0.5",
+            upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "2"
@@ -1301,7 +1336,9 @@ export const initialCatalog: Catalog = {
         washingMachine: {
             priceTableName: "Washing Machine",
             abbreviation: "WM",
-            fixtureUnits: "5",
+            asnzFixtureUnits: "5",
+            enDischargeUnits: "1.2",
+            upcFixtureUnits: "3",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "3",
@@ -1364,7 +1401,9 @@ export const initialCatalog: Catalog = {
         wc: {
             priceTableName: "WC",
             abbreviation: "WC",
-            fixtureUnits: "4",
+            asnzFixtureUnits: "4",
+            enDischargeUnits: "1.8",
+            upcFixtureUnits: "4",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "2"
@@ -3847,6 +3886,12 @@ export const initialCatalog: Catalog = {
                 },
             }
         }
+    },
+    en12056FrequencyFactor: {
+        [EN12056FrequencyFactor.IntermittentUse]: 0.5,
+        [EN12056FrequencyFactor.FrequentUse]: 0.7,
+        [EN12056FrequencyFactor.CongestedUse]: 1.0,
+        [EN12056FrequencyFactor.SpecialUse]: 1.2,
     },
     gasDiversification: {
         1: 1,

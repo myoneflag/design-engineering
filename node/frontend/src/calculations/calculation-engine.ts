@@ -71,6 +71,8 @@ import {fillPlantDefaults, makePlantEntityFields} from "../../../common/src/api/
 import Plant from "../htmlcanvas/objects/plant";
 import {
     assertUnreachable,
+    isDrainage,
+    isGas,
     isGermanStandard,
     StandardFlowSystemUids,
     SupportedPsdStandards
@@ -1420,7 +1422,7 @@ export default class CalculationEngine implements CalculationContext {
                                     dwellings: 0,
                                     entity: node.entity.uid,
                                     correlationGroup: fixture.uid,
-                                    fixtureUnits: mainFixture.fixtureUnits!,
+                                    drainageUnits: mainFixture.asnzFixtureUnits!,
                                     gasMJH: 0,
                                 }];
                             } else {
@@ -1431,7 +1433,7 @@ export default class CalculationEngine implements CalculationContext {
                                     entity: node.entity.uid,
                                     gasMJH: 0,
                                     correlationGroup: fixture.uid,
-                                    fixtureUnits: mainFixture.fixtureUnits!,
+                                    drainageUnits: mainFixture.asnzFixtureUnits!,
                                 }];
                             }
                         }
@@ -1447,7 +1449,7 @@ export default class CalculationEngine implements CalculationContext {
                         entity: parentEntity.uid,
                         correlationGroup: parentEntity.uid,
                         gasMJH: parentEntity.flowRateMJH!,
-                        fixtureUnits: 0,
+                        drainageUnits: 0,
                     }];
                 }
                 case EntityType.PLANT: {
@@ -1462,7 +1464,7 @@ export default class CalculationEngine implements CalculationContext {
                                     entity: node.entity.uid,
                                     correlationGroup: parentEntity.uid,
                                     gasMJH: filled.gasConsumptionMJH,
-                                    fixtureUnits: 0,
+                                    drainageUnits: 0,
                                 }];
                             }
                             break;
@@ -1519,7 +1521,8 @@ export default class CalculationEngine implements CalculationContext {
                         if (systemChk) {
                             loadingUnits = parseCatalogNumberOrMin(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[SupportedPsdStandards.bs806][systemChk])!;
                             designFlowRateLS = parseCatalogNumberOrMin(this.catalog.fixtures[nodeProp.fixtures[i]].qLS[manufacturer][selectedOption][systemChk])!;
-                            fixtureUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[i]].fixtureUnits)!;
+                            loadingUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[SupportedPsdStandards.bs806][systemChk])!;
+                            fixtureUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[0]].asnzFixtureUnits)!;
                         }
 
                         if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
@@ -1529,7 +1532,7 @@ export default class CalculationEngine implements CalculationContext {
                                 dwellings: 0,
                                 entity: filled.uid + '-' + i,
                                 gasMJH: filled.node.gasFlowRateMJH,
-                                fixtureUnits,
+                                drainageUnits: fixtureUnits,
                                 correlationGroup: correlationGroup + '-' + i,
                             });
                         } else {
@@ -1539,7 +1542,7 @@ export default class CalculationEngine implements CalculationContext {
                                 dwellings: 0,
                                 entity: filled.uid + '-' + i,
                                 gasMJH: filled.node.gasFlowRateMJH,
-                                fixtureUnits,
+                                drainageUnits: fixtureUnits,
                                 correlationGroup: correlationGroup + '-' + i,
                             });
                         }
@@ -1557,7 +1560,7 @@ export default class CalculationEngine implements CalculationContext {
                                 dwellings: 0,
                                 entity: filled.uid,
                                 gasMJH: filled.node.gasFlowRateMJH,
-                                fixtureUnits: filled.node.fixtureUnits,
+                                drainageUnits: filled.node.asnzFixtureUnits,
                                 correlationGroup
                             }];
                         } else {
@@ -1567,7 +1570,7 @@ export default class CalculationEngine implements CalculationContext {
                                 dwellings: 0,
                                 entity: filled.uid,
                                 gasMJH: filled.node.gasFlowRateMJH,
-                                fixtureUnits: filled.node.fixtureUnits,
+                                drainageUnits: filled.node.asnzFixtureUnits,
                                 correlationGroup
                             }];
                         }
@@ -1578,7 +1581,7 @@ export default class CalculationEngine implements CalculationContext {
                             dwellings: filled.node.dwellings,
                             entity: filled.uid,
                             gasMJH: filled.node.gasFlowRateMJH * filled.node.dwellings!,
-                            fixtureUnits: filled.node.fixtureUnits,
+                            drainageUnits: filled.node.asnzFixtureUnits,
                             correlationGroup
                         }];
                     default:
@@ -1613,6 +1616,8 @@ export default class CalculationEngine implements CalculationContext {
                 const isGas = entity.systemUid === StandardFlowSystemUids.Gas;
                 if (isGas) {
                     // TODO: Gas calculation
+                } else if (isDrainage(entity.systemUid)) {
+                    // TODO: Drainage sizing
                 } else {
 
                     const flowRate = lookupFlowRate(psdU, this.doc, this.catalog, entity.systemUid);
@@ -2464,7 +2469,7 @@ export default class CalculationEngine implements CalculationContext {
                             dwellings: total.dwellings,
                             continuousFlowLS: total.continuousFlowLS,
                             gasMJH: total.gasMJH,
-                            fixtureUnits: total.fixtureUnits,
+                            drainageUnits: total.drainageUnits,
                             highestLU,
                         };
 

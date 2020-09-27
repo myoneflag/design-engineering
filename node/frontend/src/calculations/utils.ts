@@ -46,7 +46,7 @@ export interface PsdCountEntry {
     gasMJH: number;
 
     // drainage
-    fixtureUnits: number;
+    drainageUnits: number;
 }
 
 export interface FinalPsdCountEntry extends PsdCountEntry {
@@ -191,7 +191,7 @@ export function addPsdCounts(a: PsdCountEntry, b: PsdCountEntry): PsdCountEntry 
         continuousFlowLS: a.continuousFlowLS + b.continuousFlowLS,
         dwellings: a.dwellings + b.dwellings,
         gasMJH: a.gasMJH + b.gasMJH,
-        fixtureUnits: a.gasMJH + b.gasMJH,
+        drainageUnits: a.drainageUnits + b.drainageUnits,
     };
 }
 
@@ -202,7 +202,7 @@ export function addFinalPsdCounts(a: FinalPsdCountEntry, b: FinalPsdCountEntry):
         dwellings: a.dwellings + b.dwellings,
         highestLU: Math.max(a.highestLU, b.highestLU),
         gasMJH: a.gasMJH + b.gasMJH,
-        fixtureUnits: a.gasMJH + b.gasMJH,
+        drainageUnits: a.drainageUnits + b.drainageUnits,
     };
 }
 
@@ -212,7 +212,7 @@ export function subPsdCounts(a: PsdCountEntry, b: PsdCountEntry): PsdCountEntry 
         continuousFlowLS: a.continuousFlowLS - b.continuousFlowLS,
         dwellings: a.dwellings - b.dwellings,
         gasMJH: a.gasMJH - b.gasMJH,
-        fixtureUnits: a.gasMJH - b.gasMJH,
+        drainageUnits: a.drainageUnits - b.drainageUnits,
     };
 }
 
@@ -222,7 +222,7 @@ export function scalePsdCounts(a: PsdCountEntry, scale: number): PsdCountEntry {
         continuousFlowLS: a.continuousFlowLS * scale,
         dwellings: a.dwellings * scale,
         gasMJH: a.gasMJH * scale,
-        fixtureUnits: a.gasMJH * scale,
+        drainageUnits: a.drainageUnits * scale,
     };
 }
 
@@ -232,7 +232,7 @@ export function equalPsdCounts(a: PsdCountEntry, b: PsdCountEntry): boolean {
         Math.abs(a.continuousFlowLS - b.continuousFlowLS) < EPS &&
         Math.abs(a.dwellings - b.dwellings) < EPS &&
         Math.abs(a.gasMJH - b.gasMJH) < EPS &&
-        Math.abs(a.fixtureUnits - b.fixtureUnits) < EPS
+        Math.abs(a.drainageUnits - b.drainageUnits) < EPS
     );
 }
 
@@ -297,7 +297,7 @@ export function countPsdProfile(profile: PsdProfile): FinalPsdCountEntry {
                 units: Math.max(a.units, b.units),
                 continuousFlowLS: Math.max(a.continuousFlowLS, b.continuousFlowLS),
                 gasMJH: Math.max(a.gasMJH, b.gasMJH),
-                fixtureUnits: Math.max(a.fixtureUnits, b.fixtureUnits),
+                drainageUnits: Math.max(a.drainageUnits, b.drainageUnits),
             };
 
             byCorrelated.set(contextual.correlationGroup, max);
@@ -316,7 +316,7 @@ export function countPsdProfile(profile: PsdProfile): FinalPsdCountEntry {
         dwellings: total.dwellings,
         continuousFlowLS: total.continuousFlowLS,
         gasMJH: total.gasMJH,
-        fixtureUnits: total.fixtureUnits,
+        drainageUnits: total.drainageUnits,
         highestLU,
     };
 }
@@ -339,7 +339,7 @@ export function subtractPsdProfiles(profile: PsdProfile, operand: PsdProfile): v
             continuousFlowLS: prev.continuousFlowLS - contextual.continuousFlowLS,
             dwellings: prev.dwellings - contextual.dwellings,
             gasMJH: prev.gasMJH - contextual.gasMJH,
-            fixtureUnits: prev.fixtureUnits - contextual.fixtureUnits,
+            drainageUnits: prev.drainageUnits - contextual.drainageUnits,
         });
     });
 }
@@ -350,7 +350,7 @@ export function zeroPsdCounts(): PsdCountEntry {
         continuousFlowLS: 0,
         dwellings: 0,
         gasMJH: 0,
-        fixtureUnits: 0,
+        drainageUnits: 0,
     };
 }
 
@@ -361,7 +361,7 @@ export function zeroFinalPsdCounts(): FinalPsdCountEntry {
         dwellings: 0,
         highestLU: 0,
         gasMJH: 0,
-        fixtureUnits: 0,
+        drainageUnits: 0,
     };
 }
 
@@ -373,7 +373,7 @@ export function zeroContextualPCE(entity: string, correlationGroup: string): Con
         units: 0,
         dwellings: 0,
         gasMJH: 0,
-        fixtureUnits: 0,
+        drainageUnits: 0,
     };
 }
 

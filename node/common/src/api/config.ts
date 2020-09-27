@@ -43,6 +43,53 @@ export type SupportedEquationPSDStandards =
     SupportedPsdStandards.din1988300AssistedLiving |
     SupportedPsdStandards.din1988300NursingHome;
 
+export enum SupportedDrainageMethods {
+    AS2018FixtureUnits = 'AS2018FixtureUnits',
+    EN1205622000DischargeUnits = 'EN1205622000DischargeUnits',
+    UPC2018DrainageFixtureUnits = 'UPC2018DrainageFixtureUnits',
+}
+
+export const DRAINAGE_METHOD_CHOICES: Choice[] = [
+    {
+        name: "AS/NZS3500.2:2018 Fixture Unit",
+        key: SupportedDrainageMethods.AS2018FixtureUnits
+    },
+    {
+        name: "EN 12056-2:2000 Discharge Unit",
+        key: SupportedDrainageMethods.EN1205622000DischargeUnits
+    },
+    {
+        name: "2018 UPC Drainage Fixture Unit",
+        key: SupportedDrainageMethods.UPC2018DrainageFixtureUnits
+    },
+];
+
+export enum EN12056FrequencyFactor {
+    IntermittentUse = "IntermittentUse",
+    FrequentUse = "FrequentUse",
+    CongestedUse = "CongestedUse",
+    SpecialUse = "SpecialUse",
+}
+
+export const EN_12506_FREQUENCY_FACTOR_CHOICES: Choice[] = [
+    {
+        name: "Intermittent Use",
+        key: EN12056FrequencyFactor.IntermittentUse,
+    },
+    {
+        name: "Frequent Use",
+        key: EN12056FrequencyFactor.FrequentUse,
+    },
+    {
+        name: "Congested Use",
+        key: EN12056FrequencyFactor.CongestedUse,
+    },
+    {
+        name: "Special Use",
+        key: EN12056FrequencyFactor.SpecialUse,
+    },
+];
+
 export function isSupportedPsdStandard(arg: any): arg is SupportedPsdStandards {
     return Object.values(SupportedPsdStandards).includes(arg);
 }

@@ -25,7 +25,10 @@ export interface LoadNode {
     gasFlowRateMJH: number;
     gasPressureKPA: number;
     variant: NodeVariant;
-    fixtureUnits: number;
+    asnzFixtureUnits: number;
+    enDischargeUnits: number;
+    upcFixtureUnits: number;
+
 }
 
 export interface DwellingNode {
@@ -36,7 +39,10 @@ export interface DwellingNode {
     gasPressureKPA: number;
     loadingUnits: number | null;
     designFlowRateLS: number | null;
-    fixtureUnits: number;
+    asnzFixtureUnits: number;
+    enDischargeUnits: number;
+    upcFixtureUnits: number;
+
 }
 
 export default interface LoadNodeEntity extends DrawableEntity, CenteredEntity {
@@ -107,13 +113,33 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                                 units: Units.LitersPerSecond,
                             },
                             {
-                                property: "node.fixtureUnits",
-                                title: "Fixture Units",
+                                property: "node.asnzFixtureUnits",
+                                title: "AS/NZS3500.2:2018 Fixture Unit",
                                 hasDefault: false,
                                 isCalculated: false,
                                 type: FieldType.Number,
                                 params: { min: 0, max: null },
-                                multiFieldId: "fixtureUnits",
+                                multiFieldId: "asnzFixtureUnits",
+                                units: Units.None
+                            },
+                            {
+                                property: "node.enDischargeUnits",
+                                title: "EN 12056-2:2000 Discharge Unit",
+                                hasDefault: false,
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "enDischargeUnits",
+                                units: Units.None
+                            },
+                            {
+                                property: "node.upcFixtureUnits",
+                                title: "2018 UPC Drainage Fixture Unit",
+                                hasDefault: false,
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "upcFixtureUnits",
                                 units: Units.None
                             },
                         );
@@ -131,13 +157,33 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                                 units: Units.LitersPerSecond
                             },
                             {
-                                property: "node.fixtureUnits",
-                                title: "Fixture Units",
+                                property: "node.asnzFixtureUnits",
+                                title: "AS/NZS3500.2:2018 Fixture Unit",
                                 hasDefault: false,
                                 isCalculated: false,
                                 type: FieldType.Number,
                                 params: { min: 0, max: null },
-                                multiFieldId: "fixtureUnits",
+                                multiFieldId: "asnzFixtureUnits",
+                                units: Units.None
+                            },
+                            {
+                                property: "node.enDischargeUnits",
+                                title: "EN 12056-2:2000 Discharge Unit",
+                                hasDefault: false,
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "enDischargeUnits",
+                                units: Units.None
+                            },
+                            {
+                                property: "node.upcFixtureUnits",
+                                title: "2018 UPC Drainage Fixture Unit",
+                                hasDefault: false,
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "upcFixtureUnits",
                                 units: Units.None
                             },
                         );
@@ -172,16 +218,6 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                                 params: { min: 0, max: null },
                                 multiFieldId: "continuousFlowLS",
                                 units: Units.LitersPerSecond
-                            },
-                            {
-                                property: "node.fixtureUnits",
-                                title: "Fixture Units",
-                                hasDefault: false,
-                                isCalculated: false,
-                                type: FieldType.Number,
-                                params: { min: 0, max: null },
-                                multiFieldId: "fixtureUnits",
-                                units: Units.None
                             },
                         );
                         break;
@@ -236,13 +272,33 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                     },
 
                     {
-                        property: "node.fixtureUnits",
-                            title: "Fixture Units",
+                        property: "node.asnzFixtureUnits",
+                        title: "AS/NZS3500.2:2018 Fixture Unit",
                         hasDefault: false,
                         isCalculated: false,
                         type: FieldType.Number,
                         params: { min: 0, max: null },
-                        multiFieldId: "fixtureUnits",
+                        multiFieldId: "asnzFixtureUnits",
+                        units: Units.None
+                    },
+                    {
+                        property: "node.enDischargeUnits",
+                        title: "EN 12056-2:2000 Discharge Unit",
+                        hasDefault: false,
+                        isCalculated: false,
+                        type: FieldType.Number,
+                        params: { min: 0, max: null },
+                        multiFieldId: "enDischargeUnits",
+                        units: Units.None
+                    },
+                    {
+                        property: "node.upcFixtureUnits",
+                        title: "2018 UPC Drainage Fixture Unit",
+                        hasDefault: false,
+                        isCalculated: false,
+                        type: FieldType.Number,
+                        params: { min: 0, max: null },
+                        multiFieldId: "upcFixtureUnits",
                         units: Units.None
                     },
                 );

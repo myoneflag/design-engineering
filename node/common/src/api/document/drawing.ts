@@ -1,19 +1,21 @@
-import { DrawableEntityConcrete } from "./entities/concrete-entity";
+import {DrawableEntityConcrete} from "./entities/concrete-entity";
 import {
     ComponentPressureLossMethod,
+    EN12056FrequencyFactor,
     InsulationJackets,
     InsulationMaterials,
     PIPE_SIZING_METHODS,
-    RingMainCalculationMethod, StandardFlowSystemUids,
+    RingMainCalculationMethod,
+    StandardFlowSystemUids,
+    SupportedDrainageMethods,
     SupportedDwellingStandards,
     SupportedPsdStandards
 } from "../config";
 import RiserEntity from "./entities/riser-entity";
-import { EntityType } from "./entities/types";
+import {EntityType} from "./entities/types";
 import {Choice, cloneSimple, DeepPartial} from "../../lib/utils";
 import {PriceTable} from "../catalog/price-table";
 import { OperationTransformConcrete, OPERATION_NAMES } from './operation-transforms';
-import {bool} from "aws-sdk/clients/signer";
 
 export interface Coord {
     x: number;
@@ -255,6 +257,8 @@ export interface FlowSystemParameters extends WithID {
 export interface CalculationParameters {
     psdMethod: SupportedPsdStandards;
     dwellingMethod: SupportedDwellingStandards | null;
+    drainageMethod: SupportedDrainageMethods;
+    en12056FrequencyFactor: EN12056FrequencyFactor;
     ringMainCalculationMethod: RingMainCalculationMethod;
     pipeSizingMethod: string;
     componentPressureLossMethod: ComponentPressureLossMethod;
@@ -525,7 +529,8 @@ export const initialDrawing: DrawingState = {
                         material: "gmsMedium",
                         minimumPipeSize: 100,
                     }
-                }
+                },
+                drainageProperties: cloneSimple(initialDrainageProperties),
             },
             {
                 name: "Fire Hose Reel",
@@ -559,7 +564,9 @@ export const initialDrawing: DrawingState = {
                         material: "copperTypeB",
                         minimumPipeSize: 25,
                     }
-                }
+                },
+
+                drainageProperties: cloneSimple(initialDrainageProperties),
             },
 
             {
@@ -750,6 +757,8 @@ export const initialDrawing: DrawingState = {
         calculationParams: {
             psdMethod: SupportedPsdStandards.as35002018LoadingUnits,
             dwellingMethod: null,
+            drainageMethod: SupportedDrainageMethods.AS2018FixtureUnits,
+            en12056FrequencyFactor: EN12056FrequencyFactor.IntermittentUse,
             ringMainCalculationMethod: RingMainCalculationMethod.ISOLATION_CASES,
             pipeSizingMethod: PIPE_SIZING_METHODS[0].key as string,
             componentPressureLossMethod: ComponentPressureLossMethod.INDIVIDUALLY,
