@@ -2613,7 +2613,7 @@ export default class CalculationEngine implements CalculationContext {
                 case EntityType.LOAD_NODE: {
                     const filled = fillDefaultLoadNodeFields(this.doc, this.globalStore, o.entity, this.catalog, this.nodes);
                     const calc = this.globalStore.getOrCreateCalculation(filled);
-                    if (calc.pressureKPA !== null && calc.pressureKPA > filled.maxPressureKPA!) {
+                    if (calc.pressureKPA !== null && filled.maxPressureKPA !== null && calc.pressureKPA > filled.maxPressureKPA!) {
                         calc.warning = 'Max pressure exceeded ('
                             + calc.pressureKPA.toFixed(2) + 'kpa > '
                             + filled.maxPressureKPA!.toFixed(2) + 'kpa';
