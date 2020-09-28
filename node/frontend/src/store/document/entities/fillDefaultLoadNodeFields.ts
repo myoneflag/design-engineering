@@ -37,8 +37,8 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
         const node = nodes.find((node: NodeProps) => node.id === result.customNodeId || node.uid === result.customNodeId)!;
 
         result.name = node.name;
-        result.minPressureKPA = Number(node.minPressure);
-        result.maxPressureKPA = Number(node.maxPressure);
+        result.minPressureKPA = node.minPressure ? Number(node.minPressure) : null;
+        result.maxPressureKPA = node.maxPressure ? Number(node.maxPressure) : null;
 
         const psdStrategy = doc.drawing
             ? doc.drawing.metadata.calculationParams.psdMethod
