@@ -30,7 +30,7 @@
                 label-cols-lg="4"
             >
                 <b-input-group append="kPa">
-                    <b-form-input :disabled="submitting" id="minPressure" v-model="reactiveForm.minPressure" type="number"></b-form-input>
+                    <b-form-input :disabled="submitting" id="minPressure" v-model.number="reactiveForm.minPressure" type="number"></b-form-input>
                 </b-input-group>
             </b-form-group>
             <b-form-group
@@ -39,7 +39,7 @@
                 label-cols-lg="4"
             >
                 <b-input-group append="kPa">
-                    <b-form-input :disabled="submitting" id="maxPressure" v-model="reactiveForm.maxPressure" type="number"></b-form-input>
+                    <b-form-input :disabled="submitting" id="maxPressure" v-model.number="reactiveForm.maxPressure" type="number"></b-form-input>
                 </b-input-group>
             </b-form-group>
             <b-form-group label="Available Fixtures" :disabled="submitting">
