@@ -26,10 +26,10 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
         }
     }
 
-    if (result.minPressureKPA === null) {
+    if (result.minPressureKPA === null && typeof result.customNodeId === "undefined") {
         result.minPressureKPA = 200;
     }
-    if (result.maxPressureKPA === null) {
+    if (result.maxPressureKPA === null && typeof result.customNodeId === "undefined") {
         result.maxPressureKPA = 500;
     }
 
@@ -37,8 +37,8 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
         const node = nodes.find((node: NodeProps) => node.id === result.customNodeId || node.uid === result.customNodeId)!;
 
         result.name = node.name;
-        result.minPressureKPA = node.minPressure ? Number(node.minPressure) : null;
-        result.maxPressureKPA = node.maxPressure ? Number(node.maxPressure) : null;
+        result.minPressureKPA = result.minPressureKPA === null && (node.minPressure ? Number(node.minPressure) : null) || result.minPressureKPA;
+        result.maxPressureKPA = result.maxPressureKPA === null && (node.maxPressure ? Number(node.maxPressure) : null) || result.maxPressureKPA;
 
         const psdStrategy = doc.drawing
             ? doc.drawing.metadata.calculationParams.psdMethod

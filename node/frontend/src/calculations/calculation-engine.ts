@@ -2614,6 +2614,15 @@ export default class CalculationEngine implements CalculationContext {
                         calc.warning = 'Max pressure exceeded ('
                             + calc.pressureKPA.toFixed(2) + 'kpa > '
                             + filled.maxPressureKPA!.toFixed(2) + 'kpa';
+                    } else if (calc.pressureKPA !== null && filled.minPressureKPA !== null && calc.pressureKPA < filled.minPressureKPA) {
+                        const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === filled.systemUidOption)!;
+                        
+                        calc.warning =
+                                "Not enough " +
+                                system.name +
+                                " pressure. Required: " +
+                                filled.minPressureKPA!.toFixed(0) +
+                                " kPa";
                     }
                     break;
                 }
