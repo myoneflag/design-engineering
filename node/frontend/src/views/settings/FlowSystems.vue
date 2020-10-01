@@ -38,6 +38,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
+import { Watch } from 'vue-property-decorator'
 import { DocumentState, initialDocumentState } from "../../../src/store/document/types";
 import SettingsFieldBuilder from "../../../src/components/editor/lib/SettingsFieldBuilder.vue";
 import uuid from "uuid";
@@ -54,6 +55,8 @@ import {
 } from "../../../../common/src/api/config";
 import { Units } from "../../../../common/src/lib/measurements";
 import {Catalog} from "../../../../common/src/api/catalog/types";
+import { valuesIn } from "lodash";
+import { setPropertyByString } from "../../lib/utils";
 
 @Component({
     components: { SettingsFieldBuilder, FlowSystemPicker },
@@ -125,6 +128,14 @@ export default class FlowSystems extends Vue {
             ["", "Network Properties", "title3"]
         );
 
+        const pipeSizes: { [key: string]: Array<{key: number, name: string}> } = {};
+        Object.entries(this.catalog.pipes).map(([key, pipeProp]) => {
+            pipeSizes[key] = Object.keys(pipeProp.pipesBySize.generic).map(x => ({
+                key: +x,
+                name: x + "mm",
+            }));
+        });
+
         for (const netKey of Object.keys(this.selectedSystem.networks)) {
             if (netKey === NetworkType.CONNECTIONS && selectedIsGas) {
                 continue;
@@ -138,6 +149,13 @@ export default class FlowSystems extends Vue {
                     "Material",
                     "choice",
                     this.$store.getters["catalog/defaultPipeMaterialChoices"]
+                ],
+                [
+                    "networks." + netKey + ".minimumPipeSize",
+                    "Minimum Pipe Size",
+                    "choice",
+                    pipeSizes[this.selectedSystem.networks[netKey as NetworkType].material],
+                    this.selectedSystem.networks[netKey as NetworkType].material
                 ],
                 ["networks." + netKey + ".spareCapacityPCT", "Spare Capacity (%)", "range", 0, 100]
             );
@@ -156,6 +174,33 @@ export default class FlowSystems extends Vue {
 
     get flowSystems() {
         return this.document.drawing.metadata.flowSystems;
+    }
+
+    get risersMaterial() {
+        return this.selectedSystem.networks.RISERS.material;
+    }
+
+    @Watch('risersMaterial')
+    handleRisersMaterialChange(val: string, oldVal: string) {
+        setPropertyByString(this.selectedSystem, 'networks.RISERS.minimumPipeSize', Number(Object.keys(this.catalog.pipes[val].pipesBySize.generic)[0]));
+    }
+
+    get reticulationsMaterial() {
+        return this.selectedSystem.networks.RETICULATIONS.material;
+    }
+
+    @Watch('reticulationsMaterial')
+    handleReticulationsMaterialChange(val: string, oldVal: string) {
+        setPropertyByString(this.selectedSystem, 'networks.RETICULATIONS.minimumPipeSize', Number(Object.keys(this.catalog.pipes[val].pipesBySize.generic)[0]));
+    }
+
+    get connectionsMaterial() {
+        return this.selectedSystem.networks.CONNECTIONS.material;
+    }
+
+    @Watch('connectionsMaterial')
+    handleConnectionsMaterialChange(val: string, oldVal: string) {
+        setPropertyByString(this.selectedSystem, 'networks.CONNECTIONS.minimumPipeSize', Number(Object.keys(this.catalog.pipes[val].pipesBySize.generic)[0]));
     }
 
     selectSystem(value: number) {

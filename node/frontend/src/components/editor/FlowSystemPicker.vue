@@ -1,5 +1,3 @@
-import { InsulationJackets } from "../../../../common/src/api/config";
-import { InsulationMaterials } from "../../../../common/src/api/config";
 <template>
     <b-dropdown
         size="md"
@@ -73,17 +71,20 @@ export default class FlowSystemPicker extends Vue {
                 RISERS: {
                     velocityMS: 0,
                     spareCapacityPCT: 0,
-                    material: ""
+                    material: "",
+                    minimumPipeSize: 0,
                 },
                 RETICULATIONS: {
                     velocityMS: 0,
                     spareCapacityPCT: 0,
-                    material: ""
+                    material: "",
+                    minimumPipeSize: 0,
                 },
                 CONNECTIONS: {
                     velocityMS: 0,
                     spareCapacityPCT: 0,
-                    material: ""
+                    material: "",
+                    minimumPipeSize: 0,
                 }
             }
         };

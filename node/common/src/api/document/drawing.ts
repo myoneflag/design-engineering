@@ -171,6 +171,7 @@ export interface NetworkParams {
     velocityMS: number;
     spareCapacityPCT: number;
     material: string;
+    minimumPipeSize: number;
 }
 
 export interface FlowSystemParametersV8 extends WithID {
@@ -291,17 +292,20 @@ export const initialDrawing: DrawingState = {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 1.5,
-                        material: "copperTypeB"
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 1.5,
-                        material: "copperTypeB"
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: "pexSdr74"
+                        material: "pexSdr74",
+                        minimumPipeSize: 16,
                     }
                 }
             },
@@ -322,17 +326,20 @@ export const initialDrawing: DrawingState = {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 1.2,
-                        material: "copperTypeB"
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 1.2,
-                        material: "copperTypeB"
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: "pexSdr74"
+                        material: "pexSdr74",
+                        minimumPipeSize: 16,
                     }
                 }
             },
@@ -353,17 +360,20 @@ export const initialDrawing: DrawingState = {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 1.2,
-                        material: "copperTypeB"
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 1.2,
-                        material: "copperTypeB"
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: "pexSdr74"
+                        material: "pexSdr74",
+                        minimumPipeSize: 16,
                     }
                 }
             },
@@ -384,17 +394,20 @@ export const initialDrawing: DrawingState = {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "copperTypeB"
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "copperTypeB"
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: "pexSdr74"
+                        material: "pexSdr74",
+                        minimumPipeSize: 16,
                     }
                 }
             }

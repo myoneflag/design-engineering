@@ -671,21 +671,29 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
     }
 
     getManufacturerCatalogPage(context: CalculationContext): { [key: string]: PipeSpec } | null {
-        const { drawing, catalog, globalStore } = context;
+        const { drawing, catalog } = context;
         const computed = fillPipeDefaultFields(drawing, this.computedLengthM, this.entity);
         if (!computed.material) {
             return null;
         }
         const page = catalog.pipes[computed.material];
         const manufacturer = drawing.metadata.catalog.pipes.find((m) => m.uid === computed.material)?.manufacturer || 'generic';
-        return page.pipesBySize[manufacturer];
+        const minimumPipeSize = drawing.metadata.flowSystems.find(s => s.uid === computed.systemUid)!.networks[computed.network].minimumPipeSize;
+        
+        let pipeSize: { [key: string]: PipeSpec } = {};
+        for (var i = 0; i < Object.entries(page.pipesBySize[manufacturer]).length; i++) {
+            const [key, pipe] = Object.entries(page.pipesBySize[manufacturer])[i];
+            if (Number(pipe.diameterNominalMM) >= minimumPipeSize) {
+                pipeSize = {...pipeSize, [key]: pipe};
+            }
+        }
+
+        return pipeSize;
     }
 
     getCatalogBySizePage(context: CalculationContext): PipeSpec | null {
-        const { drawing } = context;
-
         const calculation = context.globalStore.getCalculation(this.entity);
-        const computed = fillPipeDefaultFields(drawing, this.computedLengthM, this.entity);
+        
         if (!calculation || !calculation.realNominalPipeDiameterMM) {
             return null;
         }
@@ -693,8 +701,9 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         if (!material) {
             return null;
         }
-        const manufacturer = drawing.metadata.catalog.pipes.find(obj => obj.uid === material.uid)?.manufacturer || 'generic';
-        const tableVal = lowerBoundTable(material.pipesBySize[manufacturer], calculation.realNominalPipeDiameterMM);
+ 
+        const tableVal = lowerBoundTable(this.getManufacturerCatalogPage(context)!, calculation.realNominalPipeDiameterMM);
+
         return tableVal;
     }
 

@@ -1,4 +1,3 @@
-import { SelectedMaterialManufacturer } from './../../../common/src/api/document/drawing';
 import CalculationEngine, { EdgeType, FlowEdge, FlowNode } from "./calculation-engine";
 import PipeEntity, { fillPipeDefaultFields } from "../../../common/src/api/document/entities/pipe-entity";
 import { Edge } from "./graph";
@@ -189,13 +188,7 @@ export class RingMainCalculator {
             if (r.value.type === EdgeType.PIPE) {
                 const pipeObject = this.engine.globalStore.get(r.value.uid) as Pipe;
                 const pcalc = this.engine.globalStore.getOrCreateCalculation(pipeObject.entity);
-                const filled = fillPipeDefaultFields(
-                    this.engine.drawing,
-                    pipeObject.computedLengthM,
-                    pipeObject.entity
-                );
-                const manufacturer = this.engine.doc.drawing.metadata.catalog.pipes.find((pipe: SelectedMaterialManufacturer) => pipe.uid === filled.material)?.manufacturer || 'generic';
-                let initialSize = lowerBoundTable(this.engine.catalog.pipes[filled.material!].pipesBySize[manufacturer], 0)!;
+                let initialSize = lowerBoundTable(pipeObject.getManufacturerCatalogPage(this.engine)!, 0)!;
                 if (pipeObject.entity.diameterMM) {
                     // there is a custom diameter
                     initialSize = this.engine.getPipeByNominal(pipeObject.entity, pipeObject.entity.diameterMM)!;

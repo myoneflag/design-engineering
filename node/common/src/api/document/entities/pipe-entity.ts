@@ -5,7 +5,6 @@ import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin }
 import { Catalog } from "../../catalog/types";
 import { convertPipeDiameterFromMetric, Units } from "../../../lib/measurements";
 import {StandardFlowSystemUids} from "../../config";
-import {PlantType} from "./plants/plant-types";
 
 export default interface PipeEntity extends DrawableEntity {
     type: EntityType.PIPE;
@@ -42,16 +41,20 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
         };
         return c;
     });
+    const flowSystemSettings = drawing.metadata.flowSystems.find((prop) => prop.uid === result.systemUid)!;
     const manufacturer = drawing.metadata.catalog.pipes.find((pipe: SelectedMaterialManufacturer) => pipe.uid === result.material)?.manufacturer || 'generic';
-    const diameters = Object.keys(catalog.pipes[result.material!].pipesBySize[manufacturer]).map((d) => {
-        const val = convertPipeDiameterFromMetric(drawing.metadata.units, parseCatalogNumberExact(d));
-        const c: Choice = {
-            disabled: false,
-            key: parseCatalogNumberOrMin(d),
-            name: val[1] + val[0],
-        };
-        return c;
-    });
+    const diameters = Object.keys(catalog.pipes[result.material!].pipesBySize[manufacturer])
+        .map((d) => {
+            const val = convertPipeDiameterFromMetric(drawing.metadata.units, parseCatalogNumberExact(d));
+            const c: Choice = {
+                disabled: false,
+                key: parseCatalogNumberOrMin(d),
+                name: val[1] + val[0],
+            };
+            return c;
+        })
+        .filter((d) => Number(d.key) >= flowSystemSettings.networks[result.network].minimumPipeSize);
+        
     return [
         {
             property: "systemUid",
