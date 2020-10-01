@@ -1762,12 +1762,9 @@ export default class CalculationEngine implements CalculationContext {
 
     getPipePressureDropMH(pipe: PipeEntity): number {
         const obj = this.globalStore.get(pipe.uid) as Pipe;
-        const filled = fillPipeDefaultFields(this.doc.drawing, obj.computedLengthM, pipe);
-
         const calculation = this.globalStore.getOrCreateCalculation(pipe);
-        const manufacturer = this.doc.drawing.metadata.catalog.pipes.find((pipe: SelectedMaterialManufacturer) => pipe.uid === filled.material)?.manufacturer || 'generic';
         const realPipe = lowerBoundTable(
-            this.catalog.pipes[filled.material!].pipesBySize[manufacturer],
+            obj.getManufacturerCatalogPage(this)!,
             calculation.realNominalPipeDiameterMM!
         )!;
 
@@ -1832,6 +1829,7 @@ export default class CalculationEngine implements CalculationContext {
     }
 
     getRealPipe(pipe: PipeEntity): PipeSpec | null {
+        const obj = this.globalStore.get(pipe.uid) as Pipe;
         const calculation = this.globalStore.getOrCreateCalculation(pipe);
         const pipeFilled = fillPipeDefaultFields(this.doc.drawing, 0, pipe);
         const table = this.catalog.pipes[pipeFilled.material!];
@@ -1840,8 +1838,7 @@ export default class CalculationEngine implements CalculationContext {
             throw new Error("Material doesn't exist anymore " + JSON.stringify(pipeFilled));
         }
 
-        const manufacturer = this.doc.drawing.metadata.catalog.pipes.find((pipe: SelectedMaterialManufacturer) => pipe.uid === pipeFilled.material)?.manufacturer || 'generic';
-        const a = lowerBoundTable(table.pipesBySize[manufacturer], calculation.optimalInnerPipeDiameterMM!, (p) => {
+        const a = lowerBoundTable(obj.getManufacturerCatalogPage(this)!, calculation.optimalInnerPipeDiameterMM!, (p) => {
             const v = parseCatalogNumberExact(p.diameterInternalMM);
             if (!v) {
                 throw new Error("no nominal diameter");

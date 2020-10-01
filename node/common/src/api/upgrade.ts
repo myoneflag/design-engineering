@@ -98,17 +98,20 @@ export function upgrade15to16(original: DrawingState) {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "copperTypeB"
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "copperTypeB"
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: "pexSdr74"
+                        material: "pexSdr74",
+                        minimumPipeSize: 16,
                     }
                 }
             }
@@ -217,4 +220,12 @@ export function upgrade16to17(original: DrawingState) {
             }
         }
     }
+}
+
+export function upgrade17to18(original: DrawingState) {
+    original.metadata.flowSystems.forEach(system => {
+        system.networks.RISERS.minimumPipeSize = 15;
+        system.networks.RETICULATIONS.minimumPipeSize = 15;
+        system.networks.CONNECTIONS.minimumPipeSize = 16;
+    });
 }

@@ -78,7 +78,6 @@
                             size="md"
                             :text="choiceName(getReactiveData(field[0]), field[3])"
                             variant="outline-secondary"
-                            style="padding-bottom: 20px"
                         >
                             <b-dropdown-item
                                 v-for="(choice, index) in field[3]"
