@@ -284,7 +284,7 @@ export const initialDrawing: DrawingState = {
                 hasReturnSystem: false,
                 returnIsInsulated: false,
                 returnMaxVelocityMS: 1,
-                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationMaterial: InsulationMaterials.mmKemblaInsulation,
                 insulationJacket: InsulationJackets.allServiceJacket,
                 insulationThicknessMM: 25,
 
@@ -318,7 +318,7 @@ export const initialDrawing: DrawingState = {
                 hasReturnSystem: true,
                 returnIsInsulated: true,
                 returnMaxVelocityMS: 1,
-                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationMaterial: InsulationMaterials.mmKemblaInsulation,
                 insulationJacket: InsulationJackets.allServiceJacket,
                 insulationThicknessMM: 25,
 
@@ -352,7 +352,7 @@ export const initialDrawing: DrawingState = {
                 hasReturnSystem: false,
                 returnIsInsulated: false,
                 returnMaxVelocityMS: 1,
-                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationMaterial: InsulationMaterials.mmKemblaInsulation,
                 insulationJacket: InsulationJackets.allServiceJacket,
                 insulationThicknessMM: 25,
 
@@ -386,7 +386,7 @@ export const initialDrawing: DrawingState = {
                 hasReturnSystem: false,
                 returnIsInsulated: false,
                 returnMaxVelocityMS: 1,
-                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationMaterial: InsulationMaterials.mmKemblaInsulation,
                 insulationJacket: InsulationJackets.allServiceJacket,
                 insulationThicknessMM: 25,
 
@@ -427,12 +427,27 @@ export const initialDrawing: DrawingState = {
         },
         availableFixtures: ["basin", "bath", "shower", "kitchenSink", "wc", "washingMachine", "laundryTrough"],
         catalog: {
-            pipes: [],
-            backflowValves: [],
-            mixingValves: [],
-            prv: [],
-            balancingValves: [],
-            hotWaterPlant: [],
+            pipes: [
+                { manufacturer: "kemblaCu", uid: "copperTypeB", },
+                { manufacturer: "rehauPex", uid: "pexSdr74", },
+                { manufacturer: "kemblaS/s", uid: "stainlessSteel", },
+            ],
+            backflowValves: [
+                { manufacturer: "apolloRpzd", uid: "RPZD", },
+            ],
+            mixingValves: [
+                { manufacturer: "caleffi", uid: "temperingValve", },
+                { manufacturer: "caleffi", uid: "tmv", },
+            ],
+            prv: [
+                { manufacturer: "caleffi", uid: "prv", },
+            ],
+            balancingValves: [
+                { manufacturer: "cimberio", uid: "balancingValves", },
+            ],
+            hotWaterPlant: [
+                { manufacturer: "grundfos", uid: "hotWaterPlant", },
+            ],
         },
         priceTable: {},
     },
