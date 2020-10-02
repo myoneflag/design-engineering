@@ -1,12 +1,5 @@
 import { FieldCategory, CalculationField} from "../../../../src/store/document/calculations/calculation-field";
-import {
-    addPressureCalculationFields,
-    Calculation,
-    PressureCalculation
-} from "../../../../src/store/document/calculations/types";
-import FixtureEntity from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
-import { DocumentState } from "../types";
-import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
+import { Calculation } from "../../../../src/store/document/calculations/types";
 import { Units } from "../../../../../common/src/lib/measurements";
 import { StandardFlowSystemUids } from "../../../../../common/src/api/config";
 import GasApplianceEntity from "../../../../../common/src/api/document/entities/gas-appliance";
@@ -24,6 +17,7 @@ export function makeGasApplianceCalculationFields(entity: GasApplianceEntity): C
             units: Units.MegajoulesPerHour,
             category: FieldCategory.FlowRate,
             systemUid: StandardFlowSystemUids.Gas,
+            defaultEnabled: true,
         },
     ];
 }

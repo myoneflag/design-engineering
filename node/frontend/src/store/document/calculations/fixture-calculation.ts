@@ -38,6 +38,7 @@ export function makeFixtureCalculationFields(doc: DocumentState, entity: Fixture
                 systemUid: suid,
                 units: Units.Liters,
                 category: FieldCategory.Volume,
+                defaultEnabled: true,
                 hideIfNull: true,
             });
         }
@@ -50,6 +51,7 @@ export function makeFixtureCalculationFields(doc: DocumentState, entity: Fixture
                 systemUid: suid,
                 units: Units.Meters,
                 category: FieldCategory.Length,
+                defaultEnabled: true,
                 hideIfNull: true,
             });
         }

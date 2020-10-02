@@ -67,7 +67,6 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
             property: "kvValue",
             title: "Kv Value",
             short: "",
-            defaultEnabled: true,
             units: Units.Kv,
             category: FieldCategory.Pressure,
             systemUid,
@@ -75,7 +74,7 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
     }
 
     if (!valveIsGas) {
-        addPressureCalculationFields(fields, systemUid, "", {short: "In", defaultEnabled: true});
+        addPressureCalculationFields(fields, systemUid, "", {short: "In"});
     }
 
     if (entity.systemUidOption) {
@@ -98,7 +97,6 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
                         units: Units.KiloPascals,
                         systemUid,
                         category: FieldCategory.Pressure,
-                        defaultEnabled: true,
                     },
                 );
             }

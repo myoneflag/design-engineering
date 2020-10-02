@@ -22,7 +22,7 @@ export function makeLoadNodeCalculationFields(entity: LoadNodeEntity, settings: 
     const result: CalculationField[] = [];
 
     const systemUid =  determineConnectableSystemUid(globalStore, entity);
-    addPressureCalculationFields(result, entity.systemUidOption || undefined, "", {defaultEnabled: true});
+    addPressureCalculationFields(result, entity.systemUidOption || undefined, "", {defaultEnabled: true}, {defaultEnabled: true});
 
     const system = settings.metadata.flowSystems.find((f) => f.uid === systemUid);
     const thisIsGas = isGas(system ? system.fluid : 'water', catalog);

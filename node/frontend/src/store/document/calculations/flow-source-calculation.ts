@@ -19,7 +19,7 @@ export default interface FlowSourceCalculation extends
 export function makeFlowSourceCalculationFields(entity: FlowSourceEntity, settings: DrawingState): CalculationField[] {
     const result: CalculationField[] = [];
 
-    addPressureCalculationFields(result, entity.systemUid);
+    addPressureCalculationFields(result, entity.systemUid, "", {defaultEnabled: true}, {defaultEnabled: true});
 
     result.push(
         {
