@@ -1565,7 +1565,7 @@ export default class CalculationEngine implements CalculationContext {
                         }
                     case NodeType.DWELLING:
                         return [{
-                            units: isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod) ? filled.node.designFlowRateLS!: filled.node.loadingUnits!,
+                            units: 0,
                             continuousFlowLS: filled.node.continuousFlowLS!,
                             dwellings: filled.node.dwellings,
                             entity: filled.uid,
