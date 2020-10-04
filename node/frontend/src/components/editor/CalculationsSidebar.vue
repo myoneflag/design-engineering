@@ -2,16 +2,9 @@
     <b-container class="calculationSidePanel">
         <b-row>
             <b-col>
-                <b-button-group>
-                    <b-button
-                        variant="outline-dark"
-                        class="calculationBtn"
-                        @click="filterShown = !filterShown"
-                        :pressed="filterShown"
-                    >
-                        Filters
-                        <v-icon name="caret-down" scale="1" />
-                    </b-button>
+                <b-button-group
+                        style="margin-left: -350px"
+                >
 
                     <b-dropdown variant="outline-dark" size="sm" class="calculationBtn" text="Export (*)">
                         <b-dropdown-item @click="pdfSnapshot" variant="outline-dark" size="sm"> PDF</b-dropdown-item>
@@ -29,6 +22,16 @@
                     >
                         Share
                         <v-icon name="share-alt" scale="1" />
+                    </b-button>
+
+                    <b-button
+                            variant="outline-dark"
+                            class="calculationBtn"
+                            @click="filterShown = !filterShown"
+                            :pressed="filterShown"
+                    >
+                        Filters
+                        <v-icon name="caret-down" scale="1" />
                     </b-button>
                 </b-button-group>
             </b-col>

@@ -74,7 +74,7 @@ import {
     isDrainage,
     isGas,
     isGermanStandard,
-    StandardFlowSystemUids,
+    StandardFlowSystemUids, SupportedDrainageMethods,
     SupportedPsdStandards
 } from "../../../common/src/api/config";
 import {Catalog, PipeSpec} from "../../../common/src/api/catalog/types";
@@ -1413,6 +1413,21 @@ export default class CalculationEngine implements CalculationContext {
                     const fixture = parentEntity as FixtureEntity;
                     const mainFixture = fillFixtureFields(this.doc.drawing, this.catalog, fixture);
 
+                    let drainageUnits = undefined;
+                    switch (this.doc.drawing.metadata.calculationParams.drainageMethod) {
+                        case SupportedDrainageMethods.AS2018FixtureUnits:
+                            drainageUnits = mainFixture.asnzFixtureUnits;
+                            break;
+                        case SupportedDrainageMethods.EN1205622000DischargeUnits:
+                            drainageUnits = mainFixture.enDischargeUnits;
+                            break;
+                        case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
+                            drainageUnits = mainFixture.upcFixtureUnits;
+                            break;
+                        default:
+                            assertUnreachable(this.doc.drawing.metadata.calculationParams.drainageMethod)
+                    }
+
                     for (const suid of fixture.roughInsInOrder) {
                         if (node.uid === fixture.roughIns[suid].uid) {
                             console.log(mainFixture.asnzFixtureUnits!);
@@ -1425,7 +1440,7 @@ export default class CalculationEngine implements CalculationContext {
                                     dwellings: 0,
                                     entity: node.entity.uid,
                                     correlationGroup: fixture.uid,
-                                    drainageUnits: isDrainage(suid) ? mainFixture.asnzFixtureUnits! : 0,
+                                    drainageUnits: isDrainage(suid) ? drainageUnits! : 0,
                                     gasMJH: 0,
                                 }];
                             } else {
@@ -1436,7 +1451,7 @@ export default class CalculationEngine implements CalculationContext {
                                     entity: node.entity.uid,
                                     gasMJH: 0,
                                     correlationGroup: fixture.uid,
-                                    drainageUnits: isDrainage(suid) ? mainFixture.asnzFixtureUnits! : 0,
+                                    drainageUnits: isDrainage(suid) ? drainageUnits! : 0,
                                 }];
                             }
                         }
@@ -1525,7 +1540,19 @@ export default class CalculationEngine implements CalculationContext {
                             loadingUnits = parseCatalogNumberOrMin(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[SupportedPsdStandards.bs806][systemChk])!;
                             designFlowRateLS = parseCatalogNumberOrMin(this.catalog.fixtures[nodeProp.fixtures[i]].qLS[manufacturer][selectedOption][systemChk])!;
                             loadingUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[SupportedPsdStandards.bs806][systemChk])!;
-                            fixtureUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[0]].asnzFixtureUnits)!;
+                            switch (this.doc.drawing.metadata.calculationParams.drainageMethod) {
+                                case SupportedDrainageMethods.AS2018FixtureUnits:
+                                    fixtureUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[0]].asnzFixtureUnits)!;
+                                    break;
+                                case SupportedDrainageMethods.EN1205622000DischargeUnits:
+                                    fixtureUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[0]].enDischargeUnits)!;
+                                    break;
+                                case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
+                                    fixtureUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[0]].upcFixtureUnits)!;
+                                    break;
+                                default:
+                                    assertUnreachable(this.doc.drawing.metadata.calculationParams.drainageMethod);
+                            }
                         }
 
                         if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
@@ -1554,6 +1581,20 @@ export default class CalculationEngine implements CalculationContext {
                     return returnData;
                 }
             } else {
+                let drainageUnits: number;
+                switch (this.doc.drawing.metadata.calculationParams.drainageMethod) {
+                    case SupportedDrainageMethods.AS2018FixtureUnits:
+                        drainageUnits = filled.node.asnzFixtureUnits;
+                        break;
+                    case SupportedDrainageMethods.EN1205622000DischargeUnits:
+                        drainageUnits = filled.node.enDischargeUnits;
+                        break;
+                    case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
+                        drainageUnits = filled.node.upcFixtureUnits;
+                        break;
+                    default:
+                        assertUnreachable(this.doc.drawing.metadata.calculationParams.drainageMethod);
+                }
                 switch (filled.node.type) {
                     case NodeType.LOAD_NODE:
                         if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
@@ -1563,7 +1604,7 @@ export default class CalculationEngine implements CalculationContext {
                                 dwellings: 0,
                                 entity: filled.uid,
                                 gasMJH: filled.node.gasFlowRateMJH,
-                                drainageUnits: filled.node.asnzFixtureUnits,
+                                drainageUnits: drainageUnits!,
                                 correlationGroup
                             }];
                         } else {
@@ -1573,7 +1614,7 @@ export default class CalculationEngine implements CalculationContext {
                                 dwellings: 0,
                                 entity: filled.uid,
                                 gasMJH: filled.node.gasFlowRateMJH,
-                                drainageUnits: filled.node.asnzFixtureUnits,
+                                drainageUnits: drainageUnits!,
                                 correlationGroup
                             }];
                         }
@@ -1584,7 +1625,7 @@ export default class CalculationEngine implements CalculationContext {
                             dwellings: filled.node.dwellings,
                             entity: filled.uid,
                             gasMJH: filled.node.gasFlowRateMJH * filled.node.dwellings!,
-                            drainageUnits: filled.node.asnzFixtureUnits,
+                            drainageUnits: drainageUnits!,
                             correlationGroup
                         }];
                     default:

@@ -82,7 +82,7 @@
                     :is-drawing="toolHandler !== null"
             />
 
-            <PressureDrainageSelector>
+            <PressureDrainageSelector v-if="document.uiState.drawingMode !== DrawingMode.FloorPlan">
 
             </PressureDrainageSelector>
 
@@ -278,6 +278,10 @@
             }
 
             return false;
+        }
+
+        get DrawingMode() {
+            return DrawingMode;
         }
 
         get shouldDisplayModeButtons() {

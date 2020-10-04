@@ -17,9 +17,9 @@ import {makeFlowSourceCalculationFields} from "../store/document/calculations/fl
 import {ObjectStore} from "../htmlcanvas/lib/object-store";
 import {makePlantCalculationFields} from "../store/document/calculations/plant-calculation";
 import {
-    assertUnreachable,
+    assertUnreachable, getPsdMethods,
     isGermanStandard,
-    StandardFlowSystemUids,
+    StandardFlowSystemUids, SupportedDrainageMethods,
     SupportedPsdStandards
 } from "../../../common/src/api/config";
 import {Catalog} from "../../../common/src/api/catalog/types";
@@ -402,6 +402,19 @@ export function getPsdUnitName(psdMethod: SupportedPsdStandards): { name: string
             return { name: "Full Flow Rate", abbreviation: "F. Flow" };
     }
     assertUnreachable(psdMethod);
+}
+
+export function getDrainageUnitName(drainageMethod: SupportedDrainageMethods):  { name: string; abbreviation: string } {
+    switch (drainageMethod) {
+        case SupportedDrainageMethods.AS2018FixtureUnits:
+        case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
+            return { name: 'Fixture Units', abbreviation: 'FU' };
+            break;
+        case SupportedDrainageMethods.EN1205622000DischargeUnits:
+            return { name: 'Discharge Units', abbreviation: 'DU' };
+            break;
+    }
+    assertUnreachable(drainageMethod);
 }
 
 export interface FlowRateResult {

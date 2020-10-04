@@ -59,6 +59,8 @@
 
     .pressure-drainage-btn {
         background-color: white;
+        height: 45px;
+        font-size: 12px;
     }
 
 </style>

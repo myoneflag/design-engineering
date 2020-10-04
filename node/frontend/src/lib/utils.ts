@@ -8,6 +8,7 @@ import { getFields } from "../calculations/utils";
 import { getEntityName } from "../../../common/src/api/document/entities/types";
 import Vue from 'vue';
 import { Color } from "../../../common/src/api/document/drawing";
+import {assertUnreachable} from "../../../common/src/api/config";
 
 export const lighten = (col: string, percent: number, alpha: number = 1.0) => {
     const num = parseInt(col.substr(1), 16);
@@ -168,12 +169,24 @@ export function getValveK(catalogId: string, catalog: Catalog, pipeDiameterMM: n
 }
 
 export function getEffectiveFilter(objects: BaseBackedObject[], calculationFilters: CalculationFilters, document: DocumentState, catalog: Catalog) {
+    console.log('getting effective filter');
     const build: CalculationFilters = {};
 
     const existing = cloneSimple(calculationFilters);
 
     objects.forEach((o) => {
-        const fields = getFields(o.entity, document, o.globalStore, catalog);
+        let fields = getFields(o.entity, document, o.globalStore, catalog);
+        switch (document.uiState.pressureOrDrainage) {
+            case "pressure":
+                fields = fields.filter((f) => f.layouts === undefined || f.layouts.includes('pressure'));
+                break;
+            case "drainage":
+                fields = fields.filter((f) => f.layouts !== undefined && f.layouts.includes('drainage'));
+                break;
+            default:
+                assertUnreachable(document.uiState.pressureOrDrainage);
+        }
+
         let wasInserted = false;
         if (!(o.entity.type in build)) {
             Vue.set(build, o.entity.type, {

@@ -1,10 +1,14 @@
 import { SelectedMaterialManufacturer } from './../../../../../common/src/api/document/drawing';
-import { FieldCategory, CalculationField} from "../../../../src/store/document/calculations/calculation-field";
+import {
+    FieldCategory,
+    CalculationField,
+    CalculationLayout
+} from "../../../../src/store/document/calculations/calculation-field";
 import { Calculation, PsdCalculation } from "../../../../src/store/document/calculations/types";
 import PipeEntity, { fillPipeDefaultFields } from "../../../../../common/src/api/document/entities/pipe-entity";
 import { getPsdUnitName, PsdProfile } from "../../../calculations/utils";
 import set = Reflect.set;
-import {assertUnreachable, isGas, isGermanStandard} from "../../../../../common/src/api/config";
+import {assertUnreachable, isDrainage, isGas, isGermanStandard} from "../../../../../common/src/api/config";
 import {Catalog, Manufacturer, PipeManufacturer} from "../../../../../common/src/api/catalog/types";
 import { DrawingState, MeasurementSystem, UnitsParameters } from "../../../../../common/src/api/document/drawing";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
@@ -81,6 +85,8 @@ export function makePipeCalculationFields(
 
     const result: CalculationField[] = [];
 
+    const layoutOptionDrainage: CalculationLayout[] = isDrainage(entity.systemUid) ? ['pressure', 'drainage'] : [];
+
     if (!pipeIsGas) {
         if (pCalc.totalPeakFlowRateLS) {
             result.push(
@@ -147,7 +153,8 @@ export function makePipeCalculationFields(
                         return convertPipeDiameterFromMetric(unitPrefs, value);
                 }
                 assertUnreachable(unitPrefs.lengthMeasurementSystem);
-            }
+            },
+            layouts: layoutOptionDrainage,
         },
         {
             property: "realInternalDiameterMM",
@@ -158,6 +165,7 @@ export function makePipeCalculationFields(
             systemUid: entity.systemUid
         },
     );
+
 
     if (pipeIsGas) {
         result.push(
@@ -190,7 +198,8 @@ export function makePipeCalculationFields(
             short: "",
             units: Units.Meters,
             category: FieldCategory.Size,
-            systemUid: entity.systemUid
+            systemUid: entity.systemUid,
+            layouts: layoutOptionDrainage,
         },
         {
             property: "velocityRealMS",
@@ -244,6 +253,18 @@ export function makePipeCalculationFields(
             });
         }
 
+        if (isDrainage(entity.systemUid)) {
+
+            result.push({
+                property: "psdUnits.units",
+                title: psdUnit.name,
+                short: psdUnit.abbreviation,
+                units: Units.None,
+                category: FieldCategory.LoadingUnits,
+                systemUid: entity.systemUid,
+                layouts: ['drainage'],
+            });
+        }
     }
 
     return result;
