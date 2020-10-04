@@ -1662,6 +1662,8 @@ export default class CalculationEngine implements CalculationContext {
                     // TODO: Gas calculation
                 } else if (isDrainage(entity.systemUid)) {
                     // TODO: Drainage sizing
+                    calculation.realNominalPipeDiameterMM = 420;
+                    calculation.optimalInnerPipeDiameterMM = 420;
                 } else {
 
                     const flowRate = lookupFlowRate(psdU, this.doc, this.catalog, entity.systemUid);

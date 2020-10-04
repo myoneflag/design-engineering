@@ -6,13 +6,14 @@ import {
 } from "../../../../src/store/document/calculations/calculation-field";
 import { Calculation, PsdCalculation } from "../../../../src/store/document/calculations/types";
 import PipeEntity, { fillPipeDefaultFields } from "../../../../../common/src/api/document/entities/pipe-entity";
-import { getPsdUnitName, PsdProfile } from "../../../calculations/utils";
+import {getDrainageUnitName, getPsdUnitName, PsdProfile} from "../../../calculations/utils";
 import set = Reflect.set;
 import {assertUnreachable, isDrainage, isGas, isGermanStandard} from "../../../../../common/src/api/config";
 import {Catalog, Manufacturer, PipeManufacturer} from "../../../../../common/src/api/catalog/types";
 import { DrawingState, MeasurementSystem, UnitsParameters } from "../../../../../common/src/api/document/drawing";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import { convertPipeDiameterFromMetric, mm2IN, Units } from "../../../../../common/src/lib/measurements";
+import {DocumentState} from "../types";
 
 export enum NoFlowAvailableReason {
     NO_SOURCE = "NO_SOURCE",
@@ -63,18 +64,20 @@ export default interface PipeCalculation extends PsdCalculation, Calculation {
 
 export function makePipeCalculationFields(
     entity: PipeEntity,
-    settings: DrawingState,
+    document: DocumentState,
     catalog: Catalog | undefined,
     globalStore: GlobalStore,
 ): CalculationField[] {
-    const psdUnit = getPsdUnitName(settings.metadata.calculationParams.psdMethod);
+    const psdUnit = getPsdUnitName(document.drawing.metadata.calculationParams.psdMethod);
+    const drainageUnits = getDrainageUnitName(document.drawing.metadata.calculationParams.drainageMethod);
 
-    const pipeIsGas = catalog && isGas(settings.metadata.flowSystems.find((f) => f.uid === entity.systemUid)!.fluid, catalog);
+    const pipeIsGas = catalog && isGas(document.drawing.metadata.flowSystems.find((f) => f.uid === entity.systemUid)!.fluid, catalog);
+    const pipeIsDrainage = isDrainage(entity.systemUid);
 
     let materialName = "";
     if (catalog) {
-        const pipe = fillPipeDefaultFields(settings, 0, entity);
-        const manufacturer = settings.metadata.catalog.pipes.find((pipeObj: SelectedMaterialManufacturer) => pipeObj.uid === pipe.material)?.manufacturer || 'generic';
+        const pipe = fillPipeDefaultFields(document.drawing, 0, entity);
+        const manufacturer = document.drawing.metadata.catalog.pipes.find((pipeObj: SelectedMaterialManufacturer) => pipeObj.uid === pipe.material)?.manufacturer || 'generic';
         const abbreviation = manufacturer !== 'generic'
             && catalog.pipes[pipe.material!].manufacturer.find((manufacturerObj: PipeManufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation
             || catalog.pipes[pipe.material!].abbreviation;
@@ -231,7 +234,7 @@ export function makePipeCalculationFields(
 
     if (!pipeIsGas) {
 
-        if (settings.metadata.calculationParams.psdMethod !== null) {
+        if (document.drawing.metadata.calculationParams.psdMethod !== null) {
             result.push({
                 property: "psdUnits.units",
                 title: psdUnit.name,
@@ -242,7 +245,7 @@ export function makePipeCalculationFields(
             });
         }
 
-        if (settings.metadata.calculationParams.dwellingMethod !== null) {
+        if (document.drawing.metadata.calculationParams.dwellingMethod !== null) {
             result.push({
                 property: "psdUnits.dwellings",
                 title: "Dwellings",
@@ -256,14 +259,24 @@ export function makePipeCalculationFields(
         if (isDrainage(entity.systemUid)) {
 
             result.push({
-                property: "psdUnits.units",
-                title: psdUnit.name,
-                short: psdUnit.abbreviation,
+                property: "psdUnits.drainageUnits",
+                title: drainageUnits.name,
+                short: drainageUnits.abbreviation,
                 units: Units.None,
                 category: FieldCategory.LoadingUnits,
                 systemUid: entity.systemUid,
                 layouts: ['drainage'],
             });
+        }
+    }
+
+    if (isDrainage(entity.systemUid)) {
+        if (document.uiState.pressureOrDrainage === 'drainage') {
+            console.log('checking out drainage in riser');
+            console.log(result.filter((f) => f.layouts && f.layouts.includes('drainage')));
+            return result.filter((f) => f.layouts && f.layouts.includes('drainage'));
+        } else {
+            return [];
         }
     }
 

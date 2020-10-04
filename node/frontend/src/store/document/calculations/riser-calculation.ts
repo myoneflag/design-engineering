@@ -84,7 +84,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
 
     if (isDrainage(entity.systemUid)) {
         result.push({
-            property: "heights." + lvlUid + ".psdUnits.units",
+            property: "heights." + lvlUid + ".psdUnits.drainageUnits",
             title: drainageUnit.name + " To Below",
             short: drainageUnit.abbreviation + " to below",
             units: Units.None,
@@ -146,7 +146,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
 
         if (isDrainage(entity.systemUid)) {
             result.push({
-                property: "heights." + lvlAboveUid + ".psdUnits.units",
+                property: "heights." + lvlAboveUid + ".psdUnits.drainageUnits",
                 title: drainageUnit.name + " To Above",
                 short: drainageUnit.abbreviation + " to above",
                 units: Units.None,
@@ -166,6 +166,16 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 category: FieldCategory.LoadingUnits,
                 systemUid: entity.systemUid
             });
+        }
+    }
+
+    if (isDrainage(entity.systemUid)) {
+        if (doc.uiState.pressureOrDrainage === 'drainage') {
+            console.log('checking out drainage in riser');
+            console.log(result.filter((f) => f.layouts && f.layouts.includes('drainage')));
+            return result.filter((f) => f.layouts && f.layouts.includes('drainage'));
+        } else {
+            return [];
         }
     }
 

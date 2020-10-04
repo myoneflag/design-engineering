@@ -338,6 +338,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
             heights: {},
             warning: null
         };
+        const IAmDrainage = isDrainage(this.entity.systemUid);
 
         const tower = this.getCalculationTower(context);
 
@@ -367,7 +368,6 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
 
             if (topOfPipe > 0 && tower[topOfPipe][0].calculationHeightM! >= levels[lvlUid].floorHeightM) {
                 const calc = context.globalStore.getOrCreateCalculation(tower[topOfPipe][1]!);
-
                 const pipe = context.globalStore.get(tower[topOfPipe][1]!.uid) as Pipe;
 
                 const totalHL = pipe.getFrictionHeadLoss(
@@ -380,7 +380,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                     PressurePushMode.PSD,
                 );
 
-                if (totalHL != null) {
+                if (totalHL != null && !IAmDrainage) {
                     const totalLength =
                         tower[topOfPipe][0].calculationHeightM! - tower[topOfPipe - 1][0].calculationHeightM!;
                     const partialLength = levels[lvlUid].floorHeightM - tower[topOfPipe - 1][0].calculationHeightM!;
@@ -406,6 +406,15 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                             sizeMM: calc.realNominalPipeDiameterMM,
                         };
                     }
+                } else if (IAmDrainage) {
+                    res.heights[lvlUid] = {
+                        flowRateLS: null,
+                        heightAboveGround: levels[lvlUid].floorHeightM,
+                        psdUnits: calc.psdUnits,
+                        pressureKPA: null,
+                        staticPressureKPA: null,
+                        sizeMM: calc.realNominalPipeDiameterMM,
+                    };
                 }
             }
         }

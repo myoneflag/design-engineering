@@ -169,10 +169,12 @@ export function getValveK(catalogId: string, catalog: Catalog, pipeDiameterMM: n
 }
 
 export function getEffectiveFilter(objects: BaseBackedObject[], calculationFilters: CalculationFilters, document: DocumentState, catalog: Catalog) {
-    console.log('getting effective filter');
     const build: CalculationFilters = {};
 
     const existing = cloneSimple(calculationFilters);
+
+    const wasInserted = new Set<string>();
+    const hasEnabled = new Set<string>();
 
     objects.forEach((o) => {
         let fields = getFields(o.entity, document, o.globalStore, catalog);
@@ -187,17 +189,16 @@ export function getEffectiveFilter(objects: BaseBackedObject[], calculationFilte
                 assertUnreachable(document.uiState.pressureOrDrainage);
         }
 
-        let wasInserted = false;
+
         if (!(o.entity.type in build)) {
             Vue.set(build, o.entity.type, {
                 name: getEntityName(o.entity),
                 filters: {},
                 enabled: false
             });
-            wasInserted = true;
+            wasInserted.add(o.entity.type);
         }
 
-        let hasEnabled = false;
         fields.forEach((f) => {
             if (!(f.title in build[o.entity.type].filters)) {
                 Vue.set(build[o.entity.type].filters, f.title, {
@@ -206,14 +207,17 @@ export function getEffectiveFilter(objects: BaseBackedObject[], calculationFilte
                 });
                 if (f.defaultEnabled) {
                     build[o.entity.type].filters[f.title].enabled = true;
-                    hasEnabled = true;
+                    hasEnabled.add(o.entity.type);
                 }
             }
         });
-        if (wasInserted && hasEnabled) {
-            build[o.entity.type].enabled = true;
-        }
     });
+
+    for (const eType of Array.from(wasInserted.values())) {
+        if (hasEnabled.has(eType)) {
+            build[eType].enabled = true;
+        }
+    }
 
     for (const eType in existing) {
         if (eType in build && existing.hasOwnProperty(eType)) {

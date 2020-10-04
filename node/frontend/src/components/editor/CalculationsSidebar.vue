@@ -132,6 +132,8 @@ export default class CalculationsSidebar extends Vue {
 
     stageNewFilters() {
         const filters = cloneSimple(this.filters);
+        console.log("Staging new filter: ");
+        console.log(filters);
         for (const eType in filters) {
             // noinspection JSUnfilteredForInLoop
             if (filters.hasOwnProperty(eType)) {
