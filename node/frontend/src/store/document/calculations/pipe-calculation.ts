@@ -1,18 +1,17 @@
-import { SelectedMaterialManufacturer } from './../../../../../common/src/api/document/drawing';
+import {NetworkType, SelectedMaterialManufacturer} from './../../../../../common/src/api/document/drawing';
 import {
-    FieldCategory,
     CalculationField,
-    CalculationLayout
+    CalculationLayout,
+    FieldCategory
 } from "../../../../src/store/document/calculations/calculation-field";
-import { Calculation, PsdCalculation } from "../../../../src/store/document/calculations/types";
-import PipeEntity, { fillPipeDefaultFields } from "../../../../../common/src/api/document/entities/pipe-entity";
+import {Calculation, PsdCalculation} from "../../../../src/store/document/calculations/types";
+import PipeEntity, {fillPipeDefaultFields} from "../../../../../common/src/api/document/entities/pipe-entity";
 import {getDrainageUnitName, getPsdUnitName, PsdProfile} from "../../../calculations/utils";
-import set = Reflect.set;
-import {assertUnreachable, isDrainage, isGas, isGermanStandard} from "../../../../../common/src/api/config";
-import {Catalog, Manufacturer, PipeManufacturer} from "../../../../../common/src/api/catalog/types";
-import { DrawingState, MeasurementSystem, UnitsParameters } from "../../../../../common/src/api/document/drawing";
-import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
-import { convertPipeDiameterFromMetric, mm2IN, Units } from "../../../../../common/src/lib/measurements";
+import {assertUnreachable, isDrainage, isGas} from "../../../../../common/src/api/config";
+import {Catalog, PipeManufacturer} from "../../../../../common/src/api/catalog/types";
+import {MeasurementSystem, UnitsParameters} from "../../../../../common/src/api/document/drawing";
+import {GlobalStore} from "../../../htmlcanvas/lib/global-store";
+import {convertPipeDiameterFromMetric, Units} from "../../../../../common/src/lib/measurements";
 import {DocumentState} from "../types";
 
 export enum NoFlowAvailableReason {
@@ -58,6 +57,7 @@ export default interface PipeCalculation extends PsdCalculation, Calculation {
     velocityRealMS: number | null;
 
     temperatureRange: string | null;
+    gradePCT: number | null;
 
     gasMJH: number | null;
 }
@@ -267,13 +267,24 @@ export function makePipeCalculationFields(
                 systemUid: entity.systemUid,
                 layouts: ['drainage'],
             });
+
+            if (entity.network === NetworkType.RETICULATIONS) {
+                result.push({
+                    property: "gradePCT",
+                    title: 'Grade (%)',
+                    short: '%',
+                    units: Units.None,
+                    category: FieldCategory.Location,
+                    systemUid: entity.systemUid,
+                    defaultEnabled: true,
+                    layouts: ['drainage'],
+                });
+            }
         }
     }
 
     if (isDrainage(entity.systemUid)) {
         if (document.uiState.pressureOrDrainage === 'drainage') {
-            console.log('checking out drainage in riser');
-            console.log(result.filter((f) => f.layouts && f.layouts.includes('drainage')));
             return result.filter((f) => f.layouts && f.layouts.includes('drainage'));
         } else {
             return [];
@@ -309,6 +320,7 @@ export function emptyPipeCalculation(): PipeCalculation {
         velocityRealMS: null,
         warning: null,
         psdProfile: null,
-        flowFrom: null
+        flowFrom: null,
+        gradePCT: null,
     };
 }

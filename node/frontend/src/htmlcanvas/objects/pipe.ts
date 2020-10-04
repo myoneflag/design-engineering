@@ -769,6 +769,10 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         pressureKPA: number | null,
         pressurePushMode: PressurePushMode,
     ): number | null {
+        if (isDrainage(this.entity.systemUid)) {
+            return 0;
+        }
+
         const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
         const { drawing, catalog, globalStore } = context;
         const entity = this.entity;

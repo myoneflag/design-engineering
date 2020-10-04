@@ -109,6 +109,7 @@ import {makeGasApplianceFields} from "../../../common/src/api/document/entities/
 import {calculateGas} from "./gas";
 import {PlantType, ReturnSystemPlant} from "../../../common/src/api/document/entities/plants/plant-types";
 import {NodeProps} from '../../../common/src/models/CustomEntity';
+import {sizeDrainagePipe} from "./drainage";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -1662,8 +1663,7 @@ export default class CalculationEngine implements CalculationContext {
                     // TODO: Gas calculation
                 } else if (isDrainage(entity.systemUid)) {
                     // TODO: Drainage sizing
-                    calculation.realNominalPipeDiameterMM = 420;
-                    calculation.optimalInnerPipeDiameterMM = 420;
+                    sizeDrainagePipe(entity, this);
                 } else {
 
                     const flowRate = lookupFlowRate(psdU, this.doc, this.catalog, entity.systemUid);
