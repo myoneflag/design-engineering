@@ -105,7 +105,6 @@ export function makePipeCalculationFields(
             units: Units.Meters,
             category: FieldCategory.Location,
             systemUid: entity.systemUid,
-            defaultEnabled: true,
         },
     );
 

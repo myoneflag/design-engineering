@@ -36,10 +36,9 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
     }
 
     addPressureCalculationFields(result, entity.systemUid, "heights." + lvlUid + ".", {
-        defaultEnabled: true,
         title: "Pressure At Floor",
         short: "at floor",
-    }, { defaultEnabled: true, title: "Static Pressure At Floor", short: "at floor" });
+    }, { title: "Static Pressure At Floor", short: "at floor" });
 
     result.push(
         {
@@ -49,7 +48,6 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             units: Units.LitersPerSecond,
             systemUid: entity.systemUid,
             category: FieldCategory.FlowRate,
-            defaultEnabled: true
         },
         {
             property: "heights." + lvlUid + ".sizeMM",
@@ -59,7 +57,6 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             units: Units.PipeDiameterMM,
             systemUid: entity.systemUid,
             category: FieldCategory.Size,
-            defaultEnabled: true,
             hideUnits: true,
             significantDigits: 0
         }
@@ -85,7 +82,6 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             units: Units.None,
             category: FieldCategory.LoadingUnits,
             systemUid: entity.systemUid,
-            defaultEnabled: true
         });
     }
 

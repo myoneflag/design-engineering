@@ -30,14 +30,16 @@ export function makePlantCalculationFields(value: PlantEntity): CalculationField
             title: "Return System Duty Flow Rate",
             short: "(rtn)",
             units: Units.LitersPerSecond,
-            category: FieldCategory.FlowRate
+            category: FieldCategory.FlowRate,
+            defaultEnabled: true,
         },
         {
             property: "circulationPressureLoss",
             title: "Return System Pressure Loss",
             short: "(rtn drop)",
             units: Units.KiloPascals,
-            category: FieldCategory.Pressure
+            category: FieldCategory.Pressure,
+            defaultEnabled: true,
         },
 
         {
