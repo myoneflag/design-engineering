@@ -160,7 +160,7 @@ export class DocumentUpgrader {
                             case 16:
                                 upgrade16to17(newUpgraded);
                             // noinspection FallThroughInSwitchStatementJS
-                            case 16:
+                            case 17:
                                 upgrade17to18(newUpgraded);
                             // noinspection FallThroughInSwitchStatementJS
                             case CURRENT_VERSION:
