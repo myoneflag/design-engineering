@@ -244,6 +244,7 @@ export function isZeroPsdCounts(a: PsdCountEntry): boolean {
     Math.abs(a.drainageUnits) < EPS;
 }
 
+// Returns >0 if a > b, <0 if a < b.
 export function comparePsdCounts(a: PsdCountEntry, b: PsdCountEntry): number | null {
     const unitDiff = a.units + EPS < b.units ? -1 : a.units - EPS > b.units ? 1 : 0;
     const cfDiff =
