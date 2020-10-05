@@ -290,7 +290,7 @@ export const COMPONENT_PRESSURE_LOSS_METHODS: Choice[] = [
 ];
 
 export const LEVEL_HEIGHT_DIFF_M = 3;
-export const CURRENT_VERSION = 17;
+export const CURRENT_VERSION = 18;
 
 export enum StandardFlowSystemUids {
     ColdWater = "cold-water",
