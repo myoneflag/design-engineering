@@ -4,7 +4,7 @@ import {NetworkType} from "../../../common/src/api/document/drawing";
 import CalculationEngine, {EdgeType} from "./calculation-engine";
 import {EntityType} from "../../../common/src/api/document/entities/types";
 import {isDrainage} from "../../../common/src/api/config";
-import {addPsdCounts, comparePsdCounts, PsdCountEntry, zeroPsdCounts} from "./utils";
+import {addPsdCounts, comparePsdCounts, PsdCountEntry, subPsdCounts, zeroPsdCounts} from "./utils";
 import FittingEntity from "../../../common/src/api/document/entities/fitting-entity";
 
 export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext, overridePsdUnits?: PsdCountEntry) {
@@ -82,7 +82,7 @@ export function processVents(context: CalculationEngine, roots: Map<string, PsdC
     for (const e of exits) {
         const flowOfNode = new Map<string, PsdCountEntry>();
         let multipleVentExits = false; // the algorithm only supports a unique vent exit.
-        const listOfVents: PipeEntity[] = [];
+        const listOfVents: PipeEntity[] = []; // To retroactively create warnings later.
 
         const connection = context.globalStore.getConnections(e.uid);
 
@@ -96,6 +96,10 @@ export function processVents(context: CalculationEngine, roots: Map<string, PsdC
             undefined,
             undefined,
             (edge) => {
+                if (edge.value.type !== EdgeType.PIPE) {
+                    return;
+                }
+
                 // Only go down vents
                 const pipe = context.globalStore.get(edge.value.uid);
                 if (!pipe
@@ -125,6 +129,10 @@ export function processVents(context: CalculationEngine, roots: Map<string, PsdC
                 }
             },
             (edge) => {
+                if (edge.value.type !== EdgeType.PIPE) {
+                    return;
+                }
+
                 const downstreamFlow = flowOfNode.get(edge.to.connectable) || zeroPsdCounts();
 
                 // Propagate to upstream
@@ -153,11 +161,130 @@ export function processVents(context: CalculationEngine, roots: Map<string, PsdC
 
 
 export function processVentRoots(context: CalculationEngine): Map<string, PsdCountEntry> {
+    const result = new Map<string, PsdCountEntry>();
 
+    // Even though in a well drawn document, we won't visit pipes twice (everything is a tree),
+    // in case it IS poorly draw, keep this seen set to help avoid taking too much time.
+    const seenPipes = new Set<string>();
+
+    for (const obj of context.networkObjects()) {
+        if (obj.entity.type === EntityType.FLOW_SOURCE) {
+            if (isDrainage(obj.entity.systemUid)) {
+
+                // The strategy: from a sewer connection, we will traverse the graph of pipes.
+                // Using a similar method to processVents, we will propagate up the total sum
+                // of nodes experienced at all immediate vented nodes downstream. Then, once we
+                // have that, the unvented load at any point is the load of the pipe upstream
+                // from it minus the load experienced (and neutralized) by the vented nodes below.
+
+                const flowAtNextVent = new Map<string, PsdCountEntry>();
+                let multipleSewerConnections = false;
+                let missingCalculations = false;
+                const listOfPipes: PipeEntity[] = [];
+
+                const connections = context.globalStore.getConnections(obj.entity.uid);
+                if (!connections.length) {
+                    continue;
+                }
+
+                const catalyst = connections[0];
+                context.flowGraph.dfs(
+                    {connectable: obj.entity.uid, connection: catalyst},
+                    undefined,
+                    undefined,
+                    (edge) => {
+                        if (edge.value.type !== EdgeType.PIPE) {
+                            return;
+                        }
+
+                        // Only go down drainage pipes
+                        const pipe = context.globalStore.get(edge.value.uid);
+                        if (!pipe
+                            || pipe.entity.type !== EntityType.PIPE
+                            || !isDrainage(pipe.entity.systemUid)
+                            || pipe.entity.network !== NetworkType.RETICULATIONS
+                        ) {
+                            return true;
+                        }
+
+                        if (seenPipes.has(edge.value.uid)) {
+                            return true; // this shouldn't really happen unless there are multiple drainages per group.
+                        }
+                        seenPipes.add(edge.value.uid);
+
+                        listOfPipes.push(pipe.entity);
+                    },
+                    (edge) => {
+                        if (edge.value.type !== EdgeType.PIPE) {
+                            return;
+                        }
+
+                        // Every potential vent root is represented by the pipe "upstream" from it.
+                        const downUid = edge.to.connectable;
+                        const connections = context.globalStore.getConnections(downUid);
+                        let isRoot = false;
+
+                        for (const cuid of connections) {
+                            const cobj = context.globalStore.get(cuid);
+                            if (cobj && cobj.entity.type === EntityType.PIPE) {
+                                if (isDrainage(cobj.entity.systemUid) && cobj.entity.network === NetworkType.CONNECTIONS) {
+                                    isRoot = true;
+                                }
+                            }
+                        }
+
+                        const upstreamUid = edge.from.connectable;
+
+                        const pipe = context.globalStore.get(edge.value.uid);
+                        if (!pipe || pipe.entity.type !== EntityType.PIPE) {
+                            return;
+                        }
+                        const calc = context.globalStore.getOrCreateCalculation(pipe.entity);
+
+                        const upstreamNextFlowTally = flowAtNextVent.get(upstreamUid) || zeroPsdCounts();
+                        const downstreamNextFlowTally = flowAtNextVent.get(downUid) || zeroPsdCounts();
+                        if (isRoot) {
+                            if (calc.psdUnits) {
+                                flowAtNextVent.set(upstreamUid, addPsdCounts(upstreamNextFlowTally, calc.psdUnits));
+                                // Record this root.
+                                result.set(edge.to.connectable, subPsdCounts(calc.psdUnits, downstreamNextFlowTally));;
+                            } else {
+                                missingCalculations = true;
+                            }
+                        } else {
+                            flowAtNextVent.set(upstreamUid, addPsdCounts(upstreamNextFlowTally, downstreamNextFlowTally));
+                        }
+                    }
+                );
+
+                if (missingCalculations) {
+                    // TODO: produce warnings for missing calculations
+                }
+                if (multipleSewerConnections) {
+                    // TODO: produce warnings for multiple sewer connections connected to same system.
+                }
+            }
+        }
+    }
+    return result;
 }
 
 export function findVentExits(context: CalculationEngine): FittingEntity[] {
-
+    const result: FittingEntity[] = [];
+    for (const obj of context.networkObjects()) {
+        if (obj.entity.type === EntityType.FITTING) {
+            const connections = context.globalStore.getConnections(obj.entity.uid);
+            if (connections.length === 1) {
+                const pipe = context.globalStore.get(connections[0])!;
+                if (pipe.entity.type === EntityType.PIPE) {
+                    if (pipe.entity.network === NetworkType.CONNECTIONS && isDrainage(pipe.entity.systemUid)) {
+                        result.push(obj.entity);
+                    }
+                }
+            }
+        }
+    }
+    return result;
 }
 
 export function processFixedStacks(context: CalculationEngine) {
