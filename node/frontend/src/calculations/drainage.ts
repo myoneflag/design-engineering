@@ -4,7 +4,7 @@ import {NetworkType} from "../../../common/src/api/document/drawing";
 import CalculationEngine, {EdgeType} from "./calculation-engine";
 import {EntityType} from "../../../common/src/api/document/entities/types";
 import {isDrainage} from "../../../common/src/api/config";
-import {comparePsdCounts, PsdCountEntry, zeroPsdCounts} from "./utils";
+import {addPsdCounts, comparePsdCounts, PsdCountEntry, zeroPsdCounts} from "./utils";
 import FittingEntity from "../../../common/src/api/document/entities/fitting-entity";
 
 export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext, overridePsdUnits?: PsdCountEntry) {
@@ -48,7 +48,19 @@ export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext
             break;
 
     }
+}
 
+export function sizeVentPipe(entity: PipeEntity, context: CalculationContext, psdUnits: PsdCountEntry) {
+    const calc = context.globalStore.getOrCreateCalculation(entity);
+    calc.psdUnits = psdUnits;
+
+    const system = context.doc.drawing.metadata.flowSystems.find((fs) => fs.uid === entity.systemUid)!;
+    for (const entry of system.drainageProperties.ventSizing) {
+        if (entry.minUnits <= psdUnits.drainageUnits && entry.maxUnits >= psdUnits.drainageUnits) {
+            calc.optimalInnerPipeDiameterMM = calc.realNominalPipeDiameterMM = entry.sizeMM;
+            break;
+        }
+    }
 }
 
 
@@ -63,7 +75,80 @@ export function processDrainage(context: CalculationEngine) {
 
 // Assumes that vents are arranged in a tree like pattern.
 export function processVents(context: CalculationEngine, roots: Map<string, PsdCountEntry>, exits: FittingEntity[]) {
+    const seenPipes = new Set<string>();
 
+    const exitSet = new Set<string>(exits.map((e) => e.uid));
+
+    for (const e of exits) {
+        const flowOfNode = new Map<string, PsdCountEntry>();
+        let multipleVentExits = false; // the algorithm only supports a unique vent exit.
+        const listOfVents: PipeEntity[] = [];
+
+        const connection = context.globalStore.getConnections(e.uid);
+
+        // The strategy is for the children nodes to be populated with their loads in flowOfNode,
+        // then when it comes time to exit the pipe, we would know the load of our downstream, and
+        // also update our upstream node.
+        // Note: Here, "downstream" means from the exit to the source. So closer to exit = upstream,
+        // closer to drainage pipe = downstream.
+        context.flowGraph.dfs(
+            {connectable: e.uid, connection: connection[0]},
+            undefined,
+            undefined,
+            (edge) => {
+                // Only go down vents
+                const pipe = context.globalStore.get(edge.value.uid);
+                if (!pipe
+                    || pipe.entity.type !== EntityType.PIPE
+                    || !isDrainage(pipe.entity.systemUid)
+                    || pipe.entity.network !== NetworkType.CONNECTIONS
+                ) {
+                    return true;
+                }
+
+                if (seenPipes.has(edge.value.uid)) {
+                    return true; // this shouldn't really happen unless there are multiple vent exits per group.
+                }
+                seenPipes.add(edge.value.uid);
+
+                listOfVents.push(pipe.entity);
+
+                // Look for terminal cases going down
+                const to = edge.to.connectable;
+                if (roots.has(to)) {
+                    flowOfNode.set(edge.value.uid, roots.get(to) || zeroPsdCounts());
+                }
+                if (exitSet.has(to) && to !== e.uid) {
+                    // We have found a connected exit that is not us. There are two exits - this makes vent
+                    // sizing ambiguous and is currently not supported.
+                    multipleVentExits = true;
+                }
+            },
+            (edge) => {
+                const downstreamFlow = flowOfNode.get(edge.to.connectable) || zeroPsdCounts();
+
+                // Propagate to upstream
+                const existingUpstreamFlow = flowOfNode.get(edge.from.connectable) || zeroPsdCounts();
+                flowOfNode.set(edge.from.connectable, addPsdCounts(downstreamFlow, existingUpstreamFlow));
+
+                // Size the pipe. That's what we're here for, right?
+                const pipe = context.globalStore.get(edge.value.uid);
+                if (pipe
+                    && pipe.entity.type === EntityType.PIPE
+                    && isDrainage(pipe.entity.systemUid)
+                    && pipe.entity.network === NetworkType.CONNECTIONS
+                ) {
+                    sizeVentPipe(pipe.entity, context, downstreamFlow);
+                } else {
+                    throw new Error('Leaving a pipe that wasn\'t a vent');
+                }
+            }
+        );
+
+        if (multipleVentExits) {
+            // TODO: invalidate the sizings and produce warnings.
+        }
+    }
 }
 
 
