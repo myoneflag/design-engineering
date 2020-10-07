@@ -7,6 +7,7 @@ import {isDrainage} from "../../../common/src/api/config";
 import {addPsdCounts, comparePsdCounts, PsdCountEntry, subPsdCounts, zeroPsdCounts} from "./utils";
 import FittingEntity from "../../../common/src/api/document/entities/fitting-entity";
 
+
 export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext, overridePsdUnits?: PsdCountEntry) {
     const calc = context.globalStore.getOrCreateCalculation(entity);
     const psdUnits = overridePsdUnits || calc.psdUnits;
@@ -91,7 +92,7 @@ export function processVents(context: CalculationEngine, roots: Map<string, PsdC
         // also update our upstream node.
         // Note: Here, "downstream" means from the exit to the source. So closer to exit = upstream,
         // closer to drainage pipe = downstream.
-        context.flowGraph.dfs(
+        context.flowGraph.dfsRecursive(
             {connectable: e.uid, connection: connection[0]},
             undefined,
             undefined,
@@ -112,6 +113,7 @@ export function processVents(context: CalculationEngine, roots: Map<string, PsdC
 
                 if (seenPipes.has(edge.value.uid)) {
                     return true; // this shouldn't really happen unless there are multiple vent exits per group.
+                    // But we check for it anyway and break here to save computation in that case.
                 }
                 seenPipes.add(edge.value.uid);
 
@@ -120,7 +122,7 @@ export function processVents(context: CalculationEngine, roots: Map<string, PsdC
                 // Look for terminal cases going down
                 const to = edge.to.connectable;
                 if (roots.has(to)) {
-                    flowOfNode.set(edge.value.uid, roots.get(to) || zeroPsdCounts());
+                    flowOfNode.set(edge.to.connectable, roots.get(to) || zeroPsdCounts());
                 }
                 if (exitSet.has(to) && to !== e.uid) {
                     // We have found a connected exit that is not us. There are two exits - this makes vent
@@ -128,7 +130,11 @@ export function processVents(context: CalculationEngine, roots: Map<string, PsdC
                     multipleVentExits = true;
                 }
             },
-            (edge) => {
+            (edge, wasCancelled) => {
+                if (wasCancelled) {
+                    return;
+                }
+
                 if (edge.value.type !== EdgeType.PIPE) {
                     return;
                 }
@@ -155,6 +161,7 @@ export function processVents(context: CalculationEngine, roots: Map<string, PsdC
 
         if (multipleVentExits) {
             // TODO: invalidate the sizings and produce warnings.
+            console.log("ERROR: There are multiple vent exits");
         }
     }
 }
@@ -188,7 +195,7 @@ export function processVentRoots(context: CalculationEngine): Map<string, PsdCou
                 }
 
                 const catalyst = connections[0];
-                context.flowGraph.dfs(
+                context.flowGraph.dfsRecursive(
                     {connectable: obj.entity.uid, connection: catalyst},
                     undefined,
                     undefined,
@@ -214,7 +221,10 @@ export function processVentRoots(context: CalculationEngine): Map<string, PsdCou
 
                         listOfPipes.push(pipe.entity);
                     },
-                    (edge) => {
+                    (edge, wasCancelled) => {
+                        if (wasCancelled) {
+                            return;
+                        }
                         if (edge.value.type !== EdgeType.PIPE) {
                             return;
                         }
@@ -259,9 +269,11 @@ export function processVentRoots(context: CalculationEngine): Map<string, PsdCou
 
                 if (missingCalculations) {
                     // TODO: produce warnings for missing calculations
+                    console.log("ERROR: There are missing PSD values along the pipes leading into the vent");
                 }
                 if (multipleSewerConnections) {
                     // TODO: produce warnings for multiple sewer connections connected to same system.
+                    console.log("ERROR: There are multiple sewer connections");
                 }
             }
         }
@@ -307,7 +319,6 @@ export function processFixedStacks(context: CalculationEngine) {
 }
 
 export function processFixedStack(context: CalculationEngine, member: PipeEntity, seen: Set<string>) {
-    const connections = context.globalStore.getConnections(member.uid);
 
     let highestLU: PsdCountEntry = zeroPsdCounts();
     const fullStack: PipeEntity[] = [];
@@ -316,7 +327,7 @@ export function processFixedStack(context: CalculationEngine, member: PipeEntity
     const seenSystemUids = new Set<string>();
 
     context.flowGraph.dfs(
-        {connectable: connections[0], connection: member.uid},
+        {connectable: member.endpointUid[0], connection: member.uid},
         undefined,
         undefined,
         (edge) => {
@@ -333,6 +344,8 @@ export function processFixedStack(context: CalculationEngine, member: PipeEntity
                         } else if (cmp === null) {
                             isUndefined = true;
                         }
+                    } else {
+                        isUndefined = true;
                     }
                     fullStack.push(pipe);
                     seenSystemUids.add(pipe.systemUid);
@@ -345,21 +358,22 @@ export function processFixedStack(context: CalculationEngine, member: PipeEntity
 
     if (isUndefined) {
         // produce a warning TODO
+        console.log("Pipe in stack has undefined PSD, can't size properly now.");
         return;
     }
 
     let allStackNotDiminishing = true;
     let allStackDiminishing = true;
-    for (const suid of seenSystemUids) {
+    for (const suid of Array.from(seenSystemUids.values())) {
         const system = context.doc.drawing.metadata.flowSystems.find((fs) => fs.uid === suid);
         if (!system || system.drainageProperties.stackSizeDiminish === true) {
             allStackNotDiminishing = false;
-        } else if (system && system.drainageProperties.stackSizeDiminish === false) {
+        } else if (!system || system.drainageProperties.stackSizeDiminish === false) {
             allStackDiminishing = false;
         }
     }
 
-    if (!allStackNotDiminishing || !allStackDiminishing) {
+    if (!allStackNotDiminishing && !allStackDiminishing) {
         // produce a warning that segments in this pipe have incompatable settings for stack size diminishing
         return;
     }

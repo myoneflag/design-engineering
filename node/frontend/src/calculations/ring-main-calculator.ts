@@ -8,8 +8,9 @@ import { EPS, lowerBoundTable, parseCatalogNumberExact } from "../../../common/s
 import { adjustPathHardyCross } from "./flow-solver";
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
 import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
-import { assertUnreachable, RingMainCalculationMethod } from "../../../common/src/api/config";
+import {assertUnreachable, isDrainage, RingMainCalculationMethod} from "../../../common/src/api/config";
 import { Configuration, NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
+import {EntityType} from "../../../common/src/api/document/entities/types";
 
 export class RingMainCalculator {
     engine: CalculationEngine;
@@ -35,7 +36,18 @@ export class RingMainCalculator {
                             case EdgeType.PIPE:
                                 // don't size something that's already sized as a return. Ring mains can't be on returns.
                                 const c = this.engine.globalStore.getOrCreateCalculation(this.engine.globalStore.get(e.value.uid)!.entity as PipeEntity);
-                                return (c.configuration === null || c.configuration === Configuration.NORMAL) && c.totalPeakFlowRateLS === null;
+                                const isReturn = !(c.configuration === null || c.configuration === Configuration.NORMAL) && c.totalPeakFlowRateLS === null;
+                                if (isReturn) {
+                                    return false;
+                                }
+
+                                // don't size something that is a drainage
+                                const p = this.engine.globalStore.get(e.value.uid);
+                                let iAmDrainage = false;
+                                if (p && p.entity.type === EntityType.PIPE) {
+                                    iAmDrainage = isDrainage(p.entity.systemUid);
+                                }
+                                return !iAmDrainage;
                             case EdgeType.FITTING_FLOW:
                             case EdgeType.ISOLATION_THROUGH:
                             case EdgeType.BALANCING_THROUGH:

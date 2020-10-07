@@ -1,4 +1,5 @@
-import { SelectedMaterialManufacturer } from './../../../common/src/api/document/drawing';
+
+import { NetworkType, SelectedMaterialManufacturer } from './../../../common/src/api/document/drawing';
 import { DocumentState } from "../../src/store/document/types";
 import { SelectionTarget } from "../../src/htmlcanvas/lib/types";
 import { EntityType } from "../../../common/src/api/document/entities/types";
@@ -72,9 +73,9 @@ import Plant from "../htmlcanvas/objects/plant";
 import {
     assertUnreachable,
     isDrainage,
-    isGas,
     isGermanStandard,
-    StandardFlowSystemUids, SupportedDrainageMethods,
+    StandardFlowSystemUids,
+    SupportedDrainageMethods,
     SupportedPsdStandards
 } from "../../../common/src/api/config";
 import {Catalog, PipeSpec} from "../../../common/src/api/catalog/types";
@@ -109,7 +110,7 @@ import {makeGasApplianceFields} from "../../../common/src/api/document/entities/
 import {calculateGas} from "./gas";
 import {PlantType, ReturnSystemPlant} from "../../../common/src/api/document/entities/plants/plant-types";
 import {NodeProps} from '../../../common/src/models/CustomEntity';
-import {sizeDrainagePipe} from "./drainage";
+import {processDrainage, sizeDrainagePipe} from "./drainage";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -346,6 +347,8 @@ export default class CalculationEngine implements CalculationContext {
                 returnFlowRates(this, returns);
                 returnBalanceValves(this, returns);  // balance valves before calculating point pressures so that balancing valve pressure drops are accounted for.
 
+                processDrainage(this);
+
                 this.calculateHotWaterDeadlegs();
 
 
@@ -528,6 +531,17 @@ export default class CalculationEngine implements CalculationContext {
             undefined,
             (e) => {
                 const pc = this.globalStore.getOrCreateCalculation((this.globalStore.get(e.value.uid) as Pipe).entity);
+
+                // Edge case: Do not push flow, including sewer flow, through vents.
+                if (e.value.type === EdgeType.PIPE) {
+                    const pipe = this.globalStore.get(e.value.uid);
+                    if (pipe && pipe.entity.type === EntityType.PIPE && isDrainage(pipe.entity.systemUid)) {
+                        if (pipe.entity.network === NetworkType.CONNECTIONS) {
+                            return true;
+                        }
+                    }
+                }
+
                 // Some pipes may have their flow directions fixed in an earlier step (such as return systems)
                 if (pc.flowFrom) {
                     if (e.from.connectable !== pc.flowFrom) {
@@ -545,7 +559,10 @@ export default class CalculationEngine implements CalculationContext {
                 this.firstWet.set(e.uid, e.from);
                 this.secondWet.set(e.uid, e.to);
             },
-            (e) => {
+            (e, wasCancelled) => {
+                if (wasCancelled) {
+                    return;
+                }
                 if (this.allBridges.has(e.uid)) {
                     if (e.uid !== bridgeStack.pop()!.uid) {
                         throw new Error("traversal error");
@@ -1431,9 +1448,6 @@ export default class CalculationEngine implements CalculationContext {
 
                     for (const suid of fixture.roughInsInOrder) {
                         if (node.uid === fixture.roughIns[suid].uid) {
-                            console.log(mainFixture.asnzFixtureUnits!);
-                            console.log(suid);
-                            console.log(isDrainage(suid));
                             if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
                                 return [{
                                     units: Number(mainFixture.roughIns[suid].designFlowRateLS),
@@ -2739,6 +2753,16 @@ export default class CalculationEngine implements CalculationContext {
                 },
                 undefined,
                 (edge) => {
+                    // Edge case: Do not push flow, including sewer flow, through vents.
+                    if (edge.value.type === EdgeType.PIPE) {
+                        const pipe = this.globalStore.get(edge.value.uid);
+                        if (pipe && pipe.entity.type === EntityType.PIPE && isDrainage(pipe.entity.systemUid)) {
+                            if (pipe.entity.network === NetworkType.CONNECTIONS) {
+                                return true;
+                            }
+                        }
+                    }
+
                     if (this.allBridges.has(edge.uid)) {
                         const res = this.precomputePsdAfterBridge(edge, edge.to, visitedEdges);
                         for (const r of res.values()) {
@@ -2785,6 +2809,16 @@ export default class CalculationEngine implements CalculationContext {
                 },
                 undefined,
                 (e) => {
+                    // Edge case: Do not push flow, including sewer flow, through vents.
+                    if (e.value.type === EdgeType.PIPE) {
+                        const pipe = this.globalStore.get(e.value.uid);
+                        if (pipe && pipe.entity.type === EntityType.PIPE && isDrainage(pipe.entity.systemUid)) {
+                            if (pipe.entity.network === NetworkType.CONNECTIONS) {
+                                return true;
+                            }
+                        }
+                    }
+
                     const pc = this.globalStore.getOrCreateCalculation((this.globalStore.get(e.value.uid) as Pipe).entity);
                     // Some pipes may have their flow directions fixed in an earlier step (such as return systems)
                     if (pc.flowFrom) {
@@ -2848,6 +2882,16 @@ export default class CalculationEngine implements CalculationContext {
                 },
                 undefined,
                 (e) => {
+                    // Edge case: Do not push flow, including sewer flow, through vents.
+                    if (e.value.type === EdgeType.PIPE) {
+                        const pipe = this.globalStore.get(e.value.uid);
+                        if (pipe && pipe.entity.type === EntityType.PIPE && isDrainage(pipe.entity.systemUid)) {
+                            if (pipe.entity.network === NetworkType.CONNECTIONS) {
+                                return true;
+                            }
+                        }
+                    }
+
                     if (e.value.type === EdgeType.PIPE) {
                         const pc = this.globalStore.getOrCreateCalculation((this.globalStore.get(e.value.uid) as Pipe).entity);
 

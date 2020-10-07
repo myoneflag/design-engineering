@@ -246,9 +246,9 @@ export default class Graph<N, E> {
     dfs(
         start: N,
         visitNode?: (node: N) => boolean | void,
-        leaveNode?: (node: N) => void,
+        leaveNode?: (node: N, wasCancelled?: boolean) => void,
         visitEdge?: (edge: Edge<N, E>) => boolean | void,
-        leaveEdge?: (edge: Edge<N, E>) => void,
+        leaveEdge?: (edge: Edge<N, E>, wasCancelled?: boolean) => void,
         seen?: Set<string>,
         seenEdges?: Set<string>,
         directed: boolean = true,
@@ -278,7 +278,7 @@ export default class Graph<N, E> {
                 const should = visitNode(curr);
                 if (should !== undefined && should) {
                     if (leaveNode) {
-                        leaveNode(curr);
+                        leaveNode(curr, true);
                     }
                     continue;
                 }
@@ -309,7 +309,7 @@ export default class Graph<N, E> {
                     const should = visitEdge(next);
                     if (should !== undefined && should) {
                         if (leaveEdge) {
-                            leaveEdge(next);
+                            leaveEdge(next, true);
                         }
 
                         continue;
@@ -336,9 +336,9 @@ export default class Graph<N, E> {
     dfsRecursive(
         start: N,
         visitNode?: (node: N) => boolean | void,
-        leaveNode?: (node: N) => void,
+        leaveNode?: (node: N, wasCancelled?: boolean) => void,
         visitEdge?: (edge: Edge<N, E>) => boolean | void,
-        leaveEdge?: (edge: Edge<N, E>) => void,
+        leaveEdge?: (edge: Edge<N, E>, wasCancelled?: boolean) => void,
         seen?: Set<string>,
         seenEdges?: Set<string>,
         directed: boolean = true,
@@ -363,7 +363,7 @@ export default class Graph<N, E> {
             const should = visitNode(start);
             if (should !== undefined && should) {
                 if (leaveNode) {
-                    leaveNode(start);
+                    leaveNode(start, true);
                 }
                 return;
             }
@@ -394,7 +394,7 @@ export default class Graph<N, E> {
                 const should = visitEdge(next);
                 if (should !== undefined && should) {
                     if (leaveEdge) {
-                        leaveEdge(next);
+                        leaveEdge(next, true);
                     }
 
                     continue;
