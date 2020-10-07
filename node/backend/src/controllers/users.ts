@@ -388,17 +388,20 @@ export class UserController {
     @ApiHandleError()
     @AuthRequired(AccessLevel.SUPERUSER)
     public async activeUsers(req: Request, res: Response) {
+        const activeFrom = (new Date(req.query.activeFrom)).getFullYear() + "-" + ((new Date(req.query.activeFrom)).getMonth()+1) + "-" + (new Date(req.query.activeFrom)).getDate() + " 00:00:00";
+        const activeTo = (new Date(req.query.activeTo)).getFullYear() + "-" + ((new Date(req.query.activeTo)).getMonth()+1) + "-" + (new Date(req.query.activeTo)).getDate() + " 23:59:59";
+
         const data = await getRepository(AccessEvents)
             .createQueryBuilder("access_events")
-            .select("TO_CHAR(access_events.\"dateTime\"::DATE, 'mm-dd-yyyy') AS date")
+            .select("TO_CHAR(access_events.\"dateTime\"::DATE, 'mm/dd/yyyy') AS date")
             .addSelect("COUNT(DISTINCT access_events.username) as total_active")
             .leftJoin("access_events.user", "user")
             .where("(access_events.username <> '') IS TRUE")
             .andWhere("user.accessLevel NOT IN (:...role)", { role: [AccessLevel.SUPERUSER, AccessLevel.ADMIN] })
-            .andWhere(req.query.activeFrom ? `DATE(access_events.dateTime) >= :activeFrom` : '1=1', { activeFrom: req.query.activeFrom })
-            .andWhere(req.query.activeTo ? `DATE(access_events.dateTime) <= :activeTo` : '1=1', { activeTo: req.query.activeTo })
+            .andWhere(req.query.activeFrom ? "access_events.\"dateTime\" BETWEEN :activeFrom AND :activeTo" : '1=1', { activeFrom: activeFrom, activeTo: activeTo })
             .groupBy("DATE(access_events.dateTime)")
             .orderBy("DATE(access_events.dateTime)", "ASC")
+            .printSql()
             .getRawMany();
 
         return res.send({
