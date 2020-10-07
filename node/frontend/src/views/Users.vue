@@ -81,6 +81,7 @@ import { getUsers, activeUsers } from "../api/users";
 import MainNavBar from "../../src/components/MainNavBar.vue";
 import BarChart from "../../src/components/chartjs/Bar.vue";
 import { cloneSimple } from "../../../common/src/lib/utils";
+import { format as DateFnsFormat, subMonths as DateFnsSubMonths } from 'date-fns';
 
 interface DateProps {
     activeFrom: null | Date | string;
@@ -98,12 +99,12 @@ export default class Users extends Vue {
     isLoaded: boolean = false;
     isChartLoaded: boolean = false;
     date: DateProps = {
-        activeFrom: null,
-        activeTo: null,
+        activeFrom: DateFnsFormat(DateFnsSubMonths(new Date(), 1), 'yyyy-MM-dd'),
+        activeTo: DateFnsFormat(new Date(), 'yyyy-MM-dd'),
     };
     reactiveDate: DateProps = {
-        activeFrom: null,
-        activeTo: null,
+        activeFrom: DateFnsFormat(DateFnsSubMonths(new Date(), 1), 'yyyy-MM-dd'),
+        activeTo: DateFnsFormat(new Date(), 'yyyy-MM-dd'),
     };
     chartData = {
         labels: [],
@@ -115,16 +116,6 @@ export default class Users extends Vue {
             borderWidth: 1
         }],
     };
-
-    created() {
-        var d = new Date();
-        d.setMonth(d.getMonth() - 1);
-        d.setHours(0, 0, 0);
-        d.setMilliseconds(0);
-
-        this.date.activeFrom = this.reactiveDate.activeFrom = d;
-        this.date.activeTo = this.reactiveDate.activeTo = new Date();
-    }
 
     async mounted() {
         // fill documents
@@ -187,7 +178,7 @@ export default class Users extends Vue {
         this.$router.push({ name: "user", params: { id: row.username } });
     }
 
-    handleActiveUserRequest(props?: {activeFrom: Date, activeTo: Date}) {
+    handleActiveUserRequest(props?: {activeFrom?: Date, activeTo?: Date}) {
         this.isChartLoaded = false;
 
         activeUsers(props).then(res => {

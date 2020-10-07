@@ -147,7 +147,7 @@ export async function activeUsers(props?: {
     activeTo?: Date,
 }): Promise<APIResult<Array<{date: string, total_active: number}>>> {
     try {
-        return (await axios.get("/api/users/active-users", { params: props })).data;
+        return (await axios.get("/api/users/active-users", { params: {...props, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone} })).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };
