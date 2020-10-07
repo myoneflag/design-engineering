@@ -1167,6 +1167,7 @@
                 canvas.width = rw;
                 canvas.height = rh;
                 context = canvas.getContext("2d");
+                context.filter = "grayscale(1)";
                 context.fillStyle = '#FFFFFF';
                 context.fillRect(0, 0, rw, rh);
                 context.drawImage(image, sx, sy, sw, sh, 0, 0, rw, rh);
