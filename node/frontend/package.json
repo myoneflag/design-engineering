@@ -40,6 +40,7 @@
     "chart.js": "^2.9.3",
     "core-js": "^2.6.5",
     "css-loader": "^3.2.0",
+    "date-fns": "^2.16.1",
     "decimal.js": "^10.2.0",
     "deep-equal": "^1.0.1",
     "exceljs": "^4.1.1",
