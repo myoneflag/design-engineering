@@ -9,7 +9,7 @@ import {
     EdgeLikeEntity
 } from "../../../../common/src/api/document/entities/concrete-entity";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
-import { CalculationContext } from "../../../src/calculations/types";
+import {CalculationContext, PressurePushMode} from "../../../src/calculations/types";
 import { FlowNode } from "../../../src/calculations/calculation-engine";
 import Flatten from "@flatten-js/core";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
@@ -157,7 +157,8 @@ export default abstract class BaseBackedObject extends DrawableObject {
         from: FlowNode,
         to: FlowNode,
         signed: boolean,
-        pressureKPA: number | null
+        pressureKPA: number | null,
+        pressurePushMode: PressurePushMode,
     ): number | null;
 
     /**

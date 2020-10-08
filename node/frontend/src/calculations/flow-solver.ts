@@ -1,16 +1,12 @@
-import Graph, { Edge } from "../../src/calculations/graph";
-import { DocumentState } from "../../src/store/document/types";
-import { getFluidDensityOfSystem, kpa2head } from "../../src/calculations/pressure-drops";
-import { ternarySearchForGlobalMin } from "../../src/calculations/search-functions";
+import Graph, {Edge} from "../../src/calculations/graph";
+import {getFluidDensityOfSystem, kpa2head} from "../../src/calculations/pressure-drops";
+import {ternarySearchForGlobalMin} from "../../src/calculations/search-functions";
 import RiserEntity from "../../../common/src/api/document/entities/riser-entity";
-import { FlowAssignment } from "../../src/calculations/flow-assignment";
-import { getObjectFrictionHeadLoss } from "./entity-pressure-drops";
-import { FlowEdge, FlowNode, FLOW_SOURCE_EDGE } from "../../src/calculations/calculation-engine";
+import {FlowAssignment} from "../../src/calculations/flow-assignment";
+import {getObjectFrictionHeadLoss} from "./entity-pressure-drops";
+import {FLOW_SOURCE_EDGE, FlowEdge, FlowNode} from "../../src/calculations/calculation-engine";
 import Fitting from "../../src/htmlcanvas/objects/fitting";
-import { GlobalStore } from "../htmlcanvas/lib/global-store";
-import { ObjectStore } from "../htmlcanvas/lib/object-store";
-import { Catalog } from "../../../common/src/api/catalog/types";
-import { CalculationContext } from "./types";
+import {CalculationContext, PressurePushMode} from "./types";
 
 export const MINIMUM_FLOW_RATE_CHANGE = 0.0001;
 
@@ -149,7 +145,8 @@ export function adjustPathHardyCross(
                     v.from,
                     v.to,
                     true,
-                    null
+                    null,
+                    PressurePushMode.PSD,
                 );
                 if (delta === null) {
                     throw new Error("Could not get friction loss of pipe");

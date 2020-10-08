@@ -11,7 +11,7 @@ import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
 import { DrawingContext, ValidationResult } from "../../../../src/htmlcanvas/lib/types";
 import Flatten from "@flatten-js/core";
 import { PIPE_HEIGHT_GRAPHIC_EPS_MM } from "../../../../src/config";
-import { CalculationContext } from "../../../../src/calculations/types";
+import {CalculationContext, PressurePushMode} from "../../../../src/calculations/types";
 import { FlowNode } from "../../../../src/calculations/calculation-engine";
 import { angleDiffRad } from "../../../../src/lib/utils";
 import { DrawingArgs, EntityDrawingArgs } from "../../../../src/htmlcanvas/lib/drawable-object";
@@ -540,8 +540,8 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                             .flat()
                             .map((o) => o.uid)
                     ),
-                (context, flowLS, from, to, signed, pipeSizes) =>
-                    flowLS + from.connectable + to.connectable + signed + stringify(pipeSizes)
+                (context, flowLS, from, to, signed, mode, pipeSizes) =>
+                    flowLS + from.connectable + to.connectable + signed + mode + stringify(pipeSizes)
             )
             getFrictionHeadLoss(
                 context: CalculationContext,
@@ -550,6 +550,7 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                 to: FlowNode,
                 signed: boolean,
                 pressureKPA: number | null,
+                pressurePushMode: PressurePushMode,
                 pipeSizes?: [number, number]
             ): number | null {
                 hlcounts++;

@@ -1,13 +1,10 @@
-import { SelectedMaterialManufacturer } from './../../../common/src/api/document/drawing';
-import { DocumentState } from "../../src/store/document/types";
-import { SelectionTarget } from "../../src/htmlcanvas/lib/types";
-import { EntityType } from "../../../common/src/api/document/entities/types";
-import PipeEntity, {
-    fillPipeDefaultFields,
-    makePipeFields
-} from "../../../common/src/api/document/entities/pipe-entity";
-import { makeValveFields } from "../../../common/src/api/document/entities/fitting-entity";
-import { makeRiserFields } from "../../../common/src/api/document/entities/riser-entity";
+import {SelectedMaterialManufacturer} from './../../../common/src/api/document/drawing';
+import {DocumentState} from "../../src/store/document/types";
+import {SelectionTarget} from "../../src/htmlcanvas/lib/types";
+import {EntityType} from "../../../common/src/api/document/entities/types";
+import PipeEntity, {fillPipeDefaultFields, makePipeFields} from "../../../common/src/api/document/entities/pipe-entity";
+import {makeValveFields} from "../../../common/src/api/document/entities/fitting-entity";
+import {makeRiserFields} from "../../../common/src/api/document/entities/riser-entity";
 import {
     BigValveType,
     makeBigValveFields,
@@ -18,7 +15,7 @@ import FixtureEntity, {
     makeFixtureFields
 } from "../../../common/src/api/document/entities/fixtures/fixture-entity";
 import {CalculationContext, PressurePushMode} from "../../src/calculations/types";
-import Graph, { Edge } from "../../src/calculations/graph";
+import Graph, {Edge} from "../../src/calculations/graph";
 import EquationEngine from "../../src/calculations/equation-engine";
 import BaseBackedObject from "../../src/htmlcanvas/lib/base-backed-object";
 import Pipe from "../../src/htmlcanvas/objects/pipe";
@@ -29,16 +26,17 @@ import {
     getReynoldsNumber,
     head2kpa
 } from "../../src/calculations/pressure-drops";
-import { PropertyField } from "../../../common/src/api/document/entities/property-field";
-import { MainEventBus } from "../../src/store/main-event-bus";
-import { getObjectFrictionHeadLoss } from "../../src/calculations/entity-pressure-drops";
-import { DrawableEntityConcrete, isConnectableEntity } from "../../../common/src/api/document/entities/concrete-entity";
+import {PropertyField} from "../../../common/src/api/document/entities/property-field";
+import {MainEventBus} from "../../src/store/main-event-bus";
+import {getObjectFrictionHeadLoss} from "../../src/calculations/entity-pressure-drops";
+import {DrawableEntityConcrete, isConnectableEntity} from "../../../common/src/api/document/entities/concrete-entity";
 import BigValve from "../htmlcanvas/objects/big-valve/bigValve";
 // tslint:disable-next-line:max-line-length
-import DirectedValveEntity, { makeDirectedValveFields } from "../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
-import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
+import DirectedValveEntity, {makeDirectedValveFields} from "../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
+import {ValveType} from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import {
     addCosts,
+    addPsdCounts,
     comparePsdCounts,
     ContextualPCE,
     countPsdProfile,
@@ -48,29 +46,33 @@ import {
     lookupFlowRate,
     PsdProfile,
     subtractPsdProfiles,
-    zeroContextualPCE, 
+    zeroContextualPCE,
     zeroCost,
     zeroFinalPsdCounts,
     zeroPsdCounts,
-    addPsdCounts,
 } from "../../src/calculations/utils";
 import FittingCalculation from "../../src/store/document/calculations/fitting-calculation";
 import DirectedValveCalculation from "../../src/store/document/calculations/directed-valve-calculation";
 import SystemNodeCalculation from "../../src/store/document/calculations/system-node-calculation";
-import { isCalculated } from "../store/document/calculations";
+import {isCalculated} from "../store/document/calculations";
 import DrawableObjectFactory from "../htmlcanvas/lib/drawable-object-factory";
-import { Calculated } from "../htmlcanvas/lib/object-traits/calculated-object";
+import {Calculated} from "../htmlcanvas/lib/object-traits/calculated-object";
 import stringify from "json-stable-stringify";
-import { makeLoadNodesFields, NodeType } from "../../../common/src/api/document/entities/load-node-entity";
-import { GlobalStore } from "../htmlcanvas/lib/global-store";
-import { ObjectStore } from "../htmlcanvas/lib/object-store";
-import { makeFlowSourceFields } from "../../../common/src/api/document/entities/flow-source-entity";
+import {makeLoadNodesFields, NodeType} from "../../../common/src/api/document/entities/load-node-entity";
+import {GlobalStore} from "../htmlcanvas/lib/global-store";
+import {ObjectStore} from "../htmlcanvas/lib/object-store";
+import {makeFlowSourceFields} from "../../../common/src/api/document/entities/flow-source-entity";
 import FlowSourceCalculation from "../store/document/calculations/flow-source-calculation";
 import {fillPlantDefaults, makePlantEntityFields} from "../../../common/src/api/document/entities/plants/plant-entity";
 import Plant from "../htmlcanvas/objects/plant";
-import {assertUnreachable, isGas, isGermanStandard, StandardFlowSystemUids, SupportedPsdStandards} from "../../../common/src/api/config";
-import { Catalog, PipeSpec } from "../../../common/src/api/catalog/types";
-import { DrawingState } from "../../../common/src/api/document/drawing";
+import {
+    assertUnreachable,
+    isGermanStandard,
+    StandardFlowSystemUids,
+    SupportedPsdStandards
+} from "../../../common/src/api/config";
+import {Catalog, PipeSpec} from "../../../common/src/api/catalog/types";
+import {DrawingState} from "../../../common/src/api/document/drawing";
 import {
     cloneSimple,
     interpolateTable,
@@ -80,11 +82,11 @@ import {
     parseCatalogNumberOrMin,
     upperBoundTable
 } from "../../../common/src/lib/utils";
-import { determineConnectableSystemUid } from "../store/document/entities/lib";
-import { getPropertyByString } from "../lib/utils";
-import { getPlantPressureLossKPA } from "../htmlcanvas/lib/utils";
-import { RingMainCalculator } from "./ring-main-calculator";
-import { Configuration, NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
+import {determineConnectableSystemUid} from "../store/document/entities/lib";
+import {getPropertyByString} from "../lib/utils";
+import {getPlantPressureLossKPA} from "../htmlcanvas/lib/utils";
+import {RingMainCalculator} from "./ring-main-calculator";
+import {Configuration, NoFlowAvailableReason} from "../store/document/calculations/pipe-calculation";
 import {
     identifyReturns,
     MINIMUM_BALANCING_VALVE_PRESSURE_DROP_KPA,
@@ -95,13 +97,12 @@ import DirectedValve from "../htmlcanvas/objects/directed-valve";
 import SystemNode from "../htmlcanvas/objects/big-valve/system-node";
 import Fixture from "../htmlcanvas/objects/fixture";
 import LoadNodeCalculation from "../store/document/calculations/load-node-calculation";
-import { fillDefaultLoadNodeFields } from "../store/document/entities/fillDefaultLoadNodeFields";
+import {fillDefaultLoadNodeFields} from "../store/document/entities/fillDefaultLoadNodeFields";
 import {PriceTable} from "../../../common/src/api/catalog/price-table";
-import GasApplianceEntity, {makeGasApplianceFields} from "../../../common/src/api/document/entities/gas-appliance";
+import {makeGasApplianceFields} from "../../../common/src/api/document/entities/gas-appliance";
 import {calculateGas} from "./gas";
 import {PlantType, ReturnSystemPlant} from "../../../common/src/api/document/entities/plants/plant-types";
-import {Return} from "aws-sdk/clients/cloudsearchdomain";
-import { NodeProps } from '../../../common/src/models/CustomEntity';
+import {NodeProps} from '../../../common/src/models/CustomEntity';
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -844,7 +845,8 @@ export default class CalculationEngine implements CalculationContext {
                                 edge.from,
                                 edge.to,
                                 true,
-                                finalPressureKPA
+                                finalPressureKPA,
+                                pressurePushMode,
                             );
                             if (headLoss === null) {
                                 return -Infinity;
@@ -913,7 +915,8 @@ export default class CalculationEngine implements CalculationContext {
                                 flowFrom,
                                 flowTo,
                                 true,
-                                finalPressureKPA
+                                finalPressureKPA,
+                                pressurePushMode,
                             );
                             return hl === null
                                 ? -Infinity
@@ -993,7 +996,8 @@ export default class CalculationEngine implements CalculationContext {
                                 flowFrom,
                                 flowTo,
                                 true,
-                                finalPressureKPA
+                                finalPressureKPA,
+                                pressurePushMode,
                             );
                             return hl === null
                                 ? -Infinity
@@ -1038,7 +1042,8 @@ export default class CalculationEngine implements CalculationContext {
                             flowFrom,
                             flowTo,
                             true,
-                            finalPressureKPA
+                            finalPressureKPA,
+                            pressurePushMode,
                         );
                         return hl === null
                             ? -Infinity
@@ -2190,7 +2195,8 @@ export default class CalculationEngine implements CalculationContext {
                                     { connection: o.uid, connectable: o.entity.coldRoughInUid },
                                     { connection: o.uid, connectable: o.entity.valve.coldOutputUid },
                                     true,
-                                    calculation.coldPressureKPA
+                                    calculation.coldPressureKPA,
+                                    PressurePushMode.PSD,
                                 );
                                 calculation.outputs[StandardFlowSystemUids.ColdWater].pressureDropKPA =
                                     hl === null
@@ -2217,7 +2223,8 @@ export default class CalculationEngine implements CalculationContext {
                                     { connection: o.uid, connectable: o.entity.hotRoughInUid },
                                     { connection: o.uid, connectable: o.entity.valve.warmOutputUid },
                                     true,
-                                    calculation.hotPeakFlowRate
+                                    calculation.hotPeakFlowRate,
+                                    PressurePushMode.PSD,
                                 );
                                 calculation.outputs[StandardFlowSystemUids.WarmWater].pressureDropKPA =
                                     hl === null
@@ -2244,7 +2251,8 @@ export default class CalculationEngine implements CalculationContext {
                                     { connection: o.uid, connectable: o.entity.coldRoughInUid },
                                     { connection: o.uid, connectable: o.entity.valve.coldOutputUid },
                                     true,
-                                    calculation.coldPressureKPA
+                                    calculation.coldPressureKPA,
+                                    PressurePushMode.PSD,
                                 );
                                 calculation.outputs[StandardFlowSystemUids.ColdWater].pressureDropKPA =
                                     hl === null
@@ -2270,7 +2278,8 @@ export default class CalculationEngine implements CalculationContext {
                                     { connection: o.uid, connectable: o.entity.valve.hotOutputUid },
                                     true,
 
-                                    calculation.hotPeakFlowRate
+                                    calculation.hotPeakFlowRate,
+                                    PressurePushMode.PSD,
                                 );
                                 calculation.outputs[StandardFlowSystemUids.HotWater].pressureDropKPA =
                                     hl === null
@@ -2301,7 +2310,8 @@ export default class CalculationEngine implements CalculationContext {
                             { connection: o.uid, connectable: o.entity.endpointUid[0] },
                             { connection: o.uid, connectable: o.entity.endpointUid[1] },
                             true,
-                            null
+                            null,
+                            PressurePushMode.PSD,
                         );
                         calculation.pressureDropKPA =
                             hl === null
@@ -2359,7 +2369,8 @@ export default class CalculationEngine implements CalculationContext {
                                     { connectable: o.uid, connection: connections[0] },
                                     { connectable: o.uid, connection: connections[1] },
                                     true,
-                                    calculation.pressureKPA
+                                    calculation.pressureKPA,
+                                    PressurePushMode.PSD,
                                 );
                                 const dir1 =
                                     hl1 === null
@@ -2380,7 +2391,8 @@ export default class CalculationEngine implements CalculationContext {
                                     { connectable: o.uid, connection: connections[1] },
                                     { connectable: o.uid, connection: connections[0] },
                                     true,
-                                    calculation.pressureKPA
+                                    calculation.pressureKPA,
+                                    PressurePushMode.PSD,
                                 );
                                 const dir2 =
                                     hl2 === null
