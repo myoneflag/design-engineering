@@ -911,6 +911,8 @@ export function returnBalanceValves(engine: CalculationEngine, returns: ReturnRe
             pressureDrop: circulationPressureLoss,
         });
 
+        console.log("return pump pressure:");
+        console.log(circulationPressureLoss + ' ' + checkAdjustment.total);
         pCalc.circulationPressureLoss = circulationPressureLoss + checkAdjustment.total;
         pCalc.manufacturer = checkAdjustment.manufacturer;
 

@@ -1,34 +1,32 @@
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import RiserEntity from "../../../../common/src/api/document/entities/riser-entity";
 import * as TM from "transformation-matrix";
-import { DocumentState } from "../../../src/store/document/types";
-import { matrixScale } from "../../../src/htmlcanvas/utils";
-import { lighten, rgb2style } from "../../../src/lib/utils";
-import Connectable, { ConnectableObject } from "../../../src/htmlcanvas/lib/object-traits/connectable";
+import {DocumentState} from "../../../src/store/document/types";
+import {lighten, rgb2style} from "../../../src/lib/utils";
+import Connectable, {ConnectableObject} from "../../../src/htmlcanvas/lib/object-traits/connectable";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
 import {CostBreakdown, DrawingContext, ValidationResult} from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
-import { EntityType } from "../../../../common/src/api/document/entities/types";
+import {EntityType} from "../../../../common/src/api/document/entities/types";
 import BackedConnectable from "../../../src/htmlcanvas/lib/BackedConnectable";
-import { getDragPriority } from "../../../src/store/document";
-import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
-import { CenteredObject, CenteredObjectNoParent } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
-import { CalculationContext } from "../../../src/calculations/types";
-import { FlowNode } from "../../../src/calculations/calculation-engine";
-import { DrawingArgs, EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
-import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
-import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
+import {getDragPriority} from "../../../src/store/document";
+import {SelectableObject} from "../../../src/htmlcanvas/lib/object-traits/selectable";
+import {CenteredObjectNoParent} from "../../../src/htmlcanvas/lib/object-traits/centered-object";
+import {CalculationContext, PressurePushMode} from "../../../src/calculations/types";
+import {FlowNode} from "../../../src/calculations/calculation-engine";
+import {EntityDrawingArgs} from "../../../src/htmlcanvas/lib/drawable-object";
+import {Calculated, CalculatedObject} from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
+import {CalculationData} from "../../../src/store/document/calculations/calculation-field";
 import CanvasContext from "../lib/canvas-context";
-import { DrawableEntityConcrete, EdgeLikeEntity } from "../../../../common/src/api/document/entities/concrete-entity";
+import {DrawableEntityConcrete, EdgeLikeEntity} from "../../../../common/src/api/document/entities/concrete-entity";
 import RiserCalculation from "../../store/document/calculations/riser-calculation";
 import Pipe from "./pipe";
-import { getFluidDensityOfSystem, head2kpa } from "../../calculations/pressure-drops";
-import { Coord, FlowSystemParameters } from "../../../../common/src/api/document/drawing";
-import { getEdgeLikeHeightAboveGroundM, getHighlightColor } from "../lib/utils";
-import { GlobalStore } from "../lib/global-store";
-import { APIResult } from "../../../../common/src/api/document/types";
-import { Interaction, InteractionType } from "../lib/interaction";
-import { SnappableObject } from "../lib/object-traits/snappable-object";
+import {getFluidDensityOfSystem, head2kpa} from "../../calculations/pressure-drops";
+import {Coord, FlowSystemParameters} from "../../../../common/src/api/document/drawing";
+import {getEdgeLikeHeightAboveGroundM, getHighlightColor} from "../lib/utils";
+import {GlobalStore} from "../lib/global-store";
+import {Interaction, InteractionType} from "../lib/interaction";
+import {SnappableObject} from "../lib/object-traits/snappable-object";
 
 @CalculatedObject
 @SelectableObject
@@ -349,7 +347,8 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                     { connectable: tower[topOfPipe - 1][0].uid, connection: pipe.uid },
                     { connectable: tower[topOfPipe][0].uid, connection: pipe.uid },
                     true,
-                    null
+                    null,
+                    PressurePushMode.PSD,
                 );
 
                 if (totalHL != null) {

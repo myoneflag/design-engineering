@@ -13,7 +13,7 @@ import {CostBreakdown, DrawingContext} from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
 import {EntityType} from "../../../../common/src/api/document/entities/types";
 import BackedConnectable, {BaseBackedConnectable} from "../../../src/htmlcanvas/lib/BackedConnectable";
-import {CalculationContext} from "../../../src/calculations/types";
+import {CalculationContext, PressurePushMode} from "../../../src/calculations/types";
 import {
     ConnectableEntityConcrete,
     DrawableEntityConcrete,
@@ -736,7 +736,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                     .flat()
                     .map((o) => o.uid)
             ),
-        (context, flowLS, from, to, signed) => flowLS + from.connectable + to.connectable + signed
+        (context, flowLS, from, to, signed, pressureKPA, pressurePushMode) => flowLS + from.connectable + to.connectable + signed + pressureKPA + pressurePushMode
     )
     getFrictionHeadLoss(
         context: CalculationContext,
@@ -744,7 +744,8 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         from: FlowNode,
         to: FlowNode,
         signed: boolean,
-        pressureKPA: number | null
+        pressureKPA: number | null,
+        pressurePushMode: PressurePushMode,
     ): number | null {
         const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
         const { drawing, catalog, globalStore } = context;
@@ -836,6 +837,17 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             throw new Error("inconsistent 2d/3d paradigm");
         } else {
             throw new Error("pipe " + this.uid + " with no 3d");
+        }
+
+        switch (pressurePushMode) {
+            case PressurePushMode.PSD:
+            case PressurePushMode.Static:
+                break;
+            case PressurePushMode.CirculationFlowOnly:
+                heightHeadLoss = 0;
+                break;
+            default:
+                assertUnreachable(pressurePushMode);
         }
 
         return retval + heightHeadLoss;
