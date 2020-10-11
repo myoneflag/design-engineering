@@ -1,10 +1,10 @@
-import { FieldType, PropertyField } from "./property-field";
-import { EntityType } from "./types";
-import { Color, COLORS, DrawableEntity, DrawingState, NetworkType, SelectedMaterialManufacturer } from "../drawing";
-import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../lib/utils";
-import { Catalog } from "../../catalog/types";
-import { convertPipeDiameterFromMetric, Units } from "../../../lib/measurements";
-import {StandardFlowSystemUids} from "../../config";
+import {FieldType, PropertyField} from "./property-field";
+import {EntityType} from "./types";
+import {Color, COLORS, DrawableEntity, DrawingState, NetworkType, SelectedMaterialManufacturer} from "../drawing";
+import {Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin} from "../../../lib/utils";
+import {Catalog} from "../../catalog/types";
+import {convertPipeDiameterFromMetric, Units} from "../../../lib/measurements";
+import {isDrainage, StandardFlowSystemUids} from "../../config";
 
 export default interface PipeEntity extends DrawableEntity {
     type: EntityType.PIPE;
@@ -172,6 +172,11 @@ export function fillPipeDefaultFields(drawing: DrawingState, computedLengthM: nu
         }
         if (result.color == null) {
             result.color = system.color;
+            if (isDrainage(system.uid)) {
+                if (value.network === NetworkType.CONNECTIONS) {
+                    result.color = { hex: '#ff7755' };
+                }
+            }
         }
     } else {
         throw new Error("Existing system not found for object " + JSON.stringify(value));

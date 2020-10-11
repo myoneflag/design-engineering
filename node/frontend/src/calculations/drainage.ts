@@ -75,18 +75,6 @@ export function getSizeOfVent(system: FlowSystemParameters, psdUnits: PsdCountEn
     return null;
 }
 
-export function sizeDedicatedVentOfPipe(entity: PipeEntity, context: CalculationContext, psdUnits: PsdCountEntry) {
-    const calc = context.globalStore.getOrCreateCalculation(entity);
-    calc.psdUnits = psdUnits;
-
-    const system = context.doc.drawing.metadata.flowSystems.find((fs) => fs.uid === entity.systemUid)!;
-    for (const entry of system.drainageProperties.ventSizing) {
-        if (entry.minUnits <= psdUnits.drainageUnits && entry.maxUnits >= psdUnits.drainageUnits) {
-            calc.stackDedicatedVentSize = entry.sizeMM;
-            break;
-        }
-    }
-}
 
 // This function must be run AFTER PSDs have been propagated.
 export function processDrainage(context: CalculationEngine) {
@@ -203,11 +191,14 @@ export function produceUnventedUnitsWarnings(context: CalculationEngine, roots: 
             for (const outletUid of fixture.roughInsInOrder) {
                 if (isDrainage(outletUid)) {
                     const outlet = fixture.roughIns[outletUid];
-                    const system = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === outletUid);
 
-                    if (!system) {
-                        continue;
-                    }
+                    // Don't trust the system of the outlet - use the first pipe instead because the outlet
+                    // is a fixed drainage system but the user can draw any drainage system onto it.
+                    // const system = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === outletUid);
+
+                    // if (!system) {
+                    //    continue;
+                    // }
 
                     const groupId = groups.find(outlet.uid);
 
@@ -218,6 +209,13 @@ export function produceUnventedUnitsWarnings(context: CalculationEngine, roots: 
                         const pipe = context.globalStore.get(connections[0]) as Pipe;
                         const pCalcOriginal = context.globalStore.getOrCreateCalculation(pipe.entity);
                         const originalSize = pCalcOriginal.realNominalPipeDiameterMM;
+
+                        const system = context.doc.drawing.metadata.flowSystems.find((s) =>
+                            s.uid === pipe.entity.systemUid
+                        );
+                        if (!system) {
+                            continue;
+                        }
 
                         if (!originalSize) {
                             // We need the pipe to be sized to know how much venting it needs
@@ -262,15 +260,25 @@ export function produceUnventedLengthWarningsAndGetUnventedGroup(context: Calcul
                     if (connections.length > 0) {
                         // Theoretically, the vent shouldn't ever split (only combine), but we will handle it just in case.
                         const lengthAtNode = new Map<string, number>();
-                        const system = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === outletUid);
-                        if (!system) {
-                            continue;
-                        }
+
+                        // Don't trust the system of the outlet - use the first pipe instead because the outlet
+                        // is a fixed drainage system but the user can draw any drainage system onto it.
+                        // const system = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === outletUid);
+                        // if (!system) {
+                        //    continue;
+                        // }
 
                         // outlets should only connect to one pipe. So for that pipe, use its size as a canary.
                         const pipe = context.globalStore.get(connections[0]) as Pipe;
                         const pCalcOriginal = context.globalStore.getOrCreateCalculation(pipe.entity);
                         const originalSize = pCalcOriginal.realNominalPipeDiameterMM;
+
+                        const system = context.doc.drawing.metadata.flowSystems.find((s) =>
+                            s.uid === pipe.entity.systemUid
+                        );
+                        if (!system) {
+                            continue;
+                        }
 
                         if (!originalSize) {
                             // We need the pipe to be sized to know how much venting it needs

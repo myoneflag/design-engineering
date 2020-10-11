@@ -52,7 +52,7 @@ import {
     StandardFlowSystemUids
 } from "../../../../common/src/api/config";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
-import { getHighlightColor } from "../lib/utils";
+import {flowSystemsCompatible, getHighlightColor} from "../lib/utils";
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 1.5;
@@ -621,7 +621,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
         switch (interaction.type) {
             case InteractionType.INSERT:
-                if (interaction.systemUid && interaction.systemUid !== this.entity.systemUid) {
+                if (interaction.systemUid && !flowSystemsCompatible(interaction.systemUid, this.entity.systemUid)) {
                     return null;
                 }
                 return [this.entity];
@@ -635,7 +635,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                         interaction.src.type !== EntityType.DIRECTED_VALVE &&
                         interaction.src.type !== EntityType.LOAD_NODE
                     ) {
-                        if (interaction.src.systemUid !== this.entity.systemUid) {
+                        if (!flowSystemsCompatible(interaction.src.systemUid, this.entity.systemUid) ) {
                             return null;
                         }
                     }
@@ -646,7 +646,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             }
             case InteractionType.CONTINUING_PIPE:
             case InteractionType.STARTING_PIPE:
-                if (interaction.system.uid !== this.entity.systemUid) {
+                if (!flowSystemsCompatible(interaction.system.uid, this.entity.systemUid) ) {
                     return null;
                 }
                 return [this.entity];
@@ -662,7 +662,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                         return null;
                     }
                 }
-                if (interaction.systemUid === null || interaction.systemUid === this.entity.systemUid) {
+                if (interaction.systemUid === null || flowSystemsCompatible(interaction.systemUid, this.entity.systemUid) ) {
                     return [this.entity];
                 } else {
                     return null;

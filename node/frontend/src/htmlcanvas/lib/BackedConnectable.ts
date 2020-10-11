@@ -15,6 +15,7 @@ import { Matrix } from "transformation-matrix";
 import { Coord } from "../../../../common/src/api/document/drawing";
 import { determineConnectableSystemUid } from "../../store/document/entities/lib";
 import { SystemNodeEntity } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
+import {flowSystemsCompatible} from "./utils";
 
 // TODO: this entire abstract class is obsolete and should be encapsulated in the ConnectableObject
 // decorator.
@@ -36,6 +37,8 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
         }
     }
 
+
+
     offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
         let allowAllSystemUid = false;
         if (this.entity.type === EntityType.SYSTEM_NODE) {
@@ -51,7 +54,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                     getDragPriority(interaction.entityType) >= this.dragPriority
                 ) {
                     if (hasExplicitSystemUid(this.entity) && interaction.systemUid) {
-                        if (interaction.systemUid !== this.entity.systemUid && !allowAllSystemUid) {
+                        if (!flowSystemsCompatible(interaction.systemUid, this.entity.systemUid) && !allowAllSystemUid) {
                             return null;
                         }
                     }
@@ -63,7 +66,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                 const resultingConnections = this.globalStore.getConnections(this.entity.uid).length + 1;
                 if (this.numConnectionsInBound(resultingConnections)) {
                     if (hasExplicitSystemUid(this.entity)) {
-                        if (interaction.system.uid !== this.entity.systemUid && !allowAllSystemUid) {
+                        if (!flowSystemsCompatible(interaction.system.uid, this.entity.systemUid) && !allowAllSystemUid) {
                             return null;
                         }
                     }
@@ -86,7 +89,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                         )
                     ) {
                         if (hasExplicitSystemUid(this.entity) && hasExplicitSystemUid(interaction.src)) {
-                            if (this.entity.systemUid !== interaction.src.systemUid && !allowAllSystemUid) {
+                            if (!flowSystemsCompatible(interaction.src.systemUid, this.entity.systemUid) && !allowAllSystemUid) {
                                 return null;
                             }
                         }
@@ -111,7 +114,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                         )
                     ) {
                         if (hasExplicitSystemUid(this.entity) && hasExplicitSystemUid(interaction.dest)) {
-                            if (this.entity.systemUid !== interaction.dest.systemUid && !allowAllSystemUid) {
+                            if (!flowSystemsCompatible(interaction.dest.systemUid, this.entity.systemUid)  && !allowAllSystemUid) {
                                 return null;
                             }
                         }
@@ -134,12 +137,12 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
 
                 if (entity.type === EntityType.DIRECTED_VALVE || entity.type === EntityType.LOAD_NODE) {
                     const suid = determineConnectableSystemUid(this.globalStore, entity);
-                    isSystemCorrect = interaction.systemUid === null || interaction.systemUid === suid;
+                    isSystemCorrect = interaction.systemUid === null || flowSystemsCompatible(interaction.systemUid, suid!) ;
                 } else {
                     isSystemCorrect =
                         allowAllSystemUid ||
                         interaction.systemUid === null ||
-                        interaction.systemUid === entity.systemUid;
+                        flowSystemsCompatible(interaction.systemUid, entity.systemUid) ;
                 }
 
                 if (isSystemCorrect) {

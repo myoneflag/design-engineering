@@ -531,6 +531,9 @@ export default class HydraulicsInsertPanel extends Vue {
     }
 
     get selectedSystem(): FlowSystemParameters {
+        if (this.selectedSystemId >= this.$props.flowSystems.length) {
+            this.selectedSystemId = 0;
+        }
         return this.$props.flowSystems[this.selectedSystemId];
     }
 
