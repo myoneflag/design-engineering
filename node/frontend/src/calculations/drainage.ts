@@ -1,11 +1,12 @@
-import PipeEntity from "../../../common/src/api/document/entities/pipe-entity";
+import PipeEntity, {fillPipeDefaultFields} from "../../../common/src/api/document/entities/pipe-entity";
 import {CalculationContext} from "./types";
-import {NetworkType} from "../../../common/src/api/document/drawing";
+import {FlowSystemParameters, NetworkType} from "../../../common/src/api/document/drawing";
 import CalculationEngine, {EdgeType} from "./calculation-engine";
 import {EntityType} from "../../../common/src/api/document/entities/types";
 import {isDrainage} from "../../../common/src/api/config";
 import {addPsdCounts, comparePsdCounts, PsdCountEntry, subPsdCounts, zeroPsdCounts} from "./utils";
 import FittingEntity from "../../../common/src/api/document/entities/fitting-entity";
+import Pipe from "../htmlcanvas/objects/pipe";
 
 
 export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext, overridePsdUnits?: PsdCountEntry) {
@@ -30,6 +31,10 @@ export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext
                         calc.realNominalPipeDiameterMM = calc.optimalInnerPipeDiameterMM = size.sizeMM;
                         break;
                     }
+                }
+
+                if (system.drainageProperties.stackDedicatedVent) {
+                    calc.stackDedicatedVentSize = getSizeOfVent(system, psdUnits);
                 }
             }
             break;
@@ -56,14 +61,30 @@ export function sizeVentPipe(entity: PipeEntity, context: CalculationContext, ps
     calc.psdUnits = psdUnits;
 
     const system = context.doc.drawing.metadata.flowSystems.find((fs) => fs.uid === entity.systemUid)!;
+    calc.optimalInnerPipeDiameterMM = calc.realNominalPipeDiameterMM = getSizeOfVent(system, psdUnits);
+}
+
+export function getSizeOfVent(system: FlowSystemParameters, psdUnits: PsdCountEntry) {
     for (const entry of system.drainageProperties.ventSizing) {
         if (entry.minUnits <= psdUnits.drainageUnits && entry.maxUnits >= psdUnits.drainageUnits) {
-            calc.optimalInnerPipeDiameterMM = calc.realNominalPipeDiameterMM = entry.sizeMM;
+            return entry.sizeMM;
+        }
+    }
+    return null;
+}
+
+export function sizeDedicatedVentOfPipe(entity: PipeEntity, context: CalculationContext, psdUnits: PsdCountEntry) {
+    const calc = context.globalStore.getOrCreateCalculation(entity);
+    calc.psdUnits = psdUnits;
+
+    const system = context.doc.drawing.metadata.flowSystems.find((fs) => fs.uid === entity.systemUid)!;
+    for (const entry of system.drainageProperties.ventSizing) {
+        if (entry.minUnits <= psdUnits.drainageUnits && entry.maxUnits >= psdUnits.drainageUnits) {
+            calc.stackDedicatedVentSize = entry.sizeMM;
             break;
         }
     }
 }
-
 
 // This function must be run AFTER PSDs have been propagated.
 export function processDrainage(context: CalculationEngine) {
@@ -82,6 +103,7 @@ export function processVents(context: CalculationEngine, roots: Map<string, PsdC
 
     for (const e of exits) {
         const flowOfNode = new Map<string, PsdCountEntry>();
+        const lengthOfNode = new Map<string, number>();
         let multipleVentExits = false; // the algorithm only supports a unique vent exit.
         const listOfVents: PipeEntity[] = []; // To retroactively create warnings later.
 
@@ -185,6 +207,7 @@ export function processVentRoots(context: CalculationEngine): Map<string, PsdCou
                 // from it minus the load experienced (and neutralized) by the vented nodes below.
 
                 const flowAtNextVent = new Map<string, PsdCountEntry>();
+                const lenghtAtNextVent = new Map<string, number>();
                 let multipleSewerConnections = false;
                 let missingCalculations = false;
                 const listOfPipes: PipeEntity[] = [];
@@ -245,15 +268,21 @@ export function processVentRoots(context: CalculationEngine): Map<string, PsdCou
 
                         const upstreamUid = edge.from.connectable;
 
-                        const pipe = context.globalStore.get(edge.value.uid);
+                        const pipe = context.globalStore.get(edge.value.uid) as Pipe;
                         if (!pipe || pipe.entity.type !== EntityType.PIPE) {
                             return;
                         }
                         const calc = context.globalStore.getOrCreateCalculation(pipe.entity);
+                        const filled = fillPipeDefaultFields(context.drawing, pipe.computedLengthM, pipe.entity);
 
                         const upstreamNextFlowTally = flowAtNextVent.get(upstreamUid) || zeroPsdCounts();
                         const downstreamNextFlowTally = flowAtNextVent.get(downUid) || zeroPsdCounts();
+
+                        const upstreamNextLengthTally = lenghtAtNextVent.get(upstreamUid) || 0;
+                        const downstreamNextLengthTally = lenghtAtNextVent.get(downUid) || 0;
+
                         if (isRoot) {
+                            lenghtAtNextVent.set(upstreamUid, Math.max(upstreamNextLengthTally, filled.lengthM!));
                             if (calc.psdUnits) {
                                 flowAtNextVent.set(upstreamUid, addPsdCounts(upstreamNextFlowTally, calc.psdUnits));
                                 // Record this root.

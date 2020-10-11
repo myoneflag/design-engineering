@@ -22,6 +22,7 @@ export default interface RiserCalculation extends Calculation {
             flowRateLS: number | null;
             heightAboveGround: number | null;
             sizeMM: number | null;
+            ventSizeMM: number | null;
         } & PressureCalculation & PsdCalculation;
     };
 }
@@ -40,6 +41,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
     if (lvlIndex !== -1 && lvlIndex !== sortedLevels.length - 1) {
         lvlAboveUid = sortedLevels[lvlIndex + 1].uid;
     }
+    const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === entity.systemUid);
 
     addPressureCalculationFields(result, entity.systemUid, "heights." + lvlUid + ".", {
         title: "Pressure At Floor",
@@ -155,9 +157,21 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 layouts: ['drainage'],
                 format: (v) => "" + Number(v?.toFixed(5)),
             });
+
+            if (system && system.drainageProperties.stackDedicatedVent) {
+                result.push({
+                    property: "heights." + lvlAboveUid + ".ventSizeMM",
+                    title: "Dedicated Vent Size",
+                    short: "vent",
+                    units: Units.PipeDiameterMM,
+                    category: FieldCategory.LoadingUnits,
+                    systemUid: entity.systemUid,
+                    layouts: ['drainage'],
+                });
+            }
         }
 
-        if (drawing.metadata.calculationParams.dwellingMethod !== null) {
+        if (system) {
             result.push({
                 property: "heights." + lvlAboveUid + ".psdUnits.dwellings",
                 title: "Dwellings To Above",
