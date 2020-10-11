@@ -347,6 +347,22 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
             return context.doc.drawing.levels[a].floorHeightM - context.doc.drawing.levels[b].floorHeightM;
         });
 
+        // Find size of base vent for dedicated vent sizing
+        let biggestDedicatedVentSize: number | null = null;
+        if (IAmDrainage) {
+            for (const segment of tower) {
+                const pipe = segment[1];
+                if (pipe) {
+                    const pcalc = context.globalStore.getOrCreateCalculation(pipe);
+                    if (pcalc.stackDedicatedVentSize !== null &&
+                        (biggestDedicatedVentSize === null || pcalc.stackDedicatedVentSize > biggestDedicatedVentSize) ) {
+                        biggestDedicatedVentSize = pcalc.stackDedicatedVentSize;
+                    }
+                }
+            }
+        }
+
+        // Collect all levels together
         let topOfPipe = 0;
         for (const lvlUid of levelUidsByHeight) {
             res.heights[lvlUid] = {
@@ -416,7 +432,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                         pressureKPA: null,
                         staticPressureKPA: null,
                         sizeMM: calc.realNominalPipeDiameterMM,
-                        ventSizeMM: calc.stackDedicatedVentSize,
+                        ventSizeMM: biggestDedicatedVentSize,
                     };
                 }
             }
