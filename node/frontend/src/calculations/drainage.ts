@@ -3,10 +3,12 @@ import {CalculationContext} from "./types";
 import {FlowSystemParameters, NetworkType} from "../../../common/src/api/document/drawing";
 import CalculationEngine, {EdgeType} from "./calculation-engine";
 import {EntityType} from "../../../common/src/api/document/entities/types";
-import {isDrainage} from "../../../common/src/api/config";
+import {assertUnreachable, isDrainage, SupportedDrainageMethods} from "../../../common/src/api/config";
 import {addPsdCounts, comparePsdCounts, PsdCountEntry, subPsdCounts, zeroPsdCounts} from "./utils";
 import FittingEntity from "../../../common/src/api/document/entities/fitting-entity";
 import Pipe from "../htmlcanvas/objects/pipe";
+import {parseCatalogNumberExact, upperBoundTable} from "../../../common/src/lib/utils";
+import UnionFind from "./union-find";
 
 
 export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext, overridePsdUnits?: PsdCountEntry) {
@@ -90,20 +92,287 @@ export function sizeDedicatedVentOfPipe(entity: PipeEntity, context: Calculation
 export function processDrainage(context: CalculationEngine) {
     const roots = processVentRoots(context);
     const exits = findVentExits(context);
-    processVents(context, roots, exits);
+    sizeVents(context, roots, exits);
+    propagateVentedness(context, roots);
+    produceUnventedWarnings(context, roots);
 
     processFixedStacks(context);
 }
 
+export function produceUnventedWarnings(context: CalculationEngine, roots: Map<string, PsdCountEntry>) {
+    produceUnventedLengthWarningsAndGetUnventedGroup(context);
+    produceUnventedUnitsWarnings(context, roots);
+}
+
+// Strategy:
+// 1. Union find groups of unvented stuff together
+// 2. Calculate the size of each group.
+// 3. Go back to every fixture and check how many units the group it is connect to is.
+// 4. Profit. No ???.
+// We need roots as a param just to know what nodes to exclude, to make sure groups connected at a
+// node that is vented are not joined together.
+export function produceUnventedUnitsWarnings(context: CalculationEngine, roots: Map<string, PsdCountEntry>) {
+    const groups = new UnionFind<string>();
+
+    // 1. Generate the groups
+    for (const obj of context.networkObjects()) {
+        if (obj.entity.type === EntityType.FIXTURE) {
+            const fixture = obj.entity;
+            for (const outletUid of fixture.roughInsInOrder) {
+                if (isDrainage(outletUid)) {
+                    const outlet = fixture.roughIns[outletUid];
+                    const connections = context.globalStore.getConnections(outlet.uid);
+
+                    if (connections.length > 0) {
+
+                        context.flowGraph.dfsRecursive(
+                            {connectable: outlet.uid, connection: connections[0]},
+                            undefined,
+                            undefined,
+                            (edge) => {
+                                if (edge.value.type === EdgeType.PIPE) {
+                                    const pipe = context.globalStore.get(edge.value.uid) as Pipe;
+                                    if (!pipe || !isDrainage(pipe.entity.systemUid)) {
+                                        return true;
+                                    }
+                                    const pCalc = context.globalStore.getOrCreateCalculation(pipe.entity);
+
+                                    const nodesVented = roots.has(edge.from.connectable) || roots.has(edge.to.connectable);
+
+                                    if (nodesVented || pCalc.vented) {
+                                        return true;
+                                    }
+
+                                    groups.join(edge.from.connectable, edge.to.connectable);
+                                }
+                            }
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    // 2. Get the psdUnits of each group.
+    const unitsOfGroup = new Map<string, PsdCountEntry>();
+    for (const obj of context.networkObjects()) {
+        if (obj.entity.type === EntityType.FIXTURE) {
+            const fixture = obj.entity;
+            for (const outletUid of fixture.roughInsInOrder) {
+                if (isDrainage(outletUid)) {
+                    const outlet = fixture.roughIns[outletUid];
+
+                    const groupId = groups.find(outlet.uid);
+
+                    const units = unitsOfGroup.get(groupId) || zeroPsdCounts();
+                    const connections = context.globalStore.getConnections(outlet.uid);
+                    if (connections.length > 0) {
+                        const connectedPipe = context.globalStore.get(connections[0]) as Pipe;
+                        const connectedPCalc = context.globalStore.getOrCreateCalculation(connectedPipe.entity);
+                        const additionalUnits = connectedPCalc?.psdUnits;
+                        if (additionalUnits) {
+                            const sumUnits = addPsdCounts(units, additionalUnits);
+                            unitsOfGroup.set(groupId, sumUnits);
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+
+    // 3. Use the units of each group to generate warnings.
+
+    let unitsPerWc = 0;
+    switch (context.doc.drawing.metadata.calculationParams.drainageMethod) {
+        case SupportedDrainageMethods.AS2018FixtureUnits:
+            unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].asnzFixtureUnits)!;
+            break;
+        case SupportedDrainageMethods.EN1205622000DischargeUnits:
+            unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].enDischargeUnits)!;
+            break;
+        case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
+            unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].upcFixtureUnits)!;
+            break;
+        default:
+            assertUnreachable(context.doc.drawing.metadata.calculationParams.drainageMethod);
+    }
+    for (const obj of context.networkObjects()) {
+        if (obj.entity.type === EntityType.FIXTURE) {
+            const fixture = obj.entity;
+            for (const outletUid of fixture.roughInsInOrder) {
+                if (isDrainage(outletUid)) {
+                    const outlet = fixture.roughIns[outletUid];
+                    const system = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === outletUid);
+
+                    if (!system) {
+                        continue;
+                    }
+
+                    const groupId = groups.find(outlet.uid);
+
+                    const units = unitsOfGroup.get(groupId);
+
+                    const connections = context.globalStore.getConnections(outlet.uid);
+                    if (connections.length > 0 && units) {
+                        const pipe = context.globalStore.get(connections[0]) as Pipe;
+                        const pCalcOriginal = context.globalStore.getOrCreateCalculation(pipe.entity);
+                        const originalSize = pCalcOriginal.realNominalPipeDiameterMM;
+
+                        if (!originalSize) {
+                            // We need the pipe to be sized to know how much venting it needs
+                            continue;
+                        }
+
+                        const maxUnventedWCs = upperBoundTable(
+                            system.drainageProperties.maxUnventedCapacityWCs,
+                            originalSize
+                        );
+
+                        if (maxUnventedWCs === undefined || maxUnventedWCs === null) {
+                            // unlimited
+                            continue;
+                        }
+
+                        const maxUnventedUnits = unitsPerWc * maxUnventedWCs;
+
+                        console.log("For fixture " + fixture.uid + " we have " + units.drainageUnits + ' and max is ' + maxUnventedUnits);
+                        if (units.drainageUnits > maxUnventedUnits) {
+                            const fcalc = context.globalStore.getOrCreateCalculation(fixture);
+                            fcalc.warning = 'Unvented drainage flow exceeds the max of ' + maxUnventedWCs + ' WC\'s';
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Make warnings for unvented fixtures that ought to be vented.
+export function produceUnventedLengthWarningsAndGetUnventedGroup(context: CalculationEngine) {
+
+    for (const obj of context.networkObjects()) {
+        if (obj.entity.type === EntityType.FIXTURE) {
+            const fixture = obj.entity;
+            for (const outletUid of fixture.roughInsInOrder) {
+                if (isDrainage(outletUid)) {
+                    const outlet = fixture.roughIns[outletUid];
+                    const connections = context.globalStore.getConnections(outlet.uid);
+
+                    if (connections.length > 0) {
+                        // Theoretically, the vent shouldn't ever split (only combine), but we will handle it just in case.
+                        const lengthAtNode = new Map<string, number>();
+                        const system = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === outletUid);
+                        if (!system) {
+                            continue;
+                        }
+
+                        // outlets should only connect to one pipe. So for that pipe, use its size as a canary.
+                        const pipe = context.globalStore.get(connections[0]) as Pipe;
+                        const pCalcOriginal = context.globalStore.getOrCreateCalculation(pipe.entity);
+                        const originalSize = pCalcOriginal.realNominalPipeDiameterMM;
+
+                        if (!originalSize) {
+                            // We need the pipe to be sized to know how much venting it needs
+                            continue;
+                        }
+
+                        const maxUnventedLengthM = upperBoundTable(
+                            system.drainageProperties.maxUnventedLengthM,
+                            originalSize
+                        );
+
+                        if (maxUnventedLengthM === undefined || maxUnventedLengthM === null) {
+                            // it is unbounded
+                            continue;
+                        }
+
+                        let maxUnventedExceeded = false;
+                        context.flowGraph.dfsRecursive(
+                            {connectable: outlet.uid, connection: connections[0]},
+                            undefined,
+                            undefined,
+                            (edge) => {
+                                if (edge.value.type === EdgeType.PIPE) {
+                                    const pipe = context.globalStore.get(edge.value.uid) as Pipe;
+                                    if (!pipe || !isDrainage(pipe.entity.systemUid)) {
+                                        return true;
+                                    }
+
+                                    const pcalc = context.globalStore.getOrCreateCalculation(pipe.entity);
+                                    if (edge.to.connectable !== pcalc.flowFrom) {
+                                        return true;
+                                    }
+                                    // If it is already vented, we are done with the calculation.
+                                    if (pcalc.vented) {
+                                        return true;
+                                    }
+
+                                    // We already accomplished our goal.
+                                    if (maxUnventedExceeded) {
+                                        return true;
+                                    }
+
+                                    const currLength = lengthAtNode.get(edge.from.connectable) || 0;
+                                    const newLength = currLength + (pcalc.lengthM || 0);
+                                    if (newLength > maxUnventedLengthM) {
+                                        // Too big.
+                                        maxUnventedExceeded = true;
+                                        return true;
+                                    }
+                                    lengthAtNode.set(edge.to.connectable, newLength);
+                                }
+                            }
+                        );
+
+                        if (maxUnventedExceeded) {
+                            const fcalc = context.globalStore.getOrCreateCalculation(fixture);
+                            fcalc.warning = 'Max unvented length of ' + maxUnventedLengthM + " exceeded";
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+export function propagateVentedness(context: CalculationEngine, roots: Map<string, PsdCountEntry>) {
+    const seen = new Set<string>();
+    const seenEdges = new Set<string>();
+    for (const root of Array.from(roots.keys())) {
+        const connection = context.globalStore.getConnections(root);
+        context.flowGraph.dfsRecursive(
+            {connectable: root, connection: connection[0]},
+            undefined,
+            undefined,
+            (edge) => {
+                if (edge.value.type === EdgeType.PIPE) {
+                    // Only go towards the source.
+                    const pipe = context.globalStore.get(edge.value.uid) as Pipe;
+                    const pcalc = context.globalStore.getOrCreateCalculation(pipe.entity);
+                    if (edge.to.connectable !== pcalc.flowFrom) {
+                        return true;
+                    } else {
+                        pcalc.vented = true;
+                    }
+                }
+            },
+            undefined,
+            seen,
+            seenEdges,
+        );
+    }
+}
+
 // Assumes that vents are arranged in a tree like pattern.
-export function processVents(context: CalculationEngine, roots: Map<string, PsdCountEntry>, exits: FittingEntity[]) {
+export function sizeVents(context: CalculationEngine, roots: Map<string, PsdCountEntry>, exits: FittingEntity[]) {
     const seenPipes = new Set<string>();
 
     const exitSet = new Set<string>(exits.map((e) => e.uid));
 
     for (const e of exits) {
         const flowOfNode = new Map<string, PsdCountEntry>();
-        const lengthOfNode = new Map<string, number>();
         let multipleVentExits = false; // the algorithm only supports a unique vent exit.
         const listOfVents: PipeEntity[] = []; // To retroactively create warnings later.
 
@@ -232,7 +501,7 @@ export function processVentRoots(context: CalculationEngine): Map<string, PsdCou
                         if (!pipe
                             || pipe.entity.type !== EntityType.PIPE
                             || !isDrainage(pipe.entity.systemUid)
-                            || pipe.entity.network !== NetworkType.RETICULATIONS
+                            || (pipe.entity.network !== NetworkType.RETICULATIONS && pipe.entity.network !== NetworkType.RISERS)
                         ) {
                             return true;
                         }

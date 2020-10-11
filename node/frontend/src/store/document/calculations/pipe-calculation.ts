@@ -63,6 +63,7 @@ export default interface PipeCalculation extends PsdCalculation, Calculation {
 
     // An invisible, transactional value during calculations specifically for stacks.
     stackDedicatedVentSize: number | null;
+    vented: boolean | null;
 }
 
 export function makePipeCalculationFields(
@@ -327,5 +328,6 @@ export function emptyPipeCalculation(): PipeCalculation {
         gradePCT: null,
 
         stackDedicatedVentSize: null,
+        vented: null,
     };
 }
