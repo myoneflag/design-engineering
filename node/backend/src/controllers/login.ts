@@ -1,3 +1,4 @@
+
 import * as bcrypt from "bcrypt";
 import uuid from "uuid";
 import { getRepository } from 'typeorm';
@@ -6,12 +7,19 @@ import { AccessEvents, LoginEventType } from "../../../common/src/models/AccessE
 import { Session } from "../../../common/src/models/Session";
 import { AccessLevel, User } from "../../../common/src/models/User";
 import { VideoView } from "../../../common/src/models/VideoView";
-import { Document } from "../../../common/src/models/Document";
+import { Document, DocumentStatus } from "../../../common/src/models/Document";
 import { FeedbackMessage } from "../../../common/src/models/FeedbackMessage";
 import { Organization } from './../../../common/src/models/Organization';
 import { Onboarding } from '../../../common/src/models/Onboarding';
+import { ShareDocument } from '../../../common/src/models/ShareDocument';
+import { Operation } from '../../../common/src/models/Operation';
 import { ApiHandleError } from "../helpers/apiWrapper";
 import { AuthRequired } from "../helpers/withAuth";
+import random from '../helpers/random';
+import { cloneSimple } from '../../../common/src/lib/utils';
+import { DrawingState, exampleDrawing } from '../../../common/src/api/document/drawing';
+import { CURRENT_VERSION } from '../../../common/src/api/config';
+import { OPERATION_NAMES } from '../../../common/src/api/document/operation-transforms';
 
 export async function registerUser(data: {
     username: string
@@ -224,9 +232,50 @@ export class LoginController {
         event.success = true;
         await event.save();
 
+        // Create example document for new user
+        const sd = ShareDocument.create();
+        sd.token =  random(10);
+        await sd.save();
+
+        const doc = Document.create();
+        doc.organization = myUser.organization;
+        doc.createdBy = myUser;
+        doc.createdOn = new Date();
+        doc.metadata = {
+            "title": "Example Project",
+            "projectNumber": "0001",
+            "projectStage": "Design",
+            "designer": "H2X",
+            "reviewed": "JM",
+            "approved": "AH",
+            "revision": 1,
+            "client": "King Development",
+            "description": "This is an example project to showcase the benefits of H2X."
+        };
+        doc.version = CURRENT_VERSION;
+        doc.state = DocumentStatus.ACTIVE;
+        doc.shareDocument = sd;
+        await doc.save();
+
+        const now = new Date();
+        const op1 = Operation.create();
+        op1.document = Promise.resolve(doc);
+        op1.dateTime = now;
+        op1.blame = null;
+        op1.operation = exampleDrawing;
+        op1.orderIndex = 0;
+        await op1.save();
+        const op2 = Operation.create();
+        op2.document = Promise.resolve(doc);
+        op2.dateTime = now;
+        op2.blame = null;
+        op2.operation = {"type": OPERATION_NAMES.COMMITTED_OPERATION, "id": 1};
+        op2.orderIndex = 0;
+        await op2.save();
+
         res.status(200).send({
             success: true,
-            data: null,
+            data: doc,
         });
     }
 

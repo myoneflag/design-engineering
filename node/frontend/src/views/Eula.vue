@@ -208,7 +208,7 @@ export default class Home extends Vue {
         const res = await acceptEula();
         if (res.success) {
             await this.$store.dispatch("profile/setProfile", null);
-            await this.$router.push("/");
+            window.location.replace("/document/" + (res.data! as Document).id);
         } else {
             this.$bvToast.toast(res.message, {
                 variant: "danger",
