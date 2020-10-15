@@ -13,6 +13,9 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
 
     const systemUid = determineConnectableSystemUid(objectStore, value);
     const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === systemUid);
+    const selectedMaterialManufacturer = doc.drawing.metadata.catalog.fixtures.find(obj => obj.uid === value.uid);
+    const manufacturer = selectedMaterialManufacturer?.manufacturer || 'generic';
+    const selectedOption = selectedMaterialManufacturer?.selected || 'default';
 
     result.systemUidOption = system ? system.uid : null;
 
@@ -85,7 +88,7 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
                     }
 
                     if (systemChk) {
-                        designFlowRateLS += parseCatalogNumberOrMin(catalog.fixtures[node.fixtures[i]].qLS[systemChk])!;
+                        designFlowRateLS += parseCatalogNumberOrMin(catalog.fixtures[node.fixtures[i]].qLS[manufacturer][selectedOption][systemChk])!;
                     }
                 }
 

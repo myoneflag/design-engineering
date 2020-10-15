@@ -57,34 +57,54 @@
                                 <b-table
                                     v-if="val.table.link"
                                     striped
+                                    responsive
+                                    selectable
                                     :items="getTable(prop).items"
                                     :fields="getTable(prop).fields"
-                                    style="max-width: 100%; overflow-x: auto; margin-top:25px"
+                                    style="margin-top:25px"
                                     select-mode="single"
-                                    :selectable="true"
                                     @row-selected="(d) => onRowClick(prop, d)"
-                                    responsive="true"
                                 >
+                                    <template v-slot:head()="data">
+                                        <span class="text-nowrap">{{ data.label }}</span>
+                                    </template>
                                     <template v-slot:cell(manufacturer)="data">
-                                        <b-button 
-                                            :variant="isSelectedManufacturer(prop, data.item._key, manufacturer.uid) && 'primary' || 'outline-primary'" 
-                                            size="sm" 
-                                            :class="'manufacturer-item-btn'"
-                                            v-for="manufacturer in data.item.Manufacturer" :key="manufacturer.name"
-                                            @click="(e) => handleManufacturerClick(prop, data.item._key, manufacturer.uid)"
-                                        >
-                                            {{ manufacturer.name }}
-                                        </b-button> 
+                                        <template v-for="manufacturer in data.item.Manufacturer">
+                                            <b-dropdown 
+                                                v-if="!!(manufacturer.option)"
+                                                :key="manufacturer.name"
+                                                right
+                                                size="sm"
+                                                :variant="isSelectedManufacturer(prop, data.item._key, manufacturer.uid) && 'primary' || 'outline-primary'" 
+                                                :text="manufacturer.name"
+                                            >
+                                                <b-dropdown-item-button v-for="option in manufacturer.option" :key="option"
+                                                    :value="option"
+                                                    :active="isSelectedOption(data.item._key, manufacturer.uid, option)"
+                                                    @click="(e) => handleManufacturerClick(prop, data.item._key, manufacturer.uid, e.target.value)"
+                                                >{{ manufacturer.name }} {{ option }}</b-dropdown-item-button>
+                                            </b-dropdown>
+                                            <b-button
+                                                v-else
+                                                :key="manufacturer.name"
+                                                :variant="isSelectedManufacturer(prop, data.item._key, manufacturer.uid) && 'primary' || 'outline-primary'" 
+                                                size="sm" 
+                                                :class="'manufacturer-item-btn'"
+                                                @click="(e) => handleManufacturerClick(prop, data.item._key, manufacturer.uid)"
+                                            >
+                                                {{ manufacturer.name }}
+                                            </b-button>
+                                        </template>
                                     </template>
                                 </b-table>
                                 <b-table
                                     small
                                     v-else
                                     striped
+                                    responsive
                                     :items="getTable(prop).items"
                                     :fields="getTable(prop).fields"
-                                    style="max-width: 100%; overflow-x: auto; margin-top:25px"
-                                    responsive="true"
+                                    style="margin-top:25px"
                                 ></b-table>
                             </b-collapse>
                         </b-col>
@@ -562,16 +582,20 @@ export default class CatalogView extends Vue {
         return this.selMtlMftr(catalog).findIndex((obj: SelectedMaterialManufacturer) => obj.uid === key && obj.manufacturer === manufacturer) >= 0;
     }
 
-    handleManufacturerClick(catalog: string, key: string, manufacturer: string) {
+    handleManufacturerClick(catalog: string, key: string, manufacturer: string, selectedOption: string | null = null) {
         const index = this.selMtlMftr(catalog).findIndex((obj: SelectedMaterialManufacturer) => obj.uid === key);
         
         if (!this.selMtlMftr(catalog).length || index < 0) {
-            this.document.drawing.metadata.catalog[catalog].push({uid: key, manufacturer});
+            this.document.drawing.metadata.catalog[catalog].push({uid: key, manufacturer, selected: selectedOption});
         } else {
-            this.document.drawing.metadata.catalog[catalog].splice(index, 1, {uid: key, manufacturer});
+            this.document.drawing.metadata.catalog[catalog].splice(index, 1, {uid: key, manufacturer, selected: selectedOption});
         }
 
         this.save();
+    }
+
+    isSelectedOption(fixtureUid: string, manufacturer: string, option: string) {
+        return this.document.drawing.metadata.catalog.fixtures.find(obj => obj.uid === fixtureUid && obj.manufacturer === manufacturer)?.selected === option;
     }
 
     save() {

@@ -30,6 +30,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
             table: {
                 primaryName: null,
                 columns: [
+                    ["manufacturer", "Manufacturer"],
                     ["name", "Name"],
                     ["abbreviation", "Abbreviation"],
                     ["maxInletPressureKPA", "Max. Inlet Pressure", Units.KiloPascals],
@@ -37,12 +38,13 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                     ["outletAboveFloorM", "Outlet Height", Units.Meters]
                 ],
                 link: {
-                    name: { order: 1, name: "Fixture Name" },
-                    abbreviation: { order: 2, name: "Abbreviation" },
+                    manufacturer: { order: 1, name: "Manufacturer"},
+                    name: { order: 2, name: "Fixture Name" },
+                    abbreviation: { order: 3, name: "Abbreviation" },
                     uid: null,
-                    fixtureUnits: { order: 3, name: "Fixture Units" },
+                    fixtureUnits: { order: 4, name: "Fixture Units" },
                     loadingUnits: {
-                        order: 4,
+                        order: 5,
                         name: "Loading Units By PSD Method",
                         table: {
                             primaryName: "PSD Method",
@@ -54,7 +56,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                         }
                     },
                     qLS: {
-                        order: 5,
+                        order: 6,
                         name: "Full Flow Rate",
                         table: {
                             primaryName: " ",
@@ -63,7 +65,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                     },
                     roughIns: null,
                     continuousFlowLS: {
-                        order: 6,
+                        order: 7,
                         name: "Continuous Flow Rate",
                         table: {
                             primaryName: " ",
@@ -71,11 +73,11 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                         }
                     },
 
-                    maxInletPressureKPA: { order: 7, name: "Max. Inlet Pressure", units: Units.KiloPascals },
-                    minInletPressureKPA: { order: 8, name: "Min. Inlet Pressure", units: Units.KiloPascals },
-                    probabilityOfUsagePCT: { order: 9, name: "Probability of Usage (%)" },
-                    outletAboveFloorM: { order: 10, name: "Outlet Above Floor", units: Units.Meters },
-                    warmTempC: { order: 11, name: "Warm Temperature", units: Units.Celsius },
+                    maxInletPressureKPA: { order: 8, name: "Max. Inlet Pressure", units: Units.KiloPascals },
+                    minInletPressureKPA: { order: 9, name: "Min. Inlet Pressure", units: Units.KiloPascals },
+                    probabilityOfUsagePCT: { order: 10, name: "Probability of Usage (%)" },
+                    outletAboveFloorM: { order: 11, name: "Outlet Above Floor", units: Units.Meters },
+                    warmTempC: { order: 12, name: "Warm Temperature", units: Units.Celsius },
                     priceTableName: null,
                 }
             }

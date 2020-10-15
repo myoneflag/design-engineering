@@ -180,7 +180,7 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity):
 }
 
 export function fillFixtureFields(
-    drawing: DrawingState | undefined,
+    drawing: DrawingState,
     defaultCatalog: Catalog,
     value: FixtureEntity
 ): FixtureEntity {
@@ -222,8 +222,12 @@ export function fillFixtureFields(
             }
         }
 
+        const selectedMaterialManufacturer = drawing.metadata.catalog.fixtures.find(obj => obj.uid === result.name);
+        const manufacturer = selectedMaterialManufacturer?.manufacturer || 'generic';
+        const selectedOption = selectedMaterialManufacturer?.selected || 'default';
+
         if (target.designFlowRateLS === null) {
-            target.designFlowRateLS = parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].qLS[systemUid]);
+            target.designFlowRateLS = parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].qLS[manufacturer][selectedOption][systemUid]);
         }
 
         if (continuousFlowLS) {

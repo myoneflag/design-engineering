@@ -4,7 +4,7 @@ import LoadingUnitHotColdTable from "./psd-standard/loading-unit-hot-cold-table"
 import PsdEquation from "./psd-standard/psdEquation";
 import LoadingUnitMaxTable from "./psd-standard/loading-unit-max-table";
 import { SupportedPsdStandards } from "../config";
-import {PipesTable} from "./price-table";
+import {FixturesTable, PipesTable} from "./price-table";
 
 export interface DwellingUnitHotColdTable {
     type: DwellingStandardType.DWELLING_HOT_COLD_LOOKUP_TABLE;
@@ -109,7 +109,7 @@ export interface FixtureSpec {
         [SupportedPsdStandards.upc2018Flushometer]: LoadingUnit,
     };
     qLS: FlowRateSpec;
-    continuousFlowLS?: FlowRateSpec;
+    continuousFlowLS?: ContinuousFlowRateSpec;
     roughIns: string[];
 
     maxInletPressureKPA: string | null;
@@ -119,14 +119,24 @@ export interface FixtureSpec {
     outletAboveFloorM: string | null;
 
     warmTempC: string | null;
+
+    manufacturer: FixtureManufacturer[]
 }
+
+export type FixtureManufacturer = Manufacturer<keyof FixturesTable>;
 
 export interface LoadingUnit {
     [key: string]: string | null;
 }
 
-export interface FlowRateSpec {
+export interface ContinuousFlowRateSpec {
     [key: string]: string | null;
+}
+
+export interface FlowRateSpec {
+    [key: string]: {
+        [key: string]: { [key: string]: string }
+    };
 }
 
 export interface ValveSpec {
@@ -158,6 +168,7 @@ export interface Manufacturer<ManufacturerEntryNames> {
     abbreviation: string;
     priceTableName: ManufacturerEntryNames;
     uid: string;
+    option?: string[]
 }
 
 export interface PipeSpec {
