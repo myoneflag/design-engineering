@@ -1,18 +1,18 @@
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
-import { EntityType } from "../../../../../common/src/api/document/entities/types";
-import { getConnectedFlowComponent } from "../../../../src/htmlcanvas/lib/black-magic/utils";
+import {EntityType} from "../../../../../common/src/api/document/entities/types";
+import {getConnectedFlowComponent} from "../../../../src/htmlcanvas/lib/black-magic/utils";
 import UnionFind from "../../../../src/calculations/union-find";
 import {
     ConnectableEntityConcrete,
     DrawableEntityConcrete,
     isConnectableEntity
 } from "../../../../../common/src/api/document/entities/concrete-entity";
-import { fillFixtureFields } from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
-import { getFloorHeight, maxHeightOfConnection, minHeightOfConnection } from "../../../../src/htmlcanvas/lib/utils";
+import {fillFixtureFields} from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
+import {getFloorHeight, maxHeightOfConnection, minHeightOfConnection} from "../../../../src/htmlcanvas/lib/utils";
 import Flatten from "@flatten-js/core";
-import { InteractionType } from "../../../../src/htmlcanvas/lib/interaction";
-import { addValveAndSplitPipe } from "../../../../src/htmlcanvas/lib/black-magic/split-pipe";
+import {InteractionType} from "../../../../src/htmlcanvas/lib/interaction";
+import {addValveAndSplitPipe} from "../../../../src/htmlcanvas/lib/black-magic/split-pipe";
 import Pipe from "../../../../src/htmlcanvas/objects/pipe";
 import PipeEntity from "../../../../../common/src/api/document/entities/pipe-entity";
 import uuid from "uuid";
@@ -22,17 +22,16 @@ import {
     FlowConfiguration
 } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import assert from "assert";
-import { MainEventBus } from "../../../../src/store/main-event-bus";
-import { EntityParam } from "../../../../src/store/document/types";
-import { rebaseAll } from "../../../../src/htmlcanvas/lib/black-magic/rebase-all";
+import {MainEventBus} from "../../../../src/store/main-event-bus";
+import {EntityParam} from "../../../../src/store/document/types";
 import connectBigValveToSource from "./connect-big-valve-to-source";
 import BigValve from "../../objects/big-valve/bigValve";
-import RiserEntity, { fillRiserDefaults } from "../../../../../common/src/api/document/entities/riser-entity";
-import { GroupDistCache } from "./group-dist-cache";
-import { assertUnreachable, StandardFlowSystemUids, StandardMaterialUids } from "../../../../../common/src/api/config";
-import { Coord, NetworkType } from "../../../../../common/src/api/document/drawing";
-import { fillDirectedValveFields } from "../../../store/document/entities/fillDirectedValveFields";
-import { fillDefaultLoadNodeFields } from "../../../store/document/entities/fillDefaultLoadNodeFields";
+import RiserEntity, {fillRiserDefaults} from "../../../../../common/src/api/document/entities/riser-entity";
+import {GroupDistCache} from "./group-dist-cache";
+import {assertUnreachable, isDrainage, StandardFlowSystemUids} from "../../../../../common/src/api/config";
+import {Coord, NetworkType} from "../../../../../common/src/api/document/drawing";
+import {fillDirectedValveFields} from "../../../store/document/entities/fillDirectedValveFields";
+import {fillDefaultLoadNodeFields} from "../../../store/document/entities/fillDefaultLoadNodeFields";
 
 const CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM = 500;
 const FIXTURE_WALL_DIST_MM = 200;
@@ -1006,10 +1005,16 @@ export class AutoConnector {
         height: number,
         systemUid: string
     ) {
+        let network = NetworkType.CONNECTIONS;
+        if (isDrainage(systemUid)) {
+            network = NetworkType.RETICULATIONS;
+        }
+
+
         const p: PipeEntity = {
             color: null,
             diameterMM: null,
-            network: NetworkType.CONNECTIONS,
+            network,
             endpointUid: [a.uid, b.uid],
             heightAboveFloorM: height,
             lengthM: null,
