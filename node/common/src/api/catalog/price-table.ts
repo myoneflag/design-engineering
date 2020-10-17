@@ -44,6 +44,7 @@ export interface PlantTable {
     'Storage Tank': number;
     'Pump': number;
     'Custom': number;
+    'Drainage Pit': number;
 }
 
 export type PipesTable = {
@@ -91,9 +92,12 @@ export interface EquipmentTable {
     'RPZD': {[key: number]: number};
     'Tempering Valve': number;
     'Balancing Valve': {[key: number]: number};
+    'Reflux Valve': {[key: number]: number};
     'Gas Meter': number;
     'Gas Regulator': number;
     'Gas Filter': number;
+    'Inspection Opening': number;
+    'Floor Waste': number;
 }
 
 export function getEquipmentFullName(name: keyof EquipmentTable): string {
@@ -114,6 +118,12 @@ export function getEquipmentFullName(name: keyof EquipmentTable): string {
             return "Gas Meter";
         case "Gas Regulator":
             return "Gas Regulator";
+        case "Floor Waste":
+            return 'Typical floor waste including grating and trap';
+        case "Reflux Valve":
+            return 'Reflux Valves';
+        case "Inspection Opening":
+            return 'Inspection Openings';
     }
     assertUnreachable(name);
 }

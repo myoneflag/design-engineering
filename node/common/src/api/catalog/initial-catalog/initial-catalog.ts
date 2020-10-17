@@ -2592,7 +2592,7 @@ export const initialCatalog: Catalog = {
             }
         },
         uPVCSewer: {
-            name: "Unplasticised Polyvinyl Chloride (Sewer)",
+            name: "Unplasticised PVC (Sewer)",
             abbreviation: "uPCV",
             manufacturer: [
                 {

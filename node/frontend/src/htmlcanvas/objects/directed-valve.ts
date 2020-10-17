@@ -1139,13 +1139,33 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                     }],
                 };
             case ValveType.FLOOR_WASTE:
-            case ValveType.INSPECTION_OPENING:
-            case ValveType.REFLUX_VALVE:
-                // TODO: costs
                 return {
-                    cost: 0,
-                    breakdown: [],
+                    cost: context.priceTable.Equipment['Floor Waste'],
+                    breakdown: [{
+                        qty: 1,
+                        path: `Equipment.Floor Waste`,
+                    }]
                 };
+            case ValveType.INSPECTION_OPENING:
+                return {
+                    cost: context.priceTable.Equipment['Inspection Opening'],
+                    breakdown: [{
+                        qty: 1,
+                        path: `Equipment.Inspection Opening`,
+                    }]
+                };
+            case ValveType.REFLUX_VALVE:
+                size = lowerBoundNumberTable(context.priceTable.Equipment["Reflux Valve"], size);
+                if (size) {
+                    return {
+                        cost: context.priceTable.Equipment['Reflux Valve'][size],
+                        breakdown: [{
+                            qty: 1,
+                            path: `Equipment.Inspection Opening`,
+                        }]
+                    };
+                }
+                break;
             default:
                 assertUnreachable(this.entity.valve);
         }
