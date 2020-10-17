@@ -68,6 +68,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             systemUid: entity.systemUid,
             category: FieldCategory.Size,
             hideUnits: true,
+            layouts: ['drainage', 'pressure'],
             significantDigits: 0
         }
     );
@@ -92,7 +93,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             units: Units.None,
             category: FieldCategory.LoadingUnits,
             systemUid: entity.systemUid,
-            layouts: ['drainage'],
+            layouts: layoutOptionDrainage,
             format: (v) => "" + Number(v?.toFixed(5))
         });
     }
