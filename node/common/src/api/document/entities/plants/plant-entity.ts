@@ -1,10 +1,10 @@
-import { FieldType, PropertyField } from "../property-field";
-import { EntityType } from "../types";
-import { CenteredEntity, COLORS, Coord, DrawingState, FlowSystemParameters } from "../../drawing";
-import { cloneSimple } from "../../../../lib/utils";
-import { PlantConcrete, PlantType, PressureMethod } from "./plant-types";
-import { assertUnreachable } from "../../../config";
-import { Units } from "../../../../lib/measurements";
+import {FieldType, PropertyField} from "../property-field";
+import {EntityType} from "../types";
+import {CenteredEntity, COLORS, Coord, DrawingState, FlowSystemParameters} from "../../drawing";
+import {cloneSimple} from "../../../../lib/utils";
+import {PlantConcrete, PlantType, PressureMethod} from "./plant-types";
+import {assertUnreachable, isDrainage} from "../../../config";
+import {Units} from "../../../../lib/measurements";
 
 export default interface PlantEntity extends CenteredEntity {
     type: EntityType.PLANT;
@@ -30,7 +30,7 @@ export default interface PlantEntity extends CenteredEntity {
 }
 
 export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemParameters[]): PropertyField[] {
-    const outSystem = systems.find((u) => u.uid === entity.outletSystemUid);
+    const iAmDrainage = isDrainage(entity.outletSystemUid) || isDrainage(entity.inletSystemUid);
 
     const res: PropertyField[] = [
         {
@@ -45,6 +45,7 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                     {name: 'Tank', key: PlantType.TANK},
                     {name: 'Pump', key: PlantType.PUMP},
                     {name: 'Custom', key: PlantType.CUSTOM},
+                    {name: 'Drainage Pit', key: PlantType.DRAINAGE_PIT},
                 ],
             },
             readonly: true,
@@ -181,7 +182,6 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
             });
             break;
         case PlantType.TANK:
-        case PlantType.DRAINAGE_PIT:
         case PlantType.PUMP:
             break;
         case PlantType.CUSTOM:
@@ -201,68 +201,73 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                     multiFieldId: "pressureMethod"
                 },
             );
+        case PlantType.DRAINAGE_PIT:
             break;
         default:
             assertUnreachable(entity.plant);
     }
 
-    if (entity.plant.type !== PlantType.RETURN_SYSTEM) {
-        switch (entity.plant.pressureLoss.pressureMethod) {
-            case PressureMethod.PUMP_DUTY:
-                res.push({
-                    property: "plant.pressureLoss.pumpPressureKPA",
-                    title: "Pump Pressure",
-                    hasDefault: true,
-                    isCalculated: false,
-                    type: FieldType.Number,
-                    params: { min: 0, max: null },
-                    multiFieldId: "pumpPressureKPA",
-                    units: Units.KiloPascals,
-                });
-                break;
-            case PressureMethod.FIXED_PRESSURE_LOSS:
-                res.push({
-                    property: "plant.pressureLoss.pressureLossKPA",
-                    title: "Pressure Loss",
-                    hasDefault: true,
-                    isCalculated: false,
-                    type: FieldType.Number,
-                    params: { min: 0, max: null },
-                    multiFieldId: "pressureLossKPA",
-                    units: Units.KiloPascals,
-                });
-                break;
-            case PressureMethod.STATIC_PRESSURE:
-                res.push({
-                    property: "plant.pressureLoss.staticPressureKPA",
-                    title: "Static Pressure",
-                    hasDefault: true,
-                    isCalculated: false,
-                    type: FieldType.Number,
-                    params: { min: 0, max: null },
-                    multiFieldId: "staticPressureKPA",
-                    units: Units.KiloPascals,
-                });
-                break;
-            default:
-                assertUnreachable(entity.plant.pressureLoss);
+    if (!iAmDrainage) {
+        if (entity.plant.type !== PlantType.RETURN_SYSTEM) {
+            switch (entity.plant.pressureLoss.pressureMethod) {
+                case PressureMethod.PUMP_DUTY:
+                    res.push({
+                        property: "plant.pressureLoss.pumpPressureKPA",
+                        title: "Pump Pressure",
+                        hasDefault: true,
+                        isCalculated: false,
+                        type: FieldType.Number,
+                        params: {min: 0, max: null},
+                        multiFieldId: "pumpPressureKPA",
+                        units: Units.KiloPascals,
+                    });
+                    break;
+                case PressureMethod.FIXED_PRESSURE_LOSS:
+                    res.push({
+                        property: "plant.pressureLoss.pressureLossKPA",
+                        title: "Pressure Loss",
+                        hasDefault: true,
+                        isCalculated: false,
+                        type: FieldType.Number,
+                        params: {min: 0, max: null},
+                        multiFieldId: "pressureLossKPA",
+                        units: Units.KiloPascals,
+                    });
+                    break;
+                case PressureMethod.STATIC_PRESSURE:
+                    res.push({
+                        property: "plant.pressureLoss.staticPressureKPA",
+                        title: "Static Pressure",
+                        hasDefault: true,
+                        isCalculated: false,
+                        type: FieldType.Number,
+                        params: {min: 0, max: null},
+                        multiFieldId: "staticPressureKPA",
+                        units: Units.KiloPascals,
+                    });
+                    break;
+                default:
+                    assertUnreachable(entity.plant.pressureLoss);
+            }
         }
     }
 
-    res.push(
-        {
-            property: "outletTemperatureC",
-            title: "Outlet Temperature",
-            hasDefault: true,
-            highlightOnOverride: COLORS.YELLOW,
-            isCalculated: false,
-            type: FieldType.Number,
-            params: { min: null, max: null },
-            multiFieldId: "outletTemperatureC",
-            units: Units.Celsius,
-        },
+    if (!iAmDrainage) {
+        res.push(
+            {
+                property: "outletTemperatureC",
+                title: "Outlet Temperature",
+                hasDefault: true,
+                highlightOnOverride: COLORS.YELLOW,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: null, max: null },
+                multiFieldId: "outletTemperatureC",
+                units: Units.Celsius,
+            },
 
-    );
+        );
+    }
 
     res.push(
         {

@@ -55,7 +55,10 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
         })
         .filter((d) => Number(d.key) >= flowSystemSettings.networks[result.network].minimumPipeSize);
         
-    return [
+    const fields: PropertyField[] = [];
+    const iAmDrainage = isDrainage(entity.systemUid);
+
+    fields.push(
         {
             property: "systemUid",
             title: "Flow System",
@@ -113,19 +116,25 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
             params: null,
             multiFieldId: "color"
         },
+    );
 
-        {
-            property: "maximumVelocityMS",
-            title: "Maximum Velocity",
-            hasDefault: true,
-            highlightOnOverride: COLORS.YELLOW,
-            isCalculated: false,
-            type: FieldType.Number,
-            params: { min: 0, max: null },
-            multiFieldId: "maximumVelocityMS",
-            units: Units.MetersPerSecond
-        },
+    if (!iAmDrainage) {
+        fields.push(
+            {
+                property: "maximumVelocityMS",
+                title: "Maximum Velocity",
+                hasDefault: true,
+                highlightOnOverride: COLORS.YELLOW,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: {min: 0, max: null},
+                multiFieldId: "maximumVelocityMS",
+                units: Units.MetersPerSecond
+            },
+        );
+    }
 
+    fields.push(
         {
             property: "diameterMM",
             title: "Diameter",
@@ -148,8 +157,9 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
             params: { min: null, max: null },
             multiFieldId: "heightAboveFloorM",
             units: Units.Meters
-        }
-    ];
+        },
+    );
+    return fields;
 }
 
 export function fillPipeDefaultFields(drawing: DrawingState, computedLengthM: number, value: PipeEntity) {
