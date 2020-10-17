@@ -42,6 +42,7 @@ import { EndErrorLine } from "tslint/lib/verify/lines";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import {lowerBoundNumberTable} from "../utils";
 import {decomposeMatrix} from "../utils";
+import {DEFAULT_FONT_NAME} from "../../config";
 
 
 @CalculatedObject
@@ -186,28 +187,47 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     }
 
     drawFloorWaste(context: DrawingContext) {
-        const ctx = context.ctx;
-        ctx.beginPath();
-        ctx.arc(0, 0, VALVE_SIZE_MM, 0, Math.PI * 2);
+        this.withWorldAngle(context, {x: 0, y: 0}, () => {
+            const ctx = context.ctx;
+            ctx.fillStyle='#ffffff';
+            ctx.beginPath();
+            ctx.arc(0, 0, VALVE_SIZE_MM, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
 
-        const lineX = VALVE_SIZE_MM / 2;
-        const lineY = ((VALVE_SIZE_MM ** 2) - (lineX ** 2)) ** 0.5;
+            ctx.beginPath();
+            const lineX = VALVE_SIZE_MM / 2;
+            const lineY = ((VALVE_SIZE_MM ** 2) - (lineX ** 2)) ** 0.5;
 
-        ctx.moveTo(0, VALVE_SIZE_MM);
-        ctx.lineTo(0, -VALVE_SIZE_MM);
-        ctx.moveTo(lineX, lineY);
-        ctx.lineTo(lineX, -lineY);
-        ctx.moveTo(-lineX, lineY);
-        ctx.lineTo(-lineX, -lineY);
+            ctx.moveTo(0, VALVE_SIZE_MM);
+            ctx.lineTo(0, -VALVE_SIZE_MM);
+            ctx.moveTo(lineX, lineY);
+            ctx.lineTo(lineX, -lineY);
+            ctx.moveTo(-lineX, lineY);
+            ctx.lineTo(-lineX, -lineY);
 
-        ctx.stroke();
+            ctx.stroke();
+
+
+            ctx.fillStyle = '#000000';
+            ctx.font = '65px ' + DEFAULT_FONT_NAME;
+            ctx.fillText("FW", -50, 25);
+        });
     }
 
     drawInspectionOpening(context: DrawingContext) {
-        const ctx = context.ctx;
-        ctx.beginPath();
-        ctx.arc(0, 0, VALVE_SIZE_MM, 0, Math.PI * 2);
-        ctx.stroke();
+        this.withWorldAngle(context, {x: 0, y: 0}, () => {
+            const ctx = context.ctx;
+            ctx.fillStyle='#ffffff';
+            ctx.beginPath();
+            ctx.arc(0, 0, VALVE_SIZE_MM, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#000000';
+            ctx.font = '65px ' + DEFAULT_FONT_NAME;
+            ctx.fillText("I.O.", -50, 25);
+        });
     }
 
     drawRefluxValve(context: DrawingContext) {
