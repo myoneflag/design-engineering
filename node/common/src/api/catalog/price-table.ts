@@ -23,14 +23,21 @@ export interface NodeTable {
     'Continuous Flow Node': number;
 }
 
-export interface ValveByPipe {
-    'PEX': PipesBySize;
-    'Copper': PipesBySize;
-    'Stainless Steel': PipesBySize;
-    'HDPE': PipesBySize;
-    'GMS': PipesBySize;
-    'Cast Iron': PipesBySize;
-}
+export type PipeMaterials =
+    | 'PEX'
+    | 'Copper'
+    | 'Stainless Steel'
+    | 'HDPE'
+    | 'GMS'
+    | 'Cast Iron'
+    | 'Stainless Steel (Sewer)'
+    | 'PVC (Sewer)'
+    | 'HDPE (Sewer)'
+    | 'Cast Iron (Sewer)';
+
+export type ValveByPipe = {
+    [key in PipeMaterials]: PipesBySize;
+};
 
 export interface PlantTable {
     'Hot Water Plant': number;
@@ -39,14 +46,9 @@ export interface PlantTable {
     'Custom': number;
 }
 
-export interface PipesTable {
-    'PEX': PipesBySize;
-    'Copper': PipesBySize;
-    'Stainless Steel': PipesBySize;
-    'HDPE': PipesBySize;
-    'GMS': PipesBySize;
-    'Cast Iron': PipesBySize;
-}
+export type PipesTable = {
+    [key in PipeMaterials]: PipesBySize;
+};
 
 export interface FixturesTable {
     'Ablution Trough': number;
