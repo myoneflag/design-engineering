@@ -224,6 +224,8 @@ export interface StackPipeSizing {
 }
 
 export interface DrainageProperties {
+    ventColor: Color;
+
     stackSizeDiminish: boolean;
     stackDedicatedVent: boolean;
     maxUnventedLengthM: {[key: number]: number | undefined};
@@ -295,6 +297,7 @@ export interface SelectedMaterialManufacturer {
 }
 
 export const initialDrainageProperties: DrainageProperties = {
+    ventColor: { hex: '#ff7755' },
     availablePipeSizesMM: [40, 50, 65, 80, 100, 125, 150, 225, 300, 375],
     horizontalPipeSizing: [
         {minUnits: 0, maxUnits: 165, sizeMM: 100, gradePCT: 1.65},

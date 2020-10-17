@@ -174,7 +174,7 @@ export function fillPipeDefaultFields(drawing: DrawingState, computedLengthM: nu
             result.color = system.color;
             if (isDrainage(system.uid)) {
                 if (value.network === NetworkType.CONNECTIONS) {
-                    result.color = { hex: '#ff7755' };
+                    result.color = system.drainageProperties.ventColor;
                 }
             }
         }

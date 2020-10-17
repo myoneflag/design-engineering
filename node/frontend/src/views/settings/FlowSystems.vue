@@ -87,6 +87,12 @@ export default class FlowSystems extends Vue {
             ["color", "Colour", "color"],
         );
 
+        if (selectedIsDrainage) {
+            fields.push(
+                ["drainageProperties.ventColor", "Vent colour", "color"],
+            )
+        }
+
         if (!selectedIsGas && !selectedIsDrainage) {
             fields.push(
                 ["hasReturnSystem", "Has Return System", "yesno"],

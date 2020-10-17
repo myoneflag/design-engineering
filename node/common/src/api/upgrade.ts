@@ -314,14 +314,5 @@ export function upgrade18to19(original: DrawingState) {
     // Then, we have to add fixtureUnits to load nodes.
     // Add variant field
 
-    /*
-    instead of fixtureUnits, use:
-
-    asnzFixtureUnits: string | null;
-    enDischargeUnits: string | null;
-    upcFixtureUnits: string | null;
-
-    in fixtures, and load nodes
-     */
-
     // Add drainage rough in to fixtures.
+    // Vent colour setting to flow systems
