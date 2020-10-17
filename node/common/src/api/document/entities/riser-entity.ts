@@ -2,9 +2,9 @@ import { FieldType, PropertyField } from "./property-field";
 import { EntityType } from "./types";
 import { Color, COLORS, ConnectableEntity, Coord, DrawingState, NetworkType, SelectedMaterialManufacturer } from "../drawing";
 import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../lib/utils";
-import { LEVEL_HEIGHT_DIFF_M } from "../../config";
+import {isDrainage, LEVEL_HEIGHT_DIFF_M} from "../../config";
 import { Catalog } from "../../catalog/types";
-import { fillPipeDefaultFields } from "./pipe-entity";
+import {fillPipeDefaultFields, getDrainageMaterials} from "./pipe-entity";
 import { convertPipeDiameterFromMetric, Units } from "../../../lib/measurements";
 
 export default interface RiserEntity extends ConnectableEntity {
@@ -42,6 +42,7 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
         };
         return c;
     });
+    const iAmDrainage = isDrainage(entity.systemUid);
     return [
         {
             property: "systemUid",
@@ -108,7 +109,7 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
             highlightOnOverride: COLORS.YELLOW,
             isCalculated: false,
             type: FieldType.Choice,
-            params: { choices: materials },
+            params: { choices: iAmDrainage ? getDrainageMaterials(materials) : materials },
             multiFieldId: "material"
         },
 
