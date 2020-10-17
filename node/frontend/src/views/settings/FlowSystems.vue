@@ -46,17 +46,18 @@ import uuid from "uuid";
 import FlowSystemPicker from "../../../src/components/editor/FlowSystemPicker.vue";
 import * as _ from "lodash";
 import {initialDrainageProperties, initialDrawing, NetworkType} from "../../../../common/src/api/document/drawing";
-import { cloneSimple } from "../../../../common/src/lib/utils";
+import {Choice, cloneSimple} from "../../../../common/src/lib/utils";
 import {
     getInsulationMaterialChoicesWithThermalConductivity,
     INSULATION_JACKET_CHOICES,
     INSULATION_MATERIAL_CHOICES, InsulationJackets,
     InsulationMaterials,
-    INSULATION_THICKNESS_MMKEMBLA, StandardFlowSystemUids, isGas, isDrainage
+    INSULATION_THICKNESS_MMKEMBLA, StandardFlowSystemUids, isGas, isDrainage, assertUnreachable
 } from "../../../../common/src/api/config";
 import { Units } from "../../../../common/src/lib/measurements";
 import {Catalog} from "../../../../common/src/api/catalog/types";
 import { setPropertyByString } from "../../lib/utils";
+import {getDrainageMaterials} from "../../../../common/src/api/document/entities/pipe-entity";
 
 @Component({
     components: {SettingsFieldBuilder, FlowSystemPicker },
@@ -132,14 +133,36 @@ export default class FlowSystems extends Vue {
         }
 
         if (selectedIsDrainage) {
+            for (const netKey of Object.keys(this.selectedSystem.networks) as NetworkType[]) {
+                let drainageTitle = '';
+                switch (netKey) {
+                    case NetworkType.RISERS:
+                        drainageTitle = 'Stacks';
+                        break;
+                    case NetworkType.RETICULATIONS:
+                        drainageTitle = 'Pipes';
+                        break;
+                    case NetworkType.CONNECTIONS:
+                        drainageTitle = 'Vents';
+                        break;
+                    default:
+                        assertUnreachable(netKey);
+                }
+
+                fields.push(
+                    [netKey, drainageTitle, "title4"],
+                    [
+                        "networks." + netKey + ".material",
+                        "Material",
+                        "choice",
+                        this.drainageMaterials,
+                    ],
+                );
+            }
+
             fields.push(
-                [
-                    "networks." + NetworkType.RETICULATIONS + ".material",
-                    "Material",
-                    "choice",
-                    this.$store.getters["catalog/defaultPipeMaterialChoices"]
-                ],
-            );
+                ["", "Drainage Properties", "title4"],
+            )
 
             fields.push(
                 [
@@ -280,6 +303,11 @@ export default class FlowSystems extends Vue {
 
     get catalog(): Catalog {
         return this.$store.getters['catalog/default'];
+    }
+
+    get drainageMaterials(): Choice[] {
+        const choices: Choice[] = this.$store.getters["catalog/defaultPipeMaterialChoices"];
+        return getDrainageMaterials(choices);
     }
 
     get flowSystems() {

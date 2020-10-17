@@ -589,19 +589,19 @@ export const initialDrawing: DrawingState = {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "copperTypeB",
+                        material: "stainlessSteel",
                         minimumPipeSize: 15,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "copperTypeB",
+                        material: "stainlessSteel",
                         minimumPipeSize: 15,
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: "pexSdr74",
+                        material: "hdpeSdr11",
                         minimumPipeSize: 16,
                     }
                 },
@@ -626,19 +626,19 @@ export const initialDrawing: DrawingState = {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "copperTypeB",
+                        material: "stainlessSteel",
                         minimumPipeSize: 15,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "copperTypeB",
+                        material: "stainlessSteel",
                         minimumPipeSize: 15,
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: "pexSdr74",
+                        material: "hdpeSdr11",
                         minimumPipeSize: 16,
                     }
                 },
@@ -663,19 +663,19 @@ export const initialDrawing: DrawingState = {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "copperTypeB",
+                        material: "stainlessSteel",
                         minimumPipeSize: 15,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "copperTypeB",
+                        material: "stainlessSteel",
                         minimumPipeSize: 15,
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: "pexSdr74",
+                        material: "hdpeSdr11",
                         minimumPipeSize: 16,
                     }
                 },
@@ -700,19 +700,19 @@ export const initialDrawing: DrawingState = {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "copperTypeB",
+                        material: "stainlessSteel",
                         minimumPipeSize: 15,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "copperTypeB",
+                        material: "stainlessSteel",
                         minimumPipeSize: 15,
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: "pexSdr74",
+                        material: "hdpeSdr11",
                         minimumPipeSize: 16,
                     }
                 },
@@ -737,19 +737,19 @@ export const initialDrawing: DrawingState = {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "copperTypeB",
+                        material: "stainlessSteel",
                         minimumPipeSize: 15,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "copperTypeB",
+                        material: "stainlessSteel",
                         minimumPipeSize: 15,
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: "pexSdr74",
+                        material: "hdpeSdr11",
                         minimumPipeSize: 16,
                     }
                 },

@@ -88,7 +88,7 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
             highlightOnOverride: COLORS.YELLOW,
             isCalculated: false,
             type: FieldType.Choice,
-            params: { choices: materials },
+            params: { choices: isDrainage(flowSystemSettings.uid) ? getDrainageMaterials(materials) : materials },
             multiFieldId: "material"
         },
 
@@ -183,4 +183,12 @@ export function fillPipeDefaultFields(drawing: DrawingState, computedLengthM: nu
     }
 
     return result;
+}
+
+export function getDrainageMaterials(onlyChoices: Choice[]): Choice[] {
+    return onlyChoices.filter((c) => {
+        // TODO: replace pexSdr74
+        // QUESTION: why does typescript require the parameter inside includes to be the same type???
+        return ['hdpeSdr11', 'stainlessSteel', 'castIronCoated', 'pexSdr74'].includes(c.key as string);
+    });
 }
