@@ -1447,7 +1447,7 @@ export default class CalculationEngine implements CalculationContext {
                     }
 
                     for (const suid of fixture.roughInsInOrder) {
-                        if (node.uid === fixture.roughIns[suid].uid) {
+                        if (node.uid === fixture.roughIns[suid].uid || (isDrainage(node.entity.systemUid) && isDrainage(suid))) {
                             if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
                                 return [{
                                     units: Number(mainFixture.roughIns[suid].designFlowRateLS),
