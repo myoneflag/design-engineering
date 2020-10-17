@@ -31,7 +31,7 @@ export type PipeMaterials =
     | 'GMS'
     | 'Cast Iron'
     | 'Stainless Steel (Sewer)'
-    | 'PVC (Sewer)'
+    | 'uPVC (Sewer)'
     | 'HDPE (Sewer)'
     | 'Cast Iron (Sewer)';
 

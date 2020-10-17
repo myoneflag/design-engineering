@@ -81,7 +81,7 @@ export const defaultPriceTable: PriceTable = {
             110: 176,
             160: 290,
         },
-        'PVC (Sewer)': {
+        'uPVC (Sewer)': {
             40: 42,
             50: 52,
             65: 62,
@@ -274,7 +274,7 @@ export const defaultPriceTable: PriceTable = {
                 110: 156,
                 160: 300,
             },
-            'PVC (Sewer)': {
+            'uPVC (Sewer)': {
                 40: 28.5,
                 50: 34,
                 65: 45,
@@ -373,7 +373,7 @@ export const defaultPriceTable: PriceTable = {
                 110: 114,
                 160: 200,
             },
-            'PVC (Sewer)': {
+            'uPVC (Sewer)': {
                 40: 22.5,
                 50: 28,
                 65: 36.5,
@@ -492,7 +492,7 @@ export const defaultPriceTable: PriceTable = {
                 110: 114,
                 160: 200,
             },
-            'PVC (Sewer)': {
+            'uPVC (Sewer)': {
                 40: 22.5,
                 50: 28,
                 65: 36.5,

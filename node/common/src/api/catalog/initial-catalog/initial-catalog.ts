@@ -2541,18 +2541,68 @@ export const initialCatalog: Catalog = {
             },
             uid: "stainlessSteel"
         },
-        uPVC: {
-            name: "Unplasticised Polyvinyl Chloride",
+
+        stainlessSteelSewer: {
+            name: "Stainless Steel (Sewer)",
+            abbreviation: "S/S",
+            manufacturer: [
+                {
+                    name: 'Generic',
+                    abbreviation: 'Generic',
+                    priceTableName: "Stainless Steel (Sewer)",
+                    uid: 'generic',
+                },
+            ],
+            uid: 'stainlessSteelSewer',
+            pipesBySize: {
+                generic: {
+                    50: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "50",
+                        diameterNominalMM: "50",
+                        diameterOutsideMM: "50",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    75: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "75",
+                        diameterNominalMM: "75",
+                        diameterOutsideMM: "75",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    110: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "110",
+                        diameterNominalMM: "110",
+                        diameterOutsideMM: "110",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    160: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "160",
+                        diameterNominalMM: "160",
+                        diameterOutsideMM: "160",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    }
+                }
+            }
+        },
+        uPVCSewer: {
+            name: "Unplasticised Polyvinyl Chloride (Sewer)",
             abbreviation: "uPCV",
             manufacturer: [
                 {
                     name: 'Generic',
                     abbreviation: 'Generic',
-                    priceTableName: "Stainless Steel",
+                    priceTableName: "uPVC (Sewer)",
                     uid: 'generic',
                 },
             ],
-            uid: 'pvc',
+            uid: 'uPVCSewer',
             pipesBySize: {
                 generic: {
                     40: {
@@ -2560,7 +2610,7 @@ export const initialCatalog: Catalog = {
                         diameterInternalMM: "40",
                         diameterNominalMM: "40",
                         diameterOutsideMM: "40",
-                        pipeUid: "pvc",
+                        pipeUid: "uPVCSewer",
                         safeWorkingPressureKPA: "1600"
                     },
                     50: {
@@ -2568,7 +2618,7 @@ export const initialCatalog: Catalog = {
                         diameterInternalMM: "50",
                         diameterNominalMM: "50",
                         diameterOutsideMM: "50",
-                        pipeUid: "pvc",
+                        pipeUid: "uPVCSewer",
                         safeWorkingPressureKPA: "1600"
                     },
                     65: {
@@ -2576,7 +2626,7 @@ export const initialCatalog: Catalog = {
                         diameterInternalMM: "65",
                         diameterNominalMM: "65",
                         diameterOutsideMM: "65",
-                        pipeUid: "pvc",
+                        pipeUid: "uPVCSewer",
                         safeWorkingPressureKPA: "1600"
                     },
                     80: {
@@ -2584,7 +2634,7 @@ export const initialCatalog: Catalog = {
                         diameterInternalMM: "80",
                         diameterNominalMM: "80",
                         diameterOutsideMM: "80",
-                        pipeUid: "pvc",
+                        pipeUid: "uPVCSewer",
                         safeWorkingPressureKPA: "1600"
                     },
                     100: {
@@ -2592,7 +2642,7 @@ export const initialCatalog: Catalog = {
                         diameterInternalMM: "100",
                         diameterNominalMM: "100",
                         diameterOutsideMM: "100",
-                        pipeUid: "pvc",
+                        pipeUid: "uPVCSewer",
                         safeWorkingPressureKPA: "1600"
                     },
                     150: {
@@ -2600,12 +2650,150 @@ export const initialCatalog: Catalog = {
                         diameterInternalMM: "150",
                         diameterNominalMM: "150",
                         diameterOutsideMM: "150",
-                        pipeUid: "pvc",
+                        pipeUid: "uPVCSewer",
                         safeWorkingPressureKPA: "1600"
                     }
                 }
             }
-        }
+        },
+        hdpeSdr11Sewer: {
+            name: "HDPE (SDR11) (Sewer)",
+            abbreviation: "HDPE",
+            manufacturer: [
+                {
+                    name: 'Generic',
+                    abbreviation: 'Generic',
+                    priceTableName: "HDPE (Sewer)",
+                    uid: 'generic',
+                },
+            ],
+            uid: 'hdpeSdr11Sewer',
+            pipesBySize: {
+                generic: {
+                    50: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "50",
+                        diameterNominalMM: "50",
+                        diameterOutsideMM: "50",
+                        pipeUid: "hdpeSdr11Sewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    75: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "75",
+                        diameterNominalMM: "75",
+                        diameterOutsideMM: "75",
+                        pipeUid: "hdpeSdr11Sewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    90: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "90",
+                        diameterNominalMM: "90",
+                        diameterOutsideMM: "90",
+                        pipeUid: "hdpeSdr11Sewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    110: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "110",
+                        diameterNominalMM: "110",
+                        diameterOutsideMM: "110",
+                        pipeUid: "hdpeSdr11Sewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    160: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "160",
+                        diameterNominalMM: "160",
+                        diameterOutsideMM: "160",
+                        pipeUid: "hdpeSdr11Sewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    250: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "250",
+                        diameterNominalMM: "250",
+                        diameterOutsideMM: "250",
+                        pipeUid: "hdpeSdr11Sewer",
+                        safeWorkingPressureKPA: "1600"
+                    }
+                }
+            }
+        },
+        castIronSewer: {
+            name: "Cast Iron (Sewer)",
+            abbreviation: "CICL",
+            manufacturer: [
+                {
+                    name: 'Generic',
+                    abbreviation: 'Generic',
+                    priceTableName: "Cast Iron (Sewer)",
+                    uid: 'generic',
+                },
+            ],
+            uid: 'castIronSewer',
+            pipesBySize: {
+                generic: {
+                    50: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "50",
+                        diameterNominalMM: "50",
+                        diameterOutsideMM: "50",
+                        pipeUid: "castIronSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    70: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "70",
+                        diameterNominalMM: "70",
+                        diameterOutsideMM: "70",
+                        pipeUid: "castIronSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    100: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "100",
+                        diameterNominalMM: "100",
+                        diameterOutsideMM: "100",
+                        pipeUid: "castIronSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    150: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "150",
+                        diameterNominalMM: "150",
+                        diameterOutsideMM: "150",
+                        pipeUid: "castIronSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    200: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "200",
+                        diameterNominalMM: "200",
+                        diameterOutsideMM: "200",
+                        pipeUid: "castIronSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    250: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "250",
+                        diameterNominalMM: "250",
+                        diameterOutsideMM: "250",
+                        pipeUid: "castIronSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    300: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "300",
+                        diameterNominalMM: "300",
+                        diameterOutsideMM: "300",
+                        pipeUid: "castIronSewer",
+                        safeWorkingPressureKPA: "1600"
+                    }
+                }
+            }
+        },
     },
     valves: {
         "45Elbow": {

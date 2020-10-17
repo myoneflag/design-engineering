@@ -953,23 +953,23 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
         ].sort((a, b) => Number(a) - Number(b)).filter((v, i, a) => v !== a[i + 1]);
 
         for (const size of keys) {
-            let entry = pipe[size];
+            let entry = pipe[Number(size)];
             sheet.getCell('A' + row).value = Number(size);
 
             sheet.getCell('B' + row).value = entry || '';
             mapping.set(`Pipes.${material}.${size}`, ["$B$" + row, entry]);
 
             entry = context.effectivePriceTable.Fittings.Elbow
-                [material as keyof ValveByPipe][Number(size)] || '';
+                [material as keyof ValveByPipe][Number(size)] || 0;
             sheet.getCell('C' + row).value = entry || '';
             mapping.set(`Fittings.Elbow.${material}.${size}`, ["$C$" + row, entry]);
 
             entry = context.effectivePriceTable.Fittings.Tee
-                [material as keyof ValveByPipe][Number(size)] || '';
+                [material as keyof ValveByPipe][Number(size)] || 0;
             sheet.getCell('D' + row).value = entry;
 
             entry =  context.effectivePriceTable.Fittings.Reducer
-                [material as keyof ValveByPipe][Number(size)] || '';
+                [material as keyof ValveByPipe][Number(size)] || 0;
             mapping.set(`Fittings.Tee.${material}.${size}`, ["$D$" + row, entry]);
             sheet.getCell('E' + row).value = entry;
             mapping.set(`Fittings.Reducer.${material}.${size}`, ["$E$" + row, entry]);

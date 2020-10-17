@@ -589,19 +589,19 @@ export const initialDrawing: DrawingState = {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "uPVC",
+                        material: "uPVCSewer",
                         minimumPipeSize: 15,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "uPVC",
+                        material: "uPVCSewer",
                         minimumPipeSize: 15,
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: "uPVC",
+                        material: "uPVCSewer",
                         minimumPipeSize: 16,
                     }
                 },
@@ -626,19 +626,19 @@ export const initialDrawing: DrawingState = {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "uPVC",
+                        material: "uPVCSewer",
                         minimumPipeSize: 15,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "uPVC",
+                        material: "uPVCSewer",
                         minimumPipeSize: 15,
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: "uPVC",
+                        material: "uPVCSewer",
                         minimumPipeSize: 16,
                     }
                 },
@@ -663,19 +663,19 @@ export const initialDrawing: DrawingState = {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "hdpeSdr11",
+                        material: "hdpeSdr11Sewer",
                         minimumPipeSize: 15,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "hdpeSdr11",
+                        material: "hdpeSdr11Sewer",
                         minimumPipeSize: 15,
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: "hdpeSdr11",
+                        material: "hdpeSdr11Sewer",
                         minimumPipeSize: 16,
                     }
                 },
@@ -700,19 +700,19 @@ export const initialDrawing: DrawingState = {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "hdpeSdr11",
+                        material: "hdpeSdr11Sewer",
                         minimumPipeSize: 15,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "hdpeSdr11",
+                        material: "hdpeSdr11Sewer",
                         minimumPipeSize: 15,
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: "hdpeSdr11",
+                        material: "hdpeSdr11Sewer",
                         minimumPipeSize: 16,
                     }
                 },
@@ -737,19 +737,19 @@ export const initialDrawing: DrawingState = {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "uPVC",
+                        material: "uPVCSewer",
                         minimumPipeSize: 15,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "uPVC",
+                        material: "uPVCSewer",
                         minimumPipeSize: 15,
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: "uPVC",
+                        material: "uPVCSewer",
                         minimumPipeSize: 16,
                     }
                 },

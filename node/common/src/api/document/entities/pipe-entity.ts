@@ -200,10 +200,10 @@ export function getDrainageMaterials(allChoices: Choice[]): Choice[] {
         // TODO: replace pexSdr74
         // QUESTION: why does typescript require the parameter inside includes to be the same type???
         return [
-            'hdpeSdr11',
-            'stainlessSteel',
-            'castIronCoated',
-            'uPVC',
+            'stainlessSteelSewer',
+            'uPVCSewer',
+            'hdpeSdr11Sewer',
+            'castIronSewer',
         ].includes(c.key as string);
     });
 }
