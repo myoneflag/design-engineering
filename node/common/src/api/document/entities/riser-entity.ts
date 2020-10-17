@@ -4,7 +4,7 @@ import { Color, COLORS, ConnectableEntity, Coord, DrawingState, NetworkType, Sel
 import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../lib/utils";
 import {isDrainage, LEVEL_HEIGHT_DIFF_M} from "../../config";
 import { Catalog } from "../../catalog/types";
-import {fillPipeDefaultFields, getDrainageMaterials} from "./pipe-entity";
+import {fillPipeDefaultFields, getDrainageMaterials, getWaterDrainageMaterials} from "./pipe-entity";
 import { convertPipeDiameterFromMetric, Units } from "../../../lib/measurements";
 
 export default interface RiserEntity extends ConnectableEntity {
@@ -109,7 +109,7 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
             highlightOnOverride: COLORS.YELLOW,
             isCalculated: false,
             type: FieldType.Choice,
-            params: { choices: iAmDrainage ? getDrainageMaterials(materials) : materials },
+            params: { choices: iAmDrainage ? getDrainageMaterials(materials) : getWaterDrainageMaterials(materials) },
             multiFieldId: "material"
         },
 

@@ -2540,6 +2540,71 @@ export const initialCatalog: Catalog = {
                 }
             },
             uid: "stainlessSteel"
+        },
+        uPVC: {
+            name: "Unplasticised Polyvinyl Chloride",
+            abbreviation: "uPCV",
+            manufacturer: [
+                {
+                    name: 'Generic',
+                    abbreviation: 'Generic',
+                    priceTableName: "Stainless Steel",
+                    uid: 'generic',
+                },
+            ],
+            uid: 'pvc',
+            pipesBySize: {
+                generic: {
+                    40: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "40",
+                        diameterNominalMM: "40",
+                        diameterOutsideMM: "40",
+                        pipeUid: "pvc",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    50: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "50",
+                        diameterNominalMM: "50",
+                        diameterOutsideMM: "50",
+                        pipeUid: "pvc",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    65: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "65",
+                        diameterNominalMM: "65",
+                        diameterOutsideMM: "65",
+                        pipeUid: "pvc",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    80: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "80",
+                        diameterNominalMM: "80",
+                        diameterOutsideMM: "80",
+                        pipeUid: "pvc",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    100: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "100",
+                        diameterNominalMM: "100",
+                        diameterOutsideMM: "100",
+                        pipeUid: "pvc",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    150: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "150",
+                        diameterNominalMM: "150",
+                        diameterOutsideMM: "150",
+                        pipeUid: "pvc",
+                        safeWorkingPressureKPA: "1600"
+                    }
+                }
+            }
         }
     },
     valves: {

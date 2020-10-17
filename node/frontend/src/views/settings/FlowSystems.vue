@@ -57,7 +57,10 @@ import {
 import { Units } from "../../../../common/src/lib/measurements";
 import {Catalog} from "../../../../common/src/api/catalog/types";
 import { setPropertyByString } from "../../lib/utils";
-import {getDrainageMaterials} from "../../../../common/src/api/document/entities/pipe-entity";
+import {
+    getDrainageMaterials,
+    getWaterDrainageMaterials
+} from "../../../../common/src/api/document/entities/pipe-entity";
 
 @Component({
     components: {SettingsFieldBuilder, FlowSystemPicker },
@@ -269,7 +272,7 @@ export default class FlowSystems extends Vue {
                         "networks." + netKey + ".material",
                         "Material",
                         "choice",
-                        this.$store.getters["catalog/defaultPipeMaterialChoices"]
+                        this.waterMaterials,
                     ],
                     [
                         "networks." + netKey + ".minimumPipeSize",
@@ -308,6 +311,11 @@ export default class FlowSystems extends Vue {
     get drainageMaterials(): Choice[] {
         const choices: Choice[] = this.$store.getters["catalog/defaultPipeMaterialChoices"];
         return getDrainageMaterials(choices);
+    }
+
+    get waterMaterials(): Choice[] {
+        const choices: Choice[] = this.$store.getters["catalog/defaultPipeMaterialChoices"];
+        return getWaterDrainageMaterials(choices);
     }
 
     get flowSystems() {

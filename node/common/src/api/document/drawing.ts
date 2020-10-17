@@ -589,19 +589,19 @@ export const initialDrawing: DrawingState = {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "stainlessSteel",
+                        material: "uPVC",
                         minimumPipeSize: 15,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "stainlessSteel",
+                        material: "uPVC",
                         minimumPipeSize: 15,
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: "hdpeSdr11",
+                        material: "uPVC",
                         minimumPipeSize: 16,
                     }
                 },
@@ -626,19 +626,19 @@ export const initialDrawing: DrawingState = {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "stainlessSteel",
+                        material: "uPVC",
                         minimumPipeSize: 15,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "stainlessSteel",
+                        material: "uPVC",
                         minimumPipeSize: 15,
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: "hdpeSdr11",
+                        material: "uPVC",
                         minimumPipeSize: 16,
                     }
                 },
@@ -663,13 +663,13 @@ export const initialDrawing: DrawingState = {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "stainlessSteel",
+                        material: "hdpeSdr11",
                         minimumPipeSize: 15,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "stainlessSteel",
+                        material: "hdpeSdr11",
                         minimumPipeSize: 15,
                     },
                     CONNECTIONS: {
@@ -700,13 +700,13 @@ export const initialDrawing: DrawingState = {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "stainlessSteel",
+                        material: "hdpeSdr11",
                         minimumPipeSize: 15,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "stainlessSteel",
+                        material: "hdpeSdr11",
                         minimumPipeSize: 15,
                     },
                     CONNECTIONS: {
@@ -737,19 +737,19 @@ export const initialDrawing: DrawingState = {
                     RISERS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "stainlessSteel",
+                        material: "uPVC",
                         minimumPipeSize: 15,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 20,
-                        material: "stainlessSteel",
+                        material: "uPVC",
                         minimumPipeSize: 15,
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 3,
-                        material: "hdpeSdr11",
+                        material: "uPVC",
                         minimumPipeSize: 16,
                     }
                 },
