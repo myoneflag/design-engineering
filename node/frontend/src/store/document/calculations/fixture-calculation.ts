@@ -68,6 +68,7 @@ export function emptyFixtureCalculation(entity: FixtureEntity): FixtureCalculati
 
         inlets: {},
         warning: null,
+        warningLayout: null,
     };
     for (const suid of entity.roughInsInOrder) {
         result.inlets[suid] = {

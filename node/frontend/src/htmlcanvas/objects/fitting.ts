@@ -350,6 +350,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             pressureDropKPA: calc.pressureDropKPA,
             pressureKPA: calc.pressureKPA,
             warning: calc.warning,
+            warningLayout: calc.warningLayout,
             pressureByEndpointKPA: {},
             staticPressureKPA: calc.staticPressureKPA,
         };

@@ -201,6 +201,7 @@ export function emptyRiserCalculations(): RiserCalculation {
         expandedEntities: null,
 
         warning: null,
+        warningLayout: null,
         heights: {}
     };
 }

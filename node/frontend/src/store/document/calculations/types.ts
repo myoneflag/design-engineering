@@ -1,5 +1,5 @@
 import {Cost, PsdCountEntry} from "../../../calculations/utils";
-import {CalculationField, FieldCategory} from "./calculation-field";
+import {CalculationField, CalculationLayout, FieldCategory} from "./calculation-field";
 import {Units} from "../../../../../common/src/lib/measurements";
 import {DrawableEntityConcrete} from "../../../../../common/src/api/document/entities/concrete-entity";
 import {CostBreakdown} from "../../../htmlcanvas/lib/types";
@@ -10,6 +10,7 @@ export interface PsdCalculation {
 
 export interface Calculation {
     warning: string | null;
+    warningLayout: CalculationLayout | null;
     cost: Cost | null;
     costBreakdown: Array<{qty: number, path: string}> | null;
     expandedEntities: DrawableEntityConcrete[] | null;

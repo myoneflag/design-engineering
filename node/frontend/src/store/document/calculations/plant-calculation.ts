@@ -90,5 +90,6 @@ export function emptyPlantCalculation(): PlantCalculation {
         heatLossKW: null,
         manufacturer: '',
         warning: null,
+        warningLayout: null,
     };
 }

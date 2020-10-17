@@ -323,6 +323,7 @@ export function emptyPipeCalculation(): PipeCalculation {
         configuration: null,
         velocityRealMS: null,
         warning: null,
+        warningLayout: null,
         psdProfile: null,
         flowFrom: null,
         gradePCT: null,

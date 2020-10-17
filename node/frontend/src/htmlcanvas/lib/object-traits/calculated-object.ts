@@ -405,7 +405,25 @@ export function CalculatedObject<
             if (calculation && calculation.warning === undefined) {
                 throw new Error("undefined calculation: " + JSON.stringify(this.entity));
             }
-            return calculation !== undefined && calculation.warning !== null;
+            if (!calculation) {
+                return false;
+            }
+            switch (calculation.warningLayout) {
+                case null:
+                case "pressure":
+                    if (context.doc.uiState.pressureOrDrainage !== 'pressure') {
+                        return false;
+                    }
+                    break;
+                case "drainage":
+                    if (context.doc.uiState.pressureOrDrainage !== 'drainage') {
+                        return false;
+                    }
+                    break;
+                default:
+                    assertUnreachable(calculation.warningLayout);
+            }
+            return calculation.warning !== null;
         }
     };
 }

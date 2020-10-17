@@ -348,6 +348,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
             flowRateLS: calc.flowRateLS,
             pressureKPA: calc.pressureKPA, // TODO: differentiate this in different levels
             warning: calc.warning,
+            warningLayout: calc.warningLayout,
             staticPressureKPA: calc.staticPressureKPA,
         };
 

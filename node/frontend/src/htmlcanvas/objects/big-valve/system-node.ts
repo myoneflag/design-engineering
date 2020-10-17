@@ -243,6 +243,7 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
             flowRateLS: calc.flowRateLS,
             pressureKPA: calc.pressureKPA, // TODO: differentiate this in different levels
             warning: calc.warning,
+            warningLayout: calc.warningLayout,
             staticPressureKPA: calc.staticPressureKPA,
         };
 

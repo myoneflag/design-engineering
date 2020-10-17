@@ -336,7 +336,8 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
             expandedEntities: null,
 
             heights: {},
-            warning: null
+            warning: null,
+            warningLayout: null,
         };
         const IAmDrainage = isDrainage(this.entity.systemUid);
 

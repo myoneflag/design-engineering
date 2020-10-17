@@ -238,6 +238,7 @@ export function produceUnventedUnitsWarnings(context: CalculationEngine, roots: 
                         if (units.drainageUnits > maxUnventedUnits) {
                             const fcalc = context.globalStore.getOrCreateCalculation(fixture);
                             fcalc.warning = 'Unvented drainage flow exceeds the max of ' + maxUnventedWCs + ' WC\'s';
+                            fcalc.warningLayout = 'drainage';
                         }
                     }
                 }
@@ -336,6 +337,7 @@ export function produceUnventedLengthWarningsAndGetUnventedGroup(context: Calcul
                         if (maxUnventedExceeded) {
                             const fcalc = context.globalStore.getOrCreateCalculation(fixture);
                             fcalc.warning = 'Max unvented length of ' + maxUnventedLengthM + " exceeded";
+                            fcalc.warningLayout = 'drainage';
                         }
                     }
                 }

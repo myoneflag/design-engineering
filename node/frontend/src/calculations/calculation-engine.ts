@@ -2567,18 +2567,22 @@ export default class CalculationEngine implements CalculationContext {
                 case EntityType.FITTING:
                     break;
                 case EntityType.PIPE: {
-                    const filled = fillPipeDefaultFields(this.doc.drawing, (o as Pipe).computedLengthM, o.entity);
-                    const pipeSpec = (o as Pipe).getCatalogBySizePage(this);
-                    const calc = this.globalStore.getOrCreateCalculation(o.entity);
-                    if (pipeSpec) {
-                        const maxWorking = parseCatalogNumberExact(pipeSpec.safeWorkingPressureKPA);
-                        const ca = this.entityStaticPressureKPA.get(o.entity.endpointUid[0]);
-                        const cb = this.entityStaticPressureKPA.get(o.entity.endpointUid[1]);
-                        const actualPressure = Math.max(ca || 0, cb || 0);
-                        
-                        if (maxWorking !== null) {
-                            if (actualPressure > maxWorking) {
-                                calc.warning = 'Max pressure ' + maxWorking + 'kpa exceeded (' + actualPressure + ' kpa)';
+                    const thisIsDrainage = isDrainage(o.entity.systemUid);
+
+                    if (!thisIsDrainage) {
+                        const filled = fillPipeDefaultFields(this.doc.drawing, (o as Pipe).computedLengthM, o.entity);
+                        const pipeSpec = (o as Pipe).getCatalogBySizePage(this);
+                        const calc = this.globalStore.getOrCreateCalculation(o.entity);
+                        if (pipeSpec) {
+                            const maxWorking = parseCatalogNumberExact(pipeSpec.safeWorkingPressureKPA);
+                            const ca = this.entityStaticPressureKPA.get(o.entity.endpointUid[0]);
+                            const cb = this.entityStaticPressureKPA.get(o.entity.endpointUid[1]);
+                            const actualPressure = Math.max(ca || 0, cb || 0);
+
+                            if (maxWorking !== null) {
+                                if (actualPressure > maxWorking) {
+                                    calc.warning = 'Max pressure ' + maxWorking + 'kpa exceeded (' + actualPressure + ' kpa)';
+                                }
                             }
                         }
                     }

@@ -80,6 +80,7 @@ export function emptyFittingCalculation(): FittingCalculation {
         pressureKPA: null,
         staticPressureKPA: null,
         warning: null,
+        warningLayout: null,
         pressureByEndpointKPA: {},
     };
 }

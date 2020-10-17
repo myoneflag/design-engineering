@@ -44,6 +44,7 @@ export function emptyFlowSourceCalculation(): FlowSourceCalculation {
         flowRateLS: null,
         pressureKPA: null,
         staticPressureKPA: null,
-        warning: null
+        warning: null,
+        warningLayout: null,
     };
 }
