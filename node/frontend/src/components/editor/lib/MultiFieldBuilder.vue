@@ -119,7 +119,7 @@ export default class MultiFieldBuilder extends Vue {
             case EntityType.BACKGROUND_IMAGE:
                 return obj.entity;
             case EntityType.FITTING:
-                return fillValveDefaultFields(this.document.drawing, obj.entity);
+                return fillValveDefaultFields(this.document.drawing, obj.entity, this.$props.objectStore);
             case EntityType.PIPE:
                 return fillPipeDefaultFields(this.document.drawing, (obj as Pipe).computedLengthM, obj.entity);
             case EntityType.RISER:
