@@ -3,7 +3,7 @@ import Excel, {Worksheet} from 'exceljs';
 import {User} from "../../../../../common/src/models/User";
 import {
     EquipmentTable,
-    FittingsTable, getEquipmentFullName,
+    FittingsTable, getEquipmentDescription, getEquipmentTitle,
     PipesBySize,
     PipesTable, PlantTable,
     ValveByPipe,
@@ -600,10 +600,11 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                 row += 2;
             }
 
-            for (const [equipmentName, equipment] of Object.entries(context.effectivePriceTable.Equipment)) {
+            for (const [equipmentName_, equipment] of Object.entries(context.effectivePriceTable.Equipment)) {
+                const equipmentName = equipmentName_ as keyof EquipmentTable;
                 if (exists.has(equipmentName as keyof EquipmentTable)) {
                     sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
-                    sheet.getCell('B' + row).value = getEquipmentFullName(equipmentName as keyof EquipmentTable);
+                    sheet.getCell('B' + row).value = getEquipmentTitle(equipmentName as keyof EquipmentTable);
                     lastMinorBump = row;
                     minorSum = 0;
                     stylizeTitle(sheet.getCell('A' + row));
@@ -615,7 +616,7 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                 if (typeof equipment !== 'object') {
                     if (items.has(`Equipment.${equipmentName}`)) {
                         sheet.getCell('A' + row).value = `${majorItem}.${minorItem}.${patch}`;
-                        sheet.getCell('B' + row).value = `${equipmentName} - All sizes`;
+                        sheet.getCell('B' + row).value = `${getEquipmentDescription(equipmentName)}`;
 
                         sheet.getCell('C' + row).value = 'No';
                         const quantity = items.get(`Equipment.${equipmentName}`)!;
@@ -642,7 +643,7 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                     for (const [size, cost] of Object.entries(equipment)) {
                         if (items.has(`Equipment.${equipmentName}.${size}`)) {
                             sheet.getCell('A' + row).value = `${majorItem}.${minorItem}.${patch}`;
-                            sheet.getCell('B' + row).value = `${size}mm diameter ${equipmentName}`;
+                            sheet.getCell('B' + row).value = `${size}mm diameter ${getEquipmentDescription(equipmentName)}`;
 
                             sheet.getCell('C' + row).value = 'No';
                             const quantity = items.get(`Equipment.${equipmentName}.${size}`)!;

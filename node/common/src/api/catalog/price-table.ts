@@ -44,7 +44,6 @@ export interface PlantTable {
     'Storage Tank': number;
     'Pump': number;
     'Custom': number;
-    'Drainage Pit': number;
 }
 
 export type PipesTable = {
@@ -98,9 +97,10 @@ export interface EquipmentTable {
     'Gas Filter': number;
     'Inspection Opening': number;
     'Floor Waste': number;
+    'Drainage Pit': number;
 }
 
-export function getEquipmentFullName(name: keyof EquipmentTable): string {
+export function getEquipmentTitle(name: keyof EquipmentTable): string {
     switch (name) {
         case "PRV":
             return "PRV - Pressure Reduction Valves";
@@ -115,15 +115,47 @@ export function getEquipmentFullName(name: keyof EquipmentTable): string {
         case "Gas Filter":
             return "Gas Filters";
         case "Gas Meter":
-            return "Gas Meter";
+            return "Gas Meters";
         case "Gas Regulator":
-            return "Gas Regulator";
+            return "Gas Regulators";
         case "Floor Waste":
-            return 'Typical floor waste including grating and trap';
+            return 'Floor Wastes';
         case "Reflux Valve":
             return 'Reflux Valves';
         case "Inspection Opening":
             return 'Inspection Openings';
+        case "Drainage Pit":
+            return 'Drainage Pit';
+    }
+    assertUnreachable(name);
+}
+
+export function getEquipmentDescription(name: keyof EquipmentTable): string {
+    switch (name) {
+        case "PRV":
+            return "PRV - Pressure Reduction Valve";
+        case "TMV":
+            return "TMV - Thermostatic Mixing Valve - All Sizes";
+        case "RPZD":
+            return "RPZD - Reduced Pressure Zone Device";
+        case "Tempering Valve":
+            return "Tempering Valve - All Sizes";
+        case "Balancing Valve":
+            return "Balancing Valve";
+        case "Gas Filter":
+            return "Gas Filter - All Sizes";
+        case "Gas Meter":
+            return "Gas Meter - All Sizes";
+        case "Gas Regulator":
+            return "Gas Regulator - All Sizes";
+        case "Floor Waste":
+            return 'Typical floor waste including grating and trap';
+        case "Reflux Valve":
+            return 'Reflux Valve';
+        case "Inspection Opening":
+            return 'Inspection Opening';
+        case "Drainage Pit":
+            return 'Allowance for drainage pit, engineer to define size and specification';
     }
     assertUnreachable(name);
 }

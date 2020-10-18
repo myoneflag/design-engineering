@@ -524,7 +524,6 @@ export const defaultPriceTable: PriceTable = {
         'Storage Tank': 100000,
         'Pump': 20000,
         'Custom': 10000,
-        'Drainage Pit': 10000,
     },
     'Equipment': {
         'PRV': {
@@ -584,6 +583,7 @@ export const defaultPriceTable: PriceTable = {
 
         'Inspection Opening': 0,
         'Floor Waste': 350,
+        'Drainage Pit': 10000,
     },
     'Fixtures': {
         "Basin": 1655,

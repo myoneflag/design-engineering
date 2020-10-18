@@ -1161,7 +1161,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                         cost: context.priceTable.Equipment['Reflux Valve'][size],
                         breakdown: [{
                             qty: 1,
-                            path: `Equipment.Inspection Opening`,
+                            path: `Equipment.Reflux Valve.${size}`,
                         }]
                     };
                 }

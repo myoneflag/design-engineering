@@ -425,11 +425,12 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                     }],
                 };
             case PlantType.DRAINAGE_PIT:
-                // TODO: drainage costs
-
                 return {
-                    cost: 0,
-                    breakdown: [],
+                    cost: context.priceTable.Equipment["Drainage Pit"],
+                    breakdown: [{
+                        qty: 1,
+                        path: 'Equipment.Drainage Pit',
+                    }],
                 };
         }
         assertUnreachable(this.entity.plant);
