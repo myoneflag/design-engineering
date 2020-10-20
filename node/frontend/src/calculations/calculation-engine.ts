@@ -1,10 +1,13 @@
-import {SelectedMaterialManufacturer} from './../../../common/src/api/document/drawing';
-import {DocumentState} from "../../src/store/document/types";
-import {SelectionTarget} from "../../src/htmlcanvas/lib/types";
-import {EntityType} from "../../../common/src/api/document/entities/types";
-import PipeEntity, {fillPipeDefaultFields, makePipeFields} from "../../../common/src/api/document/entities/pipe-entity";
-import {makeValveFields} from "../../../common/src/api/document/entities/fitting-entity";
-import {makeRiserFields} from "../../../common/src/api/document/entities/riser-entity";
+import { SelectedMaterialManufacturer } from './../../../common/src/api/document/drawing';
+import { DocumentState } from "../../src/store/document/types";
+import { SelectionTarget } from "../../src/htmlcanvas/lib/types";
+import { EntityType } from "../../../common/src/api/document/entities/types";
+import PipeEntity, {
+    fillPipeDefaultFields,
+    makePipeFields
+} from "../../../common/src/api/document/entities/pipe-entity";
+import { makeValveFields } from "../../../common/src/api/document/entities/fitting-entity";
+import { makeRiserFields } from "../../../common/src/api/document/entities/riser-entity";
 import {
     BigValveType,
     makeBigValveFields,
@@ -1629,6 +1632,7 @@ export default class CalculationEngine implements CalculationContext {
             }
             case EntityType.BIG_VALVE: {
                 const calculation = this.globalStore.getOrCreateCalculation(entity);
+               
 
                 const systemUid =
                     flowEdge.type === EdgeType.BIG_VALVE_COLD_COLD
@@ -1636,8 +1640,11 @@ export default class CalculationEngine implements CalculationContext {
                         : StandardFlowSystemUids.HotWater;
                 const flowRate = lookupFlowRate(psdU, this.doc, this.catalog, systemUid);
 
-                if (entity.valve.type !== BigValveType.RPZD_HOT_COLD) {
-                    calculation.mixingValveSizeMM = calculation.mixingValveSizeMM || this.sizeMixingValveForFlowRate(flowRate?.flowRateLS || 0);
+                // size is based on the warm water flow rate on the outlet of the TMV
+                if (entity.valve.type !== BigValveType.RPZD_HOT_COLD && systemUid === StandardFlowSystemUids.HotWater) {
+                    const manufacturer = this.doc.drawing.metadata.catalog.mixingValves.find((material: SelectedMaterialManufacturer) => material.uid === entity.valve.catalogId)?.manufacturer || 'generic';
+
+                    calculation.mixingValveSizeMM = this.sizeMixingValveForFlowRate(!!(flowRate?.flowRateLS) ? flowRate.flowRateLS : 0, manufacturer);
                 }
 
                 if (entity.valve.type === BigValveType.RPZD_HOT_COLD && flowRate !== null) {
@@ -2811,11 +2818,26 @@ export default class CalculationEngine implements CalculationContext {
         return psdUs;
     }
 
-    sizeMixingValveForFlowRate(fr: number): number {
-        if (fr >= 0.49 ) {
-            return 25;
+    sizeMixingValveForFlowRate(fr: number, manufacturer: string): number {
+        switch (manufacturer) {
+            case "galvin":
+                if (fr > 0.51 ) {
+                    return 20;
+                }
+        
+                return 15;
+            case "enware":
+                if (fr > 0.65 ) {
+                    return 2500;
+                }
+        
+                return 1500;
+            default:
+                if (fr >= 0.49 ) {
+                    return 25;
+                }
+        
+                return 15;
         }
-
-        return 15;
     }
 }

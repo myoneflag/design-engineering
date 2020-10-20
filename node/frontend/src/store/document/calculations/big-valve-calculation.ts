@@ -98,8 +98,11 @@ export function makeBigValveCalculationFields(doc: DocumentState, entity: BigVal
             title: "Size",
             attachUid: entity.uid,
             short: abbreviation,
-            units: Units.Millimeters,
-            category: FieldCategory.Size
+            units: manufacturer !== 'enware' && Units.Millimeters || Units.None,
+            category: FieldCategory.Size,
+            format: (v) => {
+                return Number(v).toString();
+            }
         });
     }
 

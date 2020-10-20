@@ -592,11 +592,9 @@ export default class CatalogView extends Vue {
 
 <style>
     .manufacturer-item-btn {
-        margin-right: 15px;
-    }
-
-    .manufacturer-item-btn:last-child {
-        margin-right: 0px;
+        display: block;
+        width: 100%;
+        margin-bottom: 6px;
     }
 
     .manufacturer-field .col {
