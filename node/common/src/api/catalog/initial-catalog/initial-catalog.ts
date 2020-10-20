@@ -997,18 +997,26 @@ export const initialCatalog: Catalog = {
             maxFlowRateLS: {
                 generic: "0.65",
                 caleffi: "1",
+                galvin: "0.7",
+                enware: "1.21",
             },
             maxInletPressureKPA: {
                 generic: "500",
                 caleffi: "1400",
+                galvin: "500",
+                enware: "500",
             },
             minFlowRateLS: {
                 generic: "0.066",
                 caleffi: "0.033",
+                galvin: "0.1",
+                enware: "0.07",
             },
             minInletPressureKPA: {
                 generic: "20",
                 caleffi: "20",
+                galvin: "20",
+                enware: "20",
             },
             name: "TMV",
             uid: "tmv",
@@ -1031,6 +1039,32 @@ export const initialCatalog: Catalog = {
                     0.83: "100",
                     1: "150",
                 },
+                galvin: {
+                    0: "0",
+                    0.1: "30",
+                    0.3: "50",
+                    0.43: "100",
+                    0.51: "150",
+                    0.62: "200",
+                    0.7: "250",
+                    0.75: "300",
+                },
+                enware: {
+                    0: "0",
+                    0.07: "15",
+                    0.26: "50",
+                    0.36: "100",
+                    0.45: "150",
+                    0.53: "200",
+                    0.60: "250",
+                    0.65: "300",
+                    0.7: "100",
+                    0.8: "130",
+                    0.9: "167",
+                    1: "210",
+                    1.1: "250",
+                    1.21: "300",
+                }
             },
             manufacturer: [
                 {
@@ -1044,6 +1078,18 @@ export const initialCatalog: Catalog = {
                     abbreviation: "Caleffi",
                     uid: "caleffi",
                     priceTableName: "TMV",
+                },
+                {
+                    name: 'Galvin',
+                    abbreviation: "Galvin",
+                    uid: "galvin",
+                    priceTableName: "Tempering Valve",
+                },
+                {
+                    name: 'Enware',
+                    abbreviation: "Enware",
+                    uid: "enware",
+                    priceTableName: "Tempering Valve",
                 }
             ],
         }
