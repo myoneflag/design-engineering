@@ -245,12 +245,14 @@ export interface Catalog {
     prv: SelectedMaterialManufacturer[];
     balancingValves: SelectedMaterialManufacturer[];
     hotWaterPlant: SelectedMaterialManufacturer[];
+    fixtures: SelectedMaterialManufacturer[];
     [key: string]: SelectedMaterialManufacturer[];
 }
 
 export interface SelectedMaterialManufacturer {
     uid: string;
     manufacturer: string;
+    selected: string | null;
 }
 
 export const initialDrawing: DrawingState = {
@@ -497,26 +499,27 @@ export const initialDrawing: DrawingState = {
         availableFixtures: ["basin", "bath", "shower", "kitchenSink", "wc", "washingMachine", "laundryTrough"],
         catalog: {
             pipes: [
-                { manufacturer: "kemblaCu", uid: "copperTypeB", },
-                { manufacturer: "rehauPex", uid: "pexSdr74", },
-                { manufacturer: "kemblaS/s", uid: "stainlessSteel", },
+                { manufacturer: "kemblaCu", uid: "copperTypeB", selected: null },
+                { manufacturer: "rehauPex", uid: "pexSdr74", selected: null,},
+                { manufacturer: "kemblaS/s", uid: "stainlessSteel", selected: null,},
             ],
             backflowValves: [
-                { manufacturer: "apolloRpzd", uid: "RPZD", },
+                { manufacturer: "apolloRpzd", uid: "RPZD", selected: null,},
             ],
             mixingValves: [
-                { manufacturer: "caleffi", uid: "temperingValve", },
-                { manufacturer: "caleffi", uid: "tmv", },
+                { manufacturer: "caleffi", uid: "temperingValve", selected: null,},
+                { manufacturer: "caleffi", uid: "tmv", selected: null,},
             ],
             prv: [
-                { manufacturer: "caleffi", uid: "prv", },
+                { manufacturer: "caleffi", uid: "prv", selected: null,},
             ],
             balancingValves: [
-                { manufacturer: "cimberio", uid: "balancingValves", },
+                { manufacturer: "cimberio", uid: "balancingValves", selected: null,},
             ],
             hotWaterPlant: [
-                { manufacturer: "grundfos", uid: "hotWaterPlant", },
+                { manufacturer: "grundfos", uid: "hotWaterPlant", selected: null,},
             ],
+            fixtures: [],
         },
         priceTable: {},
     },

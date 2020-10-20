@@ -1489,6 +1489,10 @@ export default class CalculationEngine implements CalculationContext {
         } else if (node.entity.type === EntityType.LOAD_NODE) {
             const correlationGroup = node.entity.linkedToUid || node.entity.uid;
             const filled = fillDefaultLoadNodeFields(this.doc, this.globalStore, node.entity, this.catalog, this.nodes);
+            
+            const selectedMaterialManufacturer = this.doc.drawing.metadata.catalog.fixtures.find(obj => obj.uid === filled.uid);
+            const manufacturer = selectedMaterialManufacturer?.manufacturer || 'generic';
+            const selectedOption = selectedMaterialManufacturer?.selected || 'default';
 
             if (typeof filled.customNodeId !== "undefined" && this.doc.drawing.metadata.calculationParams.psdMethod === SupportedPsdStandards.bs806) {
                 const nodeProp = this.nodes.find((node: NodeProps) => node.id === filled.customNodeId || node.uid === filled.customNodeId);
@@ -1507,7 +1511,7 @@ export default class CalculationEngine implements CalculationContext {
                         let designFlowRateLS = 0;
                         if (systemChk) {
                             loadingUnits = parseCatalogNumberOrMin(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[SupportedPsdStandards.bs806][systemChk])!;
-                            designFlowRateLS = parseCatalogNumberOrMin(this.catalog.fixtures[nodeProp.fixtures[i]].qLS[systemChk])!;
+                            designFlowRateLS = parseCatalogNumberOrMin(this.catalog.fixtures[nodeProp.fixtures[i]].qLS[manufacturer][selectedOption][systemChk])!;
                         }
 
                         switch (filled.node.type) {

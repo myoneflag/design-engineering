@@ -48,6 +48,26 @@ export interface PipesTable {
     'Cast Iron': PipesBySize;
 }
 
+export interface FixturesTable {
+    'Ablution Trough': number;
+    'Basin': number;
+    'Bath': number;
+    'Bedpan Sanitiser': number;
+    'Beverage Bay': number;
+    'Birthing Pool': number;
+    'Cleaners Sink': number;
+    'Dishwasher': number;
+    'Drinking Fountain': number;
+    'Flushing Rim Sink': number;
+    'Hose Tap': number;
+    'Kitchen Sink': number;
+    'Laundry Trough': number;
+    'Shower': number;
+    'Urinal': number;
+    'Washing Machine': number;
+    'WC': number;
+}
+
 export interface ValvesTable {
     'Brass Ball Valve': {[key: number]: number};
     'Brass Gate Valve': {[key: number]: number};

@@ -48,11 +48,49 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                "cold-water": "0.12",
-                "warm-water": "0.12"
+                generic: {
+                    default: {
+                        "cold-water": "0.12",
+                        "warm-water": "0.12"
+                    }
+                },
+                enware: {
+                    5: {
+                        "cold-water": "0.09",
+                        "warm-water": "0.09"
+                    },
+                },
+                galvin: {
+                    5: {
+                        "cold-water": "0.11",
+                        "warm-water": "0.11"
+                    },
+                },
             },
             uid: "ablutionTrough",
-            warmTempC: "42"
+            warmTempC: "42",
+            manufacturer: [
+                {
+                    name: "Generic",
+                    abbreviation: "Generic",
+                    priceTableName: "Ablution Trough",
+                    uid: "generic",
+                },
+                {
+                    name: "Enware",
+                    abbreviation: "Enware",
+                    priceTableName: "Ablution Trough",
+                    uid: "enware",
+                    option: ["5"],
+                },
+                {
+                    name: "Galvin",
+                    abbreviation: "Galvin",
+                    priceTableName: "Ablution Trough",
+                    uid: "galvin",
+                    option: ["5"],
+                }
+            ],
         },
         basin: {
             priceTableName: "Basin",
@@ -99,11 +137,57 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                "cold-water": "0.1",
-                "warm-water": "0.1"
+                generic: {
+                    default: {
+                        "cold-water": "0.1",
+                        "warm-water": "0.1"
+                    }
+                },
+                enware: {
+                    3: {
+                        "cold-water": "0.13",
+                        "warm-water": "0.13"
+                    },
+                    5: {
+                        "cold-water": "0.09",
+                        "warm-water": "0.09"
+                    },
+                },
+                galvin: {
+                    4: {
+                        "cold-water": "0.11",
+                        "warm-water": "0.11"
+                    },
+                    6: {
+                        "cold-water": "0.83",
+                        "warm-water": "0.83"
+                    },
+                },
             },
             uid: "basin",
-            warmTempC: "42"
+            warmTempC: "42",
+            manufacturer: [
+                {
+                    name: "Generic",
+                    abbreviation: "Generic",
+                    priceTableName: "Basin",
+                    uid: "generic",
+                },
+                {
+                    name: "Enware",
+                    abbreviation: "Enware",
+                    priceTableName: "Basin",
+                    uid: "enware",
+                    option: ["3", "5"],
+                },
+                {
+                    name: "Galvin",
+                    abbreviation: "Galvin",
+                    priceTableName: "Basin",
+                    uid: "galvin",
+                    option: ["4", "5", "6"],
+                }
+            ]
         },
         bath: {
             priceTableName: "Bath",
@@ -150,11 +234,36 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "0.75",
             probabilityOfUsagePCT: "1",
             qLS: {
-                "cold-water": "0.3",
-                "warm-water": "0.15"
+                generic: {
+                    default: {
+                        "cold-water": "0.3",
+                        "warm-water": "0.15"
+                    }
+                },
+                galvin: {
+                    4: {
+                        "cold-water": "0.11",
+                        "warm-water": "0.11"
+                    }
+                },
             },
             uid: "bath",
-            warmTempC: "42"
+            warmTempC: "42",
+            manufacturer: [
+                {
+                    name: "Generic",
+                    abbreviation: "Generic",
+                    priceTableName: "Bath",
+                    uid: "generic",
+                },
+                {
+                    name: "Galvin",
+                    abbreviation: "Galvin",
+                    priceTableName: "Bath",
+                    uid: "galvin",
+                    option: ["4"],
+                }
+            ]
         },
         bedpanSanitiser: {
             priceTableName: "Bedpan Sanitiser",
@@ -201,11 +310,23 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                "cold-water": "0.12",
-                "hot-water": "0.12"
+                generic: {
+                    default: {
+                        "cold-water": "0.12",
+                        "hot-water": "0.12"
+                    }
+                },                
             },
             uid: "bedpanSanitiser",
-            warmTempC: null
+            warmTempC: null,
+            manufacturer: [
+                {
+                    name: "Generic",
+                    abbreviation: "Generic",
+                    priceTableName: "Bedpan Sanitiser",
+                    uid: "generic",
+                },
+            ]
         },
         beverageBay: {
             priceTableName: "Beverage Bay",
@@ -252,11 +373,49 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                "cold-water": "0.1",
-                "warm-water": "0.1"
+                generic: {
+                   default: {
+                        "cold-water": "0.1",
+                        "warm-water": "0.1"
+                   }
+                },  
+                enware: {
+                    5: {
+                        "cold-water": "0.09",
+                        "warm-water": "0.09"
+                    }
+                },  
+                galvin: {
+                    5: {
+                        "cold-water": "0.11",
+                        "warm-water": "0.11"
+                    }
+                },  
             },
             uid: "beverageBay",
-            warmTempC: "42"
+            warmTempC: "42",
+            manufacturer: [
+                {
+                    name: "Generic",
+                    abbreviation: "Generic",
+                    priceTableName: "Beverage Bay",
+                    uid: "generic",
+                },
+                {
+                    name: "Enware",
+                    abbreviation: "Enware",
+                    priceTableName: "Beverage Bay",
+                    uid: "enware",
+                    option: ["5"],
+                },
+                {
+                    name: "Galvin",
+                    abbreviation: "Galvin",
+                    priceTableName: "Beverage Bay",
+                    uid: "galvin",
+                    option: ["5"],
+                }
+            ]
         },
         birthingPool: {
             priceTableName: "Birthing Pool",
@@ -303,11 +462,35 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "0.75",
             probabilityOfUsagePCT: "1",
             qLS: {
-                "cold-water": "1",
-                "warm-water": "1"
+                generic: {
+                    default: {
+                        "cold-water": "1",
+                        "warm-water": "1"
+                    }
+                },  
+                galvin: {
+                    default: {
+                        "cold-water": "1.25",
+                        "warm-water": "1.25"
+                    }
+                },  
             },
             uid: "birthingPool",
-            warmTempC: "38"
+            warmTempC: "38",
+            manufacturer: [
+                {
+                    name: "Generic",
+                    abbreviation: "Generic",
+                    priceTableName: "Birthing Pool",
+                    uid: "generic",
+                },
+                {
+                    name: "Galvin",
+                    abbreviation: "Galvin",
+                    priceTableName: "Birthing Pool",
+                    uid: "galvin",
+                }
+            ]
         },
         cleanersSink: {
             priceTableName: "Cleaners Sink",
@@ -354,11 +537,23 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                "cold-water": "0.12",
-                "hot-water": "0.12"
+                generic: {
+                    default: {
+                        "cold-water": "0.12",
+                        "hot-water": "0.12"
+                    }
+                }
             },
             uid: "cleanersSink",
-            warmTempC: null
+            warmTempC: null,
+            manufacturer: [
+                {
+                    name: "Generic",
+                    abbreviation: "Generic",
+                    priceTableName: "Cleaners Sink",
+                    uid: "generic",
+                },
+            ]
         },
         dishwasher: {
             priceTableName: "Dishwasher",
@@ -405,11 +600,23 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "0.8",
             probabilityOfUsagePCT: "0.5",
             qLS: {
-                "cold-water": "0.2",
-                "hot-water": "0.1"
+                generic: {
+                    default: {
+                        "cold-water": "0.2",
+                        "hot-water": "0.1"
+                    }
+                }
             },
             uid: "dishwasher",
-            warmTempC: null
+            warmTempC: null,
+            manufacturer: [
+                {
+                    name: "Generic",
+                    abbreviation: "Generic",
+                    priceTableName: "Dishwasher",
+                    uid: "generic",
+                },
+            ]
         },
         drinkingFountain: {
             priceTableName: "Drinking Fountain",
@@ -448,10 +655,20 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "0.8",
             probabilityOfUsagePCT: "0.5",
             qLS: {
-                "cold-water": "0.1"
+                generic: {
+                    default: { "cold-water": "0.1" }
+                }
             },
             uid: "drinkingFountain",
-            warmTempC: null
+            warmTempC: null,
+            manufacturer: [
+                {
+                    name: "Generic",
+                    abbreviation: "Generic",
+                    priceTableName: "Drinking Fountain",
+                    uid: "generic",
+                },
+            ]
         },
         flushingRimSink: {
             priceTableName: "Flushing Rim Sink",
@@ -498,11 +715,35 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                "cold-water": "0.12",
-                "hot-water": "0.12"
+                generic: {
+                    default: {
+                        "cold-water": "0.12",
+                        "hot-water": "0.12"
+                    }
+                },
+                galvin: {
+                    default: {
+                        "cold-water": "1.5",
+                        "hot-water": "1.5"
+                    }
+                }
             },
             uid: "flushingRimSink",
-            warmTempC: null
+            warmTempC: null,
+            manufacturer: [
+                {
+                    name: "Generic",
+                    abbreviation: "Generic",
+                    priceTableName: "Flushing Rim Sink",
+                    uid: "generic",
+                },
+                {
+                    name: "Galvin",
+                    abbreviation: "Galvin",
+                    priceTableName: "Flushing Rim Sink",
+                    uid: "galvin",
+                }
+            ]
         },
         hoseTap: {
             priceTableName: "Hose Tap",
@@ -541,10 +782,18 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "0.5",
             probabilityOfUsagePCT: "0",
             qLS: {
-                "cold-water": "0.3"
+                generic:{ default: { "cold-water": "0.3" } }
             },
             uid: "hoseTap",
-            warmTempC: null
+            warmTempC: null,
+            manufacturer: [
+                {
+                    name: "Generic",
+                    abbreviation: "Generic",
+                    priceTableName: "Hose Tap",
+                    uid: "generic",
+                },
+            ]
         },
         kitchenSink: {
             priceTableName: "Kitchen Sink",
@@ -591,11 +840,49 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                "cold-water": "0.1",
-                "warm-water": "0.1"
+                generic: {
+                    default: {
+                        "cold-water": "0.1",
+                        "warm-water": "0.1"
+                    }
+                },
+                enware: {
+                    5: {
+                        "cold-water": "0.09",
+                        "warm-water": "0.09"
+                    }
+                },
+                galvin: {
+                    5: {
+                        "cold-water": "0.083",
+                        "warm-water": "0.083"
+                    }
+                }
             },
             uid: "kitchenSink",
-            warmTempC: null
+            warmTempC: null,
+            manufacturer: [
+                {
+                    name: "Generic",
+                    abbreviation: "Generic",
+                    priceTableName: "Kitchen Sink",
+                    uid: "generic",
+                },
+                {
+                    name: "Enware",
+                    abbreviation: "Enware",
+                    priceTableName: "Kitchen Sink",
+                    uid: "enware",
+                    option: ["5"],
+                },
+                {
+                    name: "Galvin",
+                    abbreviation: "Galvin",
+                    priceTableName: "Kitchen Sink",
+                    uid: "galvin",
+                    option: ["5"],
+                }
+            ]
         },
         kitchenSinkHot: {
             priceTableName: "Kitchen Sink",
@@ -642,11 +929,49 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                "cold-water": "0.1",
-                "hot-water": "0.1"
+                generic: {
+                    default: {
+                        "cold-water": "0.1",
+                        "hot-water": "0.1"
+                    }
+                },
+                enware: {
+                    5: {
+                        "cold-water": "0.09",
+                        "warm-water": "0.09"
+                    }
+                },
+                galvin: {
+                    5: {
+                        "cold-water": "0.083",
+                        "warm-water": "0.083"
+                    }
+                }
             },
             uid: "kitchenSinkHot",
-            warmTempC: null
+            warmTempC: null,
+            manufacturer: [
+                {
+                    name: "Generic",
+                    abbreviation: "Generic",
+                    priceTableName: "Kitchen Sink",
+                    uid: "generic",
+                },
+                {
+                    name: "Enware",
+                    abbreviation: "Enware",
+                    priceTableName: "Kitchen Sink",
+                    uid: "enware",
+                    option: ["5"],
+                },
+                {
+                    name: "Galvin",
+                    abbreviation: "Galvin",
+                    priceTableName: "Kitchen Sink",
+                    uid: "galvin",
+                    option: ["5"],
+                }
+            ]
         },
         laundryTrough: {
             priceTableName: "Laundry Trough",
@@ -693,11 +1018,49 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                "cold-water": "0.12",
-                "warm-water": "0.12"
+                generic: {
+                   default: {
+                        "cold-water": "0.12",
+                        "warm-water": "0.12"
+                   }
+                },
+                enware: {
+                    5: {
+                        "cold-water": "0.09",
+                        "warm-water": "0.09"
+                    }
+                },
+                galvin: {
+                    5: {
+                        "cold-water": "0.11",
+                        "warm-water": "0.11"
+                    }
+                }
             },
             uid: "laundryTrough",
-            warmTempC: null
+            warmTempC: null,
+            manufacturer: [
+                {
+                    name: "Generic",
+                    abbreviation: "Generic",
+                    priceTableName: "Laundry Trough",
+                    uid: "generic",
+                },
+                {
+                    name: "Enware",
+                    abbreviation: "Enware",
+                    priceTableName: "Laundry Trough",
+                    uid: "enware",
+                    option: ["5"],
+                },
+                {
+                    name: "Galvin",
+                    abbreviation: "Galvin",
+                    priceTableName: "Laundry Trough",
+                    uid: "galvin",
+                    option: ["5"],
+                }
+            ]
         },
         laundryTroughHot: {
             priceTableName: "Laundry Trough",
@@ -744,11 +1107,49 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "1",
             probabilityOfUsagePCT: "2",
             qLS: {
-                "cold-water": "0.12",
-                "hot-water": "0.12"
+                generic: {
+                    default: {
+                        "cold-water": "0.12",
+                        "warm-water": "0.12"
+                    }
+                },
+                enware: {
+                    5: {
+                        "cold-water": "0.09",
+                        "warm-water": "0.09"
+                    }
+                },
+                galvin: {
+                    5: {
+                        "cold-water": "0.11",
+                        "warm-water": "0.11"
+                    }
+                }
             },
             uid: "laundryTroughHot",
-            warmTempC: null
+            warmTempC: null,
+            manufacturer: [
+                {
+                    name: "Generic",
+                    abbreviation: "Generic",
+                    priceTableName: "Laundry Trough",
+                    uid: "generic",
+                },
+                {
+                    name: "Enware",
+                    abbreviation: "Enware",
+                    priceTableName: "Laundry Trough",
+                    uid: "enware",
+                    option: ["5"],
+                },
+                {
+                    name: "Galvin",
+                    abbreviation: "Galvin",
+                    priceTableName: "Laundry Trough",
+                    uid: "galvin",
+                    option: ["5"],
+                }
+            ]
         },
         shower: {
             priceTableName: "Shower",
@@ -795,11 +1196,53 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "1.5",
             probabilityOfUsagePCT: "4.5",
             qLS: {
-                "cold-water": "0.1",
-                "warm-water": "0.1"
+                generic: {
+                    default: {
+                        "cold-water": "0.1",
+                        "warm-water": "0.1"
+                    }
+                },
+                enware: {
+                    3: {
+                        "cold-water": "0.13",
+                        "warm-water": "0.13"
+                    },
+                    4: {
+                        "cold-water": "0.1",
+                        "warm-water": "0.1"
+                    }
+                },
+                galvin: {
+                    3: {
+                        "cold-water": "0.15",
+                        "warm-water": "0.15"
+                    }
+                }
             },
             uid: "shower",
-            warmTempC: "42"
+            warmTempC: "42",
+            manufacturer: [
+                {
+                    name: "Generic",
+                    abbreviation: "Generic",
+                    priceTableName: "Shower",
+                    uid: "generic",
+                },
+                {
+                    name: "Enware",
+                    abbreviation: "Enware",
+                    priceTableName: "Shower",
+                    uid: "enware",
+                    option: ["3", "4"],
+                },
+                {
+                    name: "Galvin",
+                    abbreviation: "Galvin",
+                    priceTableName: "Shower",
+                    uid: "galvin",
+                    option: ["3"],
+                }
+            ]
         },
         urinal: {
             priceTableName: "Urinal",
@@ -838,10 +1281,18 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: null,
             probabilityOfUsagePCT: "4.5",
             qLS: {
-                "cold-water": "0.1"
+                generic: { default: { "cold-water": "0.1" } }
             },
             uid: "urinal",
-            warmTempC: null
+            warmTempC: null,
+            manufacturer: [
+                {
+                    name: "Generic",
+                    abbreviation: "Generic",
+                    priceTableName: "Urinal",
+                    uid: "generic",
+                },
+            ]
         },
         washingMachine: {
             priceTableName: "Washing Machine",
@@ -888,11 +1339,23 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "0.8",
             probabilityOfUsagePCT: "5.5",
             qLS: {
-                "cold-water": "0.2",
-                "hot-water": "0.1"
+                generic: {
+                    default: {
+                        "cold-water": "0.2",
+                        "hot-water": "0.1"
+                    }
+                }
             },
             uid: "washingMachine",
-            warmTempC: null
+            warmTempC: null,
+            manufacturer: [
+                {
+                    name: "Generic",
+                    abbreviation: "Generic",
+                    priceTableName: "Washing Machine",
+                    uid: "generic",
+                },
+            ]
         },
         wc: {
             priceTableName: "WC",
@@ -931,10 +1394,18 @@ export const initialCatalog: Catalog = {
             outletAboveFloorM: "0.75",
             probabilityOfUsagePCT: "1",
             qLS: {
-                "cold-water": "0.1"
+                generic: { default: { "cold-water": "0.1" } }
             },
             uid: "wc",
-            warmTempC: null
+            warmTempC: null,
+            manufacturer: [
+                {
+                    name: "Generic",
+                    abbreviation: "Generic",
+                    priceTableName: "WC",
+                    uid: "generic",
+                },
+            ]
         }
     },
     mixingValves: {
