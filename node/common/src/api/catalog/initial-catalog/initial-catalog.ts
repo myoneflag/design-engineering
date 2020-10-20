@@ -1510,14 +1510,6 @@ export const initialCatalog: Catalog = {
                         pipeUid: "gmsMedium",
                         safeWorkingPressureKPA: "4330"
                     },
-                    80: {
-                        colebrookWhiteCoefficient: "0.15",
-                        diameterInternalMM: "80.7",
-                        diameterNominalMM: "80",
-                        diameterOutsideMM: "88.7",
-                        pipeUid: "gmsMedium",
-                        safeWorkingPressureKPA: "6530"
-                    }
                 }
             },
             uid: "gmsMedium"
@@ -1638,7 +1630,23 @@ export const initialCatalog: Catalog = {
                         diameterOutsideMM: "75",
                         pipeUid: "hdpeSdr11",
                         safeWorkingPressureKPA: "1600"
-                    }
+                    },
+                    125: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "101",
+                        diameterNominalMM: "125",
+                        diameterOutsideMM: "125",
+                        pipeUid: "hdpeSdr11",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    180: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "145",
+                        diameterNominalMM: "180",
+                        diameterOutsideMM: "180",
+                        pipeUid: "hdpeSdr11",
+                        safeWorkingPressureKPA: "1600"
+                    },
                 }
             },
             uid: "hdpeSdr11"
