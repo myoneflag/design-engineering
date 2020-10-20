@@ -250,7 +250,7 @@ export default class Onboarding extends Vue {
         await getDocuments().then((res) => {
             if (res.success) {
                 const mine = res.data.filter((r) => r.createdBy.username === this.profile.username);
-                result = mine.length === 1;
+                result = mine.length === 2;
             }
         });
 
@@ -312,34 +312,36 @@ export default class Onboarding extends Vue {
             } as OnboardingState);
         }
 
-        if (screen === ONBOARDING_SCREEN.DOCUMENT && this.profile.onboarding && this.profile.onboarding.document === 0) {
-            this.$store.dispatch("onboarding/setOnboarding", {
-                ...this.onboarding, 
-                screen,
-                totalSteps: 7, 
-                currentStep: 1,
-                show: true,
-            } as OnboardingState);
-        }
+        if (await this.isFirstTimeDocument()) {
+            if (screen === ONBOARDING_SCREEN.DOCUMENT && this.profile.onboarding && this.profile.onboarding.document === 0) {
+                this.$store.dispatch("onboarding/setOnboarding", {
+                    ...this.onboarding, 
+                    screen,
+                    totalSteps: 7, 
+                    currentStep: 1,
+                    show: true,
+                } as OnboardingState);
+            }
 
-        if (screen === ONBOARDING_SCREEN.DOCUMENT_PLUMBING && this.profile.onboarding && this.profile.onboarding.document_plumbing === 0) {
-            this.$store.dispatch("onboarding/setOnboarding", {
-                ...this.onboarding, 
-                screen,
-                totalSteps: 10, 
-                currentStep: 1,
-                show: true,
-            } as OnboardingState);
-        }
+            if (screen === ONBOARDING_SCREEN.DOCUMENT_PLUMBING && this.profile.onboarding && this.profile.onboarding.document_plumbing === 0) {
+                this.$store.dispatch("onboarding/setOnboarding", {
+                    ...this.onboarding, 
+                    screen,
+                    totalSteps: 10, 
+                    currentStep: 1,
+                    show: true,
+                } as OnboardingState);
+            }
 
-        if (screen === ONBOARDING_SCREEN.DOCUMENT_SETTING && this.profile.onboarding && this.profile.onboarding.document_setting === 0) {
-            this.$store.dispatch("onboarding/setOnboarding", {
-                ...this.onboarding, 
-                screen,
-                totalSteps: 7, 
-                currentStep: 1,
-                show: true,
-            } as OnboardingState);
+            if (screen === ONBOARDING_SCREEN.DOCUMENT_SETTING && this.profile.onboarding && this.profile.onboarding.document_setting === 0) {
+                this.$store.dispatch("onboarding/setOnboarding", {
+                    ...this.onboarding, 
+                    screen,
+                    totalSteps: 7, 
+                    currentStep: 1,
+                    show: true,
+                } as OnboardingState);
+            }
         }
     }
 
