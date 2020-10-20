@@ -229,3 +229,83 @@ export function upgrade17to18(original: DrawingState) {
         system.networks.CONNECTIONS.minimumPipeSize = 16;
     });
 }
+
+export function upgrade18to19(original: DrawingState) {
+    if (!original.metadata.flowSystems.find((f) => f.uid === StandardFlowSystemUids.FireHydrant)) {
+        original.metadata.flowSystems.push(
+            {
+                name: "Fire Hydrant",
+                temperature: 20,
+                color: { hex: "#9F0500" },
+                uid: StandardFlowSystemUids.FireHydrant,
+                fluid: "water",
+                hasReturnSystem: false,
+                returnIsInsulated: false,
+                returnMaxVelocityMS: 1,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationJacket: InsulationJackets.allServiceJacket,
+                insulationThicknessMM: 25,
+
+                networks: {
+                    RISERS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 4,
+                        material: "gmsMedium",
+                        minimumPipeSize: 100,
+                    },
+                    RETICULATIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 4,
+                        material: "gmsMedium",
+                        minimumPipeSize: 100,
+                    },
+                    CONNECTIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 4,
+                        material: "gmsMedium",
+                        minimumPipeSize: 100,
+                    }
+                }
+            }
+        );
+    }
+
+    if (!original.metadata.flowSystems.find((f) => f.uid === StandardFlowSystemUids.FireHoseReel)) {
+        original.metadata.flowSystems.push(
+            {
+                name: "Fire Hose Reel",
+                temperature: 20,
+                color: { hex: "#FCDC00" },
+                uid: StandardFlowSystemUids.FireHoseReel,
+                fluid: "water",
+                hasReturnSystem: false,
+                returnIsInsulated: false,
+                returnMaxVelocityMS: 1,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationJacket: InsulationJackets.allServiceJacket,
+                insulationThicknessMM: 25,
+
+                networks: {
+                    RISERS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 1.5,
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
+                    },
+                    RETICULATIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 1.5,
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
+                    },
+                    CONNECTIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 1.5,
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
+                    }
+                }
+            }
+        );
+    }
+}

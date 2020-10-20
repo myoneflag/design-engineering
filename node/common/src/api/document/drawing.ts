@@ -410,7 +410,75 @@ export const initialDrawing: DrawingState = {
                         minimumPipeSize: 16,
                     }
                 }
-            }
+            },
+            {
+                name: "Fire Hydrant",
+                temperature: 20,
+                color: { hex: "#9F0500" },
+                uid: StandardFlowSystemUids.FireHydrant,
+                fluid: "water",
+                hasReturnSystem: false,
+                returnIsInsulated: false,
+                returnMaxVelocityMS: 1,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationJacket: InsulationJackets.allServiceJacket,
+                insulationThicknessMM: 25,
+
+                networks: {
+                    RISERS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 4,
+                        material: "gmsMedium",
+                        minimumPipeSize: 100,
+                    },
+                    RETICULATIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 4,
+                        material: "gmsMedium",
+                        minimumPipeSize: 100,
+                    },
+                    CONNECTIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 4,
+                        material: "gmsMedium",
+                        minimumPipeSize: 100,
+                    }
+                }
+            },
+            {
+                name: "Fire Hose Reel",
+                temperature: 20,
+                color: { hex: "#FCDC00" },
+                uid: StandardFlowSystemUids.FireHoseReel,
+                fluid: "water",
+                hasReturnSystem: false,
+                returnIsInsulated: false,
+                returnMaxVelocityMS: 1,
+                insulationMaterial: InsulationMaterials.calciumSilicate,
+                insulationJacket: InsulationJackets.allServiceJacket,
+                insulationThicknessMM: 25,
+
+                networks: {
+                    RISERS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 1.5,
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
+                    },
+                    RETICULATIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 1.5,
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
+                    },
+                    CONNECTIONS: {
+                        spareCapacityPCT: 0,
+                        velocityMS: 1.5,
+                        material: "copperTypeB",
+                        minimumPipeSize: 15,
+                    }
+                }
+            },
         ],
         calculationParams: {
             psdMethod: SupportedPsdStandards.as35002018LoadingUnits,

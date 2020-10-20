@@ -290,13 +290,15 @@ export const COMPONENT_PRESSURE_LOSS_METHODS: Choice[] = [
 ];
 
 export const LEVEL_HEIGHT_DIFF_M = 3;
-export const CURRENT_VERSION = 18;
+export const CURRENT_VERSION = 19;
 
 export enum StandardFlowSystemUids {
     ColdWater = "cold-water",
     HotWater = "hot-water",
     WarmWater = "warm-water",
     Gas = 'gas',
+    FireHydrant = "fire-hydrant",
+    FireHoseReel = "fire-hose-reel",
 }
 
 export enum StandardMaterialUids {
