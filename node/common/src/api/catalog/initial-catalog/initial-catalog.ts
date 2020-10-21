@@ -158,6 +158,10 @@ export const initialCatalog: Catalog = {
                         "cold-water": "0.11",
                         "warm-water": "0.11"
                     },
+                    5: {
+                        "cold-water": "0.1",
+                        "warm-water": "0.1"
+                    },
                     6: {
                         "cold-water": "0.83",
                         "warm-water": "0.83"
