@@ -508,7 +508,7 @@ export const initialDrawing: DrawingState = {
             ],
             mixingValves: [
                 { manufacturer: "caleffi", uid: "temperingValve", selected: null,},
-                { manufacturer: "caleffi", uid: "tmv", selected: null,},
+                { manufacturer: "enware", uid: "tmv", selected: null,},
             ],
             prv: [
                 { manufacturer: "caleffi", uid: "prv", selected: null,},
