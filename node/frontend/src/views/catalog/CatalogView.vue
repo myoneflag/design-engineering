@@ -74,9 +74,11 @@
                                                 v-if="!!(manufacturer.option)"
                                                 :key="manufacturer.name"
                                                 right
+                                                block
                                                 size="sm"
                                                 :variant="isSelectedManufacturer(prop, data.item._key, manufacturer.uid) && 'primary' || 'outline-primary'" 
                                                 :text="manufacturer.name"
+                                                class="manufacturer-item-btn"
                                             >
                                                 <b-dropdown-item-button v-for="option in manufacturer.option" :key="option"
                                                     :value="option"

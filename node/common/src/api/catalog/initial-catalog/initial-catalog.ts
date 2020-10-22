@@ -55,13 +55,13 @@ export const initialCatalog: Catalog = {
                     }
                 },
                 enware: {
-                    5: {
+                    "5*": {
                         "cold-water": "0.09",
                         "warm-water": "0.09"
                     },
                 },
                 galvin: {
-                    5: {
+                    "5*": {
                         "cold-water": "0.11",
                         "warm-water": "0.11"
                     },
@@ -81,14 +81,14 @@ export const initialCatalog: Catalog = {
                     abbreviation: "Enware",
                     priceTableName: "Ablution Trough",
                     uid: "enware",
-                    option: ["5"],
+                    option: ["5*"],
                 },
                 {
                     name: "Galvin",
                     abbreviation: "Galvin",
                     priceTableName: "Ablution Trough",
                     uid: "galvin",
-                    option: ["5"],
+                    option: ["5*"],
                 }
             ],
         },
@@ -144,27 +144,27 @@ export const initialCatalog: Catalog = {
                     }
                 },
                 enware: {
-                    3: {
+                    "3*": {
                         "cold-water": "0.13",
                         "warm-water": "0.13"
                     },
-                    5: {
+                    "5*": {
                         "cold-water": "0.09",
                         "warm-water": "0.09"
                     },
                 },
                 galvin: {
-                    4: {
+                    "4*": {
                         "cold-water": "0.11",
                         "warm-water": "0.11"
                     },
-                    5: {
-                        "cold-water": "0.1",
-                        "warm-water": "0.1"
+                    "5*": {
+                        "cold-water": "0.083",
+                        "warm-water": "0.083"
                     },
-                    6: {
-                        "cold-water": "0.83",
-                        "warm-water": "0.83"
+                    "6*": {
+                        "cold-water": "0.083",
+                        "warm-water": "0.083"
                     },
                 },
             },
@@ -182,14 +182,14 @@ export const initialCatalog: Catalog = {
                     abbreviation: "Enware",
                     priceTableName: "Basin",
                     uid: "enware",
-                    option: ["3", "5"],
+                    option: ["3*", "5*"],
                 },
                 {
                     name: "Galvin",
                     abbreviation: "Galvin",
                     priceTableName: "Basin",
                     uid: "galvin",
-                    option: ["4", "5", "6"],
+                    option: ["4*", "5*", "6*"],
                 }
             ]
         },
@@ -245,7 +245,7 @@ export const initialCatalog: Catalog = {
                     }
                 },
                 galvin: {
-                    4: {
+                    "4*": {
                         "cold-water": "0.11",
                         "warm-water": "0.11"
                     }
@@ -265,7 +265,7 @@ export const initialCatalog: Catalog = {
                     abbreviation: "Galvin",
                     priceTableName: "Bath",
                     uid: "galvin",
-                    option: ["4"],
+                    option: ["4*"],
                 }
             ]
         },
@@ -384,13 +384,13 @@ export const initialCatalog: Catalog = {
                    }
                 },  
                 enware: {
-                    5: {
+                    "5*": {
                         "cold-water": "0.09",
                         "warm-water": "0.09"
                     }
                 },  
                 galvin: {
-                    5: {
+                    "5*": {
                         "cold-water": "0.11",
                         "warm-water": "0.11"
                     }
@@ -410,14 +410,14 @@ export const initialCatalog: Catalog = {
                     abbreviation: "Enware",
                     priceTableName: "Beverage Bay",
                     uid: "enware",
-                    option: ["5"],
+                    option: ["5*"],
                 },
                 {
                     name: "Galvin",
                     abbreviation: "Galvin",
                     priceTableName: "Beverage Bay",
                     uid: "galvin",
-                    option: ["5"],
+                    option: ["5*"],
                 }
             ]
         },
@@ -851,13 +851,13 @@ export const initialCatalog: Catalog = {
                     }
                 },
                 enware: {
-                    5: {
+                    "5*": {
                         "cold-water": "0.09",
                         "warm-water": "0.09"
                     }
                 },
                 galvin: {
-                    5: {
+                    "5*": {
                         "cold-water": "0.083",
                         "warm-water": "0.083"
                     }
@@ -877,14 +877,14 @@ export const initialCatalog: Catalog = {
                     abbreviation: "Enware",
                     priceTableName: "Kitchen Sink",
                     uid: "enware",
-                    option: ["5"],
+                    option: ["5*"],
                 },
                 {
                     name: "Galvin",
                     abbreviation: "Galvin",
                     priceTableName: "Kitchen Sink",
                     uid: "galvin",
-                    option: ["5"],
+                    option: ["5*"],
                 }
             ]
         },
@@ -940,15 +940,15 @@ export const initialCatalog: Catalog = {
                     }
                 },
                 enware: {
-                    5: {
+                    "5*": {
                         "cold-water": "0.09",
-                        "warm-water": "0.09"
+                        "hot-water": "0.09"
                     }
                 },
                 galvin: {
-                    5: {
+                    "5*": {
                         "cold-water": "0.083",
-                        "warm-water": "0.083"
+                        "hot-water": "0.083"
                     }
                 }
             },
@@ -966,14 +966,14 @@ export const initialCatalog: Catalog = {
                     abbreviation: "Enware",
                     priceTableName: "Kitchen Sink",
                     uid: "enware",
-                    option: ["5"],
+                    option: ["5*"],
                 },
                 {
                     name: "Galvin",
                     abbreviation: "Galvin",
                     priceTableName: "Kitchen Sink",
                     uid: "galvin",
-                    option: ["5"],
+                    option: ["5*"],
                 }
             ]
         },
@@ -1029,13 +1029,13 @@ export const initialCatalog: Catalog = {
                    }
                 },
                 enware: {
-                    5: {
+                    "5*": {
                         "cold-water": "0.09",
                         "warm-water": "0.09"
                     }
                 },
                 galvin: {
-                    5: {
+                    "5*": {
                         "cold-water": "0.11",
                         "warm-water": "0.11"
                     }
@@ -1055,14 +1055,14 @@ export const initialCatalog: Catalog = {
                     abbreviation: "Enware",
                     priceTableName: "Laundry Trough",
                     uid: "enware",
-                    option: ["5"],
+                    option: ["5*"],
                 },
                 {
                     name: "Galvin",
                     abbreviation: "Galvin",
                     priceTableName: "Laundry Trough",
                     uid: "galvin",
-                    option: ["5"],
+                    option: ["5*"],
                 }
             ]
         },
@@ -1114,19 +1114,19 @@ export const initialCatalog: Catalog = {
                 generic: {
                     default: {
                         "cold-water": "0.12",
-                        "warm-water": "0.12"
+                        "hot-water": "0.12"
                     }
                 },
                 enware: {
-                    5: {
+                    "5*": {
                         "cold-water": "0.09",
-                        "warm-water": "0.09"
+                        "hot-water": "0.09"
                     }
                 },
                 galvin: {
-                    5: {
+                    "5*": {
                         "cold-water": "0.11",
-                        "warm-water": "0.11"
+                        "hot-water": "0.11"
                     }
                 }
             },
@@ -1144,14 +1144,14 @@ export const initialCatalog: Catalog = {
                     abbreviation: "Enware",
                     priceTableName: "Laundry Trough",
                     uid: "enware",
-                    option: ["5"],
+                    option: ["5*"],
                 },
                 {
                     name: "Galvin",
                     abbreviation: "Galvin",
                     priceTableName: "Laundry Trough",
                     uid: "galvin",
-                    option: ["5"],
+                    option: ["5*"],
                 }
             ]
         },
@@ -1207,17 +1207,17 @@ export const initialCatalog: Catalog = {
                     }
                 },
                 enware: {
-                    3: {
+                    "3*": {
                         "cold-water": "0.13",
                         "warm-water": "0.13"
                     },
-                    4: {
+                    "4*": {
                         "cold-water": "0.1",
                         "warm-water": "0.1"
                     }
                 },
                 galvin: {
-                    3: {
+                    "3*": {
                         "cold-water": "0.15",
                         "warm-water": "0.15"
                     }
@@ -1237,14 +1237,14 @@ export const initialCatalog: Catalog = {
                     abbreviation: "Enware",
                     priceTableName: "Shower",
                     uid: "enware",
-                    option: ["3", "4"],
+                    option: ["3*", "4*"],
                 },
                 {
                     name: "Galvin",
                     abbreviation: "Galvin",
                     priceTableName: "Shower",
                     uid: "galvin",
-                    option: ["3"],
+                    option: ["3*"],
                 }
             ]
         },
