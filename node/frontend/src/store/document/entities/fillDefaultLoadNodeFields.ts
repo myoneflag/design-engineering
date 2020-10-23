@@ -57,6 +57,10 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
             || !result.node.continuousFlowLS)
         {
             for (var i = 0; i < node.fixtures.length; i++) {
+                const selectedMaterialManufacturer = doc.drawing.metadata.catalog.fixtures.find(obj => obj.uid === node.fixtures[i]);
+                const manufacturer = selectedMaterialManufacturer?.manufacturer || 'generic';
+                const selectedOption = selectedMaterialManufacturer?.selected || 'default';
+
                 if (result.node.loadingUnits === null
                     && isLUStandard(psdStrategy)
                     && result.systemUidOption)
@@ -81,9 +85,9 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
                     && result.systemUidOption)
                 {   
                     let systemChk = null;
-                    if (!!(catalog.fixtures[node.fixtures[i]].qLS[result.systemUidOption])) {
+                    if (!!(catalog.fixtures[node.fixtures[i]].qLS[manufacturer][selectedOption][result.systemUidOption])) {
                         systemChk = result.systemUidOption;
-                    } else if (result.systemUidOption === 'hot-water' && !!(catalog.fixtures[node.fixtures[i]].qLS['warm-water'])) {
+                    } else if (result.systemUidOption === 'hot-water' && !!(catalog.fixtures[node.fixtures[i]].qLS[manufacturer][selectedOption]['warm-water'])) {
                         systemChk = 'warm-water';
                     }
 
