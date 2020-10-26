@@ -290,19 +290,19 @@ export function upgrade18to19(original: DrawingState) {
                         spareCapacityPCT: 0,
                         velocityMS: 1.5,
                         material: "copperTypeB",
-                        minimumPipeSize: 15,
+                        minimumPipeSize: 25,
                     },
                     RETICULATIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 1.5,
                         material: "copperTypeB",
-                        minimumPipeSize: 15,
+                        minimumPipeSize: 25,
                     },
                     CONNECTIONS: {
                         spareCapacityPCT: 0,
                         velocityMS: 1.5,
                         material: "copperTypeB",
-                        minimumPipeSize: 15,
+                        minimumPipeSize: 25,
                     }
                 }
             }
