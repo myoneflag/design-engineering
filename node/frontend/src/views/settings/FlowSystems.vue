@@ -128,13 +128,21 @@ export default class FlowSystems extends Vue {
             ["", "Network Properties", "title3"]
         );
 
-        const pipeSizes: { [key: string]: Array<{key: number, name: string}> } = {};
-        Object.entries(this.catalog.pipes).map(([key, pipeProp]) => {
-            pipeSizes[key] = Object.keys(pipeProp.pipesBySize.generic).map(x => ({
-                key: +x,
-                name: x + "mm",
-            }));
-        });
+        // const pipeSizes: { [key: string]: Array<{key: number, name: string}> } = {};
+        // Object.entries(this.catalog.pipes).map(([key, pipeProp]) => {
+        //     pipeSizes[key] = Object.keys(pipeProp.pipesBySize.generic)
+        //     .filter(x => {
+        //         if (this.selectedSystemId === 5) {
+        //             return +x >= 25;
+        //         }
+                
+        //         return true;
+        //     })
+        //     .map(x => ({
+        //         key: +x,
+        //         name: x + "mm",
+        //     }));
+        // });
 
         for (const netKey of Object.keys(this.selectedSystem.networks)) {
             if (netKey === NetworkType.CONNECTIONS && selectedIsGas) {
@@ -154,7 +162,7 @@ export default class FlowSystems extends Vue {
                     "networks." + netKey + ".minimumPipeSize",
                     "Minimum Pipe Size",
                     "choice",
-                    pipeSizes[this.selectedSystem.networks[netKey as NetworkType].material],
+                    this.pipeSizes[this.selectedSystem.networks[netKey as NetworkType].material],
                     this.selectedSystem.networks[netKey as NetworkType].material
                 ],
                 ["networks." + netKey + ".spareCapacityPCT", "Spare Capacity (%)", "range", 0, 100]
@@ -176,13 +184,34 @@ export default class FlowSystems extends Vue {
         return this.document.drawing.metadata.flowSystems;
     }
 
+    get pipeSizes() {
+        const pipeSizes: { [key: string]: Array<{key: number, name: string}> } = {};
+        
+        Object.entries(this.catalog.pipes).map(([key, pipeProp]) => {
+            pipeSizes[key] = Object.keys(pipeProp.pipesBySize.generic)
+            .filter(x => {
+                if (this.selectedSystemId === 5) {
+                    return +x >= 25;
+                }
+                
+                return true;
+            })
+            .map(x => ({
+                key: +x,
+                name: x + "mm",
+            }));
+        });
+
+        return pipeSizes;
+    }
+
     get risersMaterial() {
         return this.selectedSystem.networks.RISERS.material;
     }
 
     @Watch('risersMaterial')
     handleRisersMaterialChange(val: string, oldVal: string) {
-        setPropertyByString(this.selectedSystem, 'networks.RISERS.minimumPipeSize', Number(Object.keys(this.catalog.pipes[val].pipesBySize.generic)[0]));
+        setPropertyByString(this.selectedSystem, 'networks.RISERS.minimumPipeSize', this.pipeSizes[val][0].key);
     }
 
     get reticulationsMaterial() {
@@ -191,7 +220,7 @@ export default class FlowSystems extends Vue {
 
     @Watch('reticulationsMaterial')
     handleReticulationsMaterialChange(val: string, oldVal: string) {
-        setPropertyByString(this.selectedSystem, 'networks.RETICULATIONS.minimumPipeSize', Number(Object.keys(this.catalog.pipes[val].pipesBySize.generic)[0]));
+        setPropertyByString(this.selectedSystem, 'networks.RETICULATIONS.minimumPipeSize', this.pipeSizes[val][0].key);
     }
 
     get connectionsMaterial() {
@@ -200,7 +229,7 @@ export default class FlowSystems extends Vue {
 
     @Watch('connectionsMaterial')
     handleConnectionsMaterialChange(val: string, oldVal: string) {
-        setPropertyByString(this.selectedSystem, 'networks.CONNECTIONS.minimumPipeSize', Number(Object.keys(this.catalog.pipes[val].pipesBySize.generic)[0]));
+        setPropertyByString(this.selectedSystem, 'networks.CONNECTIONS.minimumPipeSize', this.pipeSizes[val][0].key);
     }
 
     selectSystem(value: number) {
