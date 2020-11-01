@@ -13,6 +13,7 @@ import {MeasurementSystem, UnitsParameters} from "../../../../../common/src/api/
 import {GlobalStore} from "../../../htmlcanvas/lib/global-store";
 import {convertPipeDiameterFromMetric, Units} from "../../../../../common/src/lib/measurements";
 import {DocumentState} from "../types";
+import {bool} from "aws-sdk/clients/signer";
 
 export enum NoFlowAvailableReason {
     NO_SOURCE = "NO_SOURCE",
@@ -61,9 +62,12 @@ export default interface PipeCalculation extends PsdCalculation, Calculation {
 
     gasMJH: number | null;
 
+    // Vent specific calcs;
     // An invisible, transactional value during calculations specifically for stacks.
     stackDedicatedVentSize: number | null;
-    vented: boolean | null;
+    ventRoot: string | null;
+    ventTooFarDist: boolean | null;
+    ventTooFarWC: boolean | null;
 }
 
 export function makePipeCalculationFields(
@@ -329,6 +333,8 @@ export function emptyPipeCalculation(): PipeCalculation {
         gradePCT: null,
 
         stackDedicatedVentSize: null,
-        vented: null,
+        ventRoot: null,
+        ventTooFarWC: null,
+        ventTooFarDist: null,
     };
 }
