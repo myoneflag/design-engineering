@@ -82,18 +82,20 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
         );
     }
 
-    res.push(
-        {
-            property: "heightAboveGroundM",
-            title: "AHD",
-            hasDefault: false,
-            isCalculated: false,
-            requiresInput: true,
-            type: FieldType.Number,
-            params: { min: null, max: null },
-            multiFieldId: "heightAboveGroundM",
-            units: Units.Meters
-        });
+    if (!isDrainage(entity.systemUid)) {
+        res.push(
+            {
+                property: "heightAboveGroundM",
+                title: "AHD",
+                hasDefault: false,
+                isCalculated: false,
+                requiresInput: true,
+                type: FieldType.Number,
+                params: { min: null, max: null },
+                multiFieldId: "heightAboveGroundM",
+                units: Units.Meters
+            });
+    }
 
     res.push(
         {
@@ -119,6 +121,7 @@ export function fillFlowSourceDefaults(drawing: DrawingState, value: FlowSourceE
         if (result.color == null) {
             result.color = system.color;
         }
+
     } else {
         throw new Error("Existing system not found for object " + JSON.stringify(value));
     }

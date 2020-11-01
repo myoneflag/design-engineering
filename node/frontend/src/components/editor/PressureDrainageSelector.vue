@@ -16,6 +16,7 @@
                 variant="outline-dark"
         >
             Drainage
+            <b-badge style="font-size: 12px">Beta</b-badge>
         </b-button>
     </b-button-group>
 </template>

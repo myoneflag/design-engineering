@@ -154,6 +154,17 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         ctx.fill();
     }
 
+    isActive(): boolean {
+        const systemUid = this.entity.systemUid;
+        switch (this.document.uiState.pressureOrDrainage) {
+            case "pressure":
+                return !isDrainage(systemUid);
+            case "drainage":
+                return isDrainage(systemUid);
+        }
+        assertUnreachable(this.document.uiState.pressureOrDrainage);
+    }
+
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
         return [];
     }
@@ -165,6 +176,9 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
     }
 
     color(doc: DocumentState) {
+        if (!this.isActive()) {
+            return {hex: '#777777'};
+        }
         return this.entity.color == null ? this.system(doc).color : this.entity.color;
     }
 
@@ -226,8 +240,15 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         const tower: Array<
             [ConnectableEntityConcrete, PipeEntity] | [ConnectableEntityConcrete]
         > = this.getCalculationTower(context);
+
         const se = cloneSimple(this.entity);
         se.uid += ".calculation";
+
+        if (isDrainage(this.entity.systemUid)) {
+            // Drainage pipe has no height.
+            se.heightAboveGroundM = tower[0]?.[0]?.calculationHeightM! || 0;
+        }
+
         se.calculationHeightM = se.heightAboveGroundM;
 
         if (tower.length === 0) {
