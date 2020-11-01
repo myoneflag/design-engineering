@@ -1,26 +1,16 @@
-import { DocumentState } from "../../../src/store/document/types";
-import { MainEventBus } from "../../../src/store/main-event-bus";
-import PointTool from "../../../src/htmlcanvas/tools/point-tool";
+import {MainEventBus} from "../../../src/store/main-event-bus";
 import RiserEntity from "../../../../common/src/api/document/entities/riser-entity";
-import { EntityType } from "../../../../common/src/api/document/entities/types";
+import {EntityType} from "../../../../common/src/api/document/entities/types";
 import uuid from "uuid";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
-import { getInsertCoordsAt } from "../../../src/htmlcanvas/lib/utils";
-import { InteractionType } from "../../../src/htmlcanvas/lib/interaction";
-import * as _ from "lodash";
-import Pipe from "../../../src/htmlcanvas/objects/pipe";
-import BackedDrawableObject from "../../../src/htmlcanvas/lib/backed-drawable-object";
-import { ConnectableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
-import { addValveAndSplitPipe } from "../../../src/htmlcanvas/lib/black-magic/split-pipe";
-import { rebaseAll } from "../../../src/htmlcanvas/lib/black-magic/rebase-all";
-import { ConnectableEntity, Coord, FlowSystemParameters } from "../../../../common/src/api/document/drawing";
-import { cloneSimple } from "../../../../common/src/lib/utils";
-import { moveOnto } from "../lib/black-magic/move-onto";
-import { BaseBackedConnectable } from "../lib/BackedConnectable";
-import { cooperativeYield } from "../utils";
-import SnappingInsertTool, { CONNECTABLE_SNAP_RADIUS_PX } from "./snapping-insert-tool";
+import {InteractionType} from "../../../src/htmlcanvas/lib/interaction";
+import {Coord, FlowSystemParameters, NetworkType} from "../../../../common/src/api/document/drawing";
+import {cloneSimple} from "../../../../common/src/lib/utils";
+import {moveOnto} from "../lib/black-magic/move-onto";
+import {BaseBackedConnectable} from "../lib/BackedConnectable";
+import SnappingInsertTool, {CONNECTABLE_SNAP_RADIUS_PX} from "./snapping-insert-tool";
 
-export default function insertRiser(context: CanvasContext, system: FlowSystemParameters) {
+export default function insertRiser(context: CanvasContext, system: FlowSystemParameters, isVent: boolean | undefined) {
     const newUid = uuid();
     MainEventBus.$emit(
         "set-tool-handler",
@@ -44,6 +34,14 @@ export default function insertRiser(context: CanvasContext, system: FlowSystemPa
                         type: InteractionType.INSERT
                     },
                     (o) => {
+                        if (isVent) {
+                            // Vents should only connect to other vents
+                            if (o[0].type === EntityType.PIPE) {
+                                if (o[0].network !== NetworkType.CONNECTIONS) {
+                                    return false;
+                                }
+                            }
+                        }
                         return o[0].type === EntityType.FITTING || o[0].type === EntityType.PIPE;
                     }
                 );
@@ -63,6 +61,7 @@ export default function insertRiser(context: CanvasContext, system: FlowSystemPa
                     systemUid: system.uid,
                     temperatureC: null,
                     type: EntityType.RISER,
+                    isVent: !!isVent,
                     uid: newUid
                 };
 

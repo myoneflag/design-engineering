@@ -131,7 +131,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         ctx.beginPath();
         ctx.fillStyle = "#000000";
 
-        if (isDrainage(this.entity.systemUid)) {
+        if (isDrainage(this.entity.systemUid) && !this.entity.isVent) {
             // stack. Draw upside down traingle.
             ctx.moveTo(0, this.lastDrawnDiameterW * 0.45);
             ctx.lineTo(this.lastDrawnDiameterW * 0.38, -this.lastDrawnDiameterW * 0.25);
@@ -162,6 +162,9 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
     }
 
     color(doc: DocumentState) {
+        if (this.entity.isVent) {
+            return this.system(doc).drainageProperties.ventColor;
+        }
         return this.entity.color == null ? this.system(doc).color : this.entity.color;
     }
 
@@ -253,10 +256,14 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                 if (tryToFix) {
                     this.entity.topHeightM = this.maxPipeHeight(context);
                 } else {
+                    let messageBase = "Riser top can't be lower than our highest pipe. (";
+                    if (this.entity.isVent) {
+                        messageBase = "Vent top height must be higher than the highest pipe length. (";
+                    }
                     return {
                         success: false,
                         message:
-                            "Riser top can't be lower than our highest pipe. (" +
+                            messageBase +
                             this.entity.uid +
                             ", " +
                             this.entity.topHeightM +

@@ -1451,12 +1451,14 @@
             outletSystemUid: string;
             title: string;
             customNodeId: number;
+            isVent: boolean | undefined;
         }) {
-            const { entityName, system, catalogId, valveType, nodeType, valveName, networkType, bigValveType, plantType, inletSystemUid, outletSystemUid, title } = params;
+            const { entityName, system, catalogId, valveType, nodeType, valveName, networkType,
+                bigValveType, plantType, inletSystemUid, outletSystemUid, title, isVent } = params;
             this.select([], SelectMode.Replace);
 
             if (entityName === EntityType.RISER) {
-                insertRiser(this, system);
+                insertRiser(this, system, isVent);
             } else if (entityName === EntityType.RETURN) {
                 this.insertFlowReturn(system);
             } else if (entityName === EntityType.PIPE) {

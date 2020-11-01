@@ -51,6 +51,9 @@ export default class RiserProperties extends Vue {
     }
 
     get name() {
+        if (this.$props.selectedEntity.isVent) {
+            return "Vertical Vent";
+        }
         return getEntityName(this.$props.selectedEntity);
     }
 

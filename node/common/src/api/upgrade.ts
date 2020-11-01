@@ -316,3 +316,4 @@ export function upgrade18to19(original: DrawingState) {
 
     // Add drainage rough in to fixtures.
     // Vent colour setting to flow systems
+    // Add isVent option of riser.

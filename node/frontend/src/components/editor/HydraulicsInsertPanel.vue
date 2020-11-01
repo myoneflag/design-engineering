@@ -93,7 +93,19 @@
                         v-b-tooltip.hover
                         title="Vent"
                 >
-                    <v-icon name="wave-square" scale="1.2" />{{
+                    <v-icon name="wind" scale="1.2" />{{
+                    catalog.pipes[selectedSystem.networks[NetworkType.CONNECTIONS].material].abbreviation
+                    }}
+                </b-button>
+                <b-button
+                        v-if="systemLayout === 'drainage'"
+                        variant="outline-dark"
+                        class="insertBtn pipes btn-sm"
+                        @click="toggleVerticalVent"
+                        v-b-tooltip.hover
+                        title="Vertical Vent"
+                >
+                    <v-icon name="arrow-up" scale="1.2" />{{
                     catalog.pipes[selectedSystem.networks[NetworkType.CONNECTIONS].material].abbreviation
                     }}
                 </b-button>
@@ -438,14 +450,6 @@ export default class HydraulicsInsertPanel extends Vue {
             hotWaterPlant,
             tank,
             pump,
-            prv,
-            ballValve,
-            gateValve,
-            butterflyValve,
-            balancingValve,
-            strainer,
-            waterMeter,
-            checkValve,
             nodePair,
             continuousFlowNode,
             dwellingNodePair,
@@ -768,6 +772,14 @@ export default class HydraulicsInsertPanel extends Vue {
             entityName: this.entityNames.PIPE,
             system: this.selectedSystem,
             networkType: NetworkType.CONNECTIONS,
+        });
+    }
+
+    toggleVerticalVent() {
+        this.$emit('insert', {
+            entityName: this.entityNames.RISER,
+            system: this.selectedSystem,
+            isVent: true,
         });
     }
 
