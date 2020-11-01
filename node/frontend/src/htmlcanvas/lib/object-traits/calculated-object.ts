@@ -246,7 +246,7 @@ export function CalculatedObject<
                     }
                 }
 
-                // line to
+                // line too
                 const boxShape = new Flatten.Polygon();
                 const worldMin = vp.toWorldCoord(
                     TM.applyToPoint(context.vp.currToScreenTransform(ctx), { x: box.xmin, y: box.ymin })

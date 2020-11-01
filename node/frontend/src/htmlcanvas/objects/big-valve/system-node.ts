@@ -27,9 +27,10 @@ import * as TM from "transformation-matrix";
 import { Matrix } from "transformation-matrix";
 import PipeEntity from "../../../../../common/src/api/document/entities/pipe-entity";
 import SystemNodeCalculation from "../../../store/document/calculations/system-node-calculation";
-import { assertUnreachable } from "../../../../../common/src/api/config";
+import {assertUnreachable, isDrainage} from "../../../../../common/src/api/config";
 import { Coord } from "../../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../../common/src/lib/utils";
+import {flowSystemsCompatible} from "../../lib/utils";
 
 @CalculatedObject
 @ConnectableObject({customCopyObjects: true})
@@ -54,7 +55,7 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
                 if (this.globalStore.getConnections(this.entity.uid).length > 0) {
                     return null;
                 }
-                if (interaction.system.uid !== this.entity.systemUid && !this.entity.allowAllSystems) {
+                if (!flowSystemsCompatible(interaction.system.uid, this.entity.systemUid) && !this.entity.allowAllSystems) {
                     return null;
                 }
                 break;
