@@ -112,7 +112,7 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity):
 
         {
             property: "probabilityOfUsagePCT",
-            title: "2018 UPC Drainage Fixture Unit",
+            title: "Probability of usage (%)",
             hasDefault: true,
             highlightOnOverride: COLORS.YELLOW,
             isCalculated: false,
