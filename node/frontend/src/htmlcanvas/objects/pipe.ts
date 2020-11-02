@@ -436,6 +436,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 lengthM: null,
                 material: this.entity.material,
                 maximumVelocityMS: this.entity.maximumVelocityMS,
+                gradePCT: null,
                 parentUid: null,
                 network: determineConnectableNetwork(this.globalStore, e)!,
                 systemUid: this.entity.systemUid,

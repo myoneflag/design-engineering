@@ -219,6 +219,7 @@ function insertPipeChain(
                     heightAboveFloorM: heightM,
                     material: null,
                     maximumVelocityMS: null,
+                    gradePCT: null,
                     parentUid: null,
                     systemUid: system.uid,
                     network,

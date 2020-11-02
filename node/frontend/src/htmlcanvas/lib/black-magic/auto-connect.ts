@@ -1020,6 +1020,7 @@ export class AutoConnector {
             lengthM: null,
             material: null,
             maximumVelocityMS: null,
+            gradePCT: null,
             parentUid: null,
             systemUid,
             type: EntityType.PIPE,

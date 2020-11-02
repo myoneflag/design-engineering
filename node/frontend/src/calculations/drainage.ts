@@ -48,6 +48,9 @@ export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext
                     if (size.minUnits <= psdUnits.drainageUnits && size.maxUnits >= psdUnits.drainageUnits) {
                         calc.realNominalPipeDiameterMM = calc.optimalInnerPipeDiameterMM = size.sizeMM;
                         calc.gradePCT = size.gradePCT;
+                        if (entity.gradePCT !== null) {
+                            calc.gradePCT = entity.gradePCT; // user override grade
+                        }
                         break;
                     }
                 }
@@ -57,6 +60,10 @@ export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext
             // AKA vents.
             break;
 
+    }
+
+    if (entity.diameterMM !== null) {
+        calc.realNominalPipeDiameterMM = calc.optimalInnerPipeDiameterMM = entity.diameterMM;
     }
 }
 

@@ -20,6 +20,7 @@ export default interface PipeEntity extends DrawableEntity {
     diameterMM: number | null;
 
     heightAboveFloorM: number;
+    gradePCT: number | null;
 
     color: Color | null;
     readonly endpointUid: [string, string];
@@ -132,6 +133,22 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
                 units: Units.MetersPerSecond
             },
         );
+    } else {
+        if (entity.network === NetworkType.RETICULATIONS) {
+            fields.push(
+                {
+                    property: "gradePCT",
+                    title: "Grade (%)",
+                    hasDefault: false,
+                    isCalculated: true,
+                    highlightOnOverride: COLORS.YELLOW,
+                    type: FieldType.Number,
+                    params: {min: 0, max: null, initialValue: 0},
+                    multiFieldId: "gradePCT",
+                    units: Units.None
+                },
+            );
+        }
     }
 
     fields.push(

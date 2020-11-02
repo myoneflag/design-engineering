@@ -751,7 +751,8 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                             systemUid,
                             network: spawnedPipeNetwork!,
                             type: EntityType.PIPE,
-                            uid: this.uid + "." + i + ".p"
+                            uid: this.uid + "." + i + ".p",
+                            gradePCT: null,
                         };
                         result.push([ce, pe]);
                     } else {
