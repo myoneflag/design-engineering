@@ -597,7 +597,7 @@ export const initialDrawing: DrawingState = {
             {
                 name: "Sewer Drainage",
                 temperature: 20,
-                color: { hex: "#11bb11" },
+                color: { hex: "#119911" },
                 uid: StandardFlowSystemUids.SewerDrainage,
                 fluid: "sewage",
                 hasReturnSystem: false,
@@ -634,7 +634,7 @@ export const initialDrawing: DrawingState = {
             {
                 name: "Sanitary Plumbing",
                 temperature: 20,
-                color: { hex: "#11bb11" },
+                color: { hex: "#66FF66" },
                 uid: StandardFlowSystemUids.SanitaryPlumbing,
                 fluid: "sewage",
                 hasReturnSystem: false,
@@ -671,7 +671,7 @@ export const initialDrawing: DrawingState = {
             {
                 name: "Grease Waste",
                 temperature: 20,
-                color: { hex: "#11bb11" },
+                color: { hex: "#90403e" },
                 uid: StandardFlowSystemUids.GreaseWaste,
                 fluid: "sewage",
                 hasReturnSystem: false,
@@ -708,7 +708,7 @@ export const initialDrawing: DrawingState = {
             {
                 name: "Trade Waste",
                 temperature: 20,
-                color: { hex: "#11bb11" },
+                color: { hex: "#a10000" },
                 uid: StandardFlowSystemUids.TradeWaste,
                 fluid: "sewage",
                 hasReturnSystem: false,
@@ -745,7 +745,7 @@ export const initialDrawing: DrawingState = {
             {
                 name: "Rising Main",
                 temperature: 20,
-                color: { hex: "#11bb11" },
+                color: { hex: "#7100c2" },
                 uid: StandardFlowSystemUids.RisingMain,
                 fluid: "sewage",
                 hasReturnSystem: false,
