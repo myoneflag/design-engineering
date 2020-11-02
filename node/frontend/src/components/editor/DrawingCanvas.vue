@@ -1722,6 +1722,7 @@
         }
 
         async drawError(e: Error) {
+            console.log(e);
             if (this.ctx) {
                 try {
                     await this.blitBuffer(false);

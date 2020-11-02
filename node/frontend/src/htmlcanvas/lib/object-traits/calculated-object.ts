@@ -258,10 +258,10 @@ export function CalculatedObject<
                     worldMin.x -= WARNING_WIDTH;
                 }
                 const worldBox = new Flatten.Box(
-                    Math.min(worldMin.x, worldMax.x),
-                    Math.min(worldMin.y, worldMax.y),
-                    Math.max(worldMin.x, worldMax.x),
-                    Math.max(worldMin.y, worldMax.y)
+                    Math.min(worldMin.x, worldMax.x) - 1,
+                    Math.min(worldMin.y, worldMax.y) - 1,
+                    Math.max(worldMin.x, worldMax.x) + 1,
+                    Math.max(worldMin.y, worldMax.y + 1)
                 );
 
                 boxShape.addFace(worldBox);
