@@ -35,7 +35,7 @@ import SystemNode from "./big-valve/system-node";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { StandardFlowSystemUids } from "../../../../common/src/api/config";
 import { rgb2style } from "../../lib/utils";
-import { getHighlightColor } from "../lib/utils";
+import {flowSystemsCompatible, getHighlightColor} from "../lib/utils";
 
 @CalculatedObject
 @SelectableObject
@@ -254,10 +254,12 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
     }
 
     offerJoiningInteraction(systemUid: string, interaction: Interaction) {
-        if (systemUid in this.entity.roughIns) {
-            const obj = this.globalStore.get(this.entity.roughIns[systemUid].uid);
-            if (obj && obj.offerInteraction(interaction)) {
-                return [obj.entity, this.entity];
+        for (const systemUidIter of Object.keys(this.entity.roughIns)) {
+            if (flowSystemsCompatible(systemUid, systemUidIter)) {
+                const obj = this.globalStore.get(this.entity.roughIns[systemUidIter].uid);
+                if (obj && obj.offerInteraction(interaction)) {
+                    return [obj.entity, this.entity];
+                }
             }
         }
         return null;
