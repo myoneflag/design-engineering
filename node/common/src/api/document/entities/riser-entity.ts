@@ -237,6 +237,7 @@ export function fillRiserDefaults(drawing: DrawingState, value: RiserEntity) {
                 result.bottomHeightM = Math.min(result.bottomHeightM!, v.floorHeightM);
             });
         }
+
         if (result.topHeightM == null) {
             result.topHeightM = 0;
             Object.values(drawing.levels).forEach((v) => {

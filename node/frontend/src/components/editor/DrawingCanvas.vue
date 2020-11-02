@@ -1,3 +1,4 @@
+import {EntityType} from "../../../../common/src/api/document/entities/types";
 <template>
     <drop @drop="onDrop">
         <!--Anything that needs scrolling needs to be up here, outside of canvasFrame.-->
@@ -128,7 +129,6 @@
 <script lang="ts">
     import Vue from "vue";
     import Component from "vue-class-component";
-
     // @ts-ignore
     import ClickOutside from 'vue-click-outside';
 
@@ -190,7 +190,7 @@
     import CalculationsSidebar from "../../../src/components/editor/CalculationsSidebar.vue";
     import DrawingNavBar from "../DrawingNavBar.vue";
     import LevelSelector from "./LevelSelector.vue";
-    import PipeEntity, { fillPipeDefaultFields } from "../../../../common/src/api/document/entities/pipe-entity";
+    import PipeEntity, {fillPipeDefaultFields} from "../../../../common/src/api/document/entities/pipe-entity";
     import util from "util";
     import insertLoadNode from "../../htmlcanvas/tools/insert-load-node";
     import {NodeType, NodeVariant} from "../../../../common/src/api/document/entities/load-node-entity";
@@ -222,8 +222,6 @@
     import OnboardingState, {ONBOARDING_SCREEN} from "../../store/onboarding/types";
     import insertGasAppliance from "../../htmlcanvas/tools/insert-gas-appliance";
     import {drawGridLines} from "../../htmlcanvas/on-screen-items";
-
-    import FixtureEntity from "../../../../common/src/api/document/entities/fixtures/fixture-entity";
 
     import PressureDrainageSelector from "./PressureDrainageSelector.vue";
 
@@ -1263,7 +1261,27 @@
             if (selectionTarget.uid === null) {
                 this.select([], SelectMode.Replace);
             } else {
-                const objectLevel = this.globalStore.levelOfEntity.get(selectionTarget.uid);
+                let objectLevel = this.globalStore.levelOfEntity.get(selectionTarget.uid);
+
+                const obj = this.globalStore.get(selectionTarget.uid);
+                if (!obj) {
+                    throw new Error("Selecting an object that doesn't exist");
+                }
+                if (obj.entity.type === EntityType.RISER) {
+                    const riser = obj as Riser;
+                    // risers have level set to null, so we can't use it to find a visible level.
+                    for (const lvlUid of [this.document.uiState.levelUid,
+                        ...Object.keys(this.document.drawing.levels)]) {
+                        if (levelIncludesRiser(
+                            this.document.drawing.levels[lvlUid!],
+                            obj.entity,
+                            this.$store.getters["document/sortedLevels"]
+                        )) {
+                            objectLevel = lvlUid;
+                            break;
+                        }
+                    }
+                }
 
                 if (objectLevel && (this.currentLevel === null || objectLevel !== this.currentLevel.uid)) {
                     await this.$store.dispatch("document/setCurrentLevelUid", objectLevel);
@@ -1274,10 +1292,6 @@
                     throw new Error("Level didn't change properly");
                 }
 
-                const obj = this.globalStore.get(selectionTarget.uid);
-                if (!obj) {
-                    throw new Error("Selecting an object that doesn't exist");
-                }
 
                 const drawable = obj.entity;
                 if (drawable.type === EntityType.BACKGROUND_IMAGE) {

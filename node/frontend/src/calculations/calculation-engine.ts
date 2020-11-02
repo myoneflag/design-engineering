@@ -306,6 +306,7 @@ export default class CalculationEngine implements CalculationContext {
                 if (!selectObject) {
                     if (field.requiresInput) {
                         const val = getPropertyByString(obj.entity, field.property);
+                        console.log("Field " + field.title + " requires input and has value " + val);
                         if (val === null || val === "") {
                             selectObject = {
                                 uid: obj.uid,
