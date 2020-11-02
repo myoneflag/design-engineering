@@ -7,9 +7,8 @@ import {assertUnreachable, isDrainage, SupportedDrainageMethods} from "../../../
 import {addPsdCounts, comparePsdCounts, PsdCountEntry, subPsdCounts, zeroPsdCounts} from "./utils";
 import FittingEntity from "../../../common/src/api/document/entities/fitting-entity";
 import Pipe from "../htmlcanvas/objects/pipe";
-import {parseCatalogNumberExact, upperBoundTable} from "../../../common/src/lib/utils";
+import {lowerBoundTable, parseCatalogNumberExact, upperBoundTable} from "../../../common/src/lib/utils";
 import UnionFind from "./union-find";
-import {isConnectableEntity} from "../../../common/src/api/document/entities/concrete-entity";
 import {fillFixtureFields} from "../../../common/src/api/document/entities/fixtures/fixture-entity";
 import {Edge} from "./graph";
 
@@ -89,6 +88,26 @@ export function processDrainage(context: CalculationEngine) {
     // produceUnventedWarnings(context, roots);
 
     processFixedStacks(context);
+    calculateFalls(context);
+}
+
+export function calculateFalls(context: CalculationEngine) {
+    for (const obj of context.networkObjects()) {
+        if (obj.entity.type === EntityType.PIPE) {
+            const pipe = context.globalStore.get(obj.entity.uid) as Pipe;
+            const filled = fillPipeDefaultFields(context.drawing, pipe.computedLengthM, pipe.entity);
+            if (!isDrainage(filled.systemUid)) {
+                continue;
+            }
+
+            // grade only applies to horizontal pipes.
+            // But calculate it for all - if it isn't horizontal it just won't get shown, that's all.
+            const pCalc = context.globalStore.getOrCreateCalculation(pipe.entity);
+            if (pCalc.gradePCT && pCalc.lengthM) {
+                pCalc.fallM = pCalc.gradePCT * pCalc.lengthM;
+            }
+        }
+    }
 }
 
 // Refer to https://h2xengineering.atlassian.net/secure/RapidBoard.jspa?rapidView=2&projectKey=DEV&modal=detail&selectedIssue=DEV-145

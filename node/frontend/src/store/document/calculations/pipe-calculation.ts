@@ -13,7 +13,6 @@ import {MeasurementSystem, UnitsParameters} from "../../../../../common/src/api/
 import {GlobalStore} from "../../../htmlcanvas/lib/global-store";
 import {convertPipeDiameterFromMetric, Units} from "../../../../../common/src/lib/measurements";
 import {DocumentState} from "../types";
-import {bool} from "aws-sdk/clients/signer";
 
 export enum NoFlowAvailableReason {
     NO_SOURCE = "NO_SOURCE",
@@ -68,6 +67,7 @@ export default interface PipeCalculation extends PsdCalculation, Calculation {
     ventRoot: string | null;
     ventTooFarDist: boolean | null;
     ventTooFarWC: boolean | null;
+    fallM: number | null;
 }
 
 export function makePipeCalculationFields(
@@ -266,18 +266,21 @@ export function makePipeCalculationFields(
 
         if (isDrainage(entity.systemUid)) {
 
-            result.push({
-                property: "psdUnits.drainageUnits",
-                title: drainageUnits.name,
-                short: drainageUnits.abbreviation,
-                units: Units.None,
-                category: FieldCategory.LoadingUnits,
-                systemUid: entity.systemUid,
-                layouts: ['drainage'],
-            });
+            result.push(
+                {
+                    property: "psdUnits.drainageUnits",
+                    title: drainageUnits.name,
+                    short: drainageUnits.abbreviation,
+                    units: Units.None,
+                    category: FieldCategory.LoadingUnits,
+                    systemUid: entity.systemUid,
+                    layouts: ['drainage'],
+                },
+            );
 
             if (entity.network === NetworkType.RETICULATIONS) {
-                result.push({
+                result.push(
+                    {
                     property: "gradePCT",
                     title: 'Grade (%)',
                     short: '%',
@@ -286,7 +289,18 @@ export function makePipeCalculationFields(
                     systemUid: entity.systemUid,
                     defaultEnabled: true,
                     layouts: ['drainage'],
-                });
+                },
+
+                    {
+                        property: "fallM",
+                        title: "Fall",
+                        short: "fall",
+                        units: Units.Meters,
+                        systemUid: entity.systemUid,
+                        category: FieldCategory.Length,
+                        layouts: ['drainage'],
+                    },
+                    );
             }
         }
     }
@@ -336,5 +350,6 @@ export function emptyPipeCalculation(): PipeCalculation {
         ventRoot: null,
         ventTooFarWC: null,
         ventTooFarDist: null,
+        fallM: null,
     };
 }
