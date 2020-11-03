@@ -446,6 +446,45 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
             }
         }
 
+        if (IAmDrainage) {
+            const system = context.doc.drawing.metadata.flowSystems.find((f) => f.uid === this.entity.systemUid);
+            if (system) {
+                const overFlowedLevels: string[] = [];
+                // Do warnings of max thing per level
+
+                for (let i = 0; i < levelUidsByHeight.length - 1; i++) {
+                    const thisLvlUid = levelUidsByHeight[i];
+                    const nextLvlUid = levelUidsByHeight[i + 1];
+                    const levelRes = res.heights[thisLvlUid];
+                    const nextLevelRes = res.heights[nextLvlUid];
+
+                    if (!levelRes || !nextLevelRes) {
+                        continue;
+                    }
+
+
+                    let drainageUnitsLimit = (1e10);
+                    for (const sizing of system.drainageProperties.stackPipeSizing) {
+                        if (sizing.sizeMM === levelRes.sizeMM) {
+                            drainageUnitsLimit = sizing.maximumUnitsPerLevel;
+                        }
+                    }
+
+                    const drainageUnits = (levelRes.psdUnits?.drainageUnits || 0) -
+                        (nextLevelRes.psdUnits?.drainageUnits || 0);
+
+                    if (drainageUnits > drainageUnitsLimit) {
+                        overFlowedLevels.push(context.doc.drawing.levels[thisLvlUid].name);
+                    }
+                }
+
+                if (overFlowedLevels.length > 0) {
+                    res.warningLayout = 'drainage';
+                    res.warning = "Max loading units per level exceeded on level " + overFlowedLevels.join(", ");
+                }
+            }
+        }
+
         // TODO:
         return res;
     }

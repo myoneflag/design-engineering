@@ -20,6 +20,7 @@ import { GlobalStore } from "./global-store";
 import { Color, Coord, Coord3D } from "../../../../common/src/api/document/drawing";
 import { makeEntityFields } from "./utils";
 import { getPropertyByString } from "../../lib/utils";
+import {isCalculated} from "../../store/document/calculations";
 
 export default abstract class BaseBackedObject extends DrawableObject {
     entityBacked: DrawableEntityConcrete;
