@@ -1255,6 +1255,8 @@ export default class CalculationEngine implements CalculationContext {
                     }
                     for (let i = 0; i < toConnect.length; i++) {
                         for (let j = i + 1; j < toConnect.length; j++) {
+
+                            // For nodes, that might connect things of two different
                             const p1 = this.globalStore.get(toConnect[i]);
                             const p2 = this.globalStore.get(toConnect[j]);
                             if (p1 && p2 && p1 instanceof Pipe && p2 instanceof Pipe) {
@@ -1264,7 +1266,9 @@ export default class CalculationEngine implements CalculationContext {
                                     this.doc,
                                     this.catalog,
                                 )) {
-                                    continue;
+                                    // Cannot enable this yet. Because can't make this work with
+                                    // towered calculations yet.
+                                    //continue;
                                 }
                             }
 
@@ -1630,7 +1634,7 @@ export default class CalculationEngine implements CalculationContext {
                     return returnData;
                 }
             } else {
-                let drainageUnits: number;
+                let drainageUnits: number | null = null;
                 switch (this.doc.drawing.metadata.calculationParams.drainageMethod) {
                     case SupportedDrainageMethods.AS2018FixtureUnits:
                         drainageUnits = filled.node.asnzFixtureUnits;
@@ -1644,6 +1648,8 @@ export default class CalculationEngine implements CalculationContext {
                     default:
                         assertUnreachable(this.doc.drawing.metadata.calculationParams.drainageMethod);
                 }
+                console.log(flowNode);
+                console.log("load node drainage units: " + drainageUnits);
                 switch (filled.node.type) {
                     case NodeType.LOAD_NODE:
                         if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {

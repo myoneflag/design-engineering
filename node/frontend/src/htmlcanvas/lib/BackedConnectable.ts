@@ -37,7 +37,9 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
         }
     }
 
-
+    flowSystemsCompatible(a: string, b: string) {
+        return flowSystemsCompatible(a, b);
+    }
 
     offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
         let allowAllSystemUid = false;
@@ -54,7 +56,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                     getDragPriority(interaction.entityType) >= this.dragPriority
                 ) {
                     if (hasExplicitSystemUid(this.entity) && interaction.systemUid) {
-                        if (!flowSystemsCompatible(interaction.systemUid, this.entity.systemUid) && !allowAllSystemUid) {
+                        if (!this.flowSystemsCompatible(interaction.systemUid, this.entity.systemUid) && !allowAllSystemUid) {
                             return null;
                         }
                     }
@@ -66,9 +68,10 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                 const resultingConnections = this.globalStore.getConnections(this.entity.uid).length + 1;
                 if (this.numConnectionsInBound(resultingConnections)) {
                     if (hasExplicitSystemUid(this.entity)) {
-                        if (!flowSystemsCompatible(interaction.system.uid, this.entity.systemUid) && !allowAllSystemUid) {
+                        if (!this.flowSystemsCompatible(interaction.system.uid, this.entity.systemUid) && !allowAllSystemUid) {
                             return null;
                         }
+                        // load nodes can't do two of the same type.
                     }
                     return [this.entity];
                 } else {
@@ -89,7 +92,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                         )
                     ) {
                         if (hasExplicitSystemUid(this.entity) && hasExplicitSystemUid(interaction.src)) {
-                            if (!flowSystemsCompatible(interaction.src.systemUid, this.entity.systemUid) && !allowAllSystemUid) {
+                            if (!this.flowSystemsCompatible(interaction.src.systemUid, this.entity.systemUid) && !allowAllSystemUid) {
                                 return null;
                             }
                         }
@@ -114,7 +117,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                         )
                     ) {
                         if (hasExplicitSystemUid(this.entity) && hasExplicitSystemUid(interaction.dest)) {
-                            if (!flowSystemsCompatible(interaction.dest.systemUid, this.entity.systemUid)  && !allowAllSystemUid) {
+                            if (!this.flowSystemsCompatible(interaction.dest.systemUid, this.entity.systemUid)  && !allowAllSystemUid) {
                                 return null;
                             }
                         }
@@ -142,7 +145,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                     isSystemCorrect =
                         allowAllSystemUid ||
                         interaction.systemUid === null ||
-                        flowSystemsCompatible(interaction.systemUid, entity.systemUid) ;
+                        this.flowSystemsCompatible(interaction.systemUid, entity.systemUid) ;
                 }
 
                 if (isSystemCorrect) {
