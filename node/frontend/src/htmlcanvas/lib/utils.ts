@@ -24,7 +24,7 @@ import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-d
 import { GlobalStore } from "./global-store";
 import {
     assertUnreachable,
-    isDrainage,
+    isDrainage, isGas,
     LEVEL_HEIGHT_DIFF_M,
     StandardFlowSystemUids
 } from "../../../../common/src/api/config";
@@ -149,6 +149,21 @@ export function flowSystemsCompatible(a: string, b: string) {
         return true;
     }
     return a === b;
+}
+
+export function flowSystemsFlowTogether(a: string, b: string, doc: DocumentState, catalog: Catalog) {
+    const systemA = doc.drawing.metadata.flowSystems.find((s) => s.uid === a);
+    const systemB = doc.drawing.metadata.flowSystems.find((s) => s.uid === b);
+
+    if (systemA && systemB) {
+
+        const categoryA = isDrainage(a) ? 'd' : isGas(systemA.fluid, catalog) ? 'g' : 'w';
+        const categoryB = isDrainage(b) ? 'd' : isGas(systemB.fluid, catalog) ? 'g' : 'w';
+        return categoryA === categoryB;
+    }  else {
+        return false;
+    }
+
 }
 
 export function maxHeightOfConnection(entity: ConnectableEntityConcrete, context: CanvasContext) {

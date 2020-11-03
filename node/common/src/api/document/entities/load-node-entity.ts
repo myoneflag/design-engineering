@@ -42,7 +42,6 @@ export interface DwellingNode {
     asnzFixtureUnits: number;
     enDischargeUnits: number;
     upcFixtureUnits: number;
-
 }
 
 export default interface LoadNodeEntity extends DrawableEntity, CenteredEntity {

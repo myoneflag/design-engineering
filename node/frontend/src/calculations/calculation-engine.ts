@@ -91,7 +91,7 @@ import {
 } from "../../../common/src/lib/utils";
 import {determineConnectableSystemUid} from "../store/document/entities/lib";
 import {getPropertyByString} from "../lib/utils";
-import {getPlantPressureLossKPA} from "../htmlcanvas/lib/utils";
+import {flowSystemsFlowTogether, getPlantPressureLossKPA} from "../htmlcanvas/lib/utils";
 import {RingMainCalculator} from "./ring-main-calculator";
 import {Configuration, NoFlowAvailableReason} from "../store/document/calculations/pipe-calculation";
 import {
@@ -1255,6 +1255,19 @@ export default class CalculationEngine implements CalculationContext {
                     }
                     for (let i = 0; i < toConnect.length; i++) {
                         for (let j = i + 1; j < toConnect.length; j++) {
+                            const p1 = this.globalStore.get(toConnect[i]);
+                            const p2 = this.globalStore.get(toConnect[j]);
+                            if (p1 && p2 && p1 instanceof Pipe && p2 instanceof Pipe) {
+                                if (!flowSystemsFlowTogether(
+                                    p1.entity.systemUid,
+                                    p2.entity.systemUid,
+                                    this.doc,
+                                    this.catalog,
+                                )) {
+                                    continue;
+                                }
+                            }
+
                             this.flowGraph.addEdge(
                                 {
                                     connectable: obj.entity.uid,
