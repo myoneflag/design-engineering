@@ -1276,20 +1276,40 @@ export default class CalculationEngine implements CalculationContext {
                     this.configureDirectedValveLUGraph(obj.entity);
                     break;
                 case EntityType.PLANT:
-                    this.flowGraph.addDirectedEdge(
-                        {
-                            connectable: obj.entity.inletUid,
-                            connection: obj.entity.uid
-                        },
-                        {
-                            connectable: obj.entity.outletUid,
-                            connection: obj.entity.uid
-                        },
-                        {
-                            type: EdgeType.PLANT_THROUGH,
-                            uid: obj.entity.uid
-                        }
-                    );
+                    // sewer pits are reversed
+                    if (isDrainage(obj.entity.inletSystemUid)) {
+
+                        this.flowGraph.addDirectedEdge(
+                            {
+                                connectable: obj.entity.outletUid,
+                                connection: obj.entity.uid
+                            },
+                            {
+                                connectable: obj.entity.inletUid,
+                                connection: obj.entity.uid
+                            },
+                            {
+                                type: EdgeType.PLANT_THROUGH,
+                                uid: obj.entity.uid
+                            }
+                        );
+                    } else {
+
+                        this.flowGraph.addDirectedEdge(
+                            {
+                                connectable: obj.entity.inletUid,
+                                connection: obj.entity.uid
+                            },
+                            {
+                                connectable: obj.entity.outletUid,
+                                connection: obj.entity.uid
+                            },
+                            {
+                                type: EdgeType.PLANT_THROUGH,
+                                uid: obj.entity.uid
+                            }
+                        );
+                    }
                     break;
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.FIXTURE:
