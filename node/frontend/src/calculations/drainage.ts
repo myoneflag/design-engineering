@@ -7,10 +7,11 @@ import {assertUnreachable, isDrainage, SupportedDrainageMethods} from "../../../
 import {addPsdCounts, comparePsdCounts, PsdCountEntry, subPsdCounts, zeroPsdCounts} from "./utils";
 import FittingEntity from "../../../common/src/api/document/entities/fitting-entity";
 import Pipe from "../htmlcanvas/objects/pipe";
-import {lowerBoundTable, parseCatalogNumberExact, upperBoundTable} from "../../../common/src/lib/utils";
+import {parseCatalogNumberExact, upperBoundTable} from "../../../common/src/lib/utils";
 import UnionFind from "./union-find";
 import {fillFixtureFields} from "../../../common/src/api/document/entities/fixtures/fixture-entity";
 import {Edge} from "./graph";
+import {NoFlowAvailableReason} from "../store/document/calculations/pipe-calculation";
 
 
 export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext, overridePsdUnits?: PsdCountEntry) {
@@ -36,6 +37,9 @@ export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext
                         break;
                     }
                 }
+                if (calc.realNominalPipeDiameterMM === null) {
+                    calc.noFlowAvailableReason = NoFlowAvailableReason.NO_SUITABLE_PIPE_SIZE;
+                }
 
                 if (system.drainageProperties.stackDedicatedVent) {
                     calc.stackDedicatedVentSize = getSizeOfVent(system, psdUnits);
@@ -53,6 +57,11 @@ export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext
                         }
                         break;
                     }
+                }
+
+
+                if (calc.realNominalPipeDiameterMM === null) {
+                    calc.noFlowAvailableReason = NoFlowAvailableReason.NO_SUITABLE_PIPE_SIZE;
                 }
             }
             break;
@@ -73,6 +82,9 @@ export function sizeVentPipe(entity: PipeEntity, context: CalculationContext, ps
 
     const system = context.doc.drawing.metadata.flowSystems.find((fs) => fs.uid === entity.systemUid)!;
     calc.optimalInnerPipeDiameterMM = calc.realNominalPipeDiameterMM = getSizeOfVent(system, psdUnits);
+    if (calc.realNominalPipeDiameterMM === null) {
+        calc.noFlowAvailableReason = NoFlowAvailableReason.NO_SUITABLE_PIPE_SIZE;
+    }
 }
 
 export function getSizeOfVent(system: FlowSystemParameters, psdUnits: PsdCountEntry) {
