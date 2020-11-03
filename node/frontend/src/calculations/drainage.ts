@@ -123,7 +123,7 @@ export function calculateFalls(context: CalculationEngine) {
             // But calculate it for all - if it isn't horizontal it just won't get shown, that's all.
             const pCalc = context.globalStore.getOrCreateCalculation(pipe.entity);
             if (pCalc.gradePCT && pCalc.lengthM) {
-                pCalc.fallM = pCalc.gradePCT * pCalc.lengthM;
+                pCalc.fallM = pCalc.gradePCT * pCalc.lengthM / 100;
             }
         }
     }
