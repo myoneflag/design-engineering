@@ -2,7 +2,14 @@ import CalculationEngine, { EdgeType, FlowEdge, FlowNode } from "./calculation-e
 import PipeEntity, { fillPipeDefaultFields } from "../../../common/src/api/document/entities/pipe-entity";
 import { Edge } from "./graph";
 import { FlowAssignment } from "./flow-assignment";
-import { comparePsdCounts, countPsdProfile, lookupFlowRate, mergePsdProfile, PsdCountEntry, PsdProfile } from "./utils";
+import {
+    compareWaterPsdCounts,
+    countPsdProfile,
+    lookupFlowRate,
+    mergePsdProfile,
+    PsdCountEntry,
+    PsdProfile
+} from "./utils";
 import Pipe from "../htmlcanvas/objects/pipe";
 import { EPS, lowerBoundTable, parseCatalogNumberExact } from "../../../common/src/lib/utils";
 import { adjustPathHardyCross } from "./flow-solver";
@@ -357,7 +364,7 @@ export class RingMainCalculator {
                 const fr = lookupFlowRate(psdCount, this.engine.doc, this.engine.catalog, systemUid)!;
                 rightToLeft.addFlow(ring[ix].value.uid, ring[ix].to.connectable, fr.flowRateLS);
                 if (aggregatePsd.has(ring[ix].value.uid)) {
-                    const cmp = comparePsdCounts(aggregatePsd.get(ring[ix].value.uid)!, psdCount);
+                    const cmp = compareWaterPsdCounts(aggregatePsd.get(ring[ix].value.uid)!, psdCount);
                     if (cmp !== null && cmp < 0) {
                         aggregatePsd.set(ring[ix].value.uid, psdCount);
                     }

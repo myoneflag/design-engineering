@@ -4,7 +4,7 @@ import {FlowSystemParameters, NetworkType} from "../../../common/src/api/documen
 import CalculationEngine, {EdgeType, FlowEdge, FlowNode} from "./calculation-engine";
 import {EntityType} from "../../../common/src/api/document/entities/types";
 import {assertUnreachable, isDrainage, SupportedDrainageMethods} from "../../../common/src/api/config";
-import {addPsdCounts, comparePsdCounts, PsdCountEntry, subPsdCounts, zeroPsdCounts} from "./utils";
+import {addPsdCounts, compareDrainagePsdCounts, PsdCountEntry, subPsdCounts, zeroPsdCounts} from "./utils";
 import FittingEntity from "../../../common/src/api/document/entities/fitting-entity";
 import Pipe from "../htmlcanvas/objects/pipe";
 import {parseCatalogNumberExact, upperBoundTable} from "../../../common/src/lib/utils";
@@ -159,7 +159,6 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
 
             for (const outletUid of fixture.roughInsInOrder) {
                 if (isDrainage(outletUid)) {
-                    console.log("tracing gas from fixture " + fixture.uid);
 
                     const outlet = fixture.roughIns[outletUid];
                     const connections = context.globalStore.getConnections(outlet.uid);
@@ -267,7 +266,6 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                                                     curr = parentOf.get(curr.from.connectable);
                                                 }
                                             }
-                                            console.log("vent too far le " + edge.from.connectable);
                                             if (accountedFor) {
                                                 return true;
                                             };
@@ -289,7 +287,6 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                                                     curr = parentOf.get(curr.from.connectable);
                                                 }
                                             }
-                                            console.log("Vent too far wc " + edge.from.connectable);
                                             if (accountedFor) {
                                                 return true;
                                             }
@@ -873,7 +870,7 @@ export function processFixedStack(context: CalculationEngine, member: PipeEntity
                     // Is Stack, continue DFS along it.
                     const calc = context.globalStore.getOrCreateCalculation(pipe);
                     if (calc.psdUnits) {
-                        const cmp = comparePsdCounts(calc.psdUnits, highestLU);
+                        const cmp = compareDrainagePsdCounts(calc.psdUnits, highestLU);
                         if (cmp !== null && cmp > 0) {
                             highestLU = calc.psdUnits;
                         } else if (cmp === null) {

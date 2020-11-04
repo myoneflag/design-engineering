@@ -274,7 +274,6 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
                 type: EntityType.PIPE,
                 uid: this.uid + ".-1.p"
             };
-            console.log([se, pe, ...tower.flat()]);
             return [se, pe, ...tower.flat()];
         }
 

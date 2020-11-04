@@ -1,33 +1,32 @@
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
 import Pipe from "../../../../src/htmlcanvas/objects/pipe";
 import assert from "assert";
-import { EntityType } from "../../../../../common/src/api/document/entities/types";
-import BackedConnectable, { BaseBackedConnectable } from "../../../../src/htmlcanvas/lib/BackedConnectable";
+import {EntityType} from "../../../../../common/src/api/document/entities/types";
+import {BaseBackedConnectable} from "../../../../src/htmlcanvas/lib/BackedConnectable";
 import {
     ConnectableEntityConcrete,
     EdgeLikeEntity
 } from "../../../../../common/src/api/document/entities/concrete-entity";
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
-import { DrawingContext, ValidationResult } from "../../../../src/htmlcanvas/lib/types";
+import {DrawingContext, ValidationResult} from "../../../../src/htmlcanvas/lib/types";
 import Flatten from "@flatten-js/core";
-import { PIPE_HEIGHT_GRAPHIC_EPS_MM } from "../../../../src/config";
+import {PIPE_HEIGHT_GRAPHIC_EPS_MM} from "../../../../src/config";
 import {CalculationContext, PressurePushMode} from "../../../../src/calculations/types";
-import { FlowNode } from "../../../../src/calculations/calculation-engine";
-import { angleDiffRad } from "../../../../src/lib/utils";
-import { DrawingArgs, EntityDrawingArgs } from "../../../../src/htmlcanvas/lib/drawable-object";
-import { CalculationData } from "../../../../src/store/document/calculations/calculation-field";
+import {FlowNode} from "../../../../src/calculations/calculation-engine";
+import {angleDiffRad} from "../../../../src/lib/utils";
+import {EntityDrawingArgs} from "../../../../src/htmlcanvas/lib/drawable-object";
+import {CalculationData} from "../../../../src/store/document/calculations/calculation-field";
 import * as TM from "transformation-matrix";
 import PipeEntity from "../../../../../common/src/api/document/entities/pipe-entity";
 import FittingEntity from "../../../../../common/src/api/document/entities/fitting-entity";
-import { getEdgeLikeHeightAboveGroundM } from "../utils";
+import {getEdgeLikeHeightAboveGroundM} from "../utils";
 import Cached from "../cached";
 import stringify from "json-stable-stringify";
 import uuid from "uuid";
 import Fitting from "../../objects/fitting";
-import { Coord, Coord3D } from "../../../../../common/src/api/document/drawing";
-import { determineConnectableNetwork, determineConnectableSystemUid } from "../../../store/document/entities/lib";
-import { APIResult } from "../../../../../common/src/api/document/types";
-import { assertUnreachable, ComponentPressureLossMethod } from "../../../../../common/src/api/config";
+import {Coord, Coord3D} from "../../../../../common/src/api/document/drawing";
+import {determineConnectableNetwork, determineConnectableSystemUid} from "../../../store/document/entities/lib";
+import {assertUnreachable, ComponentPressureLossMethod} from "../../../../../common/src/api/config";
 
 export default interface Connectable {
     getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]>;
@@ -717,7 +716,7 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                 }
 
                 const result: Array<[FittingEntity, PipeEntity] | [FittingEntity]> = [];
-                const systemUid = determineConnectableSystemUid(this.globalStore, this.entity)!;
+                const mySystemUid = determineConnectableSystemUid(this.globalStore, this.entity)!;
 
                 let lastGroup: EdgeLikeEntity[] | undefined;
 
@@ -727,6 +726,11 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                 groups.forEach((g) => {
                     const minHeight = getEdgeLikeHeightAboveGroundM(g[0], context);
                     const maxHeight = getEdgeLikeHeightAboveGroundM(g[g.length - 1], context);
+
+                    let systemUid = mySystemUid;
+                    if (g[0].type === EntityType.PIPE) {
+                        systemUid = g[0].systemUid;
+                    }
 
                     const ce: FittingEntity = {
                         center: this.entity.center,

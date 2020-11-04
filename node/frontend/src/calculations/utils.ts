@@ -236,7 +236,7 @@ export function equalPsdCounts(a: PsdCountEntry, b: PsdCountEntry): boolean {
     );
 }
 
-export function isZeroPsdCounts(a: PsdCountEntry): boolean {
+function isZeroPsdCounts(a: PsdCountEntry): boolean {
     return Math.abs(a.units) < EPS &&
     Math.abs(a.continuousFlowLS) < EPS &&
     Math.abs(a.dwellings) < EPS &&
@@ -244,17 +244,42 @@ export function isZeroPsdCounts(a: PsdCountEntry): boolean {
     Math.abs(a.drainageUnits) < EPS;
 }
 
+export function isZeroWaterPsdCounts(a: PsdCountEntry): boolean {
+    return Math.abs(a.units) < EPS &&
+        Math.abs(a.continuousFlowLS) < EPS &&
+        Math.abs(a.dwellings) < EPS;
+}
+
+export function isZeroDrainagePsdCounts(a: PsdCountEntry): boolean {
+    return Math.abs(a.drainageUnits) < EPS;
+}
+
 // Returns >0 if a > b, <0 if a < b.
-export function comparePsdCounts(a: PsdCountEntry, b: PsdCountEntry): number | null {
+export function compareWaterPsdCounts(a: PsdCountEntry, b: PsdCountEntry): number | null {
     const unitDiff = a.units + EPS < b.units ? -1 : a.units - EPS > b.units ? 1 : 0;
     const cfDiff =
         a.continuousFlowLS + EPS < b.continuousFlowLS ? -1 : a.continuousFlowLS - EPS > b.continuousFlowLS ? 1 : 0;
     const dDiff = a.dwellings + EPS < b.dwellings ? -1 : a.dwellings - EPS > b.dwellings ? 1 : 0;
-    const gDiff = a.gasMJH + EPS < b.gasMJH ? -1 : a.gasMJH - EPS > b.gasMJH ? 1 : 0;
+
+    const small = Math.min(unitDiff, cfDiff, dDiff);
+    const large = Math.max(unitDiff, cfDiff, dDiff);
+
+    if (small === 0) {
+        return large;
+    } else if (large === 0) {
+        return small;
+    } else if (small !== large) {
+        return null;
+    } else {
+        return small;
+    }
+}
+
+export function compareDrainagePsdCounts(a: PsdCountEntry, b: PsdCountEntry): number | null {
     const sDiff = a.drainageUnits + EPS < b.drainageUnits ? -1 : a.drainageUnits - EPS > b.drainageUnits ? 1 : 0;
 
-    const small = Math.min(unitDiff, cfDiff, dDiff, gDiff, sDiff);
-    const large = Math.max(unitDiff, cfDiff, dDiff, gDiff, sDiff);
+    const small = Math.min(sDiff);
+    const large = Math.max(sDiff);
 
     if (small === 0) {
         return large;

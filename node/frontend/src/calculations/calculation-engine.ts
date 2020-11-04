@@ -41,12 +41,12 @@ import {ValveType} from "../../../common/src/api/document/entities/directed-valv
 import {
     addCosts,
     addPsdCounts,
-    comparePsdCounts,
+    compareWaterPsdCounts,
     ContextualPCE,
     countPsdProfile,
     FinalPsdCountEntry,
     insertPsdProfile,
-    isZeroPsdCounts,
+    isZeroWaterPsdCounts,
     lookupFlowRate,
     PsdProfile,
     subtractPsdProfiles,
@@ -54,7 +54,6 @@ import {
     zeroCost,
     zeroFinalPsdCounts,
     zeroPsdCounts,
-    PsdCountEntry,
 } from "../../src/calculations/utils";
 import FittingCalculation from "../../src/store/document/calculations/fitting-calculation";
 import DirectedValveCalculation from "../../src/store/document/calculations/directed-valve-calculation";
@@ -306,7 +305,6 @@ export default class CalculationEngine implements CalculationContext {
                 if (!selectObject) {
                     if (field.requiresInput) {
                         const val = getPropertyByString(obj.entity, field.property);
-                        console.log("Field " + field.title + " requires input and has value " + val);
                         if (val === null || val === "") {
                             selectObject = {
                                 uid: obj.uid,
@@ -1268,7 +1266,7 @@ export default class CalculationEngine implements CalculationContext {
                                 )) {
                                     // Cannot enable this yet. Because can't make this work with
                                     // towered calculations yet.
-                                    //continue;
+                                    continue;
                                 }
                             }
 
@@ -1573,11 +1571,12 @@ export default class CalculationEngine implements CalculationContext {
             const manufacturer = selectedMaterialManufacturer?.manufacturer || 'generic';
             const selectedOption = selectedMaterialManufacturer?.selected || 'default';
 
-            if (typeof filled.customNodeId !== "undefined") {
+            const psdStandard = this.doc.drawing.metadata.calculationParams.psdMethod;
+            if (typeof filled.customNodeId !== "undefined" && psdStandard === SupportedPsdStandards.bs806) {
                 const nodeProp = this.nodes.find((node: NodeProps) => node.id === filled.customNodeId || node.uid === filled.customNodeId);
 
-                const psdStandard = this.doc.drawing.metadata.calculationParams.psdMethod;
                 if (nodeProp !== undefined) {
+                    // Special case for bs806 because it requires individual fixture information.
                     const returnData: ContextualPCE[] = [];
                     for (let i = 0; i < nodeProp.fixtures.length; i++) {
                         let loadingUnits = 0;
@@ -1661,8 +1660,6 @@ export default class CalculationEngine implements CalculationContext {
                     default:
                         assertUnreachable(this.doc.drawing.metadata.calculationParams.drainageMethod);
                 }
-                console.log(flowNode);
-                console.log("load node drainage units: " + drainageUnits);
                 switch (filled.node.type) {
                     case NodeType.LOAD_NODE:
                         if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
@@ -1727,7 +1724,7 @@ export default class CalculationEngine implements CalculationContext {
 
                 const isGas = entity.systemUid === StandardFlowSystemUids.Gas;
                 if (isGas) {
-                    // TODO: Gas calculation
+                    // Gas calculation done elsewhere
                 } else if (isDrainage(entity.systemUid)) {
                     // TODO: Drainage sizing
                     sizeDrainagePipe(entity, this);
@@ -1737,7 +1734,7 @@ export default class CalculationEngine implements CalculationContext {
 
                     if (flowRate === null) {
                         // Warn for no PSD
-                        if (isZeroPsdCounts(psdU)) {
+                        if (isZeroWaterPsdCounts(psdU)) {
                             this.setPipePSDFlowRate(entity, 0);
                         } else {
                             calculation.noFlowAvailableReason = NoFlowAvailableReason.LOADING_UNITS_OUT_OF_BOUNDS;
@@ -2267,8 +2264,8 @@ export default class CalculationEngine implements CalculationContext {
             );
             const residualPsdU = countPsdProfile(residualPsdProfile);
 
-            if (!isZeroPsdCounts(exclusivePsdU)) {
-                const cmp = comparePsdCounts(residualPsdU, exclusivePsdU);
+            if (!isZeroWaterPsdCounts(exclusivePsdU)) {
+                const cmp = compareWaterPsdCounts(residualPsdU, exclusivePsdU);
                 if (cmp === null) {
                     throw new Error("Impossible PSD situation");
                 }
@@ -2276,6 +2273,8 @@ export default class CalculationEngine implements CalculationContext {
                     // TODO: Info that flow rate is ambiguous, but some flow is exclusive to us
                     if (object.entity.type === EntityType.PIPE) {
                         const pcalc = this.globalStore.getOrCreateCalculation(object.entity);
+                        console.log("Setting unusual configuration from flow rate ambiguity, zero exclusive");
+                        console.trace();
                         pcalc.noFlowAvailableReason = NoFlowAvailableReason.UNUSUAL_CONFIGURATION;
                     }
                 } else {
@@ -2286,7 +2285,7 @@ export default class CalculationEngine implements CalculationContext {
                     this.configureEntityForPSD(object.entity, exclusivePsdU, flowEdge, wet, exclusiveProfile, null);
                 }
             } else {
-                if (isZeroPsdCounts(residualPsdU)) {
+                if (isZeroWaterPsdCounts(residualPsdU)) {
                     this.configureEntityForPSD(
                         object.entity,
                         zeroFinalPsdCounts(),
@@ -2299,6 +2298,9 @@ export default class CalculationEngine implements CalculationContext {
                     // TODO: flow rate is ambiguous, and no flow is exclusive to us.
                     if (object.entity.type === EntityType.PIPE) {
                         const pcalc = this.globalStore.getOrCreateCalculation(object.entity);
+                        console.log("Setting unusual configuration from flow rate ambiguity");
+                        console.trace();
+
                         pcalc.noFlowAvailableReason = NoFlowAvailableReason.UNUSUAL_CONFIGURATION;
                         pcalc.psdUnits = residualPsdU;
                     }
