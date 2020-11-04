@@ -1573,61 +1573,74 @@ export default class CalculationEngine implements CalculationContext {
             const manufacturer = selectedMaterialManufacturer?.manufacturer || 'generic';
             const selectedOption = selectedMaterialManufacturer?.selected || 'default';
 
-            if (typeof filled.customNodeId !== "undefined" && this.doc.drawing.metadata.calculationParams.psdMethod === SupportedPsdStandards.bs806) {
+            if (typeof filled.customNodeId !== "undefined") {
                 const nodeProp = this.nodes.find((node: NodeProps) => node.id === filled.customNodeId || node.uid === filled.customNodeId);
 
-                if (typeof nodeProp !== "undefined") {
+                const psdStandard = this.doc.drawing.metadata.calculationParams.psdMethod;
+                if (nodeProp !== undefined) {
                     const returnData: ContextualPCE[] = [];
                     for (let i = 0; i < nodeProp.fixtures.length; i++) {
-                        let systemChk = null;
-                        if (!!(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[SupportedPsdStandards.bs806][filled.systemUidOption!])) {
-                            systemChk = filled.systemUidOption;
-                        } else if (filled.systemUidOption === 'hot-water' && !!(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[SupportedPsdStandards.bs806]['warm-water'])) {
-                            systemChk = 'warm-water';
-                        }
-
                         let loadingUnits = 0;
                         let designFlowRateLS = 0;
                         let fixtureUnits = 0;
-                        if (systemChk) {
-                            loadingUnits = parseCatalogNumberOrMin(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[SupportedPsdStandards.bs806][systemChk])!;
-                            designFlowRateLS = parseCatalogNumberOrMin(this.catalog.fixtures[nodeProp.fixtures[i]].qLS[manufacturer][selectedOption][systemChk])!;
-                            loadingUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[SupportedPsdStandards.bs806][systemChk])!;
-                            switch (this.doc.drawing.metadata.calculationParams.drainageMethod) {
-                                case SupportedDrainageMethods.AS2018FixtureUnits:
-                                    fixtureUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[0]].asnzFixtureUnits)!;
-                                    break;
-                                case SupportedDrainageMethods.EN1205622000DischargeUnits:
-                                    fixtureUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[0]].enDischargeUnits)!;
-                                    break;
-                                case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
-                                    fixtureUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[0]].upcFixtureUnits)!;
-                                    break;
-                                default:
-                                    assertUnreachable(this.doc.drawing.metadata.calculationParams.drainageMethod);
-                            }
+                        switch (this.doc.drawing.metadata.calculationParams.drainageMethod) {
+                            case SupportedDrainageMethods.AS2018FixtureUnits:
+                                fixtureUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[i]].asnzFixtureUnits)!;
+                                break;
+                            case SupportedDrainageMethods.EN1205622000DischargeUnits:
+                                fixtureUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[i]].enDischargeUnits)!;
+                                break;
+                            case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
+                                fixtureUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[i]].upcFixtureUnits)!;
+                                break;
+                            default:
+                                assertUnreachable(this.doc.drawing.metadata.calculationParams.drainageMethod);
                         }
 
-                        if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
-                            returnData.push({
-                                units: designFlowRateLS,
-                                continuousFlowLS: filled.node.continuousFlowLS!,
-                                dwellings: 0,
-                                entity: filled.uid + '-' + i,
-                                gasMJH: filled.node.gasFlowRateMJH,
-                                drainageUnits: fixtureUnits,
-                                correlationGroup: correlationGroup + '-' + i,
-                            });
+                        if (isGermanStandard(psdStandard)) {
+                            let systemChk = null;
+                            if (!!(this.catalog.fixtures[nodeProp.fixtures[i]].qLS[psdStandard])) {
+                                systemChk = filled.systemUidOption;
+                            } else if (filled.systemUidOption === 'hot-water' && !!(this.catalog.fixtures[nodeProp.fixtures[i]].qLS['warm-water'])) {
+                                systemChk = 'warm-water';
+                            }
+                            if (systemChk) {
+                                loadingUnits = parseCatalogNumberOrMin(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[SupportedPsdStandards.bs806][systemChk])!;
+                                designFlowRateLS = parseCatalogNumberOrMin(this.catalog.fixtures[nodeProp.fixtures[i]].qLS[manufacturer][selectedOption][systemChk])!;
+                                loadingUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[SupportedPsdStandards.bs806][systemChk])!;
+
+                                returnData.push({
+                                    units: designFlowRateLS,
+                                    continuousFlowLS: filled.node.continuousFlowLS!,
+                                    dwellings: 0,
+                                    entity: filled.uid + '-' + i,
+                                    gasMJH: filled.node.gasFlowRateMJH,
+                                    drainageUnits: fixtureUnits,
+                                    correlationGroup: correlationGroup + '-' + i,
+                                });
+                            }
                         } else {
-                            returnData.push({
-                                units: loadingUnits,
-                                continuousFlowLS: filled.node.continuousFlowLS!,
-                                dwellings: 0,
-                                entity: filled.uid + '-' + i,
-                                gasMJH: filled.node.gasFlowRateMJH,
-                                drainageUnits: fixtureUnits,
-                                correlationGroup: correlationGroup + '-' + i,
-                            });
+                            let systemChk = null;
+                            if (!!(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[psdStandard][filled.systemUidOption!])) {
+                                systemChk = filled.systemUidOption;
+                            } else if (filled.systemUidOption === 'hot-water' && !!(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[psdStandard]['warm-water'])) {
+                                systemChk = 'warm-water';
+                            }
+
+                            let loadingUnits = 0;
+                            if (systemChk) {
+                                loadingUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[psdStandard][systemChk])!;
+
+                                returnData.push({
+                                    units: loadingUnits,
+                                    continuousFlowLS: filled.node.continuousFlowLS!,
+                                    dwellings: 0,
+                                    entity: filled.uid + '-' + i,
+                                    gasMJH: filled.node.gasFlowRateMJH,
+                                    drainageUnits: fixtureUnits,
+                                    correlationGroup: correlationGroup + '-' + i,
+                                });
+                            }
                         }
                     }
 
