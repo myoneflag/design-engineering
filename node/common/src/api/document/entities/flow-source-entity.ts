@@ -27,6 +27,7 @@ export default interface FlowSourceEntity extends ConnectableEntity {
 }
 
 export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: FlowSourceEntity): PropertyField[] {
+
     const res: PropertyField[] = [
         {
             property: "systemUid",
@@ -35,6 +36,7 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
             isCalculated: false,
             type: FieldType.FlowSystemChoice,
             params: { systems },
+
             multiFieldId: "systemUid"
         },
     ];

@@ -156,22 +156,22 @@ export default class CalculationsSidebar extends Vue {
         exportBudgetReport(this.$props.canvasContext);
     }
 
-    onCheck(eType: string, prop: string, value: boolean, shouldChange: boolean = true) {
-        if (!(eType in this.document.uiState.calculationFilters)) {
-            Vue.set(this.document.uiState.calculationFilters, eType, {
-                name: this.filters[eType].name,
+    onCheck(eName: string, prop: string, value: boolean, shouldChange: boolean = true) {
+        if (!(eName in this.document.uiState.calculationFilters)) {
+            Vue.set(this.document.uiState.calculationFilters, eName, {
+                name: this.filters[eName].name,
                 enabled: false,
                 filters: {}
             });
         }
 
-        if (!(prop in this.document.uiState.calculationFilters[eType].filters)) {
-            Vue.set(this.document.uiState.calculationFilters[eType].filters, prop, {
-                name: this.filters[eType].filters[prop].name,
+        if (!(prop in this.document.uiState.calculationFilters[eName].filters)) {
+            Vue.set(this.document.uiState.calculationFilters[eName].filters, prop, {
+                name: this.filters[eName].filters[prop].name,
                 enabled: value
             });
         }
-        this.document.uiState.calculationFilters[eType].filters[prop].enabled = value;
+        this.document.uiState.calculationFilters[eName].filters[prop].enabled = value;
         if (shouldChange) {
             this.$props.onChange();
         }

@@ -16,7 +16,7 @@ import { tm2flatten } from "../../../../src/htmlcanvas/lib/utils";
 import { TEXT_MAX_SCALE } from "../../../../src/htmlcanvas/objects/pipe";
 import { getWarningSignImg, matrixScale, warningSignImg, wrapText } from "../../../../src/htmlcanvas/utils";
 import { CalculationContext } from "../../../calculations/types";
-import { EntityType } from "../../../../../common/src/api/document/entities/types";
+import {EntityType, getEntityName} from "../../../../../common/src/api/document/entities/types";
 import { CalculationConcrete } from "../../../store/document/calculations/calculation-concrete";
 import { NoFlowAvailableReason } from "../../../store/document/calculations/pipe-calculation";
 import { assertUnreachable } from "../../../../../common/src/api/config";
@@ -321,7 +321,8 @@ export function CalculatedObject<
         }
 
         getCalculationFields(context: DrawingContext, filters: CalculationFilters): CalculationData[] {
-            const filter = filters[this.entity.type].filters;
+            const eName = getEntityName(this.entity);
+            const filter = filters[eName].filters;
             const calculation = context.globalStore.getCalculation(this.entity);
 
             const res: CalculationData[] = [];

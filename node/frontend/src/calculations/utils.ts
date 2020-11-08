@@ -590,9 +590,9 @@ export function getFields(
         case EntityType.LOAD_NODE:
             return makeLoadNodeCalculationFields(entity, doc.drawing, catalog, globalStore);
         case EntityType.FLOW_SOURCE:
-            return makeFlowSourceCalculationFields(entity, doc.drawing);
+            return makeFlowSourceCalculationFields(entity, doc);
         case EntityType.PLANT:
-            return makePlantCalculationFields(entity);
+            return makePlantCalculationFields(entity, doc);
         case EntityType.BACKGROUND_IMAGE:
             return [];
     }

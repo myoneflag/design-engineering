@@ -189,44 +189,45 @@ export function getEffectiveFilter(objects: BaseBackedObject[], calculationFilte
                 assertUnreachable(document.uiState.pressureOrDrainage);
         }
 
+        const eName = getEntityName(o.entity);
 
-        if (!(o.entity.type in build)) {
-            Vue.set(build, o.entity.type, {
-                name: getEntityName(o.entity),
+        if (!(eName in build)) {
+            Vue.set(build, eName, {
+                name: eName,
                 filters: {},
                 enabled: false
             });
-            wasInserted.add(o.entity.type);
+            wasInserted.add(eName);
         }
 
         fields.forEach((f) => {
-            if (!(f.title in build[o.entity.type].filters)) {
-                Vue.set(build[o.entity.type].filters, f.title, {
+            if (!(f.title in build[eName].filters)) {
+                Vue.set(build[eName].filters, f.title, {
                     name: f.title,
                     value: false
                 });
                 if (f.defaultEnabled) {
-                    build[o.entity.type].filters[f.title].enabled = true;
-                    hasEnabled.add(o.entity.type);
+                    build[eName].filters[f.title].enabled = true;
+                    hasEnabled.add(eName);
                 }
             }
         });
     });
 
-    for (const eType of Array.from(wasInserted.values())) {
-        if (hasEnabled.has(eType)) {
-            build[eType].enabled = true;
+    for (const eName of Array.from(wasInserted.values())) {
+        if (hasEnabled.has(eName)) {
+            build[eName].enabled = true;
         }
     }
 
-    for (const eType in existing) {
-        if (eType in build && existing.hasOwnProperty(eType)) {
-            for (const prop in existing[eType].filters) {
-                if (prop in build[eType].filters) {
-                    build[eType].filters[prop].enabled = existing[eType].filters[prop].enabled;
+    for (const eName in existing) {
+        if (eName in build && existing.hasOwnProperty(eName)) {
+            for (const prop in existing[eName].filters) {
+                if (prop in build[eName].filters) {
+                    build[eName].filters[prop].enabled = existing[eName].filters[prop].enabled;
                 }
             }
-            build[eType].enabled = existing[eType].enabled;
+            build[eName].enabled = existing[eName].enabled;
         }
     }
     return build;

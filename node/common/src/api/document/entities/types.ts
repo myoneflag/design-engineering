@@ -29,7 +29,11 @@ export function getEntityName(entity: DrawableEntityConcrete): string {
             return "Background";
         case EntityType.RISER:
             if (isDrainage(entity.systemUid)) {
-                return "Stack";
+                if (entity.isVent) {
+                    return "Vertical vent";
+                } else {
+                    return "Stack";
+                }
             } else {
                 return "Riser";
             }
