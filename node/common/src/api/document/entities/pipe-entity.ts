@@ -170,6 +170,7 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
             title: "Height Above Floor",
             hasDefault: false,
             isCalculated: false,
+            readonly: iAmDrainage,
             type: FieldType.Number,
             params: { min: null, max: null },
             multiFieldId: "heightAboveFloorM",
