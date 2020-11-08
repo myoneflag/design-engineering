@@ -8,7 +8,7 @@ import FixtureEntity from "../../../../../common/src/api/document/entities/fixtu
 import { DocumentState } from "../types";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import { Units } from "../../../../../common/src/lib/measurements";
-import { StandardFlowSystemUids } from "../../../../../common/src/api/config";
+import {isDrainage, StandardFlowSystemUids} from "../../../../../common/src/api/config";
 
 export default interface FixtureCalculation extends Calculation {
     inlets: {
@@ -22,6 +22,10 @@ export default interface FixtureCalculation extends Calculation {
 export function makeFixtureCalculationFields(doc: DocumentState, entity: FixtureEntity, globalStore: GlobalStore): CalculationField[] {
     const fCalc = globalStore.getOrCreateCalculation(entity);
     return entity.roughInsInOrder.map((suid) => {
+        if (isDrainage(suid)) {
+            return [];
+        }
+
         const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === suid);
         if (!system) {
             throw new Error("System not found");

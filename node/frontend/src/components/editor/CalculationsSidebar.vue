@@ -3,7 +3,7 @@
         <b-row>
             <b-col>
                 <b-button-group
-                        style="margin-left: -350px"
+                        style="margin-left: -380px"
                 >
 
                     <b-dropdown variant="outline-dark" size="sm" class="calculationBtn" text="Export (*)">

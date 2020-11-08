@@ -97,6 +97,7 @@ export function makePipeCalculationFields(
     const result: CalculationField[] = [];
 
     const layoutOptionDrainage: CalculationLayout[] = isDrainage(entity.systemUid) ? ['pressure', 'drainage'] : [];
+    const layoutStrict: CalculationLayout[] = isDrainage(entity.systemUid) ? ['drainage'] : ['pressure'];
 
     if (!pipeIsGas) {
         if (pCalc.totalPeakFlowRateLS) {
@@ -165,7 +166,7 @@ export function makePipeCalculationFields(
                 }
                 assertUnreachable(unitPrefs.lengthMeasurementSystem);
             },
-            layouts: layoutOptionDrainage,
+            layouts: layoutStrict,
         },
         {
             property: "realInternalDiameterMM",
@@ -274,6 +275,7 @@ export function makePipeCalculationFields(
                     units: Units.None,
                     category: FieldCategory.LoadingUnits,
                     systemUid: entity.systemUid,
+                    defaultEnabled: true,
                     layouts: ['drainage'],
                 },
             );
@@ -297,10 +299,11 @@ export function makePipeCalculationFields(
                         short: "fall",
                         units: Units.Meters,
                         systemUid: entity.systemUid,
+                        defaultEnabled: true,
                         category: FieldCategory.Length,
                         layouts: ['drainage'],
                     },
-                    );
+                );
             }
         }
     }
@@ -308,6 +311,12 @@ export function makePipeCalculationFields(
     if (isDrainage(entity.systemUid)) {
         if (document.uiState.pressureOrDrainage === 'drainage') {
             return result.filter((f) => f.layouts && f.layouts.includes('drainage'));
+        } else {
+            return [];
+        }
+    } else {
+        if (document.uiState.pressureOrDrainage === 'pressure') {
+            return result.filter((f) => !f.layouts || f.layouts.includes('pressure'));
         } else {
             return [];
         }
