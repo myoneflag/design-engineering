@@ -246,7 +246,7 @@ export function fillFixtureFields(
                 target.maxPressureKPA = parseCatalogNumberExact(defaultCatalog.fixtures[result.name].maxInletPressureKPA);
             }
 
-            const selectedMaterialManufacturer = drawing.metadata.catalog.fixtures.find(obj => obj.uid === result.name);
+            const selectedMaterialManufacturer = drawing?.metadata?.catalog?.fixtures?.find(obj => obj.uid === result.name);
             const manufacturer = selectedMaterialManufacturer?.manufacturer || 'generic';
             const selectedOption = selectedMaterialManufacturer?.selected || 'default';
 
