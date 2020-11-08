@@ -355,6 +355,193 @@ export const initialDrainageProperties: DrainageProperties = {
     ],
 };
 
+export const DRAINAGE_FLOW_SYSTEMS: FlowSystemParameters[] = [
+    {
+        name: "Sewer Drainage",
+        temperature: 20,
+        color: { hex: "#119911" },
+        uid: StandardFlowSystemUids.SewerDrainage,
+        fluid: "sewage",
+        hasReturnSystem: false,
+        returnIsInsulated: false,
+        returnMaxVelocityMS: 1,
+        insulationMaterial: InsulationMaterials.calciumSilicate,
+        insulationJacket: InsulationJackets.allServiceJacket,
+        insulationThicknessMM: 25,
+
+        networks: {
+            RISERS: {
+                spareCapacityPCT: 0,
+                velocityMS: 20,
+                material: "uPVCSewer",
+                minimumPipeSize: 15,
+            },
+            RETICULATIONS: {
+                spareCapacityPCT: 0,
+                velocityMS: 20,
+                material: "uPVCSewer",
+                minimumPipeSize: 15,
+            },
+            CONNECTIONS: {
+                spareCapacityPCT: 0,
+                velocityMS: 3,
+                material: "uPVCSewer",
+                minimumPipeSize: 16,
+            }
+        },
+
+        drainageProperties: cloneSimple(initialDrainageProperties),
+    },
+
+    {
+        name: "Sanitary Plumbing",
+        temperature: 20,
+        color: { hex: "#66FF66" },
+        uid: StandardFlowSystemUids.SanitaryPlumbing,
+        fluid: "sewage",
+        hasReturnSystem: false,
+        returnIsInsulated: false,
+        returnMaxVelocityMS: 1,
+        insulationMaterial: InsulationMaterials.calciumSilicate,
+        insulationJacket: InsulationJackets.allServiceJacket,
+        insulationThicknessMM: 25,
+
+        networks: {
+            RISERS: {
+                spareCapacityPCT: 0,
+                velocityMS: 20,
+                material: "uPVCSewer",
+                minimumPipeSize: 15,
+            },
+            RETICULATIONS: {
+                spareCapacityPCT: 0,
+                velocityMS: 20,
+                material: "uPVCSewer",
+                minimumPipeSize: 15,
+            },
+            CONNECTIONS: {
+                spareCapacityPCT: 0,
+                velocityMS: 3,
+                material: "uPVCSewer",
+                minimumPipeSize: 16,
+            }
+        },
+
+        drainageProperties: cloneSimple(initialDrainageProperties),
+    },
+
+    {
+        name: "Grease Waste",
+        temperature: 20,
+        color: { hex: "#90403e" },
+        uid: StandardFlowSystemUids.GreaseWaste,
+        fluid: "sewage",
+        hasReturnSystem: false,
+        returnIsInsulated: false,
+        returnMaxVelocityMS: 1,
+        insulationMaterial: InsulationMaterials.calciumSilicate,
+        insulationJacket: InsulationJackets.allServiceJacket,
+        insulationThicknessMM: 25,
+
+        networks: {
+            RISERS: {
+                spareCapacityPCT: 0,
+                velocityMS: 20,
+                material: "hdpeSdr11Sewer",
+                minimumPipeSize: 15,
+            },
+            RETICULATIONS: {
+                spareCapacityPCT: 0,
+                velocityMS: 20,
+                material: "hdpeSdr11Sewer",
+                minimumPipeSize: 15,
+            },
+            CONNECTIONS: {
+                spareCapacityPCT: 0,
+                velocityMS: 3,
+                material: "hdpeSdr11Sewer",
+                minimumPipeSize: 16,
+            }
+        },
+
+        drainageProperties: cloneSimple(initialDrainageProperties),
+    },
+
+    {
+        name: "Trade Waste",
+        temperature: 20,
+        color: { hex: "#a10000" },
+        uid: StandardFlowSystemUids.TradeWaste,
+        fluid: "sewage",
+        hasReturnSystem: false,
+        returnIsInsulated: false,
+        returnMaxVelocityMS: 1,
+        insulationMaterial: InsulationMaterials.calciumSilicate,
+        insulationJacket: InsulationJackets.allServiceJacket,
+        insulationThicknessMM: 25,
+
+        networks: {
+            RISERS: {
+                spareCapacityPCT: 0,
+                velocityMS: 20,
+                material: "hdpeSdr11Sewer",
+                minimumPipeSize: 15,
+            },
+            RETICULATIONS: {
+                spareCapacityPCT: 0,
+                velocityMS: 20,
+                material: "hdpeSdr11Sewer",
+                minimumPipeSize: 15,
+            },
+            CONNECTIONS: {
+                spareCapacityPCT: 0,
+                velocityMS: 3,
+                material: "hdpeSdr11Sewer",
+                minimumPipeSize: 16,
+            }
+        },
+
+        drainageProperties: cloneSimple(initialDrainageProperties),
+    },
+
+    {
+        name: "Rising Main",
+        temperature: 20,
+        color: {hex: "#7100c2"},
+        uid: StandardFlowSystemUids.RisingMain,
+        fluid: "sewage",
+        hasReturnSystem: false,
+        returnIsInsulated: false,
+        returnMaxVelocityMS: 1,
+        insulationMaterial: InsulationMaterials.calciumSilicate,
+        insulationJacket: InsulationJackets.allServiceJacket,
+        insulationThicknessMM: 25,
+
+        networks: {
+            RISERS: {
+                spareCapacityPCT: 0,
+                velocityMS: 20,
+                material: "uPVCSewer",
+                minimumPipeSize: 15,
+            },
+            RETICULATIONS: {
+                spareCapacityPCT: 0,
+                velocityMS: 20,
+                material: "uPVCSewer",
+                minimumPipeSize: 15,
+            },
+            CONNECTIONS: {
+                spareCapacityPCT: 0,
+                velocityMS: 3,
+                material: "uPVCSewer",
+                minimumPipeSize: 16,
+            }
+        },
+
+        drainageProperties: cloneSimple(initialDrainageProperties),
+    }
+];
+
 export const initialDrawing: DrawingState = {
     metadata: {
         generalInfo: {
@@ -593,191 +780,7 @@ export const initialDrawing: DrawingState = {
 
                 drainageProperties: cloneSimple(initialDrainageProperties),
             },
-
-            {
-                name: "Sewer Drainage",
-                temperature: 20,
-                color: { hex: "#119911" },
-                uid: StandardFlowSystemUids.SewerDrainage,
-                fluid: "sewage",
-                hasReturnSystem: false,
-                returnIsInsulated: false,
-                returnMaxVelocityMS: 1,
-                insulationMaterial: InsulationMaterials.calciumSilicate,
-                insulationJacket: InsulationJackets.allServiceJacket,
-                insulationThicknessMM: 25,
-
-                networks: {
-                    RISERS: {
-                        spareCapacityPCT: 0,
-                        velocityMS: 20,
-                        material: "uPVCSewer",
-                        minimumPipeSize: 15,
-                    },
-                    RETICULATIONS: {
-                        spareCapacityPCT: 0,
-                        velocityMS: 20,
-                        material: "uPVCSewer",
-                        minimumPipeSize: 15,
-                    },
-                    CONNECTIONS: {
-                        spareCapacityPCT: 0,
-                        velocityMS: 3,
-                        material: "uPVCSewer",
-                        minimumPipeSize: 16,
-                    }
-                },
-
-                drainageProperties: cloneSimple(initialDrainageProperties),
-            },
-
-            {
-                name: "Sanitary Plumbing",
-                temperature: 20,
-                color: { hex: "#66FF66" },
-                uid: StandardFlowSystemUids.SanitaryPlumbing,
-                fluid: "sewage",
-                hasReturnSystem: false,
-                returnIsInsulated: false,
-                returnMaxVelocityMS: 1,
-                insulationMaterial: InsulationMaterials.calciumSilicate,
-                insulationJacket: InsulationJackets.allServiceJacket,
-                insulationThicknessMM: 25,
-
-                networks: {
-                    RISERS: {
-                        spareCapacityPCT: 0,
-                        velocityMS: 20,
-                        material: "uPVCSewer",
-                        minimumPipeSize: 15,
-                    },
-                    RETICULATIONS: {
-                        spareCapacityPCT: 0,
-                        velocityMS: 20,
-                        material: "uPVCSewer",
-                        minimumPipeSize: 15,
-                    },
-                    CONNECTIONS: {
-                        spareCapacityPCT: 0,
-                        velocityMS: 3,
-                        material: "uPVCSewer",
-                        minimumPipeSize: 16,
-                    }
-                },
-
-                drainageProperties: cloneSimple(initialDrainageProperties),
-            },
-
-            {
-                name: "Grease Waste",
-                temperature: 20,
-                color: { hex: "#90403e" },
-                uid: StandardFlowSystemUids.GreaseWaste,
-                fluid: "sewage",
-                hasReturnSystem: false,
-                returnIsInsulated: false,
-                returnMaxVelocityMS: 1,
-                insulationMaterial: InsulationMaterials.calciumSilicate,
-                insulationJacket: InsulationJackets.allServiceJacket,
-                insulationThicknessMM: 25,
-
-                networks: {
-                    RISERS: {
-                        spareCapacityPCT: 0,
-                        velocityMS: 20,
-                        material: "hdpeSdr11Sewer",
-                        minimumPipeSize: 15,
-                    },
-                    RETICULATIONS: {
-                        spareCapacityPCT: 0,
-                        velocityMS: 20,
-                        material: "hdpeSdr11Sewer",
-                        minimumPipeSize: 15,
-                    },
-                    CONNECTIONS: {
-                        spareCapacityPCT: 0,
-                        velocityMS: 3,
-                        material: "hdpeSdr11Sewer",
-                        minimumPipeSize: 16,
-                    }
-                },
-
-                drainageProperties: cloneSimple(initialDrainageProperties),
-            },
-
-            {
-                name: "Trade Waste",
-                temperature: 20,
-                color: { hex: "#a10000" },
-                uid: StandardFlowSystemUids.TradeWaste,
-                fluid: "sewage",
-                hasReturnSystem: false,
-                returnIsInsulated: false,
-                returnMaxVelocityMS: 1,
-                insulationMaterial: InsulationMaterials.calciumSilicate,
-                insulationJacket: InsulationJackets.allServiceJacket,
-                insulationThicknessMM: 25,
-
-                networks: {
-                    RISERS: {
-                        spareCapacityPCT: 0,
-                        velocityMS: 20,
-                        material: "hdpeSdr11Sewer",
-                        minimumPipeSize: 15,
-                    },
-                    RETICULATIONS: {
-                        spareCapacityPCT: 0,
-                        velocityMS: 20,
-                        material: "hdpeSdr11Sewer",
-                        minimumPipeSize: 15,
-                    },
-                    CONNECTIONS: {
-                        spareCapacityPCT: 0,
-                        velocityMS: 3,
-                        material: "hdpeSdr11Sewer",
-                        minimumPipeSize: 16,
-                    }
-                },
-
-                drainageProperties: cloneSimple(initialDrainageProperties),
-            },
-
-            {
-                name: "Rising Main",
-                temperature: 20,
-                color: { hex: "#7100c2" },
-                uid: StandardFlowSystemUids.RisingMain,
-                fluid: "sewage",
-                hasReturnSystem: false,
-                returnIsInsulated: false,
-                returnMaxVelocityMS: 1,
-                insulationMaterial: InsulationMaterials.calciumSilicate,
-                insulationJacket: InsulationJackets.allServiceJacket,
-                insulationThicknessMM: 25,
-
-                networks: {
-                    RISERS: {
-                        spareCapacityPCT: 0,
-                        velocityMS: 20,
-                        material: "uPVCSewer",
-                        minimumPipeSize: 15,
-                    },
-                    RETICULATIONS: {
-                        spareCapacityPCT: 0,
-                        velocityMS: 20,
-                        material: "uPVCSewer",
-                        minimumPipeSize: 15,
-                    },
-                    CONNECTIONS: {
-                        spareCapacityPCT: 0,
-                        velocityMS: 3,
-                        material: "uPVCSewer",
-                        minimumPipeSize: 16,
-                    }
-                },
-
-                drainageProperties: cloneSimple(initialDrainageProperties),
-            }
+            ...DRAINAGE_FLOW_SYSTEMS,
         ],
         calculationParams: {
             psdMethod: SupportedPsdStandards.as35002018LoadingUnits,
@@ -832,6 +835,7 @@ export const initialDrawing: DrawingState = {
     },
     shared: {}
 };
+
 
 export const exampleDrawing: OperationTransformConcrete = {
     "type": OPERATION_NAMES.DIFF_OPERATION,
