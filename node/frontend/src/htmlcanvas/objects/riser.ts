@@ -118,6 +118,9 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         }
 
         ctx.fillStyle = this.color(doc).hex;
+        if (!this.isActive()) {
+            ctx.fillStyle = 'rgba(150, 150, 150, 0.65)';
+        }
 
         ctx.globalAlpha = 1;
         ctx.beginPath();
@@ -139,6 +142,36 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
             ctx.lineTo(-this.lastDrawnDiameterW * 0.38, -this.lastDrawnDiameterW * 0.25);
             ctx.closePath();
             ctx.fill();
+
+            const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === this.entity.systemUid);
+            if (system) {
+                if (system.drainageProperties.stackDedicatedVent) {
+                    // draw dedicated vent.
+                    const ventColor = system.drainageProperties.ventColor.hex;
+
+                    ctx.beginPath();
+                    ctx.fillStyle = ventColor;
+
+                    if (!this.isActive()) {
+                        ctx.fillStyle = 'rgba(150, 150, 150, 0.65)';
+                    }
+
+                    const ventRadius = this.lastDrawnDiameterW / 4;
+                    const ventDiameter = ventRadius * 2;
+                    ctx.arc(this.lastDrawnDiameterW , 0, ventRadius, 0, Math.PI * 2);
+                    ctx.fill();
+
+
+                    ctx.beginPath();
+                    ctx.fillStyle = '#000000';
+                    ctx.moveTo(this.lastDrawnDiameterW, -ventDiameter * 0.45);
+                    ctx.lineTo(this.lastDrawnDiameterW + ventDiameter * 0.38, ventDiameter * 0.25);
+                    ctx.lineTo(this.lastDrawnDiameterW, ventDiameter * 0.1);
+                    ctx.lineTo(this.lastDrawnDiameterW - ventDiameter * 0.38, ventDiameter * 0.25);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            }
         } else {
 
             // riser. Draw normal triangle.
@@ -182,6 +215,9 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
     }
 
     inBounds(objectCoord: Coord, radius?: number) {
+        if (!this.isActive()) {
+            return false;
+        }
         const dist = Math.sqrt(objectCoord.x ** 2 + objectCoord.y ** 2);
         return dist <= this.toObjectLength(this.lastDrawnDiameterW / 2) + (radius ? radius : 0);
     }
