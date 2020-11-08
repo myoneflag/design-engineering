@@ -53,6 +53,12 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         const { selected } = args;
 
         this.withWorldScale(context, { x: 0, y: 0 }, () => {
+            const lastAlpha = ctx.globalAlpha;
+
+            if (!this.isActive()) {
+                ctx.globalAlpha = 0.5;
+            }
+
             const l = -this.entity.widthMM / 2;
             const r = this.entity.widthMM / 2;
             const b = this.entity.heightMM / 2;
@@ -93,6 +99,8 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
 
             ctx.fillStyle = "#000000";
             ctx.fillText(this.entity.name.toUpperCase(), -measure.width / 2, +fontSize / 3);
+
+            ctx.globalAlpha = lastAlpha;
         });
     }
 
@@ -103,6 +111,29 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             TM.rotateDEG(this.entity.rotation),
             TM.scale(scale, scale)
         );
+    }
+
+    isActive() {
+        let iAmDrainage = false;
+        let iAmPressure = false;
+        switch (this.entity.plant.type) {
+            case PlantType.RETURN_SYSTEM:
+            case PlantType.TANK:
+            case PlantType.PUMP:
+                iAmPressure = true;
+                break;
+            case PlantType.CUSTOM:
+                iAmDrainage = iAmPressure = true;
+                break;
+            case PlantType.DRAINAGE_PIT:
+                iAmDrainage = true;
+                break;
+            default:
+                assertUnreachable(this.entity.plant);
+        }
+
+        return (this.document.uiState.pressureOrDrainage === 'drainage' && iAmDrainage) ||
+            (this.document.uiState.pressureOrDrainage === 'pressure' && iAmPressure);
     }
 
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
@@ -138,6 +169,9 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
     }
 
     inBounds(objectCoord: Coord) {
+        if (!this.isActive()) {
+            return false;
+        }
         if (Math.abs(objectCoord.x) <= this.entity.widthMM / 2) {
             if (objectCoord.y >= -this.entity.heightMM * 0.5) {
                 if (objectCoord.y <= this.entity.heightMM * 0.5) {

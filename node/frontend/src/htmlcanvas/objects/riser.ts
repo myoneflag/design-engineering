@@ -91,7 +91,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
             ), 0.5);
 
             if (!this.isActive()) {
-                ctx.fillStyle = '#777777';
+                ctx.fillStyle = 'rgba(150, 150, 150, 0.65)';
             }
 
             ctx.beginPath();

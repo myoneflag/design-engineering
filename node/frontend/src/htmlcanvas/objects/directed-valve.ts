@@ -123,7 +123,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         }
         let color = e.color!;
         if (!this.isActive()) {
-            color = {hex: '#777777'};
+            color = {hex: 'rgba(150, 150, 150, 0.65)'};
         }
 
         const baseWidth = Math.max(2.0 / s, VALVE_LINE_WIDTH_MM / this.toWorldLength(1));

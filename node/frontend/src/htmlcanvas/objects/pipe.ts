@@ -224,7 +224,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         let baseColor = this.displayObject(doc).color!.hex;
 
         if (!this.isActive()) {
-            baseColor = '#777777';
+            baseColor = 'rgba(150, 150, 150, 0.65)';
         }
 
         const baseWidth = Math.max(

@@ -89,7 +89,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
 
             ctx.fillStyle = rgb2style(getHighlightColor(selected, overrideColorList, this.color(doc)), 0.5);
             if (!this.pressureDrainageActive()) {
-                ctx.fillStyle = '#777777';
+                ctx.fillStyle = 'rgba(150, 150, 150, 0.65)';
             }
 
             ctx.beginPath();
@@ -177,7 +177,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
 
     color(doc: DocumentState) {
         if (!this.isActive()) {
-            return {hex: '#777777'};
+            return {hex: 'rgba(150, 150, 150, 0.65)'};
         }
         return this.entity.color == null ? this.system(doc).color : this.entity.color;
     }

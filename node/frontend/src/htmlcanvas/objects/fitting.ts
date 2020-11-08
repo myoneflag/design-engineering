@@ -143,7 +143,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
                         ctx.strokeStyle = baseColorHex;
                         if (!this.isActive()) {
-                            ctx.strokeStyle = '#777777';
+                            ctx.strokeStyle = 'rgba(150, 150, 150, 0.65)';
                         }
                         ctx.lineWidth = targetWidth;
                         ctx.beginPath();
