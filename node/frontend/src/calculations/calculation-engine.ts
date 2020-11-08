@@ -1715,6 +1715,7 @@ export default class CalculationEngine implements CalculationContext {
             case EntityType.PIPE: {
 
                 const calculation = this.globalStore.getOrCreateCalculation(entity);
+
                 calculation.psdUnits = psdU;
                 calculation.psdProfile = profile;
                 if (!calculation.flowFrom) {
@@ -2273,8 +2274,6 @@ export default class CalculationEngine implements CalculationContext {
                     // TODO: Info that flow rate is ambiguous, but some flow is exclusive to us
                     if (object.entity.type === EntityType.PIPE) {
                         const pcalc = this.globalStore.getOrCreateCalculation(object.entity);
-                        console.log("Setting unusual configuration from flow rate ambiguity, zero exclusive");
-                        console.trace();
                         pcalc.noFlowAvailableReason = NoFlowAvailableReason.UNUSUAL_CONFIGURATION;
                     }
                 } else {
@@ -2288,7 +2287,7 @@ export default class CalculationEngine implements CalculationContext {
                 if (isZeroWaterPsdCounts(residualPsdU)) {
                     this.configureEntityForPSD(
                         object.entity,
-                        zeroFinalPsdCounts(),
+                        exclusivePsdU,
                         flowEdge,
                         wet,
                         new PsdProfile(),
@@ -2298,8 +2297,6 @@ export default class CalculationEngine implements CalculationContext {
                     // TODO: flow rate is ambiguous, and no flow is exclusive to us.
                     if (object.entity.type === EntityType.PIPE) {
                         const pcalc = this.globalStore.getOrCreateCalculation(object.entity);
-                        console.log("Setting unusual configuration from flow rate ambiguity");
-                        console.trace();
 
                         pcalc.noFlowAvailableReason = NoFlowAvailableReason.UNUSUAL_CONFIGURATION;
                         pcalc.psdUnits = residualPsdU;
