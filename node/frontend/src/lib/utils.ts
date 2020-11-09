@@ -8,6 +8,7 @@ import { getFields } from "../calculations/utils";
 import { getEntityName } from "../../../common/src/api/document/entities/types";
 import Vue from 'vue';
 import { Color } from "../../../common/src/api/document/drawing";
+import {assertUnreachable} from "../../../common/src/api/config";
 
 export const lighten = (col: string, percent: number, alpha: number = 1.0) => {
     const num = parseInt(col.substr(1), 16);
@@ -172,44 +173,61 @@ export function getEffectiveFilter(objects: BaseBackedObject[], calculationFilte
 
     const existing = cloneSimple(calculationFilters);
 
+    const wasInserted = new Set<string>();
+    const hasEnabled = new Set<string>();
+
     objects.forEach((o) => {
-        const fields = getFields(o.entity, document, o.globalStore, catalog);
-        let wasInserted = false;
-        if (!(o.entity.type in build)) {
-            Vue.set(build, o.entity.type, {
-                name: getEntityName(o.entity.type),
+        let fields = getFields(o.entity, document, o.globalStore, catalog);
+        switch (document.uiState.pressureOrDrainage) {
+            case "pressure":
+                fields = fields.filter((f) => f.layouts === undefined || f.layouts.includes('pressure'));
+                break;
+            case "drainage":
+                fields = fields.filter((f) => f.layouts !== undefined && f.layouts.includes('drainage'));
+                break;
+            default:
+                assertUnreachable(document.uiState.pressureOrDrainage);
+        }
+
+        const eName = getEntityName(o.entity);
+
+        if (!(eName in build)) {
+            Vue.set(build, eName, {
+                name: eName,
                 filters: {},
                 enabled: false
             });
-            wasInserted = true;
+            wasInserted.add(eName);
         }
 
-        let hasEnabled = false;
         fields.forEach((f) => {
-            if (!(f.title in build[o.entity.type].filters)) {
-                Vue.set(build[o.entity.type].filters, f.title, {
+            if (!(f.title in build[eName].filters)) {
+                Vue.set(build[eName].filters, f.title, {
                     name: f.title,
                     value: false
                 });
                 if (f.defaultEnabled) {
-                    build[o.entity.type].filters[f.title].enabled = true;
-                    hasEnabled = true;
+                    build[eName].filters[f.title].enabled = true;
+                    hasEnabled.add(eName);
                 }
             }
         });
-        if (wasInserted && hasEnabled) {
-            build[o.entity.type].enabled = true;
-        }
     });
 
-    for (const eType in existing) {
-        if (eType in build && existing.hasOwnProperty(eType)) {
-            for (const prop in existing[eType].filters) {
-                if (prop in build[eType].filters) {
-                    build[eType].filters[prop].enabled = existing[eType].filters[prop].enabled;
+    for (const eName of Array.from(wasInserted.values())) {
+        if (hasEnabled.has(eName)) {
+            build[eName].enabled = true;
+        }
+    }
+
+    for (const eName in existing) {
+        if (eName in build && existing.hasOwnProperty(eName)) {
+            for (const prop in existing[eName].filters) {
+                if (prop in build[eName].filters) {
+                    build[eName].filters[prop].enabled = existing[eName].filters[prop].enabled;
                 }
             }
-            build[eType].enabled = existing[eType].enabled;
+            build[eName].enabled = existing[eName].enabled;
         }
     }
     return build;

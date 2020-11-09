@@ -1,4 +1,5 @@
-import { SelectedMaterialManufacturer } from './../../../common/src/api/document/drawing';
+
+import { NetworkType, SelectedMaterialManufacturer } from './../../../common/src/api/document/drawing';
 import { DocumentState } from "../../src/store/document/types";
 import { SelectionTarget } from "../../src/htmlcanvas/lib/types";
 import { EntityType } from "../../../common/src/api/document/entities/types";
@@ -40,12 +41,12 @@ import {ValveType} from "../../../common/src/api/document/entities/directed-valv
 import {
     addCosts,
     addPsdCounts,
-    comparePsdCounts,
+    compareWaterPsdCounts,
     ContextualPCE,
     countPsdProfile,
     FinalPsdCountEntry,
     insertPsdProfile,
-    isZeroPsdCounts,
+    isZeroWaterPsdCounts,
     lookupFlowRate,
     PsdProfile,
     subtractPsdProfiles,
@@ -70,8 +71,10 @@ import {fillPlantDefaults, makePlantEntityFields} from "../../../common/src/api/
 import Plant from "../htmlcanvas/objects/plant";
 import {
     assertUnreachable,
+    isDrainage,
     isGermanStandard,
     StandardFlowSystemUids,
+    SupportedDrainageMethods,
     SupportedPsdStandards
 } from "../../../common/src/api/config";
 import {Catalog, PipeSpec} from "../../../common/src/api/catalog/types";
@@ -87,7 +90,7 @@ import {
 } from "../../../common/src/lib/utils";
 import {determineConnectableSystemUid} from "../store/document/entities/lib";
 import {getPropertyByString} from "../lib/utils";
-import {getPlantPressureLossKPA} from "../htmlcanvas/lib/utils";
+import {flowSystemsFlowTogether, getPlantPressureLossKPA} from "../htmlcanvas/lib/utils";
 import {RingMainCalculator} from "./ring-main-calculator";
 import {Configuration, NoFlowAvailableReason} from "../store/document/calculations/pipe-calculation";
 import {
@@ -106,6 +109,7 @@ import {makeGasApplianceFields} from "../../../common/src/api/document/entities/
 import {calculateGas} from "./gas";
 import {PlantType, ReturnSystemPlant} from "../../../common/src/api/document/entities/plants/plant-types";
 import {NodeProps} from '../../../common/src/models/CustomEntity';
+import {processDrainage, sizeDrainagePipe} from "./drainage";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -342,6 +346,8 @@ export default class CalculationEngine implements CalculationContext {
                 returnFlowRates(this, returns);
                 returnBalanceValves(this, returns);  // balance valves before calculating point pressures so that balancing valve pressure drops are accounted for.
 
+                processDrainage(this);
+
                 this.calculateHotWaterDeadlegs();
 
 
@@ -524,6 +530,17 @@ export default class CalculationEngine implements CalculationContext {
             undefined,
             (e) => {
                 const pc = this.globalStore.getOrCreateCalculation((this.globalStore.get(e.value.uid) as Pipe).entity);
+
+                // Edge case: Do not push flow, including sewer flow, through vents.
+                if (e.value.type === EdgeType.PIPE) {
+                    const pipe = this.globalStore.get(e.value.uid);
+                    if (pipe && pipe.entity.type === EntityType.PIPE && isDrainage(pipe.entity.systemUid)) {
+                        if (pipe.entity.network === NetworkType.CONNECTIONS) {
+                            return true;
+                        }
+                    }
+                }
+
                 // Some pipes may have their flow directions fixed in an earlier step (such as return systems)
                 if (pc.flowFrom) {
                     if (e.from.connectable !== pc.flowFrom) {
@@ -541,7 +558,10 @@ export default class CalculationEngine implements CalculationContext {
                 this.firstWet.set(e.uid, e.from);
                 this.secondWet.set(e.uid, e.to);
             },
-            (e) => {
+            (e, wasCancelled) => {
+                if (wasCancelled) {
+                    return;
+                }
                 if (this.allBridges.has(e.uid)) {
                     if (e.uid !== bridgeStack.pop()!.uid) {
                         throw new Error("traversal error");
@@ -1233,6 +1253,23 @@ export default class CalculationEngine implements CalculationContext {
                     }
                     for (let i = 0; i < toConnect.length; i++) {
                         for (let j = i + 1; j < toConnect.length; j++) {
+
+                            // For nodes, that might connect things of two different
+                            const p1 = this.globalStore.get(toConnect[i]);
+                            const p2 = this.globalStore.get(toConnect[j]);
+                            if (p1 && p2 && p1 instanceof Pipe && p2 instanceof Pipe) {
+                                if (!flowSystemsFlowTogether(
+                                    p1.entity.systemUid,
+                                    p2.entity.systemUid,
+                                    this.doc,
+                                    this.catalog,
+                                )) {
+                                    // Cannot enable this yet. Because can't make this work with
+                                    // towered calculations yet.
+                                    continue;
+                                }
+                            }
+
                             this.flowGraph.addEdge(
                                 {
                                     connectable: obj.entity.uid,
@@ -1254,20 +1291,40 @@ export default class CalculationEngine implements CalculationContext {
                     this.configureDirectedValveLUGraph(obj.entity);
                     break;
                 case EntityType.PLANT:
-                    this.flowGraph.addDirectedEdge(
-                        {
-                            connectable: obj.entity.inletUid,
-                            connection: obj.entity.uid
-                        },
-                        {
-                            connectable: obj.entity.outletUid,
-                            connection: obj.entity.uid
-                        },
-                        {
-                            type: EdgeType.PLANT_THROUGH,
-                            uid: obj.entity.uid
-                        }
-                    );
+                    // sewer pits are reversed
+                    if (isDrainage(obj.entity.inletSystemUid)) {
+
+                        this.flowGraph.addDirectedEdge(
+                            {
+                                connectable: obj.entity.outletUid,
+                                connection: obj.entity.uid
+                            },
+                            {
+                                connectable: obj.entity.inletUid,
+                                connection: obj.entity.uid
+                            },
+                            {
+                                type: EdgeType.PLANT_THROUGH,
+                                uid: obj.entity.uid
+                            }
+                        );
+                    } else {
+
+                        this.flowGraph.addDirectedEdge(
+                            {
+                                connectable: obj.entity.inletUid,
+                                connection: obj.entity.uid
+                            },
+                            {
+                                connectable: obj.entity.outletUid,
+                                connection: obj.entity.uid
+                            },
+                            {
+                                type: EdgeType.PLANT_THROUGH,
+                                uid: obj.entity.uid
+                            }
+                        );
+                    }
                     break;
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.FIXTURE:
@@ -1356,6 +1413,9 @@ export default class CalculationEngine implements CalculationContext {
                 case ValveType.WATER_METER:
                 case ValveType.FILTER:
                 case ValveType.STRAINER:
+                case ValveType.FLOOR_WASTE:
+                case ValveType.INSPECTION_OPENING:
+                case ValveType.REFLUX_VALVE:
                     this.flowGraph.addEdge(
                         {
                             connectable: entity.uid,
@@ -1407,8 +1467,23 @@ export default class CalculationEngine implements CalculationContext {
                     const fixture = parentEntity as FixtureEntity;
                     const mainFixture = fillFixtureFields(this.doc.drawing, this.catalog, fixture);
 
+                    let drainageUnits = undefined;
+                    switch (this.doc.drawing.metadata.calculationParams.drainageMethod) {
+                        case SupportedDrainageMethods.AS2018FixtureUnits:
+                            drainageUnits = mainFixture.asnzFixtureUnits;
+                            break;
+                        case SupportedDrainageMethods.EN1205622000DischargeUnits:
+                            drainageUnits = mainFixture.enDischargeUnits;
+                            break;
+                        case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
+                            drainageUnits = mainFixture.upcFixtureUnits;
+                            break;
+                        default:
+                            assertUnreachable(this.doc.drawing.metadata.calculationParams.drainageMethod)
+                    }
+
                     for (const suid of fixture.roughInsInOrder) {
-                        if (node.uid === fixture.roughIns[suid].uid) {
+                        if (node.uid === fixture.roughIns[suid].uid || (isDrainage(node.entity.systemUid) && isDrainage(suid))) {
                             if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
                                 return [{
                                     units: Number(mainFixture.roughIns[suid].designFlowRateLS),
@@ -1416,6 +1491,7 @@ export default class CalculationEngine implements CalculationContext {
                                     dwellings: 0,
                                     entity: node.entity.uid,
                                     correlationGroup: fixture.uid,
+                                    drainageUnits: isDrainage(suid) ? drainageUnits! : 0,
                                     gasMJH: 0,
                                 }];
                             } else {
@@ -1425,7 +1501,8 @@ export default class CalculationEngine implements CalculationContext {
                                     dwellings: 0,
                                     entity: node.entity.uid,
                                     gasMJH: 0,
-                                    correlationGroup: fixture.uid
+                                    correlationGroup: fixture.uid,
+                                    drainageUnits: isDrainage(suid) ? drainageUnits! : 0,
                                 }];
                             }
                         }
@@ -1434,7 +1511,6 @@ export default class CalculationEngine implements CalculationContext {
                     return [zeroContextualPCE(node.entity.uid, node.entity.uid)];
                 }
                 case EntityType.GAS_APPLIANCE: {
-                    // TODO: for gas calculation BIG TODO
                     return [{
                         units: 0,
                         continuousFlowLS: 0,
@@ -1442,6 +1518,7 @@ export default class CalculationEngine implements CalculationContext {
                         entity: parentEntity.uid,
                         correlationGroup: parentEntity.uid,
                         gasMJH: parentEntity.flowRateMJH!,
+                        drainageUnits: 0,
                     }];
                 }
                 case EntityType.PLANT: {
@@ -1456,14 +1533,14 @@ export default class CalculationEngine implements CalculationContext {
                                     entity: node.entity.uid,
                                     correlationGroup: parentEntity.uid,
                                     gasMJH: filled.gasConsumptionMJH,
+                                    drainageUnits: 0,
                                 }];
                             }
                             break;
                         case PlantType.TANK:
-                            break;
                         case PlantType.CUSTOM:
-                            break;
                         case PlantType.PUMP:
+                        case PlantType.DRAINAGE_PIT:
                             break;
                         default:
                             assertUnreachable(parentEntity.plant);
@@ -1494,66 +1571,95 @@ export default class CalculationEngine implements CalculationContext {
             const manufacturer = selectedMaterialManufacturer?.manufacturer || 'generic';
             const selectedOption = selectedMaterialManufacturer?.selected || 'default';
 
-            if (typeof filled.customNodeId !== "undefined" && this.doc.drawing.metadata.calculationParams.psdMethod === SupportedPsdStandards.bs806) {
+            const psdStandard = this.doc.drawing.metadata.calculationParams.psdMethod;
+            if (typeof filled.customNodeId !== "undefined" && psdStandard === SupportedPsdStandards.bs806) {
                 const nodeProp = this.nodes.find((node: NodeProps) => node.id === filled.customNodeId || node.uid === filled.customNodeId);
 
-                if (typeof nodeProp !== "undefined") {
-                    const returnData = [];
-                    for (var i = 0; i < nodeProp.fixtures.length; i++) {
-                        let systemChk = null;
-                        if (!!(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[SupportedPsdStandards.bs806][filled.systemUidOption!])) {
-                            systemChk = filled.systemUidOption;
-                        } else if (filled.systemUidOption === 'hot-water' && !!(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[SupportedPsdStandards.bs806]['warm-water'])) {
-                            systemChk = 'warm-water';
-                        }
-
+                if (nodeProp !== undefined) {
+                    // Special case for bs806 because it requires individual fixture information.
+                    const returnData: ContextualPCE[] = [];
+                    for (let i = 0; i < nodeProp.fixtures.length; i++) {
                         let loadingUnits = 0;
                         let designFlowRateLS = 0;
-                        if (systemChk) {
-                            loadingUnits = parseCatalogNumberOrMin(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[SupportedPsdStandards.bs806][systemChk])!;
-                            designFlowRateLS = parseCatalogNumberOrMin(this.catalog.fixtures[nodeProp.fixtures[i]].qLS[manufacturer][selectedOption][systemChk])!;
-                        }
-
-                        switch (filled.node.type) {
-                            case NodeType.LOAD_NODE:
-                                if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
-                                    returnData.push({
-                                        units: designFlowRateLS,
-                                        continuousFlowLS: filled.node.continuousFlowLS!,
-                                        dwellings: 0,
-                                        entity: filled.uid + '-' + i,
-                                        gasMJH: filled.node.gasFlowRateMJH,
-                                        correlationGroup: correlationGroup + '-' + i,
-                                    });
-                                } else {
-                                    returnData.push({
-                                        units: loadingUnits,
-                                        continuousFlowLS: filled.node.continuousFlowLS!,
-                                        dwellings: 0,
-                                        entity: filled.uid + '-' + i,
-                                        gasMJH: filled.node.gasFlowRateMJH,
-                                        correlationGroup: correlationGroup + '-' + i,
-                                    });
-                                }
+                        let fixtureUnits = 0;
+                        switch (this.doc.drawing.metadata.calculationParams.drainageMethod) {
+                            case SupportedDrainageMethods.AS2018FixtureUnits:
+                                fixtureUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[i]].asnzFixtureUnits)!;
                                 break;
-                            case NodeType.DWELLING:
-                                returnData.push({
-                                    units: isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod) ? designFlowRateLS: loadingUnits,
-                                    continuousFlowLS: filled.node.continuousFlowLS!,
-                                    dwellings: filled.node.dwellings,
-                                    entity: filled.uid + '-' + i,
-                                    gasMJH: filled.node.gasFlowRateMJH * filled.node.dwellings!,
-                                    correlationGroup: correlationGroup + '-' + i,
-                                });
+                            case SupportedDrainageMethods.EN1205622000DischargeUnits:
+                                fixtureUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[i]].enDischargeUnits)!;
+                                break;
+                            case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
+                                fixtureUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[i]].upcFixtureUnits)!;
                                 break;
                             default:
-                                assertUnreachable(filled.node);
+                                assertUnreachable(this.doc.drawing.metadata.calculationParams.drainageMethod);
+                        }
+
+                        if (isGermanStandard(psdStandard)) {
+                            let systemChk = null;
+                            if (!!(this.catalog.fixtures[nodeProp.fixtures[i]].qLS[psdStandard])) {
+                                systemChk = filled.systemUidOption;
+                            } else if (filled.systemUidOption === 'hot-water' && !!(this.catalog.fixtures[nodeProp.fixtures[i]].qLS['warm-water'])) {
+                                systemChk = 'warm-water';
+                            }
+                            if (systemChk) {
+                                loadingUnits = parseCatalogNumberOrMin(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[SupportedPsdStandards.bs806][systemChk])!;
+                                designFlowRateLS = parseCatalogNumberOrMin(this.catalog.fixtures[nodeProp.fixtures[i]].qLS[manufacturer][selectedOption][systemChk])!;
+                                loadingUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[SupportedPsdStandards.bs806][systemChk])!;
+
+                                returnData.push({
+                                    units: designFlowRateLS,
+                                    continuousFlowLS: filled.node.continuousFlowLS!,
+                                    dwellings: 0,
+                                    entity: filled.uid + '-' + i,
+                                    gasMJH: filled.node.gasFlowRateMJH,
+                                    drainageUnits: fixtureUnits,
+                                    correlationGroup: correlationGroup + '-' + i,
+                                });
+                            }
+                        } else {
+                            let systemChk = null;
+                            if (!!(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[psdStandard][filled.systemUidOption!])) {
+                                systemChk = filled.systemUidOption;
+                            } else if (filled.systemUidOption === 'hot-water' && !!(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[psdStandard]['warm-water'])) {
+                                systemChk = 'warm-water';
+                            }
+
+                            let loadingUnits = 0;
+                            if (systemChk) {
+                                loadingUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[psdStandard][systemChk])!;
+
+                                returnData.push({
+                                    units: loadingUnits,
+                                    continuousFlowLS: filled.node.continuousFlowLS!,
+                                    dwellings: 0,
+                                    entity: filled.uid + '-' + i,
+                                    gasMJH: filled.node.gasFlowRateMJH,
+                                    drainageUnits: fixtureUnits,
+                                    correlationGroup: correlationGroup + '-' + i,
+                                });
+                            }
                         }
                     }
 
                     return returnData;
                 }
             } else {
+                let drainageUnits: number | null = null;
+                switch (this.doc.drawing.metadata.calculationParams.drainageMethod) {
+                    case SupportedDrainageMethods.AS2018FixtureUnits:
+                        drainageUnits = filled.node.asnzFixtureUnits;
+                        break;
+                    case SupportedDrainageMethods.EN1205622000DischargeUnits:
+                        drainageUnits = filled.node.enDischargeUnits;
+                        break;
+                    case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
+                        drainageUnits = filled.node.upcFixtureUnits;
+                        break;
+                    default:
+                        assertUnreachable(this.doc.drawing.metadata.calculationParams.drainageMethod);
+                }
                 switch (filled.node.type) {
                     case NodeType.LOAD_NODE:
                         if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
@@ -1563,6 +1669,7 @@ export default class CalculationEngine implements CalculationContext {
                                 dwellings: 0,
                                 entity: filled.uid,
                                 gasMJH: filled.node.gasFlowRateMJH,
+                                drainageUnits: drainageUnits!,
                                 correlationGroup
                             }];
                         } else {
@@ -1572,6 +1679,7 @@ export default class CalculationEngine implements CalculationContext {
                                 dwellings: 0,
                                 entity: filled.uid,
                                 gasMJH: filled.node.gasFlowRateMJH,
+                                drainageUnits: drainageUnits!,
                                 correlationGroup
                             }];
                         }
@@ -1582,6 +1690,7 @@ export default class CalculationEngine implements CalculationContext {
                             dwellings: filled.node.dwellings,
                             entity: filled.uid,
                             gasMJH: filled.node.gasFlowRateMJH * filled.node.dwellings!,
+                            drainageUnits: drainageUnits!,
                             correlationGroup
                         }];
                     default:
@@ -1606,6 +1715,7 @@ export default class CalculationEngine implements CalculationContext {
             case EntityType.PIPE: {
 
                 const calculation = this.globalStore.getOrCreateCalculation(entity);
+
                 calculation.psdUnits = psdU;
                 calculation.psdProfile = profile;
                 if (!calculation.flowFrom) {
@@ -1615,14 +1725,17 @@ export default class CalculationEngine implements CalculationContext {
 
                 const isGas = entity.systemUid === StandardFlowSystemUids.Gas;
                 if (isGas) {
-                    // TODO: Gas calculation
+                    // Gas calculation done elsewhere
+                } else if (isDrainage(entity.systemUid)) {
+                    // TODO: Drainage sizing
+                    sizeDrainagePipe(entity, this);
                 } else {
 
                     const flowRate = lookupFlowRate(psdU, this.doc, this.catalog, entity.systemUid);
 
                     if (flowRate === null) {
                         // Warn for no PSD
-                        if (isZeroPsdCounts(psdU)) {
+                        if (isZeroWaterPsdCounts(psdU)) {
                             this.setPipePSDFlowRate(entity, 0);
                         } else {
                             calculation.noFlowAvailableReason = NoFlowAvailableReason.LOADING_UNITS_OUT_OF_BOUNDS;
@@ -2041,6 +2154,9 @@ export default class CalculationEngine implements CalculationContext {
                         case ValveType.GAS_REGULATOR:
                         case ValveType.FILTER:
                         case ValveType.BALANCING:
+                        case ValveType.FLOOR_WASTE:
+                        case ValveType.INSPECTION_OPENING:
+                        case ValveType.REFLUX_VALVE:
                             break;
                         default:
                             assertUnreachable(obj.entity.valve);
@@ -2149,8 +2265,8 @@ export default class CalculationEngine implements CalculationContext {
             );
             const residualPsdU = countPsdProfile(residualPsdProfile);
 
-            if (!isZeroPsdCounts(exclusivePsdU)) {
-                const cmp = comparePsdCounts(residualPsdU, exclusivePsdU);
+            if (!isZeroWaterPsdCounts(exclusivePsdU)) {
+                const cmp = compareWaterPsdCounts(residualPsdU, exclusivePsdU);
                 if (cmp === null) {
                     throw new Error("Impossible PSD situation");
                 }
@@ -2168,10 +2284,10 @@ export default class CalculationEngine implements CalculationContext {
                     this.configureEntityForPSD(object.entity, exclusivePsdU, flowEdge, wet, exclusiveProfile, null);
                 }
             } else {
-                if (isZeroPsdCounts(residualPsdU)) {
+                if (isZeroWaterPsdCounts(residualPsdU)) {
                     this.configureEntityForPSD(
                         object.entity,
-                        zeroFinalPsdCounts(),
+                        exclusivePsdU,
                         flowEdge,
                         wet,
                         new PsdProfile(),
@@ -2181,6 +2297,7 @@ export default class CalculationEngine implements CalculationContext {
                     // TODO: flow rate is ambiguous, and no flow is exclusive to us.
                     if (object.entity.type === EntityType.PIPE) {
                         const pcalc = this.globalStore.getOrCreateCalculation(object.entity);
+
                         pcalc.noFlowAvailableReason = NoFlowAvailableReason.UNUSUAL_CONFIGURATION;
                         pcalc.psdUnits = residualPsdU;
                     }
@@ -2459,11 +2576,12 @@ export default class CalculationEngine implements CalculationContext {
                             highestLU = Math.max(highestLU, contextual.units);
                         });
 
-                        let newUnits = {
+                        let newUnits: FinalPsdCountEntry = {
                             units: total.units,
                             dwellings: total.dwellings,
                             continuousFlowLS: total.continuousFlowLS,
                             gasMJH: total.gasMJH,
+                            drainageUnits: total.drainageUnits,
                             highestLU,
                         };
 
@@ -2501,18 +2619,22 @@ export default class CalculationEngine implements CalculationContext {
                 case EntityType.FITTING:
                     break;
                 case EntityType.PIPE: {
-                    const filled = fillPipeDefaultFields(this.doc.drawing, (o as Pipe).computedLengthM, o.entity);
-                    const pipeSpec = (o as Pipe).getCatalogBySizePage(this);
-                    const calc = this.globalStore.getOrCreateCalculation(o.entity);
-                    if (pipeSpec) {
-                        const maxWorking = parseCatalogNumberExact(pipeSpec.safeWorkingPressureKPA);
-                        const ca = this.entityStaticPressureKPA.get(o.entity.endpointUid[0]);
-                        const cb = this.entityStaticPressureKPA.get(o.entity.endpointUid[1]);
-                        const actualPressure = Math.max(ca || 0, cb || 0);
-                        
-                        if (maxWorking !== null) {
-                            if (actualPressure > maxWorking) {
-                                calc.warning = 'Max pressure ' + maxWorking + 'kpa exceeded (' + actualPressure + ' kpa)';
+                    const thisIsDrainage = isDrainage(o.entity.systemUid);
+
+                    if (!thisIsDrainage) {
+                        const filled = fillPipeDefaultFields(this.doc.drawing, (o as Pipe).computedLengthM, o.entity);
+                        const pipeSpec = (o as Pipe).getCatalogBySizePage(this);
+                        const calc = this.globalStore.getOrCreateCalculation(o.entity);
+                        if (pipeSpec) {
+                            const maxWorking = parseCatalogNumberExact(pipeSpec.safeWorkingPressureKPA);
+                            const ca = this.entityStaticPressureKPA.get(o.entity.endpointUid[0]);
+                            const cb = this.entityStaticPressureKPA.get(o.entity.endpointUid[1]);
+                            const actualPressure = Math.max(ca || 0, cb || 0);
+
+                            if (maxWorking !== null) {
+                                if (actualPressure > maxWorking) {
+                                    calc.warning = 'Max pressure ' + maxWorking + 'kpa exceeded (' + actualPressure + ' kpa)';
+                                }
                             }
                         }
                     }
@@ -2589,6 +2711,9 @@ export default class CalculationEngine implements CalculationContext {
                         case ValveType.BALANCING:
                         case ValveType.GAS_REGULATOR:
                         case ValveType.FILTER:
+                        case ValveType.FLOOR_WASTE:
+                        case ValveType.INSPECTION_OPENING:
+                        case ValveType.REFLUX_VALVE:
                             break;
                         case ValveType.PRV_SINGLE:
                         case ValveType.PRV_DOUBLE:
@@ -2684,6 +2809,16 @@ export default class CalculationEngine implements CalculationContext {
                 },
                 undefined,
                 (edge) => {
+                    // Edge case: Do not push flow, including sewer flow, through vents.
+                    if (edge.value.type === EdgeType.PIPE) {
+                        const pipe = this.globalStore.get(edge.value.uid);
+                        if (pipe && pipe.entity.type === EntityType.PIPE && isDrainage(pipe.entity.systemUid)) {
+                            if (pipe.entity.network === NetworkType.CONNECTIONS) {
+                                return true;
+                            }
+                        }
+                    }
+
                     if (this.allBridges.has(edge.uid)) {
                         const res = this.precomputePsdAfterBridge(edge, edge.to, visitedEdges);
                         for (const r of res.values()) {
@@ -2730,6 +2865,16 @@ export default class CalculationEngine implements CalculationContext {
                 },
                 undefined,
                 (e) => {
+                    // Edge case: Do not push flow, including sewer flow, through vents.
+                    if (e.value.type === EdgeType.PIPE) {
+                        const pipe = this.globalStore.get(e.value.uid);
+                        if (pipe && pipe.entity.type === EntityType.PIPE && isDrainage(pipe.entity.systemUid)) {
+                            if (pipe.entity.network === NetworkType.CONNECTIONS) {
+                                return true;
+                            }
+                        }
+                    }
+
                     const pc = this.globalStore.getOrCreateCalculation((this.globalStore.get(e.value.uid) as Pipe).entity);
                     // Some pipes may have their flow directions fixed in an earlier step (such as return systems)
                     if (pc.flowFrom) {
@@ -2793,6 +2938,16 @@ export default class CalculationEngine implements CalculationContext {
                 },
                 undefined,
                 (e) => {
+                    // Edge case: Do not push flow, including sewer flow, through vents.
+                    if (e.value.type === EdgeType.PIPE) {
+                        const pipe = this.globalStore.get(e.value.uid);
+                        if (pipe && pipe.entity.type === EntityType.PIPE && isDrainage(pipe.entity.systemUid)) {
+                            if (pipe.entity.network === NetworkType.CONNECTIONS) {
+                                return true;
+                            }
+                        }
+                    }
+
                     if (e.value.type === EdgeType.PIPE) {
                         const pc = this.globalStore.getOrCreateCalculation((this.globalStore.get(e.value.uid) as Pipe).entity);
 

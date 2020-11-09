@@ -43,6 +43,55 @@ export type SupportedEquationPSDStandards =
     SupportedPsdStandards.din1988300AssistedLiving |
     SupportedPsdStandards.din1988300NursingHome;
 
+export enum SupportedDrainageMethods {
+    AS2018FixtureUnits = 'AS2018FixtureUnits',
+    EN1205622000DischargeUnits = 'EN1205622000DischargeUnits',
+    UPC2018DrainageFixtureUnits = 'UPC2018DrainageFixtureUnits',
+}
+
+export const DRAINAGE_METHOD_CHOICES: Choice[] = [
+    {
+        name: "AS/NZS3500.2:2018 Fixture Unit",
+        key: SupportedDrainageMethods.AS2018FixtureUnits
+    },
+    {
+        name: "EN 12056-2:2000 Discharge Unit",
+        key: SupportedDrainageMethods.EN1205622000DischargeUnits
+    },
+    {
+        name: "2018 UPC Drainage Fixture Unit",
+        key: SupportedDrainageMethods.UPC2018DrainageFixtureUnits
+    },
+];
+
+export enum EN12056FrequencyFactor {
+    IntermittentUse = "IntermittentUse",
+    FrequentUse = "FrequentUse",
+    CongestedUse = "CongestedUse",
+    SpecialUse = "SpecialUse",
+}
+
+export function getEN_12506_FREQUENCY_FACTOR_CHOICES(catalog: Catalog): Choice[] {
+    return [
+        {
+            name: `Intermittent Use (${catalog.en12056FrequencyFactor.IntermittentUse})`,
+            key: EN12056FrequencyFactor.IntermittentUse,
+        },
+        {
+            name: `Frequent Use (${catalog.en12056FrequencyFactor.FrequentUse})`,
+            key: EN12056FrequencyFactor.FrequentUse,
+        },
+        {
+            name: `Congested Use (${catalog.en12056FrequencyFactor.CongestedUse})`,
+            key: EN12056FrequencyFactor.CongestedUse,
+        },
+        {
+            name: `Special Use (${catalog.en12056FrequencyFactor.SpecialUse})`,
+            key: EN12056FrequencyFactor.SpecialUse,
+        },
+    ];
+}
+
 export function isSupportedPsdStandard(arg: any): arg is SupportedPsdStandards {
     return Object.values(SupportedPsdStandards).includes(arg);
 }
@@ -104,6 +153,18 @@ export function isLUStandard(psd: SupportedPsdStandards): psd is SupportedLUPsdS
 export function isGas(fluidId: string, catalog: Catalog) {
     const fluid = catalog.fluids[fluidId];
     return fluid.state === State.GAS;
+}
+
+export function isDrainage(systemUid: string): systemUid is DrainageSystemUid {
+    switch (systemUid as StandardFlowSystemUids) {
+        case StandardFlowSystemUids.SanitaryPlumbing:
+        case StandardFlowSystemUids.SewerDrainage:
+        case StandardFlowSystemUids.RisingMain:
+        case StandardFlowSystemUids.TradeWaste:
+        case StandardFlowSystemUids.GreaseWaste:
+            return true;
+    }
+    return false;
 }
 
 //
@@ -290,16 +351,29 @@ export const COMPONENT_PRESSURE_LOSS_METHODS: Choice[] = [
 ];
 
 export const LEVEL_HEIGHT_DIFF_M = 3;
-export const CURRENT_VERSION = 19;
+export const CURRENT_VERSION = 20;
 
 export enum StandardFlowSystemUids {
     ColdWater = "cold-water",
     HotWater = "hot-water",
     WarmWater = "warm-water",
+
     Gas = 'gas',
     FireHydrant = "fire-hydrant",
     FireHoseReel = "fire-hose-reel",
+    SewerDrainage = 'sewer-drainage',
+    SanitaryPlumbing = 'sanitary-plumbing',
+    GreaseWaste = 'grease-waste',
+    TradeWaste = 'trade-waste',
+    RisingMain = 'rising-main',
 }
+
+export type DrainageSystemUid =
+    StandardFlowSystemUids.SewerDrainage
+    | StandardFlowSystemUids.SanitaryPlumbing
+    | StandardFlowSystemUids.GreaseWaste
+    | StandardFlowSystemUids.TradeWaste
+    | StandardFlowSystemUids.RisingMain;
 
 export enum StandardMaterialUids {
     Copper = "copperTypeB",

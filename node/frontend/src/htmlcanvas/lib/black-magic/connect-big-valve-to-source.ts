@@ -116,6 +116,7 @@ export function leadPipe(
         systemUid,
         network: NetworkType.CONNECTIONS,
         type: EntityType.PIPE,
+        gradePCT: null,
         uid: uuid()
     };
 

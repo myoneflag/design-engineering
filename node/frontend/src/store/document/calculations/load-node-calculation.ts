@@ -91,6 +91,7 @@ export function emptyLoadNodeCalculation(): LoadNodeCalculation {
         staticPressureKPA: null,
         flowRateLS: null,
         gasFlowRateMJH: null,
-        warning: null
+        warning: null,
+        warningLayout: null,
     };
 }

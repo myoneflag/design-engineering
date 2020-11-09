@@ -42,9 +42,12 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                     name: { order: 2, name: "Fixture Name" },
                     abbreviation: { order: 3, name: "Abbreviation" },
                     uid: null,
-                    fixtureUnits: { order: 4, name: "Fixture Units" },
+                    asnzFixtureUnits: { order: 4, name: "AS/NZS3500.2:2018 Fixture Unit" },
+                    enDischargeUnits: { order: 5, name: "EN 12056-2:2000 Discharge Unit" },
+                    upcFixtureUnits: { order: 6, name: "2018 UPC Drainage Fixture Unit" },
+
                     loadingUnits: {
-                        order: 5,
+                        order: 7,
                         name: "Loading Units By PSD Method",
                         table: {
                             primaryName: "PSD Method",
@@ -56,7 +59,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                         }
                     },
                     qLS: {
-                        order: 6,
+                        order: 8,
                         name: "Full Flow Rate",
                         table: {
                             primaryName: " ",
@@ -65,7 +68,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                     },
                     roughIns: null,
                     continuousFlowLS: {
-                        order: 7,
+                        order: 9,
                         name: "Continuous Flow Rate",
                         table: {
                             primaryName: " ",
@@ -73,11 +76,11 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                         }
                     },
 
-                    maxInletPressureKPA: { order: 8, name: "Max. Inlet Pressure", units: Units.KiloPascals },
-                    minInletPressureKPA: { order: 9, name: "Min. Inlet Pressure", units: Units.KiloPascals },
-                    probabilityOfUsagePCT: { order: 10, name: "Probability of Usage (%)" },
-                    outletAboveFloorM: { order: 11, name: "Outlet Above Floor", units: Units.Meters },
-                    warmTempC: { order: 12, name: "Warm Temperature", units: Units.Celsius },
+                    maxInletPressureKPA: { order: 10, name: "Max. Inlet Pressure", units: Units.KiloPascals },
+                    minInletPressureKPA: { order: 11, name: "Min. Inlet Pressure", units: Units.KiloPascals },
+                    probabilityOfUsagePCT: { order: 12, name: "Probability of Usage (%)" },
+                    outletAboveFloorM: { order: 13, name: "Outlet Above Floor", units: Units.Meters },
+                    warmTempC: { order: 14, name: "Warm Temperature", units: Units.Celsius },
                     priceTableName: null,
                 }
             }
@@ -169,8 +172,20 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                 }
             }
         },
-        gasDiversification: {
+
+        en12056FrequencyFactor: {
             order: 4,
+            name: "EN 12056 Frequency Factor",
+            table: {
+                primaryName: "Usage",
+                columns: [
+                    [null, "Frequency Factor"],
+                ],
+            }
+        },
+
+        gasDiversification: {
+            order: 5,
             name: "Gas Diversification",
             table: {
                 primaryName: "Dwelling Units",
@@ -180,7 +195,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
             }
         },
         fluids: {
-            order: 5,
+            order: 6,
             name: "Fluids",
             table: {
                 primaryName: null,
@@ -213,7 +228,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
             }
         },
         pipes: {
-            order: 6,
+            order: 7,
             name: "Pipes",
             table: {
                 primaryName: null,
@@ -245,7 +260,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
             }
         },
         valves: {
-            order: 7,
+            order: 8,
             name: "Valves",
             table: {
                 primaryName: null,
@@ -273,7 +288,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
             }
         },
         mixingValves: {
-            order: 8,
+            order: 9,
             name: "Mixing Valves",
             table: {
                 primaryName: null,
@@ -306,7 +321,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
             }
         },
         prv: {
-            order: 9,
+            order: 10,
             name: "Pressure Reducing Valves",
             table: {
                 primaryName: "Nominal Diameter",
@@ -328,7 +343,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
             }
         },
         backflowValves: {
-            order: 10,
+            order: 11,
             name: "Backflow Valves",
             table: {
                 primaryName: null,
@@ -375,11 +390,11 @@ export function getCatalogDisplaySchema(): CatalogSchema {
             }
         },
         balancingValves: {
-            order: 11,
+            order: 12,
             name: "Balancing Valves",
         },
         hotWaterPlant: {
-            order: 12,
+            order: 13,
             name: "Heated Water Circulating Pumps",
             table: {
                 primaryName: "Grundfos Settings",

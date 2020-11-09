@@ -1,4 +1,8 @@
-import { CalculationField, FieldCategory } from "../../../../src/store/document/calculations/calculation-field";
+import {
+    CalculationField,
+    CalculationLayout,
+    FieldCategory
+} from "../../../../src/store/document/calculations/calculation-field";
 import {
     addPressureCalculationFields,
     Calculation,
@@ -7,9 +11,10 @@ import {
 } from "../../../../src/store/document/calculations/types";
 import { DocumentState } from "../../../../src/store/document/types";
 import RiserEntity from "../../../../../common/src/api/document/entities/riser-entity";
-import { getPsdUnitName } from "../../../calculations/utils";
+import {getDrainageUnitName, getPsdUnitName} from "../../../calculations/utils";
 import { Units } from "../../../../../common/src/lib/measurements";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
+import {isDrainage} from "../../../../../common/src/api/config";
 
 export default interface RiserCalculation extends Calculation {
     heights: {
@@ -17,6 +22,7 @@ export default interface RiserCalculation extends Calculation {
             flowRateLS: number | null;
             heightAboveGround: number | null;
             sizeMM: number | null;
+            ventSizeMM: number | null;
         } & PressureCalculation & PsdCalculation;
     };
 }
@@ -26,6 +32,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
     const result: CalculationField[] = [];
 
     const psdUnit = getPsdUnitName(drawing.metadata.calculationParams.psdMethod);
+    const drainageUnit = getDrainageUnitName(drawing.metadata.calculationParams.drainageMethod);
 
     const lvlUid = doc.uiState.levelUid;
     const sortedLevels = Object.values(doc.drawing.levels).sort((a, b) => a.floorHeightM - b.floorHeightM);
@@ -34,11 +41,14 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
     if (lvlIndex !== -1 && lvlIndex !== sortedLevels.length - 1) {
         lvlAboveUid = sortedLevels[lvlIndex + 1].uid;
     }
+    const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === entity.systemUid);
 
     addPressureCalculationFields(result, entity.systemUid, "heights." + lvlUid + ".", {
         title: "Pressure At Floor",
         short: "at floor",
     }, { title: "Static Pressure At Floor", short: "at floor" });
+
+    const layoutOptionDrainage: CalculationLayout[] = isDrainage(entity.systemUid) ? ['pressure', 'drainage'] : [];
 
     result.push(
         {
@@ -58,6 +68,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             systemUid: entity.systemUid,
             category: FieldCategory.Size,
             hideUnits: true,
+            layouts: ['drainage', 'pressure'],
             significantDigits: 0
         }
     );
@@ -70,7 +81,20 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             units: Units.None,
             category: FieldCategory.LoadingUnits,
             systemUid: entity.systemUid,
-            format: (v) => "" + Number(v.toFixed(5))
+            format: (v) => "" + Number(v?.toFixed(5))
+        });
+    }
+
+    if (isDrainage(entity.systemUid)) {
+        result.push({
+            property: "heights." + lvlUid + ".psdUnits.drainageUnits",
+            title: drainageUnit.name + " To Below",
+            short: drainageUnit.abbreviation + " to below",
+            units: Units.None,
+            category: FieldCategory.LoadingUnits,
+            systemUid: entity.systemUid,
+            layouts: layoutOptionDrainage,
+            format: (v) => "" + Number(v?.toFixed(5))
         });
     }
 
@@ -106,7 +130,8 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 short: "to above",
                 units: Units.PipeDiameterMM,
                 systemUid: entity.systemUid,
-                category: FieldCategory.Size
+                category: FieldCategory.Size,
+                layouts: layoutOptionDrainage,
             }
         );
 
@@ -117,11 +142,37 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 short: psdUnit.abbreviation + " to above",
                 units: Units.None,
                 category: FieldCategory.LoadingUnits,
-                systemUid: entity.systemUid
+                systemUid: entity.systemUid,
+                format: (v) => "" + Number(v?.toFixed(5)),
             });
         }
 
-        if (drawing.metadata.calculationParams.dwellingMethod !== null) {
+        if (isDrainage(entity.systemUid)) {
+            result.push({
+                property: "heights." + lvlAboveUid + ".psdUnits.drainageUnits",
+                title: drainageUnit.name + " To Above",
+                short: drainageUnit.abbreviation + " to above",
+                units: Units.None,
+                category: FieldCategory.LoadingUnits,
+                systemUid: entity.systemUid,
+                layouts: ['drainage'],
+                format: (v) => "" + Number(v?.toFixed(5)),
+            });
+
+            if (system && system.drainageProperties.stackDedicatedVent) {
+                result.push({
+                    property: "heights." + lvlAboveUid + ".ventSizeMM",
+                    title: "Dedicated Vent Size",
+                    short: "vent",
+                    units: Units.PipeDiameterMM,
+                    category: FieldCategory.LoadingUnits,
+                    systemUid: entity.systemUid,
+                    layouts: ['drainage'],
+                });
+            }
+        }
+
+        if (system) {
             result.push({
                 property: "heights." + lvlAboveUid + ".psdUnits.dwellings",
                 title: "Dwellings To Above",
@@ -130,6 +181,14 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 category: FieldCategory.LoadingUnits,
                 systemUid: entity.systemUid
             });
+        }
+    }
+
+    if (isDrainage(entity.systemUid)) {
+        if (doc.uiState.pressureOrDrainage === 'drainage') {
+            return result.filter((f) => f.layouts && f.layouts.includes('drainage'));
+        } else {
+            return [];
         }
     }
 
@@ -143,6 +202,7 @@ export function emptyRiserCalculations(): RiserCalculation {
         expandedEntities: null,
 
         warning: null,
+        warningLayout: null,
         heights: {}
     };
 }

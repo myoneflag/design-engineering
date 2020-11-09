@@ -1,16 +1,19 @@
-import { DrawableEntityConcrete } from "./entities/concrete-entity";
+import {DrawableEntityConcrete} from "./entities/concrete-entity";
 import {
     ComponentPressureLossMethod,
+    EN12056FrequencyFactor,
     InsulationJackets,
     InsulationMaterials,
     PIPE_SIZING_METHODS,
-    RingMainCalculationMethod, StandardFlowSystemUids,
+    RingMainCalculationMethod,
+    StandardFlowSystemUids,
+    SupportedDrainageMethods,
     SupportedDwellingStandards,
     SupportedPsdStandards
 } from "../config";
 import RiserEntity from "./entities/riser-entity";
-import { EntityType } from "./entities/types";
-import {Choice, DeepPartial} from "../../lib/utils";
+import {EntityType} from "./entities/types";
+import {Choice, cloneSimple, DeepPartial} from "../../lib/utils";
 import {PriceTable} from "../catalog/price-table";
 import { OperationTransformConcrete, OPERATION_NAMES } from './operation-transforms';
 
@@ -200,6 +203,41 @@ export interface FlowSystemParametersV9 extends WithID {
     networks: { [key in keyof typeof NetworkType]: NetworkParams };
 }
 
+export interface HorizontalPipeSizing {
+    minUnits: number;
+    maxUnits: number;
+    sizeMM: number;
+    gradePCT: number;
+}
+
+export interface VentSizing {
+    minUnits: number;
+    maxUnits: number;
+    sizeMM: number;
+}
+
+export interface StackPipeSizing {
+    minUnits: number;
+    maxUnits: number;
+    sizeMM: number;
+    maximumUnitsPerLevel: number;
+}
+
+export interface DrainageProperties {
+    ventColor: Color;
+
+    stackSizeDiminish: boolean;
+    stackDedicatedVent: boolean;
+    maxUnventedLengthM: {[key: number]: number | undefined};
+    maxUnventedCapacityWCs: {[key: number]: number | undefined};
+
+    horizontalPipeSizing: HorizontalPipeSizing[];
+    availablePipeSizesMM: number[];
+    ventSizing: VentSizing[];
+    stackPipeSizing: StackPipeSizing[];
+    stackVentPipeSizing: VentSizing[];
+}
+
 export interface FlowSystemParameters extends WithID {
     name: string;
     temperature: number;
@@ -213,6 +251,7 @@ export interface FlowSystemParameters extends WithID {
     insulationJacket: InsulationJackets;
     insulationThicknessMM: number;
 
+    drainageProperties: DrainageProperties;
 
     networks: { [key in keyof typeof NetworkType]: NetworkParams};
 }
@@ -220,6 +259,8 @@ export interface FlowSystemParameters extends WithID {
 export interface CalculationParameters {
     psdMethod: SupportedPsdStandards;
     dwellingMethod: SupportedDwellingStandards | null;
+    drainageMethod: SupportedDrainageMethods;
+    en12056FrequencyFactor: EN12056FrequencyFactor;
     ringMainCalculationMethod: RingMainCalculationMethod;
     pipeSizingMethod: string;
     componentPressureLossMethod: ComponentPressureLossMethod;
@@ -254,6 +295,252 @@ export interface SelectedMaterialManufacturer {
     manufacturer: string;
     selected: string | null;
 }
+
+export const initialDrainageProperties: DrainageProperties = {
+    ventColor: { hex: '#ff7755' },
+    availablePipeSizesMM: [40, 50, 65, 80, 100, 125, 150, 225, 300, 375],
+    horizontalPipeSizing: [
+        {minUnits: 0, maxUnits: 165, sizeMM: 100, gradePCT: 1.65},
+        {minUnits: 166, maxUnits: 855, sizeMM: 150, gradePCT: 1},
+        {minUnits: 856, maxUnits: 1310, sizeMM: 150, gradePCT: 1.65},
+        {minUnits: 1311, maxUnits: 4500, sizeMM: 225, gradePCT: 1},
+        {minUnits: 4501, maxUnits: 11400, sizeMM: 300, gradePCT: 1},
+    ],
+    maxUnventedCapacityWCs: {
+        40: 2,
+        50: 2,
+        65: 2,
+        80: 2,
+        100: 2,
+        125: 2,
+        150: 2,
+        225: 2,
+        300: 2,
+        375: 2,
+    },
+    maxUnventedLengthM: {
+        40: 10,
+        50: 10,
+        65: 10,
+        80: 10,
+        100: 10,
+        125: 10,
+        150: 10,
+        225: 10,
+        300: 10,
+        375: 10,
+    },
+    stackDedicatedVent: false,
+    stackPipeSizing: [
+        {minUnits: 0, maxUnits: 500, sizeMM: 100, maximumUnitsPerLevel: 125},
+        {minUnits: 501, maxUnits: 1000, sizeMM: 125, maximumUnitsPerLevel: 250},
+        {minUnits: 1001, maxUnits: 2400, sizeMM: 150, maximumUnitsPerLevel: 600},
+        {minUnits: 2401, maxUnits: 7000, sizeMM: 225, maximumUnitsPerLevel: 1750},
+    ],
+    stackSizeDiminish: false,
+    stackVentPipeSizing: [
+        {minUnits: 0, maxUnits: 56, sizeMM: 65},
+        {minUnits: 57, maxUnits: 80, sizeMM: 80},
+        {minUnits: 81, maxUnits: 500, sizeMM: 100},
+        {minUnits: 501, maxUnits: 1100, sizeMM: 125},
+        {minUnits: 1101, maxUnits: 2400, sizeMM: 150},
+        {minUnits: 2401, maxUnits: 7000, sizeMM: 225},
+    ],
+    ventSizing: [
+        {minUnits: 0, maxUnits: 10, sizeMM: 40},
+        {minUnits: 11, maxUnits: 30, sizeMM: 50},
+        {minUnits: 31, maxUnits: 175, sizeMM: 65},
+        {minUnits: 176, maxUnits: 400, sizeMM: 80},
+        {minUnits: 401, maxUnits: 600, sizeMM: 100},
+    ],
+};
+
+export const DRAINAGE_FLOW_SYSTEMS: FlowSystemParameters[] = [
+    {
+        name: "Sewer Drainage",
+        temperature: 20,
+        color: { hex: "#119911" },
+        uid: StandardFlowSystemUids.SewerDrainage,
+        fluid: "sewage",
+        hasReturnSystem: false,
+        returnIsInsulated: false,
+        returnMaxVelocityMS: 1,
+        insulationMaterial: InsulationMaterials.calciumSilicate,
+        insulationJacket: InsulationJackets.allServiceJacket,
+        insulationThicknessMM: 25,
+
+        networks: {
+            RISERS: {
+                spareCapacityPCT: 0,
+                velocityMS: 20,
+                material: "uPVCSewer",
+                minimumPipeSize: 15,
+            },
+            RETICULATIONS: {
+                spareCapacityPCT: 0,
+                velocityMS: 20,
+                material: "uPVCSewer",
+                minimumPipeSize: 15,
+            },
+            CONNECTIONS: {
+                spareCapacityPCT: 0,
+                velocityMS: 3,
+                material: "uPVCSewer",
+                minimumPipeSize: 16,
+            }
+        },
+
+        drainageProperties: cloneSimple(initialDrainageProperties),
+    },
+
+    {
+        name: "Sanitary Plumbing",
+        temperature: 20,
+        color: { hex: "#66FF66" },
+        uid: StandardFlowSystemUids.SanitaryPlumbing,
+        fluid: "sewage",
+        hasReturnSystem: false,
+        returnIsInsulated: false,
+        returnMaxVelocityMS: 1,
+        insulationMaterial: InsulationMaterials.calciumSilicate,
+        insulationJacket: InsulationJackets.allServiceJacket,
+        insulationThicknessMM: 25,
+
+        networks: {
+            RISERS: {
+                spareCapacityPCT: 0,
+                velocityMS: 20,
+                material: "uPVCSewer",
+                minimumPipeSize: 15,
+            },
+            RETICULATIONS: {
+                spareCapacityPCT: 0,
+                velocityMS: 20,
+                material: "uPVCSewer",
+                minimumPipeSize: 15,
+            },
+            CONNECTIONS: {
+                spareCapacityPCT: 0,
+                velocityMS: 3,
+                material: "uPVCSewer",
+                minimumPipeSize: 16,
+            }
+        },
+
+        drainageProperties: cloneSimple(initialDrainageProperties),
+    },
+
+    {
+        name: "Grease Waste",
+        temperature: 20,
+        color: { hex: "#90403e" },
+        uid: StandardFlowSystemUids.GreaseWaste,
+        fluid: "sewage",
+        hasReturnSystem: false,
+        returnIsInsulated: false,
+        returnMaxVelocityMS: 1,
+        insulationMaterial: InsulationMaterials.calciumSilicate,
+        insulationJacket: InsulationJackets.allServiceJacket,
+        insulationThicknessMM: 25,
+
+        networks: {
+            RISERS: {
+                spareCapacityPCT: 0,
+                velocityMS: 20,
+                material: "hdpeSdr11Sewer",
+                minimumPipeSize: 15,
+            },
+            RETICULATIONS: {
+                spareCapacityPCT: 0,
+                velocityMS: 20,
+                material: "hdpeSdr11Sewer",
+                minimumPipeSize: 15,
+            },
+            CONNECTIONS: {
+                spareCapacityPCT: 0,
+                velocityMS: 3,
+                material: "hdpeSdr11Sewer",
+                minimumPipeSize: 16,
+            }
+        },
+
+        drainageProperties: cloneSimple(initialDrainageProperties),
+    },
+
+    {
+        name: "Trade Waste",
+        temperature: 20,
+        color: { hex: "#a10000" },
+        uid: StandardFlowSystemUids.TradeWaste,
+        fluid: "sewage",
+        hasReturnSystem: false,
+        returnIsInsulated: false,
+        returnMaxVelocityMS: 1,
+        insulationMaterial: InsulationMaterials.calciumSilicate,
+        insulationJacket: InsulationJackets.allServiceJacket,
+        insulationThicknessMM: 25,
+
+        networks: {
+            RISERS: {
+                spareCapacityPCT: 0,
+                velocityMS: 20,
+                material: "hdpeSdr11Sewer",
+                minimumPipeSize: 15,
+            },
+            RETICULATIONS: {
+                spareCapacityPCT: 0,
+                velocityMS: 20,
+                material: "hdpeSdr11Sewer",
+                minimumPipeSize: 15,
+            },
+            CONNECTIONS: {
+                spareCapacityPCT: 0,
+                velocityMS: 3,
+                material: "hdpeSdr11Sewer",
+                minimumPipeSize: 16,
+            }
+        },
+
+        drainageProperties: cloneSimple(initialDrainageProperties),
+    },
+
+    {
+        name: "Rising Main",
+        temperature: 20,
+        color: {hex: "#7100c2"},
+        uid: StandardFlowSystemUids.RisingMain,
+        fluid: "sewage",
+        hasReturnSystem: false,
+        returnIsInsulated: false,
+        returnMaxVelocityMS: 1,
+        insulationMaterial: InsulationMaterials.calciumSilicate,
+        insulationJacket: InsulationJackets.allServiceJacket,
+        insulationThicknessMM: 25,
+
+        networks: {
+            RISERS: {
+                spareCapacityPCT: 0,
+                velocityMS: 20,
+                material: "uPVCSewer",
+                minimumPipeSize: 15,
+            },
+            RETICULATIONS: {
+                spareCapacityPCT: 0,
+                velocityMS: 20,
+                material: "uPVCSewer",
+                minimumPipeSize: 15,
+            },
+            CONNECTIONS: {
+                spareCapacityPCT: 0,
+                velocityMS: 3,
+                material: "uPVCSewer",
+                minimumPipeSize: 16,
+            }
+        },
+
+        drainageProperties: cloneSimple(initialDrainageProperties),
+    }
+];
 
 export const initialDrawing: DrawingState = {
     metadata: {
@@ -310,7 +597,9 @@ export const initialDrawing: DrawingState = {
                         material: "pexSdr74",
                         minimumPipeSize: 16,
                     }
-                }
+                },
+
+                drainageProperties: cloneSimple(initialDrainageProperties),
             },
             {
                 name: "Hot Water",
@@ -344,7 +633,9 @@ export const initialDrawing: DrawingState = {
                         material: "pexSdr74",
                         minimumPipeSize: 16,
                     }
-                }
+                },
+
+                drainageProperties: cloneSimple(initialDrainageProperties),
             },
             {
                 name: "Warm Water",
@@ -378,7 +669,9 @@ export const initialDrawing: DrawingState = {
                         material: "pexSdr74",
                         minimumPipeSize: 16,
                     }
-                }
+                },
+
+                drainageProperties: cloneSimple(initialDrainageProperties),
             },
             {
                 name: "Gas",
@@ -412,9 +705,12 @@ export const initialDrawing: DrawingState = {
                         material: "pexSdr74",
                         minimumPipeSize: 16,
                     }
-                }
+                },
+
+                drainageProperties: cloneSimple(initialDrainageProperties),
             },
             {
+
                 name: "Fire Hydrant",
                 temperature: 20,
                 color: { hex: "#9F0500" },
@@ -426,7 +722,6 @@ export const initialDrawing: DrawingState = {
                 insulationMaterial: InsulationMaterials.calciumSilicate,
                 insulationJacket: InsulationJackets.allServiceJacket,
                 insulationThicknessMM: 25,
-
                 networks: {
                     RISERS: {
                         spareCapacityPCT: 0,
@@ -446,7 +741,8 @@ export const initialDrawing: DrawingState = {
                         material: "gmsMedium",
                         minimumPipeSize: 100,
                     }
-                }
+                },
+                drainageProperties: cloneSimple(initialDrainageProperties),
             },
             {
                 name: "Fire Hose Reel",
@@ -480,12 +776,17 @@ export const initialDrawing: DrawingState = {
                         material: "copperTypeB",
                         minimumPipeSize: 25,
                     }
-                }
+                },
+
+                drainageProperties: cloneSimple(initialDrainageProperties),
             },
+            ...DRAINAGE_FLOW_SYSTEMS,
         ],
         calculationParams: {
             psdMethod: SupportedPsdStandards.as35002018LoadingUnits,
             dwellingMethod: null,
+            drainageMethod: SupportedDrainageMethods.AS2018FixtureUnits,
+            en12056FrequencyFactor: EN12056FrequencyFactor.IntermittentUse,
             ringMainCalculationMethod: RingMainCalculationMethod.ISOLATION_CASES,
             pipeSizingMethod: PIPE_SIZING_METHODS[0].key as string,
             componentPressureLossMethod: ComponentPressureLossMethod.INDIVIDUALLY,
@@ -534,6 +835,7 @@ export const initialDrawing: DrawingState = {
     },
     shared: {}
 };
+
 
 export const exampleDrawing: OperationTransformConcrete = {
     "type": OPERATION_NAMES.DIFF_OPERATION,

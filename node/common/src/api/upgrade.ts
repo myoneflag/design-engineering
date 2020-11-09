@@ -1,4 +1,4 @@
-import {DrawingState, initialDrawing} from "./document/drawing";
+import {DRAINAGE_FLOW_SYSTEMS, DrawingState, initialDrainageProperties, initialDrawing} from "./document/drawing";
 import {EntityType} from "./document/entities/types";
 import {InsulationJackets, InsulationMaterials, StandardFlowSystemUids, SupportedPsdStandards} from "./config";
 import {PlantType} from "./document/entities/plants/plant-types";
@@ -114,7 +114,7 @@ export function upgrade15to16(original: DrawingState) {
                         minimumPipeSize: 16,
                     }
                 }
-            }
+            } as any,
         );
     }
 
@@ -266,7 +266,7 @@ export function upgrade18to19(original: DrawingState) {
                         minimumPipeSize: 100,
                     }
                 }
-            }
+            } as any,
         );
     }
 
@@ -305,7 +305,72 @@ export function upgrade18to19(original: DrawingState) {
                         minimumPipeSize: 25,
                     }
                 }
-            }
+            } as any,
         );
+    }
+}
+
+    // Then, we have to add fixtureUnits to load nodes.
+    // Add variant field
+
+    // Add drainage rough in to fixtures.
+    // Vent colour setting to flow systems
+
+
+export function upgrade19to20(original: DrawingState) {
+    if (!original.metadata.flowSystems.find((s) => s.uid === StandardFlowSystemUids.SewerDrainage)) {
+        // Vent colour setting to flow systems
+        for (const system of original.metadata.flowSystems) {
+            system.drainageProperties = cloneSimple(initialDrainageProperties);
+        }
+
+        // We have to add the sewage flow systems.
+        original.metadata.flowSystems.push(
+            ...DRAINAGE_FLOW_SYSTEMS,
+        );
+    }
+
+    for (const level of Object.values(original.levels)) {
+        const entities = level.entities;
+        for (const e of Object.values(entities)) {
+            // Add drainage rough in to fixtures.
+            if (e.type === EntityType.FIXTURE) {
+                if (!e.roughInsInOrder.includes(StandardFlowSystemUids.SewerDrainage)) {
+                    e.roughInsInOrder.unshift(StandardFlowSystemUids.SewerDrainage);
+
+                    const newSystemNode: SystemNodeEntity = {
+                        center: {
+                            x: e.pipeDistanceMM * 0,
+                            y: e.pipeDistanceMM * -0.2,
+                        },
+                        parentUid: e.uid,
+                        type: EntityType.SYSTEM_NODE,
+                        calculationHeightM: null,
+                        allowAllSystems: false,
+                        systemUid: StandardFlowSystemUids.SewerDrainage,
+                        uid: uuid.v4(),
+                        configuration: FlowConfiguration.INPUT
+                    };
+                    e.roughIns[StandardFlowSystemUids.SewerDrainage] = {
+                        continuousFlowLS: null,
+                        designFlowRateLS: null,
+                        loadingUnits: null,
+                        maxPressureKPA: null,
+                        minPressureKPA: null,
+                        allowAllSystems: false,
+                        uid: newSystemNode.uid,
+                    };
+                    level.entities[newSystemNode.uid] = newSystemNode;
+                }
+            }
+
+
+            // Add isVent option of riser.
+            else if (e.type === EntityType.RISER) {
+                if (e.isVent === undefined) {
+                    e.isVent = false;
+                }
+            }
+        }
     }
 }

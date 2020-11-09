@@ -41,6 +41,7 @@ import { Catalog, ValveSpec } from "../../../../../common/src/api/catalog/types"
         selectedEntity: Object,
         selectedObject: Object,
         targetProperty: String,
+        objectStore: Map,
         onDelete: Function,
         onChange: Function
     }
@@ -65,7 +66,7 @@ export default class FittingProperties extends Vue {
     }
 
     get defaultData(): FittingEntity {
-        return fillValveDefaultFields(this.document.drawing, this.reactiveData);
+        return fillValveDefaultFields(this.document.drawing, this.reactiveData, this.$props.objectStore);
     }
 
     async onCommit() {

@@ -20,6 +20,7 @@
                 v-else-if="entity.type === ENTITY_NAMES.FITTING"
                 :selected-entity="entity"
                 :selected-object="selectedObjects[0]"
+                :object-store="objectStore"
                 :on-change="onChange"
                 :target-property="targetProperty"
                 :on-delete="onDelete"

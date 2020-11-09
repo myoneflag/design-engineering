@@ -50,7 +50,10 @@ export interface UIState {
 
     exportSettings: ExportUiSettings;
     costAndLUTableOpen: boolean;
+
+    pressureOrDrainage: "pressure" | "drainage";
 }
+
 
 export interface ExportUiSettings {
     paperSize: PaperSize;
@@ -152,6 +155,7 @@ export const initialUIState: UIState = {
     },
 
     costAndLUTableOpen: true,
+    pressureOrDrainage: "pressure",
 };
 
 export function blankDiffFilter() {

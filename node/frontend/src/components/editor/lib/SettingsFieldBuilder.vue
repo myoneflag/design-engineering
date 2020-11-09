@@ -118,16 +118,82 @@
                             style="padding-bottom: 20px"
                         >
                             <b-dropdown-item
-                                    @click="reactiveData[field[0]] = true"
+                                    @click="setReactiveData(field[0], true)"
                             >
                                 Yes
                             </b-dropdown-item>
                             <b-dropdown-item
-                                    @click="reactiveData[field[0]] = false"
+                                    @click="setReactiveData(field[0], false)"
                             >
                                 No
                             </b-dropdown-item>
                         </b-dropdown>
+
+                        <b-table-simple
+                            v-else-if="field[2] === 'array-table'"
+                            small
+                        >
+                            <b-thead>
+                                <b-tr>
+                                    <b-th v-for="col in field[3]">{{col.name}}</b-th>
+                                </b-tr>
+                            </b-thead>
+                            <b-tbody>
+                                <b-tr v-for="(rowVal, rowIndex) in getReactiveData(field[0])">
+                                    <b-td v-for="col in field[3]">
+
+                                        <b-input-group :prepend="col.units ? convertUnits(col.units) : undefined" size="sm">
+                                            <b-form-input
+                                                    size="sm"
+                                                    :value="displayWithCorrectUnits(col.units, `${field[0]}.${rowIndex}.${col.key}`)"
+                                                    @input="setRenderedDataNumeric(col.units, `${field[0]}.${rowIndex}.${col.key}`, Number($event))"
+                                                    :id="'input-' + `${field[0]}.${rowIndex}.${col.key}`"
+                                                    type="number"
+                                            />
+                                        </b-input-group>
+                                    </b-td>
+                                </b-tr>
+                            </b-tbody>
+
+                        </b-table-simple>
+
+                        <b-table-simple
+                                v-else-if="field[2] === 'optional-numeric-table'"
+                                small
+                        >
+                            <b-thead>
+                                <b-tr>
+                                    <b-th>{{field[4]}}</b-th>
+                                    <b-th>{{field[1]}}</b-th>
+                                </b-tr>
+                            </b-thead>
+                            <b-tbody>
+                                <b-tr v-for="row in field[3]">
+                                    <b-td>{{row}}</b-td>
+                                    <b-td>
+                                        <b-input-group :prepend="field[7] ? convertUnits(field[7]) : undefined" size="sm">
+                                        <b-form-input
+                                                size="sm"
+                                                :value="displayWithCorrectUnits(field[7], `${field[0]}.${row}`)"
+                                                @input="setRenderedDataNumeric(field[7], `${field[0]}.${row}`, Number($event))"
+                                                :id="'input-' + `${field[0]}.${row}`"
+                                                type="number"
+                                                :disabled="getReactiveData(field[0])[row] === undefined"
+                                        />
+                                        </b-input-group>
+                                    </b-td>
+                                    <b-td>
+                                        <b-form-checkbox
+                                                @change="setOptionalTableRow(field[0], row, $event ? undefined : (getOriginalData(`${field[0]}.${row}`) || 0))"
+                                                v-bind:checked="getReactiveData(field[0])[row] === undefined"
+                                        >
+                                            {{field[5]}}
+                                        </b-form-checkbox>
+                                    </b-td>
+                                </b-tr>
+                            </b-tbody>
+
+                        </b-table-simple>
 
                         <b-form-input
                             v-else
@@ -140,6 +206,7 @@
                     </b-form-group>
                 </b-col>
             </b-row>
+            <slot name="more-fields"/>
         </div>
         <b-row>
             <b-col cols="8"> </b-col>
@@ -197,8 +264,19 @@ export default class SettingsFieldBuilder extends Vue {
         return getPropertyByString(this.$props.reactiveData, prop);
     }
 
+    getOriginalData(prop: string) {
+        return getPropertyByString(this.$props.originalData, prop);
+    }
+
     setReactiveData(prop: string, value: any) {
         return setPropertyByString(this.$props.reactiveData, prop, value);
+    }
+
+    setOptionalTableRow(field: string, row: any, value: any) {
+        console.log("setting");
+        console.log(row);
+        console.log(value);
+        Vue.set(this.getReactiveData(field), row, value);
     }
 
     save() {

@@ -77,7 +77,7 @@
         onCellInput(equipment: keyof EquipmentTableType, size: number | 'All', value: number) {
             const priceTable = this.document.drawing.metadata.priceTable;
             console.log(JSON.stringify(priceTable, null, 2));
-            if (equipment === 'TMV' || equipment === 'Tempering Valve') {
+            if (typeof this.priceTable.Equipment[equipment] === 'number') {
                 setPropertyByStringVue(priceTable, 'Equipment.' + equipment, Number(value));
             } else {
                 setPropertyByStringVue(priceTable, 'Equipment.' + equipment + '.' + Number(size), Number(value));
@@ -86,7 +86,7 @@
         }
 
         items(equipment: keyof EquipmentTableType) {
-            if (equipment === 'TMV' || equipment === 'Tempering Valve') {
+            if (typeof this.priceTable.Equipment[equipment] === 'number') {
                 // Single 'all'
                 return [{"Size (mm)": "All", "Unit cost": this.priceTable.Equipment[equipment]}];
             } else {

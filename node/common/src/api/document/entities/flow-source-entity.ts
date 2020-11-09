@@ -3,7 +3,7 @@ import { EntityType } from "./types";
 import { Color, ConnectableEntity, Coord, DrawingState, FlowSystemParameters } from "../drawing";
 import { Choice, cloneSimple } from "../../../lib/utils";
 import { Units } from "../../../lib/measurements";
-import {StandardFlowSystemUids} from "../../config";
+import {isDrainage, StandardFlowSystemUids} from "../../config";
 
 export interface FlowSourceEntityV11 extends ConnectableEntity {
     type: EntityType.FLOW_SOURCE;
@@ -27,6 +27,7 @@ export default interface FlowSourceEntity extends ConnectableEntity {
 }
 
 export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: FlowSourceEntity): PropertyField[] {
+
     const res: PropertyField[] = [
         {
             property: "systemUid",
@@ -35,6 +36,7 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
             isCalculated: false,
             type: FieldType.FlowSystemChoice,
             params: { systems },
+
             multiFieldId: "systemUid"
         },
     ];
@@ -53,7 +55,7 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
                 units: Units.KiloPascals,
             },
         );
-    } else {
+    } else if (!isDrainage(entity.systemUid)) {
         res.push(
             {
                 property: "minPressureKPA",
@@ -82,19 +84,22 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
         );
     }
 
-    res.push(
-        {
-            property: "heightAboveGroundM",
-            title: "AHD",
-            hasDefault: false,
-            isCalculated: false,
-            requiresInput: true,
-            type: FieldType.Number,
-            params: { min: null, max: null },
-            multiFieldId: "heightAboveGroundM",
-            units: Units.Meters
-        },
+    if (!isDrainage(entity.systemUid)) {
+        res.push(
+            {
+                property: "heightAboveGroundM",
+                title: "AHD",
+                hasDefault: false,
+                isCalculated: false,
+                requiresInput: true,
+                type: FieldType.Number,
+                params: { min: null, max: null },
+                multiFieldId: "heightAboveGroundM",
+                units: Units.Meters
+            });
+    }
 
+    res.push(
         {
             property: "color",
             title: "Color",
@@ -118,6 +123,7 @@ export function fillFlowSourceDefaults(drawing: DrawingState, value: FlowSourceE
         if (result.color == null) {
             result.color = system.color;
         }
+
     } else {
         throw new Error("Existing system not found for object " + JSON.stringify(value));
     }

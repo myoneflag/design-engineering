@@ -22,6 +22,7 @@ import {
     NetworkType
 } from "../../../../common/src/api/document/drawing";
 import CoordContextualSnappingTool, { CONNECTABLE_SNAP_RADIUS_PX } from "./snapping-insert-tool";
+import {isDrainage} from "../../../../common/src/api/config";
 
 export default function insertPipes(context: CanvasContext, system: FlowSystemParameters, network: NetworkType) {
     // strategy:
@@ -110,6 +111,10 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                     entity = valveEntity;
                     context.$store.dispatch("document/addEntity", valveEntity);
                     context.globalStore.get(valveEntity.uid)!.rebase(context);
+                }
+
+                if (isDrainage(system.uid)) {
+                    heightM = -1;
                 }
 
                 context.$store.dispatch("document/commit").then(() => {
@@ -219,6 +224,7 @@ function insertPipeChain(
                     heightAboveFloorM: heightM,
                     material: null,
                     maximumVelocityMS: null,
+                    gradePCT: null,
                     parentUid: null,
                     systemUid: system.uid,
                     network,
@@ -246,7 +252,7 @@ function insertPipeChain(
             },
 
             "Set Pipe",
-            [
+            isDrainage(system.uid) ? [] : [
                 [
                     KeyCode.UP,
                     {

@@ -25,6 +25,7 @@ export function makeGasApplianceCalculationFields(entity: GasApplianceEntity): C
 export function emptyGasApplianceCalculation(): GasApplianceCalculation {
     return {
         warning: null,
+        warningLayout: null,
         costBreakdown: null,
         cost: null, expandedEntities: null,
         demandMJH: null,

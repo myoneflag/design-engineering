@@ -16,7 +16,7 @@ import { tm2flatten } from "../../../../src/htmlcanvas/lib/utils";
 import { TEXT_MAX_SCALE } from "../../../../src/htmlcanvas/objects/pipe";
 import { getWarningSignImg, matrixScale, warningSignImg, wrapText } from "../../../../src/htmlcanvas/utils";
 import { CalculationContext } from "../../../calculations/types";
-import { EntityType } from "../../../../../common/src/api/document/entities/types";
+import {EntityType, getEntityName} from "../../../../../common/src/api/document/entities/types";
 import { CalculationConcrete } from "../../../store/document/calculations/calculation-concrete";
 import { NoFlowAvailableReason } from "../../../store/document/calculations/pipe-calculation";
 import { assertUnreachable } from "../../../../../common/src/api/config";
@@ -246,7 +246,7 @@ export function CalculatedObject<
                     }
                 }
 
-                // line to
+                // line too
                 const boxShape = new Flatten.Polygon();
                 const worldMin = vp.toWorldCoord(
                     TM.applyToPoint(context.vp.currToScreenTransform(ctx), { x: box.xmin, y: box.ymin })
@@ -321,7 +321,8 @@ export function CalculatedObject<
         }
 
         getCalculationFields(context: DrawingContext, filters: CalculationFilters): CalculationData[] {
-            const filter = filters[this.entity.type].filters;
+            const eName = getEntityName(this.entity);
+            const filter = filters[eName].filters;
             const calculation = context.globalStore.getCalculation(this.entity);
 
             const res: CalculationData[] = [];
@@ -405,7 +406,25 @@ export function CalculatedObject<
             if (calculation && calculation.warning === undefined) {
                 throw new Error("undefined calculation: " + JSON.stringify(this.entity));
             }
-            return calculation !== undefined && calculation.warning !== null;
+            if (!calculation) {
+                return false;
+            }
+            switch (calculation.warningLayout) {
+                case null:
+                case "pressure":
+                    if (context.doc.uiState.pressureOrDrainage !== 'pressure') {
+                        return false;
+                    }
+                    break;
+                case "drainage":
+                    if (context.doc.uiState.pressureOrDrainage !== 'drainage') {
+                        return false;
+                    }
+                    break;
+                default:
+                    assertUnreachable(calculation.warningLayout);
+            }
+            return calculation.warning !== null;
         }
     };
 }
