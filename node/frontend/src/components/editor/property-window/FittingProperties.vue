@@ -29,11 +29,11 @@ import Component from "vue-class-component";
 import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
 import { DocumentState } from "../../../../src/store/document/types";
 import FittingEntity, {
-    fillValveDefaultFields,
     makeValveFields
 } from "../../../../../common/src/api/document/entities/fitting-entity";
 import * as _ from "lodash";
 import { Catalog, ValveSpec } from "../../../../../common/src/api/catalog/types";
+import {fillValveDefaultFields} from "../../../store/document/entities/fillDefaultEntityFields";
 
 @Component({
     components: { PropertiesFieldBuilder },

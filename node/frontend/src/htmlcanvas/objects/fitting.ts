@@ -1,5 +1,5 @@
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
-import FittingEntity, {fillValveDefaultFields} from "../../../../common/src/api/document/entities/fitting-entity";
+import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import * as TM from "transformation-matrix";
 import {Matrix} from "transformation-matrix";
 import {DocumentState} from "../../../src/store/document/types";
@@ -38,6 +38,7 @@ import {assertUnreachable, ComponentPressureLossMethod, isDrainage} from "../../
 import {SnappableObject} from "../lib/object-traits/snappable-object";
 import {getHighlightColor} from "../lib/utils";
 import {PipesTable} from "../../../../common/src/api/catalog/price-table";
+import {fillValveDefaultFields} from "../../store/document/entities/fillDefaultEntityFields";
 
 @CalculatedObject
 @SelectableObject
