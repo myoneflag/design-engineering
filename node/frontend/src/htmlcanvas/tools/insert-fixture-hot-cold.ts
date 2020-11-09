@@ -72,9 +72,9 @@ export default function insertFixtureHotCold(context: CanvasContext, rotationDEG
                         continuousFlowLS: null,
                         gasFlowRateMJH: 0,
                         gasPressureKPA: 0,
-                        asnzFixtureUnits: 0,
-                        enDischargeUnits: 0,
-                        upcFixtureUnits: 0,
+                        asnzFixtureUnits: null,
+                        enDischargeUnits: null,
+                        upcFixtureUnits: null,
                         variant: NodeVariant.FIXTURE_GROUP,
                     };
                 }

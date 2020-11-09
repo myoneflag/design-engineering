@@ -25,9 +25,9 @@ export interface LoadNode {
     gasFlowRateMJH: number;
     gasPressureKPA: number;
     variant: NodeVariant;
-    asnzFixtureUnits: number;
-    enDischargeUnits: number;
-    upcFixtureUnits: number;
+    asnzFixtureUnits: number | null;
+    enDischargeUnits: number | null;
+    upcFixtureUnits: number | null;
 
 }
 
@@ -217,6 +217,36 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                                 params: { min: 0, max: null },
                                 multiFieldId: "continuousFlowLS",
                                 units: Units.LitersPerSecond
+                            },
+                            {
+                                property: "node.asnzFixtureUnits",
+                                title: "AS/NZS3500.2:2018 Fixture Unit",
+                                hasDefault: true,
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "asnzFixtureUnits",
+                                units: Units.None
+                            },
+                            {
+                                property: "node.enDischargeUnits",
+                                title: "EN 12056-2:2000 Discharge Unit",
+                                hasDefault: true,
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "enDischargeUnits",
+                                units: Units.None
+                            },
+                            {
+                                property: "node.upcFixtureUnits",
+                                title: "2018 UPC Drainage Fixture Unit",
+                                hasDefault: true,
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "upcFixtureUnits",
+                                units: Units.None
                             },
                         );
                         break;
