@@ -330,6 +330,8 @@ export function upgrade19to20(original: DrawingState) {
         );
     }
 
+    const newSewerNodeOf: {[key: string]: string} = {};
+
     for (const level of Object.values(original.levels)) {
         const entities = level.entities;
         for (const e of Object.values(entities)) {
@@ -348,9 +350,10 @@ export function upgrade19to20(original: DrawingState) {
                         calculationHeightM: null,
                         allowAllSystems: false,
                         systemUid: StandardFlowSystemUids.SewerDrainage,
-                        uid: uuid.v4(),
+                        uid: newSewerNodeOf[e.uid] || uuid.v4(),
                         configuration: FlowConfiguration.INPUT
                     };
+                    newSewerNodeOf[e.uid] = newSystemNode.uid;
                     e.roughIns[StandardFlowSystemUids.SewerDrainage] = {
                         continuousFlowLS: null,
                         designFlowRateLS: null,
