@@ -317,6 +317,8 @@ export function upgrade18to19(original: DrawingState) {
     // Vent colour setting to flow systems
 
 
+const newSewerNodeOf: {[key: string]: string} = {};
+
 export function upgrade19to20(original: DrawingState) {
     if (!original.metadata.flowSystems.find((s) => s.uid === StandardFlowSystemUids.SewerDrainage)) {
         // Vent colour setting to flow systems
@@ -330,7 +332,6 @@ export function upgrade19to20(original: DrawingState) {
         );
     }
 
-    const newSewerNodeOf: {[key: string]: string} = {};
 
     for (const level of Object.values(original.levels)) {
         const entities = level.entities;
