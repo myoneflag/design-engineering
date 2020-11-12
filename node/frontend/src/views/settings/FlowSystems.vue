@@ -165,7 +165,7 @@ export default class FlowSystems extends Vue {
 
             fields.push(
                 ["", "Drainage Properties", "title4"],
-            )
+            );
 
             fields.push(
                 [
@@ -282,17 +282,6 @@ export default class FlowSystems extends Vue {
                         this.selectedSystem.networks[netKey as NetworkType].material
                     ],
                     ["networks." + netKey + ".spareCapacityPCT", "Spare Capacity (%)", "range", 0, 100],
-                    [
-                        "drainageProperties.horizontalPipeSizing",
-                        "Horizontal Pipe Sizing",
-                        "array-table",
-                        [
-                            {name: "Min Units", key: "minUnits"},
-                            {name: "Max Units", key: "maxUnits"},
-                            {name: "Size (mm)", key: "sizeMM"},
-                            {name: "grade %", key: "gradePCT"},
-                        ],
-                    ]
                 );
             }
         }
