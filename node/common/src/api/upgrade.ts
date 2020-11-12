@@ -378,3 +378,33 @@ export function upgrade19to20(original: DrawingState) {
         }
     }
 }
+
+// This is to fix problems with the previous upgrade - drainage unit fields for fixtures not set.
+export function upgrade20to21(original: DrawingState) {
+    for (const level of Object.values(original.levels)) {
+        const entities = level.entities;
+        for (const e of Object.values(entities)) {
+            if (e.type === EntityType.FIXTURE) {
+                if (e.upcFixtureUnits === undefined) {
+                    e.upcFixtureUnits = null;
+                }
+                if (e.asnzFixtureUnits === undefined) {
+                    e.asnzFixtureUnits = null;
+                }
+                if (e.enDischargeUnits === undefined) {
+                    e.enDischargeUnits = null;
+                }
+            } else if (e.type === EntityType.LOAD_NODE) {
+                if (e.node.upcFixtureUnits === undefined) {
+                    e.node.upcFixtureUnits = null;
+                }
+                if (e.node.asnzFixtureUnits === undefined) {
+                    e.node.asnzFixtureUnits = null;
+                }
+                if (e.node.enDischargeUnits === undefined) {
+                    e.node.enDischargeUnits = null;
+                }
+            }
+        }
+    }
+}
