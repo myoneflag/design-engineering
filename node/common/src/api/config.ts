@@ -351,7 +351,7 @@ export const COMPONENT_PRESSURE_LOSS_METHODS: Choice[] = [
 ];
 
 export const LEVEL_HEIGHT_DIFF_M = 3;
-export const CURRENT_VERSION = 20;
+export const CURRENT_VERSION = 21;
 
 export enum StandardFlowSystemUids {
     ColdWater = "cold-water",
@@ -374,6 +374,14 @@ export type DrainageSystemUid =
     | StandardFlowSystemUids.GreaseWaste
     | StandardFlowSystemUids.TradeWaste
     | StandardFlowSystemUids.RisingMain;
+
+export const ALL_DRAINAGE_SYSTEM_UIDS: DrainageSystemUid[] = [
+    StandardFlowSystemUids.SewerDrainage,
+    StandardFlowSystemUids.SanitaryPlumbing,
+    StandardFlowSystemUids.GreaseWaste,
+    StandardFlowSystemUids.TradeWaste,
+    StandardFlowSystemUids.RisingMain,
+];
 
 export enum StandardMaterialUids {
     Copper = "copperTypeB",

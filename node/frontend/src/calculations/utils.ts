@@ -17,7 +17,7 @@ import {makeFlowSourceCalculationFields} from "../store/document/calculations/fl
 import {ObjectStore} from "../htmlcanvas/lib/object-store";
 import {makePlantCalculationFields} from "../store/document/calculations/plant-calculation";
 import {
-    assertUnreachable, getPsdMethods,
+    assertUnreachable, getPsdMethods, isDrainage,
     isGermanStandard,
     StandardFlowSystemUids, SupportedDrainageMethods,
     SupportedPsdStandards
@@ -106,6 +106,22 @@ export function countPsdUnits(
                     }
 
                     result[suid].continuousFlowLS += mainFixture.roughIns[suid].continuousFlowLS!;
+
+                    if (isDrainage(suid)) {
+                        let drainageUnits: number | null = 0;
+                        switch (doc.drawing.metadata.calculationParams.drainageMethod) {
+                            case SupportedDrainageMethods.AS2018FixtureUnits:
+                                drainageUnits = mainFixture.asnzFixtureUnits;
+                                break;
+                            case SupportedDrainageMethods.EN1205622000DischargeUnits:
+                                drainageUnits =  mainFixture.enDischargeUnits;
+                                break;
+                            case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
+                                drainageUnits =  mainFixture.upcFixtureUnits;
+                                break;
+                        }
+                        result[suid].drainageUnits += drainageUnits!;
+                    }
                 }
 
                 break;
@@ -120,11 +136,16 @@ export function countPsdUnits(
                     if (!result.hasOwnProperty(suid)) {
                         result[suid] = zeroFinalPsdCounts();
                     }
+                    if (!result.hasOwnProperty(StandardFlowSystemUids.SewerDrainage)) {
+                        result[StandardFlowSystemUids.SewerDrainage] = zeroFinalPsdCounts();
+                    }
 
                     switch (mainLoadNode.node.type) {
                         case NodeType.DWELLING:
                             result[suid].dwellings += mainLoadNode.node.dwellings;
                         case NodeType.LOAD_NODE:
+
+
                             if (isGermanStandard(doc.drawing.metadata.calculationParams.psdMethod)) {
                                 result[suid].units += mainLoadNode.node.designFlowRateLS!;
                             } else {
@@ -132,6 +153,26 @@ export function countPsdUnits(
                                 result[suid].highestLU = Math.max(result[suid].highestLU, mainLoadNode.node.loadingUnits!);
                             }
                             result[suid].continuousFlowLS += mainLoadNode.node.continuousFlowLS!;
+
+                            let hasDrainagePipe = false;
+
+
+                            // The drainage nodes are repeated for pairs of load nodes, so we apply this only to the root.
+                            if (!mainLoadNode.linkedToUid || !objectStore.get(mainLoadNode.linkedToUid)) {
+                                let drainageUnits: number | null = 0;
+                                switch (doc.drawing.metadata.calculationParams.drainageMethod) {
+                                    case SupportedDrainageMethods.AS2018FixtureUnits:
+                                        drainageUnits = mainLoadNode.node.asnzFixtureUnits;
+                                        break;
+                                    case SupportedDrainageMethods.EN1205622000DischargeUnits:
+                                        drainageUnits = mainLoadNode.node.enDischargeUnits;
+                                        break;
+                                    case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
+                                        drainageUnits = mainLoadNode.node.upcFixtureUnits;
+                                        break;
+                                }
+                                result[StandardFlowSystemUids.SewerDrainage].drainageUnits += drainageUnits!;
+                            }
                             break;
                     }
                 }
