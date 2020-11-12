@@ -129,11 +129,21 @@ export function calculateFalls(context: CalculationEngine) {
     }
 }
 
+interface VentSource {
+    node: FlowNode;
+    entityUid: string;
+    pipeSize: number;
+    system: FlowSystemParameters;
+    drainageUnits: number | null;
+}
+
 // Refer to https://h2xengineering.atlassian.net/secure/RapidBoard.jspa?rapidView=2&projectKey=DEV&modal=detail&selectedIssue=DEV-145
 export function assignVentCapacities(context: CalculationEngine, roots: Map<string, PsdCountEntry>): Map<string, PsdCountEntry> {
     const result = new Map<string, PsdCountEntry>();
     // keep track of pipe LUs for warnings
     const unventedLUs = new Map<string, PsdCountEntry>();
+
+    const entryPoints: VentSource[] = [];
 
     // For every fixture, find the closest vented pipe downstream, and add it to the vent root associated.
     for (const obj of context.networkObjects()) {
@@ -164,9 +174,6 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                     const connections = context.globalStore.getConnections(outlet.uid);
 
                     if (connections.length > 0) {
-                        const parentOf = new Map<string, Edge<FlowNode, FlowEdge>>();
-
-                        const distTo = new Map<string, number>();
                         const pipe = context.globalStore.get(connections[0]) as Pipe;
                         const pCalcOriginal = context.globalStore.getOrCreateCalculation(pipe.entity);
                         const originalSize = pCalcOriginal.realNominalPipeDiameterMM;
@@ -180,125 +187,176 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
 
                         if (!originalSize) {
                             // We need the pipe to be sized to know how much venting it needs
-                            continue;
+                        } else {
+                            entryPoints.push({
+                                node: {connectable: outlet.uid, connection: connections[0]},
+                                entityUid: outlet.uid,
+                                pipeSize: originalSize,
+                                system,
+                                drainageUnits,
+                            });
                         }
-
-                        const maxUnventedLengthM = upperBoundTable(
-                            system.drainageProperties.maxUnventedLengthM,
-                            originalSize
-                        );
-
-                        const maxUnventedWCs = upperBoundTable(
-                            system.drainageProperties.maxUnventedCapacityWCs,
-                            originalSize
-                        );
-
-                        let unitsPerWc = 0;
-                        switch (context.doc.drawing.metadata.calculationParams.drainageMethod) {
-                            case SupportedDrainageMethods.AS2018FixtureUnits:
-                                unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].asnzFixtureUnits)!;
-                                break;
-                            case SupportedDrainageMethods.EN1205622000DischargeUnits:
-                                unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].enDischargeUnits)!;
-                                break;
-                            case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
-                                unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].upcFixtureUnits)!;
-                                break;
-                            default:
-                                assertUnreachable(context.doc.drawing.metadata.calculationParams.drainageMethod);
-                        }
-
-                        context.flowGraph.dfsRecursive(
-                            {connectable: outlet.uid, connection: connections[0]},
-                            undefined,
-                            undefined,
-                            (edge) => {
-                                if (edge.value.type === EdgeType.PIPE) {
-                                    const pipe = context.globalStore.get(edge.value.uid) as Pipe;
-                                    parentOf.set(edge.to.connectable, edge);
-                                    if (!pipe || !isDrainage(pipe.entity.systemUid)) {
-                                        return true;
-                                    }
-
-                                    // only go upstream
-                                    const pCalc = context.globalStore.getOrCreateCalculation(pipe.entity);
-                                    if (edge.to.connectable !== pCalc.flowFrom) {
-                                        return true;
-                                    }
-                                    const prevUnvented = unventedLUs.get(edge.value.uid) || zeroPsdCounts();
-                                    unventedLUs.set(edge.value.uid, addPsdCounts(prevUnvented, {
-                                        continuousFlowLS: 0, dwellings: 0, gasMJH: 0, units: 0,
-                                        drainageUnits: drainageUnits || 0,
-                                    }));
-
-                                    // the whole point of this algo - assign this flow to the vent root
-                                    // that reaches this pipe.
-                                    if (pCalc.ventRoot) {
-                                        const curr = result.get(pCalc.ventRoot) || zeroPsdCounts();
-
-                                        result.set(pCalc.ventRoot, addPsdCounts(curr, {
-                                            continuousFlowLS: 0,
-                                            dwellings: 0,
-                                            gasMJH: 0,
-                                            units: 0,
-                                            drainageUnits: drainageUnits || 0,
-                                        }));
-                                        return true;
-                                    } else {
-                                        // Check that the pipe will not exceed max unvented length or FU
-                                        const unventedLength = (distTo.get(edge.from.connectable) || 0) + pCalc.lengthM!;
-                                        const unventedLU = pCalc.psdUnits?.drainageUnits || 0;
-
-                                        distTo.set(edge.to.connectable, unventedLength);
-
-                                        if ((maxUnventedLengthM != null && unventedLength > maxUnventedLengthM)
-                                            || pCalc.ventTooFarDist
-                                        ) {
-                                            const accountedFor = pCalc.ventTooFarDist;
-                                            let curr: Edge<FlowNode, FlowEdge> | undefined = edge;
-                                            while (curr) {
-                                                const currPipe = context.globalStore.get(curr.value.uid);
-                                                if (currPipe?.entity.type === EntityType.PIPE) {
-                                                    const currPCalc = context.globalStore.getOrCreateCalculation(currPipe.entity);
-                                                    currPCalc.ventTooFarDist = true;
-                                                    currPCalc.warning = 'Max unvented length of ' + maxUnventedLengthM + " exceeded " + unventedLength;
-                                                    currPCalc.warningLayout = 'drainage';
-                                                    curr = parentOf.get(curr.from.connectable);
-                                                }
-                                            }
-                                            if (accountedFor) {
-                                                return true;
-                                            };
-                                        }
-
-                                        if ((maxUnventedWCs != null && unventedLU > maxUnventedWCs * unitsPerWc)
-                                            || pCalc.ventTooFarWC
-                                        ) {
-
-                                            const accountedFor = pCalc.ventTooFarWC;
-                                            let curr: Edge<FlowNode, FlowEdge> | undefined = edge;
-                                            while (curr) {
-                                                const currPipe = context.globalStore.get(curr.value.uid);
-                                                if (currPipe?.entity.type === EntityType.PIPE) {
-                                                    const currPCalc = context.globalStore.getOrCreateCalculation(currPipe.entity);
-                                                    currPCalc.ventTooFarWC = true;
-                                                    currPCalc.warning = 'Unvented drainage flow exceeds the max of ' + maxUnventedWCs + ' WC\'s';
-                                                    currPCalc.warningLayout = 'drainage';
-                                                    curr = parentOf.get(curr.from.connectable);
-                                                }
-                                            }
-                                            if (accountedFor) {
-                                                return true;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        );
                     }
                 }
             }
+        } else if (obj.entity.type === EntityType.LOAD_NODE) {
+            console.log("checking load node " + obj.entity.uid);
+            console.log(obj.entity);
+
+            const connections = context.globalStore.getConnections(obj.entity.uid);
+            console.log(connections);
+            if (connections.length > 0) {
+                const pipe = context.globalStore.get(connections[0]) as Pipe;
+                const pCalcOriginal = context.globalStore.getOrCreateCalculation(pipe.entity);
+
+                if (pCalcOriginal.flowFrom === obj.entity.uid) {
+                    continue;
+                }
+
+                const originalSize = pCalcOriginal.realNominalPipeDiameterMM;
+                const system = context.doc.drawing.metadata.flowSystems.find((s) =>
+                    s.uid === pipe.entity.systemUid
+                );
+                if (!system) {
+                    continue;
+                }
+                const drainageUnits = pCalcOriginal.psdUnits?.drainageUnits;
+
+                if (!originalSize) {
+                    // We need the pipe to be sized to know how much venting it needs
+                } else {
+                    console.log("pushing entry point");
+                    entryPoints.push({
+                        node: {connectable: obj.entity.uid, connection: connections[0]},
+                        entityUid: obj.entity.uid,
+                        pipeSize: originalSize,
+                        system,
+                        drainageUnits: drainageUnits!,
+                    });
+                    console.log(entryPoints[entryPoints.length - 1]);
+                }
+            }
         }
+    }
+
+
+    for (const ep of entryPoints) {
+
+        const parentOf = new Map<string, Edge<FlowNode, FlowEdge>>();
+
+        const distTo = new Map<string, number>();
+        const maxUnventedLengthM = upperBoundTable(
+            ep.system.drainageProperties.maxUnventedLengthM,
+            ep.pipeSize,
+        );
+
+        const maxUnventedWCs = upperBoundTable(
+            ep.system.drainageProperties.maxUnventedCapacityWCs,
+            ep.pipeSize,
+        );
+
+        let unitsPerWc = 0;
+        switch (context.doc.drawing.metadata.calculationParams.drainageMethod) {
+            case SupportedDrainageMethods.AS2018FixtureUnits:
+                unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].asnzFixtureUnits)!;
+                break;
+            case SupportedDrainageMethods.EN1205622000DischargeUnits:
+                unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].enDischargeUnits)!;
+                break;
+            case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
+                unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].upcFixtureUnits)!;
+                break;
+            default:
+                assertUnreachable(context.doc.drawing.metadata.calculationParams.drainageMethod);
+        }
+
+        context.flowGraph.dfsRecursive(
+            ep.node,
+            undefined,
+            undefined,
+            (edge) => {
+                if (edge.value.type === EdgeType.PIPE) {
+                    const pipe = context.globalStore.get(edge.value.uid) as Pipe;
+                    parentOf.set(edge.to.connectable, edge);
+                    if (!pipe || !isDrainage(pipe.entity.systemUid)) {
+                        return true;
+                    }
+
+                    // only go upstream
+                    const pCalc = context.globalStore.getOrCreateCalculation(pipe.entity);
+                    if (edge.to.connectable !== pCalc.flowFrom) {
+                        return true;
+                    }
+                    const prevUnvented = unventedLUs.get(edge.value.uid) || zeroPsdCounts();
+                    unventedLUs.set(edge.value.uid, addPsdCounts(prevUnvented, {
+                        continuousFlowLS: 0, dwellings: 0, gasMJH: 0, units: 0,
+                        drainageUnits: ep.drainageUnits || 0,
+                    }));
+
+                    // the whole point of this algo - assign this flow to the vent root
+                    // that reaches this pipe.
+                    if (pCalc.ventRoot) {
+                        const curr = result.get(pCalc.ventRoot) || zeroPsdCounts();
+
+                        result.set(pCalc.ventRoot, addPsdCounts(curr, {
+                            continuousFlowLS: 0,
+                            dwellings: 0,
+                            gasMJH: 0,
+                            units: 0,
+                            drainageUnits: ep.drainageUnits || 0,
+                        }));
+                        return true;
+                    } else {
+                        // Check that the pipe will not exceed max unvented length or FU
+                        const unventedLength = (distTo.get(edge.from.connectable) || 0) + pCalc.lengthM!;
+                        const unventedLU = pCalc.psdUnits?.drainageUnits || 0;
+
+                        distTo.set(edge.to.connectable, unventedLength);
+
+                        if ((maxUnventedLengthM != null && unventedLength > maxUnventedLengthM)
+                            || pCalc.ventTooFarDist
+                        ) {
+                            const accountedFor = pCalc.ventTooFarDist;
+                            let curr: Edge<FlowNode, FlowEdge> | undefined = edge;
+                            while (curr) {
+                                const currPipe = context.globalStore.get(curr.value.uid);
+                                if (currPipe?.entity.type === EntityType.PIPE) {
+                                    const currPCalc = context.globalStore.getOrCreateCalculation(currPipe.entity);
+                                    currPCalc.ventTooFarDist = true;
+                                    currPCalc.warning = 'Max unvented length of ' + maxUnventedLengthM + " exceeded " + unventedLength;
+                                    currPCalc.warningLayout = 'drainage';
+                                    curr = parentOf.get(curr.from.connectable);
+                                }
+                            }
+                            if (accountedFor) {
+                                return true;
+                            };
+                        }
+
+                        if ((maxUnventedWCs != null && unventedLU > maxUnventedWCs * unitsPerWc)
+                            || pCalc.ventTooFarWC
+                        ) {
+
+                            const accountedFor = pCalc.ventTooFarWC;
+                            let curr: Edge<FlowNode, FlowEdge> | undefined = edge;
+                            while (curr) {
+                                const currPipe = context.globalStore.get(curr.value.uid);
+                                if (currPipe?.entity.type === EntityType.PIPE) {
+                                    const currPCalc = context.globalStore.getOrCreateCalculation(currPipe.entity);
+                                    currPCalc.ventTooFarWC = true;
+                                    currPCalc.warning = 'Unvented drainage flow exceeds the max of ' + maxUnventedWCs + ' WC\'s';
+                                    currPCalc.warningLayout = 'drainage';
+                                    curr = parentOf.get(curr.from.connectable);
+                                }
+                            }
+                            if (accountedFor) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        );
     }
 
     return result;
