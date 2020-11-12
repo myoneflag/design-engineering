@@ -159,7 +159,6 @@ export function countPsdUnits(
 
                             // The drainage nodes are repeated for pairs of load nodes, so we apply this only to the root.
                             if (!mainLoadNode.linkedToUid || !objectStore.get(mainLoadNode.linkedToUid)) {
-                                console.log("adding drainage units in load node.");
                                 let drainageUnits: number | null = 0;
                                 switch (doc.drawing.metadata.calculationParams.drainageMethod) {
                                     case SupportedDrainageMethods.AS2018FixtureUnits:

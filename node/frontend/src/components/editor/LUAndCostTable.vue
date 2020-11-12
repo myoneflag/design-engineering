@@ -29,8 +29,8 @@
                                     variant="warning"
                                     v-b-tooltip.hover title="Calculate to update"
                             >Outdated</b-badge>
-                            <div style="border-style: solid; border-width: 1px; border-radius: 5px; border-color: #aaa">
-                                <i class="small-label">{{psdMethodName}}</i>
+                            <div style="bottom: 0; border-style: solid; border-width: 1px; border-radius: 5px; border-color: #aaa">
+                                <i class="small-label"><v-icon name="info-circle" style="margin-top:-5px"/>{{psdMethodName}}</i>
                             </div>
                         </td>
                         <td>
