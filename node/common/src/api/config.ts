@@ -375,6 +375,14 @@ export type DrainageSystemUid =
     | StandardFlowSystemUids.TradeWaste
     | StandardFlowSystemUids.RisingMain;
 
+export const ALL_DRAINAGE_SYSTEM_UIDS: DrainageSystemUid[] = [
+    StandardFlowSystemUids.SewerDrainage,
+    StandardFlowSystemUids.SanitaryPlumbing,
+    StandardFlowSystemUids.GreaseWaste,
+    StandardFlowSystemUids.TradeWaste,
+    StandardFlowSystemUids.RisingMain,
+];
+
 export enum StandardMaterialUids {
     Copper = "copperTypeB",
     Pex = "pexSdr74"

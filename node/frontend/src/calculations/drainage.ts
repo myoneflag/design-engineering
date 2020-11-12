@@ -200,11 +200,8 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                 }
             }
         } else if (obj.entity.type === EntityType.LOAD_NODE) {
-            console.log("checking load node " + obj.entity.uid);
-            console.log(obj.entity);
 
             const connections = context.globalStore.getConnections(obj.entity.uid);
-            console.log(connections);
             if (connections.length > 0) {
                 const pipe = context.globalStore.get(connections[0]) as Pipe;
                 const pCalcOriginal = context.globalStore.getOrCreateCalculation(pipe.entity);
@@ -225,7 +222,6 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                 if (!originalSize) {
                     // We need the pipe to be sized to know how much venting it needs
                 } else {
-                    console.log("pushing entry point");
                     entryPoints.push({
                         node: {connectable: obj.entity.uid, connection: connections[0]},
                         entityUid: obj.entity.uid,
@@ -233,7 +229,6 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                         system,
                         drainageUnits: drainageUnits!,
                     });
-                    console.log(entryPoints[entryPoints.length - 1]);
                 }
             }
         }
