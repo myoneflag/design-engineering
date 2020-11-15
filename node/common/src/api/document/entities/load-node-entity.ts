@@ -90,6 +90,8 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
         case NodeType.LOAD_NODE:
             if (!nodeIsGas || systemUid === null) {
                 switch (value.node.variant) {
+                    case undefined:
+                    case null:
                     case NodeVariant.FIXTURE:
                         fields.push(
                             {
@@ -251,7 +253,8 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                         );
                         break;
                     default:
-                        assertUnreachable(value.node.variant);
+                        // Do not assert unreachable.
+                        //assertUnreachable(value.node.variant);
                 }
             }
             break;
