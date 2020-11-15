@@ -91,35 +91,10 @@ export async function compressDocumentIfRequired(doc: Document) {
                     // For performance, don't replace the operation row because the bulky operation
                     // should be the the same - just update it.
                     // This is the most common case.
-                    const newOps = cloneSimple(diffState(oldDoc, currentDrawing, undefined));
-
                     for (const oo of opsSinceLast) {
                         if (oo.orderIndex !== orderIndex) {
                             oo.orderIndex = orderIndex;
                             await tx.save(Operation, oo);
-                        }
-
-                        if (oo.operation.type === OPERATION_NAMES.DIFF_OPERATION) {
-                            if (newOps.length > 0) {
-                                if (newOps[0].type === OPERATION_NAMES.DIFF_OPERATION
-                                    && diffObject(newOps[0].diff, oo.operation.diff, undefined)) {
-                                    console.log(newOps[0]);
-                                    console.log(oo.operation);
-
-                                    const diffdiff = diffState(oo.operation, newOps[0], undefined);
-                                    console.log(JSON.stringify(diffdiff[0], null, 2));
-
-                                    console.log(opsSinceLast.length);
-                                    console.log(opNum);
-                                    console.log(ops.map((o) => o.dateTime));
-                                    console.log(opsSinceLast);
-
-                                    console.log("docs:------");
-                                    console.log(oldDoc);
-                                    console.log(currentDrawing);
-                                    throw new Error('Compression error - operation that expected to be the same was not the same');
-                                }
-                            }
                         }
 
                         orderIndex ++;
