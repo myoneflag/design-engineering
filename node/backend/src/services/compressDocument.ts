@@ -51,35 +51,32 @@ export async function compressDocumentIfRequired(doc: Document) {
         let opsSinceLast: Operation[] = [];
         let numDiffOpsSinceLast = 0;
 
-        let orderIndex = 0;
-
         // Sneak an undefined in there to trigger the last update check.
         let opNum = 0;
         for (const o of [...ops, undefined]) {
             if (!shouldCombine(oldOp, o) && oldOp) {
                 // We should create a new operation.
                 if (numDiffOpsSinceLast > 1) {
+                    console.log("combining " + opNum);
                     // Replace the last cluster of operations with just one diff-commit pair.
                     const newOps = cloneSimple(diffState(oldDoc, currentDrawing, undefined));
                     if (newOps.length > 0) {
                         if (newOps[0].type === OPERATION_NAMES.DIFF_OPERATION) {
                             await tx.save(Operation, {
-                                orderIndex,
+                                orderIndex: oldOp.orderIndex - 1,
                                 operation: newOps[0],
                                 dateTime: oldOp.dateTime,
                                 blame: oldOp.blame,
                                 documentId: oldOp.documentId,
                             });
-                            orderIndex ++;
 
                             await tx.save(Operation, {
-                                orderIndex,
+                                orderIndex: oldOp.orderIndex,
                                 operation: {type: OPERATION_NAMES.COMMITTED_OPERATION},
                                 dateTime: oldOp.dateTime,
                                 blame: oldOp.blame,
                                 documentId: oldOp.documentId,
                             });
-                            orderIndex ++;
                             added += 2;
                         }
                     }
@@ -92,12 +89,6 @@ export async function compressDocumentIfRequired(doc: Document) {
                     // should be the the same - just update it.
                     // This is the most common case.
                     for (const oo of opsSinceLast) {
-                        if (oo.orderIndex !== orderIndex) {
-                            oo.orderIndex = orderIndex;
-                            await tx.save(Operation, oo);
-                        }
-
-                        orderIndex ++;
                         ignored ++;
                     }
                 }
@@ -113,7 +104,6 @@ export async function compressDocumentIfRequired(doc: Document) {
                     case OPERATION_NAMES.DIFF_OPERATION:
                         applyDiffNative(currentDrawing, o.operation.diff);
                         numDiffOpsSinceLast ++;
-                        oldOp = o;
                         break;
                     case OPERATION_NAMES.COMMITTED_OPERATION:
                         break;
@@ -121,6 +111,7 @@ export async function compressDocumentIfRequired(doc: Document) {
                         assertUnreachable(o.operation);
                 }
                 opsSinceLast.push(o);
+                oldOp = o;
             }
             opNum++;
         }
@@ -165,7 +156,7 @@ function shouldCombine(a: Operation | undefined, b: Operation | undefined): bool
     const ta = new Date(a.dateTime).getTime();
     const opDiffSecs = (tb - ta) / 1000;
 
-    const agoSecs = new Date(b.dateTime).getTime() - new Date().getTime();
+    const agoSecs = (new Date().getTime() - new Date(b.dateTime).getTime()) / 1000;
     if (agoSecs > 60 * 60 * 24 * 7) {
         // more than a week - gap is 2 hours.
         return opDiffSecs < 60 * 60 * 2;
