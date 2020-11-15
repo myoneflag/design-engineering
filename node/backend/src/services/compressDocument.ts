@@ -29,7 +29,7 @@ export async function compressDocumentIfRequired(doc: Document) {
         let added = 0;
         let ignored = 0;
         const start = new Date().getTime();
-        if (start - new Date(doc.lastCompression).getTime() < 60 * 5 * 1) {
+        if (start - new Date(doc.lastCompression).getTime() < 60 * 60 * 1) {
             // don't need upgrading. skip.
             return;
         }
@@ -151,7 +151,7 @@ function shouldCombine(a: Operation | undefined, b: Operation | undefined): bool
     if (!b) {
         return false;
     }
-    if (a.blame?.username !== b.blame?.username) {
+    if (a.blame && b.blame && a.blame.username !== b.blame.username) {
         return false;
     }
 
