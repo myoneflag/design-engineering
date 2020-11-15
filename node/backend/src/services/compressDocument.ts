@@ -151,6 +151,9 @@ function shouldCombine(a: Operation | undefined, b: Operation | undefined): bool
     if (!b) {
         return false;
     }
+    if (a.blame?.username !== b.blame?.username) {
+        return false;
+    }
 
     const tb = new Date(b.dateTime).getTime();
     const ta = new Date(a.dateTime).getTime();
