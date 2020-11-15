@@ -408,3 +408,8 @@ export function upgrade20to21(original: DrawingState) {
         }
     }
 }
+
+export function upgraded21to22(original: DrawingState) {
+    // no-op.
+    // Just exist here to invoke the compression.
+}
