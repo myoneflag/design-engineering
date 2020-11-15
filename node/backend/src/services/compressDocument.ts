@@ -11,7 +11,7 @@ import {initialDrawing} from "../../../common/src/api/document/drawing";
 import {OPERATION_NAMES} from "../../../common/src/api/document/operation-transforms";
 import {applyDiffNative} from "../../../common/src/api/document/state-ot-apply";
 import {assertUnreachable} from "../../../common/src/api/config";
-import {diffState} from "../../../common/src/api/document/state-differ";
+import {diffObject, diffState} from "../../../common/src/api/document/state-differ";
 import ConcurrentDocument from "./concurrentDocument";
 
 // combines operations on 2 criteria : time and author.
@@ -21,20 +21,29 @@ import ConcurrentDocument from "./concurrentDocument";
 // For all other operations > 2 hr old, combine anything with less than 1 minute gap
 // Don't combine anything done in the last 2 hours.
 // DO NOT RUN while a document is open by a client. It will cause inconsistent states.
-export async function compressDocument(doc: Document) {
-    await ConcurrentDocument.withDocumentLock(doc.id, async (tx, doc) => {
+export async function compressDocumentIfRequired(doc: Document) {
+
+
+    await ConcurrentDocument.withDocumentLockRepeatableRead(doc.id, async (tx, doc) => {
         let removed = 0;
         let added = 0;
         let ignored = 0;
         const start = new Date().getTime();
-        tx.createQueryBuilder()
-        const ops = await tx.createQueryBuilder()
-            .select()
-            .from(Operation, 'operation')
+        if (start - new Date(doc.lastCompression).getTime() < 60 * 5 * 1) {
+            // don't need upgrading. skip.
+            return;
+        }
+
+        console.log("compressing document id " + doc.id + ", \"" + doc.metadata.title + "\"");
+
+        const ops = await tx.getRepository(Operation)
+            .createQueryBuilder('operation')
             .leftJoinAndSelect("operation.blame", "user")
             .where("operation.document = :document", { document: doc.id })
             .orderBy("\"orderIndex\"", "ASC")
             .getMany();
+
+        console.log("...with " + ops.length + " operations");
 
         let oldDoc = cloneSimple(initialDrawing);
         let currentDrawing = cloneSimple(initialDrawing);
@@ -45,6 +54,7 @@ export async function compressDocument(doc: Document) {
         let orderIndex = 0;
 
         // Sneak an undefined in there to trigger the last update check.
+        let opNum = 0;
         for (const o of [...ops, undefined]) {
             if (!shouldCombine(oldOp, o) && oldOp) {
                 // We should create a new operation.
@@ -58,6 +68,7 @@ export async function compressDocument(doc: Document) {
                                 operation: newOps[0],
                                 dateTime: oldOp.dateTime,
                                 blame: oldOp.blame,
+                                documentId: oldOp.documentId,
                             });
                             orderIndex ++;
 
@@ -66,24 +77,51 @@ export async function compressDocument(doc: Document) {
                                 operation: {type: OPERATION_NAMES.COMMITTED_OPERATION},
                                 dateTime: oldOp.dateTime,
                                 blame: oldOp.blame,
+                                documentId: oldOp.documentId,
                             });
                             orderIndex ++;
                             added += 2;
                         }
                     }
                     for (const oo of opsSinceLast) {
-                        await tx.remove(oo);
+                        await tx.remove(Operation, oo);
                         removed ++;
                     }
                 } else {
                     // For performance, don't replace the operation row because the bulky operation
                     // should be the the same - just update it.
                     // This is the most common case.
+                    const newOps = cloneSimple(diffState(oldDoc, currentDrawing, undefined));
+
                     for (const oo of opsSinceLast) {
                         if (oo.orderIndex !== orderIndex) {
                             oo.orderIndex = orderIndex;
                             await tx.save(Operation, oo);
                         }
+
+                        if (oo.operation.type === OPERATION_NAMES.DIFF_OPERATION) {
+                            if (newOps.length > 0) {
+                                if (newOps[0].type === OPERATION_NAMES.DIFF_OPERATION
+                                    && diffObject(newOps[0].diff, oo.operation.diff, undefined)) {
+                                    console.log(newOps[0]);
+                                    console.log(oo.operation);
+
+                                    const diffdiff = diffState(oo.operation, newOps[0], undefined);
+                                    console.log(JSON.stringify(diffdiff[0], null, 2));
+
+                                    console.log(opsSinceLast.length);
+                                    console.log(opNum);
+                                    console.log(ops.map((o) => o.dateTime));
+                                    console.log(opsSinceLast);
+
+                                    console.log("docs:------");
+                                    console.log(oldDoc);
+                                    console.log(currentDrawing);
+                                    throw new Error('Compression error - operation that expected to be the same was not the same');
+                                }
+                            }
+                        }
+
                         orderIndex ++;
                         ignored ++;
                     }
@@ -109,9 +147,11 @@ export async function compressDocument(doc: Document) {
                 }
                 opsSinceLast.push(o);
             }
+            opNum++;
         }
 
-        doc.nextOperationIndex = orderIndex;
+        doc.lastCompression = new Date();
+
         await tx.save(doc);
 
         const totalMs = new Date().getTime() - start;
@@ -122,6 +162,22 @@ export async function compressDocument(doc: Document) {
 }
 
 // As a tester, group in buckets of 5 second gaps.
+// To help, here is some research done on 15/11/2020.
+// Of the roughly 3.1 million operations at the time (wowzers!), here are the frequency distributions
+// of how they spread out:
+// 100th percentile (smallest diff): 0.0 seconds (obv)
+// 50%: 0.54 seconds
+// 25%: 4.7 seconds (so a quarter of all operations occur 4.7 seconds or more after the previous)
+// 10%: 12 seconds
+// 3%: 38 seconds
+// 1%: 163 seconds
+// .3%: 18 minutes
+// .2%: 41 minutes
+// .1%: 911 minutes
+// 0.0%: 17458275.717999935 or ~202 days was the longest a doc went untouched then touched again.
+
+// In conclusion, by choosing 2 hours as a break, we can reduce the number of operations stored
+// by 500-1000x. By choosing a 10 minute gap, it is 100-300x. 1 minute, it is 30-100x.
 function shouldCombine(a: Operation | undefined, b: Operation | undefined): boolean {
     if (!a) {
         return true;
@@ -132,6 +188,20 @@ function shouldCombine(a: Operation | undefined, b: Operation | undefined): bool
 
     const tb = new Date(b.dateTime).getTime();
     const ta = new Date(a.dateTime).getTime();
-    const secs = (tb - ta) / 1000;
-    return secs <= 5;
+    const opDiffSecs = (tb - ta) / 1000;
+
+    const agoSecs = new Date(b.dateTime).getTime() - new Date().getTime();
+    if (agoSecs > 60 * 60 * 24 * 7) {
+        // more than a week - gap is 2 hours.
+        return opDiffSecs < 60 * 60 * 2;
+    } else if (agoSecs > 60 * 60 * 10) {
+        // Different working day. Gap is 20 min
+        return opDiffSecs < 60 * 20;
+    } else if (agoSecs > 60 * 60) {
+        // same day but more than an hour ago. Do groups with 2 min gap
+        return opDiffSecs < 60 * 2;
+    } else {
+        // within the hour. Do none.
+        return false;
+    }
 }
