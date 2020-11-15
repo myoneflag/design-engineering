@@ -17,6 +17,7 @@ import { AccessType, withDocument, withOrganization } from "../helpers/withResou
 import random from '../helpers/random';
 import { cloneSimple } from "../../../common/src/lib/utils";
 import ConcurrentDocument from "../services/concurrentDocument";
+import {compressDocumentIfRequired} from "../services/compressDocument";
 
 export class DocumentController {
     @ApiHandleError()
@@ -350,6 +351,7 @@ router.ws("/:id/websocket", (ws, req) => {
         async (session) => {
             withDocument(Number(req.params.id), null, session, AccessType.UPDATE, async (doc) => {
                 // sanity checks.
+                await compressDocumentIfRequired(doc);
                 switch (doc.state) {
                     case DocumentStatus.ACTIVE:
                         if (doc.version !== CURRENT_VERSION) {

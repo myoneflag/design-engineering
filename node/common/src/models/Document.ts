@@ -63,6 +63,9 @@ export class Document extends BaseEntity {
     @OneToOne(() => ShareDocument, { eager: true })
     @JoinColumn()
     shareDocument: ShareDocument;
+
+    @Column({default: new Date(2000, 0, 0)})
+    lastCompression: Date;
 }
 
 export function canUserDeleteDocument(doc: Document, user: User) {

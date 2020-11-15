@@ -4,7 +4,7 @@ module.exports = {
     "port": process.env.RDS_PORT || process.env.DB_PORT || 5432,
    "username": process.env.RDS_USERNAME || process.env.DB_USERNAME || "postgres",
    "password": process.env.RDS_PASSWORD || process.env.DB_PASSWORD || "postgres",
-   "database": process.env.RDS_DB_NAME || process.env.DB_NAME || "h2x",
+   "database": process.env.RDS_DB_NAME || process.env.DB_NAME || "ebdb",
    "synchronize": false,
    "logging": process.env.MODE === "production" ? false : true,
    "entities": [
