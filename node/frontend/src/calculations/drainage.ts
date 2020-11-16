@@ -203,32 +203,40 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
 
             const connections = context.globalStore.getConnections(obj.entity.uid);
             if (connections.length > 0) {
-                const pipe = context.globalStore.get(connections[0]) as Pipe;
-                const pCalcOriginal = context.globalStore.getOrCreateCalculation(pipe.entity);
+                for (let i = 0; i < connections.length; i++) {
+                    const pipe = context.globalStore.get(connections[i]) as Pipe;
+                    if (!isDrainage(pipe.entity.systemUid)) {
+                        continue;
+                    } else {
+                        i = connections.length - 1;
+                    }
 
-                if (pCalcOriginal.flowFrom === obj.entity.uid) {
-                    continue;
-                }
+                    const pCalcOriginal = context.globalStore.getOrCreateCalculation(pipe.entity);
 
-                const originalSize = pCalcOriginal.realNominalPipeDiameterMM;
-                const system = context.doc.drawing.metadata.flowSystems.find((s) =>
-                    s.uid === pipe.entity.systemUid
-                );
-                if (!system) {
-                    continue;
-                }
-                const drainageUnits = pCalcOriginal.psdUnits?.drainageUnits;
+                    if (pCalcOriginal.flowFrom === obj.entity.uid) {
+                        continue;
+                    }
 
-                if (!originalSize) {
-                    // We need the pipe to be sized to know how much venting it needs
-                } else {
-                    entryPoints.push({
-                        node: {connectable: obj.entity.uid, connection: connections[0]},
-                        entityUid: obj.entity.uid,
-                        pipeSize: originalSize,
-                        system,
-                        drainageUnits: drainageUnits!,
-                    });
+                    const originalSize = pCalcOriginal.realNominalPipeDiameterMM;
+                    const system = context.doc.drawing.metadata.flowSystems.find((s) =>
+                        s.uid === pipe.entity.systemUid
+                    );
+                    if (!system) {
+                        continue;
+                    }
+                    const drainageUnits = pCalcOriginal.psdUnits?.drainageUnits;
+
+                    if (!originalSize) {
+                        // We need the pipe to be sized to know how much venting it needs
+                    } else {
+                        entryPoints.push({
+                            node: {connectable: obj.entity.uid, connection: connections[i]},
+                            entityUid: obj.entity.uid,
+                            pipeSize: originalSize,
+                            system,
+                            drainageUnits: drainageUnits!,
+                        });
+                    }
                 }
             }
         }

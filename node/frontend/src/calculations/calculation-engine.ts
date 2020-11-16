@@ -2675,8 +2675,10 @@ export default class CalculationEngine implements CalculationContext {
 
                     for (const suid of e.roughInsInOrder) {
                         if (calculation.inlets[suid].pressureKPA === null) {
-                            if (!calculation.warning) {
-                                calculation.warning = " ";
+                            if (!isDrainage(suid)) {
+                                if (!calculation.warning) {
+                                    calculation.warning = " ";
+                                }
                             }
                         } else if ((calculation.inlets[suid].pressureKPA || 0) < e.roughIns[suid].minPressureKPA!) {
                             const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === suid)!;

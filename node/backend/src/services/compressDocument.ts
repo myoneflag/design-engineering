@@ -96,7 +96,17 @@ export async function compressDocumentIfRequired(doc: Document) {
                 numDiffOpsSinceLast = 0;
                 opsSinceLast = [];
 
-                oldDoc = cloneSimple(currentDrawing);
+                for (const oo of opsSinceLast) {
+                    switch (oo.operation.type) {
+                        case OPERATION_NAMES.DIFF_OPERATION:
+                            applyDiffNative(oo, oo.operation.diff);
+                            break;
+                        case OPERATION_NAMES.COMMITTED_OPERATION:
+                            break;
+                        default:
+                            assertUnreachable(oo.operation);
+                    }
+                }
             }
 
             if (o) {

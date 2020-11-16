@@ -17,9 +17,12 @@ import { ApiHandleError } from "../helpers/apiWrapper";
 import { AuthRequired } from "../helpers/withAuth";
 import random from '../helpers/random';
 import { cloneSimple } from '../../../common/src/lib/utils';
-import { DrawingState, exampleDrawing } from '../../../common/src/api/document/drawing';
+import {DrawingState, initialDrawing} from '../../../common/src/api/document/drawing';
 import { CURRENT_VERSION } from '../../../common/src/api/config';
 import { OPERATION_NAMES } from '../../../common/src/api/document/operation-transforms';
+import {EXAMPLE_DRAWING, EXAMPLE_DRAWING_VERSION} from "../../../common/src/api/constants/example-drawing";
+import {DocumentUpgrader} from "../services/DocumentUpgrader";
+import {diffState} from "../../../common/src/api/document/state-differ";
 
 export async function registerUser(data: {
     username: string
@@ -252,7 +255,7 @@ export class LoginController {
             "client": "King Development",
             "description": "This is an example project to showcase the benefits of H2X."
         };
-        doc.version = CURRENT_VERSION;
+        doc.version = EXAMPLE_DRAWING_VERSION;
         doc.state = DocumentStatus.ACTIVE;
         doc.shareDocument = sd;
         await doc.save();
@@ -262,7 +265,7 @@ export class LoginController {
         op1.document = Promise.resolve(doc);
         op1.dateTime = now;
         op1.blame = null;
-        op1.operation = exampleDrawing;
+        op1.operation = diffState(initialDrawing, EXAMPLE_DRAWING, undefined)[0];
         op1.orderIndex = 0;
         await op1.save();
         const op2 = Operation.create();
@@ -272,6 +275,10 @@ export class LoginController {
         op2.operation = {"type": OPERATION_NAMES.COMMITTED_OPERATION, "id": 1};
         op2.orderIndex = 0;
         await op2.save();
+
+        // In case the document is upgraded in development without updating the example document,
+        // the example document needs to be upgraded.
+        await DocumentUpgrader.submitDocumentForUpgrade(doc.id);
 
         res.status(200).send({
             success: true,
