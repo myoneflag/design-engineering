@@ -65,8 +65,12 @@ export class DocumentUpgrader {
 
         console.log('need to submit ' + toUpgrade.length + ' documents for upgrade');
         for (const doc of toUpgrade) {
-            await MqClient.publish({ destination: this.upgradeQueueName, body: "" + doc.id });
+            await this.submitDocumentForUpgrade(doc.id);
         }
+    }
+
+    static async submitDocumentForUpgrade(id: number) {
+        await MqClient.publish({ destination: this.upgradeQueueName, body: "" + id });
     }
 
     static async onDocumentUpgradeRequest(msg: IMessage) {
