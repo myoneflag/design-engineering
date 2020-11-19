@@ -182,7 +182,7 @@ export class DocumentUpgrader {
                                 case 20:
                                     upgrade20to21(newUpgraded);
                                 // noinspection FallThroughInSwitchStatementJS
-                                case 20:
+                                case 21:
                                     upgraded21to22(newUpgraded);
                                 // noinspection FallThroughInSwitchStatementJS
                                 case CURRENT_VERSION:
