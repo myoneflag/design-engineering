@@ -308,11 +308,17 @@ export default class CalculationsSidebar extends Vue {
 
                     result[lprops.abbreviation] = {
                         ...result[lprops.abbreviation],
-                        [filled!.network]: {
-                            ...(result[lprops.abbreviation] && result[lprops.abbreviation][filled!.network]),
-                            [system!.name]: {
-                                ...(result[lprops.abbreviation] && result[lprops.abbreviation][filled!.network] && result[lprops.abbreviation][system!.name]),
-                                pipes: [
+                            [filled!.network]: 
+                        {
+                            ...(result[lprops.abbreviation] && 
+                                result[lprops.abbreviation][filled!.network]),
+                                [system!.name]: 
+                            {
+                                ...(result[lprops.abbreviation] && 
+                                    result[lprops.abbreviation][filled!.network] && 
+                                    result[lprops.abbreviation][filled!.network][system!.name]),
+                                    pipes: 
+                                [
                                     ...data,
                                     {
                                         // fittingName: null,
@@ -362,11 +368,17 @@ export default class CalculationsSidebar extends Vue {
 
                     result[lprops.abbreviation] = {
                         ...result[lprops.abbreviation],
-                        ["RETICULATIONS"]: {
-                            ...(result[lprops.abbreviation] && result[lprops.abbreviation]["RETICULATIONS"]),
-                            [system!.name]: {
-                                ...(result[lprops.abbreviation] && result[lprops.abbreviation]["RETICULATIONS"] && result[lprops.abbreviation][system!.name]),
-                                fittings: [
+                            ["RETICULATIONS"]:
+                        {
+                            ...(result[lprops.abbreviation] && 
+                                result[lprops.abbreviation]["RETICULATIONS"]),
+                                [system!.name]: 
+                            {
+                                ...(result[lprops.abbreviation] && 
+                                    result[lprops.abbreviation]["RETICULATIONS"] && 
+                                    result[lprops.abbreviation]["RETICULATIONS"] [system!.name]),
+                                    fittings: 
+                                [
                                     ...data,
                                     {
                                         networkType: "RETICULATIONS",
@@ -433,10 +445,15 @@ export default class CalculationsSidebar extends Vue {
 
                         result[lprops.abbreviation] = {
                             ...result[lprops.abbreviation],
-                            ["RETICULATIONS"]: {
-                                ...(result[lprops.abbreviation] && result[lprops.abbreviation]["RETICULATIONS"]),
-                                [system!.name]: {
-                                    ...(result[lprops.abbreviation] && result[lprops.abbreviation]["RETICULATIONS"] && result[lprops.abbreviation][system.name]),
+                                ["RETICULATIONS"]: 
+                            {
+                                ...(result[lprops.abbreviation] && 
+                                    result[lprops.abbreviation]["RETICULATIONS"]),
+                                    [system!.name]: 
+                                {
+                                    ...(result[lprops.abbreviation] && 
+                                        result[lprops.abbreviation]["RETICULATIONS"] && 
+                                        result[lprops.abbreviation]["RETICULATIONS"][system.name]),
                                     valves: [
                                         ...data,
                                         {
@@ -472,11 +489,17 @@ export default class CalculationsSidebar extends Vue {
 
                     result[lprops.abbreviation] = {
                         ...result[lprops.abbreviation],
-                        ["RETICULATIONS"]: {
-                            ...(result[lprops.abbreviation] && result[lprops.abbreviation]["RETICULATIONS"]),
-                            ["HOT_COLD"]: {
-                                ...(result[lprops.abbreviation] && result[lprops.abbreviation]["RETICULATIONS"] && result[lprops.abbreviation]["HOT_COLD"]),
-                                valves: [
+                            ["RETICULATIONS"]: 
+                        {
+                            ...(result[lprops.abbreviation] && 
+                                result[lprops.abbreviation]["RETICULATIONS"]),
+                                ["HOT_COLD"]: 
+                            {
+                                ...(result[lprops.abbreviation] && 
+                                    result[lprops.abbreviation]["RETICULATIONS"] && 
+                                    result[lprops.abbreviation]["RETICULATIONS"]["HOT_COLD"]),
+                                    valves: 
+                                [
                                     ...data,
                                     {
                                         // fittingName: null,
@@ -523,11 +546,17 @@ export default class CalculationsSidebar extends Vue {
 
                         result[lprops.abbreviation] = {
                             ...result[lprops.abbreviation],
-                            ["RISERS"]: {
-                                ...(result[lprops.abbreviation] && result[lprops.abbreviation]["RISERS"]),
-                                [system.name]: {
-                                    ...(result[lprops.abbreviation] && result[lprops.abbreviation]["RISERS"] && result[lprops.abbreviation][system.name]),
-                                    risers: [
+                                ["RISERS"]: 
+                            {
+                                ...(result[lprops.abbreviation] && 
+                                    result[lprops.abbreviation]["RISERS"]),
+                                    [system.name]: 
+                                {
+                                    ...(result[lprops.abbreviation] && 
+                                        result[lprops.abbreviation]["RISERS"] && 
+                                        result[lprops.abbreviation]["RISERS"][system.name]),
+                                        risers: 
+                                    [
                                         ...data,
                                         {
                                             // fittingName: null,
