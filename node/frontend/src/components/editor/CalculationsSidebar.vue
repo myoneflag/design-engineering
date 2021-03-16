@@ -551,18 +551,21 @@ export default class CalculationsSidebar extends Vue {
                     const re = obj.entity as RiserEntity;
                     const filled = fillRiserDefaults(this.document.drawing, re);
 
-                    const connections = this.globalStore.getConnections(obj.entity.uid);
-                    const sizeMMArray: Array<number> = [];
-                    connections.forEach((uid) => {
-                        const conObj = this.globalStore.get(uid);
-
-                        if (conObj instanceof Pipe) {
-                            const calc = this.globalStore.getOrCreateCalculation(conObj.entity);
-                            sizeMMArray.push(calc.realNominalPipeDiameterMM || 0);
-                        }
-                    });
-          
                     if (system) {
+                        const calculation = this.globalStore.getOrCreateCalculation(obj.entity);
+                        const currentLevelCalc = Object.entries(calculation.heights).find(
+                            ([uid, props]) => uid === lprops.uid
+                        );
+                        const riserSize = currentLevelCalc![1]?.sizeMM;
+                        let riserSizeInMM
+                        if (riserSize === null) {
+                            // riser is set to minimum size when null.
+                            riserSizeInMM = 15;
+                        } else if (riserSize !== null) {
+                            riserSizeInMM = currentLevelCalc![1]?.sizeMM
+                        };
+
+                     
                         let data: Array<any> = [];
                         if (
                             typeof result[lprops.abbreviation] !== "undefined" &&
@@ -592,7 +595,7 @@ export default class CalculationsSidebar extends Vue {
                                             networkType: "RISERS",
                                             // pipeSystem: null,
                                             // pipeMaterial: null,
-                                            pipeSizeMM: Math.min(...sizeMMArray),
+                                            pipeSizeMM: riserSizeInMM,
                                             // pipeStart: null,
                                             // pipeEnd: null,
                                             // z: Infinity,
