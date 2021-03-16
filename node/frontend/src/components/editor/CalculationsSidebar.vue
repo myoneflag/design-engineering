@@ -112,6 +112,7 @@ import { ValveType } from "../../../../common/src/api/document/entities/directed
 import Fitting from "../../htmlcanvas/objects/fitting";
 import Riser from "../../htmlcanvas/objects/riser";
 import { BaseBackedConnectable } from "../../htmlcanvas/lib/BackedConnectable";
+import RiserEntity, { fillRiserDefaults } from "../../../../common/src/api/document/entities/riser-entity";
 
 @Component({
     components: {},
@@ -486,7 +487,7 @@ export default class CalculationsSidebar extends Vue {
                                             valveType: filled.valve.catalogId,
                                             valveSystem: [system.name],
                                             valveSizeMM: valveSizeMM || Math.min(...sizeMMArray),
-                                            center: filled,
+                                            center: filled.center,
                                             z: lprops.floorHeightM + Math.min(...zArray)
                                         }
                                     ]
@@ -547,11 +548,21 @@ export default class CalculationsSidebar extends Vue {
                         (s) => s.uid === obj.entity.systemUid
                     );
 
+                    const re = obj.entity as RiserEntity;
+                    const filled = fillRiserDefaults(this.document.drawing, re);
+
+                    const connections = this.globalStore.getConnections(obj.entity.uid);
+                    const sizeMMArray: Array<number> = [];
+                    connections.forEach((uid) => {
+                        const conObj = this.globalStore.get(uid);
+
+                        if (conObj instanceof Pipe) {
+                            const calc = this.globalStore.getOrCreateCalculation(conObj.entity);
+                            sizeMMArray.push(calc.realNominalPipeDiameterMM || 0);
+                        }
+                    });
+          
                     if (system) {
-                        const calculation = this.globalStore.getOrCreateCalculation(obj.entity);
-                        const currentLevelCalc = Object.entries(calculation.heights).find(
-                            ([uid, props]) => uid === lprops.uid
-                        );
                         let data: Array<any> = [];
                         if (
                             typeof result[lprops.abbreviation] !== "undefined" &&
@@ -581,16 +592,16 @@ export default class CalculationsSidebar extends Vue {
                                             networkType: "RISERS",
                                             // pipeSystem: null,
                                             // pipeMaterial: null,
-                                            pipeSizeMM: currentLevelCalc![1]?.sizeMM,
+                                            pipeSizeMM: Math.min(...sizeMMArray),
                                             // pipeStart: null,
                                             // pipeEnd: null,
                                             // z: Infinity,
                                             // valveType: null,
                                             // valveSystem: null,
                                             // valveSizeMM: null,
-                                            center: obj.entity.center,
-                                            bottomHeightM:  obj.entity.bottomHeightM,
-                                            topHeightM:  obj.entity.topHeightM,
+                                            center: filled.center,
+                                            bottomHeightM:  filled.bottomHeightM,
+                                            topHeightM:  filled.topHeightM,
                                         }
                                     ]
                                 }
