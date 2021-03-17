@@ -564,14 +564,14 @@ export default class CalculationsSidebar extends Vue {
                             riserSizeInMM = currentLevelCalc![1]?.sizeMM
                         };
                         // riser that has the highest pipe size will on be shown.
-                        const riserEntries = [].concat.apply([], Object.entries(calculation.heights));
-                        const sizeList = riserEntries.map(function(row){ return row.sizeMM });
+                        const riserEntries = [].concat.apply([], Object.entries(calculation.heights) as any[]);
+                        const sizeList = riserEntries.map(function(row: { sizeMM: any; }){ return row.sizeMM });
 
-                        const data = sizeList.filter(function( element ) {
+                        const data = sizeList.filter(function( element: any ) {
                             return element !== undefined;
                         });
                         const maxRiserSize = Math.max.apply(null, data);
-
+                        
                         if (maxRiserSize === riserSizeInMM) {
                             let data: Array<any> = [];
                             if (
