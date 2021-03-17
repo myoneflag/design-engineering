@@ -550,7 +550,6 @@ export default class CalculationsSidebar extends Vue {
 
                     const re = obj.entity as RiserEntity;
                     const filled = fillRiserDefaults(this.document.drawing, re);
-
                     if (system) {
                         const calculation = this.globalStore.getOrCreateCalculation(obj.entity);
                         const currentLevelCalc = Object.entries(calculation.heights).find(
@@ -560,56 +559,65 @@ export default class CalculationsSidebar extends Vue {
                         let riserSizeInMM
                         if (riserSize === null) {
                             // riser is set to minimum size when null.
-                            riserSizeInMM = 15;
+                            riserSizeInMM = system.networks.RISERS.minimumPipeSize;
                         } else if (riserSize !== null) {
                             riserSizeInMM = currentLevelCalc![1]?.sizeMM
                         };
+                        // riser that has the highest pipe size will on be shown.
+                        const riserEntries = [].concat.apply([], Object.entries(calculation.heights));
+                        const sizeList = riserEntries.map(function(row){ return row.sizeMM });
 
-                     
-                        let data: Array<any> = [];
-                        if (
-                            typeof result[lprops.abbreviation] !== "undefined" &&
-                            typeof result[lprops.abbreviation]["RISERS"] !== "undefined" &&
-                            typeof result[lprops.abbreviation]["RISERS"][system.name] !== "undefined" &&
-                            typeof result[lprops.abbreviation]["RISERS"][system.name]["risers"] !== "undefined"
-                        ) {
-                            data = result[lprops.abbreviation]["RISERS"][system.name]["risers"];
-                        }
+                        const data = sizeList.filter(function( element ) {
+                            return element !== undefined;
+                        });
+                        const maxRiserSize = Math.max.apply(null, data);
 
-                        result[lprops.abbreviation] = {
-                            ...result[lprops.abbreviation],
-                                ["RISERS"]: 
-                            {
-                                ...(result[lprops.abbreviation] && 
-                                    result[lprops.abbreviation]["RISERS"]),
-                                    [system.name]: 
+                        if (maxRiserSize === riserSizeInMM) {
+                            let data: Array<any> = [];
+                            if (
+                                typeof result[lprops.abbreviation] !== "undefined" &&
+                                typeof result[lprops.abbreviation]["RISERS"] !== "undefined" &&
+                                typeof result[lprops.abbreviation]["RISERS"][system.name] !== "undefined" &&
+                                typeof result[lprops.abbreviation]["RISERS"][system.name]["risers"] !== "undefined"
+                            ) {
+                                data = result[lprops.abbreviation]["RISERS"][system.name]["risers"];
+                            }
+
+                            result[lprops.abbreviation] = {
+                                ...result[lprops.abbreviation],
+                                    ["RISERS"]: 
                                 {
                                     ...(result[lprops.abbreviation] && 
-                                        result[lprops.abbreviation]["RISERS"] && 
-                                        result[lprops.abbreviation]["RISERS"][system.name]),
-                                        risers: 
-                                    [
-                                        ...data,
-                                        {
-                                            // fittingName: null,
-                                            networkType: "RISERS",
-                                            // pipeSystem: null,
-                                            // pipeMaterial: null,
-                                            pipeSizeMM: riserSizeInMM,
-                                            // pipeStart: null,
-                                            // pipeEnd: null,
-                                            // z: Infinity,
-                                            // valveType: null,
-                                            // valveSystem: null,
-                                            // valveSizeMM: null,
-                                            center: filled.center,
-                                            bottomHeightM:  filled.bottomHeightM,
-                                            topHeightM:  filled.topHeightM,
-                                        }
-                                    ]
+                                        result[lprops.abbreviation]["RISERS"]),
+                                        [system.name]: 
+                                    {
+                                        ...(result[lprops.abbreviation] && 
+                                            result[lprops.abbreviation]["RISERS"] && 
+                                            result[lprops.abbreviation]["RISERS"][system.name]),
+                                            risers: 
+                                        [
+                                            ...data,
+                                            {
+                                                // fittingName: null,
+                                                networkType: "RISERS",
+                                                // pipeSystem: null,
+                                                // pipeMaterial: null,
+                                                pipeSizeMM: riserSizeInMM,
+                                                // pipeStart: null,
+                                                // pipeEnd: null,
+                                                // z: Infinity,
+                                                // valveType: null,
+                                                // valveSystem: null,
+                                                // valveSizeMM: null,
+                                                center: filled.center,
+                                                bottomHeightM:  filled.bottomHeightM,
+                                                topHeightM:  filled.topHeightM,
+                                            }
+                                        ]
+                                    }
                                 }
-                            }
-                        };
+                            };
+                        }
                     }
                 }
             });
