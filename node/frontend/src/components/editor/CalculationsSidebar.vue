@@ -571,52 +571,62 @@ export default class CalculationsSidebar extends Vue {
                             return element !== undefined;
                         });
                         const maxRiserSize = Math.max.apply(null, data);
-                        
+              
                         if (maxRiserSize === riserSizeInMM) {
-                            let data: Array<any> = [];
-                            if (
-                                typeof result[lprops.abbreviation] !== "undefined" &&
-                                typeof result[lprops.abbreviation]["RISERS"] !== "undefined" &&
-                                typeof result[lprops.abbreviation]["RISERS"][system.name] !== "undefined" &&
-                                typeof result[lprops.abbreviation]["RISERS"][system.name]["risers"] !== "undefined"
-                            ) {
-                                data = result[lprops.abbreviation]["RISERS"][system.name]["risers"];
-                            }
+                 
+                            const filteredSizeMM =  riserEntries.filter(function(row: { sizeMM: any;}) {
+                                if (row.sizeMM === maxRiserSize) { return row }
+                            });
 
-                            result[lprops.abbreviation] = {
-                                ...result[lprops.abbreviation],
-                                    ["RISERS"]: 
-                                {
-                                    ...(result[lprops.abbreviation] && 
-                                        result[lprops.abbreviation]["RISERS"]),
-                                        [system.name]: 
+                            const filteredHeightAbove = filteredSizeMM.map(function(row: { heightAboveGround: any; }){ return row.heightAboveGround });
+                            const maxHeight = Math.max.apply(null, filteredHeightAbove);
+
+                            if (currentLevelCalc![1]?.heightAboveGround === maxHeight) {
+                                let data: Array<any> = [];
+                                if (
+                                    typeof result[lprops.abbreviation] !== "undefined" &&
+                                    typeof result[lprops.abbreviation]["RISERS"] !== "undefined" &&
+                                    typeof result[lprops.abbreviation]["RISERS"][system.name] !== "undefined" &&
+                                    typeof result[lprops.abbreviation]["RISERS"][system.name]["risers"] !== "undefined"
+                                ) {
+                                    data = result[lprops.abbreviation]["RISERS"][system.name]["risers"];
+                                }
+
+                                result[lprops.abbreviation] = {
+                                    ...result[lprops.abbreviation],
+                                        ["RISERS"]: 
                                     {
                                         ...(result[lprops.abbreviation] && 
-                                            result[lprops.abbreviation]["RISERS"] && 
-                                            result[lprops.abbreviation]["RISERS"][system.name]),
-                                            risers: 
-                                        [
-                                            ...data,
-                                            {
-                                                // fittingName: null,
-                                                networkType: "RISERS",
-                                                // pipeSystem: null,
-                                                // pipeMaterial: null,
-                                                pipeSizeMM: riserSizeInMM,
-                                                // pipeStart: null,
-                                                // pipeEnd: null,
-                                                // z: Infinity,
-                                                // valveType: null,
-                                                // valveSystem: null,
-                                                // valveSizeMM: null,
-                                                center: filled.center,
-                                                bottomHeightM:  filled.bottomHeightM,
-                                                topHeightM:  filled.topHeightM,
-                                            }
-                                        ]
+                                            result[lprops.abbreviation]["RISERS"]),
+                                            [system.name]: 
+                                        {
+                                            ...(result[lprops.abbreviation] && 
+                                                result[lprops.abbreviation]["RISERS"] && 
+                                                result[lprops.abbreviation]["RISERS"][system.name]),
+                                                risers: 
+                                            [
+                                                ...data,
+                                                {
+                                                    // fittingName: null,
+                                                    networkType: "RISERS",
+                                                    // pipeSystem: null,
+                                                    // pipeMaterial: null,
+                                                    pipeSizeMM: riserSizeInMM,
+                                                    // pipeStart: null,
+                                                    // pipeEnd: null,
+                                                    // z: Infinity,
+                                                    // valveType: null,
+                                                    // valveSystem: null,
+                                                    // valveSizeMM: null,
+                                                    center: filled.center,
+                                                    bottomHeightM:  filled.bottomHeightM,
+                                                    topHeightM:  filled.topHeightM,
+                                                }
+                                            ]
+                                        }
                                     }
-                                }
-                            };
+                                };
+                            }
                         }
                     }
                 }
