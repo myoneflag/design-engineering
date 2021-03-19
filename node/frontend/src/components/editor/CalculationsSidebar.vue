@@ -97,14 +97,13 @@ import { generateShareLink } from "../../api/share-document";
 import PdfSnapshotTool from "../../htmlcanvas/tools/pdf-snapshot-tool";
 import { GlobalStore } from "../../htmlcanvas/lib/global-store";
 import { exportBudgetReport } from "../../htmlcanvas/lib/budget-report/budget-report";
-import { getFields } from "../../../src/calculations/utils";
 import { globalStore } from "../../store/document/mutations";
 import { CalculationFilters, DocumentState } from "../../store/document/types";
 import { MainEventBus } from "../../store/main-event-bus";
 import { getEffectiveFilter } from "../../lib/utils";
 import { User } from "../../../../common/src/models/User";
 import { Catalog } from "../../../../common/src/api/catalog/types";
-import { Coord, Coord3D, NetworkType } from "../../../../common/src/api/document/drawing";
+import { Coord } from "../../../../common/src/api/document/drawing";
 import { fillPipeDefaultFields } from "../../../../common/src/api/document/entities/pipe-entity";
 import Pipe from "../../htmlcanvas/objects/pipe";
 import { fillDirectedValveFields } from "../../store/document/entities/fillDirectedValveFields";
@@ -297,17 +296,9 @@ export default class CalculationsSidebar extends Vue {
 
                     const pipeStart= this.globalStore.get(filled.endpointUid[0]) as BaseBackedConnectable;
                     const pipeEnd = this.globalStore.get(filled.endpointUid[1]) as BaseBackedConnectable;
-                    const res: Coord3D[] = [];
-
-                    let pipeStartPoint;
-                    const a = pipeStart.toWorldCoord({ x: 0, y: 0 });
-                    res.push({ x: a.x, y: a.y, z: (pipeStart.entity.calculationHeightM || 0) * 1000 });
-                    pipeStartPoint = a;
-
-                    let pipeEndPoint;
-                    const b = pipeEnd.toWorldCoord({ x: 0, y: 0 });
-                    res.push({ x: b.x, y: b.y, z: (pipeEnd.entity.calculationHeightM || 0) * 1000 });
-                    pipeEndPoint = b;
+                    
+                    const pipeStartPoint = pipeStart.toWorldCoord({ x: 0, y: 0 });
+                    const pipeEndPoint = pipeEnd.toWorldCoord({ x: 0, y: 0 });
     
                     let data: Array<any> = [];
                     if (
@@ -368,13 +359,9 @@ export default class CalculationsSidebar extends Vue {
                         }
                     });
                     const system = this.document.drawing.metadata.flowSystems.find((s) => s.uid === entity.systemUid);
-                    
-                    const res: Coord3D[] = [];
-                    let center;
-                    const b = o.toWorldCoord({ x: 0, y: 0 });
-                    res.push({ x: b.x, y: b.y, z: (o.entity.calculationHeightM || 0) * 1000 });
-                    center = b;
-
+            
+                    const center = o.toWorldCoord({ x: 0, y: 0 });
+                
                     let data: Array<any> = [];
                     if (
                         typeof result[lprops.abbreviation] !== "undefined" &&
@@ -418,6 +405,9 @@ export default class CalculationsSidebar extends Vue {
                         }
                     };
                 } else if (entity.type === EntityType.DIRECTED_VALVE) {
+                    const o = globalStore.get(entity.uid) as Pipe;
+                    const center = o.toWorldCoord({ x: 0, y: 0 });
+
                     const connections = this.globalStore.getConnections(entity.uid);
                     const zArray: Array<number> = [];
                     const sizeMMArray: Array<number> = [];
@@ -487,7 +477,7 @@ export default class CalculationsSidebar extends Vue {
                                             valveType: filled.valve.catalogId,
                                             valveSystem: [system.name],
                                             valveSizeMM: valveSizeMM || Math.min(...sizeMMArray),
-                                            center: filled.center,
+                                            center: center,
                                             z: lprops.floorHeightM + Math.min(...zArray)
                                         }
                                     ]
@@ -496,6 +486,8 @@ export default class CalculationsSidebar extends Vue {
                         };
                     }
                 } else if (entity.type === EntityType.BIG_VALVE) {
+                    const o = globalStore.get(entity.uid) as Pipe;
+                    const center = o.toWorldCoord();
                     let data: Array<any> = [];
                     if (
                         typeof result[lprops.abbreviation] !== "undefined" &&
@@ -532,7 +524,7 @@ export default class CalculationsSidebar extends Vue {
                                         valveType: entity.valve.type,
                                         valveSystem: ["HOT_COLD"],
                                         // valveSizeMM: null,
-                                        center: entity.center,
+                                        center: center,
                                         z: lprops.floorHeightM + entity.heightAboveFloorM,
                                     }
                                 ]
