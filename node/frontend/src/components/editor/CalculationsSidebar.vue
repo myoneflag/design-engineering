@@ -295,26 +295,20 @@ export default class CalculationsSidebar extends Vue {
                     const system = this.document.drawing.metadata.flowSystems.find((s) => s.uid === filled.systemUid);
                     const calc = this.globalStore.getOrCreateCalculation(o.entity);
 
-                    const pipeStartPoint = this.globalStore.get(filled.endpointUid[0]) as Fitting;
-                    const pipeEnd = this.globalStore.get(filled.endpointUid[1]);
-                    
+                    const pipeStart= this.globalStore.get(filled.endpointUid[0]) as BaseBackedConnectable;
+                    const pipeEnd = this.globalStore.get(filled.endpointUid[1]) as BaseBackedConnectable;
+                    const res: Coord3D[] = [];
+
+                    let pipeStartPoint;
+                    const a = pipeStart.toWorldCoord({ x: 0, y: 0 });
+                    res.push({ x: a.x, y: a.y, z: (pipeStart.entity.calculationHeightM || 0) * 1000 });
+                    pipeStartPoint = a;
+
                     let pipeEndPoint;
-                    if (pipeEnd.entity.type === EntityType.SYSTEM_NODE ) {
-                        console.log('node');
-                        const bo = this.globalStore.get(filled.endpointUid[1]) as BaseBackedConnectable;
-                        const b = bo.toWorldCoord({ x: 0, y: 0 });
-                        const res: Coord3D[] = [];
-
-                        res.push({ x: b.x, y: b.y, z: (bo.entity.calculationHeightM || 0) * 1000 });
-                        pipeEndPoint = b;
-
-                    } else {
-                        console.log('normal')
-                        const pipeEndAsFitting = pipeEnd as Fitting;
-                        pipeEndPoint = pipeEndAsFitting.entity.center;
-                    }
-                    
-
+                    const b = pipeEnd.toWorldCoord({ x: 0, y: 0 });
+                    res.push({ x: b.x, y: b.y, z: (pipeEnd.entity.calculationHeightM || 0) * 1000 });
+                    pipeEndPoint = b;
+    
                     let data: Array<any> = [];
                     if (
                         typeof result[lprops.abbreviation] !== "undefined" &&
@@ -375,6 +369,12 @@ export default class CalculationsSidebar extends Vue {
                     });
                     const system = this.document.drawing.metadata.flowSystems.find((s) => s.uid === entity.systemUid);
                     
+                    const res: Coord3D[] = [];
+                    let center;
+                    const b = o.toWorldCoord({ x: 0, y: 0 });
+                    res.push({ x: b.x, y: b.y, z: (o.entity.calculationHeightM || 0) * 1000 });
+                    center = b;
+
                     let data: Array<any> = [];
                     if (
                         typeof result[lprops.abbreviation] !== "undefined" &&
@@ -410,7 +410,7 @@ export default class CalculationsSidebar extends Vue {
                                         // valveType: null,
                                         // valveSystem: null,
                                         // valveSizeMM: null,
-                                        center: entity.center,
+                                        center: center,
                                         z: lprops.floorHeightM + Math.min(...zArray)
                                     }
                                 ]
@@ -580,7 +580,6 @@ export default class CalculationsSidebar extends Vue {
 
                             const filteredHeightAbove = filteredSizeMM.map(function(row: { heightAboveGround: any; }){ return row.heightAboveGround });
                             const maxHeight = Math.max.apply(null, filteredHeightAbove);
-
                             if (currentLevelCalc![1]?.heightAboveGround === maxHeight) {
                                 let data: Array<any> = [];
                                 if (
@@ -612,6 +611,7 @@ export default class CalculationsSidebar extends Vue {
                                                     // pipeSystem: null,
                                                     // pipeMaterial: null,
                                                     pipeSizeMM: riserSizeInMM,
+                                                    material: filled.material,
                                                     // pipeStart: null,
                                                     // pipeEnd: null,
                                                     // z: Infinity,
