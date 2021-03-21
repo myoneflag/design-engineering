@@ -88,7 +88,7 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
         res.push(
             {
                 property: "heightAboveGroundM",
-                title: "AHD",
+                title: "Height",
                 hasDefault: false,
                 isCalculated: false,
                 requiresInput: true,

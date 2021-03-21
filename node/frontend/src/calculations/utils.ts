@@ -613,7 +613,7 @@ export function getFields(
 ): CalculationField[] {
     switch (entity.type) {
         case EntityType.RISER:
-            return makeRiserCalculationFields(entity, doc, catalog);
+            return makeRiserCalculationFields(entity, doc, catalog, globalStore);
         case EntityType.PIPE:
             return makePipeCalculationFields(entity, doc, catalog, globalStore);
         case EntityType.FITTING:

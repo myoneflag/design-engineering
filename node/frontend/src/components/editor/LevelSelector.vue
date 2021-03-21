@@ -79,7 +79,7 @@
                                             class="border-right-0"
                                             @click="$event.stopPropagation()"
                                             v-b-tooltip.hover.top="{
-                                                title: 'Floor Height Above Sea (m)',
+                                                title: 'Floor Level (m)',
                                                 boundary: 'viewport'
                                             }"
                                             type="number"

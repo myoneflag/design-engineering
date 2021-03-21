@@ -19,7 +19,7 @@
         <b-row style="margin-bottom: 20px">
             <b-col cols="6">
                 <h4>
-                    Disabled Fixtures
+                    Non-Project Fixtures
                 </h4>
                 <b-list-group>
                     <b-list-group-item
@@ -33,7 +33,7 @@
             </b-col>
             <b-col cols="6">
                 <h4>
-                    Available Fixtures
+                    Project Fixtures
                 </h4>
                 <b-list-group>
                     <b-list-group-item
