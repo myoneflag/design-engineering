@@ -9,9 +9,9 @@ import {
 } from "../../src/calculations/utils";
 import { GridLineMode } from "../store/document/types";
 import { Catalog } from "../../../common/src/api/catalog/types";
-import { NetworkType } from "../../../common/src/api/document/drawing";
-import { convertMeasurementSystem, Units } from "../../../common/src/lib/measurements";
-import { StandardFlowSystemUids } from "../../../common/src/api/config";
+import { MeasurementSystem, NetworkType } from "../../../common/src/api/document/drawing";
+import { convertMeasurementSystem, in2MM, Units } from "../../../common/src/lib/measurements";
+import { assertUnreachable, StandardFlowSystemUids } from "../../../common/src/api/config";
 
 const SENSIBLE_UNITS_MM: number[] = [
     1,
@@ -51,6 +51,32 @@ const SENSIBLE_UNITS_MM: number[] = [
     8000000 // 1km to 8km
 ];
 
+const SENSIBLE_UNITS_INCH: number[] = [
+    1 / 8,
+    1 / 4,
+    1 / 2,
+    1,
+    2,
+    4,
+    6,
+    12, // 1 ft
+    24,
+    36, // 1 yard
+    36 * 2,
+    36 * 4,
+    36 * 8,
+    36 * 10,
+    36 * 16,
+    36 * 20,
+    36 * 40,
+    36 * 80,
+    36 * 160,
+    36 * 220,
+    36 * 440,
+    36 * 880,
+    36 * 1760, // 1 mile.
+];
+
 const MINOR_GRID_MIN_PX = 20;
 
 export const getFriendlyDistanceUnit = (mm: number): [string, number] => {
@@ -64,13 +90,31 @@ export const getFriendlyDistanceUnit = (mm: number): [string, number] => {
     return ["km", 10 * 100 * 1000];
 };
 
+export const getFriendlyDistanceUnitImperial = (inches: number): [string, number] => {
+    if (inches === 1 / 8) {
+        return ["/8 in", 1 / 8];
+    } else if (inches === 1 / 4) {
+        return ["/4 in", 1 / 4];
+    } else if (inches === 1 / 2) {
+        return ["/2 in", 1 / 2];
+    } else if (inches < 36 * 30) {
+        return ["in", 1];
+    } else if (inches < 36 * 1760) {
+        return ["ft", 12];
+    } else {
+        return ["mi", 36 * 1760];
+    }
+}
+
 export const drawPaperScale = (
     ctx: CanvasRenderingContext2D,
+    measurement: MeasurementSystem,
     pxPerMm: number,
     maxWidthPx: number = 4 * 2 * 50,
     x?: number,
     y?: number
 ) => {
+    const pxPerIn = in2MM(pxPerMm);
     ctx.setTransform(TM.identity());
     ctx.lineWidth = 1;
     // draw on bottom left
@@ -79,22 +123,40 @@ export const drawPaperScale = (
     // Draw ruler
     let smallestUnit: number = 0;
     let segments: number = 0;
-    for (const units of SENSIBLE_UNITS_MM) {
-        if (units * pxPerMm * 30 <= maxWidthPx) {
-            smallestUnit = units;
-            segments = 4;
-        }/*
-        if (units * pxPerMm * 40 * 2 <= maxWidthPx) {
-            smallestUnit = units;
-            segments = 5;
-        }*/
-        if (units * pxPerMm * 50 <= maxWidthPx) {
-            smallestUnit = units;
-            segments = 6;
-        }
-    }
+    let smallestUnitPx: number = 0;
+    switch (measurement) {
+        case MeasurementSystem.IMPERIAL:
+            for (const units of SENSIBLE_UNITS_INCH) {
+                if (units * pxPerIn * 30 <= maxWidthPx) {
+                    smallestUnit = units;
+                    segments = 4;
+                }
+                if (units * pxPerIn * 50 <= maxWidthPx) {
+                    smallestUnit = units;
+                    segments = 6;
+                }
+            }
+            smallestUnitPx = smallestUnit * pxPerIn;
+            break;
+        case MeasurementSystem.METRIC:
 
-    const smallW = smallestUnit * pxPerMm;
+            for (const units of SENSIBLE_UNITS_MM) {
+                if (units * pxPerMm * 30 <= maxWidthPx) {
+                    smallestUnit = units;
+                    segments = 4;
+                }
+                if (units * pxPerMm * 50 <= maxWidthPx) {
+                    smallestUnit = units;
+                    segments = 6;
+                }
+            }
+            smallestUnitPx = smallestUnit * pxPerMm;
+
+            break;
+        default:
+            assertUnreachable(measurement);
+    }
+    const smallW = smallestUnitPx;
     const medW = smallW * 5;
     const largeW = smallW * 10;
     const scaleHeight = 10;
@@ -133,7 +195,18 @@ export const drawPaperScale = (
     }
 
     // draw ruler text
-    const [uname, unit] = getFriendlyDistanceUnit(smallestUnit * 10);
+    let result = getFriendlyDistanceUnit(smallestUnit * 10);
+    switch (measurement) {
+        case MeasurementSystem.METRIC:
+            break;
+        case MeasurementSystem.IMPERIAL:
+            result = getFriendlyDistanceUnitImperial(smallestUnit * 10);
+            break;
+        default:
+            assertUnreachable(measurement);
+    }
+    const [uname, unit] = result;
+
     left = scaleLeftEdge;
     ctx.beginPath();
     ctx.font = "9px " + DEFAULT_FONT_NAME;

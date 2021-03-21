@@ -48,19 +48,20 @@ import * as _ from "lodash";
 import {initialDrainageProperties, initialDrawing, NetworkType} from "../../../../common/src/api/document/drawing";
 import {Choice, cloneSimple} from "../../../../common/src/lib/utils";
 import {
-    getInsulationMaterialChoicesWithThermalConductivity,
     INSULATION_JACKET_CHOICES,
     INSULATION_MATERIAL_CHOICES, InsulationJackets,
     InsulationMaterials,
     INSULATION_THICKNESS_MMKEMBLA, StandardFlowSystemUids, isGas, isDrainage, assertUnreachable
 } from "../../../../common/src/api/config";
-import { Units } from "../../../../common/src/lib/measurements";
+import { convertMeasurementSystem, Units } from "../../../../common/src/lib/measurements";
 import {Catalog} from "../../../../common/src/api/catalog/types";
 import { setPropertyByString } from "../../lib/utils";
 import {
     getDrainageMaterials,
     getWaterDrainageMaterials
 } from "../../../../common/src/api/document/entities/pipe-entity";
+import { evaluatePolynomial } from "../../../../common/src/lib/polynomials";
+import { THERMAL_CONDUCTIVITY } from "../../../../common/src/api/constants/air-properties";
 
 @Component({
     components: {SettingsFieldBuilder, FlowSystemPicker },
@@ -108,7 +109,8 @@ export default class FlowSystems extends Vue {
             );
 
             if (this.selectedSystem.returnIsInsulated) {
-               fields.push(['insulationMaterial', "Insulation Material", "choice", getInsulationMaterialChoicesWithThermalConductivity(this.selectedSystem.temperature)]);
+               fields.push(['insulationMaterial', "Insulation Material", "choice",
+                   this.getInsulationMaterialChoicesWithThermalConductivity(this.selectedSystem.temperature, this.document)]);
 
                 if (this.selectedSystem.insulationMaterial !== 'mmKemblaInsulation') {
                     fields.push(['insulationJacket', "Insulation Jacket", "choice", INSULATION_JACKET_CHOICES],);
@@ -334,6 +336,16 @@ export default class FlowSystems extends Vue {
 
     get risersMaterial() {
         return this.selectedSystem.networks.RISERS.material;
+    }
+
+    getInsulationMaterialChoicesWithThermalConductivity(tempC: number, doc: DocumentState) {
+
+        return INSULATION_MATERIAL_CHOICES.map((c) => {
+            const watts = evaluatePolynomial(THERMAL_CONDUCTIVITY[c.key as string], tempC + 273.15).toFixed(3);
+            const [units, tempConverted] =
+                convertMeasurementSystem(doc.drawing.metadata.units, Units.Celsius, tempC);
+            return {key: c.key, name: c.name + " (" + watts + " W/m.K @ " + (tempConverted as number).toFixed(3) + " " + units + ")"};
+        });
     }
 
     @Watch('risersMaterial')

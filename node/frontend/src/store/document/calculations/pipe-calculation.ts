@@ -221,6 +221,8 @@ export function makePipeCalculationFields(
             category: FieldCategory.Velocity,
             systemUid: entity.systemUid
         },
+
+        /* TODO: temperature loss calculation for hot water loop.
         {
             property: "temperatureRange",
             title: "Temperature Range",
@@ -228,7 +230,7 @@ export function makePipeCalculationFields(
             units: Units.Celsius,
             category: FieldCategory.Temperature,
             systemUid: entity.systemUid
-        }
+        }*/
 
         /*
         {

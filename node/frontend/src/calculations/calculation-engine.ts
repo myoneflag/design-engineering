@@ -110,6 +110,7 @@ import {calculateGas} from "./gas";
 import {PlantType, ReturnSystemPlant} from "../../../common/src/api/document/entities/plants/plant-types";
 import {NodeProps} from '../../../common/src/models/CustomEntity';
 import {processDrainage, sizeDrainagePipe} from "./drainage";
+import { convertMeasurementSystem, convertMeasurementToMetric, Units } from "../../../common/src/lib/measurements";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -2633,7 +2634,11 @@ export default class CalculationEngine implements CalculationContext {
 
                             if (maxWorking !== null) {
                                 if (actualPressure > maxWorking) {
-                                    calc.warning = 'Max pressure ' + maxWorking + 'kpa exceeded (' + actualPressure + ' kpa)';
+                                    const [units, maxWorkingDisplay] =
+                                        convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, maxWorking);
+                                    const [_, actualPressureDisplay] =
+                                        convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, actualPressure);
+                                    calc.warning = `Max pressure ${maxWorkingDisplay}${units} exceeded (${actualPressureDisplay}${actualPressure})`;
                                 }
                             }
                         }
@@ -2664,7 +2669,9 @@ export default class CalculationEngine implements CalculationContext {
                     }
                     if (maxFlowRateLS !== null) {
                         if ((calc.hotPeakFlowRate || 0) > maxFlowRateLS || (calc.coldPeakFlowRate || 0) > maxFlowRateLS) {
-                            calc.warning = 'Max Flow Rate ' + maxFlowRateLS + ' L/s exceeded';
+                            const [units, converted] =
+                                convertMeasurementSystem(this.doc.drawing.metadata.units, Units.LitersPerSecond, maxFlowRateLS);
+                            calc.warning = `Max Flow Rate ${converted}${units} exceeded`;
                         }
                     }
                     break;
@@ -2682,20 +2689,23 @@ export default class CalculationEngine implements CalculationContext {
                             }
                         } else if ((calculation.inlets[suid].pressureKPA || 0) < e.roughIns[suid].minPressureKPA!) {
                             const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === suid)!;
-
+                            const [units, converted] =
+                                convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, e.roughIns[suid].minPressureKPA);
                             calculation.warning =
                                 "Not enough " +
                                 system.name +
                                 " pressure. Required: " +
-                                e.roughIns[suid].minPressureKPA!.toFixed(0) +
-                                " kPa";
+                                (converted as number).toFixed(0) +
+                                units;
                         } else if ((calculation.inlets[suid].staticPressureKPA || 0) > e.roughIns[suid].maxPressureKPA!) {
                             const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === suid)!;
+                            const [units, converted] =
+                                convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, e.roughIns[suid].maxPressureKPA);
                             calculation.warning =
                                 system.name +
                                 " pressure overload. Max: " +
-                                e.roughIns[suid].maxPressureKPA!.toFixed(0) +
-                                " kPa";
+                                (converted as number).toFixed(0) +
+                                units;
                         }
                     }
                     break;
@@ -2727,7 +2737,8 @@ export default class CalculationEngine implements CalculationContext {
                                 const maxInletPressure = parseCatalogNumberExact(lowerBoundTable(this.catalog.prv.size[manufacturer], calculation.sizeMM, (prv) => Number(prv.diameterNominalMM))!.maxInletPressureKPA);
 
                                 if (maxInletPressure !== null && inPressure > maxInletPressure) {
-                                    calculation.warning = 'Max pressure of ' + maxInletPressure.toFixed(2) + ' kpa exceeded';
+                                    const [units, converted] = convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, maxInletPressure);
+                                    calculation.warning = 'Max pressure of ' + (converted as number).toFixed(2) + units + ' exceeded';
                                 }
                             }
 
@@ -2738,13 +2749,19 @@ export default class CalculationEngine implements CalculationContext {
                             ) {
                                 const ratio = parseCatalogNumberExact(lowerBoundTable(this.catalog.prv.size[manufacturer], calculation.sizeMM, (prv) => Number(prv.diameterNominalMM))!.maxPressureDropRatio);
                                 if (ratio !== null && inPressure > o.entity.valve.targetPressureKPA * ratio) {
+                                    const [units, inPressureConverted] =
+                                        convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, inPressure);
+                                    const [_, targetConverted] =
+                                        convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, o.entity.valve.targetPressureKPA);
                                     calculation.warning =
                                         "Pressure of " +
-                                        inPressure.toFixed(2) +
+                                        (inPressureConverted as number).toFixed(2) +
+                                        units +
                                         " is more than " +
                                         ratio +
                                         "x the target pressure of " +
-                                        o.entity.valve.targetPressureKPA;
+                                        targetConverted +
+                                        units;
                                 }
                             }
                             break;
@@ -2761,18 +2778,25 @@ export default class CalculationEngine implements CalculationContext {
                     const filled = fillDefaultLoadNodeFields(this.doc, this.globalStore, o.entity, this.catalog, this.nodes);
                     const calc = this.globalStore.getOrCreateCalculation(filled);
                     if (calc.pressureKPA !== null && filled.maxPressureKPA !== null && calc.pressureKPA > filled.maxPressureKPA!) {
+                        const [units, pConverted] =
+                            convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, calc.pressureKPA);
+                        const [_, mpConverted] =
+                            convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, filled.maxPressureKPA);
+
                         calc.warning = 'Max pressure exceeded ('
-                            + calc.pressureKPA.toFixed(2) + 'kpa > '
-                            + filled.maxPressureKPA!.toFixed(2) + 'kpa';
+                            + (pConverted as number).toFixed(2) + units + ' > '
+                            + (mpConverted as number).toFixed(2) + units;
                     } else if (calc.pressureKPA !== null && filled.minPressureKPA !== null && calc.pressureKPA < filled.minPressureKPA) {
                         const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === filled.systemUidOption)!;
-                        
+
+                        const [units, converted] =
+                            convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, filled.minPressureKPA);
                         calc.warning =
                                 "Not enough " +
                                 system.name +
                                 " pressure. Required: " +
-                                filled.minPressureKPA!.toFixed(0) +
-                                " kPa";
+                                (converted as number).toFixed(0) +
+                                units;
                     }
                     break;
                 }
