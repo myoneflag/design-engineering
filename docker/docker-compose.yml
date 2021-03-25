@@ -13,6 +13,17 @@ services:
         ports:
             - 5432:5432
 
+    # ActiveMQ instance
+    # hostname: mq
+    mq:
+        image: webcenter/activemq
+        restart: always
+        environment: 
+            - ACTIVEMQ_ADMIN_LOGIN=admin
+            - ACTIVEMQ_ADMIN_PASSWORD=admin
+        ports:
+            - 8161:8161
+            - 61614:61614 #default WS transport protocol port open
 
     backend:
         build: 
