@@ -1,6 +1,8 @@
 version: '3.2'
 
 services:
+    # Postgres DB instance
+    # hostname: db
     db:
         image: postgres
         restart: always
@@ -8,8 +10,9 @@ services:
             - POSTGRES_PASSWORD=postgres
             - POSTGRES_DB=h2x
             - POSTGRES_USER=postgres
-        volumes:
-            - /opt/h2x/.h2xdb/:/var/lib/postgresql/data
+        ports:
+            - 5432:5432
+
 
     backend:
         build: 
