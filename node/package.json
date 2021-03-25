@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "setup_local": "npm install && cd frontend && npm install && cd ../backend && npm install"
   },
   "author": "",
   "license": "ISC",
