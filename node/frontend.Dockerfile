@@ -1,23 +1,22 @@
 from node:12
 
-run npm install -g serve
+run apt-get update
+run apt-get upgrade -y
 
-workdir /usr/src/app/backend
-copy ./backend/package*.json ./backend/npm*.json ./
+add . /usr/src/app
+workdir /usr/src/app
 run npm install
 
 workdir /usr/src/app/frontend
-copy ./frontend/package*.json ./frontend/npm*.json ./
 run npm install
 
-workdir /usr/src/app/
-copy ./package*.json ./npm*.json ./
-run npm install
-
-workdir /usr/src/app/frontend
-
-copy ./ ../
-run npm run build
 expose 80
 env PORT 80
-cmd [ "serve", "--single", "./dist" ]
+
+# PRODUCTION 
+# run npm install -g serve
+# run npm run build
+# cmd [ "serve", "--single", "./dist" ]
+
+# DEVELOPMENT
+cmd [ "npm", "run", "serve" ]
