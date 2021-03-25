@@ -38,6 +38,13 @@ services:
             - db
         ports:
             - 8012:80
+        volumes:
+            # anonymous volumes to prevent container folders being overwritten by host folders
+            - /usr/src/app/node_modules
+            - /usr/src/app/backend/node_modules
+            - /usr/src/app/backend/dist
+            # current code as bind volume
+            - ../node/:/usr/src/app/
 
     frontend:
         build:
@@ -47,6 +54,13 @@ services:
         restart: always
         ports:
             - 8011:80
+        volumes:
+            # anonymous volumes to prevent container folders being overwritten by host folders
+            - /usr/src/app/node_modules
+            - /usr/src/app/frontend/node_modules
+            - /usr/src/app/frontend/dist
+            # current code as bind volume
+            - ../node/:/usr/src/app/
 
     backup:
         build:
@@ -74,4 +88,3 @@ services:
         depends_on:
             - backend
             - frontend
-        
