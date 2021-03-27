@@ -29,6 +29,7 @@ export enum Units {
     GallonsPerMinute = "gal/min",
     USGallonsPerMinute = "US gal/min", // wtf usa
     Inches = "in",
+    InchesShort = "″",
     Feet = "ft",
     FeetPerSecondSquared = "ftt/s\u0178",
     Psi = "psi",
@@ -151,6 +152,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
             assertUnreachable(unitsPrefs.volumeMeasurementSystem);
             return [Units.None, 0];
         case Units.Inches:
+        case Units.InchesShort:
             switch (unitsPrefs.lengthMeasurementSystem) {
                 case MeasurementSystem.METRIC:
                     return [Units.Millimeters, in2MM(value)];
@@ -420,9 +422,9 @@ export function convertPipeDiameterFromMetric(unitPrefs: UnitsParameters, valueR
                     prefix = b.split('x')[0] + ' × ';
                     b = b.split('x')[1];
                 }
-                return [Units.Inches, prefix + closestImperialPipe(Number(b)) + ' + ' + closestImperialPipe(Number(c))];
+                return [Units.Inches, prefix + closestImperialPipe(Number(b)) + '″ + ' + closestImperialPipe(Number(c)) + "″"];
             }
-            return [Units.Inches, closestImperialPipe(valueMM)];
+            return [Units.InchesShort, closestImperialPipe(valueMM) + "″"];
     }
     assertUnreachable(unitPrefs.lengthMeasurementSystem);
 }

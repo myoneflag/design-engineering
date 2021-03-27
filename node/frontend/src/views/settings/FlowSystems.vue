@@ -256,10 +256,13 @@ export default class FlowSystems extends Vue {
 
             const pipeSizes: { [key: string]: Array<{key: number, name: string}> } = {};
             Object.entries(this.catalog.pipes).map(([key, pipeProp]) => {
-                pipeSizes[key] = Object.keys(pipeProp.pipesBySize.generic).map(x => ({
-                    key: +x,
-                    name: x + "mm",
-                }));
+                pipeSizes[key] = Object.keys(pipeProp.pipesBySize.generic).map(x => {
+                    const [units, value] = convertMeasurementSystem(this.document.drawing.metadata.units, Units.PipeDiameterMM, x);
+                    return {
+                        key: +x,
+                        name:  value + units,
+                    }
+                });
             });
 
             for (const netKey of Object.keys(this.selectedSystem.networks)) {
