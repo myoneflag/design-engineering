@@ -361,7 +361,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                         name: "Valves By Size",
                         table: {
                             primaryName: "Diameter",
-                            primaryUnits: Units.Millimeters,
+                            primaryUnits: Units.PipeDiameterMM,
                             columns: [
                                 ["minInletPressureKPA", "Min. Inlet Pressure", Units.KiloPascals],
                                 ["maxInletPressureKPA", "Max. Inlet Pressure", Units.KiloPascals],

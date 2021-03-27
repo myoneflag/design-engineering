@@ -50,7 +50,8 @@ export enum Units {
 
 }
 
-export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, units: Units, value: number): [Units, number | string | null] {
+export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, units: Units, valueRaw: number | string): [Units, number | string | null] {
+    const value = Number(valueRaw);
     switch (units) {
         case Units.None:
         case Units.Kv:
@@ -239,7 +240,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
             assertUnreachable(unitsPrefs.volumeMeasurementSystem);
             return [Units.None, 0];
         case Units.PipeDiameterMM:
-            return convertPipeDiameterFromMetric(unitsPrefs, value);
+            return convertPipeDiameterFromMetric(unitsPrefs, valueRaw);
         case Units.FurlongsPerFortnight:
             switch (unitsPrefs.velocityMeasurementSystem) {
                 case VelocityMeasurementSystem.METRIC:
@@ -298,7 +299,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
     return [Units.None, 0];
 }
 
-export function convertMeasurementSystem(unitsPrefs: UnitsParameters, units: Units, value: number | null): [Units, number | null | string] {
+export function convertMeasurementSystem(unitsPrefs: UnitsParameters, units: Units, value: number | string | null): [Units, number | null | string] {
     if (value === null) {
         const [newUnits] = convertMeasurementSystemNonNull(unitsPrefs, units, 1);
         return [newUnits, null];
@@ -356,20 +357,20 @@ export function f2C(fahrenheit: number) {
 }
 
 const validConverts: { [key: number]: string } = {
-    0.25: "1/4",
-    0.5: "1/2",
-    0.75: "3/4",
+    0.25: "¼",
+    0.5: "½",
+    0.75: "¾",
     1: "1",
-    1.25: "1 1/4",
-    1.5: "1 1/2",
+    1.25: "1¼",
+    1.5: "1½",
     2: "2",
-    2.5: "2 1/2",
+    2.5: "2½",
     3: "3",
-    3.5: "3 1/2",
+    3.5: "3½",
     4: "4",
-    4.5: "4 1/2",
+    4.5: "4½",
     5: "5",
-    5.5: "5.5",
+    5.5: "5½",
     6: "6",
     7: "7",
     8: "8",
@@ -385,25 +386,43 @@ const validConverts: { [key: number]: string } = {
     18: "18"
 };
 
-export function convertPipeDiameterFromMetric(unitPrefs: UnitsParameters, valueMM: number | null): [Units, number | string | null] {
+function closestImperialPipe(valueMM: number) {
+
+    let closestDist = Infinity;
+    let value: string | number | null = mm2IN(valueMM);
+
+    const inches = mm2IN(valueMM);
+    for (const [num, val] of Object.entries(validConverts)) {
+        if (Math.abs(Number(num) - inches) < closestDist) {
+            closestDist = Math.abs(Number(num) - inches);
+            value = val;
+        }
+    }
+
+    return value;
+}
+
+
+export function convertPipeDiameterFromMetric(unitPrefs: UnitsParameters, valueRawMM: number | string | null): [Units, number | string | null] {
+    const valueMM = Number(valueRawMM);
     switch (unitPrefs.lengthMeasurementSystem) {
         case MeasurementSystem.METRIC:
-            return [Units.Millimeters, valueMM];
+            return [Units.Millimeters, valueRawMM];
         case MeasurementSystem.IMPERIAL:
-            if (valueMM === null) {
+            if (valueMM === null || valueRawMM === null) {
                 return [Units.Inches, valueMM];
             }
-            let closestDist = Infinity;
-            let value: string | number | null = mm2IN(valueMM);
-
-            const inches = mm2IN(valueMM);
-            for (const [num, val] of Object.entries(validConverts)) {
-                if (Math.abs(Number(num) - inches) < closestDist) {
-                    closestDist = Math.abs(Number(num) - inches);
-                    value = val;
+            if (typeof valueRawMM === 'string' && valueRawMM.includes('+')) {
+                // parse [Ax]B+C syntax
+                let [b, c] = valueRawMM.split('+');
+                let prefix = '';
+                if (b.includes('x')) {
+                    prefix = b.split('x')[0] + ' × ';
+                    b = b.split('x')[1];
                 }
+                return [Units.Inches, prefix + closestImperialPipe(Number(b)) + ' + ' + closestImperialPipe(Number(c))];
             }
-            return [Units.Inches, value];
+            return [Units.Inches, closestImperialPipe(valueMM)];
     }
     assertUnreachable(unitPrefs.lengthMeasurementSystem);
 }

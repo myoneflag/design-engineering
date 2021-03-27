@@ -392,11 +392,11 @@ export default class CatalogView extends Vue {
 
                 const item: any = {};
                 if (table.primaryName) {
-                    if (table.primaryUnits && !isNaN(Number(key))) {
+                    if (table.primaryUnits) {
                         item[table.primaryName] = convertMeasurementSystem(
                             this.document.drawing.metadata.units,
                             table.primaryUnits,
-                            Number(key),
+                            key,
                         )[1];
                         if (!isNaN(item[table.primaryName])) {
                             item[table.primaryName] = parseFloat(Number(item[table.primaryName]).toFixed(5));
@@ -482,11 +482,11 @@ export default class CatalogView extends Vue {
                 const item: any = {};
 
                 if (table.primaryName) {
-                    if (table.primaryUnits && !isNaN(Number(key))) {
+                    if (table.primaryUnits) {
                         item[table.primaryName] = convertMeasurementSystem(
                             this.document.drawing.metadata.units,
                             table.primaryUnits,
-                            Number(key),
+                            key,
                         )[1];
                         if (!isNaN(item[table.primaryName])) {
                             item[table.primaryName] = parseFloat(Number(item[table.primaryName]).toFixed(5));
@@ -512,7 +512,7 @@ export default class CatalogView extends Vue {
                         item[col[1]] = convertMeasurementSystem(
                             this.document.drawing.metadata.units,
                             col[2],
-                            Number(display),
+                            display as any,
                         )[1];
                         if (!isNaN(item[col[1]])) {
                             item[col[1]] = parseFloat(Number(item[col[1]]).toFixed(5));
