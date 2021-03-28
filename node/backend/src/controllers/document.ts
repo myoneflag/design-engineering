@@ -70,11 +70,11 @@ export class DocumentController {
                 doc.organization = org1;
                 doc.createdBy = user;
                 doc.createdOn = new Date();
-                doc.metadata = cloneSimple(initialDrawing.metadata.generalInfo);
+                doc.locale = toSupportedLocale(req.body.locale);
+                doc.metadata = cloneSimple(initialDrawing(doc.locale).metadata.generalInfo);
                 doc.version = CURRENT_VERSION;
                 doc.state = DocumentStatus.ACTIVE;
                 doc.shareDocument = sd;
-                doc.locale = toSupportedLocale(req.body.locale);
                 await doc.save();
 
                 res.status(200).send({
@@ -91,11 +91,11 @@ export class DocumentController {
             doc.organization = null;
             doc.createdBy = user;
             doc.createdOn = new Date();
-            doc.metadata = cloneSimple(initialDrawing.metadata.generalInfo);
+            doc.locale = toSupportedLocale(req.body.locale);
+            doc.metadata = cloneSimple(initialDrawing(doc.locale).metadata.generalInfo);
             doc.version = CURRENT_VERSION;
             doc.state = DocumentStatus.ACTIVE;
             doc.shareDocument = sd;
-            doc.locale = toSupportedLocale(req.body.locale);
             await doc.save();
 
             res.status(200).send({
@@ -302,8 +302,8 @@ export class DocumentController {
                 }
                 doc.nextOperationIndex = lastOrderIndex + 1;
 
-                const drawing = cloneSimple(initialDrawing);
-                const drawingWithTitle = cloneSimple(initialDrawing);
+                const drawing = initialDrawing(doc.locale);
+                const drawingWithTitle = initialDrawing(doc.locale);
                 drawingWithTitle.metadata.generalInfo.title = doc.metadata.title;
 
 
@@ -482,7 +482,7 @@ router.ws("/:id/websocket", (ws, req) => {
 
 
                 let operations: Operation[] = [];
-                let drawing: DrawingState = cloneSimple(initialDrawing);
+                let drawing: DrawingState = initialDrawing(doc.locale);
                 let lastOpId = -1;
                 // Now that we have hooked update handlers, Load document. Reconstruct the state, and send the
                 // initial document state.
@@ -497,7 +497,7 @@ router.ws("/:id/websocket", (ws, req) => {
 
 
                     // form document to get snapshot
-                    drawing = cloneSimple(initialDrawing);
+                    drawing = initialDrawing(doc.locale);
                     for (const op of operations) {
                         if (op.operation.type === OPERATION_NAMES.DIFF_OPERATION) {
                             applyDiffNative(drawing, op.operation.diff);
@@ -645,7 +645,7 @@ router.ws("/share/:id/websocket", async (ws, req) => {
     ws.on("close", closeHandler);
     
     let operations: Operation[] = [];
-    let drawing: DrawingState = cloneSimple(initialDrawing);
+    let drawing: DrawingState = initialDrawing(doc.locale);
     let lastOpId = -1;
     // Now that we have hooked update handlers, Load document. Reconstruct the state, and send the
     // initial document state.
@@ -658,7 +658,7 @@ router.ws("/share/:id/websocket", async (ws, req) => {
             .getMany();
 
         // form document to get snapshot
-        drawing = cloneSimple(initialDrawing);
+        drawing = initialDrawing(doc.locale);
         for (const op of operations) {
             if (op.operation.type === OPERATION_NAMES.DIFF_OPERATION) {
                 applyDiffNative(drawing, op.operation.diff);

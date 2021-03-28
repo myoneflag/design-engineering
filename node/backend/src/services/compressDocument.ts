@@ -45,8 +45,8 @@ export async function compressDocumentIfRequired(doc: Document) {
 
         console.log("...with " + ops.length + " operations");
 
-        let oldDoc = cloneSimple(initialDrawing);
-        let currentDrawing = cloneSimple(initialDrawing);
+        let oldDoc = initialDrawing(doc.locale);
+        let currentDrawing = initialDrawing(doc.locale);
         let oldOp: Operation | undefined = undefined;
         let opsSinceLast: Operation[] = [];
         let numDiffOpsSinceLast = 0;

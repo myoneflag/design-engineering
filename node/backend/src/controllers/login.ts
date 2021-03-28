@@ -265,7 +265,7 @@ export class LoginController {
         op1.document = Promise.resolve(doc);
         op1.dateTime = now;
         op1.blame = null;
-        op1.operation = diffState(initialDrawing, EXAMPLE_DRAWING, undefined)[0];
+        op1.operation = diffState(initialDrawing(doc.locale), EXAMPLE_DRAWING, undefined)[0];
         op1.orderIndex = 0;
         await op1.save();
         const op2 = Operation.create();

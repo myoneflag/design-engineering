@@ -1,5 +1,6 @@
-import {DrawableEntityConcrete} from "./entities/concrete-entity";
+import { DrawableEntityConcrete } from "./entities/concrete-entity";
 import {
+    assertUnreachable,
     ComponentPressureLossMethod,
     EN12056FrequencyFactor,
     InsulationJackets,
@@ -12,9 +13,10 @@ import {
     SupportedPsdStandards
 } from "../config";
 import RiserEntity from "./entities/riser-entity";
-import {EntityType} from "./entities/types";
-import {Choice, cloneSimple, DeepPartial} from "../../lib/utils";
-import {PriceTable} from "../catalog/price-table";
+import { EntityType } from "./entities/types";
+import { Choice, cloneSimple, DeepPartial } from "../../lib/utils";
+import { PriceTable } from "../catalog/price-table";
+import { SupportedLocales } from "../locale";
 
 export interface Coord {
     x: number;
@@ -541,7 +543,64 @@ export const DRAINAGE_FLOW_SYSTEMS: FlowSystemParameters[] = [
     }
 ];
 
-export const initialDrawing: DrawingState = {
+export function initialDrawing(locale: SupportedLocales): DrawingState {
+    const result = cloneSimple(initialAustralianDrawing);
+    switch (locale) {
+        case SupportedLocales.AU:
+            break;
+        case SupportedLocales.UK:
+            result.metadata.calculationParams.psdMethod = SupportedPsdStandards.bs806;
+            // 0 index is cold water.
+            result.metadata.flowSystems[0].temperature = 10;
+
+            break;
+        case SupportedLocales.US:
+            result.metadata.units = {
+                energyMeasurementSystem: EnergyMeasurementSystem.IMPERIAL,
+                lengthMeasurementSystem: MeasurementSystem.IMPERIAL,
+                pressureMeasurementSystem: MeasurementSystem.IMPERIAL,
+                temperatureMeasurementSystem: MeasurementSystem.IMPERIAL,
+                velocityMeasurementSystem: VelocityMeasurementSystem.IMPERIAL,
+                volumeMeasurementSystem: VolumeMeasurementSystem.IMPERIAL
+            };
+
+            result.metadata.calculationParams.psdMethod = SupportedPsdStandards.upc2018FlushTanks;
+
+            // hot water is 140 F
+            result.metadata.flowSystems[1].temperature = 60;
+            result.metadata.flowSystems[1].insulationThicknessMM = 25.4;
+
+            // warm water
+            result.metadata.flowSystems[2].temperature = 48.888888888;
+
+            // cold water
+            result.metadata.flowSystems[0].temperature = 21.11111111;
+
+            // warm and hot velocity
+            result.metadata.flowSystems[1].networks.RISERS.velocityMS =
+                result.metadata.flowSystems[1].networks.RETICULATIONS.velocityMS =
+                    result.metadata.flowSystems[2].networks.RISERS.velocityMS =
+                        result.metadata.flowSystems[2].networks.RETICULATIONS.velocityMS = 1.524;
+
+
+            // cold water velocity
+            result.metadata.flowSystems[0].networks.RISERS.velocityMS =
+                result.metadata.flowSystems[1].networks.RETICULATIONS.velocityMS = 2.4384;
+
+            // all connections are the same.
+            result.metadata.flowSystems[0].networks.CONNECTIONS.velocityMS =
+                result.metadata.flowSystems[1].networks.CONNECTIONS.velocityMS =
+                    result.metadata.flowSystems[1].networks.CONNECTIONS.velocityMS = 2.7432;
+
+            break;
+        default:
+            assertUnreachable(locale);
+    }
+    return result;
+}
+
+
+export const initialAustralianDrawing: DrawingState = {
     metadata: {
         generalInfo: {
             title: "Untitled",

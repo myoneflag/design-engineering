@@ -108,8 +108,8 @@ export class DocumentUpgrader {
 
             //await new Promise((res) => setTimeout(res, 5000));
 
-            const drawing = cloneSimple(initialDrawing);
-            let upgraded = cloneSimple(initialDrawing);
+            const drawing = initialDrawing(doc.locale);
+            let upgraded = initialDrawing(doc.locale);
 
 
             let ops: Operation[];

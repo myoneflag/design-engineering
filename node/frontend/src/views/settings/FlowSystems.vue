@@ -40,7 +40,7 @@ import {Units} from "../../../../common/src/lib/measurements";
 import Vue from "vue";
 import Component from "vue-class-component";
 import { Watch } from 'vue-property-decorator'
-import { DocumentState, initialDocumentState } from "../../../src/store/document/types";
+import { DocumentState } from "../../../src/store/document/types";
 import SettingsFieldBuilder from "../../../src/components/editor/lib/SettingsFieldBuilder.vue";
 import uuid from "uuid";
 import FlowSystemPicker from "../../../src/components/editor/FlowSystemPicker.vue";
@@ -413,7 +413,7 @@ export default class FlowSystems extends Vue {
                 color: { hex: "#FCDC00" },
                 uid: uuid(),
                 fluid: "water",
-                networks: cloneSimple(initialDrawing.metadata.flowSystems[0].networks),
+                networks: cloneSimple(initialDrawing(this.document.locale).metadata.flowSystems[0].networks),
                 hasReturnSystem: false,
                 returnIsInsulated: false,
                 returnMaxVelocityMS: 1,

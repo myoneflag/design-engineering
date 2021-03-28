@@ -168,8 +168,8 @@ export function blankDiffFilter() {
 }
 
 export const initialDocumentState: DocumentState = {
-    committedDrawing: cloneSimple(initialDrawing),
-    drawing: cloneSimple(initialDrawing),
+    committedDrawing: {} as DrawingState,
+    drawing: {} as DrawingState, // This gets filled in upon loading after locales are known.
     undoStack: [],
     undoIndex: 0,
     diffFilter: blankDiffFilter(),

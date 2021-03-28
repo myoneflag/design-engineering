@@ -1,4 +1,9 @@
-import {DRAINAGE_FLOW_SYSTEMS, DrawingState, initialDrainageProperties, initialDrawing} from "./document/drawing";
+import {
+    DRAINAGE_FLOW_SYSTEMS,
+    DrawingState,
+    initialAustralianDrawing,
+    initialDrainageProperties
+} from "./document/drawing";
 import {EntityType} from "./document/entities/types";
 import {InsulationJackets, InsulationMaterials, StandardFlowSystemUids, SupportedPsdStandards} from "./config";
 import {PlantType} from "./document/entities/plants/plant-types";
@@ -26,7 +31,7 @@ export function upgrade9to10(original: DrawingState) {
 
 export function upgrade10to11(original: DrawingState) {
     if (original.metadata.units === undefined) {
-        original.metadata.units = cloneSimple(initialDrawing.metadata.units);
+        original.metadata.units = cloneSimple(initialAustralianDrawing.metadata.units);
     }
 }
 
@@ -68,13 +73,13 @@ export function upgrade12to13(original: DrawingState) {
 
 export function upgrade13to14(original: DrawingState) {
     if (original.metadata.catalog === undefined) {
-        original.metadata.catalog = cloneSimple(initialDrawing.metadata.catalog);
+        original.metadata.catalog = cloneSimple(initialAustralianDrawing.metadata.catalog);
     }
 }
 
 export function upgrade14to15(original: DrawingState) {
     if (original.metadata.priceTable === undefined) {
-        original.metadata.priceTable = cloneSimple(initialDrawing.metadata.priceTable);
+        original.metadata.priceTable = cloneSimple(initialAustralianDrawing.metadata.priceTable);
     }
 }
 

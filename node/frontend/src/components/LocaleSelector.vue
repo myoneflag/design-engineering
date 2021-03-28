@@ -5,29 +5,44 @@
              :src="require('../assets/flags/UK.svg')"
         />
 
-        <img v-if="!isActiveLocale(SupportedLocales.UK)"
-             class="flag"
-             :src="require('../assets/flags/UK.svg')"
-             v-b-tooltip="'Change locale to UK'"
-             @click="changeLocale(SupportedLocales.UK)"
-        />
         <img v-if="isActiveLocale(SupportedLocales.AU)"
              class="flag active"
              :src="require('../assets/flags/AU.svg')"
-        />
-        <img v-if="!isActiveLocale(SupportedLocales.AU)"
-             class="flag"
-             :src="require('../assets/flags/AU.svg')"
-             v-b-tooltip="'Change locale to AU'"
-             @click="changeLocale(SupportedLocales.AU)"
         />
         <img v-if="isActiveLocale(SupportedLocales.US)"
              class="flag active"
              :src="require('../assets/flags/US.svg')"
         />
 
-        <img v-if="!isActiveLocale(SupportedLocales.US)"
+        <img v-if="isActiveLocale(SupportedLocales.UK)"
+             class="flag disabled"
+             :src="require('../assets/flags/UK.svg')"
+        />
+        <img
+            v-else
              class="flag"
+             :src="require('../assets/flags/UK.svg')"
+             v-b-tooltip="'Change locale to UK'"
+             @click="changeLocale(SupportedLocales.UK)"
+        />
+        <img v-if="isActiveLocale(SupportedLocales.AU)"
+             class="flag disabled"
+             :src="require('../assets/flags/AU.svg')"
+        />
+        <img
+            v-else
+            class="flag"
+             :src="require('../assets/flags/AU.svg')"
+             v-b-tooltip="'Change locale to AU'"
+             @click="changeLocale(SupportedLocales.AU)"
+        />
+        <img v-if="isActiveLocale(SupportedLocales.US)"
+             class="flag disabled"
+             :src="require('../assets/flags/US.svg')"
+        />
+        <img
+            v-else
+            class="flag"
              :src="require('../assets/flags/US.svg')"
              v-b-tooltip="'Change locale to US'"
              @click="changeLocale(SupportedLocales.US)"
@@ -80,25 +95,24 @@ export default class LocaleSelector extends Vue {
         display: block;
         left: 0;
         .flag {
-            width: 70px;
+            width: 60px;
             padding: 5px;
             display: none;
             &.active {
                 display: inline-block;
-                transition: all 0.5s;
+                width: 70px;
             }
         }
 
         &:hover {
             z-index: 1000;
-            margin-top: -1px;
             img.flag {
-                filter: grayscale(80%);
+                filter: opacity(20%);
                 display: inline-block;
-                &:hover, &.active {
+                &:hover, &.disabled, &.active {
                     filter: none;
                 }
-                &.active {
+                &.disabled {
                     outline: 1px solid blue;
                 }
             }
