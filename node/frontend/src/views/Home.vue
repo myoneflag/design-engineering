@@ -2,6 +2,7 @@
     <div>
         <MainNavBar :profile="profile"></MainNavBar>
         <div style="overflow-y: auto; overflow-x: hidden; height: calc(100vh - 70px)" :class="[ (profile && !profile.email_verified_at) && 'isEmailVerification']">
+            <LocaleSelector/>
             <b-container class="home">
                 <b-row>
                     <b-col>
@@ -144,9 +145,11 @@ import { ChangeLogMessage } from "../../../common/src/models/ChangeLogMessage";
 import { ONBOARDING_SCREEN } from "../store/onboarding/types";
 import MainNavBar from "../../src/components/MainNavBar.vue";
 import Onboarding from "../../src/components/Onboarding.vue";
+import LocaleSelector from "../components/LocaleSelector.vue";
 
 @Component({
     components: {
+        LocaleSelector,
         MainNavBar, Onboarding
     }
 })
