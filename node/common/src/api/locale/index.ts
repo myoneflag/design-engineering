@@ -1,7 +1,7 @@
 export enum SupportedLocales {
-    AU = 'au',
-    US = 'us',
-    UK = 'uk',
+    AU = 'en-au',
+    US = 'en-us',
+    UK = 'en-uk',
 }
 
 export const LOCALE_NAMES = {

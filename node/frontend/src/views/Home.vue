@@ -68,7 +68,7 @@
                                         </tr>
                                         <tr>
                                             <td>Created:</td>
-                                            <td>{{ new Date(doc.createdOn).toLocaleDateString() }}</td>
+                                            <td>{{ new Date(doc.createdOn).toLocaleDateString(locale) }}</td>
                                         </tr>
                                         <template v-if="shouldShowCompany() && doc.organization"
                                             ><tr>
@@ -85,7 +85,7 @@
                                         <template v-if="doc.lastModifiedOn"
                                             ><tr>
                                                 <td>Modified On:</td>
-                                                <td>{{ new Date(doc.lastModifiedOn).toLocaleDateString() }}</td>
+                                                <td>{{ new Date(doc.lastModifiedOn).toLocaleDateString(locale) }}</td>
                                             </tr></template
                                         >
                                     </table>
@@ -146,6 +146,7 @@ import { ONBOARDING_SCREEN } from "../store/onboarding/types";
 import MainNavBar from "../../src/components/MainNavBar.vue";
 import Onboarding from "../../src/components/Onboarding.vue";
 import LocaleSelector from "../components/LocaleSelector.vue";
+import { SupportedLocales } from "../../../common/src/api/locale";
 
 @Component({
     components: {
@@ -171,6 +172,10 @@ export default class Home extends Vue {
 
     get profile(): User {
         return this.$store.getters["profile/profile"];
+    }
+
+    get locale(): SupportedLocales {
+        return this.$store.getters["profile/locale"];
     }
 
     docIcon(doc: Document) {
@@ -232,7 +237,7 @@ export default class Home extends Vue {
 
     createDocument() {
         if (this.profile.organization) {
-            createDocument(this.profile.organization.id).then((res) => {
+            createDocument(this.profile.organization.id, this.locale).then((res) => {
                 if (res.success) {
                     this.$router.push("/document/" + res.data.id);
                 } else {
@@ -246,7 +251,7 @@ export default class Home extends Vue {
                 this.$store.dispatch('profile/refreshOnBoardingStats');
             });
         } else if (this.profile.temporaryUser) {
-            createDocument(null).then((res) => {
+            createDocument(null, this.locale).then((res) => {
                 if (res.success) {
                     this.$router.push("/document/" + res.data.id);
                 } else {

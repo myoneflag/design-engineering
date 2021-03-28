@@ -25,7 +25,7 @@ export const getters: GetterTree<ProfileState, RootState> = {
             return state.locale;
         }
         if (localStorage.getItem('locale')) {
-            return localStorage.getItem('locale');
+            return toSupportedLocale(localStorage.getItem('locale'));
         } else {
             return toSupportedLocale(getBrowserLocale());
         }

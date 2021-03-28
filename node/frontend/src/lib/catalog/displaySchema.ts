@@ -1,5 +1,7 @@
 import {Catalog, PRVSize} from "../../../../common/src/api/catalog/types";
 import {Units} from "../../../../common/src/lib/measurements";
+import { SupportedLocales } from "../../../../common/src/api/locale";
+import { I18N } from "../../../../common/src/api/locale/values";
 
 export type Page<V> = {
     [K in keyof V]: {
@@ -22,7 +24,7 @@ export interface Table<TV> {
 
 export type CatalogSchema = Page<Catalog>;
 
-export function getCatalogDisplaySchema(): CatalogSchema {
+export function getCatalogDisplaySchema(locale: SupportedLocales): CatalogSchema {
     return {
         fixtures: {
             order: 1,
@@ -322,7 +324,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
         },
         prv: {
             order: 10,
-            name: "Pressure Reducing Valves",
+            name: I18N.pressureReducingValve[locale],
             table: {
                 primaryName: "Nominal Diameter",
                 primaryUnits: Units.PipeDiameterMM,
@@ -391,7 +393,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
         },
         balancingValves: {
             order: 12,
-            name: "Balancing Valves",
+            name: I18N.balancingValve[locale],
         },
         hotWaterPlant: {
             order: 13,

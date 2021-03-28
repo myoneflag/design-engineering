@@ -18,6 +18,7 @@ import random from '../helpers/random';
 import { cloneSimple } from "../../../common/src/lib/utils";
 import ConcurrentDocument from "../services/concurrentDocument";
 import {compressDocumentIfRequired} from "../services/compressDocument";
+import { toSupportedLocale } from "../../../common/src/api/locale";
 
 export class DocumentController {
     @ApiHandleError()
@@ -73,6 +74,7 @@ export class DocumentController {
                 doc.version = CURRENT_VERSION;
                 doc.state = DocumentStatus.ACTIVE;
                 doc.shareDocument = sd;
+                doc.locale = toSupportedLocale(req.body.locale);
                 await doc.save();
 
                 res.status(200).send({
@@ -93,6 +95,7 @@ export class DocumentController {
             doc.version = CURRENT_VERSION;
             doc.state = DocumentStatus.ACTIVE;
             doc.shareDocument = sd;
+            doc.locale = toSupportedLocale(req.body.locale);
             await doc.save();
 
             res.status(200).send({

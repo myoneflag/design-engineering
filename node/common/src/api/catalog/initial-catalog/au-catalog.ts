@@ -2,7 +2,7 @@ import { DwellingStandardType, PSDStandardType } from "../psd-standard/types";
 import {Catalog, State} from "../types";
 import {EN12056FrequencyFactor} from "../../config";
 
-export const initialCatalog: Catalog = {
+export const auCatalog: Catalog = {
     fixtures: {
         ablutionTrough: {
             priceTableName: "Ablution Trough",

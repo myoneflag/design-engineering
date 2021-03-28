@@ -17,6 +17,7 @@ import {assertUnreachable, StandardFlowSystemUids} from "../../../../../common/s
 import {determineConnectableSystemUid} from "../../../store/document/entities/lib";
 import {lowerCase} from "../../../../../common/src/lib/utils";
 import {BigValveType} from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
+import { SupportedLocales } from "../../../../../common/src/api/locale";
 
 export const MONEY_FMT = '$#,##0.00;-#,##0.00';
 
@@ -238,7 +239,13 @@ function getPriceQuantitiesForSystem(context: CanvasContext, levelUid: string | 
     return result;
 }
 
-function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappings: Map<string, [string, number]>, levelUid: string | null) {
+function createLevelPage(
+    context: CanvasContext,
+    workbook: Excel.Workbook,
+    mappings: Map<string, [string, number]>,
+    levelUid: string | null,
+) {
+    const locale = context.document.locale;
     const quantities = getPriceQuantities(context, levelUid);
     let totalCost = 0;
     let roofHeight = 0;
@@ -604,7 +611,7 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                 const equipmentName = equipmentName_ as keyof EquipmentTable;
                 if (exists.has(equipmentName as keyof EquipmentTable)) {
                     sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
-                    sheet.getCell('B' + row).value = getEquipmentTitle(equipmentName as keyof EquipmentTable);
+                    sheet.getCell('B' + row).value = getEquipmentTitle(equipmentName as keyof EquipmentTable, locale);
                     lastMinorBump = row;
                     minorSum = 0;
                     stylizeTitle(sheet.getCell('A' + row));
@@ -616,7 +623,7 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                 if (typeof equipment !== 'object') {
                     if (items.has(`Equipment.${equipmentName}`)) {
                         sheet.getCell('A' + row).value = `${majorItem}.${minorItem}.${patch}`;
-                        sheet.getCell('B' + row).value = `${getEquipmentDescription(equipmentName)}`;
+                        sheet.getCell('B' + row).value = `${getEquipmentDescription(equipmentName, locale)}`;
 
                         sheet.getCell('C' + row).value = 'No';
                         const quantity = items.get(`Equipment.${equipmentName}`)!;
@@ -643,7 +650,7 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                     for (const [size, cost] of Object.entries(equipment)) {
                         if (items.has(`Equipment.${equipmentName}.${size}`)) {
                             sheet.getCell('A' + row).value = `${majorItem}.${minorItem}.${patch}`;
-                            sheet.getCell('B' + row).value = `${size}mm diameter ${getEquipmentDescription(equipmentName)}`;
+                            sheet.getCell('B' + row).value = `${size}mm diameter ${getEquipmentDescription(equipmentName, locale)}`;
 
                             sheet.getCell('C' + row).value = 'No';
                             const quantity = items.get(`Equipment.${equipmentName}.${size}`)!;

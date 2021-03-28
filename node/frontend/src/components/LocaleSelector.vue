@@ -1,36 +1,36 @@
 <template>
     <div class="locale-selector">
-        <img v-if="isActiveLocale('uk')"
+        <img v-if="isActiveLocale(SupportedLocales.UK)"
              class="flag active"
              :src="require('../assets/flags/UK.svg')"
         />
 
-        <img v-if="!isActiveLocale('uk')"
+        <img v-if="!isActiveLocale(SupportedLocales.UK)"
              class="flag"
              :src="require('../assets/flags/UK.svg')"
              v-b-tooltip="'Change locale to UK'"
-             @click="changeLocale('uk')"
+             @click="changeLocale(SupportedLocales.UK)"
         />
-        <img v-if="isActiveLocale('au')"
+        <img v-if="isActiveLocale(SupportedLocales.AU)"
              class="flag active"
              :src="require('../assets/flags/AU.svg')"
         />
-        <img v-if="!isActiveLocale('au')"
+        <img v-if="!isActiveLocale(SupportedLocales.AU)"
              class="flag"
              :src="require('../assets/flags/AU.svg')"
              v-b-tooltip="'Change locale to AU'"
-             @click="changeLocale('au')"
+             @click="changeLocale(SupportedLocales.AU)"
         />
-        <img v-if="isActiveLocale('us')"
+        <img v-if="isActiveLocale(SupportedLocales.US)"
              class="flag active"
              :src="require('../assets/flags/US.svg')"
         />
 
-        <img v-if="!isActiveLocale('us')"
+        <img v-if="!isActiveLocale(SupportedLocales.US)"
              class="flag"
              :src="require('../assets/flags/US.svg')"
              v-b-tooltip="'Change locale to US'"
-             @click="changeLocale('us')"
+             @click="changeLocale(SupportedLocales.US)"
         />
     </div>
 </template>
@@ -54,6 +54,10 @@ export default class LocaleSelector extends Vue {
 
     set locale(locale: SupportedLocales) {
         this.$store.dispatch('profile/setLocale', locale)
+    }
+
+    get SupportedLocales() {
+        return SupportedLocales;
     }
 
     isActiveLocale(locale: string) {

@@ -3,7 +3,7 @@
         <template v-for="component in components">
             <b-row>
                 <b-col>
-                    <h4>{{component}}</h4>
+                    <h4>{{ title(component) }}</h4>
                 </b-col>
             </b-row>
             <b-table
@@ -43,6 +43,8 @@
     import {defaultPriceTable} from "../../../../common/src/api/catalog/default-price-table";
     import {DocumentState} from "../../store/document/types";
     import {setPropertyByString, setPropertyByStringVue} from "../../lib/utils";
+    import { Price } from "aws-sdk/clients/route53domains";
+    import { I18N } from "../../../../common/src/api/locale/values";
 
     @Component({
         components: { },
@@ -50,6 +52,15 @@
         }
     })
     export default class EquipmentTable extends Vue {
+
+        title(component: keyof PriceTable["Equipment"]) {
+            switch (component) {
+                case "Balancing Valve":
+                    return I18N.balancingValve[this.document.locale];
+            }
+            return component;
+        }
+
         get priceTable(): PriceTable {
             return this.$store.getters['document/priceTable'];
         }

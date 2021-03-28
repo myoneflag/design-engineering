@@ -65,6 +65,7 @@ export default class Document extends Vue {
                             this.document.uiState.viewOnlyReason =
                                 "Superusers view documents in View Only mode by default (click to edit)";
                         }
+                        this.document.locale = res.data.locale;
                     } else {
                         this.$bvToast.toast(res.message, {
                             title: "Error Getting Document Metadata",

@@ -182,6 +182,7 @@ import { cloneSimple } from "../../../../common/src/lib/utils";
 import { convertMeasurementSystem, Units } from "../../../../common/src/lib/measurements";
 import { SelectedMaterialManufacturer } from "../../../../common/src/api/document/drawing";
 import { HotWaterPlantGrundfosSettingsName } from "../../../../common/src/api/document/entities/plants/plant-types";
+import { SupportedLocales } from "../../../../common/src/api/locale";
 @Component({
     components: { MainNavBar },
     props: {
@@ -201,8 +202,12 @@ export default class CatalogView extends Vue {
         return this.$store.getters["catalog/default"];
     }
 
+    get locale(): SupportedLocales {
+        return this.$store.getters["profile/locale"];
+    }
+
     get schemaTyped(): CatalogSchema {
-        return getCatalogDisplaySchema();
+        return getCatalogDisplaySchema(this.document.locale);
     }
 
     get paths(): Array<{ text: string; to: RawLocation }> {

@@ -224,6 +224,8 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
     import {drawGridLines} from "../../htmlcanvas/on-screen-items";
 
     import PressureDrainageSelector from "./PressureDrainageSelector.vue";
+    import { I18N } from "../../../../common/src/api/locale/values";
+    import { SupportedLocales } from "../../../../common/src/api/locale";
 
     @Component({
         components: {
@@ -349,6 +351,10 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
             return this.document.drawing.metadata.availableFixtures;
         }
 
+        get locale(): SupportedLocales {
+            return this.$store.getters['profile/locale'];
+        }
+
         get availableValves(): Array<ValveId | { name: string; valves: ValveId[] }> {
             return [
                 { type: ValveType.ISOLATION_VALVE, catalogId: "gateValve", name: "" },
@@ -365,7 +371,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
                 { type: ValveType.RPZD_DOUBLE_SHARED, catalogId: "RPZD", name: "Double RPZD - 50/50 Load Each" },
                 { type: ValveType.RPZD_DOUBLE_ISOLATED, catalogId: "RPZD", name: "Double RPZD - 100% Load Each" },
 
-                { type: ValveType.PRV_SINGLE, catalogId: "prv", name: "Pressure Reducing Valve" },
+                { type: ValveType.PRV_SINGLE, catalogId: "prv", name: I18N.pressureReducingValve[this.locale] },
                 { type: ValveType.PRV_DOUBLE, catalogId: "prv", name: "PRV Dual - 50% Load Each" },
                 { type: ValveType.PRV_TRIPLE, catalogId: "prv", name: "PRV Trio - 33% Load Each" },
             ].map((a) => {
