@@ -1,6 +1,6 @@
 module.exports = {
   "type": "postgres",
-  "host":  process.env.RDS_HOSTNAME || process.env.DB_HOSTNAME || (process.env.MODE === "production" ? "db" : "localhost"),
+  "host":  process.env.RDS_HOSTNAME || process.env.DB_HOSTNAME || (process.env.MODE === "production" ? "db" : "db"),
   "port": process.env.RDS_PORT || process.env.DB_PORT || 5432,
   "username": process.env.RDS_USERNAME || process.env.DB_USERNAME || "postgres",
   "password": process.env.RDS_PASSWORD || process.env.DB_PASSWORD || "postgres",

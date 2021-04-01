@@ -8,7 +8,7 @@ export default {
   FRONTEND_REL_PATH: process.env.MODE === "production" ? "../../../../frontend/dist" : "../../frontend/dist",
 
 
-  MQ_URL: process.env.MQ_URL || "ws://127.0.0.1:61614",
+  MQ_URL: process.env.MQ_URL || "ws://mq:61614",
   MQ_USERNAME: process.env.MQ_USERNAME || 'admin',
   MQ_PASSWORD: process.env.MQ_PASSWORD || 'admin',
 
