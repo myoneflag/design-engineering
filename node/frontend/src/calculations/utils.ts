@@ -432,18 +432,6 @@ export function lookupFlowRate(
                     fromLoading = a * psdU.units ** b - c;
                 }
             }
-            
-            if (systemUid === StandardFlowSystemUids.HotWater) {
-                const [ cold, hot, warm ] = doc.drawing.metadata.flowSystems;
-                const coldTemp = cold.temperature;
-                const hotTemp = hot.temperature;
-                const warmTemp = warm.temperature;
-
-                if (coldTemp < warmTemp && warmTemp <= hotTemp) {
-                    fromLoading = ((warmTemp - coldTemp) / (hotTemp - coldTemp)) * fromLoading!;
-                }
-            }
-
             break;
         }
         case PSDStandardType.LU_MAX_LOOKUP_TABLE: {
