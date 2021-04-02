@@ -26,110 +26,22 @@
         "EnvTag": {
           "Description": "Extra name tag for elastic beanstalk resources names",
           "Type": "String",
-          "Default": ""
+          "Default": "-2"
         }
     },
-    "Resources": {
-        /* VPC & misc
-        "VPC": {
-          "Type": "AWS::EC2::VPC",
+    "Resources": {        
+        // Instance Roles
+        "InstanceProfile": {
+          "Type": "AWS::IAM::InstanceProfile",
           "Properties": {
-            "CidrBlock": "----/--",
-            "Tags": ["-"]
+              "Path": "/",
+              "Roles": [ 
+                "aws-elasticbeanstalk-ec2-role"
+              ]
           }
         },
-        "SubnetAZ1": {
-          "Type": "AWS::EC2::Subnet",
-          "Properties": {
-            "AvailabilityZone": "-",
-            "VpcId": "-",
-            "CidrBlock": "-",
-            "Tags": ["-"]
-          }
-        },
-        "SubnetAZ2": {
-          "Type": "AWS::EC2::Subnet",
-          "Properties": {
-            "AvailabilityZone": "-",
-            "VpcId": "-",
-            "CidrBlock": "-",
-            "Tags": ["-"]
-          }
-        },
-        "DBInstance": {
-          "Type": "AWS::RDS::DBInstance",
-          "Properties": {
-            "AllocatedStorage": "",
-            "DBInstanceClass": "",
-            "AllowMajorVersionUpgrade": "true | false",
-            "AutoMinorVersionUpgrade": "true | false",
-            "AvailabilityZone": "",
-            "BackupRetentionPeriod": "",
-            "CharacterSetName": "",
-            "DBInstanceIdentifier": "",
-            "DBName": "",
-            "DBParameterGroupName": "",
-            "DBSecurityGroups": [ "" ],
-            "DBSnapshotIdentifier": "",
-            "DBSubnetGroupName": "",
-            "Engine": "",
-            "EngineVersion": "",
-            "Iops": "",
-            "KmsKeyId": "",
-            "LicenseModel": "",
-            "MasterUsername": "",
-            "MasterUserPassword": "",
-            "MultiAZ": "true | false",
-            "OptionGroupName": "",
-            "Port": "",
-            "PreferredBackupWindow": "",
-            "PreferredMaintenanceWindow": "",
-            "PubliclyAccessible": "true | false",
-            "SourceDBInstanceIdentifier": "",
-            "StorageEncrypted": "true | false",
-            "StorageType": "",
-            "Tags": [  ],
-            "VPCSecurityGroups": [ "" ]
-          }
-        },
-        "MQBroker": {
-            "Type" : "AWS::AmazonMQ::Broker",
-            "Properties" : {
-                "AuthenticationStrategy" : String,
-                "AutoMinorVersionUpgrade" : Boolean,
-                "BrokerName" : String,
-                "Configuration" : ConfigurationId,
-                "DeploymentMode" : String,
-                "EncryptionOptions" : EncryptionOptions,
-                "EngineType" : String,
-                "EngineVersion" : String,
-                "HostInstanceType" : String,
-                "LdapServerMetadata" : LdapServerMetadata,
-                "Logs" : LogList,
-                "MaintenanceWindowStartTime" : MaintenanceWindow,
-                "PubliclyAccessible" : Boolean,
-                "SecurityGroups" : [ String, ... ],
-                "StorageType" : String,
-                "SubnetIds" : [ String, ... ],
-                "Tags" : [ TagsEntry, ... ],
-                "Users" : [ User, ... ]
-              }
-          },        
-        "S3Bucket": {
-            "Type": "AWS::S3::Bucket",
-            "Properties": {
-                "AccessControl": "Private | PublicRead | PublicReadWrite | AuthenticatedRead | LogDeliveryWrite | BucketOwnerRead | BucketOwnerFullControl",
-                "BucketName": "",
-                "CorsConfiguration": {},
-                "LifecycleConfiguration": {},
-                "NotificationConfiguration": {},
-                "VersioningConfiguration": {},
-                "WebsiteConfiguration": {},
-                "Tags": [] 
-            }
-        },*/      
-        
-        /* Web environment*/
+
+        // Web environment
         "WebApplication": {
           "Type": "AWS::ElasticBeanstalk::Application",
           "Properties": {
@@ -157,12 +69,42 @@
               {
                 "Namespace": "aws:autoscaling:launchconfiguration",
                 "OptionName": "IamInstanceProfile",
-                "Value": "aws-elasticbeanstalk-ec2-role"
+                "Value": { "Ref": "InstanceProfile" }
               },
               {
                 "Namespace" : "aws:autoscaling:launchconfiguration",
                 "OptionName" : "EC2KeyName",
                 "Value" : { "Ref": "Ec2InstanceKeyname" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:cloudwatch:logs",
+                "OptionName": "StreamLogs",
+                "Value": true
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:cloudwatch:logs",
+                "OptionName": "RetentionInDays",
+                "Value": 30
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:cloudwatch:logs:health",
+                "OptionName": "HealthStreamingEnabled",
+                "Value": true
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+                "OptionName": "SystemType",
+                "Value": "enhanced"
+              },
+              { 
+                "Namespace": "aws:elasticbeanstalk:cloudwatch:logs:health",
+                "OptionName": "RetentionInDays",
+                "Value": 30 
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:environment",
+                "OptionName": "LoadBalancerType",
+                "Value": "application"
               },
               {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
@@ -188,6 +130,7 @@
            }
         },
 
+        // Worker Enviroment
         "WorkerApplication": {
           "Type": "AWS::ElasticBeanstalk::Application",
           "Properties": {
@@ -215,12 +158,37 @@
               {
                 "Namespace": "aws:autoscaling:launchconfiguration",
                 "OptionName": "IamInstanceProfile",
-                "Value": "aws-elasticbeanstalk-ec2-role"
+                "Value": { "Ref": "InstanceProfile" }
               },
               {
                 "Namespace" : "aws:autoscaling:launchconfiguration",
                 "OptionName" : "EC2KeyName",
                 "Value" : { "Ref": "Ec2InstanceKeyname" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:cloudwatch:logs",
+                "OptionName": "StreamLogs",
+                "Value": true
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:cloudwatch:logs",
+                "OptionName": "RetentionInDays",
+                "Value": 30
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:cloudwatch:logs:health",
+                "OptionName": "HealthStreamingEnabled",
+                "Value": true
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+                "OptionName": "SystemType",
+                "Value": "enhanced"
+              },              
+              { 
+                "Namespace": "aws:elasticbeanstalk:cloudwatch:logs:health",
+                "OptionName": "RetentionInDays",
+                "Value": 30 
               },
               {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
@@ -246,15 +214,6 @@
            }
         }
 
-        /*,
-        "DeploymentOpsSNS": {
-          "Type": "AWS::SNS::Topic",
-          "Properties": {
-            "DisplayName": "",
-            "Subscription": [  ],
-            "TopicName": ""
-          }
-        }*/
     },
     "Outputs": {
 
