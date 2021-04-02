@@ -1,0 +1,262 @@
+{
+"AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "H2X Web and Worker Enviromment Setup Template",
+    "Metadata": {  
+    },
+    "Parameters": {
+        "EnvName": {
+            "Description": "Enviroment name, used in DNS, database names, etc.",
+            "Type": "String",
+            "Default": "test"
+        },
+        "Ec2InstanceKeyname": {
+            "Description": "Keypair name for SSH access on instances - keypair must be created prior to Stack creation",
+            "Type": "AWS::EC2::KeyPair::KeyName"
+        },
+        "WebInstanceType": {
+            "Description": "Web server instance type",
+            "Type": "String",
+            "Default": "t2.small"
+        },
+        "WorkerInstanceType": {
+            "Description": "Worker instance type",
+            "Type": "String",
+            "Default": "t2.small"
+        },
+        "EnvTag": {
+          "Description": "Extra name tag for elastic beanstalk resources names",
+          "Type": "String",
+          "Default": "-1"
+        }
+    },
+    "Resources": {
+        /* VPC & misc
+        "VPC": {
+          "Type": "AWS::EC2::VPC",
+          "Properties": {
+            "CidrBlock": "----/--",
+            "Tags": ["-"]
+          }
+        },
+        "SubnetAZ1": {
+          "Type": "AWS::EC2::Subnet",
+          "Properties": {
+            "AvailabilityZone": "-",
+            "VpcId": "-",
+            "CidrBlock": "-",
+            "Tags": ["-"]
+          }
+        },
+        "SubnetAZ2": {
+          "Type": "AWS::EC2::Subnet",
+          "Properties": {
+            "AvailabilityZone": "-",
+            "VpcId": "-",
+            "CidrBlock": "-",
+            "Tags": ["-"]
+          }
+        },
+        "DBInstance": {
+          "Type": "AWS::RDS::DBInstance",
+          "Properties": {
+            "AllocatedStorage": "",
+            "DBInstanceClass": "",
+            "AllowMajorVersionUpgrade": "true | false",
+            "AutoMinorVersionUpgrade": "true | false",
+            "AvailabilityZone": "",
+            "BackupRetentionPeriod": "",
+            "CharacterSetName": "",
+            "DBInstanceIdentifier": "",
+            "DBName": "",
+            "DBParameterGroupName": "",
+            "DBSecurityGroups": [ "" ],
+            "DBSnapshotIdentifier": "",
+            "DBSubnetGroupName": "",
+            "Engine": "",
+            "EngineVersion": "",
+            "Iops": "",
+            "KmsKeyId": "",
+            "LicenseModel": "",
+            "MasterUsername": "",
+            "MasterUserPassword": "",
+            "MultiAZ": "true | false",
+            "OptionGroupName": "",
+            "Port": "",
+            "PreferredBackupWindow": "",
+            "PreferredMaintenanceWindow": "",
+            "PubliclyAccessible": "true | false",
+            "SourceDBInstanceIdentifier": "",
+            "StorageEncrypted": "true | false",
+            "StorageType": "",
+            "Tags": [  ],
+            "VPCSecurityGroups": [ "" ]
+          }
+        },
+        "MQBroker": {
+            "Type" : "AWS::AmazonMQ::Broker",
+            "Properties" : {
+                "AuthenticationStrategy" : String,
+                "AutoMinorVersionUpgrade" : Boolean,
+                "BrokerName" : String,
+                "Configuration" : ConfigurationId,
+                "DeploymentMode" : String,
+                "EncryptionOptions" : EncryptionOptions,
+                "EngineType" : String,
+                "EngineVersion" : String,
+                "HostInstanceType" : String,
+                "LdapServerMetadata" : LdapServerMetadata,
+                "Logs" : LogList,
+                "MaintenanceWindowStartTime" : MaintenanceWindow,
+                "PubliclyAccessible" : Boolean,
+                "SecurityGroups" : [ String, ... ],
+                "StorageType" : String,
+                "SubnetIds" : [ String, ... ],
+                "Tags" : [ TagsEntry, ... ],
+                "Users" : [ User, ... ]
+              }
+          },        
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "AccessControl": "Private | PublicRead | PublicReadWrite | AuthenticatedRead | LogDeliveryWrite | BucketOwnerRead | BucketOwnerFullControl",
+                "BucketName": "",
+                "CorsConfiguration": {},
+                "LifecycleConfiguration": {},
+                "NotificationConfiguration": {},
+                "VersioningConfiguration": {},
+                "WebsiteConfiguration": {},
+                "Tags": [] 
+            }
+        },*/      
+        
+        /* Web environment*/
+        "WebApplication": {
+          "Type": "AWS::ElasticBeanstalk::Application",
+          "Properties": {
+             "ApplicationName": { "Fn::Sub": "H2X-web-${EnvName}-${EnvTag}" },
+             "Description": { "Fn::Sub": "H2X ${EnvName} Web Application" }
+          }
+        },
+        "WebApplicationVersion": {
+          "Type": "AWS::ElasticBeanstalk::ApplicationVersion",
+          "Properties": {
+            "ApplicationName": { "Ref": "WebApplication" },
+            "Description": { "Fn::Sub": "H2X-web-${EnvName}" },
+            "SourceBundle": { 
+              "S3Bucket": { "Fn::Sub": "elasticbeanstalk-${AWS::Region}-${AWS::AccountId}" }, 
+              "S3Key": "test/docker.zip"
+             }
+          }
+        },
+        "WebApplicationConfiguration": {
+          "Type": "AWS::ElasticBeanstalk::ConfigurationTemplate",
+          "Properties": {  
+            "ApplicationName": { "Ref": "WebApplication" },
+            "Description": { "Fn::Sub": "${WebApplication} configuration" },
+            "EnvironmentId": { "Ref": "WebEnvironment" },
+            "OptionSettings": [ 
+              {
+                "Namespace": "aws:autoscaling:launchconfiguration",
+                "OptionName": "IamInstanceProfile",
+                "Value": "aws-elasticbeanstalk-ec2-role"
+              },
+              {
+                "Namespace" : "aws:autoscaling:launchconfiguration",
+                "OptionName" : "EC2KeyName",
+                "Value" : { "Ref": "Ec2InstanceKeyname" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "TEST_VAR",
+                "Value": "TEST_VAL"
+              }
+            ],
+            "SolutionStackName": "64bit Amazon Linux 2 v3.2.6 running Docker",
+          } 
+        },
+        "WebEnvironment": {
+           "Type": "AWS::ElasticBeanstalk::Environment",
+           "Properties": {
+              "ApplicationName": { "Ref": "WebApplication" },
+              "EnvironmentName":  { "Fn::Sub": "H2X-web-${EnvName}-${EnvTag}" },              
+              "Description": { "Fn::Sub": "H2X ${EnvName} Web Environment" },
+              "VersionLabel": { "Ref": "WebApplicationVersion" },
+              "Tier": {
+                "Name" : "WebServer",
+                "Type" : "Standard"
+              }
+           }
+        },
+
+        "WorkerApplication": {
+          "Type": "AWS::ElasticBeanstalk::Application",
+          "Properties": {
+             "ApplicationName": { "Fn::Sub": "H2X-worker-${EnvName}-${EnvTag}" },
+             "Description": { "Fn::Sub": "H2X ${EnvName} Worker Application" }
+          }
+       },
+        "WorkerApplicationVersion": {
+          "Type": "AWS::ElasticBeanstalk::ApplicationVersion",
+          "Properties": {
+            "ApplicationName": { "Ref": "WorkerApplication" },
+            "Description": { "Fn::Sub": "H2X-worker-${EnvName}" },
+            "SourceBundle": { 
+              "S3Bucket": { "Fn::Sub": "elasticbeanstalk-${AWS::Region}-${AWS::AccountId}" }, 
+              "S3Key": "test/docker-multicontainer-v2.zip"
+             }
+          }
+        },
+        "WorkerApplicationConfiguration": {
+          "Type": "AWS::ElasticBeanstalk::ConfigurationTemplate",
+          "Properties": {  
+            "ApplicationName": { "Ref": "WorkerApplication" },
+            "Description": { "Fn::Sub": "${WorkerApplication} configuration" },
+            "EnvironmentId": { "Ref": "WorkerEnvironment" },
+            "OptionSettings": [ 
+              {
+                "Namespace": "aws:autoscaling:launchconfiguration",
+                "OptionName": "IamInstanceProfile",
+                "Value": "aws-elasticbeanstalk-ec2-role"
+              },
+              {
+                "Namespace" : "aws:autoscaling:launchconfiguration",
+                "OptionName" : "EC2KeyName",
+                "Value" : { "Ref": "Ec2InstanceKeyname" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "TEST_VAR",
+                "Value": "TEST_VAL"
+              }
+            ],
+            "SolutionStackName": "64bit Amazon Linux 2018.03 v2.25.2 running Multi-container Docker 19.03.13-ce (Generic)"
+          } 
+        },
+        "WorkerEnvironment": {
+           "Type": "AWS::ElasticBeanstalk::Environment",
+           "Properties": {
+              "ApplicationName": { "Ref": "WorkerApplication" },
+              "EnvironmentName":  { "Fn::Sub": "H2X-worker-${EnvName}-${EnvTag}" },
+              "Description": { "Fn::Sub": "H2X ${EnvName} Worker Environment" },
+              "VersionLabel": { "Ref": "WorkerApplicationVersion" },
+              "Tier": {
+                "Name" : "Worker",
+                "Type" : "SQS/HTTP"
+              }
+           }
+        }
+
+        /*,
+        "DeploymentOpsSNS": {
+          "Type": "AWS::SNS::Topic",
+          "Properties": {
+            "DisplayName": "",
+            "Subscription": [  ],
+            "TopicName": ""
+          }
+        }*/
+    },
+    "Outputs": {
+
+    }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "h2x-cloudformation",
+  "version": "1.0.0",
+  "description": "Cloudformation scripts and utilities",
+  "main": "index.js",
+  "scripts": {
+    "clean": "rm template.cfn.json",
+    "validate": "run-s prep-template validate-template",
+    "create": "run-s prep-template stack-create",
+    "update": "run-s prep-template stack-update",
+    "prep-template": "jsmin template.json > template.cfn.json",    
+    "validate-template": "source config/config.$EnvName.env && aws cloudformation validate-template  --profile $AWSProfile --template-body file://template.cfn.json",
+    "stack-create": "source config/config.$EnvName.env && aws cloudformation create-stack --stack-name h2x-$EnvName-stack --profile $AWSProfile --template-body file://template.cfn.json --parameters ParameterKey=Ec2InstanceKeyname,ParameterValue=$Ec2InstanceKeyname ParameterKey=EnvName,ParameterValue=$EnvName",
+    "stack-update": "source config/config.$EnvName.env && aws cloudformation update-stack --stack-name h2x-$EnvName-stack --profile $AWSProfile --template-body file://template.cfn.json --parameters ParameterKey=Ec2InstanceKeyname,ParameterValue=$Ec2InstanceKeyname ParameterKey=EnvName,ParameterValue=$EnvName",
+    "stack-delete": "source config/config.$EnvName.env && aws cloudformation delete-stack --stack-name h2x-$EnvName-stack --profile $AWSProfile"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/info892/H2X.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/info892/H2X/issues"
+  },
+  "homepage": "https://gitlab.com/info892/H2X#readme",
+  "dependencies": {
+    "jsmin": "^1.0.1",
+    "npm-run-all": "^4.1.5"
+  }
+}
