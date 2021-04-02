@@ -26,7 +26,7 @@
         "EnvTag": {
           "Description": "Extra name tag for elastic beanstalk resources names",
           "Type": "String",
-          "Default": "-1"
+          "Default": ""
         }
     },
     "Resources": {
@@ -133,7 +133,7 @@
         "WebApplication": {
           "Type": "AWS::ElasticBeanstalk::Application",
           "Properties": {
-             "ApplicationName": { "Fn::Sub": "H2X-web-${EnvName}-${EnvTag}" },
+             "ApplicationName": { "Fn::Sub": "H2X-web-${EnvName}${EnvTag}" },
              "Description": { "Fn::Sub": "H2X ${EnvName} Web Application" }
           }
         },
@@ -153,7 +153,6 @@
           "Properties": {  
             "ApplicationName": { "Ref": "WebApplication" },
             "Description": { "Fn::Sub": "${WebApplication} configuration" },
-            "EnvironmentId": { "Ref": "WebEnvironment" },
             "OptionSettings": [ 
               {
                 "Namespace": "aws:autoscaling:launchconfiguration",
@@ -178,9 +177,10 @@
            "Type": "AWS::ElasticBeanstalk::Environment",
            "Properties": {
               "ApplicationName": { "Ref": "WebApplication" },
-              "EnvironmentName":  { "Fn::Sub": "H2X-web-${EnvName}-${EnvTag}" },              
+              "EnvironmentName":  { "Fn::Sub": "H2X-web-${EnvName}${EnvTag}" },              
               "Description": { "Fn::Sub": "H2X ${EnvName} Web Environment" },
               "VersionLabel": { "Ref": "WebApplicationVersion" },
+              "TemplateName": { "Ref": "WebApplicationConfiguration" },
               "Tier": {
                 "Name" : "WebServer",
                 "Type" : "Standard"
@@ -191,10 +191,10 @@
         "WorkerApplication": {
           "Type": "AWS::ElasticBeanstalk::Application",
           "Properties": {
-             "ApplicationName": { "Fn::Sub": "H2X-worker-${EnvName}-${EnvTag}" },
+             "ApplicationName": { "Fn::Sub": "H2X-worker-${EnvName}${EnvTag}" },
              "Description": { "Fn::Sub": "H2X ${EnvName} Worker Application" }
           }
-       },
+        },
         "WorkerApplicationVersion": {
           "Type": "AWS::ElasticBeanstalk::ApplicationVersion",
           "Properties": {
@@ -211,7 +211,6 @@
           "Properties": {  
             "ApplicationName": { "Ref": "WorkerApplication" },
             "Description": { "Fn::Sub": "${WorkerApplication} configuration" },
-            "EnvironmentId": { "Ref": "WorkerEnvironment" },
             "OptionSettings": [ 
               {
                 "Namespace": "aws:autoscaling:launchconfiguration",
@@ -236,9 +235,10 @@
            "Type": "AWS::ElasticBeanstalk::Environment",
            "Properties": {
               "ApplicationName": { "Ref": "WorkerApplication" },
-              "EnvironmentName":  { "Fn::Sub": "H2X-worker-${EnvName}-${EnvTag}" },
+              "EnvironmentName":  { "Fn::Sub": "H2X-worker-${EnvName}${EnvTag}" },
               "Description": { "Fn::Sub": "H2X ${EnvName} Worker Environment" },
               "VersionLabel": { "Ref": "WorkerApplicationVersion" },
+              "TemplateName": { "Ref": "WorkerApplicationConfiguration" },              
               "Tier": {
                 "Name" : "Worker",
                 "Type" : "SQS/HTTP"

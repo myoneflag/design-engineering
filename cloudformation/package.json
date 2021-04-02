@@ -6,13 +6,18 @@
   "scripts": {
     "clean": "rm template.cfn.json",
     "validate": "run-s prep-template validate-template",
-    "create": "run-s prep-template stack-create",
-    "update": "run-s prep-template stack-update",
+    "create": "run-s prep-template create-stack wait-create-stack describe-stack",
+    "update": "run-s prep-template update-stack wait-update-stack describe-stack",
+    "delete": "run-s prep-template delete-stack wait-delete-stack describe-stack",
     "prep-template": "jsmin template.json > template.cfn.json",    
     "validate-template": "source config/config.$EnvName.env && aws cloudformation validate-template  --profile $AWSProfile --template-body file://template.cfn.json",
-    "stack-create": "source config/config.$EnvName.env && aws cloudformation create-stack --stack-name h2x-$EnvName-stack --profile $AWSProfile --template-body file://template.cfn.json --parameters ParameterKey=Ec2InstanceKeyname,ParameterValue=$Ec2InstanceKeyname ParameterKey=EnvName,ParameterValue=$EnvName",
-    "stack-update": "source config/config.$EnvName.env && aws cloudformation update-stack --stack-name h2x-$EnvName-stack --profile $AWSProfile --template-body file://template.cfn.json --parameters ParameterKey=Ec2InstanceKeyname,ParameterValue=$Ec2InstanceKeyname ParameterKey=EnvName,ParameterValue=$EnvName",
-    "stack-delete": "source config/config.$EnvName.env && aws cloudformation delete-stack --stack-name h2x-$EnvName-stack --profile $AWSProfile"
+    "create-stack": "source config/config.$EnvName.env && aws cloudformation create-stack --stack-name h2x-$EnvName-stack --profile $AWSProfile --template-body file://template.cfn.json --parameters ParameterKey=Ec2InstanceKeyname,ParameterValue=$Ec2InstanceKeyname ParameterKey=EnvName,ParameterValue=$EnvName",
+    "wait-create-stack": "source config/config.$EnvName.env && aws cloudformation wait stack-create-complete --stack-name h2x-$EnvName-stack --profile $AWSProfile",
+    "update-stack": "source config/config.$EnvName.env && aws cloudformation update-stack --stack-name h2x-$EnvName-stack --profile $AWSProfile --template-body file://template.cfn.json --parameters ParameterKey=Ec2InstanceKeyname,ParameterValue=$Ec2InstanceKeyname ParameterKey=EnvName,ParameterValue=$EnvName",
+    "wait-update-stack": "source config/config.$EnvName.env && aws cloudformation wait stack-update-complete --stack-name h2x-$EnvName-stack --profile $AWSProfile",
+    "describe-stack": "source config/config.$EnvName.env && aws cloudformation describe-stack-resources --stack-name h2x-$EnvName-stack --profile $AWSProfile --output json --query 'StackResources[*].{LogicalResourceId:LogicalResourceId,PhysicalResourceId:PhysicalResourceId,ResourceStatus:ResourceStatus}'",
+    "delete-stack": "source config/config.$EnvName.env && aws cloudformation delete-stack --stack-name h2x-$EnvName-stack --profile $AWSProfile",
+    "wait-delete-stack": "source config/config.$EnvName.env && aws cloudformation wait stack-delete-complete --stack-name h2x-$EnvName-stack --profile $AWSProfile"
   },
   "repository": {
     "type": "git",
