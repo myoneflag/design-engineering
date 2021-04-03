@@ -41,6 +41,25 @@
           }
         },
 
+        // Security groups
+        "WebSecurityGroup" : {
+          "Type" : "AWS::EC2::SecurityGroup",
+          "Properties" : {
+            "GroupDescription" : "h2x-web-${EnvName}-sg",
+            "SecurityGroupIngress" : [ 
+            ]
+          }
+        },
+
+        "WorkerSecurityGroup" : {
+          "Type" : "AWS::EC2::SecurityGroup",
+          "Properties" : {
+            "GroupDescription" : "h2x-worker-${EnvName}-sg",
+            "SecurityGroupIngress" : [ 
+            ]
+          }
+        },
+
         // Web environment
         "WebApplication": {
           "Type": "AWS::ElasticBeanstalk::Application",
@@ -212,8 +231,62 @@
                 "Type" : "SQS/HTTP"
               }
            }
-        }
+        }, 
+        
+        // RDS
+        "DBSecurityGroup": {
+           "Type": "AWS::RDS::DBSecurityGroup",
+           "Properties": {
+              "GroupDescription": "h2x-db-${EnvName}-sg",
+              "DBSecurityGroupIngress": [ 
+                {
+                  "EC2SecurityGroupId" : { "Fn::GetAtt": [ "WebSecurityGroup", "GroupId" ] }
+                },
+                {
+                  "EC2SecurityGroupId" : { "Fn::GetAtt": [ "WorkerSecurityGroup", "GroupId" ] }
+                }
+               ]
+           }
+        },
 
+        "DBInstance": {
+          "Type": "AWS::RDS::DBInstance",
+          "Properties": {
+            "AllocatedStorage": "100",
+            "DBInstanceIdentifier": {"Fn::Sub": "h2x-db-${EnvName}" },
+            "DBInstanceClass": "db.t3.small",
+            "DBSecurityGroups": [ {"Ref": "DBSecurityGroup"} ],
+            "DeleteAutomatedBackups": false,
+            "Engine": "postgres",
+            "EngineVersion": "13.1",
+            "MultiAZ": "false",
+            "PubliclyAccessible": "false",
+            "MasterUsername": "h2xdbuser",
+            "MasterUserPassword": "FLorpUTHoupe"
+          }
+        },
+
+        // MQ
+        "MQBroker": {
+          "Type" : "AWS::AmazonMQ::Broker",
+          "Properties" : {
+              "AutoMinorVersionUpgrade" : false,
+              "BrokerName" : {"Fn::Sub": "h2x-mq-${EnvName}" },
+              "DeploymentMode" : "SINGLE_INSTANCE",
+              "EngineType" : "ACTIVEMQ",
+              "EngineVersion" : "5.15.13",
+              "HostInstanceType" : "mq.t2.micro",
+              "PubliclyAccessible" : false,
+              "SecurityGroups" : [ { "Fn::GetAtt": [ "WebSecurityGroup", "GroupId" ] } ],
+              "Users" : [ 
+                {
+                  "ConsoleAccess" : true,
+                  "Password" : "TEremoRmyoUT",
+                  "Username" : "emqemqemq"
+                }
+               ]
+            }
+        }
     },
     "Outputs": {
 
