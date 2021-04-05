@@ -26,7 +26,7 @@
         "EnvTag": {
           "Description": "Extra name tag for elastic beanstalk resources names",
           "Type": "String",
-          "Default": "-2"
+          "Default": ""
         }
     },
     "Resources": {        
@@ -45,7 +45,7 @@
         "WebSecurityGroup" : {
           "Type" : "AWS::EC2::SecurityGroup",
           "Properties" : {
-            "GroupDescription" : "h2x-web-${EnvName}-sg",
+            "GroupDescription" : { "Fn::Sub": "h2x-web-${EnvName}-sg" },
             "SecurityGroupIngress" : [ 
             ]
           }
@@ -54,7 +54,7 @@
         "WorkerSecurityGroup" : {
           "Type" : "AWS::EC2::SecurityGroup",
           "Properties" : {
-            "GroupDescription" : "h2x-worker-${EnvName}-sg",
+            "GroupDescription" : { "Fn::Sub": "h2x-worker-${EnvName}-sg" },
             "SecurityGroupIngress" : [ 
             ]
           }
@@ -126,28 +126,34 @@
                 "Value": "application"
               },
               {
+                "Namespace": "aws:elasticbeanstalk:sns:topics",
+                "OptionName": "Notification Topic ARN",
+                "Value": { "Ref": "WebDeployNotification" }
+              },
+              {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "TEST_VAR",
                 "Value": "TEST_VAL"
               }
             ],
-            "SolutionStackName": "64bit Amazon Linux 2 v3.2.6 running Docker",
+            "SolutionStackName": "64bit Amazon Linux 2 v3.2.6 running Docker"
           } 
         },
+
         "WebEnvironment": {
-           "Type": "AWS::ElasticBeanstalk::Environment",
-           "Properties": {
-              "ApplicationName": { "Ref": "WebApplication" },
-              "EnvironmentName":  { "Fn::Sub": "H2X-web-${EnvName}${EnvTag}" },              
-              "Description": { "Fn::Sub": "H2X ${EnvName} Web Environment" },
-              "VersionLabel": { "Ref": "WebApplicationVersion" },
-              "TemplateName": { "Ref": "WebApplicationConfiguration" },
-              "Tier": {
-                "Name" : "WebServer",
-                "Type" : "Standard"
-              }
-           }
-        },
+          "Type": "AWS::ElasticBeanstalk::Environment",
+          "Properties": {
+             "ApplicationName": { "Ref": "WebApplication" },
+             "EnvironmentName":  { "Fn::Sub": "H2X-web-${EnvName}${EnvTag}" },              
+             "Description": { "Fn::Sub": "H2X ${EnvName} Web Environment" },
+             "VersionLabel": { "Ref": "WebApplicationVersion" },
+             "TemplateName": { "Ref": "WebApplicationConfiguration" },
+             "Tier": {
+               "Name" : "WebServer",
+               "Type" : "Standard"
+             }
+          }
+       },
 
         // Worker Enviroment
         "WorkerApplication": {
@@ -210,6 +216,16 @@
                 "Value": 30 
               },
               {
+                "Namespace": "aws:elasticbeanstalk:sqsd",
+                "OptionName": "WorkerQueueURL",
+                "Value": { "Ref": "WorkerQueue" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:sqsd",
+                "OptionName": "HttpPath",
+                "Value": "/workermessage"
+              },
+              {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "TEST_VAR",
                 "Value": "TEST_VAL"
@@ -269,6 +285,7 @@
         // MQ
         "MQBroker": {
           "Type" : "AWS::AmazonMQ::Broker",
+          "DependsOn": [ "WebSecurityGroup" ],
           "Properties" : {
               "AutoMinorVersionUpgrade" : false,
               "BrokerName" : {"Fn::Sub": "h2x-mq-${EnvName}" },
@@ -286,7 +303,32 @@
                 }
                ]
             }
+        },
+
+        // Web environment SNS topic for Deploy Notifications
+        "WebDeployNotification": {
+          "Type" : "AWS::SNS::Topic",
+          "Properties" : {
+              "TopicName" : { "Fn::Sub": "h2x-sns-${EnvName}-deploy" },
+              "DisplayName" : { "Fn::Sub": "h2x-sns-${EnvName}-deploy" },
+              "Subscription" : [ 
+                {
+                  "Endpoint" : { "Fn::GetAtt": [ "WorkerQueue", "Arn" ] },
+                  "Protocol" : "sqs"
+                }              
+              ]
+            }
+        },
+
+        // Worker queue
+        "WorkerQueue": {
+           "Type": "AWS::SQS::Queue",
+           "Properties": {
+              "QueueName": { "Fn::Sub": "h2x-worker-queue-${EnvName}" },
+              "VisibilityTimeout": "300"
+           }
         }
+        
     },
     "Outputs": {
 
