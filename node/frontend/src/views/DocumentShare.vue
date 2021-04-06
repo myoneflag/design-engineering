@@ -13,12 +13,13 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { closeDocument, openDocumentShare } from "../api/document";
+import { closeDocument, getDocument, openDocumentShare } from "../api/document";
 import { loadCatalogShare } from "../api/catalog";
 import { MainEventBus } from "../store/main-event-bus";
 import { DocumentState } from "../store/document/types";
 import DrawingCanvas from "../../src/components/editor/DrawingCanvas.vue";
 import LoadingScreen from "../../src/views/LoadingScreen.vue";
+import { initialDrawing } from "../../../common/src/api/document/drawing";
 
 @Component({
     components: {
@@ -37,35 +38,48 @@ export default class DocumentShare extends Vue {
     uiMouseDisabled: boolean = false;
 
     mounted() {
-        openDocumentShare(
-            this.$props.documentSharedId,
-            (op) => {
-                this.$store.dispatch("document/setIsLoading", true);
-                setTimeout(() => this.$store.dispatch("document/applyRemoteOperation", op), 2000);
-            },
-            () => {
-                this.$bvToast.toast('The document has been deleted', {
-                    title: "Error!",
-                    variant: "danger"
-                });
-            },
-            () => {
-                MainEventBus.$emit("drawing-loaded");
-            },
-            (msg) => {
-                if (!this.closeExpected) {
-                    this.$bvToast.toast(
-                        "The connection to the server was lost, please refresh. " +
-                        "Changes from now will not be saved.\n" +
-                        "reason: " + msg,
-                        {
-                            title: "Connection Error",
-                            variant: "danger",
+        console.log("Document share");
+        getDocument(this.$props.id).then((res) => {
+            if (res.success) {
+                this.document.locale = res.data.locale;
+                // repair the document structure with the correct initial state, now that we
+                // know the locale.
+                this.document.drawing = initialDrawing(res.data.locale)
+                this.document.committedDrawing = initialDrawing(res.data.locale)
+
+                console.log(this.document.drawing)
+
+                openDocumentShare(
+                    this.$props.documentSharedId,
+                    (op) => {
+                        this.$store.dispatch("document/setIsLoading", true);
+                        setTimeout(() => this.$store.dispatch("document/applyRemoteOperation", op), 2000);
+                    },
+                    () => {
+                        this.$bvToast.toast('The document has been deleted', {
+                            title: "Error!",
+                            variant: "danger"
+                        });
+                    },
+                    () => {
+                        MainEventBus.$emit("drawing-loaded");
+                    },
+                    (msg) => {
+                        if (!this.closeExpected) {
+                            this.$bvToast.toast(
+                                "The connection to the server was lost, please refresh. " +
+                                "Changes from now will not be saved.\n" +
+                                "reason: " + msg,
+                                {
+                                    title: "Connection Error",
+                                    variant: "danger",
+                                }
+                            );
                         }
-                    );
-                }
-            },
-        );
+                    },
+                );
+            }
+        })
 
         loadCatalogShare(this.$props.documentSharedId).then((catalog) => {
             if (catalog.success) {
