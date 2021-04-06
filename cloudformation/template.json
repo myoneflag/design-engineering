@@ -5,24 +5,32 @@
     },
     "Parameters": {
         "EnvName": {
-            "Description": "Enviroment name, used in DNS, database names, etc.",
-            "Type": "String",
-            "Default": "test"
+          "Description": "Enviroment name, used in DNS, database names, etc.",
+          "Type": "String",
+          "Default": "test"
         },
         "Ec2InstanceKeyname": {
-            "Description": "Keypair name for SSH access on instances - keypair must be created prior to Stack creation",
-            "Type": "AWS::EC2::KeyPair::KeyName"
+          "Description": "Keypair name for SSH access on instances - keypair must be created prior to Stack creation",
+          "Type": "AWS::EC2::KeyPair::KeyName"
         },
         "WebInstanceType": {
-            "Description": "Web server instance type",
-            "Type": "String",
-            "Default": "t2.small"
+          "Description": "Web server instance type",
+          "Type": "String",
+          "Default": "t2.small"
         },
         "WorkerInstanceType": {
-            "Description": "Worker instance type",
-            "Type": "String",
-            "Default": "t2.small"
+          "Description": "Worker instance type",
+          "Type": "String",
+          "Default": "t2.small"
         },
+        "DnsZoneId": {
+          "Description": "HostedZoneID of the DNS zone to create the main records pointing to the web loadbalancer",
+          "Type": "AWS::Route53::HostedZone::Id"
+        },
+        "DnsZoneName": {
+          "Description": "HostedZone DNS zone to create the main records pointing to the web loadbalancer",
+          "Type": "String"
+        },        
         "EnvTag": {
           "Description": "Extra name tag for elastic beanstalk resources names",
           "Type": "String",
@@ -129,6 +137,16 @@
                 "Namespace": "aws:elasticbeanstalk:sns:topics",
                 "OptionName": "Notification Topic ARN",
                 "Value": { "Ref": "WebDeployNotification" }
+              },
+              {
+                "Namespace": "aws:elbv2:listener:443",
+                "OptionName": "Protocol",
+                "Value": "HTTPS"
+              },
+              {
+                "Namespace": "aws:elbv2:listener:443",
+                "OptionName": "SSLCertificateArns",
+                "Value": { "Ref": "SSLCertificate"}
               },
               {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
@@ -327,8 +345,75 @@
               "QueueName": { "Fn::Sub": "h2x-worker-queue-${EnvName}" },
               "VisibilityTimeout": "300"
            }
+        }, 
+
+        //S3 buckets
+        "PdfBucket": {
+          "Type": "AWS::S3::Bucket",
+          "Properties": {
+            "AccessControl": "Private",
+            "BucketName": { "Fn::Sub": "h2x-s3-pdf-${EnvName}" }
+          }
+        },
+        "PdfRendersBucket": {
+          "Type": "AWS::S3::Bucket",
+          "Properties": {
+            "AccessControl": "Private",
+            "BucketName": { "Fn::Sub": "h2x-s3-pdfrenders-${EnvName}" }
+          }
+        }, 
+
+        // DNS record
+        "DnsRecord": {
+          "Type": "AWS::Route53::RecordSet",
+          "Properties": {
+            "Name": { "Fn::Sub": "app-${EnvName}.${DnsZoneName}" },
+            "Type": "CNAME",
+            "TTL": "900",
+            "HostedZoneId": { "Ref": "DnsZoneId" },
+            "ResourceRecords": [ { "Fn::GetAtt": [ "WebEnvironment", "EndpointURL" ]} ]
+          }
+        }, 
+
+        //SSL certificate
+        "SSLCertificate":{
+          "Type":"AWS::CertificateManager::Certificate",
+          "Properties":{
+            "DomainName": { "Fn::Sub": "app-${EnvName}.${DnsZoneName}" },
+            "ValidationMethod": "DNS",
+            "DomainValidationOptions" : [
+                {
+                  "DomainName" : { "Fn::Sub": "app-${EnvName}.${DnsZoneName}" },
+                  "HostedZoneId": { "Ref": "DnsZoneId" }
+                }
+              ]
+            }
         }
-        
+    },
+    "Mappings": {
+      "RegionParams": {
+        "us-east-1": { "EBHostedZoneId": "Z117KPS5GTRQ2G" },
+        "us-east-2": { "EBHostedZoneId": "Z14LCN19Q5QHIC" },
+        "us-west-1": { "EBHostedZoneId": "Z1LQECGX5PH1X" },
+        "us-west-2": { "EBHostedZoneId": "Z38NKT9BP95V3O" },
+        "af-south-1": { "EBHostedZoneId": "Z1EI3BVKMKK4AM" },
+        "ap-east-1": { "EBHostedZoneId": "ZPWYUBWRU171A" },
+        "ap-south-1": { "EBHostedZoneId": "Z18NTBI3Y7N9TZ" },
+        "ap-northeast-3": { "EBHostedZoneId": "ZNE5GEY1TIAGY" },
+        "ap-northeast-2": { "EBHostedZoneId": "Z3JE5OI70TWKCP" },
+        "ap-southeast-1": { "EBHostedZoneId": "Z16FZ9L249IFLT" },
+        "ap-southeast-2": { "EBHostedZoneId": "Z2PCDNR3VC2G1N" },
+        "ap-northeast-1": { "EBHostedZoneId": "Z1R25G3KIG2GBW" },
+        "ca-central-1": { "EBHostedZoneId": "ZJFCZL7SSZB5I" },
+        "eu-central-1": { "EBHostedZoneId": "Z1FRNW7UH4DEZJ" },
+        "eu-west-1": { "EBHostedZoneId": "Z2NYPWQ7DFZAZH" },
+        "eu-west-2": { "EBHostedZoneId": "Z1GKAAAUGATPF1" },
+        "eu-south-1": { "EBHostedZoneId": "Z10VDYYOA2JFKM" },
+        "eu-west-3": { "EBHostedZoneId": "Z5WN6GAYWG5OB" },
+        "eu-north-1": { "EBHostedZoneId": "Z23GO28BZ5AETM" },
+        "me-south-1": { "EBHostedZoneId": "Z2BBTEKR2I36N2" },
+        "sa-east-1": { "EBHostedZoneId": "Z10X7K2B4QSOFV" }  
+      }
     },
     "Outputs": {
 
