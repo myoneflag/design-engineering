@@ -4,38 +4,56 @@
     "Metadata": {  
     },
     "Parameters": {
-        "EnvName": {
-          "Description": "Enviroment name, used in DNS, database names, etc.",
-          "Type": "String",
-          "Default": "test"
-        },
-        "Ec2InstanceKeyname": {
-          "Description": "Keypair name for SSH access on instances - keypair must be created prior to Stack creation",
-          "Type": "AWS::EC2::KeyPair::KeyName"
-        },
-        "WebInstanceType": {
-          "Description": "Web server instance type",
-          "Type": "String",
-          "Default": "t2.small"
-        },
-        "WorkerInstanceType": {
-          "Description": "Worker instance type",
-          "Type": "String",
-          "Default": "t2.small"
-        },
-        "DnsZoneId": {
-          "Description": "HostedZoneID of the DNS zone to create the main records pointing to the web loadbalancer",
-          "Type": "AWS::Route53::HostedZone::Id"
-        },
-        "DnsZoneName": {
-          "Description": "HostedZone DNS zone to create the main records pointing to the web loadbalancer",
-          "Type": "String"
-        },        
-        "EnvTag": {
-          "Description": "Extra name tag for elastic beanstalk resources names",
-          "Type": "String",
-          "Default": ""
-        }
+      "EnvName": {
+        "Description": "Enviroment name, used in DNS, database names, etc.",
+        "Type": "String",
+        "Default": "test"
+      },
+      "Ec2InstanceKeyname": {
+        "Description": "Keypair name for SSH access on instances - keypair must be created prior to Stack creation",
+        "Type": "AWS::EC2::KeyPair::KeyName"
+      },
+      "WebInstanceType": {
+        "Description": "Web server instance type",
+        "Type": "String",
+        "Default": "t2.small"
+      },
+      "WorkerInstanceType": {
+        "Description": "Worker instance type",
+        "Type": "String",
+        "Default": "t2.small"
+      },
+      "DnsZoneId": {
+        "Description": "HostedZoneID of the DNS zone to create the main records pointing to the web loadbalancer",
+        "Type": "AWS::Route53::HostedZone::Id"
+      },
+      "DnsZoneName": {
+        "Description": "HostedZone DNS zone to create the main records pointing to the web loadbalancer",
+        "Type": "String"
+      },        
+      "DBSnapshotARNRestore": {
+        "Description": "ARN of the DB snapshot to use to recreate the RDS instance",
+        "Type": "String",
+        "Default": ""
+      },
+      "WebVersion": {
+        "Description": "Extra name tag for major upgrades to Web EB",
+        "Type": "String",
+        "Default": ""
+      },
+      "WorkerVersion": {
+        "Description": "Extra name tag for major upgrades to Worker EB",
+        "Type": "String",
+        "Default": ""
+      },
+      "DbVersion": {
+        "Description": "Extra name tag for major upgrades to RDS DB",
+        "Type": "String",
+        "Default": "v1"
+      }
+    },
+    "Conditions" : {
+      "UseRDSSnapshot": { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "DBSnapshotARNRestore" }, "" ]}] }
     },
     "Resources": {        
         // Instance Roles
@@ -72,7 +90,7 @@
         "WebApplication": {
           "Type": "AWS::ElasticBeanstalk::Application",
           "Properties": {
-             "ApplicationName": { "Fn::Sub": "H2X-web-${EnvName}${EnvTag}" },
+             "ApplicationName": { "Fn::Sub": "H2X-web-${EnvName}${WebVersion}" },
              "Description": { "Fn::Sub": "H2X ${EnvName} Web Application" }
           }
         },
@@ -162,7 +180,7 @@
           "Type": "AWS::ElasticBeanstalk::Environment",
           "Properties": {
              "ApplicationName": { "Ref": "WebApplication" },
-             "EnvironmentName":  { "Fn::Sub": "H2X-web-${EnvName}${EnvTag}" },              
+             "EnvironmentName":  { "Fn::Sub": "H2X-web-${EnvName}${WebVersion}" },              
              "Description": { "Fn::Sub": "H2X ${EnvName} Web Environment" },
              "VersionLabel": { "Ref": "WebApplicationVersion" },
              "TemplateName": { "Ref": "WebApplicationConfiguration" },
@@ -177,7 +195,7 @@
         "WorkerApplication": {
           "Type": "AWS::ElasticBeanstalk::Application",
           "Properties": {
-             "ApplicationName": { "Fn::Sub": "H2X-worker-${EnvName}${EnvTag}" },
+             "ApplicationName": { "Fn::Sub": "H2X-worker-${EnvName}${WorkerVersion}" },
              "Description": { "Fn::Sub": "H2X ${EnvName} Worker Application" }
           }
         },
@@ -256,7 +274,7 @@
            "Type": "AWS::ElasticBeanstalk::Environment",
            "Properties": {
               "ApplicationName": { "Ref": "WorkerApplication" },
-              "EnvironmentName":  { "Fn::Sub": "H2X-worker-${EnvName}${EnvTag}" },
+              "EnvironmentName":  { "Fn::Sub": "H2X-worker-${EnvName}${WorkerVersion}" },
               "Description": { "Fn::Sub": "H2X ${EnvName} Worker Environment" },
               "VersionLabel": { "Ref": "WorkerApplicationVersion" },
               "TemplateName": { "Ref": "WorkerApplicationConfiguration" },              
@@ -286,8 +304,16 @@
         "DBInstance": {
           "Type": "AWS::RDS::DBInstance",
           "Properties": {
+            "DBSnapshotIdentifier": {
+              "Fn::If" : [
+                "UseRDSSnapshot",
+                {"Ref" : "DBSnapshotARNRestore"},
+                {"Ref" : "AWS::NoValue"}
+              ]
+            },
             "AllocatedStorage": "100",
-            "DBInstanceIdentifier": {"Fn::Sub": "h2x-db-${EnvName}" },
+            "AllowMajorVersionUpgrade": true,
+            "DBInstanceIdentifier": { "Fn::Sub": "h2x-db-${EnvName}${DbVersion}" },
             "DBInstanceClass": "db.t3.small",
             "DBSecurityGroups": [ {"Ref": "DBSecurityGroup"} ],
             "DeleteAutomatedBackups": false,
@@ -416,6 +442,5 @@
       }
     },
     "Outputs": {
-
     }
 }
