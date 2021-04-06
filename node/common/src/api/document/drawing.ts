@@ -17,6 +17,12 @@ import { EntityType } from "./entities/types";
 import { Choice, cloneSimple, DeepPartial } from "../../lib/utils";
 import { PriceTable } from "../catalog/price-table";
 import { SupportedLocales } from "../locale";
+import {
+    EnergyMeasurementSystem,
+    MeasurementSystem,
+    VelocityMeasurementSystem,
+    VolumeMeasurementSystem
+} from "../../lib/measurements";
 
 export interface Coord {
     x: number;
@@ -88,28 +94,6 @@ export interface UnitsParameters {
     energyMeasurementSystem: EnergyMeasurementSystem;
 }
 
-export enum EnergyMeasurementSystem {
-    METRIC = 'METRIC',
-    IMPERIAL = 'IMPERIAL',
-}
-
-export enum MeasurementSystem {
-    METRIC = 'METRIC',
-    IMPERIAL = 'IMPERIAL',
-}
-
-export enum VolumeMeasurementSystem {
-    METRIC = 'METRIC',
-    IMPERIAL = 'IMPERIAL',
-    US = 'US',
-}
-
-
-export enum VelocityMeasurementSystem {
-    METRIC = 'METRIC',
-    IMPERIAL = 'IMPERIAL',
-    ALTERNATIVE_IMPERIAL = 'ALTERNATIVE_IMPERIAL',
-}
 
 export const LENGTH_MEASUREMENT_CHOICES: Choice[] = [
     {name: "Metric (mm)", key: MeasurementSystem.METRIC},

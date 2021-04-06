@@ -9,9 +9,9 @@ import PipeEntity, {fillPipeDefaultFields} from "../../../../../common/src/api/d
 import {getDrainageUnitName, getPsdUnitName, PsdProfile} from "../../../calculations/utils";
 import {assertUnreachable, isDrainage, isGas} from "../../../../../common/src/api/config";
 import {Catalog, PipeManufacturer} from "../../../../../common/src/api/catalog/types";
-import {MeasurementSystem, UnitsParameters} from "../../../../../common/src/api/document/drawing";
+import {UnitsParameters} from "../../../../../common/src/api/document/drawing";
 import {GlobalStore} from "../../../htmlcanvas/lib/global-store";
-import {convertPipeDiameterFromMetric, Units} from "../../../../../common/src/lib/measurements";
+import { convertPipeDiameterFromMetric, MeasurementSystem, Units } from "../../../../../common/src/lib/measurements";
 import {DocumentState} from "../types";
 
 export enum NoFlowAvailableReason {

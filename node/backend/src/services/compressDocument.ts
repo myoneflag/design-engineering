@@ -133,8 +133,6 @@ export async function compressDocumentIfRequired(doc: Document) {
         const totalMs = new Date().getTime() - start;
         console.log("Completed in " + (totalMs / 1000).toPrecision(3) + "s. Removed " + removed + ", inserted " + added + ", ignored: " + ignored);
     });
-
-
 }
 
 // As a tester, group in buckets of 5 second gaps.

@@ -1,5 +1,8 @@
+
 import { Catalog, State } from "./catalog/types";
 import { Choice, cloneSimple, SelectField } from "../lib/utils";
+import { UnitsParameters } from "./document/drawing";
+import { MeasurementSystem } from "../lib/measurements";
 
 export enum SupportedPsdStandards {
     as35002018LoadingUnits = "as35002018LoadingUnits",
@@ -380,7 +383,7 @@ export enum StandardMaterialUids {
     Pex = "pexSdr74"
 }
 
-export const INSULATION_THICKNESS_MMKEMBLA: SelectField[] = [
+const INSULATION_THICKNESS_MMKEMBLA: SelectField[] = [
     { value: 9, text: '9' },
     { value: 13, text: '13' },
     { value: 19, text: '19' },
@@ -388,3 +391,23 @@ export const INSULATION_THICKNESS_MMKEMBLA: SelectField[] = [
     { value: 32, text: '32' },
     { value: 38, text: '38' },
 ];
+
+const INSULATION_THICKNESS_MMKEMBLA_IN: SelectField[] = [
+    { value: 9, text: '⅜' },
+    { value: 13, text: '½' },
+    { value: 19, text: '¾' },
+    { value: 25, text: '1' },
+    { value: 32, text: '1¼' },
+    { value: 38, text: '1½' },
+];
+
+export function getInsulationThicknessMMKEMBLA(units: UnitsParameters) {
+    switch (units.lengthMeasurementSystem) {
+        case MeasurementSystem.METRIC:
+            return INSULATION_THICKNESS_MMKEMBLA;
+        case MeasurementSystem.IMPERIAL:
+            return INSULATION_THICKNESS_MMKEMBLA_IN;
+        default:
+            assertUnreachable(units.lengthMeasurementSystem);
+    }
+}

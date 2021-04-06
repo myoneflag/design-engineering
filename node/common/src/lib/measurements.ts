@@ -1,11 +1,5 @@
-import {
-    EnergyMeasurementSystem,
-    MeasurementSystem,
-    UnitsParameters,
-    VelocityMeasurementSystem,
-    VolumeMeasurementSystem
-} from "../api/document/drawing";
-import {assertUnreachable} from "../api/config";
+import { UnitsParameters } from "../api/document/drawing";
+import { assertUnreachable } from "../api/config";
 
 export enum Units {
     None = "",
@@ -51,8 +45,31 @@ export enum Units {
 
 }
 
+export enum EnergyMeasurementSystem {
+    METRIC = "METRIC",
+    IMPERIAL = "IMPERIAL",
+}
+
+export enum MeasurementSystem {
+    METRIC = "METRIC",
+    IMPERIAL = "IMPERIAL",
+}
+
+export enum VolumeMeasurementSystem {
+    METRIC = "METRIC",
+    IMPERIAL = "IMPERIAL",
+    US = "US",
+}
+
+export enum VelocityMeasurementSystem {
+    METRIC = "METRIC",
+    IMPERIAL = "IMPERIAL",
+    ALTERNATIVE_IMPERIAL = "ALTERNATIVE_IMPERIAL",
+}
+
 export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, units: Units, valueRaw: number | string): [Units, number | string | null] {
     const value = Number(valueRaw);
+
     switch (units) {
         case Units.None:
         case Units.Kv:

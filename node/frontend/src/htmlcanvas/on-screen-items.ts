@@ -9,8 +9,8 @@ import {
 } from "../../src/calculations/utils";
 import { GridLineMode } from "../store/document/types";
 import { Catalog } from "../../../common/src/api/catalog/types";
-import { MeasurementSystem, NetworkType } from "../../../common/src/api/document/drawing";
-import { convertMeasurementSystem, in2MM, Units } from "../../../common/src/lib/measurements";
+import { NetworkType } from "../../../common/src/api/document/drawing";
+import { convertMeasurementSystem, in2MM, MeasurementSystem, Units } from "../../../common/src/lib/measurements";
 import { assertUnreachable, StandardFlowSystemUids } from "../../../common/src/api/config";
 
 const SENSIBLE_UNITS_MM: number[] = [
