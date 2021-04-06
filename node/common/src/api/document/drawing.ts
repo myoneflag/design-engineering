@@ -545,7 +545,7 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
                 pressureMeasurementSystem: MeasurementSystem.IMPERIAL,
                 temperatureMeasurementSystem: MeasurementSystem.IMPERIAL,
                 velocityMeasurementSystem: VelocityMeasurementSystem.IMPERIAL,
-                volumeMeasurementSystem: VolumeMeasurementSystem.IMPERIAL
+                volumeMeasurementSystem: VolumeMeasurementSystem.US
             };
 
             result.metadata.calculationParams.psdMethod = SupportedPsdStandards.upc2018FlushTanks;
