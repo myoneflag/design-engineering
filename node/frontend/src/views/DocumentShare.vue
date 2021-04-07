@@ -13,7 +13,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { closeDocument, getDocument, openDocumentShare } from "../api/document";
+import { closeDocument, getDocument, getSharedDocument, openDocumentShare } from "../api/document";
 import { loadCatalogShare } from "../api/catalog";
 import { MainEventBus } from "../store/main-event-bus";
 import { DocumentState } from "../store/document/types";
@@ -39,7 +39,7 @@ export default class DocumentShare extends Vue {
 
     mounted() {
         console.log("Document share");
-        getDocument(this.$props.id).then((res) => {
+        getSharedDocument(this.$props.documentSharedId).then((res) => {
             if (res.success) {
                 this.document.locale = res.data.locale;
                 // repair the document structure with the correct initial state, now that we

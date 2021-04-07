@@ -221,6 +221,24 @@ export class DocumentController {
         });
     }
 
+
+    @ApiHandleError()
+    public async findOneShared(req: Request, res: Response, next: NextFunction, session: Session) {
+        const sd = await ShareDocument.findOne({token: req.params.sharedId});
+        const doc = sd && await Document.findOne({where: {shareDocument: {id: sd.id}}});
+
+        if (!doc) {
+            return res.status(404).send({
+                success: false,
+                message: "Shared document link is invalid"
+            });
+        }
+        res.status(200).send({
+            success: true,
+            data: doc
+        });
+    }
+
     @ApiHandleError()
     @AuthRequired()
     public async findOperations(req: Request, res: Response, next: NextFunction, session: Session) {
@@ -712,6 +730,7 @@ router.post("/:id/clone", controller.clone.bind(controller));
 router.get("/:id/operations", controller.findOperations.bind(controller));
 router.put("/:id", controller.update.bind(controller));
 router.get("/:id", controller.findOne.bind(controller));
+router.get("/shared/:sharedId", controller.findOneShared.bind(controller));
 router.post("/:id/restore", controller.restore.bind(controller));
 router.get("/", controller.find.bind(controller));
 

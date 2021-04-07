@@ -219,6 +219,18 @@ export async function getDocument(id: number): Promise<APIResult<Document>> {
     }
 }
 
+export async function getSharedDocument(sharedId: string): Promise<APIResult<Document>> {
+    try {
+        return (await axios.get("/api/documents/shared/" + sharedId)).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return { success: false, message: e.response.data.message };
+        } else {
+            return { success: false, message: e.message };
+        }
+    }
+}
+
 export async function createDocument(orgId: string | null, locale: SupportedLocales): Promise<APIResult<Document>> {
     try {
         return (
