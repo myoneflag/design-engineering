@@ -46,6 +46,16 @@
         "Type": "String",
         "Default": ""
       },
+      "MQUsername": {
+        "Description": "MQ Username",
+        "Type": "String",
+        "NoEcho": "true"
+      },
+      "MQPassword": {
+        "Description": "MQ Password",
+        "Type": "String",
+        "NoEcho": "true"
+      },
       "WebVersion": {
         "Description": "Extra name tag for major upgrades to Web EB",
         "Type": "String",
@@ -108,7 +118,7 @@
         "InstancePolicy": {
           "Type": "AWS::IAM::Policy",
           "Properties": {
-            "PolicyName" : "h2x-application-policy-${EnvName}",
+            "PolicyName" : { "Fn::Sub": "h2x-application-policy-${EnvName}" },
              "PolicyDocument": {
                 "Version" : "2012-10-17",
                 "Statement": [ 
@@ -241,6 +251,31 @@
                 "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "RDS_HOSTNAME",
                 "Value":  { "Fn::GetAtt": [ "DBInstance", "Endpoint.Address" ] }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "RDS_USER",
+                "Value":  { "Ref": "DBMasterUserName" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "RDS_PASSWORD",
+                "Value":  { "Ref": "DBMasterUserPassword" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "MQ_URL",
+                "Value":  { "Fn::GetAtt": [ "MQBroker", "WssEndpoints" ] }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "MQ_USERNAME",
+                "Value":  { "Ref": "MQUsername" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "MQ_PASSWORD",
+                "Value":  { "Ref": "MQPassword" }
               }
             ],
             "SolutionStackName": "64bit Amazon Linux 2 v3.2.6 running Docker"
@@ -336,6 +371,31 @@
                 "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "RDS_HOSTNAME",
                 "Value":  { "Fn::GetAtt": [ "DBInstance", "Endpoint.Address" ] }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "RDS_USER",
+                "Value":  { "Ref": "DBMasterUserName" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "RDS_PASSWORD",
+                "Value":  { "Ref": "DBMasterUserPassword" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "MQ_URL",
+                "Value":  { "Fn::GetAtt": [ "MQBroker", "WssEndpoints" ] }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "MQ_USERNAME",
+                "Value":  { "Ref": "MQUsername" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "MQ_PASSWORD",
+                "Value":  { "Ref": "MQPassword" }
               }
             ],
             "SolutionStackName": "64bit Amazon Linux 2018.03 v2.25.2 running Multi-container Docker 19.03.13-ce (Generic)"
@@ -414,8 +474,8 @@
               "Users" : [ 
                 {
                   "ConsoleAccess" : true,
-                  "Password" : "TEremoRmyoUT",
-                  "Username" : "emqemqemq"
+                  "Password" : { "Ref": "MQPassword"},
+                  "Username" : { "Ref": "MQUsername" }
                 }
                ]
             }
