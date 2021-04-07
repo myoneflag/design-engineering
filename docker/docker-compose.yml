@@ -26,9 +26,11 @@ services:
             - 61614:61614 #default WS transport protocol port open
 
     backend:
+        profiles:
+            - dev
         build: 
             context: ../node/
-            dockerfile: ../docker/backend.Dockerfile
+            dockerfile: ../docker/dev-backend.Dockerfile
             args:
                 - AWS_KEY=${AWS_KEY}
                 - AWS_SECRET=${AWS_SECRET}
@@ -47,9 +49,11 @@ services:
             - ../node/:/usr/src/app/
 
     frontend:
+        profiles:
+            - dev
         build:
             context: ../node/
-            dockerfile: ../docker/frontend.Dockerfile
+            dockerfile: ../docker/dev-frontend.Dockerfile
         image: 'h2x-frontend:latest'
         restart: always
         ports:
@@ -61,6 +65,24 @@ services:
             - /usr/src/app/frontend/dist
             # current code as bind volume
             - ../node/:/usr/src/app/
+
+    production:
+        profiles:
+            - production
+        build:
+            context: ../node/
+            dockerfile: ../docker/production.Dockerfile
+        image: 'h2x-production:latest'
+        restart: always
+        ports:
+            - 80:80
+        volumes:
+            # anonymous volumes to prevent container folders being overwritten by host folders
+            - /usr/src/app/node_modules
+            - /usr/src/app/frontend/node_modules
+            - /usr/src/app/frontend/dist
+            - /usr/src/app/backend/node_modules
+            - /usr/src/app/backend/dist
 
     backup:
         build:
@@ -80,6 +102,8 @@ services:
             - db
 
     nginx:
+        profiles:
+          - dev
         image: 'nginx:latest'
         volumes:
             - ./nginx.conf:/etc/nginx/nginx.conf

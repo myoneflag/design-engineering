@@ -30,7 +30,17 @@
       "DnsZoneName": {
         "Description": "HostedZone DNS zone to create the main records pointing to the web loadbalancer",
         "Type": "String"
-      },        
+      },
+      "DBMasterUserName": {
+        "Type": "String",
+        "Description": "DB Master Username",
+        "NoEcho": "true"
+      },
+      "DBMasterUserPassword": {
+        "Type": "String",
+        "Description": "DB Master User Password",
+        "NoEcho": "true"
+      },
       "DBSnapshotARNRestore": {
         "Description": "ARN of the DB snapshot to use to recreate the RDS instance",
         "Type": "String",
@@ -49,7 +59,7 @@
       "DbVersion": {
         "Description": "Extra name tag for major upgrades to RDS DB",
         "Type": "String",
-        "Default": "v1"
+        "Default": ""
       }
     },
     "Conditions" : {
@@ -62,8 +72,69 @@
           "Properties": {
               "Path": "/",
               "Roles": [ 
-                "aws-elasticbeanstalk-ec2-role"
+                { "Ref": "InstanceIAMRole" }
               ]
+          }
+        },
+
+        "InstanceIAMRole": {
+           "Type": "AWS::IAM::Role",
+           "Properties": {
+            "AssumeRolePolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                  {
+                      "Effect": "Allow",
+                      "Principal": {
+                          "Service": [
+                              "ec2.amazonaws.com"
+                          ]
+                      },
+                      "Action": [
+                          "sts:AssumeRole"
+                      ]
+                  }
+                ]
+              },
+              "Path": "/",
+              "ManagedPolicyArns": [ 
+                "arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier",
+                "arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier",
+                "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+              ]
+           }
+        },
+
+        "InstancePolicy": {
+          "Type": "AWS::IAM::Policy",
+          "Properties": {
+            "PolicyName" : "h2x-application-policy-${EnvName}",
+             "PolicyDocument": {
+                "Version" : "2012-10-17",
+                "Statement": [ 
+                  {
+                    "Sid": "S3PdfBucketAccess",
+                    "Action": "s3:*",
+                    "Effect": "Allow",
+                    "Resource": { "Ref": "PdfBucket"}
+                  },
+                  {
+                    "Sid": "S3PdfRenderBucketAccess",
+                    "Action": "s3:*",
+                    "Effect": "Allow",
+                    "Resource": { "Ref": "PdfRendersBucket" }
+                  },
+                  {
+                    "Sid": "ConmnectRdsDb",
+                    "Action": "rds-db:connect",
+                    "Effect": "Allow",
+                    "Resource": { "Fn::Sub": "arn:aws:rds-db:${AWS::Region}:${AWS::AccountId}:dbuser:${DBInstance}/${DBMasterUserName}" }
+                  }                  
+                ]
+             },
+             "Roles": [ {
+                "Ref": "InstanceIAMRole"
+             } ]
           }
         },
 
@@ -168,8 +239,8 @@
               },
               {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
-                "OptionName": "TEST_VAR",
-                "Value": "TEST_VAL"
+                "OptionName": "RDS_HOSTNAME",
+                "Value":  { "Fn::GetAtt": [ "DBInstance", "Endpoint.Address" ] }
               }
             ],
             "SolutionStackName": "64bit Amazon Linux 2 v3.2.6 running Docker"
@@ -263,8 +334,8 @@
               },
               {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
-                "OptionName": "TEST_VAR",
-                "Value": "TEST_VAL"
+                "OptionName": "RDS_HOSTNAME",
+                "Value":  { "Fn::GetAtt": [ "DBInstance", "Endpoint.Address" ] }
               }
             ],
             "SolutionStackName": "64bit Amazon Linux 2018.03 v2.25.2 running Multi-container Docker 19.03.13-ce (Generic)"
@@ -319,10 +390,11 @@
             "DeleteAutomatedBackups": false,
             "Engine": "postgres",
             "EngineVersion": "13.1",
+            "EnableIAMDatabaseAuthentication": "true",
             "MultiAZ": "false",
             "PubliclyAccessible": "false",
-            "MasterUsername": "h2xdbuser",
-            "MasterUserPassword": "FLorpUTHoupe"
+            "MasterUsername": { "Ref": "DBMasterUserName"},
+            "MasterUserPassword": { "Ref": "DBMasterUserPassword" }
           }
         },
 
