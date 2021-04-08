@@ -41,6 +41,11 @@
         "Description": "DB Master User Password",
         "NoEcho": "true"
       },
+      "DBName": {
+        "Type": "String",
+        "Description": "Database Name",
+        "NoEcho": "true"
+      },
       "DBSnapshotARNRestore": {
         "Description": "ARN of the DB snapshot to use to recreate the RDS instance",
         "Type": "String",
@@ -55,6 +60,18 @@
         "Description": "MQ Password",
         "Type": "String",
         "NoEcho": "true"
+      },
+      "SourceBucketName": {
+        "Description": "S3 Bucket where deployment source is uploaded",
+        "Type": "String"
+      },
+      "SourcePathWeb": {
+        "Description": "S3 Bucket path where Web deployment source is uploaded",
+        "Type": "String"
+      },
+      "SourcePathWorker": {
+        "Description": "S3 Bucket path where Worker deployment source is uploaded",
+        "Type": "String"
       },
       "WebVersion": {
         "Description": "Extra name tag for major upgrades to Web EB",
@@ -126,13 +143,13 @@
                     "Sid": "S3PdfBucketAccess",
                     "Action": "s3:*",
                     "Effect": "Allow",
-                    "Resource": { "Ref": "PdfBucket"}
+                    "Resource": { "Fn::GetAtt": [ "PdfBucket", "Arn" ] }
                   },
                   {
                     "Sid": "S3PdfRenderBucketAccess",
                     "Action": "s3:*",
                     "Effect": "Allow",
-                    "Resource": { "Ref": "PdfRendersBucket" }
+                    "Resource": { "Fn::GetAtt": [ "PdfRendersBucket", "Arn" ] }
                   },
                   {
                     "Sid": "ConmnectRdsDb",
@@ -175,14 +192,15 @@
              "Description": { "Fn::Sub": "H2X ${EnvName} Web Application" }
           }
         },
-        "WebApplicationVersion": {
+        "WebApplicationVersion_DATESTAMP_": {
           "Type": "AWS::ElasticBeanstalk::ApplicationVersion",
+          "UpdateReplacePolicy" : "Retain",          
           "Properties": {
             "ApplicationName": { "Ref": "WebApplication" },
-            "Description": { "Fn::Sub": "H2X-web-${EnvName}" },
+            "Description": { "Fn::Sub": "H2X-web-${EnvName}-${SourcePathWeb}" },
             "SourceBundle": { 
-              "S3Bucket": { "Fn::Sub": "elasticbeanstalk-${AWS::Region}-${AWS::AccountId}" }, 
-              "S3Key": "test/docker.zip"
+              "S3Bucket": { "Ref": "SourceBucketName" }, 
+              "S3Key": { "Ref": "SourcePathWeb" }
              }
           }
         },
@@ -269,6 +287,11 @@
               },
               {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "RDS_DB_NAME",
+                "Value":  { "Ref": "DBName" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "MQ_URL",
                 "Value":  { "Fn::Select" : [ 0, { "Fn::GetAtt": [ "MQBroker", "WssEndpoints" ] } ] }
               },
@@ -293,14 +316,14 @@
              "ApplicationName": { "Ref": "WebApplication" },
              "EnvironmentName":  { "Fn::Sub": "H2X-web-${EnvName}${WebVersion}" },              
              "Description": { "Fn::Sub": "H2X ${EnvName} Web Environment" },
-             "VersionLabel": { "Ref": "WebApplicationVersion" },
+             "VersionLabel": { "Ref": "WebApplicationVersion_DATESTAMP_" },
              "TemplateName": { "Ref": "WebApplicationConfiguration" },
              "Tier": {
                "Name" : "WebServer",
                "Type" : "Standard"
              }
           }
-       },
+        },
 
         // Worker Enviroment
         "WorkerApplication": {
@@ -310,14 +333,15 @@
              "Description": { "Fn::Sub": "H2X ${EnvName} Worker Application" }
           }
         },
-        "WorkerApplicationVersion": {
+        "WorkerApplicationVersion_DATESTAMP_": {
           "Type": "AWS::ElasticBeanstalk::ApplicationVersion",
+          "UpdateReplacePolicy" : "Retain",          
           "Properties": {
             "ApplicationName": { "Ref": "WorkerApplication" },
-            "Description": { "Fn::Sub": "H2X-worker-${EnvName}" },
+            "Description": { "Fn::Sub": "H2X-worker-${EnvName}-${SourcePathWorker}" },
             "SourceBundle": { 
-              "S3Bucket": { "Fn::Sub": "elasticbeanstalk-${AWS::Region}-${AWS::AccountId}" }, 
-              "S3Key": "test/docker-multicontainer-v2.zip"
+              "S3Bucket": { "Ref": "SourceBucketName" }, 
+              "S3Key": { "Ref": "SourcePathWorker"}
              }
           }
         },
@@ -394,6 +418,11 @@
               },
               {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "RDS_DB_NAME",
+                "Value":  { "Ref": "DBName" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "MQ_URL",
                 "Value":  { "Fn::Select" : [ 0, { "Fn::GetAtt": [ "MQBroker", "WssEndpoints" ] } ] }
               },
@@ -408,7 +437,7 @@
                 "Value":  { "Ref": "MQPassword" }
               }
             ],
-            "SolutionStackName": "64bit Amazon Linux 2018.03 v2.25.2 running Multi-container Docker 19.03.13-ce (Generic)"
+            "SolutionStackName": "64bit Amazon Linux 2 v3.2.6 running Docker"
           } 
         },
         "WorkerEnvironment": {
@@ -417,7 +446,7 @@
               "ApplicationName": { "Ref": "WorkerApplication" },
               "EnvironmentName":  { "Fn::Sub": "H2X-worker-${EnvName}${WorkerVersion}" },
               "Description": { "Fn::Sub": "H2X ${EnvName} Worker Environment" },
-              "VersionLabel": { "Ref": "WorkerApplicationVersion" },
+              "VersionLabel": { "Ref": "WorkerApplicationVersion_DATESTAMP_" },
               "TemplateName": { "Ref": "WorkerApplicationConfiguration" },              
               "Tier": {
                 "Name" : "Worker",
@@ -464,7 +493,8 @@
             "MultiAZ": "false",
             "PubliclyAccessible": "false",
             "MasterUsername": { "Ref": "DBMasterUserName"},
-            "MasterUserPassword": { "Ref": "DBMasterUserPassword" }
+            "MasterUserPassword": { "Ref": "DBMasterUserPassword" },
+            "DBName": { "Ref": "DBName" }
           }
         },
 
