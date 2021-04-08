@@ -3,3 +3,6 @@ aws_creds.sh
 node_modules/
 implement_notes/
 cloudformation/template.cfn.json
+docker/*-Dockerrun.aws.json
+docker/package-lock.json
+cloudformation/package-lock.json
