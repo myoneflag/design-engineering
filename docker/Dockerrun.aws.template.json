@@ -1,7 +1,7 @@
 {
     "AWSEBDockerrunVersion": "1",
     "Image": {
-      "Name": "891449579858.dkr.ecr.us-west-1.amazonaws.com/h2x-docker-repository:latest",
+      "Name": "_IMAGE_NAME_",
       "Update": "true"
     },
     "Ports": [
