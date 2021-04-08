@@ -1,0 +1,21 @@
+{
+  "name": "h2x-docker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "npm-run-all": "^4.1.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "dev": "docker-compose up --profile dev",
+    "build": "docker-compose build production",
+    "login": "source config/config.${EnvName}.env && aws ecr get-login-password --region us-west-1 --profile ${AWSProfile} | docker login --username AWS --password-stdin 891449579858.dkr.ecr.us-west-1.amazonaws.com",
+    "tag": "source config/config.${EnvName}.env && docker tag h2x-production:latest ${REMOTE_IMAGE_TAG}",
+    "prep": "source config/config.${EnvName}.env && sed \"s#_IMAGE_NAME_#${REMOTE_IMAGE_TAG}#g\" Dockerrun.aws.template.json > ${DOCKERRUN_FILE}",
+    "push": "source config/config.${EnvName}.env && docker push ${REMOTE_IMAGE_TAG}",
+    "deploy": "source config/config.${EnvName}.env && run-s tag prep push"
+  },
+  "author": "",
+  "license": "ISC"
+}
