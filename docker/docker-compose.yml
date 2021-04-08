@@ -71,7 +71,7 @@ services:
             - production
         build:
             context: ../node/
-            dockerfile: ../docker/production.Dockerfile
+            dockerfile: ../docker/prod-web.Dockerfile
         image: 'h2x-production:latest'
         restart: always
         ports:
