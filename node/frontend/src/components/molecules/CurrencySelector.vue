@@ -15,7 +15,7 @@
             {{ CurrencySymbol.POUNDS }}
         </span>
         <b-input-group append="%" class="ml-2" >
-            <b-input type="number" v-model="currency.multiplierPct" v-b-tooltip.bottom="{title: 'multiplier'}" :disabled="disabled"/>
+            <b-input type="number" v-model="currency.multiplierPct" v-b-tooltip.bottom="{title: 'multiplier'}" :readonly="disabled"/>
         </b-input-group>
     </div>
 </template>

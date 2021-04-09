@@ -15,12 +15,12 @@
                     responsive="true"
             >
                 <template v-slot:[cellKey]="slot" >
-                    <b-input-group prepend="$" size="sm">
+                    <b-input-group :prepend="currency.symbol" size="sm">
                         <b-form-input
                                 size="sm"
                                 type="number"
                                 @input="(e) => onCellInput(component, slot.item['Size (mm)'], e)"
-                                :value="slot.value"
+                                :value="displayValue(slot.value)"
                         ></b-form-input>
                     </b-input-group>
                 </template>
@@ -68,6 +68,15 @@
         get document(): DocumentState {
             return this.$store.getters['document/document'];
         }
+        get currency() {
+            return this.document.drawing.metadata.units.currency;
+        }
+        displayValue(value: number) {
+            if (!value) {
+                return value;
+            }
+            return (value * this.currency.multiplierPct / 100).toFixed(2);
+        }
 
         get components() {
             return Object.keys(this.priceTable.Equipment);
@@ -89,9 +98,17 @@
             const priceTable = this.document.drawing.metadata.priceTable;
             console.log(JSON.stringify(priceTable, null, 2));
             if (typeof this.priceTable.Equipment[equipment] === 'number') {
-                setPropertyByStringVue(priceTable, 'Equipment.' + equipment, Number(value));
+                setPropertyByStringVue(
+                    priceTable,
+                    'Equipment.' + equipment,
+                    Number(value) / this.currency.multiplierPct * 100,
+                );
             } else {
-                setPropertyByStringVue(priceTable, 'Equipment.' + equipment + '.' + Number(size), Number(value));
+                setPropertyByStringVue(
+                    priceTable,
+                    'Equipment.' + equipment + '.' + Number(size),
+                    Number(value) / this.currency.multiplierPct * 100,
+                );
             }
             console.log(JSON.stringify(priceTable, null, 2));
         }

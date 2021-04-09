@@ -8,8 +8,8 @@
             responsive="true"
     >
         <template v-slot:[cellKey]="slot">
-            <b-input-group prepend="$">
-                <b-form-input type="number" @input="(e) => onCellInput(slot.item['Node'], e)" :value="slot.value"></b-form-input>
+            <b-input-group :prepend="currency.symbol">
+                <b-form-input type="number" @input="(e) => onCellInput(slot.item['Node'], e)" :value="displayValue(slot.value)"></b-form-input>
             </b-input-group>
         </template>
     </b-table>
@@ -35,6 +35,15 @@
         get document(): DocumentState {
             return this.$store.getters['document/document'];
         }
+        get currency() {
+            return this.document.drawing.metadata.units.currency;
+        }
+        displayValue(value: number) {
+            if (!value) {
+                return value;
+            }
+            return (value * this.currency.multiplierPct / 100).toFixed(2);
+        }
 
         get fields() {
             return ["Node", "Unit cost"];
@@ -48,7 +57,7 @@
             setPropertyByStringVue(
                 this.document.drawing.metadata.priceTable,
                 'Fixtures.' + id,
-                Number(value),
+                Number(value) / this.currency.multiplierPct * 100,
             );
         }
 
