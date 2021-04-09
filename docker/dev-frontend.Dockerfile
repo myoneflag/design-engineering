@@ -13,10 +13,5 @@ run npm install
 expose 80
 env PORT 80
 
-# PRODUCTION 
-# run npm install -g serve
-# run npm run build
-# cmd [ "serve", "--single", "./dist" ]
-
 # DEVELOPMENT
 cmd [ "npm", "run", "serve" ]
