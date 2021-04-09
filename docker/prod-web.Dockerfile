@@ -25,4 +25,4 @@ env PORT 80
 # PRODUCTION
 workdir /usr/src/app/backend
 env MODE production
-cmd [ "npm", "run", "prod" ]
+cmd [ "npm", "run", "start" ]

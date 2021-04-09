@@ -66,23 +66,69 @@ services:
             # current code as bind volume
             - ../node/:/usr/src/app/
 
-    production:
+    worker:
+        profiles:
+            - dev
+        build: 
+            context: ../node/
+            dockerfile: ../docker/dev-worker.Dockerfile
+            args:
+                - AWS_KEY=${AWS_KEY}
+                - AWS_SECRET=${AWS_SECRET}
+        image: 'h2x-worker:latest'
+        restart: always
+        depends_on:
+            - db
+        ports:
+            - 8013:80
+        volumes:
+            # anonymous volumes to prevent container folders being overwritten by host folders
+            - /usr/src/app/node_modules
+            - /usr/src/app/backend/node_modules
+            - /usr/src/app/backend/dist
+            # current code as bind volume
+            - ../node/:/usr/src/app/
+
+    prod-web:
         profiles:
             - production
         build:
             context: ../node/
             dockerfile: ../docker/prod-web.Dockerfile
-        image: 'h2x-production:latest'
+        image: 'h2x-prod-web:latest'
         restart: always
         ports:
             - 80:80
-        volumes:
-            # anonymous volumes to prevent container folders being overwritten by host folders
-            - /usr/src/app/node_modules
-            - /usr/src/app/frontend/node_modules
-            - /usr/src/app/frontend/dist
-            - /usr/src/app/backend/node_modules
-            - /usr/src/app/backend/dist
+        # volumes:
+            # # anonymous volumes to prevent container folders being overwritten by host folders
+            # - /usr/src/app/node_modules
+            # - /usr/src/app/frontend/node_modules
+            # - /usr/src/app/frontend/dist
+            # - /usr/src/app/backend/node_modules
+            # - /usr/src/app/backend/dist
+
+    prod-worker:
+        profiles:
+            - production
+        build: 
+            context: ../node/
+            dockerfile: ../docker/prod-worker.Dockerfile
+            args:
+                - AWS_KEY=${AWS_KEY}
+                - AWS_SECRET=${AWS_SECRET}
+        image: 'h2x-prod-worker:latest'
+        restart: always
+        depends_on:
+            - db
+        ports:
+            - 8013:80
+        # volumes:
+            # # anonymous volumes to prevent container folders being overwritten by host folders
+            # - /usr/src/app/node_modules
+            # - /usr/src/app/backend/node_modules
+            # - /usr/src/app/backend/dist
+            # current code as bind volume
+            # - ../node/:/usr/src/app/
 
     backup:
         build:
