@@ -6,6 +6,7 @@ run apt-get install imagemagick ghostscript -y
 
 workdir /usr/src/app/backend
 run npm install
+run npm build
 
 expose 80
 env PORT 80
