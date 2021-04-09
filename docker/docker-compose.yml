@@ -42,9 +42,9 @@ services:
             - 8012:80
         volumes:
             # anonymous volumes to prevent container folders being overwritten by host folders
-            - /usr/src/app/node_modules
-            - /usr/src/app/backend/node_modules
-            - /usr/src/app/backend/dist
+            # - /usr/src/app/node_modules
+            # - /usr/src/app/backend/node_modules
+            # - /usr/src/app/backend/dist
             # current code as bind volume
             - ../node/:/usr/src/app/
 
@@ -60,9 +60,9 @@ services:
             - 8011:80
         volumes:
             # anonymous volumes to prevent container folders being overwritten by host folders
-            - /usr/src/app/node_modules
-            - /usr/src/app/frontend/node_modules
-            - /usr/src/app/frontend/dist
+            # - /usr/src/app/node_modules
+            # - /usr/src/app/frontend/node_modules
+            # - /usr/src/app/frontend/dist
             # current code as bind volume
             - ../node/:/usr/src/app/
 
@@ -83,9 +83,9 @@ services:
             - 8013:80
         volumes:
             # anonymous volumes to prevent container folders being overwritten by host folders
-            - /usr/src/app/node_modules
-            - /usr/src/app/backend/node_modules
-            - /usr/src/app/backend/dist
+            # - /usr/src/app/node_modules
+            # - /usr/src/app/backend/node_modules
+            # - /usr/src/app/backend/dist
             # current code as bind volume
             - ../node/:/usr/src/app/
 
@@ -99,13 +99,6 @@ services:
         restart: always
         ports:
             - 80:80
-        # volumes:
-            # # anonymous volumes to prevent container folders being overwritten by host folders
-            # - /usr/src/app/node_modules
-            # - /usr/src/app/frontend/node_modules
-            # - /usr/src/app/frontend/dist
-            # - /usr/src/app/backend/node_modules
-            # - /usr/src/app/backend/dist
 
     prod-worker:
         profiles:
@@ -120,13 +113,6 @@ services:
         restart: always
         ports:
             - 8013:80
-        # volumes:
-            # # anonymous volumes to prevent container folders being overwritten by host folders
-            # - /usr/src/app/node_modules
-            # - /usr/src/app/backend/node_modules
-            # - /usr/src/app/backend/dist
-            # current code as bind volume
-            # - ../node/:/usr/src/app/
 
     nginx:
         profiles:
