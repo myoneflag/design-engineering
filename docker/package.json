@@ -9,11 +9,11 @@
   "devDependencies": {},
   "scripts": {
     "dev": "docker-compose up --profile dev",
-    "build": "docker-compose build production",
+    "build": "docker-compose build prod-web prod-worker",
     "login": "source config/config.${EnvName}.env && aws ecr get-login-password --region us-west-1 --profile ${AWSProfile} | docker login --username AWS --password-stdin 891449579858.dkr.ecr.us-west-1.amazonaws.com",
-    "tag": "source config/config.${EnvName}.env && docker tag h2x-production:latest ${REMOTE_IMAGE_TAG}",
-    "prep": "source config/config.${EnvName}.env && sed \"s#_IMAGE_NAME_#${REMOTE_IMAGE_TAG}#g\" Dockerrun.aws.template.json > ${DOCKERRUN_FILE}",
-    "push": "source config/config.${EnvName}.env && docker push ${REMOTE_IMAGE_TAG}",
+    "tag": "source config/config.${EnvName}.env && docker tag h2x-prod-web:latest ${WEB_REMOTE_IMAGE_TAG} && docker tag h2x-prod-worker:latest ${WORKER_REMOTE_IMAGE_TAG}",
+    "prep": "source config/config.${EnvName}.env && sed \"s#_IMAGE_NAME_#${WEB_REMOTE_IMAGE_TAG}#g\" Dockerrun.aws.template.json > ${WEB_DOCKERRUN_FILE} && sed \"s#_IMAGE_NAME_#${WORKER_REMOTE_IMAGE_TAG}#g\" Dockerrun.aws.template.json > ${WORKER_DOCKERRUN_FILE}",
+    "push": "source config/config.${EnvName}.env && docker push ${WEB_REMOTE_IMAGE_TAG} && docker push ${WORKER_REMOTE_IMAGE_TAG}",
     "deploy": "source config/config.${EnvName}.env && run-s tag prep push"
   },
   "author": "",
