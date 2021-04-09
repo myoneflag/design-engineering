@@ -6,3 +6,4 @@ cloudformation/template.cfn.json
 docker/*-Dockerrun.aws.json
 docker/package-lock.json
 cloudformation/package-lock.json
+.DS_Store
