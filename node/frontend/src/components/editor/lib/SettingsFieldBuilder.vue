@@ -204,9 +204,9 @@
                             :placeholder="'Enter ' + field[1]"
                         />
                     </b-form-group>
+                    <slot name="more-fields"/>
                 </b-col>
             </b-row>
-            <slot name="more-fields"/>
         </div>
         <b-row>
             <b-col cols="8"> </b-col>

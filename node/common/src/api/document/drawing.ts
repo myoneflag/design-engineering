@@ -18,6 +18,7 @@ import { Choice, cloneSimple, DeepPartial } from "../../lib/utils";
 import { PriceTable } from "../catalog/price-table";
 import { SupportedLocales } from "../locale";
 import {
+    CurrencySymbol,
     EnergyMeasurementSystem,
     MeasurementSystem,
     VelocityMeasurementSystem,
@@ -92,6 +93,10 @@ export interface UnitsParameters {
     temperatureMeasurementSystem: MeasurementSystem;
     volumeMeasurementSystem: VolumeMeasurementSystem;
     energyMeasurementSystem: EnergyMeasurementSystem;
+    currency: {
+        symbol: CurrencySymbol;
+        multiplierPct: 100;
+    };
 }
 
 
@@ -122,13 +127,10 @@ export const VOLUME_MEASUREMENT_CHOICES: Choice[] = [
     {name: "US Imperial (US gal)", key: VolumeMeasurementSystem.US},
 ];
 
-
 export const ENERGY_MEASUREMENT_CHOICES: Choice[] = [
     {name: "Megajoules (mj)", key: EnergyMeasurementSystem.METRIC},
     {name: "Therms (thm)", key: EnergyMeasurementSystem.IMPERIAL},
 ];
-
-
 
 export interface GeneralInfo {
     title: string;
@@ -536,6 +538,10 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
             result.metadata.calculationParams.psdMethod = SupportedPsdStandards.bs806;
             // 0 index is cold water.
             result.metadata.flowSystems[0].temperature = 10;
+            result.metadata.units.currency = {
+                symbol: CurrencySymbol.POUNDS,
+                multiplierPct: 100,
+            };
 
             break;
         case SupportedLocales.US:
@@ -545,7 +551,11 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
                 pressureMeasurementSystem: MeasurementSystem.IMPERIAL,
                 temperatureMeasurementSystem: MeasurementSystem.IMPERIAL,
                 velocityMeasurementSystem: VelocityMeasurementSystem.IMPERIAL,
-                volumeMeasurementSystem: VolumeMeasurementSystem.US
+                volumeMeasurementSystem: VolumeMeasurementSystem.US,
+                currency: {
+                    symbol: CurrencySymbol.DOLLARS,
+                    multiplierPct: 100,
+                }
             };
 
             result.metadata.calculationParams.psdMethod = SupportedPsdStandards.upc2018FlushTanks;
@@ -604,6 +614,10 @@ export const initialAustralianDrawing: DrawingState = {
             pressureMeasurementSystem: MeasurementSystem.METRIC,
             temperatureMeasurementSystem: MeasurementSystem.METRIC,
             energyMeasurementSystem: EnergyMeasurementSystem.METRIC,
+            currency: {
+                symbol: CurrencySymbol.DOLLARS,
+                multiplierPct: 100
+            }
         },
         flowSystems: [
             // TODO: these values should get got from the database.

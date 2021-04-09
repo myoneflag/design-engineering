@@ -67,6 +67,11 @@ export enum VelocityMeasurementSystem {
     ALTERNATIVE_IMPERIAL = "ALTERNATIVE_IMPERIAL",
 }
 
+export enum CurrencySymbol {
+    DOLLARS = '$',
+    POUNDS = '£'
+}
+
 export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, units: Units, valueRaw: number | string): [Units, number | string | null] {
     const value = Number(valueRaw);
 
@@ -337,6 +342,10 @@ export function convertMeasurementToMetric(units: Units, value: number | null) {
             pressureMeasurementSystem: MeasurementSystem.METRIC,
             volumeMeasurementSystem: VolumeMeasurementSystem.METRIC,
             energyMeasurementSystem: EnergyMeasurementSystem.METRIC,
+            currency: {
+                symbol: CurrencySymbol.POUNDS,
+                multiplierPct: 100,
+            }
         },
         units,
         value

@@ -6,7 +6,20 @@
             :originalData="committedUnits"
             :onSave="save"
             :onBack="back"
-    />
+    >
+        <template v-slot:more-fields>
+            <b-form-group
+                id="input-group-currency"
+                label="Currency"
+                label-for="input-currency"
+                label-cols="4"
+            >
+                <b-input-group>
+                    <currency-selector/>
+                </b-input-group>
+            </b-form-group>
+        </template>
+    </SettingsFieldBuilder>
 </template>
 
 <script lang="ts">
@@ -20,8 +33,9 @@
         PRESSURE_MEASUREMENT_CHOICES,
         TEMPERATURE_MEASUREMENT_CHOICES, VELOCITY_MEASUREMENT_CHOICES, VOLUME_MEASUREMENT_CHOICES
     } from "../../../../common/src/api/document/drawing";
+    import CurrencySelector from "../../components/molecules/CurrencySelector.vue";
     @Component({
-        components: { SettingsFieldBuilder },
+        components: { CurrencySelector, SettingsFieldBuilder },
         beforeRouteLeave(to, from, next) {
             if ((this.$refs.fields as any).leave()) {
                 next();
