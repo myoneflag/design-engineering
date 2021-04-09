@@ -216,6 +216,11 @@
                 "Value": { "Ref": "InstanceProfile" }
               },
               {
+                "Namespace": "aws:ec2:instances",
+                "OptionName": "InstanceTypes",
+                "Value": { "Ref": "WebInstanceType" }
+              },
+              {
                 "Namespace": "aws:autoscaling:launchconfiguration",
                 "OptionName": "SecurityGroups",
                 "Value": { "Ref": "WebSecurityGroup" }
@@ -355,6 +360,11 @@
                 "Namespace": "aws:autoscaling:launchconfiguration",
                 "OptionName": "IamInstanceProfile",
                 "Value": { "Ref": "InstanceProfile" }
+              },
+              {
+                "Namespace": "aws:ec2:instances",
+                "OptionName": "InstanceTypes",
+                "Value": { "Ref": "WorkerInstanceType" }
               },
               {
                 "Namespace": "aws:autoscaling:launchconfiguration",
