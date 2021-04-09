@@ -34,7 +34,7 @@ services:
             args:
                 - AWS_KEY=${AWS_KEY}
                 - AWS_SECRET=${AWS_SECRET}
-        image: 'h2x-backend:latest'
+        image: 'h2x-dev-backend:latest'
         restart: always
         depends_on:
             - db
@@ -54,7 +54,7 @@ services:
         build:
             context: ../node/
             dockerfile: ../docker/dev-frontend.Dockerfile
-        image: 'h2x-frontend:latest'
+        image: 'h2x-dev-frontend:latest'
         restart: always
         ports:
             - 8011:80
@@ -75,7 +75,7 @@ services:
             args:
                 - AWS_KEY=${AWS_KEY}
                 - AWS_SECRET=${AWS_SECRET}
-        image: 'h2x-worker:latest'
+        image: 'h2x-dev-worker:latest'
         restart: always
         depends_on:
             - db
