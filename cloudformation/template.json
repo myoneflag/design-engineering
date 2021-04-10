@@ -430,21 +430,6 @@
                 "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "RDS_DB_NAME",
                 "Value":  { "Ref": "DBName" }
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:application:environment",
-                "OptionName": "MQ_URL",
-                "Value":  { "Fn::Select" : [ 0, { "Fn::GetAtt": [ "MQBroker", "WssEndpoints" ] } ] }
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:application:environment",
-                "OptionName": "MQ_USERNAME",
-                "Value":  { "Ref": "MQUsername" }
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:application:environment",
-                "OptionName": "MQ_PASSWORD",
-                "Value":  { "Ref": "MQPassword" }
               }
             ],
             "SolutionStackName": "64bit Amazon Linux 2 v3.2.6 running Docker"
@@ -511,7 +496,7 @@
         // MQ
         "MQBroker": {
           "Type" : "AWS::AmazonMQ::Broker",
-          "DependsOn": [ "WebSecurityGroup", "WorkerSecurityGroup" ],
+          "DependsOn": [ "WebSecurityGroup" ],
           "Properties" : {
               "AutoMinorVersionUpgrade" : false,
               "BrokerName" : {"Fn::Sub": "h2x-mq-${EnvName}" },
@@ -521,8 +506,7 @@
               "HostInstanceType" : "mq.t2.micro",
               "PubliclyAccessible" : false,
               "SecurityGroups" : [ 
-                { "Fn::GetAtt": [ "WebSecurityGroup", "GroupId" ] },
-                { "Fn::GetAtt": [ "WorkerSecurityGroup", "GroupId" ] }                
+                { "Fn::GetAtt": [ "WebSecurityGroup", "GroupId" ] }
               ],
               "Users" : [ 
                 {
