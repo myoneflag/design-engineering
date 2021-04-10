@@ -8,8 +8,11 @@
   },
   "devDependencies": {},
   "scripts": {
-    "dev": "docker-compose up --profile dev",
+    "dev": "docker-compose --profile dev up -d",
     "build": "docker-compose --profile prod build",
+    "build-web": "docker-compose build prod-web",
+    "build-worker": "docker-compose build prod-worker",    
+    "rebuild-dev": "docker-compose --profile dev build",
     "clean": "rm *-Dockerrun.aws.json",
     "login": "source config/config.${EnvName}.env && aws ecr get-login-password --region us-west-1 --profile ${AWSProfile} | docker login --username AWS --password-stdin 891449579858.dkr.ecr.us-west-1.amazonaws.com",
     "tag": "source config/config.${EnvName}.env && docker tag h2x-prod-web:latest ${WEB_REMOTE_IMAGE_TAG} && docker tag h2x-prod-worker:latest ${WORKER_REMOTE_IMAGE_TAG}",
