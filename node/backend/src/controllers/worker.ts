@@ -6,6 +6,9 @@ export class WorkerController {
         const jsonMessage = req.body;
         console.log("Worker Message Received")
         console.log(jsonMessage)
+        return res.status(200).send({
+            success: true
+        });        
     }
 }
 
