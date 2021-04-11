@@ -27,6 +27,7 @@ export enum Units {
     Feet = "ft",
     FeetPerSecondSquared = "ftt/s\u0178",
     Psi = "psi",
+    Bar = 'bar',
     FeetPerSecond = "ft/s",
     Fahrenheit = "\u00B0F",
     // keep it at kilowatts
@@ -53,6 +54,12 @@ export enum EnergyMeasurementSystem {
 export enum MeasurementSystem {
     METRIC = "METRIC",
     IMPERIAL = "IMPERIAL",
+}
+
+export enum PressureMeasurementSystem {
+    METRIC = "METRIC",
+    IMPERIAL = "IMPERIAL",
+    UK = "UK",
 }
 
 export enum VolumeMeasurementSystem {
@@ -115,10 +122,12 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
             return [Units.None, 0];
         case Units.KiloPascals:
             switch (unitsPrefs.pressureMeasurementSystem) {
-                case MeasurementSystem.METRIC:
+                case PressureMeasurementSystem.METRIC:
                     return [units, value];
-                case MeasurementSystem.IMPERIAL:
+                case PressureMeasurementSystem.IMPERIAL:
                     return [Units.Psi, kpa2PSI(value)];
+                case PressureMeasurementSystem.UK:
+                    return [Units.Bar, kpa2bar(value)];
             }
             assertUnreachable(unitsPrefs.pressureMeasurementSystem);
             return [Units.None, 0];
@@ -194,10 +203,23 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
             return [Units.None, 0];
         case Units.Psi:
             switch (unitsPrefs.pressureMeasurementSystem) {
-                case MeasurementSystem.METRIC:
+                case PressureMeasurementSystem.METRIC:
                     return [Units.KiloPascals, psi2KPA(value)];
-                case MeasurementSystem.IMPERIAL:
+                case PressureMeasurementSystem.IMPERIAL:
                     return [Units.Psi, value];
+                case PressureMeasurementSystem.UK:
+                    return [Units.Bar, kpa2bar(psi2KPA(value))];
+            }
+            assertUnreachable(unitsPrefs.pressureMeasurementSystem);
+            return [Units.None, 0];
+        case Units.Bar:
+            switch (unitsPrefs.pressureMeasurementSystem) {
+                case PressureMeasurementSystem.METRIC:
+                    return [Units.KiloPascals, bar2kpa(value)];
+                case PressureMeasurementSystem.IMPERIAL:
+                    return [Units.Psi, kpa2PSI(bar2kpa(value))];
+                case PressureMeasurementSystem.UK:
+                    return [Units.Bar, value];
             }
             assertUnreachable(unitsPrefs.pressureMeasurementSystem);
             return [Units.None, 0];
@@ -339,7 +361,7 @@ export function convertMeasurementToMetric(units: Units, value: number | null) {
             lengthMeasurementSystem: MeasurementSystem.METRIC,
             temperatureMeasurementSystem: MeasurementSystem.METRIC,
             velocityMeasurementSystem: VelocityMeasurementSystem.METRIC,
-            pressureMeasurementSystem: MeasurementSystem.METRIC,
+            pressureMeasurementSystem: PressureMeasurementSystem.METRIC,
             volumeMeasurementSystem: VolumeMeasurementSystem.METRIC,
             energyMeasurementSystem: EnergyMeasurementSystem.METRIC,
             currency: {
@@ -374,6 +396,14 @@ export function kpa2PSI(kpa: number) {
 
 export function psi2KPA(psi: number) {
     return psi * 6.894757293168361;
+}
+
+export function kpa2bar(kpa: number) {
+    return kpa / 100;
+}
+
+export function bar2kpa(bar: number) {
+    return bar * 100;
 }
 
 export function c2F(celsius: number) {

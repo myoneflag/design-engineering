@@ -21,6 +21,7 @@ import {
     CurrencySymbol,
     EnergyMeasurementSystem,
     MeasurementSystem,
+    PressureMeasurementSystem,
     VelocityMeasurementSystem,
     VolumeMeasurementSystem
 } from "../../lib/measurements";
@@ -88,7 +89,7 @@ export interface DrawingState {
 
 export interface UnitsParameters {
     lengthMeasurementSystem: MeasurementSystem;
-    pressureMeasurementSystem: MeasurementSystem;
+    pressureMeasurementSystem: PressureMeasurementSystem;
     velocityMeasurementSystem: VelocityMeasurementSystem;
     temperatureMeasurementSystem: MeasurementSystem;
     volumeMeasurementSystem: VolumeMeasurementSystem;
@@ -106,8 +107,9 @@ export const LENGTH_MEASUREMENT_CHOICES: Choice[] = [
 ];
 
 export const PRESSURE_MEASUREMENT_CHOICES: Choice[] = [
-    {name: "Metric (kpa)", key: MeasurementSystem.METRIC},
-    {name: "Imperial (psi)", key: MeasurementSystem.IMPERIAL},
+    {name: "Metric (kpa)", key: PressureMeasurementSystem.METRIC},
+    {name: "Imperial (psi)", key: PressureMeasurementSystem.IMPERIAL},
+    {name: "UK (bar)", key: PressureMeasurementSystem.UK}
 ];
 
 export const TEMPERATURE_MEASUREMENT_CHOICES: Choice[] = [
@@ -548,7 +550,7 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
             result.metadata.units = {
                 energyMeasurementSystem: EnergyMeasurementSystem.IMPERIAL,
                 lengthMeasurementSystem: MeasurementSystem.IMPERIAL,
-                pressureMeasurementSystem: MeasurementSystem.IMPERIAL,
+                pressureMeasurementSystem: PressureMeasurementSystem.IMPERIAL,
                 temperatureMeasurementSystem: MeasurementSystem.IMPERIAL,
                 velocityMeasurementSystem: VelocityMeasurementSystem.IMPERIAL,
                 volumeMeasurementSystem: VolumeMeasurementSystem.US,
@@ -611,7 +613,7 @@ export const initialAustralianDrawing: DrawingState = {
             lengthMeasurementSystem: MeasurementSystem.METRIC,
             volumeMeasurementSystem: VolumeMeasurementSystem.METRIC,
             velocityMeasurementSystem: VelocityMeasurementSystem.METRIC,
-            pressureMeasurementSystem: MeasurementSystem.METRIC,
+            pressureMeasurementSystem: PressureMeasurementSystem.METRIC,
             temperatureMeasurementSystem: MeasurementSystem.METRIC,
             energyMeasurementSystem: EnergyMeasurementSystem.METRIC,
             currency: {
