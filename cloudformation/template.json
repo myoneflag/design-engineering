@@ -269,13 +269,13 @@
               },
               {
                 "Namespace": "aws:elasticbeanstalk:sns:topics",
-                "OptionName": "Notification Endpoint",
-                "Value": { "Ref": "NotificationsEmail" }
+                "OptionName": "Notification Topic Name",
+                "Value": { "Fn::GetAtt": [ "WebDeployNotification", "TopicName" ] }
               },
               {
                 "Namespace": "aws:elasticbeanstalk:sns:topics",
-                "OptionName": "Notification Topic ARN",
-                "Value": { "Ref": "WebDeployNotification" }
+                "OptionName": "Notification Protocol",
+                "Value": "https"
               },
               {
                 "Namespace": "aws:elbv2:listener:443",
@@ -582,7 +582,11 @@
                 {
                   "Endpoint" : { "Fn::GetAtt": [ "WorkerQueue", "Arn" ] },
                   "Protocol" : "sqs"
-                }              
+                },
+                {
+                  "Endpoint": { "Ref": "NotificationsEmail" },
+                  "Protocol": "email"
+                }
               ]
             }
         },
