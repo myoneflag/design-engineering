@@ -429,6 +429,26 @@
                 "Value": "/workermessage"
               },
               {
+                "Namespace": "aws:elasticbeanstalk:sqsd",
+                "OptionName": "HttpConnections",
+                "Value": "1"
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:sqsd",
+                "OptionName": "InactivityTimeout",
+                "Value": "1190"
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:sqsd",
+                "OptionName": "VisibilityTimeout",
+                "Value": "1200"
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:sqsd",
+                "OptionName": "MaxRetries",
+                "Value": "2"
+              },
+              {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "RDS_HOSTNAME",
                 "Value":  { "Fn::GetAtt": [ "DBInstance", "Endpoint.Address" ] }
