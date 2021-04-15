@@ -9,6 +9,7 @@
   "devDependencies": {},
   "scripts": {
     "dev": "docker-compose --profile dev up -d",
+    "logs": "docker-compose --profile dev logs --follow --tail=100",    
     "build": "docker-compose --profile prod build",
     "build-web": "docker-compose build prod-web",
     "build-worker": "docker-compose build prod-worker",    
