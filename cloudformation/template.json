@@ -269,13 +269,8 @@
               },
               {
                 "Namespace": "aws:elasticbeanstalk:sns:topics",
-                "OptionName": "Notification Topic Name",
-                "Value": { "Fn::GetAtt": [ "WebDeployNotification", "TopicName" ] }
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:sns:topics",
-                "OptionName": "Notification Protocol",
-                "Value": "https"
+                "OptionName": "Notification Endpoint",
+                "Value": { "Ref": "NotificationsEmail" }
               },
               {
                 "Namespace": "aws:elbv2:listener:443",
@@ -353,7 +348,8 @@
         },
         "WorkerApplicationVersion_DATESTAMP_": {
           "Type": "AWS::ElasticBeanstalk::ApplicationVersion",
-          "UpdateReplacePolicy" : "Retain",          
+          "UpdateReplacePolicy" : "Retain",
+          "DeletionPolicy": "Retain",
           "Properties": {
             "ApplicationName": { "Ref": "WorkerApplication" },
             "Description": { "Fn::Sub": "H2X-worker-${EnvName}-${SourcePathWorker}" },
@@ -553,25 +549,6 @@
                   "Username" : { "Ref": "MQUsername" }
                 }
                ]
-            }
-        },
-
-        // Web environment SNS topic for Deploy Notifications
-        "WebDeployNotification": {
-          "Type" : "AWS::SNS::Topic",
-          "Properties" : {
-              "TopicName" : { "Fn::Sub": "h2x-sns-${EnvName}-deploy" },
-              "DisplayName" : { "Fn::Sub": "h2x-sns-${EnvName}-deploy" },
-              "Subscription" : [ 
-                {
-                  "Endpoint" : { "Fn::GetAtt": [ "WorkerQueue", "Arn" ] },
-                  "Protocol" : "sqs"
-                },
-                {
-                  "Endpoint": { "Ref": "NotificationsEmail" },
-                  "Protocol": "email"
-                }
-              ]
             }
         },
 
