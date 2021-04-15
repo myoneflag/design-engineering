@@ -200,7 +200,8 @@
         },
         "WebApplicationVersion_DATESTAMP_": {
           "Type": "AWS::ElasticBeanstalk::ApplicationVersion",
-          "UpdateReplacePolicy" : "Retain",          
+          "UpdateReplacePolicy" : "Retain",
+          "DeletionPolicy": "Retain",
           "Properties": {
             "ApplicationName": { "Ref": "WebApplication" },
             "Description": { "Fn::Sub": "H2X-web-${EnvName}-${SourcePathWeb}" },
