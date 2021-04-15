@@ -9,6 +9,7 @@ class AppWorker {
     public express: express.Application;
 
     constructor() {
+        console.log("Worker start");
         this.express = express();
         this.setMiddlewares();
         this.setRoutes();
