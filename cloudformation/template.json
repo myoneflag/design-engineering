@@ -87,7 +87,13 @@
         "Description": "Extra name tag for major upgrades to RDS DB",
         "Type": "String",
         "Default": ""
+      }, 
+      "NotificationsEmail": {
+        "Description": "Notifications email to send Beanstalk deployment notifications to",
+        "Type": "String",
+        "Default": "b7g9b9g2a7k2z2x7@h2xengineering.slack.com"
       }
+      
     },
     "Conditions" : {
       "UseRDSSnapshot": { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "DBSnapshotARNRestore" }, "" ]}] }
@@ -262,6 +268,11 @@
               },
               {
                 "Namespace": "aws:elasticbeanstalk:sns:topics",
+                "OptionName": "Notification Endpoint",
+                "Value": { "Ref": "NotificationsEmail" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:sns:topics",
                 "OptionName": "Notification Topic ARN",
                 "Value": { "Ref": "WebDeployNotification" }
               },
@@ -317,6 +328,7 @@
 
         "WebEnvironment": {
           "Type": "AWS::ElasticBeanstalk::Environment",
+          "DependsOn": [ "WorkerEnvironment" ],
           "Properties": {
              "ApplicationName": { "Ref": "WebApplication" },
              "EnvironmentName":  { "Fn::Sub": "H2X-web-${EnvName}${WebVersion}" },              
@@ -400,6 +412,11 @@
                 "Namespace": "aws:elasticbeanstalk:cloudwatch:logs:health",
                 "OptionName": "RetentionInDays",
                 "Value": 30 
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:sns:topics",
+                "OptionName": "Notification Endpoint",
+                "Value": { "Ref": "NotificationsEmail" }
               },
               {
                 "Namespace": "aws:elasticbeanstalk:sqsd",
