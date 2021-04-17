@@ -1,5 +1,3 @@
-import MqClient from "./MqClient";
-import { IMessage, StompSubscription } from "@stomp/stompjs";
 import {
     upgrade10to11,
     upgrade11to12, upgrade12to13, upgrade13to14, upgrade14to15, upgrade15to16, upgrade16to17, upgrade17to18,
@@ -17,7 +15,6 @@ import { initialDrawing } from "../../../common/src/api/document/drawing";
 import ConcurrentDocument from "./concurrentDocument";
 import { LessThan } from "typeorm";
 import { CURRENT_VERSION } from "../../../common/src/api/config";
-import { promisify } from "util";
 
 export const UPGRADE_EXPIRED_THRESHOLD_MIN = 5;
 // acknowledge that we are working while upgrading, but with enough interval so we don't update the DB too often.
@@ -26,20 +23,12 @@ export const UPGRADE_LOCK_REFRESH_THRESHOLD_MIN = 4;
 export const HEARTBEAT_INTERVAL_SEC = 5; // It doesn't seem like connections are being kept alive by heartbeats, so
 // send to a dummy topic every now and then during long updates without acks.
 
+export enum Tasks {
+    DocumentUpgradeScan = "documentUpgradeScan",
+    DocumentUpgradeExecute = "documentUpgradeExecute"
+}
 
 export class DocumentUpgrader {
-
-    static sub: StompSubscription;
-    static upgradeQueueName = "/queue/documentUpgrade";
-
-    static async initialize() {
-        this.sub = MqClient.subscribe(
-            this.upgradeQueueName,
-            DocumentUpgrader.onDocumentUpgradeRequest.bind(this),
-            { ack: "client-individual", 'activemq.prefetchSize': '1' },
-        );
-        await this.submitDocumentsForUpgrade();
-    }
 
     static async submitDocumentsForUpgrade() {
         const docs = await Document.find({
@@ -61,21 +50,29 @@ export class DocumentUpgrader {
             return 0;
         });
 
-
         console.log('need to submit ' + toUpgrade.length + ' documents for upgrade');
         for (const doc of toUpgrade) {
-            await MqClient.publish({ destination: this.upgradeQueueName, body: "" + doc.id });
+            await this.enqueueDocumentForUpgrade(doc.id);
         }
+        await this.enqueueDocumentForUpgrade(1);
     }
 
-    static async onDocumentUpgradeRequest(msg: IMessage) {
-        console.log('got document upgrade request ' + JSON.stringify(msg.body));
+    static async enqueueDocumentForUpgrade(docId: number) {
+        const queueMessage = { 
+            "task": Tasks.DocumentUpgradeExecute,
+            "parameters": {
+                "docId": docId
+            }
+        }
+        console.log(queueMessage)
+    }
+
+    static async onDocumentUpgradeRequest(docId: number) {
+        console.log('got document upgrade request ' + docId);
         try {
             const start = new Date();
-            const docId = Number(msg.body);
 
             let shouldUpgrade = true;
-
 
             await ConcurrentDocument.withDocumentLock(docId, async (tx, innerDoc) => {
                 const now = new Date();
@@ -212,7 +209,6 @@ export class DocumentUpgrader {
             await doc.save();
         } finally {
             console.log("ACKing upgrade request");
-            msg.ack();
         }
     }
 }
