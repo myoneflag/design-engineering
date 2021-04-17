@@ -7,7 +7,6 @@ import { registerUser } from "./controllers/login";
 import { AccessLevel, User } from "../../common/src/models/User";
 import { Document } from "../../common/src/models/Document";
 import pLimit from 'p-limit';
-import { DocumentUpgrader, fixOperationIds } from "./services/DocumentUpgrader";
 
 const limit = pLimit(4);
 
@@ -33,8 +32,6 @@ async function ensureInitialUser() {
 
 createConnection().then(async (connection) => {
     await ensureInitialUser();
-    DocumentUpgrader.initialize();
-    // await fixOperationIds();
 
     app.enable("trust proxy");
 
