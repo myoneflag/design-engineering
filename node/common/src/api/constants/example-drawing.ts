@@ -22,7 +22,11 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "velocityMeasurementSystem": "METRIC",
             "pressureMeasurementSystem": "METRIC",
             "temperatureMeasurementSystem": "METRIC",
-            "energyMeasurementSystem": "METRIC"
+            "energyMeasurementSystem": "METRIC",
+            "currency": {
+                "multiplierPct": 100,
+                "symbol": "$",
+            }
         },
         "flowSystems": [
             {

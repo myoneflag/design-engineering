@@ -8,6 +8,7 @@ export class documentLocales1616907224689 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "document" ADD "locale" "document_locale_enum" NOT NULL DEFAULT 'en-au'`);
         await queryRunner.query(`ALTER TABLE "operation" DROP CONSTRAINT "FK_9fbd8ce3d758c9ec02e70896f8f"`);
         await queryRunner.query(`DROP INDEX "IDX_4cfedf30406e87a7ca9d8437c1"`);
+        await queryRunner.query(`delete from operation where operation."documentId" is null`);
         await queryRunner.query(`ALTER TABLE "operation" ALTER COLUMN "documentId" SET NOT NULL`);
         await queryRunner.query(`ALTER TABLE "document" ALTER COLUMN "upgradingLockExpires" SET DEFAULT 'now'`);
         await queryRunner.query(`ALTER TABLE "document" ALTER COLUMN "lastCompression" SET DEFAULT '"1999-12-30T13:00:00.000Z"'`);
