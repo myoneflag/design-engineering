@@ -39,7 +39,6 @@ import cookieParser from "cookie-parser";
 import * as path from "path";
 import ConcurrentDocument from "./services/concurrentDocument";
 import MqClient from "./services/MqClient";
-import { DocumentUpgrader } from "./services/DocumentUpgrader";
 
 class App {
     public express: expressWs.Application;

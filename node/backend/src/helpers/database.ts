@@ -1,5 +1,4 @@
 import { EntityManager, getManager } from "typeorm";
-import { Document } from "../../../common/src/models/Document";
 import retry from "retry";
 
 export function withSerializableTransaction<T>(retryable: (tx: EntityManager) => Promise<T>) {
