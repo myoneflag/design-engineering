@@ -24,6 +24,30 @@ services:
         ports:
             - 8161:8161
             - 61614:61614 #default WS transport protocol port open
+    
+    sqs:
+        image: softwaremill/elasticmq-native
+        restart: always        
+        ports:
+            - 9324:9324
+            - 9325:9325
+        environment:
+            - AWS_ACCESS_KEY_ID=fake
+            - AWS_SECRET_ACCESS_KEY=fake
+        volumes: 
+            - ./sqs.conf:/opt/elasticmq.conf
+
+    sqsd:
+        image: mogadanez/sqsd
+        environment:
+            - SQSD_WORKER_HTTP_URL=http://worker:8013/workermessage
+            - SQSD_QUEUE_URL=http://sqs:9324/queue/h2x-worker-queue
+            - SQSD_SSL_ENABLED=false
+            - SQSD_RUN_DAEMONIZED=1
+            - SQSD_MAX_MESSAGES_PER_REQUEST=1
+            - AWS_ACCESS_KEY_ID=fake
+            - AWS_SECRET_ACCESS_KEY=fake
+
 
     backend:
         profiles:
