@@ -40,7 +40,9 @@ services:
     sqsd:
         image: mogadanez/sqsd
         environment:
+            - SQSD_ENDPOINT_URL=http://sqs:9324
             - SQSD_WORKER_HTTP_URL=http://worker:8013/workermessage
+            - SQSD_QUEUE_NAME=h2x-worker-queue
             - SQSD_QUEUE_URL=http://sqs:9324/queue/h2x-worker-queue
             - SQSD_SSL_ENABLED=false
             - SQSD_RUN_DAEMONIZED=1
@@ -64,6 +66,10 @@ services:
             - db
         ports:
             - 8012:80
+        environment:
+            - PDF_BUCKET=localbucket
+            - PDF_RENDERS_BUCKET=localbucket
+            - AWS_REGION=us-local    
         volumes:
             # anonymous volumes to prevent container folders being overwritten by host folders
             - /usr/src/app/node_modules
@@ -105,6 +111,11 @@ services:
             - db
         ports:
             - 8013:80
+        environment:
+            - SQS_QUEUE_URL=http://sqs:9324/queue/h2x-worker-queue
+            - AWS_REGION=us-local            
+            - DEBUG_SQS_ENDPOINT_URL=http://sqs:9324
+            - DEBUG_SQS_SSL_ENABLED=false
         volumes:
             # anonymous volumes to prevent container folders being overwritten by host folders
             - /usr/src/app/node_modules

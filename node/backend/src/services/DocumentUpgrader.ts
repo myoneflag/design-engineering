@@ -15,6 +15,7 @@ import { initialDrawing } from "../../../common/src/api/document/drawing";
 import ConcurrentDocument from "./concurrentDocument";
 import { LessThan } from "typeorm";
 import { CURRENT_VERSION } from "../../../common/src/api/config";
+import SqsClient from "../services/SqsClient"
 
 export const UPGRADE_EXPIRED_THRESHOLD_MIN = 5;
 // acknowledge that we are working while upgrading, but with enough interval so we don't update the DB too often.
@@ -58,13 +59,14 @@ export class DocumentUpgrader {
     }
 
     static async enqueueDocumentForUpgrade(docId: number) {
+
         const queueMessage = { 
             "task": Tasks.DocumentUpgradeExecute,
             "parameters": {
                 "docId": docId
             }
         }
-        console.log(queueMessage)
+        await SqsClient.publish(queueMessage)
     }
 
     static async onDocumentUpgradeRequest(docId: number) {

@@ -316,6 +316,21 @@
                 "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "MQ_PASSWORD",
                 "Value":  { "Ref": "MQPassword" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "AWS_REGION",
+                "Value": { "Ref": "AWS::Region" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "PDF_BUCKET",
+                "Value": { "Ref": "PdfBucket" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "PDF_RENDERS_BUCKET",
+                "Value": { "Ref": "PdfRendersBucket" }
               }
             ],
             "SolutionStackName": "64bit Amazon Linux 2 v3.2.6 running Docker"
@@ -464,6 +479,16 @@
                 "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "RDS_DB_NAME",
                 "Value":  { "Ref": "DBName" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "SQS_QUEUE_URL",
+                "Value": { "Ref": "WorkerQueue" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "AWS_REGION",
+                "Value": { "Ref": "AWS::Region" }
               }
             ],
             "SolutionStackName": "64bit Amazon Linux 2 v3.2.6 running Docker"
