@@ -7,6 +7,8 @@ export default {
   AWS_SECRET: process.env.AWS_SECRET || undefined,
   FRONTEND_REL_PATH: process.env.MODE === "production" ? "../../../../frontend/dist" : "../../frontend/dist",
 
+  PDF_BUCKET: process.env.PDF_BUCKET,
+  PDF_RENDERS_BUCKET: process.env.PDF_RENDERS_BUCKET,
 
   MQ_URL: process.env.MQ_URL || "ws://mq:61614",
   MQ_USERNAME: process.env.MQ_USERNAME || 'admin',
