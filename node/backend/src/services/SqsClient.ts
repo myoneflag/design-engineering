@@ -4,15 +4,17 @@ import Config from '../config/config'
 
 export default class SqsClient {
 
-    static client = new SQSClient(this.clientConfig());
+    static client = new SQSClient(SqsClient.clientConfig());
 
     static clientConfig() { 
-        const config = {}
-        if (Config.DEBUG_SQS_QUEUE_URL)
-            config.endpoint = Config.DEBUG_SQS_QUEUE_URL
-        if (Config.DEBUG_SQS_SSL_ENABLED)
-            config.tls = Config.DEBUG_SQS_SSL_ENABLED
-        return config;
+        if (Config.DEBUG_SQS_ENDPOINT_URL && Config.DEBUG_SQS_SSL_ENABLED) {
+            const config = {
+                endpoint: Config.DEBUG_SQS_ENDPOINT_URL,
+                tls: Config.DEBUG_SQS_SSL_ENABLED
+            }
+            return config
+        }
+        return {};
     }
 
     static async publish(message) {
