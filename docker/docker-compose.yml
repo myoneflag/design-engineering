@@ -24,42 +24,40 @@ services:
         ports:
             - 8161:8161
             - 61614:61614 #default WS transport protocol port open
-    
+
+    # Local SQS instance
+    # hostname: sqs
     sqs:
         image: softwaremill/elasticmq-native
         restart: always        
         ports:
             - 9324:9324
             - 9325:9325
-        environment:
-            - AWS_ACCESS_KEY_ID=fake
-            - AWS_SECRET_ACCESS_KEY=fake
         volumes: 
             - ./sqs.conf:/opt/elasticmq.conf
 
+    # Local Elastic Beanstalk SQS Daemon instance
+    # hostname: sqsd
     sqsd:
         image: mogadanez/sqsd
         environment:
-            - SQSD_ENDPOINT_URL=http://sqs:9324
-            - SQSD_WORKER_HTTP_URL=http://worker:8013/workermessage
+            - SQSD_WORKER_HTTP_URL=http://worker:80/workermessage
             - SQSD_QUEUE_NAME=h2x-worker-queue
             - SQSD_QUEUE_URL=http://sqs:9324/queue/h2x-worker-queue
             - SQSD_SSL_ENABLED=false
             - SQSD_RUN_DAEMONIZED=1
             - SQSD_MAX_MESSAGES_PER_REQUEST=1
-            - AWS_ACCESS_KEY_ID=fake
-            - AWS_SECRET_ACCESS_KEY=fake
+            - AWS_REGION=us-local
+            - AWS_ACCESS_KEY_ID=test
+            - AWS_SECRET_ACCESS_KEY=test
 
-
+    # Development Backend server
     backend:
         profiles:
             - dev
         build: 
             context: ../node/
             dockerfile: ../docker/dev-backend.Dockerfile
-            args:
-                - AWS_KEY=${AWS_KEY}
-                - AWS_SECRET=${AWS_SECRET}
         image: 'h2x-dev-backend:latest'
         restart: always
         depends_on:
@@ -69,7 +67,9 @@ services:
         environment:
             - PDF_BUCKET=localbucket
             - PDF_RENDERS_BUCKET=localbucket
-            - AWS_REGION=us-local    
+            - AWS_REGION=us-local
+            - AWS_ACCESS_KEY_ID=test
+            - AWS_SECRET_ACCESS_KEY=test
         volumes:
             # anonymous volumes to prevent container folders being overwritten by host folders
             - /usr/src/app/node_modules
@@ -78,6 +78,7 @@ services:
             # current code as bind volume
             - ../node/:/usr/src/app/
 
+    # Development Frontend Server
     frontend:
         profiles:
             - dev
@@ -96,15 +97,13 @@ services:
             # current code as bind volume
             - ../node/:/usr/src/app/
 
+    # Development Worker Server
     worker:
         profiles:
             - dev
         build: 
             context: ../node/
             dockerfile: ../docker/dev-worker.Dockerfile
-            args:
-                - AWS_KEY=${AWS_KEY}
-                - AWS_SECRET=${AWS_SECRET}
         image: 'h2x-dev-worker:latest'
         restart: always
         depends_on:
@@ -113,9 +112,11 @@ services:
             - 8013:80
         environment:
             - SQS_QUEUE_URL=http://sqs:9324/queue/h2x-worker-queue
-            - AWS_REGION=us-local            
             - DEBUG_SQS_ENDPOINT_URL=http://sqs:9324
             - DEBUG_SQS_SSL_ENABLED=false
+            - AWS_REGION=us-local
+            - AWS_ACCESS_KEY_ID=test
+            - AWS_SECRET_ACCESS_KEY=test
         volumes:
             # anonymous volumes to prevent container folders being overwritten by host folders
             - /usr/src/app/node_modules
@@ -124,6 +125,7 @@ services:
             # current code as bind volume
             - ../node/:/usr/src/app/
 
+    # Production Web Server (backend + frontend combined)
     prod-web:
         profiles:
             - prod
@@ -135,20 +137,19 @@ services:
         ports:
             - 80:80
 
+    # Production Worker Server
     prod-worker:
         profiles:
             - prod
         build: 
             context: ../node/
             dockerfile: ../docker/prod-worker.Dockerfile
-            args:
-                - AWS_KEY=${AWS_KEY}
-                - AWS_SECRET=${AWS_SECRET}
         image: 'h2x-prod-worker:latest'
         restart: always
         ports:
             - 8013:80
 
+    # Local NGINX proxy server
     nginx:
         profiles:
           - dev
@@ -160,3 +161,4 @@ services:
         depends_on:
             - backend
             - frontend
+            - worker            

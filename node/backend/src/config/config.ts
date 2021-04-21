@@ -3,8 +3,7 @@ dotenv.config();
 
 export default {
   PORT: process.env.PORT || '3000',
-  AWS_ACCESS_KEY: process.env.AWS_ACCESS_KEY || undefined,
-  AWS_SECRET: process.env.AWS_SECRET || undefined,
+
   FRONTEND_REL_PATH: process.env.MODE === "production" ? "../../../../frontend/dist" : "../../frontend/dist",
 
   PDF_BUCKET: process.env.PDF_BUCKET,
