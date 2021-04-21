@@ -33,6 +33,9 @@
 ```npm run build --service=[backend|frontend|worker|sqsd|...]```
 * Rebuild specified container
 
+```npm run exec --service=[backend|frontend|worker|sqsd|...]```
+* Opens a terminal in the specified container
+
 ### Troubleshooting
 
 #### `Not enough space left on device`

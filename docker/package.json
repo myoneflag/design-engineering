@@ -14,6 +14,7 @@
     "build:all": "docker-compose --profile $npm_config_target build",
     "rebuild:all": "docker-compose --profile $npm_config_target build --no-cache",
     "build": "docker-compose build $npm_config_service",
+    "exec": "docker-compose exec $npm_config_service bash",
     "restart": "docker-compose stop $npm_config_service && docker-compose up -d $npm_config_service",
     "clean": "rm *-Dockerrun.aws.json",
     "login": "source config/config.${EnvName}.env && aws ecr get-login-password --region us-west-1 --profile ${AWSProfile} | docker login --username AWS --password-stdin 891449579858.dkr.ecr.us-west-1.amazonaws.com",
