@@ -55,7 +55,6 @@ export class DocumentUpgrader {
         for (const doc of toUpgrade) {
             await this.enqueueDocumentForUpgrade(doc.id);
         }
-        await this.enqueueDocumentForUpgrade(1);
     }
 
     static async enqueueDocumentForUpgrade(docId: number) {
