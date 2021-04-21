@@ -254,7 +254,7 @@ export class PDFController {
             console.log('downloading from s3: ' + pdfFile);
 
             const params: GetObjectRequest = {
-                Bucket: ,
+                Bucket: Config.PDF_BUCKET,
                 Key: pdfFile,
             };
             // download pdf again from amazon
