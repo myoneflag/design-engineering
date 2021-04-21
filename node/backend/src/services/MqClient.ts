@@ -1,8 +1,6 @@
 import { Client, IFrame, IMessage, IPublishParams, StompHeaders, StompSubscription } from "@stomp/stompjs";
 import CONFIG from "../config/config";
-import uuid from 'uuid';
 import retry from 'retry';
-import { getManager } from "typeorm";
 
 interface Subscription {
     destination: string;
