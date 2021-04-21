@@ -8,22 +8,24 @@ export class WorkerController {
         console.log("Worker Message Received")
         console.log(jsonMessage)
 
-        switch (jsonMessage.task) {
-            case Tasks.DocumentUpgradeScan:
-                await DocumentUpgrader.submitDocumentsForUpgrade()
-                break
-            case Tasks.DocumentUpgradeExecute:
-                let docId: number;
-                docId = req.body.parameters.docId
-                await DocumentUpgrader.onDocumentUpgradeRequest(docId);
-                break;
-            default:
-                console.log("unknown message type")
+        try {
+            switch (jsonMessage.task) {
+                case Tasks.DocumentUpgradeScan:
+                    await DocumentUpgrader.submitDocumentsForUpgrade()
+                    break
+                case Tasks.DocumentUpgradeExecute:
+                    let docId: number;
+                    docId = req.body.parameters.docId
+                    await DocumentUpgrader.onDocumentUpgradeRequest(docId);
+                    break;
+                default:
+                    console.log("unknown message type")
+            }
+            return res.status(200).send({success: true});            
+        } catch (err) {
+            console.error(err)
+            return res.status(500).send({success: false})
         }
-
-        return res.status(200).send({
-            success: true
-        });        
     }
 }
 
