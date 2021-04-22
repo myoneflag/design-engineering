@@ -278,7 +278,7 @@ export class LoginController {
 
         // In case the document is upgraded in development without updating the example document,
         // the example document needs to be upgraded.
-        await DocumentUpgrader.submitDocumentForUpgrade(doc.id);
+        await DocumentUpgrader.onDocumentUpgradeRequest(doc.id);
 
         res.status(200).send({
             success: true,
