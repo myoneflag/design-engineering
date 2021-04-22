@@ -9,3 +9,14 @@ region = "us-west-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
 
+
+[stage]
+[stage.deploy]
+[stage.deploy.parameters]
+stack_name = "pdf-renderer-stage"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1ojnl9ycp7kvq"
+s3_prefix = "pdf-renderer-stage"
+region = "us-west-1"
+profile = "calin-h2x-testing"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
