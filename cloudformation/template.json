@@ -21,7 +21,7 @@
       "WorkerInstanceType": {
         "Description": "Worker instance type",
         "Type": "String",
-        "Default": "t2.medium"
+        "Default": "t2.large"
       },
       "DnsZoneId": {
         "Description": "HostedZoneID of the DNS zone to create the main records pointing to the web loadbalancer",
@@ -86,7 +86,7 @@
       "DbVersion": {
         "Description": "Extra name tag for major upgrades to RDS DB",
         "Type": "String",
-        "Default": ""
+        "Default": "-restore-1"
       }, 
       "NotificationsEmail": {
         "Description": "Notifications email to send Beanstalk deployment notifications to",
@@ -337,7 +337,6 @@
                 "OptionName": "NODE_OPTIONS",
                 "Value": "--max_old_space_size=6144"
               },
-              
               {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "EMAIL_ADDRESS",
@@ -508,6 +507,11 @@
               },
               {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "NODE_OPTIONS",
+                "Value": "--max_old_space_size=6144"
+              },              
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "RDS_HOSTNAME",
                 "Value":  { "Fn::GetAtt": [ "DBInstance", "Endpoint.Address" ] }
               },
@@ -582,19 +586,37 @@
               ]
             },
             "AllocatedStorage": "100",
-            "AllowMajorVersionUpgrade": true,
+            "AllowMajorVersionUpgrade": false,
             "DBInstanceIdentifier": { "Fn::Sub": "h2x-db-${EnvName}${DbVersion}" },
             "DBInstanceClass": "db.t3.small",
             "DBSecurityGroups": [ {"Ref": "DBSecurityGroup"} ],
             "DeleteAutomatedBackups": false,
             "Engine": "postgres",
-            "EngineVersion": "13.1",
-            "EnableIAMDatabaseAuthentication": "true",
+            "EngineVersion": "11.10",
+            "EnableIAMDatabaseAuthentication": true,
             "MultiAZ": "false",
             "PubliclyAccessible": "false",
-            "MasterUsername": { "Ref": "DBMasterUserName"},
-            "MasterUserPassword": { "Ref": "DBMasterUserPassword" },
-            "DBName": { "Ref": "DBName" }
+            "MasterUsername": {
+              "Fn::If" : [
+                "UseRDSSnapshot",
+                {"Ref" : "AWS::NoValue"},
+                { "Ref": "DBMasterUserName"}
+              ]
+            },
+            "MasterUserPassword": {
+              "Fn::If" : [
+                "UseRDSSnapshot",
+                { "Ref" : "AWS::NoValue" },
+                { "Ref": "DBMasterUserPassword" }
+              ]
+            },
+            "DBName": {
+              "Fn::If" : [
+                "UseRDSSnapshot",
+                { "Ref" : "AWS::NoValue" },
+                { "Ref": "DBName" }
+              ]
+            }
           }
         },
 
