@@ -86,7 +86,7 @@
       "DbVersion": {
         "Description": "Extra name tag for major upgrades to RDS DB",
         "Type": "String",
-        "Default": ""
+        "Default": "-restore-1"
       }, 
       "NotificationsEmail": {
         "Description": "Notifications email to send Beanstalk deployment notifications to",
@@ -582,19 +582,37 @@
               ]
             },
             "AllocatedStorage": "100",
-            "AllowMajorVersionUpgrade": true,
+            "AllowMajorVersionUpgrade": false,
             "DBInstanceIdentifier": { "Fn::Sub": "h2x-db-${EnvName}${DbVersion}" },
             "DBInstanceClass": "db.t3.small",
             "DBSecurityGroups": [ {"Ref": "DBSecurityGroup"} ],
             "DeleteAutomatedBackups": false,
             "Engine": "postgres",
-            "EngineVersion": "13.1",
-            "EnableIAMDatabaseAuthentication": "true",
+            "EngineVersion": "11.10",
+            "EnableIAMDatabaseAuthentication": true,
             "MultiAZ": "false",
             "PubliclyAccessible": "false",
-            "MasterUsername": { "Ref": "DBMasterUserName"},
-            "MasterUserPassword": { "Ref": "DBMasterUserPassword" },
-            "DBName": { "Ref": "DBName" }
+            "MasterUsername": {
+              "Fn::If" : [
+                "UseRDSSnapshot",
+                {"Ref" : "AWS::NoValue"},
+                { "Ref": "DBMasterUserName"}
+              ]
+            },
+            "MasterUserPassword": {
+              "Fn::If" : [
+                "UseRDSSnapshot",
+                { "Ref" : "AWS::NoValue" },
+                { "Ref": "DBMasterUserPassword" }
+              ]
+            },
+            "DBName": {
+              "Fn::If" : [
+                "UseRDSSnapshot",
+                { "Ref" : "AWS::NoValue" },
+                { "Ref": "DBName" }
+              ]
+            }
           }
         },
 
