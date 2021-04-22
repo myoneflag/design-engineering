@@ -1,8 +1,8 @@
 import {
     upgrade10to11,
     upgrade11to12, upgrade12to13, upgrade13to14, upgrade14to15, upgrade15to16, upgrade16to17, upgrade17to18,
-    upgrade18to19,
-    upgrade9to10
+    upgrade18to19, upgrade19to20, upgrade20to21,
+    upgrade9to10, upgraded21to22
 } from "../../../common/src/api/upgrade";
 import { Operation } from "../../../common/src/models/Operation";
 import { Document, DocumentStatus } from "../../../common/src/models/Document";
@@ -13,13 +13,15 @@ import { diffState } from "../../../common/src/api/document/state-differ";
 import stringify from "json-stable-stringify";
 import { initialDrawing } from "../../../common/src/api/document/drawing";
 import ConcurrentDocument from "./concurrentDocument";
-import { LessThan } from "typeorm";
+import {getManager, LessThan} from "typeorm";
 import { CURRENT_VERSION } from "../../../common/src/api/config";
 import SqsClient from "../services/SqsClient"
+import { promisify } from "util";
+import {compressDocumentIfRequired} from "./compressDocument";
+import {withTransaction} from "../helpers/database";
 
-export const UPGRADE_EXPIRED_THRESHOLD_MIN = 5;
+export const UPGRADE_EXPIRED_THRESHOLD_MIN = 10;
 // acknowledge that we are working while upgrading, but with enough interval so we don't update the DB too often.
-export const UPGRADE_LOCK_REFRESH_THRESHOLD_MIN = 4;
 
 export const HEARTBEAT_INTERVAL_SEC = 5; // It doesn't seem like connections are being kept alive by heartbeats, so
 // send to a dummy topic every now and then during long updates without acks.
@@ -95,119 +97,133 @@ export class DocumentUpgrader {
                 return;
             }
 
+
             const doc = await Document.findOne({ id: docId });
+            await compressDocumentIfRequired(doc);
 
-            const drawing = cloneSimple(initialDrawing);
-            let upgraded = cloneSimple(initialDrawing);
+            //await new Promise((res) => setTimeout(res, 5000));
+
+            const drawing = initialDrawing(doc.locale);
+            let upgraded = initialDrawing(doc.locale);
 
 
-            const ops = await Operation.createQueryBuilder("operation")
-                .leftJoinAndSelect("operation.blame", "user")
-                .where("operation.document = :document", { document: doc.id })
-                .orderBy("operation.orderIndex", "ASC")
-                .getMany();
+            let ops: Operation[];
 
-            console.log("Upgrading document (" + doc.id + ") " + doc.metadata.title + " from version " + doc.version + ". Has ops " + ops.length + ", state: " + doc.state);
+            await getManager().transaction('READ UNCOMMITTED', async (tx) => {
+                ops = await tx.getRepository(Operation)
+                    .createQueryBuilder("operation")
+                    .leftJoinAndSelect("operation.blame", "user")
+                    .where("operation.document = :document", { document: docId })
+                    .orderBy("operation.orderIndex", "ASC")
+                    .getMany();
 
-            let opsUpgraded = 0;
-            let lastHeartbeat = new Date();
-            for (const op of ops) {
 
-                if (doc.upgradingLockExpires < new Date(new Date().getTime() + UPGRADE_LOCK_REFRESH_THRESHOLD_MIN * 60000)) {
-                    doc.upgradingLockExpires = new Date(new Date().getTime() + UPGRADE_EXPIRED_THRESHOLD_MIN * 60000);
-                    await doc.save();
-                }
+                console.log("Upgrading document (" + doc.id + ") " + doc.metadata.title + " from version " + doc.version + ". Has ops " + ops.length + ", state: " + doc.state);
 
-                switch (op.operation.type) {
-                    case OPERATION_NAMES.DIFF_OPERATION:
-                        applyDiffNative(drawing, op.operation.diff);
+                let opsUpgraded = 0;
+                let lastHeartbeat = new Date();
+                for (const op of ops) {
 
-                        const newUpgraded = cloneSimple(drawing);
-                        let updated = false;
-                        switch (doc.version) {
-                            case 0:
-                            case 1:
-                            case 2:
-                            case 3:
-                            case 4:
-                            case 5:
-                            case 6:
-                            case 7:
-                            case 8:
-                                throw new Error("Version too old");
-                            case 9:
-                                upgrade9to10(newUpgraded);
-                            // noinspection FallThroughInSwitchStatementJS
-                            case 10:
-                                upgrade10to11(newUpgraded);
-                            // noinspection FallThroughInSwitchStatementJS
-                            case 11:
-                                upgrade11to12(newUpgraded);
-                            // noinspection FallThroughInSwitchStatementJS
-                            case 12:
-                                upgrade12to13(newUpgraded);
-                            // noinspection FallThroughInSwitchStatementJS
-                            case 13:
-                                upgrade13to14(newUpgraded);
-                            // noinspection FallThroughInSwitchStatementJS
-                            case 14:
-                                upgrade14to15(newUpgraded);
-                            // noinspection FallThroughInSwitchStatementJS
-                            case 15:
-                                upgrade15to16(newUpgraded);
-                            // noinspection FallThroughInSwitchStatementJS
-                            case 16:
-                                upgrade16to17(newUpgraded);
-                            // noinspection FallThroughInSwitchStatementJS
-                            case 17:
-                                upgrade17to18(newUpgraded);
-                            // noinspection FallThroughInSwitchStatementJS
-                            case 18:
-                                upgrade18to19(newUpgraded);
-                            // noinspection FallThroughInSwitchStatementJS
-                            case CURRENT_VERSION:
-                                break;
-                        }
+                    switch (op.operation.type) {
+                        case OPERATION_NAMES.DIFF_OPERATION:
+                            applyDiffNative(drawing, op.operation.diff);
 
-                        const upgradedOps = cloneSimple(diffState(upgraded, newUpgraded, undefined));
-                        upgraded = newUpgraded;
-                        if (upgradedOps.length) {
-                            if (upgradedOps[0].type === OPERATION_NAMES.DIFF_OPERATION) {
-                                if (stringify(op.operation) !== stringify(upgradedOps[0])) {
-                                    opsUpgraded++;
-                                    op.operation = upgradedOps[0];
-                                    await op.save();
+                            const newUpgraded = cloneSimple(drawing);
+                            let updated = false;
+                            switch (doc.version) {
+                                case 0:
+                                case 1:
+                                case 2:
+                                case 3:
+                                case 4:
+                                case 5:
+                                case 6:
+                                case 7:
+                                case 8:
+                                    throw new Error("Version too old");
+                                case 9:
+                                    upgrade9to10(newUpgraded);
+                                // noinspection FallThroughInSwitchStatementJS
+                                case 10:
+                                    upgrade10to11(newUpgraded);
+                                // noinspection FallThroughInSwitchStatementJS
+                                case 11:
+                                    upgrade11to12(newUpgraded);
+                                // noinspection FallThroughInSwitchStatementJS
+                                case 12:
+                                    upgrade12to13(newUpgraded);
+                                // noinspection FallThroughInSwitchStatementJS
+                                case 13:
+                                    upgrade13to14(newUpgraded);
+                                // noinspection FallThroughInSwitchStatementJS
+                                case 14:
+                                    upgrade14to15(newUpgraded);
+                                // noinspection FallThroughInSwitchStatementJS
+                                case 15:
+                                    upgrade15to16(newUpgraded);
+                                // noinspection FallThroughInSwitchStatementJS
+                                case 16:
+                                    upgrade16to17(newUpgraded);
+                                // noinspection FallThroughInSwitchStatementJS
+                                case 17:
+                                    upgrade17to18(newUpgraded);
+                                // noinspection FallThroughInSwitchStatementJS
+                                case 18:
+                                    upgrade18to19(newUpgraded);
+                                // noinspection FallThroughInSwitchStatementJS
+                                case 19:
+                                    upgrade19to20(newUpgraded);
+                                // noinspection FallThroughInSwitchStatementJS
+                                case 20:
+                                    upgrade20to21(newUpgraded);
+                                // noinspection FallThroughInSwitchStatementJS
+                                case 21:
+                                    upgraded21to22(newUpgraded);
+                                // noinspection FallThroughInSwitchStatementJS
+                                case CURRENT_VERSION:
+                                    break;
+                            }
+
+                            const upgradedOps = cloneSimple(diffState(upgraded, newUpgraded, undefined));
+                            upgraded = newUpgraded;
+                            if (upgradedOps.length) {
+                                if (upgradedOps[0].type === OPERATION_NAMES.DIFF_OPERATION) {
+                                    if (stringify(op.operation) !== stringify(upgradedOps[0])) {
+                                        opsUpgraded++;
+                                        op.operation = upgradedOps[0];
+                                        await tx.save(Operation, op);
+                                    }
+                                } else {
+                                    throw new Error("diffState returned something unusual");
                                 }
                             } else {
-                                throw new Error("diffState returned something unusual");
+                                await tx.remove(Operation, op);
                             }
-                        } else {
-                            await op.remove();
-                        }
-                        break;
-                    case OPERATION_NAMES.COMMITTED_OPERATION:
-                        break;
+                            break;
+                        case OPERATION_NAMES.COMMITTED_OPERATION:
+                            break;
+                    }
+
+
+                    // yield a bit, ya know? Let the message handling breathe.
+                    await new Promise((res, rej) => {
+                        setTimeout(res, 0);
+                    });
                 }
 
+                if (opsUpgraded) {
+                    console.log("upgraded " + opsUpgraded + " operations");
+                } else {
+                    console.log("All good, no changes made");
+                }
+                console.log("took " + ((new Date().getTime() - start.getTime()) / 60000) + " minutes");
 
-                // yield a bit, ya know? Let the message handling breathe.
-                await new Promise((res, rej) => {
-                    setTimeout(res, 0);
-                });
-            }
+                // upgrade
+                doc.version = CURRENT_VERSION;
 
-            if (opsUpgraded) {
-                console.log("upgraded " + opsUpgraded + " operations");
-            } else {
-                console.log("All good, no changes made");
-            }
-            console.log("took " + ((new Date().getTime() - start.getTime()) / 60000) + " minutes");
-
-            // upgrade
-            doc.version = CURRENT_VERSION;
-
-            doc.metadata = drawing.metadata.generalInfo;
-            await doc.save();
+                doc.metadata = drawing.metadata.generalInfo;
+                await tx.save(Document, doc);
+            });
         } finally {
             console.log("ACKing upgrade request");
         }

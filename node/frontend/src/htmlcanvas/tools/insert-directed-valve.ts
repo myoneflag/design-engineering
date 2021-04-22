@@ -251,6 +251,13 @@ function createBareValve(type: ValveType, catalogId: string): DirectedValveConcr
                 catalogId: 'filter',
                 pressureDropKPA: 0,
             };
+        case ValveType.FLOOR_WASTE:
+        case ValveType.INSPECTION_OPENING:
+        case ValveType.REFLUX_VALVE:
+            return {
+                type,
+                catalogId: 'floorWaste',
+            };
     }
     assertUnreachable(type);
 }

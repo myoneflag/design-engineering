@@ -64,11 +64,11 @@
 
         <b-row style="padding-top:10px;">
             <b-col cols="12">
-                <b-form-group label="Distance m" label-cols="6">
+                <b-form-group :label="`Distance ${lengthUnits}`" label-cols="6">
                     <b-input
                         @update="distanceChanged"
-                        :value="ABDistanceMeters ? ABDistanceMeters.toFixed(2) : undefined"
-                        :disabled="ABDistanceMeters === undefined"
+                        :value="ABDistance ? ABDistance.toFixed(2) : undefined"
+                        :disabled="ABDistance === undefined"
                     >
                     </b-input>
                 </b-form-group>
@@ -79,7 +79,7 @@
             <b-col>
                 <b-button
                     variant="primary"
-                    :disabled="ABDistanceMeters === undefined || !changeIsValid"
+                    :disabled="ABDistance === undefined || !changeIsValid"
                     @click="calibrate"
                     >Calibrate &nbsp;</b-button
                 >
@@ -122,9 +122,11 @@ import { MainEventBus } from "../../../../src/store/main-event-bus";
 import PointTool from "../../../../src/htmlcanvas/tools/point-tool";
 import DrawableObject from "../../../../src/htmlcanvas/lib/drawable-object";
 import { BackgroundImage } from "../../../../src/htmlcanvas/objects/background-image";
-import { PDFRenderResult, renderPdf } from "../../../../src/api/pdf";
+import { renderPdf } from "../../../../src/api/pdf";
 import { BackgroundEntity } from "../../../../../common/src/api/document/entities/background-entity";
 import { Coord } from "../../../../../common/src/api/document/drawing";
+import { convertMeasurementSystem, Units } from "../../../../../common/src/lib/measurements";
+import { DocumentState } from "../../../store/document/types";
 
 @Component({
     props: {
@@ -143,9 +145,18 @@ export default class FloorPlanProperties extends Vue {
     enteredDistance: string = "";
 
     mounted() {
-        if (this.ABDistanceMeters) {
-            this.enteredDistance = this.ABDistanceMeters.toString();
+        if (this.ABDistance) {
+            this.enteredDistance = this.ABDistance.toString();
         }
+    }
+
+    get document(): DocumentState {
+      return this.$store.getters["document/document"];
+    }
+
+    get lengthUnits() {
+      const [units] = convertMeasurementSystem(this.document.drawing.metadata.units, Units.Meters, null);
+      return units;
     }
 
     get pointA() {
@@ -155,7 +166,12 @@ export default class FloorPlanProperties extends Vue {
         if (background.pointA) {
             const wa: Coord = backgroundImage.toWorldCoord(background.pointA);
 
-            return (wa.x / 1000).toFixed(2) + ", " + (wa.y / 1000).toFixed(2) + "m";
+            const [units, xConverted] =
+                convertMeasurementSystem(this.document.drawing.metadata.units, Units.Meters, wa.x / 1000);
+            const [_, yConverted] =
+                convertMeasurementSystem(this.document.drawing.metadata.units, Units.Meters, wa.y / 1000);
+
+            return (xConverted as number).toFixed(2) + ", " + (yConverted as number).toFixed(2) + units;
         } else {
             return "Choose";
         }
@@ -166,10 +182,10 @@ export default class FloorPlanProperties extends Vue {
             if (parseFloat(this.enteredDistance) < this.EPS) {
                 return false;
             }
-            if (!this.ABDistanceMeters) {
+            if (!this.ABDistance) {
                 return false;
             }
-            return Math.abs(this.ABDistanceMeters - parseFloat(this.enteredDistance)) > this.EPS;
+            return Math.abs(this.ABDistance - parseFloat(this.enteredDistance)) > this.EPS;
         } catch {
             return false;
         }
@@ -180,9 +196,14 @@ export default class FloorPlanProperties extends Vue {
         const backgroundImage: BackgroundImage = this.$props.selectedObject;
 
         if (background.pointB) {
-            const wb: Coord = backgroundImage.toWorldCoord(background.pointB);
+            const wa: Coord = backgroundImage.toWorldCoord(background.pointB);
 
-            return (wb.x / 1000).toFixed(2) + ", " + (wb.y / 1000).toFixed(2) + "m";
+            const [units, xConverted] =
+                convertMeasurementSystem(this.document.drawing.metadata.units, Units.Meters, wa.x / 1000);
+            const [_, yConverted] =
+                convertMeasurementSystem(this.document.drawing.metadata.units, Units.Meters, wa.y / 1000);
+
+            return (xConverted as number).toFixed(2) + ", " + (yConverted as number).toFixed(2) + units;
         } else {
             return "Choose";
         }
@@ -214,8 +235,8 @@ export default class FloorPlanProperties extends Vue {
     calibrate() {
         const background: BackgroundEntity = this.$props.selectedEntity;
 
-        if (this.ABDistanceMeters) {
-            const factor = parseFloat(this.enteredDistance) / this.ABDistanceMeters;
+        if (this.ABDistance) {
+            const factor = parseFloat(this.enteredDistance) / this.ABDistance;
 
             this.background.scaleFactor *= factor;
 
@@ -224,7 +245,7 @@ export default class FloorPlanProperties extends Vue {
         }
     }
 
-    get ABDistanceMeters() {
+    get ABDistance() {
         const background: BackgroundEntity = this.$props.selectedEntity;
         const backgroundImage: BackgroundImage = this.$props.selectedObject;
 
@@ -232,7 +253,11 @@ export default class FloorPlanProperties extends Vue {
             const wa: Coord = backgroundImage.toWorldCoord(background.pointA);
             const wb: Coord = backgroundImage.toWorldCoord(background.pointB);
 
-            return Math.sqrt((wa.x - wb.x) ** 2 + (wa.y - wb.y) ** 2) / 1000;
+            const distM = Math.sqrt((wa.x - wb.x) ** 2 + (wa.y - wb.y) ** 2) / 1000;
+
+            const [units, converted] =
+                convertMeasurementSystem(this.document.drawing.metadata.units, Units.Meters, distM);
+            return converted as number;
         }
     }
 

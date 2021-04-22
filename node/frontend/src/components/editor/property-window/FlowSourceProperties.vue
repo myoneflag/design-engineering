@@ -2,7 +2,7 @@
     <b-container>
         <b-row>
             <b-col>
-                <h3>Flow Source</h3>
+                <h3>{{name}}</h3>
             </b-col>
         </b-row>
         <PropertiesFieldBuilder
@@ -33,6 +33,7 @@ import {
     fillFlowSourceDefaults,
     makeFlowSourceFields
 } from "../../../../../common/src/api/document/entities/flow-source-entity";
+import {getEntityName} from "../../../../../common/src/api/document/entities/types";
 
 @Component({
     components: { PropertiesFieldBuilder },
@@ -50,6 +51,10 @@ export default class FlowSourceProperties extends Vue {
             this.document.drawing.metadata.flowSystems,
             this.$props.selectedEntity,
         );
+    }
+
+    get name() {
+        return getEntityName(this.$props.selectedEntity);
     }
 
     get reactiveData() {

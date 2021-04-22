@@ -1,3 +1,4 @@
+import {EntityType} from "../../../../common/src/api/document/entities/types";
 <template>
     <drop @drop="onDrop">
         <!--Anything that needs scrolling needs to be up here, outside of canvasFrame.-->
@@ -71,7 +72,7 @@
 
             <HydraulicsInsertPanel
                     v-if="document.uiState.drawingMode === 1 && initialized && !document.uiState.viewOnly"
-                    :flow-systems="document.drawing.metadata.flowSystems"
+                    :flow-systems="availableFlowSystems"
                     @insert="hydraulicsInsert"
                     :fixtures="effectiveCatalog.fixtures"
                     :valves="effectiveCatalog.valves"
@@ -81,6 +82,10 @@
                     :last-used-valve-vid="document.uiState.lastUsedValveVid"
                     :is-drawing="toolHandler !== null"
             />
+
+            <PressureDrainageSelector v-if="document.uiState.drawingMode !== DrawingMode.FloorPlan">
+
+            </PressureDrainageSelector>
 
             <CalculationTopBar
                     v-if="
@@ -124,7 +129,6 @@
 <script lang="ts">
     import Vue from "vue";
     import Component from "vue-class-component";
-
     // @ts-ignore
     import ClickOutside from 'vue-click-outside';
 
@@ -186,7 +190,7 @@
     import CalculationsSidebar from "../../../src/components/editor/CalculationsSidebar.vue";
     import DrawingNavBar from "../DrawingNavBar.vue";
     import LevelSelector from "./LevelSelector.vue";
-    import PipeEntity, { fillPipeDefaultFields } from "../../../../common/src/api/document/entities/pipe-entity";
+    import PipeEntity, {fillPipeDefaultFields} from "../../../../common/src/api/document/entities/pipe-entity";
     import util from "util";
     import insertLoadNode from "../../htmlcanvas/tools/insert-load-node";
     import {NodeType, NodeVariant} from "../../../../common/src/api/document/entities/load-node-entity";
@@ -195,7 +199,7 @@
     import {GlobalStore} from "../../htmlcanvas/lib/global-store";
     import insertFlowSource from "../../htmlcanvas/tools/insert-flow-source";
     import insertPlant from "../../htmlcanvas/tools/insert-plant";
-    import {assertUnreachable} from "../../../../common/src/api/config";
+    import {assertUnreachable, isDrainage} from "../../../../common/src/api/config";
     import {Catalog} from "../../../../common/src/api/catalog/types";
     import {Coord, FlowSystemParameters, Level, NetworkType} from "../../../../common/src/api/document/drawing";
     import {rebaseAll} from "../../htmlcanvas/lib/black-magic/rebase-all";
@@ -218,7 +222,10 @@
     import OnboardingState, {ONBOARDING_SCREEN} from "../../store/onboarding/types";
     import insertGasAppliance from "../../htmlcanvas/tools/insert-gas-appliance";
     import {drawGridLines} from "../../htmlcanvas/on-screen-items";
-    import FixtureEntity from "../../../../common/src/api/document/entities/fixtures/fixture-entity";
+
+    import PressureDrainageSelector from "./PressureDrainageSelector.vue";
+    import { I18N } from "../../../../common/src/api/locale/values";
+    import { SupportedLocales } from "../../../../common/src/api/locale";
 
     @Component({
         components: {
@@ -238,9 +245,10 @@
             PropertiesWindow,
             ModeButtons,
             Onboarding,
+            PressureDrainageSelector,
         },
         directives: {
-            ClickOutside
+            ClickOutside,
         }
     })
     export default class DrawingCanvas extends Vue {
@@ -270,6 +278,10 @@
             }
 
             return false;
+        }
+
+        get DrawingMode() {
+            return DrawingMode;
         }
 
         get shouldDisplayModeButtons() {
@@ -339,6 +351,10 @@
             return this.document.drawing.metadata.availableFixtures;
         }
 
+        get locale(): SupportedLocales {
+            return this.$store.getters['profile/locale'];
+        }
+
         get availableValves(): Array<ValveId | { name: string; valves: ValveId[] }> {
             return [
                 { type: ValveType.ISOLATION_VALVE, catalogId: "gateValve", name: "" },
@@ -355,7 +371,7 @@
                 { type: ValveType.RPZD_DOUBLE_SHARED, catalogId: "RPZD", name: "Double RPZD - 50/50 Load Each" },
                 { type: ValveType.RPZD_DOUBLE_ISOLATED, catalogId: "RPZD", name: "Double RPZD - 100% Load Each" },
 
-                { type: ValveType.PRV_SINGLE, catalogId: "prv", name: "Pressure Reducing Valve" },
+                { type: ValveType.PRV_SINGLE, catalogId: "prv", name: I18N.pressureReducingValve[this.locale] },
                 { type: ValveType.PRV_DOUBLE, catalogId: "prv", name: "PRV Dual - 50% Load Each" },
                 { type: ValveType.PRV_TRIPLE, catalogId: "prv", name: "PRV Trio - 33% Load Each" },
             ].map((a) => {
@@ -544,6 +560,16 @@
 
         get nodes() {
             return this.$store.getters["customEntity/nodes"];
+        }
+
+        get availableFlowSystems(): FlowSystemParameters[] {
+            switch (this.document.uiState.pressureOrDrainage) {
+                case "pressure":
+                    return this.document.drawing.metadata.flowSystems.filter((s) => !isDrainage(s.uid));
+                case "drainage":
+                    return this.document.drawing.metadata.flowSystems.filter((s) => isDrainage(s.uid));
+            }
+            assertUnreachable(this.document.uiState.pressureOrDrainage);
         }
 
         projectCost(): Cost {
@@ -1241,7 +1267,27 @@
             if (selectionTarget.uid === null) {
                 this.select([], SelectMode.Replace);
             } else {
-                const objectLevel = this.globalStore.levelOfEntity.get(selectionTarget.uid);
+                let objectLevel = this.globalStore.levelOfEntity.get(selectionTarget.uid);
+
+                const obj = this.globalStore.get(selectionTarget.uid);
+                if (!obj) {
+                    throw new Error("Selecting an object that doesn't exist");
+                }
+                if (obj.entity.type === EntityType.RISER) {
+                    const riser = obj as Riser;
+                    // risers have level set to null, so we can't use it to find a visible level.
+                    for (const lvlUid of [this.document.uiState.levelUid,
+                        ...Object.keys(this.document.drawing.levels)]) {
+                        if (levelIncludesRiser(
+                            this.document.drawing.levels[lvlUid!],
+                            obj.entity,
+                            this.$store.getters["document/sortedLevels"]
+                        )) {
+                            objectLevel = lvlUid;
+                            break;
+                        }
+                    }
+                }
 
                 if (objectLevel && (this.currentLevel === null || objectLevel !== this.currentLevel.uid)) {
                     await this.$store.dispatch("document/setCurrentLevelUid", objectLevel);
@@ -1252,10 +1298,6 @@
                     throw new Error("Level didn't change properly");
                 }
 
-                const obj = this.globalStore.get(selectionTarget.uid);
-                if (!obj) {
-                    throw new Error("Selecting an object that doesn't exist");
-                }
 
                 const drawable = obj.entity;
                 if (drawable.type === EntityType.BACKGROUND_IMAGE) {
@@ -1429,12 +1471,14 @@
             outletSystemUid: string;
             title: string;
             customNodeId: number;
+            isVent: boolean | undefined;
         }) {
-            const { entityName, system, catalogId, valveType, nodeType, valveName, networkType, bigValveType, plantType, inletSystemUid, outletSystemUid, title } = params;
+            const { entityName, system, catalogId, valveType, nodeType, valveName, networkType,
+                bigValveType, plantType, inletSystemUid, outletSystemUid, title, isVent } = params;
             this.select([], SelectMode.Replace);
 
             if (entityName === EntityType.RISER) {
-                insertRiser(this, system);
+                insertRiser(this, system, isVent);
             } else if (entityName === EntityType.RETURN) {
                 this.insertFlowReturn(system);
             } else if (entityName === EntityType.PIPE) {
@@ -1722,6 +1766,7 @@
         }
 
         async drawError(e: Error) {
+            console.log(e);
             if (this.ctx) {
                 try {
                     await this.blitBuffer(false);

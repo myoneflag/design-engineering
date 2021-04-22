@@ -4,6 +4,7 @@ import { Organization } from "./Organization";
 import { AccessLevel, User } from "./User";
 import { ShareDocument } from './ShareDocument';
 import { GeneralInfo } from "../api/document/drawing";
+import { SupportedLocales } from "../api/locale";
 
 export enum DocumentStatus {
     ACTIVE,
@@ -63,6 +64,12 @@ export class Document extends BaseEntity {
     @OneToOne(() => ShareDocument, { eager: true })
     @JoinColumn()
     shareDocument: ShareDocument;
+
+    @Column({default: new Date(2000, 0, 0)})
+    lastCompression: Date;
+
+    @Column({type: "enum", enum: SupportedLocales, default: SupportedLocales.AU})
+    locale: SupportedLocales;
 }
 
 export function canUserDeleteDocument(doc: Document, user: User) {

@@ -2,16 +2,9 @@
     <b-container class="calculationSidePanel">
         <b-row>
             <b-col>
-                <b-button-group>
-                    <b-button
-                        variant="outline-dark"
-                        class="calculationBtn"
-                        @click="filterShown = !filterShown"
-                        :pressed="filterShown"
-                    >
-                        Filters
-                        <v-icon name="caret-down" scale="1" />
-                    </b-button>
+                <b-button-group
+                        style="margin-left: -380px"
+                >
 
                     <b-dropdown variant="outline-dark" size="sm" class="calculationBtn" text="Export (*)">
                         <b-dropdown-item @click="pdfSnapshot" variant="outline-dark" size="sm"> PDF</b-dropdown-item>
@@ -29,6 +22,16 @@
                     >
                         Share
                         <v-icon name="share-alt" scale="1" />
+                    </b-button>
+
+                    <b-button
+                            variant="outline-dark"
+                            class="calculationBtn"
+                            @click="filterShown = !filterShown"
+                            :pressed="filterShown"
+                    >
+                        Filters
+                        <v-icon name="caret-down" scale="1" />
                     </b-button>
                 </b-button-group>
             </b-col>
@@ -129,6 +132,8 @@ export default class CalculationsSidebar extends Vue {
 
     stageNewFilters() {
         const filters = cloneSimple(this.filters);
+        console.log("Staging new filter: ");
+        console.log(filters);
         for (const eType in filters) {
             // noinspection JSUnfilteredForInLoop
             if (filters.hasOwnProperty(eType)) {
@@ -151,22 +156,22 @@ export default class CalculationsSidebar extends Vue {
         exportBudgetReport(this.$props.canvasContext);
     }
 
-    onCheck(eType: string, prop: string, value: boolean, shouldChange: boolean = true) {
-        if (!(eType in this.document.uiState.calculationFilters)) {
-            Vue.set(this.document.uiState.calculationFilters, eType, {
-                name: this.filters[eType].name,
+    onCheck(eName: string, prop: string, value: boolean, shouldChange: boolean = true) {
+        if (!(eName in this.document.uiState.calculationFilters)) {
+            Vue.set(this.document.uiState.calculationFilters, eName, {
+                name: this.filters[eName].name,
                 enabled: false,
                 filters: {}
             });
         }
 
-        if (!(prop in this.document.uiState.calculationFilters[eType].filters)) {
-            Vue.set(this.document.uiState.calculationFilters[eType].filters, prop, {
-                name: this.filters[eType].filters[prop].name,
+        if (!(prop in this.document.uiState.calculationFilters[eName].filters)) {
+            Vue.set(this.document.uiState.calculationFilters[eName].filters, prop, {
+                name: this.filters[eName].filters[prop].name,
                 enabled: value
             });
         }
-        this.document.uiState.calculationFilters[eType].filters[prop].enabled = value;
+        this.document.uiState.calculationFilters[eName].filters[prop].enabled = value;
         if (shouldChange) {
             this.$props.onChange();
         }

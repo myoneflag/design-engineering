@@ -1,22 +1,20 @@
-import { DocumentState } from "../../../src/store/document/types";
-import { MainEventBus } from "../../../src/store/main-event-bus";
-import PointTool from "../../../src/htmlcanvas/tools/point-tool";
-import { EntityType } from "../../../../common/src/api/document/entities/types";
+import {MainEventBus} from "../../../src/store/main-event-bus";
+import {EntityType} from "../../../../common/src/api/document/entities/types";
 import uuid from "uuid";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import {
     FlowConfiguration,
     SystemNodeEntity
 } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
-import { KeyCode } from "../../../src/htmlcanvas/utils";
+import {KeyCode} from "../../../src/htmlcanvas/utils";
 import PlantEntity from "../../../../common/src/api/document/entities/plants/plant-entity";
-import { Coord } from "../../../../common/src/api/document/drawing";
+import {Coord} from "../../../../common/src/api/document/drawing";
 import {
     PlantConcrete,
     PlantType,
     PressureMethod
 } from "../../../../common/src/api/document/entities/plants/plant-types";
-import { assertUnreachable, StandardFlowSystemUids } from "../../../../common/src/api/config";
+import {assertUnreachable, StandardFlowSystemUids} from "../../../../common/src/api/config";
 import SnappingInsertTool from "./snapping-insert-tool";
 
 export default function insertPlant(context: CanvasContext, angle: number, type: PlantType, inletSystemUid: string, outletSystemUid: string, title: string, rightToLeft: boolean = false) {
@@ -235,6 +233,14 @@ function createPlant(type: PlantType, outletSystemUid: string, returnUid: string
                     staticPressureKPA: null,
                     pumpPressureKPA: null,
                 }
+            };
+        case PlantType.DRAINAGE_PIT:
+            return {
+                type,
+                pressureLoss: {
+                    pressureMethod: PressureMethod.STATIC_PRESSURE,
+                    staticPressureKPA: 0,
+                },
             };
     }
     assertUnreachable(type);

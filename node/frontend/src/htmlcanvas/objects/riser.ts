@@ -21,12 +21,14 @@ import CanvasContext from "../lib/canvas-context";
 import {DrawableEntityConcrete, EdgeLikeEntity} from "../../../../common/src/api/document/entities/concrete-entity";
 import RiserCalculation from "../../store/document/calculations/riser-calculation";
 import Pipe from "./pipe";
-import {getFluidDensityOfSystem, head2kpa} from "../../calculations/pressure-drops";
-import {Coord, FlowSystemParameters} from "../../../../common/src/api/document/drawing";
-import {getEdgeLikeHeightAboveGroundM, getHighlightColor} from "../lib/utils";
-import {GlobalStore} from "../lib/global-store";
-import {Interaction, InteractionType} from "../lib/interaction";
-import {SnappableObject} from "../lib/object-traits/snappable-object";
+import { getFluidDensityOfSystem, head2kpa } from "../../calculations/pressure-drops";
+import { Coord, FlowSystemParameters } from "../../../../common/src/api/document/drawing";
+import { getEdgeLikeHeightAboveGroundM, getHighlightColor } from "../lib/utils";
+import { GlobalStore } from "../lib/global-store";
+import { APIResult } from "../../../../common/src/api/document/types";
+import { Interaction, InteractionType } from "../lib/interaction";
+import { SnappableObject } from "../lib/object-traits/snappable-object";
+import {assertUnreachable, isDrainage} from "../../../../common/src/api/config";
 
 @CalculatedObject
 @SelectableObject
@@ -53,6 +55,17 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         return TM.transform(TM.translate(this.entity.center.x, this.entity.center.y), TM.scale(scale, scale));
     }
 
+    isActive(): boolean {
+        const systemUid = this.entity.systemUid;
+        switch (this.document.uiState.pressureOrDrainage) {
+            case "pressure":
+                return !isDrainage(systemUid);
+            case "drainage":
+                return isDrainage(systemUid);
+        }
+        assertUnreachable(this.document.uiState.pressureOrDrainage);
+    }
+
     drawEntity({ ctx, doc, vp }: DrawingContext, { selected, layerActive, overrideColorList }: EntityDrawingArgs): void {
         this.lastDrawnWorldRadius = 0;
 
@@ -76,6 +89,10 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                 overrideColorList,
                 {hex: lighten(this.color(doc).hex, 50)},
             ), 0.5);
+
+            if (!this.isActive()) {
+                ctx.fillStyle = 'rgba(150, 150, 150, 0.65)';
+            }
 
             ctx.beginPath();
             ctx.lineWidth = 0;
@@ -101,6 +118,9 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         }
 
         ctx.fillStyle = this.color(doc).hex;
+        if (!this.isActive()) {
+            ctx.fillStyle = 'rgba(150, 150, 150, 0.65)';
+        }
 
         ctx.globalAlpha = 1;
         ctx.beginPath();
@@ -113,13 +133,55 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
 
         ctx.beginPath();
         ctx.fillStyle = "#000000";
-        // draw triangle
-        ctx.moveTo(0, -this.lastDrawnDiameterW * 0.45);
-        ctx.lineTo(this.lastDrawnDiameterW * 0.38, this.lastDrawnDiameterW * 0.25);
-        ctx.lineTo(0, this.lastDrawnDiameterW * 0.1);
-        ctx.lineTo(-this.lastDrawnDiameterW * 0.38, this.lastDrawnDiameterW * 0.25);
-        ctx.closePath();
-        ctx.fill();
+
+        if (isDrainage(this.entity.systemUid) && !this.entity.isVent) {
+            // stack. Draw upside down traingle.
+            ctx.moveTo(0, this.lastDrawnDiameterW * 0.45);
+            ctx.lineTo(this.lastDrawnDiameterW * 0.38, -this.lastDrawnDiameterW * 0.25);
+            ctx.lineTo(0, -this.lastDrawnDiameterW * 0.1);
+            ctx.lineTo(-this.lastDrawnDiameterW * 0.38, -this.lastDrawnDiameterW * 0.25);
+            ctx.closePath();
+            ctx.fill();
+
+            const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === this.entity.systemUid);
+            if (system) {
+                if (system.drainageProperties.stackDedicatedVent) {
+                    // draw dedicated vent.
+                    const ventColor = system.drainageProperties.ventColor.hex;
+
+                    ctx.beginPath();
+                    ctx.fillStyle = ventColor;
+
+                    if (!this.isActive()) {
+                        ctx.fillStyle = 'rgba(150, 150, 150, 0.65)';
+                    }
+
+                    const ventRadius = this.lastDrawnDiameterW / 4;
+                    const ventDiameter = ventRadius * 2;
+                    ctx.arc(this.lastDrawnDiameterW , 0, ventRadius, 0, Math.PI * 2);
+                    ctx.fill();
+
+
+                    ctx.beginPath();
+                    ctx.fillStyle = '#000000';
+                    ctx.moveTo(this.lastDrawnDiameterW, -ventDiameter * 0.45);
+                    ctx.lineTo(this.lastDrawnDiameterW + ventDiameter * 0.38, ventDiameter * 0.25);
+                    ctx.lineTo(this.lastDrawnDiameterW, ventDiameter * 0.1);
+                    ctx.lineTo(this.lastDrawnDiameterW - ventDiameter * 0.38, ventDiameter * 0.25);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            }
+        } else {
+
+            // riser. Draw normal triangle.
+            ctx.moveTo(0, -this.lastDrawnDiameterW * 0.45);
+            ctx.lineTo(this.lastDrawnDiameterW * 0.38, this.lastDrawnDiameterW * 0.25);
+            ctx.lineTo(0, this.lastDrawnDiameterW * 0.1);
+            ctx.lineTo(-this.lastDrawnDiameterW * 0.38, this.lastDrawnDiameterW * 0.25);
+            ctx.closePath();
+            ctx.fill();
+        }
     }
 
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
@@ -133,6 +195,9 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
     }
 
     color(doc: DocumentState) {
+        if (this.entity.isVent) {
+            return this.system(doc).drainageProperties.ventColor;
+        }
         return this.entity.color == null ? this.system(doc).color : this.entity.color;
     }
 
@@ -150,6 +215,9 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
     }
 
     inBounds(objectCoord: Coord, radius?: number) {
+        if (!this.isActive()) {
+            return false;
+        }
         const dist = Math.sqrt(objectCoord.x ** 2 + objectCoord.y ** 2);
         return dist <= this.toObjectLength(this.lastDrawnDiameterW / 2) + (radius ? radius : 0);
     }
@@ -224,10 +292,14 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                 if (tryToFix) {
                     this.entity.topHeightM = this.maxPipeHeight(context);
                 } else {
+                    let messageBase = "Riser top can't be lower than our highest pipe. (";
+                    if (this.entity.isVent) {
+                        messageBase = "Vent top height must be higher than the highest pipe length. (";
+                    }
                     return {
                         success: false,
                         message:
-                            "Riser top can't be lower than our highest pipe. (" +
+                            messageBase +
                             this.entity.uid +
                             ", " +
                             this.entity.topHeightM +
@@ -307,8 +379,10 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
             expandedEntities: null,
 
             heights: {},
-            warning: null
+            warning: null,
+            warningLayout: null,
         };
+        const IAmDrainage = isDrainage(this.entity.systemUid);
 
         const tower = this.getCalculationTower(context);
 
@@ -317,6 +391,22 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
             return context.doc.drawing.levels[a].floorHeightM - context.doc.drawing.levels[b].floorHeightM;
         });
 
+        // Find size of base vent for dedicated vent sizing
+        let biggestDedicatedVentSize: number | null = null;
+        if (IAmDrainage) {
+            for (const segment of tower) {
+                const pipe = segment[1];
+                if (pipe) {
+                    const pcalc = context.globalStore.getOrCreateCalculation(pipe);
+                    if (pcalc.stackDedicatedVentSize !== null &&
+                        (biggestDedicatedVentSize === null || pcalc.stackDedicatedVentSize > biggestDedicatedVentSize) ) {
+                        biggestDedicatedVentSize = pcalc.stackDedicatedVentSize;
+                    }
+                }
+            }
+        }
+
+        // Collect all levels together
         let topOfPipe = 0;
         for (const lvlUid of levelUidsByHeight) {
             res.heights[lvlUid] = {
@@ -326,6 +416,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                 pressureKPA: null,
                 staticPressureKPA: null,
                 sizeMM: null,
+                ventSizeMM: null,
             };
 
             // iterate pipe if need be. Note, we don't want to go over.
@@ -338,7 +429,6 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
 
             if (topOfPipe > 0 && tower[topOfPipe][0].calculationHeightM! >= levels[lvlUid].floorHeightM) {
                 const calc = context.globalStore.getOrCreateCalculation(tower[topOfPipe][1]!);
-
                 const pipe = context.globalStore.get(tower[topOfPipe][1]!.uid) as Pipe;
 
                 const totalHL = pipe.getFrictionHeadLoss(
@@ -351,7 +441,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                     PressurePushMode.PSD,
                 );
 
-                if (totalHL != null) {
+                if (totalHL != null && !IAmDrainage) {
                     const totalLength =
                         tower[topOfPipe][0].calculationHeightM! - tower[topOfPipe - 1][0].calculationHeightM!;
                     const partialLength = levels[lvlUid].floorHeightM - tower[topOfPipe - 1][0].calculationHeightM!;
@@ -375,8 +465,58 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                             pressureKPA: bottomPressure - risenSegmentPressureLossKPA,
                             staticPressureKPA: bottomStaticPressure === null ? null : bottomStaticPressure - risenSegmentPressureLossKPA,
                             sizeMM: calc.realNominalPipeDiameterMM,
+                            ventSizeMM: null,
                         };
                     }
+                } else if (IAmDrainage) {
+                    res.heights[lvlUid] = {
+                        flowRateLS: null,
+                        heightAboveGround: levels[lvlUid].floorHeightM,
+                        psdUnits: calc.psdUnits,
+                        pressureKPA: null,
+                        staticPressureKPA: null,
+                        sizeMM: calc.realNominalPipeDiameterMM,
+                        ventSizeMM: biggestDedicatedVentSize,
+                    };
+                }
+            }
+        }
+
+        if (IAmDrainage) {
+            const system = context.doc.drawing.metadata.flowSystems.find((f) => f.uid === this.entity.systemUid);
+            if (system) {
+                const overFlowedLevels: string[] = [];
+                // Do warnings of max thing per level
+
+                for (let i = 0; i < levelUidsByHeight.length - 1; i++) {
+                    const thisLvlUid = levelUidsByHeight[i];
+                    const nextLvlUid = levelUidsByHeight[i + 1];
+                    const levelRes = res.heights[thisLvlUid];
+                    const nextLevelRes = res.heights[nextLvlUid];
+
+                    if (!levelRes || !nextLevelRes) {
+                        continue;
+                    }
+
+
+                    let drainageUnitsLimit = (1e10);
+                    for (const sizing of system.drainageProperties.stackPipeSizing) {
+                        if (sizing.sizeMM === levelRes.sizeMM) {
+                            drainageUnitsLimit = sizing.maximumUnitsPerLevel;
+                        }
+                    }
+
+                    const drainageUnits = (levelRes.psdUnits?.drainageUnits || 0) -
+                        (nextLevelRes.psdUnits?.drainageUnits || 0);
+
+                    if (drainageUnits > drainageUnitsLimit) {
+                        overFlowedLevels.push(context.doc.drawing.levels[thisLvlUid].name);
+                    }
+                }
+
+                if (overFlowedLevels.length > 0) {
+                    res.warningLayout = 'drainage';
+                    res.warning = "Max loading units per level exceeded on level " + overFlowedLevels.join(", ");
                 }
             }
         }

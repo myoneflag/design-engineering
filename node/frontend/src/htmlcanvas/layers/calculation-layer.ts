@@ -4,7 +4,7 @@ import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import { MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
 import CalculationEngine from "../../../src/calculations/calculation-engine";
-import { EntityType } from "../../../../common/src/api/document/entities/types";
+import {EntityType, getEntityName} from "../../../../common/src/api/document/entities/types";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
@@ -130,10 +130,11 @@ export default class CalculationLayer extends LayerImplementation {
 
         this.uidsInOrder.forEach((uid) => {
             const o = this.context.globalStore.get(uid)!;
+            const eName = getEntityName(o.entity);
             if (
                 isCalculated(o.entity) &&
-                o.type in calculationFilters &&
-                calculationFilters[o.type].enabled &&
+                eName in calculationFilters &&
+                calculationFilters[eName].enabled &&
                 context.globalStore.getCalculation(o.entity)
             ) {
                 const fields = o.getCalculationFields(context, calculationFilters);

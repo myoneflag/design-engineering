@@ -1,4 +1,9 @@
-import {DrawingState, initialDrawing} from "./document/drawing";
+import {
+    DRAINAGE_FLOW_SYSTEMS,
+    DrawingState,
+    initialAustralianDrawing,
+    initialDrainageProperties
+} from "./document/drawing";
 import {EntityType} from "./document/entities/types";
 import {InsulationJackets, InsulationMaterials, StandardFlowSystemUids, SupportedPsdStandards} from "./config";
 import {PlantType} from "./document/entities/plants/plant-types";
@@ -26,7 +31,7 @@ export function upgrade9to10(original: DrawingState) {
 
 export function upgrade10to11(original: DrawingState) {
     if (original.metadata.units === undefined) {
-        original.metadata.units = cloneSimple(initialDrawing.metadata.units);
+        original.metadata.units = cloneSimple(initialAustralianDrawing.metadata.units);
     }
 }
 
@@ -68,13 +73,13 @@ export function upgrade12to13(original: DrawingState) {
 
 export function upgrade13to14(original: DrawingState) {
     if (original.metadata.catalog === undefined) {
-        original.metadata.catalog = cloneSimple(initialDrawing.metadata.catalog);
+        original.metadata.catalog = cloneSimple(initialAustralianDrawing.metadata.catalog);
     }
 }
 
 export function upgrade14to15(original: DrawingState) {
     if (original.metadata.priceTable === undefined) {
-        original.metadata.priceTable = cloneSimple(initialDrawing.metadata.priceTable);
+        original.metadata.priceTable = cloneSimple(initialAustralianDrawing.metadata.priceTable);
     }
 }
 
@@ -114,7 +119,7 @@ export function upgrade15to16(original: DrawingState) {
                         minimumPipeSize: 16,
                     }
                 }
-            }
+            } as any,
         );
     }
 
@@ -266,7 +271,7 @@ export function upgrade18to19(original: DrawingState) {
                         minimumPipeSize: 100,
                     }
                 }
-            }
+            } as any,
         );
     }
 
@@ -305,7 +310,111 @@ export function upgrade18to19(original: DrawingState) {
                         minimumPipeSize: 25,
                     }
                 }
-            }
+            } as any,
         );
     }
+}
+
+    // Then, we have to add fixtureUnits to load nodes.
+    // Add variant field
+
+    // Add drainage rough in to fixtures.
+    // Vent colour setting to flow systems
+
+
+const newSewerNodeOf: {[key: string]: string} = {};
+
+export function upgrade19to20(original: DrawingState) {
+    if (!original.metadata.flowSystems.find((s) => s.uid === StandardFlowSystemUids.SewerDrainage)) {
+        // Vent colour setting to flow systems
+        for (const system of original.metadata.flowSystems) {
+            system.drainageProperties = cloneSimple(initialDrainageProperties);
+        }
+
+        // We have to add the sewage flow systems.
+        original.metadata.flowSystems.push(
+            ...DRAINAGE_FLOW_SYSTEMS,
+        );
+    }
+
+
+    for (const level of Object.values(original.levels)) {
+        const entities = level.entities;
+        for (const e of Object.values(entities)) {
+            // Add drainage rough in to fixtures.
+            if (e.type === EntityType.FIXTURE) {
+                if (!e.roughInsInOrder.includes(StandardFlowSystemUids.SewerDrainage)) {
+                    e.roughInsInOrder.unshift(StandardFlowSystemUids.SewerDrainage);
+
+                    const newSystemNode: SystemNodeEntity = {
+                        center: {
+                            x: e.pipeDistanceMM * 0,
+                            y: e.pipeDistanceMM * -0.2,
+                        },
+                        parentUid: e.uid,
+                        type: EntityType.SYSTEM_NODE,
+                        calculationHeightM: null,
+                        allowAllSystems: false,
+                        systemUid: StandardFlowSystemUids.SewerDrainage,
+                        uid: newSewerNodeOf[e.uid] || uuid.v4(),
+                        configuration: FlowConfiguration.INPUT
+                    };
+                    newSewerNodeOf[e.uid] = newSystemNode.uid;
+                    e.roughIns[StandardFlowSystemUids.SewerDrainage] = {
+                        continuousFlowLS: null,
+                        designFlowRateLS: null,
+                        loadingUnits: null,
+                        maxPressureKPA: null,
+                        minPressureKPA: null,
+                        allowAllSystems: false,
+                        uid: newSystemNode.uid,
+                    };
+                    level.entities[newSystemNode.uid] = newSystemNode;
+                }
+            }
+
+
+            // Add isVent option of riser.
+            else if (e.type === EntityType.RISER) {
+                if (e.isVent === undefined) {
+                    e.isVent = false;
+                }
+            }
+        }
+    }
+}
+
+// This is to fix problems with the previous upgrade - drainage unit fields for fixtures not set.
+export function upgrade20to21(original: DrawingState) {
+    for (const level of Object.values(original.levels)) {
+        const entities = level.entities;
+        for (const e of Object.values(entities)) {
+            if (e.type === EntityType.FIXTURE) {
+                if (e.upcFixtureUnits === undefined) {
+                    e.upcFixtureUnits = null;
+                }
+                if (e.asnzFixtureUnits === undefined) {
+                    e.asnzFixtureUnits = null;
+                }
+                if (e.enDischargeUnits === undefined) {
+                    e.enDischargeUnits = null;
+                }
+            } else if (e.type === EntityType.LOAD_NODE) {
+                if (e.node.upcFixtureUnits === undefined) {
+                    e.node.upcFixtureUnits = null;
+                }
+                if (e.node.asnzFixtureUnits === undefined) {
+                    e.node.asnzFixtureUnits = null;
+                }
+                if (e.node.enDischargeUnits === undefined) {
+                    e.node.enDischargeUnits = null;
+                }
+            }
+        }
+    }
+}
+
+export function upgraded21to22(original: DrawingState) {
+    // no-op.
+    // Just exist here to invoke the compression.
 }

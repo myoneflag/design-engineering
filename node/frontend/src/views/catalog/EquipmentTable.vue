@@ -3,7 +3,7 @@
         <template v-for="component in components">
             <b-row>
                 <b-col>
-                    <h4>{{component}}</h4>
+                    <h4>{{ title(component) }}</h4>
                 </b-col>
             </b-row>
             <b-table
@@ -15,12 +15,12 @@
                     responsive="true"
             >
                 <template v-slot:[cellKey]="slot" >
-                    <b-input-group prepend="$" size="sm">
+                    <b-input-group :prepend="currency.symbol" size="sm">
                         <b-form-input
                                 size="sm"
                                 type="number"
                                 @input="(e) => onCellInput(component, slot.item['Size (mm)'], e)"
-                                :value="slot.value"
+                                :value="displayValue(slot.value)"
                         ></b-form-input>
                     </b-input-group>
                 </template>
@@ -43,6 +43,8 @@
     import {defaultPriceTable} from "../../../../common/src/api/catalog/default-price-table";
     import {DocumentState} from "../../store/document/types";
     import {setPropertyByString, setPropertyByStringVue} from "../../lib/utils";
+    import { Price } from "aws-sdk/clients/route53domains";
+    import { I18N } from "../../../../common/src/api/locale/values";
 
     @Component({
         components: { },
@@ -50,12 +52,30 @@
         }
     })
     export default class EquipmentTable extends Vue {
+
+        title(component: keyof PriceTable["Equipment"]) {
+            switch (component) {
+                case "Balancing Valve":
+                    return I18N.balancingValve[this.document.locale];
+            }
+            return component;
+        }
+
         get priceTable(): PriceTable {
             return this.$store.getters['document/priceTable'];
         }
 
         get document(): DocumentState {
             return this.$store.getters['document/document'];
+        }
+        get currency() {
+            return this.document.drawing.metadata.units.currency;
+        }
+        displayValue(value: number) {
+            if (!value) {
+                return value;
+            }
+            return (value * this.currency.multiplierPct / 100).toFixed(2);
         }
 
         get components() {
@@ -77,16 +97,24 @@
         onCellInput(equipment: keyof EquipmentTableType, size: number | 'All', value: number) {
             const priceTable = this.document.drawing.metadata.priceTable;
             console.log(JSON.stringify(priceTable, null, 2));
-            if (equipment === 'TMV' || equipment === 'Tempering Valve') {
-                setPropertyByStringVue(priceTable, 'Equipment.' + equipment, Number(value));
+            if (typeof this.priceTable.Equipment[equipment] === 'number') {
+                setPropertyByStringVue(
+                    priceTable,
+                    'Equipment.' + equipment,
+                    Number(value) / this.currency.multiplierPct * 100,
+                );
             } else {
-                setPropertyByStringVue(priceTable, 'Equipment.' + equipment + '.' + Number(size), Number(value));
+                setPropertyByStringVue(
+                    priceTable,
+                    'Equipment.' + equipment + '.' + Number(size),
+                    Number(value) / this.currency.multiplierPct * 100,
+                );
             }
             console.log(JSON.stringify(priceTable, null, 2));
         }
 
         items(equipment: keyof EquipmentTableType) {
-            if (equipment === 'TMV' || equipment === 'Tempering Valve') {
+            if (typeof this.priceTable.Equipment[equipment] === 'number') {
                 // Single 'all'
                 return [{"Size (mm)": "All", "Unit cost": this.priceTable.Equipment[equipment]}];
             } else {

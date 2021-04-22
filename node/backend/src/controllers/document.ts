@@ -17,6 +17,8 @@ import { AccessType, withDocument, withOrganization } from "../helpers/withResou
 import random from '../helpers/random';
 import { cloneSimple } from "../../../common/src/lib/utils";
 import ConcurrentDocument from "../services/concurrentDocument";
+import {compressDocumentIfRequired} from "../services/compressDocument";
+import { toSupportedLocale } from "../../../common/src/api/locale";
 
 export class DocumentController {
     @ApiHandleError()
@@ -68,7 +70,8 @@ export class DocumentController {
                 doc.organization = org1;
                 doc.createdBy = user;
                 doc.createdOn = new Date();
-                doc.metadata = cloneSimple(initialDrawing.metadata.generalInfo);
+                doc.locale = toSupportedLocale(req.body.locale);
+                doc.metadata = cloneSimple(initialDrawing(doc.locale).metadata.generalInfo);
                 doc.version = CURRENT_VERSION;
                 doc.state = DocumentStatus.ACTIVE;
                 doc.shareDocument = sd;
@@ -88,7 +91,8 @@ export class DocumentController {
             doc.organization = null;
             doc.createdBy = user;
             doc.createdOn = new Date();
-            doc.metadata = cloneSimple(initialDrawing.metadata.generalInfo);
+            doc.locale = toSupportedLocale(req.body.locale);
+            doc.metadata = cloneSimple(initialDrawing(doc.locale).metadata.generalInfo);
             doc.version = CURRENT_VERSION;
             doc.state = DocumentStatus.ACTIVE;
             doc.shareDocument = sd;
@@ -217,6 +221,24 @@ export class DocumentController {
         });
     }
 
+
+    @ApiHandleError()
+    public async findOneShared(req: Request, res: Response, next: NextFunction, session: Session) {
+        const sd = await ShareDocument.findOne({token: req.params.sharedId});
+        const doc = sd && await Document.findOne({where: {shareDocument: {id: sd.id}}});
+
+        if (!doc) {
+            return res.status(404).send({
+                success: false,
+                message: "Shared document link is invalid"
+            });
+        }
+        res.status(200).send({
+            success: true,
+            data: doc
+        });
+    }
+
     @ApiHandleError()
     @AuthRequired()
     public async findOperations(req: Request, res: Response, next: NextFunction, session: Session) {
@@ -298,8 +320,8 @@ export class DocumentController {
                 }
                 doc.nextOperationIndex = lastOrderIndex + 1;
 
-                const drawing = cloneSimple(initialDrawing);
-                const drawingWithTitle = cloneSimple(initialDrawing);
+                const drawing = initialDrawing(doc.locale);
+                const drawingWithTitle = initialDrawing(doc.locale);
                 drawingWithTitle.metadata.generalInfo.title = doc.metadata.title;
 
 
@@ -350,6 +372,7 @@ router.ws("/:id/websocket", (ws, req) => {
         async (session) => {
             withDocument(Number(req.params.id), null, session, AccessType.UPDATE, async (doc) => {
                 // sanity checks.
+                await compressDocumentIfRequired(doc);
                 switch (doc.state) {
                     case DocumentStatus.ACTIVE:
                         if (doc.version !== CURRENT_VERSION) {
@@ -477,7 +500,7 @@ router.ws("/:id/websocket", (ws, req) => {
 
 
                 let operations: Operation[] = [];
-                let drawing: DrawingState = cloneSimple(initialDrawing);
+                let drawing: DrawingState = initialDrawing(doc.locale);
                 let lastOpId = -1;
                 // Now that we have hooked update handlers, Load document. Reconstruct the state, and send the
                 // initial document state.
@@ -492,7 +515,7 @@ router.ws("/:id/websocket", (ws, req) => {
 
 
                     // form document to get snapshot
-                    drawing = cloneSimple(initialDrawing);
+                    drawing = initialDrawing(doc.locale);
                     for (const op of operations) {
                         if (op.operation.type === OPERATION_NAMES.DIFF_OPERATION) {
                             applyDiffNative(drawing, op.operation.diff);
@@ -640,7 +663,7 @@ router.ws("/share/:id/websocket", async (ws, req) => {
     ws.on("close", closeHandler);
     
     let operations: Operation[] = [];
-    let drawing: DrawingState = cloneSimple(initialDrawing);
+    let drawing: DrawingState = initialDrawing(doc.locale);
     let lastOpId = -1;
     // Now that we have hooked update handlers, Load document. Reconstruct the state, and send the
     // initial document state.
@@ -653,7 +676,7 @@ router.ws("/share/:id/websocket", async (ws, req) => {
             .getMany();
 
         // form document to get snapshot
-        drawing = cloneSimple(initialDrawing);
+        drawing = initialDrawing(doc.locale);
         for (const op of operations) {
             if (op.operation.type === OPERATION_NAMES.DIFF_OPERATION) {
                 applyDiffNative(drawing, op.operation.diff);
@@ -707,6 +730,7 @@ router.post("/:id/clone", controller.clone.bind(controller));
 router.get("/:id/operations", controller.findOperations.bind(controller));
 router.put("/:id", controller.update.bind(controller));
 router.get("/:id", controller.findOne.bind(controller));
+router.get("/shared/:sharedId", controller.findOneShared.bind(controller));
 router.post("/:id/restore", controller.restore.bind(controller));
 router.get("/", controller.find.bind(controller));
 

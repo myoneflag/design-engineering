@@ -1,3 +1,4 @@
+import {SupportedDrainageMethods} from "../../../../common/src/api/config";
 import {SupportedPsdStandards} from "../../config"; import {SupportedPsdStandards} from "../../config";
 <template>
     <SettingsFieldBuilder
@@ -11,25 +12,28 @@ import {SupportedPsdStandards} from "../../config"; import {SupportedPsdStandard
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
-import { DocumentState } from "../../../src/store/document/types";
-import SettingsFieldBuilder from "../../../src/components/editor/lib/SettingsFieldBuilder.vue";
-import { getDwellingMethods, isSupportedDwellingStandard } from "../../../src/config";
-import {
-    assertUnreachable,
-    COMPONENT_PRESSURE_LOSS_METHODS,
-    ComponentPressureLossMethod,
-    getPsdMethods,
-    isSupportedPsdStandard,
-    PIPE_SIZING_METHODS,
-    RING_MAIN_CALCULATION_METHODS,
-    SupportedDwellingStandards,
-    SupportedPsdStandards
-} from "../../../../common/src/api/config";
-import { Units } from "../../../../common/src/lib/measurements";
+    import Vue from "vue";
+    import Component from "vue-class-component";
+    import {DocumentState} from "../../../src/store/document/types";
+    import SettingsFieldBuilder from "../../../src/components/editor/lib/SettingsFieldBuilder.vue";
+    import {getDwellingMethods, isSupportedDwellingStandard} from "../../../src/config";
+    import {
+        assertUnreachable,
+        COMPONENT_PRESSURE_LOSS_METHODS,
+        ComponentPressureLossMethod,
+        DRAINAGE_METHOD_CHOICES, getEN_12506_FREQUENCY_FACTOR_CHOICES,
+        getPsdMethods,
+        isSupportedPsdStandard,
+        PIPE_SIZING_METHODS,
+        RING_MAIN_CALCULATION_METHODS, SupportedDrainageMethods,
+        SupportedDwellingStandards,
+        SupportedPsdStandards
+    } from "../../../../common/src/api/config";
+    import {Units} from "../../../../common/src/lib/measurements";
+    import CatalogState from "../../store/catalog/types";
+    import {Catalog} from "../../../../common/src/api/catalog/types";
 
-@Component({
+    @Component({
     components: { SettingsFieldBuilder },
     beforeRouteLeave(to, from, next) {
         if ((this.$refs.fields as any).leave()) {
@@ -48,8 +52,8 @@ export default class Calculations extends Vue {
             "Peak Flow Rate Calculation Method",
             "choice",
             [
-                ...getPsdMethods(this.$store.getters["catalog/default"]),
-                ...getDwellingMethods(this.$store.getters["catalog/default"])
+                ...getPsdMethods(this.catalog),
+                ...getDwellingMethods(this.catalog)
             ]
         ]);
 
@@ -86,6 +90,16 @@ export default class Calculations extends Vue {
         }
 
         result.push(
+            ["drainageMethod", "Drainage Method", "choice", DRAINAGE_METHOD_CHOICES],
+        );
+
+        if (this.document.drawing.metadata.calculationParams.drainageMethod === SupportedDrainageMethods.EN1205622000DischargeUnits) {
+            result.push(
+                ["en12056FrequencyFactor", "EN 12056-2:2000 Frequency factor", "choice", getEN_12506_FREQUENCY_FACTOR_CHOICES(this.catalog)],
+            );
+        }
+
+        result.push(
             ["ringMainCalculationMethod", "Ring Main Calculation Method", "choice", RING_MAIN_CALCULATION_METHODS],
             ["ceilingPipeHeightM", "Default Pipe Height Above Floor", "number", Units.Meters],
             ["roomTemperatureC", "Room Temperature", "range", 10, 40, null, Units.Celsius],
@@ -94,6 +108,10 @@ export default class Calculations extends Vue {
         );
 
         return result;
+    }
+
+    get catalog(): Catalog {
+        return this.$store.getters["catalog/default"];
     }
 
     get document(): DocumentState {

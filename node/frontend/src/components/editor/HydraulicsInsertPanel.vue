@@ -3,59 +3,120 @@
         <b-col>
             <b-button-group>
                 <FlowSystemPicker
-                    :selected-system-uid="selectedSystem.uid"
-                    :flow-systems="flowSystems"
-                    @selectSystem="selectSystem"
-                    :disabled="isDrawing"
-                    :class="{onboarding: checkOnboardingClass(1)}"
+                        :selected-system-uid="selectedSystem.uid"
+                        :flow-systems="flowSystems"
+                        @selectSystem="selectSystem"
+                        :disabled="isDrawing"
+                        :class="{onboarding: checkOnboardingClass(1)}"
                 />
                 <b-button
-                    variant="outline-dark"
-                    class="insertBtn flowsource btn-sm"
-                    @click="toggleWaterSource"
-                    :class="{onboarding: checkOnboardingClass(2)}"
-                    v-b-tooltip.hover
-                    title="Flow Source"
+                        v-if="systemLayout === 'water' || systemLayout === 'gas'"
+                        variant="outline-dark"
+                        class="insertBtn flowsource btn-sm"
+                        @click="toggleWaterSource"
+                        :class="{onboarding: checkOnboardingClass(2)}"
+                        v-b-tooltip.hover
+                        title="Flow Source"
                 ></b-button>
                 <b-button
-                    variant="outline-dark"
-                    class="insertBtn riser btn-sm"
-                    @click="toggleRiser"
-                    :class="{onboarding: checkOnboardingClass(3)}"
-                    v-b-tooltip.hover
-                    title="Riser"
-                    ><v-icon name="arrow-up" scale="1.2"
-                /></b-button>
+                        v-if="systemLayout === 'water' || systemLayout === 'gas'"
+                        variant="outline-dark"
+                        class="insertBtn riser btn-sm"
+                        @click="toggleRiser"
+                        :class="{onboarding: checkOnboardingClass(3)}"
+                        v-b-tooltip.hover
+                        title="Riser"
+                        >
+                    <v-icon name="arrow-up" scale="1.2"/>
+                </b-button>
                 <b-button
-                    variant="outline-dark"
-                    class="insertBtn pipes btn-sm"
-                    @click="toggleReticulationPipe"
-                    :class="{onboarding: checkOnboardingClass(4)}"
-                    v-b-tooltip.hover
-                    title="Reticulation Pipe"
+                        v-if="systemLayout === 'water' || systemLayout === 'gas'"
+                        variant="outline-dark"
+                        class="insertBtn pipes btn-sm"
+                        @click="toggleReticulationPipe"
+                        :class="{onboarding: checkOnboardingClass(4)}"
+                        v-b-tooltip.hover
+                        title="Reticulation Pipe"
                     ><v-icon name="wave-square" scale="1.2" />{{
                         catalog.pipes[selectedSystem.networks[NetworkType.RETICULATIONS].material].abbreviation
                     }}</b-button
                 >
                 <b-button
-                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
-                    variant="outline-dark"
-                    class="insertBtn pipes btn-sm"
-                    @click="toggleConnectionPipe"
-                    :class="{onboarding: checkOnboardingClass(5)}"
-                    v-b-tooltip.hover
-                    title="Connection Pipe"
-                    ><v-icon name="wave-square" scale="1.2" />{{
+                        v-if="systemLayout === 'water' "
+                        variant="outline-dark"
+                        class="insertBtn pipes btn-sm"
+                        @click="toggleConnectionPipe"
+                        :class="{onboarding: checkOnboardingClass(5)}"
+                        v-b-tooltip.hover
+                        title="Connection Pipe"
+                        ><v-icon name="wave-square" scale="1.2" />{{
                         catalog.pipes[selectedSystem.networks[NetworkType.CONNECTIONS].material].abbreviation
                     }}</b-button
                 >
+
+
+                <b-button
+                        v-if="systemLayout === 'drainage'"
+                        variant="outline-dark"
+                        class="insertBtn sewer-connection btn-sm"
+                        @click="toggleSewerConnection"
+                        v-b-tooltip.hover
+                        title="Sewer Connection"
+                ></b-button>
+                <b-button
+                        v-if="systemLayout === 'drainage'"
+                        variant="outline-dark"
+                        class="insertBtn stack btn-sm"
+                        @click="toggleStack"
+                        v-b-tooltip.hover
+                        title="Stack"
+                >
+                    <v-icon name="arrow-down" scale="1.2"/>
+                </b-button>
+                <b-button
+                        v-if="systemLayout === 'drainage'"
+                        variant="outline-dark"
+                        class="insertBtn pipes btn-sm"
+                        @click="toggleReticulationPipe"
+                        v-b-tooltip.hover
+                        title="Reticulation pipe"
+                >
+                    <v-icon name="wave-square" scale="1.2" />{{
+                      catalog.pipes[selectedSystem.networks[NetworkType.RETICULATIONS].material].abbreviation
+                    }}
+                </b-button>
+                <b-button
+                        v-if="systemLayout === 'drainage'"
+                        variant="outline-dark"
+                        class="insertBtn pipes btn-sm"
+                        @click="toggleVent"
+                        v-b-tooltip.hover
+                        title="Vent"
+                >
+                    <v-icon name="wind" scale="1.2" />{{
+                    catalog.pipes[selectedSystem.networks[NetworkType.CONNECTIONS].material].abbreviation
+                    }}
+                </b-button>
+                <b-button
+                        v-if="systemLayout === 'drainage'"
+                        variant="outline-dark"
+                        class="insertBtn pipes btn-sm"
+                        @click="toggleVerticalVent"
+                        v-b-tooltip.hover
+                        title="Vertical Vent"
+                >
+                    <v-icon name="arrow-up" scale="1.2" />{{
+                    catalog.pipes[selectedSystem.networks[NetworkType.CONNECTIONS].material].abbreviation
+                    }}
+                </b-button>
             </b-button-group>
         </b-col>
 
         <b-col>
             <b-button-group>
+
                 <b-button
-                        v-if="selectedSystem.uid === StandardFlowSystemUids.Gas"
+                        v-if="systemLayout === 'gas'"
                         variant="outline-dark"
                         class="insertBtn gas-regulator btn-sm"
                         @click="
@@ -71,7 +132,7 @@
                         title="Gas Regulator"
                 ></b-button>
                 <b-button
-                        v-if="selectedSystem.uid === StandardFlowSystemUids.Gas"
+                        v-if="systemLayout === 'gas'"
                         variant="outline-dark"
                         class="insertBtn meter btn-sm"
                         @click="
@@ -87,7 +148,7 @@
                         title="Meter"
                 ></b-button>
                 <b-button
-                        v-if="selectedSystem.uid === StandardFlowSystemUids.Gas"
+                        v-if="systemLayout === 'gas'"
                         variant="outline-dark"
                         class="insertBtn filter btn-sm"
                         @click="
@@ -103,7 +164,7 @@
                         title="Filter"
                 ></b-button>
                 <b-button
-                        v-if="selectedSystem.uid === StandardFlowSystemUids.Gas"
+                        v-if="systemLayout === 'gas'"
                         variant="outline-dark"
                         class="insertBtn isolation btn-sm"
                         @click="
@@ -119,7 +180,7 @@
                         title="Isolation Valve"
                 ></b-button>
                 <b-button
-                        v-if="selectedSystem.uid === StandardFlowSystemUids.Gas"
+                        v-if="systemLayout === 'gas'"
                         variant="outline-dark"
                         class="insertBtn gas-appliance btn-sm"
                         @click="
@@ -133,31 +194,64 @@
                 ></b-button>
 
                 <b-button
-                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
-                    variant="outline-dark"
-                    class="insertBtn rpzd-hot-cold btn-sm"
-                    @click="toggleRPZD"
-                    :class="{onboarding: checkOnboardingClass(6)}"
-                    v-b-tooltip.hover
-                    title="RPZD (Hot + Cold)"
+                        v-if="systemLayout === 'water'"
+                        variant="outline-dark"
+                        class="insertBtn rpzd-hot-cold btn-sm"
+                        @click="toggleRPZD"
+                        :class="{onboarding: checkOnboardingClass(6)}"
+                        v-b-tooltip.hover
+                        title="RPZD (Hot + Cold)"
                 ></b-button>
                 <b-button
-                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
-                    variant="outline-dark"
-                    class="insertBtn tmv btn-sm"
-                    @click="toggleTMV"
-                    :class="{onboarding: checkOnboardingClass(6)}"
-                    v-b-tooltip.hover
-                    title="TMV (Warm + Cold)"
+                        v-if="systemLayout === 'water'"
+                        variant="outline-dark"
+                        class="insertBtn tmv btn-sm"
+                        @click="toggleTMV"
+                        :class="{onboarding: checkOnboardingClass(6)}"
+                        v-b-tooltip.hover
+                        title="TMV (Warm + Cold)"
                 ></b-button>
                 <b-button
-                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
-                    variant="outline-dark"
-                    class="insertBtn tempering-valve btn-sm"
-                    @click="toggleTemperingValve"
-                    :class="{onboarding: checkOnboardingClass(6)}"
-                    v-b-tooltip.hover
-                    title="Tempering Valve (Warm)"
+                        v-if="systemLayout === 'water'"
+                        variant="outline-dark"
+                        class="insertBtn tempering-valve btn-sm"
+                        @click="toggleTemperingValve"
+                        :class="{onboarding: checkOnboardingClass(6)}"
+                        v-b-tooltip.hover
+                        title="Tempering Valve (Warm)"
+                ></b-button>
+
+                <b-button
+                        v-if="systemLayout === 'drainage'"
+                        variant="outline-dark"
+                        class="insertBtn floor-waste btn-sm"
+                        @click="toggleFloorWaste"
+                        v-b-tooltip.hover
+                        title="Floor Waste"
+                ></b-button>
+                <b-button
+                        v-if="systemLayout === 'drainage'"
+                        variant="outline-dark"
+                        class="insertBtn inspection-opening btn-sm"
+                        @click="toggleInspectionOpening"
+                        v-b-tooltip.hover
+                        title="Inspection Opening"
+                ></b-button>
+                <b-button
+                        v-if="systemLayout === 'drainage'"
+                        variant="outline-dark"
+                        class="insertBtn reflux-valve btn-sm"
+                        @click="toggleRefluxValve"
+                        v-b-tooltip.hover
+                        title="Reflux Valve"
+                ></b-button>
+                <b-button
+                        v-if="systemLayout === 'drainage'"
+                        variant="outline-dark"
+                        class="insertBtn pit btn-sm"
+                        @click="togglePit"
+                        v-b-tooltip.hover
+                        title="Pit"
                 ></b-button>
             </b-button-group>
         </b-col>
@@ -169,7 +263,7 @@
                     class="insertEntityBtn"
                     :class="{onboarding: checkOnboardingClass(7)}"
                     variant="outline-dark"
-                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
+                    v-if="systemLayout === 'water'"
                 >
                     <b-dropdown-item
                         variant="outline-dark"
@@ -236,7 +330,7 @@
                     class="insertEntityBtn"
                     :class="{onboarding: checkOnboardingClass(8)}"
                     variant="outline-dark"
-                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
+                    v-if="systemLayout === 'water' || systemLayout === 'drainage'"
                 >
                     <b-dropdown-item
                             v-for="fixture in availableFixtureList"
@@ -259,7 +353,7 @@
                     class="insertEntityBtn"
                     :class="{onboarding: checkOnboardingClass(9)}"
                     variant="outline-dark"
-                    v-if="selectedSystem.uid !== StandardFlowSystemUids.Gas"
+                    v-if="systemLayout === 'water'"
                 >
                     <b-dropdown-item
                             v-for="valve in availableValves"
@@ -356,14 +450,6 @@ export default class HydraulicsInsertPanel extends Vue {
             hotWaterPlant,
             tank,
             pump,
-            prv,
-            ballValve,
-            gateValve,
-            butterflyValve,
-            balancingValve,
-            strainer,
-            waterMeter,
-            checkValve,
             nodePair,
             continuousFlowNode,
             dwellingNodePair,
@@ -402,6 +488,24 @@ export default class HydraulicsInsertPanel extends Vue {
         });
     }
 
+    get systemLayout() {
+        switch (this.selectedSystem.uid as StandardFlowSystemUids) {
+            case StandardFlowSystemUids.Gas:
+                return 'gas';
+            case StandardFlowSystemUids.SewerDrainage:
+            case StandardFlowSystemUids.SanitaryPlumbing:
+            case StandardFlowSystemUids.GreaseWaste:
+            case StandardFlowSystemUids.TradeWaste:
+            case StandardFlowSystemUids.RisingMain:
+                return 'drainage';
+            case StandardFlowSystemUids.ColdWater:
+            case StandardFlowSystemUids.HotWater:
+            case StandardFlowSystemUids.WarmWater:
+            default:
+                return 'water';
+        }
+    }
+
     get hotKeySetting(): { [key: string]: string } {
         return this.$store.getters["hotKey/setting"];
     }
@@ -431,6 +535,9 @@ export default class HydraulicsInsertPanel extends Vue {
     }
 
     get selectedSystem(): FlowSystemParameters {
+        if (this.selectedSystemId >= this.$props.flowSystems.length) {
+            this.selectedSystemId = 0;
+        }
         return this.$props.flowSystems[this.selectedSystemId];
     }
 
@@ -615,6 +722,67 @@ export default class HydraulicsInsertPanel extends Vue {
         });
     }
 
+    toggleFloorWaste() {
+        this.$emit('insert', {
+            entityName: this.entityNames.DIRECTED_VALVE,
+            system: this.selectedSystem,
+            valveType: ValveType.FLOOR_WASTE,
+        });
+    }
+
+    toggleInspectionOpening() {
+        this.$emit('insert', {
+            entityName: this.entityNames.DIRECTED_VALVE,
+            system: this.selectedSystem,
+            valveType: ValveType.INSPECTION_OPENING,
+        });
+    }
+
+    toggleRefluxValve() {
+        this.$emit('insert', {
+            entityName: this.entityNames.DIRECTED_VALVE,
+            system: this.selectedSystem,
+            valveType: ValveType.REFLUX_VALVE,
+        });
+    }
+
+    togglePit() {
+        this.$emit('insert', {
+            entityName: this.entityNames.PLANT,
+            inletSystemUid: this.selectedSystem.uid,
+            outletSystemUid: this.selectedSystem.uid,
+            plantType: PlantType.DRAINAGE_PIT,
+            title: 'Pit',
+        });
+    }
+
+    toggleSewerConnection() {
+        this.$emit('insert', {
+            entityName: this.entityNames.FLOW_SOURCE,
+            system: this.selectedSystem,
+        });
+    }
+
+    toggleStack() {
+        this.$emit('insert', { entityName: this.entityNames.RISER, system: this.selectedSystem });
+    }
+
+    toggleVent() {
+        this.$emit('insert', {
+            entityName: this.entityNames.PIPE,
+            system: this.selectedSystem,
+            networkType: NetworkType.CONNECTIONS,
+        });
+    }
+
+    toggleVerticalVent() {
+        this.$emit('insert', {
+            entityName: this.entityNames.RISER,
+            system: this.selectedSystem,
+            isVent: true,
+        });
+    }
+
     get onboarding(): OnboardingState {
         return this.$store.getters["onboarding/onboarding"];
     }
@@ -712,6 +880,42 @@ export default class HydraulicsInsertPanel extends Vue {
 
 .insertBtn.isolation {
     background-image: url("../../../src/assets/object-icons/valves/isolation.png");
+    background-size: 25px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.insertBtn.sewer-connection {
+    background-image: url("../../../src/assets/object-icons/pipework/flow-source.png");
+    background-size: 25px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.insertBtn.floor-waste {
+    background-image: url("../../../src/assets/object-icons/valves/floor-waste.png");
+    background-size: 25px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+
+.insertBtn.inspection-opening {
+    background-image: url("../../../src/assets/object-icons/valves/inspection-opening.png");
+    background-size: 25px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.insertBtn.reflux-valve {
+    background-image: url("../../../src/assets/object-icons/valves/reflux-valve.png");
+    background-size: 25px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.insertBtn.pit {
+    background-image: url("../../../src/assets/object-icons/valves/pit.png");
     background-size: 25px;
     background-repeat: no-repeat;
     background-position: center;

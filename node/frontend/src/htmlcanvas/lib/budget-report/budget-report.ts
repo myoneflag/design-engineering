@@ -3,7 +3,7 @@ import Excel, {Worksheet} from 'exceljs';
 import {User} from "../../../../../common/src/models/User";
 import {
     EquipmentTable,
-    FittingsTable, getEquipmentFullName,
+    FittingsTable, getEquipmentDescription, getEquipmentTitle,
     PipesBySize,
     PipesTable, PlantTable,
     ValveByPipe,
@@ -17,6 +17,7 @@ import {assertUnreachable, StandardFlowSystemUids} from "../../../../../common/s
 import {determineConnectableSystemUid} from "../../../store/document/entities/lib";
 import {lowerCase} from "../../../../../common/src/lib/utils";
 import {BigValveType} from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
+import { SupportedLocales } from "../../../../../common/src/api/locale";
 
 export const MONEY_FMT = '$#,##0.00;-#,##0.00';
 
@@ -238,7 +239,13 @@ function getPriceQuantitiesForSystem(context: CanvasContext, levelUid: string | 
     return result;
 }
 
-function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappings: Map<string, [string, number]>, levelUid: string | null) {
+function createLevelPage(
+    context: CanvasContext,
+    workbook: Excel.Workbook,
+    mappings: Map<string, [string, number]>,
+    levelUid: string | null,
+) {
+    const locale = context.document.locale;
     const quantities = getPriceQuantities(context, levelUid);
     let totalCost = 0;
     let roofHeight = 0;
@@ -600,10 +607,11 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                 row += 2;
             }
 
-            for (const [equipmentName, equipment] of Object.entries(context.effectivePriceTable.Equipment)) {
+            for (const [equipmentName_, equipment] of Object.entries(context.effectivePriceTable.Equipment)) {
+                const equipmentName = equipmentName_ as keyof EquipmentTable;
                 if (exists.has(equipmentName as keyof EquipmentTable)) {
                     sheet.getCell('A' + row).value = `${majorItem}.${minorItem}`;
-                    sheet.getCell('B' + row).value = getEquipmentFullName(equipmentName as keyof EquipmentTable);
+                    sheet.getCell('B' + row).value = getEquipmentTitle(equipmentName as keyof EquipmentTable, locale);
                     lastMinorBump = row;
                     minorSum = 0;
                     stylizeTitle(sheet.getCell('A' + row));
@@ -615,7 +623,7 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                 if (typeof equipment !== 'object') {
                     if (items.has(`Equipment.${equipmentName}`)) {
                         sheet.getCell('A' + row).value = `${majorItem}.${minorItem}.${patch}`;
-                        sheet.getCell('B' + row).value = `${equipmentName} - All sizes`;
+                        sheet.getCell('B' + row).value = `${getEquipmentDescription(equipmentName, locale)}`;
 
                         sheet.getCell('C' + row).value = 'No';
                         const quantity = items.get(`Equipment.${equipmentName}`)!;
@@ -642,7 +650,7 @@ function createLevelPage(context: CanvasContext, workbook: Excel.Workbook, mappi
                     for (const [size, cost] of Object.entries(equipment)) {
                         if (items.has(`Equipment.${equipmentName}.${size}`)) {
                             sheet.getCell('A' + row).value = `${majorItem}.${minorItem}.${patch}`;
-                            sheet.getCell('B' + row).value = `${size}mm diameter ${equipmentName}`;
+                            sheet.getCell('B' + row).value = `${size}mm diameter ${getEquipmentDescription(equipmentName, locale)}`;
 
                             sheet.getCell('C' + row).value = 'No';
                             const quantity = items.get(`Equipment.${equipmentName}.${size}`)!;
@@ -953,23 +961,23 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
         ].sort((a, b) => Number(a) - Number(b)).filter((v, i, a) => v !== a[i + 1]);
 
         for (const size of keys) {
-            let entry = pipe[size];
+            let entry = pipe[Number(size)];
             sheet.getCell('A' + row).value = Number(size);
 
             sheet.getCell('B' + row).value = entry || '';
             mapping.set(`Pipes.${material}.${size}`, ["$B$" + row, entry]);
 
             entry = context.effectivePriceTable.Fittings.Elbow
-                [material as keyof ValveByPipe][Number(size)] || '';
+                [material as keyof ValveByPipe][Number(size)] || 0;
             sheet.getCell('C' + row).value = entry || '';
             mapping.set(`Fittings.Elbow.${material}.${size}`, ["$C$" + row, entry]);
 
             entry = context.effectivePriceTable.Fittings.Tee
-                [material as keyof ValveByPipe][Number(size)] || '';
+                [material as keyof ValveByPipe][Number(size)] || 0;
             sheet.getCell('D' + row).value = entry;
 
             entry =  context.effectivePriceTable.Fittings.Reducer
-                [material as keyof ValveByPipe][Number(size)] || '';
+                [material as keyof ValveByPipe][Number(size)] || 0;
             mapping.set(`Fittings.Tee.${material}.${size}`, ["$D$" + row, entry]);
             sheet.getCell('E' + row).value = entry;
             mapping.set(`Fittings.Reducer.${material}.${size}`, ["$E$" + row, entry]);

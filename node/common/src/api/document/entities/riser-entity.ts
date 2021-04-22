@@ -1,16 +1,26 @@
-import { FieldType, PropertyField } from "./property-field";
-import { EntityType } from "./types";
-import { Color, COLORS, ConnectableEntity, Coord, DrawingState, NetworkType, SelectedMaterialManufacturer } from "../drawing";
-import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../lib/utils";
-import { LEVEL_HEIGHT_DIFF_M } from "../../config";
-import { Catalog } from "../../catalog/types";
-import { fillPipeDefaultFields } from "./pipe-entity";
-import { convertPipeDiameterFromMetric, Units } from "../../../lib/measurements";
+import {FieldType, PropertyField} from "./property-field";
+import {EntityType} from "./types";
+import {
+    Color,
+    COLORS,
+    ConnectableEntity,
+    Coord,
+    DrawingState,
+    NetworkType,
+    SelectedMaterialManufacturer
+} from "../drawing";
+import {Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin} from "../../../lib/utils";
+import {isDrainage, LEVEL_HEIGHT_DIFF_M} from "../../config";
+import {Catalog} from "../../catalog/types";
+import {getDrainageMaterials, getWaterDrainageMaterials} from "./pipe-entity";
+import {convertPipeDiameterFromMetric, Units} from "../../../lib/measurements";
 
 export default interface RiserEntity extends ConnectableEntity {
     type: EntityType.RISER;
     center: Coord;
     systemUid: string;
+
+    isVent: boolean;
 
     diameterMM: number | null;
     maximumVelocityMS: number | null; // null means default
@@ -42,97 +52,162 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
         };
         return c;
     });
-    return [
-        {
-            property: "systemUid",
-            title: "Flow System",
-            hasDefault: false,
-            isCalculated: false,
-            type: FieldType.FlowSystemChoice,
-            params: { systems: drawing.metadata.flowSystems },
-            multiFieldId: "systemUid"
-        },
+    const iAmDrainage = isDrainage(entity.systemUid);
 
-        {
-            property: "bottomHeightM",
-            title: "Bottom Height",
-            hasDefault: true,
-            isCalculated: false,
-            type: FieldType.Number,
-            params: { min: null, max: null },
-            multiFieldId: "bottomHeightM",
-            units: Units.Meters,
-        },
+    if (entity.isVent) {
 
-        {
-            property: "topHeightM",
-            title: "Top Height",
-            hasDefault: true,
-            isCalculated: false,
-            type: FieldType.Number,
-            params: { min: null, max: null },
-            multiFieldId: "topHeightM",
-            units: Units.Meters,
-        },
-
-        {
-            property: "maximumVelocityMS",
-            title: "Maximum Velocity",
-            hasDefault: true,
-            highlightOnOverride: COLORS.YELLOW,
-            isCalculated: false,
-            type: FieldType.Number,
-            params: { min: 0, max: null },
-            multiFieldId: "maximumVelocityMS",
-            units: Units.MetersPerSecond,
-        },
-
-        {
-            property: "diameterMM",
-            title: "Diameter",
-            highlightOnOverride: COLORS.YELLOW,
-            hasDefault: false,
-            isCalculated: true,
-            type: FieldType.Choice,
-            params: {
-                choices: diameters,
-                initialValue: diameters[0].key
+        return [
+            {
+                property: "systemUid",
+                title: "Flow System",
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.FlowSystemChoice,
+                params: { systems: drawing.metadata.flowSystems },
+                multiFieldId: "systemUid"
             },
-            multiFieldId: "diameterMM"
-        },
 
-        {
-            property: "material",
-            title: "Material",
-            hasDefault: true,
-            highlightOnOverride: COLORS.YELLOW,
-            isCalculated: false,
-            type: FieldType.Choice,
-            params: { choices: materials },
-            multiFieldId: "material"
-        },
+            {
+                property: "topHeightM",
+                title: "Top Height",
+                hasDefault: false,
+                isCalculated: false,
+                requiresInput: true,
+                type: FieldType.Number,
+                params: { min: null, max: null },
+                multiFieldId: "topHeightM",
+                units: Units.Meters,
+            },
 
-        {
-            property: "color",
-            title: "Color:",
-            hasDefault: true,
-            isCalculated: false,
-            type: FieldType.Color,
-            params: null,
-            multiFieldId: "color"
-        },
+            {
+                property: "diameterMM",
+                title: "Diameter",
+                highlightOnOverride: COLORS.YELLOW,
+                hasDefault: false,
+                isCalculated: true,
+                type: FieldType.Choice,
+                params: {
+                    choices: diameters,
+                    initialValue: diameters[0].key
+                },
+                multiFieldId: "diameterMM"
+            },
 
-        {
-            property: "temperatureC",
-            title: "Temperature (°C)",
-            hasDefault: true,
-            highlightOnOverride: COLORS.YELLOW,
-            isCalculated: false,
-            type: FieldType.Number,
-            params: { min: 0, max: 100 },
-            multiFieldId: "temperatureC"
-        }
-    ];
+            {
+                property: "material",
+                title: "Material",
+                hasDefault: true,
+                highlightOnOverride: COLORS.YELLOW,
+                isCalculated: false,
+                type: FieldType.Choice,
+                params: { choices: iAmDrainage ? getDrainageMaterials(materials) : getWaterDrainageMaterials(materials) },
+                multiFieldId: "material"
+            },
+
+            {
+                property: "color",
+                title: "Color:",
+                hasDefault: true,
+                isCalculated: false,
+                type: FieldType.Color,
+                params: null,
+                multiFieldId: "color"
+            },
+        ];
+    } else {
+
+        return [
+            {
+                property: "systemUid",
+                title: "Flow System",
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.FlowSystemChoice,
+                params: {systems: drawing.metadata.flowSystems},
+                multiFieldId: "systemUid"
+            },
+
+            {
+                property: "bottomHeightM",
+                title: "Bottom Height",
+                hasDefault: true,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: {min: null, max: null},
+                multiFieldId: "bottomHeightM",
+                units: Units.Meters,
+            },
+
+            {
+                property: "topHeightM",
+                title: "Top Height",
+                hasDefault: true,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: {min: null, max: null},
+                multiFieldId: "topHeightM",
+                units: Units.Meters,
+            },
+
+            {
+                property: "maximumVelocityMS",
+                title: "Maximum Velocity",
+                hasDefault: true,
+                highlightOnOverride: COLORS.YELLOW,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: {min: 0, max: null},
+                multiFieldId: "maximumVelocityMS",
+                units: Units.MetersPerSecond,
+            },
+
+            {
+                property: "diameterMM",
+                title: "Diameter",
+                highlightOnOverride: COLORS.YELLOW,
+                hasDefault: false,
+                isCalculated: true,
+                type: FieldType.Choice,
+                params: {
+                    choices: diameters,
+                    initialValue: diameters[0].key
+                },
+                multiFieldId: "diameterMM"
+            },
+
+            {
+                property: "material",
+                title: "Material",
+                hasDefault: true,
+                highlightOnOverride: COLORS.YELLOW,
+                isCalculated: false,
+                type: FieldType.Choice,
+                params: {choices: iAmDrainage ? getDrainageMaterials(materials) : getWaterDrainageMaterials(materials)},
+                multiFieldId: "material"
+            },
+
+            {
+                property: "color",
+                title: "Color:",
+                hasDefault: true,
+                isCalculated: false,
+                type: FieldType.Color,
+                params: null,
+                multiFieldId: "color"
+            },
+
+            {
+                property: "temperatureC",
+                title: "Temperature (°C)",
+                hasDefault: true,
+                highlightOnOverride: COLORS.YELLOW,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: {min: 0, max: 100},
+                multiFieldId: "temperatureC"
+            }
+        ];
+    }
 }
 
 export function fillRiserDefaults(drawing: DrawingState, value: RiserEntity) {
@@ -141,12 +216,14 @@ export function fillRiserDefaults(drawing: DrawingState, value: RiserEntity) {
     // get system
     const system = drawing.metadata.flowSystems.find((s) => s.uid === value.systemUid);
 
+    const network = value.isVent ? NetworkType.CONNECTIONS : NetworkType.RISERS;
+
     if (system) {
         if (result.maximumVelocityMS == null) {
-            result.maximumVelocityMS = Number(system.networks[NetworkType.RISERS].velocityMS);
+            result.maximumVelocityMS = Number(system.networks[network].velocityMS);
         }
         if (result.material == null) {
-            result.material = system.networks[NetworkType.RISERS].material;
+            result.material = system.networks[network].material;
         }
         if (result.color == null) {
             result.color = system.color;
@@ -160,6 +237,7 @@ export function fillRiserDefaults(drawing: DrawingState, value: RiserEntity) {
                 result.bottomHeightM = Math.min(result.bottomHeightM!, v.floorHeightM);
             });
         }
+
         if (result.topHeightM == null) {
             result.topHeightM = 0;
             Object.values(drawing.levels).forEach((v) => {

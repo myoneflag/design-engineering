@@ -1,10 +1,10 @@
-import { FieldType, PropertyField } from "./property-field";
-import { EntityType } from "./types";
-import { Color, COLORS, DrawableEntity, DrawingState, NetworkType, SelectedMaterialManufacturer } from "../drawing";
-import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../lib/utils";
-import { Catalog } from "../../catalog/types";
-import { convertPipeDiameterFromMetric, Units } from "../../../lib/measurements";
-import {StandardFlowSystemUids} from "../../config";
+import {FieldType, PropertyField} from "./property-field";
+import {EntityType} from "./types";
+import {Color, COLORS, DrawableEntity, DrawingState, NetworkType, SelectedMaterialManufacturer} from "../drawing";
+import {Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin} from "../../../lib/utils";
+import {Catalog} from "../../catalog/types";
+import {convertPipeDiameterFromMetric, Units} from "../../../lib/measurements";
+import {isDrainage, StandardFlowSystemUids} from "../../config";
 
 export default interface PipeEntity extends DrawableEntity {
     type: EntityType.PIPE;
@@ -20,6 +20,7 @@ export default interface PipeEntity extends DrawableEntity {
     diameterMM: number | null;
 
     heightAboveFloorM: number;
+    gradePCT: number | null;
 
     color: Color | null;
     readonly endpointUid: [string, string];
@@ -55,7 +56,10 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
         })
         .filter((d) => Number(d.key) >= flowSystemSettings.networks[result.network].minimumPipeSize);
         
-    return [
+    const fields: PropertyField[] = [];
+    const iAmDrainage = isDrainage(entity.systemUid);
+
+    fields.push(
         {
             property: "systemUid",
             title: "Flow System",
@@ -88,7 +92,7 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
             highlightOnOverride: COLORS.YELLOW,
             isCalculated: false,
             type: FieldType.Choice,
-            params: { choices: materials },
+            params: { choices: isDrainage(flowSystemSettings.uid) ? getDrainageMaterials(materials) : getWaterDrainageMaterials(materials) },
             multiFieldId: "material"
         },
 
@@ -113,19 +117,41 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
             params: null,
             multiFieldId: "color"
         },
+    );
 
-        {
-            property: "maximumVelocityMS",
-            title: "Maximum Velocity",
-            hasDefault: true,
-            highlightOnOverride: COLORS.YELLOW,
-            isCalculated: false,
-            type: FieldType.Number,
-            params: { min: 0, max: null },
-            multiFieldId: "maximumVelocityMS",
-            units: Units.MetersPerSecond
-        },
+    if (!iAmDrainage) {
+        fields.push(
+            {
+                property: "maximumVelocityMS",
+                title: "Maximum Velocity",
+                hasDefault: true,
+                highlightOnOverride: COLORS.YELLOW,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: {min: 0, max: null},
+                multiFieldId: "maximumVelocityMS",
+                units: Units.MetersPerSecond
+            },
+        );
+    } else {
+        if (entity.network === NetworkType.RETICULATIONS) {
+            fields.push(
+                {
+                    property: "gradePCT",
+                    title: "Grade (%)",
+                    hasDefault: false,
+                    isCalculated: true,
+                    highlightOnOverride: COLORS.YELLOW,
+                    type: FieldType.Number,
+                    params: {min: 0, max: null, initialValue: 0},
+                    multiFieldId: "gradePCT",
+                    units: Units.None
+                },
+            );
+        }
+    }
 
+    fields.push(
         {
             property: "diameterMM",
             title: "Diameter",
@@ -144,12 +170,14 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
             title: "Height Above Floor",
             hasDefault: false,
             isCalculated: false,
+            readonly: iAmDrainage,
             type: FieldType.Number,
             params: { min: null, max: null },
             multiFieldId: "heightAboveFloorM",
             units: Units.Meters
-        }
-    ];
+        },
+    );
+    return fields;
 }
 
 export function fillPipeDefaultFields(drawing: DrawingState, computedLengthM: number, value: PipeEntity) {
@@ -172,10 +200,42 @@ export function fillPipeDefaultFields(drawing: DrawingState, computedLengthM: nu
         }
         if (result.color == null) {
             result.color = system.color;
+            if (isDrainage(system.uid)) {
+                if (value.network === NetworkType.CONNECTIONS) {
+                    result.color = system.drainageProperties.ventColor;
+                }
+            }
         }
     } else {
         throw new Error("Existing system not found for object " + JSON.stringify(value));
     }
 
     return result;
+}
+
+export function getDrainageMaterials(allChoices: Choice[]): Choice[] {
+    return allChoices.filter((c) => {
+        // TODO: replace pexSdr74
+        // QUESTION: why does typescript require the parameter inside includes to be the same type???
+        return [
+            'stainlessSteelSewer',
+            'uPVCSewer',
+            'hdpeSdr11Sewer',
+            'castIronSewer',
+        ].includes(c.key as string);
+    });
+}
+
+export function getWaterDrainageMaterials(allChoices: Choice[]): Choice[] {
+    return allChoices.filter((c) => {
+        // QUESTION: why does typescript require the parameter inside includes to be the same type???
+        return [
+            'castIronCoated',
+            'copperTypeB',
+            'gmsMedium',
+            'hdpeSdr11',
+            'pexSdr74',
+            'stainlessSteel',
+        ].includes(c.key as string);
+    });
 }

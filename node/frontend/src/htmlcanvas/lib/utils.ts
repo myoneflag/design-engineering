@@ -22,7 +22,12 @@ import { CalculationContext } from "../../calculations/types";
 import { ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
 import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
 import { GlobalStore } from "./global-store";
-import { assertUnreachable, LEVEL_HEIGHT_DIFF_M } from "../../../../common/src/api/config";
+import {
+    assertUnreachable,
+    isDrainage, isGas,
+    LEVEL_HEIGHT_DIFF_M,
+    StandardFlowSystemUids
+} from "../../../../common/src/api/config";
 import { Color, COLORS, Coord, DrawableEntity, DrawingState, Level, SelectedMaterialManufacturer } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, EPS, interpolateTable, upperBoundTable } from "../../../../common/src/lib/utils";
 import PlantEntity, {
@@ -137,6 +142,28 @@ export function getSystemNodeHeightM(entity: SystemNodeEntity, context: CanvasCo
         globalStore: context.globalStore,
         nodes: context.$store.getters["customEntity/nodes"],
     });
+}
+
+export function flowSystemsCompatible(a: string, b: string) {
+    if (isDrainage(a) && isDrainage(b)) {
+        return true;
+    }
+    return a === b;
+}
+
+export function flowSystemsFlowTogether(a: string, b: string, doc: DocumentState, catalog: Catalog) {
+    const systemA = doc.drawing.metadata.flowSystems.find((s) => s.uid === a);
+    const systemB = doc.drawing.metadata.flowSystems.find((s) => s.uid === b);
+
+    if (systemA && systemB) {
+
+        const categoryA = isDrainage(a) ? 'd' : isGas(systemA.fluid, catalog) ? 'g' : 'w';
+        const categoryB = isDrainage(b) ? 'd' : isGas(systemB.fluid, catalog) ? 'g' : 'w';
+        return categoryA === categoryB;
+    }  else {
+        return false;
+    }
+
 }
 
 export function maxHeightOfConnection(entity: ConnectableEntityConcrete, context: CanvasContext) {

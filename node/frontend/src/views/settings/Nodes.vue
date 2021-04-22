@@ -29,8 +29,8 @@
                 label-for="minPressure"
                 label-cols-lg="4"
             >
-                <b-input-group append="kPa">
-                    <b-form-input :disabled="submitting" id="minPressure" v-model.number="reactiveForm.minPressure" type="number"></b-form-input>
+                <b-input-group :append="pressureUnits">
+                    <b-form-input :disabled="submitting" id="minPressure" v-model.number="minPressureReactive" type="number"></b-form-input>
                 </b-input-group>
             </b-form-group>
             <b-form-group
@@ -38,8 +38,8 @@
                 label-for="maxPressure"
                 label-cols-lg="4"
             >
-                <b-input-group append="kPa">
-                    <b-form-input :disabled="submitting" id="maxPressure" v-model.number="reactiveForm.maxPressure" type="number"></b-form-input>
+                <b-input-group :append="pressureUnits">
+                    <b-form-input :disabled="submitting" id="maxPressure" v-model.number="maxPressureReactive" type="number"></b-form-input>
                 </b-input-group>
             </b-form-group>
             <b-form-group label="Available Fixtures" :disabled="submitting">
@@ -77,16 +77,17 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import Component from 'vue-class-component';
+import Vue from "vue";
+import Component from "vue-class-component";
 import * as _ from "lodash";
-import { DocumentState } from '../../store/document/types';
-import { User } from '../../../../common/src/models/User';
-import { NodeProps, Entities } from '../../../../common/src/models/CustomEntity';
-import { FixtureSpec } from '../../../../common/src/api/catalog/types';
-import { cloneSimple } from '../../../../common/src/lib/utils';
-import { add, remove, update } from '../../api/custom-entity';
-import { EntityType } from '../../../../common/src/api/document/entities/types';
+import { DocumentState } from "../../store/document/types";
+import { User } from "../../../../common/src/models/User";
+import { NodeProps } from "../../../../common/src/models/CustomEntity";
+import { FixtureSpec } from "../../../../common/src/api/catalog/types";
+import { cloneSimple } from "../../../../common/src/lib/utils";
+import { add, remove, update } from "../../api/custom-entity";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
+import { convertMeasurementSystem, convertMeasurementToMetric, Units } from "../../../../common/src/lib/measurements";
 
 @Component
 export default class Nodes extends Vue {
@@ -121,6 +122,47 @@ export default class Nodes extends Vue {
 
     get isUnchanged(): boolean {
         return _.isEqual(this.originalForm, this.reactiveForm);
+    }
+
+    get minPressureReactive() {
+        if (this.reactiveForm.minPressure !== null) {
+            const [_, converted] =
+                convertMeasurementSystem(this.document.drawing.metadata.units, Units.KiloPascals, this.reactiveForm.minPressure);
+            return converted as number;
+        }
+        return null;
+    }
+
+    set minPressureReactive(value: number | null) {
+        if (value === null) {
+            this.reactiveForm.minPressure = null;
+        } else {
+            const [_, converted] = convertMeasurementToMetric(this.pressureUnits, value);
+            this.reactiveForm.minPressure = converted as number;
+        }
+    }
+
+    get maxPressureReactive() {
+        if (this.reactiveForm.maxPressure !== null) {
+            const [_, converted] =
+                convertMeasurementSystem(this.document.drawing.metadata.units, Units.KiloPascals, this.reactiveForm.maxPressure);
+            return converted as number;
+        }
+        return null;
+    }
+
+    set maxPressureReactive(value: number | null) {
+        if (value === null) {
+            this.reactiveForm.maxPressure = null;
+        } else {
+            const [_, converted] = convertMeasurementToMetric(this.pressureUnits, value);
+            this.reactiveForm.maxPressure = converted as number;
+        }
+    }
+
+    get pressureUnits() {
+        const [units] = convertMeasurementSystem(this.document.drawing.metadata.units, Units.KiloPascals, null);
+        return units;
     }
 
     handleViewNode(key: number | string) {

@@ -29,8 +29,9 @@
     import Vue from "vue";
     import Component from "vue-class-component";
     import { lighten } from "../../../src/lib/utils";
-    import { FlowSystemParameters } from "../../../../common/src/api/document/drawing";
+    import {FlowSystemParameters, initialDrainageProperties} from "../../../../common/src/api/document/drawing";
     import { InsulationJackets, InsulationMaterials } from "../../../../common/src/api/config";
+    import {cloneSimple} from "../../../../common/src/lib/utils";
 
     @Component({
     props: {
@@ -67,6 +68,7 @@ export default class FlowSystemPicker extends Vue {
             insulationJacket: InsulationJackets.allServiceJacket,
             insulationThicknessMM: 0,
             returnMaxVelocityMS: 0,
+            drainageProperties: cloneSimple(initialDrainageProperties),
             networks: {
                 RISERS: {
                     velocityMS: 0,
