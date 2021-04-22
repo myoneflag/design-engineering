@@ -337,7 +337,6 @@
                 "OptionName": "NODE_OPTIONS",
                 "Value": "--max_old_space_size=6144"
               },
-              
               {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "EMAIL_ADDRESS",
@@ -506,6 +505,11 @@
                 "OptionName": "MaxRetries",
                 "Value": "2"
               },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "NODE_OPTIONS",
+                "Value": "--max_old_space_size=6144"
+              },              
               {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "RDS_HOSTNAME",
