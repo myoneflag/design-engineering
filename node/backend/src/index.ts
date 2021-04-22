@@ -40,10 +40,6 @@ createConnection().then(async (connection) => {
             return console.log(err);
         }
 
-        console.log("AWS key: " + process.env.AWS_ACCESS_KEY);
-        console.log("MQ url: " + process.env.MQ_URL);
-        console.log("MQ username: " + process.env.MQ_USERNAME);
-
         console.log(`Server is listening on ${PORT}`);
     });
 }).catch((error) => console.log(error));
