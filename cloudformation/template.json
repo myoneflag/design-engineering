@@ -16,12 +16,12 @@
       "WebInstanceType": {
         "Description": "Web server instance type",
         "Type": "String",
-        "Default": "t2.small"
+        "Default": "t2.medium"
       },
       "WorkerInstanceType": {
         "Description": "Worker instance type",
         "Type": "String",
-        "Default": "t2.small"
+        "Default": "t2.medium"
       },
       "DnsZoneId": {
         "Description": "HostedZoneID of the DNS zone to create the main records pointing to the web loadbalancer",
@@ -158,7 +158,7 @@
                     "Resource": { "Fn::GetAtt": [ "PdfRendersBucket", "Arn" ] }
                   },
                   {
-                    "Sid": "ConmnectRdsDb",
+                    "Sid": "ConnectRdsDb",
                     "Action": "rds-db:connect",
                     "Effect": "Allow",
                     "Resource": { "Fn::Sub": "arn:aws:rds-db:${AWS::Region}:${AWS::AccountId}:dbuser:${DBInstance}/${DBMasterUserName}" }
@@ -555,7 +555,6 @@
         // MQ
         "MQBroker": {
           "Type" : "AWS::AmazonMQ::Broker",
-          "DependsOn": [ "WebSecurityGroup" ],
           "Properties" : {
               "AutoMinorVersionUpgrade" : false,
               "BrokerName" : {"Fn::Sub": "h2x-mq-${EnvName}" },
@@ -565,7 +564,7 @@
               "HostInstanceType" : "mq.t2.micro",
               "PubliclyAccessible" : false,
               "SecurityGroups" : [ 
-                { "Fn::GetAtt": [ "WebSecurityGroup", "GroupId" ] }
+                { "Fn::GetAtt": [ "MQSecurityGroup", "GroupId" ] }
               ],
               "Users" : [ 
                 {
@@ -576,6 +575,22 @@
                ]
             }
         },
+
+        "MQSecurityGroup" : {
+          "Type" : "AWS::EC2::SecurityGroup",
+          "Properties" : {
+            "GroupDescription" : "ActiveMQ security group",
+            "SecurityGroupIngress" : [ 
+              {
+                "FromPort": "61619",
+                "ToPort": "61619",
+                "IpProtocol": "tcp",
+                "SourceSecurityGroupId": { "Fn::GetAtt": [ "WebSecurityGroup", "GroupId" ] }
+              }
+            ]
+          }
+        },
+        
 
         // Worker queue
         "WorkerQueue": {
