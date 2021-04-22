@@ -21,7 +21,7 @@
       "WorkerInstanceType": {
         "Description": "Worker instance type",
         "Type": "String",
-        "Default": "t2.medium"
+        "Default": "t2.large"
       },
       "DnsZoneId": {
         "Description": "HostedZoneID of the DNS zone to create the main records pointing to the web loadbalancer",
