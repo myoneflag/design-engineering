@@ -299,12 +299,11 @@ export class PDFController {
     public async getImageLink(req: Request, res: Response, next: NextFunction, session: Session) {
         const key = req.params.key;
 
-
-        const sGetUrl = s3.getSignedUrl("getObject", {
+        const sGetUrl = await s3.getSignedUrlPromise("getObject", {
             Bucket: Config.PDF_RENDERS_BUCKET,
             Key: key
         });
-        const sHeadUrl = s3.getSignedUrl("headObject", {
+        const sHeadUrl = await s3.getSignedUrlPromise("headObject", {
             Bucket: Config.PDF_RENDERS_BUCKET,
             Key: key
         });
