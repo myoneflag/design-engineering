@@ -238,36 +238,6 @@
                 "Value" : { "Ref": "Ec2InstanceKeyname" }
               },
               {
-                "Namespace": "aws:elasticbeanstalk:cloudwatch:logs",
-                "OptionName": "StreamLogs",
-                "Value": true
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:cloudwatch:logs",
-                "OptionName": "RetentionInDays",
-                "Value": 30
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:cloudwatch:logs:health",
-                "OptionName": "HealthStreamingEnabled",
-                "Value": true
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:healthreporting:system",
-                "OptionName": "SystemType",
-                "Value": "enhanced"
-              },
-              { 
-                "Namespace": "aws:elasticbeanstalk:cloudwatch:logs:health",
-                "OptionName": "RetentionInDays",
-                "Value": 30 
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:environment",
-                "OptionName": "LoadBalancerType",
-                "Value": "application"
-              },
-              {
                 "Namespace": "aws:elasticbeanstalk:sns:topics",
                 "OptionName": "Notification Endpoint",
                 "Value": { "Ref": "NotificationsEmail" }
@@ -281,11 +251,6 @@
                 "Namespace": "aws:autoscaling:asg",
                 "OptionName": "MaxSize",
                 "Value": "10"
-              },
-              {
-                "Namespace": "aws:elbv2:listener:443",
-                "OptionName": "Protocol",
-                "Value": "HTTPS"
               },
               {
                 "Namespace": "aws:elbv2:listener:443",
@@ -341,11 +306,6 @@
                 "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "PDF_RENDERS_BUCKET",
                 "Value": { "Ref": "PdfRendersBucket" }
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:application:environment",
-                "OptionName": "NODE_OPTIONS",
-                "Value": "--max_old_space_size=6144"
               },
               {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
@@ -456,35 +416,10 @@
                 "Value" : { "Ref": "Ec2InstanceKeyname" }
               },
               {
-                "Namespace": "aws:elasticbeanstalk:cloudwatch:logs",
-                "OptionName": "StreamLogs",
-                "Value": true
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:cloudwatch:logs",
-                "OptionName": "RetentionInDays",
-                "Value": 30
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:cloudwatch:logs:health",
-                "OptionName": "HealthStreamingEnabled",
-                "Value": true
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:healthreporting:system",
-                "OptionName": "SystemType",
-                "Value": "enhanced"
-              },              
-              { 
-                "Namespace": "aws:elasticbeanstalk:cloudwatch:logs:health",
-                "OptionName": "RetentionInDays",
-                "Value": 30 
-              },
-              {
                 "Namespace": "aws:elasticbeanstalk:sns:topics",
                 "OptionName": "Notification Endpoint",
                 "Value": { "Ref": "NotificationsEmail" }
-              },
+              },              
               {
                 "Namespace": "aws:autoscaling:asg",
                 "OptionName": "MinSize",
@@ -500,36 +435,6 @@
                 "OptionName": "WorkerQueueURL",
                 "Value": { "Ref": "WorkerQueue" }
               },
-              {
-                "Namespace": "aws:elasticbeanstalk:sqsd",
-                "OptionName": "HttpPath",
-                "Value": "/workermessage"
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:sqsd",
-                "OptionName": "HttpConnections",
-                "Value": "1"
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:sqsd",
-                "OptionName": "InactivityTimeout",
-                "Value": "1190"
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:sqsd",
-                "OptionName": "VisibilityTimeout",
-                "Value": "1200"
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:sqsd",
-                "OptionName": "MaxRetries",
-                "Value": "2"
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:application:environment",
-                "OptionName": "NODE_OPTIONS",
-                "Value": "--max_old_space_size=6144"
-              },              
               {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "RDS_HOSTNAME",
@@ -678,7 +583,6 @@
             ]
           }
         },
-        
 
         // Worker queue
         "WorkerQueue": {
