@@ -86,7 +86,7 @@
       "DbVersion": {
         "Description": "Extra name tag for major upgrades to RDS DB",
         "Type": "String",
-        "Default": "-restore-1"
+        "Default": "-restore-2"
       }, 
       "NotificationsEmail": {
         "Description": "Notifications email to send Beanstalk deployment notifications to",
@@ -533,7 +533,7 @@
             "AllocatedStorage": "100",
             "AllowMajorVersionUpgrade": false,
             "DBInstanceIdentifier": { "Fn::Sub": "h2x-db-${EnvName}${DbVersion}" },
-            "DBInstanceClass": "db.t3.small",
+            "DBInstanceClass": "db.t2.medium",
             "DBSecurityGroups": [ {"Ref": "DBSecurityGroup"} ],
             "DeleteAutomatedBackups": false,
             "Engine": "postgres",
