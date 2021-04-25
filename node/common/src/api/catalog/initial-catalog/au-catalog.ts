@@ -28,12 +28,12 @@ export const auCatalog: Catalog = {
                     "warm-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "3",
-                    "warm-water": "3",
+                    "cold-water": "2.25",
+                    "warm-water": "2.25",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "3",
-                    "warm-water": "3",
+                    "cold-water": "2.25",
+                    "warm-water": "2.25",
                 },
                 upc2018Flushometer: {
                     "cold-water": "3",
@@ -119,20 +119,20 @@ export const auCatalog: Catalog = {
                     "warm-water": "2",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "2",
-                    "warm-water": "2",
+                    "cold-water": "1.5",
+                    "warm-water": "1.5",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "2",
-                    "warm-water": "2",
+                    "cold-water": "1.5",
+                    "warm-water": "1.5",
                 },
                 upc2018Flushometer: {
-                    "cold-water": "2",
-                    "warm-water": "2",
+                    "cold-water": "1",
+                    "warm-water": "1",
                 },
                 upc2018FlushTanks: {
-                    "cold-water": "2",
-                    "warm-water": "2",
+                    "cold-water": "1",
+                    "warm-water": "1",
                 },
             },
             roughIns: ["sewer-drainage", "warm-water", "cold-water"],
@@ -222,12 +222,12 @@ export const auCatalog: Catalog = {
                     "warm-water": "10",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "4",
-                    "warm-water": "4",
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "4",
-                    "warm-water": "4",
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 upc2018Flushometer: {
                     "cold-water": "4",
@@ -300,20 +300,20 @@ export const auCatalog: Catalog = {
                     "hot-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "2",
-                    "hot-water": "2",
+                    "cold-water": "2.25",
+                    "hot-water": "2.25",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "2",
-                    "hot-water": "2",
+                    "cold-water": "2.25",
+                    "hot-water": "2.25",
                 },
                 upc2018Flushometer: {
-                    "cold-water": "2",
-                    "hot-water": "2",
+                    "cold-water": "3",
+                    "hot-water": "3",
                 },
                 upc2018FlushTanks: {
-                    "cold-water": "2",
-                    "hot-water": "2",
+                    "cold-water": "3",
+                    "hot-water": "3",
                 },
             },
             roughIns: ["sewer-drainage", "hot-water", "cold-water"],
@@ -365,12 +365,12 @@ export const auCatalog: Catalog = {
                     "warm-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "1.5",
-                    "warm-water": "1.5",
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "1.5",
-                    "warm-water": "1.5",
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 upc2018Flushometer: {
                     "cold-water": "1.5",
@@ -533,19 +533,19 @@ export const auCatalog: Catalog = {
                     "hot-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "2",
-                    "hot-water": "3",
+                    "cold-water": "2.25",
+                    "hot-water": "2.25",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "2",
-                    "hot-water": "3",
+                    "cold-water": "2.25",
+                    "hot-water": "2.25",
                 },
                 upc2018Flushometer: {
-                    "cold-water": "2",
+                    "cold-water": "3",
                     "hot-water": "3",
                 },
                 upc2018FlushTanks: {
-                    "cold-water": "2",
+                    "cold-water": "3",
                     "hot-water": "3",
                 },
             },
@@ -598,12 +598,12 @@ export const auCatalog: Catalog = {
                     "hot-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "1.5",
-                    "hot-water": "1.5",
+                    "cold-water": "1.4",
+                    "hot-water": "1.4",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "1.5",
-                    "hot-water": "1.5",
+                    "cold-water": "1.4",
+                    "hot-water": "1.4",
                 },
                 upc2018Flushometer: {
                     "cold-water": "1.5",
@@ -659,16 +659,16 @@ export const auCatalog: Catalog = {
                     "cold-water": "1",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "1",
+                    "cold-water": "0.25",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "1",
+                    "cold-water": "0.25",
                 },
                 upc2018Flushometer: {
-                    "cold-water": "1",
+                    "cold-water": "0.5",
                 },
                 upc2018FlushTanks: {
-                    "cold-water": "1",
+                    "cold-water": "0.5",
                 },
             },
             roughIns: ["sewer-drainage", "cold-water"],
@@ -717,20 +717,20 @@ export const auCatalog: Catalog = {
                     "hot-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "2",
-                    "hot-water": "2",
+                    "cold-water": "2.25",
+                    "hot-water": "2.25",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "2",
-                    "hot-water": "2",
+                    "cold-water": "2.25",
+                    "hot-water": "2.25",
                 },
                 upc2018Flushometer: {
-                    "cold-water": "2",
-                    "hot-water": "2",
+                    "cold-water": "3",
+                    "hot-water": "3",
                 },
                 upc2018FlushTanks: {
-                    "cold-water": "2",
-                    "hot-water": "2",
+                    "cold-water": "3",
+                    "hot-water": "3",
                 },
             },
             roughIns: ["sewer-drainage", "hot-water", "cold-water"],
@@ -846,12 +846,12 @@ export const auCatalog: Catalog = {
                     "warm-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "1.5",
-                    "warm-water": "1.5",
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "1.5",
-                    "warm-water": "1.5",
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 upc2018Flushometer: {
                     "cold-water": "1.5",
@@ -937,12 +937,12 @@ export const auCatalog: Catalog = {
                     "hot-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "1.5",
-                    "hot-water": "1.5",
+                    "cold-water": "3",
+                    "hot-water": "3",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "1.5",
-                    "hot-water": "1.5",
+                    "cold-water": "3",
+                    "hot-water": "3",
                 },
                 upc2018Flushometer: {
                     "cold-water": "1.5",
@@ -1028,20 +1028,20 @@ export const auCatalog: Catalog = {
                     "warm-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "3",
-                    "warm-water": "3",
+                    "cold-water": "2.25",
+                    "warm-water": "2.25",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "3",
-                    "warm-water": "3",
+                    "cold-water": "2.25",
+                    "warm-water": "2.25",
                 },
                 upc2018Flushometer: {
-                    "cold-water": "3",
-                    "warm-water": "3",
+                    "cold-water": "1.5",
+                    "warm-water": "1.5",
                 },
                 upc2018FlushTanks: {
-                    "cold-water": "3",
-                    "warm-water": "3",
+                    "cold-water": "1.5",
+                    "warm-water": "1.5",
                 },
             },
             roughIns: ["sewer-drainage", "warm-water", "cold-water"],
@@ -1119,20 +1119,20 @@ export const auCatalog: Catalog = {
                     "hot-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "3",
-                    "hot-water": "3",
+                    "cold-water": "2.25",
+                    "hot-water": "2.25",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "3",
-                    "hot-water": "3",
+                    "cold-water": "2.25",
+                    "hot-water": "2.25",
                 },
                 upc2018Flushometer: {
-                    "cold-water": "3",
-                    "hot-water": "3",
+                    "cold-water": "1.5",
+                    "hot-water": "1.5",
                 },
                 upc2018FlushTanks: {
-                    "cold-water": "3",
-                    "hot-water": "3",
+                    "cold-water": "1.5",
+                    "hot-water": "1.5",
                 },
             },
             roughIns: ["sewer-drainage", "hot-water", "cold-water"],
@@ -1210,12 +1210,12 @@ export const auCatalog: Catalog = {
                     "warm-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "2",
-                    "warm-water": "2",
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "2",
-                    "warm-water": "2",
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 upc2018Flushometer: {
                     "cold-water": "2",
@@ -1301,10 +1301,10 @@ export const auCatalog: Catalog = {
                     "cold-water": "1",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "2",
+                    "cold-water": "3",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "2",
+                    "cold-water": "3",
                 },
                 upc2018Flushometer: {
                     "cold-water": "2",
@@ -1357,12 +1357,12 @@ export const auCatalog: Catalog = {
                     "hot-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "4",
-                    "hot-water": "4",
+                    "cold-water": "3",
+                    "hot-water": "3",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "4",
-                    "hot-water": "4",
+                    "cold-water": "3",
+                    "hot-water": "3",
                 },
                 upc2018Flushometer: {
                     "cold-water": "4",
@@ -1418,10 +1418,10 @@ export const auCatalog: Catalog = {
                     "cold-water": "2",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "2.5",
+                    "cold-water": "5",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "2.5",
+                    "cold-water": "5",
                 },
                 upc2018Flushometer: {
                     "cold-water": "2.5",
