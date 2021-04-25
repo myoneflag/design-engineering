@@ -29,6 +29,7 @@ import { APIResult } from "../../../../common/src/api/document/types";
 import { Interaction, InteractionType } from "../lib/interaction";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import {assertUnreachable, isDrainage} from "../../../../common/src/api/config";
+import { I18N } from "../../../../common/src/api/locale/values";
 
 @CalculatedObject
 @SelectableObject
@@ -516,7 +517,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
 
                 if (overFlowedLevels.length > 0) {
                     res.warningLayout = 'drainage';
-                    res.warning = "Max loading units per level exceeded on level " + overFlowedLevels.join(", ");
+                    res.warning = "Max " + I18N.loadingUnits[context.doc.locale] + " per level exceeded on level " + overFlowedLevels.join(", ");
                 }
             }
         }

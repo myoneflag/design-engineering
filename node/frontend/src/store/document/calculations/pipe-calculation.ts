@@ -76,7 +76,7 @@ export function makePipeCalculationFields(
     catalog: Catalog | undefined,
     globalStore: GlobalStore,
 ): CalculationField[] {
-    const psdUnit = getPsdUnitName(document.drawing.metadata.calculationParams.psdMethod);
+    const psdUnit = getPsdUnitName(document.drawing.metadata.calculationParams.psdMethod, document.locale);
     const drainageUnits = getDrainageUnitName(document.drawing.metadata.calculationParams.drainageMethod);
 
     const pipeIsGas = catalog && isGas(document.drawing.metadata.flowSystems.find((f) => f.uid === entity.systemUid)!.fluid, catalog);

@@ -36,7 +36,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
     const drawing = doc.drawing;
     const result: CalculationField[] = [];
 
-    const psdUnit = getPsdUnitName(drawing.metadata.calculationParams.psdMethod);
+    const psdUnit = getPsdUnitName(drawing.metadata.calculationParams.psdMethod, doc.locale);
     const drainageUnit = getDrainageUnitName(drawing.metadata.calculationParams.drainageMethod);
 
     const lvlUid = doc.uiState.levelUid;

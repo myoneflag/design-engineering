@@ -280,7 +280,7 @@ export default class CalculationEngine implements CalculationContext {
                     fields = makeBigValveFields(obj.entity);
                     break;
                 case EntityType.FIXTURE:
-                    fields = makeFixtureFields(this.doc.drawing, obj.entity);
+                    fields = makeFixtureFields(this.doc, obj.entity);
                     break;
                 case EntityType.DIRECTED_VALVE:
                     fields = makeDirectedValveFields(obj.entity, this.catalog, this.doc.drawing);
@@ -290,7 +290,7 @@ export default class CalculationEngine implements CalculationContext {
                     break;
                 case EntityType.LOAD_NODE:
                     const systemUid = determineConnectableSystemUid(obj.globalStore, obj.entity);
-                    fields = makeLoadNodesFields(this.doc.drawing, obj.entity, this.catalog, systemUid || null);
+                    fields = makeLoadNodesFields(this.doc, obj.entity, this.catalog, systemUid || null);
                     break;
                 case EntityType.PLANT:
                     fields = makePlantEntityFields(obj.entity, []);
@@ -1734,6 +1734,11 @@ export default class CalculationEngine implements CalculationContext {
 
                     const flowRate = lookupFlowRate(psdU, this.doc, this.catalog, entity.systemUid);
 
+                    if (entity.uid.includes('d5e06935-0c32-43a3-925c-9c78de801a8e')) {
+                        console.log(psdU);
+                        console.log(flowRate);
+                        console.log(this.doc);
+                    }
                     if (flowRate === null) {
                         // Warn for no PSD
                         if (isZeroWaterPsdCounts(psdU)) {

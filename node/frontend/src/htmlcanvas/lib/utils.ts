@@ -364,7 +364,7 @@ export function makeEntityFields(entity: DrawableEntityConcrete, document: Docum
                 .filter((p) => p.multiFieldId)
                 .filter((p) => p.multiFieldId);
         case EntityType.FIXTURE:
-            return makeFixtureFields(document.drawing, entity)
+            return makeFixtureFields(document, entity)
                 .filter((p) => p.multiFieldId)
                 .filter((p) => p.multiFieldId);
         case EntityType.DIRECTED_VALVE:
@@ -375,7 +375,7 @@ export function makeEntityFields(entity: DrawableEntityConcrete, document: Docum
             throw new Error("Invalid object in multi select");
         case EntityType.LOAD_NODE:
             const systemUid = determineConnectableSystemUid(store, entity);
-            return makeLoadNodesFields(document.drawing,  entity, catalog, systemUid || null).filter(
+            return makeLoadNodesFields(document,  entity, catalog, systemUid || null).filter(
                 (p) => p.multiFieldId
             );
         case EntityType.FLOW_SOURCE:
