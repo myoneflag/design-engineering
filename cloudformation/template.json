@@ -652,7 +652,7 @@
                       "AllowedOrigins": [
                           "*"
                       ],
-                      "ExposeHeaders": []
+                      "ExposedHeaders": []
                   }
                 ]
               }            
