@@ -637,7 +637,25 @@
           "Type": "AWS::S3::Bucket",
           "Properties": {
             "AccessControl": "Private",
-            "BucketName": { "Fn::Sub": "h2x-s3-pdfrenders-${EnvName}" }
+            "BucketName": { "Fn::Sub": "h2x-s3-pdfrenders-${EnvName}" },
+            "CorsConfiguration": {
+              "CorsRules": [
+                  {
+                      "AllowedHeaders": [
+                          "*"
+                      ],
+                      "AllowedMethods": [
+                          "GET",
+                          "POST",
+                          "HEAD"
+                      ],
+                      "AllowedOrigins": [
+                          "*"
+                      ],
+                      "ExposeHeaders": []
+                  }
+                ]
+              }            
           }
         }, 
 
