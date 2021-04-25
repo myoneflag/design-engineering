@@ -588,6 +588,15 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
                 result.metadata.flowSystems[1].networks.CONNECTIONS.velocityMS =
                     result.metadata.flowSystems[1].networks.CONNECTIONS.velocityMS = 2.7432;
 
+            result.levels = {
+                ground: {
+                    entities: {},
+                    floorHeightM: 0,
+                    name: "Level 1",
+                    abbreviation: "L1",
+                    uid: "ground"
+                }
+            };
             break;
         default:
             assertUnreachable(locale);
