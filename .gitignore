@@ -4,6 +4,6 @@ node_modules/
 implement_notes/
 cloudformation/template.cfn.json
 cloudformation/package-lock.json
-cloudformation/dist/**
+cloudformation/dist
 docker/package-lock.json
-docker/dist/**
+docker/dist

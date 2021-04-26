@@ -10,7 +10,9 @@ Production account Destination buckets:
 * h2x-s3-pdf-stage
 * h2x-s3-pdfrenders-stage
 
-### Attach Bucket Policy
+### 1. Attach Bucket Policy
+(If not already done)
+
 For each destination bucket attach bucket policy allowing all entities in Production account to manage s3 buckets in Testing account.
 
 ```
@@ -55,7 +57,12 @@ For each destination bucket attach bucket policy allowing all entities in Produc
 }
 ```
 
-### Perform file sync of buckets
+### 2. Disable PDF Bucket trigger for renderere lambda function
+Go to S3 > `h2x-s3-pdf-stage` > Properties tab > Event Notifications and disable trigger for `pdf-renderer-stage` lambda function. Disable by editing trigger to change suffix from `pdf` to `_pdf_`.
+
+> ! Failing to do so will trigger the lambda function thousands of times, incurring costs.
+
+### 3. Perform file sync of buckets
 
 * Log into Production account
 * Open CloudShell
@@ -63,5 +70,22 @@ For each destination bucket attach bucket policy allowing all entities in Produc
 
 ```
 aws s3 sync s3://h2x-pdf s3://h2x-s3-pdf-stage --acl bucket-owner-full-control --dryrun
+```
+
+```
 aws s3 sync s3://h2x-pdf-renders s3://h2x-s3-pdfrenders-stage --acl bucket-owner-full-control --dryrun
 ```
+
+For a progress, you can run in a new CloudShell window commands like 
+```
+aws s3 sync s3://source s3://destination --dryrun | wc -l
+```
+that will return tnumber of files that still need to be copied.
+
+### 4. Re-enable PDF trigger
+Change trigger suffix back to `pdf`.
+
+### 5. Test
+Assuming the database of the testing environment is a fresh backup form production, any project opened will show background images.
+
+To restore a production backup to a test environment, read [here](./restore-production-backup-to-a-test-environment.md).
