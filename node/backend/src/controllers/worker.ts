@@ -5,24 +5,26 @@ import { DocumentUpgrader, Tasks } from "../services/DocumentUpgrader";
 export class WorkerController {
     public async processQueueMessage(req: Request, res: Response) {
         const jsonMessage = req.body;
-        console.log("Worker Message Received")
-        console.log(jsonMessage)
+        console.log("worker.message", jsonMessage)
 
+        let docId: number;
         try {
             switch (jsonMessage.task) {
                 case Tasks.DocumentUpgradeScan:
+                    console.log("worker.task", jsonMessage.task )                    
                     await DocumentUpgrader.submitDocumentsForUpgrade()
                     break
                 case Tasks.DocumentUpgradeExecute:
-                    let docId: number;
                     docId = req.body.parameters.docId
+                    console.log("worker.task", jsonMessage.task, { docId } )
                     await DocumentUpgrader.onDocumentUpgradeRequest(docId);
                     break;
                 default:
-                    console.log("unknown message type")
+                    console.log("worker.unkownMessage")
             }
             return res.status(200).send({success: true});            
         } catch (err) {
+            console.log("worker.error", jsonMessage.task, { docId } )
             console.error(err)
             return res.status(500).send({success: false})
         }

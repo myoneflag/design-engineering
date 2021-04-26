@@ -53,14 +53,13 @@ export class DocumentUpgrader {
             return 0;
         });
 
-        console.log('need to submit ' + toUpgrade.length + ' documents for upgrade');
+        console.log('documentUpgradeScan', { 'count': toUpgrade.length });
         for (const doc of toUpgrade) {
             await this.enqueueDocumentForUpgrade(doc.id);
         }
     }
 
     static async enqueueDocumentForUpgrade(docId: number) {
-
         const queueMessage = { 
             "task": Tasks.DocumentUpgradeExecute,
             "parameters": {
@@ -71,9 +70,9 @@ export class DocumentUpgrader {
     }
 
     static async onDocumentUpgradeRequest(docId: number) {
-        console.log('got document upgrade request ' + docId);
         try {
-            const start = new Date();
+            console.log('documentUpgradeExecute', 'start', {docId, CURRENT_VERSION})
+            let start = new Date();
 
             let shouldUpgrade = true;
 
@@ -83,7 +82,7 @@ export class DocumentUpgrader {
                 if (innerDoc.version >= CURRENT_VERSION) {
                     shouldUpgrade = false;
                 } else if (innerDoc.upgradingLockExpires && innerDoc.upgradingLockExpires >= new Date()) {
-                    console.log("document (" + innerDoc.id + ") " + innerDoc.metadata.title + " is still updating, skipping. ");
+                    console.log('documentUpgradeExecute', 'stillUpgrading', { docId });
                     shouldUpgrade = false;
                 }
                 if (shouldUpgrade) {
@@ -93,7 +92,7 @@ export class DocumentUpgrader {
             });
 
             if (!shouldUpgrade) {
-                console.log("skipping to next document to upgrade");
+                console.log('documentUpgradeExecute', 'skiping', { docId });
                 return;
             }
 
@@ -117,8 +116,7 @@ export class DocumentUpgrader {
                     .orderBy("operation.orderIndex", "ASC")
                     .getMany();
 
-
-                console.log("Upgrading document (" + doc.id + ") " + doc.metadata.title + " from version " + doc.version + ". Has ops " + ops.length + ", state: " + doc.state);
+                console.log('documentUpgradeExecute', 'starting', { docId, fromVersion: doc.version, ops: ops.length, state: doc.state} );
 
                 let opsUpgraded = 0;
                 let lastHeartbeat = new Date();
@@ -211,21 +209,24 @@ export class DocumentUpgrader {
                     });
                 }
 
-                if (opsUpgraded) {
-                    console.log("upgraded " + opsUpgraded + " operations");
-                } else {
-                    console.log("All good, no changes made");
-                }
-                console.log("took " + ((new Date().getTime() - start.getTime()) / 60000) + " minutes");
+                let timeTakenSeconds = Math.round((new Date().getTime() - start.getTime()) / 1000)
+                console.log('documentUpgradeExecute', 'computed', { docId, opsUpgraded, timeTakenSeconds} );
+
+                start = new Date();
 
                 // upgrade
                 doc.version = CURRENT_VERSION;
-
                 doc.metadata = drawing.metadata.generalInfo;
                 await tx.save(Document, doc);
+
+                timeTakenSeconds = Math.round((new Date().getTime() - start.getTime()) / 1000)
+                console.log('documentUpgradeExecute', 'saved', { docId, timeTakenSeconds} );
+                
+                console.log('documentUpgradeExecute', 'complete', { docId } );    
             });
-        } finally {
-            console.log("ACKing upgrade request");
+        } catch(error) {
+            console.log('documentUpgradeExecute', 'error', { docId, error } );
+            throw(error)
         }
     }
 }

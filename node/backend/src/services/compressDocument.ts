@@ -23,18 +23,16 @@ import ConcurrentDocument from "./concurrentDocument";
 // DO NOT RUN while a document is open by a client. It will cause inconsistent states.
 export async function compressDocumentIfRequired(doc: Document, entirely: boolean = false) {
     await ConcurrentDocument.withDocumentLockRepeatableRead(doc.id, async (tx, doc) => {
+        
+        console.log('documentCompress', 'start', {docId: doc.id, entirely})        
+
         let removed = 0;
         let added = 0;
         let ignored = 0;
         const start = new Date().getTime();
         if (start - new Date(doc.lastCompression).getTime() < 60 * 60 * 1 && !entirely) {
-            // don't need upgrading. skip.
+            console.log('documentCompress', 'skip', {docId: doc.id})
             return;
-        }
-
-        console.log("compressing document id " + doc.id + ", \"" + doc.metadata.title + "\"");
-        if (entirely) {
-            console.log("Compressing entirely");
         }
 
         const ops = await tx.getRepository(Operation)
@@ -44,7 +42,7 @@ export async function compressDocumentIfRequired(doc: Document, entirely: boolea
             .orderBy("\"orderIndex\"", "ASC")
             .getMany();
 
-        console.log("...with " + ops.length + " operations");
+        console.log('documentCompress', 'starting', {docId: doc.id, operations: ops.length})
 
         let oldDoc = initialDrawing(doc.locale);
         let currentDrawing = initialDrawing(doc.locale);
@@ -58,7 +56,6 @@ export async function compressDocumentIfRequired(doc: Document, entirely: boolea
             if (!shouldCombine(oldOp, o, entirely) && oldOp) {
                 // We should create a new operation.
                 if (numDiffOpsSinceLast > 1) {
-                    console.log("combining " + opNum);
                     // Replace the last cluster of operations with just one diff-commit pair.
                     const newOps = cloneSimple(diffState(oldDoc, currentDrawing, undefined));
                     if (newOps.length > 0) {
@@ -122,8 +119,8 @@ export async function compressDocumentIfRequired(doc: Document, entirely: boolea
 
         await tx.save(doc);
 
-        const totalMs = new Date().getTime() - start;
-        console.log("Completed in " + (totalMs / 1000).toPrecision(3) + "s. Removed " + removed + ", inserted " + added + ", ignored: " + ignored);
+        const timeTakenSeconds = Math.round((new Date().getTime() - start)/1000);
+        console.log('documentCompress', 'completed', {docId: doc.id, timeTakenSeconds, added, removed, ignored})
     });
 }
 
