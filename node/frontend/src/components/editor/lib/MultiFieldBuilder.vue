@@ -36,14 +36,8 @@ import {
     fillDefaultBigValveFields,
     makeBigValveFields
 } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
-import {
-    fillFixtureFields,
-    makeFixtureFields
-} from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
 import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
 import Pipe from "../../../../src/htmlcanvas/objects/pipe";
-import { makeDirectedValveFields } from "../../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
-import { makeLoadNodesFields } from "../../../../../common/src/api/document/entities/load-node-entity";
 import { getPropertyByString, setPropertyByString } from "../../../lib/utils";
 import {
     fillFlowSourceDefaults,

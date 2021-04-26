@@ -6,7 +6,6 @@ import {assertUnreachable, isGas} from "../../config";
 import {Catalog} from "../../catalog/types";
 import { NodeProps } from "../../../models/CustomEntity";
 import { I18N } from "../../locale/values";
-import { DocumentState } from "../../../../../frontend/src/store/document/types";
 
 export enum NodeType {
     LOAD_NODE,
@@ -61,7 +60,7 @@ export default interface LoadNodeEntity extends DrawableEntity, CenteredEntity {
     name?: string | null;
 }
 
-export function makeLoadNodesFields(doc: DocumentState, value: LoadNodeEntity, catalog: Catalog, systemUid: string | null): PropertyField[] {
+export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity, catalog: Catalog, locale: string, systemUid: string | null): PropertyField[] {
     const fields: PropertyField[] = [
         {
             property: "systemUidOption",
@@ -69,7 +68,7 @@ export function makeLoadNodesFields(doc: DocumentState, value: LoadNodeEntity, c
             hasDefault: false,
             isCalculated: false,
             type: FieldType.FlowSystemChoice,
-            params: { systems: doc.drawing.metadata.flowSystems },
+            params: { systems: drawing.metadata.flowSystems },
             multiFieldId: "systemUid"
         },
 
@@ -84,7 +83,7 @@ export function makeLoadNodesFields(doc: DocumentState, value: LoadNodeEntity, c
         }
     ];
 
-    const system = doc.drawing.metadata.flowSystems.find((f) => f.uid === systemUid);
+    const system = drawing.metadata.flowSystems.find((f) => f.uid === systemUid);
 
     const nodeIsGas = isGas(system ? system.fluid : 'water', catalog);
 
@@ -98,7 +97,7 @@ export function makeLoadNodesFields(doc: DocumentState, value: LoadNodeEntity, c
                         fields.push(
                             {
                                 property: "node.loadingUnits",
-                                title: I18N.loadingUnits[doc.locale],
+                                title: I18N.loadingUnits[locale],
                                 hasDefault: typeof value.customNodeId !== "undefined",
                                 isCalculated: false,
                                 type: FieldType.Number,
@@ -195,7 +194,7 @@ export function makeLoadNodesFields(doc: DocumentState, value: LoadNodeEntity, c
                         fields.push(
                             {
                                 property: "node.loadingUnits",
-                                title: I18N.loadingUnits[doc.locale],
+                                title: I18N.loadingUnits[locale],
                                 hasDefault: typeof value.customNodeId !== "undefined",
                                 isCalculated: false,
                                 type: FieldType.Number,
@@ -273,7 +272,7 @@ export function makeLoadNodesFields(doc: DocumentState, value: LoadNodeEntity, c
                 },
                 {
                     property: "node.loadingUnits",
-                    title: I18N.loadingUnits[doc.locale],
+                    title: I18N.loadingUnits[locale],
                     hasDefault: true,
                     isCalculated: false,
                     type: FieldType.Number,

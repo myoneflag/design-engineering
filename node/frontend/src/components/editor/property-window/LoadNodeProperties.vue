@@ -54,7 +54,7 @@ import {determineConnectableSystemUid} from "../../../store/document/entities/li
 export default class LoadNodeProperties extends Vue {
     get fields() {
         const systemUid = determineConnectableSystemUid(this.$props.selectedObject.globalStore, this.$props.selectedEntity);
-        return makeLoadNodesFields(this.document, this.$props.selectedEntity, this.catalog, systemUid || null);
+        return makeLoadNodesFields(this.document.drawing, this.$props.selectedEntity, this.catalog, this.document.locale, systemUid || null);
     }
 
     get reactiveData(): LoadNodeEntity {
