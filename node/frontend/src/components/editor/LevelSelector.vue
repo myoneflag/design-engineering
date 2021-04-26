@@ -310,7 +310,10 @@ export default class LevelSelector extends Vue {
                     }
                     text +=
                         Number(result[k].units.toFixed(2)) +
-                        getPsdUnitName(this.document.drawing.metadata.calculationParams.psdMethod).abbreviation;
+                        getPsdUnitName(
+                            this.document.drawing.metadata.calculationParams.psdMethod,
+                            this.document.locale
+                        ).abbreviation;
                 }
                 if (result[k].dwellings) {
                     if (text) {

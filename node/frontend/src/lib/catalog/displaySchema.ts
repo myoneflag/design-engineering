@@ -50,13 +50,13 @@ export function getCatalogDisplaySchema(locale: SupportedLocales): CatalogSchema
 
                     loadingUnits: {
                         order: 7,
-                        name: "Loading Units By PSD Method",
+                        name: I18N.loadingUnits[locale] + " By PSD Method",
                         table: {
                             primaryName: "PSD Method",
                             columns: [
-                                ["hot-water", "Hot LUs"],
-                                ["warm-water", "Hot (Warm) LUs"],
-                                ["cold-water", "Cold LUs"]
+                                ["hot-water", "Hot " + I18N.loadingUnitShort[locale] + "s"],
+                                ["warm-water", "Hot (Warm) " + I18N.loadingUnitShort[locale] + "s"],
+                                ["cold-water", "Cold " + I18N.loadingUnitShort[locale] + "s"]
                             ]
                         }
                     },
@@ -110,26 +110,26 @@ export function getCatalogDisplaySchema(locale: SupportedLocales): CatalogSchema
                     },
                     table: {
                         order: 3,
-                        name: "Loading Unit Table",
+                        name: I18N.loadingUnitMedium[locale] + " Table",
                         table: {
-                            primaryName: "Loading Units",
+                            primaryName: I18N.loadingUnitMedium[locale],
                             columns: [[null, "Flow Rate", Units.LitersPerSecond]]
                         }
                     },
                     maxLuTable: {
                         order: 3,
-                        name: "Loading Unit Table by Highest LU",
+                        name: I18N.loadingUnitMedium[locale] + " Table by Highest LU",
                         table: {
-                            primaryName: "Highest LU / Total",
+                            primaryName: "Highest " + I18N.loadingUnitShort[locale] + " / Total",
                             columns: [],
                             twoDimensional: true,
                         }
                     },
                     hotColdTable: {
                         order: 3,
-                        name: "Loading Unit Table",
+                        name: I18N.loadingUnitMedium[locale] + " Table",
                         table: {
-                            primaryName: "Loading Units",
+                            primaryName: I18N.loadingUnitMedium[locale],
                             columns: [
                                 ["cold", "Cold Flow Rate", Units.LitersPerSecond],
                                 ["hot", "Hot Flow Rate", Units.LitersPerSecond]

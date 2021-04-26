@@ -48,7 +48,7 @@ import { Catalog } from "../../../../../common/src/api/catalog/types";
 })
 export default class FixtureProperties extends Vue {
     get fields() {
-        return makeFixtureFields(this.document.drawing, this.$props.selectedEntity);
+        return makeFixtureFields(this.document, this.$props.selectedEntity);
     }
 
     get reactiveData() {

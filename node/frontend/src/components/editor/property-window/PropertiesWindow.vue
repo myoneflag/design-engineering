@@ -228,7 +228,10 @@ export default class PropertiesWindow extends Vue {
 
     systemPsdUnitName(suid: string) {
         const system = this.document.drawing.metadata.flowSystems.find((s) => s.uid === suid)!;
-        return system.name + " " + getPsdUnitName(this.document.drawing.metadata.calculationParams.psdMethod).name;
+        return system.name + " " + getPsdUnitName(
+            this.document.drawing.metadata.calculationParams.psdMethod,
+            this.document.locale
+        ).name;
     }
 
     get psdName() {

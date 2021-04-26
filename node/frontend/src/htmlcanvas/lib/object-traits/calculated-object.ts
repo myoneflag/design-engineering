@@ -21,6 +21,7 @@ import { CalculationConcrete } from "../../../store/document/calculations/calcul
 import { NoFlowAvailableReason } from "../../../store/document/calculations/pipe-calculation";
 import { assertUnreachable } from "../../../../../common/src/api/config";
 import { convertMeasurementSystem } from "../../../../../common/src/lib/measurements";
+import { I18N } from "../../../../../common/src/api/locale/values";
 
 export interface Calculated {
     drawCalculationBox(
@@ -349,7 +350,7 @@ export function CalculatedObject<
                                 ambiguousMessage = "NO ISOLATION VALVES ON MAIN";
                                 break;
                             case NoFlowAvailableReason.LOADING_UNITS_OUT_OF_BOUNDS:
-                                ambiguousMessage = "LOADING UNITS OUT OF BOUNDS";
+                                ambiguousMessage = I18N.loadingUnits[context.doc.locale].toLocaleUpperCase() + " OUT OF BOUNDS";
                                 break;
                             case NoFlowAvailableReason.NO_SUITABLE_PIPE_SIZE:
                                 ambiguousMessage = "NO SUITABLE PIPE SIZE";

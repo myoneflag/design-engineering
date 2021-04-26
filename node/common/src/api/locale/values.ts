@@ -12,4 +12,22 @@ export const I18N = {
         [SupportedLocales.US]: "Balancing Device",
         [SupportedLocales.UK]: "Balancing Valve",
     },
+
+    loadingUnits: {
+        [SupportedLocales.AU]: "Loading Units",
+        [SupportedLocales.UK]: "Loading Units",
+        [SupportedLocales.US]: "Water Supply Fixture Units",
+    },
+
+    loadingUnitMedium: {
+        [SupportedLocales.AU]: "Loading Units",
+        [SupportedLocales.UK]: "Loading Units",
+        [SupportedLocales.US]: "WSFU",
+    },
+
+    loadingUnitShort: {
+        [SupportedLocales.AU]: "LU",
+        [SupportedLocales.UK]: "LU",
+        [SupportedLocales.US]: "WSFU",
+    }
 }
