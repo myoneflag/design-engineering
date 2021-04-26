@@ -38,7 +38,7 @@ This runs NginX that exposes all 3 webservers (configured default for port *80*)
 
 ```
 cd docker
-export EnvName=stage
+export env=stage
 ```
 
 Login into ECR - uses the configured AWS Profile to obtain *docker login* credentials.
@@ -63,7 +63,7 @@ Also, is updates an existing environment with new Docker images that have been p
 
 ```
 cd cloudformation
-export EnvName=stage
+export env=stage
 npm run update
 ```
 
@@ -75,7 +75,7 @@ npm run update
 
 # Deployment scripts
 ```
-export EnvName=stage
+export env=stage
 pushd docker && npm run build && npm run publish && popd
 pushd cloudformation && npm run update && popd
 ```
