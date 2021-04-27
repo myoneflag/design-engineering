@@ -6,22 +6,47 @@
     "Parameters": {
       "EnvName": {
         "Description": "Enviroment name, used in DNS, database names, etc.",
-        "Type": "String",
-        "Default": "test"
+        "Type": "String"
       },
       "Ec2InstanceKeyname": {
         "Description": "Keypair name for SSH access on instances - keypair must be created prior to Stack creation",
         "Type": "AWS::EC2::KeyPair::KeyName"
       },
-      "WebInstanceType": {
-        "Description": "Web server instance type",
-        "Type": "String",
-        "Default": "t2.medium"
+      "WebInstanceSize": {
+        "Description": "Web server instance size",
+        "Type": "String"
       },
-      "WorkerInstanceType": {
-        "Description": "Worker instance type",
-        "Type": "String",
-        "Default": "t2.large"
+      "WorkerInstanceSize": {
+        "Description": "Worker instance size",
+        "Type": "String"
+      },
+      "DbInstanceSize": {
+        "Description": "DB instance size",
+        "Type": "String"
+      },
+      "WebInstanceMin": {
+        "Description": "Web group min instance count",
+        "Type": "Number"
+      },
+      "WebInstanceMax": {
+        "Description": "Web group max instance count",
+        "Type": "Number"
+      },
+      "WebInstanceIncrement": {
+        "Description": "Web group instance increase on trigger",
+        "Type": "Number"
+      },
+      "WorkerInstanceMin": {
+        "Description": "Worker group min instance count",
+        "Type": "Number"
+      },
+      "WorkerInstanceMax": {
+        "Description": "Web group max instance count",
+        "Type": "Number"
+      },
+      "WorkerInstanceIncrement": {
+        "Description": "Web group instance increase on trigger",
+        "Type": "Number"
       },
       "DnsZoneId": {
         "Description": "HostedZoneID of the DNS zone to create the main records pointing to the web loadbalancer",
@@ -86,12 +111,11 @@
       "DbVersion": {
         "Description": "Extra name tag for major upgrades to RDS DB",
         "Type": "String",
-        "Default": "-restore-3"
+        "Default": ""
       }, 
       "NotificationsEmail": {
         "Description": "Notifications email to send Beanstalk deployment notifications to",
-        "Type": "String",
-        "Default": "b7g9b9g2a7k2z2x7@h2xengineering.slack.com"
+        "Type": "String"
       }
       
     },
@@ -225,7 +249,7 @@
               {
                 "Namespace": "aws:ec2:instances",
                 "OptionName": "InstanceTypes",
-                "Value": { "Ref": "WebInstanceType" }
+                "Value": { "Ref": "WebInstanceSize" }
               },
               {
                 "Namespace": "aws:autoscaling:launchconfiguration",
@@ -255,12 +279,22 @@
               {
                 "Namespace": "aws:autoscaling:asg",
                 "OptionName": "MinSize",
-                "Value": "1"
+                "Value": { "Ref": "WebInstanceMin"}
               },
               {
                 "Namespace": "aws:autoscaling:asg",
                 "OptionName": "MaxSize",
-                "Value": "10"
+                "Value": { "Ref": "WebInstanceMax"}
+              },
+              {
+                "Namespace": "aws:autoscaling:trigger",
+                "OptionName": "UpperBreachScaleIncrement",
+                "Value": { "Ref": "WebInstanceIncrement" }
+              },
+              {
+                "Namespace": "aws:autoscaling:trigger",
+                "OptionName": "LowerBreachScaleIncrement",
+                "Value": { "Fn::Sub": "-${WebInstanceIncrement}" }
               },
               {
                 "Namespace": "aws:elbv2:listener:443",
@@ -328,7 +362,7 @@
                 "Value": "info@h2xengineering.com"
               },
 
-              // email smtp host sending params              
+              // email smtp host sending params
               {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "EMAIL_HOST",
@@ -413,7 +447,7 @@
               {
                 "Namespace": "aws:ec2:instances",
                 "OptionName": "InstanceTypes",
-                "Value": { "Ref": "WorkerInstanceType" }
+                "Value": { "Ref": "WorkerInstanceSize" }
               },
               {
                 "Namespace": "aws:autoscaling:launchconfiguration",
@@ -433,22 +467,22 @@
               {
                 "Namespace": "aws:autoscaling:asg",
                 "OptionName": "MinSize",
-                "Value": "1"
+                "Value": { "Ref": "WorkerInstanceMin" }
               },
               {
                 "Namespace": "aws:autoscaling:asg",
                 "OptionName": "MaxSize",
-                "Value": "16"
+                "Value": { "Ref": "WorkerInstanceMax" }
               },
               {
                 "Namespace": "aws:autoscaling:trigger",
                 "OptionName": "UpperBreachScaleIncrement",
-                "Value": "5"
+                "Value": { "Ref": "WorkerInstanceIncrement" }
               },
               {
                 "Namespace": "aws:autoscaling:trigger",
                 "OptionName": "LowerBreachScaleIncrement",
-                "Value": "-5"
+                "Value": { "Fn::Sub": "-${WorkerInstanceIncrement}" }
               },
               {
                 "Namespace": "aws:elasticbeanstalk:sqsd",
@@ -533,7 +567,7 @@
             "AllocatedStorage": "100",
             "AllowMajorVersionUpgrade": false,
             "DBInstanceIdentifier": { "Fn::Sub": "h2x-db-${EnvName}${DbVersion}" },
-            "DBInstanceClass": "db.t2.medium",
+            "DBInstanceClass": { "Ref": "DbInstanceSize" },
             "DBSecurityGroups": [ {"Ref": "DBSecurityGroup"} ],
             "DeleteAutomatedBackups": false,
             "Engine": "postgres",
