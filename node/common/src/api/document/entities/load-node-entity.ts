@@ -6,6 +6,7 @@ import {assertUnreachable, isGas} from "../../config";
 import {Catalog} from "../../catalog/types";
 import { NodeProps } from "../../../models/CustomEntity";
 import { I18N } from "../../locale/values";
+import { SupportedLocales } from "../../locale";
 
 export enum NodeType {
     LOAD_NODE,
@@ -60,7 +61,7 @@ export default interface LoadNodeEntity extends DrawableEntity, CenteredEntity {
     name?: string | null;
 }
 
-export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity, catalog: Catalog, locale: string, systemUid: string | null): PropertyField[] {
+export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity, catalog: Catalog, locale: SupportedLocales, systemUid: string | null): PropertyField[] {
     const fields: PropertyField[] = [
         {
             property: "systemUidOption",

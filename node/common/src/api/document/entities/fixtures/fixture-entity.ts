@@ -6,6 +6,8 @@ import { COLORS, Coord, DrawableEntity, DrawingState } from "../../drawing";
 import { cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../../lib/utils";
 import { Units } from "../../../../lib/measurements";
 import { I18N } from "../../../locale/values";
+import { SupportedLocales } from "../../../locale";
+
 
 export interface RoughInRecord {
     uid: string;
@@ -41,7 +43,7 @@ export default interface FixtureEntity extends DrawableEntity {
     probabilityOfUsagePCT: number | null;
 }
 
-export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity, locale: string): PropertyField[] {
+export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity, locale: SupportedLocales): PropertyField[] {
     const res: PropertyField[] = [
         {
             property: "rotation",
