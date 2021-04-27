@@ -8,7 +8,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "up": "docker-compose --profile dev up -d",
+    "dev": "docker-compose --profile dev up -d",
     "logs": "docker-compose logs --follow --tail=100 $npm_config_service",
     "down": "docker-compose --profile dev down",
     "build:all": "docker-compose --profile $npm_config_target build",
