@@ -22,7 +22,7 @@ Also, is updates an existing environment with new Docker images that have been p
 * `catalog` folder - obsolete
 * `backup` folder - redundant
 
-### Local development
+## Local development
 
 ```
 cd docker
@@ -44,8 +44,17 @@ This also runs in the `backend` folder `npm run dev-worker` - dev server with ho
 * start a NGinx container `nginx`  
 This runs NginX that exposes all 3 webservers (configured default for port *80*) to serve over 8011,8012,8013 to avoid port 80 conflicts
 
-### AWS Development
+## AWS Development
 
+Issue AK, SK for your IAM user. Create local AWS profile using:
+```
+aws configure --profile awsprofile
+```
+
+Main files: `template.json` and `parameters.json` in `cloudformation` folder.
+Envvironment specific configs for deployment - `config` folder.
+
+Validate changes:
 ```
 cd cloudformation
 export env=test
@@ -59,8 +68,13 @@ This is a breakdown of the process. For a single line deployment, see below unde
 
 Set environment
 ```
-cd docker
 export env=stage
+export profile=awsprofile
+```
+
+Prep and build docker
+```
+cd docker
 ```
 
 Login into ECR - uses the configured AWS Profile to obtain *docker login* credentials.
@@ -80,6 +94,8 @@ This will:
 * creates descriptor files for the Cloudformation ElasticBeanstalk update.
 
 # Deployment scripts
+Executing a full docker build, and aws update with that build:
+
 ```
 export env=test
 export profile=awsprofile
