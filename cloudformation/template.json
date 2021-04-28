@@ -116,8 +116,15 @@
       "NotificationsEmail": {
         "Description": "Notifications email to send Beanstalk deployment notifications to",
         "Type": "String"
+      },
+      "SesEmailRegion": {
+        "Description": "SES Region to send emails from",
+        "Type": "String"
+      },
+      "H2XEmailAddress": {
+        "Description": "Email Address to send emails from",
+        "Type": "String"
       }
-      
     },
     "Conditions" : {
       "UseRDSSnapshot": { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "DBSnapshotARNRestore" }, "" ]}] }
@@ -351,46 +358,18 @@
                 "OptionName": "PDF_RENDERS_BUCKET",
                 "Value": { "Ref": "PdfRendersBucket" }
               },
-              {
-                "Namespace": "aws:elasticbeanstalk:application:environment",
-                "OptionName": "EMAIL_ADDRESS",
-                "Value": "info@h2xengineering.com"
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:application:environment",
-                "OptionName": "EMAIL_ADDRESS_H2X",
-                "Value": "info@h2xengineering.com"
-              },
-
-              // email smtp host sending params
-              {
-                "Namespace": "aws:elasticbeanstalk:application:environment",
-                "OptionName": "EMAIL_HOST",
-                "Value": "email-smtp.ap-southeast-2.amazonaws.com"
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:application:environment",
-                "OptionName": "EMAIL_PORT",
-                "Value": "587"
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:application:environment",
-                "OptionName": "EMAIL_PASS",
-                "Value": ""
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:application:environment",
-                "OptionName": "EMAIL_USER",
-                "Value": ""
-              },
 
               // email SES sending params
               {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "SES_EMAIL_REGION",
-                "Value": "ap-southeast-2"
+                "Value": { "Ref": "SesEmailRegion" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "EMAIL_ADDRESS",
+                "Value": { "Ref": "H2XEmailAddress" }
               }
-
             ],
             "SolutionStackName": "64bit Amazon Linux 2 v3.2.6 running Docker"
           } 

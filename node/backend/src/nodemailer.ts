@@ -1,12 +1,15 @@
 "use strict";
 const nodemailer = require("nodemailer");
+const aws = require("aws-sdk")
+
+let sesClient;
+const sesRegion = process.env.SES_EMAIL_REGION
+if (sesRegion) {
+  sesClient = new aws.SES( {region: sesRegion} )
+} else {
+  sesClient = new aws.SES()
+}
 
 export const NodeMailerTransporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
-    secure: false, // true for 465, false for other ports
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
+  SES: sesClient
 });

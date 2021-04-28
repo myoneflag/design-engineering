@@ -102,5 +102,13 @@
     {
         "ParameterKey":"NotificationsEmail",
         "ParameterValue":"${NotificationsEmail}"
+    }, 
+    {
+        "ParameterKey": "SesEmailRegion",
+        "ParameterValue":"${SesEmailRegion}"
+    }, 
+    {
+        "ParameterKey": "H2XEmailAddress",
+        "ParameterValue":"${H2XEmailAddress}"
     }
 ]

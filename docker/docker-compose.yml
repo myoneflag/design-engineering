@@ -71,7 +71,6 @@ services:
             - AWS_PROFILE=${AWS_PROFILE}
             - SES_EMAIL_REGION=us-west-1
             - EMAIL_ADDRESS=test@h2xtesting.com
-            - EMAIL_ADDRESS_H2X=test@h2xtesting.com
         volumes:
             # anonymous volumes to prevent container folders being overwritten by host folders
             - /usr/src/app/node_modules
