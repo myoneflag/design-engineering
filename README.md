@@ -12,6 +12,16 @@
 ### `docker`
 * `docker-compose` is used to bring up local development containers, and to build production containers
 
+### `cloudformation`
+This contains the `template.json` AWS Cloudformation template, that creates all resources for deploying a new environment.  
+Also, is updates an existing environment with new Docker images that have been pushed after a production build.
+
+### Others
+
+* `java` folder - obsolete
+* `catalog` folder - obsolete
+* `backup` folder - redundant
+
 ### Local development
 
 ```
@@ -34,8 +44,20 @@ This also runs in the `backend` folder `npm run dev-worker` - dev server with ho
 * start a NGinx container `nginx`  
 This runs NginX that exposes all 3 webservers (configured default for port *80*) to serve over 8011,8012,8013 to avoid port 80 conflicts
 
+### AWS Development
+
+```
+cd cloudformation
+export env=test
+export profile=awsprofile
+npm run validate
+```
+
 ### Production build
 
+This is a breakdown of the process. For a single line deployment, see below under `Deploy`.
+
+Set environment
 ```
 cd docker
 export env=stage
@@ -57,25 +79,9 @@ This will:
 * pushes them to ECR
 * creates descriptor files for the Cloudformation ElasticBeanstalk update.
 
-### `cloudformation`
-This contains the `template.json` AWS Cloudformation template, that creates all resources for deployign a new environment.  
-Also, is updates an existing environment with new Docker images that have been pushed after a production build.
-
-```
-cd cloudformation
-export env=stage
-npm run update
-```
-
-### Others
-
-* `java` folder - obsolete
-* `catalog` folder - obsolete
-* `backup` folder - redundant
-
 # Deployment scripts
 ```
-export env=stage
-pushd docker && npm run build && npm run publish && popd
-pushd cloudformation && npm run update && popd
+export env=test
+export profile=awsprofile
+./deploy.sh
 ```
