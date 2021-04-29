@@ -1,0 +1,47 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "H2X AWS Resources for local development",
+    "Parameters": {
+      "EnvName": {
+        "Description": "Enviroment name, used in DNS, database names, etc.",
+        "Type": "String",
+        "Default": "local"
+      }
+    },
+    "Resources": {        
+        "PdfBucket": {
+          "Type": "AWS::S3::Bucket",
+          "Properties": {
+            "AccessControl": "Private",
+            "BucketName": { "Fn::Sub": "h2x-s3-pdf-${EnvName}" }
+          }
+        },
+        "PdfRendersBucket": {
+          "Type": "AWS::S3::Bucket",
+          "Properties": {
+            "AccessControl": "Private",
+            "BucketName": { "Fn::Sub": "h2x-s3-pdfrenders-${EnvName}" },
+            "CorsConfiguration": {
+              "CorsRules": [
+                  {
+                      "AllowedHeaders": [
+                          "*"
+                      ],
+                      "AllowedMethods": [
+                          "GET",
+                          "POST",
+                          "HEAD"
+                      ],
+                      "AllowedOrigins": [
+                          "*"
+                      ],
+                      "ExposedHeaders": []
+                  }
+                ]
+              }            
+          }
+        }
+    },
+   "Outputs": {
+    }
+}

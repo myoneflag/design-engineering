@@ -2,29 +2,20 @@ import {AuthRequired} from "../helpers/withAuth";
 import {NextFunction, Request, Response, Router} from "express";
 import {ApiHandleError} from "../helpers/apiWrapper";
 import {allContactMessageColumns, ContactMessage} from "../../../common/src/models/ContactMessage";
-import * as NodeMailer from 'nodemailer';
+import { NodeMailerTransporter } from '../nodemailer';
 import {AccessLevel, User} from "../../../common/src/models/User";
 import {Session} from "../../../common/src/models/Session";
 import {getConnection, LessThanOrEqual} from "typeorm";
 
 async function sendToSubscribers(contact: ContactMessage) {
 
-    const transporter = NodeMailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: 'h2xnoreply@gmail.com',
-            pass: 'thisistemporaryomg',
-        }
-    });
-
     const subscribers = await User.find({where: {subscribed: true, accessLevel: LessThanOrEqual(AccessLevel.ADMIN)}});
-
 
     return await Promise.all(subscribers.map((s) => {
         if (s.email) {
 
             const mailOptions = {
-                from: 'h2xnoreply@gmail.com',
+                from: process.env.EMAIL_ADDRESS,
                 to: s.email,
                 subject: 'New H2X Contact Submission',
                 html: "<p>Hi " + s.name + ", here's a new contact message from the page at h2x.maxwu.cloud/contact</p>" +
@@ -37,7 +28,7 @@ async function sendToSubscribers(contact: ContactMessage) {
 
             console.log("Sending to " + s.email);
 
-            return transporter.sendMail(mailOptions);
+            return NodeMailerTransporter.sendMail(mailOptions);
         } else {
             console.log("Want to send to user " + s.username + " but they have no email");
         }

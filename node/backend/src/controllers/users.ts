@@ -144,7 +144,7 @@ export class UserController {
             lastname: user.lastname,
             username: user.username,
             email: user.email,
-        }));
+        }));    
         
         return res.status(200).send({
             success: true,

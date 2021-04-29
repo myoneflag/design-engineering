@@ -4,27 +4,19 @@ import {ApiHandleError} from "../helpers/apiWrapper";
 import {FeedbackMessage} from "../../../common/src/models/FeedbackMessage";
 import {Session} from "../../../common/src/models/Session";
 import { AccessLevel, User } from "../../../common/src/models/User";
-import {LessThanOrEqual} from "typeorm";
-import * as NodeMailer from 'nodemailer';
+import { LessThanOrEqual } from "typeorm";
+import { NodeMailerTransporter } from '../nodemailer';
+
 
 async function sendToSubscribers(feedback: FeedbackMessage) {
 
-    const transporter = NodeMailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: 'h2xnoreply@gmail.com',
-            pass: 'thisistemporaryomg',
-        }
-    });
-
     const subscribers = await User.find({where: {subscribed: true, accessLevel: LessThanOrEqual(AccessLevel.ADMIN)}});
-
 
     return await Promise.all(subscribers.map((s) => {
         if (s.email) {
 
             const mailOptions = {
-                from: 'h2xnoreply@gmail.com',
+                from: process.env.EMAIL_ADDRESS,
                 to: s.email,
                 subject: 'New H2X Feedback Submission',
                 html: "<p>Hi " + s.name + ", here's a new feedback message,</p>" +
@@ -37,7 +29,7 @@ async function sendToSubscribers(feedback: FeedbackMessage) {
 
             console.log("Sending to " + s.email);
 
-            return transporter.sendMail(mailOptions);
+            return NodeMailerTransporter.sendMail(mailOptions);
         } else {
             console.log("Want to send to user " + s.username + " but they have no email");
         }

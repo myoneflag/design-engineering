@@ -17,5 +17,5 @@ export default {
   MQ_USERNAME: process.env.MQ_USERNAME || 'admin',
   MQ_PASSWORD: process.env.MQ_PASSWORD || 'admin',
 
-  INIT_SUPERUSER_EMAIL: process.env.INIT_SUPERUSER_EMAIL || 'info@h2xengineering.com',
+  INIT_SUPERUSER_EMAIL: process.env.INIT_SUPERUSER_EMAIL || 'test@h2xtesting.com'
 };
