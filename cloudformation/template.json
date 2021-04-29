@@ -193,7 +193,13 @@
                     "Action": "rds-db:connect",
                     "Effect": "Allow",
                     "Resource": { "Fn::Sub": "arn:aws:rds-db:${AWS::Region}:${AWS::AccountId}:dbuser:${DBInstance}/${DBMasterUserName}" }
-                  }                  
+                  }, 
+                  {
+                    "Sid": "SendSesEmail",
+                    "Effect": "Allow",
+                    "Action": "ses:SendRawEmail",
+                    "Resource": "*"
+                  }
                 ]
              },
              "Roles": [ {
