@@ -2,6 +2,7 @@ import { EntityManager, getManager } from "typeorm";
 import retry from "retry";
 
 export function withSerializableTransaction<T>(retryable: (tx: EntityManager) => Promise<T>) {
+    /*
     return new Promise<any>((res, rej) => {
         // randomize so that conflicting transactions don't just cancel each other over and over.
         const operation = retry.operation({randomize: true, minTimeout: 200, forever: true});
@@ -22,5 +23,18 @@ export function withSerializableTransaction<T>(retryable: (tx: EntityManager) =>
                 }
             }
         });
+    });
+    */
+
+    return new Promise<any>( async (res, rej) => {
+        try {
+            await getManager().transaction('SERIALIZABLE', async (tx) => {
+                const result = await retryable(tx)
+                res(result);
+            });
+        } catch (e) {
+            console.error(e)
+            rej(e);
+        }
     });
 }
