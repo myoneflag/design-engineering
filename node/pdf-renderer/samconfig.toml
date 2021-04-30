@@ -42,3 +42,14 @@ region = "us-west-1"
 profile = "calin-h2x-testing"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
+
+[prod]
+[prod.deploy]
+[prod.deploy.parameters]
+stack_name = "pdf-renderer-prod"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-420lvuja3pgj"
+s3_prefix = "pdf-renderer-prod"
+region = "us-west-1"
+profile = "calin-h2x-production"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
