@@ -331,7 +331,7 @@ export default class CalculationsSidebar extends Vue {
                                         pipeSystem: system!.name,
                                         pipeMaterial: filled.material,
                                         pipeSizeMM: calc.realNominalPipeDiameterMM,
-                                        pipeStart:  pipeStartPoint.entity.center,
+                                        pipeStart:  pipeStartPoint,
                                         pipeEnd: pipeEndPoint,
                                         z: lprops.floorHeightM + filled.heightAboveFloorM,
                                         // valveType: null,
