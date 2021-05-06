@@ -18,16 +18,15 @@
                             PDF
                         </b-dropdown-item>
                         <b-dropdown-item @click="budgetReport" variant="outline-dark" size="sm"> 
-                            Bill of Materials (.xlsx) <b-badge>New</b-badge> 
+                            Bill of Materials (.xlsx)
                         </b-dropdown-item>
-                        <b-dropdown-item variant="outline-dark" size="sm" :disabled="true"
-                            >DWG (Coming soon)
+                        <b-dropdown-item variant="outline-dark" size="sm" :disabled="true">
+                            AutoCAD (.dwg) (Coming soon)
                         </b-dropdown-item>
-                        <b-dropdown-item @click="jsonExport" variant="outline-dark" size="sm"
-                            >JSON (Revit Plugin)
+                        <b-dropdown-item @click="jsonExport" variant="outline-dark" size="sm">
+                            Revit Plugin (.json) <b-badge>BETA</b-badge> &nbsp; <b-link v-on:click.stop href="https://h2xengineering.com" target="_blank"><b-icon icon="info-square" variant="dark"></b-icon></b-link>
                         </b-dropdown-item>
                     </b-dropdown>
-
                     <b-button
                         v-if="profile"
                         variant="outline-dark"
