@@ -627,7 +627,7 @@ export default class CalculationsSidebar extends Vue {
 
         // console.log(result);
 
-        const data = JSON.stringify(result);
+        const data = JSON.stringify(result, null, 4);
         const blob = new Blob([data], { type: "text/plain" });
         const e = document.createEvent("MouseEvents"),
             a = document.createElement("a");
