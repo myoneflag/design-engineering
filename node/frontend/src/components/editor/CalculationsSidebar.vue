@@ -295,6 +295,13 @@ export default class CalculationsSidebar extends Vue {
                     
                     const pipeStartPoint = pipeStart.toWorldCoord({ x: 0, y: 0 });
                     const pipeEndPoint = pipeEnd.toWorldCoord({ x: 0, y: 0 });
+
+                    // skip pipes of 0 length
+                    if (pipeStartPoint.x === pipeEndPoint.x && pipeStartPoint.y === pipeEndPoint.y) {
+                        console.log("skip 0 length pipes")
+                        return;                        
+                    }
+                        
     
                     let data: Array<any> = [];
                     if (
