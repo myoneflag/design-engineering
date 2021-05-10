@@ -1,30 +1,24 @@
 import { EntityManager, getManager } from "typeorm";
-import { Document } from "../../../common/src/models/Document";
 import retry from "retry";
-import {IsolationLevel} from "typeorm/driver/types/IsolationLevel";
 
 export function withSerializableTransaction<T>(retryable: (tx: EntityManager) => Promise<T>) {
-    return withTransaction('SERIALIZABLE', retryable);
-}
-
-export function withTransaction<T>(isolationLevel: IsolationLevel, retryable: (tx: EntityManager) => Promise<T>) {
     return new Promise<any>((res, rej) => {
         // randomize so that conflicting transactions don't just cancel each other over and over.
-        const operation = retry.operation({randomize: true, minTimeout: 200, forever: true});
+        const operation = retry.operation({randomize: true, minTimeout: 200, maxTimeout: 1000, retries: 10});
 
         operation.attempt(async () => {
             try {
-                await getManager().transaction(isolationLevel, async (tx) => {
+                await getManager().transaction('SERIALIZABLE', async (tx) => {
+                    console.debug('attemptTransaction', tx)                    
                     res(await retryable(tx));
                 });
             } catch (e) {
+                console.warn('tentativeTransactionFail', e)
                 if (operation.retry(e)) {
-                    console.log(e);
-                    console.warn('retrying transaction');
-                    console.trace();
+                    console.warn('retryTransaction', e);
                     return;
                 } else {
-                    console.warn('cannot retry transaction: failed completely and gave up');
+                    console.error('transactionFinalError', e)
                     rej(e);
                 }
             }

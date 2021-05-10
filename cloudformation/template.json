@@ -694,11 +694,11 @@
         "SSLCertificate":{
           "Type":"AWS::CertificateManager::Certificate",
           "Properties":{
-            "DomainName": { "Fn::Sub": "app-${EnvName}.${DnsZoneName}" },
+            "DomainName": { "Fn::Sub": "*.${DnsZoneName}" },
             "ValidationMethod": "DNS",
             "DomainValidationOptions" : [
                 {
-                  "DomainName" : { "Fn::Sub": "app-${EnvName}.${DnsZoneName}" },
+                  "DomainName" : { "Fn::Sub": "*.${DnsZoneName}" },
                   "HostedZoneId": { "Ref": "DnsZoneId" }
                 }
               ]

@@ -6,14 +6,17 @@
                         style="margin-left: -380px"
                 >
 
-                    <b-dropdown variant="outline-dark" size="sm" class="calculationBtn" text="Export (*)">
-                        <b-dropdown-item @click="pdfSnapshot" variant="outline-dark" size="sm"> PDF</b-dropdown-item>
-                        <b-dropdown-item @click="budgetReport" variant="outline-dark" size="sm"> Bill of Materials (.xlsx) <b-badge>New</b-badge> </b-dropdown-item>
-                        <b-dropdown-item variant="outline-dark" size="sm" :disabled="true"
-                            >DWG (Coming soon)
+                    <b-dropdown variant="outline-dark" size="sm" class="calculationBtn" text="Export (*)" >
+                        <b-dropdown-item @click="pdfSnapshot" variant="outline-dark" size="sm"> 
+                            PDF
+                        </b-dropdown-item>
+                        <b-dropdown-item @click="budgetReport" variant="outline-dark" size="sm"> 
+                            Bill of Materials (.xlsx)
+                        </b-dropdown-item>
+                        <b-dropdown-item @click="jsonExport" variant="outline-dark" size="sm">
+                            Revit Plugin (.json) <b-badge>BETA</b-badge> &nbsp; <b-link v-on:click.stop href="https://drive.google.com/file/d/1paqZlZ45_fYAjswlKSisy42Q_I7633Yp/view?usp=sharing" target="_blank"><b-icon icon="info-square" variant="dark"></b-icon></b-link>
                         </b-dropdown-item>
                     </b-dropdown>
-
                     <b-button
                         v-if="profile"
                         variant="outline-dark"
@@ -65,14 +68,19 @@
             </template>
             <div class="d-flex" v-if="document.shareToken">
                 <div class="flex-fill">
-                    <b-form-input ref="shareLinkInput" onClick="this.setSelectionRange(0, this.value.length)" :value="shareLink + document.shareToken" readonly></b-form-input>
+                    <b-form-input
+                        ref="shareLinkInput"
+                        onClick="this.setSelectionRange(0, this.value.length)"
+                        :value="shareLink + document.shareToken"
+                        readonly
+                    ></b-form-input>
                 </div>
                 <b-button @click="handleCopyLink" id="copyLink" class="ml-2" variant="light">Copy link</b-button>
             </div>
             <div v-else>
                 <b-button @click="handleGenerateShareLink" variant="success" block>
-                    Generate shareable link 
-                    <b-spinner v-if="generate.isLoading" style="width: 1.0rem; height: 1.0rem;"></b-spinner>    
+                    Generate shareable link
+                    <b-spinner v-if="generate.isLoading" style="width: 1.0rem; height: 1.0rem;"></b-spinner>
                 </b-button>
             </div>
         </b-modal>
@@ -82,40 +90,61 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { getEntityName } from "../../../../common/src/api/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { generateShareLink } from "../../api/share-document";
-import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
-import { getFields } from "../../../src/calculations/utils";
+import PdfSnapshotTool from "../../htmlcanvas/tools/pdf-snapshot-tool";
+import { GlobalStore } from "../../htmlcanvas/lib/global-store";
+import { exportBudgetReport } from "../../htmlcanvas/lib/budget-report/budget-report";
+import { globalStore } from "../../store/document/mutations";
 import { CalculationFilters, DocumentState } from "../../store/document/types";
 import { MainEventBus } from "../../store/main-event-bus";
-import PdfSnapshotTool from "../../htmlcanvas/tools/pdf-snapshot-tool";
 import { getEffectiveFilter } from "../../lib/utils";
 import { User } from "../../../../common/src/models/User";
-import {exportBudgetReport} from "../../htmlcanvas/lib/budget-report/budget-report";
-import {Catalog} from "../../../../common/src/api/catalog/types";
+import { Catalog } from "../../../../common/src/api/catalog/types";
+import { Coord } from "../../../../common/src/api/document/drawing";
+import { fillPipeDefaultFields } from "../../../../common/src/api/document/entities/pipe-entity";
+import Pipe from "../../htmlcanvas/objects/pipe";
+import { fillDirectedValveFields } from "../../store/document/entities/fillDirectedValveFields";
+import { ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
+import Fitting from "../../htmlcanvas/objects/fitting";
+import Riser from "../../htmlcanvas/objects/riser";
+import { BaseBackedConnectable } from "../../htmlcanvas/lib/BackedConnectable";
+import RiserEntity, { fillRiserDefaults } from "../../../../common/src/api/document/entities/riser-entity";
 
 @Component({
     components: {},
     props: {
         objects: Array,
         onChange: Function,
-        canvasContext: Object,
+        canvasContext: Object
     }
 })
 export default class CalculationsSidebar extends Vue {
     filterShown = true;
     shareLink: string = window.location.origin + "/";
-    generate: {isLoading: boolean} = {
-        isLoading: false,
+    generate: { isLoading: boolean } = {
+        isLoading: false
     };
+  $bvToast: any;
+  $bvModal: any;
+  entity: any;
 
     mounted() {
         this.stageNewFilters();
     }
 
+    get globalStore(): GlobalStore {
+        return globalStore;
+    }
+
     get filters(): CalculationFilters {
-        return getEffectiveFilter(this.$props.objects, this.document.uiState.calculationFilters, this.document, this.catalog);
+        return getEffectiveFilter(
+            this.$props.objects,
+            this.document.uiState.calculationFilters,
+            this.document,
+            this.catalog
+        );
     }
 
     get catalog(): Catalog {
@@ -194,7 +223,7 @@ export default class CalculationsSidebar extends Vue {
     }
 
     handleShareClick() {
-        this.$bvModal.show('bv-modal-example');
+        this.$bvModal.show("bv-modal-example");
     }
 
     handleCopyLink() {
@@ -202,30 +231,419 @@ export default class CalculationsSidebar extends Vue {
 
         shareLinkText.select();
         shareLinkText.setSelectionRange(0, 99999);
-        
+
         document.execCommand("copy");
 
-        this.$bvToast.toast('Link copied', {
+        this.$bvToast.toast("Link copied", {
             variant: "primary",
-            headerClass: 'd-none'
+            headerClass: "d-none"
         });
     }
 
     handleGenerateShareLink() {
         this.generate.isLoading = true;
-        
-        generateShareLink(this.document.documentId).then(res => {
+
+        generateShareLink(this.document.documentId).then((res) => {
             if (res.success) {
                 this.$store.dispatch("document/setShareToken", res.data);
             } else {
-                this.$bvToast.toast('Generate shareable link failed! Please try again.', {
+                this.$bvToast.toast("Generate shareable link failed! Please try again.", {
                     variant: "danger",
-                    title: 'Error!'
+                    title: "Error!"
                 });
             }
-           
+
             this.generate.isLoading = false;
         });
+    }
+
+    jsonExport() {
+        const result: {
+            [key: string]: {
+                [key: string]: {
+                    [key: string]: {
+                        [key: string]: Array<{
+                            networkType: string | null;
+                            fittingName: string | null;
+                            pipeSystem: string | null;
+                            pipeMaterial: string | null;
+                            pipeSizeMM: number | null;
+                            pipeStart: null | Coord;
+                            pipeEnd: null | Coord;
+                            z: null | number;
+                            valveType: string | null;
+                            valveSystem: string[] | null;
+                            valveSizeMM: number | null;
+                            center: Coord | null;
+                            bottomHeightM: number | null;
+                            topHeightM: number | null;
+                        }>;
+                    };
+                };
+            };
+        } = {};
+
+        for (const [luid, lprops] of Object.entries(this.document.drawing.levels)) {
+            const entities = Array.from(this.globalStore.entitiesInLevel.get(luid) || new Set<string>()).map(
+                (uid) => this.globalStore.get(uid)!.entity
+            );
+
+            entities.forEach((entity) => {
+                if (entity.type === EntityType.PIPE) {
+                    const o = this.globalStore.get(entity.uid) as Pipe;
+                    const filled = fillPipeDefaultFields(this.document.drawing, o.computedLengthM, o.entity);
+                    const system = this.document.drawing.metadata.flowSystems.find((s) => s.uid === filled.systemUid);
+                    const calc = this.globalStore.getOrCreateCalculation(o.entity);
+
+                    const pipeStart= this.globalStore.get(filled.endpointUid[0]) as BaseBackedConnectable;
+                    const pipeEnd = this.globalStore.get(filled.endpointUid[1]) as BaseBackedConnectable;
+                    
+                    const pipeStartPoint = pipeStart.toWorldCoord({ x: 0, y: 0 });
+                    const pipeEndPoint = pipeEnd.toWorldCoord({ x: 0, y: 0 });
+
+                    // skip pipes of 0 length
+                    if (pipeStartPoint.x === pipeEndPoint.x && pipeStartPoint.y === pipeEndPoint.y) {
+                        console.log("skip 0 length pipes")
+                        return;                        
+                    }
+                        
+    
+                    let data: Array<any> = [];
+                    if (
+                        typeof result[lprops.abbreviation] !== "undefined" &&
+                        typeof result[lprops.abbreviation][filled!.network] !== "undefined" &&
+                        typeof result[lprops.abbreviation][filled!.network][system!.name] !== "undefined" &&
+                        typeof result[lprops.abbreviation][filled!.network][system!.name]["pipes"] !== "undefined"
+                    ) 
+                    {
+                        data = result[lprops.abbreviation][filled!.network][system!.name]["pipes"];
+                    }
+
+                    result[lprops.abbreviation] = {
+                        ...result[lprops.abbreviation],
+                            [filled!.network]: 
+                        {
+                            ...(result[lprops.abbreviation] && 
+                                result[lprops.abbreviation][filled!.network]),
+                                [system!.name]: 
+                            {
+                                ...(result[lprops.abbreviation] && 
+                                    result[lprops.abbreviation][filled!.network] && 
+                                    result[lprops.abbreviation][filled!.network][system!.name]),
+                                    pipes: 
+                                [
+                                    ...data,
+                                    {
+                                        // fittingName: null,
+                                        networkType: filled!.network,
+                                        pipeSystem: system!.name,
+                                        pipeMaterial: filled.material,
+                                        pipeSizeMM: calc.realNominalPipeDiameterMM,
+                                        pipeStart:  pipeStartPoint,
+                                        pipeEnd: pipeEndPoint,
+                                        z: lprops.floorHeightM + filled.heightAboveFloorM,
+                                        // valveType: null,
+                                        // valveSystem: null,
+                                        // valveSizeMM: null,
+                                        // center: null
+                                    }
+                                ]
+                            }
+                        }
+                    };
+                } else if (entity.type === EntityType.FITTING) {
+                    const o = this.globalStore.get(entity.uid) as Fitting;
+                    const connections = this.globalStore.getConnections(entity.uid);
+                    const zArray: Array<number> = [];
+                    const sizeMMArray: Array<number> = [];
+                    connections.forEach((uid) => {
+                        const conObj = this.globalStore.get(uid);
+
+                        if (conObj instanceof Pipe) {
+                            const calc = this.globalStore.getOrCreateCalculation(conObj.entity);
+
+                            zArray.push(conObj.entity.heightAboveFloorM);
+                            sizeMMArray.push(calc.realNominalPipeDiameterMM || 0);
+                        }
+                    });
+                    const system = this.document.drawing.metadata.flowSystems.find((s) => s.uid === entity.systemUid);
+            
+                    const center = o.toWorldCoord({ x: 0, y: 0 });
+                
+                    let data: Array<any> = [];
+                    if (
+                        typeof result[lprops.abbreviation] !== "undefined" &&
+                        typeof result[lprops.abbreviation]["RETICULATIONS"] !== "undefined" &&
+                        typeof result[lprops.abbreviation]["RETICULATIONS"][system!.name] !== "undefined" &&
+                        typeof result[lprops.abbreviation]["RETICULATIONS"][system!.name]["fittings"] !== "undefined"
+                    ) {
+                        data = result[lprops.abbreviation]["RETICULATIONS"][system!.name]["fittings"];
+                    }
+
+                    result[lprops.abbreviation] = {
+                        ...result[lprops.abbreviation],
+                            ["RETICULATIONS"]:
+                        {
+                            ...(result[lprops.abbreviation] && 
+                                result[lprops.abbreviation]["RETICULATIONS"]),
+                                [system!.name]: 
+                            {
+                                ...(result[lprops.abbreviation] && 
+                                    result[lprops.abbreviation]["RETICULATIONS"] && 
+                                    result[lprops.abbreviation]["RETICULATIONS"] [system!.name]),
+                                    fittings: 
+                                [
+                                    ...data,
+                                    {
+                                        networkType: "RETICULATIONS",
+                                        fittingName: o.friendlyTypeName,
+                                        pipeSystem: system!.name,
+                                        // pipeMaterial: null,
+                                        pipeSizeMM: Math.min(...sizeMMArray),
+                                        // pipeStart: null,
+                                        // pipeEnd: null,
+                                        // valveType: null,
+                                        // valveSystem: null,
+                                        // valveSizeMM: null,
+                                        center: center,
+                                        z: lprops.floorHeightM + Math.min(...zArray)
+                                    }
+                                ]
+                            }
+                        }
+                    };
+                } else if (entity.type === EntityType.DIRECTED_VALVE) {
+                    const o = globalStore.get(entity.uid) as Pipe;
+                    const center = o.toWorldCoord({ x: 0, y: 0 });
+
+                    const connections = this.globalStore.getConnections(entity.uid);
+                    const zArray: Array<number> = [];
+                    const sizeMMArray: Array<number> = [];
+                    connections.forEach((uid) => {
+                        const conObj = this.globalStore.get(uid);
+
+                        if (conObj instanceof Pipe) {
+                            const calc = this.globalStore.getOrCreateCalculation(conObj.entity);
+
+                            zArray.push(conObj.entity.heightAboveFloorM);
+                            sizeMMArray.push(calc.realNominalPipeDiameterMM || 0);
+                        }
+                    });
+
+                    const filled = fillDirectedValveFields(this.document.drawing, this.globalStore, entity);
+                    const system = this.document.drawing.metadata.flowSystems.find(
+                        (s) => s.uid === filled.systemUidOption
+                    );
+                    const valveWithSize = [
+                        ValveType.RPZD_SINGLE,
+                        ValveType.RPZD_DOUBLE_SHARED,
+                        ValveType.RPZD_DOUBLE_ISOLATED,
+                        ValveType.PRV_SINGLE,
+                        ValveType.PRV_DOUBLE,
+                        ValveType.PRV_TRIPLE
+                    ];
+
+                    let valveSizeMM = null;
+                    if (valveWithSize.includes(entity.valve.type)) {
+                        const calc = this.globalStore.getOrCreateCalculation(entity);
+                        valveSizeMM = calc.sizeMM;
+                    }
+
+                    if (system) {
+                        let data: Array<any> = [];
+                        if (
+                            typeof result[lprops.abbreviation] !== "undefined" &&
+                            typeof result[lprops.abbreviation]["RETICULATIONS"] !== "undefined" &&
+                            typeof result[lprops.abbreviation]["RETICULATIONS"][system.name] !== "undefined" &&
+                            typeof result[lprops.abbreviation]["RETICULATIONS"][system.name]["valves"] !== "undefined"
+                        ) {
+                            data = result[lprops.abbreviation]["RETICULATIONS"][system.name]["valves"];
+                        }
+
+                        result[lprops.abbreviation] = {
+                            ...result[lprops.abbreviation],
+                                ["RETICULATIONS"]: 
+                            {
+                                ...(result[lprops.abbreviation] && 
+                                    result[lprops.abbreviation]["RETICULATIONS"]),
+                                    [system!.name]: 
+                                {
+                                    ...(result[lprops.abbreviation] && 
+                                        result[lprops.abbreviation]["RETICULATIONS"] && 
+                                        result[lprops.abbreviation]["RETICULATIONS"][system.name]),
+                                    valves: [
+                                        ...data,
+                                        {
+                                            // fittingName: null,
+                                            // networkType: null,
+                                            // pipeSystem: null,
+                                            // pipeMaterial: null,
+                                            // pipeSizeMM: null,
+                                            // pipeStart: null,
+                                            // pipeEnd: null,
+                                            networkType: "RETICULATIONS",
+                                            valveType: filled.valve.catalogId,
+                                            valveSystem: [system.name],
+                                            valveSizeMM: valveSizeMM || Math.min(...sizeMMArray),
+                                            center: center,
+                                            z: lprops.floorHeightM + Math.min(...zArray)
+                                        }
+                                    ]
+                                }
+                            }
+                        };
+                    }
+                } else if (entity.type === EntityType.BIG_VALVE) {
+                    const o = globalStore.get(entity.uid) as Pipe;
+                    const center = o.toWorldCoord();
+                    let data: Array<any> = [];
+                    if (
+                        typeof result[lprops.abbreviation] !== "undefined" &&
+                        typeof result[lprops.abbreviation]["RETICULATIONS"] !== "undefined" &&
+                        typeof result[lprops.abbreviation]["RETICULATIONS"]["HOT_COLD"] !== "undefined" &&
+                        typeof result[lprops.abbreviation]["RETICULATIONS"]["HOT_COLD"]["valves"] !== "undefined"
+                    ) {
+                        data = result[lprops.abbreviation]["RETICULATIONS"]["HOT_COLD"]["valves"];
+                    }
+
+                    result[lprops.abbreviation] = {
+                        ...result[lprops.abbreviation],
+                            ["RETICULATIONS"]: 
+                        {
+                            ...(result[lprops.abbreviation] && 
+                                result[lprops.abbreviation]["RETICULATIONS"]),
+                                ["HOT_COLD"]: 
+                            {
+                                ...(result[lprops.abbreviation] && 
+                                    result[lprops.abbreviation]["RETICULATIONS"] && 
+                                    result[lprops.abbreviation]["RETICULATIONS"]["HOT_COLD"]),
+                                    valves: 
+                                [
+                                    ...data,
+                                    {
+                                        // fittingName: null,
+                                        // networkType: null,
+                                        // pipeSystem: null,
+                                        // pipeMaterial: null,
+                                        // pipeSizeMM: null,
+                                        // pipeStart: null,
+                                        // pipeEnd: null,
+                                        networkType: "RETICULATIONS",
+                                        valveType: entity.valve.type,
+                                        valveSystem: ["HOT_COLD"],
+                                        // valveSizeMM: null,
+                                        center: center,
+                                        z: lprops.floorHeightM + entity.heightAboveFloorM,
+                                    }
+                                ]
+                            }
+                        }
+                    };
+                }
+            });
+
+            this.globalStore.forEach((obj) => {
+                if (obj instanceof Riser) {
+                    const system = this.document.drawing.metadata.flowSystems.find(
+                        (s) => s.uid === obj.entity.systemUid
+                    );
+
+                    const re = obj.entity as RiserEntity;
+                    const filled = fillRiserDefaults(this.document.drawing, re);
+                    if (system) {
+                        const calculation = this.globalStore.getOrCreateCalculation(obj.entity);
+                        const currentLevelCalc = Object.entries(calculation.heights).find(
+                            ([uid, props]) => uid === lprops.uid
+                        );
+                        const riserSize = currentLevelCalc![1]?.sizeMM;
+                        let riserSizeInMM
+                        if (riserSize === null) {
+                            // riser is set to minimum size when null.
+                            riserSizeInMM = system.networks.RISERS.minimumPipeSize;
+                        } else if (riserSize !== null) {
+                            riserSizeInMM = currentLevelCalc![1]?.sizeMM
+                        };
+                        // riser that has the highest pipe size will on be shown.
+                        const riserEntries = [].concat.apply([], Object.entries(calculation.heights) as any[]);
+                        const sizeList = riserEntries.map(function(row: { sizeMM: any; }){ return row.sizeMM });
+
+                        const data = sizeList.filter(function( element: any ) {
+                            return element !== undefined;
+                        });
+                        const maxRiserSize = Math.max.apply(null, data);
+              
+                        if (maxRiserSize === riserSizeInMM) {
+                 
+                            const filteredSizeMM =  riserEntries.filter(function(row: { sizeMM: any;}) {
+                                if (row.sizeMM === maxRiserSize) { return row }
+                            });
+
+                            const filteredHeightAbove = filteredSizeMM.map(function(row: { heightAboveGround: any; }){ return row.heightAboveGround });
+                            const maxHeight = Math.max.apply(null, filteredHeightAbove);
+                            if (currentLevelCalc![1]?.heightAboveGround === maxHeight) {
+                                let data: Array<any> = [];
+                                if (
+                                    typeof result[lprops.abbreviation] !== "undefined" &&
+                                    typeof result[lprops.abbreviation]["RISERS"] !== "undefined" &&
+                                    typeof result[lprops.abbreviation]["RISERS"][system.name] !== "undefined" &&
+                                    typeof result[lprops.abbreviation]["RISERS"][system.name]["risers"] !== "undefined"
+                                ) {
+                                    data = result[lprops.abbreviation]["RISERS"][system.name]["risers"];
+                                }
+
+                                result[lprops.abbreviation] = {
+                                    ...result[lprops.abbreviation],
+                                        ["RISERS"]: 
+                                    {
+                                        ...(result[lprops.abbreviation] && 
+                                            result[lprops.abbreviation]["RISERS"]),
+                                            [system.name]: 
+                                        {
+                                            ...(result[lprops.abbreviation] && 
+                                                result[lprops.abbreviation]["RISERS"] && 
+                                                result[lprops.abbreviation]["RISERS"][system.name]),
+                                                risers: 
+                                            [
+                                                ...data,
+                                                {
+                                                    // fittingName: null,
+                                                    networkType: "RISERS",
+                                                    // pipeSystem: null,
+                                                    // pipeMaterial: null,
+                                                    pipeSizeMM: riserSizeInMM,
+                                                    material: filled.material,
+                                                    // pipeStart: null,
+                                                    // pipeEnd: null,
+                                                    // z: Infinity,
+                                                    // valveType: null,
+                                                    // valveSystem: null,
+                                                    // valveSizeMM: null,
+                                                    center: filled.center,
+                                                    bottomHeightM:  filled.bottomHeightM,
+                                                    topHeightM:  filled.topHeightM,
+                                                }
+                                            ]
+                                        }
+                                    }
+                                };
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // console.log(result);
+
+        const data = JSON.stringify(result, null, 4);
+        const blob = new Blob([data], { type: "text/plain" });
+        const e = document.createEvent("MouseEvents"),
+            a = document.createElement("a");
+        a.download = this.document.drawing.metadata.generalInfo.title + ".json";
+        a.href = window.URL.createObjectURL(blob);
+        a.dataset.downloadurl = ["text/json", a.download, a.href].join(":");
+        e.initEvent("click", true, false);
+        a.dispatchEvent(e);
     }
 }
 </script>
@@ -263,7 +681,7 @@ export default class CalculationsSidebar extends Vue {
 
 #copyLink {
     color: #1a73e8;
-    
+
     &:hover {
         color: #174ea6;
     }

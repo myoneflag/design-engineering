@@ -858,7 +858,7 @@ function adjustPlantPressureDropByManufacturer(props: {
                 
                 settingsData.find(([Q, H], i) => {
                     if (Number(Q) > returnFlow) {
-                        const pressure1 = Number(settingsData[i-1][1]);
+                        const pressure1 = Number(settingsData[(i > 0) ? (i-1): 0][1]);
                         const pressure2 = Number(H);
 
                         // check if pressureLoss is below the current settings pressure

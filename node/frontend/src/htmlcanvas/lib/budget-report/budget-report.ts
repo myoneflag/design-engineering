@@ -94,7 +94,7 @@ function createCompanyHeader(context: CanvasContext, sheet: Worksheet) {
     sheet.mergeCells('B1:F1');
     sheet.getCell('A1').font = {bold: true};
     sheet.getCell('A1').value = 'Company';
-    sheet.getCell('B1').value = user.organization!.name;
+    sheet.getCell('B1').value = user.organization ? user.organization.name: "";
     sheet.mergeCells('B2:F2');
     sheet.getCell('A2').font = {bold: true};
     sheet.getCell('A2').value = 'Project Title';
