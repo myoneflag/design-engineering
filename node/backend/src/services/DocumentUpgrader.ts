@@ -98,7 +98,7 @@ export class DocumentUpgrader {
 
 
             const doc = await Document.findOne({ id: docId });
-            await compressDocumentIfRequired(doc);
+            // await compressDocumentIfRequired(doc);
 
             //await new Promise((res) => setTimeout(res, 5000));
 

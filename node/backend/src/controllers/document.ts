@@ -372,7 +372,7 @@ router.ws("/:id/websocket", (ws, req) => {
         async (session) => {
             withDocument(Number(req.params.id), null, session, AccessType.UPDATE, async (doc) => {
                 // sanity checks.
-                await compressDocumentIfRequired(doc);
+                // await compressDocumentIfRequired(doc);
                 switch (doc.state) {
                     case DocumentStatus.ACTIVE:
                         if (doc.version !== CURRENT_VERSION) {
