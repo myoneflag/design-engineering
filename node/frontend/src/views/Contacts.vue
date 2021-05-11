@@ -35,8 +35,8 @@
                             <b-card-text style="text-align: left">
                                 <b>Category:</b> {{ feedback.category }}<br />
                                 {{ feedback.message }} <br />
-                                <b>By:</b> {{ feedback.submittedBy }}<br />
-                                {{ new Date(feedback.createdOn).toLocaleString() }}<br />
+                                <b>By:</b>  {{ feedback.submittedBy.name }} <a :href="'/users/username/'+feedback.submittedBy.username">@{{feedback.submittedBy.username}}</a>&nbsp;<a :href="`mailto:`+feedback.submittedBy.email">{{feedback.submittedBy.email}}</a> <br />
+                                <b>On:</b> {{ new Date(feedback.createdOn).toLocaleString() }}<br />
                             </b-card-text>
                         </b-card>
                     </b-col>
