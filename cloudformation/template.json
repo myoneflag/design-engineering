@@ -137,6 +137,11 @@
               "Path": "/",
               "Roles": [ 
                 { "Ref": "InstanceIAMRole" }
+              ], 
+              "Tags": [ 
+                { "Key": "Name", "Value": { "Fn::Sub": "h2x-instanceprofile-${EnvName}"} },
+                { "Key": "AppName", "Value": "H2X" },
+                { "Key": "Environment", "Value": { "Ref": "EnvName" } }
               ]
           }
         },
@@ -159,13 +164,18 @@
                       ]
                   }
                 ]
-              },
-              "Path": "/",
-              "ManagedPolicyArns": [ 
-                "arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier",
-                "arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier",
-                "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-              ]
+            },
+            "Path": "/",
+            "ManagedPolicyArns": [ 
+              "arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier",
+              "arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier",
+              "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+            ],
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-instancerole-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
            }
         },
 
@@ -204,7 +214,12 @@
              },
              "Roles": [ {
                 "Ref": "InstanceIAMRole"
-             } ]
+             } ],
+             "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-instanceprolicy-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
           }
         },
 
@@ -214,6 +229,11 @@
           "Properties" : {
             "GroupDescription" : { "Fn::Sub": "h2x-web-${EnvName}-sg" },
             "SecurityGroupIngress" : [ 
+            ],
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-web-securitygroup-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
             ]
           }
         },
@@ -223,6 +243,11 @@
           "Properties" : {
             "GroupDescription" : { "Fn::Sub": "h2x-worker-${EnvName}-sg" },
             "SecurityGroupIngress" : [ 
+            ],
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-worker-securitygroup-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
             ]
           }
         },
@@ -232,7 +257,12 @@
           "Type": "AWS::ElasticBeanstalk::Application",
           "Properties": {
              "ApplicationName": { "Fn::Sub": "H2X-web-${EnvName}${WebVersion}" },
-             "Description": { "Fn::Sub": "H2X ${EnvName} Web Application" }
+             "Description": { "Fn::Sub": "H2X ${EnvName} Web Application" },
+             "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-beanstalk-app-web-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
           }
         },
         "WebApplicationVersion_DATESTAMP_": {
@@ -245,7 +275,12 @@
             "SourceBundle": { 
               "S3Bucket": { "Ref": "SourceBucketName" }, 
               "S3Key": { "Ref": "SourcePathWeb" }
-             }
+             },
+             "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-beanstalk-appversion-web-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
           }
         },
         "WebApplicationConfiguration": {
@@ -377,8 +412,13 @@
                 "Value": { "Ref": "H2XEmailAddress" }
               }
             ],
-            "SolutionStackName": "64bit Amazon Linux 2 v3.2.6 running Docker"
-          } 
+            "SolutionStackName": "64bit Amazon Linux 2 v3.3.0 running Docker",
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-beanstalk-appconfig-web-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
+          }
         },
 
         "WebEnvironment": {
@@ -393,7 +433,12 @@
              "Tier": {
                "Name" : "WebServer",
                "Type" : "Standard"
-             }
+             },
+             "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-beanstalk-environment-web-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
           }
         },
 
@@ -402,7 +447,12 @@
           "Type": "AWS::ElasticBeanstalk::Application",
           "Properties": {
              "ApplicationName": { "Fn::Sub": "H2X-worker-${EnvName}${WorkerVersion}" },
-             "Description": { "Fn::Sub": "H2X ${EnvName} Worker Application" }
+             "Description": { "Fn::Sub": "H2X ${EnvName} Worker Application" },
+             "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-beanstalk-app-worker-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
           }
         },
         "WorkerApplicationVersion_DATESTAMP_": {
@@ -415,7 +465,12 @@
             "SourceBundle": { 
               "S3Bucket": { "Ref": "SourceBucketName" }, 
               "S3Key": { "Ref": "SourcePathWorker"}
-             }
+             },
+             "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-beanstalk-appversion-worker-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
           }
         },
         "WorkerApplicationConfiguration": {
@@ -505,7 +560,12 @@
                 "Value": { "Ref": "AWS::Region" }
               }
             ],
-            "SolutionStackName": "64bit Amazon Linux 2 v3.2.6 running Docker"
+            "SolutionStackName": "64bit Amazon Linux 2 v3.3.0 running Docker",
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-beanstalk-appconfig-worker-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
           } 
         },
         "WorkerEnvironment": {
@@ -519,7 +579,12 @@
               "Tier": {
                 "Name" : "Worker",
                 "Type" : "SQS/HTTP"
-              }
+              },
+              "Tags": [ 
+                { "Key": "Name", "Value": { "Fn::Sub": "h2x-beanstalk-environment-worker-${EnvName}"} },
+                { "Key": "AppName", "Value": "H2X" },
+                { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+              ]  
            }
         }, 
         
@@ -535,7 +600,13 @@
                 {
                   "EC2SecurityGroupId" : { "Fn::GetAtt": [ "WorkerSecurityGroup", "GroupId" ] }
                 }
-               ]
+               ],
+               "Tags": [ 
+                { "Key": "Name", "Value": { "Fn::Sub": "h2x-rds-securitygroup-${EnvName}"} },
+                { "Key": "AppName", "Value": "H2X" },
+                { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+              ]
+  
            }
         },
 
@@ -580,7 +651,12 @@
                 { "Ref" : "AWS::NoValue" },
                 { "Ref": "DBName" }
               ]
-            }
+            },
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-rds-instance-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
           }
         },
 
@@ -604,6 +680,11 @@
                   "Password" : { "Ref": "MQPassword"},
                   "Username" : { "Ref": "MQUsername" }
                 }
+               ],
+               "Tags": [ 
+                { "Key": "Name", "Value": { "Fn::Sub": "h2x-mq-broker-${EnvName}"} },
+                { "Key": "AppName", "Value": "H2X" },
+                { "Key": "Environment", "Value": { "Ref": "EnvName" } }
                ]
             }
         },
@@ -619,6 +700,11 @@
                 "IpProtocol": "tcp",
                 "SourceSecurityGroupId": { "Fn::GetAtt": [ "WebSecurityGroup", "GroupId" ] }
               }
+            ],
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-mq-securitygroup-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
             ]
           }
         },
@@ -632,14 +718,24 @@
               "RedrivePolicy": {
                 "deadLetterTargetArn": { "Fn::GetAtt" : [ "WorkerDeadLetterQueue", "Arn" ] },
                 "maxReceiveCount": "10"
-              }
+              },
+              "Tags": [ 
+                { "Key": "Name", "Value": { "Fn::Sub": "h2x-worker-queue-${EnvName}"} },
+                { "Key": "AppName", "Value": "H2X" },
+                { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+              ]  
            }
         },
         
         "WorkerDeadLetterQueue": {
            "Type": "AWS::SQS::Queue",
            "Properties": {
-              "QueueName": { "Fn::Sub": "h2x-worker-deadletterqueue-${EnvName}" }
+              "QueueName": { "Fn::Sub": "h2x-worker-deadletterqueue-${EnvName}" },
+              "Tags": [ 
+                { "Key": "Name", "Value": { "Fn::Sub": "h2x-worker-dlqueue-${EnvName}"} },
+                { "Key": "AppName", "Value": "H2X" },
+                { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+              ]  
            }
         },
         
@@ -649,7 +745,12 @@
           "Type": "AWS::S3::Bucket",
           "Properties": {
             "AccessControl": "Private",
-            "BucketName": { "Fn::Sub": "h2x-s3-pdf-${EnvName}" }
+            "BucketName": { "Fn::Sub": "h2x-s3-pdf-${EnvName}" },
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-s3-pdf-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
           }
         },
         "PdfRendersBucket": {
@@ -674,7 +775,12 @@
                       "ExposedHeaders": []
                   }
                 ]
-              }            
+              },
+              "Tags": [ 
+                { "Key": "Name", "Value": { "Fn::Sub": "h2x-s3-pdfrenders-${EnvName}"} },
+                { "Key": "AppName", "Value": "H2X" },
+                { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+              ]
           }
         }, 
 
@@ -686,7 +792,12 @@
             "Type": "CNAME",
             "TTL": "900",
             "HostedZoneId": { "Ref": "DnsZoneId" },
-            "ResourceRecords": [ { "Fn::GetAtt": [ "WebEnvironment", "EndpointURL" ]} ]
+            "ResourceRecords": [ { "Fn::GetAtt": [ "WebEnvironment", "EndpointURL" ]} ],
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-dns-record-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
           }
         }, 
 
@@ -701,35 +812,36 @@
                   "DomainName" : { "Fn::Sub": "*.${DnsZoneName}" },
                   "HostedZoneId": { "Ref": "DnsZoneId" }
                 }
-              ]
+              ],
+              "Tags": [ 
+                { "Key": "Name", "Value": { "Fn::Sub": "h2x-ssl-certificate-${EnvName}"} },
+                { "Key": "AppName", "Value": "H2X" },
+                { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+              ]  
             }
+        },
+        "ResourceGroup": {
+            "Type": "AWS::ResourceGroups::Group",
+            "Properties": {
+                "Name": { "Fn::Sub": "h2x-resource-group-${EnvName}"},
+                "Description": { "Fn::Sub": "All resources of the ${EnvName} Cloudformation stack" },
+                "ResourceQuery": { 
+                    "Type": "CLOUDFORMATION_STACK_1_0",
+                    "Query": {
+                        "ResourceTypeFilters": [
+                            "AWS::AllSupported" 
+                        ],
+                        "StackIdentifier": { "Ref": "AWS::StackId" }
+                    }
+                },
+                "Tags": [ 
+                  { "Key": "Name", "Value": { "Fn::Sub": "h2x-resource-group-${EnvName}"} },
+                  { "Key": "AppName", "Value": "H2X" },
+                  { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+                ]  
+          }
         }
-    },
-    "Mappings": {
-      "RegionParams": {
-        "us-east-1": { "EBHostedZoneId": "Z117KPS5GTRQ2G" },
-        "us-east-2": { "EBHostedZoneId": "Z14LCN19Q5QHIC" },
-        "us-west-1": { "EBHostedZoneId": "Z1LQECGX5PH1X" },
-        "us-west-2": { "EBHostedZoneId": "Z38NKT9BP95V3O" },
-        "af-south-1": { "EBHostedZoneId": "Z1EI3BVKMKK4AM" },
-        "ap-east-1": { "EBHostedZoneId": "ZPWYUBWRU171A" },
-        "ap-south-1": { "EBHostedZoneId": "Z18NTBI3Y7N9TZ" },
-        "ap-northeast-3": { "EBHostedZoneId": "ZNE5GEY1TIAGY" },
-        "ap-northeast-2": { "EBHostedZoneId": "Z3JE5OI70TWKCP" },
-        "ap-southeast-1": { "EBHostedZoneId": "Z16FZ9L249IFLT" },
-        "ap-southeast-2": { "EBHostedZoneId": "Z2PCDNR3VC2G1N" },
-        "ap-northeast-1": { "EBHostedZoneId": "Z1R25G3KIG2GBW" },
-        "ca-central-1": { "EBHostedZoneId": "ZJFCZL7SSZB5I" },
-        "eu-central-1": { "EBHostedZoneId": "Z1FRNW7UH4DEZJ" },
-        "eu-west-1": { "EBHostedZoneId": "Z2NYPWQ7DFZAZH" },
-        "eu-west-2": { "EBHostedZoneId": "Z1GKAAAUGATPF1" },
-        "eu-south-1": { "EBHostedZoneId": "Z10VDYYOA2JFKM" },
-        "eu-west-3": { "EBHostedZoneId": "Z5WN6GAYWG5OB" },
-        "eu-north-1": { "EBHostedZoneId": "Z23GO28BZ5AETM" },
-        "me-south-1": { "EBHostedZoneId": "Z2BBTEKR2I36N2" },
-        "sa-east-1": { "EBHostedZoneId": "Z10X7K2B4QSOFV" }  
-      }
-    },
-    "Outputs": {
-    }
+   },
+   "Outputs": {
+   }
 }
