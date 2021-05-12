@@ -137,11 +137,6 @@
               "Path": "/",
               "Roles": [ 
                 { "Ref": "InstanceIAMRole" }
-              ], 
-              "Tags": [ 
-                { "Key": "Name", "Value": { "Fn::Sub": "h2x-instanceprofile-${EnvName}"} },
-                { "Key": "AppName", "Value": "H2X" },
-                { "Key": "Environment", "Value": { "Ref": "EnvName" } }
               ]
           }
         },
@@ -214,12 +209,7 @@
              },
              "Roles": [ {
                 "Ref": "InstanceIAMRole"
-             } ],
-             "Tags": [ 
-              { "Key": "Name", "Value": { "Fn::Sub": "h2x-instanceprolicy-${EnvName}"} },
-              { "Key": "AppName", "Value": "H2X" },
-              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
-            ]
+             } ]
           }
         },
 
@@ -257,12 +247,7 @@
           "Type": "AWS::ElasticBeanstalk::Application",
           "Properties": {
              "ApplicationName": { "Fn::Sub": "H2X-web-${EnvName}${WebVersion}" },
-             "Description": { "Fn::Sub": "H2X ${EnvName} Web Application" },
-             "Tags": [ 
-              { "Key": "Name", "Value": { "Fn::Sub": "h2x-beanstalk-app-web-${EnvName}"} },
-              { "Key": "AppName", "Value": "H2X" },
-              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
-            ]
+             "Description": { "Fn::Sub": "H2X ${EnvName} Web Application" }
           }
         },
         "WebApplicationVersion_DATESTAMP_": {
@@ -275,12 +260,7 @@
             "SourceBundle": { 
               "S3Bucket": { "Ref": "SourceBucketName" }, 
               "S3Key": { "Ref": "SourcePathWeb" }
-             },
-             "Tags": [ 
-              { "Key": "Name", "Value": { "Fn::Sub": "h2x-beanstalk-appversion-web-${EnvName}"} },
-              { "Key": "AppName", "Value": "H2X" },
-              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
-            ]
+             }
           }
         },
         "WebApplicationConfiguration": {
@@ -412,12 +392,7 @@
                 "Value": { "Ref": "H2XEmailAddress" }
               }
             ],
-            "SolutionStackName": "64bit Amazon Linux 2 v3.3.0 running Docker",
-            "Tags": [ 
-              { "Key": "Name", "Value": { "Fn::Sub": "h2x-beanstalk-appconfig-web-${EnvName}"} },
-              { "Key": "AppName", "Value": "H2X" },
-              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
-            ]
+            "SolutionStackName": "64bit Amazon Linux 2 v3.3.0 running Docker"
           }
         },
 
@@ -435,7 +410,6 @@
                "Type" : "Standard"
              },
              "Tags": [ 
-              { "Key": "Name", "Value": { "Fn::Sub": "h2x-beanstalk-environment-web-${EnvName}"} },
               { "Key": "AppName", "Value": "H2X" },
               { "Key": "Environment", "Value": { "Ref": "EnvName" } }
             ]
@@ -447,12 +421,7 @@
           "Type": "AWS::ElasticBeanstalk::Application",
           "Properties": {
              "ApplicationName": { "Fn::Sub": "H2X-worker-${EnvName}${WorkerVersion}" },
-             "Description": { "Fn::Sub": "H2X ${EnvName} Worker Application" },
-             "Tags": [ 
-              { "Key": "Name", "Value": { "Fn::Sub": "h2x-beanstalk-app-worker-${EnvName}"} },
-              { "Key": "AppName", "Value": "H2X" },
-              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
-            ]
+             "Description": { "Fn::Sub": "H2X ${EnvName} Worker Application" }
           }
         },
         "WorkerApplicationVersion_DATESTAMP_": {
@@ -465,12 +434,7 @@
             "SourceBundle": { 
               "S3Bucket": { "Ref": "SourceBucketName" }, 
               "S3Key": { "Ref": "SourcePathWorker"}
-             },
-             "Tags": [ 
-              { "Key": "Name", "Value": { "Fn::Sub": "h2x-beanstalk-appversion-worker-${EnvName}"} },
-              { "Key": "AppName", "Value": "H2X" },
-              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
-            ]
+             }
           }
         },
         "WorkerApplicationConfiguration": {
@@ -560,12 +524,7 @@
                 "Value": { "Ref": "AWS::Region" }
               }
             ],
-            "SolutionStackName": "64bit Amazon Linux 2 v3.3.0 running Docker",
-            "Tags": [ 
-              { "Key": "Name", "Value": { "Fn::Sub": "h2x-beanstalk-appconfig-worker-${EnvName}"} },
-              { "Key": "AppName", "Value": "H2X" },
-              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
-            ]
+            "SolutionStackName": "64bit Amazon Linux 2 v3.3.0 running Docker"
           } 
         },
         "WorkerEnvironment": {
@@ -581,7 +540,6 @@
                 "Type" : "SQS/HTTP"
               },
               "Tags": [ 
-                { "Key": "Name", "Value": { "Fn::Sub": "h2x-beanstalk-environment-worker-${EnvName}"} },
                 { "Key": "AppName", "Value": "H2X" },
                 { "Key": "Environment", "Value": { "Ref": "EnvName" } }
               ]  
@@ -792,12 +750,7 @@
             "Type": "CNAME",
             "TTL": "900",
             "HostedZoneId": { "Ref": "DnsZoneId" },
-            "ResourceRecords": [ { "Fn::GetAtt": [ "WebEnvironment", "EndpointURL" ]} ],
-            "Tags": [ 
-              { "Key": "Name", "Value": { "Fn::Sub": "h2x-dns-record-${EnvName}"} },
-              { "Key": "AppName", "Value": "H2X" },
-              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
-            ]
+            "ResourceRecords": [ { "Fn::GetAtt": [ "WebEnvironment", "EndpointURL" ]} ]
           }
         }, 
 
