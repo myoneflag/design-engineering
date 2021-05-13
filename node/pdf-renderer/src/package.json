@@ -1,11 +1,11 @@
 {
-  "name": "hello_world",
+  "name": "h2x-pdfrenderer",
   "version": "1.0.0",
-  "description": "hello world sample for NodeJS",
+  "description": "H2X pdf renderer",
+  "repository": "gitlab:info892/H2X",
+  "license": "UNLICENSED",
+  "private": true,
   "main": "app.js",
-  "repository": "https://github.com/awslabs/aws-sam-cli/tree/develop/samcli/local/init/templates/cookiecutter-aws-sam-hello-nodejs",
-  "author": "SAM CLI",
-  "license": "MIT",
   "dependencies": {
     "axios": "^0.18.0"
   },
