@@ -22,6 +22,8 @@ services:
         restart: always
         profiles:
             - dev
+        depends_on:
+            - db
         environment: 
             - ACTIVEMQ_ADMIN_LOGIN=admin
             - ACTIVEMQ_ADMIN_PASSWORD=admin
@@ -36,6 +38,8 @@ services:
         restart: always
         profiles:
             - dev
+        depends_on:
+            - mq
         ports:
             - 9324:9324
             - 9325:9325
@@ -48,6 +52,8 @@ services:
         image: mogadanez/sqsd
         profiles:
             - dev
+        depends_on:
+            - sqs
         environment:
             - SQSD_WORKER_HTTP_URL=http://worker:80/workermessage
             - SQSD_QUEUE_NAME=h2x-worker-queue
@@ -61,8 +67,7 @@ services:
 
     base:
         profiles:
-            - dev
-            - prod
+            - donotstart
         build: 
             context: ../node/
             dockerfile: ../docker/base.Dockerfile
@@ -79,6 +84,8 @@ services:
         restart: always
         depends_on:
             - db
+            - mq
+            - sqsd
         ports:
             - 8012:80
         environment:
@@ -107,6 +114,8 @@ services:
             dockerfile: ../docker/dev-frontend.Dockerfile
         image: 'h2x-dev-frontend:latest'
         restart: always
+        depends_on:
+            - backend
         ports:
             - 8011:80
         volumes:
@@ -127,7 +136,7 @@ services:
         image: 'h2x-dev-worker:latest'
         restart: always
         depends_on:
-            - db
+            - frontend
         ports:
             - 8013:80
         environment:

@@ -11,7 +11,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "dev": "export AWS_PROFILE=$npm_config_profile && docker-compose --profile dev up -d",
+    "dev": "export COMPOSE_HTTP_TIMEOUT=240 && export AWS_PROFILE=$npm_config_profile && docker-compose --profile dev up -d",
     "logs": "docker-compose logs --follow --tail=100 $npm_config_service",
     "down": "docker-compose --profile dev down",
     "stop": "docker-compose --profile dev stop",    

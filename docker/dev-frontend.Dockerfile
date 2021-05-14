@@ -1,6 +1,7 @@
 from h2x-base:latest
 
-workdir /usr/src/app/frontend
+copy ./frontend/package*.json /usr/src/app/frontend/
+workdir /usr/src/app/frontend/
 run npm install
 
 expose 80
