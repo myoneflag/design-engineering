@@ -1,11 +1,13 @@
 # For AWS Beanstalk - single docker instance
 from h2x-base:latest
 
+copy ./backend /usr/src/app/backend
 workdir /usr/src/app/backend
 run npm install
 run npm run build
 
 # /dist directory built
+copy ./frontend /usr/src/app/frontend
 workdir /usr/src/app/frontend
 run npm install
 run npm run build
