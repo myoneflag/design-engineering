@@ -5,6 +5,8 @@ services:
     # hostname: db
     db:
         image: postgres
+        profiles:
+            - dev
         restart: always
         environment:
             - POSTGRES_PASSWORD=postgres
@@ -18,6 +20,8 @@ services:
     mq:
         image: webcenter/activemq
         restart: always
+        profiles:
+            - dev
         environment: 
             - ACTIVEMQ_ADMIN_LOGIN=admin
             - ACTIVEMQ_ADMIN_PASSWORD=admin
@@ -29,7 +33,9 @@ services:
     # hostname: sqs
     sqs:
         image: softwaremill/elasticmq-native
-        restart: always        
+        restart: always
+        profiles:
+            - dev
         ports:
             - 9324:9324
             - 9325:9325
@@ -40,6 +46,8 @@ services:
     # hostname: sqsd
     sqsd:
         image: mogadanez/sqsd
+        profiles:
+            - dev
         environment:
             - SQSD_WORKER_HTTP_URL=http://worker:80/workermessage
             - SQSD_QUEUE_NAME=h2x-worker-queue
@@ -50,6 +58,15 @@ services:
             - AWS_REGION=us-local
             - AWS_ACCESS_KEY_ID=test
             - AWS_SECRET_ACCESS_KEY=test
+
+    base:
+        profiles:
+            - dev
+            - prod
+        build: 
+            context: ../node/
+            dockerfile: ../docker/base.Dockerfile
+        image: 'h2x-base:latest'
 
     # Development Backend server
     backend:
@@ -164,4 +181,4 @@ services:
         depends_on:
             - backend
             - frontend
-            - worker            
+            - worker
