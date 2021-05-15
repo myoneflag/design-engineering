@@ -1,6 +1,10 @@
 # For AWS Beanstalk - single docker instance
 from h2x-base:latest
 
+copy ./common /usr/src/app/common
+
+copy ./ormconfig.js /usr/src/app/
+
 copy ./backend /usr/src/app/backend
 workdir /usr/src/app/backend
 run npm install
