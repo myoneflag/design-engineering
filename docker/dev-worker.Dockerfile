@@ -1,12 +1,4 @@
-from node:12
-
-run apt-get update
-run apt-get upgrade -y
-run apt-get install imagemagick ghostscript -y
-
-workdir /usr/src/app/backend
-run npm install
-run npm build
+from h2x-dev-backend:latest
 
 expose 80
 env PORT 80
