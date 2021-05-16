@@ -58,11 +58,11 @@
                     <b-col>
                         <b-card>
                             <b-card-text style="text-align: left">
-                                <b>Tags:</b> {{ log.tags }}<br />
-                                <b>Date:</b> {{ new Date(log.createdOn).toLocaleString() }}<br />
-                                <b>Version:</b> {{ log.version }}<br />
-                                <b>Submitted by:</b> {{ log.submittedBy }}<br />
+                                <b>Version:</b> {{ log.version }}<br />                                
+                                <b>Date:</b> {{ new Date(log.createdOn).toLocaleString() }}<br />                                
                                 <b>Message:</b><p style="white-space: pre-wrap">{{ log.message }}</p>
+                                <b-badge pill variant="primary" v-for="badge in log.tags.split(',')" :key="badge">{{ badge }}</b-badge> <br/>                                
+                                <b>Submitted by:</b> {{ log.submittedBy.name }} @{{log.submittedBy.username }}<br />                                
                             </b-card-text>
                         </b-card>
                     </b-col>
