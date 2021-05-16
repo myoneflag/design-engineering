@@ -2,23 +2,22 @@
     <div>
         <b-row>
             <b-col>
-                <h4>Debug Info</h4>
-            </b-col>
-        </b-row>
-        <b-row>
-            <b-col>
-                <b-form-group label="Document">
-                    <b-textarea v-model="drawingJson" rows="30" style="font-size: 12px"></b-textarea>
+                <b-form-group label="Debug Info">
+                    <b-button @click="showDocument = !showDocument">{{showDocument ? "Hide" : "Show"}}</b-button> <br/>
+                    <b-button v-if="showDocument" variant="primary" @click="paste">Paste from clipboard</b-button> &nbsp;
+                    <b-button v-if="showDocument" variant="warning" @click="getJson()">Revert</b-button> &nbsp;   
+                    <b-button v-if="showDocument" variant="danger" @click="save">Save</b-button>
+                    <b-textarea v-if="showDocument" v-model="drawingJson" rows="30" style="font-size: 12px"></b-textarea>
                 </b-form-group>
             </b-col>
         </b-row>
         <b-row>
             <b-col>
-                <b-btn-group>
-                    <b-btn variant="success" @click="save">Save</b-btn>
-                </b-btn-group>
+                <b-button variant="success" @click="download">Download</b-button> &nbsp;
+                <b-button variant="primary" @click="copy">Copy to clipboard</b-button> &nbsp;              
             </b-col>
         </b-row>
+        <br/>
         <b-row>
             <b-col>
                 <b-btn-group>
@@ -44,9 +43,10 @@ import { DrawingState } from "../../../../common/src/api/document/drawing";
 @Component({})
 export default class Debug extends Vue {
     drawingJson: string = "";
+    showDocument: boolean = false;
 
     mounted() {
-        this.drawingJson = JSON.stringify(this.document.drawing, null, 2);
+        this.getJson()
     }
 
     get profile(): User {
@@ -59,6 +59,29 @@ export default class Debug extends Vue {
 
     get catalog(): CatalogState {
         return this.$store.getters["catalog/default"];
+    }
+
+    getJson() {
+        this.drawingJson = JSON.stringify(this.document.drawing, null, 2);        
+    }
+
+    async download() {
+        const blob = new Blob([this.drawingJson], { type: "text/plain" });
+        const e = document.createEvent("MouseEvents"),
+            a = document.createElement("a");
+        a.download = `debug_${this.document.drawing.metadata.generalInfo.title}.json`;
+        a.href = window.URL.createObjectURL(blob);
+        a.dataset.downloadurl = ["text/json", a.download, a.href].join(":");
+        e.initEvent("click", true, false);
+        a.dispatchEvent(e);
+    }
+
+    async copy() {
+        await navigator.clipboard.writeText(this.drawingJson)
+    }
+
+    async paste() {
+        await navigator.clipboard.readText().then(text => this.drawingJson = text);    
     }
 
     async save() {
