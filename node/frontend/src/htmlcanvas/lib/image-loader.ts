@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getFloorPlanRenders, getImageLink } from "../../api/pdf";
+import { getImageLink } from "../../api/pdf";
 
 // Retrying image loading in an exponential backoff manner
 // Total max delay: ~30 sec
@@ -18,7 +18,7 @@ export default class ImageLoader {
 
                 const imageLinks = await getImageLink(key);
                 if (!imageLinks.success) {
-                    reject("couldn't get secure link");
+                    reject(`couldn't get secure link ${key}`);
                     return;
                 }
 
@@ -46,7 +46,7 @@ export default class ImageLoader {
                 }
 
                 if (iters === MAX_ITERATIONS) {
-                    reject("Could not load image background")
+                    reject(`Could not load image background ${key}`)
                     return;
                 }
 
