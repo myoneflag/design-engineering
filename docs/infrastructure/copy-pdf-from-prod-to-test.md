@@ -13,6 +13,8 @@ Production account Destination buckets:
 ### 1. Attach Bucket Policy
 (If not already done)
 
+See https://aws.amazon.com/premiumsupport/knowledge-center/cross-account-access-s3/ for more info on the following settings.
+
 For each destination bucket attach bucket policy allowing all entities in Production account to manage s3 buckets in Testing account.
 
 ```

@@ -33,10 +33,11 @@
                     <b-col>
                         <b-card>
                             <b-card-text style="text-align: left">
-                                <b>Category:</b> {{ feedback.category }}<br />
+                                <b-badge :variant="badgeCategory[feedback.category]">{{ feedback.category }}</b-badge>
+                                &nbsp;<b-icon icon="person"/>  {{ feedback.submittedBy.name }} <a :href="'/users/username/'+feedback.submittedBy.username">@{{feedback.submittedBy.username}}</a>&nbsp;<a :href="`mailto:`+feedback.submittedBy.email">{{feedback.submittedBy.email}}</a>
+                                &nbsp;<b-icon icon="calendar"/> {{ new Date(feedback.createdOn).toLocaleString() }}
+                                <br />
                                 {{ feedback.message }} <br />
-                                <b>By:</b> {{ feedback.submittedBy }}<br />
-                                {{ new Date(feedback.createdOn).toLocaleString() }}<br />
                             </b-card-text>
                         </b-card>
                     </b-col>
@@ -64,6 +65,13 @@ import { getFeedbacks } from "../api/feedback-message";
 export default class Contacts extends Vue {
     feedbacks: FeedbackMessage[] = [];
     isLoaded: boolean = false;
+
+    badgeCategory: {} = {
+        feature: "primary",
+        bug: "danger", 
+        suggestion: "warning",
+        other: "secondary"
+    }
 
     mounted() {
         // fill documents

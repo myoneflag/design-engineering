@@ -1,7 +1,10 @@
 {
-  "name": "rest-api-node-ts-boilerplate",
+  "name": "h2x-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "H2X backend",
+  "repository": "gitlab:info892/H2X",
+  "license": "UNLICENSED",
+  "private": true,
   "main": "src/index.js",
   "scripts": {
     "build": "tsc",
@@ -18,8 +21,6 @@
     "migration:revert": "ts-node ../node_modules/typeorm/cli.js migration:revert"
   },
   "keywords": [],
-  "author": "",
-  "license": "MIT",
   "dependencies": {
     "@babel/cli": "^7.1.2",
     "@babel/core": "^7.1.2",

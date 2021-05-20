@@ -1,20 +1,17 @@
 # For AWS Beanstalk - single docker instance
-from node:12
+from h2x-base:latest
 
-run apt-get update
-run apt-get upgrade -y
-run apt-get install imagemagick ghostscript -y
+copy ./common /usr/src/app/common
 
-add . /usr/src/app
-workdir /usr/src/app
-copy imagemagick-policy.xml /etc/ImageMagick-6/policy.xml
-run npm install
+copy ./ormconfig.js /usr/src/app/
 
+copy ./backend /usr/src/app/backend
 workdir /usr/src/app/backend
 run npm install
 run npm run build
 
 # /dist directory built
+copy ./frontend /usr/src/app/frontend
 workdir /usr/src/app/frontend
 run npm install
 run npm run build

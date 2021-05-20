@@ -1,16 +1,20 @@
 {
   "name": "h2x-docker",
   "version": "1.0.0",
-  "description": "",
+  "description": "H2X docker",
+  "repository": "gitlab:info892/H2X",
+  "license": "UNLICENSED",
+  "private": true,
   "main": "index.js",
   "dependencies": {
     "npm-run-all": "^4.1.5"
   },
   "devDependencies": {},
   "scripts": {
-    "dev": "export AWS_PROFILE=$npm_config_profile && docker-compose --profile dev up -d",
+    "dev": "export COMPOSE_HTTP_TIMEOUT=240 && export AWS_PROFILE=$npm_config_profile && docker-compose --profile dev up -d",
     "logs": "docker-compose logs --follow --tail=100 $npm_config_service",
     "down": "docker-compose --profile dev down",
+    "stop": "docker-compose --profile dev stop",    
     "build:all": "docker-compose --profile $npm_config_target build",
     "rebuild:all": "docker-compose --profile $npm_config_target build --no-cache",
     "build": "docker-compose build $npm_config_service",
@@ -22,7 +26,5 @@
     "prep": "source ../config/build.env && mkdir -p ${WEB_DIST} && mkdir -p ${WORKER_DIST} && sed \"s#_IMAGE_NAME_#${WEB_REMOTE_IMAGE_TAG}#g\" Dockerrun.aws.template.json > ${WEB_DIST}/Dockerrun.aws.json && sed \"s#_IMAGE_NAME_#${WORKER_REMOTE_IMAGE_TAG}#g\" Dockerrun.aws.template.json > ${WORKER_DIST}/Dockerrun.aws.json",
     "push": "source ../config/build.env && docker push ${WEB_REMOTE_IMAGE_TAG} && docker push ${WORKER_REMOTE_IMAGE_TAG}",
     "publish": "source ../config/build.env && run-s tag prep push"
-  },
-  "author": "",
-  "license": "ISC"
+  }
 }

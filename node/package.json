@@ -1,13 +1,13 @@
 {
   "name": "h2x-root",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "H2X root components",
+  "repository": "gitlab:info892/H2X",
+  "license": "UNLICENSED",
+  "private": true,
   "scripts": {
     "setup_local": "npm install && cd frontend && npm install && cd ../backend && npm install"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@types/lodash": "^4.14.149",
     "aws-sdk": "^2.656.0",

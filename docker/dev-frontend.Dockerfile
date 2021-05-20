@@ -1,13 +1,7 @@
-from node:12
+from h2x-base:latest
 
-run apt-get update
-run apt-get upgrade -y
-
-add . /usr/src/app
-workdir /usr/src/app
-run npm install
-
-workdir /usr/src/app/frontend
+copy ./frontend/package*.json /usr/src/app/frontend/
+workdir /usr/src/app/frontend/
 run npm install
 
 expose 80

@@ -189,14 +189,13 @@ function getPriceQuantitiesForSystem(context: CanvasContext, levelUid: string | 
                     if (entity.valve.type === BigValveType.RPZD_HOT_COLD) {
                         // Special case. There's a cold and hot RPZD here. Handle it specifically here and then skip the
                         // general handler.
-                        if (systemUid === StandardFlowSystemUids.ColdWater && o.costBreakdown) {
+                        if (systemUid === StandardFlowSystemUids.ColdWater && o.costBreakdown && o.costBreakdown.length > 0) {
                             const {qty, path} = o.costBreakdown[0];
                             if (!result.has(path)) {
                                 result.set(path, 0);
                             }
                             result.set(path, result.get(path)! + qty);
-                        } else if (systemUid === StandardFlowSystemUids.HotWater && o.costBreakdown) {
-
+                        } else if (systemUid === StandardFlowSystemUids.HotWater && o.costBreakdown && o.costBreakdown.length > 1) {
                             const {qty, path} = o.costBreakdown[1];
                             if (!result.has(path)) {
                                 result.set(path, 0);
