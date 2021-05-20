@@ -17,7 +17,6 @@
                             overflow-y: auto;
                             overflow-x: hidden;
                             height: calc(100vh - 300px)"
-                        @scroll="onScroll"
                     >
                         <p>
                             This agreement is between
@@ -134,15 +133,15 @@
                             id="acceptBtn"
                             variant="success"
                             @click="accept"
-                            :disabled="(profile && profile.eulaAccepted) || !scrolledToBottom"
+                            :disabled="profile && profile.eulaAccepted"
                         >
                             I Accept
                             <b-tooltip target="acceptDeclineBtn" v-if="profile && profile.eulaAccepted">
                                 You have already accepted the EULA
                             </b-tooltip>
-                            <b-tooltip target="acceptDeclineBtn" v-else-if="!scrolledToBottom">
+                            <b-tooltip target="acceptDeclineBtn">
                                 Please read the agreement before accepting
-                            </b-tooltip>
+                            </b-tooltip>                            
                         </b-button>
                     </b-col>
                 </b-row>
@@ -154,10 +153,7 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import MainNavBar from "../../src/components/MainNavBar.vue";
-import { State, Action, Getter } from "vuex-class";
-import { DocumentState } from "../../src/store/document/types";
 import { Document } from "../../../common/src/models/Document";
-import { createDocument, getDocuments } from "../api/document";
 import { User } from "../../../common/src/models/User";
 import { acceptEula, declineEula, logout } from "../api/logins";
 
@@ -170,23 +166,8 @@ export default class Home extends Vue {
     documents: Document[] = [];
     loaded: boolean = false;
 
-    scrolledToBottom = false;
-
-    mount() {
-        setTimeout(() => {
-            this.scrolledToBottom = true;
-        }, 10000);
-    }
-
     get profile(): User {
         return this.$store.getters["profile/profile"];
-    }
-
-    onScroll(event: UIEvent) {
-        const { scrollTop, clientHeight, scrollHeight } = event.target! as any;
-        if (scrollTop + clientHeight >= scrollHeight) {
-            this.scrolledToBottom = true;
-        }
     }
 
     async decline() {
