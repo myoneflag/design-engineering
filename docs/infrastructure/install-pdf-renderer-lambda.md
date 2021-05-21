@@ -1,4 +1,4 @@
-# Installing the PDF Rendering lambda
+# Installing the PDF Rendering lambda on AWS
 
 TBD more details
 
@@ -12,6 +12,14 @@ cd node/pdf-renderer
 sam build
 ```
 
+Deploy to an existing environment
+```
+sam deploy --config-env ENVIRONMENT --profile AWS_PROFILE
+```
+
+List of currently configured environments in `samconfig.toml`
+
+Deploy to a new environment
 ```
 sam deploy --guided --profile AWS_PROFILE
 ```

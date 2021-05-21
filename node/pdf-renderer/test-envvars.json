@@ -1,0 +1,5 @@
+{
+    "PdfRendererFunction": {
+      "DESTINATION_BUCKET": "h2x-s3-pdfrenders-local"
+    }
+}
