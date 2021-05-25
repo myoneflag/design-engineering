@@ -7,3 +7,4 @@ cloudformation/package-lock.json
 cloudformation/dist
 docker/package-lock.json
 docker/dist
+docker/temp
