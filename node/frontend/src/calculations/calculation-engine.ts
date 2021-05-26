@@ -29,7 +29,7 @@ import {
     getReynoldsNumber,
     head2kpa
 } from "../../src/calculations/pressure-drops";
-import {PropertyField} from "../../../common/src/api/document/entities/property-field";
+import {PropertyField, ChoiceField, FieldType} from "../../../common/src/api/document/entities/property-field";
 import {MainEventBus} from "../../src/store/main-event-bus";
 import {getObjectFrictionHeadLoss} from "../../src/calculations/entity-pressure-drops";
 import {DrawableEntityConcrete, isConnectableEntity} from "../../../common/src/api/document/entities/concrete-entity";
@@ -308,6 +308,19 @@ export default class CalculationEngine implements CalculationContext {
                                 message: "Please enter a value for " + field.property,
                                 variant: "danger",
                                 title: "Missing required value",
+                                recenter: true
+                            };
+                        }
+                    } else if (field.type == FieldType.Choice) {
+                        const val = getPropertyByString(obj.entity, field.property);
+                        const choices = (field as ChoiceField).params.choices;
+                        if ( !choices.find( c => c.key == val) ) {
+                            selectObject = {
+                                uid: obj.uid,
+                                property: field.property,
+                                message: "Please select a valid option for " + field.property,
+                                variant: "danger",
+                                title: "Valid value required",
                                 recenter: true
                             };
                         }
@@ -1722,9 +1735,6 @@ export default class CalculationEngine implements CalculationContext {
     sizePipeForFlowRate(pipe: PipeEntity, requirements: Array<[number | null, number]>) {
         const calculation = this.globalStore.getOrCreateCalculation(pipe);
 
-        let page: PipeSpec | null = null;
-
-
         let sizeMM = -Infinity;
         for (const [flowRate, maxVel] of requirements) {
             if (flowRate === null) {
@@ -1739,6 +1749,7 @@ export default class CalculationEngine implements CalculationContext {
 
         calculation.optimalInnerPipeDiameterMM = sizeMM;
 
+        let page: PipeSpec | null = null;
         if (pipe.diameterMM === null) {
             page = this.getRealPipe(pipe);
         } else {
