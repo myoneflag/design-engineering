@@ -11,10 +11,10 @@
   },
   "devDependencies": {},
   "scripts": {
-    "dev": "export COMPOSE_HTTP_TIMEOUT=240 && export AWS_PROFILE=$npm_config_profile && docker-compose --profile dev up -d",
+    "dev": "export COMPOSE_HTTP_TIMEOUT=240 && export AWS_PROFILE=$npm_config_profile && docker-compose --profile dev up --detach",
     "down": "run-s _require_service && docker-compose rm $npm_config_service",
     "logs": "run-s _require_service && docker-compose logs --follow --tail=100 $npm_config_service",
-    "start": "run-s _require_service && docker-compose up --no-deps -d $npm_config_service",
+    "start": "run-s _require_service && docker-compose up --no-deps --detach $npm_config_service",
     "stop": "run-s _require_service && docker-compose stop $npm_config_service",
     "build": "run-s _require_service && docker-compose build $npm_config_service",
     "rebuild": "run-s _require_service && docker-compose build --no-cache $npm_config_service",

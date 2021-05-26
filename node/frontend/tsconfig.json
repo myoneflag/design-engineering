@@ -26,7 +26,8 @@
       "scripthost"
     ],
     "skipLibCheck": true, // for flatten-js.
-    "strictPropertyInitialization": false
+    "strictPropertyInitialization": false,
+    "sourceMap": true
   },
   "include": [
     "src/**/*.ts",
