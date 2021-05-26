@@ -70,7 +70,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             units: Units.None,
             category: FieldCategory.LoadingUnits,
             systemUid: entity.systemUid,
-            format: (v) => "" + Number(v.toFixed(5))
+            format: (v) => "" + Number((v ? v : 0).toFixed(5))
         });
     }
 
