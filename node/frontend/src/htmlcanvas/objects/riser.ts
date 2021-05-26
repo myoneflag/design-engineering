@@ -458,17 +458,15 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                         context.doc.drawing.metadata.calculationParams.gravitationalAcceleration
                         );
 
-                    if (bottomPressure) {
-                        res.heights[lvlUid] = {
-                            flowRateLS: calc.totalPeakFlowRateLS,
-                            heightAboveGround: levels[lvlUid].floorHeightM,
-                            psdUnits: calc.psdUnits,
-                            pressureKPA: bottomPressure - risenSegmentPressureLossKPA,
-                            staticPressureKPA: bottomStaticPressure === null ? null : bottomStaticPressure - risenSegmentPressureLossKPA,
-                            sizeMM: calc.realNominalPipeDiameterMM,
-                            ventSizeMM: null,
-                        };
-                    }
+                    res.heights[lvlUid] = {
+                        flowRateLS: calc.totalPeakFlowRateLS,
+                        heightAboveGround: levels[lvlUid].floorHeightM,
+                        psdUnits: calc.psdUnits,
+                        pressureKPA: bottomPressure ? bottomPressure : 0 - risenSegmentPressureLossKPA,
+                        staticPressureKPA: bottomStaticPressure ? bottomStaticPressure : 0 - risenSegmentPressureLossKPA,
+                        sizeMM: calc.realNominalPipeDiameterMM,
+                        ventSizeMM: null,
+                    };
                 } else if (IAmDrainage) {
                     res.heights[lvlUid] = {
                         flowRateLS: null,

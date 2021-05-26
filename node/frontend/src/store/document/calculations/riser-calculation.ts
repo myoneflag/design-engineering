@@ -94,7 +94,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 units: Units.None,
                 category: FieldCategory.LoadingUnits,
                 systemUid: entity.systemUid,
-                format: (v) => "" + Number(v?.toFixed(5))
+                format: (v) => "" + Number((v?v:0).toFixed(5))
             });
         }
 
@@ -107,7 +107,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 category: FieldCategory.LoadingUnits,
                 systemUid: entity.systemUid,
                 layouts: layoutOptionDrainage,
-                format: (v) => "" + Number(v?.toFixed(5))
+                format: (v) => "" + Number((v?v:0).toFixed(5))
             });
         }
 
@@ -157,7 +157,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 units: Units.None,
                 category: FieldCategory.LoadingUnits,
                 systemUid: entity.systemUid,
-                format: (v) => "" + Number(v?.toFixed(5)),
+                format: (v) => "" + Number((v?v:0).toFixed(5)),
             });
         }
 
@@ -170,7 +170,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 category: FieldCategory.LoadingUnits,
                 systemUid: entity.systemUid,
                 layouts: ['drainage'],
-                format: (v) => "" + Number(v?.toFixed(5)),
+                format: (v) => "" + Number((v?v:0).toFixed(5)),
             });
 
             if (system && system.drainageProperties.stackDedicatedVent) {
