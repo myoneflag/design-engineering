@@ -314,7 +314,8 @@ export default class CalculationEngine implements CalculationContext {
                     } else if (field.type == FieldType.Choice) {
                         const val = getPropertyByString(obj.entity, field.property);
                         const choices = (field as ChoiceField).params.choices;
-                        if ( !choices.find( c => c.key == val) ) {
+                        if ( val && val !== "" && 
+                             choices && choices.length > 0 && !choices.find( c => c.key == val) ) {
                             selectObject = {
                                 uid: obj.uid,
                                 property: field.property,
