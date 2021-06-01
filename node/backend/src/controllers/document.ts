@@ -181,27 +181,26 @@ export class DocumentController {
             const user = await session.user;
             await user.reload();
             const org = user.organization;
-            console.log('here in general?')
             console.log(user)
             if (org == null) {
                 results = [];
             } else {
-                results = await Document
-                    .createQueryBuilder("document")
-                    .where("document.organization = :organization", { organization: org.id })
-                    .andWhere(new Brackets((qb) => {
-                        qb.where("document.state = :state", { state: DocumentStatus.ACTIVE });
+                let where = [ 
+                    { organization: org.id, state: DocumentStatus.ACTIVE }
+                ];
+                if (session.user.accessLevel <= AccessLevel.MANAGER) {
+                    where.push({ organization: org.id, state: DocumentStatus.DELETED })
+                }
 
-                        if (session.user.accessLevel <= AccessLevel.MANAGER) {
-                            qb.orWhere("document.state = :state2", { state2: DocumentStatus.DELETED });
-                        }
-                    }))
-                    .orderBy("document.createdOn", "DESC")
-                    .getMany();
+                results = await Document.find( { 
+                    where,
+                    order: {
+                        createdOn: "DESC"
+                    }
+                })
             }
-            await Promise.all(results.map((r) => r.reload()));
         } else {
-            results = await Document.find({ order: { "createdOn": "DESC" } });
+            results = await Document.find({ order: { createdOn: "DESC" } });
         }
 
         res.status(200).send({
