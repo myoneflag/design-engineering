@@ -72,7 +72,8 @@ export class DocumentUpgrader {
     static async onDocumentUpgradeRequest(docId: number) {
         try {
             console.log('documentUpgradeExecute', 'start', {docId, CURRENT_VERSION})
-            let start = new Date();
+
+            console.time('documentUpgradeExecute')
 
             let shouldUpgrade = true;
 
@@ -97,6 +98,8 @@ export class DocumentUpgrader {
             }
 
 
+            console.timeLog('documentUpgradeExecute', 'getDoc', { docId })
+
             const doc = await Document.findOne({ id: docId });
             // await compressDocumentIfRequired(doc);
 
@@ -109,6 +112,9 @@ export class DocumentUpgrader {
             let ops: Operation[];
 
             await getManager().transaction('READ UNCOMMITTED', async (tx) => {
+                
+                console.timeLog('documentUpgradeExecute', 'getOps:start', { docId })
+
                 ops = await tx.getRepository(Operation)
                     .createQueryBuilder("operation")
                     .leftJoinAndSelect("operation.blame", "user")
@@ -116,11 +122,13 @@ export class DocumentUpgrader {
                     .orderBy("operation.orderIndex", "ASC")
                     .getMany();
 
-                console.log('documentUpgradeExecute', 'starting', { docId, fromVersion: doc.version, ops: ops.length, state: doc.state} );
+                console.timeLog('documentUpgradeExecute', 'getOps:end', { docId, fromVersion: doc.version, ops: ops.length, state: doc.state})
 
                 let opsUpgraded = 0;
+                let opsProcessed = 0;
                 for (const op of ops) {
-
+                    if (!(opsProcessed++ % 100))
+                        console.timeLog('documentUpgradeExecute', '100 ops')
                     switch (op.operation.type) {
                         case OPERATION_NAMES.DIFF_OPERATION:
                             applyDiffNative(drawing, op.operation.diff);
@@ -207,20 +215,14 @@ export class DocumentUpgrader {
                     });
                 }
 
-                let timeTakenSeconds = Math.round((new Date().getTime() - start.getTime()) / 1000)
-                console.log('documentUpgradeExecute', 'computed', { docId, opsUpgraded, timeTakenSeconds} );
-
-                start = new Date();
-
                 // upgrade
                 doc.version = CURRENT_VERSION;
                 doc.metadata = drawing.metadata.generalInfo;
                 await tx.save(Document, doc);
 
-                timeTakenSeconds = Math.round((new Date().getTime() - start.getTime()) / 1000)
-                console.log('documentUpgradeExecute', 'saved', { docId, timeTakenSeconds} );
-                
-                console.log('documentUpgradeExecute', 'complete', { docId } );    
+                console.timeLog('documentUpgradeExecute', { docId, opsUpgraded} );                
+
+                console.timeEnd('documentUpgradeExecute')
             });
         } catch(error) {
             console.log('documentUpgradeExecute', 'error', { docId, error } );
