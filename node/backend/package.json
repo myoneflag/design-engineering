@@ -17,7 +17,7 @@
     "clean": "rm -rf node_modules coverage dist .nyc_output",
     "lint": "tslint -t stylish --project \"tsconfig.json\"",
     "migration:generate": "ts-node ../node_modules/typeorm/cli.js migration:generate -n",
-    "migration:run": "ts-node ../node_modules/typeorm/cli.js migration:run",
+    "migration:run": "ts-node ../node_modules/typeorm/cli.js --config ../ormconfig.js migration:run",
     "migration:revert": "ts-node ../node_modules/typeorm/cli.js migration:revert"
   },
   "keywords": [],
