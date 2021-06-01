@@ -44,11 +44,7 @@ createConnection().then(async (connection) => {
 
     app.enable("trust proxy");
 
-    app.listen(Number(PORT), "0.0.0.0", (err) => {
-        if (err) {
-            return console.log(err);
-        }
-
+    app.listen(Number(PORT), "0.0.0.0", () => {
         console.log(`Server is listening on ${PORT}`);
     });
 }).catch((error) => console.log(error));
