@@ -9,7 +9,7 @@ import {InsulationJackets, InsulationMaterials, StandardFlowSystemUids, Supporte
 import {PlantType} from "./document/entities/plants/plant-types";
 import {cloneSimple} from "../lib/utils";
 import {FlowSourceEntityV11} from "./document/entities/flow-source-entity";
-import uuid from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import {FlowConfiguration, SystemNodeEntity} from "./document/entities/big-valve/big-valve-entity";
 import {ValveType} from "./document/entities/directed-valves/valve-types";
 
@@ -130,7 +130,7 @@ export function upgrade15to16(original: DrawingState) {
                 if (e.plant.type === PlantType.RETURN_SYSTEM) {
                     // Add the missing gas entity
                     if (!e.plant.gasNodeUid) {
-                        const newUid = uuid();
+                        const newUid = uuidv4();
 
                         const newEntity: SystemNodeEntity = {
                             center: {
@@ -202,7 +202,7 @@ export function upgrade16to17(original: DrawingState) {
                 if (e.plant.type === PlantType.RETURN_SYSTEM) {
                     // Add the missing gas entity
                     if (!e.plant.gasNodeUid) {
-                        const newUid = uuid();
+                        const newUid = uuidv4();
 
                         const newEntity: SystemNodeEntity = {
                             center: {
@@ -356,7 +356,7 @@ export function upgrade19to20(original: DrawingState) {
                         calculationHeightM: null,
                         allowAllSystems: false,
                         systemUid: StandardFlowSystemUids.SewerDrainage,
-                        uid: newSewerNodeOf[e.uid] || uuid.v4(),
+                        uid: newSewerNodeOf[e.uid] || uuidv4(),
                         configuration: FlowConfiguration.INPUT
                     };
                     newSewerNodeOf[e.uid] = newSystemNode.uid;

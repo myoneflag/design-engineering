@@ -119,7 +119,6 @@ export class DocumentUpgrader {
                 console.log('documentUpgradeExecute', 'starting', { docId, fromVersion: doc.version, ops: ops.length, state: doc.state} );
 
                 let opsUpgraded = 0;
-                let lastHeartbeat = new Date();
                 for (const op of ops) {
 
                     switch (op.operation.type) {
@@ -127,7 +126,6 @@ export class DocumentUpgrader {
                             applyDiffNative(drawing, op.operation.diff);
 
                             const newUpgraded = cloneSimple(drawing);
-                            let updated = false;
                             switch (doc.version) {
                                 case 0:
                                 case 1:
