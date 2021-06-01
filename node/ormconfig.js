@@ -26,7 +26,7 @@ module.exports = {
   },
   database,
   synchronize: false,
-  logging: process.env.MODE === "production" ? false : true,
+  logging: false,
   entities: [
     process.env.MODE === "production" ? "./dist/common/src/models/**/*{.ts,.js}" : "../common/src/models/**/*.ts"
   ],
@@ -35,6 +35,7 @@ module.exports = {
   ],
   migrationsRun: true,
   migrationsTableName: "migrations",
+  maxQueryExecutionTime: 1000,
   subscribers: [
     "./src/subscriber/**/*.ts"
   ],
