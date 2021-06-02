@@ -5,6 +5,10 @@ export function withSerializableTransaction<T>(retryable: (tx: EntityManager) =>
     return withTransaction('SERIALIZABLE', retryable);
 }
 
+export function withRepeatableReadTransaction<T>(retryable: (tx: EntityManager) => Promise<T>) {
+    return withTransaction('REPEATABLE READ', retryable);
+}
+
 export function withTransaction<T>(isolationLevel: IsolationLevel, retryable: (tx: EntityManager) => Promise<T>) {
     const txid = Date.now()    
     return new Promise<any>((res, rej) => {    

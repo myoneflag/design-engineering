@@ -70,14 +70,15 @@ export class DocumentUpgrader {
     }
 
     static async onDocumentUpgradeRequest(docId: number) {
+        let timingLabel = `documentUpgradeExecute:${docId}:${Date.now()}`        
         try {
             console.log('documentUpgradeExecute', 'start', {docId, CURRENT_VERSION})
 
-            console.time(`documentUpgradeExecute:${docId}`)
+            console.time(timingLabel)
 
             let shouldUpgrade = true;
 
-            await ConcurrentDocument.withDocumentLock(docId, async (tx, innerDoc) => {
+            await ConcurrentDocument.withDocumentLockRepeatableRead(docId, async (tx, innerDoc) => {
                 const now = new Date();
 
                 if (innerDoc.version >= CURRENT_VERSION) {
@@ -98,7 +99,7 @@ export class DocumentUpgrader {
             }
 
 
-            console.timeLog(`documentUpgradeExecute:${docId}`, 'getDoc', { docId })
+            console.timeLog(timingLabel, 'getDoc', { docId })
 
             const doc = await Document.findOne({ id: docId });
             // await compressDocumentIfRequired(doc);
@@ -113,7 +114,7 @@ export class DocumentUpgrader {
 
             await getManager().transaction('READ UNCOMMITTED', async (tx) => {
                 
-                console.timeLog(`documentUpgradeExecute:${docId}`, 'getOps:start', { docId })
+                console.timeLog(timingLabel, 'getOps:start', { docId })
 
                 ops = await tx.getRepository(Operation)
                     .createQueryBuilder("operation")
@@ -122,13 +123,13 @@ export class DocumentUpgrader {
                     .orderBy("operation.orderIndex", "ASC")
                     .getMany();
 
-                console.timeLog(`documentUpgradeExecute:${docId}`, 'getOps:end', { docId, fromVersion: doc.version, ops: ops.length, state: doc.state})
+                console.timeLog(timingLabel, 'getOps:end', { docId, fromVersion: doc.version, ops: ops.length, state: doc.state})
 
                 let opsUpgraded = 0;
                 let opsProcessed = 0;
                 for (const op of ops) {
                     if (!(opsProcessed++ % 100))
-                        console.timeLog(`documentUpgradeExecute:${docId}`, '100 ops')
+                        console.timeLog(timingLabel, { opsProcessed })
                     switch (op.operation.type) {
                         case OPERATION_NAMES.DIFF_OPERATION:
                             applyDiffNative(drawing, op.operation.diff);
@@ -220,13 +221,13 @@ export class DocumentUpgrader {
                 doc.metadata = drawing.metadata.generalInfo;
                 await tx.save(Document, doc);
 
-                console.timeLog(`documentUpgradeExecute:${docId}`, { "complete": true, docId, opsUpgraded} );
+                console.timeLog(timingLabel, { "complete": true, docId, opsUpgraded} );
             });
         } catch(error) {
             console.log('documentUpgradeExecute', 'error', { docId, error } );
             throw(error)
         } finally {
-            console.timeEnd(`documentUpgradeExecute:${docId}`)            
+            console.timeEnd(timingLabel)            
         }
     }
 }
