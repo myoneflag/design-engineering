@@ -221,12 +221,12 @@ export class DocumentUpgrader {
                 await tx.save(Document, doc);
 
                 console.timeLog(`documentUpgradeExecute:${docId}`, { "complete": true, docId, opsUpgraded} );
-
-                console.timeEnd(`documentUpgradeExecute:${docId}`)
             });
         } catch(error) {
             console.log('documentUpgradeExecute', 'error', { docId, error } );
             throw(error)
+        } finally {
+            console.timeEnd(`documentUpgradeExecute:${docId}`)            
         }
     }
 }
