@@ -20,11 +20,8 @@ import { promisify } from "util";
 import {compressDocumentIfRequired} from "./compressDocument";
 import {withTransaction} from "../helpers/database";
 
-export const UPGRADE_EXPIRED_THRESHOLD_MIN = 10;
+export const UPGRADE_EXPIRED_THRESHOLD_MIN = 30;
 // acknowledge that we are working while upgrading, but with enough interval so we don't update the DB too often.
-
-export const HEARTBEAT_INTERVAL_SEC = 5; // It doesn't seem like connections are being kept alive by heartbeats, so
-// send to a dummy topic every now and then during long updates without acks.
 
 export enum Tasks {
     DocumentUpgradeScan = "documentUpgradeScan",
