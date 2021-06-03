@@ -1,9 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, ManyToOne, Index } from "typeorm";
-import { BaseEntity } from "typeorm";
+import { Entity, BaseEntity, PrimaryGeneratedColumn, Column, OneToOne, ManyToOne, Index, JoinColumn} from "typeorm";
 import { Document } from "./Document";
-import { OperationTransformConcrete } from "../api/document/operation-transforms";
 import { User } from "./User";
-import {JoinColumn} from "typeorm";
+import { OperationTransformConcrete } from "../api/document/operation-transforms";
 
 @Entity()
 @Index(['document', 'orderIndex'])
