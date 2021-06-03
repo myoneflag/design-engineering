@@ -213,7 +213,7 @@ export class DocumentUpgrader {
                     let drawingData = new Drawing()
                     drawingData.documentId = docId
                     drawingData.drawing = drawing
-                    tx.save(Drawing, drawingData)
+                    await tx.save(Drawing, drawingData)
                 }
 
                 // upgrade
