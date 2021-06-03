@@ -19,6 +19,7 @@ import SqsClient from "../services/SqsClient"
 import { promisify } from "util";
 import {compressDocumentIfRequired} from "./compressDocument";
 import {withReadUncommittedTransaction} from "../helpers/database";
+import { Drawing } from "../../../common/src/models/Drawing";
 
 // acknowledge that we are working while upgrading, but with enough interval so we don't update the DB too often.
 export const UPGRADE_EXPIRED_THRESHOLD_MIN = 120;
@@ -205,6 +206,14 @@ export class DocumentUpgrader {
                     await new Promise((res, rej) => {
                         setTimeout(res, 0);
                     });
+                }
+
+                if (CURRENT_VERSION == 22) {
+                    // save drawing state to seed drawing table
+                    let drawingData = new Drawing()
+                    drawingData.documentId = docId
+                    drawingData.drawing = drawing
+                    tx.save(Drawing, drawingData)
                 }
 
                 // upgrade
