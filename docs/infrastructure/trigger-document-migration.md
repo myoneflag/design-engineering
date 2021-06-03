@@ -8,12 +8,18 @@ This outlines the procedure of invokign the worker servers to perform the docume
 2. Navigate to SQS and identify the queue that corresponds to the environment you want to update. e.g. `h2x-worker-queue-stage`
 3. Click `Send and receive message`
 4. Use the following message body:
-```
+```json
 { "task": "documentUpgradeScan" }
 ```
 Click Send message
+
+To trigger the document upgrade of only one document, use the following message:
+```json
+{ "task": "documentUpgradeExecute", "parameters": { "docId": "DOCUMENTID" } }
+```
 
 5. Monitor upgrade process in Cloudwatch Log insights
 ```
 https://us-west-1.console.aws.amazon.com/cloudwatch/home?region=us-west-1#logsV2:logs-insights
 ```
+
