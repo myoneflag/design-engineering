@@ -324,7 +324,7 @@ export function upgrade18to19(original: DrawingState) {
 
 const newSewerNodeOf: {[key: string]: string} = {};
 
-export function upgrade19to20(original: DrawingState) {
+export function upgrade19to20and21(original: DrawingState) {
     if (!original.metadata.flowSystems.find((s) => s.uid === StandardFlowSystemUids.SewerDrainage)) {
         // Vent colour setting to flow systems
         for (const system of original.metadata.flowSystems) {
@@ -373,22 +373,13 @@ export function upgrade19to20(original: DrawingState) {
                 }
             }
 
-
             // Add isVent option of riser.
             else if (e.type === EntityType.RISER) {
                 if (e.isVent === undefined) {
                     e.isVent = false;
                 }
             }
-        }
-    }
-}
 
-// This is to fix problems with the previous upgrade - drainage unit fields for fixtures not set.
-export function upgrade20to21(original: DrawingState) {
-    for (const level of Object.values(original.levels)) {
-        const entities = level.entities;
-        for (const e of Object.values(entities)) {
             if (e.type === EntityType.FIXTURE) {
                 if (e.upcFixtureUnits === undefined) {
                     e.upcFixtureUnits = null;
@@ -410,6 +401,7 @@ export function upgrade20to21(original: DrawingState) {
                     e.node.enDischargeUnits = null;
                 }
             }
+
         }
     }
 }

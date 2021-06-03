@@ -1,7 +1,7 @@
 import {
     upgrade10to11,
     upgrade11to12, upgrade12to13, upgrade13to14, upgrade14to15, upgrade15to16, upgrade16to17, upgrade17to18,
-    upgrade18to19, upgrade19to20, upgrade20to21,
+    upgrade18to19, upgrade19to20and21,
     upgrade9to10, upgraded21to22
 } from "../../../common/src/api/upgrade";
 import { Operation } from "../../../common/src/models/Operation";
@@ -174,10 +174,9 @@ export class DocumentUpgrader {
                                     upgrade18to19(newUpgraded);
                                 // noinspection FallThroughInSwitchStatementJS
                                 case 19:
-                                    upgrade19to20(newUpgraded);
-                                // noinspection FallThroughInSwitchStatementJS
                                 case 20:
-                                    upgrade20to21(newUpgraded);
+                                    // document versions 20 and 21 are being applied and deployed at the same time
+                                    upgrade19to20and21(newUpgraded);
                                 // noinspection FallThroughInSwitchStatementJS
                                 case 21:
                                     upgraded21to22(newUpgraded);
