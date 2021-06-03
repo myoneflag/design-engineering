@@ -18,10 +18,11 @@ import { CURRENT_VERSION } from "../../../common/src/api/config";
 import SqsClient from "../services/SqsClient"
 import { promisify } from "util";
 import {compressDocumentIfRequired} from "./compressDocument";
-import {withTransaction} from "../helpers/database";
+import {withReadUncommittedTransaction} from "../helpers/database";
 
-export const UPGRADE_EXPIRED_THRESHOLD_MIN = 30;
 // acknowledge that we are working while upgrading, but with enough interval so we don't update the DB too often.
+export const UPGRADE_EXPIRED_THRESHOLD_MIN = 120;
+export const MINUTE_MS = 60 * 1000;
 
 export enum Tasks {
     DocumentUpgradeScan = "documentUpgradeScan",
@@ -69,51 +70,43 @@ export class DocumentUpgrader {
     static async onDocumentUpgradeRequest(docId: number) {
         let timingLabel = `documentUpgradeExecute:${docId}:${Date.now()}`        
         try {
-            console.log('documentUpgradeExecute', 'start', {docId, CURRENT_VERSION})
+            console.log(timingLabel, 'start', {docId, CURRENT_VERSION})
 
             console.time(timingLabel)
 
             let shouldUpgrade = true;
 
-            await ConcurrentDocument.withDocumentLockRepeatableRead(docId, async (tx, innerDoc) => {
+            await ConcurrentDocument.withDocumentLockReadUncommitted(docId, async (tx, doc) => {
                 const now = new Date();
 
-                if (innerDoc.version >= CURRENT_VERSION) {
+                if (doc.version >= CURRENT_VERSION) {
                     shouldUpgrade = false;
-                } else if (innerDoc.upgradingLockExpires && innerDoc.upgradingLockExpires >= new Date()) {
-                    console.log('documentUpgradeExecute', 'stillUpgrading', { docId });
+                } else if (doc.upgradingLockExpires && doc.upgradingLockExpires >= new Date()) {
+                    console.timeLog(timingLabel, 'stillUpgrading', { docId });
                     shouldUpgrade = false;
                 }
                 if (shouldUpgrade) {
-                    innerDoc.upgradingLockExpires = new Date(new Date().getTime() + UPGRADE_EXPIRED_THRESHOLD_MIN * 60000);
-                    await tx.save(innerDoc);
+                    doc.upgradingLockExpires = new Date(new Date().getTime() + UPGRADE_EXPIRED_THRESHOLD_MIN * MINUTE_MS);
+                    await tx.save(doc);
                 }
             });
 
             if (!shouldUpgrade) {
-                console.log('documentUpgradeExecute', 'skiping', { docId });
+                console.timeLog(timingLabel, 'skipping', { docId });
                 return;
             }
-
 
             console.timeLog(timingLabel, 'getDoc', { docId })
 
             const doc = await Document.findOne({ id: docId });
-            // await compressDocumentIfRequired(doc);
-
-            //await new Promise((res) => setTimeout(res, 5000));
-
             const drawing = initialDrawing(doc.locale);
             let upgraded = initialDrawing(doc.locale);
 
-
-            let ops: Operation[];
-
-            await getManager().transaction('READ UNCOMMITTED', async (tx) => {
+            await withReadUncommittedTransaction( async (tx) => {
                 
                 console.timeLog(timingLabel, 'getOps:start', { docId })
 
-                ops = await tx.getRepository(Operation)
+                let ops = await tx.getRepository(Operation)
                     .createQueryBuilder("operation")
                     .leftJoinAndSelect("operation.blame", "user")
                     .where("operation.document = :document", { document: docId })
@@ -125,8 +118,10 @@ export class DocumentUpgrader {
                 let opsUpgraded = 0;
                 let opsProcessed = 0;
                 for (const op of ops) {
+
                     if (!(opsProcessed++ % 100))
                         console.timeLog(timingLabel, { opsProcessed })
+
                     switch (op.operation.type) {
                         case OPERATION_NAMES.DIFF_OPERATION:
                             applyDiffNative(drawing, op.operation.diff);
@@ -192,7 +187,7 @@ export class DocumentUpgrader {
                                     if (stringify(op.operation) !== stringify(upgradedOps[0])) {
                                         opsUpgraded++;
                                         op.operation = upgradedOps[0];
-                                        await tx.save(Operation, op);
+                                        await tx.update(Operation, { id: op.id }, op);
                                     }
                                 } else {
                                     throw new Error("diffState returned something unusual");
@@ -217,10 +212,10 @@ export class DocumentUpgrader {
                 doc.metadata = drawing.metadata.generalInfo;
                 await tx.save(Document, doc);
 
-                console.timeLog(timingLabel, { "complete": true, docId, opsUpgraded} );
+                console.timeLog(timingLabel, 'complete', { docId, opsUpgraded, ops: ops.length } );
             });
         } catch(error) {
-            console.log('documentUpgradeExecute', 'error', { docId, error } );
+            console.timeLog(timingLabel, 'error', { docId, error } );
             throw(error)
         } finally {
             console.timeEnd(timingLabel)            
