@@ -33,8 +33,8 @@ export enum Tasks {
 export class DocumentUpgrader {
 
     static async submitDocumentsForUpgrade() {
+
         const docs = await Document.find({
-            upgradingLockExpires: LessThan(new Date()),
             version: LessThan(CURRENT_VERSION),
         });
 
@@ -52,7 +52,7 @@ export class DocumentUpgrader {
             return 0;
         });
 
-        console.log('documentUpgradeScan', { 'count': toUpgrade.length });
+        console.log('documentUpgradeScan', { 'toUpgrade': toUpgrade.length });
         for (const doc of toUpgrade) {
             await this.enqueueDocumentForUpgrade(doc.id);
         }
