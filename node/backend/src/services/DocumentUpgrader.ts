@@ -75,27 +75,20 @@ export class DocumentUpgrader {
 
             console.time(timingLabel)
 
-            let shouldUpgrade = true;
-
             await ConcurrentDocument.withDocumentLockReadUncommitted(docId, async (tx, doc) => {
                 const now = new Date();
 
                 if (doc.version >= CURRENT_VERSION) {
-                    shouldUpgrade = false;
+                    console.timeLog(timingLabel, 'alreadyUpgraded', { docId });
+                    return true;
                 } else if (doc.upgradingLockExpires && doc.upgradingLockExpires >= new Date()) {
                     console.timeLog(timingLabel, 'stillUpgrading', { docId });
-                    shouldUpgrade = false;
+                    return false;
                 }
-                if (shouldUpgrade) {
-                    doc.upgradingLockExpires = new Date(new Date().getTime() + UPGRADE_EXPIRED_THRESHOLD_MIN * MINUTE_MS);
-                    await tx.save(doc);
-                }
+                
+                doc.upgradingLockExpires = new Date(new Date().getTime() + UPGRADE_EXPIRED_THRESHOLD_MIN * MINUTE_MS);
             });
 
-            if (!shouldUpgrade) {
-                console.timeLog(timingLabel, 'skipping', { docId });
-                return false;
-            }
 
             console.timeLog(timingLabel, 'getDoc', { docId })
 
