@@ -8,6 +8,7 @@ export class WorkerController {
         console.log("worker.message", jsonMessage)
 
         let docId: number;
+        let result = true;
         try {
             switch (jsonMessage.task) {
                 case Tasks.DocumentUpgradeScan:
@@ -17,12 +18,16 @@ export class WorkerController {
                 case Tasks.DocumentUpgradeExecute:
                     docId = req.body.parameters.docId
                     console.log("worker.task", jsonMessage.task, { docId } )
-                    await DocumentUpgrader.onDocumentUpgradeRequest(docId);
+                    result = await DocumentUpgrader.onDocumentUpgradeRequest(docId);
                     break;
                 default:
                     console.log("worker.unkownMessage")
             }
-            return res.status(200).send({success: true});            
+            if (result) {
+                return res.status(200).send({success: true});
+            } else {
+                return res.status(406).send({success: false});
+            }
         } catch (err) {
             console.log("worker.error", jsonMessage.task, { docId } )
             console.error(err)

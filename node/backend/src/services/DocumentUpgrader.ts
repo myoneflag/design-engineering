@@ -68,7 +68,7 @@ export class DocumentUpgrader {
         await SqsClient.publish(queueMessage)
     }
 
-    static async onDocumentUpgradeRequest(docId: number) {
+    static async onDocumentUpgradeRequest(docId: number): Promise<boolean> {
         let timingLabel = `documentUpgradeExecute:${docId}:${Date.now()}`        
         try {
             console.log(timingLabel, 'start', {docId, CURRENT_VERSION})
@@ -94,7 +94,7 @@ export class DocumentUpgrader {
 
             if (!shouldUpgrade) {
                 console.timeLog(timingLabel, 'skipping', { docId });
-                return;
+                return false;
             }
 
             console.timeLog(timingLabel, 'getDoc', { docId })
@@ -229,6 +229,7 @@ export class DocumentUpgrader {
         } finally {
             console.timeEnd(timingLabel)            
         }
+        return true;
     }
 }
 
