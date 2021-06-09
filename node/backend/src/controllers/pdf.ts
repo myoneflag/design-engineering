@@ -322,7 +322,6 @@ const router: Router = Router();
 
 const controller = new PDFController();
 
-// Retrieve all Users
 router.post("/", controller.uploadPdf.bind(controller));
 router.get("/:key", controller.getImageLink.bind(controller));
 router.get("/:key/renders", controller.getRenders.bind(controller));

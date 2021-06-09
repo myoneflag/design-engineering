@@ -396,7 +396,6 @@ const router: Router = Router();
 
 const controller = new LoginController();
 
-// Retrieve all Users
 router.post('/login', controller.login.bind(controller));
 router.all('/logout', controller.logout.bind(controller));
 router.all('/session', controller.session.bind(controller));

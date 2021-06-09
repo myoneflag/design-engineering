@@ -84,7 +84,6 @@ export class OrganizationController {
 const router = Router();
 const controller = new OrganizationController();
 
-// Retrieve all Users
 router.post('/', controller.create.bind(controller));
 router.get('/:id', controller.findOne.bind(controller));
 router.get('/', controller.find.bind(controller));
