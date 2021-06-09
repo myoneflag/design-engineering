@@ -82,11 +82,12 @@ import Component from 'vue-class-component';
 import * as _ from "lodash";
 import { DocumentState } from '../../store/document/types';
 import { User } from '../../../../common/src/models/User';
-import { NodeProps, Entities } from '../../../../common/src/models/CustomEntity';
+import { NodeProps } from '../../../../common/src/models/CustomEntity';
 import { FixtureSpec } from '../../../../common/src/api/catalog/types';
 import { cloneSimple } from '../../../../common/src/lib/utils';
 import { add, remove, update } from '../../api/custom-entity';
 import { EntityType } from '../../../../common/src/api/document/entities/types';
+import { drawingContainsCustomNode } from '@/../../common/src/api/document/entities/load-node-entity';
 
 @Component
 export default class Nodes extends Vue {
@@ -145,24 +146,20 @@ export default class Nodes extends Vue {
     }
 
     async handleDelete() {
-        this.$bvModal.msgBoxConfirm('Make sure this node is not use in the project or else you will experiencing some errors.', {
-            okVariant: 'warning',
-            okTitle: 'Continue',
-        }).then(async value => {
-            if (value) {
-                this.submitting = true;
-                await remove(this.viewNode as number, {documentId: this.document.documentId, entity: this.reactiveForm}).then(res => {
-                    if (res.success) {
-                        this.$store.dispatch("customEntity/setNodes", res.data);
-                    }
-                });
-                this.submitting = false;
-                this.$bvModal.hide('form');
-                return true;
-            } else {
-                return false;
-            }
-        });   
+        const nodeId = this.viewNode as number;
+        if ( drawingContainsCustomNode(this.document.drawing, nodeId) ) {
+            this.$bvModal.msgBoxOk('This node is in use in the project and cannot be deleted.')
+        } else  {
+            this.submitting = true;
+            await remove(nodeId, {documentId: this.document.documentId, entity: this.reactiveForm}).then(res => {
+                if (res.success) {
+                    this.$store.dispatch("customEntity/setNodes", res.data);
+                }
+                console.log(res.data)
+            });
+            this.submitting = false;
+            this.$bvModal.hide('form');            
+        }
     }
 
     async handleSave() {

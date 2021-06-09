@@ -39,7 +39,7 @@ export async function update(id: number, data: {documentId: number, entity: Node
 
 export async function remove(id: number, data: {documentId: number, entity: NodeProps}) {
     try {
-        return (await axios.delete("/api/customEntity/" + id, { params: data })).data;
+        return (await axios.delete("/api/customEntity/" + id, { params: { documentId: data.documentId, type: data.entity.type } })).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };

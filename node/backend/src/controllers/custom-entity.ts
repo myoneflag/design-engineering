@@ -33,10 +33,13 @@ export class HotKeyController {
     @AuthRequired()
     public async post(req: Request, res: Response, next: NextFunction, session: Session) {
         const customEntity = CustomEntity.create();
+        customEntity.id = null;
         customEntity.entity = req.body.entity;
         customEntity.type = req.body.entity.type;
         customEntity.document_id = req.body.documentId;
         customEntity.created_by = session.user.username;
+        await customEntity.save();
+        customEntity.entity.id = customEntity.id;
         await customEntity.save();
 
         const data = await CustomEntity.find({
@@ -97,7 +100,7 @@ export class HotKeyController {
             select: ["id", "entity", "document_id", "type"],
             where: { 
                 document_id: req.query.documentId,
-                type: req.query.entity.type,
+                type: req.query.type,
                 deletedAt: IsNull(),
             }
         });
