@@ -46,9 +46,14 @@ export default class ModeButtons extends Vue {
     mounted() {
         const { floorPlan, plumbing, results } = this.hotKeySetting;
 
-        Mousetrap.bind(floorPlan, this.toggleFloorPlan);
-        Mousetrap.bind(plumbing, this.togglePlumbing);
-        Mousetrap.bind(results, this.toggleResults);
+        if (floorPlan)
+            Mousetrap.bind(floorPlan, this.toggleFloorPlan);
+
+        if (plumbing)
+            Mousetrap.bind(plumbing, this.togglePlumbing);
+
+        if (results)
+            Mousetrap.bind(results, this.toggleResults);
     }
     
     get document(): DocumentState {

@@ -300,6 +300,10 @@ export default class Onboarding extends Vue {
     }
 
     async displayOnboarding() {
+
+        if (!this.profile)
+            return;
+
         const { screen } = this.$props;
        
         if (screen === ONBOARDING_SCREEN.HOME && this.profile.onboarding && this.profile.onboarding.home === 0) {
