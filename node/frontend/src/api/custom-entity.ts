@@ -13,6 +13,19 @@ export async function customEntityData(data: {documentId: number, type: string})
     }
 }
 
+export async function customEntityShareData(data: {id: string, type: string}) {
+    try {
+        return (await axios.get("/api/customEntity/share", { params: data })).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return { success: false, message: e.response.data.message };
+        } else {
+            return { success: false, message: e.message };
+        }
+    }
+}
+
+
 export async function add(data: { documentId: number, entity: NodeProps}) {
     try {
         return (await axios.post("/api/customEntity/", data)).data;

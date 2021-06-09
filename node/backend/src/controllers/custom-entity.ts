@@ -4,28 +4,59 @@ import { ApiHandleError } from '../helpers/apiWrapper';
 import { AuthRequired } from '../helpers/withAuth';
 import { Session } from '../../../common/src/models/Session';
 import { CustomEntity } from '../../../common/src/models/CustomEntity';
+import { EntityType } from '../../../common/src/api/document/entities/types';
+import { ShareDocument } from '../../../common/src/models/ShareDocument';
 
-export class HotKeyController {
-    @ApiHandleError()
-    @AuthRequired()
-    public async getEntity(req: Request, res: Response) {
+export class CustomEntityController {
+
+    static async getDocumentEntities(documentId: number, type: EntityType ) {
         const data = await CustomEntity.find({
             select: ["id", "entity", "document_id", "type"],
             where: { 
-                document_id: req.query.documentId,
-                type: req.query.type,
+                document_id: documentId,
+                type: type,
                 deletedAt: IsNull(),
             }
         });
+        const result = data.map(row => {
+            return {
+                id: row.id,
+                ...row.entity,
+            }
+        })
+        console.log(result)
+        return result;
+    }
+
+    @ApiHandleError()
+    @AuthRequired()
+    public async getEntity(req: Request, res: Response) {
+        const entities = await CustomEntityController.getDocumentEntities(req.query.documentId, req.query.type)
 
         res.send({
             success: true,
-            data: data.map(row => {
-                return {
-                    id: row.id,
-                    ...row.entity,
-                }
-            }),
+            data: entities
+        });
+    }
+
+    @ApiHandleError()
+    public async getEntityShare(req: Request, res: Response) {
+
+        const token = req.query.id;
+        const sd = await ShareDocument.findOne({token: token});
+
+        if (!sd) {
+            return res.status(401).send({
+                success: false,
+                message: "Invalid link!",
+            });
+        }
+
+        const entities = await CustomEntityController.getDocumentEntities(sd.id, req.query.type)
+
+        res.send({
+            success: true,
+            data: entities
         });
     }
 
@@ -118,9 +149,10 @@ export class HotKeyController {
 }
 
 const router = Router();
-const controller = new HotKeyController();
+const controller = new CustomEntityController();
 
 router.get("/", controller.getEntity.bind(controller));
+router.get("/share", controller.getEntityShare.bind(controller));
 router.post('/', controller.post.bind(controller));
 router.put('/:id', controller.update.bind(controller));
 router.delete('/:id', controller.delete.bind(controller));
