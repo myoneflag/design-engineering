@@ -26,7 +26,7 @@ module.exports = {
   },
   database,
   synchronize: false,
-  logging: process.env.MODE === "production" ? false : true,
+  logging: process.env.MODE === "production" ? false : false,
   entities: [
     process.env.MODE === "production" ? "./dist/common/src/models/**/*{.ts,.js}" : "../common/src/models/**/*.ts"
   ],
