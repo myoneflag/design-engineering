@@ -9,7 +9,7 @@
                             <h2>Welcome Back</h2>
                         </b-card>
                         <h5 style="margin-bottom: 20px">Sign In to H2X - Plumbing Design Software</h5>
-                        <b-form style="text-align: left">
+                        <b-form style="text-align: left" @keyup.enter="login">
                             <b-form-group :label-cols="3" label="Username">
                                 <b-form-input :disabled="isLoading" type="text" v-model="username"></b-form-input>
                             </b-form-group>

@@ -58,7 +58,6 @@ export class AccessEventsController {
 const router = Router();
 const controller = new AccessEventsController();
 
-// Retrieve all Users
 router.get('/', controller.find.bind(controller));
 router.get('/:username', controller.getDataByUsername.bind(controller));
 

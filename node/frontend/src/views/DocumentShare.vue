@@ -13,13 +13,15 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { closeDocument, getDocument, getSharedDocument, openDocumentShare } from "../api/document";
+import { closeDocument, getSharedDocument, openDocumentShare } from "../api/document";
 import { loadCatalogShare } from "../api/catalog";
 import { MainEventBus } from "../store/main-event-bus";
 import { DocumentState } from "../store/document/types";
 import DrawingCanvas from "../../src/components/editor/DrawingCanvas.vue";
 import LoadingScreen from "../../src/views/LoadingScreen.vue";
 import { initialDrawing } from "../../../common/src/api/document/drawing";
+import { customEntityShareData } from "../api/custom-entity";
+import { EntityType } from "../../../common/src/api/document/entities/types";
 
 @Component({
     components: {
@@ -88,6 +90,17 @@ export default class DocumentShare extends Vue {
                 this.$bvToast.toast(catalog.message, {
                     title: "Error retrieving catalog",
                     variant: "danger",
+                });
+            }
+        });
+
+        customEntityShareData({id: this.$props.documentSharedId, type: EntityType.LOAD_NODE}).then(res => {
+            if (res.success) {
+                this.$store.dispatch("customEntity/setNodes", res.data);
+            } else {
+                this.$bvToast.toast(res.message, {
+                    title: "Error retrieving nodes",
+                    variant: "Danger"
                 });
             }
         });

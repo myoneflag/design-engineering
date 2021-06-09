@@ -55,7 +55,6 @@ export class CatalogController {
 const router: Router = Router();
 const controller = new CatalogController();
 
-// Retrieve all Users
 router.get('/:id', controller.getCatalog.bind(controller));
 router.get('/share/:id', controller.getCatalogShare.bind(controller));
 

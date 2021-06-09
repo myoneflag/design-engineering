@@ -2,9 +2,8 @@ import {FieldType, PropertyField} from "./property-field";
 import {EntityType} from "./types";
 import {CenteredEntity, Color, COLORS, DrawableEntity, DrawingState} from "../drawing";
 import {Units} from "../../../lib/measurements";
-import {assertUnreachable, isGas} from "../../config";
+import {isGas} from "../../config";
 import {Catalog} from "../../catalog/types";
-import { NodeProps } from "../../../models/CustomEntity";
 import { I18N } from "../../locale/values";
 import { SupportedLocales } from "../../locale";
 
@@ -415,4 +414,18 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
     }
 
     return fields;
+}
+
+export function drawingContainsCustomNode(drawing: DrawingState, customNodeId: number): boolean {
+    let found = false;
+    for (const level of Object.values(drawing.levels)) {
+        for (const entity of Object.values(level.entities)) {
+            if ( entity.type === EntityType.LOAD_NODE && entity.customNodeId === customNodeId ) {
+                found = true;
+                break;
+            }
+        }
+        if (found) break;
+    }
+    return found;
 }
