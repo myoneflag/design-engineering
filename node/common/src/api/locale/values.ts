@@ -29,5 +29,11 @@ export const I18N = {
         [SupportedLocales.AU]: "LU",
         [SupportedLocales.UK]: "LU",
         [SupportedLocales.US]: "WSFU",
+    }, 
+
+    currency: {
+        [SupportedLocales.AU]: "AUD",
+        [SupportedLocales.UK]: "GBP",
+        [SupportedLocales.US]: "USD",
     }
 }

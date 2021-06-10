@@ -68,6 +68,7 @@
     import {NetworkType} from "../../../../common/src/api/document/drawing";
     import {ALL_DRAINAGE_SYSTEM_UIDS, StandardFlowSystemUids} from "../../../../common/src/api/config";
     import {convertMeasurementSystem, Units} from "../../../../common/src/lib/measurements";
+    import { I18N } from "@../../../common/src/api/locale/values";
 
     @Component({
         props: {
@@ -110,11 +111,7 @@
         }
 
         cost2str(cost: Cost) {
-            if (cost.exact) {
-                return Number(cost.value).toLocaleString(undefined, {style: 'currency', currency: 'AUD'}) + '';
-            } else {
-                return Number(cost.value).toLocaleString(undefined, {style: 'currency', currency: 'AUD'}) + "+";
-            }
+            return Number(cost.value).toLocaleString(undefined, {style: 'currency', currency: I18N.currency[this.document.locale]}) + (cost.exact ? '' : '+')
         }
 
         get costItems() {
