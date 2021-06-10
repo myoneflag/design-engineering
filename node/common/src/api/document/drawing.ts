@@ -853,7 +853,7 @@ export const initialAustralianDrawing: DrawingState = {
             psdMethod: SupportedPsdStandards.as35002018LoadingUnits,
             dwellingMethod: null,
             drainageMethod: SupportedDrainageMethods.AS2018FixtureUnits,
-            en12056FrequencyFactor: EN12056FrequencyFactor.IntermittentUse,
+            en12056FrequencyFactor: EN12056FrequencyFactor.CongestedUse,
             ringMainCalculationMethod: RingMainCalculationMethod.ISOLATION_CASES,
             pipeSizingMethod: PIPE_SIZING_METHODS[0].key as string,
             componentPressureLossMethod: ComponentPressureLossMethod.INDIVIDUALLY,

@@ -2179,7 +2179,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "psdMethod": "as35002018LoadingUnits",
             "dwellingMethod": null,
             "drainageMethod": "AS2018FixtureUnits",
-            "en12056FrequencyFactor": "IntermittentUse",
+            "en12056FrequencyFactor": "CongestedUse",
             "ringMainCalculationMethod": "ISOLATION_CASES",
             "pipeSizingMethod": "velocity",
             "componentPressureLossMethod": "INDIVIDUALLY",
