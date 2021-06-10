@@ -311,7 +311,7 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                         }));
                         return true;
                     } else {
-                        // Check that the pipe will not exceed max unvented length or FU
+                        // Check that the pipe will not exceed max unvented length or FU/DU
                         const unventedLength = (distTo.get(edge.from.connectable) || 0) + pCalc.lengthM!;
                         const unventedLU = pCalc.psdUnits?.drainageUnits || 0;
 

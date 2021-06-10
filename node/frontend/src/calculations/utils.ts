@@ -664,3 +664,8 @@ export function addCosts(a: Cost | null, b: Cost | null): Cost {
     const exact = a !== null && a.exact && b !== null && b.exact;
     return {value, exact};
 }
+
+export function roundNumber(value: number, decimalPlaces: number) {
+    const factor = Math.pow(10, decimalPlaces)
+    return Math.round((value + Number.EPSILON) * factor) / factor
+}

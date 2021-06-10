@@ -60,8 +60,10 @@
         addFinalPsdCounts,
         Cost,
         countPsdUnits,
+        getDrainageUnitName,
         lookupFlowRate,
         PsdUnitsByFlowSystem,
+        roundNumber,
         zeroFinalPsdCounts
     } from "../../calculations/utils";
     import {Catalog} from "../../../../common/src/api/catalog/types";
@@ -154,7 +156,8 @@
             }
 
             let x = 80;
-            const res: any[] = [{"PSD": "Cold"}, {"PSD": "Hot"}, {"PSD": "Gas"}, {'PSD': 'FU'}];
+            const drainageUnits = getDrainageUnitName(this.document.drawing.metadata.calculationParams.drainageMethod);
+            const res: any[] = [{"PSD": "Cold"}, {"PSD": "Hot"}, {"PSD": "Gas"}, {'PSD': drainageUnits.abbreviation}];
             for (const [units, fieldName] of [[focusedUnits, this.$props.focusName], [projectUnits, "Project"]]) {
                 let coldFR: number | null | undefined;
                 let hotFR: number | null | undefined;
@@ -170,6 +173,7 @@
                     coldFR = res ? res.flowRateLS : null;
                 } catch (e) {
                     // Exception here
+                    console.warn('Cold water results flow rate exception', e)
                 }
                 try {
                     const res = lookupFlowRate(
@@ -181,7 +185,7 @@
                     );
                     hotFR = res ? res.flowRateLS : null;
                 } catch (e) {
-                    /**/
+                    console.warn('Hot water results flow rate exception', e)
                 }
                 gasMJH = units[StandardFlowSystemUids.Gas].gasMJH;
 
@@ -230,13 +234,13 @@
                     drainageUnits += units[suid].drainageUnits;
                 }
                 if (!isNaN(drainageUnits)) {
-                    drainageText = '' + drainageUnits;
+                    drainageText = '' + roundNumber(drainageUnits,2)
                 }
 
                 res[0][fieldName] = coldSpareText + " " + coldUnits;
                 res[1][fieldName] = hotSpareText + " " + hotUnits;
                 res[2][fieldName] = gasMJHText + " " + gasUnits;
-                res[3][fieldName] = drainageUnits;
+                res[3][fieldName] = drainageText;
             }
 
 
