@@ -538,6 +538,7 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
             break;
         case SupportedLocales.UK:
             result.metadata.calculationParams.psdMethod = SupportedPsdStandards.bs806;
+            result.metadata.calculationParams.drainageMethod = SupportedDrainageMethods.EN1205622000DischargeUnits
             // 0 index is cold water.
             result.metadata.flowSystems[0].temperature = 10;
             result.metadata.units.currency = {
@@ -561,6 +562,7 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
             };
 
             result.metadata.calculationParams.psdMethod = SupportedPsdStandards.upc2018FlushTanks;
+            result.metadata.calculationParams.drainageMethod = SupportedDrainageMethods.UPC2018DrainageFixtureUnits;
 
             // hot water is 140 F
             result.metadata.flowSystems[1].temperature = 60;
