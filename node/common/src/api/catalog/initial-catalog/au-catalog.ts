@@ -8,7 +8,7 @@ export const auCatalog: Catalog = {
             priceTableName: "Ablution Trough",
             abbreviation: "AT",
             asnzFixtureUnits: "3",
-            enDischargeUnits: "0.6",
+            enDischargeUnits: "1",
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -99,7 +99,7 @@ export const auCatalog: Catalog = {
             priceTableName: "Basin",
             abbreviation: "B",
             asnzFixtureUnits: "1",
-            enDischargeUnits: "0.3",
+            enDischargeUnits: "0.5",
             upcFixtureUnits: "1",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -202,7 +202,7 @@ export const auCatalog: Catalog = {
             priceTableName: "Bath",
             abbreviation: "BT",
             asnzFixtureUnits: "4",
-            enDischargeUnits: "0.6",
+            enDischargeUnits: "0.8",
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -280,7 +280,7 @@ export const auCatalog: Catalog = {
             priceTableName: "Bedpan Sanitiser",
             abbreviation: "BPST",
             asnzFixtureUnits: "6",
-            enDischargeUnits: "0.6",
+            enDischargeUnits: "2",
             upcFixtureUnits: "4",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -345,7 +345,7 @@ export const auCatalog: Catalog = {
             priceTableName: "Beverage Bay",
             abbreviation: "BB",
             asnzFixtureUnits: "1",
-            enDischargeUnits: "0.6",
+            enDischargeUnits: "0.5",
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -436,7 +436,7 @@ export const auCatalog: Catalog = {
             priceTableName: "Birthing Pool",
             abbreviation: "BP",
             asnzFixtureUnits: "8",
-            enDischargeUnits: "1",
+            enDischargeUnits: "4",
             upcFixtureUnits: "8",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -513,7 +513,7 @@ export const auCatalog: Catalog = {
             priceTableName: "Cleaners Sink",
             abbreviation: "CS",
             asnzFixtureUnits: "1",
-            enDischargeUnits: "0.6",
+            enDischargeUnits: "1",
             upcFixtureUnits: "3",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -578,7 +578,7 @@ export const auCatalog: Catalog = {
             priceTableName: "Dishwasher",
             abbreviation: "D",
             asnzFixtureUnits: "3",
-            enDischargeUnits: "0.6",
+            enDischargeUnits: "1.5",
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -643,7 +643,7 @@ export const auCatalog: Catalog = {
             priceTableName: "Drinking Fountain",
             abbreviation: "DF",
             asnzFixtureUnits: "1",
-            enDischargeUnits: "0.3",
+            enDischargeUnits: "0.5",
             upcFixtureUnits: "0.5",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -697,7 +697,7 @@ export const auCatalog: Catalog = {
             priceTableName: "Flushing Rim Sink",
             abbreviation: "FRS",
             asnzFixtureUnits: "6",
-            enDischargeUnits: "1.8",
+            enDischargeUnits: "2",
             upcFixtureUnits: "6",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -826,7 +826,7 @@ export const auCatalog: Catalog = {
             priceTableName: "Kitchen Sink",
             abbreviation: "KS",
             asnzFixtureUnits: "3",
-            enDischargeUnits: "0.6",
+            enDischargeUnits: "0.8",
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -917,7 +917,7 @@ export const auCatalog: Catalog = {
             priceTableName: "Kitchen Sink",
             abbreviation: "KS",
             asnzFixtureUnits: "3",
-            enDischargeUnits: "0.6",
+            enDischargeUnits: "0.8",
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -1008,7 +1008,7 @@ export const auCatalog: Catalog = {
             priceTableName: "Laundry Trough",
             abbreviation: "T",
             asnzFixtureUnits: "5",
-            enDischargeUnits: "0.6",
+            enDischargeUnits: "2",
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -1099,7 +1099,7 @@ export const auCatalog: Catalog = {
             priceTableName: "Laundry Trough",
             abbreviation: "T",
             asnzFixtureUnits: "5",
-            enDischargeUnits: "0.6",
+            enDischargeUnits: "2",
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -1190,7 +1190,7 @@ export const auCatalog: Catalog = {
             priceTableName: "Shower",
             abbreviation: "SHR",
             asnzFixtureUnits: "2",
-            enDischargeUnits: "0.5",
+            enDischargeUnits: "0.6",
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -1337,7 +1337,7 @@ export const auCatalog: Catalog = {
             priceTableName: "Washing Machine",
             abbreviation: "WM",
             asnzFixtureUnits: "5",
-            enDischargeUnits: "1.2",
+            enDischargeUnits: "1.5",
             upcFixtureUnits: "3",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -1402,7 +1402,7 @@ export const auCatalog: Catalog = {
             priceTableName: "WC",
             abbreviation: "WC",
             asnzFixtureUnits: "4",
-            enDischargeUnits: "1.8",
+            enDischargeUnits: "2",
             upcFixtureUnits: "4",
             loadingUnits: {
                 as35002018LoadingUnits: {
