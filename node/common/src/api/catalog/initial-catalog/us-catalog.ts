@@ -1,6 +1,6 @@
 import { DwellingStandardType, PSDStandardType } from "../psd-standard/types";
-import {Catalog, State} from "../types";
-import {EN12056FrequencyFactor} from "../../config";
+import { Catalog, State } from "../types";
+import { EN12056FrequencyFactor } from "../../config";
 
 export const usCatalog: Catalog = {
     fixtures: {
