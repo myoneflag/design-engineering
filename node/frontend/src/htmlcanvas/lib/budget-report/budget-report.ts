@@ -15,7 +15,7 @@ import {assertUnreachable, StandardFlowSystemUids} from "../../../../../common/s
 import {determineConnectableSystemUid} from "../../../store/document/entities/lib";
 import {lowerCase} from "../../../../../common/src/lib/utils";
 import {BigValveType} from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
-import { convertMeasurementSystemNonNull, CurrencySymbol, Units } from "../../../../../common/src/lib/measurements";
+import { convertMeasurementSystemNonNull, CurrencySymbol, MeasurementSystem, Units } from "../../../../../common/src/lib/measurements";
 import { UnitsParameters } from "../../../../../common/src/api/document/drawing";
 
 class BudgetReport {
@@ -27,23 +27,34 @@ class BudgetReport {
     readonly currencySymbol: CurrencySymbol
     readonly currencyFormat: string
 
-    readonly lengthUnits: UnitsParameters
+    readonly documentUnits: UnitsParameters
     readonly lengthSymbol: string
+    readonly pipeLengthSymbol: string
 
     constructor(context: CanvasContext, user: User) {
         this.context = context
         this.user = user;
 
         this.currencySymbol = this.context.document.drawing.metadata.units.currency.symbol
+        console.log(this.currencySymbol)
         this.currencyFormat = `${this.currencySymbol}#,##0.00;-#,##0.00`
-        this.lengthUnits = this.context.document.drawing.metadata.units
-        this.lengthSymbol = convertMeasurementSystemNonNull(this.lengthUnits, Units.Meters, 0)[0]
+        console.log(this.currencyFormat)        
+
+        this.documentUnits = this.context.document.drawing.metadata.units
+        this.lengthSymbol = convertMeasurementSystemNonNull(this.documentUnits, Units.Meters, 0)[0]
+        this.pipeLengthSymbol = convertMeasurementSystemNonNull(this.documentUnits, Units.PipeDiameterMM, 0)[0]
+        if (this.pipeLengthSymbol == Units.InchesShort)
+            this.pipeLengthSymbol = '';
 
         this.workbook = new Excel.Workbook()        
     }
         
     convertMeasurement(value: number) {
-        return Number(convertMeasurementSystemNonNull(this.lengthUnits, Units.Meters, value)[1])
+        return Number(convertMeasurementSystemNonNull(this.documentUnits, Units.Meters, value)[1])
+    }
+
+    convertPipeDiameter(value: number|string) {
+        return convertMeasurementSystemNonNull(this.documentUnits, Units.PipeDiameterMM, value)[1]
     }
     
     initWorkbook() {
@@ -394,15 +405,18 @@ class BudgetReport {
                 for (const [size, _] of Object.entries(context.effectivePriceTable.Pipes[material as keyof PipesTable])) {
                     if (items.has(`Pipes.${material}.${size}`)) {
                         sheet.getCell('A' + row).value = `${majorItem}.${minorItem}.${patch}`;
-                        if (roofHeight >= 0) {
-                            sheet.getCell('B' + row).value = `${size}mm diameter - Above ground ${lowerCase(material)} pipework including joints and supports as specification`;
-                        } else {
-                            sheet.getCell('B' + row).value = `${size}mm diameter - Below ground ${lowerCase(material)} pipework including joints and supports as specification`;
-                        }
+                        const where = roofHeight >= 0 ? "Above": "Below"
+                        sheet.getCell('B' + row).value = `${this.convertPipeDiameter(size)}${this.pipeLengthSymbol} diameter - ${where} ground ${lowerCase(material)} pipework including joints and supports as specification`;
+
                         const quantity = this.convertMeasurement(items.get(`Pipes.${material}.${size}`)!)
                         sheet.getCell('C' + row).value = this.lengthSymbol;
                         sheet.getCell('D' + row).value = quantity;
-                        const [loc, cost] = mappings.get(`Pipes.${material}.${size}`)!;
+                        let [loc, cost] = mappings.get(`Pipes.${material}.${size}`)!;
+                        // TODO remove cost adjustment after fixing https://h2xengineering.atlassian.net/browse/DEV-284
+                        // adjust cost to account cost being expressed in /m prices
+                        if (this.documentUnits.lengthMeasurementSystem != MeasurementSystem.METRIC) {
+                            cost *= 0.3048
+                        }
                         totalCost += cost * quantity;
                         minorSum += cost * quantity;
                         majorSum += cost * quantity;
@@ -436,7 +450,7 @@ class BudgetReport {
                     {
                         if (items.has(`Fittings.${fitting}.${material}.${size}`)) {
                             sheet.getCell('A' + row).value = `${majorItem}.${minorItem}.${patch}`;
-                            sheet.getCell('B' + row).value = `${size}mm ${lowerCase(material)} ${fitting}`;
+                            sheet.getCell('B' + row).value = `${this.convertPipeDiameter(size)}${this.pipeLengthSymbol} ${lowerCase(material)} ${fitting}`;
     
                             sheet.getCell('C' + row).value = 'No';
                             const quantity = items.get(`Fittings.${fitting}.${material}.${size}`)!;
@@ -500,7 +514,7 @@ class BudgetReport {
                     for (const [size, cost] of Object.entries(valve)) {
                         if (items.has(`Valves.${valveType}.${size}`)) {
                             sheet.getCell('A' + row).value = `${majorItem}.${minorItem}.${patch}`;
-                            sheet.getCell('B' + row).value = `${size}mm ${valveType}`;
+                            sheet.getCell('B' + row).value = `${this.convertPipeDiameter(size)}${this.pipeLengthSymbol} ${valveType}`;
     
                             sheet.getCell('C' + row).value = 'No';
                             const quantity = items.get(`Valves.${valveType}.${size}`)!;
@@ -620,7 +634,7 @@ class BudgetReport {
                         for (const [size, cost] of Object.entries(equipment)) {
                             if (items.has(`Equipment.${equipmentName}.${size}`)) {
                                 sheet.getCell('A' + row).value = `${majorItem}.${minorItem}.${patch}`;
-                                sheet.getCell('B' + row).value = `${size}mm diameter ${getEquipmentDescription(equipmentName, locale)}`;
+                                sheet.getCell('B' + row).value = `${this.convertPipeDiameter(size)}${this.pipeLengthSymbol} diameter ${getEquipmentDescription(equipmentName, locale)}`;
     
                                 sheet.getCell('C' + row).value = 'No';
                                 const quantity = items.get(`Equipment.${equipmentName}.${size}`)!;
@@ -671,12 +685,17 @@ class BudgetReport {
                 for (const [size, cost] of Object.entries(context.effectivePriceTable.Insulation)) {
                     if (items.has(`Insulation.${size}`)) {
                         sheet.getCell('A' + row).value = `${majorItem}.${minorItem}.${patch}`;
-                        sheet.getCell('B' + row).value = `${size}mm diameter - Pipework Insulation`;
+                        sheet.getCell('B' + row).value = `${this.convertPipeDiameter(size)}${this.pipeLengthSymbol} diameter - Pipework Insulation`;
     
                         sheet.getCell('C' + row).value = this.lengthSymbol;
                         const quantity = this.convertMeasurement(items.get(`Insulation.${size}`)!);
                         sheet.getCell('D' + row).value = quantity;
-                        const [loc, cost] = mappings.get(`Insulation.${size}`)!;
+                        let [loc, cost] = mappings.get(`Insulation.${size}`)!;
+                        // TODO remove cost adjustment after fixing https://h2xengineering.atlassian.net/browse/DEV-284                        
+                        // adjust cost to account cost being expressed in /m prices
+                        if (this.documentUnits.lengthMeasurementSystem != MeasurementSystem.METRIC) {
+                            cost *= 0.3048
+                        }
                         totalCost += cost * quantity;
                         minorSum += cost * quantity;
                         majorSum += cost * quantity;
