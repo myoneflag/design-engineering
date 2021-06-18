@@ -17,9 +17,15 @@ import {assertUnreachable, StandardFlowSystemUids} from "../../../../../common/s
 import {determineConnectableSystemUid} from "../../../store/document/entities/lib";
 import {lowerCase} from "../../../../../common/src/lib/utils";
 import {BigValveType} from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
-import { SupportedLocales } from "../../../../../common/src/api/locale";
+import { DrawingState } from "../../../../../common/src/api/document/drawing";
 
-export const MONEY_FMT = '$#,##0.00;-#,##0.00';
+export function currencySymbol(drawing: DrawingState) {
+    return drawing.metadata.units.currency.symbol;
+}
+
+export function currencyFormat(drawing: DrawingState) {
+    return `${currencySymbol(drawing)}#,##0.00;-#,##0.00`
+}
 
 export async function exportBudgetReport(context: CanvasContext) {
     const workbook = new Excel.Workbook();
@@ -146,8 +152,6 @@ function stylizeCaption(cell: Excel.Cell | Excel.Row) {
     cell.font = {bold: true, italic: true};
     cell.alignment = {horizontal: "center"};
 }
-
-
 
 function getPriceQuantities(context: CanvasContext, levelUid: string | null) {
     const result = new Map<string, number>();
@@ -276,8 +280,8 @@ function createLevelPage(
     sheet.getCell('A7').font = {bold: true};
     sheet.getCell('B7').value = levelFullTitle;
 
-    sheet.getColumn('E').numFmt = MONEY_FMT;
-    sheet.getColumn('F').numFmt = MONEY_FMT;
+    sheet.getColumn('E').numFmt = currencyFormat(context.document.drawing);
+    sheet.getColumn('F').numFmt = currencyFormat(context.document.drawing);
 
     for (let col = 1; col <= 6; col++) {
         sheet.mergeCells([9, col, 11, col]);
@@ -287,8 +291,8 @@ function createLevelPage(
     sheet.getCell('B9').value = 'Item Description';
     sheet.getCell('C9').value = 'Unit';
     sheet.getCell('D9').value = 'Qty';
-    sheet.getCell('E9').value = 'Rate $';
-    sheet.getCell('F9').value = 'Cost $';
+    sheet.getCell('E9').value = `Rate ${currencySymbol(context.document.drawing)}`;
+    sheet.getCell('F9').value = `Cost ${currencySymbol(context.document.drawing)}`;
 
     stylizeTable(9, 11, 'A', 'F', sheet);
 
@@ -428,16 +432,9 @@ function createLevelPage(
                     } else {
                         sheet.getCell('B' + row).value = `${size}mm diameter - Below ground ${lowerCase(material)} pipework including joints and supports as specification`;
                     }
-                    sheet.getCell('C' + row).value = 'm';
                     const quantity = items.get(`Pipes.${material}.${size}`)!;
-                    sheet.getCell('D' + row).value = quantity;
                     const [loc, cost] = mappings.get(`Pipes.${material}.${size}`)!;
-                    totalCost += cost * quantity;
-                    minorSum += cost * quantity;
-                    majorSum += cost * quantity;
-                    sectionSum += cost * quantity;
                     sheet.getCell('E' + row).value = {formula: `'Master Rates'!${loc}`, result: cost, date1904: true};
-                    sheet.getCell('F' + row).value = {formula: `D${row} * E${row}`, result: cost * quantity, date1904: true};
                     sheet.getRow(row).height = 30;
                     sheet.getCell('B' + row).style = {alignment: {wrapText: true}};
 
@@ -928,7 +925,7 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
         const startRow = row;
 
         sheet.mergeCells('A' + row + ":E" + row);
-        sheet.getCell('A' + row).value = material + " - $";
+        sheet.getCell('A' + row).value = `${material} - ${currencySymbol(context.document.drawing)}`;
         stylizeHeader(sheet.getCell('A' + row));
 
         row ++;
@@ -942,10 +939,10 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
         sheet.getCell('D' + row).font = {bold: true};
         sheet.getCell('E' + row).value = 'Reducer/No.';
         sheet.getCell('E' + row).font = {bold: true};
-        sheet.getColumn('B').numFmt = MONEY_FMT;
-        sheet.getColumn('C').numFmt = MONEY_FMT;
-        sheet.getColumn('D').numFmt = MONEY_FMT;
-        sheet.getColumn('E').numFmt = MONEY_FMT;
+        sheet.getColumn('B').numFmt = currencyFormat(context.document.drawing);
+        sheet.getColumn('C').numFmt = currencyFormat(context.document.drawing);
+        sheet.getColumn('D').numFmt = currencyFormat(context.document.drawing);
+        sheet.getColumn('E').numFmt = currencyFormat(context.document.drawing);
         sheet.getColumn('B').width = 12;
         sheet.getColumn('C').width = 12;
         sheet.getColumn('D').width = 12;
@@ -997,16 +994,16 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
     for (const [valveName, valve] of Object.entries(context.effectivePriceTable.Valves)) {
         const startRow = row;
         sheet.mergeCells('G' + row + ":H" + row);
-        sheet.getCell('G' + row).value = valveName + " - $";
+        sheet.getCell('G' + row).value = `${valveName} - ${currencySymbol(context.document.drawing)}`;
         stylizeHeader(sheet.getCell('G' + row));
 
 
         row ++;
         sheet.getCell('G' + row).value = 'Size';
         sheet.getCell('G' + row).font = {bold: true};
-        sheet.getCell('H' + row).value = '$/Unit';
+        sheet.getCell('H' + row).value = `${currencySymbol(context.document.drawing)}/Unit`;
         sheet.getCell('H' + row).font = {bold: true};
-        sheet.getColumn('H').numFmt = MONEY_FMT;
+        sheet.getColumn('H').numFmt = currencyFormat(context.document.drawing);
         sheet.getColumn('H').width = 12;
 
         row ++;
@@ -1032,15 +1029,15 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
         const startRow = row;
 
         sheet.mergeCells('J' + row + ":K" + row);
-        sheet.getCell('J' + row).value = "Fixtures" + " - $";
+        sheet.getCell('J' + row).value = `Fixtures - ${currencySymbol(context.document.drawing)}`;
         stylizeHeader(sheet.getCell('J' + row));
 
         row++;
         sheet.getCell('J' + row).value = 'Type';
         sheet.getCell('J' + row).font = {bold: true};
-        sheet.getCell('K' + row).value = '$/Unit';
+        sheet.getCell('K' + row).value = `${currencySymbol(context.document.drawing)}/Unit`;
         sheet.getCell('K' + row).font = {bold: true};
-        sheet.getColumn('K').numFmt = MONEY_FMT;
+        sheet.getColumn('K').numFmt = currencyFormat(context.document.drawing);
         sheet.getColumn('K').width = 12;
 
         row++;
@@ -1066,15 +1063,15 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
         if (typeof table !== 'object') {
             // single
             sheet.mergeCells('M' + row + ":N" + row);
-            sheet.getCell('M' + row).value = equipment + " - $";
+            sheet.getCell('M' + row).value = `${equipment} - ${currencySymbol(context.document.drawing)}`;
             stylizeHeader(sheet.getCell('M' + row));
 
             row ++;
             sheet.getCell('M' + row).value = 'Size';
             sheet.getCell('M' + row).font = {bold: true};
-            sheet.getCell('N' + row).value = '$/Unit';
+            sheet.getCell('N' + row).value = `${currencySymbol(context.document.drawing)}/Unit`;
             sheet.getCell('N' + row).font = {bold: true};
-            sheet.getColumn('N').numFmt = MONEY_FMT;
+            sheet.getColumn('N').numFmt = currencyFormat(context.document.drawing);
             sheet.getColumn('N').width = 12;
 
             row ++;
@@ -1087,15 +1084,15 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
         } else {
             // by price
             sheet.mergeCells('M' + row + ":N" + row);
-            sheet.getCell('M' + row).value = equipment + " - $";
+            sheet.getCell('M' + row).value = `${equipment} - ${currencySymbol(context.document.drawing)}`;
             stylizeHeader(sheet.getCell('M' + row));
 
             row ++;
             sheet.getCell('M' + row).value = 'Size';
             sheet.getCell('M' + row).font = {bold: true};
-            sheet.getCell('N' + row).value = '$/Unit';
+            sheet.getCell('N' + row).value = `${currencySymbol(context.document.drawing)}/Unit`;
             sheet.getCell('N' + row).font = {bold: true};
-            sheet.getColumn('N').numFmt = MONEY_FMT;
+            sheet.getColumn('N').numFmt = currencyFormat(context.document.drawing);
             sheet.getColumn('N').width = 12;
 
             row ++;
@@ -1121,15 +1118,15 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
         const startRow = row;
 
         sheet.mergeCells('P' + row + ":Q" + row);
-        sheet.getCell('P' + row).value = "Nodes" + " - $";
+        sheet.getCell('P' + row).value = `Nodes - ${currencySymbol(context.document.drawing)}`;
         stylizeHeader(sheet.getCell('P' + row));
 
         row ++;
         sheet.getCell('P' + row).value = 'Type';
         sheet.getCell('P' + row).font = {bold: true};
-        sheet.getCell('Q' + row).value = '$/Unit';
+        sheet.getCell('Q' + row).value = `${currencySymbol(context.document.drawing)}/Unit`;
         sheet.getCell('Q' + row).font = {bold: true};
-        sheet.getColumn('Q').numFmt = MONEY_FMT;
+        sheet.getColumn('Q').numFmt = currencyFormat(context.document.drawing);
         sheet.getColumn('Q').width = 12;
 
         row ++;
@@ -1151,15 +1148,15 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
     {
         const startRow = row;
         sheet.mergeCells('S' + row + ":T" + row);
-        sheet.getCell('S' + row).value = "Plants" + " - $";
+        sheet.getCell('S' + row).value = `Plants - ${currencySymbol(context.document.drawing)}`;
         stylizeHeader(sheet.getCell('S' + row));
 
         row ++;
         sheet.getCell('S' + row).value = 'Type';
         sheet.getCell('S' + row).font = {bold: true};
-        sheet.getCell('T' + row).value = '$/Unit';
+        sheet.getCell('T' + row).value = `${currencySymbol(context.document.drawing)}/Unit`;
         sheet.getCell('T' + row).font = {bold: true};
-        sheet.getColumn('T').numFmt = MONEY_FMT;
+        sheet.getColumn('T').numFmt = currencyFormat(context.document.drawing);
         sheet.getColumn('T').width = 12;
 
         row ++;
@@ -1182,15 +1179,15 @@ function createMasterPage(context: CanvasContext, workbook: Excel.Workbook): Map
     {
         const startRow = row;
         sheet.mergeCells('V' + row + ":W" + row);
-        sheet.getCell('V' + row).value = "Insulation" + " - $";
+        sheet.getCell('V' + row).value = `Insulation - ${currencySymbol(context.document.drawing)}`;
         stylizeHeader(sheet.getCell('V' + row));
 
         row ++;
         sheet.getCell('V' + row).value = 'Size';
         sheet.getCell('V' + row).font = {bold: true};
-        sheet.getCell('W' + row).value = '$/m';
+        sheet.getCell('W' + row).value = `${currencySymbol(context.document.drawing)}/m`;
         sheet.getCell('W' + row).font = {bold: true};
-        sheet.getColumn('W').numFmt = MONEY_FMT;
+        sheet.getColumn('W').numFmt = currencyFormat(context.document.drawing);
         sheet.getColumn('W').width = 12;
 
         row ++;
