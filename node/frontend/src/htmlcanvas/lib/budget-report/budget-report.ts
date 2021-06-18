@@ -66,7 +66,6 @@ class BudgetReport {
     }
     
     createCoverPage() {
-        const context = this.context
         const workbook = this.workbook
         const sheet = workbook.addWorksheet("BOW-Cover");
         sheet.pageSetup.printArea = 'A1:F14';
@@ -674,8 +673,8 @@ class BudgetReport {
                         sheet.getCell('A' + row).value = `${majorItem}.${minorItem}.${patch}`;
                         sheet.getCell('B' + row).value = `${size}mm diameter - Pipework Insulation`;
     
-                        sheet.getCell('C' + row).value = 'm';
-                        const quantity = items.get(`Insulation.${size}`)!;
+                        sheet.getCell('C' + row).value = this.lengthSymbol;
+                        const quantity = this.convertMeasurement(items.get(`Insulation.${size}`)!);
                         sheet.getCell('D' + row).value = quantity;
                         const [loc, cost] = mappings.get(`Insulation.${size}`)!;
                         totalCost += cost * quantity;
@@ -881,7 +880,7 @@ class BudgetReport {
             row ++;
             sheet.getCell('A' + row).value = 'Size';
             sheet.getCell('A' + row).font = {bold: true};
-            sheet.getCell('B' + row).value = 'Pipe/m';
+            sheet.getCell('B' + row).value = `Pipe/${this.lengthSymbol}`;
             sheet.getCell('B' + row).font = {bold: true};
             sheet.getCell('C' + row).value = 'Bend/No.';
             sheet.getCell('C' + row).font = {bold: true};
@@ -1135,7 +1134,7 @@ class BudgetReport {
             row ++;
             sheet.getCell('V' + row).value = 'Size';
             sheet.getCell('V' + row).font = {bold: true};
-            sheet.getCell('W' + row).value = `${this.currencySymbol}/m`;
+            sheet.getCell('W' + row).value = `${this.currencySymbol}/${this.lengthSymbol}`;
             sheet.getCell('W' + row).font = {bold: true};
             sheet.getColumn('W').numFmt = this.currencyFormat;
             sheet.getColumn('W').width = 12;
