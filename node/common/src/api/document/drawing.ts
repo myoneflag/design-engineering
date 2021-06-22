@@ -545,6 +545,11 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
                 multiplierPct: 100,
             };
 
+            // default pipes manufacturers
+            result.metadata.catalog.pipes[0].manufacturer = "bsen1057Cu"
+            result.metadata.catalog.pipes[1].manufacturer = "enIso15875pex"
+            result.metadata.catalog.pipes[2].manufacturer = "bs1387ss"
+
             break;
         case SupportedLocales.US:
             result.metadata.units = {
@@ -588,6 +593,11 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
             result.metadata.flowSystems[0].networks.CONNECTIONS.velocityMS =
                 result.metadata.flowSystems[1].networks.CONNECTIONS.velocityMS =
                     result.metadata.flowSystems[1].networks.CONNECTIONS.velocityMS = 2.7432;
+
+            // default pipes manufacturers
+            result.metadata.catalog.pipes[0].manufacturer = "atsmB88Cu"
+            result.metadata.catalog.pipes[1].manufacturer = "atsmF877pex"
+            result.metadata.catalog.pipes[2].manufacturer = "bs1387ss"
 
             result.levels = {
                 ground: {
