@@ -119,8 +119,7 @@ export const TEMPERATURE_MEASUREMENT_CHOICES: Choice[] = [
 
 export const VELOCITY_MEASUREMENT_CHOICES: Choice[] = [
     {name: 'Metric (m/s)', key: VelocityMeasurementSystem.METRIC},
-    {name: 'Imperial (furlongs/fortnight)', key: VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL},
-    {name: 'Alt. Imperial (ft/s)', key: VelocityMeasurementSystem.IMPERIAL},
+    {name: 'Imperial (ft/s)', key: VelocityMeasurementSystem.IMPERIAL},
 ];
 
 export const VOLUME_MEASUREMENT_CHOICES: Choice[] = [

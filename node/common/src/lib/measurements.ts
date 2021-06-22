@@ -38,12 +38,7 @@ export enum Units {
     ThermsPerHour = 'thm/hr',
 
     PipeDiameterMM = "pmm",
-    CubicFeetPerHour = "ft^3/hr",
-
-    // April Fools
-    FurlongsPerFortnight = "fur/fortn",
-
-
+    CubicFeetPerHour = "ft^3/hr"
 }
 
 export enum EnergyMeasurementSystem {
@@ -70,8 +65,7 @@ export enum VolumeMeasurementSystem {
 
 export enum VelocityMeasurementSystem {
     METRIC = "METRIC",
-    IMPERIAL = "IMPERIAL",
-    ALTERNATIVE_IMPERIAL = "ALTERNATIVE_IMPERIAL",
+    IMPERIAL = "IMPERIAL"
 }
 
 export enum CurrencySymbol {
@@ -137,8 +131,6 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [units, value];
                 case VelocityMeasurementSystem.IMPERIAL:
                     return [Units.FeetPerSecond, m2FT(value)];
-                case VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL:
-                    return [Units.FurlongsPerFortnight, value * 6012.87];
             }
             assertUnreachable(unitsPrefs.velocityMeasurementSystem);
             return [Units.None, 0];
@@ -229,8 +221,6 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.MetersPerSecond, ft2M(value)];
                 case VelocityMeasurementSystem.IMPERIAL:
                     return [Units.FeetPerSecond, value];
-                case VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL:
-                    return [Units.FurlongsPerFortnight, ft2M(value) * 6012.87];
             }
             assertUnreachable(unitsPrefs.velocityMeasurementSystem);
             return [Units.None, 0];
@@ -287,19 +277,6 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
             return [Units.None, 0];
         case Units.PipeDiameterMM:
             return convertPipeDiameterFromMetric(unitsPrefs, valueRaw);
-        case Units.FurlongsPerFortnight:
-            switch (unitsPrefs.velocityMeasurementSystem) {
-                case VelocityMeasurementSystem.METRIC:
-                    return [Units.MetersPerSecond, value / 6012.87];
-                case VelocityMeasurementSystem.IMPERIAL:
-                    return [Units.FeetPerSecond, m2FT(value / 6012.87)];
-                case VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL:
-                    return [Units.FurlongsPerFortnight, value];
-                default:
-                    assertUnreachable(unitsPrefs.velocityMeasurementSystem);
-            }
-            assertUnreachable(unitsPrefs.velocityMeasurementSystem);
-            return [Units.None, 0];
         case Units.MegajoulesPerHour:
             switch (unitsPrefs.energyMeasurementSystem) {
                 case EnergyMeasurementSystem.METRIC:
@@ -313,7 +290,6 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                 case VelocityMeasurementSystem.METRIC:
                     return [Units.MetersCubedPerHour, value];
                 case VelocityMeasurementSystem.IMPERIAL:
-                case VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL:
                     return [Units.CubicFeetPerHour, value * 3.28084 * 3.28084 * 3.28084];
                 default:
                     assertUnreachable(unitsPrefs.velocityMeasurementSystem);
@@ -324,7 +300,6 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                 case VelocityMeasurementSystem.METRIC:
                     return [Units.MetersCubedPerHour, value / (3.28084 * 3.28084 * 3.28084)];
                 case VelocityMeasurementSystem.IMPERIAL:
-                case VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL:
                     return [Units.CubicFeetPerHour, value];
                 default:
                     assertUnreachable(unitsPrefs.velocityMeasurementSystem);
