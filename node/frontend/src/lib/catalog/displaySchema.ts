@@ -242,7 +242,7 @@ export function getCatalogDisplaySchema(locale: SupportedLocales): CatalogSchema
                 link: {
                     name: { order: 1, name: "Material" },
                     manufacturer: { order: 2, name: "Manufacturer"},
-                    abbreviation: { order: 3, name: "Abbreaviation" },
+                    abbreviation: { order: 3, name: "Abbreviation" },
                     uid: null,
                     pipesBySize: {
                         order: 4,
@@ -268,12 +268,12 @@ export function getCatalogDisplaySchema(locale: SupportedLocales): CatalogSchema
                 primaryName: null,
                 columns: [
                     ["name", "Name"],
-                    ["abbreviation", "Abbreaviation"]
+                    ["abbreviation", "Abbreviation"]
                 ],
                 link: {
                     name: { order: 1, name: "Name" },
                     uid: null,
-                    abbreviation: { order: 2, name: "Abbreaviation" },
+                    abbreviation: { order: 2, name: "Abbreviation" },
                     valvesBySize: {
                         order: 3,
                         name: "K values By Size",

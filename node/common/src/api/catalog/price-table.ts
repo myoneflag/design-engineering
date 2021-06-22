@@ -29,6 +29,7 @@ export type PipeMaterials =
     | 'PEX'
     | 'Copper'
     | 'Stainless Steel'
+    | 'CPVC'
     | 'HDPE'
     | 'GMS'
     | 'Cast Iron'
