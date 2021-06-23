@@ -3000,6 +3000,12 @@ export const auCatalog: Catalog = {
                     priceTableName: "Stainless Steel (Sewer)",
                     uid: 'generic',
                 },
+                {
+                    name: 'Blucher',
+                    abbreviation: 'blucherSS',
+                    priceTableName: "Stainless Steel (Sewer)",
+                    uid: 'blucherSS',
+                }
             ],
             uid: 'stainlessSteelSewer',
             pipesBySize: {
@@ -3033,6 +3039,64 @@ export const auCatalog: Catalog = {
                         diameterInternalMM: "160",
                         diameterNominalMM: "160",
                         diameterOutsideMM: "160",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    }
+                },
+                blucherSS: {
+                    50: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "50",
+                        diameterNominalMM: "50",
+                        diameterOutsideMM: "50",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    75: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "75",
+                        diameterNominalMM: "75",
+                        diameterOutsideMM: "75",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    110: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "110",
+                        diameterNominalMM: "110",
+                        diameterOutsideMM: "110",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    160: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "160",
+                        diameterNominalMM: "160",
+                        diameterOutsideMM: "160",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    200: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "200",
+                        diameterNominalMM: "200",
+                        diameterOutsideMM: "200",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    250: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "250",
+                        diameterNominalMM: "250",
+                        diameterOutsideMM: "250",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    315: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "315",
+                        diameterNominalMM: "315",
+                        diameterOutsideMM: "315",
                         pipeUid: "stainlessSteelSewer",
                         safeWorkingPressureKPA: "1600"
                     }
