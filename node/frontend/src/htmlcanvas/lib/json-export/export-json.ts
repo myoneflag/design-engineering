@@ -10,6 +10,7 @@ import RiserEntity, { fillRiserDefaults } from "../../../../../common/src/api/do
 import { EntityType } from "../../../../../common/src/api/document/entities/types";
 import { BaseBackedConnectable } from "../BackedConnectable";
 import { GlobalStore } from "../global-store";
+import { Coord } from "../../../../../common/src/api/document/drawing";
 
 
 export function jsonExport(document: DocumentState, globalStore: GlobalStore) {
