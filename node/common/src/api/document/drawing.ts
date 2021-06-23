@@ -472,19 +472,19 @@ export const DRAINAGE_FLOW_SYSTEMS: FlowSystemParameters[] = [
             RISERS: {
                 spareCapacityPCT: 0,
                 velocityMS: 20,
-                material: "hdpeSdr11Sewer",
+                material: "stainlessSteelSewer",
                 minimumPipeSize: 15,
             },
             RETICULATIONS: {
                 spareCapacityPCT: 0,
                 velocityMS: 20,
-                material: "hdpeSdr11Sewer",
+                material: "stainlessSteelSewer",
                 minimumPipeSize: 15,
             },
             CONNECTIONS: {
                 spareCapacityPCT: 0,
                 velocityMS: 3,
-                material: "hdpeSdr11Sewer",
+                material: "stainlessSteelSewer",
                 minimumPipeSize: 16,
             }
         },
