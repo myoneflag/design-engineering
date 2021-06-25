@@ -1457,6 +1457,7 @@ export default class CalculationEngine implements CalculationContext {
     // Checks basic validity stuff, like hot water/cold water shouldn't mix, all fixtures have
     // required water sources filled in, etc.
     sanityCheck(objectStore: ObjectStore, doc: DocumentState): boolean {
+        // TODO come up with all sanity checks that are required
         return true;
     }
 

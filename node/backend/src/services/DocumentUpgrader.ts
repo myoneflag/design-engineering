@@ -201,13 +201,13 @@ export class DocumentUpgrader {
                     });
                 }
 
-                if (CURRENT_VERSION == 22) {
-                    // save drawing state to seed drawing table
-                    let drawingData = new Drawing()
-                    drawingData.documentId = docId
-                    drawingData.drawing = drawing
-                    await tx.save(Drawing, drawingData)
-                }
+                // if (CURRENT_VERSION == 22) {
+                //     // save drawing state to seed drawing table
+                //     let drawingData = new Drawing()
+                //     drawingData.documentId = docId
+                //     drawingData.drawing = drawing
+                //     await tx.save(Drawing, drawingData)
+                // }
 
                 // upgrade
                 doc.version = CURRENT_VERSION;
